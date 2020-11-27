@@ -8,10 +8,6 @@ add_subdirectory(bitcoin)
 set(cxx-sources
     blockoracle/Cache.cpp
     blockoracle/Mem.cpp
-    filteroracle/BlockQueue.cpp
-    filteroracle/FilterQueue.cpp
-    filteroracle/HeaderQueue.cpp
-    filteroracle/IndexBlockJob.cpp
     peermanager/Jobs.cpp
     peermanager/Peers.cpp
     peermanager/ZMQ.cpp
@@ -40,7 +36,10 @@ set(cxx-headers
     ${cxx-install-headers}
     "${opentxs_SOURCE_DIR}/src/internal/blockchain/client/Client.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/blockchain/client/Factory.hpp"
+    filteroracle/BlockIndexer.hpp
     filteroracle/FilterCheckpoints.hpp
+    filteroracle/FilterDownloader.hpp
+    filteroracle/HeaderDownloader.hpp
     peermanager/IncomingConnectionManager.hpp
     wallet/HDStateData.hpp
     BlockOracle.hpp

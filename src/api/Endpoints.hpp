@@ -54,6 +54,8 @@ public:
     auto FindServer() const noexcept -> std::string final;
     auto FindUnitDefinition() const noexcept -> std::string final;
     auto InternalBlockchainAsioContext() const noexcept -> std::string final;
+    auto InternalBlockchainBlockUpdated(const opentxs::blockchain::Type chain)
+        const noexcept -> std::string final;
     auto InternalBlockchainFilterUpdated(const opentxs::blockchain::Type chain)
         const noexcept -> std::string final;
     auto InternalBlockchainThreadPool() const noexcept -> std::string final;

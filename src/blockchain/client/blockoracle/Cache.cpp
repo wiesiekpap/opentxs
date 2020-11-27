@@ -57,16 +57,19 @@ auto BlockOracle::Cache::download(const block::Hash& block) const noexcept
 auto BlockOracle::Cache::ReceiveBlock(const zmq::Frame& in) const noexcept
     -> void
 {
-    auto pBlock = api_.Factory().BitcoinBlock(chain_, in.Bytes());
+    ReceiveBlock(api_.Factory().BitcoinBlock(chain_, in.Bytes()));
+}
 
-    if (false == bool(pBlock)) {
+auto BlockOracle::Cache::ReceiveBlock(BitcoinBlock_p in) const noexcept -> void
+{
+    if (false == bool(in)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid block").Flush();
 
         return;
     }
 
     Lock lock{lock_};
-    auto& block = *pBlock;
+    auto& block = *in;
 
     if (api::client::blockchain::BlockStorage::None != db_.BlockPolicy()) {
         db_.BlockStore(block);
@@ -84,7 +87,7 @@ auto BlockOracle::Cache::ReceiveBlock(const zmq::Frame& in) const noexcept
     }
 
     auto& [time, promise, future, queued] = pending->second;
-    promise.set_value(std::move(pBlock));
+    promise.set_value(std::move(in));
     LogVerbose(OT_METHOD)(__FUNCTION__)(": Cached block ")(id.asHex()).Flush();
     mem_.push(std::move(id), std::move(future));
     pending_.erase(pending);

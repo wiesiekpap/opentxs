@@ -43,6 +43,9 @@ namespace opentxs::blockchain::client::implementation
 PeerManager::Peers::Peers(
     const api::Core& api,
     const internal::Network& network,
+    const internal::HeaderOracle& headers,
+    const internal::FilterOracle& filter,
+    const internal::BlockOracle& block,
     const internal::PeerDatabase& database,
     const internal::PeerManager& parent,
     const Flag& running,
@@ -54,6 +57,9 @@ PeerManager::Peers::Peers(
     : chain_(chain)
     , api_(api)
     , network_(network)
+    , headers_(headers)
+    , filter_(filter)
+    , block_(block)
     , database_(database)
     , parent_(parent)
     , context_(context)
@@ -410,6 +416,9 @@ auto PeerManager::Peers::peer_factory(Endpoint endpoint, const int id) noexcept
             return factory::BitcoinP2PPeerLegacy(
                 api_,
                 network_,
+                headers_,
+                filter_,
+                block_,
                 parent_,
                 context_,
                 id,

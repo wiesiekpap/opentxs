@@ -64,35 +64,35 @@ public:
     {
         return const_iterator(this, payload_.size());
     }
-    auto Previous() const noexcept -> const value_type& final
+    auto Previous() const noexcept -> const filter::Header& final
     {
         return previous_;
     }
     auto size() const noexcept -> std::size_t final { return payload_.size(); }
-    auto Stop() const noexcept -> const value_type& final { return stop_; }
+    auto Stop() const noexcept -> const block::Hash& final { return stop_; }
     auto Type() const noexcept -> filter::Type final { return type_; }
 
     Cfheaders(
         const api::Core& api,
         const blockchain::Type network,
         const filter::Type type,
-        const filter::Hash& stop,
+        const block::Hash& stop,
         const ReadView previousHeader,
         const std::vector<filter::pHash>& headers) noexcept;
     Cfheaders(
         const api::Core& api,
         std::unique_ptr<Header> header,
         const filter::Type type,
-        const filter::Hash& stop,
-        const filter::Hash& previous,
+        const block::Hash& stop,
+        const filter::Header& previous,
         const std::vector<filter::pHash>& headers) noexcept;
 
     ~Cfheaders() final = default;
 
 private:
     const filter::Type type_;
-    const filter::pHash stop_;
-    const filter::pHash previous_;
+    const block::pHash stop_;
+    const filter::pHeader previous_;
     const std::vector<filter::pHash> payload_;
 
     auto payload() const noexcept -> OTData final;

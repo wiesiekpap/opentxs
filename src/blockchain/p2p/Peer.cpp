@@ -11,6 +11,7 @@
 #include <string_view>
 #include <type_traits>
 
+#include "blockchain/DownloadTask.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -38,6 +39,8 @@ namespace opentxs::blockchain::p2p::implementation
 Peer::Peer(
     const api::Core& api,
     const client::internal::Network& network,
+    const client::internal::FilterOracle& filter,
+    const client::internal::BlockOracle& block,
     const client::internal::PeerManager& manager,
     const blockchain::client::internal::IO& context,
     const int id,
@@ -47,6 +50,8 @@ Peer::Peer(
     std::unique_ptr<internal::Address> address) noexcept
     : Worker(api, std::chrono::milliseconds(10))
     , network_(network)
+    , filter_(filter)
+    , block_(block)
     , manager_(manager)
     , chain_(address->Chain())
     , header_probe_(false)
@@ -54,6 +59,9 @@ Peer::Peer(
     , address_(std::move(address))
     , download_peers_()
     , state_()
+    , cfheader_job_()
+    , cfilter_job_()
+    , block_job_()
     , verify_filter_checkpoint_(
           api::client::blockchain::BlockStorage::All !=
           static_cast<const blockchain::client::internal::BlockDatabase&>(
@@ -112,6 +120,29 @@ auto Peer::check_download_peers() noexcept -> void
         interval;
 
     if (download) { request_addresses(); }
+}
+
+auto Peer::check_jobs() noexcept -> void
+{
+    constexpr auto limit = std::chrono::minutes(1);
+
+    if (auto& job = cfheader_job_; job) {
+        if (job.Elapsed() >= limit) { reset_cfheader_job(); }
+    } else if (cfilter_probe_) {
+        reset_cfheader_job();
+    }
+
+    if (auto& job = cfilter_job_; job) {
+        if (job.Elapsed() >= limit) { reset_cfilter_job(); }
+    } else if (cfilter_probe_) {
+        reset_cfilter_job();
+    }
+
+    if (auto& job = block_job_; job) {
+        if (job.Elapsed() >= limit) { reset_block_job(); }
+    } else if (header_probe_) {
+        reset_block_job();
+    }
 }
 
 auto Peer::check_handshake() noexcept -> void
@@ -253,14 +284,25 @@ auto Peer::pipeline(zmq::Message& message) noexcept -> void
         case Task::Getheaders: {
             if (State::Run == state_.value_.load()) { request_headers(); }
         } break;
-        case Task::Getcfheaders: {
+        case Task::JobAvailableCfheaders: {
             if (State::Run == state_.value_.load()) {
-                request_cfheaders(message);
+                if (cfheader_job_) { break; }
+
+                reset_cfheader_job();
             }
         } break;
-        case Task::Getcfilters: {
+        case Task::JobAvailableCfilters: {
             if (State::Run == state_.value_.load()) {
-                request_cfilter(message);
+                if (cfilter_job_) { break; }
+
+                reset_cfilter_job();
+            }
+        } break;
+        case Task::JobAvailableBlock: {
+            if (State::Run == state_.value_.load()) {
+                if (block_job_) { break; }
+
+                reset_block_job();
             }
         } break;
         case Task::Getblock: {
@@ -302,11 +344,42 @@ auto Peer::process_state_machine() noexcept -> void
     switch (state_.value_.load()) {
         case State::Run: {
             check_activity();
+            check_jobs();
             check_download_peers();
         } break;
         default: {
         }
     }
+}
+
+auto Peer::reset_block_job() noexcept -> void
+{
+    auto& job = block_job_;
+    job = {};
+
+    if (header_probe_) { job = block_.GetBlockJob(); }
+
+    if (job) { request_blocks(); }
+}
+
+auto Peer::reset_cfheader_job() noexcept -> void
+{
+    auto& job = cfheader_job_;
+    job = {};
+
+    if (cfilter_probe_) { job = filter_.GetHeaderJob(); }
+
+    if (job) { request_cfheaders(); }
+}
+
+auto Peer::reset_cfilter_job() noexcept -> void
+{
+    auto& job = cfilter_job_;
+    job = {};
+
+    if (cfilter_probe_) { job = filter_.GetFilterJob(); }
+
+    if (job) { request_cfilter(); }
 }
 
 auto Peer::send(OTData in) noexcept -> SendStatus
@@ -439,11 +512,12 @@ auto Peer::subscribe() noexcept -> void
         pipeline_->Start(manager_.Endpoint(Task::Getheaders));
         pipeline_->Start(manager_.Endpoint(Task::Getblock));
         pipeline_->Start(manager_.Endpoint(Task::BroadcastTransaction));
+        pipeline_->Start(manager_.Endpoint(Task::JobAvailableBlock));
     }
 
     if (cfilter || cfilter_probe_) {
-        pipeline_->Start(manager_.Endpoint(Task::Getcfheaders));
-        pipeline_->Start(manager_.Endpoint(Task::Getcfilters));
+        pipeline_->Start(manager_.Endpoint(Task::JobAvailableCfheaders));
+        pipeline_->Start(manager_.Endpoint(Task::JobAvailableCfilters));
     }
 
     pipeline_->Start(manager_.Endpoint(Task::BroadcastBlock));

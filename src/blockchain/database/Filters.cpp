@@ -162,7 +162,7 @@ auto Filters::LoadFilterHeader(const filter::Type type, const ReadView block)
 
 auto Filters::SetHeaderTip(
     const filter::Type type,
-    const block::Position position) const noexcept -> bool
+    const block::Position& position) const noexcept -> bool
 {
     return lmdb_
         .Store(
@@ -172,7 +172,7 @@ auto Filters::SetHeaderTip(
         .first;
 }
 
-auto Filters::SetTip(const filter::Type type, const block::Position position)
+auto Filters::SetTip(const filter::Type type, const block::Position& position)
     const noexcept -> bool
 {
     return lmdb_

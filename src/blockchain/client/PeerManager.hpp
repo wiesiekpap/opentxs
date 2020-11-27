@@ -121,6 +121,9 @@ public:
         Peers(
             const api::Core& api,
             const internal::Network& network,
+            const internal::HeaderOracle& headers,
+            const internal::FilterOracle& filter,
+            const internal::BlockOracle& block,
             const internal::PeerDatabase& database,
             const internal::PeerManager& parent,
             const Flag& running,
@@ -139,6 +142,9 @@ public:
 
         const api::Core& api_;
         const internal::Network& network_;
+        const internal::HeaderOracle& headers_;
+        const internal::FilterOracle& filter_;
+        const internal::BlockOracle& block_;
         const internal::PeerDatabase& database_;
         const internal::PeerManager& parent_;
         const blockchain::client::internal::IO& context_;
@@ -214,18 +220,11 @@ public:
     {
         jobs_.Dispatch(Task::Heartbeat);
     }
+    auto JobReady(const Task type) const noexcept -> void final;
     auto Listen(const p2p::Address& address) const noexcept -> bool final;
     auto RequestBlock(const block::Hash& block) const noexcept -> bool final;
     auto RequestBlocks(const std::vector<ReadView>& hashes) const noexcept
         -> bool final;
-    auto RequestFilterHeaders(
-        const filter::Type type,
-        const block::Height start,
-        const block::Hash& stop) const noexcept -> bool final;
-    auto RequestFilters(
-        const filter::Type type,
-        const block::Height start,
-        const block::Hash& stop) const noexcept -> bool final;
     auto RequestHeaders() const noexcept -> bool final;
     auto Shutdown() noexcept -> std::shared_future<void> final
     {
@@ -237,6 +236,9 @@ public:
     PeerManager(
         const api::Core& api,
         const internal::Network& network,
+        const internal::HeaderOracle& headers,
+        const internal::FilterOracle& filter,
+        const internal::BlockOracle& block,
         const internal::PeerDatabase& database,
         const blockchain::client::internal::IO& io,
         const Type chain,
@@ -265,8 +267,9 @@ private:
 
         const zmq::Context& zmq_;
         OTZMQPushSocket getheaders_;
-        OTZMQPushSocket getcfheaders_;
-        OTZMQPushSocket getcfilters_;
+        OTZMQPublishSocket getcfheaders_;
+        OTZMQPublishSocket getcfilters_;
+        OTZMQPublishSocket getblocks_;
         OTZMQPublishSocket heartbeat_;
         OTZMQPushSocket getblock_;
         OTZMQPushSocket broadcast_transaction_;

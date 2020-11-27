@@ -293,6 +293,8 @@ using Position = std::pair<Height, pHash>;
 using Txid = blockchain::Hash;
 using pTxid = blockchain::pHash;
 
+/// Use this to test for a chain reorg. lhs is the current position and rhs is
+/// the new position.
 bool operator>(const Position& lhs, const Position& rhs) noexcept;
 
 pHash BlankHash() noexcept;

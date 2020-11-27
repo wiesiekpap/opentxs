@@ -123,7 +123,7 @@ struct FilterPrefixBasic {
     FilterPrefixBasic(
         const blockchain::Type chain,
         const filter::Type type,
-        const filter::Hash& hash) noexcept(false);
+        const block::Hash& hash) noexcept(false);
     FilterPrefixBasic() noexcept;
 };
 struct FilterPrefixChained {
@@ -131,15 +131,15 @@ struct FilterPrefixChained {
     HashField hash_;
     HashField previous_;
 
-    auto Previous() const noexcept -> filter::pHash;
-    auto Stop() const noexcept -> filter::pHash;
+    auto Previous() const noexcept -> filter::pHeader;
+    auto Stop() const noexcept -> block::pHash;
     auto Type(const blockchain::Type chain) const noexcept -> filter::Type;
 
     FilterPrefixChained(
         const blockchain::Type chain,
         const filter::Type type,
-        const filter::Hash& stop,
-        const filter::Hash& prefix) noexcept(false);
+        const block::Hash& stop,
+        const filter::Header& prefix) noexcept(false);
     FilterPrefixChained() noexcept;
 };
 struct FilterRequest {
@@ -206,9 +206,9 @@ struct Cfheaders : virtual public bitcoin::Message {
         -> const value_type& = 0;
     virtual auto begin() const noexcept -> const_iterator = 0;
     virtual auto end() const noexcept -> const_iterator = 0;
-    virtual auto Previous() const noexcept -> const value_type& = 0;
+    virtual auto Previous() const noexcept -> const filter::Header& = 0;
     virtual auto size() const noexcept -> std::size_t = 0;
-    virtual auto Stop() const noexcept -> const value_type& = 0;
+    virtual auto Stop() const noexcept -> const block::Hash& = 0;
     virtual auto Type() const noexcept -> filter::Type = 0;
 };
 struct Cfilter : virtual public bitcoin::Message {
@@ -216,7 +216,7 @@ struct Cfilter : virtual public bitcoin::Message {
     virtual auto ElementCount() const noexcept -> std::uint32_t = 0;
     virtual auto FPRate() const noexcept -> std::uint32_t = 0;
     virtual auto Filter() const noexcept -> ReadView = 0;
-    virtual auto Hash() const noexcept -> const filter::Hash& = 0;
+    virtual auto Hash() const noexcept -> const block::Hash& = 0;
     virtual auto Type() const noexcept -> filter::Type = 0;
 };
 struct Filteradd : virtual public bitcoin::Message {

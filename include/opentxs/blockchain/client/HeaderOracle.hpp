@@ -26,12 +26,46 @@ class HeaderOracle
 {
 public:
     using Hashes = std::vector<block::pHash>;
+    using Positions = std::vector<block::Position>;
 
     /// Throws std::out_of_range for invalid type
     OPENTXS_EXPORT static const block::Hash& GenesisBlockHash(
         const blockchain::Type type);
 
+    /** Query a partial set of ancestors of a target block
+     *
+     *  This function always returns at least one position.
+     *
+     *  The first position returned will be the newest common ancestor between
+     *  the target position and the previous chain as indicated by the start
+     *  argument. If no reorg has occurred this will be the start argument.
+     *
+     *  Subsequent positions represent every block following the common ancestor
+     *  up to and including the specified stop position, in ascending order.
+     *
+     *  \throws std::runtime_error if either of the specified positions does not
+     *  exist in the database
+     */
+    OPENTXS_EXPORT virtual Positions Ancestors(
+        const block::Position& start,
+        const block::Position& target) const noexcept(false) = 0;
     OPENTXS_EXPORT virtual block::Position BestChain() const noexcept = 0;
+    /** Determine which blocks have updated since the provided position
+     *
+     *  This function always returns at least one position.
+     *
+     *  The first position returned will be the newest common ancestor between
+     *  the current best chain and the previous chain as indicated by the tip
+     *  argument. If no reorg has occurred this will be the tip argument.
+     *
+     *  Subsequent positions represent every block following the common ancestor
+     *  up to and including the current best tip, in ascending order.
+     *
+     *  \throws std::runtime_error if the specified tip does not exist in the
+     *  database
+     */
+    OPENTXS_EXPORT virtual Positions BestChain(const block::Position& tip) const
+        noexcept(false) = 0;
     OPENTXS_EXPORT virtual block::pHash BestHash(
         const block::Height height) const noexcept = 0;
     OPENTXS_EXPORT virtual Hashes BestHashes(
@@ -59,7 +93,7 @@ public:
      *  \throws std::runtime_error if the provided position is not a descendant
      *  of this chain's genesis block
      */
-    OPENTXS_EXPORT virtual std::vector<block::Position> CalculateReorg(
+    OPENTXS_EXPORT virtual Positions CalculateReorg(
         const block::Position tip) const noexcept(false) = 0;
     /** Test block position for membership in the best chain
      *

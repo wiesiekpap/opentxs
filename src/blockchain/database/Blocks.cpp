@@ -7,44 +7,93 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "blockchain/database/Blocks.hpp"  // IWYU pragma: associated
 
+#include <iosfwd>
 #include <memory>
+#include <stdexcept>
 
+#include "internal/blockchain/Blockchain.hpp"
+#include "internal/blockchain/Params.hpp"
+#include "internal/blockchain/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
+#include "opentxs/Pimpl.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "util/LMDB.hpp"
 
 #define OT_METHOD "opentxs::blockchain::database::Blocks::"
 
 namespace opentxs::blockchain::database
 {
+template <typename Input>
+auto tsv(const Input& in) noexcept -> ReadView
+{
+    return {reinterpret_cast<const char*>(&in), sizeof(in)};
+}
+
 Blocks::Blocks(
     const api::Core& api,
     const Common& common,
+    const opentxs::storage::lmdb::LMDB& lmdb,
     const blockchain::Type type) noexcept
     : api_(api)
     , common_(common)
+    , lmdb_(lmdb)
+    , blank_position_(make_blank<block::Position>::value(api))
     , chain_(type)
+    , genesis_([&] {
+        const auto& hex = params::Data::chains_.at(chain_).genesis_hash_hex_;
+
+        return api_.Factory().Data(hex, StringStyle::Hex);
+    }())
 {
+    if (blank_position_.first == Tip().first) {
+        SetTip(block::Position{0, genesis_});
+    }
 }
 
 auto Blocks::LoadBitcoin(const block::Hash& block) const noexcept
     -> std::shared_ptr<const block::bitcoin::Block>
 {
-    const auto bytes = common_.BlockLoad(block);
+    if (block == genesis_) {
+        const auto& hex = params::Data::chains_.at(chain_).genesis_block_hex_;
+        const auto data = api_.Factory().Data(hex, StringStyle::Hex);
 
-    if (false == bytes.valid()) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Block ")(block.asHex())(
-            " not found ")
-            .Flush();
+        if (data->empty()) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid genesis hex").Flush();
 
-        return {};
+            return {};
+        }
+
+        return api_.Factory().BitcoinBlock(chain_, data->Bytes());
+    } else {
+        const auto bytes = common_.BlockLoad(block);
+
+        if (false == bytes.valid()) {
+            LogVerbose(OT_METHOD)(__FUNCTION__)(": block ")(block.asHex())(
+                " not found.")
+                .Flush();
+
+            return {};
+        }
+
+        return api_.Factory().BitcoinBlock(chain_, bytes.get());
     }
+}
 
-    return api_.Factory().BitcoinBlock(chain_, bytes.get());
+auto Blocks::SetTip(const block::Position& position) const noexcept -> bool
+{
+    return lmdb_
+        .Store(
+            Table::Config,
+            tsv(static_cast<std::size_t>(Key::BestFullBlock)),
+            reader(blockchain::internal::Serialize(position)))
+        .first;
 }
 
 auto Blocks::Store(const block::Block& block) const noexcept -> bool
@@ -69,5 +118,17 @@ auto Blocks::Store(const block::Block& block) const noexcept -> bool
     }
 
     return true;
+}
+
+auto Blocks::Tip() const noexcept -> block::Position
+{
+    auto output{blank_position_};
+    auto cb = [this, &output](const auto in) {
+        output = blockchain::internal::Deserialize(api_, in);
+    };
+    lmdb_.Load(
+        Table::Config, tsv(static_cast<std::size_t>(Key::BestFullBlock)), cb);
+
+    return output;
 }
 }  // namespace opentxs::blockchain::database

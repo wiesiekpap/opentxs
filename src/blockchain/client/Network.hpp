@@ -151,6 +151,8 @@ public:
     {
         return local_chain_height_.load() >= remote_chain_height_.load();
     }
+    auto JobReady(const internal::PeerManager::Task type) const noexcept
+        -> void final;
     auto Listen(const p2p::Address& address) const noexcept -> bool final;
     auto Reorg() const noexcept -> const network::zeromq::socket::Publish& final
     {
@@ -159,14 +161,6 @@ public:
     auto RequestBlock(const block::Hash& block) const noexcept -> bool final;
     auto RequestBlocks(const std::vector<ReadView>& hashes) const noexcept
         -> bool final;
-    auto RequestFilterHeaders(
-        const filter::Type type,
-        const block::Height start,
-        const block::Hash& stop) const noexcept -> bool final;
-    auto RequestFilters(
-        const filter::Type type,
-        const block::Height start,
-        const block::Hash& stop) const noexcept -> bool final;
     auto SendToAddress(
         const opentxs::identifier::Nym& sender,
         const std::string& address,
@@ -198,9 +192,9 @@ private:
     opentxs::internal::ShutdownSender shutdown_sender_;
     std::unique_ptr<blockchain::internal::Database> database_p_;
     std::unique_ptr<internal::HeaderOracle> header_p_;
-    std::unique_ptr<internal::PeerManager> peer_p_;
     std::unique_ptr<internal::BlockOracle> block_p_;
     std::unique_ptr<internal::FilterOracle> filter_p_;
+    std::unique_ptr<internal::PeerManager> peer_p_;
     std::unique_ptr<internal::Wallet> wallet_p_;
 
 protected:
@@ -243,8 +237,6 @@ private:
 
     auto pipeline(zmq::Message& in) noexcept -> void;
     auto process_block(zmq::Message& in) noexcept -> void;
-    auto process_cfheader(zmq::Message& in) noexcept -> void;
-    auto process_filter(zmq::Message& in) noexcept -> void;
     auto process_filter_update(zmq::Message& in) noexcept -> void;
     auto process_header(zmq::Message& in) noexcept -> void;
     auto shutdown(std::promise<void>& promise) noexcept -> void;

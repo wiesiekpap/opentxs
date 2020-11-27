@@ -62,17 +62,10 @@ Network::Network(
           blockchain.BlockchainDB(),
           type))
     , header_p_(factory::HeaderOracle(api, *database_p_, type))
-    , peer_p_(factory::BlockchainPeerManager(
-          api,
-          *this,
-          *database_p_,
-          blockchain.IO(),
-          type,
-          seednode,
-          shutdown_sender_.endpoint_))
     , block_p_(factory::BlockOracle(
           api,
           *this,
+          *header_p_,
           *database_p_,
           type,
           shutdown_sender_.endpoint_))
@@ -81,8 +74,20 @@ Network::Network(
           blockchain,
           *this,
           *header_p_,
+          *block_p_,
           *database_p_,
           type,
+          shutdown_sender_.endpoint_))
+    , peer_p_(factory::BlockchainPeerManager(
+          api,
+          *this,
+          *header_p_,
+          *filter_p_,
+          *block_p_,
+          *database_p_,
+          blockchain.IO(),
+          type,
+          seednode,
           shutdown_sender_.endpoint_))
     , wallet_p_(factory::BlockchainWallet(
           api,
@@ -260,6 +265,12 @@ auto Network::init() noexcept -> void
     trigger();
 }
 
+auto Network::JobReady(const internal::PeerManager::Task type) const noexcept
+    -> void
+{
+    if (peer_p_) { peer_.JobReady(type); }
+}
+
 auto Network::Listen(const p2p::Address& address) const noexcept -> bool
 {
     if (false == running_.get()) { return false; }
@@ -276,12 +287,6 @@ auto Network::pipeline(zmq::Message& in) noexcept -> void
     OT_ASSERT(0 < body.size());
 
     switch (body.at(0).as<Task>()) {
-        case Task::SubmitFilterHeader: {
-            process_cfheader(in);
-        } break;
-        case Task::SubmitFilter: {
-            process_filter(in);
-        } break;
         case Task::SubmitBlock: {
             process_block(in);
         } break;
@@ -323,20 +328,6 @@ auto Network::process_block(network::zeromq::Message& in) noexcept -> void
     }
 
     block_.SubmitBlock(body.at(1).Bytes());
-}
-
-auto Network::process_cfheader(network::zeromq::Message& in) noexcept -> void
-{
-    if (false == running_.get()) { return; }
-
-    filters_.AddHeaders(in);
-}
-
-auto Network::process_filter(network::zeromq::Message& in) noexcept -> void
-{
-    if (false == running_.get()) { return; }
-
-    filters_.AddFilter(in);
 }
 
 auto Network::process_filter_update(network::zeromq::Message& in) noexcept
@@ -431,26 +422,6 @@ auto Network::RequestBlocks(const std::vector<ReadView>& hashes) const noexcept
     return peer_.RequestBlocks(hashes);
 }
 
-auto Network::RequestFilterHeaders(
-    const filter::Type type,
-    const block::Height start,
-    const block::Hash& stop) const noexcept -> bool
-{
-    if (false == running_.get()) { return false; }
-
-    return peer_.RequestFilterHeaders(type, start, stop);
-}
-
-auto Network::RequestFilters(
-    const filter::Type type,
-    const block::Height start,
-    const block::Hash& stop) const noexcept -> bool
-{
-    if (false == running_.get()) { return false; }
-
-    return peer_.RequestFilters(type, start, stop);
-}
-
 auto Network::SendToAddress(
     const opentxs::identifier::Nym& sender,
     const std::string& address,
@@ -510,8 +481,8 @@ auto Network::shutdown(std::promise<void>& promise) noexcept -> void
 
         wallet_.Shutdown().get();
         wallet_initialized_ = false;
-        block_.Shutdown().get();
         peer_.Shutdown().get();
+        block_.Shutdown().get();
         filters_.Shutdown().get();
         shutdown_sender_.Close();
 

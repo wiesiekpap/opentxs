@@ -34,10 +34,9 @@ namespace opentxs::blockchain::client::implementation
 PeerManager::Jobs::Jobs(const api::Core& api) noexcept
     : zmq_(api.ZeroMQ())
     , getheaders_(api.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Bind))
-    , getcfheaders_(
-          api.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Bind))
-    , getcfilters_(
-          api.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Bind))
+    , getcfheaders_(api.ZeroMQ().PublishSocket())
+    , getcfilters_(api.ZeroMQ().PublishSocket())
+    , getblocks_(api.ZeroMQ().PublishSocket())
     , heartbeat_(api.ZeroMQ().PublishSocket())
     , getblock_(api.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Bind))
     , broadcast_transaction_(
@@ -46,8 +45,9 @@ PeerManager::Jobs::Jobs(const api::Core& api) noexcept
     , endpoint_map_([&] {
         auto map = EndpointMap{};
         listen(map, Task::Getheaders, getheaders_);
-        listen(map, Task::Getcfheaders, getcfheaders_);
-        listen(map, Task::Getcfilters, getcfilters_);
+        listen(map, Task::JobAvailableCfheaders, getcfheaders_);
+        listen(map, Task::JobAvailableCfilters, getcfilters_);
+        listen(map, Task::JobAvailableBlock, getblocks_);
         listen(map, Task::Heartbeat, heartbeat_);
         listen(map, Task::Getblock, getblock_);
         listen(map, Task::BroadcastTransaction, broadcast_transaction_);
@@ -57,8 +57,9 @@ PeerManager::Jobs::Jobs(const api::Core& api) noexcept
     }())
     , socket_map_({
           {Task::Getheaders, &getheaders_.get()},
-          {Task::Getcfheaders, &getcfheaders_.get()},
-          {Task::Getcfilters, &getcfilters_.get()},
+          {Task::JobAvailableCfheaders, &getcfheaders_.get()},
+          {Task::JobAvailableBlock, &getcfilters_.get()},
+          {Task::JobAvailableCfilters, &getblocks_.get()},
           {Task::Heartbeat, &heartbeat_.get()},
           {Task::Getblock, &getblock_.get()},
           {Task::BroadcastTransaction, &broadcast_transaction_.get()},

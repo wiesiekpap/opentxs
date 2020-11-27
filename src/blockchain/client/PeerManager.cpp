@@ -38,6 +38,9 @@ namespace opentxs::factory
 auto BlockchainPeerManager(
     const api::Core& api,
     const blockchain::client::internal::Network& network,
+    const blockchain::client::internal::HeaderOracle& headers,
+    const blockchain::client::internal::FilterOracle& filter,
+    const blockchain::client::internal::BlockOracle& block,
     const blockchain::client::internal::PeerDatabase& database,
     const blockchain::client::internal::IO& io,
     const blockchain::Type type,
@@ -48,7 +51,16 @@ auto BlockchainPeerManager(
     using ReturnType = blockchain::client::implementation::PeerManager;
 
     return std::make_unique<ReturnType>(
-        api, network, database, io, type, seednode, shutdown);
+        api,
+        network,
+        headers,
+        filter,
+        block,
+        database,
+        io,
+        type,
+        seednode,
+        shutdown);
 }
 }  // namespace opentxs::factory
 
@@ -57,6 +69,9 @@ namespace opentxs::blockchain::client::implementation
 PeerManager::PeerManager(
     const api::Core& api,
     const internal::Network& network,
+    const internal::HeaderOracle& headers,
+    const internal::FilterOracle& filter,
+    const internal::BlockOracle& block,
     const internal::PeerDatabase& database,
     const blockchain::client::internal::IO& io,
     const Type chain,
@@ -70,6 +85,9 @@ PeerManager::PeerManager(
     , peers_(
           api,
           network,
+          headers,
+          filter,
+          block,
           database_,
           *this,
           running_,
@@ -170,6 +188,23 @@ auto PeerManager::init() noexcept -> void
 {
     init_promise_.set_value();
     trigger();
+}
+
+auto PeerManager::JobReady(const Task type) const noexcept -> void
+{
+    switch (type) {
+        case Task::JobAvailableCfheaders: {
+            jobs_.Dispatch(jobs_.Work(Task::JobAvailableCfheaders));
+        } break;
+        case Task::JobAvailableCfilters: {
+            jobs_.Dispatch(jobs_.Work(Task::JobAvailableCfilters));
+        } break;
+        case Task::JobAvailableBlock: {
+            jobs_.Dispatch(jobs_.Work(Task::JobAvailableBlock));
+        } break;
+        default: {
+        }
+    }
 }
 
 auto PeerManager::Listen(const p2p::Address& address) const noexcept -> bool
@@ -324,42 +359,6 @@ auto PeerManager::RequestBlocks(
         work->AddFrame(block.data(), block.size());
     }
 
-    jobs_.Dispatch(work);
-
-    return true;
-}
-
-auto PeerManager::RequestFilterHeaders(
-    const filter::Type type,
-    const block::Height start,
-    const block::Hash& stop) const noexcept -> bool
-{
-    if (false == running_.get()) { return false; }
-
-    if (0 == peers_.Count()) { return false; }
-
-    auto work = jobs_.Work(Task::Getcfheaders);
-    work->AddFrame(type);
-    work->AddFrame(start);
-    work->AddFrame(stop);
-    jobs_.Dispatch(work);
-
-    return true;
-}
-
-auto PeerManager::RequestFilters(
-    const filter::Type type,
-    const block::Height start,
-    const block::Hash& stop) const noexcept -> bool
-{
-    if (false == running_.get()) { return false; }
-
-    if (0 == peers_.Count()) { return false; }
-
-    auto work = jobs_.Work(Task::Getcfilters);
-    work->AddFrame(type);
-    work->AddFrame(start);
-    work->AddFrame(stop);
     jobs_.Dispatch(work);
 
     return true;

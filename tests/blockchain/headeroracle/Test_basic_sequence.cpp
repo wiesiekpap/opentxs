@@ -3,12 +3,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include <gtest/gtest-message.h>
-#include <gtest/gtest-test-part.h>
 #include <gtest/gtest.h>
 #include <memory>
+#include <vector>
 
 #include "Helpers.hpp"
+#include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/client/HeaderOracle.hpp"
 
 TEST_F(Test_HeaderOracle, basic_sequence)
@@ -22,4 +23,54 @@ TEST_F(Test_HeaderOracle, basic_sequence)
     EXPECT_TRUE(apply_blocks(sequence_1_));
     EXPECT_TRUE(verify_post_state(post_state_1_));
     EXPECT_TRUE(verify_siblings(siblings_1_));
+
+    {
+        const auto existing =
+            header_oracle_.LoadHeader(get_block_hash(BLOCK_7));
+
+        ASSERT_TRUE(existing);
+
+        {
+            const auto data = header_oracle_.BestChain(existing->Position());
+
+            ASSERT_EQ(data.size(), 4);
+            EXPECT_EQ(data.at(0).second, get_block_hash(BLOCK_7));
+            EXPECT_EQ(data.at(1).second, get_block_hash(BLOCK_8));
+            EXPECT_EQ(data.at(2).second, get_block_hash(BLOCK_9));
+            EXPECT_EQ(data.at(3).second, get_block_hash(BLOCK_10));
+        }
+        {
+            const auto target =
+                header_oracle_.LoadHeader(get_block_hash(BLOCK_9));
+
+            ASSERT_TRUE(target);
+
+            const auto data = header_oracle_.Ancestors(
+                existing->Position(), target->Position());
+
+            ASSERT_EQ(data.size(), 3);
+            EXPECT_EQ(data.at(0).second, get_block_hash(BLOCK_7));
+            EXPECT_EQ(data.at(1).second, get_block_hash(BLOCK_8));
+            EXPECT_EQ(data.at(2).second, get_block_hash(BLOCK_9));
+        }
+        {
+            const auto target =
+                header_oracle_.LoadHeader(get_block_hash(BLOCK_5));
+
+            ASSERT_TRUE(target);
+
+            const auto data = header_oracle_.Ancestors(
+                existing->Position(), target->Position());
+
+            ASSERT_EQ(data.size(), 1);
+            EXPECT_EQ(data.at(0).second, get_block_hash(BLOCK_5));
+        }
+        {
+            const auto data = header_oracle_.Ancestors(
+                existing->Position(), existing->Position());
+
+            ASSERT_EQ(data.size(), 1);
+            EXPECT_EQ(data.at(0).second, get_block_hash(BLOCK_7));
+        }
+    }
 }

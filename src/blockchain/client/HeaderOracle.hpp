@@ -59,7 +59,11 @@ namespace opentxs::blockchain::client::implementation
 class HeaderOracle final : virtual public internal::HeaderOracle
 {
 public:
+    auto Ancestors(const block::Position& start, const block::Position& target)
+        const noexcept(false) -> Positions final;
     auto BestChain() const noexcept -> block::Position final;
+    auto BestChain(const block::Position& tip) const noexcept(false)
+        -> Positions final;
     auto BestHash(const block::Height height) const noexcept
         -> block::pHash final;
     auto BestHashes(const block::Height start, const std::size_t limit = 0)
@@ -73,7 +77,7 @@ public:
         const block::Hash& stop,
         const std::size_t limit) const noexcept -> Hashes final;
     auto CalculateReorg(const block::Position tip) const noexcept(false)
-        -> std::vector<block::Position> final;
+        -> Positions final;
     auto CommonParent(const block::Position& position) const noexcept
         -> std::pair<block::Position, block::Position> final;
     auto GetCheckpoint() const noexcept -> block::Position final;
@@ -131,6 +135,8 @@ private:
         const block::Height start,
         const block::Hash& stop,
         const std::size_t limit) const noexcept -> Hashes;
+    auto common_parent(const Lock& lock, const block::Position& position)
+        const noexcept -> std::pair<block::Position, block::Position>;
     auto is_in_best_chain(const Lock& lock, const block::Hash& hash)
         const noexcept -> std::pair<bool, block::Height>;
     auto is_in_best_chain(const Lock& lock, const block::Position& position)

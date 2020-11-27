@@ -85,10 +85,6 @@ auto Blockchain::ThreadPoolManager::callback(zmq::Message& in) noexcept -> void
             opentxs::blockchain::client::internal::Wallet::ProcessThreadPool(
                 in);
         } break;
-        case Work::FilterOracle: {
-            opentxs::blockchain::client::internal::FilterOracle::
-                ProcessThreadPool(in);
-        } break;
         default: {
             OT_FAIL;
         }

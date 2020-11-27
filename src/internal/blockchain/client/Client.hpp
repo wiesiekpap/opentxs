@@ -22,6 +22,9 @@
 #include <vector>
 
 #include "1_Internal.hpp"
+#if OT_BLOCKCHAIN
+#include "blockchain/DownloadTask.hpp"
+#endif  // OT_BLOCKCHAIN
 #include "internal/core/Core.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/Bytes.hpp"
@@ -196,6 +199,13 @@ using Hashes = std::set<block::pHash>;
 using Segments = std::set<ChainSegment>;
 // parent block hash, disconnected block hash
 using DisconnectedList = std::multimap<block::pHash, block::pHash>;
+
+using CfheaderJob =
+    download::Batch<filter::pHash, filter::pHeader, filter::Type>;
+using CfilterJob =
+    download::Batch<std::unique_ptr<const GCS>, filter::pHeader, filter::Type>;
+using BlockJob =
+    download::Batch<std::shared_ptr<const block::bitcoin::Block>, int>;
 }  // namespace opentxs::blockchain::client
 #endif  // OT_BLOCKCHAIN
 
@@ -211,6 +221,9 @@ struct BlockDatabase {
         -> api::client::blockchain::BlockStorage = 0;
     virtual auto BlockStore(const block::Block& block) const noexcept
         -> bool = 0;
+    virtual auto BlockTip() const noexcept -> block::Position = 0;
+    virtual auto SetBlockTip(const block::Position& position) const noexcept
+        -> bool = 0;
 
     virtual ~BlockDatabase() = default;
 };
@@ -222,8 +235,10 @@ struct BlockOracle : virtual public opentxs::blockchain::client::BlockOracle {
         Shutdown = value(WorkType::Shutdown),
     };
 
+    virtual auto GetBlockJob() const noexcept -> BlockJob = 0;
     virtual auto Heartbeat() const noexcept -> void = 0;
     virtual auto SubmitBlock(const ReadView in) const noexcept -> void = 0;
+    virtual auto Tip() const noexcept -> block::Position = 0;
 
     virtual auto Init() noexcept -> void = 0;
     virtual auto Shutdown() noexcept -> std::shared_future<void> = 0;
@@ -257,10 +272,10 @@ struct FilterDatabase {
         const noexcept -> Hash = 0;
     virtual auto SetFilterHeaderTip(
         const filter::Type type,
-        const block::Position position) const noexcept -> bool = 0;
+        const block::Position& position) const noexcept -> bool = 0;
     virtual auto SetFilterTip(
         const filter::Type type,
-        const block::Position position) const noexcept -> bool = 0;
+        const block::Position& position) const noexcept -> bool = 0;
     virtual auto StoreFilters(
         const filter::Type type,
         std::vector<Filter> filters) const noexcept -> bool = 0;
@@ -280,18 +295,13 @@ struct FilterDatabase {
 struct FilterOracle : virtual public opentxs::blockchain::client::FilterOracle {
     using Header = FilterDatabase::Hash;
 
-    static auto ProcessThreadPool(const zmq::Message& task) noexcept -> void;
-
-    virtual auto AddFilter(zmq::Message& work) const noexcept -> void = 0;
-    virtual auto AddHeaders(zmq::Message& work) const noexcept -> void = 0;
+    virtual auto GetFilterJob() const noexcept -> CfilterJob = 0;
+    virtual auto GetHeaderJob() const noexcept -> CfheaderJob = 0;
     virtual auto Heartbeat() const noexcept -> void = 0;
     virtual auto LoadFilterOrResetTip(
         const filter::Type type,
         const block::Position& position) const noexcept
         -> std::unique_ptr<const GCS> = 0;
-    virtual auto PreviousHeader(
-        const filter::Type type,
-        const block::Height& block) const noexcept -> Header = 0;
     virtual auto ProcessBlock(const block::bitcoin::Block& block) const noexcept
         -> bool = 0;
 
@@ -395,14 +405,79 @@ private:
     auto operator=(IO &&) -> IO& = delete;
 };
 
+struct PeerDatabase {
+    using Address = std::unique_ptr<p2p::internal::Address>;
+    using Protocol = p2p::Protocol;
+    using Service = p2p::Service;
+    using Type = p2p::Network;
+
+    virtual auto AddOrUpdate(Address address) const noexcept -> bool = 0;
+    virtual auto BlockPolicy() const noexcept
+        -> api::client::blockchain::BlockStorage = 0;
+    virtual auto Get(
+        const Protocol protocol,
+        const std::set<Type> onNetworks,
+        const std::set<Service> withServices) const noexcept -> Address = 0;
+    virtual auto Import(std::vector<Address> peers) const noexcept -> bool = 0;
+
+    virtual ~PeerDatabase() = default;
+};
+
+struct PeerManager {
+    enum class Task : OTZMQWorkType {
+        Getheaders = OT_ZMQ_INTERNAL_SIGNAL + 0,
+        Heartbeat = OT_ZMQ_INTERNAL_SIGNAL + 1,
+        Getblock = OT_ZMQ_INTERNAL_SIGNAL + 2,
+        BroadcastTransaction = OT_ZMQ_INTERNAL_SIGNAL + 3,
+        BroadcastBlock = OT_ZMQ_INTERNAL_SIGNAL + 4,
+        JobAvailableCfheaders = OT_ZMQ_INTERNAL_SIGNAL + 5,
+        JobAvailableCfilters = OT_ZMQ_INTERNAL_SIGNAL + 6,
+        JobAvailableBlock = OT_ZMQ_INTERNAL_SIGNAL + 7,
+        Body = OT_ZMQ_INTERNAL_SIGNAL + 126,
+        Header = OT_ZMQ_INTERNAL_SIGNAL + 127,
+        Connect = OT_ZMQ_CONNECT_SIGNAL,
+        Disconnect = OT_ZMQ_DISCONNECT_SIGNAL,
+        ReceiveMessage = OT_ZMQ_RECEIVE_SIGNAL,
+        SendMessage = OT_ZMQ_SEND_SIGNAL,
+        Register = OT_ZMQ_REGISTER_SIGNAL,
+        StateMachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
+        Shutdown = value(WorkType::Shutdown),
+    };
+
+    virtual auto AddIncomingPeer(const int id, std::uintptr_t endpoint)
+        const noexcept -> void = 0;
+    virtual auto AddPeer(const p2p::Address& address) const noexcept
+        -> bool = 0;
+    virtual auto BroadcastBlock(const block::Block& block) const noexcept
+        -> bool = 0;
+    virtual auto BroadcastTransaction(
+        const block::bitcoin::Transaction& tx) const noexcept -> bool = 0;
+    virtual auto Connect() noexcept -> bool = 0;
+    virtual auto Database() const noexcept -> const PeerDatabase& = 0;
+    virtual auto Disconnect(const int id) const noexcept -> void = 0;
+    virtual auto Endpoint(const Task type) const noexcept -> std::string = 0;
+    virtual auto GetPeerCount() const noexcept -> std::size_t = 0;
+    virtual auto Heartbeat() const noexcept -> void = 0;
+    virtual auto JobReady(const Task type) const noexcept -> void = 0;
+    virtual auto Listen(const p2p::Address& address) const noexcept -> bool = 0;
+    virtual auto RequestBlock(const block::Hash& block) const noexcept
+        -> bool = 0;
+    virtual auto RequestBlocks(
+        const std::vector<ReadView>& hashes) const noexcept -> bool = 0;
+    virtual auto RequestHeaders() const noexcept -> bool = 0;
+
+    virtual auto init() noexcept -> void = 0;
+    virtual auto Shutdown() noexcept -> std::shared_future<void> = 0;
+
+    virtual ~PeerManager() = default;
+};
+
 struct Network : virtual public opentxs::blockchain::Network {
     enum class Task : OTZMQWorkType {
         Shutdown = value(WorkType::Shutdown),
         SubmitBlockHeader = OT_ZMQ_INTERNAL_SIGNAL + 0,
-        SubmitFilterHeader = OT_ZMQ_INTERNAL_SIGNAL + 1,
-        SubmitFilter = OT_ZMQ_INTERNAL_SIGNAL + 2,
-        SubmitBlock = OT_ZMQ_INTERNAL_SIGNAL + 3,
-        Heartbeat = OT_ZMQ_INTERNAL_SIGNAL + 4,
+        SubmitBlock = OT_ZMQ_INTERNAL_SIGNAL + 2,
+        Heartbeat = OT_ZMQ_INTERNAL_SIGNAL + 3,
         StateMachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
         FilterUpdate = OT_ZMQ_NEW_FILTER_SIGNAL,
     };
@@ -431,20 +506,14 @@ struct Network : virtual public opentxs::blockchain::Network {
         -> const internal::HeaderOracle& = 0;
     virtual auto Heartbeat() const noexcept -> void = 0;
     virtual auto IsSynchronized() const noexcept -> bool = 0;
+    virtual auto JobReady(const PeerManager::Task type) const noexcept
+        -> void = 0;
     virtual auto Reorg() const noexcept
         -> const network::zeromq::socket::Publish& = 0;
     virtual auto RequestBlock(const block::Hash& block) const noexcept
         -> bool = 0;
     virtual auto RequestBlocks(
         const std::vector<ReadView>& hashes) const noexcept -> bool = 0;
-    virtual auto RequestFilterHeaders(
-        const filter::Type type,
-        const block::Height start,
-        const block::Hash& stop) const noexcept -> bool = 0;
-    virtual auto RequestFilters(
-        const filter::Type type,
-        const block::Height start,
-        const block::Hash& stop) const noexcept -> bool = 0;
     virtual auto Submit(network::zeromq::Message& work) const noexcept
         -> void = 0;
     virtual auto UpdateHeight(const block::Height height) const noexcept
@@ -459,85 +528,11 @@ struct Network : virtual public opentxs::blockchain::Network {
     virtual ~Network() = default;
 };
 
-struct PeerDatabase {
-    using Address = std::unique_ptr<p2p::internal::Address>;
-    using Protocol = p2p::Protocol;
-    using Service = p2p::Service;
-    using Type = p2p::Network;
-
-    virtual auto AddOrUpdate(Address address) const noexcept -> bool = 0;
-    virtual auto BlockPolicy() const noexcept
-        -> api::client::blockchain::BlockStorage = 0;
-    virtual auto Get(
-        const Protocol protocol,
-        const std::set<Type> onNetworks,
-        const std::set<Service> withServices) const noexcept -> Address = 0;
-    virtual auto Import(std::vector<Address> peers) const noexcept -> bool = 0;
-
-    virtual ~PeerDatabase() = default;
-};
-
-struct PeerManager {
-    enum class Task : OTZMQWorkType {
-        Getheaders = OT_ZMQ_INTERNAL_SIGNAL + 0,
-        Getcfheaders = OT_ZMQ_INTERNAL_SIGNAL + 1,
-        Getcfilters = OT_ZMQ_INTERNAL_SIGNAL + 2,
-        Heartbeat = OT_ZMQ_INTERNAL_SIGNAL + 3,
-        Getblock = OT_ZMQ_INTERNAL_SIGNAL + 4,
-        BroadcastTransaction = OT_ZMQ_INTERNAL_SIGNAL + 5,
-        BroadcastBlock = OT_ZMQ_INTERNAL_SIGNAL + 6,
-        Body = OT_ZMQ_INTERNAL_SIGNAL + 126,
-        Header = OT_ZMQ_INTERNAL_SIGNAL + 127,
-        Connect = OT_ZMQ_CONNECT_SIGNAL,
-        Disconnect = OT_ZMQ_DISCONNECT_SIGNAL,
-        ReceiveMessage = OT_ZMQ_RECEIVE_SIGNAL,
-        SendMessage = OT_ZMQ_SEND_SIGNAL,
-        Register = OT_ZMQ_REGISTER_SIGNAL,
-        StateMachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
-        Shutdown = value(WorkType::Shutdown),
-    };
-
-    virtual auto AddIncomingPeer(const int id, std::uintptr_t endpoint)
-        const noexcept -> void = 0;
-    virtual auto AddPeer(const p2p::Address& address) const noexcept
-        -> bool = 0;
-    virtual auto BroadcastBlock(const block::Block& block) const noexcept
-        -> bool = 0;
-    virtual auto BroadcastTransaction(
-        const block::bitcoin::Transaction& tx) const noexcept -> bool = 0;
-    virtual auto Connect() noexcept -> bool = 0;
-    virtual auto Database() const noexcept -> const PeerDatabase& = 0;
-    virtual auto Disconnect(const int id) const noexcept -> void = 0;
-    virtual auto Endpoint(const Task type) const noexcept -> std::string = 0;
-    virtual auto GetPeerCount() const noexcept -> std::size_t = 0;
-    virtual auto Heartbeat() const noexcept -> void = 0;
-    virtual auto Listen(const p2p::Address& address) const noexcept -> bool = 0;
-    virtual auto RequestBlock(const block::Hash& block) const noexcept
-        -> bool = 0;
-    virtual auto RequestBlocks(
-        const std::vector<ReadView>& hashes) const noexcept -> bool = 0;
-    virtual auto RequestFilterHeaders(
-        const filter::Type type,
-        const block::Height start,
-        const block::Hash& stop) const noexcept -> bool = 0;
-    virtual auto RequestFilters(
-        const filter::Type type,
-        const block::Height start,
-        const block::Hash& stop) const noexcept -> bool = 0;
-    virtual auto RequestHeaders() const noexcept -> bool = 0;
-
-    virtual auto init() noexcept -> void = 0;
-    virtual auto Shutdown() noexcept -> std::shared_future<void> = 0;
-
-    virtual ~PeerManager() = default;
-};
-
 struct ThreadPool {
     using Future = std::shared_future<void>;
 
     enum class Work : OTZMQWorkType {
         Wallet = OT_ZMQ_INTERNAL_SIGNAL + 0,
-        FilterOracle = OT_ZMQ_INTERNAL_SIGNAL + 1,
     };
 
     static auto Capacity() noexcept -> std::size_t;
