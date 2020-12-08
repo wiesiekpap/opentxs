@@ -59,6 +59,14 @@ class Block;
 class Block;
 }  // namespace block
 }  // namespace blockchain
+
+namespace storage
+{
+namespace lmdb
+{
+class LMDB;
+}  // namespace lmdb
+}  // namespace storage
 }  // namespace opentxs
 
 namespace opentxs::blockchain::database
@@ -68,16 +76,22 @@ class Blocks
 public:
     auto LoadBitcoin(const block::Hash& block) const noexcept
         -> std::shared_ptr<const block::bitcoin::Block>;
+    auto SetTip(const block::Position& position) const noexcept -> bool;
     auto Store(const block::Block& block) const noexcept -> bool;
+    auto Tip() const noexcept -> block::Position;
 
     Blocks(
         const api::Core& api,
         const Common& common,
+        const opentxs::storage::lmdb::LMDB& lmdb,
         const blockchain::Type type) noexcept;
 
 private:
     const api::Core& api_;
     const Common& common_;
+    const opentxs::storage::lmdb::LMDB& lmdb_;
+    const block::Position blank_position_;
     const blockchain::Type chain_;
+    const block::pHash genesis_;
 };
 }  // namespace opentxs::blockchain::database

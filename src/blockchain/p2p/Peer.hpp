@@ -290,6 +290,8 @@ protected:
     };
 
     const client::internal::Network& network_;
+    const client::internal::FilterOracle& filter_;
+    const client::internal::BlockOracle& block_;
     const client::internal::PeerManager& manager_;
     const blockchain::Type chain_;
     std::atomic_bool header_probe_;
@@ -297,6 +299,9 @@ protected:
     Address address_;
     DownloadPeers download_peers_;
     States state_;
+    client::CfheaderJob cfheader_job_;
+    client::CfilterJob cfilter_job_;
+    client::BlockJob block_job_;
 
     auto connection() const noexcept -> const ConnectionManager&
     {
@@ -315,7 +320,11 @@ protected:
     virtual auto pong() noexcept -> void = 0;
     virtual auto request_addresses() noexcept -> void = 0;
     virtual auto request_block(zmq::Message& message) noexcept -> void = 0;
+    virtual auto request_blocks() noexcept -> void = 0;
     virtual auto request_headers() noexcept -> void = 0;
+    auto reset_block_job() noexcept -> void;
+    auto reset_cfheader_job() noexcept -> void;
+    auto reset_cfilter_job() noexcept -> void;
     auto send(OTData message) noexcept -> SendStatus;
     auto update_address_services(
         const std::set<p2p::Service>& services) noexcept -> void;
@@ -327,6 +336,8 @@ protected:
     Peer(
         const api::Core& api,
         const client::internal::Network& network,
+        const client::internal::FilterOracle& filter,
+        const client::internal::BlockOracle& block,
         const client::internal::PeerManager& manager,
         const blockchain::client::internal::IO& io,
         const int id,
@@ -386,13 +397,14 @@ private:
     auto break_promises() noexcept -> void;
     auto check_activity() noexcept -> void;
     auto check_download_peers() noexcept -> void;
+    auto check_jobs() noexcept -> void;
     auto connect() noexcept -> void;
     auto pipeline(zmq::Message& message) noexcept -> void;
     virtual auto process_message(const zmq::Message& message) noexcept
         -> void = 0;
     auto process_state_machine() noexcept -> void;
-    virtual auto request_cfheaders(zmq::Message& message) noexcept -> void = 0;
-    virtual auto request_cfilter(zmq::Message& message) noexcept -> void = 0;
+    virtual auto request_cfheaders() noexcept -> void = 0;
+    virtual auto request_cfilter() noexcept -> void = 0;
     virtual auto request_checkpoint_block_header() noexcept -> void = 0;
     virtual auto request_checkpoint_filter_header() noexcept -> void = 0;
     auto shutdown(std::promise<void>& promise) noexcept -> void;

@@ -4,8 +4,6 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <boost/endian/buffers.hpp>
-#include <gtest/gtest-message.h>
-#include <gtest/gtest-test-part.h>
 #include <gtest/gtest.h>
 #include <cstdint>
 #include <string>

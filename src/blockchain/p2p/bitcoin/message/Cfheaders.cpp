@@ -133,7 +133,7 @@ Cfheaders::Cfheaders(
     const api::Core& api,
     const blockchain::Type network,
     const filter::Type type,
-    const filter::Hash& stop,
+    const block::Hash& stop,
     const ReadView previousHeader,
     const std::vector<filter::pHash>& headers) noexcept
     : Message(api, network, bitcoin::Command::cfheaders)
@@ -149,8 +149,8 @@ Cfheaders::Cfheaders(
     const api::Core& api,
     std::unique_ptr<Header> header,
     const filter::Type type,
-    const filter::Hash& stop,
-    const filter::Hash& previous,
+    const block::Hash& stop,
+    const filter::Header& previous,
     const std::vector<filter::pHash>& headers) noexcept
     : Message(api, std::move(header))
     , type_(type)

@@ -77,6 +77,7 @@ auto BlockchainFilterOracle(
     const api::client::internal::Blockchain& blockchain,
     const blockchain::client::internal::Network& network,
     const blockchain::client::internal::HeaderOracle& header,
+    const blockchain::client::internal::BlockOracle& block,
     const blockchain::client::internal::FilterDatabase& database,
     const blockchain::Type type,
     const std::string& shutdown) noexcept
@@ -91,6 +92,9 @@ OPENTXS_EXPORT auto BlockchainNetworkBitcoin(
 auto BlockchainPeerManager(
     const api::Core& api,
     const blockchain::client::internal::Network& network,
+    const blockchain::client::internal::HeaderOracle& headers,
+    const blockchain::client::internal::FilterOracle& filter,
+    const blockchain::client::internal::BlockOracle& block,
     const blockchain::client::internal::PeerDatabase& database,
     const blockchain::client::internal::IO& io,
     const blockchain::Type type,
@@ -107,6 +111,7 @@ OPENTXS_EXPORT auto BlockchainWallet(
 auto BlockOracle(
     const api::Core& api,
     const blockchain::client::internal::Network& network,
+    const blockchain::client::internal::HeaderOracle& header,
     const blockchain::client::internal::BlockDatabase& db,
     const blockchain::Type chain,
     const std::string& shutdown) noexcept

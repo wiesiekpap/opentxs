@@ -185,6 +185,10 @@ public:
     {
         return blocks_.Store(block);
     }
+    auto BlockTip() const noexcept -> block::Position final
+    {
+        return blocks_.Tip();
+    }
     auto CompletedProposals() const noexcept -> std::set<OTIdentifier> final
     {
         return wallet_.CompletedProposals();
@@ -356,6 +360,11 @@ public:
     {
         return wallet_.ReserveUTXO(proposal);
     }
+    auto SetBlockTip(const block::Position& position) const noexcept
+        -> bool final
+    {
+        return blocks_.SetTip(position);
+    }
     auto SetDefaultFilterType(const FilterType type) const noexcept
         -> bool final
     {
@@ -363,11 +372,11 @@ public:
     }
     auto SetFilterHeaderTip(
         const filter::Type type,
-        const block::Position position) const noexcept -> bool final
+        const block::Position& position) const noexcept -> bool final
     {
         return filters_.SetHeaderTip(type, position);
     }
-    auto SetFilterTip(const filter::Type type, const block::Position position)
+    auto SetFilterTip(const filter::Type type, const block::Position& position)
         const noexcept -> bool final
     {
         return filters_.SetTip(type, position);

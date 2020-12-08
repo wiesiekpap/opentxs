@@ -24,7 +24,7 @@ namespace opentxs::blockchain::p2p::bitcoin::message
 FilterPrefixBasic::FilterPrefixBasic(
     const blockchain::Type chain,
     const filter::Type type,
-    const filter::Hash& hash) noexcept(false)
+    const block::Hash& hash) noexcept(false)
     : type_(blockchain::internal::Serialize(chain, type))
     , hash_()
 {
@@ -58,15 +58,15 @@ auto FilterPrefixBasic::Type(const blockchain::Type chain) const noexcept
 FilterPrefixChained::FilterPrefixChained(
     const blockchain::Type chain,
     const filter::Type type,
-    const filter::Hash& hash,
-    const filter::Hash& previous) noexcept(false)
+    const block::Hash& stop,
+    const filter::Header& previous) noexcept(false)
     : type_(blockchain::internal::Serialize(chain, type))
     , hash_()
     , previous_()
 {
     static_assert(65 == sizeof(FilterPrefixChained));
 
-    if (hash.size() != hash_.size()) {
+    if (stop.size() != hash_.size()) {
         throw std::runtime_error("Invalid stop hash");
     }
 
@@ -74,7 +74,7 @@ FilterPrefixChained::FilterPrefixChained(
         throw std::runtime_error("Invalid previous hash");
     }
 
-    std::memcpy(hash_.data(), hash.data(), hash_.size());
+    std::memcpy(hash_.data(), stop.data(), hash_.size());
     std::memcpy(previous_.data(), previous.data(), previous_.size());
 }
 
@@ -86,12 +86,12 @@ FilterPrefixChained::FilterPrefixChained() noexcept
     static_assert(65 == sizeof(FilterPrefixChained));
 }
 
-auto FilterPrefixChained::Previous() const noexcept -> filter::pHash
+auto FilterPrefixChained::Previous() const noexcept -> filter::pHeader
 {
     return Data::Factory(previous_.data(), previous_.size());
 }
 
-auto FilterPrefixChained::Stop() const noexcept -> filter::pHash
+auto FilterPrefixChained::Stop() const noexcept -> block::pHash
 {
     return Data::Factory(hash_.data(), hash_.size());
 }

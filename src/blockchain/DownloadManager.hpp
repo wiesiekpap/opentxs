@@ -1,0 +1,411 @@
+// Copyright (c) 2010-2020 The Open-Transactions developers
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+#pragma once
+
+#include <algorithm>
+#include <deque>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <optional>
+#include <vector>
+
+#include "blockchain/DownloadTask.hpp"
+#include "opentxs/Types.hpp"
+#include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/core/Log.hpp"
+
+namespace opentxs::blockchain::download
+{
+template <
+    typename CRTP,
+    typename DownloadType,
+    typename FinishedType,
+    typename ExtraData = int>
+class Manager
+{
+public:
+    using Position = block::Position;
+    using Positions = std::vector<Position>;
+    using BatchType = Batch<DownloadType, FinishedType, ExtraData>;
+    using Finished = typename BatchType::TaskType::Finished;
+    using PreviousData = std::pair<Position, Finished>;
+    using Previous = std::optional<PreviousData>;
+
+    auto Reset(const Position& position, Finished&& previous) noexcept -> void
+    {
+        auto lock = Lock{dm_lock_};
+        dm_previous_ = std::move(previous);
+        dm_done_ = position;
+        dm_known_ = position;
+        buffer_.clear();
+        next_ = 0;
+        downcast().update_tip(position, dm_previous_.get());
+    }
+
+protected:
+    using DownloadedData = typename BatchType::Vector;
+
+    // WARNING Call known() and update_position() from the same thread.
+    auto known() const noexcept { return dm_known_; }
+
+    auto allocate_batch(ExtraData extra = {}) noexcept -> BatchType
+    {
+        auto lock = Lock{dm_lock_};
+
+        if (caught_up(lock)) { return {}; }
+
+        OT_ASSERT(0 < buffer_.size());
+
+        const auto size = [&] {
+            const auto unallocated = this->unallocated(lock);
+            const auto batch = downcast().batch_size(unallocated);
+
+            return std::min<std::size_t>(unallocated, batch);
+        }();
+
+        if (0 == size) { return {}; }
+
+        auto output = BatchType{
+            ++last_batch_,
+            [&] {
+                auto output = typename BatchType::Vector{};
+                auto i = buffer_.begin();
+                std::advance(i, next_);
+
+                for (; i != buffer_.end(); ++i) {
+                    const auto& task = *i;
+
+                    if (auto expected{State::New};
+                        false == task->state_.compare_exchange_strong(
+                                     expected, State::Downloading)) {
+                        if (0 == output.size()) {
+                            continue;
+                        } else {
+                            break;
+                        }
+                    }
+
+                    output.emplace_back(task);
+
+                    if (output.size() == size) { break; }
+                }
+
+                return output;
+            }(),
+            [=](const auto& batch) { finish_downloading(batch); },
+            std::move(extra)};
+
+        if (const auto allocated = output.data_.size(); 0 == allocated) {
+            --last_batch_;
+
+            return {};
+        } else {
+            next_ += allocated;
+        }
+
+        OT_ASSERT(next_ <= buffer_.size());
+
+        return output;
+    }
+    auto state_machine() noexcept -> bool
+    {
+        auto lock = Lock{dm_lock_};
+
+        return state_machine(lock);
+    }
+    auto update_position(
+        Positions&& positions,
+        ExtraData extra,
+        Previous prior = std::nullopt) noexcept
+    {
+        if (0 == positions.size()) { return; }
+
+        auto lock = Lock{dm_lock_};
+        {
+            const auto& start = positions.front();
+            const auto& end = positions.back();
+
+            if (dm_known_.first >= start.first) {
+                auto next = std::ptrdiff_t{-1};
+                auto lastGoodTask = TaskPtr{};
+
+                for (auto i{buffer_.begin()}; i != buffer_.end(); ++i, ++next) {
+                    lastGoodTask = *i;
+                    const auto& position = (*i)->position_;
+
+                    if (position.first < start.first) { continue; }
+
+                    buffer_.erase(i, buffer_.end());
+
+                    break;
+                }
+
+                {
+                    using Data = std::tuple<Position, Finished, std::size_t>;
+
+                    auto data = [&]() -> Data {
+                        if (lastGoodTask) {
+                            const auto& task = *lastGoodTask;
+
+                            return {
+                                task.position_,
+                                task.output_,
+                                static_cast<std::size_t>(
+                                    std::max<std::ptrdiff_t>(next, 0))};
+                        } else {
+                            OT_ASSERT(prior.has_value());
+
+                            auto previous = prior.value();
+
+                            return {
+                                std::move(previous.first),
+                                std::move(previous.second),
+                                0};
+                        }
+                    }();
+
+                    auto& [position, finished, index] = data;
+
+                    if (dm_done_ > start) {
+                        dm_update_tip(
+                            lock, std::move(position), std::move(finished));
+                    }
+
+                    next_ = std::min(next_, index);
+                }
+            }
+
+            dm_known_ = end;
+
+            OT_ASSERT(dm_done_.first <= dm_known_.first);
+        }
+
+        auto previous =
+            (0 == buffer_.size()) ? dm_previous_ : buffer_.back()->output_;
+
+        for (auto& position : positions) {
+            auto& task = buffer_.emplace_back(std::make_shared<TaskType>(
+                std::move(position), std::move(previous), log_.data(), extra));
+            previous = task->output_;
+        }
+
+        downcast().trigger_state_machine();
+    }
+
+    Manager(
+        const Position& position,
+        Finished&& previous,
+        const std::string& log) noexcept
+        : log_(log)
+        , dm_lock_()
+        , dm_previous_(std::move(previous))
+        , dm_done_(position)
+        , dm_known_(position)
+        , last_batch_(-1)
+        , buffer_()
+        , next_(0)
+    {
+    }
+
+    ~Manager() = default;
+
+private:
+    struct BatchData {
+        Position first_;
+        Position last_;
+
+        BatchData(Position first, Position last) noexcept
+            : first_(std::move(first))
+            , last_(std::move(last))
+        {
+        }
+    };
+
+    using TaskType = typename BatchType::TaskType;
+    using TaskPtr = std::shared_ptr<TaskType>;
+    using Buffer = std::deque<TaskPtr>;
+    using BatchID = typename BatchType::ID;
+
+    const std::string log_;
+    mutable std::mutex dm_lock_;
+    Finished dm_previous_;
+    Position dm_done_;
+    Position dm_known_;
+    BatchID last_batch_;
+    Buffer buffer_;
+    std::size_t next_;
+
+    // Functions to implement in child class:
+    //
+    // std::size_t batch_size(std::size_t outstanding): calculate batch size
+    //                                                  based on number of
+    //                                                  outstanding blocks
+    // void batch_ready(): notify interested parties that a batch of work is
+    //                     available
+    // void trigger_state_machine(): cause the state_machine() function to be
+    //                               called from a different thread
+    // void queue_processing(DownloadedData&& data): process downloaded data
+    //                                               possibly in a different
+    //                                               thread
+    // void update_tip(const Position&, const FinishedType&): perform chain tip
+    //                                                        update accounting
+
+    inline auto caught_up(const Lock&) const noexcept -> bool
+    {
+        return dm_done_ == dm_known_;
+    }
+    inline auto unallocated(const Lock&) const noexcept -> std::size_t
+    {
+        const auto outstanding =
+            static_cast<std::size_t>(dm_known_.first - dm_done_.first);
+
+        OT_ASSERT(next_ <= outstanding);
+        OT_ASSERT(next_ <= buffer_.size());
+
+        return outstanding - next_;
+    }
+
+    inline auto downcast() noexcept -> CRTP&
+    {
+        return static_cast<CRTP&>(*this);
+    }
+    auto finish_downloading(const BatchType& batch) noexcept -> void
+    {
+        auto lock = Lock{dm_lock_};
+        // Make sure all tasks in batch actually got downloaded
+        const auto& data = batch.data_;
+
+        OT_ASSERT(0 < data.size());
+
+        const auto& first = data.front();
+        auto index = std::size_t{0};
+        auto b =
+            std::find_if(buffer_.begin(), buffer_.end(), [&](const auto& task) {
+                ++index;
+
+                return task->position_ == first->position_;
+            });
+
+        if (buffer_.end() == b) { return; }
+
+        OT_ASSERT(0 < index);
+
+        --index;
+
+        for (auto i{data.cbegin()}; (i != data.cend()) && (b != buffer_.end());
+             ++i, ++b, ++index) {
+            const auto& bufferTask = *b;
+            const auto& batchTask = *i;
+
+            if (bufferTask.get() != batchTask.get()) { break; }
+
+            auto& task = *batchTask;
+            auto& state = task.state_;
+            auto expect = State::Downloaded;
+
+            if (state.compare_exchange_strong(expect, State::Update)) {
+                state.store(State::Downloaded);
+            } else {
+                next_ = std::min(next_, index);
+
+                if (State::Downloading == expect) {
+                    state.compare_exchange_strong(expect, State::New);
+                }
+            }
+        }
+
+        downcast().trigger_state_machine();
+    }
+    auto state_machine(const Lock& lock) noexcept -> bool
+    {
+        if (caught_up(lock)) { return false; }
+
+        OT_ASSERT(0 < buffer_.size());
+
+        {
+            auto end{buffer_.end()};
+            auto first{end};
+            auto last{end};
+            auto toDelete = std::size_t{0};
+            auto index = std::size_t{0};
+
+            for (auto i{buffer_.begin()}; i != end; ++i, ++index) {
+                const auto& task = **i;
+                const auto state = task.state_.load();
+
+                if (State::Processed != state) {
+                    if (State::New == state) { next_ = std::min(next_, index); }
+
+                    break;
+                }
+
+                if (end == first) { first = i; }
+
+                last = i;
+                ++toDelete;
+            }
+
+            if (0 < toDelete) {
+                OT_ASSERT(last != end);
+
+                {
+                    const auto& task = *last;
+                    dm_update_tip(
+                        lock,
+                        Position{task->position_},
+                        Finished{task->output_});
+                }
+
+                buffer_.erase(first, std::next(last));
+
+                if (next_ >= toDelete) {
+                    next_ -= toDelete;
+                } else {
+                    next_ = 0;
+                }
+            }
+        }
+
+        OT_ASSERT(dm_done_.first <= dm_known_.first);
+
+        auto process = DownloadedData{};
+
+        for (auto& pTask : buffer_) {
+            auto& task = *pTask;
+            auto& state = task.state_;
+            auto expected{State::Downloaded};
+
+            if (false ==
+                state.compare_exchange_strong(expected, State::Processing)) {
+                break;
+            }
+
+            process.emplace_back(pTask);
+        }
+
+        downcast().queue_processing(std::move(process));
+
+        if (caught_up(lock)) { return false; }
+
+        if (0u < unallocated(lock)) { downcast().batch_ready(); }
+
+        return true;
+    }
+    auto dm_update_tip(const Lock&, Position&& pos, Finished&& data) noexcept
+        -> void
+    {
+        downcast().update_tip(pos, data.get());
+        dm_done_ = std::move(pos);
+        dm_previous_ = std::move(data);
+    }
+
+    Manager(const Manager& rhs) = delete;
+    Manager(Manager&& rhs) = delete;
+    auto operator=(const Manager& rhs) -> Manager& = delete;
+    auto operator=(Manager&& rhs) -> Manager& = delete;
+};
+}  // namespace opentxs::blockchain::download

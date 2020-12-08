@@ -27,6 +27,9 @@ namespace client
 {
 namespace internal
 {
+struct BlockOracle;
+struct FilterOracle;
+struct HeaderOracle;
 struct IO;
 struct Network;
 struct PeerManager;
@@ -71,6 +74,9 @@ OPENTXS_EXPORT auto BitcoinP2PMessage(
 auto BitcoinP2PPeerLegacy(
     const api::Core& api,
     const blockchain::client::internal::Network& network,
+    const blockchain::client::internal::HeaderOracle& header,
+    const blockchain::client::internal::FilterOracle& filter,
+    const blockchain::client::internal::BlockOracle& block,
     const blockchain::client::internal::PeerManager& manager,
     const blockchain::client::internal::IO& io,
     const int id,

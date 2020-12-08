@@ -93,9 +93,9 @@ public:
         const noexcept -> Hash;
     auto LoadFilterHeader(const filter::Type type, const ReadView block)
         const noexcept -> Hash;
-    auto SetHeaderTip(const filter::Type type, const block::Position position)
+    auto SetHeaderTip(const filter::Type type, const block::Position& position)
         const noexcept -> bool;
-    auto SetTip(const filter::Type type, const block::Position position)
+    auto SetTip(const filter::Type type, const block::Position& position)
         const noexcept -> bool;
     auto StoreHeaders(
         const filter::Type type,

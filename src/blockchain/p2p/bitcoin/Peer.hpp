@@ -69,6 +69,9 @@ public:
     Peer(
         const api::Core& api,
         const client::internal::Network& network,
+        const client::internal::HeaderOracle& header,
+        const client::internal::FilterOracle& filter,
+        const client::internal::BlockOracle& block,
         const client::internal::PeerManager& manager,
         const blockchain::client::internal::IO& io,
         const std::string& shutdown,
@@ -122,6 +125,7 @@ private:
     static const ProtocolVersion default_protocol_version_{70015};
     static const std::string user_agent_;
 
+    const client::internal::HeaderOracle& headers_;
     std::atomic<ProtocolVersion> protocol_;
     const Nonce nonce_;
     const std::set<p2p::Service> local_services_;
@@ -145,8 +149,9 @@ private:
     auto process_message(const zmq::Message& message) noexcept -> void final;
     auto request_addresses() noexcept -> void final;
     auto request_block(zmq::Message& message) noexcept -> void final;
-    auto request_cfheaders(zmq::Message& message) noexcept -> void final;
-    auto request_cfilter(zmq::Message& message) noexcept -> void final;
+    auto request_blocks() noexcept -> void final;
+    auto request_cfheaders() noexcept -> void final;
+    auto request_cfilter() noexcept -> void final;
     auto request_checkpoint_block_header() noexcept -> void final;
     auto request_checkpoint_filter_header() noexcept -> void final;
     using p2p::implementation::Peer::request_headers;

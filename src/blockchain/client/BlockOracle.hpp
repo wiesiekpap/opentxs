@@ -12,6 +12,7 @@
 #include <future>
 #include <iosfwd>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <tuple>
@@ -22,9 +23,12 @@
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/client/BlockOracle.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/WorkType.hpp"
+#include "util/Work.hpp"
 
 namespace opentxs
 {
@@ -54,12 +58,26 @@ class BlockOracle final : public internal::BlockOracle,
                           public Worker<BlockOracle, api::Core>
 {
 public:
-    auto Heartbeat() const noexcept -> void final { trigger(); }
+    class BlockDownloader;
+
+    enum class Work : OTZMQWorkType {
+        block = value(WorkType::BlockchainNewHeader),
+        reorg = value(WorkType::BlockchainReorg),
+        statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
+        shutdown = value(WorkType::Shutdown),
+    };
+
+    auto GetBlockJob() const noexcept -> BlockJob final;
+    auto Heartbeat() const noexcept -> void final;
     auto LoadBitcoin(const block::Hash& block) const noexcept
         -> BitcoinBlockFuture final;
     auto LoadBitcoin(const BlockHashes& hashes) const noexcept
         -> BitcoinBlockFutures final;
     auto SubmitBlock(const ReadView in) const noexcept -> void final;
+    auto Tip() const noexcept -> block::Position final
+    {
+        return db_.BlockTip();
+    }
 
     auto Init() noexcept -> void final;
     auto Shutdown() noexcept -> std::shared_future<void> final
@@ -70,6 +88,7 @@ public:
     BlockOracle(
         const api::Core& api,
         const internal::Network& network,
+        const internal::HeaderOracle& header,
         const internal::BlockDatabase& db,
         const blockchain::Type chain,
         const std::string& shutdown) noexcept;
@@ -85,6 +104,7 @@ private:
 
     struct Cache {
         auto ReceiveBlock(const zmq::Frame& in) const noexcept -> void;
+        auto ReceiveBlock(BitcoinBlock_p in) const noexcept -> void;
         auto Request(const block::Hash& block) const noexcept
             -> BitcoinBlockFuture;
         auto Request(const BlockHashes& hashes) const noexcept
@@ -137,9 +157,12 @@ private:
     };
 
     const internal::Network& network_;
+    const internal::BlockDatabase& db_;
     std::promise<void> init_promise_;
     std::shared_future<void> init_;
     Cache cache_;
+    mutable std::mutex lock_;
+    std::unique_ptr<BlockDownloader> block_downloader_;
 
     auto pipeline(const zmq::Message& in) noexcept -> void;
     auto shutdown(std::promise<void>& promise) noexcept -> void;

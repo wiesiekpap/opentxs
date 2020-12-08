@@ -70,16 +70,18 @@ Database::Database(
           table_names_,
           common.AllocateStorageFolder(
               std::to_string(static_cast<std::uint32_t>(type))),
-          {{database::Config, MDB_INTEGERKEY},
-           {database::BlockHeaderMetadata, 0},
-           {database::BlockHeaderBest, MDB_INTEGERKEY},
-           {database::ChainData, MDB_INTEGERKEY},
-           {database::BlockHeaderSiblings, 0},
-           {database::BlockHeaderDisconnected, MDB_DUPSORT},
-           {database::BlockFilterBest, MDB_INTEGERKEY},
-           {database::BlockFilterHeaderBest, MDB_INTEGERKEY}},
+          {
+              {database::Config, MDB_INTEGERKEY},
+              {database::BlockHeaderMetadata, 0},
+              {database::BlockHeaderBest, MDB_INTEGERKEY},
+              {database::ChainData, MDB_INTEGERKEY},
+              {database::BlockHeaderSiblings, 0},
+              {database::BlockHeaderDisconnected, MDB_DUPSORT},
+              {database::BlockFilterBest, MDB_INTEGERKEY},
+              {database::BlockFilterHeaderBest, MDB_INTEGERKEY},
+          },
           0)
-    , blocks_(api, common_, type)
+    , blocks_(api, common_, lmdb_, type)
     , filters_(api, common_, lmdb_, type)
     , headers_(api, network, common_, lmdb_, type)
     , wallet_(api, blockchain, common_, chain_)

@@ -11,7 +11,7 @@
 { "include": ["@<chaiscript/.*>", "private", "<chaiscript/chaiscript.hpp>", "public"] },
 { "include": ["@<opendht/.*>", "private", "<opendht.h>", "public"] },
 { "include": ["@<sodium/.*>", "private", "<sodium.h>", "public"] },
-{ "include": ["<gtest/.*>", "private", "<gtest/gtest.h>", "public"] },
+{ "include": ["@<gtest/.*>", "private", "<gtest/gtest.h>", "public"] },
 { "include": ["<bits/exception.h>", "private", "<stdexcept>", "public"] },
 { "include": ["<ext/alloc_traits.h>", "private", "<memory>", "public"] },
 { "include": ["<ext/new_allocator.h>", "private", "<new>", "public"] },

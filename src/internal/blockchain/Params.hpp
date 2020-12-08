@@ -63,6 +63,7 @@ struct Data {
     std::int32_t nBits_{};
     std::string genesis_header_hex_{};
     std::string genesis_hash_hex_{};
+    std::string genesis_block_hex_{};
     Checkpoint checkpoint_{};
     filter::Type default_filter_type_{};
     p2p::Protocol p2p_protocol_{};

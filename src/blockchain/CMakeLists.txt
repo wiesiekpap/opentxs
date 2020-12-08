@@ -20,8 +20,11 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/Types.hpp"
 )
 
-set(cxx-headers ${cxx-install-headers}
-                "${opentxs_SOURCE_DIR}/src/internal/blockchain/Params.hpp"
+set(cxx-headers
+    ${cxx-install-headers}
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/Params.hpp"
+    "DownloadManager.hpp"
+    "DownloadTask.hpp"
 )
 
 if(OT_BLOCKCHAIN_EXPORT)

@@ -95,6 +95,55 @@ HeaderOracle::HeaderOracle(
     OT_ASSERT(0 <= best.first);
 }
 
+auto HeaderOracle::Ancestors(
+    const block::Position& start,
+    const block::Position& target) const noexcept(false) -> Positions
+{
+    Lock lock(lock_);
+    auto cache = std::deque<block::Position>{};
+    auto current = database_.LoadHeader(target.second);
+    auto sibling = database_.LoadHeader(start.second);
+
+    while (sibling->Height() > current->Height()) {
+        sibling = database_.TryLoadHeader(sibling->ParentHash());
+
+        if (false == bool(sibling)) {
+            sibling = database_.TryLoadHeader(GenesisBlockHash(chain_));
+
+            OT_ASSERT(sibling);
+
+            break;
+        }
+    }
+
+    OT_ASSERT(sibling->Height() <= current->Height());
+
+    while (current->Height() >= 0) {
+        cache.emplace_front(current->Position());
+
+        if (current->Position() == sibling->Position()) {
+            break;
+        } else if (current->Height() == sibling->Height()) {
+            sibling = database_.TryLoadHeader(sibling->ParentHash());
+
+            if (false == bool(sibling)) {
+                sibling = database_.TryLoadHeader(GenesisBlockHash(chain_));
+
+                OT_ASSERT(sibling);
+            }
+        }
+
+        current = database_.TryLoadHeader(current->ParentHash());
+
+        if (false == bool(current)) { break; }
+    }
+
+    auto output = Positions{};
+    std::move(cache.begin(), cache.end(), std::back_inserter(output));
+
+    return output;
+}
+
 auto HeaderOracle::AddCheckpoint(
     const block::Height position,
     const block::Hash& requiredHash) noexcept -> bool
@@ -279,6 +328,22 @@ auto HeaderOracle::BestChain() const noexcept -> block::Position
     return best_chain(lock);
 }
 
+auto HeaderOracle::BestChain(const block::Position& tip) const noexcept(false)
+    -> Positions
+{
+    Lock lock(lock_);
+    const auto [youngest, best] = common_parent(lock, tip);
+    static const auto blank = api_.Factory().Data();
+    auto height{youngest.first};
+    auto output = Positions{};
+
+    for (auto& hash : best_hashes(lock, height, blank, 0)) {
+        output.emplace_back(height++, std::move(hash));
+    }
+
+    return output;
+}
+
 auto HeaderOracle::BestHash(const block::Height height) const noexcept
     -> block::pHash
 {
@@ -366,9 +431,9 @@ auto HeaderOracle::best_hashes(
 }
 
 auto HeaderOracle::CalculateReorg(const block::Position tip) const
-    noexcept(false) -> std::vector<block::Position>
+    noexcept(false) -> Positions
 {
-    auto output = std::vector<block::Position>{};
+    auto output = Positions{};
     Lock lock(lock_);
 
     if (is_in_best_chain(lock, tip)) { return output; }
@@ -492,6 +557,15 @@ auto HeaderOracle::CommonParent(const block::Position& position) const noexcept
     -> std::pair<block::Position, block::Position>
 {
     Lock lock(lock_);
+
+    return common_parent(lock, position);
+}
+
+auto HeaderOracle::common_parent(
+    const Lock& lock,
+    const block::Position& position) const noexcept
+    -> std::pair<block::Position, block::Position>
+{
     const auto& database = database_;
     std::pair<block::Position, block::Position> output{
         {0, GenesisBlockHash(chain_)}, best_chain(lock)};

@@ -5,8 +5,6 @@
 
 #include <boost/container/flat_map.hpp>
 #include <boost/container/vector.hpp>
-#include <gtest/gtest-message.h>
-#include <gtest/gtest-test-part.h>
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <array>

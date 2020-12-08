@@ -242,14 +242,18 @@ struct TCPConnectionManager final : public Peer::ConnectionManager {
         const zmq::Frame& data,
         std::shared_ptr<Peer::SendPromise> promise) noexcept -> void final
     {
-        auto work = [=, buf{asio::buffer(data.data(), data.size())}]() -> void {
+        auto it = static_cast<const std::byte*>(data.data());
+        auto bytes = std::make_unique<Space>(it, it + data.size());
+        auto work = [=, b{bytes.release()}]() -> void {
             auto cb = [=](auto& error, auto bytes) -> void {
+                auto cleanup = std::unique_ptr<Space>{b};
+
                 try {
                     if (promise) { promise->set_value({error, bytes}); }
                 } catch (...) {
                 }
             };
-            asio::async_write(socket_, buf, cb);
+            asio::async_write(socket_, asio::buffer(b->data(), b->size()), cb);
         };
 
         auto& asio = context_.operator boost::asio::io_context&();

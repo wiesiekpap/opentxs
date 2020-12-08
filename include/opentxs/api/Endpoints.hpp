@@ -233,6 +233,12 @@ public:
     /** Notification of blockchain block filter updates
      *
      */
+    virtual std::string InternalBlockchainBlockUpdated(
+        const opentxs::blockchain::Type chain) const noexcept = 0;
+
+    /** Notification of blockchain block filter updates
+     *
+     */
     virtual std::string InternalBlockchainFilterUpdated(
         const opentxs::blockchain::Type chain) const noexcept = 0;
 

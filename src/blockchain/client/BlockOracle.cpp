@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "blockchain/client/blockoracle/BlockDownloader.hpp"
 #include "core/Worker.hpp"
 #include "internal/blockchain/client/Client.hpp"
 #include "internal/blockchain/client/Factory.hpp"
@@ -31,6 +32,7 @@ namespace opentxs::factory
 auto BlockOracle(
     const api::Core& api,
     const blockchain::client::internal::Network& network,
+    const blockchain::client::internal::HeaderOracle& header,
     const blockchain::client::internal::BlockDatabase& db,
     const blockchain::Type chain,
     const std::string& shutdown) noexcept
@@ -38,7 +40,8 @@ auto BlockOracle(
 {
     using ReturnType = blockchain::client::implementation::BlockOracle;
 
-    return std::make_unique<ReturnType>(api, network, db, chain, shutdown);
+    return std::make_unique<ReturnType>(
+        api, network, header, db, chain, shutdown);
 }
 }  // namespace opentxs::factory
 
@@ -47,19 +50,57 @@ namespace opentxs::blockchain::client::implementation
 BlockOracle::BlockOracle(
     const api::Core& api,
     const internal::Network& network,
+    const internal::HeaderOracle& header,
     const internal::BlockDatabase& db,
     const blockchain::Type chain,
     const std::string& shutdown) noexcept
     : Worker(api, std::chrono::milliseconds{25})
     , network_(network)
+    , db_(db)
     , init_promise_()
     , init_(init_promise_.get_future())
     , cache_(api, network, db, chain)
+    , lock_()
+    , block_downloader_([&]() -> std::unique_ptr<BlockDownloader> {
+        using Policy = api::client::blockchain::BlockStorage;
+
+        if (Policy::All != db.BlockPolicy()) { return nullptr; }
+
+        return std::make_unique<BlockDownloader>(
+            api_, db, header, network, chain, shutdown);
+    }())
 {
     init_executor({shutdown});
 }
 
-auto BlockOracle::Init() noexcept -> void { init_promise_.set_value(); }
+auto BlockOracle::GetBlockJob() const noexcept -> BlockJob
+{
+    auto lock = Lock{lock_};
+
+    if (block_downloader_) {
+
+        return block_downloader_->NextBatch();
+    } else {
+
+        return {};
+    }
+}
+
+auto BlockOracle::Heartbeat() const noexcept -> void
+{
+    trigger();
+    auto lock = Lock{lock_};
+
+    if (block_downloader_) { block_downloader_->Heartbeat(); }
+}
+
+auto BlockOracle::Init() noexcept -> void
+{
+    init_promise_.set_value();
+    auto lock = Lock{lock_};
+
+    if (block_downloader_) { block_downloader_->Start(); }
+}
 
 auto BlockOracle::LoadBitcoin(const block::Hash& block) const noexcept
     -> BitcoinBlockFuture
@@ -123,6 +164,11 @@ auto BlockOracle::pipeline(const zmq::Message& in) noexcept -> void
 auto BlockOracle::shutdown(std::promise<void>& promise) noexcept -> void
 {
     init_.get();
+    {
+        auto lock = Lock{lock_};
+
+        if (block_downloader_) { block_downloader_.reset(); }
+    }
 
     if (running_->Off()) {
         cache_.Shutdown();

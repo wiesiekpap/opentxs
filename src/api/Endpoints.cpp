@@ -20,6 +20,7 @@
 #define BLOCKCHAIN_ACCOUNT_CREATED "blockchain/account/new"
 #define BLOCKCHAIN_ASIO_ENDPOINT "blockchain/asio"
 #define BLOCKCHAIN_BALANCE_ENDPOINT "blockchain/balance"
+#define BLOCKCHAIN_BLOCK_UPDATED "blockchain/block/"
 #define BLOCKCHAIN_FILTER_UPDATED "blockchain/filter/"
 #define BLOCKCHAIN_PEER_ENDPOINT "blockchain/peer/"
 #define BLOCKCHAIN_REORG_ENDPOINT "blockchain/reorg"
@@ -183,6 +184,15 @@ auto Endpoints::FindUnitDefinition() const noexcept -> std::string
 auto Endpoints::InternalBlockchainAsioContext() const noexcept -> std::string
 {
     return build_inproc_path(BLOCKCHAIN_ASIO_ENDPOINT, ENDPOINT_VERSION_1);
+}
+
+auto Endpoints::InternalBlockchainBlockUpdated(
+    const opentxs::blockchain::Type chain) const noexcept -> std::string
+{
+    auto path = std::string{BLOCKCHAIN_BLOCK_UPDATED} +
+                std::to_string(static_cast<std::uint32_t>(chain));
+
+    return build_inproc_path(path, ENDPOINT_VERSION_1);
 }
 
 auto Endpoints::InternalBlockchainFilterUpdated(

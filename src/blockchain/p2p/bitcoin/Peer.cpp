@@ -11,10 +11,12 @@
 #include <array>
 #include <cstdint>
 #include <iterator>
+#include <stdexcept>
 #include <tuple>
 #include <utility>
 #include <vector>
 
+#include "blockchain/DownloadTask.hpp"
 #include "blockchain/bitcoin/Inventory.hpp"
 #include "blockchain/p2p/Peer.hpp"
 #include "blockchain/p2p/bitcoin/Header.hpp"
@@ -49,6 +51,7 @@
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
@@ -62,6 +65,9 @@ namespace opentxs::factory
 auto BitcoinP2PPeerLegacy(
     const api::Core& api,
     const blockchain::client::internal::Network& network,
+    const blockchain::client::internal::HeaderOracle& header,
+    const blockchain::client::internal::FilterOracle& filter,
+    const blockchain::client::internal::BlockOracle& block,
     const blockchain::client::internal::PeerManager& manager,
     const blockchain::client::internal::IO& io,
     const int id,
@@ -95,7 +101,16 @@ auto BitcoinP2PPeerLegacy(
     }
 
     return std::make_unique<ReturnType>(
-        api, network, manager, io, shutdown, id, std::move(address));
+        api,
+        network,
+        header,
+        filter,
+        block,
+        manager,
+        io,
+        shutdown,
+        id,
+        std::move(address));
 }
 }  // namespace opentxs::factory
 
@@ -141,6 +156,9 @@ const std::string Peer::user_agent_{"/opentxs:" OPENTXS_VERSION_STRING "/"};
 Peer::Peer(
     const api::Core& api,
     const client::internal::Network& network,
+    const client::internal::HeaderOracle& header,
+    const client::internal::FilterOracle& filter,
+    const client::internal::BlockOracle& block,
     const client::internal::PeerManager& manager,
     const blockchain::client::internal::IO& io,
     const std::string& shutdown,
@@ -152,6 +170,8 @@ Peer::Peer(
     : p2p::implementation::Peer(
           api,
           network,
+          filter,
+          block,
           manager,
           io,
           id,
@@ -159,6 +179,7 @@ Peer::Peer(
           HeaderType::Size(),
           MessageType::MaxPayload(),
           std::move(address))
+    , headers_(header)
     , protocol_((0 == protocol) ? default_protocol_version_ : protocol)
     , nonce_(nonce(api_))
     , local_services_(
@@ -370,16 +391,36 @@ auto Peer::process_block(
     std::unique_ptr<HeaderType> header,
     const zmq::Frame& payload) -> void
 {
-    if (146 > payload.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid block").Flush();
+    try {
+        if (146 > payload.size()) {
+            throw std::runtime_error("Invalid payload");
+        }
 
-        return;
+        auto submit{true};
+
+        if (block_job_) {
+            auto block = api_.Factory().BitcoinBlock(chain_, payload.Bytes());
+
+            if (!block) { throw std::runtime_error("Invalid block"); }
+
+            auto header = headers_.LoadHeader(block->Header().Hash());
+
+            if (!header) { throw std::runtime_error("Failed to load header"); }
+
+            submit = !block_job_.Download(header->Position(), std::move(block));
+
+            if (block_job_.isDownloaded()) { reset_block_job(); }
+        }
+
+        if (submit) {
+            using Task = client::internal::Network::Task;
+            auto work = MakeWork(Task::SubmitBlock);
+            work->AddFrame(payload);
+            network_.Submit(work);
+        }
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
     }
-
-    using Task = client::internal::Network::Task;
-    auto work = MakeWork(Task::SubmitBlock);
-    work->AddFrame(payload);
-    network_.Submit(work);
 }
 
 auto Peer::process_blocktxn(
@@ -470,8 +511,7 @@ auto Peer::process_cfheaders(
             return;
         }
 
-        const auto checkpointData =
-            network_.HeaderOracleInternal().GetDefaultCheckpoint();
+        const auto checkpointData = headers_.GetDefaultCheckpoint();
         const auto& [height, checkpointHash, parentHash, filterHash] =
             checkpointData;
         const auto receivedFilterHeader =
@@ -493,17 +533,62 @@ auto Peer::process_cfheaders(
         cfilter_probe_ = true;
         success = true;
         check_verify();
-    } else {
-        const auto type = message.Type();
-        using Task = client::internal::Network::Task;
-        auto work = MakeWork(Task::SubmitFilterHeader);
-        work->AddFrame(type);
-        work->AddFrame(message.Stop());
-        work->AddFrame(message.Previous());
+    } else if (cfheader_job_) {
+        try {
+            const auto hashCount = message.size();
+            const auto headers = [&] {
+                const auto stop = headers_.LoadHeader(message.Stop());
 
-        for (const auto& header : message) { work->AddFrame(header); }
+                if (false == bool(stop)) {
+                    throw std::runtime_error("Stop block not found");
+                }
 
-        network_.Submit(work);
+                if (0 > stop->Height()) {
+                    throw std::runtime_error("Stop block disconnected");
+                }
+
+                if (hashCount > static_cast<std::size_t>(stop->Height())) {
+                    throw std::runtime_error(
+                        "Too many filter headers returned");
+                }
+
+                const auto startHeight =
+                    stop->Height() - static_cast<block::Height>(hashCount) + 1;
+                const auto start =
+                    headers_.LoadHeader(headers_.BestHash(startHeight));
+
+                if (false == bool(start)) {
+                    throw std::runtime_error("Start block not found");
+                }
+
+                auto output =
+                    headers_.Ancestors(start->Position(), stop->Position());
+
+                while (output.size() > hashCount) {
+                    output.erase(output.begin());
+                }
+
+                return output;
+            }();
+
+            if (headers.size() != hashCount) {
+                throw std::runtime_error(
+                    "Failed to load all block positions for cfheader message");
+            }
+
+            auto block = headers.begin();
+            auto cfheader = message.begin();
+            const auto type = message.Type();
+
+            for (; cfheader != message.end(); ++block, ++cfheader) {
+                cfheader_job_.Download(*block, std::move(*cfheader), type);
+            }
+
+            if (cfheader_job_.isDownloaded()) { reset_cfheader_job(); }
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            reset_cfheader_job();
+        }
     }
 }
 
@@ -511,32 +596,48 @@ auto Peer::process_cfilter(
     std::unique_ptr<HeaderType> header,
     const zmq::Frame& payload) -> void
 {
-    const auto pMessage =
-        std::unique_ptr<message::internal::Cfilter>{factory::BitcoinP2PCfilter(
-            api_,
-            std::move(header),
-            protocol_.load(),
-            payload.data(),
-            payload.size())};
+    try {
+        const auto pMessage = std::unique_ptr<message::internal::Cfilter>{
+            factory::BitcoinP2PCfilter(
+                api_,
+                std::move(header),
+                protocol_.load(),
+                payload.data(),
+                payload.size())};
 
-    if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode cfilter payload")
-            .Flush();
+        if (false == bool(pMessage)) {
+            throw std::runtime_error("Failed to decode cfilter payload");
+        }
 
-        return;
+        if (cfilter_job_) {
+            const auto& message = *pMessage;
+            const auto block = headers_.LoadHeader(message.Hash());
+
+            if (false == bool(block)) {
+                throw std::runtime_error("Failed to load block header");
+            }
+
+            const auto& blockHash = message.Hash();
+            auto gcs = factory::GCS(
+                api_,
+                message.Bits(),
+                message.FPRate(),
+                blockchain::internal::BlockHashToFilterKey(blockHash.Bytes()),
+                message.ElementCount(),
+                message.Filter());
+
+            if (false == bool(gcs)) {
+                throw std::runtime_error("Failed to instantiate gcs");
+            }
+
+            cfilter_job_.Download(
+                block->Position(), std::move(gcs), message.Type());
+
+            if (cfilter_job_.isDownloaded()) { reset_cfilter_job(); }
+        }
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
     }
-
-    const auto& message = *pMessage;
-    const auto type = message.Type();
-    using Task = client::internal::Network::Task;
-    auto work = MakeWork(Task::SubmitFilter);
-    work->AddFrame(type);
-    work->AddFrame(message.Hash());
-    work->AddFrame(message.Bits());
-    work->AddFrame(message.FPRate());
-    work->AddFrame(message.ElementCount());
-    work->AddFrame(message.Filter().data(), message.Filter().size());
-    network_.Submit(work);
 }
 
 auto Peer::process_cmpctblock(
@@ -747,12 +848,11 @@ auto Peer::process_getcfheaders(
     }
 
     const auto& in = *pIn;
-    const auto& hOracle = network_.HeaderOracleInternal();
 
-    if (false == bool(hOracle.LoadHeader(in.Stop()))) { return; }
+    if (false == bool(headers_.LoadHeader(in.Stop()))) { return; }
 
     const auto fromGenesis = (0 == in.Start());
-    const auto blocks = hOracle.BestHashes(
+    const auto blocks = headers_.BestHashes(
         fromGenesis ? 0 : in.Start() - 1, in.Stop(), fromGenesis ? 2000 : 2001);
 
     if (0 == blocks.size()) { return; }
@@ -817,9 +917,8 @@ auto Peer::process_getcfilters(
     }
 
     const auto& message = *pMessage;
-    const auto& headers = network_.HeaderOracle();
     const auto& stopHash = message.Stop();
-    const auto pStopHeader = headers.LoadHeader(stopHash);
+    const auto pStopHeader = headers_.LoadHeader(stopHash);
 
     if (!pStopHeader) {
         LogOutput(OT_METHOD)(__FUNCTION__)(
@@ -867,7 +966,7 @@ auto Peer::process_getcfilters(
     data.reserve(count);
     const auto& filters = network_.FilterOracle();
     const auto type = message.Type();
-    const auto hashes = headers.BestHashes(startHeight, stopHash);
+    const auto hashes = headers_.BestHashes(startHeight, stopHash);
 
     for (const auto& hash : hashes) {
         const auto& pGCS = data.emplace_back(filters.LoadFilter(type, hash));
@@ -1006,15 +1105,14 @@ auto Peer::process_getheaders(
     const auto& in = *pIn;
     auto previous = client::HeaderOracle::Hashes{};
     std::copy(in.begin(), in.end(), std::back_inserter(previous));
-    const auto& oracle = network_.HeaderOracleInternal();
-    const auto hashes = oracle.BestHashes(previous, in.StopHash(), 2000);
+    const auto hashes = headers_.BestHashes(previous, in.StopHash(), 2000);
     auto headers = std::vector<std::unique_ptr<block::bitcoin::Header>>{};
     std::transform(
         hashes.begin(),
         hashes.end(),
         std::back_inserter(headers),
         [&](const auto& hash) -> auto {
-            return oracle.LoadBitcoinHeader(hash);
+            return headers_.LoadBitcoinHeader(hash);
         });
     auto pOut = std::unique_ptr<message::internal::Headers>{
         factory::BitcoinP2PHeaders(api_, chain_, std::move(headers))};
@@ -1075,8 +1173,7 @@ auto Peer::process_headers(
             return;
         }
 
-        const auto checkpointData =
-            network_.HeaderOracleInternal().GetDefaultCheckpoint();
+        const auto checkpointData = headers_.GetDefaultCheckpoint();
         const auto& [height, checkpointHash, parentHash, filterHash] =
             checkpointData;
         const auto& receivedBlockHash = message.at(0).Hash();
@@ -1529,26 +1626,55 @@ auto Peer::request_block(zmq::Message& in) noexcept -> void
     send(message.Encode());
 }
 
-auto Peer::request_cfheaders(zmq::Message& in) noexcept -> void
+auto Peer::request_blocks() noexcept -> void
 {
     if (false == running_.get()) { return; }
 
-    const auto body = in.Body();
+    const auto& job = block_job_;
+    const auto& data = job.data_;
 
-    if (4 > body.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid work").Flush();
+    try {
+        using Inventory = blockchain::bitcoin::Inventory;
+        using Type = Inventory::Type;
+        auto blocks = std::vector<Inventory>{};
 
-        return;
+        for (const auto& task : data) {
+            blocks.emplace_back(Type::MsgBlock, task->position_.second);
+        }
+
+        if (0 == blocks.size()) { return; }
+
+        auto pMessage = std::unique_ptr<Message>{
+            factory::BitcoinP2PGetdata(api_, chain_, std::move(blocks))};
+
+        if (false == bool(pMessage)) {
+            throw std::runtime_error("Failed to construct getdata");
+        }
+
+        const auto& message = *pMessage;
+        send(message.Encode());
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
     }
+}
+
+auto Peer::request_cfheaders() noexcept -> void
+{
+    if (false == running_.get()) { return; }
+
+    const auto& job = cfheader_job_;
+    const auto& data = job.data_;
+
+    OT_ASSERT(0 < data.size());
 
     try {
         auto pMessage =
             std::unique_ptr<Message>{factory::BitcoinP2PGetcfheaders(
                 api_,
                 chain_,
-                body.at(1).as<filter::Type>(),
-                body.at(2).as<block::Height>(),
-                Data::Factory(body.at(3)))};
+                job.extra_,
+                data.front()->position_.first,
+                data.back()->position_.second)};
 
         if (false == bool(pMessage)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(
@@ -1565,25 +1691,22 @@ auto Peer::request_cfheaders(zmq::Message& in) noexcept -> void
     }
 }
 
-auto Peer::request_cfilter(zmq::Message& in) noexcept -> void
+auto Peer::request_cfilter() noexcept -> void
 {
     if (false == running_.get()) { return; }
 
-    const auto body = in.Body();
+    const auto& job = cfilter_job_;
+    const auto& data = job.data_;
 
-    if (4 > body.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid work").Flush();
-
-        return;
-    }
+    OT_ASSERT(0 < data.size());
 
     try {
         auto pMessage = std::unique_ptr<Message>{factory::BitcoinP2PGetcfilters(
             api_,
             chain_,
-            body.at(1).as<filter::Type>(),
-            body.at(2).as<block::Height>(),
-            Data::Factory(body.at(3)))};
+            job.extra_,
+            data.front()->position_.first,
+            data.back()->position_.second)};
 
         if (false == bool(pMessage)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(
@@ -1617,8 +1740,7 @@ auto Peer::request_checkpoint_block_header() noexcept -> void
     }};
 
     try {
-        auto checkpointData =
-            network_.HeaderOracleInternal().GetDefaultCheckpoint();
+        auto checkpointData = headers_.GetDefaultCheckpoint();
         auto [height, checkpointBlockHash, parentBlockHash, filterHash] =
             checkpointData;
         auto pMessage = std::unique_ptr<Message>{factory::BitcoinP2PGetheaders(
@@ -1660,8 +1782,7 @@ auto Peer::request_checkpoint_filter_header() noexcept -> void
     }};
 
     try {
-        auto checkpointData =
-            network_.HeaderOracleInternal().GetDefaultCheckpoint();
+        auto checkpointData = headers_.GetDefaultCheckpoint();
         auto [height, checkpointBlockHash, parentBlockHash, filterHash] =
             checkpointData;
         auto pMessage =
@@ -1698,11 +1819,7 @@ auto Peer::request_headers(const block::Hash& hash) noexcept -> void
     if (get_headers_.Running()) { return; }
 
     auto pMessage = std::unique_ptr<Message>{factory::BitcoinP2PGetheaders(
-        api_,
-        chain_,
-        protocol_.load(),
-        network_.HeaderOracleInternal().RecentHashes(),
-        hash)};
+        api_, chain_, protocol_.load(), headers_.RecentHashes(), hash)};
 
     if (false == bool(pMessage)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct getheaders")
