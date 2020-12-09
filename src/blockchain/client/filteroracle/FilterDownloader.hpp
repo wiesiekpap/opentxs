@@ -48,15 +48,17 @@ public:
             OT_ASSERT(0 < hashes.size());
 
             auto prior = Previous{std::nullopt};
-            {
-                auto& first = hashes.front();
+            auto& first = hashes.front();
 
-                if (first != current) {
-                    auto promise = std::promise<filter::pHeader>{};
-                    promise.set_value(
-                        db_.LoadFilterHeader(type_, first.second->Bytes()));
-                    prior.emplace(std::move(current), promise.get_future());
-                }
+            if (first != current) {
+                auto promise = std::promise<filter::pHeader>{};
+                auto header =
+                    db_.LoadFilterHeader(type_, first.second->Bytes());
+
+                OT_ASSERT(false == header->empty());
+
+                promise.set_value(std::move(header));
+                prior.emplace(std::move(first), promise.get_future());
             }
             hashes.erase(hashes.begin());
             update_position(std::move(hashes), type_, std::move(prior));
@@ -135,6 +137,7 @@ private:
             return 1000;
         }
     }
+    auto check_task(TaskType&) const noexcept -> void {}
     auto trigger_state_machine() const noexcept -> void { trigger(); }
     auto update_tip(const Position& position, const filter::pHeader&)
         const noexcept -> void
@@ -216,6 +219,7 @@ private:
                     " expected: ")(expected->asHex())
                     .Flush();
                 task->redownload();
+                break;
             }
         }
 

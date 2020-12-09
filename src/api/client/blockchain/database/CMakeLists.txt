@@ -6,7 +6,6 @@
 set(cxx-sources
     BlockFilter.cpp
     BlockHeaders.cpp
-    Blocks.cpp
     Database.cpp
     Peers.cpp
     Wallet.cpp
@@ -14,33 +13,47 @@ set(cxx-sources
 set(cxx-headers
     BlockFilter.hpp
     BlockHeaders.hpp
-    Blocks.hpp
     Database.hpp
     Peers.hpp
     Wallet.hpp
 )
 
+if(OPENTXS_BLOCK_STORAGE_ENABLED)
+  list(
+    APPEND
+    cxx-sources
+    Blocks.cpp
+    Sync.cpp
+  )
+  list(
+    APPEND
+    cxx-headers
+    Blocks.hpp
+    Sync.hpp
+  )
+endif()
+
 add_library(
   opentxs-api-client-blockchain-database OBJECT ${cxx-sources} ${cxx-headers}
 )
 target_link_libraries(
-  opentxs-api-client-blockchain-database PRIVATE opentxs::messages
-                                                 unofficial-sodium::sodium lmdb
+  opentxs-api-client-blockchain-database
+  PRIVATE
+    opentxs::messages
+    unofficial-sodium::sodium
+    Boost::headers
+    lmdb
 )
 
 if(OPENTXS_BLOCK_STORAGE_ENABLED)
-  target_link_libraries(
-    opentxs-api-client-blockchain-database
-    PRIVATE Boost::iostreams Boost::headers Boost::filesystem
-  )
   target_compile_definitions(
     opentxs-api-client-blockchain-database
-    PUBLIC OPENTXS_BLOCK_STORAGE_ENABLED=1
+    PRIVATE OPENTXS_BLOCK_STORAGE_ENABLED=1
   )
 else()
   target_compile_definitions(
     opentxs-api-client-blockchain-database
-    PUBLIC OPENTXS_BLOCK_STORAGE_ENABLED=0
+    PRIVATE OPENTXS_BLOCK_STORAGE_ENABLED=0
   )
 endif()
 

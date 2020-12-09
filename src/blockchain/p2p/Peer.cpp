@@ -13,7 +13,6 @@
 
 #include "blockchain/DownloadTask.hpp"
 #include "internal/api/client/Client.hpp"
-#include "internal/blockchain/Blockchain.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -38,6 +37,7 @@ namespace opentxs::blockchain::p2p::implementation
 {
 Peer::Peer(
     const api::Core& api,
+    const client::internal::Config& config,
     const client::internal::Network& network,
     const client::internal::FilterOracle& filter,
     const client::internal::BlockOracle& block,
@@ -62,11 +62,7 @@ Peer::Peer(
     , cfheader_job_()
     , cfilter_job_()
     , block_job_()
-    , verify_filter_checkpoint_(
-          api::client::blockchain::BlockStorage::All !=
-          static_cast<const blockchain::client::internal::BlockDatabase&>(
-              network.DB())
-              .BlockPolicy())
+    , verify_filter_checkpoint_(config.download_cfilters_)
     , id_(id)
     , shutdown_endpoint_(shutdown)
     , connection_(init_connection_manager(

@@ -32,9 +32,10 @@ auto Pipeline(
     const api::internal::Core& api,
     const network::zeromq::Context& context,
     std::function<void(network::zeromq::Message&)> callback)
-    -> opentxs::network::zeromq::Pipeline*
+    -> std::unique_ptr<opentxs::network::zeromq::Pipeline>
 {
-    return new opentxs::network::zeromq::socket::implementation::Pipeline(
+    return std::make_unique<
+        opentxs::network::zeromq::socket::implementation::Pipeline>(
         api, context, callback);
 }
 }  // namespace opentxs::factory

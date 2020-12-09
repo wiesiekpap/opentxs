@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "internal/blockchain/client/Client.hpp"
+#include "internal/blockchain/p2p/P2P.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
@@ -30,6 +31,8 @@
 #include "opentxs/api/client/blockchain/PaymentCode.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
@@ -143,6 +146,7 @@ using Protocol = opentxs::blockchain::p2p::Protocol;
 using Service = opentxs::blockchain::p2p::Service;
 using Type = opentxs::blockchain::p2p::Network;
 using UpdatedHeader = opentxs::blockchain::client::UpdatedHeader;
+using SyncTableData = std::pair<int, std::string>;
 
 enum Table {
     BlockHeaders = 0,
@@ -161,7 +165,11 @@ enum Table {
     Config = 13,
     BlockIndex = 14,
     Enabled = 15,
+    SyncTips = 16,
 };
+
+auto ChainToSyncTable(const Chain chain) noexcept(false) -> int;
+auto SyncTables() noexcept -> const std::vector<SyncTableData>&;
 }  // namespace opentxs::api::client::blockchain
 #endif  // OT_BLOCKCHAIN
 

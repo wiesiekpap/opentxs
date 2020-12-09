@@ -10,6 +10,7 @@
 
 #include "blockchain/bitcoin/CompactSize.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/client/Client.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
@@ -28,6 +29,7 @@ namespace client
 namespace internal
 {
 struct BlockOracle;
+struct Config;
 struct FilterOracle;
 struct HeaderOracle;
 struct IO;
@@ -73,11 +75,13 @@ OPENTXS_EXPORT auto BitcoinP2PMessage(
     const std::size_t size = 0) -> blockchain::p2p::bitcoin::Message*;
 auto BitcoinP2PPeerLegacy(
     const api::Core& api,
+    const blockchain::client::internal::Config& config,
     const blockchain::client::internal::Network& network,
     const blockchain::client::internal::HeaderOracle& header,
     const blockchain::client::internal::FilterOracle& filter,
     const blockchain::client::internal::BlockOracle& block,
     const blockchain::client::internal::PeerManager& manager,
+    const api::client::blockchain::BlockStorage policy,
     const blockchain::client::internal::IO& io,
     const int id,
     std::unique_ptr<blockchain::p2p::internal::Address> address,

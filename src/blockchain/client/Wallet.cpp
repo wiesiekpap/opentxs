@@ -16,7 +16,6 @@
 #include "blockchain/client/wallet/HDStateData.hpp"
 #include "core/Worker.hpp"
 #include "internal/api/client/Client.hpp"
-#include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/client/Client.hpp"
 #include "internal/blockchain/client/Factory.hpp"
 #include "opentxs/api/Core.hpp"
@@ -41,6 +40,7 @@ auto BlockchainWallet(
     const api::Core& api,
     const api::client::internal::Blockchain& blockchain,
     const blockchain::client::internal::Network& parent,
+    const blockchain::client::internal::WalletDatabase& db,
     const blockchain::Type chain,
     const std::string& shutdown)
     -> std::unique_ptr<blockchain::client::internal::Wallet>
@@ -48,7 +48,7 @@ auto BlockchainWallet(
     using ReturnType = blockchain::client::implementation::Wallet;
 
     return std::make_unique<ReturnType>(
-        api, blockchain, parent, chain, shutdown);
+        api, blockchain, parent, db, chain, shutdown);
 }
 }  // namespace opentxs::factory
 
@@ -103,11 +103,12 @@ Wallet::Wallet(
     const api::Core& api,
     const api::client::internal::Blockchain& blockchain,
     const internal::Network& parent,
+    const internal::WalletDatabase& db,
     const Type chain,
     const std::string& shutdown) noexcept
     : Worker(api, std::chrono::milliseconds(10))
     , parent_(parent)
-    , db_(parent_.DB())
+    , db_(db)
     , blockchain_api_(blockchain)
     , chain_(chain)
     , task_finished_([this]() { trigger(); })

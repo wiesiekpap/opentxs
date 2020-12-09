@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                    // IWYU pragma: associated
 #include "network/zeromq/socket/Router.hpp"  // IWYU pragma: associated
 
+#include <memory>
+
 #include "internal/network/zeromq/socket/Socket.hpp"
 #include "network/zeromq/curve/Client.hpp"
 #include "network/zeromq/curve/Server.hpp"
@@ -18,6 +20,7 @@
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/socket/Router.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::socket::Router>;
 
@@ -29,11 +32,11 @@ auto RouterSocket(
     const network::zeromq::Context& context,
     const bool direction,
     const network::zeromq::ListenCallback& callback)
-    -> network::zeromq::socket::Router*
+    -> std::unique_ptr<network::zeromq::socket::Router>
 {
     using ReturnType = network::zeromq::socket::implementation::Router;
 
-    return new ReturnType(
+    return std::make_unique<ReturnType>(
         context,
         static_cast<network::zeromq::socket::Socket::Direction>(direction),
         callback);

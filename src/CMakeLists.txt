@@ -259,6 +259,10 @@ if(OT_INSTALL_LIBRARY_DEPENDENCIES AND OPENTXS_STANDALONE)
     IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
   )
   get_target_property(
+    Boost_iostreams_LIBRARY Boost::iostreams
+    IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
+  )
+  get_target_property(
     Protobuf_LITE_LIBRARY protobuf::libprotobuf-lite
     IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
   )
@@ -291,6 +295,7 @@ if(OT_INSTALL_LIBRARY_DEPENDENCIES AND OPENTXS_STANDALONE)
       "${ZLIB_LIBRARY}"
       "${Boost_system_LIBRARY}"
       "${Boost_filesystem_LIBRARY}"
+      "${Boost_iostreams_LIBRARY}"
     DESTINATION ${CMAKE_INSTALL_LIBDIR}
     COMPONENT main
   )
@@ -318,19 +323,6 @@ if(OT_INSTALL_LIBRARY_DEPENDENCIES AND OPENTXS_STANDALONE)
       COMPONENT main
     )
   endif(OT_BLOCKCHAIN_EXPORT)
-
-  if(OPENTXS_BLOCK_STORAGE_ENABLED OR FS_EXPORT)
-    get_target_property(
-      Boost_iostreams_LIBRARY Boost::iostreams
-      IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
-    )
-
-    install(
-      FILES "${Boost_iostreams_LIBRARY}"
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}
-      COMPONENT main
-    )
-  endif(OPENTXS_BLOCK_STORAGE_ENABLED OR FS_EXPORT)
 
   if(DHT_EXPORT)
     message(WARNING "Installing OpenDHT dependencies not supported yet")

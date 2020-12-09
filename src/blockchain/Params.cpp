@@ -51,6 +51,21 @@ auto BlockHash(
     }
 }
 
+auto DefinedChains() noexcept -> const std::set<Type>&
+{
+    static const auto output = [] {
+        auto output = std::set<Type>{};
+
+        for (const auto& [chain, data] : params::Data::chains_) {
+            output.emplace(chain);
+        }
+
+        return output;
+    }();
+
+    return output;
+}
+
 auto FilterHash(
     const api::Core& api,
     const Type chain,
@@ -207,8 +222,7 @@ auto ScriptHash(
 
 auto SupportedChains() noexcept -> const std::set<Type>&
 {
-    static const auto build = []() -> auto
-    {
+    static const auto output = [] {
         auto output = std::set<Type>{};
 
         for (const auto& [chain, data] : params::Data::chains_) {
@@ -216,9 +230,7 @@ auto SupportedChains() noexcept -> const std::set<Type>&
         }
 
         return output;
-    };
-
-    static const auto output{build()};
+    }();
 
     return output;
 }

@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "network/zeromq/socket/Pull.hpp"  // IWYU pragma: associated
 
+#include <memory>
+
 #include "internal/network/zeromq/socket/Socket.hpp"
 #include "network/zeromq/curve/Server.hpp"
 #include "network/zeromq/socket/Receiver.tpp"
@@ -14,6 +16,7 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
+#include "opentxs/network/zeromq/socket/Pull.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::socket::Pull>;
 
@@ -23,11 +26,11 @@ template class opentxs::Pimpl<opentxs::network::zeromq::socket::Pull>;
 namespace opentxs::factory
 {
 auto PullSocket(const network::zeromq::Context& context, const bool direction)
-    -> network::zeromq::socket::Pull*
+    -> std::unique_ptr<network::zeromq::socket::Pull>
 {
     using ReturnType = network::zeromq::socket::implementation::Pull;
 
-    return new ReturnType(
+    return std::make_unique<ReturnType>(
         context,
         static_cast<network::zeromq::socket::Socket::Direction>(direction));
 }
@@ -36,11 +39,11 @@ auto PullSocket(
     const network::zeromq::Context& context,
     const bool direction,
     const network::zeromq::ListenCallback& callback)
-    -> network::zeromq::socket::Pull*
+    -> std::unique_ptr<network::zeromq::socket::Pull>
 {
     using ReturnType = network::zeromq::socket::implementation::Pull;
 
-    return new ReturnType(
+    return std::make_unique<ReturnType>(
         context,
         static_cast<network::zeromq::socket::Socket::Direction>(direction),
         callback);

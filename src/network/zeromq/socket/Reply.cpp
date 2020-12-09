@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                   // IWYU pragma: associated
 #include "network/zeromq/socket/Reply.hpp"  // IWYU pragma: associated
 
+#include <memory>
+
 #include "internal/network/zeromq/socket/Socket.hpp"
 #include "network/zeromq/curve/Server.hpp"
 #include "network/zeromq/socket/Receiver.tpp"
@@ -14,6 +16,7 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/ReplyCallback.hpp"
+#include "opentxs/network/zeromq/socket/Reply.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::socket::Reply>;
 template class opentxs::network::zeromq::socket::implementation::Receiver<
@@ -28,11 +31,11 @@ auto ReplySocket(
     const network::zeromq::Context& context,
     const bool direction,
     const network::zeromq::ReplyCallback& callback)
-    -> network::zeromq::socket::Reply*
+    -> std::unique_ptr<network::zeromq::socket::Reply>
 {
     using ReturnType = network::zeromq::socket::implementation::Reply;
 
-    return new ReturnType(
+    return std::make_unique<ReturnType>(
         context,
         static_cast<network::zeromq::socket::Socket::Direction>(direction),
         callback);

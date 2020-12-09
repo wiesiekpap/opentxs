@@ -12,6 +12,7 @@
 
 #include <cstdint>
 
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/NumericHash.hpp"
@@ -72,6 +73,8 @@ public:
     OPENTXS_EXPORT virtual OTWork ParentWork() const noexcept = 0;
     OPENTXS_EXPORT virtual block::Position Position() const noexcept = 0;
     OPENTXS_EXPORT virtual SerializedType Serialize() const noexcept = 0;
+    OPENTXS_EXPORT virtual auto Serialize(
+        const AllocateOutput destination) const noexcept -> bool = 0;
     OPENTXS_EXPORT virtual OTNumericHash Target() const noexcept = 0;
     OPENTXS_EXPORT virtual blockchain::Type Type() const noexcept = 0;
     OPENTXS_EXPORT virtual bool Valid() const noexcept = 0;

@@ -10,8 +10,9 @@ macro(opentxs_link_target target_name)
     PRIVATE
       Threads::Threads
       ZLIB::ZLIB
-      Boost::system
       Boost::filesystem
+      Boost::iostreams
+      Boost::system
       protobuf::libprotobuf-lite
       "${OT_ZMQ_TARGET}"
       unofficial-sodium::sodium
@@ -39,10 +40,6 @@ macro(opentxs_link_target target_name)
 
   if(DHT_EXPORT)
     target_link_libraries(${target_name} PRIVATE opendht ${GNUTLS_LIBRARIES})
-  endif()
-
-  if(FS_EXPORT OR OPENTXS_BLOCK_STORAGE_ENABLED)
-    target_link_libraries(${target_name} PRIVATE Boost::iostreams)
   endif()
 
   if(SQLITE_EXPORT)

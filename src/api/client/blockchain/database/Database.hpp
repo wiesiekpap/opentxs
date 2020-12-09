@@ -28,6 +28,7 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
+#include "opentxs/protobuf/BlockchainP2PSync.pb.h"
 #include "opentxs/protobuf/BlockchainTransaction.pb.h"
 #include "util/LMDB.hpp"
 
@@ -37,21 +38,6 @@ namespace api
 {
 namespace client
 {
-namespace blockchain
-{
-namespace database
-{
-namespace implementation
-{
-class BlockFilter;
-class BlockHeader;
-class Blocks;
-class Peers;
-class Wallet;
-}  // namespace implementation
-}  // namespace database
-}  // namespace blockchain
-
 class Blockchain;
 }  // namespace client
 
@@ -77,6 +63,14 @@ struct GCS;
 }  // namespace client
 }  // namespace blockchain
 
+namespace network
+{
+namespace zeromq
+{
+class Message;
+}  // namespace zeromq
+}  // namespace network
+
 namespace proto
 {
 class BlockchainTransaction;
@@ -95,6 +89,7 @@ public:
         BlockStoragePolicy = 0,
         NextBlockAddress = 1,
         SiphashKey = 2,
+        NextSyncAddress = 3,
     };
 
     using BlockHash = opentxs::blockchain::block::Hash;
@@ -102,6 +97,8 @@ public:
     using Txid = opentxs::blockchain::block::Txid;
     using pTxid = opentxs::blockchain::block::pTxid;
     using Chain = opentxs::blockchain::Type;
+    using Height = opentxs::blockchain::block::Height;
+    using SyncItems = std::vector<proto::BlockchainP2PSync>;
 
     auto AddOrUpdate(Address_p address) const noexcept -> bool;
     auto AllocateStorageFolder(const std::string& dir) const noexcept
@@ -112,7 +109,7 @@ public:
     auto BlockHeaderExists(const BlockHash& hash) const noexcept -> bool;
     auto BlockExists(const BlockHash& block) const noexcept -> bool;
     auto BlockLoad(const BlockHash& block) const noexcept -> BlockReader;
-    auto BlockPolicy() const noexcept -> BlockStorage { return block_policy_; }
+    auto BlockPolicy() const noexcept -> BlockStorage;
     auto BlockStore(const BlockHash& block, const std::size_t bytes)
         const noexcept -> BlockWriter;
     auto Disable(const Chain type) const noexcept -> bool;
@@ -122,7 +119,7 @@ public:
         const Protocol protocol,
         const std::set<Type> onNetworks,
         const std::set<Service> withServices) const noexcept -> Address_p;
-    auto HashKey() const noexcept { return reader(siphash_key_); }
+    auto HashKey() const noexcept -> ReadView;
     auto HaveFilter(const FilterType type, const ReadView blockHash)
         const noexcept -> bool;
     auto HaveFilterHeader(const FilterType type, const ReadView blockHash)
@@ -141,12 +138,18 @@ public:
         const FilterType type,
         const ReadView blockHash,
         const AllocateOutput header) const noexcept -> bool;
+    auto LoadSync(
+        const Chain chain,
+        const Height height,
+        opentxs::network::zeromq::Message& output) const noexcept -> bool;
     auto LoadTransaction(const ReadView txid) const noexcept
         -> std::optional<proto::BlockchainTransaction>;
     auto LookupContact(const Data& pubkeyHash) const noexcept
         -> std::set<OTIdentifier>;
     auto LookupTransactions(const PatternID pattern) const noexcept
         -> std::vector<pTxid>;
+    auto ReorgSync(const Chain chain, const Height height) const noexcept
+        -> bool;
     auto StoreBlockHeader(const opentxs::blockchain::block::Header& header)
         const noexcept -> bool;
     auto StoreBlockHeaders(const UpdatedHeader& headers) const noexcept -> bool;
@@ -159,6 +162,8 @@ public:
         const FilterType type,
         const std::vector<FilterHeader>& headers,
         const std::vector<FilterData>& filters) const noexcept -> bool;
+    auto StoreSync(const Chain chain, const SyncItems& items) const noexcept
+        -> bool;
     auto StoreTransaction(const proto::BlockchainTransaction& tx) const noexcept
         -> bool;
     auto UpdateContact(const Contact& contact) const noexcept
@@ -176,49 +181,10 @@ public:
     ~Database();
 
 private:
-    using SiphashKey = Space;
+    struct Imp;
 
-    static const opentxs::storage::lmdb::TableNames table_names_;
-
-    const api::Core& api_;
-    const api::Legacy& legacy_;
-    const OTString blockchain_path_;
-    const OTString common_path_;
-#if OPENTXS_BLOCK_STORAGE_ENABLED
-    const OTString blocks_path_;
-#endif  // OPENTXS_BLOCK_STORAGE_ENABLED
-    opentxs::storage::lmdb::LMDB lmdb_;
-    const BlockStorage block_policy_;
-    const SiphashKey siphash_key_;
-    const std::unique_ptr<BlockHeader> headers_;
-    const std::unique_ptr<Peers> peers_;
-    const std::unique_ptr<BlockFilter> filters_;
-#if OPENTXS_BLOCK_STORAGE_ENABLED
-    const std::unique_ptr<Blocks> blocks_;
-#endif  // OPENTXS_BLOCK_STORAGE_ENABLED
-    const std::unique_ptr<Wallet> wallet_;
-
-    static auto block_storage_enabled() noexcept -> bool;
-    static auto block_storage_level(
-        const ArgList& args,
-        opentxs::storage::lmdb::LMDB& db) noexcept -> BlockStorage;
-    static auto block_storage_level_arg(const ArgList& args) noexcept
-        -> std::optional<BlockStorage>;
-    static auto block_storage_level_configured(
-        opentxs::storage::lmdb::LMDB& db) noexcept
-        -> std::optional<BlockStorage>;
-    static auto block_storage_level_default() noexcept -> BlockStorage;
-    static auto init_folder(
-        const api::Legacy& legacy,
-        const String& parent,
-        const String& child) noexcept(false) -> OTString;
-    static auto init_storage_path(
-        const api::Legacy& legacy,
-        const std::string& dataFolder) noexcept(false) -> OTString;
-    static auto siphash_key(opentxs::storage::lmdb::LMDB& db) noexcept
-        -> SiphashKey;
-    static auto siphash_key_configured(
-        opentxs::storage::lmdb::LMDB& db) noexcept -> std::optional<SiphashKey>;
+    std::unique_ptr<Imp> imp_p_;
+    Imp& imp_;
 
     Database() = delete;
     Database(const Database&) = delete;

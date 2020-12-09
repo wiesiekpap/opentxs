@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "network/zeromq/socket/Pair.hpp"  // IWYU pragma: associated
 
+#include <memory>
+
 #include "internal/network/zeromq/socket/Socket.hpp"
 #include "network/zeromq/socket/Bidirectional.tpp"
 #include "network/zeromq/socket/Receiver.hpp"
@@ -28,31 +30,32 @@ namespace opentxs::factory
 auto PairSocket(
     const network::zeromq::Context& context,
     const network::zeromq::ListenCallback& callback,
-    const bool startThread) -> network::zeromq::socket::Pair*
+    const bool startThread) -> std::unique_ptr<network::zeromq::socket::Pair>
 {
     using ReturnType = network::zeromq::socket::implementation::Pair;
 
-    return new ReturnType(context, callback, startThread);
+    return std::make_unique<ReturnType>(context, callback, startThread);
 }
 
 auto PairSocket(
     const network::zeromq::ListenCallback& callback,
     const network::zeromq::socket::Pair& peer,
-    const bool startThread) -> network::zeromq::socket::Pair*
+    const bool startThread) -> std::unique_ptr<network::zeromq::socket::Pair>
 {
     using ReturnType = network::zeromq::socket::implementation::Pair;
 
-    return new ReturnType(callback, peer, startThread);
+    return std::make_unique<ReturnType>(callback, peer, startThread);
 }
 
 auto PairSocket(
     const network::zeromq::Context& context,
     const network::zeromq::ListenCallback& callback,
-    const std::string& endpoint) -> network::zeromq::socket::Pair*
+    const std::string& endpoint)
+    -> std::unique_ptr<network::zeromq::socket::Pair>
 {
     using ReturnType = network::zeromq::socket::implementation::Pair;
 
-    return new ReturnType(context, callback, endpoint);
+    return std::make_unique<ReturnType>(context, callback, endpoint);
 }
 }  // namespace opentxs::factory
 

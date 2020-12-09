@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                    // IWYU pragma: associated
 #include "network/zeromq/socket/Dealer.hpp"  // IWYU pragma: associated
 
+#include <memory>
+
 #include "internal/network/zeromq/socket/Socket.hpp"
 #include "network/zeromq/curve/Client.hpp"
 #include "network/zeromq/socket/Bidirectional.tpp"
@@ -18,6 +20,7 @@
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/socket/Dealer.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::socket::Dealer>;
 
@@ -29,11 +32,11 @@ auto DealerSocket(
     const network::zeromq::Context& context,
     const bool direction,
     const network::zeromq::ListenCallback& callback)
-    -> network::zeromq::socket::Dealer*
+    -> std::unique_ptr<network::zeromq::socket::Dealer>
 {
     using ReturnType = network::zeromq::socket::implementation::Dealer;
 
-    return new ReturnType(
+    return std::make_unique<ReturnType>(
         context,
         static_cast<network::zeromq::socket::Socket::Direction>(direction),
         callback);

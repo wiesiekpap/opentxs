@@ -7,9 +7,19 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "internal/api/client/blockchain/Blockchain.hpp"  // IWYU pragma: associated
 
+#if OT_BLOCKCHAIN
+#include <boost/container/flat_map.hpp>
+#endif  // OT_BLOCKCHAIN
+
+#if OT_BLOCKCHAIN
+#include "internal/blockchain/Params.hpp"
+#endif  // OT_BLOCKCHAIN
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
+#if OT_BLOCKCHAIN
+#include "opentxs/blockchain/Blockchain.hpp"
+#endif  // OT_BLOCKCHAIN
 #include "opentxs/core/Log.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
 
@@ -35,3 +45,44 @@ auto blockchain_thread_item_id(
     return id;
 }
 }  // namespace opentxs
+
+#if OT_BLOCKCHAIN
+namespace opentxs::api::client::blockchain
+{
+constexpr auto sync_map_ = [] {
+    constexpr auto offset{65536};
+    auto map = boost::container::flat_map<Chain, SyncTableData>{};
+
+    for (const auto& chain : opentxs::blockchain::DefinedChains()) {
+        auto& [table, name] = map[chain];
+        table = offset + static_cast<int>(chain);
+        name = opentxs::blockchain::params::Data::chains_.at(chain)
+                   .display_string_;
+    }
+
+    return map;
+};
+
+auto ChainToSyncTable(const Chain chain) noexcept(false) -> int
+{
+    static const auto map = sync_map_();
+
+    return map.at(chain).first;
+}
+
+auto SyncTables() noexcept -> const std::vector<SyncTableData>&
+{
+    static const auto map = [] {
+        auto output = std::vector<SyncTableData>{};
+
+        for (const auto& [key, value] : sync_map_()) {
+            output.emplace_back(value);
+        }
+
+        return output;
+    }();
+
+    return map;
+}
+}  // namespace opentxs::api::client::blockchain
+#endif  // OT_BLOCKCHAIN

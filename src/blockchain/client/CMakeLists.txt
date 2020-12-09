@@ -54,6 +54,7 @@ set(cxx-headers
 add_library(opentxs-blockchain-client OBJECT ${cxx-sources} ${cxx-headers})
 target_link_libraries(
   opentxs-blockchain-client PRIVATE Boost::headers opentxs::messages
+                                    "${OT_ZMQ_TARGET}"
 )
 target_include_directories(
   opentxs-blockchain-client SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"

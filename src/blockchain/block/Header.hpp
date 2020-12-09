@@ -49,6 +49,7 @@ public:
     auto ParentHash() const noexcept -> const block::Hash& final;
     auto ParentWork() const noexcept -> OTWork final { return inherit_work_; }
     auto Position() const noexcept -> block::Position final;
+    using block::Header::Serialize;
     auto Serialize() const noexcept -> SerializedType override;
     auto Type() const noexcept -> blockchain::Type final { return type_; }
     auto Valid() const noexcept -> bool final;

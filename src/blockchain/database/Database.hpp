@@ -25,6 +25,7 @@
 #include "blockchain/database/Blocks.hpp"
 #include "blockchain/database/Filters.hpp"
 #include "blockchain/database/Headers.hpp"
+#include "blockchain/database/Sync.hpp"
 #include "blockchain/database/Wallet.hpp"
 #include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Blockchain.hpp"
@@ -328,6 +329,11 @@ public:
     {
         return wallet_.LoadProposals();
     }
+    auto LoadSync(const Height height, Message& output) const noexcept
+        -> bool final
+    {
+        return sync_.Load(height, output);
+    }
     auto LookupContact(const Data& pubkeyHash) const noexcept
         -> std::set<OTIdentifier> final
     {
@@ -341,6 +347,10 @@ public:
         const noexcept -> bool final
     {
         return wallet_.ReleaseChangeKey(proposal, key);
+    }
+    auto ReorgSync(const Height height) const noexcept -> bool final
+    {
+        return sync_.Reorg(height);
     }
     auto ReorgTo(
         const NodeID& balanceNode,
@@ -381,6 +391,11 @@ public:
     {
         return filters_.SetTip(type, position);
     }
+    auto SetSyncTip(const block::Position& position) const noexcept
+        -> bool final
+    {
+        return sync_.SetTip(position);
+    }
     auto SiblingHashes() const noexcept -> client::Hashes final
     {
         return headers_.SiblingHashes();
@@ -404,6 +419,11 @@ public:
         const std::vector<Header> headers) const noexcept -> bool final
     {
         return filters_.StoreHeaders(type, previous, std::move(headers));
+    }
+    auto StoreSync(const block::Position& tip, const Items& items)
+        const noexcept -> bool final
+    {
+        return sync_.Store(tip, items);
     }
     auto SubchainAddElements(
         const NodeID& balanceNode,
@@ -483,6 +503,10 @@ public:
         return wallet_.SubchainSetLastScanned(
             balanceNode, subchain, type, position);
     }
+    auto SyncTip() const noexcept -> block::Position final
+    {
+        return sync_.Tip();
+    }
     auto TransactionLoadBitcoin(const ReadView txid) const noexcept
         -> std::unique_ptr<block::bitcoin::Transaction> final
     {
@@ -523,8 +547,9 @@ private:
     mutable database::Filters filters_;
     mutable database::Headers headers_;
     mutable database::Wallet wallet_;
+    mutable database::Sync sync_;
 
-    void init_db() noexcept;
+    static auto init_db(opentxs::storage::lmdb::LMDB& db) noexcept -> void;
 
     Database() = delete;
     Database(const Database&) = delete;

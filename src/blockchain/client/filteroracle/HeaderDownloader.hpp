@@ -118,6 +118,7 @@ private:
             return 2000;
         }
     }
+    auto check_task(TaskType&) const noexcept -> void {}
     auto trigger_state_machine() const noexcept -> void { trigger(); }
     auto update_tip(const Position& position, const filter::pHeader&)
         const noexcept -> void

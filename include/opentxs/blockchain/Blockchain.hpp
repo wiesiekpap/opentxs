@@ -33,6 +33,7 @@ OPENTXS_EXPORT auto BlockHash(
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool;
+OPENTXS_EXPORT auto DefinedChains() noexcept -> const std::set<Type>&;
 OPENTXS_EXPORT auto DisplayString(const Type type) noexcept -> std::string;
 OPENTXS_EXPORT auto FilterHash(
     const api::Core& api,

@@ -13,3 +13,6 @@ add_opentx_test(
   unittests-opentxs-blockchain-regtest-block-propagation
   Test_block_propagation.cpp
 )
+add_opentx_test(
+  unittests-opentxs-blockchain-regtest-sync-server Test_sync_server.cpp
+)

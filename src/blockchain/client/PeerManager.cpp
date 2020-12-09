@@ -37,6 +37,7 @@ namespace opentxs::factory
 {
 auto BlockchainPeerManager(
     const api::Core& api,
+    const blockchain::client::internal::Config& config,
     const blockchain::client::internal::Network& network,
     const blockchain::client::internal::HeaderOracle& headers,
     const blockchain::client::internal::FilterOracle& filter,
@@ -44,6 +45,7 @@ auto BlockchainPeerManager(
     const blockchain::client::internal::PeerDatabase& database,
     const blockchain::client::internal::IO& io,
     const blockchain::Type type,
+    const api::client::blockchain::BlockStorage policy,
     const std::string& seednode,
     const std::string& shutdown) noexcept
     -> std::unique_ptr<blockchain::client::internal::PeerManager>
@@ -52,6 +54,7 @@ auto BlockchainPeerManager(
 
     return std::make_unique<ReturnType>(
         api,
+        config,
         network,
         headers,
         filter,
@@ -59,6 +62,7 @@ auto BlockchainPeerManager(
         database,
         io,
         type,
+        policy,
         seednode,
         shutdown);
 }
@@ -68,6 +72,7 @@ namespace opentxs::blockchain::client::implementation
 {
 PeerManager::PeerManager(
     const api::Core& api,
+    const internal::Config& config,
     const internal::Network& network,
     const internal::HeaderOracle& headers,
     const internal::FilterOracle& filter,
@@ -75,6 +80,7 @@ PeerManager::PeerManager(
     const internal::PeerDatabase& database,
     const blockchain::client::internal::IO& io,
     const Type chain,
+    const api::client::blockchain::BlockStorage policy,
     const std::string& seednode,
     const std::string& shutdown) noexcept
     : internal::PeerManager()
@@ -84,18 +90,20 @@ PeerManager::PeerManager(
     , jobs_(api)
     , peers_(
           api,
+          config,
           network,
           headers,
           filter,
           block,
           database_,
           *this,
+          policy,
           running_,
           shutdown,
           chain,
           seednode,
           io_context_,
-          peer_target(chain, database_))
+          peer_target(chain, policy))
     , init_promise_()
     , init_(init_promise_.get_future())
 {
@@ -235,15 +243,12 @@ auto PeerManager::Listen(const p2p::Address& address) const noexcept -> bool
 
 auto PeerManager::peer_target(
     const Type chain,
-    const internal::PeerDatabase& db) noexcept -> std::size_t
+    const api::client::blockchain::BlockStorage policy) noexcept -> std::size_t
 {
     if (Type::UnitTest == chain) { return 0; }
 
-    switch (db.BlockPolicy()) {
-        case api::client::blockchain::BlockStorage::All: {
-
-            return 8;
-        }
+    switch (policy) {
+        case api::client::blockchain::BlockStorage::All:
         case api::client::blockchain::BlockStorage::Cache: {
 
             return 2;

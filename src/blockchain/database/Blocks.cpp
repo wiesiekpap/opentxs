@@ -9,7 +9,6 @@
 
 #include <iosfwd>
 #include <memory>
-#include <stdexcept>
 
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"

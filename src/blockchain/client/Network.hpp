@@ -33,6 +33,8 @@
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/util/WorkType.hpp"
+#include "util/Work.hpp"
 
 namespace opentxs
 {
@@ -96,6 +98,14 @@ class Network : virtual public internal::Network,
                 public Worker<Network, api::Core>
 {
 public:
+    class SyncServer;
+
+    enum class Work : OTZMQWorkType {
+        filter = OT_ZMQ_NEW_FILTER_SIGNAL,
+        statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
+        shutdown = value(WorkType::Shutdown),
+    };
+
     auto AddBlock(const std::shared_ptr<const block::bitcoin::Block> block)
         const noexcept -> bool final;
     auto AddPeer(const p2p::Address& address) const noexcept -> bool final;
@@ -111,10 +121,6 @@ public:
     auto BroadcastTransaction(
         const block::bitcoin::Transaction& tx) const noexcept -> bool final;
     auto Chain() const noexcept -> Type final { return chain_; }
-    auto DB() const noexcept -> blockchain::internal::Database& final
-    {
-        return *database_p_;
-    }
     auto FeeRate() const noexcept -> Amount final;
     auto FilterOracleInternal() const noexcept
         -> const internal::FilterOracle& final
@@ -191,6 +197,7 @@ public:
 private:
     opentxs::internal::ShutdownSender shutdown_sender_;
     std::unique_ptr<blockchain::internal::Database> database_p_;
+    const internal::Config& config_;
     std::unique_ptr<internal::HeaderOracle> header_p_;
     std::unique_ptr<internal::BlockOracle> block_p_;
     std::unique_ptr<internal::FilterOracle> filter_p_;
@@ -214,13 +221,16 @@ protected:
         const api::Core& api,
         const api::client::internal::Blockchain& blockchain,
         const Type type,
+        const internal::Config& config,
         const std::string& seednode,
-        const std::string& shutdown) noexcept;
+        const std::string& syncEndpoint) noexcept;
 
 private:
     friend Worker<Network, api::Core>;
 
     const api::client::internal::Blockchain& parent_;
+    const std::string sync_endpoint_;
+    std::unique_ptr<SyncServer> sync_server_;
     mutable std::atomic<block::Height> local_chain_height_;
     mutable std::atomic<block::Height> remote_chain_height_;
     OTFlag waiting_for_headers_;

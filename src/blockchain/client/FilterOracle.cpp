@@ -43,6 +43,7 @@ namespace opentxs::factory
 auto BlockchainFilterOracle(
     const api::Core& api,
     const api::client::internal::Blockchain& blockchain,
+    const blockchain::client::internal::Config& config,
     const blockchain::client::internal::Network& network,
     const blockchain::client::internal::HeaderOracle& header,
     const blockchain::client::internal::BlockOracle& block,
@@ -52,7 +53,15 @@ auto BlockchainFilterOracle(
     -> std::unique_ptr<blockchain::client::internal::FilterOracle>
 {
     return std::make_unique<ReturnType>(
-        api, blockchain, network, header, block, database, type, shutdown);
+        api,
+        blockchain,
+        config,
+        network,
+        header,
+        block,
+        database,
+        type,
+        shutdown);
 }
 }  // namespace opentxs::factory
 
@@ -61,6 +70,7 @@ namespace opentxs::blockchain::client::implementation
 FilterOracle::FilterOracle(
     const api::Core& api,
     const api::client::internal::Blockchain& blockchain,
+    const internal::Config& config,
     const internal::Network& network,
     const internal::HeaderOracle& header,
     const internal::BlockOracle& block,
@@ -73,49 +83,54 @@ FilterOracle::FilterOracle(
     , header_(header)
     , database_(database)
     , chain_(chain)
-    , full_mode_(
-          api::client::blockchain::BlockStorage::All == database_.BlockPolicy())
     , default_type_(
-          full_mode_ ? filter::Type::Extended_opentxs
-                     : blockchain::internal::DefaultFilter(chain_))
+          config.generate_cfilters_
+              ? filter::Type::Extended_opentxs
+              : blockchain::internal::DefaultFilter(chain_))
     , lock_()
     , filter_downloader_([&]() -> std::unique_ptr<FilterDownloader> {
-        if (full_mode_) { return {}; }
-
-        return std::make_unique<FilterDownloader>(
-            api, database, header, network, chain, default_type_, shutdown);
+        if (config.download_cfilters_) {
+            return std::make_unique<FilterDownloader>(
+                api, database, header, network, chain, default_type_, shutdown);
+        } else {
+            return {};
+        }
     }())
     , header_downloader_([&]() -> std::unique_ptr<HeaderDownloader> {
-        if (full_mode_) { return {}; }
-
-        return std::make_unique<HeaderDownloader>(
-            api,
-            database,
-            header,
-            network,
-            *filter_downloader_,
-            chain,
-            default_type_,
-            shutdown,
-            [&](const auto& position, const auto& header) {
-                return compare_header_to_checkpoint(position, header);
-            });
+        if (config.download_cfilters_) {
+            return std::make_unique<HeaderDownloader>(
+                api,
+                database,
+                header,
+                network,
+                *filter_downloader_,
+                chain,
+                default_type_,
+                shutdown,
+                [&](const auto& position, const auto& header) {
+                    return compare_header_to_checkpoint(position, header);
+                });
+        } else {
+            return {};
+        }
     }())
     , block_indexer_([&]() -> std::unique_ptr<BlockIndexer> {
-        if (false == full_mode_) { return {}; }
-
-        return std::make_unique<BlockIndexer>(
-            api,
-            database,
-            header,
-            block,
-            network,
-            chain,
-            default_type_,
-            shutdown,
-            [&](const auto type, const auto& block) {
-                return process_block(type, block);
-            });
+        if (config.generate_cfilters_) {
+            return std::make_unique<BlockIndexer>(
+                api,
+                database,
+                header,
+                block,
+                network,
+                chain,
+                default_type_,
+                shutdown,
+                [&](const auto type, const auto& block) {
+                    return process_block(type, block);
+                });
+        } else {
+            return {};
+        }
     }())
     , init_promise_()
     , shutdown_promise_()
@@ -285,12 +300,12 @@ auto FilterOracle::LoadFilterOrResetTip(
 auto FilterOracle::ProcessBlock(
     const block::bitcoin::Block& block) const noexcept -> bool
 {
-    constexpr auto filterType{filter::Type::Extended_opentxs};
     const auto& id = block.ID();
+    const auto& header = block.Header();
     auto filters = std::vector<internal::FilterDatabase::Filter>{};
     auto headers = std::vector<internal::FilterDatabase::Header>{};
     const auto& pGCS =
-        filters.emplace_back(id.Bytes(), process_block(filterType, block))
+        filters.emplace_back(id.Bytes(), process_block(default_type_, block))
             .second;
 
     if (false == bool(pGCS)) {
@@ -303,7 +318,7 @@ auto FilterOracle::ProcessBlock(
 
     const auto& gcs = *pGCS;
     const auto previousHeader =
-        LoadFilterHeader(filterType, block.Header().ParentHash());
+        LoadFilterHeader(default_type_, header.ParentHash());
 
     if (previousHeader->empty()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": failed to load previous")(
@@ -325,24 +340,11 @@ auto FilterOracle::ProcessBlock(
         return false;
     }
 
-    OT_ASSERT(block_indexer_ || (filter_downloader_ && header_downloader_));
-
-    const auto position = block::Position{block.Header().Height(), block.ID()};
+    const auto position = make_blank<block::Position>::value(api_);
     const auto stored =
-        database_.StoreFilters(filterType, headers, filters, position);
+        database_.StoreFilters(default_type_, headers, filters, position);
 
     if (stored) {
-        auto promise = std::promise<filter::pHeader>{};
-        promise.set_value(previousHeader);
-        using Future = std::shared_future<filter::pHeader>;
-        auto future = Future{promise.get_future()};
-
-        if (block_indexer_) {
-            block_indexer_->Reset(position, std::move(future));
-        } else {
-            header_downloader_->Reset(position, Future{future});
-            filter_downloader_->Reset(position, std::move(future));
-        }
 
         return true;
     } else {

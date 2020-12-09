@@ -7,11 +7,14 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "network/zeromq/socket/Push.hpp"  // IWYU pragma: associated
 
+#include <memory>
+
 #include "internal/network/zeromq/socket/Socket.hpp"
 #include "network/zeromq/curve/Client.hpp"
 #include "network/zeromq/socket/Sender.tpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/network/zeromq/socket/Push.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::socket::Push>;
 
@@ -21,11 +24,11 @@ template class opentxs::Pimpl<opentxs::network::zeromq::socket::Push>;
 namespace opentxs::factory
 {
 auto PushSocket(const network::zeromq::Context& context, const bool direction)
-    -> network::zeromq::socket::Push*
+    -> std::unique_ptr<network::zeromq::socket::Push>
 {
     using ReturnType = network::zeromq::socket::implementation::Push;
 
-    return new ReturnType(
+    return std::make_unique<ReturnType>(
         context,
         static_cast<network::zeromq::socket::Socket::Direction>(direction));
 }

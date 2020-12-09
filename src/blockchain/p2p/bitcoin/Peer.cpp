@@ -64,11 +64,13 @@ namespace opentxs::factory
 {
 auto BitcoinP2PPeerLegacy(
     const api::Core& api,
+    const blockchain::client::internal::Config& config,
     const blockchain::client::internal::Network& network,
     const blockchain::client::internal::HeaderOracle& header,
     const blockchain::client::internal::FilterOracle& filter,
     const blockchain::client::internal::BlockOracle& block,
     const blockchain::client::internal::PeerManager& manager,
+    const api::client::blockchain::BlockStorage policy,
     const blockchain::client::internal::IO& io,
     const int id,
     std::unique_ptr<blockchain::p2p::internal::Address> address,
@@ -102,11 +104,13 @@ auto BitcoinP2PPeerLegacy(
 
     return std::make_unique<ReturnType>(
         api,
+        config,
         network,
         header,
         filter,
         block,
         manager,
+        policy,
         io,
         shutdown,
         id,
@@ -155,11 +159,13 @@ const std::string Peer::user_agent_{"/opentxs:" OPENTXS_VERSION_STRING "/"};
 
 Peer::Peer(
     const api::Core& api,
+    const client::internal::Config& config,
     const client::internal::Network& network,
     const client::internal::HeaderOracle& header,
     const client::internal::FilterOracle& filter,
     const client::internal::BlockOracle& block,
     const client::internal::PeerManager& manager,
+    const api::client::blockchain::BlockStorage policy,
     const blockchain::client::internal::IO& io,
     const std::string& shutdown,
     const int id,
@@ -169,6 +175,7 @@ Peer::Peer(
     const ProtocolVersion protocol) noexcept
     : p2p::implementation::Peer(
           api,
+          config,
           network,
           filter,
           block,
@@ -183,7 +190,7 @@ Peer::Peer(
     , protocol_((0 == protocol) ? default_protocol_version_ : protocol)
     , nonce_(nonce(api_))
     , local_services_(
-          get_local_services(protocol_, chain_, network.DB(), localServices))
+          get_local_services(protocol_, chain_, policy, localServices))
     , relay_(relay)
     , get_headers_()
 {
@@ -266,7 +273,7 @@ auto Peer::get_body_size(const zmq::Frame& header) const noexcept -> std::size_t
 auto Peer::get_local_services(
     const ProtocolVersion version,
     const blockchain::Type network,
-    const blockchain::client::internal::BlockDatabase& db,
+    const api::client::blockchain::BlockStorage policy,
     const std::set<p2p::Service>& input) noexcept -> std::set<p2p::Service>
 {
     auto output{input};
@@ -292,7 +299,7 @@ auto Peer::get_local_services(
         }
     }
 
-    switch (db.BlockPolicy()) {
+    switch (policy) {
         case api::client::blockchain::BlockStorage::All: {
             output.emplace(p2p::Service::Network);
             output.emplace(p2p::Service::CompactFilters);
