@@ -224,6 +224,7 @@ void Context::Init()
     }
 
     Init_Log(argLevel);
+    init_pid();
     Init_Crypto();
     Init_Factory();
     Init_Profile();
@@ -296,7 +297,7 @@ void Context::Init_Log(const std::int32_t argLevel)
     }
 }
 
-void Context::init_pid(const Lock&) const
+void Context::init_pid() const
 {
     try {
         const auto path = legacy_->PIDFilePath();
@@ -446,7 +447,6 @@ void Context::start_client(const Lock& lock, const ArgList& args) const
     OT_ASSERT(crypto_);
     OT_ASSERT(legacy_);
 
-    init_pid(lock);
     auto merged_args = merge_arglist(args);
     const int next = client_.size();
     const auto instance = client_instance(next);
@@ -514,7 +514,6 @@ void Context::start_server(const Lock& lock, const ArgList& args) const
     OT_ASSERT(verify_lock(lock))
     OT_ASSERT(crypto_);
 
-    init_pid(lock);
     const auto merged_args = merge_arglist(args);
     const auto next{server_.size()};
     const auto instance{server_instance(next)};

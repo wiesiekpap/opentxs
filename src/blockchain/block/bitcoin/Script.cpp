@@ -748,33 +748,23 @@ auto Script::is_direct_push(const OP opcode) noexcept(false)
 
     if ((0 < value) && (76 > value)) { return value; }
 
-#ifndef _MSC_VER
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
-    return {};
-#ifndef _MSC_VER
-#pragma GCC diagnostic pop
-#endif
+    return std::nullopt;
 }
 
 auto Script::is_push(const OP opcode) noexcept(false)
     -> std::optional<std::size_t>
 {
-    const auto value = static_cast<std::uint8_t>(opcode);
+    constexpr auto low = std::size_t{75u};
+    constexpr auto high = std::size_t{79u};
+    constexpr auto shift = std::size_t{low + 1u};
+    constexpr auto one = std::size_t{1};
+    const auto value = std::size_t{static_cast<std::uint8_t>(opcode)};
 
-    if ((75 < value) && (79 > value)) {
-        return std::size_t{1u << (value - 76u)};
+    if ((low < value) && (high > value)) {
+        return std::size_t{one << (value - shift)};
     }
 
-#ifndef _MSC_VER
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
-    return {};
-#ifndef _MSC_VER
-#pragma GCC diagnostic pop
-#endif
+    return std::nullopt;
 }
 
 auto Script::is_hash160(const value_type& element) noexcept -> bool

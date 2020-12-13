@@ -139,7 +139,7 @@ private:
     static auto get_arg(const ArgList& args, const std::string& argName)
         -> std::string;
 
-    void init_pid(const Lock& lock) const;
+    void init_pid() const;
     auto merge_arglist(const ArgList& args) const -> const ArgList;
     void start_client(const Lock& lock, const ArgList& args) const;
     void start_server(const Lock& lock, const ArgList& args) const;
