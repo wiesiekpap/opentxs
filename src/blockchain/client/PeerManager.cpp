@@ -158,7 +158,7 @@ auto PeerManager::BroadcastTransaction(
 
     auto bytes = Space{};
 
-    if (false == tx.Serialize(writer(bytes))) { return false; }
+    if (false == tx.Serialize(writer(bytes)).has_value()) { return false; }
 
     const auto view = reader(bytes);
     auto work = jobs_.Work(Task::BroadcastTransaction);

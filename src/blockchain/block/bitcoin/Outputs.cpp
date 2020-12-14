@@ -206,14 +206,8 @@ auto Outputs::Serialize(const AllocateOutput destination) const noexcept
     if (!destination) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output allocator")
             .Flush();
-#ifndef _MSC_VER
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
-        return {};
-#ifndef _MSC_VER
-#pragma GCC diagnostic pop
-#endif
+
+        return std::nullopt;
     }
 
     const auto size = CalculateSize();
@@ -222,14 +216,8 @@ auto Outputs::Serialize(const AllocateOutput destination) const noexcept
     if (false == output.valid(size)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to allocate output bytes")
             .Flush();
-#ifndef _MSC_VER
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
-        return {};
-#ifndef _MSC_VER
-#pragma GCC diagnostic pop
-#endif
+
+        return std::nullopt;
     }
 
     auto remaining{output.size()};
@@ -247,14 +235,8 @@ auto Outputs::Serialize(const AllocateOutput destination) const noexcept
         if (false == bytes.has_value()) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize script")
                 .Flush();
-#ifndef _MSC_VER
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
-            return {};
-#ifndef _MSC_VER
-#pragma GCC diagnostic pop
-#endif
+
+            return std::nullopt;
         }
 
         std::advance(it, bytes.value());

@@ -135,6 +135,8 @@ if(MSVC)
   set(CMAKE_CXX_FLAGS
       "${CMAKE_CXX_FLAGS} /wd4244 /wd4251 /wd4267 /wd4275 /wd4996"
   )
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ignore:4217")
+  set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ignore:4217")
 else()
   set(CMAKE_CXX_FLAGS
       "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations -Wno-format-nonliteral -Wno-noexcept -Wno-redundant-move -Wno-shadow -Wno-sign-conversion -Wno-switch-enum -Wno-undef -Wno-unused-parameter"

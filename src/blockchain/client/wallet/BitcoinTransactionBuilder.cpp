@@ -474,7 +474,8 @@ auto Wallet::Proposals::BitcoinTransactionBuilder::init_bip143(
         for (const auto& output : outputs_) {
             const auto size = output->CalculateSize();
 
-            if (false == output->Serialize(preallocated(size, it))) {
+            if (false ==
+                output->Serialize(preallocated(size, it)).has_value()) {
                 LogOutput(OT_METHOD)(__FUNCTION__)(
                     ": Failed to serialize output")
                     .Flush();

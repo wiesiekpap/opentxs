@@ -464,7 +464,7 @@ auto Transaction::calculate_witness_size() const noexcept -> std::size_t
         std::begin(*inputs_),
         std::end(*inputs_),
         std::size_t{2},  // NOTE: marker byte and segwit flag byte
-        [](const auto& previous, const auto& input) -> std::size_t {
+        [=](const std::size_t previous, const auto& input) -> std::size_t {
             return previous + calculate_witness_size(input.Witness());
         });
 }
@@ -825,7 +825,9 @@ auto Transaction::Serialize(const api::client::Blockchain& blockchain)
     output.set_txversion(version_);
     output.set_locktime(lock_time_);
 
-    if (false == Serialize(writer(*output.mutable_serialized()))) { return {}; }
+    if (false == Serialize(writer(*output.mutable_serialized())).has_value()) {
+        return {};
+    }
 
     if (false == inputs_->Serialize(blockchain, output)) { return {}; }
 
