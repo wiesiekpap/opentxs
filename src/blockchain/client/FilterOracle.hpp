@@ -90,6 +90,7 @@ public:
     class BlockIndexer;
     class FilterDownloader;
     class HeaderDownloader;
+    class SyncIndexer;
 
     enum class Work : OTZMQWorkType {
         reset_filter_tip = OT_ZMQ_INTERNAL_SIGNAL + 0,
@@ -128,6 +129,10 @@ public:
         -> std::unique_ptr<const GCS> final;
     auto ProcessBlock(const block::bitcoin::Block& block) const noexcept
         -> bool final;
+    auto Tip(const filter::Type type) const noexcept -> block::Position final
+    {
+        return database_.FilterTip(type);
+    }
 
     auto Shutdown() noexcept -> std::shared_future<void> final;
     auto Start() noexcept -> void;
@@ -135,6 +140,7 @@ public:
     FilterOracle(
         const api::Core& api,
         const api::client::internal::Blockchain& blockchain,
+        const internal::Config& config,
         const internal::Network& network,
         const internal::HeaderOracle& header,
         const internal::BlockOracle& block,
@@ -160,7 +166,6 @@ private:
     const internal::HeaderOracle& header_;
     const internal::FilterDatabase& database_;
     const blockchain::Type chain_;
-    const bool full_mode_;
     const filter::Type default_type_;
     mutable std::mutex lock_;
     mutable std::unique_ptr<FilterDownloader> filter_downloader_;

@@ -58,7 +58,6 @@ endif()
 
 target_link_libraries(
   opentxs-api-client PRIVATE Boost::headers opentxs::messages
-                             opentxs-api-client-blockchain-database
 )
 target_include_directories(
   opentxs-api-client SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"

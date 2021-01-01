@@ -80,7 +80,7 @@ auto GCS(
 
         return std::make_unique<ReturnType>(api, bits, fpRate, key, effective);
     } catch (const std::exception& e) {
-        LogVerbose("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
@@ -93,7 +93,7 @@ auto GCS(const api::Core& api, const proto::GCS& in) noexcept
         return std::make_unique<ReturnType>(
             api, in.bits(), in.fprate(), in.count(), in.key(), in.filter());
     } catch (const std::exception& e) {
-        LogVerbose("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
@@ -111,7 +111,7 @@ auto GCS(
         return std::make_unique<ReturnType>(
             api, bits, fpRate, filterElementCount, key, filter);
     } catch (const std::exception& e) {
-        LogVerbose("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
@@ -132,7 +132,7 @@ auto GCS(
         return std::make_unique<ReturnType>(
             api, params.first, params.second, elements, key, bytes);
     } catch (const std::exception& e) {
-        LogVerbose("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
@@ -167,7 +167,7 @@ auto GCS(
             blockchain::internal::BlockHashToFilterKey(block.ID().Bytes()),
             elements);
     } catch (const std::exception& e) {
-        LogVerbose("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
 
         return nullptr;
     }

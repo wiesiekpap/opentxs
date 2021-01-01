@@ -162,6 +162,7 @@ public:
         const api::Core& api,
         const api::client::internal::Blockchain& blockchain,
         const internal::Network& parent,
+        const internal::WalletDatabase& db,
         const Type chain,
         const std::string& shutdown) noexcept;
 

@@ -120,12 +120,14 @@ public:
 
         Peers(
             const api::Core& api,
+            const internal::Config& config,
             const internal::Network& network,
             const internal::HeaderOracle& headers,
             const internal::FilterOracle& filter,
             const internal::BlockOracle& block,
             const internal::PeerDatabase& database,
             const internal::PeerManager& parent,
+            const api::client::blockchain::BlockStorage policy,
             const Flag& running,
             const std::string& shutdown,
             const Type chain,
@@ -141,12 +143,14 @@ public:
         using Addresses = boost::container::flat_set<OTIdentifier>;
 
         const api::Core& api_;
+        const internal::Config& config_;
         const internal::Network& network_;
         const internal::HeaderOracle& headers_;
         const internal::FilterOracle& filter_;
         const internal::BlockOracle& block_;
         const internal::PeerDatabase& database_;
         const internal::PeerManager& parent_;
+        const api::client::blockchain::BlockStorage policy_;
         const blockchain::client::internal::IO& context_;
         const Flag& running_;
         const std::string& shutdown_endpoint_;
@@ -164,8 +168,7 @@ public:
         std::unique_ptr<IncomingConnectionManager> incoming_zmq_;
 
         static auto get_preferred_services(
-            const internal::PeerDatabase& db) noexcept
-            -> std::set<p2p::Service>;
+            const internal::Config& config) noexcept -> std::set<p2p::Service>;
         static auto set_default_peer(
             const std::string node,
             const Data& localhost,
@@ -235,6 +238,7 @@ public:
 
     PeerManager(
         const api::Core& api,
+        const internal::Config& config,
         const internal::Network& network,
         const internal::HeaderOracle& headers,
         const internal::FilterOracle& filter,
@@ -242,6 +246,7 @@ public:
         const internal::PeerDatabase& database,
         const blockchain::client::internal::IO& io,
         const Type chain,
+        const api::client::blockchain::BlockStorage policy,
         const std::string& seednode,
         const std::string& shutdown) noexcept;
 
@@ -294,7 +299,8 @@ private:
 
     static auto peer_target(
         const Type chain,
-        const internal::PeerDatabase& db) noexcept -> std::size_t;
+        const api::client::blockchain::BlockStorage policy) noexcept
+        -> std::size_t;
 
     auto pipeline(zmq::Message& message) noexcept -> void;
     auto shutdown(std::promise<void>& promise) noexcept -> void;

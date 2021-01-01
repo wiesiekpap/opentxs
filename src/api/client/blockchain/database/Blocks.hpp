@@ -5,9 +5,6 @@
 
 #pragma once
 
-#if OPENTXS_BLOCK_STORAGE_ENABLED
-
-#include <boost/iostreams/device/mapped_file.hpp>
 #include <iosfwd>
 #include <map>
 #include <mutex>
@@ -21,6 +18,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Data.hpp"
 #include "util/LMDB.hpp"
+#include "util/MappedFileStorage.hpp"
 
 namespace opentxs
 {
@@ -35,7 +33,7 @@ class LMDB;
 
 namespace opentxs::api::client::blockchain::database::implementation
 {
-class Blocks
+class Blocks final : private util::MappedFileStorage
 {
 public:
     using Hash = opentxs::blockchain::block::Hash;
@@ -51,40 +49,8 @@ public:
         const std::string& path) noexcept(false);
 
 private:
-    using FileCounter = std::size_t;
-    using MemoryPosition = std::size_t;
-    using BlockSize = std::size_t;
-
-    struct IndexData {
-        MemoryPosition position_;
-        BlockSize size_;
-    };
-
-    static const std::size_t address_key_;
-
-    opentxs::storage::lmdb::LMDB& lmdb_;
-    const std::string path_prefix_;
-    mutable MemoryPosition next_position_;
-    mutable std::vector<boost::iostreams::mapped_file> files_;
+    const int table_;
     mutable std::mutex lock_;
     mutable std::map<pHash, std::shared_mutex> block_locks_;
-
-    static auto calculate_file_name(
-        const std::string& prefix,
-        const FileCounter index) noexcept -> std::string;
-    static auto create_or_load(
-        const std::string& prefix,
-        const FileCounter file,
-        std::vector<boost::iostreams::mapped_file>& output) noexcept -> void;
-    static auto init_files(
-        const std::string& prefix,
-        const MemoryPosition position) noexcept
-        -> std::vector<boost::iostreams::mapped_file>;
-    static auto load_position(opentxs::storage::lmdb::LMDB& db) noexcept
-        -> MemoryPosition;
-
-    auto check_file(const Lock& lock, const FileCounter position) const noexcept
-        -> void;
 };
 }  // namespace opentxs::api::client::blockchain::database::implementation
-#endif  // OPENTXS_BLOCK_STORAGE_ENABLED

@@ -19,12 +19,14 @@
 #include "opentxs/blockchain/client/FilterOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/BlockchainFilterHeader.pb.h"
 #include "opentxs/protobuf/GCS.pb.h"
 #include "util/LMDB.hpp"
 
-// #define OT_METHOD
-// "opentxs::api::client::blockchain::database::implementation::BlockFilter::"
+#define OT_METHOD                                                              \
+    "opentxs::api::client::blockchain::database::implementation::BlockFilter:" \
+    ":"
 
 namespace opentxs::api::client::blockchain::database::implementation
 {
@@ -41,7 +43,8 @@ auto BlockFilter::HaveFilter(const FilterType type, const ReadView blockHash)
 {
     try {
         return lmdb_.Exists(translate_filter(type), blockHash);
-    } catch (...) {
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
         return false;
     }
@@ -53,7 +56,8 @@ auto BlockFilter::HaveFilterHeader(
 {
     try {
         return lmdb_.Exists(translate_header(type), blockHash);
-    } catch (...) {
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
         return false;
     }
@@ -71,7 +75,8 @@ auto BlockFilter::LoadFilter(const FilterType type, const ReadView blockHash)
 
     try {
         lmdb_.Load(translate_filter(type), blockHash, cb);
-    } catch (...) {
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
     }
 
     return output;
@@ -99,7 +104,8 @@ auto BlockFilter::LoadFilterHash(
 
     try {
         lmdb_.Load(translate_header(type), blockHash, cb);
-    } catch (...) {
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
     }
 
     return output;
@@ -127,7 +133,8 @@ auto BlockFilter::LoadFilterHeader(
 
     try {
         lmdb_.Load(translate_header(type), blockHash, cb);
-    } catch (...) {
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
     }
 
     return output;
@@ -171,9 +178,8 @@ auto BlockFilter::StoreFilters(
                 parentTxn);
 
             if (false == stored.first) { return false; }
-        } catch (...) {
-
-            return false;
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
         }
     }
 
@@ -191,9 +197,8 @@ auto BlockFilter::StoreFilters(
                 translate_filter(type), block, reader(bytes), parentTxn);
 
             if (false == stored.first) { return false; }
-        } catch (...) {
-
-            return false;
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
         }
     }
 

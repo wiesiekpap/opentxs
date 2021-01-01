@@ -124,6 +124,7 @@ private:
             return 1000;
         }
     }
+    auto check_task(TaskType&) const noexcept -> void {}
     auto trigger_state_machine() const noexcept -> void { trigger(); }
     auto update_tip(const Position& position, const filter::pHeader&)
         const noexcept -> void
@@ -152,10 +153,15 @@ private:
         constexpr auto none = std::chrono::seconds{0};
 
         for (const auto& task : work.data_) {
-            auto future = block_.LoadBitcoin(task->position_.second);
+            const auto& hash = task->position_.second;
+            auto future = block_.LoadBitcoin(hash);
 
             if (std::future_status::ready == future.wait_for(none)) {
                 auto block = future.get();
+
+                OT_ASSERT(block);
+                OT_ASSERT(block->ID() == hash);
+
                 task->download(std::move(block));
             }
         }
@@ -213,9 +219,13 @@ private:
 
                 if (first != current) {
                     auto promise = std::promise<filter::pHeader>{};
-                    promise.set_value(
-                        db_.LoadFilterHeader(type_, first.second->Bytes()));
-                    prior.emplace(std::move(current), promise.get_future());
+                    auto header =
+                        db_.LoadFilterHeader(type_, first.second->Bytes());
+
+                    OT_ASSERT(false == header->empty());
+
+                    promise.set_value(std::move(header));
+                    prior.emplace(std::move(first), promise.get_future());
                 }
             }
             hashes.erase(hashes.begin());
@@ -228,36 +238,56 @@ private:
         if (0 == data.size()) { return; }
 
         const auto& tip = data.back();
-        auto hashes = std::vector<block::pHash>{};
+        auto blockHashes = std::vector<block::pHash>{};
+        auto filterHashes = std::vector<filter::pHash>{};
         auto filters = std::vector<internal::FilterDatabase::Filter>{};
         auto headers = std::vector<internal::FilterDatabase::Header>{};
+        const auto count = data.size();
+        blockHashes.reserve(count);
+        filterHashes.reserve(count);
+        filters.reserve(count);
+        headers.reserve(count);
 
         for (const auto& task : data) {
             try {
+                const auto& blockhash = task->position_.second.get();
                 const auto& pBlock = task->data_.get();
 
-                if (false == bool(pBlock)) { throw; }
+                if (false == bool(pBlock)) {
+                    throw std::runtime_error(
+                        std::string{"failed to load block "} +
+                        blockhash.asHex());
+                }
 
                 const auto& block = *pBlock;
-                const auto& id = hashes.emplace_back(block.ID()).get();
+                const auto& id = blockHashes.emplace_back(blockhash).get();
                 const auto& pGCS =
                     filters.emplace_back(id.Bytes(), cb_(type_, block)).second;
 
-                if (false == bool(pGCS)) { throw; }
+                if (false == bool(pGCS)) {
+                    throw std::runtime_error(
+                        std::string{"failed to calculate gcs for "} +
+                        id.asHex());
+                }
 
                 const auto& gcs = *pGCS;
                 const auto& previousHeader = task->previous_.get().get();
                 const auto prior = previousHeader.Bytes();
-                const auto filterHash = gcs.Hash();
+                const auto& filterHash = filterHashes.emplace_back(gcs.Hash());
                 const auto& it = headers.emplace_back(
                     id, gcs.Header(prior), filterHash->Bytes());
                 const auto& [bHash, header, fHash] = it;
 
-                if (header->empty()) { throw; }
+                if (header->empty()) {
+                    throw std::runtime_error(
+                        std::string{"failed to calculate filter header for "} +
+                        id.asHex());
+                }
 
                 task->process(filter::pHeader{header});
             } catch (...) {
                 task->redownload();
+                break;
             }
         }
 

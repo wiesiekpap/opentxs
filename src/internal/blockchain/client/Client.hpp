@@ -52,6 +52,7 @@
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
+#include "opentxs/protobuf/BlockchainP2PSync.pb.h"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Blank.hpp"
 #include "util/Work.hpp"
@@ -190,6 +191,10 @@ enum class BlockStorage : std::uint8_t {
 
 namespace opentxs::blockchain::client
 {
+constexpr auto sync_hello_version_ = VersionNumber{1};
+constexpr auto sync_state_version_ = VersionNumber{1};
+constexpr auto sync_data_version_ = VersionNumber{1};
+
 // parent hash, child hash
 using ChainSegment = std::pair<block::pHash, block::pHash>;
 using UpdatedHeader =
@@ -246,6 +251,13 @@ struct BlockOracle : virtual public opentxs::blockchain::client::BlockOracle {
     ~BlockOracle() override = default;
 };
 
+struct OPENTXS_EXPORT Config {
+    bool download_cfilters_{false};
+    bool generate_cfilters_{false};
+    bool provide_sync_server_{false};
+    bool use_sync_server_{false};
+};
+
 struct FilterDatabase {
     using Hash = block::pHash;
     /// block hash, filter header, filter hash
@@ -253,8 +265,6 @@ struct FilterDatabase {
     /// block hash, filter
     using Filter = std::pair<ReadView, std::unique_ptr<const GCS>>;
 
-    virtual auto BlockPolicy() const noexcept
-        -> api::client::blockchain::BlockStorage = 0;
     virtual auto FilterHeaderTip(const filter::Type type) const noexcept
         -> block::Position = 0;
     virtual auto FilterTip(const filter::Type type) const noexcept
@@ -304,6 +314,8 @@ struct FilterOracle : virtual public opentxs::blockchain::client::FilterOracle {
         -> std::unique_ptr<const GCS> = 0;
     virtual auto ProcessBlock(const block::bitcoin::Block& block) const noexcept
         -> bool = 0;
+    virtual auto Tip(const filter::Type type) const noexcept
+        -> block::Position = 0;
 
     virtual auto Start() noexcept -> void = 0;
     virtual auto Shutdown() noexcept -> std::shared_future<void> = 0;
@@ -412,8 +424,6 @@ struct PeerDatabase {
     using Type = p2p::Network;
 
     virtual auto AddOrUpdate(Address address) const noexcept -> bool = 0;
-    virtual auto BlockPolicy() const noexcept
-        -> api::client::blockchain::BlockStorage = 0;
     virtual auto Get(
         const Protocol protocol,
         const std::set<Type> onNetworks,
@@ -489,7 +499,6 @@ struct Network : virtual public opentxs::blockchain::Network {
     virtual auto BroadcastTransaction(
         const block::bitcoin::Transaction& tx) const noexcept -> bool = 0;
     virtual auto Chain() const noexcept -> Type = 0;
-    virtual auto DB() const noexcept -> blockchain::internal::Database& = 0;
     // amount represents satoshis per 1000 bytes
     virtual auto FeeRate() const noexcept -> Amount = 0;
     auto FilterOracle() const noexcept -> const client::FilterOracle& final
@@ -526,6 +535,23 @@ struct Network : virtual public opentxs::blockchain::Network {
     virtual auto Shutdown() noexcept -> std::shared_future<void> = 0;
 
     virtual ~Network() = default;
+};
+
+struct SyncDatabase {
+    using Height = block::Height;
+    using Items = std::vector<proto::BlockchainP2PSync>;
+    using Message = network::zeromq::Message;
+
+    virtual auto LoadSync(const Height height, Message& output) const noexcept
+        -> bool = 0;
+    virtual auto ReorgSync(const Height height) const noexcept -> bool = 0;
+    virtual auto SetSyncTip(const block::Position& position) const noexcept
+        -> bool = 0;
+    virtual auto StoreSync(const block::Position& tip, const Items& items)
+        const noexcept -> bool = 0;
+    virtual auto SyncTip() const noexcept -> block::Position = 0;
+
+    virtual ~SyncDatabase() = default;
 };
 
 struct ThreadPool {

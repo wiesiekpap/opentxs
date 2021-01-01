@@ -66,33 +66,38 @@ Database::Database(
     const blockchain::Type type) noexcept
     : chain_(type)
     , common_(common)
-    , lmdb_(
-          table_names_,
-          common.AllocateStorageFolder(
-              std::to_string(static_cast<std::uint32_t>(type))),
-          {
-              {database::Config, MDB_INTEGERKEY},
-              {database::BlockHeaderMetadata, 0},
-              {database::BlockHeaderBest, MDB_INTEGERKEY},
-              {database::ChainData, MDB_INTEGERKEY},
-              {database::BlockHeaderSiblings, 0},
-              {database::BlockHeaderDisconnected, MDB_DUPSORT},
-              {database::BlockFilterBest, MDB_INTEGERKEY},
-              {database::BlockFilterHeaderBest, MDB_INTEGERKEY},
-          },
-          0)
+    , lmdb_([&] {
+        auto lmdb = opentxs::storage::lmdb::LMDB{
+            table_names_,
+            common.AllocateStorageFolder(
+                std::to_string(static_cast<std::uint32_t>(type))),
+            {
+                {database::Config, MDB_INTEGERKEY},
+                {database::BlockHeaderMetadata, 0},
+                {database::BlockHeaderBest, MDB_INTEGERKEY},
+                {database::ChainData, MDB_INTEGERKEY},
+                {database::BlockHeaderSiblings, 0},
+                {database::BlockHeaderDisconnected, MDB_DUPSORT},
+                {database::BlockFilterBest, MDB_INTEGERKEY},
+                {database::BlockFilterHeaderBest, MDB_INTEGERKEY},
+            },
+            0};
+        init_db(lmdb);
+
+        return lmdb;
+    }())
     , blocks_(api, common_, lmdb_, type)
     , filters_(api, common_, lmdb_, type)
     , headers_(api, network, common_, lmdb_, type)
     , wallet_(api, blockchain, common_, chain_)
+    , sync_(api, common_, lmdb_, type)
 {
-    init_db();
 }
 
-auto Database::init_db() noexcept -> void
+auto Database::init_db(opentxs::storage::lmdb::LMDB& db) noexcept -> void
 {
-    if (false == lmdb_.Exists(database::Config, tsv(database::Key::Version))) {
-        const auto stored = lmdb_.Store(
+    if (false == db.Exists(database::Config, tsv(database::Key::Version))) {
+        const auto stored = db.Store(
             database::Config, tsv(database::Key::Version), tsv(db_version_));
 
         OT_ASSERT(stored.first);

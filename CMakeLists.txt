@@ -5,6 +5,7 @@
 
 cmake_minimum_required(VERSION 3.15)
 cmake_policy(SET CMP0091 NEW)
+set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
 project(opentxs)
 list(APPEND CMAKE_MODULE_PATH "${${PROJECT_NAME}_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${${PROJECT_NAME}_SOURCE_DIR}")
@@ -221,7 +222,7 @@ find_package(Protobuf REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(
   Boost 1.73.0 REQUIRED
-  COMPONENTS system filesystem
+  COMPONENTS system filesystem iostreams
   OPTIONAL_COMPONENTS stacktrace_basic
 )
 
@@ -239,7 +240,10 @@ endif()
 
 if(OT_WITH_BLOCKCHAIN)
   if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
-    if(ANDROID OR APPLE)
+    if(ANDROID
+       OR APPLE
+       OR WIN32
+    )
       set(OPENTXS_BLOCK_STORAGE_ENABLED 0)
       set(OPENTXS_DEFAULT_BLOCK_STORAGE_POLICY 0)
     else()
@@ -252,19 +256,11 @@ if(OT_WITH_BLOCKCHAIN)
   endif()
 
   find_package(Boost REQUIRED thread)
-
-  if(OPENTXS_BLOCK_STORAGE_ENABLED)
-    find_package(Boost REQUIRED iostreams)
-  endif()
 endif()
 
 if(OT_DHT)
   find_package(opendht 1.10 REQUIRED)
   find_package(GnuTLS REQUIRED)
-endif()
-
-if(OT_STORAGE_FS)
-  find_package(Boost REQUIRED COMPONENTS iostreams)
 endif()
 
 if(OT_STORAGE_SQLITE)

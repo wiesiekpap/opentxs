@@ -25,6 +25,7 @@ if(OT_BLOCKCHAIN_EXPORT)
     cxx-sources
     BalanceOracle.cpp
     EnableCallbacks.cpp
+    SyncServer.cpp
     ThreadPoolManager.cpp
   )
 endif()
@@ -56,6 +57,13 @@ set(cxx-headers
 
 add_library(opentxs-api-client-blockchain OBJECT ${cxx-sources} ${cxx-headers})
 target_link_libraries(opentxs-api-client-blockchain PRIVATE opentxs::messages)
+
+if(OT_BLOCKCHAIN_EXPORT)
+  target_link_libraries(
+    opentxs-api-client-blockchain PRIVATE "${OT_ZMQ_TARGET}" Boost::headers
+  )
+endif()
+
 target_include_directories(
   opentxs-api-client-blockchain SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )

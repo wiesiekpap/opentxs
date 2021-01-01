@@ -68,11 +68,13 @@ public:
 
     Peer(
         const api::Core& api,
+        const client::internal::Config& config,
         const client::internal::Network& network,
         const client::internal::HeaderOracle& header,
         const client::internal::FilterOracle& filter,
         const client::internal::BlockOracle& block,
         const client::internal::PeerManager& manager,
+        const api::client::blockchain::BlockStorage policy,
         const blockchain::client::internal::IO& io,
         const std::string& shutdown,
         const int id,
@@ -135,7 +137,7 @@ private:
     static auto get_local_services(
         const ProtocolVersion version,
         const blockchain::Type network,
-        const blockchain::client::internal::BlockDatabase& db,
+        const api::client::blockchain::BlockStorage policy,
         const std::set<p2p::Service>& input) noexcept -> std::set<p2p::Service>;
     static auto nonce(const api::Core& api) noexcept -> Nonce;
 

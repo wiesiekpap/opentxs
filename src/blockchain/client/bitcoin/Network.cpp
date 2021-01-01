@@ -24,14 +24,15 @@ auto BlockchainNetworkBitcoin(
     const api::Core& api,
     const api::client::internal::Blockchain& blockchain,
     const blockchain::Type type,
+    const blockchain::client::internal::Config& config,
     const std::string& seednode,
-    const std::string& shutdown) noexcept
+    const std::string& syncEndpoint) noexcept
     -> std::unique_ptr<blockchain::client::internal::Network>
 {
     using ReturnType = blockchain::client::bitcoin::implementation::Network;
 
     return std::make_unique<ReturnType>(
-        api, blockchain, type, seednode, shutdown);
+        api, blockchain, type, config, seednode, syncEndpoint);
 }
 }  // namespace opentxs::factory
 
@@ -41,9 +42,10 @@ Network::Network(
     const api::Core& api,
     const api::client::internal::Blockchain& blockchain,
     const Type type,
+    const internal::Config& config,
     const std::string& seednode,
-    const std::string& shutdown)
-    : ot_super(api, blockchain, type, seednode, shutdown)
+    const std::string& syncEndpoint)
+    : ot_super(api, blockchain, type, config, seednode, syncEndpoint)
 {
     init();
 }

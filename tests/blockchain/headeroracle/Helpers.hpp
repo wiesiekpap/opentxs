@@ -111,13 +111,21 @@ public:
         const ot::api::client::internal::Manager& api,
         const b::Type type) noexcept -> std::unique_ptr<bc::internal::Network>
     {
+        static const auto config = [] {
+            auto output = ot::blockchain::client::internal::Config{};
+            output.download_cfilters_ = true;
+
+            return output;
+        }();
+
         return ot::factory::BlockchainNetworkBitcoin(
             api,
             dynamic_cast<const ot::api::client::internal::Blockchain&>(
                 api.Blockchain()),
             type,
+            config,
             "do not init peers",
-            "inproc://empty");
+            "");
     }
 
     [[maybe_unused]] bool apply_blocks(const std::vector<Test>& vector)

@@ -29,9 +29,6 @@ public:
     OPENTXS_EXPORT virtual auto nBits() const noexcept -> std::uint32_t = 0;
     OPENTXS_EXPORT virtual auto Timestamp() const noexcept -> Time = 0;
     OPENTXS_EXPORT virtual auto Version() const noexcept -> std::uint32_t = 0;
-    using block::Header::Serialize;
-    OPENTXS_EXPORT virtual auto Serialize(
-        const AllocateOutput destination) const noexcept -> bool = 0;
 
     OPENTXS_EXPORT ~Header() override = default;
 

@@ -28,5 +28,6 @@ enum class Key : std::size_t {
     CheckpointHeight = 2,
     CheckpointHash = 3,
     BestFullBlock = 4,
+    SyncPosition = 5,
 };
 }  // namespace opentxs::blockchain::database

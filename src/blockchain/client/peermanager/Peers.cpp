@@ -42,12 +42,14 @@ namespace opentxs::blockchain::client::implementation
 {
 PeerManager::Peers::Peers(
     const api::Core& api,
+    const internal::Config& config,
     const internal::Network& network,
     const internal::HeaderOracle& headers,
     const internal::FilterOracle& filter,
     const internal::BlockOracle& block,
     const internal::PeerDatabase& database,
     const internal::PeerManager& parent,
+    const api::client::blockchain::BlockStorage policy,
     const Flag& running,
     const std::string& shutdown,
     const Type chain,
@@ -56,12 +58,14 @@ PeerManager::Peers::Peers(
     const std::size_t peerTarget) noexcept
     : chain_(chain)
     , api_(api)
+    , config_(config)
     , network_(network)
     , headers_(headers)
     , filter_(filter)
     , block_(block)
     , database_(database)
     , parent_(parent)
+    , policy_(policy)
     , context_(context)
     , running_(running)
     , shutdown_endpoint_(shutdown)
@@ -71,7 +75,7 @@ PeerManager::Peers::Peers(
           seednode,
           localhost_peer_,
           const_cast<bool&>(invalid_peer_)))
-    , preferred_services_(get_preferred_services(database_))
+    , preferred_services_(get_preferred_services(config_))
     , resolver_(context_.operator boost::asio::io_context&())
     , next_id_(0)
     , minimum_peers_(peerTarget)
@@ -391,14 +395,14 @@ auto PeerManager::Peers::get_preferred_peer(
 }
 
 auto PeerManager::Peers::get_preferred_services(
-    const internal::PeerDatabase& db) noexcept -> std::set<p2p::Service>
+    const internal::Config& config) noexcept -> std::set<p2p::Service>
 {
-    if (api::client::blockchain::BlockStorage::All == db.BlockPolicy()) {
-
-        return {};
-    } else {
+    if (config.download_cfilters_) {
 
         return {p2p::Service::CompactFilters};
+    } else {
+
+        return {};
     }
 }
 
@@ -415,11 +419,13 @@ auto PeerManager::Peers::peer_factory(Endpoint endpoint, const int id) noexcept
         case p2p::Protocol::bitcoin: {
             return factory::BitcoinP2PPeerLegacy(
                 api_,
+                config_,
                 network_,
                 headers_,
                 filter_,
                 block_,
                 parent_,
+                policy_,
                 context_,
                 id,
                 std::move(endpoint),

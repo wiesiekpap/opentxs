@@ -335,6 +335,7 @@ protected:
 
     Peer(
         const api::Core& api,
+        const client::internal::Config& config,
         const client::internal::Network& network,
         const client::internal::FilterOracle& filter,
         const client::internal::BlockOracle& block,

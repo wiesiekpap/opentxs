@@ -36,9 +36,9 @@ using Callback = std::function<void(const ReadView data)>;
 using Flags = unsigned int;
 using ReadCallback =
     std::function<bool(const ReadView key, const ReadView value)>;
-using Databases = std::vector<MDB_dbi>;
 using Result = std::pair<bool, int>;
 using Table = int;
+using Databases = std::map<Table, MDB_dbi>;
 using TablesToInit = std::vector<std::pair<Table, std::size_t>>;
 using TableNames = std::map<Table, const std::string>;
 using UpdateCallback = std::function<Space(const ReadView data)>;
@@ -73,6 +73,10 @@ public:
         -> bool;
     auto Delete(
         const Table table,
+        const std::size_t key,
+        MDB_txn* parent = nullptr) const noexcept -> bool;
+    auto Delete(
+        const Table table,
         const ReadView key,
         MDB_txn* parent = nullptr) const noexcept -> bool;
     auto Delete(
@@ -103,6 +107,16 @@ public:
         const Mode mode = Mode::One) const noexcept -> bool;
     auto Read(const Table table, const ReadCallback cb, const Dir dir)
         const noexcept -> bool;
+    auto ReadFrom(
+        const Table table,
+        const ReadView key,
+        const ReadCallback cb,
+        const Dir dir) const noexcept -> bool;
+    auto ReadFrom(
+        const Table table,
+        const std::size_t key,
+        const ReadCallback cb,
+        const Dir dir) const noexcept -> bool;
     auto Store(
         const Table table,
         const ReadView key,
@@ -130,6 +144,9 @@ public:
         const TablesToInit init,
         const Flags flags = 0)
     noexcept;
+    // NOTE: move constructor is only defined to allow copy elision. It
+    // should not be used for any other purpose.
+    LMDB(LMDB&&) noexcept;
     ~LMDB();
 
 private:
@@ -153,7 +170,6 @@ private:
 
     LMDB() = delete;
     LMDB(const LMDB&) = delete;
-    LMDB(LMDB&&) = delete;
     auto operator=(const LMDB&) -> LMDB& = delete;
     auto operator=(LMDB &&) -> LMDB& = delete;
 };

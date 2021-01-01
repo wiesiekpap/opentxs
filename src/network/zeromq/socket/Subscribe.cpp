@@ -8,6 +8,7 @@
 #include "network/zeromq/socket/Subscribe.hpp"  // IWYU pragma: associated
 
 #include <zmq.h>
+#include <memory>
 #include <stdexcept>
 
 #include "internal/network/zeromq/socket/Socket.hpp"
@@ -18,6 +19,7 @@
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/socket/Subscribe.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::socket::Subscribe>;
 
@@ -29,11 +31,11 @@ namespace opentxs::factory
 auto SubscribeSocket(
     const network::zeromq::Context& context,
     const network::zeromq::ListenCallback& callback)
-    -> network::zeromq::socket::Subscribe*
+    -> std::unique_ptr<network::zeromq::socket::Subscribe>
 {
     using ReturnType = network::zeromq::socket::implementation::Subscribe;
 
-    return new ReturnType(context, callback);
+    return std::make_unique<ReturnType>(context, callback);
 }
 }  // namespace opentxs::factory
 

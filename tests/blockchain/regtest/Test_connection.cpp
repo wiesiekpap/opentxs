@@ -6,23 +6,22 @@
 #include "Helpers.hpp"  // IWYU pragma: associated
 
 #include <gtest/gtest.h>
-#include <iosfwd>
 
 namespace
 {
-TEST_F(Regtest_fixture, init_opentxs) {}
+TEST_F(Regtest_fixture_normal, init_opentxs) {}
 
-TEST_F(Regtest_fixture, start_chains) { EXPECT_TRUE(Start()); }
+TEST_F(Regtest_fixture_normal, start_chains) { EXPECT_TRUE(Start()); }
 
-TEST_F(Regtest_fixture, connect_peers) { EXPECT_TRUE(Connect()); }
+TEST_F(Regtest_fixture_normal, connect_peers) { EXPECT_TRUE(Connect()); }
 
-TEST_F(Regtest_fixture, client_disconnection_timeout)
+TEST_F(Regtest_fixture_normal, client_disconnection_timeout)
 {
-    EXPECT_TRUE(client_.Blockchain().Stop(chain_));
+    EXPECT_TRUE(client_.Blockchain().Stop(test_chain_));
 
     const auto start = ot::Clock::now();
     const auto limit = std::chrono::minutes{1};
-    const auto& chain = miner_.Blockchain().GetChain(chain_);
+    const auto& chain = miner_.Blockchain().GetChain(test_chain_);
     auto count = std::size_t{1};
 
     while ((ot::Clock::now() - start) < limit) {
@@ -36,5 +35,5 @@ TEST_F(Regtest_fixture, client_disconnection_timeout)
     EXPECT_EQ(count, 0);
 }
 
-TEST_F(Regtest_fixture, shutdown) { Shutdown(); }
+TEST_F(Regtest_fixture_normal, shutdown) { Shutdown(); }
 }  // namespace

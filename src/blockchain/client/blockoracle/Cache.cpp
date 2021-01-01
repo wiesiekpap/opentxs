@@ -144,6 +144,9 @@ auto BlockOracle::Cache::Request(const BlockHashes& hashes) const noexcept
         if (found) { continue; }
 
         if (auto pBlock = db_.BlockLoadBitcoin(block); bool(pBlock)) {
+            // TODO this should be checked in the block factory function
+            OT_ASSERT(pBlock->ID() == block);
+
             auto promise = Promise{};
             promise.set_value(std::move(pBlock));
             mem_.push(OTData{block}, promise.get_future());

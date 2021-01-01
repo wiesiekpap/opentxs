@@ -22,17 +22,18 @@
 
 namespace
 {
-TEST_F(Regtest_fixture, init_opentxs) {}
+TEST_F(Regtest_fixture_normal, init_opentxs) {}
 
-TEST_F(Regtest_fixture, start_chains) { EXPECT_TRUE(Start()); }
+TEST_F(Regtest_fixture_normal, start_chains) { EXPECT_TRUE(Start()); }
 
-TEST_F(Regtest_fixture, generate_block)
+TEST_F(Regtest_fixture_normal, generate_block)
 {
-    const auto& network = miner_.Blockchain().GetChain(chain_);
+    const auto& network = miner_.Blockchain().GetChain(test_chain_);
     const auto& headerOracle = network.HeaderOracle();
     auto previousHeader = [&] {
         const auto genesis = headerOracle.LoadHeader(
-            ot::blockchain::client::HeaderOracle::GenesisBlockHash(chain_));
+            ot::blockchain::client::HeaderOracle::GenesisBlockHash(
+                test_chain_));
 
         return genesis->as_Bitcoin();
     }();
@@ -41,7 +42,7 @@ TEST_F(Regtest_fixture, generate_block)
 
     using OutputBuilder = ot::api::Factory::OutputBuilder;
     auto tx = miner_.Factory().BitcoinGenerationTransaction(
-        chain_,
+        test_chain_,
         previousHeader->Height() + 1,
         [&] {
             auto output = std::vector<OutputBuilder>{};
@@ -49,7 +50,7 @@ TEST_F(Regtest_fixture, generate_block)
             const auto keys = std::set<ot::api::client::blockchain::Key>{};
             output.emplace_back(
                 5000000000,
-                miner_.Factory().BitcoinScriptNullData(chain_, {text}),
+                miner_.Factory().BitcoinScriptNullData(test_chain_, {text}),
                 keys);
 
             return output;
@@ -80,7 +81,7 @@ TEST_F(Regtest_fixture, generate_block)
         ASSERT_GT(serialized->size(), 0);
 
         const auto recovered = miner_.Factory().BitcoinTransaction(
-            chain_, serialized->Bytes(), true);
+            test_chain_, serialized->Bytes(), true);
 
         ASSERT_TRUE(recovered);
 
@@ -117,10 +118,10 @@ TEST_F(Regtest_fixture, generate_block)
     ASSERT_GT(serialized->size(), 0);
 
     const auto recovered =
-        miner_.Factory().BitcoinBlock(chain_, serialized->Bytes());
+        miner_.Factory().BitcoinBlock(test_chain_, serialized->Bytes());
 
     EXPECT_TRUE(recovered);
 }
 
-TEST_F(Regtest_fixture, shutdown) { Shutdown(); }
+TEST_F(Regtest_fixture_normal, shutdown) { Shutdown(); }
 }  // namespace

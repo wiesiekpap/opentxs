@@ -17,6 +17,7 @@
 #include <utility>
 #include <vector>
 
+#include "blockchain/client/network/SyncServer.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/client/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -51,8 +52,9 @@ Network::Network(
     const api::Core& api,
     const api::client::internal::Blockchain& blockchain,
     const Type type,
+    const internal::Config& config,
     const std::string& seednode,
-    const std::string& shutdown) noexcept
+    const std::string& syncEndpoint) noexcept
     : Worker(api, std::chrono::seconds(0))
     , shutdown_sender_(api.ZeroMQ(), shutdown_endpoint())
     , database_p_(factory::BlockchainDatabase(
@@ -61,6 +63,7 @@ Network::Network(
           *this,
           blockchain.BlockchainDB(),
           type))
+    , config_(config)
     , header_p_(factory::HeaderOracle(api, *database_p_, type))
     , block_p_(factory::BlockOracle(
           api,
@@ -72,6 +75,7 @@ Network::Network(
     , filter_p_(factory::BlockchainFilterOracle(
           api,
           blockchain,
+          config_,
           *this,
           *header_p_,
           *block_p_,
@@ -80,6 +84,7 @@ Network::Network(
           shutdown_sender_.endpoint_))
     , peer_p_(factory::BlockchainPeerManager(
           api,
+          config_,
           *this,
           *header_p_,
           *filter_p_,
@@ -87,12 +92,14 @@ Network::Network(
           *database_p_,
           blockchain.IO(),
           type,
+          database_p_->BlockPolicy(),
           seednode,
           shutdown_sender_.endpoint_))
     , wallet_p_(factory::BlockchainWallet(
           api,
           blockchain,
           *this,
+          *database_p_,
           type,
           shutdown_sender_.endpoint_))
     , blockchain_(blockchain)
@@ -104,6 +111,8 @@ Network::Network(
     , block_(*block_p_)
     , wallet_(*wallet_p_)
     , parent_(blockchain)
+    , sync_endpoint_(syncEndpoint)
+    , sync_server_()
     , local_chain_height_(0)
     , remote_chain_height_(0)
     , waiting_for_headers_(Flag::Factory(false))
@@ -160,18 +169,18 @@ auto Network::AddBlock(
 
     const auto& id = block.ID();
 
-    if (false == filters_.ProcessBlock(block)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": failed to index ")(
-            DisplayString(chain_))(" block")
+    if (std::future_status::ready !=
+        block_.LoadBitcoin(id).wait_for(std::chrono::seconds(10))) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": invalid ")(DisplayString(chain_))(
+            " block")
             .Flush();
 
         return false;
     }
 
-    if (std::future_status::ready !=
-        block_.LoadBitcoin(id).wait_for(std::chrono::seconds(10))) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": invalid ")(DisplayString(chain_))(
-            " block")
+    if (false == filters_.ProcessBlock(block)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": failed to index ")(
+            DisplayString(chain_))(" block")
             .Flush();
 
         return false;
@@ -261,6 +270,20 @@ auto Network::init() noexcept -> void
     peer_.init();
     block_.Init();
     filters_.Start();
+
+    if (config_.provide_sync_server_) {
+        sync_server_ = std::make_unique<SyncServer>(
+            api_,
+            database_,
+            header_,
+            filters_,
+            *this,
+            chain_,
+            filters_.DefaultType(),
+            shutdown_sender_.endpoint_,
+            sync_endpoint_);
+    }
+
     init_promise_.set_value();
     trigger();
 }
@@ -304,6 +327,9 @@ auto Network::pipeline(zmq::Message& in) noexcept -> void
             block_.Heartbeat();
             filters_.Heartbeat();
             peer_.Heartbeat();
+
+            if (sync_server_) { sync_server_->Heartbeat(); }
+
             do_work();
         } break;
         case Task::Shutdown: {
@@ -479,6 +505,7 @@ auto Network::shutdown(std::promise<void>& promise) noexcept -> void
 
         if (false == wallet_initialized_) { wallet_.Init(); }
 
+        sync_server_.reset();
         wallet_.Shutdown().get();
         wallet_initialized_ = false;
         peer_.Shutdown().get();
@@ -500,8 +527,6 @@ auto Network::shutdown_endpoint() noexcept -> std::string
 
 auto Network::state_machine() noexcept -> bool
 {
-    LogTrace(OT_METHOD)(__FUNCTION__).Flush();
-
     if (false == running_.get()) { return false; }
 
     if (processing_headers_.get()) { return false; }

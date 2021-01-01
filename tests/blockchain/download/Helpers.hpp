@@ -133,6 +133,7 @@ private:
 
     auto batch_size(std::size_t) noexcept -> std::size_t { return batch_size_; }
     auto batch_ready() noexcept -> void { batch_ready_ = true; }
+    auto check_task(TaskType&) noexcept -> void {}
     auto queue_processing(DownloadedData&& data) noexcept -> void
     {
         ready_.insert(

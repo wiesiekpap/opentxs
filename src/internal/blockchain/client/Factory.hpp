@@ -44,6 +44,7 @@ namespace internal
 {
 struct BlockDatabase;
 struct BlockOracle;
+struct Config;
 struct FilterDatabase;
 struct FilterOracle;
 struct HeaderDatabase;
@@ -53,6 +54,7 @@ struct Network;
 struct PeerDatabase;
 struct PeerManager;
 struct Wallet;
+struct WalletDatabase;
 }  // namespace internal
 }  // namespace client
 
@@ -75,6 +77,7 @@ auto BlockchainDatabase(
 auto BlockchainFilterOracle(
     const api::Core& api,
     const api::client::internal::Blockchain& blockchain,
+    const blockchain::client::internal::Config& config,
     const blockchain::client::internal::Network& network,
     const blockchain::client::internal::HeaderOracle& header,
     const blockchain::client::internal::BlockOracle& block,
@@ -86,11 +89,13 @@ OPENTXS_EXPORT auto BlockchainNetworkBitcoin(
     const api::Core& api,
     const api::client::internal::Blockchain& blockchain,
     const blockchain::Type type,
+    const blockchain::client::internal::Config& config,
     const std::string& seednode,
-    const std::string& shutdown) noexcept
+    const std::string& syncEndpoint) noexcept
     -> std::unique_ptr<blockchain::client::internal::Network>;
 auto BlockchainPeerManager(
     const api::Core& api,
+    const blockchain::client::internal::Config& config,
     const blockchain::client::internal::Network& network,
     const blockchain::client::internal::HeaderOracle& headers,
     const blockchain::client::internal::FilterOracle& filter,
@@ -98,6 +103,7 @@ auto BlockchainPeerManager(
     const blockchain::client::internal::PeerDatabase& database,
     const blockchain::client::internal::IO& io,
     const blockchain::Type type,
+    const api::client::blockchain::BlockStorage policy,
     const std::string& seednode,
     const std::string& shutdown) noexcept
     -> std::unique_ptr<blockchain::client::internal::PeerManager>;
@@ -105,6 +111,7 @@ OPENTXS_EXPORT auto BlockchainWallet(
     const api::Core& api,
     const api::client::internal::Blockchain& blockchain,
     const blockchain::client::internal::Network& parent,
+    const blockchain::client::internal::WalletDatabase& db,
     const blockchain::Type chain,
     const std::string& shutdown)
     -> std::unique_ptr<blockchain::client::internal::Wallet>;

@@ -15,6 +15,7 @@
 #include <set>
 #include <sstream>
 #include <stdexcept>
+#include <string_view>
 #include <thread>
 #include <type_traits>
 
@@ -27,7 +28,9 @@
 #if OT_BLOCKCHAIN
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/client/Client.hpp"
 #include "internal/blockchain/client/Factory.hpp"
+#include "network/zeromq/socket/Socket.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/Pimpl.hpp"
 #if OT_BLOCKCHAIN
@@ -46,6 +49,7 @@
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/blockchain/BlockchainType.hpp"
 #if OT_BLOCKCHAIN
+#include "opentxs/blockchain/client/HeaderOracle.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/core/Data.hpp"
@@ -60,7 +64,9 @@
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Sender.tpp"  // IWYU pragma: keep
-#endif                                               // OT_BLOCKCHAIN
+#include "opentxs/protobuf/BlockchainP2PChainState.pb.h"
+#include "opentxs/protobuf/BlockchainP2PHello.pb.h"
+#endif  // OT_BLOCKCHAIN
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/HDPath.pb.h"
@@ -166,8 +172,8 @@ Blockchain::Blockchain(
     , accounts_(api_)
     , balance_lists_(api_, *this)
 #if OT_BLOCKCHAIN
-    , key_generated_endpoint_(
-          std::string{"inproc://"} + Identifier::Random()->str())
+    , key_generated_endpoint_(opentxs::network::zeromq::socket::implementation::
+                                  Socket::random_inproc_endpoint())
     , thread_pool_(api_)
     , io_(api_)
     , db_(api_, *this, legacy, dataFolder, args)
@@ -177,7 +183,44 @@ Blockchain::Blockchain(
     , key_updates_(api_.ZeroMQ().PublishSocket())
     , sync_updates_(api_.ZeroMQ().PublishSocket())
     , new_blockchain_accounts_(api_.ZeroMQ().PublishSocket())
+    , config_([&] {
+        auto output = opentxs::blockchain::client::internal::Config{};
+        const auto sync = [&] {
+            try {
+                const auto& arg = args.at(OPENTXS_ARG_BLOCKCHAIN_SYNC);
+
+                if (0 == arg.size()) { return false; }
+
+                return true;
+            } catch (...) {
+
+                return false;
+            }
+        }();
+
+        using Policy = api::client::blockchain::BlockStorage;
+
+        if (Policy::All == db_.BlockPolicy()) {
+            output.generate_cfilters_ = true;
+
+            if (sync) { output.provide_sync_server_ = true; }
+        } else if (sync) {
+            output.use_sync_server_ = true;
+
+        } else {
+            output.download_cfilters_ = true;
+        }
+
+        return output;
+    }())
     , networks_()
+    , sync_server_([&]() -> std::unique_ptr<SyncServer> {
+        if (config_.provide_sync_server_) {
+            return std::make_unique<SyncServer>(api_, *this);
+        }
+
+        return {};
+    }())
     , balances_(*this, api_)
     , enabled_callbacks_(api_)
     , running_(true)
@@ -377,7 +420,7 @@ auto Blockchain::AssignTransactionMemo(
     const TxidHex& id,
     const std::string& label) const noexcept -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
     auto pTransaction = load_transaction(lock, id);
 
     if (false == bool(pTransaction)) { return false; }
@@ -573,7 +616,7 @@ auto Blockchain::DecodeAddress(const std::string& encoded) const noexcept
 #if OT_BLOCKCHAIN
 auto Blockchain::Disable(const Chain type) const noexcept -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return disable(lock, type);
 }
@@ -601,7 +644,7 @@ auto Blockchain::disable(const Lock& lock, const Chain type) const noexcept
 auto Blockchain::Enable(const Chain type, const std::string& seednode)
     const noexcept -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return enable(lock, type, seednode);
 }
@@ -661,7 +704,7 @@ auto Blockchain::EncodeAddress(
 auto Blockchain::GetChain(const Chain type) const noexcept(false)
     -> const opentxs::blockchain::Network&
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return *networks_.at(type);
 }
@@ -714,7 +757,7 @@ auto Blockchain::heartbeat() const noexcept -> void
 
         while (20 > ++counter) { Sleep(std::chrono::milliseconds{250}); }
 
-        Lock lock(lock_);
+        auto lock = Lock{lock_};
 
         for (const auto& [key, value] : networks_) {
             if (false == running_) { return; }
@@ -722,6 +765,25 @@ auto Blockchain::heartbeat() const noexcept -> void
             value->Heartbeat();
         }
     }
+}
+
+auto Blockchain::Hello() const noexcept -> proto::BlockchainP2PHello
+{
+    auto output = proto::BlockchainP2PHello{};
+    output.set_version(opentxs::blockchain::client::sync_hello_version_);
+    auto lock = Lock{lock_};
+
+    for (const auto& [chain, network] : networks_) {
+        const auto best = network->HeaderOracle().BestChain();
+        auto& state = *output.add_state();
+        state.set_version(opentxs::blockchain::client::sync_state_version_);
+        state.set_chain(static_cast<std::uint32_t>(chain));
+        state.set_height(static_cast<std::uint64_t>(best.first));
+        const auto bytes = best.second->Bytes();
+        state.set_hash(bytes.data(), bytes.size());
+    }
+
+    return output;
 }
 
 auto Blockchain::IndexItem(const ReadView bytes) const noexcept -> PatternID
@@ -769,7 +831,7 @@ auto Blockchain::init_path(
 auto Blockchain::IsEnabled(const opentxs::blockchain::Type chain) const noexcept
     -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
     const auto chains = db_.LoadEnabledChains();
 
     return std::find(chains.begin(), chains.end(), chain) != chains.end();
@@ -809,7 +871,7 @@ auto Blockchain::load_transaction(const Lock& lock, const Txid& txid)
 auto Blockchain::LoadTransactionBitcoin(const TxidHex& txid) const noexcept
     -> std::unique_ptr<const Tx>
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return load_transaction(lock, txid);
 }
@@ -817,7 +879,7 @@ auto Blockchain::LoadTransactionBitcoin(const TxidHex& txid) const noexcept
 auto Blockchain::LoadTransactionBitcoin(const Txid& txid) const noexcept
     -> std::unique_ptr<const Tx>
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return load_transaction(lock, txid);
 }
@@ -981,7 +1043,7 @@ auto Blockchain::ProcessTransaction(
     const Tx& in,
     const PasswordPrompt& reason) const noexcept -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
     auto pTransaction = in.clone();
 
     OT_ASSERT(pTransaction);
@@ -1094,7 +1156,7 @@ auto Blockchain::RestoreNetworks() const noexcept -> void
 auto Blockchain::Start(const Chain type, const std::string& seednode)
     const noexcept -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return start(lock, type, seednode);
 }
@@ -1124,10 +1186,17 @@ auto Blockchain::start(
 
     switch (opentxs::blockchain::params::Data::chains_.at(type).p2p_protocol_) {
         case p2p::Protocol::bitcoin: {
+            auto endpoint = std::string{};
+
+            if (sync_server_) {
+                sync_server_->Enable(type);
+                endpoint = sync_server_->Endpoint(type);
+            }
+
             auto [it, added] = networks_.emplace(
                 type,
                 factory::BlockchainNetworkBitcoin(
-                    api_, *this, type, seednode, ""));
+                    api_, *this, type, config_, seednode, endpoint));
 
             return it->second->Connect();
         }
@@ -1140,9 +1209,20 @@ auto Blockchain::start(
     return false;
 }
 
+auto Blockchain::StartSyncServer(
+    const std::string& sync,
+    const std::string& update) const noexcept -> bool
+{
+    auto lock = Lock{lock_};
+
+    if (sync_server_) { return sync_server_->Start(sync, update); }
+
+    return false;
+}
+
 auto Blockchain::Stop(const Chain type) const noexcept -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return stop(lock, type);
 }
@@ -1154,6 +1234,8 @@ auto Blockchain::stop(const Lock& lock, const Chain type) const noexcept -> bool
     if (networks_.end() == it) { return true; }
 
     OT_ASSERT(it->second);
+
+    if (sync_server_) { sync_server_->Disable(type); }
 
     it->second->Shutdown();
     thread_pool_.Stop(type).get();
@@ -1187,7 +1269,7 @@ auto Blockchain::UpdateElement([
                 std::back_inserter(transactions));
         });
     dedup(transactions);
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
     std::for_each(
         std::begin(transactions),
         std::end(transactions),

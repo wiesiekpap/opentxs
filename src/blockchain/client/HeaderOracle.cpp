@@ -99,6 +99,8 @@ auto HeaderOracle::Ancestors(
     const block::Position& start,
     const block::Position& target) const noexcept(false) -> Positions
 {
+    const auto check =
+        std::max<block::Height>(std::min(start.first, target.first), 0);
     Lock lock(lock_);
     auto cache = std::deque<block::Position>{};
     auto current = database_.LoadHeader(target.second);
@@ -138,8 +140,12 @@ auto HeaderOracle::Ancestors(
         if (false == bool(current)) { break; }
     }
 
+    OT_ASSERT(0 < cache.size());
+
     auto output = Positions{};
     std::move(cache.begin(), cache.end(), std::back_inserter(output));
+
+    OT_ASSERT(output.front().first <= check);
 
     return output;
 }

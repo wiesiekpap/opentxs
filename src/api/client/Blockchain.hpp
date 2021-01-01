@@ -112,6 +112,7 @@ class Message;
 
 namespace proto
 {
+class BlockchainP2PHello;
 class BlockchainTransaction;
 class HDPath;
 }  // namespace proto
@@ -219,6 +220,7 @@ public:
     auto HDSubaccount(const identifier::Nym& nymID, const Identifier& accountID)
         const noexcept(false) -> const blockchain::HD& final;
 #if OT_BLOCKCHAIN
+    auto Hello() const noexcept -> proto::BlockchainP2PHello;
     auto IndexItem(const ReadView bytes) const noexcept -> PatternID final;
     auto IO() const noexcept
         -> const opentxs::blockchain::client::internal::IO& final
@@ -279,6 +281,9 @@ public:
     auto RestoreNetworks() const noexcept -> void final;
     auto Start(const Chain type, const std::string& seednode) const noexcept
         -> bool final;
+    auto StartSyncServer(
+        const std::string& syncEndpoint,
+        const std::string& updateEndpoint) const noexcept -> bool final;
     auto Stop(const Chain type) const noexcept -> bool final;
     auto ThreadPool() const noexcept -> const ThreadPoolType& final
     {
@@ -440,6 +445,26 @@ private:
         auto operator=(const EnableCallbacks&) -> EnableCallbacks& = delete;
         auto operator=(EnableCallbacks &&) -> EnableCallbacks& = delete;
     };
+    struct SyncServer {
+        using Chain = opentxs::blockchain::Type;
+
+        auto Endpoint(const Chain chain) const noexcept -> std::string;
+
+        auto Disable(const Chain chain) noexcept -> void;
+        auto Enable(const Chain chain) noexcept -> void;
+        auto Start(const std::string& sync, const std::string& update) noexcept
+            -> bool;
+
+        SyncServer(const api::Core& api, Blockchain& parent) noexcept;
+
+        ~SyncServer();
+
+    private:
+        struct Imp;
+
+        std::unique_ptr<Imp> imp_p_;
+        Imp& imp_;
+    };
     struct ThreadPoolManager final : virtual public ThreadPoolType {
         auto Endpoint() const noexcept -> std::string final;
         auto Reset(const Chain chain) const noexcept -> void final;
@@ -539,10 +564,12 @@ private:
     OTZMQPublishSocket key_updates_;
     OTZMQPublishSocket sync_updates_;
     OTZMQPublishSocket new_blockchain_accounts_;
+    const opentxs::blockchain::client::internal::Config config_;
     mutable std::map<
         Chain,
         std::unique_ptr<opentxs::blockchain::client::internal::Network>>
         networks_;
+    std::unique_ptr<SyncServer> sync_server_;
     BalanceOracle balances_;
     mutable EnableCallbacks enabled_callbacks_;
     std::atomic_bool running_;

@@ -10,6 +10,7 @@
 #include <zmq.h>
 #include <atomic>
 #include <chrono>
+#include <memory>
 #include <thread>
 
 #include "internal/network/zeromq/socket/Socket.hpp"
@@ -30,11 +31,11 @@ template class opentxs::Pimpl<opentxs::network::zeromq::socket::Request>;
 namespace opentxs::factory
 {
 auto RequestSocket(const network::zeromq::Context& context)
-    -> network::zeromq::socket::Request*
+    -> std::unique_ptr<network::zeromq::socket::Request>
 {
     using ReturnType = network::zeromq::socket::implementation::Request;
 
-    return new ReturnType(context);
+    return std::make_unique<ReturnType>(context);
 }
 }  // namespace opentxs::factory
 

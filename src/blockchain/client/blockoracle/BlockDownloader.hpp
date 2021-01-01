@@ -105,6 +105,14 @@ private:
             return 100;
         }
     }
+    auto check_task(TaskType& task) const noexcept -> void
+    {
+        const auto& hash = task.position_.second;
+
+        if (auto block = db_.BlockLoadBitcoin(hash); bool(block)) {
+            task.download(std::move(block));
+        }
+    }
     auto trigger_state_machine() const noexcept -> void { trigger(); }
     auto update_tip(const Position& position, const int&) const noexcept -> void
     {
@@ -200,6 +208,7 @@ private:
                 task->process(0);
             } else {
                 task->redownload();
+                break;
             }
         }
     }

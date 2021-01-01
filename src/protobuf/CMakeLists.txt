@@ -42,6 +42,9 @@ set(cxx-sources
     blockchainfilterheader/BlockchainFilterHeader_1.cpp
     blockchaininputwitness/BlockchainInputWitness_1.cpp
     blockchainoutputmultisigdetails/BlockchainOutputMultisigDetails_1.cpp
+    blockchainp2pchainstate/BlockchainP2PChainState_1.cpp
+    blockchainp2phello/BlockchainP2PHello_1.cpp
+    blockchainp2psync/BlockchainP2PSync_1.cpp
     blockchainpeeraddress/BlockchainPeerAddress_1.cpp
     blockchainpreviousoutput/BlockchainPreviousOutput_1.cpp
     blockchaintransaction/BlockchainTransaction_1.cpp

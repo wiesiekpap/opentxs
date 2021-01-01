@@ -35,6 +35,14 @@ namespace block
 {
 class Header;
 }  // namespace block
+
+namespace client
+{
+namespace internal
+{
+struct Config;
+}  // namespace internal
+}  // namespace client
 }  // namespace blockchain
 }  // namespace opentxs
 
@@ -50,8 +58,9 @@ public:
         const api::Core& api,
         const api::client::internal::Blockchain& blockchain,
         const Type type,
+        const internal::Config& config,
         const std::string& seednode,
-        const std::string& shutdown);
+        const std::string& syncEndpoint);
     ~Network() final;
 
 private:

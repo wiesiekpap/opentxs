@@ -197,6 +197,8 @@ auto Filters::StoreFilters(
         return false;
     }
 
+    if (0 > tip.first) { return true; }
+
     auto parentTxn = lmdb_.TransactionRW();
     output = lmdb_
                  .Store(

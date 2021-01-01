@@ -30,6 +30,9 @@ set(PROTO_SOURCES
     BlockchainFilterHeader.proto
     BlockchainInputWitness.proto
     BlockchainOutputMultisigDetails.proto
+    BlockchainP2PChainState.proto
+    BlockchainP2PHello.proto
+    BlockchainP2PSync.proto
     BlockchainPeerAddress.proto
     BlockchainPreviousOutput.proto
     BlockchainTransaction.proto

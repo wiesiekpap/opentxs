@@ -26,6 +26,8 @@ OPENTXS_EXPORT const VersionMap&
 BlockchainBlockHeaderAllowedBlockchainBlockLocalData() noexcept;
 OPENTXS_EXPORT const VersionMap&
 BlockchainBlockHeaderAllowedEthereumBlockHeaderFields() noexcept;
+OPENTXS_EXPORT const VersionMap&
+BlockchainP2PHelloAllowedBlockchainP2PChainState() noexcept;
 OPENTXS_EXPORT const VersionMap& BlockchainTransactionAllowedInput() noexcept;
 OPENTXS_EXPORT const VersionMap& BlockchainTransactionAllowedOutput() noexcept;
 OPENTXS_EXPORT const VersionMap&

@@ -48,6 +48,7 @@ public:
 
 protected:
     using DownloadedData = typename BatchType::Vector;
+    using TaskType = typename BatchType::TaskType;
 
     // WARNING Call known() and update_position() from the same thread.
     auto known() const noexcept { return dm_known_; }
@@ -133,11 +134,15 @@ protected:
                 auto next = std::ptrdiff_t{-1};
                 auto lastGoodTask = TaskPtr{};
 
-                for (auto i{buffer_.begin()}; i != buffer_.end(); ++i, ++next) {
-                    lastGoodTask = *i;
+                for (auto i{buffer_.begin()}; i != buffer_.end(); ++i) {
                     const auto& position = (*i)->position_;
 
-                    if (position.first < start.first) { continue; }
+                    if (position.first < start.first) {
+                        lastGoodTask = *i;
+                        ++next;
+
+                        continue;
+                    }
 
                     buffer_.erase(i, buffer_.end());
 
@@ -148,16 +153,18 @@ protected:
                     using Data = std::tuple<Position, Finished, std::size_t>;
 
                     auto data = [&]() -> Data {
-                        if (lastGoodTask) {
+                        if (0 <= next) {
+                            OT_ASSERT(lastGoodTask);
+
                             const auto& task = *lastGoodTask;
 
                             return {
                                 task.position_,
                                 task.output_,
-                                static_cast<std::size_t>(
-                                    std::max<std::ptrdiff_t>(next, 0))};
+                                static_cast<std::size_t>(next)};
                         } else {
                             OT_ASSERT(prior.has_value());
+                            OT_ASSERT(0 == buffer_.size());
 
                             auto previous = prior.value();
 
@@ -191,6 +198,7 @@ protected:
             auto& task = buffer_.emplace_back(std::make_shared<TaskType>(
                 std::move(position), std::move(previous), log_.data(), extra));
             previous = task->output_;
+            downcast().check_task(*task);
         }
 
         downcast().trigger_state_machine();
@@ -225,7 +233,6 @@ private:
         }
     };
 
-    using TaskType = typename BatchType::TaskType;
     using TaskPtr = std::shared_ptr<TaskType>;
     using Buffer = std::deque<TaskPtr>;
     using BatchID = typename BatchType::ID;
@@ -246,6 +253,8 @@ private:
     //                                                  outstanding blocks
     // void batch_ready(): notify interested parties that a batch of work is
     //                     available
+    // void check_task(TaskType&): optionally look up task to see if it is
+    //                             already downloaded
     // void trigger_state_machine(): cause the state_machine() function to be
     //                               called from a different thread
     // void queue_processing(DownloadedData&& data): process downloaded data

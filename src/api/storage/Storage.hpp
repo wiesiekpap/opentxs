@@ -28,6 +28,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Editor.hpp"
 #include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"

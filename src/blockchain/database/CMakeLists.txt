@@ -8,6 +8,7 @@ set(cxx-sources
     Database.cpp
     Filters.cpp
     Headers.cpp
+    Sync.cpp
     Wallet.cpp
 )
 
@@ -17,16 +18,12 @@ set(cxx-headers
     Database.hpp
     Filters.hpp
     Headers.hpp
+    Sync.hpp
     Wallet.hpp
 )
 
 add_library(opentxs-blockchain-database OBJECT ${cxx-sources} ${cxx-headers})
 target_link_libraries(
-  opentxs-blockchain-database
-  PRIVATE
-    Boost::headers
-    opentxs::messages
-    lmdb
-    opentxs-api-client-blockchain-database
+  opentxs-blockchain-database PRIVATE Boost::headers opentxs::messages lmdb
 )
 add_dependencies(opentxs-blockchain-database generated_code)

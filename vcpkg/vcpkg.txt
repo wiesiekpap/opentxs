@@ -19,6 +19,7 @@ libsodium
 lmdb
 openssl
 protobuf
+qt5-base
 secp256k1
 sqlite3
 zeromq[sodium]
