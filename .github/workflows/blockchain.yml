@@ -45,6 +45,6 @@ jobs:
         useVcpkgToolchainFile: true
         vcpkgTriplet: '${{ matrix.vcpkg_triplet }}'
         buildDirectory: '${{ github.workspace }}/build'
-        cmakeAppendedArgs: '-GNinja -DCMAKE_BUILD_TYPE=Release -DOT_USE_VCPKG_TARGETS=ON -DOT_INSTALL_LIBRARY_DEPENDENCIES=OFF -DOT_WITH_BLOCKCHAIN=ON -DOT_WITH_QT=ON -DOT_ENABLE_RPC=OFF ${{ matrix.cmake_extra }}'
+        cmakeAppendedArgs: '-GNinja -DCMAKE_BUILD_TYPE=Release -DOT_USE_VCPKG_TARGETS=ON -DOT_INSTALL_LIBRARY_DEPENDENCIES=OFF -DOT_WITH_BLOCKCHAIN=ON -DOT_WITH_QT=ON -DOT_WITH_QML=ON -DOT_ENABLE_RPC=OFF ${{ matrix.cmake_extra }}'
         buildWithCMake: true
         buildWithCMakeArgs: '-- -k 0'
