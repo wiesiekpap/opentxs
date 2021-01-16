@@ -102,6 +102,6 @@ private:
     Source() = delete;
     Source(Source&&) = delete;
     auto operator=(const Source&) -> Source&;
-    auto operator=(Source &&) -> Source&;
+    auto operator=(Source&&) -> Source&;
 };
 }  // namespace opentxs::identity::implementation

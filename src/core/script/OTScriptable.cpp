@@ -249,8 +249,8 @@ auto OTScriptable::ValidateCallbackName(const std::string& str_name) -> bool
 // OTSmartContract::RegisterOTNativeCallsWithScript OVERRIDES this, but
 // also calls it.
 //
-void OTScriptable::RegisterOTNativeCallsWithScript([
-    [maybe_unused]] OTScript& theScript)
+void OTScriptable::RegisterOTNativeCallsWithScript(
+    [[maybe_unused]] OTScript& theScript)
 {
 #if OT_SCRIPT_CHAI
     using namespace chaiscript;

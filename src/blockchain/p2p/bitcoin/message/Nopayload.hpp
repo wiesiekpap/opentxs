@@ -66,6 +66,6 @@ private:
     Nopayload(const Nopayload&) = delete;
     Nopayload(Nopayload&&) = delete;
     auto operator=(const Nopayload&) -> Nopayload& = delete;
-    auto operator=(Nopayload &&) -> Nopayload& = delete;
+    auto operator=(Nopayload&&) -> Nopayload& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

@@ -64,6 +64,6 @@ private:
     OpenDHT(const OpenDHT&) = delete;
     OpenDHT(OpenDHT&&) = delete;
     auto operator=(const OpenDHT&) -> OpenDHT& = delete;
-    auto operator=(OpenDHT &&) -> OpenDHT& = delete;
+    auto operator=(OpenDHT&&) -> OpenDHT& = delete;
 };
 }  // namespace opentxs::network::implementation

@@ -119,6 +119,6 @@ private:
     Reply(const Reply&);
     Reply(Reply&&) = delete;
     auto operator=(const Reply&) -> Reply& = delete;
-    auto operator=(Reply &&) -> Reply& = delete;
+    auto operator=(Reply&&) -> Reply& = delete;
 };
 }  // namespace opentxs::network::zeromq::zap::implementation

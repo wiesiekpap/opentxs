@@ -8,8 +8,8 @@
 #include "storage/tree/Nym.hpp"  // IWYU pragma: associated
 
 #include <functional>
-#include <type_traits>
 
+#include "opentxs/Pimpl.hpp"
 #include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"

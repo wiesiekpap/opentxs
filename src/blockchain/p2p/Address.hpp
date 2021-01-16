@@ -141,6 +141,6 @@ private:
     Address() = delete;
     Address(Address&&) = delete;
     auto operator=(const Address&) -> Address& = delete;
-    auto operator=(Address &&) -> Address& = delete;
+    auto operator=(Address&&) -> Address& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::implementation

@@ -116,6 +116,6 @@ private:
     Bip32(const Bip32&) = delete;
     Bip32(Bip32&&) = delete;
     auto operator=(const Bip32&) -> Bip32& = delete;
-    auto operator=(Bip32 &&) -> Bip32& = delete;
+    auto operator=(Bip32&&) -> Bip32& = delete;
 };
 }  // namespace opentxs::crypto::implementation

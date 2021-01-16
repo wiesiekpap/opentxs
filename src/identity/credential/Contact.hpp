@@ -83,6 +83,6 @@ private:
     Contact(const Contact&) = delete;
     Contact(Contact&&) = delete;
     auto operator=(const Contact&) -> Contact& = delete;
-    auto operator=(Contact &&) -> Contact& = delete;
+    auto operator=(Contact&&) -> Contact& = delete;
 };
 }  // namespace opentxs::identity::credential::implementation

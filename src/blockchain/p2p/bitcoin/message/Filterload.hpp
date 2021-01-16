@@ -67,6 +67,6 @@ private:
     Filterload(const Filterload&) = delete;
     Filterload(Filterload&&) = delete;
     auto operator=(const Filterload&) -> Filterload& = delete;
-    auto operator=(Filterload &&) -> Filterload& = delete;
+    auto operator=(Filterload&&) -> Filterload& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

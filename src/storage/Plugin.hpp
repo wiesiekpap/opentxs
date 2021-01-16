@@ -100,7 +100,7 @@ private:
     Plugin(const Plugin&) = delete;
     Plugin(Plugin&&) = delete;
     auto operator=(const Plugin&) -> Plugin& = delete;
-    auto operator=(Plugin &&) -> Plugin& = delete;
+    auto operator=(Plugin&&) -> Plugin& = delete;
 };
 
 template <class T>

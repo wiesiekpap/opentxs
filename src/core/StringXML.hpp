@@ -51,6 +51,6 @@ private:
     StringXML(const StringXML& value);
     StringXML(StringXML&&) = delete;
     auto operator=(const StringXML&) -> StringXML& = delete;
-    auto operator=(StringXML &&) -> StringXML& = delete;
+    auto operator=(StringXML&&) -> StringXML& = delete;
 };
 }  // namespace opentxs::implementation

@@ -120,6 +120,6 @@ private:
     ReplyMessage(const ReplyMessage&) = delete;
     ReplyMessage(ReplyMessage&&) = delete;
     auto operator=(const ReplyMessage&) -> ReplyMessage& = delete;
-    auto operator=(ReplyMessage &&) -> ReplyMessage& = delete;
+    auto operator=(ReplyMessage&&) -> ReplyMessage& = delete;
 };
 }  // namespace opentxs::server

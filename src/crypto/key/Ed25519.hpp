@@ -102,6 +102,6 @@ private:
     Ed25519(const Ed25519&) noexcept;
     Ed25519(Ed25519&&) = delete;
     auto operator=(const Ed25519&) -> Ed25519& = delete;
-    auto operator=(Ed25519 &&) -> Ed25519& = delete;
+    auto operator=(Ed25519&&) -> Ed25519& = delete;
 };
 }  // namespace opentxs::crypto::key::implementation

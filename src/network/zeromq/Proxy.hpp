@@ -61,6 +61,6 @@ private:
     Proxy(const Proxy&) = delete;
     Proxy(Proxy&&) = delete;
     auto operator=(const Proxy&) -> Proxy& = delete;
-    auto operator=(Proxy &&) -> Proxy& = delete;
+    auto operator=(Proxy&&) -> Proxy& = delete;
 };
 }  // namespace opentxs::network::zeromq::implementation

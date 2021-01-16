@@ -80,6 +80,6 @@ private:
     Keypair(const Keypair&) noexcept;
     Keypair(Keypair&&) = delete;
     auto operator=(const Keypair&) -> Keypair& = delete;
-    auto operator=(Keypair &&) -> Keypair& = delete;
+    auto operator=(Keypair&&) -> Keypair& = delete;
 };
 }  // namespace opentxs::crypto::key::implementation

@@ -268,6 +268,6 @@ private:
     BalanceTree(const BalanceTree&) = delete;
     BalanceTree(BalanceTree&&) = delete;
     auto operator=(const BalanceTree&) -> BalanceTree& = delete;
-    auto operator=(BalanceTree &&) -> BalanceTree& = delete;
+    auto operator=(BalanceTree&&) -> BalanceTree& = delete;
 };
 }  // namespace opentxs::api::client::blockchain::implementation

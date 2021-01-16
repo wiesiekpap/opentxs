@@ -77,6 +77,6 @@ private:
     Symmetric(const Symmetric&) = delete;
     Symmetric(Symmetric&&) = delete;
     auto operator=(const Symmetric&) -> Symmetric& = delete;
-    auto operator=(Symmetric &&) -> Symmetric& = delete;
+    auto operator=(Symmetric&&) -> Symmetric& = delete;
 };
 }  // namespace opentxs::api::crypto::implementation

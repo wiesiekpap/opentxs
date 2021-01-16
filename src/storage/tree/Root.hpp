@@ -84,7 +84,7 @@ private:
     Root(const Root&) = delete;
     Root(Root&&) = delete;
     auto operator=(const Root&) -> Root = delete;
-    auto operator=(Root &&) -> Root = delete;
+    auto operator=(Root&&) -> Root = delete;
 
 public:
     auto Tree() const -> const storage::Tree&;

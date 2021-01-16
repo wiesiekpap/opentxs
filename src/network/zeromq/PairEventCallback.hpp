@@ -42,6 +42,6 @@ private:
     PairEventCallback(const PairEventCallback&) = delete;
     PairEventCallback(PairEventCallback&&) = delete;
     auto operator=(const PairEventCallback&) -> PairEventCallback& = delete;
-    auto operator=(PairEventCallback &&) -> PairEventCallback& = delete;
+    auto operator=(PairEventCallback&&) -> PairEventCallback& = delete;
 };
 }  // namespace opentxs::network::zeromq::implementation

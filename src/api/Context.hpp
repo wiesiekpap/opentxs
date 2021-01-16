@@ -160,6 +160,6 @@ private:
     Context(const Context&) = delete;
     Context(Context&&) = delete;
     auto operator=(const Context&) -> Context& = delete;
-    auto operator=(Context &&) -> Context& = delete;
+    auto operator=(Context&&) -> Context& = delete;
 };
 }  // namespace opentxs::api::implementation

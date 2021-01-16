@@ -84,7 +84,7 @@ private:
 
     auto reindex(const PayableListSortKey&, CustomData&) noexcept -> bool final;
     auto reindex(
-        const Lock& lock,
+        const Lock&,
         const PayableListSortKey& key,
         CustomData& custom) noexcept -> bool final;
 
@@ -92,7 +92,7 @@ private:
     PayableListItem(const PayableListItem&) = delete;
     PayableListItem(PayableListItem&&) = delete;
     auto operator=(const PayableListItem&) -> PayableListItem& = delete;
-    auto operator=(PayableListItem &&) -> PayableListItem& = delete;
+    auto operator=(PayableListItem&&) -> PayableListItem& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

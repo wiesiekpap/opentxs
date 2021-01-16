@@ -91,6 +91,6 @@ private:
     Getheaders(const Getheaders&) = delete;
     Getheaders(Getheaders&&) = delete;
     auto operator=(const Getheaders&) -> Getheaders& = delete;
-    auto operator=(Getheaders &&) -> Getheaders& = delete;
+    auto operator=(Getheaders&&) -> Getheaders& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

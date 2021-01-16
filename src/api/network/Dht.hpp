@@ -97,6 +97,6 @@ private:
     Dht(const Dht&) = delete;
     Dht(Dht&&) = delete;
     auto operator=(const Dht&) -> Dht& = delete;
-    auto operator=(Dht &&) -> Dht& = delete;
+    auto operator=(Dht&&) -> Dht& = delete;
 };
 }  // namespace opentxs::api::network::implementation

@@ -61,6 +61,6 @@ private:
     Subscribe(const Subscribe&) = delete;
     Subscribe(Subscribe&&) = delete;
     auto operator=(const Subscribe&) -> Subscribe& = delete;
-    auto operator=(Subscribe &&) -> Subscribe& = delete;
+    auto operator=(Subscribe&&) -> Subscribe& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

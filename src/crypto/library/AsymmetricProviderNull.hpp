@@ -81,7 +81,7 @@ private:
     AsymmetricProviderNull(AsymmetricProviderNull&&) = delete;
     auto operator=(const AsymmetricProviderNull&)
         -> AsymmetricProviderNull& = delete;
-    auto operator=(AsymmetricProviderNull &&)
+    auto operator=(AsymmetricProviderNull&&)
         -> AsymmetricProviderNull& = delete;
 };
 }  // namespace opentxs::crypto::implementation

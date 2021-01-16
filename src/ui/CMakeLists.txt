@@ -20,3 +20,16 @@ add_subdirectory(messagablelist)
 add_subdirectory(payablelist)
 add_subdirectory(profile)
 add_subdirectory(unitlist)
+
+set(cxx-install-headers
+    "${opentxs_SOURCE_DIR}/include/opentxs/ui/Blockchains.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/ui/Types.hpp"
+)
+
+if(OPENTXS_STANDALONE)
+  install(
+    FILES ${cxx-install-headers}
+    DESTINATION include/opentxs/ui
+    COMPONENT dev
+  )
+endif()

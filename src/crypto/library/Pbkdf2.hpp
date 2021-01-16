@@ -34,6 +34,6 @@ private:
     Pbkdf2(const Pbkdf2&) = delete;
     Pbkdf2(Pbkdf2&&) = delete;
     auto operator=(const Pbkdf2&) -> Pbkdf2& = delete;
-    auto operator=(Pbkdf2 &&) -> Pbkdf2& = delete;
+    auto operator=(Pbkdf2&&) -> Pbkdf2& = delete;
 };
 }  // namespace opentxs::crypto::implementation

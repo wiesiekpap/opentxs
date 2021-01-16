@@ -193,6 +193,6 @@ private:
     HeaderOracle(const HeaderOracle&) = delete;
     HeaderOracle(HeaderOracle&&) = delete;
     auto operator=(const HeaderOracle&) -> HeaderOracle& = delete;
-    auto operator=(HeaderOracle &&) -> HeaderOracle& = delete;
+    auto operator=(HeaderOracle&&) -> HeaderOracle& = delete;
 };
 }  // namespace opentxs::blockchain::client::implementation

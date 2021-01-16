@@ -249,8 +249,8 @@ protected:
         const PasswordPrompt& reason) = 0;  // called by
                                             // HookRemovalFromCron().
 
-    virtual void onRemovalFromCron([
-        [maybe_unused]] const PasswordPrompt& reason)
+    virtual void onRemovalFromCron(
+        [[maybe_unused]] const PasswordPrompt& reason)
     {
     }  // called by HookRemovalFromCron().
     void ClearClosingNumbers();

@@ -86,6 +86,6 @@ private:
     Currency(const Currency&);
     Currency(Currency&&) = delete;
     auto operator=(const Currency&) -> Currency& = delete;
-    auto operator=(Currency &&) -> Currency& = delete;
+    auto operator=(Currency&&) -> Currency& = delete;
 };
 }  // namespace opentxs::contract::unit::implementation

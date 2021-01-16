@@ -62,6 +62,6 @@ private:
     Reply(const Reply&) = delete;
     Reply(Reply&&) = delete;
     auto operator=(const Reply&) -> Reply& = delete;
-    auto operator=(Reply &&) -> Reply& = delete;
+    auto operator=(Reply&&) -> Reply& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

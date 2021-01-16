@@ -414,7 +414,7 @@ private:
     IO(const IO&) = delete;
     IO(IO&&) = delete;
     auto operator=(const IO&) -> IO& = delete;
-    auto operator=(IO &&) -> IO& = delete;
+    auto operator=(IO&&) -> IO& = delete;
 };
 
 struct PeerDatabase {

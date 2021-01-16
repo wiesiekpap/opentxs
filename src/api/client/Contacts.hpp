@@ -158,6 +158,6 @@ private:
     Contacts(const Contacts&) = delete;
     Contacts(Contacts&&) = delete;
     auto operator=(const Contacts&) -> Contacts& = delete;
-    auto operator=(Contacts &&) -> Contacts& = delete;
+    auto operator=(Contacts&&) -> Contacts& = delete;
 };
 }  // namespace opentxs::api::client::implementation

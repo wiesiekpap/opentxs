@@ -42,6 +42,6 @@ private:
     MainFile(const MainFile&) = delete;
     MainFile(MainFile&&) = delete;
     auto operator=(const MainFile&) -> MainFile& = delete;
-    auto operator=(MainFile &&) -> MainFile& = delete;
+    auto operator=(MainFile&&) -> MainFile& = delete;
 };
 }  // namespace opentxs::server

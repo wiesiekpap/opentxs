@@ -106,7 +106,7 @@ private:
         FinalizeResponse(const FinalizeResponse&) = delete;
         FinalizeResponse(FinalizeResponse&&) = delete;
         auto operator=(const FinalizeResponse&) -> FinalizeResponse& = delete;
-        auto operator=(FinalizeResponse &&) -> FinalizeResponse& = delete;
+        auto operator=(FinalizeResponse&&) -> FinalizeResponse& = delete;
 
         auto AddResponse(std::shared_ptr<OTTransaction> response)
             -> std::shared_ptr<OTTransaction>&;
@@ -229,6 +229,6 @@ private:
     UserCommandProcessor(UserCommandProcessor&&) = delete;
     auto operator=(const UserCommandProcessor&)
         -> UserCommandProcessor& = delete;
-    auto operator=(UserCommandProcessor &&) -> UserCommandProcessor& = delete;
+    auto operator=(UserCommandProcessor&&) -> UserCommandProcessor& = delete;
 };
 }  // namespace opentxs::server

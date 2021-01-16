@@ -93,6 +93,6 @@ private:
     Notary(const Notary&) = delete;
     Notary(Notary&&) = delete;
     auto operator=(const Notary&) -> Notary = delete;
-    auto operator=(Notary &&) -> Notary = delete;
+    auto operator=(Notary&&) -> Notary = delete;
 };
 }  // namespace opentxs::storage

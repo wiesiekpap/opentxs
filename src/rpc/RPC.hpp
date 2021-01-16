@@ -271,6 +271,6 @@ private:
     RPC(const RPC&) = delete;
     RPC(RPC&&) = delete;
     auto operator=(const RPC&) -> RPC& = delete;
-    auto operator=(RPC &&) -> RPC& = delete;
+    auto operator=(RPC&&) -> RPC& = delete;
 };
 }  // namespace opentxs::rpc::implementation

@@ -152,6 +152,6 @@ private:
     Tree(const Tree&);
     Tree(Tree&&) = delete;
     auto operator=(const Tree&) -> Tree = delete;
-    auto operator=(Tree &&) -> Tree = delete;
+    auto operator=(Tree&&) -> Tree = delete;
 };
 }  // namespace opentxs::storage

@@ -56,7 +56,7 @@ private:
     Frame(const void* data, const std::size_t bytes) noexcept;
     Frame(const Frame&) = delete;
     Frame(Frame&&) = delete;
-    auto operator=(Frame &&) -> Frame& = delete;
+    auto operator=(Frame&&) -> Frame& = delete;
     auto operator=(const Frame&) -> Frame& = delete;
 };
 }  // namespace opentxs::network::zeromq::implementation

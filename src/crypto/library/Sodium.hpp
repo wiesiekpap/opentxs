@@ -164,6 +164,6 @@ private:
     Sodium(const Sodium&) = delete;
     Sodium(Sodium&&) = delete;
     auto operator=(const Sodium&) -> Sodium& = delete;
-    auto operator=(Sodium &&) -> Sodium& = delete;
+    auto operator=(Sodium&&) -> Sodium& = delete;
 };
 }  // namespace opentxs::crypto::implementation

@@ -64,6 +64,6 @@ private:
     AsymmetricProvider(const AsymmetricProvider&) = delete;
     AsymmetricProvider(AsymmetricProvider&&) = delete;
     auto operator=(const AsymmetricProvider&) -> AsymmetricProvider& = delete;
-    auto operator=(AsymmetricProvider &&) -> AsymmetricProvider& = delete;
+    auto operator=(AsymmetricProvider&&) -> AsymmetricProvider& = delete;
 };
 }  // namespace opentxs::crypto::implementation

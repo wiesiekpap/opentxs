@@ -72,6 +72,6 @@ private:
     Handler(const Handler&) = delete;
     Handler(Handler&&) = delete;
     auto operator=(const Handler&) -> Handler& = delete;
-    auto operator=(Handler &&) -> Handler& = delete;
+    auto operator=(Handler&&) -> Handler& = delete;
 };
 }  // namespace opentxs::network::zeromq::zap::implementation

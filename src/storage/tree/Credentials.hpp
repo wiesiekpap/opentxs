@@ -56,7 +56,7 @@ private:
     Credentials(const Credentials&) = delete;
     Credentials(Credentials&&) = delete;
     auto operator=(const Credentials&) -> Credentials = delete;
-    auto operator=(Credentials &&) -> Credentials = delete;
+    auto operator=(Credentials&&) -> Credentials = delete;
 
 public:
     auto Alias(const std::string& id) const -> std::string;

@@ -44,6 +44,6 @@ private:
     Primitives(const Primitives&) = delete;
     Primitives(Primitives&&) = delete;
     auto operator=(const Primitives&) -> Primitives& = delete;
-    auto operator=(Primitives &&) -> Primitives& = delete;
+    auto operator=(Primitives&&) -> Primitives& = delete;
 };
 }  // namespace opentxs::api::implementation

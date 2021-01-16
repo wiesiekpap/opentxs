@@ -25,6 +25,7 @@
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/ui/Blockchains.hpp"
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::BlockchainSelection::"
@@ -35,12 +36,14 @@ namespace opentxs::factory
 {
 auto BlockchainSelectionModel(
     const api::client::internal::Manager& api,
-    const api::client::internal::Blockchain& blockchain) noexcept
+    const api::client::internal::Blockchain& blockchain,
+    const ui::Blockchains type,
+    const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::implementation::BlockchainSelection>
 {
     using ReturnType = ui::implementation::BlockchainSelection;
 
-    return std::make_unique<ReturnType>(api, blockchain);
+    return std::make_unique<ReturnType>(api, blockchain, type, cb);
 }
 
 #if OT_QT
@@ -78,11 +81,13 @@ namespace opentxs::ui::implementation
 {
 BlockchainSelection::BlockchainSelection(
     const api::client::internal::Manager& api,
-    const api::client::internal::Blockchain& blockchain) noexcept
+    const api::client::internal::Blockchain& blockchain,
+    const ui::Blockchains type,
+    const SimpleCallback& cb) noexcept
     : BlockchainSelectionList(
           api,
           Identifier::Factory(),
-          SimpleCallback{},
+          cb,
           false
 #if OT_QT
           ,
@@ -94,6 +99,7 @@ BlockchainSelection::BlockchainSelection(
           )
     , Worker(api, {})
     , blockchain_(blockchain)
+    , filter_(filter(type))
 {
     init_executor({api.Endpoints().BlockchainStateChange()});
     pipeline_->Push(MakeWork(Work::init));
@@ -126,6 +132,40 @@ auto BlockchainSelection::Enable(const blockchain::Type type) const noexcept
     if (output) { process_state(type, true); }
 
     return output;
+}
+
+auto BlockchainSelection::filter(const ui::Blockchains type) noexcept
+    -> std::set<blockchain::Type>
+{
+    auto complete = blockchain::SupportedChains();
+
+    switch (type) {
+        case Blockchains::Main: {
+            auto output = decltype(complete){};
+
+            for (const auto& chain : complete) {
+                if (false == blockchain::IsTestnet(chain)) {
+                    output.emplace(chain);
+                }
+            }
+
+            return output;
+        }
+        case Blockchains::Test: {
+            auto output = decltype(complete){};
+
+            for (const auto& chain : complete) {
+                if (blockchain::IsTestnet(chain)) { output.emplace(chain); }
+            }
+
+            return output;
+        }
+        case Blockchains::All:
+        default: {
+
+            return complete;
+        }
+    }
 }
 
 auto BlockchainSelection::pipeline(const Message& in) noexcept -> void
@@ -179,6 +219,8 @@ auto BlockchainSelection::process_state(
     const blockchain::Type chain,
     const bool enabled) const noexcept -> void
 {
+    if (0 == filter_.count(chain)) { return; }
+
     auto custom = CustomData{};
     custom.emplace_back(new bool{enabled});
     const_cast<BlockchainSelection&>(*this).add_item(
@@ -189,7 +231,7 @@ auto BlockchainSelection::process_state(
 
 auto BlockchainSelection::startup() noexcept -> void
 {
-    for (const auto& chain : blockchain::SupportedChains()) {
+    for (const auto& chain : filter_) {
         auto custom = CustomData{};
         custom.emplace_back(new bool{blockchain_.IsEnabled(chain)});
         add_item(

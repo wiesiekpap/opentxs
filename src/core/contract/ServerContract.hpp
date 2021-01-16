@@ -117,6 +117,6 @@ private:
     Server(const Server&);
     Server(Server&&) = delete;
     auto operator=(const Server&) -> Server& = delete;
-    auto operator=(Server &&) -> Server& = delete;
+    auto operator=(Server&&) -> Server& = delete;
 };
 }  // namespace opentxs::contract::implementation

@@ -71,6 +71,6 @@ private:
     Getcfcheckpt(const Getcfcheckpt&) = delete;
     Getcfcheckpt(Getcfcheckpt&&) = delete;
     auto operator=(const Getcfcheckpt&) -> Getcfcheckpt& = delete;
-    auto operator=(Getcfcheckpt &&) -> Getcfcheckpt& = delete;
+    auto operator=(Getcfcheckpt&&) -> Getcfcheckpt& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

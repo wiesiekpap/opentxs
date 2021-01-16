@@ -148,6 +148,6 @@ private:
     Token() = delete;
     Token(Token&&) = delete;
     auto operator=(const Token&) -> Token& = delete;
-    auto operator=(Token &&) -> Token& = delete;
+    auto operator=(Token&&) -> Token& = delete;
 };
 }  // namespace opentxs::blind::token::implementation

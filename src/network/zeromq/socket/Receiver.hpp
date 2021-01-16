@@ -75,6 +75,6 @@ private:
     Receiver(const Receiver&) = delete;
     Receiver(Receiver&&) = delete;
     auto operator=(const Receiver&) -> Receiver& = delete;
-    auto operator=(Receiver &&) -> Receiver& = delete;
+    auto operator=(Receiver&&) -> Receiver& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

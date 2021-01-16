@@ -79,6 +79,6 @@ private:
     Reject(const Reject&) = delete;
     Reject(Reject&&) = delete;
     auto operator=(const Reject&) -> Reject& = delete;
-    auto operator=(Reject &&) -> Reject& = delete;
+    auto operator=(Reject&&) -> Reject& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message

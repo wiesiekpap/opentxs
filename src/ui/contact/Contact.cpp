@@ -125,14 +125,14 @@ auto Contact::ContactID() const noexcept -> std::string
 
 auto Contact::DisplayName() const noexcept -> std::string
 {
-    Lock lock(lock_);
+    rLock lock{recursive_lock_};
 
     return name_;
 }
 
 auto Contact::PaymentCode() const noexcept -> std::string
 {
-    Lock lock(lock_);
+    rLock lock{recursive_lock_};
 
     return payment_code_;
 }
@@ -140,7 +140,7 @@ auto Contact::PaymentCode() const noexcept -> std::string
 void Contact::process_contact(const opentxs::Contact& contact) noexcept
 {
     {
-        Lock lock(lock_);
+        rLock lock{recursive_lock_};
         name_ = contact.Label();
         payment_code_ = contact.PaymentCode();
     }

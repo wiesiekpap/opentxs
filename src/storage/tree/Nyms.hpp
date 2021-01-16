@@ -61,7 +61,7 @@ private:
     Nyms(const Nyms&) = delete;
     Nyms(Nyms&&) = delete;
     auto operator=(const Nyms&) -> Nyms = delete;
-    auto operator=(Nyms &&) -> Nyms = delete;
+    auto operator=(Nyms&&) -> Nyms = delete;
 
 public:
     auto Exists(const std::string& id) const -> bool;

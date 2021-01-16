@@ -90,6 +90,6 @@ private:
     Cfcheckpt(const Cfcheckpt&) = delete;
     Cfcheckpt(Cfcheckpt&&) = delete;
     auto operator=(const Cfcheckpt&) -> Cfcheckpt& = delete;
-    auto operator=(Cfcheckpt &&) -> Cfcheckpt& = delete;
+    auto operator=(Cfcheckpt&&) -> Cfcheckpt& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

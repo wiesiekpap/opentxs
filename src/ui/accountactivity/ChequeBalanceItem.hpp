@@ -95,6 +95,6 @@ private:
     ChequeBalanceItem(const ChequeBalanceItem&) = delete;
     ChequeBalanceItem(ChequeBalanceItem&&) = delete;
     auto operator=(const ChequeBalanceItem&) -> ChequeBalanceItem& = delete;
-    auto operator=(ChequeBalanceItem &&) -> ChequeBalanceItem& = delete;
+    auto operator=(ChequeBalanceItem&&) -> ChequeBalanceItem& = delete;
 };
 }  // namespace opentxs::ui::implementation

@@ -79,6 +79,6 @@ private:
     Connection(const Connection&);
     Connection(Connection&&) = delete;
     auto operator=(const Connection&) -> Connection& = delete;
-    auto operator=(Connection &&) -> Connection& = delete;
+    auto operator=(Connection&&) -> Connection& = delete;
 };
 }  // namespace opentxs::contract::peer::reply::implementation

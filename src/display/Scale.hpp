@@ -53,6 +53,6 @@ private:
     std::unique_ptr<Imp> imp_;
 
     auto operator=(const Scale&) -> Scale& = delete;
-    auto operator=(Scale &&) -> Scale& = delete;
+    auto operator=(Scale&&) -> Scale& = delete;
 };
 }  // namespace opentxs::display

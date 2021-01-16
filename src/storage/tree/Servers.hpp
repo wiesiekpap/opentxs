@@ -56,7 +56,7 @@ private:
     Servers(const Servers&) = delete;
     Servers(Servers&&) = delete;
     auto operator=(const Servers&) -> Servers = delete;
-    auto operator=(Servers &&) -> Servers = delete;
+    auto operator=(Servers&&) -> Servers = delete;
 
 public:
     auto Alias(const std::string& id) const -> std::string;

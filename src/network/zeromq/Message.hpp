@@ -75,6 +75,6 @@ private:
 
     Message(Message&&) = delete;
     auto operator=(const Message&) -> Message& = delete;
-    auto operator=(Message &&) -> Message& = delete;
+    auto operator=(Message&&) -> Message& = delete;
 };
 }  // namespace opentxs::network::zeromq::implementation

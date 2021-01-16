@@ -48,6 +48,6 @@ private:
     Publish(const Publish&) = delete;
     Publish(Publish&&) = delete;
     auto operator=(const Publish&) -> Publish& = delete;
-    auto operator=(Publish &&) -> Publish& = delete;
+    auto operator=(Publish&&) -> Publish& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

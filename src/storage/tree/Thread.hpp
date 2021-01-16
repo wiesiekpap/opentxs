@@ -81,7 +81,7 @@ private:
     Thread(const Thread&) = delete;
     Thread(Thread&&) = delete;
     auto operator=(const Thread&) -> Thread = delete;
-    auto operator=(Thread &&) -> Thread = delete;
+    auto operator=(Thread&&) -> Thread = delete;
 
 public:
     auto Alias() const -> std::string;

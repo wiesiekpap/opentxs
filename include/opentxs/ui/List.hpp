@@ -6,6 +6,9 @@
 #ifndef OPENTXS_UI_LIST_HPP
 #define OPENTXS_UI_LIST_HPP
 
+#include <cassert>
+#include <limits>
+
 #ifndef Q_MOC_RUN
 #include "opentxs/Forward.hpp"  // IWYU pragma: associated
 
@@ -51,7 +54,7 @@ struct OPENTXS_EXPORT BlankModel final : public QAbstractItemModel {
 public:
     int columnCount(const QModelIndex& = QModelIndex()) const noexcept final
     {
-        return columns_;
+        return static_cast<int>(columns_);
     }
     QVariant data(const QModelIndex&, int = Qt::DisplayRole)
         const noexcept final
@@ -72,6 +75,7 @@ public:
     BlankModel(const std::size_t columns)
         : columns_(columns)
     {
+        assert(columns_ <= std::numeric_limits<int>::max());
     }
 
 private:

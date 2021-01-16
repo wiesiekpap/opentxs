@@ -50,6 +50,6 @@ private:
     PairEventListener(const PairEventListener&) = delete;
     PairEventListener(PairEventListener&&) = delete;
     auto operator=(const PairEventListener&) -> PairEventListener& = delete;
-    auto operator=(PairEventListener &&) -> PairEventListener& = delete;
+    auto operator=(PairEventListener&&) -> PairEventListener& = delete;
 };
 }  // namespace opentxs::network::zeromq::implementation

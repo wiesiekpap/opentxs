@@ -60,6 +60,6 @@ private:
     EcdsaProvider(const EcdsaProvider&) = delete;
     EcdsaProvider(EcdsaProvider&&) = delete;
     auto operator=(const EcdsaProvider&) -> EcdsaProvider& = delete;
-    auto operator=(EcdsaProvider &&) -> EcdsaProvider& = delete;
+    auto operator=(EcdsaProvider&&) -> EcdsaProvider& = delete;
 };
 }  // namespace opentxs::crypto::implementation

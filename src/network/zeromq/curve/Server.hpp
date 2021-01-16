@@ -56,6 +56,6 @@ private:
     Server(const Server&) = delete;
     Server(Server&&) = delete;
     auto operator=(const Server&) -> Server& = delete;
-    auto operator=(Server &&) -> Server& = delete;
+    auto operator=(Server&&) -> Server& = delete;
 };
 }  // namespace opentxs::network::zeromq::curve::implementation

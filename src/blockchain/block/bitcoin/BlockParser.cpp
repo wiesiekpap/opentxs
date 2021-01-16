@@ -11,7 +11,6 @@
 #include <iterator>
 #include <map>
 #include <stdexcept>
-#include <string_view>
 #include <vector>
 
 #include "blockchain/bitcoin/CompactSize.hpp"

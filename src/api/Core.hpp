@@ -155,6 +155,6 @@ private:
     Core(const Core&) = delete;
     Core(Core&&) = delete;
     auto operator=(const Core&) -> Core& = delete;
-    auto operator=(Core &&) -> Core& = delete;
+    auto operator=(Core&&) -> Core& = delete;
 };
 }  // namespace opentxs::api::implementation

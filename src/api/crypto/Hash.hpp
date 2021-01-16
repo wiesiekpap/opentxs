@@ -152,6 +152,6 @@ private:
     Hash(const Hash&) = delete;
     Hash(Hash&&) = delete;
     auto operator=(const Hash&) -> Hash& = delete;
-    auto operator=(Hash &&) -> Hash& = delete;
+    auto operator=(Hash&&) -> Hash& = delete;
 };
 }  // namespace opentxs::api::crypto::implementation

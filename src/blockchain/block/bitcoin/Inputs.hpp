@@ -129,6 +129,6 @@ private:
     Inputs() = delete;
     Inputs(Inputs&&) = delete;
     auto operator=(const Inputs&) -> Inputs& = delete;
-    auto operator=(Inputs &&) -> Inputs& = delete;
+    auto operator=(Inputs&&) -> Inputs& = delete;
 };
 }  // namespace opentxs::blockchain::block::bitcoin::implementation

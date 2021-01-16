@@ -76,6 +76,6 @@ private:
     PendingSend(const PendingSend&) = delete;
     PendingSend(PendingSend&&) = delete;
     auto operator=(const PendingSend&) -> PendingSend& = delete;
-    auto operator=(PendingSend &&) -> PendingSend& = delete;
+    auto operator=(PendingSend&&) -> PendingSend& = delete;
 };
 }  // namespace opentxs::ui::implementation

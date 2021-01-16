@@ -49,7 +49,7 @@ private:
     PeerRequests(const PeerRequests&) = delete;
     PeerRequests(PeerRequests&&) = delete;
     auto operator=(const PeerRequests&) -> PeerRequests = delete;
-    auto operator=(PeerRequests &&) -> PeerRequests = delete;
+    auto operator=(PeerRequests&&) -> PeerRequests = delete;
 
 public:
     auto Load(

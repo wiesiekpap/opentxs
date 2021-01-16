@@ -180,6 +180,6 @@ private:
     Header() = delete;
     Header(Header&&) = delete;
     auto operator=(const Header&) -> Header& = delete;
-    auto operator=(Header &&) -> Header& = delete;
+    auto operator=(Header&&) -> Header& = delete;
 };
 }  // namespace opentxs::blockchain::block::bitcoin::implementation

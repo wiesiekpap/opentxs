@@ -84,6 +84,6 @@ private:
     Pair(const Pair&) = delete;
     Pair(Pair&&) = delete;
     auto operator=(const Pair&) -> Pair& = delete;
-    auto operator=(Pair &&) -> Pair& = delete;
+    auto operator=(Pair&&) -> Pair& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

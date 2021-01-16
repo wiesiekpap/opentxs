@@ -10,6 +10,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 
@@ -88,7 +89,9 @@ public:
 
     BlockchainSelection(
         const api::client::internal::Manager& api,
-        const api::client::internal::Blockchain& blockchain) noexcept;
+        const api::client::internal::Blockchain& blockchain,
+        const ui::Blockchains type,
+        const SimpleCallback& cb) noexcept;
 
     ~BlockchainSelection() final;
 
@@ -103,6 +106,10 @@ private:
     };
 
     const api::client::internal::Blockchain& blockchain_;
+    const std::set<blockchain::Type> filter_;
+
+    static auto filter(const ui::Blockchains type) noexcept
+        -> std::set<blockchain::Type>;
 
     auto process_state(const blockchain::Type chain, const bool enabled)
         const noexcept -> void;
@@ -119,6 +126,6 @@ private:
     BlockchainSelection(const BlockchainSelection&) = delete;
     BlockchainSelection(BlockchainSelection&&) = delete;
     auto operator=(const BlockchainSelection&) -> BlockchainSelection& = delete;
-    auto operator=(BlockchainSelection &&) -> BlockchainSelection& = delete;
+    auto operator=(BlockchainSelection&&) -> BlockchainSelection& = delete;
 };
 }  // namespace opentxs::ui::implementation

@@ -310,6 +310,6 @@ private:
     PeerManager(const PeerManager&) = delete;
     PeerManager(PeerManager&&) = delete;
     auto operator=(const PeerManager&) -> PeerManager& = delete;
-    auto operator=(PeerManager &&) -> PeerManager& = delete;
+    auto operator=(PeerManager&&) -> PeerManager& = delete;
 };
 }  // namespace opentxs::blockchain::client::implementation

@@ -58,6 +58,6 @@ private:
     Config(const Config&) = delete;
     Config(Config&&) = delete;
     auto operator=(const Config&) -> Config& = delete;
-    auto operator=(Config &&) -> Config& = delete;
+    auto operator=(Config&&) -> Config& = delete;
 };
 }  // namespace opentxs::api::crypto::implementation

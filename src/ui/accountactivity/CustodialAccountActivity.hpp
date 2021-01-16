@@ -135,7 +135,7 @@ private:
     CustodialAccountActivity(CustodialAccountActivity&&) = delete;
     auto operator=(const CustodialAccountActivity&)
         -> CustodialAccountActivity& = delete;
-    auto operator=(CustodialAccountActivity &&)
+    auto operator=(CustodialAccountActivity&&)
         -> CustodialAccountActivity& = delete;
 };
 }  // namespace opentxs::ui::implementation

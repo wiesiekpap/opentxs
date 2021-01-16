@@ -74,6 +74,6 @@ private:
     Bailment(const Bailment&);
     Bailment(Bailment&&) = delete;
     auto operator=(const Bailment&) -> Bailment& = delete;
-    auto operator=(Bailment &&) -> Bailment& = delete;
+    auto operator=(Bailment&&) -> Bailment& = delete;
 };
 }  // namespace opentxs::contract::peer::request::implementation

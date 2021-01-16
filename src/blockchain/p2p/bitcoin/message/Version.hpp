@@ -163,6 +163,6 @@ private:
     Version(const Version&) = delete;
     Version(Version&&) = delete;
     auto operator=(const Version&) -> Version& = delete;
-    auto operator=(Version &&) -> Version& = delete;
+    auto operator=(Version&&) -> Version& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

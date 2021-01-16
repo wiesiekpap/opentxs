@@ -421,6 +421,6 @@ private:
     Peer(const Peer&) = delete;
     Peer(Peer&&) = delete;
     auto operator=(const Peer&) -> Peer& = delete;
-    auto operator=(Peer &&) -> Peer& = delete;
+    auto operator=(Peer&&) -> Peer& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::implementation

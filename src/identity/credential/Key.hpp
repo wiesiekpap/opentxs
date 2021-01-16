@@ -167,6 +167,6 @@ private:
     Key(const Key&) = delete;
     Key(Key&&) = delete;
     auto operator=(const Key&) -> Key& = delete;
-    auto operator=(Key &&) -> Key& = delete;
+    auto operator=(Key&&) -> Key& = delete;
 };
 }  // namespace opentxs::identity::credential::implementation

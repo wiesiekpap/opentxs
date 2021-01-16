@@ -437,6 +437,6 @@ private:
     OTX(const OTX&) = delete;
     OTX(OTX&&) = delete;
     auto operator=(const OTX&) -> OTX& = delete;
-    auto operator=(OTX &&) -> OTX& = delete;
+    auto operator=(OTX&&) -> OTX& = delete;
 };
 }  // namespace opentxs::api::client::implementation

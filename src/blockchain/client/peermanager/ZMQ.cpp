@@ -266,7 +266,7 @@ private:
     ZMQIncomingConnectionManager(ZMQIncomingConnectionManager&&) = delete;
     auto operator=(const ZMQIncomingConnectionManager&)
         -> ZMQIncomingConnectionManager& = delete;
-    auto operator=(ZMQIncomingConnectionManager &&)
+    auto operator=(ZMQIncomingConnectionManager&&)
         -> ZMQIncomingConnectionManager& = delete;
 };
 

@@ -119,6 +119,6 @@ private:
     BlockchainBalanceItem(BlockchainBalanceItem&&) = delete;
     auto operator=(const BlockchainBalanceItem&)
         -> BlockchainBalanceItem& = delete;
-    auto operator=(BlockchainBalanceItem &&) -> BlockchainBalanceItem& = delete;
+    auto operator=(BlockchainBalanceItem&&) -> BlockchainBalanceItem& = delete;
 };
 }  // namespace opentxs::ui::implementation

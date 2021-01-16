@@ -256,6 +256,6 @@ private:
     Network(const Network&) = delete;
     Network(Network&&) = delete;
     auto operator=(const Network&) -> Network& = delete;
-    auto operator=(Network &&) -> Network& = delete;
+    auto operator=(Network&&) -> Network& = delete;
 };
 }  // namespace opentxs::blockchain::client::implementation

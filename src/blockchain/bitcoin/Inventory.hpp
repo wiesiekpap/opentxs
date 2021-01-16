@@ -76,6 +76,6 @@ private:
 
     Inventory() = delete;
     auto operator=(const Inventory&) -> Inventory& = delete;
-    auto operator=(Inventory &&) -> Inventory& = delete;
+    auto operator=(Inventory&&) -> Inventory& = delete;
 };
 }  // namespace opentxs::blockchain::bitcoin

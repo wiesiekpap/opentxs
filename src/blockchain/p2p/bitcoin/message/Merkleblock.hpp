@@ -94,6 +94,6 @@ private:
     Merkleblock(const Merkleblock&) = delete;
     Merkleblock(Merkleblock&&) = delete;
     auto operator=(const Merkleblock&) -> Merkleblock& = delete;
-    auto operator=(Merkleblock &&) -> Merkleblock& = delete;
+    auto operator=(Merkleblock&&) -> Merkleblock& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message

@@ -72,6 +72,6 @@ private:
     StorageFSGC(const StorageFSGC&) = delete;
     StorageFSGC(StorageFSGC&&) = delete;
     auto operator=(const StorageFSGC&) -> StorageFSGC& = delete;
-    auto operator=(StorageFSGC &&) -> StorageFSGC& = delete;
+    auto operator=(StorageFSGC&&) -> StorageFSGC& = delete;
 };
 }  // namespace opentxs::storage::implementation

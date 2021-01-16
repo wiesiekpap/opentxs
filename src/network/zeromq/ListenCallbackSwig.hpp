@@ -44,6 +44,6 @@ private:
     ListenCallbackSwig(const ListenCallbackSwig&) = delete;
     ListenCallbackSwig(ListenCallbackSwig&&) = delete;
     auto operator=(const ListenCallbackSwig&) -> ListenCallbackSwig& = delete;
-    auto operator=(ListenCallbackSwig &&) -> ListenCallbackSwig& = delete;
+    auto operator=(ListenCallbackSwig&&) -> ListenCallbackSwig& = delete;
 };
 }  // namespace opentxs::network::zeromq::implementation

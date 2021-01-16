@@ -424,7 +424,7 @@ auto ActivityThread::process_drafts() noexcept -> bool
         }
     }
 
-    Lock widgetLock(lock_);
+    rLock widgetLock(recursive_lock_);
 
     for (const auto& id : deleted) { delete_item(widgetLock, id); }
 
@@ -643,7 +643,7 @@ void ActivityThread::startup() noexcept
 
 auto ActivityThread::ThreadID() const noexcept -> std::string
 {
-    Lock lock(lock_);
+    rLock lock{recursive_lock_};
 
     return threadID_->str();
 }

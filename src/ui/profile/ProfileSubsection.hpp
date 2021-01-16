@@ -142,7 +142,7 @@ private:
     ProfileSubsection(const ProfileSubsection&) = delete;
     ProfileSubsection(ProfileSubsection&&) = delete;
     auto operator=(const ProfileSubsection&) -> ProfileSubsection& = delete;
-    auto operator=(ProfileSubsection &&) -> ProfileSubsection& = delete;
+    auto operator=(ProfileSubsection&&) -> ProfileSubsection& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

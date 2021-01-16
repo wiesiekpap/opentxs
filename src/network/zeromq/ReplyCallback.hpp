@@ -29,6 +29,6 @@ private:
     ReplyCallback(const ReplyCallback&) = delete;
     ReplyCallback(ReplyCallback&&) = delete;
     auto operator=(const ReplyCallback&) -> ReplyCallback& = delete;
-    auto operator=(ReplyCallback &&) -> ReplyCallback& = delete;
+    auto operator=(ReplyCallback&&) -> ReplyCallback& = delete;
 };
 }  // namespace opentxs::network::zeromq::implementation

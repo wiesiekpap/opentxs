@@ -176,7 +176,7 @@ auto StorageFS::sync(const std::string& path) const -> bool
         FileDescriptor(const FileDescriptor&) = delete;
         FileDescriptor(FileDescriptor&&) = delete;
         auto operator=(const FileDescriptor&) -> FileDescriptor& = delete;
-        auto operator=(FileDescriptor &&) -> FileDescriptor& = delete;
+        auto operator=(FileDescriptor&&) -> FileDescriptor& = delete;
     };
 
     FileDescriptor fd(path);

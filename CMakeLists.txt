@@ -41,17 +41,24 @@ else()
   set(OPENTXS_BUILD_TESTS_DEFAULT OFF)
 endif()
 
-if(WIN32)
+if(DEFINED VCPKG_TARGET_TRIPLET)
   set(OT_USE_VCPKG_TARGETS_DEFAULT ON)
-  set(OT_WITH_BLOCKCHAIN_DEFAULT OFF)
-  set(OT_SCRIPT_USING_CHAI_DEFAULT OFF)
-  set(OT_ENABLE_RPC_DEFAULT OFF)
 else()
   set(OT_USE_VCPKG_TARGETS_DEFAULT OFF)
-  set(OT_WITH_BLOCKCHAIN_DEFAULT ON)
-  set(OT_SCRIPT_USING_CHAI_DEFAULT ON)
-  set(OT_ENABLE_RPC_DEFAULT ON)
 endif()
+
+if(WIN32)
+  set(OT_SCRIPT_USING_CHAI_DEFAULT OFF)
+else()
+  set(OT_SCRIPT_USING_CHAI_DEFAULT ON)
+endif()
+
+if(WIN32 OR APPLE)
+  set(OT_WITH_QT_DEFAULT ON)
+else()
+  set(OT_WITH_QT_DEFAULT OFF)
+endif()
+
 # -----------------------------------------------------------------------------
 # Options
 
@@ -71,15 +78,14 @@ option(OT_CRYPTO_SUPPORTED_KEY_ED25519 "Enable ed25519 key support" ON)
 option(OT_CRYPTO_SUPPORTED_KEY_RSA "Enable RSA key support" OFF)
 option(OT_CRYPTO_SUPPORTED_KEY_SECP256K1 "Enable secp256k1 key support" ON)
 option(OT_CRYPTO_USING_LIBSECP256K1 "Use libsecp256k1 crypto library" ON)
-option(
-  OT_WITH_BLOCKCHAIN "Enable blockchain client support"
-  ${OT_WITH_BLOCKCHAIN_DEFAULT}
-)
+option(OT_WITH_BLOCKCHAIN "Enable blockchain client support" ON)
 option(OT_CASH_USING_LUCRE "Enable Lucre support" OFF)
 option(OT_LUCRE_DEBUG "Output Lucre debug info" OFF)
 option(OT_SCRIPT_USING_CHAI "Use chaiscript" ${OT_SCRIPT_USING_CHAI_DEFAULT})
-option(OT_WITH_QT "Enable Qt model support for ui classes" OFF)
-option(OT_WITH_QML "Enable Qt QML model support for ui classes" OFF)
+option(
+  OT_WITH_QT "Enable Qt model support for ui classes" ${OT_WITH_QT_DEFAULT}
+)
+option(OT_WITH_QML "Enable Qt QML model support for ui classes" ${OT_WITH_QT})
 option(OT_WITH_JAVA "Build with Java binding" OFF)
 option(OT_OPENSSL_FLAVOR_LIBRESSL "Assume OpenSSL library is LibreSSL" OFF)
 option(
@@ -113,8 +119,12 @@ if(NOT OT_WITH_QT)
   set(OT_WITH_QML OFF)
 endif()
 
-if(ANDROID OR OT_USE_VCPKG_TARGETS)
+if(ANDROID)
   set(OT_INSTALL_LIBRARY_DEPENDENCIES_DEFAULT ON)
+elseif(OT_USE_VCPKG_TARGETS)
+  if("${VCPKG_TARGET_TRIPLET}" STREQUAL "x64-windows")
+    set(OT_INSTALL_LIBRARY_DEPENDENCIES_DEFAULT ON)
+  endif()
 else()
   set(OT_INSTALL_LIBRARY_DEPENDENCIES_DEFAULT OFF)
 endif()
@@ -160,44 +170,44 @@ endif()
 
 print_build_details(OPENTXS_PEDANTIC_BUILD OPENTXS_BUILD_TESTS)
 
-message(STATUS "Valgrind integration:   ${OT_VALGRIND}")
+message(STATUS "Valgrind integration:     ${OT_VALGRIND}")
 
 message(STATUS "Network plugins------------------------------")
-message(STATUS "DHT:                    ${OT_DHT}")
+message(STATUS "DHT:                      ${OT_DHT}")
 
 message(STATUS "Storage backends-----------------------------")
-message(STATUS "filesystem:             ${OT_STORAGE_FS}")
-message(STATUS "sqlite                  ${OT_STORAGE_SQLITE}")
-message(STATUS "LMDB                    ${OT_STORAGE_LMDB}")
+message(STATUS "filesystem:               ${OT_STORAGE_FS}")
+message(STATUS "sqlite                    ${OT_STORAGE_SQLITE}")
+message(STATUS "LMDB                      ${OT_STORAGE_LMDB}")
 
 message(STATUS "Key algorithms-------------------------------")
-message(STATUS "ed25519:                ${OT_CRYPTO_SUPPORTED_KEY_ED25519}")
-message(STATUS "RSA:                    ${OT_CRYPTO_SUPPORTED_KEY_RSA}")
-message(STATUS "secp256k1               ${OT_CRYPTO_SUPPORTED_KEY_SECP256K1}")
+message(STATUS "ed25519:                  ${OT_CRYPTO_SUPPORTED_KEY_ED25519}")
+message(STATUS "RSA:                      ${OT_CRYPTO_SUPPORTED_KEY_RSA}")
+message(STATUS "secp256k1                 ${OT_CRYPTO_SUPPORTED_KEY_SECP256K1}")
 
 message(STATUS "Crypto library providers---------------------")
-message(STATUS "OpenSSL:                ${OT_CRYPTO_USING_OPENSSL}")
-message(STATUS "libsecp256k1:           ${OT_CRYPTO_USING_LIBSECP256K1}")
+message(STATUS "OpenSSL:                  ${OT_CRYPTO_USING_OPENSSL}")
+message(STATUS "libsecp256k1:             ${OT_CRYPTO_USING_LIBSECP256K1}")
 
 message(STATUS "Blockchain-----------------------------------")
-message(STATUS "Blockchain client:      ${OT_WITH_BLOCKCHAIN}")
+message(STATUS "Blockchain client:        ${OT_WITH_BLOCKCHAIN}")
 
 message(STATUS "Cash library providers-----------------------")
-message(STATUS "Lucre:                  ${OT_CASH_USING_LUCRE}")
-message(STATUS "Lucre debug info:       ${OT_LUCRE_DEBUG}")
+message(STATUS "Lucre:                    ${OT_CASH_USING_LUCRE}")
+message(STATUS "Lucre debug info:         ${OT_LUCRE_DEBUG}")
 
 message(STATUS "Script engines-------------------------------")
-message(STATUS "Chai:                   ${OT_SCRIPT_USING_CHAI}")
+message(STATUS "Chai:                     ${OT_SCRIPT_USING_CHAI}")
 
 message(STATUS "UI-------------------------------------------")
-message(STATUS "Qt:                     ${OT_WITH_QT}")
-message(STATUS "QML:                    ${OT_WITH_QML}")
+message(STATUS "Qt:                       ${OT_WITH_QT}")
+message(STATUS "QML:                      ${OT_WITH_QML}")
 
 message(STATUS "Bindings ------------------------------------")
-message(STATUS "Java binding:           ${OT_WITH_JAVA}")
+message(STATUS "Java binding:             ${OT_WITH_JAVA}")
 
 message(STATUS "Extra ---------------------------------------")
-message(STATUS "RPC server:             ${OT_ENABLE_RPC}")
+message(STATUS "RPC server:               ${OT_ENABLE_RPC}")
 
 # -----------------------------------------------------------------------------
 # Dependencies

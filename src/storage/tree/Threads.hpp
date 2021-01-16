@@ -108,7 +108,7 @@ private:
     Threads(const Threads&) = delete;
     Threads(Threads&&) = delete;
     auto operator=(const Threads&) -> Threads = delete;
-    auto operator=(Threads &&) -> Threads = delete;
+    auto operator=(Threads&&) -> Threads = delete;
 };
 }  // namespace storage
 }  // namespace opentxs

@@ -15,7 +15,6 @@
 #include "internal/core/Core.hpp"
 #include "internal/ui/UI.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "ui/base/Items.hpp"
 #include "ui/base/Widget.hpp"
@@ -35,8 +34,7 @@ template <
     typename PrimaryID>
 class List : virtual public ExternalInterface,
              virtual public InternalInterface,
-             public Widget,
-             public Lockable
+             public Widget
 #if OT_QT
     ,
              public QAbstractItemModel
@@ -111,14 +109,14 @@ public:
 
     auto First() const noexcept -> SharedPimpl<RowInterface> override
     {
-        Lock lock(lock_);
+        rLock lock{recursive_lock_};
         counter_ = 0;
 
         return first(lock);
     }
     virtual auto last(const RowID& id) const noexcept -> bool override
     {
-        Lock lock(lock_);
+        rLock lock{recursive_lock_};
         const auto index = find_index(id);
 
         if (0 == items_.size()) { return true; }
@@ -133,7 +131,7 @@ public:
     }
     auto Next() const noexcept -> SharedPimpl<RowInterface> override
     {
-        Lock lock(lock_);
+        rLock lock{recursive_lock_};
 
         try {
 
@@ -171,7 +169,7 @@ protected:
     struct MyPointers {
         auto columnCount(const QModelIndex& parent) const noexcept -> int
         {
-            Lock lock(lock_);
+            auto lock = Lock{lock_};
             const auto* pointer = get_pointer(parent);
 
             if ((nullptr != pointer) && exists(lock, pointer)) {
@@ -184,7 +182,7 @@ protected:
 
         auto data(const QModelIndex& index, int role) const noexcept -> QVariant
         {
-            Lock lock(lock_);
+            auto lock = Lock{lock_};
             const auto* pointer = get_pointer(index);
 
             if ((nullptr != pointer) && exists(lock, pointer)) {
@@ -197,7 +195,7 @@ protected:
         auto index(int row, int column, const QModelIndex& parent)
             const noexcept -> QModelIndex
         {
-            Lock lock(lock_);
+            auto lock = Lock{lock_};
             const auto* pointer = get_pointer(parent);
 
             if ((nullptr != pointer) && exists(lock, pointer)) {
@@ -209,7 +207,7 @@ protected:
         }
         auto parent(const QModelIndex& index) const noexcept -> QModelIndex
         {
-            Lock lock(lock_);
+            auto lock = Lock{lock_};
             const auto* pointer = get_pointer(index);
 
             if ((nullptr != pointer) && exists(lock, pointer)) {
@@ -221,7 +219,7 @@ protected:
         }
         auto rowCount(const QModelIndex& parent) const noexcept -> int
         {
-            Lock lock(lock_);
+            auto lock = Lock{lock_};
             const auto* pointer = get_pointer(parent);
 
             if ((nullptr != pointer) && exists(lock, pointer)) {
@@ -234,12 +232,12 @@ protected:
 
         auto add(const void* child) const noexcept -> void
         {
-            Lock lock(lock_);
+            auto lock = Lock{lock_};
             valid_.insert(reinterpret_cast<std::uintptr_t>(child));
         }
         auto remove(const void* child) const noexcept -> void
         {
-            Lock lock(lock_);
+            auto lock = Lock{lock_};
             valid_.erase(reinterpret_cast<std::uintptr_t>(child));
         }
 
@@ -247,13 +245,15 @@ protected:
         mutable std::mutex lock_{};
         mutable std::set<std::uintptr_t> valid_{};
 
-        auto exists(const Lock& lock, const void* p) const noexcept -> bool
+        auto exists(const Lock&, const void* p) const noexcept -> bool
         {
             return 0 < valid_.count(reinterpret_cast<std::uintptr_t>(p));
         }
     };
 #endif  // OT_QT
 
+    mutable std::recursive_mutex recursive_lock_;
+    mutable std::shared_mutex shared_lock_;
 #if OT_QT
     mutable std::atomic<int> row_count_;
     const int column_count_;
@@ -291,14 +291,12 @@ protected:
 #endif  // OT_QT
     auto delete_inactive(const std::set<RowID>& active) const noexcept -> void
     {
-        Lock lock(lock_);
+        rLock lock{recursive_lock_};
         delete_inactive(lock, active);
     }
-    auto delete_inactive(const Lock& lock, const std::set<RowID>& active)
+    auto delete_inactive(const rLock& lock, const std::set<RowID>& active)
         const noexcept -> void
     {
-        OT_ASSERT(verify_lock(lock));
-
         const auto existing = items_.active();
         auto deleteIDs = std::vector<RowID>{};
         std::set_difference(
@@ -314,13 +312,11 @@ protected:
     }
     auto delete_item(const RowID& id) const noexcept -> void
     {
-        Lock lock(lock_);
+        rLock lock{recursive_lock_};
         delete_item(lock, id);
     }
-    auto delete_item(const Lock& lock, const RowID& id) const noexcept -> void
+    auto delete_item(const rLock&, const RowID& id) const noexcept -> void
     {
-        OT_ASSERT(verify_lock(lock));
-
         auto position = items_.find_delete_position(id);
 
         if (false == position.has_value()) { return; }
@@ -363,8 +359,7 @@ protected:
         }
     }
 #endif  // OT_QT
-    virtual auto first(const Lock& lock) const noexcept
-        -> SharedPimpl<RowInterface>
+    virtual auto first(const rLock&) const noexcept -> SharedPimpl<RowInterface>
     {
         try {
 
@@ -378,12 +373,12 @@ protected:
     auto get_index(const int row, const int column) const noexcept
         -> QModelIndex
     {
-        Lock lock(lock_);
+        rLock lock{recursive_lock_};
 
         return get_index(lock, row, column);
     }
 #endif  // OT_QT
-    virtual auto lookup(const Lock& lock, const RowID& id) const noexcept
+    virtual auto lookup(const rLock&, const RowID& id) const noexcept
         -> const RowInternal&
     {
         try {
@@ -402,7 +397,7 @@ protected:
         const SortKey& index,
         CustomData& custom) noexcept -> void
     {
-        Lock lock(lock_);
+        rLock lock{recursive_lock_};
         auto existing = find_index(id);
 
         if (existing.has_value()) {
@@ -421,7 +416,7 @@ protected:
     auto init() noexcept -> void {}
     auto row_modified(const RowID& id) noexcept -> void
     {
-        Lock lock(lock_);
+        rLock lock{recursive_lock_};
         row_modified(id);
     }
     virtual auto row_modified(const Lock&, const RowID& id) noexcept -> void
@@ -461,6 +456,8 @@ protected:
         const bool subnode = true,
         const SimpleCallback& cb = {}) noexcept
         : Widget(api, widgetID, cb)
+        , recursive_lock_()
+        , shared_lock_()
 #if OT_QT
         , row_count_(startRow)
         , column_count_(columns)
@@ -570,8 +567,8 @@ private:
     {
         const_cast<List&>(*this).endRemoveRows();
     }
-    auto get_index(const Lock& lock, const int row, const int column)
-        const noexcept -> QModelIndex
+    auto get_index(const rLock&, const int row, const int column) const noexcept
+        -> QModelIndex
     {
         if (column_count_ < column) { return {}; }
         if (0 > row) { return {}; }
@@ -590,13 +587,11 @@ private:
     }
 #endif  // OT_QT
     auto insert_item(
-        const Lock& lock,
+        const rLock&,
         const RowID& id,
         const SortKey& key,
         CustomData& custom) noexcept -> void
     {
-        OT_ASSERT(verify_lock(lock));
-
         auto pointer = construct_row(id, key, custom);
 
         if (false == bool(pointer)) { return; }
@@ -619,13 +614,11 @@ private:
     auto me() const noexcept -> QModelIndex override { return {}; }
 #endif  // OT_QT
     auto move_item(
-        const Lock& lock,
+        const rLock&,
         const RowID& id,
         const SortKey& key,
         CustomData& custom) noexcept -> void
     {
-        OT_ASSERT(verify_lock(lock));
-
         auto move = items_.find_move_position(id, key, id);
 
         if (false == move.has_value()) { return; }
@@ -664,6 +657,6 @@ private:
     List(const List&) = delete;
     List(List&&) = delete;
     auto operator=(const List&) -> List& = delete;
-    auto operator=(List &&) -> List& = delete;
+    auto operator=(List&&) -> List& = delete;
 };
 }  // namespace opentxs::ui::implementation

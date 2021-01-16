@@ -75,6 +75,6 @@ private:
     Getcfilters(const Getcfilters&) = delete;
     Getcfilters(Getcfilters&&) = delete;
     auto operator=(const Getcfilters&) -> Getcfilters& = delete;
-    auto operator=(Getcfilters &&) -> Getcfilters& = delete;
+    auto operator=(Getcfilters&&) -> Getcfilters& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

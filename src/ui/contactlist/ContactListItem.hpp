@@ -67,7 +67,7 @@ public:
     auto reindex(const ContactListSortKey&, CustomData&) noexcept
         -> bool override;
     virtual auto reindex(
-        const Lock& lock,
+        const Lock&,
         const ContactListSortKey&,
         CustomData&) noexcept -> bool;
 
@@ -93,7 +93,7 @@ private:
     ContactListItem(const ContactListItem&) = delete;
     ContactListItem(ContactListItem&&) = delete;
     auto operator=(const ContactListItem&) -> ContactListItem& = delete;
-    auto operator=(ContactListItem &&) -> ContactListItem& = delete;
+    auto operator=(ContactListItem&&) -> ContactListItem& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

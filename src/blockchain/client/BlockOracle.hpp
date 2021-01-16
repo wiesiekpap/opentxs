@@ -172,6 +172,6 @@ private:
     BlockOracle(const BlockOracle&) = delete;
     BlockOracle(BlockOracle&&) = delete;
     auto operator=(const BlockOracle&) -> BlockOracle& = delete;
-    auto operator=(BlockOracle &&) -> BlockOracle& = delete;
+    auto operator=(BlockOracle&&) -> BlockOracle& = delete;
 };
 }  // namespace opentxs::blockchain::client::implementation

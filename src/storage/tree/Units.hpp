@@ -54,7 +54,7 @@ private:
     Units(const Units&) = delete;
     Units(Units&&) = delete;
     auto operator=(const Units&) -> Units = delete;
-    auto operator=(Units &&) -> Units = delete;
+    auto operator=(Units&&) -> Units = delete;
 
 public:
     auto Alias(const std::string& id) const -> std::string;

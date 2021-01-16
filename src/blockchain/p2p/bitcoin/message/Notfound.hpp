@@ -77,6 +77,6 @@ private:
     Notfound(const Notfound&) = delete;
     Notfound(Notfound&&) = delete;
     auto operator=(const Notfound&) -> Notfound& = delete;
-    auto operator=(Notfound &&) -> Notfound& = delete;
+    auto operator=(Notfound&&) -> Notfound& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

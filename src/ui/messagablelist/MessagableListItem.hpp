@@ -73,7 +73,7 @@ private:
     MessagableListItem(const MessagableListItem&) = delete;
     MessagableListItem(MessagableListItem&&) = delete;
     auto operator=(const MessagableListItem&) -> MessagableListItem& = delete;
-    auto operator=(MessagableListItem &&) -> MessagableListItem& = delete;
+    auto operator=(MessagableListItem&&) -> MessagableListItem& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

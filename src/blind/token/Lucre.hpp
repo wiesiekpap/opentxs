@@ -130,6 +130,6 @@ private:
     Lucre(const Lucre&);
     Lucre(Lucre&&) = delete;
     auto operator=(const Lucre&) -> Lucre& = delete;
-    auto operator=(Lucre &&) -> Lucre& = delete;
+    auto operator=(Lucre&&) -> Lucre& = delete;
 };
 }  // namespace opentxs::blind::token::implementation

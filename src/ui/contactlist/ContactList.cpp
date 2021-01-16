@@ -230,11 +230,9 @@ auto ContactList::find_row(const ContactListRowID& id) const noexcept -> int
 }
 #endif
 
-auto ContactList::first(const Lock& lock) const noexcept
+auto ContactList::first(const rLock&) const noexcept
     -> SharedPimpl<ContactListRowInterface>
 {
-    OT_ASSERT(verify_lock(lock))
-
     return SharedPimpl<ContactListRowInterface>(owner_);
 }
 
@@ -267,7 +265,7 @@ auto ContactList::last(const ContactListRowID& id) const noexcept -> bool
     }
 }
 
-auto ContactList::lookup(const Lock& lock, const ContactListRowID& id)
+auto ContactList::lookup(const rLock& lock, const ContactListRowID& id)
     const noexcept -> const ContactListRowInternal&
 {
     if (owner_contact_id_ == id) {
@@ -338,7 +336,7 @@ auto ContactList::row_modified(const Lock&, const ContactListRowID& id) noexcept
     if (id == owner_contact_id_) {
         row_modified(0, owner_.get());
     } else {
-        Lock lock(lock_);
+        rLock lock{recursive_lock_};
         const auto index = find_index(id);
 
         if (false == index.has_value()) { return; }

@@ -94,6 +94,6 @@ private:
     RSA() = delete;
     RSA(RSA&&) = delete;
     auto operator=(const RSA&) -> RSA& = delete;
-    auto operator=(RSA &&) -> RSA& = delete;
+    auto operator=(RSA&&) -> RSA& = delete;
 };
 }  // namespace opentxs::crypto::key::implementation

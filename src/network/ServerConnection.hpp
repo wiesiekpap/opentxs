@@ -159,6 +159,6 @@ private:
     ServerConnection(const ServerConnection&) = delete;
     ServerConnection(ServerConnection&&) = delete;
     auto operator=(const ServerConnection&) -> ServerConnection& = delete;
-    auto operator=(ServerConnection &&) -> ServerConnection& = delete;
+    auto operator=(ServerConnection&&) -> ServerConnection& = delete;
 };
 }  // namespace opentxs::network::implementation

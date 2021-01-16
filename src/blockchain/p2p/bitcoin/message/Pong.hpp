@@ -70,6 +70,6 @@ private:
     Pong(const Pong&) = delete;
     Pong(Pong&&) = delete;
     auto operator=(const Pong&) -> Pong& = delete;
-    auto operator=(Pong &&) -> Pong& = delete;
+    auto operator=(Pong&&) -> Pong& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

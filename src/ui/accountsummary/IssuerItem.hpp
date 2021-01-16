@@ -124,7 +124,7 @@ private:
     IssuerItem(const IssuerItem&) = delete;
     IssuerItem(IssuerItem&&) = delete;
     auto operator=(const IssuerItem&) -> IssuerItem& = delete;
-    auto operator=(IssuerItem &&) -> IssuerItem& = delete;
+    auto operator=(IssuerItem&&) -> IssuerItem& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

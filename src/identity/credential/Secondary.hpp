@@ -77,6 +77,6 @@ private:
     Secondary(const Secondary&) = delete;
     Secondary(Secondary&&) = delete;
     auto operator=(const Secondary&) -> Secondary& = delete;
-    auto operator=(Secondary &&) -> Secondary& = delete;
+    auto operator=(Secondary&&) -> Secondary& = delete;
 };
 }  // namespace opentxs::identity::credential::implementation

@@ -211,7 +211,7 @@ auto Profile::Delete(
     const int type,
     const std::string& claimID) const noexcept -> bool
 {
-    Lock lock(lock_);
+    rLock lock{recursive_lock_};
     auto& section = lookup(lock, static_cast<ProfileRowID>(sectionType));
 
     if (false == section.Valid()) { return false; }
@@ -221,7 +221,7 @@ auto Profile::Delete(
 
 auto Profile::DisplayName() const noexcept -> std::string
 {
-    Lock lock(lock_);
+    rLock lock{recursive_lock_};
 
     return name_;
 }
@@ -239,14 +239,14 @@ auto Profile::nym_name(
 
 auto Profile::PaymentCode() const noexcept -> std::string
 {
-    Lock lock(lock_);
+    rLock lock{recursive_lock_};
 
     return payment_code_;
 }
 
 void Profile::process_nym(const identity::Nym& nym) noexcept
 {
-    Lock lock(lock_);
+    rLock lock{recursive_lock_};
     name_ = nym.Alias();
     payment_code_ = nym.PaymentCode();
     lock.unlock();
@@ -292,7 +292,7 @@ auto Profile::SetActive(
     const std::string& claimID,
     const bool active) const noexcept -> bool
 {
-    Lock lock(lock_);
+    rLock lock{recursive_lock_};
     auto& section = lookup(lock, static_cast<ProfileRowID>(sectionType));
 
     if (false == section.Valid()) { return false; }
@@ -306,7 +306,7 @@ auto Profile::SetPrimary(
     const std::string& claimID,
     const bool primary) const noexcept -> bool
 {
-    Lock lock(lock_);
+    rLock lock{recursive_lock_};
     auto& section = lookup(lock, static_cast<ProfileRowID>(sectionType));
 
     if (false == section.Valid()) { return false; }
@@ -320,7 +320,7 @@ auto Profile::SetValue(
     const std::string& claimID,
     const std::string& value) const noexcept -> bool
 {
-    Lock lock(lock_);
+    rLock lock{recursive_lock_};
     auto& section = lookup(lock, static_cast<ProfileRowID>(sectionType));
 
     if (false == section.Valid()) { return false; }

@@ -181,6 +181,6 @@ private:
     NymFile(const NymFile&) = delete;
     NymFile(NymFile&&) = delete;
     auto operator=(const NymFile&) -> NymFile& = delete;
-    auto operator=(NymFile &&) -> NymFile& = delete;
+    auto operator=(NymFile&&) -> NymFile& = delete;
 };
 }  // namespace opentxs::implementation

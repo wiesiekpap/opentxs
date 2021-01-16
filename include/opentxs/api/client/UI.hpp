@@ -16,6 +16,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/protobuf/ContactEnums.pb.h"
+#include "opentxs/ui/Types.hpp"
 
 #ifdef SWIG
 // clang-format off
@@ -125,8 +126,9 @@ public:
         const Identifier& account) const noexcept = 0;
     OPENTXS_EXPORT virtual const identifier::Server& BlockchainNotaryID(
         const opentxs::blockchain::Type chain) const noexcept = 0;
-    OPENTXS_EXPORT virtual const ui::BlockchainSelection& BlockchainSelection()
-        const noexcept = 0;
+    OPENTXS_EXPORT virtual const ui::BlockchainSelection& BlockchainSelection(
+        const ui::Blockchains type,
+        const SimpleCallback updateCB = {}) const noexcept = 0;
     OPENTXS_EXPORT virtual const identifier::UnitDefinition& BlockchainUnitID(
         const opentxs::blockchain::Type chain) const noexcept = 0;
 #endif  // OT_BLOCKCHAIN
@@ -179,8 +181,9 @@ public:
         const std::size_t columns) const noexcept = 0;
     /// Caller does not own this pointer
 #if OT_BLOCKCHAIN
-    OPENTXS_EXPORT virtual ui::BlockchainSelectionQt* BlockchainSelectionQt()
-        const noexcept = 0;
+    OPENTXS_EXPORT virtual ui::BlockchainSelectionQt* BlockchainSelectionQt(
+        const ui::Blockchains type,
+        const SimpleCallback updateCB = {}) const noexcept = 0;
 #endif  // OT_BLOCKCHAIN
     OPENTXS_EXPORT virtual ui::ContactQt* ContactQt(
         const Identifier& contactID,

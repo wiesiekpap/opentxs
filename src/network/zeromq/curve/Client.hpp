@@ -78,6 +78,6 @@ private:
     Client(const Client&) = delete;
     Client(Client&&) = delete;
     auto operator=(const Client&) -> Client& = delete;
-    auto operator=(Client &&) -> Client& = delete;
+    auto operator=(Client&&) -> Client& = delete;
 };
 }  // namespace opentxs::network::zeromq::curve::implementation

@@ -111,6 +111,6 @@ private:
     ClientContext(otx::context::Client&&) = delete;
     auto operator=(const otx::context::Client&)
         -> otx::context::Client& = delete;
-    auto operator=(ClientContext &&) -> otx::context::Client& = delete;
+    auto operator=(ClientContext&&) -> otx::context::Client& = delete;
 };
 }  // namespace opentxs::otx::context::implementation

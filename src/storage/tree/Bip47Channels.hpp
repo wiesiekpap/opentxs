@@ -129,6 +129,6 @@ private:
     Bip47Channels(const Bip47Channels&) = delete;
     Bip47Channels(Bip47Channels&&) = delete;
     auto operator=(const Bip47Channels&) -> Bip47Channels = delete;
-    auto operator=(Bip47Channels &&) -> Bip47Channels = delete;
+    auto operator=(Bip47Channels&&) -> Bip47Channels = delete;
 };
 }  // namespace opentxs::storage

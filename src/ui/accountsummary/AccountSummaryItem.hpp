@@ -101,7 +101,7 @@ private:
     AccountSummaryItem(const AccountSummaryItem&) = delete;
     AccountSummaryItem(AccountSummaryItem&&) = delete;
     auto operator=(const AccountSummaryItem&) -> AccountSummaryItem& = delete;
-    auto operator=(AccountSummaryItem &&) -> AccountSummaryItem& = delete;
+    auto operator=(AccountSummaryItem&&) -> AccountSummaryItem& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

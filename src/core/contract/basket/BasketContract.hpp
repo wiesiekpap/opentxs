@@ -79,6 +79,6 @@ private:
     Basket(const Basket&);
     Basket(Basket&&) = delete;
     auto operator=(const Basket&) -> Basket& = delete;
-    auto operator=(Basket &&) -> Basket& = delete;
+    auto operator=(Basket&&) -> Basket& = delete;
 };
 }  // namespace opentxs::contract::unit::implementation

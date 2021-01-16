@@ -34,6 +34,6 @@ private:
     Sender(const Sender&) = delete;
     Sender(Sender&&) = delete;
     auto operator=(const Sender&) -> Sender& = delete;
-    auto operator=(Sender &&) -> Sender& = delete;
+    auto operator=(Sender&&) -> Sender& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

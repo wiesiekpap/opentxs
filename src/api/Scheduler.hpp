@@ -84,7 +84,7 @@ private:
     Scheduler(const Scheduler&) = delete;
     Scheduler(Scheduler&&) = delete;
     auto operator=(const Scheduler&) -> Scheduler& = delete;
-    auto operator=(Scheduler &&) -> Scheduler& = delete;
+    auto operator=(Scheduler&&) -> Scheduler& = delete;
 
     void thread();
 };

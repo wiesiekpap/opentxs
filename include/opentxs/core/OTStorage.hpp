@@ -69,17 +69,19 @@ class WalletData;
 
 // Currently supporting MsgPack and Protocol Buffers.
 //
-enum PackType             // PACKING TYPE
-{ PACK_MESSAGE_PACK = 0,  // Using MessagePack as packer.
-  PACK_PROTOCOL_BUFFERS,  // Using Google Protocol Buffers as packer.
-  PACK_TYPE_ERROR         // (Should never be.)
+enum PackType  // PACKING TYPE
+{
+    PACK_MESSAGE_PACK = 0,  // Using MessagePack as packer.
+    PACK_PROTOCOL_BUFFERS,  // Using Google Protocol Buffers as packer.
+    PACK_TYPE_ERROR         // (Should never be.)
 };
 
 // Currently supporting filesystem, with subclasses possible via API.
 //
-enum StorageType         // STORAGE TYPE
-{ STORE_FILESYSTEM = 0,  // Filesystem
-  STORE_TYPE_SUBCLASS    // (Subclass provided by API client via SWIG.)
+enum StorageType  // STORAGE TYPE
+{
+    STORE_FILESYSTEM = 0,  // Filesystem
+    STORE_TYPE_SUBCLASS    // (Subclass provided by API client via SWIG.)
 };
 
 extern const char* StoredObjectTypeStrings[];

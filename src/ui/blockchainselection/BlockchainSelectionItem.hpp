@@ -106,7 +106,7 @@ private:
     BlockchainSelectionItem(BlockchainSelectionItem&&) = delete;
     auto operator=(const BlockchainSelectionItem&)
         -> BlockchainSelectionItem& = delete;
-    auto operator=(BlockchainSelectionItem &&)
+    auto operator=(BlockchainSelectionItem&&)
         -> BlockchainSelectionItem& = delete;
 };
 }  // namespace opentxs::ui::implementation

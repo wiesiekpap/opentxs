@@ -117,6 +117,6 @@ private:
     Nym(const Nym&) = delete;
     Nym(Nym&&) = delete;
     auto operator=(const Nym&) -> Nym& = delete;
-    auto operator=(Nym &&) -> Nym& = delete;
+    auto operator=(Nym&&) -> Nym& = delete;
 };
 }  // namespace opentxs::identity::wot::verification::implementation

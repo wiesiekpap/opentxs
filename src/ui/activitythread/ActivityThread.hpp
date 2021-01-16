@@ -202,6 +202,6 @@ private:
     ActivityThread(const ActivityThread&) = delete;
     ActivityThread(ActivityThread&&) = delete;
     auto operator=(const ActivityThread&) -> ActivityThread& = delete;
-    auto operator=(ActivityThread &&) -> ActivityThread& = delete;
+    auto operator=(ActivityThread&&) -> ActivityThread& = delete;
 };
 }  // namespace opentxs::ui::implementation

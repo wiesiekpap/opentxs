@@ -72,6 +72,6 @@ private:
     Security(const Security&);
     Security(Security&&) = delete;
     auto operator=(const Security&) -> Security& = delete;
-    auto operator=(Security &&) -> Security& = delete;
+    auto operator=(Security&&) -> Security& = delete;
 };
 }  // namespace opentxs::contract::unit::implementation

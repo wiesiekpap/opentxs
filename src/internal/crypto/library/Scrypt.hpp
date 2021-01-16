@@ -32,6 +32,6 @@ private:
     Scrypt(const Scrypt&) = delete;
     Scrypt(Scrypt&&) = delete;
     auto operator=(const Scrypt&) -> Scrypt& = delete;
-    auto operator=(Scrypt &&) -> Scrypt& = delete;
+    auto operator=(Scrypt&&) -> Scrypt& = delete;
 };
 }  // namespace opentxs::crypto

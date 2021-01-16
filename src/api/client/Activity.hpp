@@ -202,6 +202,6 @@ private:
     Activity(const Activity&) = delete;
     Activity(Activity&&) = delete;
     auto operator=(const Activity&) -> Activity& = delete;
-    auto operator=(Activity &&) -> Activity& = delete;
+    auto operator=(Activity&&) -> Activity& = delete;
 };
 }  // namespace opentxs::api::client::implementation

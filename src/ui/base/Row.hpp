@@ -29,7 +29,7 @@ protected:
     Row(const Row&) = delete;
     Row(Row&&) = delete;
     auto operator=(const Row&) -> Row& = delete;
-    auto operator=(Row &&) -> Row& = delete;
+    auto operator=(Row&&) -> Row& = delete;
 
     virtual ~Row() = default;
 };
