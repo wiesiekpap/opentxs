@@ -22,6 +22,7 @@
 #include <chrono>
 #include <cinttypes>
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 #include "internal/api/Api.hpp"

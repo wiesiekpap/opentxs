@@ -100,6 +100,6 @@ private:
     Endpoints(const Endpoints&) = delete;
     Endpoints(Endpoints&&) = delete;
     auto operator=(const Endpoints&) -> Endpoints& = delete;
-    auto operator=(Endpoints &&) -> Endpoints& = delete;
+    auto operator=(Endpoints&&) -> Endpoints& = delete;
 };
 }  // namespace opentxs::api::implementation

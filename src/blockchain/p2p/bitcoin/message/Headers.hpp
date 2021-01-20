@@ -78,6 +78,6 @@ private:
     Headers(const Headers&) = delete;
     Headers(Headers&&) = delete;
     auto operator=(const Headers&) -> Headers& = delete;
-    auto operator=(Headers &&) -> Headers& = delete;
+    auto operator=(Headers&&) -> Headers& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

@@ -80,6 +80,6 @@ private:
     StoreSecret(const StoreSecret&);
     StoreSecret(StoreSecret&&) = delete;
     auto operator=(const StoreSecret&) -> StoreSecret& = delete;
-    auto operator=(StoreSecret &&) -> StoreSecret& = delete;
+    auto operator=(StoreSecret&&) -> StoreSecret& = delete;
 };
 }  // namespace opentxs::contract::peer::request::implementation

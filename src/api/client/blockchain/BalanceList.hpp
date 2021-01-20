@@ -119,6 +119,6 @@ private:
     BalanceList(const BalanceList&) = delete;
     BalanceList(BalanceList&&) = delete;
     auto operator=(const BalanceList&) -> BalanceList& = delete;
-    auto operator=(BalanceList &&) -> BalanceList& = delete;
+    auto operator=(BalanceList&&) -> BalanceList& = delete;
 };
 }  // namespace opentxs::api::client::blockchain::implementation

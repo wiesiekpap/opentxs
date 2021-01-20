@@ -10,6 +10,7 @@
 #include <chrono>
 #include <optional>
 #include <set>
+#include <type_traits>
 #include <vector>
 
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"

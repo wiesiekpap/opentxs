@@ -105,7 +105,7 @@ private:
     ContactItem(const ContactItem&) = delete;
     ContactItem(ContactItem&&) = delete;
     auto operator=(const ContactItem&) -> ContactItem& = delete;
-    auto operator=(ContactItem &&) -> ContactItem& = delete;
+    auto operator=(ContactItem&&) -> ContactItem& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

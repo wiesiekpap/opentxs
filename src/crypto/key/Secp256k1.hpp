@@ -101,6 +101,6 @@ private:
     Secp256k1(const Secp256k1&) noexcept;
     Secp256k1(Secp256k1&&) = delete;
     auto operator=(const Secp256k1&) -> Secp256k1& = delete;
-    auto operator=(Secp256k1 &&) -> Secp256k1& = delete;
+    auto operator=(Secp256k1&&) -> Secp256k1& = delete;
 };
 }  // namespace opentxs::crypto::key::implementation

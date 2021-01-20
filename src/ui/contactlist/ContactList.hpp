@@ -148,10 +148,10 @@ private:
 #if OT_QT
     auto find_row(const ContactListRowID& id) const noexcept -> int final;
 #endif
-    auto first(const Lock& lock) const noexcept
+    auto first(const rLock&) const noexcept
         -> SharedPimpl<ContactListRowInterface> final;
     auto last(const ContactListRowID& id) const noexcept -> bool final;
-    auto lookup(const Lock& lock, const ContactListRowID& id) const noexcept
+    auto lookup(const rLock&, const ContactListRowID& id) const noexcept
         -> const ContactListRowInternal& final;
 
     auto add_item(
@@ -169,6 +169,6 @@ private:
     ContactList(const ContactList&) = delete;
     ContactList(ContactList&&) = delete;
     auto operator=(const ContactList&) -> ContactList& = delete;
-    auto operator=(ContactList &&) -> ContactList& = delete;
+    auto operator=(ContactList&&) -> ContactList& = delete;
 };
 }  // namespace opentxs::ui::implementation

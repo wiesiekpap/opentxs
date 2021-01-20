@@ -39,7 +39,7 @@ protected:
     RowType(const RowType&) = delete;
     RowType(RowType&&) = delete;
     auto operator=(const RowType&) -> RowType& = delete;
-    auto operator=(RowType &&) -> RowType& = delete;
+    auto operator=(RowType&&) -> RowType& = delete;
 
     ~RowType() override = default;
 };

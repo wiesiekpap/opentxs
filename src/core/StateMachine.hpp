@@ -102,6 +102,6 @@ private:
     StateMachine(const StateMachine&) = delete;
     StateMachine(StateMachine&&) = delete;
     auto operator=(const StateMachine&) -> StateMachine& = delete;
-    auto operator=(StateMachine &&) -> StateMachine& = delete;
+    auto operator=(StateMachine&&) -> StateMachine& = delete;
 };
 }  // namespace opentxs::internal

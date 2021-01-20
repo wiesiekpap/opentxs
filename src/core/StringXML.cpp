@@ -48,7 +48,7 @@ private:
     StringXMLPvt(const StringXMLPvt&) = delete;
     StringXMLPvt(StringXMLPvt&&) = delete;
     auto operator=(const StringXMLPvt&) -> StringXMLPvt& = delete;
-    auto operator=(StringXMLPvt &&) -> StringXMLPvt& = delete;
+    auto operator=(StringXMLPvt&&) -> StringXMLPvt& = delete;
 };
 
 StringXML::StringXML()

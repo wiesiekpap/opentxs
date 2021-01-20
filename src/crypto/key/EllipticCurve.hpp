@@ -121,6 +121,6 @@ private:
     EllipticCurve() = delete;
     EllipticCurve(EllipticCurve&&) = delete;
     auto operator=(const EllipticCurve&) -> EllipticCurve& = delete;
-    auto operator=(EllipticCurve &&) -> EllipticCurve& = delete;
+    auto operator=(EllipticCurve&&) -> EllipticCurve& = delete;
 };
 }  // namespace opentxs::crypto::key::implementation

@@ -112,7 +112,7 @@ private:
     StorageMultiplex(const StorageMultiplex&) = delete;
     StorageMultiplex(StorageMultiplex&&) = delete;
     auto operator=(const StorageMultiplex&) -> StorageMultiplex& = delete;
-    auto operator=(StorageMultiplex &&) -> StorageMultiplex& = delete;
+    auto operator=(StorageMultiplex&&) -> StorageMultiplex& = delete;
 
     void Cleanup();
     void Cleanup_StorageMultiplex();

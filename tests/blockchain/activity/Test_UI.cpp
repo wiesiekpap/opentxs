@@ -46,6 +46,7 @@
 #include "opentxs/ui/BalanceItem.hpp"
 #include "opentxs/ui/BlockchainSelection.hpp"
 #include "opentxs/ui/BlockchainSelectionItem.hpp"
+#include "opentxs/ui/Blockchains.hpp"
 
 using Subchain = ot::api::client::blockchain::Subchain;
 
@@ -153,7 +154,13 @@ TEST_F(Test_BlockchainActivity, blank_account_list_qt)
 
 TEST_F(Test_BlockchainActivity, blockchain_selection)
 {
-    const auto& widget = api_.UI().BlockchainSelection();
+    auto counter = Counter{};
+    counter.expected_ = 7;
+    const auto& widget = api_.UI().BlockchainSelection(
+        ot::ui::Blockchains::All, make_cb(counter, "Blockchain selector"));
+
+    ASSERT_TRUE(wait_for_counter(counter));
+
     auto row = widget.First();
     auto expected{ot::blockchain::Type::Bitcoin};
 
@@ -230,7 +237,8 @@ TEST_F(Test_BlockchainActivity, blockchain_selection)
 #if OT_QT
 TEST_F(Test_BlockchainActivity, blockchain_selection_qt)
 {
-    const auto* pWidget = api_.UI().BlockchainSelectionQt();
+    const auto* pWidget =
+        api_.UI().BlockchainSelectionQt(ot::ui::Blockchains::All);
 
     ASSERT_NE(pWidget, nullptr);
 

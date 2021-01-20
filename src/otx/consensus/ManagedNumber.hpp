@@ -45,6 +45,6 @@ private:
     ManagedNumber(const ManagedNumber&) = delete;
     ManagedNumber(ManagedNumber&& rhs) = delete;
     auto operator=(const ManagedNumber&) -> ManagedNumber& = delete;
-    auto operator=(ManagedNumber &&) -> ManagedNumber& = delete;
+    auto operator=(ManagedNumber&&) -> ManagedNumber& = delete;
 };
 }  // namespace opentxs::otx::context::implementation

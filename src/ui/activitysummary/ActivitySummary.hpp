@@ -112,6 +112,6 @@ private:
     ActivitySummary(const ActivitySummary&) = delete;
     ActivitySummary(ActivitySummary&&) = delete;
     auto operator=(const ActivitySummary&) -> ActivitySummary& = delete;
-    auto operator=(ActivitySummary &&) -> ActivitySummary& = delete;
+    auto operator=(ActivitySummary&&) -> ActivitySummary& = delete;
 };
 }  // namespace opentxs::ui::implementation

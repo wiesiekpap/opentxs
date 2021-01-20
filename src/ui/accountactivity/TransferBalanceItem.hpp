@@ -95,6 +95,6 @@ private:
     TransferBalanceItem(const TransferBalanceItem&) = delete;
     TransferBalanceItem(TransferBalanceItem&&) = delete;
     auto operator=(const TransferBalanceItem&) -> TransferBalanceItem& = delete;
-    auto operator=(TransferBalanceItem &&) -> TransferBalanceItem& = delete;
+    auto operator=(TransferBalanceItem&&) -> TransferBalanceItem& = delete;
 };
 }  // namespace opentxs::ui::implementation

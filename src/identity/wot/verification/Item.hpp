@@ -120,6 +120,6 @@ private:
     Item(const Item&) = delete;
     Item(Item&&) = delete;
     auto operator=(const Item&) -> Item& = delete;
-    auto operator=(Item &&) -> Item& = delete;
+    auto operator=(Item&&) -> Item& = delete;
 };
 }  // namespace opentxs::identity::wot::verification::implementation

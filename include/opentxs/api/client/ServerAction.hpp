@@ -156,7 +156,7 @@ protected:
 
 private:
     ServerAction(const ServerAction&) = delete;
-    ServerAction(ServerAction &&) = delete;
+    ServerAction(ServerAction&&) = delete;
     ServerAction& operator=(const ServerAction&) = delete;
     ServerAction& operator=(ServerAction&&) = delete;
 };

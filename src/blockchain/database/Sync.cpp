@@ -7,32 +7,18 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "blockchain/database/Sync.hpp"  // IWYU pragma: associated
 
-#include <boost/container/flat_map.hpp>
-#include <algorithm>
 #include <iosfwd>
-#include <memory>
-#include <string>
-#include <string_view>
-#include <utility>
 
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
-#include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/blockchain/FilterType.hpp"
-#include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/blockchain/block/bitcoin/Header.hpp"
-#include "opentxs/blockchain/client/FilterOracle.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "opentxs/protobuf/BlockchainP2PSync.pb.h"
 #include "util/LMDB.hpp"
 
 #define OT_METHOD "opentxs::blockchain::database::Sync::"

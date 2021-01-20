@@ -1245,8 +1245,8 @@ auto Blockchain::stop(const Lock& lock, const Chain type) const noexcept -> bool
 }
 #endif  // OT_BLOCKCHAIN
 
-auto Blockchain::UpdateElement([
-    [maybe_unused]] std::vector<ReadView>& pubkeyHashes) const noexcept -> void
+auto Blockchain::UpdateElement(
+    [[maybe_unused]] std::vector<ReadView>& pubkeyHashes) const noexcept -> void
 {
 #if OT_BLOCKCHAIN
     auto patterns = std::vector<PatternID>{};

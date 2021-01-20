@@ -85,7 +85,7 @@ private:
     BlockchainActivityThreadItem(BlockchainActivityThreadItem&&) = delete;
     auto operator=(const BlockchainActivityThreadItem&)
         -> BlockchainActivityThreadItem& = delete;
-    auto operator=(BlockchainActivityThreadItem &&)
+    auto operator=(BlockchainActivityThreadItem&&)
         -> BlockchainActivityThreadItem& = delete;
 };
 }  // namespace opentxs::ui::implementation

@@ -102,6 +102,6 @@ private:
     Set(const Set&) = delete;
     Set(Set&&) = delete;
     auto operator=(const Set&) -> Set& = delete;
-    auto operator=(Set &&) -> Set& = delete;
+    auto operator=(Set&&) -> Set& = delete;
 };
 }  // namespace opentxs::identity::wot::verification::implementation

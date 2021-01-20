@@ -49,7 +49,7 @@ private:
     PeerReplies(const PeerReplies&) = delete;
     PeerReplies(PeerReplies&&) = delete;
     auto operator=(const PeerReplies&) -> PeerReplies = delete;
-    auto operator=(PeerReplies &&) -> PeerReplies = delete;
+    auto operator=(PeerReplies&&) -> PeerReplies = delete;
 
 public:
     auto Load(

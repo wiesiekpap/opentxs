@@ -110,7 +110,7 @@ private:
     BitReader(const BitReader&) = delete;
     BitReader(BitReader&&) = delete;
     auto operator=(const BitReader&) -> BitReader& = delete;
-    auto operator=(BitReader &&) -> BitReader& = delete;
+    auto operator=(BitReader&&) -> BitReader& = delete;
 };
 
 // Source of BitWriter class:

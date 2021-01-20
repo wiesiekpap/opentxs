@@ -36,6 +36,7 @@
 #include "opentxs/ui/ActivityThread.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/ui/BlockchainSelection.hpp"
+#include "opentxs/ui/Blockchains.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/ui/Contact.hpp"
 #include "opentxs/ui/ContactList.hpp"
@@ -224,7 +225,7 @@ auto UI::account_activity(
                          (chain.has_value()
                               ? opentxs::factory::BlockchainAccountActivityModel
                               : opentxs::factory::AccountActivityModel)
-#else   // OT_BLOCKCHAIN
+#else  // OT_BLOCKCHAIN
                          (opentxs::factory::AccountActivityModel)
 #endif  // OT_BLOCKCHAIN
                              (api_, nymID, accountID, cb)))
@@ -520,12 +521,62 @@ auto UI::BlockchainNotaryID(const opentxs::blockchain::Type chain)
     return ui::NotaryID(api_, chain);
 }
 
-auto UI::BlockchainSelection() const noexcept -> const ui::BlockchainSelection&
+auto UI::blockchain_selection(
+    const Lock& lock,
+    const ui::Blockchains key,
+    const SimpleCallback cb) const noexcept
+    -> BlockchainSelectionMap::mapped_type&
 {
-    OT_ASSERT(blockchain_selection_);
+    auto it = blockchain_selection_.find(key);
 
-    return *blockchain_selection_;
+    if (blockchain_selection_.end() == it) {
+        it = blockchain_selection_
+                 .emplace(
+                     std::piecewise_construct,
+                     std::forward_as_tuple(key),
+                     std::forward_as_tuple(
+                         opentxs::factory::BlockchainSelectionModel(
+                             api_, blockchain_, key, cb)))
+                 .first;
+
+        OT_ASSERT(it->second);
+    }
+
+    return it->second;
 }
+
+auto UI::BlockchainSelection(
+    const ui::Blockchains type,
+    const SimpleCallback updateCB) const noexcept
+    -> const ui::BlockchainSelection&
+{
+    auto lock = Lock{lock_};
+
+    return *blockchain_selection(lock, type, updateCB);
+}
+
+#if OT_QT
+auto UI::BlockchainSelectionQt(
+    const ui::Blockchains key,
+    const SimpleCallback updateCB) const noexcept -> ui::BlockchainSelectionQt*
+{
+    Lock lock(lock_);
+    auto it = blockchain_selection_qt_.find(key);
+
+    if (blockchain_selection_qt_.end() == it) {
+        it = blockchain_selection_qt_
+                 .emplace(
+                     key,
+                     std::make_unique<ui::BlockchainSelectionQt>(
+                         *blockchain_selection(lock, key, updateCB)))
+                 .first;
+
+        OT_ASSERT(it->second);
+    }
+
+    return it->second.get();
+}
+#endif  // OT_QT
 
 auto UI::BlockchainUnitID(const opentxs::blockchain::Type chain) const noexcept
     -> const identifier::UnitDefinition&
@@ -643,22 +694,7 @@ auto UI::ContactListQt(const identifier::Nym& nymID, const SimpleCallback cb)
 }
 #endif
 
-auto UI::Init() noexcept -> void
-{
-#if OT_BLOCKCHAIN
-    const_cast<BlockchainSelectionType&>(blockchain_selection_) =
-        factory::BlockchainSelectionModel(api_, blockchain_);
-
-    OT_ASSERT(blockchain_selection_);
-
-#if OT_QT
-    const_cast<BlockchainSelectionQtType&>(blockchain_selection_qt_) =
-        std::make_unique<ui::BlockchainSelectionQt>(*blockchain_selection_);
-
-    OT_ASSERT(blockchain_selection_qt_);
-#endif  // OT_QT
-#endif  // OT_BLOCKCHAIN
-}
+auto UI::Init() noexcept -> void {}
 
 #if OT_BLOCKCHAIN
 auto UI::is_blockchain_account(const Identifier& id) const noexcept
@@ -839,9 +875,9 @@ auto UI::ProfileQt(const identifier::Nym& nymID, const SimpleCallback cb)
 auto UI::Shutdown() noexcept -> void
 {
 #if OT_BLOCKCHAIN
-    const_cast<BlockchainSelectionType&>(blockchain_selection_).reset();
+    const_cast<BlockchainSelectionMap&>(blockchain_selection_).clear();
 #if OT_QT
-    const_cast<BlockchainSelectionQtType&>(blockchain_selection_qt_).reset();
+    const_cast<BlockchainSelectionQtType&>(blockchain_selection_qt_).clear();
 #endif  // OT_QT
 #endif  // OT_BLOCKCHAIN
     unit_lists_.clear();

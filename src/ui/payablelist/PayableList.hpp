@@ -120,6 +120,6 @@ private:
     PayableList(const PayableList&) = delete;
     PayableList(PayableList&&) = delete;
     auto operator=(const PayableList&) -> PayableList& = delete;
-    auto operator=(PayableList &&) -> PayableList& = delete;
+    auto operator=(PayableList&&) -> PayableList& = delete;
 };
 }  // namespace opentxs::ui::implementation

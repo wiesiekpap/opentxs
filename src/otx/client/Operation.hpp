@@ -350,6 +350,6 @@ private:
     Operation(const Operation&) = delete;
     Operation(Operation&&) = delete;
     auto operator=(const Operation&) -> Operation& = delete;
-    auto operator=(Operation &&) -> Operation& = delete;
+    auto operator=(Operation&&) -> Operation& = delete;
 };
 }  // namespace opentxs::otx::client::implementation

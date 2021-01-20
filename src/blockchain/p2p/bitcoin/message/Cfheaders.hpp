@@ -100,6 +100,6 @@ private:
     Cfheaders(const Cfheaders&) = delete;
     Cfheaders(Cfheaders&&) = delete;
     auto operator=(const Cfheaders&) -> Cfheaders& = delete;
-    auto operator=(Cfheaders &&) -> Cfheaders& = delete;
+    auto operator=(Cfheaders&&) -> Cfheaders& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

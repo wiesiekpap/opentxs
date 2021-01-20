@@ -70,6 +70,6 @@ private:
     Ping(const Ping&) = delete;
     Ping(Ping&&) = delete;
     auto operator=(const Ping&) -> Ping& = delete;
-    auto operator=(Ping &&) -> Ping& = delete;
+    auto operator=(Ping&&) -> Ping& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

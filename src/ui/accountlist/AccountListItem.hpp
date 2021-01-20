@@ -130,7 +130,7 @@ private:
     AccountListItem(const AccountListItem&) = delete;
     AccountListItem(AccountListItem&&) = delete;
     auto operator=(const AccountListItem&) -> AccountListItem& = delete;
-    auto operator=(AccountListItem &&) -> AccountListItem& = delete;
+    auto operator=(AccountListItem&&) -> AccountListItem& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

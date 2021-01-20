@@ -89,6 +89,6 @@ private:
     StorageLMDB(const StorageLMDB&) = delete;
     StorageLMDB(StorageLMDB&&) = delete;
     auto operator=(const StorageLMDB&) -> StorageLMDB& = delete;
-    auto operator=(StorageLMDB &&) -> StorageLMDB& = delete;
+    auto operator=(StorageLMDB&&) -> StorageLMDB& = delete;
 };
 }  // namespace opentxs::storage::implementation

@@ -65,7 +65,7 @@ public:
         Transaction(const Transaction&) = delete;
         Transaction(Transaction&&) noexcept;
         auto operator=(const Transaction&) -> Transaction& = delete;
-        auto operator=(Transaction &&) -> Transaction& = delete;
+        auto operator=(Transaction&&) -> Transaction& = delete;
     };
 
     auto Commit() const noexcept -> bool;
@@ -171,7 +171,7 @@ private:
     LMDB() = delete;
     LMDB(const LMDB&) = delete;
     auto operator=(const LMDB&) -> LMDB& = delete;
-    auto operator=(LMDB &&) -> LMDB& = delete;
+    auto operator=(LMDB&&) -> LMDB& = delete;
 };
 }  // namespace opentxs::storage::lmdb
 #endif  // OT_STORAGE_LMDB

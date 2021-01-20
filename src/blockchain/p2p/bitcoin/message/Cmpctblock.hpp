@@ -66,6 +66,6 @@ private:
     Cmpctblock(const Cmpctblock&) = delete;
     Cmpctblock(Cmpctblock&&) = delete;
     auto operator=(const Cmpctblock&) -> Cmpctblock& = delete;
-    auto operator=(Cmpctblock &&) -> Cmpctblock& = delete;
+    auto operator=(Cmpctblock&&) -> Cmpctblock& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message

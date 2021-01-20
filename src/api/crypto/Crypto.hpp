@@ -115,6 +115,6 @@ private:
     Crypto(const Crypto&) = delete;
     Crypto(Crypto&&) = delete;
     auto operator=(const Crypto&) -> Crypto& = delete;
-    auto operator=(Crypto &&) -> Crypto& = delete;
+    auto operator=(Crypto&&) -> Crypto& = delete;
 };
 }  // namespace opentxs::api::implementation

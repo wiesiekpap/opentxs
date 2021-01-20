@@ -61,7 +61,7 @@ private:
     Issuers(const Issuers&) = delete;
     Issuers(Issuers&&) = delete;
     auto operator=(const Issuers&) -> Issuers = delete;
-    auto operator=(Issuers &&) -> Issuers = delete;
+    auto operator=(Issuers&&) -> Issuers = delete;
 };
 }  // namespace storage
 }  // namespace opentxs

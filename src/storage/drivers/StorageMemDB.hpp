@@ -81,6 +81,6 @@ private:
     StorageMemDB(const StorageMemDB&) = delete;
     StorageMemDB(StorageMemDB&&) = delete;
     auto operator=(const StorageMemDB&) -> StorageMemDB& = delete;
-    auto operator=(StorageMemDB &&) -> StorageMemDB& = delete;
+    auto operator=(StorageMemDB&&) -> StorageMemDB& = delete;
 };
 }  // namespace opentxs::storage::implementation

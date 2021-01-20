@@ -142,6 +142,6 @@ private:
     Socket(const Socket&) = delete;
     Socket(Socket&&) = delete;
     auto operator=(const Socket&) -> Socket& = delete;
-    auto operator=(Socket &&) -> Socket& = delete;
+    auto operator=(Socket&&) -> Socket& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

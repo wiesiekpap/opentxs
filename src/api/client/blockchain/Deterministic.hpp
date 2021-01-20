@@ -136,6 +136,6 @@ private:
     Deterministic(const Deterministic&) = delete;
     Deterministic(Deterministic&&) = delete;
     auto operator=(const Deterministic&) -> Deterministic& = delete;
-    auto operator=(Deterministic &&) -> Deterministic& = delete;
+    auto operator=(Deterministic&&) -> Deterministic& = delete;
 };
 }  // namespace opentxs::api::client::blockchain::implementation

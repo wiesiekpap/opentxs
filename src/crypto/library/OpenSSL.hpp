@@ -185,7 +185,7 @@ private:
         DH(const DH&) = delete;
         DH(DH&&) = delete;
         auto operator=(const DH&) -> DH& = delete;
-        auto operator=(DH &&) -> DH& = delete;
+        auto operator=(DH&&) -> DH& = delete;
     };
 
     struct MD {
@@ -216,7 +216,7 @@ private:
         MD(const MD&) = delete;
         MD(MD&&) = delete;
         auto operator=(const MD&) -> MD& = delete;
-        auto operator=(MD &&) -> MD& = delete;
+        auto operator=(MD&&) -> MD& = delete;
     };
 
     using Instantiate = std::function<::EVP_PKEY*(::BIO*)>;
@@ -260,6 +260,6 @@ private:
     OpenSSL(const OpenSSL&) = delete;
     OpenSSL(OpenSSL&&) = delete;
     auto operator=(const OpenSSL&) -> OpenSSL& = delete;
-    auto operator=(OpenSSL &&) -> OpenSSL& = delete;
+    auto operator=(OpenSSL&&) -> OpenSSL& = delete;
 };
 }  // namespace opentxs::crypto::implementation

@@ -183,6 +183,6 @@ private:
     Manager(const Manager&) = delete;
     Manager(Manager&&) = delete;
     auto operator=(const Manager&) -> Manager& = delete;
-    auto operator=(Manager &&) -> Manager& = delete;
+    auto operator=(Manager&&) -> Manager& = delete;
 };
 }  // namespace opentxs::api::server::implementation

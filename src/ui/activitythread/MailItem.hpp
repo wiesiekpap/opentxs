@@ -77,6 +77,6 @@ private:
     MailItem(const MailItem&) = delete;
     MailItem(MailItem&&) = delete;
     auto operator=(const MailItem&) -> MailItem& = delete;
-    auto operator=(MailItem &&) -> MailItem& = delete;
+    auto operator=(MailItem&&) -> MailItem& = delete;
 };
 }  // namespace opentxs::ui::implementation

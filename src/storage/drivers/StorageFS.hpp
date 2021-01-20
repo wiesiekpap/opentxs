@@ -107,6 +107,6 @@ private:
     StorageFS(const StorageFS&) = delete;
     StorageFS(StorageFS&&) = delete;
     auto operator=(const StorageFS&) -> StorageFS& = delete;
-    auto operator=(StorageFS &&) -> StorageFS& = delete;
+    auto operator=(StorageFS&&) -> StorageFS& = delete;
 };
 }  // namespace opentxs

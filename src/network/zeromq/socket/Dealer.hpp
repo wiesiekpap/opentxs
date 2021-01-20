@@ -69,6 +69,6 @@ private:
     Dealer(const Dealer&) = delete;
     Dealer(Dealer&&) = delete;
     auto operator=(const Dealer&) -> Dealer& = delete;
-    auto operator=(Dealer &&) -> Dealer& = delete;
+    auto operator=(Dealer&&) -> Dealer& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

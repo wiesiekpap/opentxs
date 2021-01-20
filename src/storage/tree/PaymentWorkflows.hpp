@@ -102,6 +102,6 @@ private:
     PaymentWorkflows(const PaymentWorkflows&) = delete;
     PaymentWorkflows(PaymentWorkflows&&) = delete;
     auto operator=(const PaymentWorkflows&) -> PaymentWorkflows = delete;
-    auto operator=(PaymentWorkflows &&) -> PaymentWorkflows = delete;
+    auto operator=(PaymentWorkflows&&) -> PaymentWorkflows = delete;
 };
 }  // namespace opentxs::storage

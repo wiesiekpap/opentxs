@@ -67,7 +67,7 @@ Crypto::Crypto(const api::Settings& settings) noexcept
     , bip39_p_(opentxs::Factory::Bip39(*this))
 #if OT_CRYPTO_USING_OPENSSL
     , ripemd160_(*ssl_)
-#else   // OT_CRYPTO_USING_OPENSSL
+#else  // OT_CRYPTO_USING_OPENSSL
     , ripemd160_(*sodium_)
 #endif  // OT_CRYPTO_USING_OPENSSL
     , bip32_p_(std::make_unique<opentxs::crypto::implementation::Bip32>(*this))
@@ -83,13 +83,13 @@ Crypto::Crypto(const api::Settings& settings) noexcept
           *encode_,
 #if OT_CRYPTO_USING_OPENSSL
           *ssl_,
-#else   // OT_CRYPTO_USING_OPENSSL
+#else  // OT_CRYPTO_USING_OPENSSL
           *sodium_,
 #endif  // OT_CRYPTO_USING_OPENSSL
           *sodium_,
 #if OT_CRYPTO_USING_OPENSSL
           *ssl_,
-#else   // OT_CRYPTO_USING_OPENSSL
+#else  // OT_CRYPTO_USING_OPENSSL
           *sodium_,
 #endif  // OT_CRYPTO_USING_OPENSSL
           ripemd160_,

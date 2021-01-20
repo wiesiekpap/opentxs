@@ -55,6 +55,6 @@ private:
     SymmetricNull(const SymmetricNull&) = delete;
     SymmetricNull(SymmetricNull&&) = delete;
     auto operator=(const SymmetricNull&) -> SymmetricNull& = delete;
-    auto operator=(SymmetricNull &&) -> SymmetricNull& = delete;
+    auto operator=(SymmetricNull&&) -> SymmetricNull& = delete;
 };
 }  // namespace opentxs::crypto::key::implementation

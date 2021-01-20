@@ -70,6 +70,6 @@ private:
     Pull(const Pull&) = delete;
     Pull(Pull&&) = delete;
     auto operator=(const Pull&) -> Pull& = delete;
-    auto operator=(Pull &&) -> Pull& = delete;
+    auto operator=(Pull&&) -> Pull& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

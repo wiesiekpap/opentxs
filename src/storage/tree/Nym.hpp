@@ -249,6 +249,6 @@ private:
     Nym(const identity::Nym&) = delete;
     Nym(Nym&&) = delete;
     auto operator=(const identity::Nym&) -> Nym = delete;
-    auto operator=(Nym &&) -> Nym = delete;
+    auto operator=(Nym&&) -> Nym = delete;
 };
 }  // namespace opentxs::storage

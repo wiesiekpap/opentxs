@@ -147,6 +147,6 @@ private:
     Accounts(const Accounts&) = delete;
     Accounts(Accounts&&) = delete;
     auto operator=(const Accounts&) -> Accounts = delete;
-    auto operator=(Accounts &&) -> Accounts = delete;
+    auto operator=(Accounts&&) -> Accounts = delete;
 };
 }  // namespace opentxs::storage

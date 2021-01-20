@@ -39,7 +39,7 @@ private:
     IncomingConnectionManager(IncomingConnectionManager&&) = delete;
     auto operator=(const IncomingConnectionManager&)
         -> IncomingConnectionManager& = delete;
-    auto operator=(IncomingConnectionManager &&)
+    auto operator=(IncomingConnectionManager&&)
         -> IncomingConnectionManager& = delete;
 };
 }  // namespace opentxs::blockchain::client::implementation

@@ -47,7 +47,7 @@ ContactListItem::ContactListItem(
 
 auto ContactListItem::calculate_section() const noexcept -> std::string
 {
-    Lock lock(lock_);
+    Lock lock{lock_};
 
     return calculate_section(lock);
 }
@@ -67,7 +67,7 @@ auto ContactListItem::ContactID() const noexcept -> std::string
 
 auto ContactListItem::DisplayName() const noexcept -> std::string
 {
-    Lock lock(lock_);
+    Lock lock{lock_};
 
     return key_;
 }
@@ -108,7 +108,7 @@ auto ContactListItem::reindex(
     const ContactListSortKey& key,
     CustomData& custom) noexcept -> bool
 {
-    Lock lock(lock_);
+    Lock lock{lock_};
 
     return reindex(lock, key, custom);
 }
@@ -132,7 +132,7 @@ auto ContactListItem::reindex(
 
 auto ContactListItem::Section() const noexcept -> std::string
 {
-    Lock lock(lock_);
+    Lock lock{lock_};
 
     return section_;
 }

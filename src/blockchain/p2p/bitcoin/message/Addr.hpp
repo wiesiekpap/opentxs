@@ -111,6 +111,6 @@ private:
     Addr(const Addr&) = delete;
     Addr(Addr&&) = delete;
     auto operator=(const Addr&) -> Addr& = delete;
-    auto operator=(Addr &&) -> Addr& = delete;
+    auto operator=(Addr&&) -> Addr& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

@@ -61,7 +61,7 @@ AccountListItem::AccountListItem(
 
 auto AccountListItem::Balance() const noexcept -> Amount
 {
-    Lock lock(lock_);
+    Lock lock{lock_};
 
     return balance_;
 }
@@ -105,7 +105,7 @@ auto AccountListItem::load_unit(
 
 auto AccountListItem::Name() const noexcept -> std::string
 {
-    Lock lock(lock_);
+    Lock lock{lock_};
 
     return name_;
 }

@@ -109,7 +109,7 @@ private:
     ActivityThreadItem(const ActivityThreadItem&) = delete;
     ActivityThreadItem(ActivityThreadItem&&) = delete;
     auto operator=(const ActivityThreadItem&) -> ActivityThreadItem& = delete;
-    auto operator=(ActivityThreadItem &&) -> ActivityThreadItem& = delete;
+    auto operator=(ActivityThreadItem&&) -> ActivityThreadItem& = delete;
 };
 }  // namespace opentxs::ui::implementation
 

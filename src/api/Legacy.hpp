@@ -111,6 +111,6 @@ private:
     Legacy(const Legacy&) = delete;
     Legacy(Legacy&&) = delete;
     auto operator=(const Legacy&) -> Legacy& = delete;
-    auto operator=(Legacy &&) -> Legacy& = delete;
+    auto operator=(Legacy&&) -> Legacy& = delete;
 };
 }  // namespace opentxs::api::implementation

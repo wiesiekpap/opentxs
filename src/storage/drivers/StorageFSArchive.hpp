@@ -84,6 +84,6 @@ private:
     StorageFSArchive(const StorageFSArchive&) = delete;
     StorageFSArchive(StorageFSArchive&&) = delete;
     auto operator=(const StorageFSArchive&) -> StorageFSArchive& = delete;
-    auto operator=(StorageFSArchive &&) -> StorageFSArchive& = delete;
+    auto operator=(StorageFSArchive&&) -> StorageFSArchive& = delete;
 };
 }  // namespace opentxs::storage::implementation

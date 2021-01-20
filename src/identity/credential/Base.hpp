@@ -186,6 +186,6 @@ private:
     Base(const Base&) = delete;
     Base(Base&&) = delete;
     auto operator=(const Base&) -> Base& = delete;
-    auto operator=(Base &&) -> Base& = delete;
+    auto operator=(Base&&) -> Base& = delete;
 };
 }  // namespace opentxs::identity::credential::implementation

@@ -44,6 +44,7 @@
 #include "opentxs/ui/MessagableList.hpp"
 #include "opentxs/ui/PayableList.hpp"
 #include "opentxs/ui/Profile.hpp"
+#include "opentxs/ui/Types.hpp"
 #include "opentxs/ui/UnitList.hpp"
 
 namespace opentxs
@@ -127,7 +128,9 @@ public:
         -> opentxs::blockchain::Type final;
     auto BlockchainNotaryID(const opentxs::blockchain::Type chain)
         const noexcept -> const identifier::Server& final;
-    auto BlockchainSelection() const noexcept
+    auto BlockchainSelection(
+        const ui::Blockchains type,
+        const SimpleCallback updateCB) const noexcept
         -> const ui::BlockchainSelection& final;
     auto BlockchainUnitID(const opentxs::blockchain::Type chain) const noexcept
         -> const identifier::UnitDefinition& final;
@@ -176,11 +179,10 @@ public:
         return blank_.get(columns);
     }
 #if OT_BLOCKCHAIN
-    auto BlockchainSelectionQt() const noexcept
-        -> ui::BlockchainSelectionQt* final
-    {
-        return blockchain_selection_qt_.get();
-    }
+    auto BlockchainSelectionQt(
+        const ui::Blockchains type,
+        const SimpleCallback updateCB) const noexcept
+        -> ui::BlockchainSelectionQt* final;
 #endif  // OT_BLOCKCHAIN
     auto ContactQt(const Identifier& contactID, const SimpleCallback cb)
         const noexcept -> ui::ContactQt* final;
@@ -256,8 +258,10 @@ private:
     using UnitListValue = std::unique_ptr<ui::implementation::UnitList>;
     using UnitListMap = std::map<UnitListKey, UnitListValue>;
 #if OT_BLOCKCHAIN
-    using BlockchainSelectionType =
+    using BlockchainSelectionPointer =
         std::unique_ptr<ui::implementation::BlockchainSelection>;
+    using BlockchainSelectionMap =
+        std::map<ui::Blockchains, BlockchainSelectionPointer>;
 #endif  // OT_BLOCKCHAIN
 
 #if OT_QT
@@ -289,8 +293,10 @@ private:
     using ProfileQtMap = std::map<ProfileKey, ProfileQtValue>;
     using UnitListQtMap = std::map<UnitListKey, UnitListQtValue>;
 #if OT_BLOCKCHAIN
-    using BlockchainSelectionQtType =
+    using BlockchainSelectionQtPointer =
         std::unique_ptr<ui::BlockchainSelectionQt>;
+    using BlockchainSelectionQtType =
+        std::map<ui::Blockchains, BlockchainSelectionQtPointer>;
 #endif  // OT_BLOCKCHAIN
 
     struct Blank {
@@ -338,7 +344,7 @@ private:
     mutable ProfileMap profiles_;
     mutable UnitListMap unit_lists_;
 #if OT_BLOCKCHAIN
-    const BlockchainSelectionType blockchain_selection_;
+    mutable BlockchainSelectionMap blockchain_selection_;
 #endif  // OT_BLOCKCHAIN
 #if OT_QT
     mutable Blank blank_;
@@ -354,7 +360,7 @@ private:
     mutable ProfileQtMap profiles_qt_;
     mutable UnitListQtMap unit_lists_qt_;
 #if OT_BLOCKCHAIN
-    const BlockchainSelectionQtType blockchain_selection_qt_;
+    mutable BlockchainSelectionQtType blockchain_selection_qt_;
 #endif  // OT_BLOCKCHAIN
 #endif  // OT_QT
     UpdateManager update_manager_;
@@ -387,6 +393,13 @@ private:
         const Identifier& threadID,
         const SimpleCallback& cb) const noexcept
         -> ActivityThreadMap::mapped_type&;
+#if OT_BLOCKCHAIN
+    auto blockchain_selection(
+        const Lock& lock,
+        const ui::Blockchains type,
+        const SimpleCallback updateCB) const noexcept
+        -> BlockchainSelectionMap::mapped_type&;
+#endif  // OT_BLOCKCHAIN
     auto contact(
         const Lock& lock,
         const Identifier& contactID,
@@ -424,6 +437,6 @@ private:
     UI(const UI&) = delete;
     UI(UI&&) = delete;
     auto operator=(const UI&) -> UI& = delete;
-    auto operator=(UI &&) -> UI& = delete;
+    auto operator=(UI&&) -> UI& = delete;
 };
 }  // namespace opentxs::api::client::implementation

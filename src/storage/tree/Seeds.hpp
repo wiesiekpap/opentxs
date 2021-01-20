@@ -61,7 +61,7 @@ private:
     Seeds(const Seeds&) = delete;
     Seeds(Seeds&&) = delete;
     auto operator=(const Seeds&) -> Seeds = delete;
-    auto operator=(Seeds &&) -> Seeds = delete;
+    auto operator=(Seeds&&) -> Seeds = delete;
 
 public:
     auto Alias(const std::string& id) const -> std::string;

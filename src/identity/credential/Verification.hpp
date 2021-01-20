@@ -85,6 +85,6 @@ private:
     Verification(const Verification&) = delete;
     Verification(Verification&&) = delete;
     auto operator=(const Verification&) -> Verification& = delete;
-    auto operator=(Verification &&) -> Verification& = delete;
+    auto operator=(Verification&&) -> Verification& = delete;
 };
 }  // namespace opentxs::identity::credential::implementation

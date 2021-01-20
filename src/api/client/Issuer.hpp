@@ -140,6 +140,6 @@ private:
     Issuer(const Issuer&) = delete;
     Issuer(Issuer&&) = delete;
     auto operator=(const Issuer&) -> Issuer& = delete;
-    auto operator=(Issuer &&) -> Issuer& = delete;
+    auto operator=(Issuer&&) -> Issuer& = delete;
 };
 }  // namespace opentxs::api::client::implementation

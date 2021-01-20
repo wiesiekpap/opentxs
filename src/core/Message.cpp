@@ -2675,8 +2675,9 @@ public:
             " NymID:    ")(m.m_strNymID)(" AccountID:    ")(m.m_strAcctID)(
             " NotaryID: ")(m.m_strNotaryID)(" Request#: ")(m.m_strRequestNum)(
             " Transaction#: ")(m.m_lTransactionNum)(" boxType: ")(
-            ((m.m_lDepth == 0) ? "nymbox"
-                               : (m.m_lDepth == 1) ? "inbox" : "outbox"))
+            ((m.m_lDepth == 0)   ? "nymbox"
+             : (m.m_lDepth == 1) ? "inbox"
+                                 : "outbox"))
             .Flush();  // outbox is 2.);
 
         return 1;

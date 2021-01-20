@@ -75,6 +75,6 @@ private:
     Getcfheaders(const Getcfheaders&) = delete;
     Getcfheaders(Getcfheaders&&) = delete;
     auto operator=(const Getcfheaders&) -> Getcfheaders& = delete;
-    auto operator=(Getcfheaders &&) -> Getcfheaders& = delete;
+    auto operator=(Getcfheaders&&) -> Getcfheaders& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

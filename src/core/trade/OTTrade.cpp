@@ -12,6 +12,7 @@
 #include <cstring>
 #include <memory>
 #include <string>
+#include <type_traits>
 
 #include "internal/api/Api.hpp"
 #include "opentxs/Pimpl.hpp"

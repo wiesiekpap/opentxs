@@ -194,7 +194,7 @@ private:
     Node(const Node&) = delete;
     Node(Node&&) = delete;
     auto operator=(const Node&) -> Node& = delete;
-    auto operator=(Node &&) -> Node& = delete;
+    auto operator=(Node&&) -> Node& = delete;
 
 protected:
     friend storage::Root;

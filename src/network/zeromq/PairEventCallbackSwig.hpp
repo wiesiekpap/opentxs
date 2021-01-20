@@ -45,6 +45,6 @@ private:
     PairEventCallbackSwig(PairEventCallbackSwig&&) = delete;
     auto operator=(const PairEventCallbackSwig&)
         -> PairEventCallbackSwig& = delete;
-    auto operator=(PairEventCallbackSwig &&) -> PairEventCallbackSwig& = delete;
+    auto operator=(PairEventCallbackSwig&&) -> PairEventCallbackSwig& = delete;
 };
 }  // namespace opentxs::network::zeromq::implementation

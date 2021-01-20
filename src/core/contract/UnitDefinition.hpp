@@ -149,6 +149,6 @@ private:
 
     Unit(Unit&&) = delete;
     auto operator=(const Unit&) -> Unit& = delete;
-    auto operator=(Unit &&) -> Unit& = delete;
+    auto operator=(Unit&&) -> Unit& = delete;
 };
 }  // namespace opentxs::contract::implementation

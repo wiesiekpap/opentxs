@@ -207,6 +207,6 @@ private:
     Purse(const Purse&);
     Purse(Purse&&) = delete;
     auto operator=(const Purse&) -> Purse& = delete;
-    auto operator=(Purse &&) -> Purse& = delete;
+    auto operator=(Purse&&) -> Purse& = delete;
 };
 }  // namespace opentxs::blind::implementation

@@ -110,6 +110,6 @@ private:
     UnitList(const UnitList&) = delete;
     UnitList(UnitList&&) = delete;
     auto operator=(const UnitList&) -> UnitList& = delete;
-    auto operator=(UnitList &&) -> UnitList& = delete;
+    auto operator=(UnitList&&) -> UnitList& = delete;
 };
 }  // namespace opentxs::ui::implementation

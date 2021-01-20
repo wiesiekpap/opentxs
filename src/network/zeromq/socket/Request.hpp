@@ -51,6 +51,6 @@ private:
     Request(const Request&) = delete;
     Request(Request&&) = delete;
     auto operator=(const Request&) -> Request& = delete;
-    auto operator=(Request &&) -> Request& = delete;
+    auto operator=(Request&&) -> Request& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

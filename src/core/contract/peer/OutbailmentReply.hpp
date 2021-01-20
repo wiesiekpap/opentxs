@@ -69,6 +69,6 @@ private:
     Outbailment(const Outbailment&);
     Outbailment(Outbailment&&) = delete;
     auto operator=(const Outbailment&) -> Outbailment& = delete;
-    auto operator=(Outbailment &&) -> Outbailment& = delete;
+    auto operator=(Outbailment&&) -> Outbailment& = delete;
 };
 }  // namespace opentxs::contract::peer::reply::implementation

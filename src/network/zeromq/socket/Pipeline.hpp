@@ -77,6 +77,6 @@ private:
     Pipeline(const Pipeline&) = delete;
     Pipeline(Pipeline&&) = delete;
     auto operator=(const Pipeline&) -> Pipeline& = delete;
-    auto operator=(Pipeline &&) -> Pipeline& = delete;
+    auto operator=(Pipeline&&) -> Pipeline& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

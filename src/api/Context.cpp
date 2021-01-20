@@ -382,7 +382,7 @@ auto Context::RPC(const proto::RPCCommand& command) const -> proto::RPCResponse
     OT_ASSERT(rpc_);
 
     return rpc_->Process(command);
-#else   // OT_RPC
+#else  // OT_RPC
     return {};
 #endif  // OT_RPC
 }

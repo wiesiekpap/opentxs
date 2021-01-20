@@ -194,7 +194,7 @@ auto ProfileSection::construct_row(
 auto ProfileSection::Delete(const int type, const std::string& claimID)
     const noexcept -> bool
 {
-    Lock lock(lock_);
+    rLock lock{recursive_lock_};
     const ProfileSectionRowID key{
         row_id_, static_cast<proto::ContactItemType>(type)};
     auto& group = lookup(lock, key);
@@ -252,7 +252,7 @@ auto ProfileSection::SetActive(
     const std::string& claimID,
     const bool active) const noexcept -> bool
 {
-    Lock lock(lock_);
+    rLock lock{recursive_lock_};
     const ProfileSectionRowID key{
         row_id_, static_cast<proto::ContactItemType>(type)};
     auto& group = lookup(lock, key);
@@ -267,7 +267,7 @@ auto ProfileSection::SetPrimary(
     const std::string& claimID,
     const bool primary) const noexcept -> bool
 {
-    Lock lock(lock_);
+    rLock lock{recursive_lock_};
     const ProfileSectionRowID key{
         row_id_, static_cast<proto::ContactItemType>(type)};
     auto& group = lookup(lock, key);
@@ -282,7 +282,7 @@ auto ProfileSection::SetValue(
     const std::string& claimID,
     const std::string& value) const noexcept -> bool
 {
-    Lock lock(lock_);
+    rLock lock{recursive_lock_};
     const ProfileSectionRowID key{
         row_id_, static_cast<proto::ContactItemType>(type)};
     auto& group = lookup(lock, key);

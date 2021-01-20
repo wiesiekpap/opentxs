@@ -75,6 +75,6 @@ private:
     Inv(const Inv&) = delete;
     Inv(Inv&&) = delete;
     auto operator=(const Inv&) -> Inv& = delete;
-    auto operator=(Inv &&) -> Inv& = delete;
+    auto operator=(Inv&&) -> Inv& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

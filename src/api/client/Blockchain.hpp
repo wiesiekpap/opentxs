@@ -443,7 +443,7 @@ private:
         EnableCallbacks(const EnableCallbacks&) = delete;
         EnableCallbacks(EnableCallbacks&&) = delete;
         auto operator=(const EnableCallbacks&) -> EnableCallbacks& = delete;
-        auto operator=(EnableCallbacks &&) -> EnableCallbacks& = delete;
+        auto operator=(EnableCallbacks&&) -> EnableCallbacks& = delete;
     };
     struct SyncServer {
         using Chain = opentxs::blockchain::Type;
@@ -628,6 +628,6 @@ private:
     Blockchain(const Blockchain&) = delete;
     Blockchain(Blockchain&&) = delete;
     auto operator=(const Blockchain&) -> Blockchain& = delete;
-    auto operator=(Blockchain &&) -> Blockchain& = delete;
+    auto operator=(Blockchain&&) -> Blockchain& = delete;
 };
 }  // namespace opentxs::api::client::implementation

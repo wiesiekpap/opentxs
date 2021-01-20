@@ -329,6 +329,6 @@ private:
     Authority(const Authority&) = delete;
     Authority(Authority&&) = delete;
     auto operator=(const Authority&) -> Authority& = delete;
-    auto operator=(Authority &&) -> Authority& = delete;
+    auto operator=(Authority&&) -> Authority& = delete;
 };
 }  // namespace opentxs::identity::implementation

@@ -262,6 +262,6 @@ private:
     BalanceNode(const BalanceNode&) = delete;
     BalanceNode(BalanceNode&&) = delete;
     auto operator=(const BalanceNode&) -> BalanceNode& = delete;
-    auto operator=(BalanceNode &&) -> BalanceNode& = delete;
+    auto operator=(BalanceNode&&) -> BalanceNode& = delete;
 };
 }  // namespace opentxs::api::client::blockchain::implementation

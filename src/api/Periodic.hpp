@@ -56,7 +56,7 @@ private:
     Periodic(const Periodic&) = delete;
     Periodic(Periodic&&) = delete;
     auto operator=(const Periodic&) -> Periodic& = delete;
-    auto operator=(Periodic &&) -> Periodic& = delete;
+    auto operator=(Periodic&&) -> Periodic& = delete;
 
     void thread();
 };

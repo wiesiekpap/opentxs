@@ -815,6 +815,6 @@ private:
     Factory(const Factory&) = delete;
     Factory(Factory&&) = delete;
     auto operator=(const Factory&) -> Factory& = delete;
-    auto operator=(Factory &&) -> Factory& = delete;
+    auto operator=(Factory&&) -> Factory& = delete;
 };
 }  // namespace opentxs::api::implementation

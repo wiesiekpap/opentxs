@@ -390,6 +390,6 @@ private:
     Workflow(const Workflow&) = delete;
     Workflow(Workflow&&) = delete;
     auto operator=(const Workflow&) -> Workflow& = delete;
-    auto operator=(Workflow &&) -> Workflow& = delete;
+    auto operator=(Workflow&&) -> Workflow& = delete;
 };
 }  // namespace opentxs::api::client::implementation

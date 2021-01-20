@@ -143,6 +143,6 @@ private:
     ProfileSection(const ProfileSection&) = delete;
     ProfileSection(ProfileSection&&) = delete;
     auto operator=(const ProfileSection&) -> ProfileSection& = delete;
-    auto operator=(ProfileSection &&) -> ProfileSection& = delete;
+    auto operator=(ProfileSection&&) -> ProfileSection& = delete;
 };
 }  // namespace opentxs::ui::implementation

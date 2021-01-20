@@ -197,6 +197,6 @@ private:
     PaymentCode(const PaymentCode&);
     PaymentCode(PaymentCode&&) = delete;
     auto operator=(const PaymentCode&) -> PaymentCode&;
-    auto operator=(PaymentCode &&) -> PaymentCode&;
+    auto operator=(PaymentCode&&) -> PaymentCode&;
 };
 }  // namespace opentxs::implementation

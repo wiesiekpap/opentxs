@@ -157,6 +157,6 @@ private:
     Envelope(const Envelope&) noexcept;
     Envelope(Envelope&&) = delete;
     auto operator=(const Envelope&) -> Envelope& = delete;
-    auto operator=(Envelope &&) -> Envelope& = delete;
+    auto operator=(Envelope&&) -> Envelope& = delete;
 };
 }  // namespace opentxs::crypto::implementation

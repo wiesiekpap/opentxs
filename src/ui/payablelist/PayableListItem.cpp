@@ -52,7 +52,7 @@ PayableListItem::PayableListItem(
 
 auto PayableListItem::PaymentCode() const noexcept -> std::string
 {
-    Lock lock(lock_);
+    Lock lock{lock_};
 
     return payment_code_;
 }
@@ -78,7 +78,7 @@ auto PayableListItem::reindex(
     const ContactListSortKey& key,
     CustomData& custom) noexcept -> bool
 {
-    Lock lock(lock_);
+    Lock lock{lock_};
 
     return reindex(lock, key, custom);
 }

@@ -37,6 +37,6 @@ private:
     Flag(const Flag&) = delete;
     Flag(Flag&&) = delete;
     auto operator=(const Flag&) -> Flag& = delete;
-    auto operator=(Flag &&) -> Flag& = delete;
+    auto operator=(Flag&&) -> Flag& = delete;
 };
 }  // namespace opentxs::implementation

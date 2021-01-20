@@ -151,6 +151,6 @@ private:
     Getblocks(const Getblocks&) = delete;
     Getblocks(Getblocks&&) = delete;
     auto operator=(const Getblocks&) -> Getblocks& = delete;
-    auto operator=(Getblocks &&) -> Getblocks& = delete;
+    auto operator=(Getblocks&&) -> Getblocks& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message

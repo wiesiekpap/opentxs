@@ -56,6 +56,9 @@
 #include "opentxs/ui/ProfileItem.hpp"
 #include "opentxs/ui/ProfileSection.hpp"
 #include "opentxs/ui/ProfileSubsection.hpp"
+#if OT_BLOCKCHAIN
+#include "opentxs/ui/Types.hpp"
+#endif  // OT_BLOCKCHAIN
 #include "opentxs/ui/UnitList.hpp"
 #include "opentxs/ui/UnitListItem.hpp"
 #include "opentxs/ui/Widget.hpp"
@@ -1275,7 +1278,9 @@ auto BlockchainActivityThreadItem(
     -> std::shared_ptr<ui::implementation::ActivityThreadRowInternal>;
 auto BlockchainSelectionModel(
     const api::client::internal::Manager& api,
-    const api::client::internal::Blockchain& blockchain) noexcept
+    const api::client::internal::Blockchain& blockchain,
+    const ui::Blockchains type,
+    const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::implementation::BlockchainSelection>;
 auto BlockchainSelectionItem(
     const ui::implementation::BlockchainSelectionInternalInterface& parent,

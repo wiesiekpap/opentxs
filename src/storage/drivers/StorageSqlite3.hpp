@@ -114,6 +114,6 @@ private:
     StorageSqlite3(const StorageSqlite3&) = delete;
     StorageSqlite3(StorageSqlite3&&) = delete;
     auto operator=(const StorageSqlite3&) -> StorageSqlite3& = delete;
-    auto operator=(StorageSqlite3 &&) -> StorageSqlite3& = delete;
+    auto operator=(StorageSqlite3&&) -> StorageSqlite3& = delete;
 };
 }  // namespace opentxs::storage::implementation

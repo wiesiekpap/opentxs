@@ -131,6 +131,6 @@ private:
     Group(const Group&) = delete;
     Group(Group&&) = delete;
     auto operator=(const Group&) -> Group& = delete;
-    auto operator=(Group &&) -> Group& = delete;
+    auto operator=(Group&&) -> Group& = delete;
 };
 }  // namespace opentxs::identity::wot::verification::implementation

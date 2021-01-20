@@ -49,7 +49,7 @@ private:
     Contexts(const Contexts&) = delete;
     Contexts(Contexts&&) = delete;
     auto operator=(const Contexts&) -> Contexts = delete;
-    auto operator=(Contexts &&) -> Contexts = delete;
+    auto operator=(Contexts&&) -> Contexts = delete;
 
 public:
     auto Load(

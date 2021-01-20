@@ -105,6 +105,6 @@ private:
     Primary(const Primary&) = delete;
     Primary(Primary&&) = delete;
     auto operator=(const Primary&) -> Primary& = delete;
-    auto operator=(Primary &&) -> Primary& = delete;
+    auto operator=(Primary&&) -> Primary& = delete;
 };
 }  // namespace opentxs::identity::credential::implementation

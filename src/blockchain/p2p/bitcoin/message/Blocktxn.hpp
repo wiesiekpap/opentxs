@@ -62,6 +62,6 @@ private:
     Blocktxn(const Blocktxn&) = delete;
     Blocktxn(Blocktxn&&) = delete;
     auto operator=(const Blocktxn&) -> Blocktxn& = delete;
-    auto operator=(Blocktxn &&) -> Blocktxn& = delete;
+    auto operator=(Blocktxn&&) -> Blocktxn& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

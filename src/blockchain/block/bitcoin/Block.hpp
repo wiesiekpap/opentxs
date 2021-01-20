@@ -141,6 +141,6 @@ private:
     Block(const Block&) = delete;
     Block(Block&&) = delete;
     auto operator=(const Block&) -> Block& = delete;
-    auto operator=(Block &&) -> Block& = delete;
+    auto operator=(Block&&) -> Block& = delete;
 };
 }  // namespace opentxs::blockchain::block::bitcoin::implementation

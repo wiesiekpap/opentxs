@@ -47,6 +47,6 @@ private:
     ZMQ(const ZMQ&) = delete;
     ZMQ(ZMQ&&) = delete;
     auto operator=(const ZMQ&) -> ZMQ& = delete;
-    auto operator=(ZMQ &&) -> ZMQ& = delete;
+    auto operator=(ZMQ&&) -> ZMQ& = delete;
 };
 }  // namespace opentxs::api::implementation

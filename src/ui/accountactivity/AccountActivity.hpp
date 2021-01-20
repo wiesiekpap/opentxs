@@ -168,8 +168,8 @@ public:
 #endif  // OT_BLOCKCHAIN
     auto Type() const noexcept -> AccountType final { return type_; }
 #if OT_BLOCKCHAIN
-    auto ValidateAddress([
-        [maybe_unused]] const std::string& text) const noexcept -> bool override
+    auto ValidateAddress([[maybe_unused]] const std::string& text)
+        const noexcept -> bool override
     {
         return false;
     }
@@ -222,6 +222,6 @@ private:
     AccountActivity(const AccountActivity&) = delete;
     AccountActivity(AccountActivity&&) = delete;
     auto operator=(const AccountActivity&) -> AccountActivity& = delete;
-    auto operator=(AccountActivity &&) -> AccountActivity& = delete;
+    auto operator=(AccountActivity&&) -> AccountActivity& = delete;
 };
 }  // namespace opentxs::ui::implementation

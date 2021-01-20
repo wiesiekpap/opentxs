@@ -178,6 +178,6 @@ private:
     ServerAction(const ServerAction&) = delete;
     ServerAction(ServerAction&&) = delete;
     auto operator=(const ServerAction&) -> ServerAction& = delete;
-    auto operator=(ServerAction &&) -> ServerAction& = delete;
+    auto operator=(ServerAction&&) -> ServerAction& = delete;
 };
 }  // namespace opentxs::api::client::implementation

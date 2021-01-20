@@ -63,6 +63,6 @@ private:
     Tx(const Tx&) = delete;
     Tx(Tx&&) = delete;
     auto operator=(const Tx&) -> Tx& = delete;
-    auto operator=(Tx &&) -> Tx& = delete;
+    auto operator=(Tx&&) -> Tx& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message

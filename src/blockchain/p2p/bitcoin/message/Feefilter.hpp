@@ -66,6 +66,6 @@ private:
     Feefilter(const Feefilter&) = delete;
     Feefilter(Feefilter&&) = delete;
     auto operator=(const Feefilter&) -> Feefilter& = delete;
-    auto operator=(Feefilter &&) -> Feefilter& = delete;
+    auto operator=(Feefilter&&) -> Feefilter& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message

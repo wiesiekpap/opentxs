@@ -80,6 +80,6 @@ private:
     Bip39(const Bip39&) = delete;
     Bip39(Bip39&&) = delete;
     auto operator=(const Bip39&) -> Bip39& = delete;
-    auto operator=(Bip39 &&) -> Bip39& = delete;
+    auto operator=(Bip39&&) -> Bip39& = delete;
 };
 }  // namespace opentxs::crypto::implementation

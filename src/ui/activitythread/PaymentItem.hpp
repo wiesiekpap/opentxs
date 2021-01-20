@@ -81,6 +81,6 @@ private:
     PaymentItem(const PaymentItem&) = delete;
     PaymentItem(PaymentItem&&) = delete;
     auto operator=(const PaymentItem&) -> PaymentItem& = delete;
-    auto operator=(PaymentItem &&) -> PaymentItem& = delete;
+    auto operator=(PaymentItem&&) -> PaymentItem& = delete;
 };
 }  // namespace opentxs::ui::implementation

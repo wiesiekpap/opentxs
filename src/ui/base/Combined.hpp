@@ -112,7 +112,7 @@ protected:
     Combined(const Combined&) = delete;
     Combined(Combined&&) = delete;
     auto operator=(const Combined&) -> Combined& = delete;
-    auto operator=(Combined &&) -> Combined& = delete;
+    auto operator=(Combined&&) -> Combined& = delete;
 
     virtual ~Combined() = default;
 };

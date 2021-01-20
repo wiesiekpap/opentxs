@@ -41,6 +41,6 @@ private:
     NullCallback(const NullCallback&) = delete;
     NullCallback(NullCallback&&) = delete;
     auto operator=(const NullCallback&) -> NullCallback& = delete;
-    auto operator=(NullCallback &&) -> NullCallback& = delete;
+    auto operator=(NullCallback&&) -> NullCallback& = delete;
 };
 }  // namespace opentxs::implementation

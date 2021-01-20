@@ -60,6 +60,6 @@ private:
     Callback(const Callback&) = delete;
     Callback(Callback&&) = delete;
     auto operator=(const Callback&) -> Callback& = delete;
-    auto operator=(Callback &&) -> Callback& = delete;
+    auto operator=(Callback&&) -> Callback& = delete;
 };
 }  // namespace opentxs::network::zeromq::zap::implementation

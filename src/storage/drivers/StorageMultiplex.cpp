@@ -253,8 +253,8 @@ void StorageMultiplex::InitBackup()
 #endif
 }
 
-void StorageMultiplex::InitEncryptedBackup([
-    [maybe_unused]] crypto::key::Symmetric& key)
+void StorageMultiplex::InitEncryptedBackup(
+    [[maybe_unused]] crypto::key::Symmetric& key)
 {
     if (config_.fs_encrypted_backup_directory_.empty()) { return; }
 

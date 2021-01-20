@@ -80,6 +80,6 @@ private:
     Sendcmpct(const Sendcmpct&) = delete;
     Sendcmpct(Sendcmpct&&) = delete;
     auto operator=(const Sendcmpct&) -> Sendcmpct& = delete;
-    auto operator=(Sendcmpct &&) -> Sendcmpct& = delete;
+    auto operator=(Sendcmpct&&) -> Sendcmpct& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message

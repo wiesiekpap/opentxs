@@ -128,6 +128,6 @@ private:
     Asymmetric(const Asymmetric&) = delete;
     Asymmetric(Asymmetric&&) = delete;
     auto operator=(const Asymmetric&) -> Asymmetric& = delete;
-    auto operator=(Asymmetric &&) -> Asymmetric& = delete;
+    auto operator=(Asymmetric&&) -> Asymmetric& = delete;
 };
 }  // namespace opentxs::api::crypto::implementation

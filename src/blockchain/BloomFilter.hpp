@@ -87,6 +87,6 @@ private:
     BloomFilter(const BloomFilter& rhs) noexcept;
     BloomFilter(BloomFilter&&) = delete;
     auto operator=(const BloomFilter&) -> BloomFilter& = delete;
-    auto operator=(BloomFilter &&) -> BloomFilter& = delete;
+    auto operator=(BloomFilter&&) -> BloomFilter& = delete;
 };
 }  // namespace opentxs::blockchain::implementation

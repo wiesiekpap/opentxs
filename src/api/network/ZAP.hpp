@@ -50,6 +50,6 @@ private:
     ZAP(const ZAP&) = delete;
     ZAP(ZAP&&) = delete;
     auto operator=(const ZAP&) -> ZAP& = delete;
-    auto operator=(ZAP &&) -> ZAP& = delete;
+    auto operator=(ZAP&&) -> ZAP& = delete;
 };
 }  // namespace opentxs::api::network::implementation

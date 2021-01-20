@@ -108,6 +108,6 @@ private:
     Reply() = delete;
     Reply(Reply&&) = delete;
     auto operator=(const Reply&) -> Reply& = delete;
-    auto operator=(Reply &&) -> Reply& = delete;
+    auto operator=(Reply&&) -> Reply& = delete;
 };
 }  // namespace opentxs::contract::peer::implementation

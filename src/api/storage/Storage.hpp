@@ -525,6 +525,6 @@ private:
     Storage(const Storage&) = delete;
     Storage(Storage&&) = delete;
     auto operator=(const Storage&) -> Storage& = delete;
-    auto operator=(Storage &&) -> Storage& = delete;
+    auto operator=(Storage&&) -> Storage& = delete;
 };
 }  // namespace opentxs::api::storage::implementation

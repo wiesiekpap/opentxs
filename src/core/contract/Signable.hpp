@@ -93,6 +93,6 @@ protected:
     Signable(const Signable&) noexcept;
     Signable(Signable&&) = delete;
     auto operator=(const Signable&) -> Signable& = delete;
-    auto operator=(Signable &&) -> Signable& = delete;
+    auto operator=(Signable&&) -> Signable& = delete;
 };
 }  // namespace opentxs::contract::implementation

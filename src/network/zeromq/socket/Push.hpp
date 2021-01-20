@@ -52,6 +52,6 @@ private:
     Push(const Push&) = delete;
     Push(Push&&) = delete;
     auto operator=(const Push&) -> Push& = delete;
-    auto operator=(Push &&) -> Push& = delete;
+    auto operator=(Push&&) -> Push& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

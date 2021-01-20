@@ -43,7 +43,7 @@ private:
     Mailbox(const Mailbox&) = delete;
     Mailbox(Mailbox&&) = delete;
     auto operator=(const Mailbox&) -> Mailbox = delete;
-    auto operator=(Mailbox &&) -> Mailbox = delete;
+    auto operator=(Mailbox&&) -> Mailbox = delete;
 
 public:
     auto Load(

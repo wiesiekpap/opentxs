@@ -72,6 +72,6 @@ private:
     Acknowledgement(const Acknowledgement&);
     Acknowledgement(Acknowledgement&&) = delete;
     auto operator=(const Acknowledgement&) -> Acknowledgement& = delete;
-    auto operator=(Acknowledgement &&) -> Acknowledgement& = delete;
+    auto operator=(Acknowledgement&&) -> Acknowledgement& = delete;
 };
 }  // namespace opentxs::contract::peer::reply::implementation

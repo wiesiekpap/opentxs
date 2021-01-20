@@ -88,6 +88,6 @@ private:
     Cfilter(const Cfilter&) = delete;
     Cfilter(Cfilter&&) = delete;
     auto operator=(const Cfilter&) -> Cfilter& = delete;
-    auto operator=(Cfilter &&) -> Cfilter& = delete;
+    auto operator=(Cfilter&&) -> Cfilter& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

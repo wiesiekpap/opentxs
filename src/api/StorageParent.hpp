@@ -92,6 +92,6 @@ private:
     StorageParent(const StorageParent&) = delete;
     StorageParent(StorageParent&&) = delete;
     auto operator=(const StorageParent&) -> StorageParent& = delete;
-    auto operator=(StorageParent &&) -> StorageParent& = delete;
+    auto operator=(StorageParent&&) -> StorageParent& = delete;
 };
 }  // namespace opentxs::api::implementation

@@ -76,6 +76,6 @@ private:
     Getblocktxn(const Getblocktxn&) = delete;
     Getblocktxn(Getblocktxn&&) = delete;
     auto operator=(const Getblocktxn&) -> Getblocktxn& = delete;
-    auto operator=(Getblocktxn &&) -> Getblocktxn& = delete;
+    auto operator=(Getblocktxn&&) -> Getblocktxn& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message

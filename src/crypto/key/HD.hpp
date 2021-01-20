@@ -109,6 +109,6 @@ private:
     HD() = delete;
     HD(HD&&) = delete;
     auto operator=(const HD&) -> HD& = delete;
-    auto operator=(HD &&) -> HD& = delete;
+    auto operator=(HD&&) -> HD& = delete;
 };
 }  // namespace opentxs::crypto::key::implementation

@@ -219,7 +219,7 @@ private:
     BlockchainAccountActivity(BlockchainAccountActivity&&) = delete;
     auto operator=(const BlockchainAccountActivity&)
         -> BlockchainAccountActivity& = delete;
-    auto operator=(BlockchainAccountActivity &&)
+    auto operator=(BlockchainAccountActivity&&)
         -> BlockchainAccountActivity& = delete;
 };
 }  // namespace opentxs::ui::implementation

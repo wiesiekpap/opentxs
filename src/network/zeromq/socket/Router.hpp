@@ -71,6 +71,6 @@ private:
     Router(const Router&) = delete;
     Router(Router&&) = delete;
     auto operator=(const Router&) -> Router& = delete;
-    auto operator=(Router &&) -> Router& = delete;
+    auto operator=(Router&&) -> Router& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

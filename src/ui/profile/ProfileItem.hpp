@@ -114,6 +114,6 @@ private:
     ProfileItem(const ProfileItem&) = delete;
     ProfileItem(ProfileItem&&) = delete;
     auto operator=(const ProfileItem&) -> ProfileItem& = delete;
-    auto operator=(ProfileItem &&) -> ProfileItem& = delete;
+    auto operator=(ProfileItem&&) -> ProfileItem& = delete;
 };
 }  // namespace opentxs::ui::implementation

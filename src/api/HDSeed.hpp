@@ -236,6 +236,6 @@ private:
     HDSeed(const HDSeed&) = delete;
     HDSeed(HDSeed&&) = delete;
     auto operator=(const HDSeed&) -> HDSeed& = delete;
-    auto operator=(HDSeed &&) -> HDSeed& = delete;
+    auto operator=(HDSeed&&) -> HDSeed& = delete;
 };
 }  // namespace opentxs::api::implementation

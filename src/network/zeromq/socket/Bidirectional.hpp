@@ -73,6 +73,6 @@ private:
     Bidirectional(const Bidirectional&) = delete;
     Bidirectional(Bidirectional&&) = delete;
     auto operator=(const Bidirectional&) -> Bidirectional& = delete;
-    auto operator=(Bidirectional &&) -> Bidirectional& = delete;
+    auto operator=(Bidirectional&&) -> Bidirectional& = delete;
 };
 }  // namespace opentxs::network::zeromq::socket::implementation

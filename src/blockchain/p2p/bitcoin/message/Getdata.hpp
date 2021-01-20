@@ -77,6 +77,6 @@ private:
     Getdata(const Getdata&) = delete;
     Getdata(Getdata&&) = delete;
     auto operator=(const Getdata&) -> Getdata& = delete;
-    auto operator=(Getdata &&) -> Getdata& = delete;
+    auto operator=(Getdata&&) -> Getdata& = delete;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

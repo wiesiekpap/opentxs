@@ -99,7 +99,7 @@ public:
         MessageFunctor(const MessageFunctor&) = delete;
         MessageFunctor(MessageFunctor&&) = delete;
         auto operator=(const MessageFunctor&) -> MessageFunctor& = delete;
-        auto operator=(MessageFunctor &&) -> MessageFunctor& = delete;
+        auto operator=(MessageFunctor&&) -> MessageFunctor& = delete;
     };
 
     template <typename T>
@@ -123,7 +123,7 @@ public:
         {
         }
         MessageProcessor(MessageProcessor&&) = default;
-        auto operator=(MessageProcessor &&) -> MessageProcessor& = default;
+        auto operator=(MessageProcessor&&) -> MessageProcessor& = default;
 
     private:
         Function callback_;
@@ -168,6 +168,6 @@ private:
     Widget(const Widget&) = delete;
     Widget(Widget&&) = delete;
     auto operator=(const Widget&) -> Widget& = delete;
-    auto operator=(Widget &&) -> Widget& = delete;
+    auto operator=(Widget&&) -> Widget& = delete;
 };  // namespace opentxs::ui::implementation
 }  // namespace opentxs::ui::implementation

@@ -29,6 +29,6 @@ private:
     Ripemd160(const Ripemd160&) = delete;
     Ripemd160(Ripemd160&&) = delete;
     auto operator=(const Ripemd160&) -> Ripemd160& = delete;
-    auto operator=(Ripemd160 &&) -> Ripemd160& = delete;
+    auto operator=(Ripemd160&&) -> Ripemd160& = delete;
 };
 }  // namespace opentxs::crypto::implementation

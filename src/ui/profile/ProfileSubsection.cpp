@@ -79,7 +79,7 @@ auto ProfileSubsection::construct_row(
 auto ProfileSubsection::Delete(const std::string& claimID) const noexcept
     -> bool
 {
-    Lock lock(lock_);
+    rLock lock{recursive_lock_};
     auto& claim = lookup(lock, Identifier::Factory(claimID));
 
     if (false == claim.Valid()) { return false; }
@@ -125,7 +125,7 @@ auto ProfileSubsection::reindex(
 auto ProfileSubsection::SetActive(const std::string& claimID, const bool active)
     const noexcept -> bool
 {
-    Lock lock(lock_);
+    rLock lock{recursive_lock_};
     auto& claim = lookup(lock, Identifier::Factory(claimID));
 
     if (false == claim.Valid()) { return false; }
@@ -137,7 +137,7 @@ auto ProfileSubsection::SetPrimary(
     const std::string& claimID,
     const bool primary) const noexcept -> bool
 {
-    Lock lock(lock_);
+    rLock lock{recursive_lock_};
     auto& claim = lookup(lock, Identifier::Factory(claimID));
 
     if (false == claim.Valid()) { return false; }
@@ -149,7 +149,7 @@ auto ProfileSubsection::SetValue(
     const std::string& claimID,
     const std::string& value) const noexcept -> bool
 {
-    Lock lock(lock_);
+    rLock lock{recursive_lock_};
     auto& claim = lookup(lock, Identifier::Factory(claimID));
 
     if (false == claim.Valid()) { return false; }
