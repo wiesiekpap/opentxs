@@ -92,7 +92,7 @@ public:
         const ContactSectionRowID& rowID,
         const ContactSectionSortKey& key,
         CustomData& custom) noexcept;
-    ~ContactSubsection() = default;
+    ~ContactSubsection() final = default;
 
 private:
     ContactSectionSortKey sequence_;

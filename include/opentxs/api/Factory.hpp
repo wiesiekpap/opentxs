@@ -719,7 +719,7 @@ public:
         const Nym_p& nym,
         const proto::UnitDefinition serialized) const noexcept(false) = 0;
 
-    OPENTXS_EXPORT virtual ~Factory() = default;
+    ~Factory() override = default;
 
 protected:
     Factory() = default;

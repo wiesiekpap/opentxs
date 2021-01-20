@@ -49,7 +49,7 @@ struct Context : virtual public api::Context {
     virtual auto Legacy() const noexcept -> const api::Legacy& = 0;
     virtual void shutdown() = 0;
 
-    virtual ~Context() = default;
+    ~Context() override = default;
 };
 
 struct Core : virtual public api::Core {
@@ -68,7 +68,7 @@ struct Core : virtual public api::Core {
     virtual auto MasterKey(const opentxs::Lock& lock) const
         -> const opentxs::crypto::key::Symmetric& = 0;
 
-    virtual ~Core() = default;
+    ~Core() override = default;
 };
 
 struct Factory : virtual public api::Factory {
@@ -76,7 +76,7 @@ struct Factory : virtual public api::Factory {
         -> const api::crypto::internal::Asymmetric& = 0;
     virtual auto Symmetric() const -> const api::crypto::Symmetric& = 0;
 
-    virtual ~Factory() = default;
+    ~Factory() override = default;
 };
 
 struct Log {

@@ -97,7 +97,7 @@ public:
         const opentxs::Amount amount,
         const std::string memo,
         const std::string text) noexcept;
-    ~BlockchainBalanceItem() = default;
+    ~BlockchainBalanceItem() final = default;
 
 private:
     const blockchain::Type chain_;

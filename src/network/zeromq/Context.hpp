@@ -140,7 +140,7 @@ public:
         const void* tag,
         const std::size_t size) const noexcept -> OTZMQMessage final;
 
-    ~Context();
+    ~Context() final;
 
 private:
     friend opentxs::Factory;

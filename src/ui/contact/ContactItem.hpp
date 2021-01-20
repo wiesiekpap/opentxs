@@ -96,7 +96,7 @@ public:
         const ContactSubsectionRowID& rowID,
         const ContactSubsectionSortKey& sortKey,
         CustomData& custom) noexcept;
-    ~ContactItem() = default;
+    ~ContactItem() final = default;
 
 private:
     std::unique_ptr<opentxs::ContactItem> item_;

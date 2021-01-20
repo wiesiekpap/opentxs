@@ -22,7 +22,7 @@ namespace opentxs::blockchain::block::implementation
 class Block : virtual public block::Block
 {
 public:
-    auto Header() const noexcept -> const block::Header&
+    auto Header() const noexcept -> const block::Header& override
     {
         return base_header_;
     }

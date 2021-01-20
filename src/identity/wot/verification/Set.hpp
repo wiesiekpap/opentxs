@@ -49,7 +49,10 @@ public:
     }
     auto External() const noexcept -> const Group& final { return *external_; }
     auto Internal() const noexcept -> const Group& final { return *internal_; }
-    auto NymID() const noexcept -> const identifier::Nym& { return nym_id_; }
+    auto NymID() const noexcept -> const identifier::Nym& final
+    {
+        return nym_id_;
+    }
     auto Version() const noexcept -> VersionNumber final { return version_; }
 
     auto AddItem(

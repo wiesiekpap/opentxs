@@ -120,7 +120,7 @@ public:
         const ProfileRowID& rowID,
         const ProfileSortKey& key,
         CustomData& custom) noexcept;
-    ~ProfileSection() = default;
+    ~ProfileSection() final = default;
 
 private:
     static auto sort_key(const ProfileSectionRowID type) noexcept -> int;

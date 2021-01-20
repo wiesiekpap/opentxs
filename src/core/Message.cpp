@@ -629,7 +629,7 @@ auto Message::SignContract(
     return m_bIsSigned;
 }
 
-// virtual (Contract)
+// (Contract)
 auto Message::VerifySignature(const identity::Nym& theNym) const -> bool
 {
     // Messages, unlike many contracts, use the authentication key instead of
@@ -678,10 +678,10 @@ void Message::registerStrategy(std::string name, OTMessageStrategy* strategy)
 
 OTMessageStrategy::~OTMessageStrategy() {}
 
-class StrategyGetMarketOffers : public OTMessageStrategy
+class StrategyGetMarketOffers final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -694,8 +694,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    virtual auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
-        -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -721,10 +721,10 @@ RegisterStrategy StrategyGetMarketOffers::reg(
     GET_MARKET_OFFERS,
     new StrategyGetMarketOffers());
 
-class StrategyGetMarketOffersResponse : public OTMessageStrategy
+class StrategyGetMarketOffersResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -745,8 +745,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    virtual auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
-        -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -806,10 +806,10 @@ RegisterStrategy StrategyGetMarketOffersResponse::reg(
     GET_MARKET_OFFERS_RESPONSE,
     new StrategyGetMarketOffersResponse());
 
-class StrategyGetMarketRecentTrades : public OTMessageStrategy
+class StrategyGetMarketRecentTrades final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -821,7 +821,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -843,10 +844,10 @@ RegisterStrategy StrategyGetMarketRecentTrades::reg(
     GET_MARKET_RECENT_TRADES,
     new StrategyGetMarketRecentTrades());
 
-class StrategyGetMarketRecentTradesResponse : public OTMessageStrategy
+class StrategyGetMarketRecentTradesResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -867,8 +868,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    virtual auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
-        -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -928,10 +929,10 @@ RegisterStrategy StrategyGetMarketRecentTradesResponse::reg(
     GET_MARKET_RECENT_TRADES_RESPONSE,
     new StrategyGetMarketRecentTradesResponse());
 
-class StrategyGetNymMarketOffers : public OTMessageStrategy
+class StrategyGetNymMarketOffers final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -942,8 +943,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    virtual auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
-        -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -964,10 +965,10 @@ RegisterStrategy StrategyGetNymMarketOffers::reg(
     GET_NYM_MARKET_OFFERS,
     new StrategyGetNymMarketOffers());
 
-class StrategyGetNymMarketOffersResponse : public OTMessageStrategy
+class StrategyGetNymMarketOffersResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -987,8 +988,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    virtual auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
-        -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -1045,10 +1046,10 @@ RegisterStrategy StrategyGetNymMarketOffersResponse::reg(
     GET_NYM_MARKET_OFFERS_RESPONSE,
     new StrategyGetNymMarketOffersResponse());
 
-class StrategyPingNotary : public OTMessageStrategy
+class StrategyPingNotary final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -1070,7 +1071,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strRequestNum =
@@ -1134,10 +1136,10 @@ public:
 };
 RegisterStrategy StrategyPingNotary::reg(PING_NOTARY, new StrategyPingNotary());
 
-class StrategyPingNotaryResponse : public OTMessageStrategy
+class StrategyPingNotaryResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -1149,7 +1151,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -1172,10 +1175,10 @@ RegisterStrategy StrategyPingNotaryResponse::reg(
     PING_NOTARY_RESPONSE,
     new StrategyPingNotaryResponse());
 
-class StrategyRegisterContract : public OTMessageStrategy
+class StrategyRegisterContract final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -1189,7 +1192,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strRequestNum =
@@ -1219,10 +1223,10 @@ RegisterStrategy StrategyRegisterContract::reg(
     REGISTER_CONTRACT,
     new StrategyRegisterContract());
 
-class StrategyRegisterContractResponse : public OTMessageStrategy
+class StrategyRegisterContractResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -1239,7 +1243,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -1276,10 +1281,10 @@ RegisterStrategy StrategyRegisterContractResponse::reg(
     REGISTER_CONTRACT_RESPONSE,
     new StrategyRegisterContractResponse());
 
-class StrategyRegisterNym : public OTMessageStrategy
+class StrategyRegisterNym final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -1292,7 +1297,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strRequestNum =
@@ -1315,10 +1321,10 @@ RegisterStrategy StrategyRegisterNym::reg(
     REGISTER_NYM,
     new StrategyRegisterNym());
 
-class StrategyRegisterNymResponse : public OTMessageStrategy
+class StrategyRegisterNymResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -1339,7 +1345,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -1390,10 +1397,10 @@ RegisterStrategy StrategyRegisterNymResponse::reg(
     REGISTER_NYM_RESPONSE,
     new StrategyRegisterNymResponse());
 
-class StrategyUnregisterNym : public OTMessageStrategy
+class StrategyUnregisterNym final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -1404,7 +1411,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -1424,10 +1432,10 @@ RegisterStrategy StrategyUnregisterNym::reg(
     UNREGISTER_NYM,
     new StrategyUnregisterNym());
 
-class StrategyUnregisterNymResponse : public OTMessageStrategy
+class StrategyUnregisterNymResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -1443,7 +1451,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -1478,10 +1487,10 @@ RegisterStrategy StrategyUnregisterNymResponse::reg(
     UNREGISTER_NYM_RESPONSE,
     new StrategyUnregisterNymResponse());
 
-class StrategyCheckNym : public OTMessageStrategy
+class StrategyCheckNym final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -1494,7 +1503,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -1516,10 +1526,10 @@ public:
 };
 RegisterStrategy StrategyCheckNym::reg(CHECK_NYM, new StrategyCheckNym());
 
-class StrategyCheckNymResponse : public OTMessageStrategy
+class StrategyCheckNymResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         // This means new-style credentials are being sent, not just the public
         // key as before.
@@ -1547,7 +1557,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -1613,10 +1624,10 @@ RegisterStrategy StrategyCheckNymResponse::reg(
     CHECK_NYM_RESPONSE,
     new StrategyCheckNymResponse());
 
-class StrategyUsageCredits : public OTMessageStrategy
+class StrategyUsageCredits final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -1629,7 +1640,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -1658,10 +1670,10 @@ RegisterStrategy StrategyUsageCredits::reg(
     USAGE_CREDITS,
     new StrategyUsageCredits());
 
-class StrategyUsageCreditsResponse : public OTMessageStrategy
+class StrategyUsageCreditsResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -1675,7 +1687,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -1711,10 +1724,11 @@ RegisterStrategy StrategyUsageCreditsResponse::reg(
 // Nymfile itself will soon be encrypted, and there's no need to
 // be redundant also as well in addition on top of that.
 //
-class StrategyOutpaymentsMessageOrOutmailMessage : public OTMessageStrategy
+class StrategyOutpaymentsMessageOrOutmailMessage final
+    : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -1730,7 +1744,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -1768,10 +1783,10 @@ RegisterStrategy StrategyOutpaymentsMessageOrOutmailMessage::reg2(
     OUTMAIL,
     new StrategyOutpaymentsMessageOrOutmailMessage());
 
-class StrategySendNymMessage : public OTMessageStrategy
+class StrategySendNymMessage final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -1788,7 +1803,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -1824,10 +1840,10 @@ RegisterStrategy StrategySendNymMessage::reg(
     SEND_NYM_MESSAGE,
     new StrategySendNymMessage());
 
-class StrategySendNymMessageResponse : public OTMessageStrategy
+class StrategySendNymMessageResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -1841,7 +1857,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -1885,10 +1902,10 @@ RegisterStrategy StrategySendNymMessageResponse::reg(
 // (artificially created
 // payDividend msg) is added to the
 // Nymbox of each recipient.
-class StrategySendNymInstrumentOrPayDividend : public OTMessageStrategy
+class StrategySendNymInstrumentOrPayDividend final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -1904,7 +1921,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -1942,10 +1960,10 @@ RegisterStrategy StrategySendNymInstrumentOrPayDividend::reg2(
     "payDividend",
     new StrategySendNymInstrumentOrPayDividend());
 
-class StrategyGetRequestNumber : public OTMessageStrategy
+class StrategyGetRequestNumber final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -1956,7 +1974,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strRequestNum =
@@ -1980,10 +1999,10 @@ RegisterStrategy StrategyGetRequestNumber::reg(
 // back from the server.
 // In all the other commands, it should be SENT to the server, not
 // received from the server.
-class StrategyGetRequestResponse : public OTMessageStrategy
+class StrategyGetRequestResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -1998,7 +2017,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -2030,10 +2050,10 @@ RegisterStrategy StrategyGetRequestResponse::reg(
     GET_REQUEST_NUMBER_RESPONSE,
     new StrategyGetRequestResponse());
 
-class StrategyRegisterInstrumentDefinition : public OTMessageStrategy
+class StrategyRegisterInstrumentDefinition final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -2050,7 +2070,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -2086,10 +2107,11 @@ RegisterStrategy StrategyRegisterInstrumentDefinition::reg(
     REGISTER_INSTRUMENT_DEFINITION,
     new StrategyRegisterInstrumentDefinition());
 
-class StrategyRegisterInstrumentDefinitionResponse : public OTMessageStrategy
+class StrategyRegisterInstrumentDefinitionResponse final
+    : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -2114,7 +2136,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -2195,10 +2218,10 @@ RegisterStrategy StrategyRegisterInstrumentDefinitionResponse::reg(
     REGISTER_INSTRUMENT_DEFINITION_RESPONSE,
     new StrategyRegisterInstrumentDefinitionResponse());
 
-class StrategyQueryInstrumentDefinitions : public OTMessageStrategy
+class StrategyQueryInstrumentDefinitions final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -2213,7 +2236,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -2246,10 +2270,11 @@ RegisterStrategy StrategyQueryInstrumentDefinitions::reg(
     QUERY_INSTRUMENT_DEFINITION,
     new StrategyQueryInstrumentDefinitions());
 
-class StrategyQueryInstrumentDefinitionsResponse : public OTMessageStrategy
+class StrategyQueryInstrumentDefinitionsResponse final
+    : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -2269,7 +2294,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -2338,10 +2364,10 @@ RegisterStrategy StrategyQueryInstrumentDefinitionsResponse::reg(
     QUERY_INSTRUMENT_DEFINITION_RESPONSE,
     new StrategyQueryInstrumentDefinitionsResponse());
 
-class StrategyIssueBasket : public OTMessageStrategy
+class StrategyIssueBasket final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -2356,7 +2382,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -2401,10 +2428,10 @@ RegisterStrategy StrategyIssueBasket::reg(
     ISSUE_BASKET,
     new StrategyIssueBasket());
 
-class StrategyIssueBasketResponse : public OTMessageStrategy
+class StrategyIssueBasketResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -2423,7 +2450,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -2476,10 +2504,10 @@ RegisterStrategy StrategyIssueBasketResponse::reg(
     ISSUE_BASKET_RESPONSE,
     new StrategyIssueBasketResponse());
 
-class StrategyRegisterAccount : public OTMessageStrategy
+class StrategyRegisterAccount final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -2492,7 +2520,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -2516,10 +2545,10 @@ RegisterStrategy StrategyRegisterAccount::reg(
     REGISTER_ACCOUNT,
     new StrategyRegisterAccount());
 
-class StrategyRegisterAccountResponse : public OTMessageStrategy
+class StrategyRegisterAccountResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -2541,7 +2570,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -2616,10 +2646,10 @@ RegisterStrategy StrategyRegisterAccountResponse::reg(
     REGISTER_ACCOUNT_RESPONSE,
     new StrategyRegisterAccountResponse());
 
-class StrategyGetBoxReceipt : public OTMessageStrategy
+class StrategyGetBoxReceipt final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -2639,7 +2669,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -2688,10 +2719,10 @@ RegisterStrategy StrategyGetBoxReceipt::reg(
     GET_BOX_RECEIPT,
     new StrategyGetBoxReceipt());
 
-class StrategyGetBoxReceiptResponse : public OTMessageStrategy
+class StrategyGetBoxReceiptResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -2719,7 +2750,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -2813,10 +2845,10 @@ RegisterStrategy StrategyGetBoxReceiptResponse::reg(
     GET_BOX_RECEIPT_RESPONSE,
     new StrategyGetBoxReceiptResponse());
 
-class StrategyUnregisterAccount : public OTMessageStrategy
+class StrategyUnregisterAccount final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -2828,7 +2860,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -2850,10 +2883,10 @@ RegisterStrategy StrategyUnregisterAccount::reg(
     UNREGISTER_ACCOUNT,
     new StrategyUnregisterAccount());
 
-class StrategyUnregisterAccountResponse : public OTMessageStrategy
+class StrategyUnregisterAccountResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -2870,7 +2903,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -2925,10 +2959,10 @@ RegisterStrategy StrategyUnregisterAccountResponse::reg(
     UNREGISTER_ACCOUNT_RESPONSE,
     new StrategyUnregisterAccountResponse());
 
-class StrategyNotarizeTransaction : public OTMessageStrategy
+class StrategyNotarizeTransaction final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -2945,7 +2979,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -2983,10 +3018,10 @@ RegisterStrategy StrategyNotarizeTransaction::reg(
     NOTARIZE_TRANSACTION,
     new StrategyNotarizeTransaction());
 
-class StrategyNotarizeTransactionResponse : public OTMessageStrategy
+class StrategyNotarizeTransactionResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -3007,7 +3042,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -3083,10 +3119,10 @@ RegisterStrategy StrategyNotarizeTransactionResponse::reg(
     NOTARIZE_TRANSACTION_RESPONSE,
     new StrategyNotarizeTransactionResponse());
 
-class StrategyGetTransactionNumbers : public OTMessageStrategy
+class StrategyGetTransactionNumbers final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -3098,7 +3134,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -3121,10 +3158,10 @@ RegisterStrategy StrategyGetTransactionNumbers::reg(
     GET_TRANSACTION_NUMBER,
     new StrategyGetTransactionNumbers());
 
-class StrategyGetTransactionNumbersResponse : public OTMessageStrategy
+class StrategyGetTransactionNumbersResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -3137,7 +3174,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -3162,10 +3200,10 @@ RegisterStrategy StrategyGetTransactionNumbersResponse::reg(
     GET_TRANSACTION_NUMBER_RESPONSE,
     new StrategyGetTransactionNumbersResponse());
 
-class StrategyGetNymbox : public OTMessageStrategy
+class StrategyGetNymbox final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -3177,7 +3215,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -3198,10 +3237,10 @@ public:
 };
 RegisterStrategy StrategyGetNymbox::reg(GET_NYMBOX, new StrategyGetNymbox());
 
-class StrategyGetNymboxResponse : public OTMessageStrategy
+class StrategyGetNymboxResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -3222,7 +3261,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -3269,10 +3309,10 @@ RegisterStrategy StrategyGetNymboxResponse::reg(
     GET_NYMBOX_RESPONSE,
     new StrategyGetNymboxResponse());
 
-class StrategyGetAccountData : public OTMessageStrategy
+class StrategyGetAccountData final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -3284,7 +3324,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -3306,10 +3347,10 @@ RegisterStrategy StrategyGetAccountData::reg(
     GET_ACCOUNT_DATA,
     new StrategyGetAccountData());
 
-class StrategyGetAccountDataResponse : public OTMessageStrategy
+class StrategyGetAccountDataResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -3340,7 +3381,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -3407,10 +3449,10 @@ RegisterStrategy StrategyGetAccountDataResponse::reg(
     GET_ACCOUNT_DATA_RESPONSE,
     new StrategyGetAccountDataResponse());
 
-class StrategyGetInstrumentDefinition : public OTMessageStrategy
+class StrategyGetInstrumentDefinition final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -3425,7 +3467,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -3458,10 +3501,10 @@ RegisterStrategy StrategyGetInstrumentDefinition::reg(
     GET_INSTRUMENT_DEFINITION,
     new StrategyGetInstrumentDefinition());
 
-class StrategyGetInstrumentDefinitionResponse : public OTMessageStrategy
+class StrategyGetInstrumentDefinitionResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -3486,7 +3529,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -3555,10 +3599,10 @@ RegisterStrategy StrategyGetInstrumentDefinitionResponse::reg(
     GET_INSTRUMENT_DEFINITION_RESPONSE,
     new StrategyGetInstrumentDefinitionResponse());
 
-class StrategyGetMint : public OTMessageStrategy
+class StrategyGetMint final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -3572,7 +3616,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -3596,10 +3641,10 @@ public:
 };
 RegisterStrategy StrategyGetMint::reg(GET_MINT, new StrategyGetMint());
 
-class StrategyGetMintResponse : public OTMessageStrategy
+class StrategyGetMintResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -3623,7 +3668,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -3685,10 +3731,10 @@ RegisterStrategy StrategyGetMintResponse::reg(
     GET_MINT_RESPONSE,
     new StrategyGetMintResponse());
 
-class StrategyProcessInbox : public OTMessageStrategy
+class StrategyProcessInbox final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -3705,7 +3751,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -3743,10 +3790,10 @@ RegisterStrategy StrategyProcessInbox::reg(
     PROCESS_INBOX,
     new StrategyProcessInbox());
 
-class StrategyProcessInboxResponse : public OTMessageStrategy
+class StrategyProcessInboxResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -3767,7 +3814,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -3840,10 +3888,10 @@ RegisterStrategy StrategyProcessInboxResponse::reg(
     PROCESS_INBOX_RESPONSE,
     new StrategyProcessInboxResponse());
 
-class StrategyProcessNymbox : public OTMessageStrategy
+class StrategyProcessNymbox final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -3859,7 +3907,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -3896,10 +3945,10 @@ RegisterStrategy StrategyProcessNymbox::reg(
     PROCESS_NYMBOX,
     new StrategyProcessNymbox());
 
-class StrategyProcessNymboxResponse : public OTMessageStrategy
+class StrategyProcessNymboxResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -3919,7 +3968,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -3990,10 +4040,10 @@ RegisterStrategy StrategyProcessNymboxResponse::reg(
     PROCESS_NYMBOX_RESPONSE,
     new StrategyProcessNymboxResponse());
 
-class StrategyTriggerClause : public OTMessageStrategy
+class StrategyTriggerClause final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -4013,7 +4063,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -4060,10 +4111,10 @@ RegisterStrategy StrategyTriggerClause::reg(
     TRIGGER_CLAUSE,
     new StrategyTriggerClause());
 
-class StrategyTriggerClauseResponse : public OTMessageStrategy
+class StrategyTriggerClauseResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -4079,7 +4130,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -4117,10 +4169,10 @@ RegisterStrategy StrategyTriggerClauseResponse::reg(
     TRIGGER_CLAUSE_RESPONSE,
     new StrategyTriggerClauseResponse());
 
-class StrategyGetMarketList : public OTMessageStrategy
+class StrategyGetMarketList final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -4131,8 +4183,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    virtual auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
-        -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
@@ -4153,11 +4205,11 @@ RegisterStrategy StrategyGetMarketList::reg(
     GET_MARKET_LIST,
     new StrategyGetMarketList());
 
-class StrategyGetMarketListResponse : public OTMessageStrategy
+class StrategyGetMarketListResponse final : public OTMessageStrategy
 {
 public:
-    virtual auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
-        -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -4209,7 +4261,7 @@ public:
         return 1;
     }
 
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -4235,10 +4287,10 @@ RegisterStrategy StrategyGetMarketListResponse::reg(
     GET_MARKET_LIST_RESPONSE,
     new StrategyGetMarketListResponse());
 
-class StrategyRequestAdmin : public OTMessageStrategy
+class StrategyRequestAdmin final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -4251,7 +4303,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strRequestNum =
@@ -4275,10 +4328,10 @@ RegisterStrategy StrategyRequestAdmin::reg(
     REQUEST_ADMIN,
     new StrategyRequestAdmin());
 
-class StrategyRequestAdminResponse : public OTMessageStrategy
+class StrategyRequestAdminResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -4296,7 +4349,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 
@@ -4335,10 +4389,10 @@ RegisterStrategy StrategyRequestAdminResponse::reg(
     REQUEST_ADMIN_RESPONSE,
     new StrategyRequestAdminResponse());
 
-class StrategyAddClaim : public OTMessageStrategy
+class StrategyAddClaim final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -4353,7 +4407,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         m.m_strCommand = String::Factory(xml->getNodeName());  // Command
         m.m_strRequestNum =
@@ -4377,10 +4432,10 @@ public:
 
 RegisterStrategy StrategyAddClaim::reg(ADD_CLAIM, new StrategyAddClaim());
 
-class StrategyAddClaimResponse : public OTMessageStrategy
+class StrategyAddClaimResponse final : public OTMessageStrategy
 {
 public:
-    virtual void writeXml(Message& m, Tag& parent)
+    void writeXml(Message& m, Tag& parent) final
     {
         TagPtr pTag(new Tag(m.m_strCommand->Get()));
 
@@ -4400,7 +4455,8 @@ public:
         parent.add_tag(pTag);
     }
 
-    auto processXml(Message& m, irr::io::IrrXMLReader*& xml) -> std::int32_t
+    auto processXml(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t final
     {
         processXmlSuccess(m, xml);
 

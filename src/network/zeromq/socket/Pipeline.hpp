@@ -48,7 +48,7 @@ public:
     {
         return sender_->Context();
     }
-    auto Start(const std::string& endpoint) const noexcept -> void
+    auto Start(const std::string& endpoint) const noexcept -> void final
     {
         return receiver_->StartAsync(endpoint);
     }
@@ -58,7 +58,7 @@ public:
         const zeromq::Context& context,
         std::function<void(zeromq::Message&)> callback) noexcept;
 
-    ~Pipeline();
+    ~Pipeline() final;
 
 private:
     friend opentxs::Factory;

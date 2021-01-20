@@ -58,7 +58,7 @@ class Secret;
 
 namespace opentxs::server
 {
-class MessageProcessor : Lockable
+class MessageProcessor final : Lockable
 {
 public:
     void DropIncoming(const int count) const;
@@ -73,7 +73,7 @@ public:
         const PasswordPrompt& reason,
         const Flag& running);
 
-    ~MessageProcessor();
+    ~MessageProcessor() final;
 
 private:
     Server& server_;

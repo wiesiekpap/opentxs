@@ -28,7 +28,7 @@ public:
     auto Queue(const DepositPaymentTask& task) -> BackgroundTask;
 
     PaymentTasks(client::internal::StateMachine& parent);
-    ~PaymentTasks() = default;
+    ~PaymentTasks() final = default;
 
 private:
     using Future = api::client::OTX::Future;

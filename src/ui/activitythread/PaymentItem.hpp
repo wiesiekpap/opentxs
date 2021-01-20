@@ -66,7 +66,7 @@ public:
         const ActivityThreadRowID& rowID,
         const ActivityThreadSortKey& sortKey,
         CustomData& custom) noexcept;
-    ~PaymentItem();
+    ~PaymentItem() final;
 
 private:
     std::string display_amount_;

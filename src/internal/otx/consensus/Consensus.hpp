@@ -22,7 +22,7 @@ struct Base : virtual public opentxs::otx::context::Base {
 #ifdef _MSC_VER
     Base() {}
 #endif  // _MSC_VER
-    virtual ~Base() = default;
+    ~Base() override = default;
 };
 struct Client : virtual public opentxs::otx::context::Client,
                 virtual public otx::context::internal::Base {
@@ -30,7 +30,7 @@ struct Client : virtual public opentxs::otx::context::Client,
 #ifdef _MSC_VER
     Client() {}
 #endif  // _MSC_VER
-    virtual ~Client() = default;
+    ~Client() override = default;
 };
 struct Server : virtual public opentxs::otx::context::Server,
                 virtual public otx::context::internal::Base {
@@ -38,7 +38,7 @@ struct Server : virtual public opentxs::otx::context::Server,
 #ifdef _MSC_VER
     Server() {}
 #endif  // _MSC_VER
-    virtual ~Server() = default;
+    ~Server() override = default;
 };
 }  // namespace opentxs::otx::context::internal
 

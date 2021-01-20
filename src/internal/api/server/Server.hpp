@@ -13,6 +13,6 @@ namespace opentxs::api::server::internal
 struct Manager : virtual public api::server::Manager,
                  virtual public api::internal::Core {
 
-    virtual ~Manager() = default;
+    ~Manager() override = default;
 };
 }  // namespace opentxs::api::server::internal

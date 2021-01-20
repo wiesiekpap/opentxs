@@ -211,7 +211,7 @@ struct BalanceNode : virtual public blockchain::BalanceNode {
         std::set<OTIdentifier>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool = 0;
     virtual auto BalanceElement(const Subchain type, const Bip32Index index)
-        const noexcept(false) -> const internal::BalanceElement& = 0;
+        const noexcept(false) -> const internal::BalanceElement& override = 0;
     virtual auto IncomingTransactions(const Key& key) const noexcept
         -> std::set<std::string> = 0;
     virtual auto PrivateKey(
@@ -245,7 +245,8 @@ struct BalanceTree : virtual public blockchain::BalanceTree {
         -> std::optional<std::pair<Key, Amount>> = 0;
     virtual auto HDChain(const Identifier& account) const noexcept(false)
         -> const blockchain::internal::HD& = 0;
-    virtual auto Parent() const noexcept -> const internal::BalanceList& = 0;
+    virtual auto Parent() const noexcept
+        -> const internal::BalanceList& override = 0;
 
     virtual auto AddHDNode(const proto::HDPath& path, Identifier& id) noexcept
         -> bool = 0;

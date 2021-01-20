@@ -28,6 +28,12 @@ function(add_opentx_test_target target_name cxx-sources)
                               ${PROJECT_BINARY_DIR}/tests
   )
 
+  if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
+    target_compile_options(
+      ${target_name} PRIVATE -Wno-suggest-destructor-override
+    )
+  endif()
+
   add_test(
     ${target_name} ${PROJECT_BINARY_DIR}/tests/${target_name}
     --gtest_output=xml:gtestresults.xml

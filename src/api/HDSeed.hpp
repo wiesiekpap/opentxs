@@ -159,7 +159,7 @@ public:
         const opentxs::crypto::Bip32& bip32,
         const opentxs::crypto::Bip39& bip39);
 
-    virtual ~HDSeed() = default;
+    ~HDSeed() final = default;
 
 private:
     using SeedMap = std::map<Style, proto::SeedType>;

@@ -105,7 +105,7 @@ public:
         const ContactRowID& rowID,
         const ContactSortKey& key,
         CustomData& custom) noexcept;
-    ~ContactSection() = default;
+    ~ContactSection() final = default;
 
 private:
     static const std::

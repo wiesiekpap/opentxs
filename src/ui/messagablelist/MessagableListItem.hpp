@@ -59,7 +59,7 @@ public:
         const api::client::internal::Manager& api,
         const ContactListRowID& rowID,
         const ContactListSortKey& key) noexcept;
-    ~MessagableListItem() = default;
+    ~MessagableListItem() final = default;
 
 private:
     using ot_super = implementation::ContactListItem;

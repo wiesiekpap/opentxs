@@ -200,8 +200,8 @@ private:
 struct Request final : virtual public opentxs::contract::peer::Request,
                        public contract::blank::Signable {
     auto Contract() const -> SerializedType final { return {}; }
-    auto Initiator() const -> const identifier::Nym& { return nym_; }
-    auto Recipient() const -> const identifier::Nym& { return nym_; }
+    auto Initiator() const -> const identifier::Nym& final { return nym_; }
+    auto Recipient() const -> const identifier::Nym& final { return nym_; }
     auto Type() const -> proto::PeerRequestType final
     {
         return proto::PEERREQUEST_ERROR;

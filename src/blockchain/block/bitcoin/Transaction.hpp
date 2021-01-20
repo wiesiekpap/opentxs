@@ -92,7 +92,7 @@ public:
         const blockchain::bitcoin::SigHash& hashType) const noexcept
         -> Space final;
     auto ID() const noexcept -> const Txid& final { return txid_; }
-    auto IDNormalized() const noexcept -> const Identifier&;
+    auto IDNormalized() const noexcept -> const Identifier& final;
     auto Inputs() const noexcept -> const bitcoin::Inputs& final
     {
         return *inputs_;

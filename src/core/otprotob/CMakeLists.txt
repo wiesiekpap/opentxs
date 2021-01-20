@@ -20,3 +20,7 @@ if(MSVC)
 else()
   target_compile_options(otprotob PRIVATE "-Wno-effc++")
 endif()
+
+if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
+  target_compile_options(otprotob PRIVATE -Wno-suggest-destructor-override)
+endif()

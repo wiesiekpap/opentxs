@@ -47,7 +47,7 @@ public:
     operator bool() const final { return false; }
 
     SymmetricNull() = default;
-    ~SymmetricNull() = default;
+    ~SymmetricNull() final = default;
 
 private:
     auto clone() const -> SymmetricNull* final { return nullptr; }

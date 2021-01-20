@@ -88,7 +88,7 @@ public:
         const proto::ContactItemType currency,
         const SimpleCallback& cb) noexcept;
 
-    ~AccountSummary();
+    ~AccountSummary() final;
 
 private:
     const ListenerDefinitions listeners_;

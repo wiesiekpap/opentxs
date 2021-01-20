@@ -110,7 +110,7 @@ public:
         const AccountListSortKey& sortKey,
         CustomData& custom) noexcept;
 
-    ~AccountListItem() = default;
+    ~AccountListItem() final = default;
 
 private:
     const AccountType type_;

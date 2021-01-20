@@ -198,7 +198,7 @@ public:
         const Chain chain,
         const blockchain::AddressStyle format,
         const Data& pubkey) const noexcept -> std::string final;
-    auto Contacts() const noexcept -> const api::client::Contacts&
+    auto Contacts() const noexcept -> const api::client::Contacts& final
     {
         return contacts_;
     }
@@ -473,7 +473,7 @@ private:
         auto Shutdown() noexcept -> void;
 
         ThreadPoolManager(const api::Core& api) noexcept;
-        ~ThreadPoolManager();
+        ~ThreadPoolManager() final;
 
     private:
         using NetworkData = std::tuple<

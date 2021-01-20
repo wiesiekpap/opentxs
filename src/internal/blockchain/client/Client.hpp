@@ -320,7 +320,7 @@ struct FilterOracle : virtual public opentxs::blockchain::client::FilterOracle {
     virtual auto Start() noexcept -> void = 0;
     virtual auto Shutdown() noexcept -> std::shared_future<void> = 0;
 
-    virtual ~FilterOracle() = default;
+    ~FilterOracle() override = default;
 };
 
 struct HeaderOracle : virtual public opentxs::blockchain::client::HeaderOracle {
@@ -338,7 +338,7 @@ struct HeaderOracle : virtual public opentxs::blockchain::client::HeaderOracle {
     virtual auto LoadBitcoinHeader(const block::Hash& hash) const noexcept
         -> std::unique_ptr<block::bitcoin::Header> = 0;
 
-    virtual ~HeaderOracle() = default;
+    ~HeaderOracle() override = default;
 };
 
 struct HeaderDatabase {
@@ -534,7 +534,7 @@ struct Network : virtual public opentxs::blockchain::Network {
     virtual auto FilterOracleInternal() noexcept -> internal::FilterOracle& = 0;
     virtual auto Shutdown() noexcept -> std::shared_future<void> = 0;
 
-    virtual ~Network() = default;
+    ~Network() override = default;
 };
 
 struct SyncDatabase {

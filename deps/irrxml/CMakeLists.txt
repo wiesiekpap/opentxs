@@ -41,6 +41,8 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
       -Wno-documentation-unknown-command
       -Wno-reserved-id-macro
       -Wno-shorten-64-to-32
+      -Wno-suggest-destructor-override
+      -Wno-suggest-override
   )
 endif()
 

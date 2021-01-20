@@ -155,7 +155,7 @@ struct ZMQIncomingConnectionManager final : public Peer::ConnectionManager {
     {
     }
 
-    ~ZMQIncomingConnectionManager()
+    ~ZMQIncomingConnectionManager() final
     {
         stop_internal();
         stop_external();

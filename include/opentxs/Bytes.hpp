@@ -73,7 +73,7 @@ public:
     ProtectedView(ProtectedView&&) = default;
     ProtectedView& operator=(const ProtectedView&) = delete;
     ProtectedView& operator=(ProtectedView&&) = default;
-    ~ProtectedView()
+    ~ProtectedView() override
     {
         lock_.reset();
 

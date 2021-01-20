@@ -55,7 +55,7 @@ public:
     {
         return params_.second;
     }
-    auto Filter() const noexcept -> ReadView { return reader(filter_); }
+    auto Filter() const noexcept -> ReadView final { return reader(filter_); }
     auto Hash() const noexcept -> const block::Hash& final { return hash_; }
     auto Type() const noexcept -> filter::Type final { return type_; }
 

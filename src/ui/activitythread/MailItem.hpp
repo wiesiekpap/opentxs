@@ -66,7 +66,7 @@ public:
         const ActivityThreadRowID& rowID,
         const ActivityThreadSortKey& sortKey,
         CustomData& custom) noexcept;
-    ~MailItem();
+    ~MailItem() final;
 
 private:
     std::unique_ptr<std::thread> load_;

@@ -35,7 +35,7 @@ public:
     Log(const opentxs::network::zeromq::Context& zmq,
         const std::string& endpoint);
 
-    ~Log() = default;
+    ~Log() final = default;
 
 private:
     OTZMQListenCallback callback_;

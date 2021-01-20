@@ -209,7 +209,7 @@ public:
     {
         return database_;
     }
-    auto Connect() noexcept -> bool;
+    auto Connect() noexcept -> bool final;
     auto Disconnect(const int id) const noexcept -> void final;
     auto Endpoint(const Task type) const noexcept -> std::string final
     {

@@ -64,7 +64,7 @@ public:
     }
     auto end() const noexcept -> const_iterator final { return cend(); }
     auto ID() const noexcept -> const identifier::Nym& final { return id_; }
-    auto NymID() const noexcept -> const identifier::Nym&
+    auto NymID() const noexcept -> const identifier::Nym& final
     {
         return parent_.External() ? id_.get() : parent_.NymID();
     }

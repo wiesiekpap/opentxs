@@ -135,7 +135,7 @@ public:
     }
 
     auto Shutdown() noexcept -> std::shared_future<void> final;
-    auto Start() noexcept -> void;
+    auto Start() noexcept -> void final;
 
     FilterOracle(
         const api::Core& api,

@@ -103,7 +103,7 @@ public:
     auto AddHeaders(std::vector<std::unique_ptr<block::Header>>&) noexcept
         -> bool final;
     auto DeleteCheckpoint() noexcept -> bool final;
-    auto Init() noexcept -> void;
+    auto Init() noexcept -> void final;
 
     HeaderOracle(
         const api::Core& api,

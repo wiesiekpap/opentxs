@@ -78,7 +78,7 @@ public:
     {
         return row_id_->str();
     }
-    auto Balance() const noexcept -> Amount;
+    auto Balance() const noexcept -> Amount final;
     auto ContractID() const noexcept -> std::string final { return contract_; }
     auto DisplayBalance() const noexcept -> std::string final
     {
@@ -111,7 +111,7 @@ public:
         const AccountListSortKey& sortKey,
         CustomData& custom) noexcept;
 
-    ~BlockchainAccountListItem() = default;
+    ~BlockchainAccountListItem() final = default;
 
 private:
     const AccountType type_;

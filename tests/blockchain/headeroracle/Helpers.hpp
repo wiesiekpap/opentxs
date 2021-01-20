@@ -305,7 +305,7 @@ public:
         header_oracle_.DeleteCheckpoint();
     }
 
-    virtual ~Test_HeaderOracle_base() = default;
+    ~Test_HeaderOracle_base() override = default;
 };
 
 struct Test_HeaderOracle_btc : public Test_HeaderOracle_base {

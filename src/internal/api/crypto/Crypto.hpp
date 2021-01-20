@@ -11,6 +11,6 @@
 namespace opentxs::api::crypto::internal
 {
 struct Asymmetric : virtual public api::crypto::Asymmetric {
-    virtual ~Asymmetric() = default;
+    ~Asymmetric() override = default;
 };
 }  // namespace opentxs::api::crypto::internal

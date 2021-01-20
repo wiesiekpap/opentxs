@@ -121,7 +121,7 @@ public:
         const api::client::internal::Manager& api,
         const identifier::Nym& nymID,
         const SimpleCallback& cb) noexcept;
-    ~Profile();
+    ~Profile() final;
 
 private:
     const ListenerDefinitions listeners_;
