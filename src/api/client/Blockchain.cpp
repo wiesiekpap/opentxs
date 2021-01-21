@@ -20,6 +20,8 @@
 #include <type_traits>
 
 #if OT_BLOCKCHAIN
+#include "api/client/blockchain/SyncClient.hpp"
+#include "api/client/blockchain/SyncServer.hpp"
 #include "core/Worker.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "internal/api/client/Client.hpp"
@@ -34,6 +36,8 @@
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/Pimpl.hpp"
 #if OT_BLOCKCHAIN
+#include "opentxs/Proto.hpp"
+#include "opentxs/Proto.tpp"
 #include "opentxs/api/Endpoints.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/api/Factory.hpp"
@@ -62,10 +66,14 @@
 #include "opentxs/identity/Nym.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/network/zeromq/Frame.hpp"
+#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Sender.tpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/BlockchainP2PChainState.pb.h"
 #include "opentxs/protobuf/BlockchainP2PHello.pb.h"
+#include "opentxs/protobuf/BlockchainP2PSync.pb.h"
+#include "opentxs/protobuf/Check.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
@@ -73,6 +81,7 @@
 #include "opentxs/protobuf/StorageThread.pb.h"
 #include "opentxs/protobuf/StorageThreadItem.pb.h"
 #if OT_BLOCKCHAIN
+#include "opentxs/protobuf/verify/BlockchainP2PSync.hpp"
 #include "opentxs/util/WorkType.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "util/Container.hpp"
@@ -183,13 +192,15 @@ Blockchain::Blockchain(
     , key_updates_(api_.ZeroMQ().PublishSocket())
     , sync_updates_(api_.ZeroMQ().PublishSocket())
     , new_blockchain_accounts_(api_.ZeroMQ().PublishSocket())
-    , config_([&] {
+    , base_config_([&] {
         auto output = opentxs::blockchain::client::internal::Config{};
         const auto sync = [&] {
             try {
                 const auto& arg = args.at(OPENTXS_ARG_BLOCKCHAIN_SYNC);
 
                 if (0 == arg.size()) { return false; }
+
+                output.sync_endpoint_ = *arg.begin();
 
                 return true;
             } catch (...) {
@@ -203,7 +214,10 @@ Blockchain::Blockchain(
         if (Policy::All == db_.BlockPolicy()) {
             output.generate_cfilters_ = true;
 
-            if (sync) { output.provide_sync_server_ = true; }
+            if (sync) {
+                output.provide_sync_server_ = true;
+                output.disable_wallet_ = true;
+            }
         } else if (sync) {
             output.use_sync_server_ = true;
 
@@ -213,16 +227,34 @@ Blockchain::Blockchain(
 
         return output;
     }())
+    , config_()
     , networks_()
-    , sync_server_([&]() -> std::unique_ptr<SyncServer> {
-        if (config_.provide_sync_server_) {
-            return std::make_unique<SyncServer>(api_, *this);
+    , sync_client_([&]() -> std::unique_ptr<blockchain::SyncClient> {
+        if (base_config_.use_sync_server_) {
+            return std::make_unique<blockchain::SyncClient>(
+                api_, *this, base_config_.sync_endpoint_);
+        }
+
+        return {};
+    }())
+    , sync_server_([&]() -> std::unique_ptr<blockchain::SyncServer> {
+        if (base_config_.provide_sync_server_) {
+            return std::make_unique<blockchain::SyncServer>(api_, *this);
         }
 
         return {};
     }())
     , balances_(*this, api_)
     , enabled_callbacks_(api_)
+    , last_hello_([&] {
+        auto output = LastHello{};
+
+        for (const auto& chain : opentxs::blockchain::SupportedChains()) {
+            output.emplace(chain, Clock::from_time_t(0));
+        }
+
+        return output;
+    }())
     , running_(true)
     , heartbeat_(&Blockchain::heartbeat, this)
 #endif  // OT_BLOCKCHAIN
@@ -254,6 +286,8 @@ Blockchain::Blockchain(
         api_.Endpoints().BlockchainAccountCreated());
 
     OT_ASSERT(listen);
+
+    if (sync_client_) { sync_client_->Heartbeat(Hello()); }
 #endif  // OT_BLOCKCHAIN
 }
 
@@ -570,6 +604,26 @@ auto Blockchain::CalculateAddress(
     return EncodeAddress(format, chain, data);
 }
 
+#if OT_BLOCKCHAIN
+auto Blockchain::check_hello(const Lock&) const noexcept -> Chains
+{
+    constexpr auto limit = std::chrono::seconds(30);
+    auto output = Chains{};
+    const auto now = Clock::now();
+
+    for (const auto& [chain, network] : networks_) {
+        auto& last = last_hello_[chain];
+
+        if ((now - last) > limit) {
+            last = now;
+            output.emplace_back(chain);
+        }
+    }
+
+    return output;
+}
+#endif  // OT_BLOCKCHAIN
+
 auto Blockchain::DecodeAddress(const std::string& encoded) const noexcept
     -> DecodedAddress
 {
@@ -755,9 +809,15 @@ auto Blockchain::heartbeat() const noexcept -> void
     while (running_) {
         auto counter{-1};
 
-        while (20 > ++counter) { Sleep(std::chrono::milliseconds{250}); }
+        while (running_ && (20 > ++counter)) {
+            Sleep(std::chrono::milliseconds{250});
+        }
 
         auto lock = Lock{lock_};
+
+        if (sync_client_) {
+            sync_client_->Heartbeat(hello(lock, check_hello(lock)));
+        }
 
         for (const auto& [key, value] : networks_) {
             if (false == running_) { return; }
@@ -769,12 +829,31 @@ auto Blockchain::heartbeat() const noexcept -> void
 
 auto Blockchain::Hello() const noexcept -> proto::BlockchainP2PHello
 {
+    auto lock = Lock{lock_};
+    auto chains = [&] {
+        auto output = Chains{};
+
+        for (const auto& [chain, network] : networks_) {
+            output.emplace_back(chain);
+        }
+
+        return output;
+    }();
+
+    return hello(lock, chains);
+}
+
+auto Blockchain::hello(const Lock&, const Chains& chains) const noexcept
+    -> proto::BlockchainP2PHello
+{
     auto output = proto::BlockchainP2PHello{};
     output.set_version(opentxs::blockchain::client::sync_hello_version_);
-    auto lock = Lock{lock_};
 
-    for (const auto& [chain, network] : networks_) {
-        const auto best = network->HeaderOracle().BestChain();
+    for (const auto chain : chains) {
+        const auto& network = networks_.at(chain);
+        const auto& filter = network->FilterOracle();
+        const auto type = filter.DefaultType();
+        const auto best = filter.FilterTip(type);
         auto& state = *output.add_state();
         state.set_version(opentxs::blockchain::client::sync_state_version_);
         state.set_chain(static_cast<std::uint32_t>(chain));
@@ -1038,6 +1117,77 @@ auto Blockchain::ProcessMergedContact(
 
     return true;
 }
+
+auto Blockchain::ProcessSyncData(OTZMQMessage&& in) const noexcept -> void
+{
+    const auto b = in->Body();
+
+    OT_ASSERT(2 < b.size());
+
+    using Network = opentxs::blockchain::client::internal::Network;
+    auto chain = std::optional<Chain>{std::nullopt};
+    using FilterType = opentxs::blockchain::filter::Type;
+    auto filterType = std::optional<FilterType>{std::nullopt};
+    using Height = opentxs::blockchain::block::Height;
+    auto height = Height{-1};
+    auto work = MakeWork(api_, Network::Task::SyncData);
+    work->AddFrame(b.at(0));
+
+    for (auto i{std::next(b.begin(), 2)}; i != b.end(); std::advance(i, 1)) {
+        const auto sync = proto::Factory<proto::BlockchainP2PSync>(*i);
+
+        if (false == proto::Validate(sync, VERBOSE)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid sync data").Flush();
+
+            return;
+        }
+
+        const auto incomingChain = static_cast<Chain>(sync.chain());
+        const auto incomingHeight = static_cast<Height>(sync.height());
+        const auto incomingType = static_cast<FilterType>(sync.filter_type());
+
+        if (chain.has_value()) {
+            if (incomingHeight != ++height) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(": Non-contiguous sync data")
+                    .Flush();
+
+                return;
+            }
+
+            if (incomingChain != chain.value()) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid chain").Flush();
+
+                return;
+            }
+
+            if (incomingType != filterType.value()) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid filter type")
+                    .Flush();
+
+                return;
+            }
+        } else {
+            chain = incomingChain;
+            height = incomingHeight;
+            filterType = incomingType;
+        }
+
+        work->AddFrame(std::move(*i));  // TODO overload AddFrame so this avoids
+                                        // making a copy
+    }
+
+    auto lock = Lock{lock_};
+
+    try {
+        auto& network = *networks_.at(chain.value());
+        network.Submit(work);
+    } catch (...) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Chain not active").Flush();
+
+        return;
+    }
+}
+
 auto Blockchain::ProcessTransaction(
     const Chain chain,
     const Tx& in,
@@ -1146,6 +1296,12 @@ auto Blockchain::ReportProgress(
     work->AddFrame(current);
     work->AddFrame(target);
     sync_updates_->Send(work);
+
+    if (sync_client_ && sync_client_->IsActive(chain)) {
+        auto lock = Lock{lock_};
+        last_hello_[chain] = Clock::now();
+        sync_client_->Heartbeat(hello(lock, {chain}));
+    }
 }
 
 auto Blockchain::RestoreNetworks() const noexcept -> void
@@ -1193,10 +1349,32 @@ auto Blockchain::start(
                 endpoint = sync_server_->Endpoint(type);
             }
 
+            auto& config = [&]() -> const Config& {
+                {
+                    auto it = config_.find(type);
+
+                    if (config_.end() != it) { return it->second; }
+                }
+
+                auto [it, added] = config_.emplace(type, base_config_);
+                auto& active = it->second.use_sync_server_;
+
+                OT_ASSERT(added);
+
+                if (active) {
+                    OT_ASSERT(sync_client_);
+
+                    active = sync_client_->IsConnected() &&
+                             sync_client_->IsActive(type);
+                }
+
+                return it->second;
+            }();
+
             auto [it, added] = networks_.emplace(
                 type,
                 factory::BlockchainNetworkBitcoin(
-                    api_, *this, type, config_, seednode, endpoint));
+                    api_, *this, type, config, seednode, endpoint));
 
             return it->second->Connect();
         }
@@ -1216,6 +1394,11 @@ auto Blockchain::StartSyncServer(
     auto lock = Lock{lock_};
 
     if (sync_server_) { return sync_server_->Start(sync, update); }
+
+    LogNormal("Blockchain sync server must be enabled at library "
+              "initialization time by passing the ")(
+        OPENTXS_ARG_BLOCKCHAIN_SYNC)(" option.")
+        .Flush();
 
     return false;
 }

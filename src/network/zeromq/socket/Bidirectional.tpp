@@ -212,7 +212,7 @@ void Bidirectional<InterfaceType, MessageType>::shutdown(
 template <typename InterfaceType, typename MessageType>
 void Bidirectional<InterfaceType, MessageType>::thread() noexcept
 {
-    LogVerbose(OT_METHOD_BIDIRECTIONAL)(__FUNCTION__)(": Starting listener")
+    LogTrace(OT_METHOD_BIDIRECTIONAL)(__FUNCTION__)(": Starting listener")
         .Flush();
 
     while (this->running_.get()) {
@@ -221,8 +221,7 @@ void Bidirectional<InterfaceType, MessageType>::thread() noexcept
         Sleep(std::chrono::milliseconds(CALLBACK_WAIT_MILLISECONDS));
     }
 
-    LogVerbose(OT_METHOD_BIDIRECTIONAL)(__FUNCTION__)(": Callback ready")
-        .Flush();
+    LogTrace(OT_METHOD_BIDIRECTIONAL)(__FUNCTION__)(": Callback ready").Flush();
 
     while (this->running_.get()) {
         std::this_thread::yield();
@@ -244,7 +243,7 @@ void Bidirectional<InterfaceType, MessageType>::thread() noexcept
         const auto events = zmq_poll(poll, 2, POLL_MILLISECONDS);
 
         if (0 == events) {
-            LogVerbose(OT_METHOD_BIDIRECTIONAL)(__FUNCTION__)(": No messages.")
+            LogInsane(OT_METHOD_BIDIRECTIONAL)(__FUNCTION__)(": No messages.")
                 .Flush();
 
             continue;
@@ -270,7 +269,6 @@ void Bidirectional<InterfaceType, MessageType>::thread() noexcept
         }
     }
 
-    LogVerbose(OT_METHOD_BIDIRECTIONAL)(__FUNCTION__)(": Shutting down")
-        .Flush();
+    LogTrace(OT_METHOD_BIDIRECTIONAL)(__FUNCTION__)(": Shutting down").Flush();
 }
 }  // namespace opentxs::network::zeromq::socket::implementation

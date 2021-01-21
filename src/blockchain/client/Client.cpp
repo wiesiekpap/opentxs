@@ -11,6 +11,7 @@
 #include <boost/bind/bind.hpp>
 #include <algorithm>
 #include <functional>
+#include <sstream>
 #include <thread>
 
 #include "opentxs/Pimpl.hpp"
@@ -150,4 +151,29 @@ auto IO::Shutdown() noexcept -> void
 }
 
 IO::~IO() { Shutdown(); }
+
+auto Config::print() const noexcept -> std::string
+{
+    constexpr auto print_bool = [](const bool in) {
+        if (in) {
+            return "true";
+        } else {
+            return "false";
+        }
+    };
+
+    auto output = std::stringstream{};
+    output << "Blockchain client options\n";
+    output << "  * download cfilters: " << print_bool(download_cfilters_)
+           << '\n';
+    output << "  * generate cfilters: " << print_bool(generate_cfilters_)
+           << '\n';
+    output << "  * provide sync server: " << print_bool(provide_sync_server_)
+           << '\n';
+    output << "  * use sync server: " << print_bool(use_sync_server_) << '\n';
+    output << "  * disable wallet: " << print_bool(disable_wallet_) << '\n';
+    output << "  * sync endpoint: " << sync_endpoint_ << '\n';
+
+    return output.str();
+}
 }  // namespace opentxs::blockchain::client::internal

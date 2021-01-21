@@ -73,6 +73,8 @@ namespace blockchain
 {
 class BalanceTree;
 class HD;
+struct SyncClient;
+struct SyncServer;
 }  // namespace blockchain
 
 namespace internal
@@ -120,6 +122,8 @@ class HDPath;
 class Contact;
 class PasswordPrompt;
 }  // namespace opentxs
+
+namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::api::client::implementation
 {
@@ -264,12 +268,12 @@ public:
     auto ProcessContact(const Contact& contact) const noexcept -> bool final;
     auto ProcessMergedContact(const Contact& parent, const Contact& child)
         const noexcept -> bool final;
+    auto ProcessSyncData(OTZMQMessage&& in) const noexcept -> void;
     auto ProcessTransaction(
         const Chain chain,
         const Tx& transaction,
         const PasswordPrompt& reason) const noexcept -> bool final;
-    auto Reorg() const noexcept
-        -> const opentxs::network::zeromq::socket::Publish& final
+    auto Reorg() const noexcept -> const zmq::socket::Publish& final
     {
         return reorg_;
     }
@@ -338,6 +342,9 @@ private:
 #if OT_BLOCKCHAIN
     using Txid = opentxs::blockchain::block::Txid;
     using pTxid = opentxs::blockchain::block::pTxid;
+    using LastHello = std::map<Chain, Time>;
+    using Chains = std::vector<Chain>;
+    using Config = opentxs::blockchain::client::internal::Config;
 #endif  // OT_BLOCKCHAIN
 
     struct AccountCache {
@@ -413,7 +420,7 @@ private:
 
         const api::client::internal::Blockchain& parent_;
         const api::Core& api_;
-        const opentxs::network::zeromq::Context& zmq_;
+        const zmq::Context& zmq_;
         OTZMQListenCallback cb_;
         OTZMQRouterSocket socket_;
         mutable std::mutex lock_;
@@ -421,7 +428,7 @@ private:
         mutable std::map<Chain, std::map<OTNymID, Subscribers>>
             nym_subscribers_;
 
-        auto cb(opentxs::network::zeromq::Message& message) noexcept -> void;
+        auto cb(zmq::Message& message) noexcept -> void;
 
         BalanceOracle() = delete;
     };
@@ -435,7 +442,7 @@ private:
         EnableCallbacks(const api::Core& api) noexcept;
 
     private:
-        const opentxs::network::zeromq::Context& zmq_;
+        const zmq::Context& zmq_;
         mutable std::mutex lock_;
         std::map<Chain, std::vector<EnabledCallback>> map_;
         OTZMQPublishSocket socket_;
@@ -444,26 +451,6 @@ private:
         EnableCallbacks(EnableCallbacks&&) = delete;
         auto operator=(const EnableCallbacks&) -> EnableCallbacks& = delete;
         auto operator=(EnableCallbacks&&) -> EnableCallbacks& = delete;
-    };
-    struct SyncServer {
-        using Chain = opentxs::blockchain::Type;
-
-        auto Endpoint(const Chain chain) const noexcept -> std::string;
-
-        auto Disable(const Chain chain) noexcept -> void;
-        auto Enable(const Chain chain) noexcept -> void;
-        auto Start(const std::string& sync, const std::string& update) noexcept
-            -> bool;
-
-        SyncServer(const api::Core& api, Blockchain& parent) noexcept;
-
-        ~SyncServer();
-
-    private:
-        struct Imp;
-
-        std::unique_ptr<Imp> imp_p_;
-        Imp& imp_;
     };
     struct ThreadPoolManager final : virtual public ThreadPoolType {
         auto Endpoint() const noexcept -> std::string final;
@@ -564,14 +551,17 @@ private:
     OTZMQPublishSocket key_updates_;
     OTZMQPublishSocket sync_updates_;
     OTZMQPublishSocket new_blockchain_accounts_;
-    const opentxs::blockchain::client::internal::Config config_;
+    const Config base_config_;
+    mutable std::map<Chain, Config> config_;
     mutable std::map<
         Chain,
         std::unique_ptr<opentxs::blockchain::client::internal::Network>>
         networks_;
-    std::unique_ptr<SyncServer> sync_server_;
+    std::unique_ptr<blockchain::SyncClient> sync_client_;
+    std::unique_ptr<blockchain::SyncServer> sync_server_;
     BalanceOracle balances_;
     mutable EnableCallbacks enabled_callbacks_;
+    mutable LastHello last_hello_;
     std::atomic_bool running_;
     std::thread heartbeat_;
 #endif  // OT_BLOCKCHAIN
@@ -596,10 +586,13 @@ private:
     auto broadcast_update_signal(
         const opentxs::blockchain::block::bitcoin::internal::Transaction& tx)
         const noexcept -> void;
+    auto check_hello(const Lock& lock) const noexcept -> Chains;
     auto disable(const Lock& lock, const Chain type) const noexcept -> bool;
     auto enable(const Lock& lock, const Chain type, const std::string& seednode)
         const noexcept -> bool;
     auto heartbeat() const noexcept -> void;
+    auto hello(const Lock&, const Chains& chains) const noexcept
+        -> proto::BlockchainP2PHello;
     auto load_transaction(const Lock& lock, const Txid& id) const noexcept
         -> std::unique_ptr<
             opentxs::blockchain::block::bitcoin::internal::Transaction>;

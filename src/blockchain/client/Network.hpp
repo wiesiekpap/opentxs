@@ -249,6 +249,7 @@ private:
     auto process_block(zmq::Message& in) noexcept -> void;
     auto process_filter_update(zmq::Message& in) noexcept -> void;
     auto process_header(zmq::Message& in) noexcept -> void;
+    auto process_sync_data(zmq::Message& in) noexcept -> void;
     auto shutdown(std::promise<void>& promise) noexcept -> void;
     auto state_machine() noexcept -> bool;
 

@@ -240,12 +240,9 @@ private:
             auto prior = Previous{std::nullopt};
             {
                 auto& first = hashes.front();
-
-                if (first != current) {
-                    auto promise = std::promise<int>{};
-                    promise.set_value(0);
-                    prior.emplace(std::move(first), promise.get_future());
-                }
+                auto promise = std::promise<int>{};
+                promise.set_value(0);
+                prior.emplace(std::move(first), promise.get_future());
             }
             hashes.erase(hashes.begin());
             update_position(std::move(hashes), type_, std::move(prior));

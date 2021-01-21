@@ -204,7 +204,7 @@ auto Sync::Load(const Chain chain, const Height height, zmq::Message& output)
             haveOne = true;
             total += view.size();
 
-            return total < 1_MiB;
+            return total < 4_MiB;
         } catch (const std::exception& e) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 

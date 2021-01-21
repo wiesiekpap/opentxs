@@ -201,6 +201,7 @@ using UpdatedHeader =
     std::map<block::pHash, std::pair<std::unique_ptr<block::Header>, bool>>;
 using BestHashes = std::map<block::Height, block::pHash>;
 using Hashes = std::set<block::pHash>;
+using HashVector = std::vector<block::pHash>;
 using Segments = std::set<ChainSegment>;
 // parent block hash, disconnected block hash
 using DisconnectedList = std::multimap<block::pHash, block::pHash>;
@@ -211,6 +212,15 @@ using CfilterJob =
     download::Batch<std::unique_ptr<const GCS>, filter::pHeader, filter::Type>;
 using BlockJob =
     download::Batch<std::shared_ptr<const block::bitcoin::Block>, int>;
+
+using ParsedSyncData = std::pair<
+    block::pHash,
+    std::vector<std::tuple<
+        block::pHash,
+        block::Height,
+        filter::Type,
+        std::uint32_t,
+        OTData>>>;
 }  // namespace opentxs::blockchain::client
 #endif  // OT_BLOCKCHAIN
 
@@ -256,6 +266,10 @@ struct OPENTXS_EXPORT Config {
     bool generate_cfilters_{false};
     bool provide_sync_server_{false};
     bool use_sync_server_{false};
+    bool disable_wallet_{false};
+    std::string sync_endpoint_{};
+
+    auto print() const noexcept -> std::string;
 };
 
 struct FilterDatabase {
@@ -314,6 +328,8 @@ struct FilterOracle : virtual public opentxs::blockchain::client::FilterOracle {
         -> std::unique_ptr<const GCS> = 0;
     virtual auto ProcessBlock(const block::bitcoin::Block& block) const noexcept
         -> bool = 0;
+    virtual auto ProcessSyncData(const ParsedSyncData& data) const noexcept
+        -> void = 0;
     virtual auto Tip(const filter::Type type) const noexcept
         -> block::Position = 0;
 
@@ -337,6 +353,9 @@ struct HeaderOracle : virtual public opentxs::blockchain::client::HeaderOracle {
     virtual auto Init() noexcept -> void = 0;
     virtual auto LoadBitcoinHeader(const block::Hash& hash) const noexcept
         -> std::unique_ptr<block::bitcoin::Header> = 0;
+    virtual auto ProcessSyncData(
+        const network::zeromq::Message& work,
+        ParsedSyncData& out) noexcept -> bool = 0;
 
     ~HeaderOracle() override = default;
 };
@@ -360,7 +379,7 @@ struct HeaderDatabase {
     // Throws std::out_of_range if the header does not exist
     virtual auto LoadHeader(const block::Hash& hash) const noexcept(false)
         -> std::unique_ptr<block::Header> = 0;
-    virtual auto RecentHashes() const noexcept -> std::vector<block::pHash> = 0;
+    virtual auto RecentHashes() const noexcept -> HashVector = 0;
     virtual auto SiblingHashes() const noexcept -> Hashes = 0;
     // Returns null pointer if the header does not exist
     virtual auto TryLoadBitcoinHeader(const block::Hash& hash) const noexcept
@@ -490,6 +509,7 @@ struct Network : virtual public opentxs::blockchain::Network {
         Heartbeat = OT_ZMQ_INTERNAL_SIGNAL + 3,
         StateMachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
         FilterUpdate = OT_ZMQ_NEW_FILTER_SIGNAL,
+        SyncData = OT_ZMQ_SYNC_DATA_SIGNAL,
     };
 
     virtual auto Blockchain() const noexcept

@@ -42,7 +42,8 @@ auto BitcoinScript(
     const ReadView bytes,
     const bool isOutput,
     const bool isCoinbase,
-    const bool allowInvalidOpcodes) noexcept
+    const bool allowInvalidOpcodes,
+    const bool mute) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Script>
 {
     const auto role = isOutput ? ReturnType::Position::Output
@@ -60,6 +61,7 @@ auto BitcoinScript(
     auto it = reinterpret_cast<const std::byte*>(bytes.data());
     auto read = std::size_t{0};
     const auto target = bytes.size();
+    const auto& logger = mute ? LogTrace : LogVerbose;
 
     try {
         while (read < target) {
@@ -89,7 +91,7 @@ auto BitcoinScript(
                                                : pushSize;
 
                 if ((read + effectiveSize) > target) {
-                    LogVerbose("opentxs::factory::")(__FUNCTION__)(
+                    logger("opentxs::factory::")(__FUNCTION__)(
                         ": Incomplete direct data push")
                         .Flush();
 
@@ -121,7 +123,7 @@ auto BitcoinScript(
                                             : sizeBytes;
 
                     if ((read + effectiveSize) > target) {
-                        LogVerbose("opentxs::factory::")(__FUNCTION__)(
+                        logger("opentxs::factory::")(__FUNCTION__)(
                             ": Incomplete data push")
                             .Flush();
 
@@ -146,7 +148,7 @@ auto BitcoinScript(
                                             : pushSize;
 
                     if ((read + effectiveSize) > target) {
-                        LogVerbose("opentxs::factory::")(__FUNCTION__)(
+                        logger("opentxs::factory::")(__FUNCTION__)(
                             ": Data push bytes missing")
                             .Flush();
 
@@ -163,8 +165,7 @@ auto BitcoinScript(
             }
         }
     } catch (...) {
-        LogVerbose("opentxs::factory::")(__FUNCTION__)(": Unknown opcode")
-            .Flush();
+        logger("opentxs::factory::")(__FUNCTION__)(": Unknown opcode").Flush();
 
         return {};
     }
@@ -933,7 +934,7 @@ auto Script::RedeemScript() const noexcept -> std::unique_ptr<bitcoin::Script>
     if (false == is_data_push(element)) { return {}; }
 
     return factory::BitcoinScript(
-        chain_, reader(element.data_.value()), false, false, false);
+        chain_, reader(element.data_.value()), false, false, false, true);
 }
 
 auto Script::ScriptHash() const noexcept -> std::optional<ReadView>

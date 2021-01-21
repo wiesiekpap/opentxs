@@ -265,7 +265,8 @@ OPENTXS_EXPORT auto BitcoinScript(
     const ReadView bytes,
     const bool outputScript = true,
     const bool isGeneration = false,
-    const bool allowInvalidOpcodes = true) noexcept
+    const bool allowInvalidOpcodes = true,
+    const bool mute = false) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Script>;
 OPENTXS_EXPORT auto BitcoinScript(
     const blockchain::Type chain,

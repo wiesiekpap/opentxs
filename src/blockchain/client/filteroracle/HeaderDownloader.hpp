@@ -127,7 +127,7 @@ private:
 
         OT_ASSERT(saved);
 
-        LogVerbose(DisplayString(chain_))(" cfheader chain updated to height ")(
+        LogOutput(DisplayString(chain_))(" cfheader chain updated to height ")(
             position.first)
             .Flush();
         filter_.UpdatePosition(position);
