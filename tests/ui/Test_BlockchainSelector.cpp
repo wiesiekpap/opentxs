@@ -11,10 +11,11 @@
 #include "UIHelpers.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/SharedPimpl.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/UI.hpp"
-#include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/Blockchain.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/ui/BlockchainSelection.hpp"
 #include "opentxs/ui/BlockchainSelectionItem.hpp"

@@ -23,15 +23,16 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "util/Work.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/ui/BlockchainSelection.hpp"
+#include "opentxs/ui/Blockchains.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "ui/base/List.hpp"
 #include "ui/base/Widget.hpp"
+#include "util/Work.hpp"
 
 namespace opentxs
 {

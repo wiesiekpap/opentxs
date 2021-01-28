@@ -13,17 +13,18 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <set>
 #include <string>
 #include <thread>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
-#include "api/client/Blockchain.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Proto.tpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Log.hpp"

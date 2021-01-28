@@ -14,6 +14,7 @@
 #include <iterator>
 #include <map>
 #include <stdexcept>
+#include <string>
 #include <type_traits>
 
 #include "blockchain/client/UpdateTransaction.hpp"
@@ -22,10 +23,10 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/client/Factory.hpp"
 #include "internal/core/Core.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Proto.tpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Work.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"  // IWYU pragma: keep
@@ -34,6 +35,7 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
+#include "opentxs/network/zeromq/FrameIterator.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/protobuf/BlockchainP2PSync.pb.h"

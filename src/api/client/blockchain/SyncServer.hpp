@@ -6,7 +6,9 @@
 #include <memory>
 #include <string>
 
+#include "api/client/Blockchain.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
 
 namespace opentxs
 {

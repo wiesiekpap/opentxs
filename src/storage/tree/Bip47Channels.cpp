@@ -9,6 +9,7 @@
 
 #include <mutex>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 #include "opentxs/Pimpl.hpp"

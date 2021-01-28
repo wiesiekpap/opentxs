@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <stdexcept>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -25,6 +26,7 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
+#include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
@@ -33,6 +35,8 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/network/zeromq/Message.hpp"
 
 #define OT_METHOD "opentxs::blockchain::client::implementation::FilterOracle::"
 

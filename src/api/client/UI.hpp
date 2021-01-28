@@ -38,6 +38,7 @@
 #include "opentxs/ui/ActivitySummary.hpp"
 #include "opentxs/ui/ActivityThread.hpp"
 #include "opentxs/ui/BlockchainSelection.hpp"
+#include "opentxs/ui/Blockchains.hpp"
 #include "opentxs/ui/Contact.hpp"
 #include "opentxs/ui/ContactList.hpp"
 #include "opentxs/ui/List.hpp"
