@@ -62,12 +62,12 @@ public:
         return this->get_index(row, column);
     }
     int qt_row_count() const noexcept final { return this->row_count_.load(); }
-    void register_child(const void* child) const noexcept
+    void register_child(const void* child) const noexcept final
     {
         this->parent_.register_child(child);
         this->valid_pointers_.add(child);
     }
-    void unregister_child(const void* child) const noexcept
+    void unregister_child(const void* child) const noexcept final
     {
         this->parent_.unregister_child(child);
         this->valid_pointers_.remove(child);
@@ -114,6 +114,6 @@ protected:
     auto operator=(const Combined&) -> Combined& = delete;
     auto operator=(Combined&&) -> Combined& = delete;
 
-    virtual ~Combined() = default;
+    ~Combined() override = default;
 };
 }  // namespace opentxs::ui::implementation

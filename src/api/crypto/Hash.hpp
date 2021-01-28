@@ -112,7 +112,7 @@ public:
         const opentxs::crypto::Ripemd160& ripe,
         const opentxs::crypto::Scrypt& scrypt) noexcept;
 
-    ~Hash() = default;
+    ~Hash() final = default;
 
 private:
     const api::crypto::Encode& encode_;

@@ -15,6 +15,7 @@ set(cxx-install-headers
 )
 set(cxx-headers
     ${cxx-install-headers}
+    AsyncValue.hpp
     Blank.hpp
     Container.hpp
     HDIndex.hpp

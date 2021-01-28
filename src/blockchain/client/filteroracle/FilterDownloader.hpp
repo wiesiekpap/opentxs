@@ -73,7 +73,8 @@ public:
         const internal::Network& network,
         const blockchain::Type chain,
         const filter::Type type,
-        const std::string& shutdown) noexcept
+        const std::string& shutdown,
+        const NotifyCallback& notify) noexcept
         : FilterDM(
               [&] { return db.FilterTip(type); }(),
               [&] {
@@ -91,15 +92,11 @@ public:
         , network_(network)
         , chain_(chain)
         , type_(type)
-        , socket_(api_.ZeroMQ().PublishSocket())
+        , notify_(notify)
         , init_promise_()
         , init_(init_promise_.get_future())
     {
         init_executor({shutdown});
-        auto zmq = socket_->Start(
-            api_.Endpoints().InternalBlockchainFilterUpdated(chain_));
-
-        OT_ASSERT(zmq);
     }
 
     ~FilterDownloader() { stop_worker().get(); }
@@ -113,7 +110,7 @@ private:
     const internal::Network& network_;
     const blockchain::Type chain_;
     const filter::Type type_;
-    OTZMQPublishSocket socket_;
+    const NotifyCallback& notify_;
     std::promise<void> init_promise_;
     std::shared_future<void> init_;
 
@@ -146,14 +143,10 @@ private:
 
         OT_ASSERT(saved);
 
-        LogVerbose(DisplayString(chain_))(" cfilter chain updated to height ")(
+        LogOutput(DisplayString(chain_))(" cfilter chain updated to height ")(
             position.first)
             .Flush();
-        auto work = MakeWork(OT_ZMQ_NEW_FILTER_SIGNAL);
-        work->AddFrame(type_);
-        work->AddFrame(position.first);
-        work->AddFrame(position.second);
-        socket_->Send(work);
+        notify_(type_, position);
     }
 
     auto pipeline(const zmq::Message& in) noexcept -> void

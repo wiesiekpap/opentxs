@@ -9,6 +9,7 @@
 #include <atomic>
 #include <chrono>
 #include <deque>
+#include <functional>
 #include <future>
 #include <iosfwd>
 #include <map>
@@ -92,6 +93,9 @@ public:
     class HeaderDownloader;
     class SyncIndexer;
 
+    using NotifyCallback =
+        std::function<void(const filter::Type, const block::Position&)>;
+
     enum class Work : OTZMQWorkType {
         reset_filter_tip = OT_ZMQ_INTERNAL_SIGNAL + 0,
         full_block = OT_ZMQ_NEW_FULL_BLOCK_SIGNAL,
@@ -129,13 +133,15 @@ public:
         -> std::unique_ptr<const GCS> final;
     auto ProcessBlock(const block::bitcoin::Block& block) const noexcept
         -> bool final;
+    auto ProcessSyncData(const ParsedSyncData& data) const noexcept
+        -> void final;
     auto Tip(const filter::Type type) const noexcept -> block::Position final
     {
         return database_.FilterTip(type);
     }
 
     auto Shutdown() noexcept -> std::shared_future<void> final;
-    auto Start() noexcept -> void;
+    auto Start() noexcept -> void final;
 
     FilterOracle(
         const api::Core& api,
@@ -168,6 +174,8 @@ private:
     const blockchain::Type chain_;
     const filter::Type default_type_;
     mutable std::mutex lock_;
+    OTZMQPublishSocket new_filters_;
+    const NotifyCallback cb_;
     mutable std::unique_ptr<FilterDownloader> filter_downloader_;
     mutable std::unique_ptr<HeaderDownloader> header_downloader_;
     mutable std::unique_ptr<BlockIndexer> block_indexer_;
@@ -176,6 +184,8 @@ private:
     std::shared_future<void> init_;
     std::shared_future<void> shutdown_;
 
+    auto new_tip(const filter::Type type, const block::Position& tip)
+        const noexcept -> void;
     auto process_block(
         const filter::Type type,
         const block::bitcoin::Block& block) const noexcept

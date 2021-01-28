@@ -102,7 +102,7 @@ public:
         const ProfileSubsectionRowID& rowID,
         const ProfileSubsectionSortKey& sortKey,
         CustomData& custom) noexcept;
-    ~ProfileItem() = default;
+    ~ProfileItem() final = default;
 
 private:
     std::unique_ptr<opentxs::ContactItem> item_;

@@ -83,15 +83,28 @@ FilterOracle::FilterOracle(
     , header_(header)
     , database_(database)
     , chain_(chain)
-    , default_type_(
-          config.generate_cfilters_
-              ? filter::Type::Extended_opentxs
-              : blockchain::internal::DefaultFilter(chain_))
+    , default_type_([&] {
+        if (config.generate_cfilters_ || config.use_sync_server_) {
+
+            return filter::Type::Extended_opentxs;
+        }
+
+        return blockchain::internal::DefaultFilter(chain_);
+    }())
     , lock_()
+    , new_filters_(api_.ZeroMQ().PublishSocket())
+    , cb_([this](const auto type, const auto& pos) { new_tip(type, pos); })
     , filter_downloader_([&]() -> std::unique_ptr<FilterDownloader> {
         if (config.download_cfilters_) {
             return std::make_unique<FilterDownloader>(
-                api, database, header, network, chain, default_type_, shutdown);
+                api,
+                database,
+                header,
+                network,
+                chain,
+                default_type_,
+                shutdown,
+                cb_);
         } else {
             return {};
         }
@@ -125,6 +138,7 @@ FilterOracle::FilterOracle(
                 chain,
                 default_type_,
                 shutdown,
+                cb_,
                 [&](const auto type, const auto& block) {
                     return process_block(type, block);
                 });
@@ -137,6 +151,11 @@ FilterOracle::FilterOracle(
     , init_(init_promise_.get_future())
     , shutdown_(shutdown_promise_.get_future())
 {
+    auto zmq = new_filters_->Start(
+        api_.Endpoints().InternalBlockchainFilterUpdated(chain_));
+
+    OT_ASSERT(zmq);
+    OT_ASSERT(cb_);
 }
 
 auto FilterOracle::compare_header_to_checkpoint(
@@ -297,6 +316,16 @@ auto FilterOracle::LoadFilterOrResetTip(
     return {};
 }
 
+auto FilterOracle::new_tip(const filter::Type type, const block::Position& tip)
+    const noexcept -> void
+{
+    auto work = MakeWork(api_, OT_ZMQ_NEW_FILTER_SIGNAL);
+    work->AddFrame(type);
+    work->AddFrame(tip.first);
+    work->AddFrame(tip.second);
+    new_filters_->Send(work);
+}
+
 auto FilterOracle::ProcessBlock(
     const block::bitcoin::Block& block) const noexcept -> bool
 {
@@ -351,6 +380,104 @@ auto FilterOracle::ProcessBlock(
         LogOutput(OT_METHOD)(__FUNCTION__)(": Database error ").Flush();
 
         return false;
+    }
+}
+
+auto FilterOracle::ProcessSyncData(const ParsedSyncData& parsed) const noexcept
+    -> void
+{
+    const auto& [prior, data] = parsed;
+
+    OT_ASSERT(0 < data.size());
+
+    auto filters = std::vector<internal::FilterDatabase::Filter>{};
+    auto headers = std::vector<internal::FilterDatabase::Header>{};
+    const auto filterType = std::get<2>(data.front());
+
+    try {
+        auto previous = [&] {
+            if (parsed.first->empty()) {
+
+                return block::BlankHash();
+            } else {
+
+                auto output = LoadFilterHeader(filterType, parsed.first);
+
+                if (output->empty()) {
+                    LogOutput(OT_METHOD)(__FUNCTION__)(": cfheader for ")(
+                        DisplayString(chain_))(" block ")(
+                        parsed.first->asHex())(" not found")
+                        .Flush();
+
+                    throw std::runtime_error("Non-contiguous filters");
+                }
+
+                return output;
+            }
+        }();
+
+        for (const auto& [block, height, type, count, bytes] : data) {
+            const auto params = blockchain::internal::GetFilterParams(type);
+            const auto& pGCS =
+                filters
+                    .emplace_back(
+                        block->Bytes(),
+                        factory::GCS(
+                            api_,
+                            params.first,
+                            params.second,
+                            blockchain::internal::BlockHashToFilterKey(
+                                block->Bytes()),
+                            count,
+                            bytes->Bytes()))
+                    .second;
+
+            if (false == bool(pGCS)) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to instantiate ")(
+                    DisplayString(chain_))(" cfilter")
+                    .Flush();
+
+                return;
+            }
+
+            const auto& gcs = *pGCS;
+            const auto filterHash = gcs.Hash();
+            const auto& cfheader = std::get<1>(headers.emplace_back(
+                block, gcs.Header(previous->Bytes()), filterHash->Bytes()));
+
+            if (cfheader->empty()) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(": failed to calculate ")(
+                    DisplayString(chain_))(" cfheader")
+                    .Flush();
+
+                return;
+            }
+
+            // TODO verify cfheader against checkpoint
+            previous = cfheader;
+        }
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+        return;
+    }
+
+    const auto tip = [&] {
+        const auto& [hash, height, type, count, filter] = parsed.second.back();
+
+        return block::Position{height, hash};
+    }();
+    make_blank<block::Position>::value(api_);
+    const auto stored =
+        database_.StoreFilters(filterType, headers, filters, tip);
+
+    if (stored) {
+        LogNormal(DisplayString(chain_))(
+            " cfheader and cfilter chain updated to height ")(tip.first)
+            .Flush();
+        cb_(filterType, tip);
+    } else {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Database error ").Flush();
     }
 }
 
@@ -466,7 +593,9 @@ auto FilterOracle::reset_tips_to(
         ++counter;
     }
 
-    if (resetBlock) { block_indexer_->Reset(position, std::move(previous)); }
+    if (resetBlock && block_indexer_) {
+        block_indexer_->Reset(position, std::move(previous));
+    }
 
     return 0 < counter;
 }

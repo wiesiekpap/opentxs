@@ -3,9 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"               // IWYU pragma: associated
-#include "1_Internal.hpp"             // IWYU pragma: associated
-#include "api/client/Blockchain.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                          // IWYU pragma: associated
+#include "1_Internal.hpp"                        // IWYU pragma: associated
+#include "api/client/blockchain/SyncServer.hpp"  // IWYU pragma: associated
 
 #include <zmq.h>
 #include <atomic>
@@ -19,6 +19,7 @@
 #include <type_traits>
 #include <vector>
 
+#include "api/client/Blockchain.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Proto.hpp"
@@ -36,12 +37,11 @@
 #include "opentxs/protobuf/verify/BlockchainP2PHello.hpp"
 #include "util/ScopeGuard.hpp"
 
-#define OT_METHOD                                                              \
-    "opentxs::api::client::implementation::Blockchain::SyncServer::Imp::"
+#define OT_METHOD "opentxs::api::client::blockchain::SyncServer::Imp::"
 
-namespace opentxs::api::client::implementation
+namespace opentxs::api::client::blockchain
 {
-struct Blockchain::SyncServer::Imp {
+struct SyncServer::Imp {
     using Socket = std::unique_ptr<void, decltype(&::zmq_close)>;
     using Map = std::map<Chain, std::tuple<std::string, bool, Socket>>;
     using OTSocket = opentxs::network::zeromq::socket::implementation::Socket;
@@ -209,15 +209,13 @@ private:
     }
 };
 
-Blockchain::SyncServer::SyncServer(
-    const api::Core& api,
-    Blockchain& parent) noexcept
+SyncServer::SyncServer(const api::Core& api, Blockchain& parent) noexcept
     : imp_p_(std::make_unique<Imp>(api, parent))
     , imp_(*imp_p_)
 {
 }
 
-auto Blockchain::SyncServer::Disable(const Chain chain) noexcept -> void
+auto SyncServer::Disable(const Chain chain) noexcept -> void
 {
     try {
         auto lock = Lock{imp_.lock_};
@@ -226,7 +224,7 @@ auto Blockchain::SyncServer::Disable(const Chain chain) noexcept -> void
     }
 }
 
-auto Blockchain::SyncServer::Enable(const Chain chain) noexcept -> void
+auto SyncServer::Enable(const Chain chain) noexcept -> void
 {
     try {
         auto lock = Lock{imp_.lock_};
@@ -235,8 +233,7 @@ auto Blockchain::SyncServer::Enable(const Chain chain) noexcept -> void
     }
 }
 
-auto Blockchain::SyncServer::Endpoint(const Chain chain) const noexcept
-    -> std::string
+auto SyncServer::Endpoint(const Chain chain) const noexcept -> std::string
 {
     try {
 
@@ -247,7 +244,7 @@ auto Blockchain::SyncServer::Endpoint(const Chain chain) const noexcept
     }
 }
 
-auto Blockchain::SyncServer::Start(
+auto SyncServer::Start(
     const std::string& sync,
     const std::string& update) noexcept -> bool
 {
@@ -286,6 +283,9 @@ auto Blockchain::SyncServer::Start(
             return false;
         }
 
+        LogNormal("Blockchain sync server listening on endpoints ")(sync)(
+            " and ")(update)
+            .Flush();
         output = true;
         imp_.running_ = output;
         imp_.thread_ = std::thread{&Imp::thread, imp_p_.get()};
@@ -294,5 +294,5 @@ auto Blockchain::SyncServer::Start(
     return output;
 }
 
-Blockchain::SyncServer::~SyncServer() = default;
-}  // namespace opentxs::api::client::implementation
+SyncServer::~SyncServer() = default;
+}  // namespace opentxs::api::client::blockchain

@@ -185,7 +185,7 @@ struct MappedFileStorage::Imp {
         }
 
         increment_index(index, bytes);
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Storing new item at position ")(
+        LogDebug(OT_METHOD)(__FUNCTION__)(": Storing new item at position ")(
             index.position_)
             .Flush();
         const auto nextPosition = index.position_ + bytes;

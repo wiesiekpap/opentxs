@@ -136,7 +136,7 @@ public:
         std::string& plaintext) -> bool;
     auto Store(const proto::Purse& purse) -> bool;
 
-    ~Nym();
+    ~Nym() final;
 
 private:
     friend Nyms;

@@ -154,7 +154,7 @@ struct Database : virtual public client::internal::BlockDatabase,
                   virtual public client::internal::WalletDatabase,
                   virtual public client::internal::SyncDatabase {
 
-    virtual ~Database() = default;
+    ~Database() override = default;
 };
 
 using FilterParams = std::pair<std::uint8_t, std::uint32_t>;

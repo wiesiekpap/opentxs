@@ -118,7 +118,7 @@ public:
         const ProfileSectionRowID& rowID,
         const ProfileSectionSortKey& key,
         CustomData& custom) noexcept;
-    ~ProfileSubsection() = default;
+    ~ProfileSubsection() final = default;
 
 private:
     ProfileSectionSortKey sequence_;

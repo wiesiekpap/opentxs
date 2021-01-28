@@ -34,7 +34,7 @@ public:
         const TaskID taskID,
         const DepositPaymentTask& payment,
         PaymentTasks& paymenttasks);
-    ~DepositPayment();
+    ~DepositPayment() final;
 
 private:
     client::internal::StateMachine& parent_;

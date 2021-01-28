@@ -80,7 +80,7 @@ public:
         CustomData& custom,
         const identifier::Nym& nymID,
         const Identifier& accountID) noexcept;
-    ~TransferBalanceItem() = default;
+    ~TransferBalanceItem() final = default;
 
 private:
     std::unique_ptr<const opentxs::Item> transfer_;

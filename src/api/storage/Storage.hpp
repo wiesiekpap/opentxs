@@ -441,7 +441,7 @@ public:
         const Identifier& thread,
         const opentxs::blockchain::Type chain,
         const Data& txid,
-        const Time time) const noexcept -> bool;
+        const Time time) const noexcept -> bool final;
     auto Store(
         const proto::PeerReply& data,
         const std::string& nymid,
@@ -475,7 +475,7 @@ public:
         const -> std::size_t final;
     void UpgradeNyms() final;
 
-    ~Storage();
+    ~Storage() final;
 
 private:
     friend opentxs::Factory;

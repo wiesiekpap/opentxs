@@ -192,6 +192,10 @@ else()
   )
 endif()
 
+if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
+  target_compile_options(messages PRIVATE -Wno-suggest-destructor-override)
+endif()
+
 set_target_properties(
   messages PROPERTIES MSVC_RUNTIME_LIBRARY "${MSVC_RUNTIME_DEFAULT}"
 )

@@ -27,7 +27,7 @@ auto StringXML::Factory(const String& value) -> OTStringXML
 
 namespace opentxs::implementation
 {
-class StringXML::StringXMLPvt : public irr::io::IFileReadCallBack
+class StringXML::StringXMLPvt final : public irr::io::IFileReadCallBack
 {
 public:
     StringXMLPvt(StringXML* ptr)
@@ -37,12 +37,12 @@ public:
 
     StringXML* super;
 
-    auto read(void* buffer, unsigned sizeToRead) -> int
+    auto read(void* buffer, unsigned sizeToRead) -> int final
     {
         return super->read(buffer, sizeToRead);
     }
 
-    auto getSize() -> int { return super->getSize(); }
+    auto getSize() -> int final { return super->getSize(); }
 
 private:
     StringXMLPvt(const StringXMLPvt&) = delete;

@@ -18,10 +18,10 @@ class OTLowLevelTestEnvironment : public testing::Environment
 public:
     static const ot::ArgList test_args_;
 
-    virtual void SetUp();
-    virtual void TearDown();
+    void SetUp() override;
+    void TearDown() override;
 
-    virtual ~OTLowLevelTestEnvironment();
+    ~OTLowLevelTestEnvironment() override;
 
 private:
     static std::string random_path();

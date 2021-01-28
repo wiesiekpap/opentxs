@@ -101,7 +101,7 @@ public:
         const AccountSummarySortKey& sortKey,
         CustomData& custom,
         const proto::ContactItemType currency) noexcept;
-    ~IssuerItem();
+    ~IssuerItem() final;
 
 private:
     const ListenerDefinitions listeners_;

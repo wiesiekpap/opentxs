@@ -135,7 +135,7 @@ namespace opentxs::api::client::internal
 struct Activity : virtual public api::client::Activity {
     virtual void MigrateLegacyThreads() const = 0;
 
-    virtual ~Activity() = default;
+    ~Activity() override = default;
 };
 struct Blockchain : virtual public api::client::Blockchain {
     /// Throws std::runtime_error if type is invalid
@@ -194,7 +194,7 @@ struct Blockchain : virtual public api::client::Blockchain {
         const std::string& address) const noexcept -> void = 0;
 #endif  // OT_BLOCKCHAIN
 
-    virtual ~Blockchain() = default;
+    ~Blockchain() override = default;
 };
 struct Contacts : virtual public api::client::Contacts {
 #if OT_BLOCKCHAIN
@@ -205,7 +205,7 @@ struct Contacts : virtual public api::client::Contacts {
 #endif  // OT_BLOCKCHAIN
     virtual auto start() -> void = 0;
 
-    virtual ~Contacts() = default;
+    ~Contacts() override = default;
 };
 struct Manager : virtual public api::client::Manager,
                  virtual public api::internal::Core {
@@ -213,7 +213,7 @@ struct Manager : virtual public api::client::Manager,
     virtual auto StartActivity() -> void = 0;
     virtual auto StartContacts() -> void = 0;
 
-    virtual ~Manager() = default;
+    ~Manager() override = default;
 };
 
 struct OTX : virtual public api::client::OTX {
@@ -239,7 +239,7 @@ struct OTX : virtual public api::client::OTX {
 struct Pair : virtual public opentxs::api::client::Pair {
     virtual void init() noexcept = 0;
 
-    virtual ~Pair() = default;
+    ~Pair() override = default;
 };
 struct UI : virtual public opentxs::api::client::UI {
     virtual auto ActivateUICallback(const Identifier& widget) const noexcept
@@ -251,6 +251,6 @@ struct UI : virtual public opentxs::api::client::UI {
     virtual auto Init() noexcept -> void = 0;
     virtual auto Shutdown() noexcept -> void = 0;
 
-    virtual ~UI() = default;
+    ~UI() override = default;
 };
 }  // namespace opentxs::api::client::internal

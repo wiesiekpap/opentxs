@@ -286,7 +286,7 @@ struct TCPConnectionManager final : public Peer::ConnectionManager {
     {
     }
 
-    ~TCPConnectionManager()
+    ~TCPConnectionManager() final
     {
         stop_internal();
         stop_external();

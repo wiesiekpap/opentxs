@@ -19,17 +19,6 @@ set(cxx-sources
     HD.cpp
 )
 
-if(OT_BLOCKCHAIN_EXPORT)
-  list(
-    APPEND
-    cxx-sources
-    BalanceOracle.cpp
-    EnableCallbacks.cpp
-    SyncServer.cpp
-    ThreadPoolManager.cpp
-  )
-endif()
-
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/blockchain/AddressStyle.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/blockchain/BalanceList.hpp"
@@ -43,17 +32,35 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/blockchain/PaymentCode.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/blockchain/Subchain.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/blockchain/Types.hpp"
-    "${opentxs_SOURCE_DIR}/src/internal/api/client/blockchain/Blockchain.hpp"
-    "${opentxs_SOURCE_DIR}/src/internal/api/client/blockchain/Factory.hpp"
-    ${cxx-install-headers}
 )
 set(cxx-headers
+    ${cxx-install-headers}
+    "${opentxs_SOURCE_DIR}/src/internal/api/client/blockchain/Blockchain.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/api/client/blockchain/Factory.hpp"
     BalanceList.hpp
     BalanceNode.hpp
     BalanceTree.hpp
     Deterministic.hpp
     HD.hpp
 )
+
+if(OT_BLOCKCHAIN_EXPORT)
+  list(
+    APPEND
+    cxx-sources
+    BalanceOracle.cpp
+    EnableCallbacks.cpp
+    SyncClient.cpp
+    SyncServer.cpp
+    ThreadPoolManager.cpp
+  )
+  list(
+    APPEND
+    cxx-headers
+    SyncClient.hpp
+    SyncServer.hpp
+  )
+endif()
 
 add_library(opentxs-api-client-blockchain OBJECT ${cxx-sources} ${cxx-headers})
 target_link_libraries(opentxs-api-client-blockchain PRIVATE opentxs::messages)

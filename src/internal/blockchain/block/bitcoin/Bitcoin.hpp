@@ -102,7 +102,7 @@ struct Input : virtual public bitcoin::Input {
         const SerializeType& rhs) noexcept -> void = 0;
     virtual auto ReplaceScript() noexcept -> bool = 0;
 
-    virtual ~Input() = default;
+    ~Input() override = default;
 };
 struct Inputs : virtual public bitcoin::Inputs {
     virtual auto AssociatedLocalNyms(
@@ -126,7 +126,7 @@ struct Inputs : virtual public bitcoin::Inputs {
         const Input::SerializeType& rhs) noexcept(false) -> void = 0;
     virtual auto ReplaceScript(const std::size_t index) noexcept -> bool = 0;
 
-    virtual ~Inputs() = default;
+    ~Inputs() override = default;
 };
 struct Output : virtual public bitcoin::Output {
     virtual auto AssociatedLocalNyms(
@@ -148,7 +148,7 @@ struct Output : virtual public bitcoin::Output {
     virtual auto SetIndex(const std::uint32_t index) noexcept -> void = 0;
     virtual auto SetValue(const std::uint64_t value) noexcept -> void = 0;
 
-    virtual ~Output() = default;
+    ~Output() override = default;
 };
 struct Outputs : virtual public bitcoin::Outputs {
     virtual auto AssociatedLocalNyms(
@@ -168,7 +168,7 @@ struct Outputs : virtual public bitcoin::Outputs {
     virtual auto MergeMetadata(const Output::SerializeType& rhs) noexcept(false)
         -> void = 0;
 
-    virtual ~Outputs() = default;
+    ~Outputs() override = default;
 };
 struct Script : virtual public bitcoin::Script {
     static auto blank_signature(const blockchain::Type chain) noexcept
@@ -184,7 +184,7 @@ struct Script : virtual public bitcoin::Script {
         -> std::unique_ptr<Script> = 0;
     virtual auto str() const noexcept -> std::string = 0;
 
-    virtual ~Script() = default;
+    ~Script() override = default;
 };
 struct Transaction : virtual public bitcoin::Transaction {
     using SigHash = blockchain::bitcoin::SigOption;
@@ -207,7 +207,7 @@ struct Transaction : virtual public bitcoin::Transaction {
         const SerializeType& rhs) noexcept -> void = 0;
     virtual auto SetMemo(const std::string& memo) noexcept -> void = 0;
 
-    virtual ~Transaction() = default;
+    ~Transaction() override = default;
 };
 }  // namespace opentxs::blockchain::block::bitcoin::internal
 
@@ -265,7 +265,8 @@ OPENTXS_EXPORT auto BitcoinScript(
     const ReadView bytes,
     const bool outputScript = true,
     const bool isGeneration = false,
-    const bool allowInvalidOpcodes = true) noexcept
+    const bool allowInvalidOpcodes = true,
+    const bool mute = false) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Script>;
 OPENTXS_EXPORT auto BitcoinScript(
     const blockchain::Type chain,

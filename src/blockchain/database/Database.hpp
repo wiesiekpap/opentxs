@@ -262,7 +262,7 @@ public:
         const Subchain subchain,
         const FilterType type,
         const ReadView blockID,
-        const VersionNumber version) const noexcept -> Patterns
+        const VersionNumber version) const noexcept -> Patterns final
     {
         return wallet_.GetUntestedPatterns(
             balanceNode, subchain, type, blockID, version);
@@ -489,7 +489,7 @@ public:
         const NodeID& balanceNode,
         const Subchain subchain,
         const FilterType type,
-        const block::Position& position) const noexcept -> bool
+        const block::Position& position) const noexcept -> bool final
     {
         return wallet_.SubchainSetLastProcessed(
             balanceNode, subchain, type, position);
@@ -498,7 +498,7 @@ public:
         const NodeID& balanceNode,
         const Subchain subchain,
         const FilterType type,
-        const block::Position& position) const noexcept -> bool
+        const block::Position& position) const noexcept -> bool final
     {
         return wallet_.SubchainSetLastScanned(
             balanceNode, subchain, type, position);
@@ -532,7 +532,7 @@ public:
         const database::Common& common,
         const blockchain::Type type) noexcept;
 
-    ~Database() = default;
+    ~Database() final = default;
 
 private:
     friend opentxs::Factory;

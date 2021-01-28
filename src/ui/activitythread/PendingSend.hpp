@@ -65,7 +65,7 @@ public:
         const ActivityThreadRowID& rowID,
         const ActivityThreadSortKey& sortKey,
         CustomData& custom) noexcept;
-    ~PendingSend() = default;
+    ~PendingSend() final = default;
 
 private:
     opentxs::Amount amount_;

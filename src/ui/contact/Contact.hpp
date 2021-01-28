@@ -82,7 +82,7 @@ public:
         const api::client::internal::Manager& api,
         const Identifier& contactID,
         const SimpleCallback& cb) noexcept;
-    ~Contact();
+    ~Contact() final;
 
 private:
     static const std::set<proto::ContactSectionName> allowed_types_;

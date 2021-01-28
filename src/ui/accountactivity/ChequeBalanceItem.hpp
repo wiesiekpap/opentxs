@@ -80,7 +80,7 @@ public:
         CustomData& custom,
         const identifier::Nym& nymID,
         const Identifier& accountID) noexcept;
-    ~ChequeBalanceItem() = default;
+    ~ChequeBalanceItem() final = default;
 
 private:
     std::unique_ptr<const opentxs::Cheque> cheque_;

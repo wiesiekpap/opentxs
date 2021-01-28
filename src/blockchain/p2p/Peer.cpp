@@ -438,12 +438,26 @@ auto Peer::shutdown(std::promise<void>& promise) noexcept -> void
 auto Peer::start_verify() noexcept -> void
 {
     if (address_.Incoming()) {
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": incoming peer ")(
+            address_.Display())(" is not required to validate checkpoints")
+            .Flush();
         state_.value_.store(State::Subscribe);
         do_work();
     } else {
         request_checkpoint_block_header();
 
-        if (verify_filter_checkpoint_) { request_checkpoint_filter_header(); }
+        if (verify_filter_checkpoint_) {
+            LogVerbose(OT_METHOD)(__FUNCTION__)(": outgoing peer ")(
+                address_.Display())(
+                " must validate block header and cfheader checkpoints")
+                .Flush();
+            request_checkpoint_filter_header();
+        } else {
+            LogVerbose(OT_METHOD)(__FUNCTION__)(": outgoing peer ")(
+                address_.Display())(
+                " must validate block header checkpoints only")
+                .Flush();
+        }
     }
 }
 
@@ -459,28 +473,45 @@ auto Peer::state_machine() noexcept -> bool
         case State::Listening: {
             OT_ASSERT(address_.Incoming());
 
+            LogVerbose(OT_METHOD)(__FUNCTION__)(
+                ": verifying incoming handshake protocol for ")(
+                address_.Display())
+                .Flush();
             disconnect = state_.handshake_.run(
-                std::chrono::seconds(15), [] {}, State::Verify);
+                std::chrono::seconds(20), [] {}, State::Verify);
         } break;
         case State::Handshake: {
+            LogVerbose(OT_METHOD)(__FUNCTION__)(
+                ": verifying outgoing handshake protocol for ")(
+                address_.Display())
+                .Flush();
             disconnect = state_.handshake_.run(
-                std::chrono::seconds(15),
+                std::chrono::seconds(20),
                 [this] { start_handshake(); },
                 State::Verify);
         } break;
         case State::Verify: {
+            LogVerbose(OT_METHOD)(__FUNCTION__)(": verifying checkpoints for ")(
+                address_.Display())
+                .Flush();
             disconnect = state_.verify_.run(
-                std::chrono::seconds(15),
+                std::chrono::seconds(30),
                 [this] { start_verify(); },
                 State::Subscribe);
         } break;
         case State::Subscribe: {
+            LogVerbose(OT_METHOD)(__FUNCTION__)(
+                ": achieved subscribe state for ")(address_.Display())
+                .Flush();
             subscribe();
             state_.value_.store(State::Run);
             network_.Blockchain().UpdatePeer(chain_, address_.Display());
             [[fallthrough]];
         }
         case State::Run: {
+            LogVerbose(OT_METHOD)(__FUNCTION__)(": achieved run state for ")(
+                address_.Display())
+                .Flush();
             process_state_machine();
         } break;
         case State::Shutdown: {
@@ -490,7 +521,12 @@ auto Peer::state_machine() noexcept -> bool
         }
     }
 
-    if (disconnect) { this->disconnect(); }
+    if (disconnect) {
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": Disconnecting ")(
+            address_.Display())
+            .Flush();
+        this->disconnect();
+    }
 
     return false;
 }

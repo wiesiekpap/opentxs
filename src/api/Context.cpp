@@ -295,6 +295,8 @@ void Context::Init_Log(const std::int32_t argLevel)
             notUsed);
         level = argLevel;
     }
+
+    LogSource::SetVerbosity(static_cast<int>(level));
 }
 
 void Context::init_pid() const

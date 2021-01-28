@@ -86,7 +86,7 @@ public:
         const UnitListSortKey& sortKey,
         CustomData& custom) noexcept;
 
-    ~UnitListItem() = default;
+    ~UnitListItem() final = default;
 
 private:
     const UnitListSortKey name_;

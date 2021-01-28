@@ -64,8 +64,8 @@ public:
         return const_iterator(this, nyms_.size());
     }
     auto end() const noexcept -> const_iterator final { return cend(); }
-    auto External() const noexcept -> bool { return external_; }
-    auto NymID() const noexcept -> const identifier::Nym&
+    auto External() const noexcept -> bool final { return external_; }
+    auto NymID() const noexcept -> const identifier::Nym& final
     {
         return parent_.NymID();
     }

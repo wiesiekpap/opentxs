@@ -613,7 +613,7 @@ public:
         const Identifier& ASSET_ACCT_ID,
         const TransactionNumber& lTransactionNum) const;
 
-    OPENTXS_EXPORT ~OT_API();  // calls Cleanup();
+    ~OT_API() override;  // calls Cleanup();
 
 private:
     friend api::client::implementation::Manager;

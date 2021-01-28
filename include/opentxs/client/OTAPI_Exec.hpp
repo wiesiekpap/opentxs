@@ -803,7 +803,7 @@ public:
         const std::string& words,
         const std::string& passphrase) const;
 
-    OPENTXS_EXPORT ~OTAPI_Exec() = default;
+    ~OTAPI_Exec() override = default;
 
 private:
     friend api::client::implementation::Manager;

@@ -17,7 +17,7 @@ struct Authority : virtual public identity::Authority {
     virtual auto GetMasterCredential() const -> const credential::Primary& = 0;
     virtual auto WriteCredentials() const -> bool = 0;
 
-    virtual ~Authority() = default;
+    ~Authority() override = default;
 };
 struct Nym : virtual public identity::Nym {
     enum class Mode : bool {
@@ -32,6 +32,6 @@ struct Nym : virtual public identity::Nym {
     virtual void SetAlias(const std::string& alias) = 0;
     virtual void SetAliasStartup(const std::string& alias) = 0;
 
-    virtual ~Nym() = default;
+    ~Nym() override = default;
 };
 }  // namespace opentxs::identity::internal

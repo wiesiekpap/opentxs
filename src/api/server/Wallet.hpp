@@ -87,7 +87,7 @@ public:
         const identifier::Nym& clientNymID,
         const PasswordPrompt& reason) const -> Editor<otx::context::Base> final;
 
-    ~Wallet() = default;
+    ~Wallet() final = default;
 
 private:
     friend opentxs::Factory;

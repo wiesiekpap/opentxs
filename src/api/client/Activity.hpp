@@ -137,7 +137,7 @@ public:
         const api::internal::Core& api,
         const client::Contacts& contact) noexcept;
 
-    ~Activity() = default;
+    ~Activity() final = default;
 
 private:
     using MailCache =

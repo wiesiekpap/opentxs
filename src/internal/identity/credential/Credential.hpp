@@ -23,7 +23,7 @@ struct Base : virtual public identity::credential::Base {
 #ifdef _MSC_VER
     Base() {}
 #endif  // _MSC_VER
-    virtual ~Base() = default;
+    ~Base() override = default;
 };
 struct Contact : virtual public Base,
                  virtual public identity::credential::Contact {
@@ -31,7 +31,7 @@ struct Contact : virtual public Base,
 #ifdef _MSC_VER
     Contact() {}
 #endif  // _MSC_VER
-    virtual ~Contact() = default;
+    ~Contact() override = default;
 };
 struct Key : virtual public Base, virtual public identity::credential::Key {
     virtual auto SelfSign(
@@ -42,7 +42,7 @@ struct Key : virtual public Base, virtual public identity::credential::Key {
 #ifdef _MSC_VER
     Key() {}
 #endif  // _MSC_VER
-    virtual ~Key() = default;
+    ~Key() override = default;
 };
 struct Primary : virtual public Key,
                  virtual public identity::credential::Primary {
@@ -50,7 +50,7 @@ struct Primary : virtual public Key,
 #ifdef _MSC_VER
     Primary() {}
 #endif  // _MSC_VER
-    virtual ~Primary() = default;
+    ~Primary() override = default;
 };
 struct Secondary : virtual public Key,
                    virtual public identity::credential::Secondary {
@@ -58,13 +58,13 @@ struct Secondary : virtual public Key,
 #ifdef _MSC_VER
     Secondary() {}
 #endif  // _MSC_VER
-    virtual ~Secondary() = default;
+    ~Secondary() override = default;
 };
 struct Verification : virtual public Base,
                       virtual public identity::credential::Verification {
 #ifdef _MSC_VER
     Verification() {}
 #endif  // _MSC_VER
-    virtual ~Verification() = default;
+    ~Verification() override = default;
 };
 }  // namespace opentxs::identity::credential::internal

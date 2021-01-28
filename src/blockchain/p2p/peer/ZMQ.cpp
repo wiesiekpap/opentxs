@@ -125,7 +125,7 @@ struct ZMQConnectionManager final : public Peer::ConnectionManager {
     {
     }
 
-    ~ZMQConnectionManager()
+    ~ZMQConnectionManager() final
     {
         stop_internal();
         stop_external();

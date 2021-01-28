@@ -31,6 +31,6 @@ protected:
     auto operator=(const Row&) -> Row& = delete;
     auto operator=(Row&&) -> Row& = delete;
 
-    virtual ~Row() = default;
+    ~Row() override = default;
 };
 }  // namespace opentxs::ui::implementation

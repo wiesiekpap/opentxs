@@ -22,6 +22,11 @@
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "util/ScopeGuard.hpp"
+
+#define INDEXER                                                                \
+    "opentxs::blockchain::client::implementation::FilterOracle::BlockIndexer:" \
+    ":"
 
 namespace opentxs::blockchain::client::implementation
 {
@@ -56,6 +61,7 @@ public:
         const blockchain::Type chain,
         const filter::Type type,
         const std::string& shutdown,
+        const NotifyCallback& notify,
         Callback cb) noexcept
         : BlockDM(
               [&] { return db.FilterTip(type); }(),
@@ -76,17 +82,13 @@ public:
         , chain_(chain)
         , type_(type)
         , cb_(std::move(cb))
-        , socket_(api_.ZeroMQ().PublishSocket())
+        , notify_(notify)
         , init_promise_()
         , init_(init_promise_.get_future())
     {
         init_executor(
             {shutdown,
              api_.Endpoints().InternalBlockchainBlockUpdated(chain_)});
-        auto zmq = socket_->Start(
-            api_.Endpoints().InternalBlockchainFilterUpdated(chain_));
-
-        OT_ASSERT(zmq);
         OT_ASSERT(cb_);
     }
 
@@ -103,7 +105,7 @@ private:
     const blockchain::Type chain_;
     const filter::Type type_;
     const Callback cb_;
-    OTZMQPublishSocket socket_;
+    const NotifyCallback& notify_;
     std::promise<void> init_promise_;
     std::shared_future<void> init_;
 
@@ -140,11 +142,7 @@ private:
         LogVerbose(DisplayString(chain_))(
             " cfheader and cfilter chain updated to height ")(position.first)
             .Flush();
-        auto work = MakeWork(OT_ZMQ_NEW_FILTER_SIGNAL);
-        work->AddFrame(type_);
-        work->AddFrame(position.first);
-        work->AddFrame(position.second);
-        socket_->Send(work);
+        notify_(type_, position);
     }
 
     auto download() noexcept -> void
@@ -207,31 +205,75 @@ private:
     }
     auto process_position(const Position& pos) noexcept -> void
     {
-        try {
-            auto current = known();
-            auto hashes = header_.Ancestors(current, pos);
+        const auto current = known();
+        auto compare{current};
+        LogTrace(INDEXER)(__FUNCTION__)(":  Current position: ")(current.first)(
+            ",")(current.second->asHex())
+            .Flush();
+        LogTrace(INDEXER)(__FUNCTION__)(": Incoming position: ")(pos.first)(
+            ",")(pos.second->asHex())
+            .Flush();
+        auto hashes = decltype(header_.Ancestors(current, pos)){};
+        auto prior = Previous{std::nullopt};
+        auto searching{true};
 
-            OT_ASSERT(0 < hashes.size());
+        while (searching) {
+            try {
+                hashes = header_.Ancestors(compare, pos);
 
-            auto prior = Previous{std::nullopt};
-            {
-                auto& first = hashes.front();
+                OT_ASSERT(0 < hashes.size());
+            } catch (const std::exception& e) {
+                LogOutput(INDEXER)(__FUNCTION__)(": ")(e.what()).Flush();
 
-                if (first != current) {
-                    auto promise = std::promise<filter::pHeader>{};
-                    auto header =
-                        db_.LoadFilterHeader(type_, first.second->Bytes());
-
-                    OT_ASSERT(false == header->empty());
-
-                    promise.set_value(std::move(header));
-                    prior.emplace(std::move(first), promise.get_future());
-                }
+                return;
             }
-            hashes.erase(hashes.begin());
-            update_position(std::move(hashes), type_, std::move(prior));
-        } catch (...) {
+
+            auto postcondition =
+                ScopeGuard{[&] { hashes.erase(hashes.begin()); }};
+            auto& first = hashes.front();
+            LogTrace(INDEXER)(__FUNCTION__)(":          Ancestor: ")(
+                first.first)(",")(first.second->asHex())
+                .Flush();
+
+            if (first == pos) { return; }
+
+            if (first == current) {
+                searching = false;
+                break;
+            }
+
+            auto header = db_.LoadFilterHeader(type_, first.second->Bytes());
+            const auto filter = db_.LoadFilter(type_, first.second->Bytes());
+
+            if (header->empty()) {
+                LogOutput(INDEXER)(__FUNCTION__)(
+                    ": Missing cfheader for block ")(first.first)(",")(
+                    first.second->asHex())
+                    .Flush();
+            }
+
+            if (!filter) {
+                LogOutput(INDEXER)(__FUNCTION__)(
+                    ": Missing cfilter for block ")(first.first)(",")(
+                    first.second->asHex())
+                    .Flush();
+            }
+
+            if (filter && (false == header->empty())) {
+                auto promise = std::promise<filter::pHeader>{};
+                promise.set_value(std::move(header));
+                prior.emplace(std::move(first), promise.get_future());
+                searching = false;
+                break;
+            }
+
+            OT_ASSERT(0 < first.first);
+
+            const auto height = first.first - 1;
+            compare = block::Position{height, header_.BestHash(height)};
         }
+
+        update_position(std::move(hashes), type_, std::move(prior));
     }
     auto queue_processing(DownloadedData&& data) noexcept -> void
     {

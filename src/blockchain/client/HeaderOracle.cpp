@@ -18,8 +18,12 @@
 
 #include "blockchain/client/UpdateTransaction.hpp"
 #include "internal/blockchain/Params.hpp"
+#include "internal/blockchain/block/Block.hpp"
+#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/client/Factory.hpp"
 #include "internal/core/Core.hpp"
+#include "opentxs/Proto.hpp"
+#include "opentxs/Proto.tpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/blockchain/Work.hpp"
@@ -29,6 +33,10 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/network/zeromq/Frame.hpp"
+#include "opentxs/network/zeromq/FrameSection.hpp"
+#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/protobuf/BlockchainP2PSync.pb.h"
 
 #define OT_METHOD "opentxs::blockchain::client::implementation::HeaderOracle::"
 
@@ -855,6 +863,82 @@ auto HeaderOracle::LoadHeader(const block::Hash& hash) const noexcept
     -> std::unique_ptr<block::Header>
 {
     return database_.TryLoadHeader(hash);
+}
+
+auto HeaderOracle::ProcessSyncData(
+    const network::zeromq::Message& work,
+    ParsedSyncData& out) noexcept -> bool
+{
+    auto& [prior, vector] = out;
+    const auto b = work.Body();
+
+    if (3 > b.size()) { return false; }
+
+    vector.clear();
+    vector.reserve(b.size() - 1u);
+    Lock lock(lock_);
+    auto update = UpdateTransaction{api_, database_};
+    auto previous = [&] {
+        const auto& first = b.at(2);
+        const auto data = proto::Factory<proto::BlockchainP2PSync>(first);
+        const auto height = static_cast<block::Height>(data.height());
+
+        if (0 >= height) {
+
+            return block::BlankHash();
+        } else {
+            const auto prior = height - 1;
+            out.first = database_.BestBlock(prior);
+
+            return out.first;
+        }
+    }();
+
+    for (auto i{std::next(b.begin(), 2)}; i != b.end(); std::advance(i, 1)) {
+        const auto sync = proto::Factory<proto::BlockchainP2PSync>(*i);
+        auto pHeader = factory::BitcoinBlockHeader(
+            api_, static_cast<Type>(sync.chain()), sync.header());
+
+        if (false == bool(pHeader)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid header").Flush();
+
+            return false;
+        }
+
+        {
+            const auto& header = *pHeader;
+
+            if (header.ParentHash() != previous) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(": Non-contiguous headers")
+                    .Flush();
+
+                return false;
+            }
+
+            const auto& [hash, height, type, count, filter] =
+                vector.emplace_back(
+                    header.Hash(),
+                    static_cast<block::Height>(sync.height()),
+                    static_cast<filter::Type>(sync.filter_type()),
+                    sync.filter_element_count(),
+                    api_.Factory().Data(sync.filter(), StringStyle::Raw));
+            previous = hash;
+
+            if (is_in_best_chain(lock, hash).first) { continue; }
+        }
+
+        if (false == add_header(lock, update, std::move(pHeader))) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to process header")
+                .Flush();
+            vector.pop_back();
+
+            return false;
+        }
+    }
+
+    database_.ApplyUpdate(update);
+
+    return 0 < vector.size();
 }
 
 auto HeaderOracle::stage_candidate(

@@ -69,7 +69,7 @@ public:
         const PayableListSortKey& key,
         const std::string& paymentcode,
         const proto::ContactItemType& currency) noexcept;
-    ~PayableListItem() = default;
+    ~PayableListItem() final = default;
 
 private:
     using ot_super = implementation::ContactListItem;

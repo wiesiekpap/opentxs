@@ -69,7 +69,7 @@ public:
         const api::internal::Core& api,
         const crypto::SymmetricProvider& engine);
 
-    ~Symmetric() = default;
+    ~Symmetric() final = default;
 
 private:
     friend opentxs::Factory;

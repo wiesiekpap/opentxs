@@ -80,10 +80,10 @@ public:
         return script_->str();
     }
     auto Serialize(const AllocateOutput destination) const noexcept
-        -> std::optional<std::size_t>;
+        -> std::optional<std::size_t> final;
     auto Serialize(
         const api::client::Blockchain& blockchain,
-        SerializeType& destination) const noexcept -> bool;
+        SerializeType& destination) const noexcept -> bool final;
     auto SigningSubscript() const noexcept
         -> std::unique_ptr<internal::Script> final
     {

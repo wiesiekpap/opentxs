@@ -48,6 +48,38 @@ namespace opentxs::blockchain::client::implementation
 constexpr auto proposal_version_ = VersionNumber{1};
 constexpr auto output_version_ = VersionNumber{1};
 
+struct NullWallet final : public internal::Wallet {
+    const api::Core& api_;
+
+    auto ConstructTransaction(const proto::BlockchainTransactionProposal&)
+        const noexcept -> std::future<block::pTxid> final
+    {
+        auto promise = std::promise<block::pTxid>{};
+        promise.set_value(api_.Factory().Data());
+
+        return promise.get_future();
+    }
+    auto Init() noexcept -> void final {}
+    auto Shutdown() noexcept -> std::shared_future<void> final
+    {
+        auto promise = std::promise<void>{};
+        promise.set_value();
+
+        return promise.get_future();
+    }
+
+    NullWallet(const api::Core& api)
+        : api_(api)
+    {
+    }
+    NullWallet(const NullWallet&) = delete;
+    NullWallet(NullWallet&&) = delete;
+    auto operator=(const NullWallet&) -> NullWallet& = delete;
+    auto operator=(NullWallet&&) -> NullWallet& = delete;
+
+    ~NullWallet() final = default;
+};
+
 Network::Network(
     const api::Core& api,
     const api::client::internal::Blockchain& blockchain,
@@ -95,13 +127,20 @@ Network::Network(
           database_p_->BlockPolicy(),
           seednode,
           shutdown_sender_.endpoint_))
-    , wallet_p_(factory::BlockchainWallet(
-          api,
-          blockchain,
-          *this,
-          *database_p_,
-          type,
-          shutdown_sender_.endpoint_))
+    , wallet_p_([&]() -> std::unique_ptr<blockchain::client::internal::Wallet> {
+        if (config_.disable_wallet_) {
+
+            return std::make_unique<NullWallet>(api);
+        } else {
+            return factory::BlockchainWallet(
+                api,
+                blockchain,
+                *this,
+                *database_p_,
+                type,
+                shutdown_sender_.endpoint_);
+        }
+    }())
     , blockchain_(blockchain)
     , chain_(type)
     , database_(*database_p_)
@@ -132,6 +171,7 @@ Network::Network(
     database_.SetDefaultFilterType(filters_.DefaultType());
     header_.Init();
     init_executor({api_.Endpoints().InternalBlockchainFilterUpdated(chain_)});
+    LogVerbose(config_.print()).Flush();
 }
 
 auto Network::AddBlock(
@@ -323,6 +363,9 @@ auto Network::pipeline(zmq::Message& in) noexcept -> void
         case Task::FilterUpdate: {
             process_filter_update(in);
         } break;
+        case Task::SyncData: {
+            process_sync_data(in);
+        } break;
         case Task::Heartbeat: {
             block_.Heartbeat();
             filters_.Heartbeat();
@@ -431,6 +474,41 @@ auto Network::process_header(network::zeromq::Message& in) noexcept -> void
 
     processing_headers_->Off();
     promise.set_value();
+}
+
+auto Network::process_sync_data(network::zeromq::Message& in) noexcept -> void
+{
+    auto parsed = ParsedSyncData{api_.Factory().Data(), {}};
+
+    {
+        const auto hello =
+            proto::Factory<proto::BlockchainP2PHello>(in.Body_at(1));
+        auto found{false};
+
+        for (const auto& state : hello.state()) {
+            const auto chain = static_cast<Type>(state.chain());
+
+            if (chain != chain_) { continue; }
+
+            found = true;
+            const auto height = static_cast<block::Height>(state.height());
+            remote_chain_height_.store(
+                std::max(height, remote_chain_height_.load()));
+        }
+
+        if (false == found) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Wrong chain").Flush();
+
+            return;
+        }
+    }
+
+    if (false == header_.ProcessSyncData(in, parsed)) { return; }
+
+    LogVerbose(OT_METHOD)(__FUNCTION__)(": Accepted ")(parsed.second.size())(
+        " of ")(in.Body().size() - 2)(" headers")
+        .Flush();
+    filters_.ProcessSyncData(parsed);
 }
 
 auto Network::RequestBlock(const block::Hash& block) const noexcept -> bool
