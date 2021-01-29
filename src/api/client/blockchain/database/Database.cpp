@@ -568,6 +568,17 @@ auto Database::StoreTransaction(
     return imp_.wallet_.StoreTransaction(tx);
 }
 
+auto Database::SyncTip(const Chain chain) const noexcept -> Height
+{
+#if OPENTXS_BLOCK_STORAGE_ENABLED
+    return imp_.sync_.Tip(chain);
+#else
+    static const auto null = make_blank<Position>::value(imp_.api_);
+
+    return null.first;
+#endif
+}
+
 auto Database::UpdateContact(const Contact& contact) const noexcept
     -> std::vector<pTxid>
 {

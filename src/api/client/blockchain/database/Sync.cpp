@@ -295,7 +295,7 @@ auto Sync::Store(const Chain chain, const Items& items) const noexcept -> bool
     auto lock = ExclusiveLock{lock_};
 
     if (const auto& first = items.front();
-        static_cast<Height>(first.height()) < tips_.at(chain)) {
+        static_cast<Height>(first.height()) <= tips_.at(chain)) {
         const auto parent = std::max<Height>(first.height() - 1, 0);
 
         if (false == reorg(chain, parent)) {
@@ -310,10 +310,14 @@ auto Sync::Store(const Chain chain, const Items& items) const noexcept -> bool
     OT_ASSERT(-2 < previous);
 
     auto txn = lmdb_.TransactionRW();
+    LogTrace(OT_METHOD)(__FUNCTION__)(": previous tip height: ")(previous)
+        .Flush();
 
     for (const auto& item : items) {
         if (static_cast<std::uint64_t>(++previous) != item.height()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": sequence error").Flush();
+            LogOutput(OT_METHOD)(__FUNCTION__)(": sequence error. Got ")(
+                item.height())(" expected ")(previous)
+                .Flush();
 
             return false;
         }
@@ -383,5 +387,18 @@ auto Sync::Store(const Chain chain, const Items& items) const noexcept -> bool
     }
 
     return true;
+}
+
+auto Sync::Tip(const Chain chain) const noexcept -> Height
+{
+    auto lock = SharedLock{lock_};
+
+    try {
+
+        return static_cast<Height>(tips_.at(chain));
+    } catch (...) {
+
+        return -1;
+    }
 }
 }  // namespace opentxs::api::client::blockchain::database::implementation

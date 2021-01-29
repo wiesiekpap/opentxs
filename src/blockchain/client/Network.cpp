@@ -156,7 +156,7 @@ Network::Network(
     , sync_endpoint_(syncEndpoint)
     , sync_server_()
     , local_chain_height_(0)
-    , remote_chain_height_(0)
+    , remote_chain_height_(params::Data::chains_.at(chain_).checkpoint_.height_)
     , waiting_for_headers_(Flag::Factory(false))
     , processing_headers_(Flag::Factory(false))
     , headers_requested_(Clock::now())

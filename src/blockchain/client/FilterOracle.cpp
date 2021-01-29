@@ -97,7 +97,10 @@ FilterOracle::FilterOracle(
     }())
     , lock_()
     , new_filters_(api_.ZeroMQ().PublishSocket())
-    , cb_([this](const auto type, const auto& pos) { new_tip(type, pos); })
+    , cb_([this](const auto type, const auto& pos) {
+        auto lock = Lock{lock_};
+        new_tip(lock, type, pos);
+    })
     , filter_downloader_([&]() -> std::unique_ptr<FilterDownloader> {
         if (config.download_cfilters_) {
             return std::make_unique<FilterDownloader>(
@@ -150,6 +153,7 @@ FilterOracle::FilterOracle(
             return {};
         }
     }())
+    , last_sync_progress_()
     , init_promise_()
     , shutdown_promise_()
     , init_(init_promise_.get_future())
@@ -295,6 +299,12 @@ auto FilterOracle::Heartbeat() const noexcept -> void
     if (filter_downloader_) { filter_downloader_->Heartbeat(); }
     if (header_downloader_) { header_downloader_->Heartbeat(); }
     if (block_indexer_) { block_indexer_->Heartbeat(); }
+
+    constexpr auto limit = std::chrono::seconds{5};
+
+    if ((Clock::now() - last_sync_progress_) > limit) {
+        new_tip(lock, default_type_, database_.FilterTip(default_type_));
+    }
 }
 
 auto FilterOracle::LoadFilterOrResetTip(
@@ -320,9 +330,12 @@ auto FilterOracle::LoadFilterOrResetTip(
     return {};
 }
 
-auto FilterOracle::new_tip(const filter::Type type, const block::Position& tip)
-    const noexcept -> void
+auto FilterOracle::new_tip(
+    const Lock&,
+    const filter::Type type,
+    const block::Position& tip) const noexcept -> void
 {
+    last_sync_progress_ = Clock::now();
     auto work = MakeWork(api_, OT_ZMQ_NEW_FILTER_SIGNAL);
     work->AddFrame(type);
     work->AddFrame(tip.first);

@@ -75,6 +75,7 @@ public:
     // Delete all entries with a height greater than specified
     auto Reorg(const Chain chain, const Height height) const noexcept -> bool;
     auto Store(const Chain chain, const Items& items) const noexcept -> bool;
+    auto Tip(const Chain chain) const noexcept -> Height;
 
     Sync(
         const api::Core& api,
