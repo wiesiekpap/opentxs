@@ -42,7 +42,7 @@ TEST_F(Regtest_fixture_sync, sync_genesis)
         EXPECT_TRUE(ot::proto::Validate(hello, ot::VERBOSE));
         ASSERT_EQ(hello.state_size(), 1);
         EXPECT_TRUE(sync_req_.check(hello.state(0), pos));
-        EXPECT_EQ(std::string{body.at(1).Bytes()}, sync_server_update_);
+        EXPECT_EQ(std::string{body.at(1).Bytes()}, sync_server_update_public_);
     }
 
     {
@@ -95,7 +95,7 @@ TEST_F(Regtest_fixture_sync, sync_full)
         EXPECT_TRUE(ot::proto::Validate(hello, ot::VERBOSE));
         ASSERT_EQ(hello.state_size(), 1);
         EXPECT_TRUE(sync_req_.check(hello.state(0), 9));
-        EXPECT_EQ(std::string{body.at(1).Bytes()}, sync_server_update_);
+        EXPECT_EQ(std::string{body.at(1).Bytes()}, sync_server_update_public_);
     }
 
     {
@@ -143,7 +143,7 @@ TEST_F(Regtest_fixture_sync, sync_partial)
         EXPECT_TRUE(ot::proto::Validate(hello, ot::VERBOSE));
         ASSERT_EQ(hello.state_size(), 1);
         EXPECT_TRUE(sync_req_.check(hello.state(0), 9));
-        EXPECT_EQ(std::string{body.at(1).Bytes()}, sync_server_update_);
+        EXPECT_EQ(std::string{body.at(1).Bytes()}, sync_server_update_public_);
     }
 
     {
@@ -200,7 +200,7 @@ TEST_F(Regtest_fixture_sync, sync_reorg)
         EXPECT_TRUE(ot::proto::Validate(hello, ot::VERBOSE));
         ASSERT_EQ(hello.state_size(), 1);
         EXPECT_TRUE(sync_req_.check(hello.state(0), 13));
-        EXPECT_EQ(std::string{body.at(1).Bytes()}, sync_server_update_);
+        EXPECT_EQ(std::string{body.at(1).Bytes()}, sync_server_update_public_);
     }
 
     {

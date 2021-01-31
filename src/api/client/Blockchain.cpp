@@ -1390,11 +1390,15 @@ auto Blockchain::start(
 
 auto Blockchain::StartSyncServer(
     const std::string& sync,
-    const std::string& update) const noexcept -> bool
+    const std::string& publicSync,
+    const std::string& update,
+    const std::string& publicUpdate) const noexcept -> bool
 {
     auto lock = Lock{lock_};
 
-    if (sync_server_) { return sync_server_->Start(sync, update); }
+    if (sync_server_) {
+        return sync_server_->Start(sync, publicSync, update, publicUpdate);
+    }
 
     LogNormal("Blockchain sync server must be enabled at library "
               "initialization time by passing the ")(

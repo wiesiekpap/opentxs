@@ -289,7 +289,9 @@ public:
         -> bool final;
     auto StartSyncServer(
         const std::string& syncEndpoint,
-        const std::string& updateEndpoint) const noexcept -> bool final;
+        const std::string& publicSyncEndpoint,
+        const std::string& updateEndpoint,
+        const std::string& publicUpdateEndpoint) const noexcept -> bool final;
     auto Stop(const Chain type) const noexcept -> bool final;
     auto ThreadPool() const noexcept -> const ThreadPoolType& final
     {

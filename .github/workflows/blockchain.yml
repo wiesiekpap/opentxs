@@ -6,11 +6,12 @@ jobs:
   build:
     strategy:
       matrix:
-        platform: [ubuntu-20.04, windows-2019, macos-10.15]
+# ubuntu-20.04 temporarily disabled due to https://github.com/actions/runner/issues/954
+        platform: [windows-2019, macos-10.15]
         include:
-          - platform: 'ubuntu-20.04'
-            vcpkg_triplet: 'x64-linux'
-            cmake_extra: '-DOPENTXS_BUILD_TESTS=OFF'
+#          - platform: 'ubuntu-20.04'
+#            vcpkg_triplet: 'x64-linux'
+#            cmake_extra: '-DOPENTXS_BUILD_TESTS=OFF'
           - platform: 'macos-10.15'
             vcpkg_triplet: 'x64-osx'
             cmake_extra: '-DOPENTXS_BUILD_TESTS=ON'

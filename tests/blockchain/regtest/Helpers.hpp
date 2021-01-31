@@ -83,7 +83,11 @@ using Sync = ot::proto::BlockchainP2PSync;
 
 constexpr auto test_chain_{b::Type::UnitTest};
 constexpr auto sync_server_sync_{"inproc://sync_server_endpoint/sync"};
+constexpr auto sync_server_sync_public_{
+    "inproc://sync_server_public_endpoint/sync"};
 constexpr auto sync_server_update_{"inproc://sync_server_endpoint/update"};
+constexpr auto sync_server_update_public_{
+    "inproc://sync_server_public_endpoint/update"};
 
 class PeerListener
 {
@@ -801,7 +805,10 @@ protected:
     {
         auto output = Regtest_fixture_base::Connect();
         output &= client_.Blockchain().StartSyncServer(
-            sync_server_sync_, sync_server_update_);
+            sync_server_sync_,
+            sync_server_sync_public_,
+            sync_server_update_,
+            sync_server_update_public_);
 
         return output;
     }

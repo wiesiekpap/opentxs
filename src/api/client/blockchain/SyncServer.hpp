@@ -36,8 +36,11 @@ struct SyncServer {
 
     auto Disable(const Chain chain) noexcept -> void;
     auto Enable(const Chain chain) noexcept -> void;
-    auto Start(const std::string& sync, const std::string& update) noexcept
-        -> bool;
+    auto Start(
+        const std::string& sync,
+        const std::string& publicSync,
+        const std::string& update,
+        const std::string& publicUpdate) noexcept -> bool;
 
     SyncServer(const api::Core& api, Blockchain& parent) noexcept;
 
