@@ -32,6 +32,7 @@
 #include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
+#include "opentxs/Forward.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
@@ -54,6 +55,7 @@
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
+#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Pull.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
@@ -287,7 +289,9 @@ public:
         -> bool final;
     auto StartSyncServer(
         const std::string& syncEndpoint,
-        const std::string& updateEndpoint) const noexcept -> bool final;
+        const std::string& publicSyncEndpoint,
+        const std::string& updateEndpoint,
+        const std::string& publicUpdateEndpoint) const noexcept -> bool final;
     auto Stop(const Chain type) const noexcept -> bool final;
     auto ThreadPool() const noexcept -> const ThreadPoolType& final
     {

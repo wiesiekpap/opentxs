@@ -51,6 +51,14 @@ class UpdateTransaction;
 }  // namespace client
 }  // namespace blockchain
 
+namespace network
+{
+namespace zeromq
+{
+class Message;
+}  // namespace zeromq
+}  // namespace network
+
 class Factory;
 }  // namespace opentxs
 

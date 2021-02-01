@@ -47,11 +47,24 @@ Sync::Sync(
         return api_.Factory().Data(hex, StringStyle::Hex);
     }())
 {
-    if (blank_position_.first == Tip().first) {
+    auto tip = Tip();
+
+    if (blank_position_.first == tip.first) {
         const auto genesis = block::Position{0, genesis_};
         const auto saved = SetTip(genesis);
+        tip = genesis;
 
         OT_ASSERT(saved);
+    }
+
+    LogVerbose(OT_METHOD)(__FUNCTION__)(": Sync tip: ")(tip.first).Flush();
+
+    if (const auto ctip = common_.SyncTip(chain_); tip.first == ctip) {
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": Database is consistent").Flush();
+    } else {
+        LogVerbose(OT_METHOD)(__FUNCTION__)(
+            ": Database inconsistency detected. Storage tip height: ")(ctip)
+            .Flush();
     }
 }
 

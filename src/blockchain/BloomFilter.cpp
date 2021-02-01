@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <cstring>
 #include <iterator>
+#include <type_traits>
 #include <vector>
 
 #include "internal/blockchain/Blockchain.hpp"

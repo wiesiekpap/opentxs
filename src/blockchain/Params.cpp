@@ -509,6 +509,7 @@ const Data::ChainData Data::chains_{
           "dnsseed.thrasher.io",
           "dnsseed.litecointools.com",
           "dnsseed.litecoinpool.org",
+          "dnsseed.koin-project.com",
       },
       25000,
       {{

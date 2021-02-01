@@ -36,7 +36,6 @@
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/Pimpl.hpp"
 #if OT_BLOCKCHAIN
-#include "opentxs/Proto.hpp"
 #include "opentxs/Proto.tpp"
 #include "opentxs/api/Endpoints.hpp"
 #endif  // OT_BLOCKCHAIN
@@ -50,10 +49,11 @@
 #include "opentxs/api/storage/Storage.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/FilterType.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/blockchain/BlockchainType.hpp"
 #if OT_BLOCKCHAIN
-#include "opentxs/blockchain/client/HeaderOracle.hpp"
+#include "opentxs/blockchain/client/FilterOracle.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/core/Data.hpp"
@@ -67,6 +67,7 @@
 #if OT_BLOCKCHAIN
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
+#include "opentxs/network/zeromq/FrameIterator.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Sender.tpp"  // IWYU pragma: keep
@@ -1389,11 +1390,15 @@ auto Blockchain::start(
 
 auto Blockchain::StartSyncServer(
     const std::string& sync,
-    const std::string& update) const noexcept -> bool
+    const std::string& publicSync,
+    const std::string& update,
+    const std::string& publicUpdate) const noexcept -> bool
 {
     auto lock = Lock{lock_};
 
-    if (sync_server_) { return sync_server_->Start(sync, update); }
+    if (sync_server_) {
+        return sync_server_->Start(sync, publicSync, update, publicUpdate);
+    }
 
     LogNormal("Blockchain sync server must be enabled at library "
               "initialization time by passing the ")(

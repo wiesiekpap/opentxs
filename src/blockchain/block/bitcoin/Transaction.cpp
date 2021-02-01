@@ -14,6 +14,7 @@
 #include <map>
 #include <numeric>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 #include "blockchain/bitcoin/CompactSize.hpp"

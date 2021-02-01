@@ -8,24 +8,30 @@
 #include "api/client/blockchain/SyncClient.hpp"  // IWYU pragma: associated
 
 #include <zmq.h>
+#include <array>
 #include <atomic>
 #include <chrono>
 #include <future>
 #include <map>
 #include <memory>
 #include <mutex>
+#include <set>
 #include <thread>
+#include <utility>
 
-#include "api/client/Blockchain.hpp"
 #include "network/zeromq/socket/Socket.hpp"
-#include "opentxs/Proto.hpp"
+#include "opentxs/Pimpl.hpp"
 #include "opentxs/Proto.tpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
+#include "opentxs/core/Log.hpp"
+#include "opentxs/core/LogSource.hpp"
+#include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
+#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/protobuf/BlockchainP2PChainState.pb.h"
 #include "opentxs/protobuf/BlockchainP2PHello.pb.h"
-#include "opentxs/protobuf/BlockchainP2PSync.pb.h"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/verify/BlockchainP2PHello.hpp"
 #include "util/AsyncValue.hpp"

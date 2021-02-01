@@ -18,6 +18,8 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Log.hpp"
 
+#define DOWNLOAD_MANAGER "opentxs::blockchain::download::Manager::"
+
 namespace opentxs::blockchain::download
 {
 template <
@@ -37,6 +39,9 @@ public:
 
     auto Reset(const Position& position, Finished&& previous) noexcept -> void
     {
+        LogVerbose(DOWNLOAD_MANAGER)(__FUNCTION__)(": resetting ")(log_)(
+            " to height")(position.first)
+            .Flush();
         auto lock = Lock{dm_lock_};
         dm_previous_ = std::move(previous);
         dm_done_ = position;
@@ -57,7 +62,12 @@ protected:
     {
         auto lock = Lock{dm_lock_};
 
-        if (caught_up(lock)) { return {}; }
+        if (caught_up(lock)) {
+            LogTrace(DOWNLOAD_MANAGER)(__FUNCTION__)(": ")(log_)(" caught up")
+                .Flush();
+
+            return {};
+        }
 
         OT_ASSERT(0 < buffer_.size());
 
@@ -67,6 +77,10 @@ protected:
 
             return std::min<std::size_t>(unallocated, batch);
         }();
+
+        LogTrace(DOWNLOAD_MANAGER)(__FUNCTION__)(": ")(size)(" ")(log_)(
+            " items to download")
+            .Flush();
 
         if (0 == size) { return {}; }
 
@@ -90,6 +104,10 @@ protected:
                         }
                     }
 
+                    LogTrace(DOWNLOAD_MANAGER)(__FUNCTION__)(": queueing ")(
+                        log_)(" item at height ")(task->position_.first)(
+                        " for download")
+                        .Flush();
                     output.emplace_back(task);
 
                     if (output.size() == size) { break; }

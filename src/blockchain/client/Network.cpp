@@ -21,6 +21,7 @@
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/client/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Proto.tpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -37,6 +38,8 @@
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/protobuf/BlockchainP2PChainState.pb.h"
+#include "opentxs/protobuf/BlockchainP2PHello.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposedOutput.pb.h"
 #include "util/ScopeGuard.hpp"
@@ -153,7 +156,7 @@ Network::Network(
     , sync_endpoint_(syncEndpoint)
     , sync_server_()
     , local_chain_height_(0)
-    , remote_chain_height_(0)
+    , remote_chain_height_(params::Data::chains_.at(chain_).checkpoint_.height_)
     , waiting_for_headers_(Flag::Factory(false))
     , processing_headers_(Flag::Factory(false))
     , headers_requested_(Clock::now())

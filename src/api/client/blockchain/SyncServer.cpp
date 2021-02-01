@@ -13,17 +13,18 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <set>
 #include <string>
 #include <thread>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
-#include "api/client/Blockchain.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Proto.tpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Log.hpp"
@@ -53,7 +54,9 @@ struct SyncServer::Imp {
     Socket update_;
     Map map_;
     std::string sync_endpoint_;
+    std::string sync_public_endpoint_;
     std::string update_endpoint_;
+    std::string update_public_endpoint_;
     mutable std::mutex lock_;
     std::atomic_bool running_;
     std::thread thread_;
@@ -140,7 +143,9 @@ struct SyncServer::Imp {
             return output;
         }())
         , sync_endpoint_()
+        , sync_public_endpoint_()
         , update_endpoint_()
+        , update_public_endpoint_()
         , lock_()
         , running_(false)
         , thread_()
@@ -177,7 +182,7 @@ private:
         {
             auto outgoing = api_.ZeroMQ().ReplyMessage(incoming);
             outgoing->AddFrame(parent_.Hello());
-            outgoing->AddFrame(update_endpoint_);
+            outgoing->AddFrame(update_public_endpoint_);
             OTSocket::send_message(lock, socket, outgoing);
         }
 
@@ -246,7 +251,9 @@ auto SyncServer::Endpoint(const Chain chain) const noexcept -> std::string
 
 auto SyncServer::Start(
     const std::string& sync,
-    const std::string& update) noexcept -> bool
+    const std::string& publicSync,
+    const std::string& update,
+    const std::string& publicUpdate) noexcept -> bool
 {
     if (sync.empty() || update.empty()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid endpoint").Flush();
@@ -259,7 +266,9 @@ auto SyncServer::Start(
     auto postcondition = ScopeGuard{[&] {
         if (output) {
             imp_.sync_endpoint_ = sync;
+            imp_.sync_public_endpoint_ = publicSync;
             imp_.update_endpoint_ = update;
+            imp_.update_public_endpoint_ = publicUpdate;
         } else {
             ::zmq_unbind(imp_.sync_.get(), sync.c_str());
             ::zmq_unbind(imp_.update_.get(), update.c_str());

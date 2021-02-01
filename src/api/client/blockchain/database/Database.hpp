@@ -166,6 +166,7 @@ public:
         -> bool;
     auto StoreTransaction(const proto::BlockchainTransaction& tx) const noexcept
         -> bool;
+    auto SyncTip(const Chain chain) const noexcept -> Height;
     auto UpdateContact(const Contact& contact) const noexcept
         -> std::vector<pTxid>;
     auto UpdateMergedContact(const Contact& parent, const Contact& child)

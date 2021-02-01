@@ -38,6 +38,9 @@
 #include "opentxs/protobuf/verify/BlockchainP2PHello.hpp"
 #include "opentxs/util/WorkType.hpp"
 
+#define SYNC_SERVER                                                            \
+    "opentxs::blockchain::client::implementation::Network::SyncServer::"
+
 namespace opentxs::blockchain::client::implementation
 {
 using SyncDM = download::
@@ -234,8 +237,21 @@ private:
         try {
             auto current = known();
             auto hashes = header_.Ancestors(current, pos);
+            LogTrace(SYNC_SERVER)(__FUNCTION__)(
+                ": current position best known position is block ")(
+                current.second->asHex())(" at height ")(current.first)
+                .Flush();
 
             OT_ASSERT(0 < hashes.size());
+
+            if (1 == hashes.size()) {
+                LogTrace(SYNC_SERVER)(__FUNCTION__)(
+                    ": current position matches incoming block ")(
+                    pos.second->asHex())(" at height ")(pos.first)
+                    .Flush();
+
+                return;
+            }
 
             auto prior = Previous{std::nullopt};
             {
@@ -245,6 +261,22 @@ private:
                 prior.emplace(std::move(first), promise.get_future());
             }
             hashes.erase(hashes.begin());
+            {
+                const auto& first = hashes.front();
+                const auto& last = hashes.back();
+
+                if (first.first <= current.first) {
+                    LogTrace(SYNC_SERVER)(__FUNCTION__)(": reorg detected")
+                        .Flush();
+                }
+
+                LogTrace(SYNC_SERVER)(__FUNCTION__)(
+                    ": scheduling download starting from block ")(
+                    first.second->asHex())(" at height ")(first.first)(
+                    " until block ")(last.second->asHex())(" at height ")(
+                    last.first)
+                    .Flush();
+            }
             update_position(std::move(hashes), type_, std::move(prior));
         } catch (...) {
         }
@@ -324,9 +356,7 @@ private:
                 item.set_filter(std::string{reader(gcs.Compressed())});
                 task->process(1);
             } catch (const std::exception& e) {
-                LogOutput("opentxs::blockchain::client::implementation::"
-                          "Network::SyncServer::")(__FUNCTION__)(": ")(e.what())
-                    .Flush();
+                LogOutput(SYNC_SERVER)(__FUNCTION__)(": ")(e.what()).Flush();
                 task->redownload();
                 break;
             }
@@ -399,8 +429,7 @@ private:
 
             if (0 > events) {
                 const auto error = ::zmq_errno();
-                LogOutput("opentxs::blockchain::client::implementation::"
-                          "Network::SyncServer::")(__FUNCTION__)(": ")(
+                LogOutput(SYNC_SERVER)(__FUNCTION__)(": ")(
                     ::zmq_strerror(error))
                     .Flush();
 

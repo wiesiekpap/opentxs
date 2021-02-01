@@ -155,7 +155,9 @@ public:
         const std::string& seednode = "") const noexcept = 0;
     OPENTXS_EXPORT virtual bool StartSyncServer(
         const std::string& syncEndpoint,
-        const std::string& updateEndpoint) const noexcept = 0;
+        const std::string& publicSyncEndpoint,
+        const std::string& updateEndpoint,
+        const std::string& publicUpdateEndpoint) const noexcept = 0;
     OPENTXS_EXPORT virtual bool Stop(const Chain type) const noexcept = 0;
 #endif  // OT_BLOCKCHAIN
 

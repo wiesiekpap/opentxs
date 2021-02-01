@@ -179,13 +179,16 @@ private:
     mutable std::unique_ptr<FilterDownloader> filter_downloader_;
     mutable std::unique_ptr<HeaderDownloader> header_downloader_;
     mutable std::unique_ptr<BlockIndexer> block_indexer_;
+    mutable Time last_sync_progress_;
     std::promise<void> init_promise_;
     std::promise<void> shutdown_promise_;
     std::shared_future<void> init_;
     std::shared_future<void> shutdown_;
 
-    auto new_tip(const filter::Type type, const block::Position& tip)
-        const noexcept -> void;
+    auto new_tip(
+        const Lock&,
+        const filter::Type type,
+        const block::Position& tip) const noexcept -> void;
     auto process_block(
         const filter::Type type,
         const block::bitcoin::Block& block) const noexcept
