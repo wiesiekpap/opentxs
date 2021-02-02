@@ -310,7 +310,6 @@ auto Network::init() noexcept -> void
             .Flush();
     }
 
-    peer_.init();
     block_.Init();
     filters_.Start();
 
@@ -327,6 +326,7 @@ auto Network::init() noexcept -> void
             sync_endpoint_);
     }
 
+    peer_.init();
     init_promise_.set_value();
     trigger();
 }
@@ -348,6 +348,7 @@ auto Network::pipeline(zmq::Message& in) noexcept -> void
 {
     if (false == running_.get()) { return; }
 
+    init_.get();
     const auto body = in.Body();
 
     OT_ASSERT(0 < body.size());
@@ -419,8 +420,8 @@ auto Network::process_filter_update(network::zeromq::Message& in) noexcept
         const auto progress = (double(height) / double(target)) * double{100};
         auto display = std::stringstream{};
         display << std::setprecision(3) << progress << "%";
-        LogNormal(DisplayString(chain_))(" chain sync progress: ")(
-            display.str())
+        LogNormal(DisplayString(chain_))(" chain sync progress: ")(height)(
+            " of ")(target)(" (")(display.str())(")")
             .Flush();
     }
 
