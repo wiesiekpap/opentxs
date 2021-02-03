@@ -399,7 +399,7 @@ auto Peer::process_block(
     const zmq::Frame& payload) -> void
 {
     try {
-        if (146 > payload.size()) {
+        if (0 == payload.size()) {
             throw std::runtime_error("Invalid payload");
         }
 
