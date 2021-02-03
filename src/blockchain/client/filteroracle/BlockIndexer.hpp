@@ -227,6 +227,7 @@ private:
                 OT_ASSERT(0 < hashes.size());
             } catch (const std::exception& e) {
                 LogOutput(INDEXER)(__FUNCTION__)(": ")(e.what()).Flush();
+                reset_to_genesis();
 
                 return;
             }
@@ -340,6 +341,15 @@ private:
             db_.StoreFilters(type_, headers, filters, tip->position_);
 
         if (false == stored) { OT_FAIL; }
+    }
+    auto reset_to_genesis() noexcept -> void
+    {
+        LogOutput(INDEXER)(__FUNCTION__)(": Performing full reset").Flush();
+        static const auto genesis =
+            block::Position{0, header_.GenesisBlockHash(chain_)};
+        auto promise = std::promise<filter::pHeader>{};
+        promise.set_value(db_.LoadFilterHeader(type_, genesis.second->Bytes()));
+        Reset(genesis, promise.get_future());
     }
     auto shutdown(std::promise<void>& promise) noexcept -> void
     {
