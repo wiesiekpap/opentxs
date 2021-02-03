@@ -934,7 +934,7 @@ auto Script::RedeemScript() const noexcept -> std::unique_ptr<bitcoin::Script>
     if (false == is_data_push(element)) { return {}; }
 
     return factory::BitcoinScript(
-        chain_, reader(element.data_.value()), false, false, false, true);
+        chain_, reader(element.data_.value()), false, false, true, true);
 }
 
 auto Script::ScriptHash() const noexcept -> std::optional<ReadView>
