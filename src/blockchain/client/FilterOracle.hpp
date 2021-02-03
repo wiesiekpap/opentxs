@@ -97,12 +97,13 @@ public:
         std::function<void(const filter::Type, const block::Position&)>;
 
     enum class Work : OTZMQWorkType {
-        reset_filter_tip = OT_ZMQ_INTERNAL_SIGNAL + 0,
-        full_block = OT_ZMQ_NEW_FULL_BLOCK_SIGNAL,
+        shutdown = value(WorkType::Shutdown),
         block = value(WorkType::BlockchainNewHeader),
         reorg = value(WorkType::BlockchainReorg),
+        reset_filter_tip = OT_ZMQ_INTERNAL_SIGNAL + 0,
+        heartbeat = OT_ZMQ_INTERNAL_SIGNAL + 1,
+        full_block = OT_ZMQ_NEW_FULL_BLOCK_SIGNAL,
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
-        shutdown = value(WorkType::Shutdown),
     };
 
     auto DefaultType() const noexcept -> filter::Type final
@@ -173,7 +174,7 @@ private:
     const internal::FilterDatabase& database_;
     const blockchain::Type chain_;
     const filter::Type default_type_;
-    mutable std::mutex lock_;
+    mutable std::recursive_mutex lock_;
     OTZMQPublishSocket new_filters_;
     const NotifyCallback cb_;
     mutable std::unique_ptr<FilterDownloader> filter_downloader_;
@@ -186,7 +187,7 @@ private:
     std::shared_future<void> shutdown_;
 
     auto new_tip(
-        const Lock&,
+        const rLock&,
         const filter::Type type,
         const block::Position& tip) const noexcept -> void;
     auto process_block(

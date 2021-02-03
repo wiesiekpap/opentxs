@@ -46,8 +46,7 @@ public:
 
     auto Heartbeat() noexcept -> void
     {
-        process_position(block_.Tip());
-        trigger();
+        pipeline_->Push(MakeWork(Work::heartbeat));
     }
     auto NextBatch() noexcept { return allocate_batch(type_); }
     auto Start() noexcept { init_promise_.set_value(); }
@@ -178,6 +177,13 @@ private:
         const auto work = body.at(0).as<Work>();
 
         switch (work) {
+            case Work::shutdown: {
+                shutdown(shutdown_promise_);
+            } break;
+            case Work::heartbeat: {
+                process_position(block_.Tip());
+                do_work();
+            } break;
             case Work::full_block: {
                 process_position(in);
                 do_work();
@@ -185,9 +191,6 @@ private:
             case Work::statemachine: {
                 download();
                 do_work();
-            } break;
-            case Work::shutdown: {
-                shutdown(shutdown_promise_);
             } break;
             default: {
                 OT_FAIL;

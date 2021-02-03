@@ -98,7 +98,7 @@ FilterOracle::FilterOracle(
     , lock_()
     , new_filters_(api_.ZeroMQ().PublishSocket())
     , cb_([this](const auto type, const auto& pos) {
-        auto lock = Lock{lock_};
+        auto lock = rLock{lock_};
         new_tip(lock, type, pos);
     })
     , filter_downloader_([&]() -> std::unique_ptr<FilterDownloader> {
@@ -268,7 +268,7 @@ auto FilterOracle::compare_tips_to_header_chain() noexcept -> bool
 
 auto FilterOracle::GetFilterJob() const noexcept -> CfilterJob
 {
-    auto lock = Lock{lock_};
+    auto lock = rLock{lock_};
 
     if (filter_downloader_) {
 
@@ -281,7 +281,7 @@ auto FilterOracle::GetFilterJob() const noexcept -> CfilterJob
 
 auto FilterOracle::GetHeaderJob() const noexcept -> CfheaderJob
 {
-    auto lock = Lock{lock_};
+    auto lock = rLock{lock_};
 
     if (header_downloader_) {
 
@@ -294,7 +294,7 @@ auto FilterOracle::GetHeaderJob() const noexcept -> CfheaderJob
 
 auto FilterOracle::Heartbeat() const noexcept -> void
 {
-    auto lock = Lock{lock_};
+    auto lock = rLock{lock_};
 
     if (filter_downloader_) { filter_downloader_->Heartbeat(); }
     if (header_downloader_) { header_downloader_->Heartbeat(); }
@@ -331,7 +331,7 @@ auto FilterOracle::LoadFilterOrResetTip(
 }
 
 auto FilterOracle::new_tip(
-    const Lock&,
+    const rLock&,
     const filter::Type type,
     const block::Position& tip) const noexcept -> void
 {
@@ -577,7 +577,7 @@ auto FilterOracle::reset_tips_to(
     OT_ASSERT(resetHeader.has_value());
     OT_ASSERT(resetfilter.has_value());
 
-    auto lock = Lock{lock_};
+    auto lock = rLock{lock_};
     using Future = std::shared_future<filter::pHeader>;
     auto previous = [&]() -> Future {
         const auto& block = header_.LoadHeader(position.second);
@@ -620,7 +620,7 @@ auto FilterOracle::reset_tips_to(
 auto FilterOracle::Shutdown() noexcept -> std::shared_future<void>
 {
     init_.get();
-    auto lock = Lock{lock_};
+    auto lock = rLock{lock_};
 
     if (header_downloader_) { header_downloader_.reset(); }
 
@@ -641,7 +641,7 @@ auto FilterOracle::Start() noexcept -> void
     compare_tips_to_header_chain();
     compare_tips_to_checkpoint();
     init_promise_.set_value();
-    auto lock = Lock{lock_};
+    auto lock = rLock{lock_};
 
     if (header_downloader_) { header_downloader_->Start(); }
 

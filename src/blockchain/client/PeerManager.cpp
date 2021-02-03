@@ -248,7 +248,10 @@ auto PeerManager::peer_target(
     if (Type::UnitTest == chain) { return 0; }
 
     switch (policy) {
-        case api::client::blockchain::BlockStorage::All:
+        case api::client::blockchain::BlockStorage::All: {
+
+            return 4;
+        }
         case api::client::blockchain::BlockStorage::Cache: {
 
             return 2;
