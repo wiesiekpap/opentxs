@@ -62,7 +62,7 @@ auto Blocks::Load(const Hash& block) const noexcept -> BlockReader
     lmdb_.Load(table_, block.Bytes(), cb);
 
     if (0 == index.size_) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Block ")(block.asHex())(
+        LogTrace(OT_METHOD)(__FUNCTION__)(": Block ")(block.asHex())(
             " not found in index")
             .Flush();
 
