@@ -8,6 +8,7 @@
 #include <boost/endian/buffers.hpp>
 #include <boost/endian/conversion.hpp>
 #include <array>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <deque>
@@ -357,8 +358,7 @@ private:
     const api::client::internal::Blockchain& blockchain_api_;
     const Type chain_;
     const SimpleCallback task_finished_;
-    std::promise<void> init_promise_;
-    std::shared_future<void> init_;
+    std::atomic_bool enabled_;
     OTZMQPushSocket socket_;
     Accounts accounts_;
     Proposals proposals_;

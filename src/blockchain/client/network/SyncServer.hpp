@@ -50,13 +50,20 @@ using SyncWorker = Worker<Network::SyncServer, api::Core>;
 class Network::SyncServer : public SyncDM, public SyncWorker
 {
 public:
-    auto Heartbeat() noexcept -> void
-    {
-        process_position(filter_.Tip(type_));
-        trigger();
-    }
+    auto Tip() const noexcept { return db_.SyncTip(); }
+
     auto NextBatch() noexcept { return allocate_batch(type_); }
-    auto Start() noexcept { init_promise_.set_value(); }
+    auto Shutdown() noexcept -> std::shared_future<void>
+    {
+        {
+            auto lock = Lock{zmq_lock_};
+            zmq_running_ = false;
+        }
+
+        if (zmq_thread_.joinable()) { zmq_thread_.join(); }
+
+        return stop_worker();
+    }
 
     SyncServer(
         const api::Core& api,
@@ -89,8 +96,6 @@ public:
         , socket_(::zmq_socket(api_.ZeroMQ(), ZMQ_PAIR), ::zmq_close)
         , zmq_lock_()
         , zmq_running_(true)
-        , init_promise_()
-        , init_(init_promise_.get_future())
         , zmq_thread_(&SyncServer::zmq_thread, this)
     {
         init_executor(
@@ -98,20 +103,9 @@ public:
              api_.Endpoints().InternalBlockchainFilterUpdated(chain_)});
         ::zmq_setsockopt(socket_.get(), ZMQ_LINGER, &linger_, sizeof(linger_));
         ::zmq_connect(socket_.get(), endpoint_.c_str());
-        init_promise_.set_value();
     }
 
-    ~SyncServer()
-    {
-        {
-            auto lock = Lock{zmq_lock_};
-            zmq_running_ = false;
-        }
-
-        if (zmq_thread_.joinable()) { zmq_thread_.join(); }
-
-        stop_worker().get();
-    }
+    ~SyncServer() { Shutdown().get(); }
 
 private:
     friend SyncDM;
@@ -131,8 +125,6 @@ private:
     Socket socket_;
     mutable std::mutex zmq_lock_;
     std::atomic_bool zmq_running_;
-    std::promise<void> init_promise_;
-    std::shared_future<void> init_;
     std::thread zmq_thread_;
 
     auto batch_ready() const noexcept -> void { trigger(); }
@@ -190,8 +182,6 @@ private:
     }
     auto pipeline(const zmq::Message& in) noexcept -> void
     {
-        init_.get();
-
         if (false == running_.get()) { return; }
 
         const auto body = in.Body();
@@ -203,16 +193,20 @@ private:
         auto lock = Lock{zmq_lock_};
 
         switch (work) {
+            case Work::shutdown: {
+                shutdown(shutdown_promise_);
+            } break;
+            case Work::heartbeat: {
+                process_position(filter_.Tip(type_));
+                run_if_enabled();
+            } break;
             case Work::filter: {
                 process_position(in);
-                do_work();
+                run_if_enabled();
             } break;
             case Work::statemachine: {
                 download();
-                do_work();
-            } break;
-            case Work::shutdown: {
-                shutdown(shutdown_promise_);
+                run_if_enabled();
             } break;
             default: {
                 OT_FAIL;
@@ -398,8 +392,6 @@ private:
     }
     auto shutdown(std::promise<void>& promise) noexcept -> void
     {
-        init_.get();
-
         if (running_->Off()) {
             try {
                 promise.set_value();
@@ -409,7 +401,6 @@ private:
     }
     auto zmq_thread() noexcept -> void
     {
-        init_.get();
         auto poll = [&] {
             auto output = std::vector<::zmq_pollitem_t>{};
 

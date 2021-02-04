@@ -74,7 +74,7 @@ auto Blocks::LoadBitcoin(const block::Hash& block) const noexcept
         const auto bytes = common_.BlockLoad(block);
 
         if (false == bytes.valid()) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": block ")(block.asHex())(
+            LogDebug(OT_METHOD)(__FUNCTION__)(": block ")(block.asHex())(
                 " not found.")
                 .Flush();
 

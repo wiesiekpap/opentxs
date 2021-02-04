@@ -57,10 +57,8 @@ BlockOracle::BlockOracle(
     : Worker(api, std::chrono::milliseconds{25})
     , network_(network)
     , db_(db)
-    , init_promise_()
-    , init_(init_promise_.get_future())
-    , cache_(api, network, db, chain)
     , lock_()
+    , cache_(api, network, db, chain)
     , block_downloader_([&]() -> std::unique_ptr<BlockDownloader> {
         using Policy = api::client::blockchain::BlockStorage;
 
@@ -96,7 +94,6 @@ auto BlockOracle::Heartbeat() const noexcept -> void
 
 auto BlockOracle::Init() noexcept -> void
 {
-    init_promise_.set_value();
     auto lock = Lock{lock_};
 
     if (block_downloader_) { block_downloader_->Start(); }
@@ -124,8 +121,6 @@ auto BlockOracle::LoadBitcoin(const BlockHashes& hashes) const noexcept
 
 auto BlockOracle::pipeline(const zmq::Message& in) noexcept -> void
 {
-    init_.get();
-
     if (false == running_.get()) { return; }
 
     const auto body = in.Body();
@@ -163,7 +158,6 @@ auto BlockOracle::pipeline(const zmq::Message& in) noexcept -> void
 
 auto BlockOracle::shutdown(std::promise<void>& promise) noexcept -> void
 {
-    init_.get();
     {
         auto lock = Lock{lock_};
 
@@ -182,8 +176,6 @@ auto BlockOracle::shutdown(std::promise<void>& promise) noexcept -> void
 
 auto BlockOracle::state_machine() noexcept -> bool
 {
-    LogTrace(OT_METHOD)(__FUNCTION__).Flush();
-
     if (false == running_.get()) { return false; }
 
     return cache_.StateMachine();

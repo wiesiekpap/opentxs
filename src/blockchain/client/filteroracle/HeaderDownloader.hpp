@@ -37,13 +37,7 @@ public:
     using Callback =
         std::function<Position(const Position&, const filter::Header&)>;
 
-    auto Heartbeat() noexcept -> void
-    {
-        process_position();
-        trigger();
-    }
     auto NextBatch() noexcept { return allocate_batch(type_); }
-    auto Start() noexcept { init_promise_.set_value(); }
 
     HeaderDownloader(
         const api::Core& api,
@@ -74,8 +68,6 @@ public:
         , chain_(chain)
         , type_(type)
         , checkpoint_(std::move(cb))
-        , init_promise_()
-        , init_(init_promise_.get_future())
     {
         init_executor({shutdown, api_.Endpoints().BlockchainReorg()});
 
@@ -95,8 +87,6 @@ private:
     const blockchain::Type chain_;
     const filter::Type type_;
     const Callback checkpoint_;
-    std::promise<void> init_promise_;
-    std::shared_future<void> init_;
 
     auto batch_ready() const noexcept -> void
     {
@@ -127,7 +117,7 @@ private:
 
         OT_ASSERT(saved);
 
-        LogOutput(DisplayString(chain_))(" cfheader chain updated to height ")(
+        LogDetail(DisplayString(chain_))(" cfheader chain updated to height ")(
             position.first)
             .Flush();
         filter_.UpdatePosition(position);
@@ -135,8 +125,6 @@ private:
 
     auto pipeline(const zmq::Message& in) noexcept -> void
     {
-        init_.get();
-
         if (false == running_.get()) { return; }
 
         const auto body = in.Body();
@@ -146,19 +134,23 @@ private:
         const auto work = body.at(0).as<FilterOracle::Work>();
 
         switch (work) {
-            case FilterOracle::Work::reset_filter_tip: {
-                process_reset(in);
+            case FilterOracle::Work::shutdown: {
+                shutdown(shutdown_promise_);
             } break;
             case FilterOracle::Work::block:
             case FilterOracle::Work::reorg: {
                 process_position(in);
-                do_work();
+                run_if_enabled();
+            } break;
+            case FilterOracle::Work::reset_filter_tip: {
+                process_reset(in);
+            } break;
+            case FilterOracle::Work::heartbeat: {
+                process_position();
+                run_if_enabled();
             } break;
             case FilterOracle::Work::statemachine: {
-                do_work();
-            } break;
-            case FilterOracle::Work::shutdown: {
-                shutdown(shutdown_promise_);
+                run_if_enabled();
             } break;
             default: {
                 OT_FAIL;
@@ -251,8 +243,6 @@ private:
     }
     auto shutdown(std::promise<void>& promise) noexcept -> void
     {
-        init_.get();
-
         if (running_->Off()) {
             try {
                 promise.set_value();

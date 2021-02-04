@@ -101,7 +101,7 @@ public:
         block = value(WorkType::BlockchainNewHeader),
         reorg = value(WorkType::BlockchainReorg),
         reset_filter_tip = OT_ZMQ_INTERNAL_SIGNAL + 0,
-        heartbeat = OT_ZMQ_INTERNAL_SIGNAL + 1,
+        heartbeat = OT_ZMQ_HEARTBEAT_SIGNAL,
         full_block = OT_ZMQ_NEW_FULL_BLOCK_SIGNAL,
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
@@ -141,7 +141,7 @@ public:
         return database_.FilterTip(type);
     }
 
-    auto Shutdown() noexcept -> std::shared_future<void> final;
+    auto Shutdown() noexcept -> void final;
     auto Start() noexcept -> void final;
 
     FilterOracle(
@@ -181,10 +181,6 @@ private:
     mutable std::unique_ptr<HeaderDownloader> header_downloader_;
     mutable std::unique_ptr<BlockIndexer> block_indexer_;
     mutable Time last_sync_progress_;
-    std::promise<void> init_promise_;
-    std::promise<void> shutdown_promise_;
-    std::shared_future<void> init_;
-    std::shared_future<void> shutdown_;
 
     auto new_tip(
         const rLock&,

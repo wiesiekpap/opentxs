@@ -61,10 +61,11 @@ public:
     class BlockDownloader;
 
     enum class Work : OTZMQWorkType {
+        shutdown = value(WorkType::Shutdown),
         block = value(WorkType::BlockchainNewHeader),
         reorg = value(WorkType::BlockchainReorg),
+        heartbeat = OT_ZMQ_HEARTBEAT_SIGNAL,
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
-        shutdown = value(WorkType::Shutdown),
     };
 
     auto GetBlockJob() const noexcept -> BlockJob final;
@@ -158,10 +159,8 @@ private:
 
     const internal::Network& network_;
     const internal::BlockDatabase& db_;
-    std::promise<void> init_promise_;
-    std::shared_future<void> init_;
-    Cache cache_;
     mutable std::mutex lock_;
+    Cache cache_;
     std::unique_ptr<BlockDownloader> block_downloader_;
 
     auto pipeline(const zmq::Message& in) noexcept -> void;

@@ -346,19 +346,32 @@ auto PeerManager::Peers::get_peer() const noexcept -> Endpoint
     const auto protocol = params::Data::chains_.at(chain_).p2p_protocol_;
     auto pAddress = get_default_peer();
 
-    if (pAddress && is_not_connected(*pAddress)) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
-            ": Attempting to connect to peer: ")(pAddress->Display())
+    if (pAddress) {
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": Default peer is: ")(
+            pAddress->Display())
             .Flush();
 
-        return pAddress;
+        if (is_not_connected(*pAddress)) {
+            LogVerbose(OT_METHOD)(__FUNCTION__)(
+                ": Attempting to connect to default peer ")(pAddress->Display())
+                .Flush();
+
+            return pAddress;
+        } else {
+            LogVerbose(OT_METHOD)(__FUNCTION__)(
+                ": Already connected / connecting to default peer ")(
+                pAddress->Display())
+                .Flush();
+        }
+    } else {
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": No default peer").Flush();
     }
 
     pAddress = get_preferred_peer(protocol);
 
     if (pAddress && is_not_connected(*pAddress)) {
         LogVerbose(OT_METHOD)(__FUNCTION__)(
-            ": Attempting to connect to peer: ")(pAddress->Display())
+            ": Attempting to connect to preferred peer: ")(pAddress->Display())
             .Flush();
 
         return pAddress;
@@ -368,7 +381,7 @@ auto PeerManager::Peers::get_peer() const noexcept -> Endpoint
 
     if (pAddress && is_not_connected(*pAddress)) {
         LogVerbose(OT_METHOD)(__FUNCTION__)(
-            ": Attempting to connect to peer: ")(pAddress->Display())
+            ": Attempting to connect to dns peer: ")(pAddress->Display())
             .Flush();
 
         return pAddress;
@@ -378,8 +391,8 @@ auto PeerManager::Peers::get_peer() const noexcept -> Endpoint
 
     OT_ASSERT(pAddress);
 
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": Attempting to connect to peer: ")(
-        pAddress->Display())
+    LogVerbose(OT_METHOD)(__FUNCTION__)(
+        ": Attempting to connect to fallback peer: ")(pAddress->Display())
         .Flush();
 
     return pAddress;

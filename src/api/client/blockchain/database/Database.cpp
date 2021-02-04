@@ -38,6 +38,9 @@ extern "C" {
 // #define OT_METHOD
 // "opentxs::api::client::blockchain::database::implementation::Database::"
 
+constexpr auto false_byte_ = std::byte{0x0};
+constexpr auto true_byte_ = std::byte{0x1};
+
 namespace opentxs::api::client::blockchain::database::implementation
 {
 template <typename Input>
@@ -300,7 +303,7 @@ const opentxs::storage::lmdb::TableNames Database::Imp::table_names_ = [] {
         {FilterHeadersOpentxs, "block_filter_headers_opentxs"},
         {Config, "config"},
         {BlockIndex, "blocks"},
-        {Enabled, "enabled_chains"},
+        {Enabled, "enabled_chains_2"},
         {SyncTips, "sync_tips"},
     };
 
@@ -381,18 +384,31 @@ auto Database::BlockStore(const BlockHash& block, const std::size_t bytes)
 
 auto Database::Disable(const Chain type) const noexcept -> bool
 {
-    static const auto data{false};
     const auto key = std::size_t{static_cast<std::uint32_t>(type)};
+    const auto value = Space{false_byte_};
+    const auto view =
+        ReadView{reinterpret_cast<const char*>(value.data()), value.size()};
 
-    return imp_.lmdb_.Store(Enabled, key, tsv(data)).first;
+    return imp_.lmdb_.Store(Enabled, key, view).first;
 }
 
-auto Database::Enable(const Chain type) const noexcept -> bool
+auto Database::Enable(const Chain type, const std::string& seednode)
+    const noexcept -> bool
 {
-    static const auto data{true};
-    const auto key = std::size_t{static_cast<std::uint32_t>(type)};
+    static_assert(sizeof(true_byte_) == 1);
 
-    return imp_.lmdb_.Store(Enabled, key, tsv(data)).first;
+    const auto key = std::size_t{static_cast<std::uint32_t>(type)};
+    const auto value = [&] {
+        auto output = space(sizeof(true_byte_) + seednode.size());
+        auto it = std::next(output.data(), sizeof(true_byte_));
+        std::memcpy(it, seednode.data(), seednode.size());
+
+        return output;
+    }();
+    const auto view =
+        ReadView{reinterpret_cast<const char*>(value.data()), value.size()};
+
+    return imp_.lmdb_.Store(Enabled, key, view).first;
 }
 
 auto Database::Find(
@@ -484,22 +500,30 @@ auto Database::LookupTransactions(const PatternID pattern) const noexcept
     return imp_.wallet_.LookupTransactions(pattern);
 }
 
-auto Database::LoadEnabledChains() const noexcept -> std::vector<Chain>
+auto Database::LoadEnabledChains() const noexcept -> std::vector<EnabledChain>
 {
-    auto output = std::vector<Chain>{};
+    auto output = std::vector<EnabledChain>{};
     const auto cb = [&](const auto key, const auto value) -> bool {
+        if (0 == value.size()) { return true; }
+
         auto chain = Chain{};
-        auto enabled{false};
+        auto data = space(value.size());
         std::memcpy(
             static_cast<void*>(&chain),
             key.data(),
             std::min(key.size(), sizeof(chain)));
         std::memcpy(
-            static_cast<void*>(&enabled),
-            value.data(),
-            std::min(value.size(), sizeof(enabled)));
+            static_cast<void*>(data.data()), value.data(), value.size());
 
-        if (enabled) { output.emplace_back(chain); }
+        if (true_byte_ == data.front()) {
+            auto seed = std::string{};
+            std::transform(
+                std::next(data.begin()),
+                data.end(),
+                std::back_inserter(seed),
+                [](const auto& value) { return static_cast<char>(value); });
+            output.emplace_back(chain, std::move(seed));
+        }
 
         return true;
     };

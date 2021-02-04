@@ -26,5 +26,6 @@ constexpr auto OT_ZMQ_NEW_BLOCKCHAIN_WALLET_KEY_SIGNAL = OTZMQWorkType{OT_ZMQ_HI
 constexpr auto OT_ZMQ_INIT_SIGNAL =                      OTZMQWorkType{OT_ZMQ_HIGHEST_SIGNAL - 8};
 constexpr auto OT_ZMQ_NEW_FULL_BLOCK_SIGNAL =            OTZMQWorkType{OT_ZMQ_HIGHEST_SIGNAL - 9};
 constexpr auto OT_ZMQ_SYNC_DATA_SIGNAL =                 OTZMQWorkType{OT_ZMQ_HIGHEST_SIGNAL - 10};
+constexpr auto OT_ZMQ_HEARTBEAT_SIGNAL =                 OTZMQWorkType{OT_ZMQ_HIGHEST_SIGNAL - 11};
 // clang-format on
 }  // namespace opentxs
