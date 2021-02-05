@@ -53,6 +53,8 @@ class Block;
 }  // namespace bitcoin
 }  // namespace block
 }  // namespace blockchain
+
+class Outstanding;
 }  // namespace opentxs
 
 namespace opentxs::blockchain::client::implementation
@@ -81,6 +83,7 @@ struct HDStateData {
     const internal::WalletDatabase& db_;
     const api::client::blockchain::HD& node_;
     const SimpleCallback& task_finished_;
+    Outstanding& job_counter_;
     const filter::Type filter_type_;
     const Subchain subchain_;
     std::atomic<bool> running_;
@@ -103,6 +106,7 @@ struct HDStateData {
         const WalletDatabase& db,
         const api::client::blockchain::HD& node,
         const SimpleCallback& taskFinished,
+        Outstanding& jobCounter,
         const filter::Type filter,
         const Subchain subchain) noexcept;
 

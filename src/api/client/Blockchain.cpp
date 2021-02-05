@@ -1430,7 +1430,7 @@ auto Blockchain::stop(const Lock& lock, const Chain type) const noexcept -> bool
 
     if (sync_server_) { sync_server_->Disable(type); }
 
-    it->second->Shutdown();
+    it->second->Shutdown().get();
     thread_pool_.Stop(type).get();
     networks_.erase(it);
 
@@ -1501,11 +1501,11 @@ Blockchain::~Blockchain()
 
     LogVerbose("Shutting down ")(networks_.size())(" blockchain clients")
         .Flush();
-    thread_pool_.Shutdown();
 
     for (auto& [chain, network] : networks_) { network->Shutdown().get(); }
 
     networks_.clear();
+    thread_pool_.Shutdown();
     io_.Shutdown();
 
 #endif  // OT_BLOCKCHAIN

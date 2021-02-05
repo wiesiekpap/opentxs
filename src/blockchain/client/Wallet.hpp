@@ -45,6 +45,7 @@
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/util/WorkType.hpp"
+#include "util/JobCounter.hpp"
 #include "util/Work.hpp"
 
 namespace opentxs
@@ -127,7 +128,8 @@ public:
             const BalanceTree& ref,
             const internal::Network& network,
             const internal::WalletDatabase& db,
-            const zmq::socket::Push& socket,
+            const zmq::socket::Push& threadPool,
+            Outstanding&& jobs,
             const SimpleCallback& taskFinished) noexcept;
         Account(Account&&) noexcept;
 
@@ -138,10 +140,11 @@ public:
         const internal::Network& network_;
         const internal::WalletDatabase& db_;
         const filter::Type filter_type_;
-        const zmq::socket::Push& socket_;
+        const zmq::socket::Push& thread_pool_;
         const SimpleCallback& task_finished_;
         std::map<OTIdentifier, HDStateData> internal_;
         std::map<OTIdentifier, HDStateData> external_;
+        Outstanding jobs_;
 
         auto state_machine_hd(HDStateData& data) noexcept -> bool;
         auto reorg_hd(HDStateData& data, const block::Position& parent) noexcept
@@ -205,9 +208,10 @@ private:
         const api::client::internal::Blockchain& blockchain_api_;
         const internal::Network& network_;
         const internal::WalletDatabase& db_;
-        const zmq::socket::Push& socket_;
+        const zmq::socket::Push& thread_pool_;
         const SimpleCallback& task_finished_;
         const Type chain_;
+        JobCounter job_counter_;
         AccountMap map_;
 
         static auto init(
@@ -217,6 +221,7 @@ private:
             const internal::WalletDatabase& db,
             const zmq::socket::Push& socket,
             const Type chain,
+            JobCounter& jobs,
             const SimpleCallback& taskFinished) noexcept -> AccountMap;
     };
 
@@ -359,7 +364,7 @@ private:
     const Type chain_;
     const SimpleCallback task_finished_;
     std::atomic_bool enabled_;
-    OTZMQPushSocket socket_;
+    OTZMQPushSocket thread_pool;
     Accounts accounts_;
     Proposals proposals_;
 

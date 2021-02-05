@@ -38,6 +38,7 @@
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "util/JobCounter.hpp"
 #include "util/Work.hpp"
 
 namespace opentxs
@@ -92,6 +93,7 @@ public:
     class FilterDownloader;
     class HeaderDownloader;
     class SyncIndexer;
+    struct SyncClientFilterData;
 
     using NotifyCallback =
         std::function<void(const filter::Type, const block::Position&)>;
@@ -136,6 +138,7 @@ public:
         -> bool final;
     auto ProcessSyncData(const ParsedSyncData& data) const noexcept
         -> void final;
+    auto ProcessSyncData(SyncClientFilterData& data) const noexcept -> void;
     auto Tip(const filter::Type type) const noexcept -> block::Position final
     {
         return database_.FilterTip(type);
@@ -165,6 +168,7 @@ private:
     using FilterHeaderMap = std::map<filter::Type, FilterHeaderHex>;
     using ChainMap = std::map<block::Height, FilterHeaderMap>;
     using CheckpointMap = std::map<blockchain::Type, ChainMap>;
+    using OutstandingMap = std::map<int, std::atomic_int>;
 
     static const CheckpointMap filter_checkpoints_;
 
@@ -181,6 +185,9 @@ private:
     mutable std::unique_ptr<HeaderDownloader> header_downloader_;
     mutable std::unique_ptr<BlockIndexer> block_indexer_;
     mutable Time last_sync_progress_;
+    mutable JobCounter outstanding_jobs_;
+    OTZMQPushSocket thread_pool_;
+    std::atomic_bool running_;
 
     auto new_tip(
         const rLock&,
