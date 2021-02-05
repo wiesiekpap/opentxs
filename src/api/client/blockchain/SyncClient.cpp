@@ -141,8 +141,8 @@ private:
 
     auto process(void* socket) noexcept -> void
     {
-        auto lock = Lock{lock_};
         auto incoming = [&] {
+            auto lock = Lock{lock_};
             auto output = api_.ZeroMQ().Message();
             OTSocket::receive_message(lock, socket, output);
 
@@ -165,29 +165,34 @@ private:
             return;
         }
 
-        for (const auto& state : hello.state()) {
-            have_sync_[static_cast<Chain>(state.chain())] = true;
-        }
-
         const auto hasEndpoint = (0 < body.at(1).size());
         const auto hasSyncData = 2 < body.size();
 
-        if (update_endpoint_.empty() && hasEndpoint) {
-            update_endpoint_ = body.at(1).Bytes();
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Received update endpoint ")(
-                update_endpoint_)
-                .Flush();
-        }
+        {
+            auto lock = Lock{lock_};
+            for (const auto& state : hello.state()) {
+                have_sync_[static_cast<Chain>(state.chain())] = true;
+            }
 
-        if ((false == update_connected_) &&
-            (false == update_endpoint_.empty())) {
-            update_connected_ =
-                (0 == ::zmq_connect(update_.get(), update_endpoint_.c_str()));
-
-            if (false == update_connected_) {
+            if (update_endpoint_.empty() && hasEndpoint) {
+                update_endpoint_ = body.at(1).Bytes();
                 LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": failed to connect update endpoint to ")(update_endpoint_)
+                    ": Received update endpoint ")(update_endpoint_)
                     .Flush();
+            }
+
+            if ((false == update_connected_) &&
+                (false == update_endpoint_.empty())) {
+                update_connected_ =
+                    (0 ==
+                     ::zmq_connect(update_.get(), update_endpoint_.c_str()));
+
+                if (false == update_connected_) {
+                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                        ": failed to connect update endpoint to ")(
+                        update_endpoint_)
+                        .Flush();
+                }
             }
         }
 
