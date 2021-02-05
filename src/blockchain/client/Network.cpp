@@ -154,13 +154,28 @@ Network::Network(
     , wallet_(*wallet_p_)
     , parent_(blockchain)
     , sync_endpoint_(syncEndpoint)
-    , sync_server_()
+    , sync_server_([&] {
+        if (config_.provide_sync_server_) {
+            return std::make_unique<SyncServer>(
+                api_,
+                database_,
+                header_,
+                filters_,
+                *this,
+                chain_,
+                filters_.DefaultType(),
+                shutdown_sender_.endpoint_,
+                sync_endpoint_);
+        } else {
+            return std::unique_ptr<SyncServer>{};
+        }
+    }())
     , local_chain_height_(0)
     , remote_chain_height_(params::Data::chains_.at(chain_).checkpoint_.height_)
     , waiting_for_headers_(Flag::Factory(false))
-    , processing_headers_(Flag::Factory(false))
     , headers_requested_(Clock::now())
-    , wallet_initialized_(false)
+    , headers_received_()
+    , state_(State::UpdatingHeaders)
     , init_promise_()
     , init_(init_promise_.get_future())
 {
@@ -310,25 +325,35 @@ auto Network::init() noexcept -> void
             .Flush();
     }
 
-    block_.Init();
-    filters_.Start();
-
-    if (config_.provide_sync_server_) {
-        sync_server_ = std::make_unique<SyncServer>(
-            api_,
-            database_,
-            header_,
-            filters_,
-            *this,
-            chain_,
-            filters_.DefaultType(),
-            shutdown_sender_.endpoint_,
-            sync_endpoint_);
-    }
-
     peer_.init();
     init_promise_.set_value();
     trigger();
+}
+
+auto Network::is_synchronized_blocks() const noexcept -> bool
+{
+    return block_.Tip().first >= this->target();
+}
+
+auto Network::is_synchronized_filters() const noexcept -> bool
+{
+    return filters_.Tip(filters_.DefaultType()).first >= this->target();
+}
+
+auto Network::is_synchronized_headers() const noexcept -> bool
+{
+    return local_chain_height_.load() >= remote_chain_height_.load();
+}
+
+auto Network::is_synchronized_sync_server() const noexcept -> bool
+{
+    if (sync_server_) {
+
+        return sync_server_->Tip().first >= this->target();
+    } else {
+
+        return false;
+    }
 }
 
 auto Network::JobReady(const internal::PeerManager::Task type) const noexcept
@@ -413,8 +438,7 @@ auto Network::process_filter_update(network::zeromq::Message& in) noexcept
     OT_ASSERT(2 < body.size());
 
     const auto height = body.at(2).as<block::Height>();
-    const auto target =
-        std::max(local_chain_height_.load(), remote_chain_height_.load());
+    const auto target = this->target();
 
     {
         const auto progress = (double(height) / double(target)) * double{100};
@@ -432,9 +456,8 @@ auto Network::process_header(network::zeromq::Message& in) noexcept -> void
 {
     if (false == running_.get()) { return; }
 
-    processing_headers_->On();
     waiting_for_headers_->Off();
-    auto postcondition = ScopeGuard{[&] { processing_headers_->Off(); }};
+    headers_received_ = Clock::now();
     using Promise = std::promise<void>;
     auto pPromise = std::unique_ptr<Promise>{};
     auto input = std::vector<ReadView>{};
@@ -476,7 +499,6 @@ auto Network::process_header(network::zeromq::Message& in) noexcept -> void
 
     if (false == headers.empty()) { header_.AddHeaders(headers); }
 
-    processing_headers_->Off();
     promise.set_value();
 }
 
@@ -584,15 +606,13 @@ auto Network::shutdown(std::promise<void>& promise) noexcept -> void
 
     if (running_->Off()) {
         shutdown_sender_.Activate();
-
-        if (false == wallet_initialized_) { wallet_.Init(); }
-
-        sync_server_.reset();
         wallet_.Shutdown().get();
-        wallet_initialized_ = false;
+
+        if (sync_server_) { sync_server_->Shutdown().get(); }
+
         peer_.Shutdown().get();
+        filters_.Shutdown();
         block_.Shutdown().get();
-        filters_.Shutdown().get();
         shutdown_sender_.Close();
 
         try {
@@ -611,29 +631,142 @@ auto Network::state_machine() noexcept -> bool
 {
     if (false == running_.get()) { return false; }
 
-    if (processing_headers_.get()) { return false; }
+    LogDebug(OT_METHOD)(__FUNCTION__)(": Starting state machine for ")(
+        DisplayString(chain_))
+        .Flush();
+    state_machine_headers();
 
-    if (IsSynchronized() && (0 < GetHeight())) {
-        if (false == wallet_initialized_) {
-            wallet_.Init();
-            wallet_initialized_ = true;
+    switch (state_.load()) {
+        case State::UpdatingHeaders: {
+            if (is_synchronized_headers()) {
+                LogDetail(OT_METHOD)(__FUNCTION__)(": ")(DisplayString(chain_))(
+                    " header oracle is synchronized")
+                    .Flush();
+                using Policy = api::client::blockchain::BlockStorage;
+
+                if (Policy::All == database_.BlockPolicy()) {
+                    state_transition_blocks();
+                } else {
+                    state_transition_filters();
+                }
+            } else {
+                LogDebug(OT_METHOD)(__FUNCTION__)(": updating ")(
+                    DisplayString(chain_))(" header oracle")
+                    .Flush();
+            }
+        } break;
+        case State::UpdatingBlocks: {
+            if (is_synchronized_blocks()) {
+                LogDetail(OT_METHOD)(__FUNCTION__)(": ")(DisplayString(chain_))(
+                    " block oracle is synchronized")
+                    .Flush();
+                state_transition_filters();
+            } else {
+                LogDebug(OT_METHOD)(__FUNCTION__)(": updating ")(
+                    DisplayString(chain_))(" block oracle")
+                    .Flush();
+
+                break;
+            }
+        } break;
+        case State::UpdatingFilters: {
+            if (is_synchronized_filters()) {
+                LogDetail(OT_METHOD)(__FUNCTION__)(": ")(DisplayString(chain_))(
+                    " filter oracle is synchronized")
+                    .Flush();
+
+                if (config_.provide_sync_server_) {
+                    state_transition_sync();
+                } else {
+                    state_transition_normal();
+                }
+            } else {
+                LogDebug(OT_METHOD)(__FUNCTION__)(": updating ")(
+                    DisplayString(chain_))(" filter oracle")
+                    .Flush();
+
+                break;
+            }
+        } break;
+        case State::UpdatingSyncData: {
+            if (is_synchronized_sync_server()) {
+                LogDetail(OT_METHOD)(__FUNCTION__)(": ")(DisplayString(chain_))(
+                    " sync server is synchronized")
+                    .Flush();
+                state_transition_normal();
+            } else {
+                LogDebug(OT_METHOD)(__FUNCTION__)(": updating ")(
+                    DisplayString(chain_))(" sync server")
+                    .Flush();
+
+                break;
+            }
+        } break;
+        case State::Normal:
+        default: {
         }
-
-        return false;
     }
 
-    if (waiting_for_headers_.get()) {
-        const auto timeout =
-            (Clock::now() - headers_requested_) > std::chrono::seconds{10};
-
-        if (false == timeout) { return false; }
-    }
-
-    waiting_for_headers_->On();
-    headers_requested_ = Clock::now();
-    peer_.RequestHeaders();
+    LogDebug(OT_METHOD)(__FUNCTION__)(": Completed state machine for ")(
+        DisplayString(chain_))
+        .Flush();
 
     return false;
+}
+
+auto Network::state_machine_headers() noexcept -> void
+{
+    constexpr auto limit = std::chrono::seconds{20};
+    constexpr auto rateLimit = std::chrono::seconds{1};
+    const auto interval = Clock::now() - headers_requested_;
+    const auto requestHeaders = [&] {
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": Requesting ")(
+            DisplayString(chain_))(" block headers from all connected peers")
+            .Flush();
+        waiting_for_headers_->On();
+        peer_.RequestHeaders();
+        headers_requested_ = Clock::now();
+    };
+
+    if (waiting_for_headers_.get()) {
+        if (interval < limit) { return; }
+
+        LogDetail(OT_METHOD)(__FUNCTION__)(": ")(DisplayString(chain_))(
+            " headers not received before timeout")
+            .Flush();
+        requestHeaders();
+    } else if ((false == is_synchronized_headers()) && (interval > rateLimit)) {
+        requestHeaders();
+    } else if ((Clock::now() - headers_received_) >= limit) {
+        requestHeaders();
+    }
+}
+
+auto Network::state_transition_blocks() noexcept -> void
+{
+    block_.Init();
+    state_.store(State::UpdatingBlocks);
+}
+
+auto Network::state_transition_filters() noexcept -> void
+{
+    filters_.Start();
+    state_.store(State::UpdatingFilters);
+}
+
+auto Network::state_transition_normal() noexcept -> void
+{
+    if (false == config_.disable_wallet_) { wallet_.Init(); }
+
+    state_.store(State::Normal);
+}
+
+auto Network::state_transition_sync() noexcept -> void
+{
+    OT_ASSERT(sync_server_);
+
+    sync_server_->Start();
+    state_.store(State::UpdatingSyncData);
 }
 
 auto Network::Submit(network::zeromq::Message& work) const noexcept -> void
@@ -641,6 +774,11 @@ auto Network::Submit(network::zeromq::Message& work) const noexcept -> void
     if (false == running_.get()) { return; }
 
     pipeline_->Push(work);
+}
+
+auto Network::target() const noexcept -> block::Height
+{
+    return std::max(local_chain_height_.load(), remote_chain_height_.load());
 }
 
 auto Network::UpdateHeight(const block::Height height) const noexcept -> void

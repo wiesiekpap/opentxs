@@ -154,16 +154,15 @@ FilterOracle::FilterOracle(
         }
     }())
     , last_sync_progress_()
-    , init_promise_()
-    , shutdown_promise_()
-    , init_(init_promise_.get_future())
-    , shutdown_(shutdown_promise_.get_future())
 {
     auto zmq = new_filters_->Start(
         api_.Endpoints().InternalBlockchainFilterUpdated(chain_));
 
     OT_ASSERT(zmq);
     OT_ASSERT(cb_);
+
+    compare_tips_to_header_chain();
+    compare_tips_to_checkpoint();
 }
 
 auto FilterOracle::compare_header_to_checkpoint(
@@ -489,7 +488,7 @@ auto FilterOracle::ProcessSyncData(const ParsedSyncData& parsed) const noexcept
         database_.StoreFilters(filterType, headers, filters, tip);
 
     if (stored) {
-        LogNormal(DisplayString(chain_))(
+        LogDetail(DisplayString(chain_))(
             " cfheader and cfilter chain updated to height ")(tip.first)
             .Flush();
         cb_(filterType, tip);
@@ -617,9 +616,8 @@ auto FilterOracle::reset_tips_to(
     return 0 < counter;
 }
 
-auto FilterOracle::Shutdown() noexcept -> std::shared_future<void>
+auto FilterOracle::Shutdown() noexcept -> void
 {
-    init_.get();
     auto lock = rLock{lock_};
 
     if (header_downloader_) { header_downloader_.reset(); }
@@ -627,20 +625,10 @@ auto FilterOracle::Shutdown() noexcept -> std::shared_future<void>
     if (filter_downloader_) { filter_downloader_.reset(); }
 
     if (block_indexer_) { block_indexer_.reset(); }
-
-    try {
-        shutdown_promise_.set_value();
-    } catch (...) {
-    }
-
-    return shutdown_;
 }
 
 auto FilterOracle::Start() noexcept -> void
 {
-    compare_tips_to_header_chain();
-    compare_tips_to_checkpoint();
-    init_promise_.set_value();
     auto lock = rLock{lock_};
 
     if (header_downloader_) { header_downloader_->Start(); }
@@ -650,5 +638,5 @@ auto FilterOracle::Start() noexcept -> void
     if (block_indexer_) { block_indexer_->Start(); }
 }
 
-FilterOracle::~FilterOracle() { Shutdown().get(); }
+FilterOracle::~FilterOracle() { Shutdown(); }
 }  // namespace opentxs::blockchain::client::implementation

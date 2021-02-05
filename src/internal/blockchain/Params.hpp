@@ -72,5 +72,6 @@ struct Data {
     std::vector<std::string> dns_seeds_{};
     Amount default_fee_rate_{};
     display::Definition scales_{};
+    std::size_t block_download_batch_{};
 };
 }  // namespace opentxs::blockchain::params

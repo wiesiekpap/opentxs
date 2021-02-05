@@ -97,6 +97,7 @@ public:
     using Txid = opentxs::blockchain::block::Txid;
     using pTxid = opentxs::blockchain::block::pTxid;
     using Chain = opentxs::blockchain::Type;
+    using EnabledChain = std::pair<Chain, std::string>;
     using Height = opentxs::blockchain::block::Height;
     using SyncItems = std::vector<proto::BlockchainP2PSync>;
 
@@ -113,7 +114,8 @@ public:
     auto BlockStore(const BlockHash& block, const std::size_t bytes)
         const noexcept -> BlockWriter;
     auto Disable(const Chain type) const noexcept -> bool;
-    auto Enable(const Chain type) const noexcept -> bool;
+    auto Enable(const Chain type, const std::string& seednode) const noexcept
+        -> bool;
     auto Find(
         const Chain chain,
         const Protocol protocol,
@@ -127,7 +129,7 @@ public:
     auto Import(std::vector<Address_p> peers) const noexcept -> bool;
     auto LoadBlockHeader(const BlockHash& hash) const noexcept(false)
         -> proto::BlockchainBlockHeader;
-    auto LoadEnabledChains() const noexcept -> std::vector<Chain>;
+    auto LoadEnabledChains() const noexcept -> std::vector<EnabledChain>;
     auto LoadFilter(const FilterType type, const ReadView blockHash) const
         noexcept -> std::unique_ptr<const opentxs::blockchain::client::GCS>;
     auto LoadFilterHash(

@@ -715,7 +715,7 @@ auto Blockchain::enable(
         return false;
     }
 
-    if (false == db_.Enable(type)) {
+    if (false == db_.Enable(type, seednode)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Database error").Flush();
 
         return false;
@@ -912,9 +912,12 @@ auto Blockchain::IsEnabled(const opentxs::blockchain::Type chain) const noexcept
     -> bool
 {
     auto lock = Lock{lock_};
-    const auto chains = db_.LoadEnabledChains();
 
-    return std::find(chains.begin(), chains.end(), chain) != chains.end();
+    for (const auto& [enabled, peer] : db_.LoadEnabledChains()) {
+        if (chain == enabled) { return true; }
+    }
+
+    return false;
 }
 
 auto Blockchain::KeyGenerated(const Chain chain) const noexcept -> void
@@ -1307,7 +1310,9 @@ auto Blockchain::ReportProgress(
 
 auto Blockchain::RestoreNetworks() const noexcept -> void
 {
-    for (const auto chain : db_.LoadEnabledChains()) { Start(chain, {}); }
+    for (const auto& [chain, peer] : db_.LoadEnabledChains()) {
+        Start(chain, peer);
+    }
 }
 
 auto Blockchain::Start(const Chain type, const std::string& seednode)

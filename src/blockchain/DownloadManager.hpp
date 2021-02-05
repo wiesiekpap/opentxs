@@ -6,6 +6,7 @@
 #pragma once
 
 #include <algorithm>
+#include <atomic>
 #include <deque>
 #include <map>
 #include <memory>
@@ -17,6 +18,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Log.hpp"
+#include "util/Work.hpp"
 
 #define DOWNLOAD_MANAGER "opentxs::blockchain::download::Manager::"
 
@@ -37,6 +39,12 @@ public:
     using PreviousData = std::pair<Position, Finished>;
     using Previous = std::optional<PreviousData>;
 
+    auto Heartbeat() noexcept -> void
+    {
+        auto& me = downcast();
+
+        me.pipeline_->Push(me.MakeWork(OT_ZMQ_HEARTBEAT_SIGNAL));
+    }
     auto Reset(const Position& position, Finished&& previous) noexcept -> void
     {
         LogVerbose(DOWNLOAD_MANAGER)(__FUNCTION__)(": resetting ")(log_)(
@@ -50,6 +58,7 @@ public:
         next_ = 0;
         downcast().update_tip(position, dm_previous_.get());
     }
+    auto Start() noexcept { enabled_ = true; }
 
 protected:
     using DownloadedData = typename BatchType::Vector;
@@ -129,6 +138,10 @@ protected:
         OT_ASSERT(next_ <= buffer_.size());
 
         return output;
+    }
+    auto run_if_enabled() noexcept -> void
+    {
+        if (enabled_) { downcast().do_work(); }
     }
     auto state_machine() noexcept -> bool
     {
@@ -234,6 +247,7 @@ protected:
         , last_batch_(-1)
         , buffer_()
         , next_(0)
+        , enabled_(false)
     {
     }
 
@@ -263,6 +277,7 @@ private:
     BatchID last_batch_;
     Buffer buffer_;
     std::size_t next_;
+    std::atomic_bool enabled_;
 
     // Functions to implement in child class:
     //

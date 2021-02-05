@@ -44,12 +44,7 @@ public:
         const filter::Type type,
         const block::bitcoin::Block& block)>;
 
-    auto Heartbeat() noexcept -> void
-    {
-        pipeline_->Push(MakeWork(Work::heartbeat));
-    }
     auto NextBatch() noexcept { return allocate_batch(type_); }
-    auto Start() noexcept { init_promise_.set_value(); }
 
     BlockIndexer(
         const api::Core& api,
@@ -82,8 +77,6 @@ public:
         , type_(type)
         , cb_(std::move(cb))
         , notify_(notify)
-        , init_promise_()
-        , init_(init_promise_.get_future())
     {
         init_executor(
             {shutdown,
@@ -105,8 +98,6 @@ private:
     const filter::Type type_;
     const Callback cb_;
     const NotifyCallback& notify_;
-    std::promise<void> init_promise_;
-    std::shared_future<void> init_;
 
     auto batch_ready() const noexcept -> void { trigger(); }
     auto batch_size(const std::size_t in) const noexcept -> std::size_t
@@ -138,7 +129,7 @@ private:
 
         OT_ASSERT(saved);
 
-        LogVerbose(DisplayString(chain_))(
+        LogDetail(DisplayString(chain_))(
             " cfheader and cfilter chain updated to height ")(position.first)
             .Flush();
         notify_(type_, position);
@@ -165,8 +156,6 @@ private:
     }
     auto pipeline(const zmq::Message& in) noexcept -> void
     {
-        init_.get();
-
         if (false == running_.get()) { return; }
 
         const auto body = in.Body();
@@ -182,15 +171,15 @@ private:
             } break;
             case Work::heartbeat: {
                 process_position(block_.Tip());
-                do_work();
+                run_if_enabled();
             } break;
             case Work::full_block: {
                 process_position(in);
-                do_work();
+                run_if_enabled();
             } break;
             case Work::statemachine: {
                 download();
-                do_work();
+                run_if_enabled();
             } break;
             default: {
                 OT_FAIL;
@@ -353,8 +342,6 @@ private:
     }
     auto shutdown(std::promise<void>& promise) noexcept -> void
     {
-        init_.get();
-
         if (running_->Off()) {
             try {
                 promise.set_value();

@@ -334,7 +334,7 @@ struct FilterOracle : virtual public opentxs::blockchain::client::FilterOracle {
         -> block::Position = 0;
 
     virtual auto Start() noexcept -> void = 0;
-    virtual auto Shutdown() noexcept -> std::shared_future<void> = 0;
+    virtual auto Shutdown() noexcept -> void = 0;
 
     ~FilterOracle() override = default;
 };
@@ -454,23 +454,23 @@ struct PeerDatabase {
 
 struct PeerManager {
     enum class Task : OTZMQWorkType {
+        Shutdown = value(WorkType::Shutdown),
         Getheaders = OT_ZMQ_INTERNAL_SIGNAL + 0,
-        Heartbeat = OT_ZMQ_INTERNAL_SIGNAL + 1,
-        Getblock = OT_ZMQ_INTERNAL_SIGNAL + 2,
-        BroadcastTransaction = OT_ZMQ_INTERNAL_SIGNAL + 3,
-        BroadcastBlock = OT_ZMQ_INTERNAL_SIGNAL + 4,
-        JobAvailableCfheaders = OT_ZMQ_INTERNAL_SIGNAL + 5,
-        JobAvailableCfilters = OT_ZMQ_INTERNAL_SIGNAL + 6,
-        JobAvailableBlock = OT_ZMQ_INTERNAL_SIGNAL + 7,
+        Getblock = OT_ZMQ_INTERNAL_SIGNAL + 1,
+        BroadcastTransaction = OT_ZMQ_INTERNAL_SIGNAL + 2,
+        BroadcastBlock = OT_ZMQ_INTERNAL_SIGNAL + 3,
+        JobAvailableCfheaders = OT_ZMQ_INTERNAL_SIGNAL + 4,
+        JobAvailableCfilters = OT_ZMQ_INTERNAL_SIGNAL + 5,
+        JobAvailableBlock = OT_ZMQ_INTERNAL_SIGNAL + 6,
         Body = OT_ZMQ_INTERNAL_SIGNAL + 126,
         Header = OT_ZMQ_INTERNAL_SIGNAL + 127,
+        Heartbeat = OT_ZMQ_HEARTBEAT_SIGNAL,
         Connect = OT_ZMQ_CONNECT_SIGNAL,
         Disconnect = OT_ZMQ_DISCONNECT_SIGNAL,
         ReceiveMessage = OT_ZMQ_RECEIVE_SIGNAL,
         SendMessage = OT_ZMQ_SEND_SIGNAL,
         Register = OT_ZMQ_REGISTER_SIGNAL,
         StateMachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
-        Shutdown = value(WorkType::Shutdown),
     };
 
     virtual auto AddIncomingPeer(const int id, std::uintptr_t endpoint)

@@ -112,8 +112,7 @@ Wallet::Wallet(
     , blockchain_api_(blockchain)
     , chain_(chain)
     , task_finished_([this]() { trigger(); })
-    , init_promise_()
-    , init_(init_promise_.get_future())
+    , enabled_(false)
     , socket_(api_.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Connect))
     , accounts_(
           api,
@@ -150,15 +149,12 @@ auto Wallet::ConstructTransaction(
 
 auto Wallet::Init() noexcept -> void
 {
-    init_promise_.set_value();
+    enabled_ = true;
     trigger();
 }
 
 auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
 {
-    const auto ready =
-        std::future_status::ready == init_.wait_for(std::chrono::seconds{0});
-
     if (false == running_.get()) { return; }
 
     const auto body = in.Body();
@@ -177,6 +173,8 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
         } break;
         case Work::reorg: {
             process_reorg(in);
+
+            if (enabled_) { do_work(); }
         } break;
         case Work::nym: {
             OT_ASSERT(1 < body.size());
@@ -187,7 +185,7 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
         case Work::key:
         case Work::filter:
         case Work::statemachine: {
-            if (ready) { do_work(); }
+            if (enabled_) { do_work(); }
         } break;
         case Work::shutdown: {
             shutdown(shutdown_promise_);
@@ -218,13 +216,10 @@ auto Wallet::process_reorg(const zmq::Message& in) noexcept -> void
         body.at(3).as<block::Height>(),
         api_.Factory().Data(body.at(2).Bytes())};
     accounts_.Reorg(parent);
-    do_work();
 }
 
 auto Wallet::shutdown(std::promise<void>& promise) noexcept -> void
 {
-    init_.get();
-
     if (running_->Off()) {
         try {
             promise.set_value();
@@ -235,8 +230,6 @@ auto Wallet::shutdown(std::promise<void>& promise) noexcept -> void
 
 auto Wallet::state_machine() noexcept -> bool
 {
-    LogTrace(OT_METHOD)(__FUNCTION__).Flush();
-
     if (false == running_.get()) { return false; }
 
     auto repeat = accounts_.state_machine();

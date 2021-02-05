@@ -32,13 +32,7 @@ using FilterWorker = Worker<FilterOracle::FilterDownloader, api::Core>;
 class FilterOracle::FilterDownloader : public FilterDM, public FilterWorker
 {
 public:
-    auto Heartbeat() noexcept -> void
-    {
-        UpdatePosition(db_.FilterHeaderTip(type_));
-        trigger();
-    }
     auto NextBatch() noexcept { return allocate_batch(type_); }
-    auto Start() noexcept { init_promise_.set_value(); }
     auto UpdatePosition(const Position& pos) -> void
     {
         try {
@@ -93,8 +87,6 @@ public:
         , chain_(chain)
         , type_(type)
         , notify_(notify)
-        , init_promise_()
-        , init_(init_promise_.get_future())
     {
         init_executor({shutdown});
     }
@@ -111,8 +103,6 @@ private:
     const blockchain::Type chain_;
     const filter::Type type_;
     const NotifyCallback& notify_;
-    std::promise<void> init_promise_;
-    std::shared_future<void> init_;
 
     auto batch_ready() const noexcept -> void
     {
@@ -143,7 +133,7 @@ private:
 
         OT_ASSERT(saved);
 
-        LogOutput(DisplayString(chain_))(" cfilter chain updated to height ")(
+        LogDetail(DisplayString(chain_))(" cfilter chain updated to height ")(
             position.first)
             .Flush();
         notify_(type_, position);
@@ -151,8 +141,6 @@ private:
 
     auto pipeline(const zmq::Message& in) noexcept -> void
     {
-        init_.get();
-
         if (false == running_.get()) { return; }
 
         const auto body = in.Body();
@@ -163,14 +151,18 @@ private:
         const auto work = body.at(0).as<Work>();
 
         switch (work) {
+            case Work::shutdown: {
+                shutdown(shutdown_promise_);
+            } break;
             case Work::reset_filter_tip: {
                 process_reset(in);
             } break;
-            case Work::statemachine: {
-                do_work();
+            case Work::heartbeat: {
+                UpdatePosition(db_.FilterHeaderTip(type_));
+                run_if_enabled();
             } break;
-            case Work::shutdown: {
-                shutdown(shutdown_promise_);
+            case Work::statemachine: {
+                run_if_enabled();
             } break;
             default: {
                 OT_FAIL;
@@ -222,8 +214,6 @@ private:
     }
     auto shutdown(std::promise<void>& promise) noexcept -> void
     {
-        init_.get();
-
         if (running_->Off()) {
             try {
                 promise.set_value();

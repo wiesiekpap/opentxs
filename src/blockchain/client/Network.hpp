@@ -101,9 +101,10 @@ public:
     class SyncServer;
 
     enum class Work : OTZMQWorkType {
+        shutdown = value(WorkType::Shutdown),
+        heartbeat = OT_ZMQ_HEARTBEAT_SIGNAL,
         filter = OT_ZMQ_NEW_FILTER_SIGNAL,
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
-        shutdown = value(WorkType::Shutdown),
     };
 
     auto AddBlock(const std::shared_ptr<const block::bitcoin::Block> block)
@@ -155,7 +156,7 @@ public:
     }
     auto IsSynchronized() const noexcept -> bool final
     {
-        return local_chain_height_.load() >= remote_chain_height_.load();
+        return is_synchronized_headers();
     }
     auto JobReady(const internal::PeerManager::Task type) const noexcept
         -> void final;
@@ -228,15 +229,23 @@ protected:
 private:
     friend Worker<Network, api::Core>;
 
+    enum class State : int {
+        UpdatingHeaders,
+        UpdatingBlocks,
+        UpdatingFilters,
+        UpdatingSyncData,
+        Normal
+    };
+
     const api::client::internal::Blockchain& parent_;
     const std::string sync_endpoint_;
     std::unique_ptr<SyncServer> sync_server_;
     mutable std::atomic<block::Height> local_chain_height_;
     mutable std::atomic<block::Height> remote_chain_height_;
     OTFlag waiting_for_headers_;
-    OTFlag processing_headers_;
     Time headers_requested_;
-    bool wallet_initialized_;
+    Time headers_received_;
+    std::atomic<State> state_;
     std::promise<void> init_promise_;
     std::shared_future<void> init_;
 
@@ -244,6 +253,11 @@ private:
 
     virtual auto instantiate_header(const ReadView payload) const noexcept
         -> std::unique_ptr<block::Header> = 0;
+    auto is_synchronized_blocks() const noexcept -> bool;
+    auto is_synchronized_filters() const noexcept -> bool;
+    auto is_synchronized_headers() const noexcept -> bool;
+    auto is_synchronized_sync_server() const noexcept -> bool;
+    auto target() const noexcept -> block::Height;
 
     auto pipeline(zmq::Message& in) noexcept -> void;
     auto process_block(zmq::Message& in) noexcept -> void;
@@ -252,6 +266,11 @@ private:
     auto process_sync_data(zmq::Message& in) noexcept -> void;
     auto shutdown(std::promise<void>& promise) noexcept -> void;
     auto state_machine() noexcept -> bool;
+    auto state_machine_headers() noexcept -> void;
+    auto state_transition_blocks() noexcept -> void;
+    auto state_transition_filters() noexcept -> void;
+    auto state_transition_normal() noexcept -> void;
+    auto state_transition_sync() noexcept -> void;
 
     Network() = delete;
     Network(const Network&) = delete;

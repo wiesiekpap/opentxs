@@ -13,6 +13,7 @@
 
 #include "blockchain/DownloadManager.hpp"
 #include "internal/blockchain/Blockchain.hpp"
+#include "internal/blockchain/Params.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -34,13 +35,7 @@ using BlockWorker = Worker<BlockOracle::BlockDownloader, api::Core>;
 class BlockOracle::BlockDownloader : public BlockDM, public BlockWorker
 {
 public:
-    auto Heartbeat() noexcept -> void
-    {
-        process_position();
-        trigger();
-    }
     auto NextBatch() noexcept { return allocate_batch(0); }
-    auto Start() noexcept { init_promise_.set_value(); }
 
     BlockDownloader(
         const api::Core& api,
@@ -64,8 +59,6 @@ public:
         , network_(network)
         , chain_(chain)
         , socket_(api_.ZeroMQ().PublishSocket())
-        , init_promise_()
-        , init_(init_promise_.get_future())
     {
         init_executor({shutdown, api_.Endpoints().BlockchainReorg()});
         auto zmq = socket_->Start(
@@ -85,8 +78,6 @@ private:
     const internal::Network& network_;
     const blockchain::Type chain_;
     OTZMQPublishSocket socket_;
-    std::promise<void> init_promise_;
-    std::shared_future<void> init_;
 
     auto batch_ready() const noexcept -> void
     {
@@ -94,15 +85,21 @@ private:
     }
     auto batch_size(const std::size_t in) const noexcept -> std::size_t
     {
+        const auto limit =
+            params::Data::chains_.at(chain_).block_download_batch_;
+
         if (in < 10) {
 
-            return 1;
+            return std::min<std::size_t>(1, limit);
         } else if (in < 100) {
 
-            return 10;
+            return std::min<std::size_t>(10, limit);
+        } else if (in < 1000) {
+
+            return std::min<std::size_t>(100, limit);
         } else {
 
-            return 100;
+            return limit;
         }
     }
     auto check_task(TaskType& task) const noexcept -> void
@@ -120,7 +117,7 @@ private:
 
         OT_ASSERT(saved);
 
-        LogVerbose(DisplayString(chain_))(" block chain updated to height ")(
+        LogDetail(DisplayString(chain_))(" block chain updated to height ")(
             position.first)
             .Flush();
         auto work = MakeWork(OT_ZMQ_NEW_FULL_BLOCK_SIGNAL);
@@ -131,8 +128,6 @@ private:
 
     auto pipeline(const zmq::Message& in) noexcept -> void
     {
-        init_.get();
-
         if (false == running_.get()) { return; }
 
         const auto body = in.Body();
@@ -142,16 +137,20 @@ private:
         const auto work = body.at(0).as<BlockOracle::Work>();
 
         switch (work) {
+            case BlockOracle::Work::shutdown: {
+                shutdown(shutdown_promise_);
+            } break;
             case BlockOracle::Work::block:
             case BlockOracle::Work::reorg: {
                 process_position(in);
-                do_work();
+                run_if_enabled();
+            } break;
+            case BlockOracle::Work::heartbeat: {
+                process_position();
+                run_if_enabled();
             } break;
             case BlockOracle::Work::statemachine: {
-                do_work();
-            } break;
-            case BlockOracle::Work::shutdown: {
-                shutdown(shutdown_promise_);
+                run_if_enabled();
             } break;
             default: {
                 OT_FAIL;
@@ -214,8 +213,6 @@ private:
     }
     auto shutdown(std::promise<void>& promise) noexcept -> void
     {
-        init_.get();
-
         if (running_->Off()) {
             try {
                 promise.set_value();
