@@ -213,14 +213,9 @@ using CfilterJob =
 using BlockJob =
     download::Batch<std::shared_ptr<const block::bitcoin::Block>, int>;
 
-using ParsedSyncData = std::pair<
-    block::pHash,
-    std::vector<std::tuple<
-        block::pHash,
-        block::Height,
-        filter::Type,
-        std::uint32_t,
-        OTData>>>;
+using ParsedSyncPacket = std::
+    tuple<block::pHash, block::Height, filter::Type, std::uint32_t, OTData>;
+using ParsedSyncData = std::pair<block::pHash, std::vector<ParsedSyncPacket>>;
 }  // namespace opentxs::blockchain::client
 #endif  // OT_BLOCKCHAIN
 
@@ -275,7 +270,7 @@ struct OPENTXS_EXPORT Config {
 struct FilterDatabase {
     using Hash = block::pHash;
     /// block hash, filter header, filter hash
-    using Header = std::tuple<block::pHash, block::pHash, ReadView>;
+    using Header = std::tuple<block::pHash, filter::pHeader, ReadView>;
     /// block hash, filter
     using Filter = std::pair<ReadView, std::unique_ptr<const GCS>>;
 
@@ -318,6 +313,8 @@ struct FilterDatabase {
 
 struct FilterOracle : virtual public opentxs::blockchain::client::FilterOracle {
     using Header = FilterDatabase::Hash;
+
+    static auto ProcessThreadPool(const zmq::Message& task) noexcept -> void;
 
     virtual auto GetFilterJob() const noexcept -> CfilterJob = 0;
     virtual auto GetHeaderJob() const noexcept -> CfheaderJob = 0;
@@ -578,7 +575,8 @@ struct ThreadPool {
     using Future = std::shared_future<void>;
 
     enum class Work : OTZMQWorkType {
-        Wallet = OT_ZMQ_INTERNAL_SIGNAL + 0,
+        HDAccount = OT_ZMQ_INTERNAL_SIGNAL + 0,
+        SyncDataFiltersIncoming = OT_ZMQ_INTERNAL_SIGNAL + 1,
     };
 
     static auto Capacity() noexcept -> std::size_t;

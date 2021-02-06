@@ -75,6 +75,7 @@ auto Wallet::ProcessThreadPool(const zmq::Message& in) noexcept -> void
     auto postcondition = ScopeGuard{[&] {
         data.running_.store(false);
         data.task_finished_();
+        --data.job_counter_;
     }};
 
     switch (body.at(0).as<Task>()) {
@@ -113,18 +114,19 @@ Wallet::Wallet(
     , chain_(chain)
     , task_finished_([this]() { trigger(); })
     , enabled_(false)
-    , socket_(api_.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Connect))
+    , thread_pool(
+          api_.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Connect))
     , accounts_(
           api,
           blockchain_api_,
           parent_,
           db_,
-          socket_,
+          thread_pool,
           chain_,
           task_finished_)
     , proposals_(api, blockchain_api_, parent_, db_, chain_)
 {
-    auto zmq = socket_->Start(blockchain.ThreadPool().Endpoint());
+    auto zmq = thread_pool->Start(blockchain.ThreadPool().Endpoint());
 
     OT_ASSERT(zmq);
 

@@ -51,6 +51,7 @@ HDStateData::HDStateData(
     const WalletDatabase& db,
     const api::client::blockchain::HD& node,
     const SimpleCallback& taskFinished,
+    Outstanding& jobCounter,
     const filter::Type filter,
     const Subchain subchain) noexcept
     : api_(api)
@@ -59,6 +60,7 @@ HDStateData::HDStateData(
     , db_(db)
     , node_(node)
     , task_finished_(taskFinished)
+    , job_counter_(jobCounter)
     , filter_type_(filter)
     , subchain_(subchain)
     , running_(false)

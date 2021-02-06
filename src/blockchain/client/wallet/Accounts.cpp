@@ -37,10 +37,19 @@ Wallet::Accounts::Accounts(
     , blockchain_api_(blockchain)
     , network_(network)
     , db_(db)
-    , socket_(socket)
+    , thread_pool_(socket)
     , task_finished_(taskFinished)
     , chain_(chain)
-    , map_(init(api, blockchain, network, db, socket, chain, taskFinished))
+    , job_counter_()
+    , map_(init(
+          api,
+          blockchain,
+          network,
+          db,
+          socket,
+          chain,
+          job_counter_,
+          taskFinished))
 {
 }
 
@@ -53,7 +62,8 @@ auto Wallet::Accounts::Add(const identifier::Nym& nym) noexcept -> bool
         blockchain_api_.BalanceTree(nym, chain_),
         network_,
         db_,
-        socket_,
+        thread_pool_,
+        job_counter_.Allocate(),
         task_finished_);
 
     if (added) {
@@ -81,6 +91,7 @@ auto Wallet::Accounts::init(
     const internal::WalletDatabase& db,
     const zmq::socket::Push& socket,
     const Type chain,
+    JobCounter& jobs,
     const SimpleCallback& taskFinished) noexcept -> AccountMap
 {
     auto output = AccountMap{};
@@ -96,6 +107,7 @@ auto Wallet::Accounts::init(
             network,
             db,
             socket,
+            jobs.Allocate(),
             taskFinished);
     }
 

@@ -41,7 +41,8 @@ Wallet::Account::Account(
     const BalanceTree& ref,
     const internal::Network& network,
     const internal::WalletDatabase& db,
-    const zmq::socket::Push& socket,
+    const zmq::socket::Push& threadPool,
+    Outstanding&& jobs,
     const SimpleCallback& taskFinished) noexcept
     : api_(api)
     , blockchain_(blockchain)
@@ -49,10 +50,11 @@ Wallet::Account::Account(
     , network_(network)
     , db_(db)
     , filter_type_(network.FilterOracleInternal().DefaultType())
-    , socket_(socket)
+    , thread_pool_(threadPool)
     , task_finished_(taskFinished)
     , internal_()
     , external_()
+    , jobs_(std::move(jobs))
 {
     for (const auto& subaccount : ref_.GetHD()) {
         const auto& id = subaccount.ID();
@@ -64,6 +66,7 @@ Wallet::Account::Account(
             db_,
             subaccount,
             task_finished_,
+            jobs_,
             filter_type_,
             Subchain::Internal);
         external_.try_emplace(
@@ -74,6 +77,7 @@ Wallet::Account::Account(
             db_,
             subaccount,
             task_finished_,
+            jobs_,
             filter_type_,
             Subchain::External);
     }
@@ -86,10 +90,11 @@ Wallet::Account::Account(Account&& rhs) noexcept
     , network_(rhs.network_)
     , db_(rhs.db_)
     , filter_type_(rhs.filter_type_)
-    , socket_(rhs.socket_)
+    , thread_pool_(rhs.thread_pool_)
     , task_finished_(rhs.task_finished_)
     , internal_(std::move(rhs.internal_))
     , external_(std::move(rhs.external_))
+    , jobs_(std::move(rhs.jobs_))
 {
 }
 
@@ -97,12 +102,15 @@ auto Wallet::Account::queue_work(
     const Task task,
     const HDStateData& data) noexcept -> void
 {
+    while (jobs_.limited()) { Sleep(std::chrono::microseconds(100)); }
+
     using Pool = internal::ThreadPool;
 
-    auto work = Pool::MakeWork(api_, network_.Chain(), Pool::Work::Wallet);
+    auto work = Pool::MakeWork(api_, network_.Chain(), Pool::Work::HDAccount);
     work->AddFrame(task);
     work->AddFrame(reinterpret_cast<std::uintptr_t>(&data));
-    socket_.Send(work);
+    thread_pool_.Send(work);
+    ++jobs_;
 }
 
 auto Wallet::Account::reorg(const block::Position& parent) noexcept -> bool
@@ -126,6 +134,7 @@ auto Wallet::Account::reorg(const block::Position& parent) noexcept -> bool
                     db_,
                     subaccount,
                     task_finished_,
+                    jobs_,
                     filter_type_,
                     Subchain::Internal);
                 it = it2;
@@ -146,6 +155,7 @@ auto Wallet::Account::reorg(const block::Position& parent) noexcept -> bool
                     db_,
                     subaccount,
                     task_finished_,
+                    jobs_,
                     filter_type_,
                     Subchain::External);
                 it = it2;
@@ -186,6 +196,7 @@ auto Wallet::Account::state_machine() noexcept -> bool
                     db_,
                     subaccount,
                     task_finished_,
+                    jobs_,
                     filter_type_,
                     Subchain::Internal);
                 it = it2;
@@ -206,6 +217,7 @@ auto Wallet::Account::state_machine() noexcept -> bool
                     db_,
                     subaccount,
                     task_finished_,
+                    jobs_,
                     filter_type_,
                     Subchain::External);
                 it = it2;
