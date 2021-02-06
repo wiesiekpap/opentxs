@@ -577,6 +577,7 @@ struct ThreadPool {
     enum class Work : OTZMQWorkType {
         HDAccount = OT_ZMQ_INTERNAL_SIGNAL + 0,
         SyncDataFiltersIncoming = OT_ZMQ_INTERNAL_SIGNAL + 1,
+        CalculateBlockFilters = OT_ZMQ_INTERNAL_SIGNAL + 2,
     };
 
     static auto Capacity() noexcept -> std::size_t;

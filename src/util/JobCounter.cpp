@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"       // IWYU pragma: associated
 #include "util/JobCounter.hpp"  // IWYU pragma: associated
 
+#include <chrono>
+
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Log.hpp"
 

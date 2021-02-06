@@ -8,6 +8,7 @@
 #include "blockchain/database/Sync.hpp"  // IWYU pragma: associated
 
 #include <iosfwd>
+#include <utility>
 
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
