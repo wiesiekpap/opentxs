@@ -42,7 +42,6 @@
 #include "opentxs/protobuf/BlockchainP2PHello.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposedOutput.pb.h"
-#include "util/ScopeGuard.hpp"
 
 #define OT_METHOD "opentxs::blockchain::client::implementation::Network::"
 

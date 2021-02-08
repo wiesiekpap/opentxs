@@ -93,6 +93,7 @@ public:
     class FilterDownloader;
     class HeaderDownloader;
     class SyncIndexer;
+    struct BlockIndexerData;
     struct SyncClientFilterData;
 
     using NotifyCallback =
@@ -136,6 +137,7 @@ public:
         -> std::unique_ptr<const GCS> final;
     auto ProcessBlock(const block::bitcoin::Block& block) const noexcept
         -> bool final;
+    auto ProcessBlock(BlockIndexerData& data) const noexcept -> void;
     auto ProcessSyncData(const ParsedSyncData& data) const noexcept
         -> void final;
     auto ProcessSyncData(SyncClientFilterData& data) const noexcept -> void;
@@ -181,12 +183,12 @@ private:
     mutable std::recursive_mutex lock_;
     OTZMQPublishSocket new_filters_;
     const NotifyCallback cb_;
+    OTZMQPushSocket thread_pool_;
     mutable std::unique_ptr<FilterDownloader> filter_downloader_;
     mutable std::unique_ptr<HeaderDownloader> header_downloader_;
     mutable std::unique_ptr<BlockIndexer> block_indexer_;
     mutable Time last_sync_progress_;
     mutable JobCounter outstanding_jobs_;
-    OTZMQPushSocket thread_pool_;
     std::atomic_bool running_;
 
     auto new_tip(

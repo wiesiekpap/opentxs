@@ -8,6 +8,7 @@ add_subdirectory(bitcoin)
 set(cxx-sources
     blockoracle/Cache.cpp
     blockoracle/Mem.cpp
+    filteroracle/BlockIndexer.cpp
     peermanager/Jobs.cpp
     peermanager/Peers.cpp
     peermanager/ZMQ.cpp

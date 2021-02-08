@@ -8,6 +8,9 @@
 #include "blockchain/client/FilterOracle.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
+#include <chrono>
+#include <exception>
+#include <future>
 #include <iterator>
 #include <stdexcept>
 #include <tuple>
@@ -15,6 +18,7 @@
 #include <utility>
 #include <vector>
 
+#include "blockchain/DownloadTask.hpp"
 #include "blockchain/client/filteroracle/BlockIndexer.hpp"
 #include "blockchain/client/filteroracle/FilterCheckpoints.hpp"
 #include "blockchain/client/filteroracle/FilterDownloader.hpp"
@@ -37,7 +41,11 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/network/zeromq/Frame.hpp"
+#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "util/ScopeGuard.hpp"
 
 #define OT_METHOD "opentxs::blockchain::client::implementation::FilterOracle::"
 
@@ -127,11 +135,28 @@ FilterOracle::FilterOracle(
         return blockchain::internal::DefaultFilter(chain_);
     }())
     , lock_()
-    , new_filters_(api_.ZeroMQ().PublishSocket())
+    , new_filters_([&] {
+        auto socket = api_.ZeroMQ().PublishSocket();
+        auto started = socket->Start(
+            api_.Endpoints().InternalBlockchainFilterUpdated(chain_));
+
+        OT_ASSERT(started);
+
+        return socket;
+    }())
     , cb_([this](const auto type, const auto& pos) {
         auto lock = rLock{lock_};
         new_tip(lock, type, pos);
     })
+    , thread_pool_([&] {
+        auto socket =
+            api_.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Connect);
+        const auto started = socket->Start(blockchain.ThreadPool().Endpoint());
+
+        OT_ASSERT(started);
+
+        return socket;
+    }())
     , filter_downloader_([&]() -> std::unique_ptr<FilterDownloader> {
         if (config.download_cfilters_) {
             return std::make_unique<FilterDownloader>(
@@ -173,28 +198,20 @@ FilterOracle::FilterOracle(
                 header,
                 block,
                 network,
+                *this,
                 chain,
                 default_type_,
                 shutdown,
                 cb_,
-                [&](const auto type, const auto& block) {
-                    return process_block(type, block);
-                });
+                thread_pool_);
         } else {
             return {};
         }
     }())
     , last_sync_progress_()
     , outstanding_jobs_()
-    , thread_pool_(
-          api_.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Connect))
     , running_(true)
 {
-    auto zmq = new_filters_->Start(
-        api_.Endpoints().InternalBlockchainFilterUpdated(chain_));
-    zmq &= thread_pool_->Start(blockchain.ThreadPool().Endpoint());
-
-    OT_ASSERT(zmq);
     OT_ASSERT(cb_);
 
     compare_tips_to_header_chain();
@@ -435,27 +452,95 @@ auto FilterOracle::ProcessBlock(
     }
 }
 
+auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
+{
+    auto post = ScopeGuard{[&] { --data.job_counter_; }};
+    auto& task = data.incoming_data_;
+    const auto& [height, block] = task.position_;
+
+    try {
+        LogTrace(OT_METHOD)(__FUNCTION__)(": Calculating filter for ")(
+            DisplayString(chain_))(" block at height ")(height)
+            .Flush();
+        auto& [blockHashView, pGCS] = data.filter_data_;
+        auto& [blockHash, filterHeader, filterHashView] = data.header_data_;
+        blockHash = block;
+        blockHashView = blockHash->Bytes();
+        const auto pBlock = task.data_.get();
+
+        if (false == bool(pBlock)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load ")(
+                DisplayString(chain_))(" block #")(height)
+                .Flush();
+
+            throw std::runtime_error(
+                std::string{"failed to load block "} + blockHash->asHex());
+        }
+
+        pGCS = process_block(data.type_, *pBlock);
+
+        if (false == bool(pGCS)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to instantiate ")(
+                DisplayString(chain_))(" cfilter #")(height)
+                .Flush();
+
+            throw std::runtime_error("Failed to instantiate gcs");
+        }
+
+        const auto& gcs = *pGCS;
+        data.filter_hash_ = gcs.Hash();
+        filterHashView = data.filter_hash_->Bytes();
+        auto& previous = task.previous_;
+        constexpr auto limit = std::chrono::minutes{1};
+        using State = std::future_status;
+
+        if (auto status = previous.wait_for(limit); State::ready != status) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": Timeout waiting for previous ")(DisplayString(chain_))(
+                " cfheader #")(height - 1)
+                .Flush();
+
+            throw std::runtime_error("timeout");
+        }
+
+        filterHeader = gcs.Header(previous.get()->Bytes());
+
+        if (filterHeader->empty()) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": failed to calculate ")(
+                DisplayString(chain_))(" cfheader #")(height)
+                .Flush();
+
+            throw std::runtime_error("Failed to calculate cfheader");
+        }
+
+        LogTrace(OT_METHOD)(__FUNCTION__)(
+            ": Finished calculating cfheader and cfilter for ")(
+            DisplayString(chain_))(" block at height ")(height)
+            .Flush();
+        task.process(filter::pHeader{filterHeader});
+    } catch (...) {
+        task.process(std::current_exception());
+    }
+}
+
 auto FilterOracle::ProcessSyncData(const ParsedSyncData& parsed) const noexcept
     -> void
 {
-    auto jobCounter = outstanding_jobs_.Allocate();
-
-    OT_ASSERT(0 == jobCounter);
-
-    const auto& [prior, data] = parsed;
-    const auto items{data.size()};
-
-    OT_ASSERT(0 < items);
-
     auto filters = std::vector<internal::FilterDatabase::Filter>{};
     auto headers = std::vector<internal::FilterDatabase::Header>{};
     auto cache = std::vector<SyncClientFilterData>{};
-    filters.reserve(items);
-    headers.reserve(items);
-    cache.reserve(items);
+    const auto& [prior, data] = parsed;
     const auto filterType = std::get<2>(data.front());
 
-    try {
+    {
+        auto jobCounter = outstanding_jobs_.Allocate();
+        const auto count{data.size()};
+
+        OT_ASSERT(0 < count);
+
+        filters.reserve(count);
+        headers.reserve(count);
+        cache.reserve(count);
         auto previous = [&] {
             if (parsed.first->empty()) {
 
@@ -478,27 +563,28 @@ auto FilterOracle::ProcessSyncData(const ParsedSyncData& parsed) const noexcept
         }();
         static const auto blank = api_.Factory().Data();
         static const auto blankView = ReadView{};
-        auto prior{cache.begin()};
+        auto before{cache.begin()};
         auto first{true};
 
         for (auto i{data.begin()}; i != data.end(); std::advance(i, 1)) {
             auto& filter = filters.emplace_back(blankView, nullptr);
             auto& header = headers.emplace_back(blank, blank, blankView);
-            auto& task =
+            auto& job =
                 cache.emplace_back(blank, *i, filter, header, jobCounter, [&] {
                     if (first) {
                         first = false;
                         auto promise = std::promise<filter::pHeader>{};
                         auto post = ScopeGuard{[&] {
-                            prior = cache.begin();
+                            before = cache.begin();
                             promise.set_value(std::move(previous));
                         }};
 
                         return promise.get_future();
                     } else {
-                        auto post = ScopeGuard{[&] { std::advance(prior, 1); }};
+                        auto post =
+                            ScopeGuard{[&] { std::advance(before, 1); }};
 
-                        return prior->calculated_header_.get_future();
+                        return before->calculated_header_.get_future();
                     }
                 }());
 
@@ -512,50 +598,37 @@ auto FilterOracle::ProcessSyncData(const ParsedSyncData& parsed) const noexcept
             auto work = Pool::MakeWork(
                 api_, chain_, Pool::Work::SyncDataFiltersIncoming);
             work->AddFrame(reinterpret_cast<std::uintptr_t>(this));
-            work->AddFrame(reinterpret_cast<std::uintptr_t>(&task));
+            work->AddFrame(reinterpret_cast<std::uintptr_t>(&job));
             thread_pool_->Send(work);
             ++jobCounter;
         }
+    }
 
-        OT_ASSERT(items == filters.size());
-        OT_ASSERT(items == headers.size());
-        OT_ASSERT(items == cache.size());
-        OT_ASSERT(items == data.size());
-
+    try {
         auto future = cache.back().calculated_header_.get_future();
-        constexpr auto limit = std::chrono::minutes{1};
-        using State = std::future_status;
+        future.get();
+        const auto tip = [&] {
+            const auto& [hash, height, type, count, filter] =
+                parsed.second.back();
 
-        if (auto status = future.wait_for(limit); State::ready != status) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Timeout waiting for final job in ")(DisplayString(chain_))(
-                " cfheader batch")
+            return block::Position{height, hash};
+        }();
+        make_blank<block::Position>::value(api_);
+        const auto stored =
+            database_.StoreFilters(filterType, headers, filters, tip);
+
+        if (stored) {
+            LogDetail(DisplayString(chain_))(
+                " cfheader and cfilter chain updated to height ")(tip.first)
                 .Flush();
-
-            throw std::runtime_error("timeout");
+            cb_(filterType, tip);
+        } else {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Database error ").Flush();
         }
     } catch (const std::exception& e) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
         return;
-    }
-
-    const auto tip = [&] {
-        const auto& [hash, height, type, count, filter] = parsed.second.back();
-
-        return block::Position{height, hash};
-    }();
-    make_blank<block::Position>::value(api_);
-    const auto stored =
-        database_.StoreFilters(filterType, headers, filters, tip);
-
-    if (stored) {
-        LogDetail(DisplayString(chain_))(
-            " cfheader and cfilter chain updated to height ")(tip.first)
-            .Flush();
-        cb_(filterType, tip);
-    } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Database error ").Flush();
     }
 }
 
@@ -606,7 +679,7 @@ auto FilterOracle::ProcessSyncData(SyncClientFilterData& data) const noexcept
             throw std::runtime_error("timeout");
         }
 
-        filterHeader = gcs.Header(data.previous_header_.get()->Bytes());
+        filterHeader = gcs.Header(previous.get()->Bytes());
 
         if (filterHeader->empty()) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": failed to calculate ")(
@@ -776,7 +849,14 @@ namespace opentxs::blockchain::client::internal
 {
 auto FilterOracle::ProcessThreadPool(const zmq::Message& in) noexcept -> void
 {
+    const auto header = in.Header();
     const auto body = in.Body();
+
+    if (2 > header.size()) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message").Flush();
+
+        OT_FAIL;
+    }
 
     if (2 > body.size()) {
         LogOutput("opentxs::blockchain::client::internal:FilterOracle::")(
@@ -790,22 +870,34 @@ auto FilterOracle::ProcessThreadPool(const zmq::Message& in) noexcept -> void
 
     const auto* pFilterOracle =
         reinterpret_cast<Imp*>(body.at(0).as<std::uintptr_t>());
-    auto* pData = reinterpret_cast<Imp::SyncClientFilterData*>(
-        body.at(1).as<std::uintptr_t>());
 
     OT_ASSERT(nullptr != pFilterOracle);
-    OT_ASSERT(nullptr != pData);
 
     const auto& filterOracle = *pFilterOracle;
-    auto& data = *pData;
+    using Work = internal::ThreadPool::Work;
 
-    /* FIXME
-    auto postcondition = ScopeGuard{[&] {
-        data.running_.store(false);
-        data.task_finished_();
-    }};
-    */
+    switch (header.at(1).as<Work>()) {
+        case Work::SyncDataFiltersIncoming: {
+            auto* pData = reinterpret_cast<Imp::SyncClientFilterData*>(
+                body.at(1).as<std::uintptr_t>());
 
-    filterOracle.ProcessSyncData(data);
+            OT_ASSERT(nullptr != pData);
+
+            auto& data = *pData;
+            filterOracle.ProcessSyncData(data);
+        } break;
+        case Work::CalculateBlockFilters: {
+            auto* pData = reinterpret_cast<Imp::BlockIndexerData*>(
+                body.at(1).as<std::uintptr_t>());
+
+            OT_ASSERT(nullptr != pData);
+
+            auto& data = *pData;
+            filterOracle.ProcessBlock(data);
+        } break;
+        default: {
+            OT_FAIL;
+        }
+    }
 }
 }  // namespace opentxs::blockchain::client::internal

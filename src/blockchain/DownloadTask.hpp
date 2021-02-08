@@ -122,6 +122,33 @@ public:
             OT_FAIL;
         }
     }
+    auto process(std::exception_ptr p) const noexcept -> void
+    {
+        auto expect{State::Processing};
+
+        if (false == state_.compare_exchange_strong(expect, State::Update)) {
+            return;
+        }
+
+        LogVerbose("Redownloading ")(log_)(" job ")(id_)(" for block ")(
+            position_.second->asHex())(" at height ")(position_.first)
+            .Flush();
+        {
+            auto promise = std::promise<DownloadType>{};
+            download_.swap(promise);
+        }
+        {
+            try {
+                process_.set_exception(std::move(p));
+            } catch (...) {
+            }
+
+            auto promise = std::promise<FinishedType>{};
+            process_.swap(promise);
+        }
+        data_ = download_.get_future();
+        state_.store(State::New);
+    }
     // WARNING if redownloading is necessary call this function prior to and
     // instead of calling calling process()
     auto redownload() const noexcept -> void

@@ -87,6 +87,7 @@ auto Blockchain::ThreadPoolManager::callback(zmq::Message& in) noexcept -> void
         case Work::HDAccount: {
             Wallet::ProcessThreadPool(in);
         } break;
+        case Work::CalculateBlockFilters:
         case Work::SyncDataFiltersIncoming: {
             Filters::ProcessThreadPool(in);
         } break;

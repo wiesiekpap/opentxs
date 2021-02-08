@@ -8,6 +8,7 @@
 #include <boost/container/flat_map.hpp>
 #include <cstdint>
 #include <functional>
+#include <iosfwd>
 #include <map>
 #include <string>
 #include <tuple>

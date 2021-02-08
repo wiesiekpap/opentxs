@@ -12,7 +12,9 @@ extern "C" {
 }
 
 #include <algorithm>
+#include <cstddef>
 #include <cstring>
+#include <iterator>
 #include <map>
 #include <stdexcept>
 #include <type_traits>
