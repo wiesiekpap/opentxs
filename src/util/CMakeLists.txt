@@ -52,11 +52,22 @@ if(UNIX
 )
   target_compile_definitions(
     opentxs-util PRIVATE OS_SUPPORTS_LARGE_SPARSE_FILES=1
+                         OS_HAS_MEDIOCRE_SPARSE_FILE_SUPPORT=1
   )
 else()
   target_compile_definitions(
     opentxs-util PRIVATE OS_SUPPORTS_LARGE_SPARSE_FILES=0
   )
+
+  if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+    target_compile_definitions(
+      opentxs-util PRIVATE OS_HAS_MEDIOCRE_SPARSE_FILE_SUPPORT=1
+    )
+  else()
+    target_compile_definitions(
+      opentxs-util PRIVATE OS_HAS_MEDIOCRE_SPARSE_FILE_SUPPORT=0
+    )
+  endif()
 endif()
 
 add_dependencies(opentxs-util generated_code)
