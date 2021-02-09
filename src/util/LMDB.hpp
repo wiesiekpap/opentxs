@@ -23,11 +23,14 @@ extern "C" {
 
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Version.hpp"
+#include "util/ByteLiterals.hpp"
 
-#if defined(__x86_64__) || defined(__aarch64__) || defined(_WIN64)
-#define OT_LMDB_SIZE 16UL * 1024UL * 1024UL * 1024UL
+#if OS_SUPPORTS_LARGE_SPARSE_FILES
+#define OT_LMDB_SIZE 1_TiB
+#elif OS_HAS_MEDIOCRE_SPARSE_FILE_SUPPORT
+#define OT_LMDB_SIZE 16_GiB
 #else
-#define OT_LMDB_SIZE 384UL * 1024UL * 1024UL
+#define OT_LMDB_SIZE 512_MiB
 #endif
 
 namespace opentxs::storage::lmdb
