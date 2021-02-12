@@ -72,7 +72,7 @@ public:
         const ReadView txid,
         const FilterType type,
         const Patterns& txos,
-        const Patterns& elements) const noexcept -> Matches final;
+        const ParsedPatterns& elements) const noexcept -> Matches final;
     auto GetPatterns() const noexcept -> std::vector<PatternID> final;
     auto Keys() const noexcept -> std::vector<KeyID> final;
     auto NetBalanceChange(

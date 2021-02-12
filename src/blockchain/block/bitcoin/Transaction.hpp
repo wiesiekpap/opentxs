@@ -85,7 +85,7 @@ public:
         const api::client::Blockchain& blockchain,
         const FilterType type,
         const Patterns& txos,
-        const Patterns& elements) const noexcept -> Matches final;
+        const ParsedPatterns& elements) const noexcept -> Matches final;
     auto GetPatterns() const noexcept -> std::vector<PatternID> final;
     auto GetPreimageBTC(
         const std::size_t index,

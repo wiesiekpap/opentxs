@@ -95,6 +95,10 @@ public:
         return ui::UnitID(Widget::api_, chain_).str();
     }
     using AccountActivity::DepositAddress;
+    auto DepositAddress() const noexcept -> std::string final
+    {
+        return DepositAddress(chain_);
+    }
     auto DepositAddress(const blockchain::Type) const noexcept
         -> std::string final;
     auto DepositChains() const noexcept -> std::vector<blockchain::Type> final

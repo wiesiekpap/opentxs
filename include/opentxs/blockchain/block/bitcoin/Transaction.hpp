@@ -54,6 +54,7 @@ class Transaction
 public:
     using FilterType = block::Block::FilterType;
     using Patterns = block::Block::Patterns;
+    using ParsedPatterns = block::Block::ParsedPatterns;
     using Match = block::Block::Match;
     using Matches = block::Block::Matches;
     using SerializeType = proto::BlockchainTransaction;
@@ -76,7 +77,7 @@ public:
         const api::client::Blockchain& blockchain,
         const FilterType type,
         const Patterns& txos,
-        const Patterns& elements) const noexcept -> Matches = 0;
+        const ParsedPatterns& elements) const noexcept -> Matches = 0;
     OPENTXS_EXPORT virtual auto GetPatterns() const noexcept
         -> std::vector<PatternID> = 0;
     OPENTXS_EXPORT virtual auto ID() const noexcept -> const Txid& = 0;

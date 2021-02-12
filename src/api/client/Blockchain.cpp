@@ -138,6 +138,7 @@ const Blockchain::AddressReverseMap Blockchain::address_prefix_reverse_map_{
 const Blockchain::AddressMap Blockchain::address_prefix_map_{
     reverse_map(address_prefix_reverse_map_)};
 const Blockchain::StyleMap Blockchain::address_style_map_{
+    {{Style::P2PKH, Chain::UnitTest}, {Prefix::BitcoinTestnetP2PKH, {}}},
     {{Style::P2PKH, Chain::BitcoinCash_testnet3},
      {Prefix::BitcoinTestnetP2PKH, {}}},
     {{Style::P2PKH, Chain::BitcoinCash}, {Prefix::BitcoinP2PKH, {}}},
@@ -149,6 +150,7 @@ const Blockchain::StyleMap Blockchain::address_style_map_{
     {{Style::P2PKH, Chain::Litecoin}, {Prefix::LitecoinP2PKH, {}}},
     {{Style::P2PKH, Chain::PKT_testnet}, {Prefix::BitcoinTestnetP2PKH, {}}},
     {{Style::P2PKH, Chain::PKT}, {Prefix::PKTP2PKH, {}}},
+    {{Style::P2SH, Chain::UnitTest}, {Prefix::BitcoinTestnetP2SH, {}}},
     {{Style::P2SH, Chain::BitcoinCash_testnet3},
      {Prefix::BitcoinTestnetP2SH, {}}},
     {{Style::P2SH, Chain::BitcoinCash}, {Prefix::BitcoinP2SH, {}}},
@@ -160,7 +162,6 @@ const Blockchain::StyleMap Blockchain::address_style_map_{
      {Prefix::LitecoinP2SH, {Prefix::BitcoinP2SH}}},
     {{Style::P2SH, Chain::PKT_testnet}, {Prefix::BitcoinTestnetP2SH, {}}},
     {{Style::P2SH, Chain::PKT}, {Prefix::PKTP2SH, {}}},
-
 };
 const Blockchain::StyleReverseMap Blockchain::address_style_reverse_map_{
     ReturnType::reverse(address_style_map_)};
@@ -224,6 +225,13 @@ Blockchain::Blockchain(
 
         } else {
             output.download_cfilters_ = true;
+        }
+
+        try {
+            const auto& arg = args.at("disableblockchainwallet");
+
+            if (0 < arg.size()) { output.disable_wallet_ = true; }
+        } catch (...) {
         }
 
         return output;
@@ -530,7 +538,8 @@ auto Blockchain::bip44_type(const proto::ContactItemType type) const noexcept
         case proto::CITEMTYPE_TNNXT:
         case proto::CITEMTYPE_TNSC:
         case proto::CITEMTYPE_TNSTEEM:
-        case proto::CITEMTYPE_TNPKT: {
+        case proto::CITEMTYPE_TNPKT:
+        case proto::CITEMTYPE_REGTEST: {
             return Bip44Type::TESTNET;
         }
         default: {

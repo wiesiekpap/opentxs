@@ -20,6 +20,7 @@
 #include "blockchain/bitcoin/CompactSize.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/block/Block.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -509,6 +510,7 @@ auto Transaction::ExtractElements(const filter::Type style) const noexcept
     LogTrace(OT_METHOD)(__FUNCTION__)(": extracted ")(output.size())(
         " total elements")
         .Flush();
+    std::sort(output.begin(), output.end());
 
     return output;
 }
@@ -517,9 +519,17 @@ auto Transaction::FindMatches(
     const api::client::Blockchain& blockchain,
     const FilterType style,
     const Patterns& txos,
-    const Patterns& elements) const noexcept -> Matches
+    const ParsedPatterns& elements) const noexcept -> Matches
 {
+    LogTrace(OT_METHOD)(__FUNCTION__)(": Verifying ")(
+        elements.data_.size() + txos.size())(" potential matches in ")(
+        inputs_->size())(" inputs for transaction ")(txid_->asHex())
+        .Flush();
     auto output = inputs_->FindMatches(txid_->Bytes(), style, txos, elements);
+    LogTrace(OT_METHOD)(__FUNCTION__)(": Verifying ")(
+        elements.data_.size() + txos.size())(" potential matches in ")(
+        inputs_->size())(" output for transaction ")(txid_->asHex())
+        .Flush();
     auto temp =
         outputs_->FindMatches(blockchain, txid_->Bytes(), style, elements);
     output.insert(

@@ -14,11 +14,8 @@
 
 #define PROTO_NAME "storage blockchain account list"
 
-namespace opentxs
+namespace opentxs::proto
 {
-namespace proto
-{
-
 auto CheckProto_1(const StorageBlockchainAccountList& input, const bool silent)
     -> bool
 {
@@ -27,7 +24,9 @@ auto CheckProto_1(const StorageBlockchainAccountList& input, const bool silent)
     const bool validChain =
         ValidContactItemType({6, CONTACTSECTION_CONTRACT}, input.id());
 
-    if (false == validChain) { FAIL_1("invalid chain") }
+    if ((false == validChain) && (input.id() != CITEMTYPE_REGTEST)) {
+        FAIL_1("invalid chain")
+    }
 
     for (const auto& it : input.list()) {
         if (MIN_PLAUSIBLE_IDENTIFIER > it.size()) {
@@ -155,5 +154,4 @@ auto CheckProto_20(const StorageBlockchainAccountList& input, const bool silent)
 {
     UNDEFINED_VERSION(20)
 }
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

@@ -77,7 +77,7 @@ public:
         const api::client::Blockchain& blockchain,
         const ReadView txid,
         const FilterType type,
-        const Patterns& elements) const noexcept -> Matches final;
+        const ParsedPatterns& elements) const noexcept -> Matches final;
     auto GetPatterns() const noexcept -> std::vector<PatternID> final;
     auto NetBalanceChange(
         const api::client::Blockchain& blockchain,

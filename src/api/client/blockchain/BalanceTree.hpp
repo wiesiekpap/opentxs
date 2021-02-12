@@ -76,7 +76,9 @@ public:
         return imported_;
     }
     auto GetNextChangeKey(const PasswordPrompt& reason) const noexcept(false)
-        -> const blockchain::BalanceNode::Element& final;
+        -> const Element& final;
+    auto GetNextDepositKey(const PasswordPrompt& reason) const noexcept(false)
+        -> const Element& final;
     auto GetPaymentCode() const noexcept -> const PaymentCodeAccounts& final
     {
         return payment_code_;
@@ -261,8 +263,9 @@ private:
 
     void init(const std::set<OTIdentifier>& HDAccounts) noexcept;
 
-    auto find_best_deposit_address() const noexcept
-        -> const blockchain::BalanceNode::Element&;
+    auto find_best_deposit_address() const noexcept -> const Element&;
+    auto find_next_element(Subchain subchain, const PasswordPrompt& reason)
+        const noexcept(false) -> const Element&;
 
     BalanceTree() = delete;
     BalanceTree(const BalanceTree&) = delete;

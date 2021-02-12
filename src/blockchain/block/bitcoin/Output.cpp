@@ -305,10 +305,13 @@ auto Output::FindMatches(
     const api::client::Blockchain& blockchain,
     const ReadView txid,
     const FilterType type,
-    const Patterns& patterns) const noexcept -> Matches
+    const ParsedPatterns& patterns) const noexcept -> Matches
 {
     const auto output =
         SetIntersection(api_, txid, patterns, ExtractElements(type));
+    LogTrace(OT_METHOD)(__FUNCTION__)(": Verified ")(output.size())(
+        " pattern matches")
+        .Flush();
     std::for_each(
         std::begin(output), std::end(output), [this](const auto& match) {
             const auto& [txid, element] = match;

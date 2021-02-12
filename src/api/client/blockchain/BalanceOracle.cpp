@@ -86,8 +86,11 @@ auto Blockchain::BalanceOracle::cb(
         socket_->Send(message);
     }};
     const auto chain = chainFrame.as<Chain>();
+    const auto unsupported =
+        (0 == opentxs::blockchain::SupportedChains().count(chain)) &&
+        (Chain::UnitTest != chain);
 
-    if (0 == opentxs::blockchain::SupportedChains().count(chain)) { return; }
+    if (unsupported) { return; }
 
     try {
         const auto& network = parent_.GetChain(chain);

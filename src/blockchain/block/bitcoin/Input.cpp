@@ -704,6 +704,7 @@ auto Input::ExtractElements(const filter::Type style) const noexcept
     LogTrace(OT_METHOD)(__FUNCTION__)(": extracted ")(output.size())(
         " elements")
         .Flush();
+    std::sort(output.begin(), output.end());
 
     return output;
 }
@@ -712,15 +713,21 @@ auto Input::FindMatches(
     const ReadView txid,
     const FilterType type,
     const Patterns& txos,
-    const Patterns& patterns) const noexcept -> Matches
+    const ParsedPatterns& patterns) const noexcept -> Matches
 {
     auto output = SetIntersection(api_, txid, patterns, ExtractElements(type));
+    LogTrace(OT_METHOD)(__FUNCTION__)(": Verified ")(output.size())(
+        " pattern matches")
+        .Flush();
 
     if (0 < txos.size()) {
         auto outpoint = std::vector<Space>{};
         auto it = reinterpret_cast<const std::byte*>(&previous_);
         outpoint.emplace_back(it, it + sizeof(previous_));
         auto temp = SetIntersection(api_, txid, txos, outpoint);
+        LogTrace(OT_METHOD)(__FUNCTION__)(": Verified ")(temp.size())(
+            " outpoint matches")
+            .Flush();
         output.insert(
             output.end(),
             std::make_move_iterator(temp.begin()),

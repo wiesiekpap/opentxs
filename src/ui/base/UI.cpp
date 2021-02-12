@@ -74,6 +74,9 @@ auto Chain(const api::Core& api, const Identifier& account) noexcept
             for (const auto& chain : blockchain::SupportedChains()) {
                 data.emplace(AccountID(api, chain), chain);
             }
+
+            constexpr auto chain{blockchain::Type::UnitTest};
+            data.emplace(AccountID(api, chain), chain);
         }
     }
 

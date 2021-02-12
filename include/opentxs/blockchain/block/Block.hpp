@@ -37,6 +37,8 @@ public:
     using Match = std::pair<pTxid, ElementID>;
     using Matches = std::vector<Match>;
 
+    struct ParsedPatterns;
+
     OPENTXS_EXPORT virtual auto CalculateSize() const noexcept
         -> std::size_t = 0;
     OPENTXS_EXPORT virtual auto ExtractElements(

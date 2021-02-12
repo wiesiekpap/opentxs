@@ -212,35 +212,43 @@ auto parse_normal_block(
 
 namespace opentxs::blockchain::block
 {
+Block::ParsedPatterns::ParsedPatterns(const Block::Patterns& in) noexcept
+    : data_()
+    , map_()
+{
+    data_.reserve(in.size());
+
+    for (auto i{in.cbegin()}; i != in.cend(); std::advance(i, 1)) {
+        const auto& [elementID, data] = *i;
+        map_.emplace(reader(data), i);
+        data_.emplace_back(data);
+    }
+
+    std::sort(data_.begin(), data_.end());
+}
+
 auto SetIntersection(
     const api::Core& api,
     const ReadView txid,
-    const Block::Patterns& patterns,
+    const Block::ParsedPatterns& parsed,
     const std::vector<Space>& compare) noexcept -> Block::Matches
 {
-    auto test = std::vector<Space>{};
-    auto map = std::map<ReadView, Block::Patterns::const_iterator>{};
-
-    for (auto i{patterns.cbegin()}; i != patterns.cend(); std::advance(i, 1)) {
-        const auto& [elementID, data] = *i;
-        map.emplace(reader(data), i);
-        test.emplace_back(data);
-    }
-
     auto matches = std::vector<Space>{};
     auto output = Block::Matches{};
     std::set_intersection(
-        std::begin(test),
-        std::end(test),
+        std::begin(parsed.data_),
+        std::end(parsed.data_),
         std::begin(compare),
         std::end(compare),
         std::back_inserter(matches));
+    output.reserve(matches.size());
     std::transform(
         std::begin(matches),
         std::end(matches),
         std::back_inserter(output),
         [&](const auto& match) -> Block::Match {
-            return {api.Factory().Data(txid), map.at(reader(match))->first};
+            return {
+                api.Factory().Data(txid), parsed.map_.at(reader(match))->first};
         });
 
     return output;
@@ -488,6 +496,7 @@ auto Block::ExtractElements(const FilterType style) const noexcept
     LogTrace(OT_METHOD)(__FUNCTION__)(": extracted ")(output.size())(
         " elements")
         .Flush();
+    std::sort(output.begin(), output.end());
 
     return output;
 }
@@ -500,10 +509,15 @@ auto Block::FindMatches(
 {
     if (0 == (outpoints.size() + patterns.size())) { return {}; }
 
+    LogTrace(OT_METHOD)(__FUNCTION__)(": Verifying ")(
+        patterns.size() + outpoints.size())(" potential matches in ")(
+        transactions_.size())(" transactions")
+        .Flush();
     auto output = Matches{};
+    const auto parsed = ParsedPatterns{patterns};
 
     for (const auto& [txid, tx] : transactions_) {
-        auto temp = tx->FindMatches(blockchain, style, outpoints, patterns);
+        auto temp = tx->FindMatches(blockchain, style, outpoints, parsed);
         output.insert(
             output.end(),
             std::make_move_iterator(temp.begin()),

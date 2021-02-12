@@ -15,13 +15,10 @@
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "protobuf/Check.hpp"
 
-#define PROTO_NAME "blockchain account"
+#define PROTO_NAME "hd account"
 
-namespace opentxs
+namespace opentxs::proto
 {
-namespace proto
-{
-
 auto CheckProto_1(const HDAccount& input, const bool silent) -> bool
 {
     CHECK_IDENTIFIER(id)
@@ -29,7 +26,9 @@ auto CheckProto_1(const HDAccount& input, const bool silent) -> bool
     const bool validChain =
         ValidContactItemType({6, CONTACTSECTION_CONTRACT}, input.type());
 
-    if (false == validChain) { FAIL_1("invalid type") }
+    if ((false == validChain) && (input.type() != CITEMTYPE_REGTEST)) {
+        FAIL_1("invalid type")
+    }
 
     CHECK_SUBOBJECT(path, HDAccountAllowedHDPath())
     CHECK_SUBOBJECTS(internaladdress, HDAccountAllowedBlockchainAddress())
@@ -133,5 +132,4 @@ auto CheckProto_20(const HDAccount& input, const bool silent) -> bool
 {
     UNDEFINED_VERSION(20)
 }
-}  // namespace proto
-}  // namespace opentxs
+}  // namespace opentxs::proto

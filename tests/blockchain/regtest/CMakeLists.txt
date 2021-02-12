@@ -19,3 +19,7 @@ if(NOT WIN32)
     unittests-opentxs-blockchain-regtest-sync-server Test_sync_server.cpp
   )
 endif()
+
+add_opentx_test(
+  unittests-opentxs-blockchain-regtest-send-receive-hd Test_send_hd.cpp
+)

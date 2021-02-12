@@ -11,6 +11,7 @@ boost-interprocess
 boost-iostreams
 boost-lexical-cast
 boost-multiprecision
+boost-program-options
 boost-stacktrace
 boost-system
 boost-thread

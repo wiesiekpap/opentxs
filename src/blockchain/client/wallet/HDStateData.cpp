@@ -217,8 +217,8 @@ auto HDStateData::process() noexcept -> void
     const auto pBlock = it->second.get();
 
     if (false == bool(pBlock)) {
-        LogVerbose("opentxs::blockchain::client::internal::")(__FUNCTION__)(
-            ": Invalid block ")(blockHash.asHex())
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": Invalid block ")(
+            blockHash.asHex())
             .Flush();
         auto& vector = blocks_to_request_;
         vector.emplace(vector.begin(), blockHash);
@@ -262,13 +262,13 @@ auto HDStateData::process() noexcept -> void
     const auto& header = *pHeader;
     update_utxos(block, header.Position(), confirmed);
     const auto [balance, unconfirmed] = db_.GetBalance();
-    LogVerbose("opentxs::blockchain::client::internal::")(__FUNCTION__)(
-        ": block ")(blockHash.asHex())(" processed in ")(
-        std::chrono::duration_cast<std::chrono::milliseconds>(
-            Clock::now() - start)
-            .count())(" milliseconds. ")(confirmed.size())(" of ")(
-        potential.size())(" potential matches confirmed. Wallet balance is: ")(
-        unconfirmed)(" (")(balance)(" confirmed)")
+    LogVerbose(OT_METHOD)(__FUNCTION__)(": block ")(blockHash.asHex())(
+        " processed in ")(std::chrono::duration_cast<std::chrono::milliseconds>(
+                              Clock::now() - start)
+                              .count())(" milliseconds. ")(confirmed.size())(
+        " of ")(potential.size())(
+        " potential matches confirmed. Wallet balance is: ")(unconfirmed)(" (")(
+        balance)(" confirmed)")
         .Flush();
     db_.SubchainMatchBlock(
         node_.ID(), subchain_, filter_type_, tested, blockHash.Bytes());

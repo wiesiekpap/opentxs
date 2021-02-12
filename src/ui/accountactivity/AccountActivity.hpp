@@ -108,7 +108,7 @@ public:
         return contract_.get();
     }
 #if OT_BLOCKCHAIN
-    auto DepositAddress() const noexcept -> std::string final
+    auto DepositAddress() const noexcept -> std::string override
     {
         return DepositAddress(blockchain::Type::Unknown);
     }

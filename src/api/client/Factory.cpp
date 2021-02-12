@@ -97,7 +97,7 @@ auto Factory::BitcoinBlock(
 auto Factory::BitcoinGenerationTransaction(
     const opentxs::blockchain::Type chain,
     const opentxs::blockchain::block::Height height,
-    std::vector<OutputBuilder> scripts,
+    std::vector<OutputBuilder>&& scripts,
     const std::string& coinbase,
     const std::int32_t version) const noexcept -> Transaction_p
 {

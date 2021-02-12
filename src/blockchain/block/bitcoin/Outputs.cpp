@@ -136,6 +136,7 @@ auto Outputs::ExtractElements(const filter::Type style) const noexcept
     LogTrace(OT_METHOD)(__FUNCTION__)(": extracted ")(output.size())(
         " elements")
         .Flush();
+    std::sort(output.begin(), output.end());
 
     return output;
 }
@@ -144,12 +145,16 @@ auto Outputs::FindMatches(
     const api::client::Blockchain& blockchain,
     const ReadView txid,
     const FilterType type,
-    const Patterns& patterns) const noexcept -> Matches
+    const ParsedPatterns& patterns) const noexcept -> Matches
 {
     auto output = Matches{};
+    auto index{-1};
 
     for (const auto& txout : *this) {
         auto temp = txout.FindMatches(blockchain, txid, type, patterns);
+        LogTrace(OT_METHOD)(__FUNCTION__)(": Verified ")(temp.size())(
+            " matches in output ")(++index)
+            .Flush();
         output.insert(
             output.end(),
             std::make_move_iterator(temp.begin()),
