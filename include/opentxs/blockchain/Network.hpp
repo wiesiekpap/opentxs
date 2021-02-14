@@ -24,6 +24,7 @@ class Block;
 
 namespace client
 {
+class BlockOracle;
 class FilterOracle;
 class HeaderOracle;
 }  // namespace client
@@ -49,6 +50,8 @@ public:
         -> bool = 0;
     OPENTXS_EXPORT virtual auto AddPeer(
         const p2p::Address& address) const noexcept -> bool = 0;
+    OPENTXS_EXPORT virtual auto BlockOracle() const noexcept
+        -> const client::BlockOracle& = 0;
     OPENTXS_EXPORT virtual auto FilterOracle() const noexcept
         -> const client::FilterOracle& = 0;
     OPENTXS_EXPORT virtual auto GetBalance() const noexcept -> Balance = 0;

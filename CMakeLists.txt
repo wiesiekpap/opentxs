@@ -236,6 +236,10 @@ find_package(
   OPTIONAL_COMPONENTS stacktrace_basic
 )
 
+if(OPENTXS_BUILD_TESTS)
+  find_package(Boost 1.73.0 REQUIRED COMPONENTS program_options)
+endif()
+
 if(OT_USE_VCPKG_TARGETS)
   find_package(ZeroMQ REQUIRED)
 else()

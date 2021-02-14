@@ -197,7 +197,7 @@ public:
     OPENTXS_EXPORT virtual auto BitcoinGenerationTransaction(
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::block::Height height,
-        std::vector<OutputBuilder> outputs,
+        std::vector<OutputBuilder>&& outputs,
         const std::string& coinbase = {},
         const std::int32_t version = 1) const noexcept -> Transaction_p = 0;
     OPENTXS_EXPORT virtual auto BitcoinScriptNullData(

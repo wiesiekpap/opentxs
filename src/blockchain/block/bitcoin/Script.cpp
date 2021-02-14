@@ -657,6 +657,7 @@ auto Script::ExtractElements(const filter::Type style) const noexcept
     LogTrace(OT_METHOD)(__FUNCTION__)(": extracted ")(output.size())(
         " elements")
         .Flush();
+    std::sort(output.begin(), output.end());
 
     return output;
 }

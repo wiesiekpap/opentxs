@@ -4,11 +4,23 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <iostream>
 
+#include "Cli.hpp"
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 
 int main(int argc, char** argv)
 {
+    auto parser = ArgumentParser{};
+    parser.parse(
+        argc, argv, const_cast<ot::ArgList&>(OTTestEnvironment::test_args_));
+
+    if (parser.show_help_) {
+        std::cout << parser.options() << "\n";
+
+        return 0;
+    }
+
     ::testing::AddGlobalTestEnvironment(new OTTestEnvironment());
     ::testing::InitGoogleTest(&argc, argv);
 

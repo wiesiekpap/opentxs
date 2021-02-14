@@ -794,7 +794,7 @@ const Data::ChainData Data::chains_{
     {blockchain::Type::UnitTest,
      {false,
       true,
-      opentxs::proto::CITEMTYPE_ERROR,
+      opentxs::proto::CITEMTYPE_REGTEST,
       "Unit Test Simulation",
       "UNITTEST",
       545259519,  // 0x207fffff

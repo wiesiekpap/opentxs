@@ -179,7 +179,12 @@ public:
                                      }()};
             const auto& [height, hash] = position;
 
-            if (height == target_) { promise_.set_value(std::move(position)); }
+            if (height == target_) {
+                try {
+                    promise_.set_value(std::move(position));
+                } catch (...) {
+                }
+            }
         }))
         , socket_(api_.ZeroMQ().SubscribeSocket(cb_))
     {
@@ -512,7 +517,12 @@ public:
             auto lock = ot::Lock{lock_};
             const auto height = body.at(2).as<Height>();
 
-            if (height == target_) { promise_.set_value(height); }
+            if (height == target_) {
+                try {
+                    promise_.set_value(height);
+                } catch (...) {
+                }
+            }
         }))
         , socket_(api_.ZeroMQ().SubscribeSocket(cb_))
     {
@@ -673,6 +683,8 @@ protected:
                   auto& level = args[OPENTXS_ARG_BLOCK_STORAGE_LEVEL];
                   level.clear();
                   level.emplace("2");
+                  auto& wallet = args["disableblockchainwallet"];
+                  wallet.emplace("true");
 
                   return args;
               }(),

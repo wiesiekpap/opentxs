@@ -262,7 +262,7 @@ public:
     auto BitcoinGenerationTransaction(
         [[maybe_unused]] const opentxs::blockchain::Type chain,
         [[maybe_unused]] const opentxs::blockchain::block::Height height,
-        [[maybe_unused]] std::vector<OutputBuilder> outputs,
+        [[maybe_unused]] std::vector<OutputBuilder>&& outputs,
         [[maybe_unused]] const std::string& coinbase,
         [[maybe_unused]] const std::int32_t version) const noexcept
         -> Transaction_p override

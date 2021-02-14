@@ -440,12 +440,17 @@ auto Network::process_filter_update(network::zeromq::Message& in) noexcept
     const auto target = this->target();
 
     {
-        const auto progress = (double(height) / double(target)) * double{100};
+        const auto progress =
+            (0 == target) ? double{0}
+                          : ((double(height) / double(target)) * double{100});
         auto display = std::stringstream{};
         display << std::setprecision(3) << progress << "%";
-        LogNormal(DisplayString(chain_))(" chain sync progress: ")(height)(
-            " of ")(target)(" (")(display.str())(")")
-            .Flush();
+
+        if (false == config_.disable_wallet_) {
+            LogNormal(DisplayString(chain_))(" chain sync progress: ")(height)(
+                " of ")(target)(" (")(display.str())(")")
+                .Flush();
+        }
     }
 
     blockchain_.ReportProgress(chain_, height, target);

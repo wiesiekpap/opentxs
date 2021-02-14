@@ -303,6 +303,12 @@ auto AccountList::startup() noexcept -> void
             subscribe(chain);
         }
     }
+
+    constexpr auto chain{blockchain::Type::UnitTest};
+
+    if (0 < Widget::api_.Blockchain().AccountList(primary_id_, chain).size()) {
+        subscribe(chain);
+    }
 #endif  // OT_BLOCKCHAIN
 
     finish_startup();

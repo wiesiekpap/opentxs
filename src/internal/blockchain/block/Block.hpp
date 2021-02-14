@@ -5,16 +5,27 @@
 
 #pragma once
 
+#include <map>
+#include <vector>
+
+#include "opentxs/Bytes.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 
 namespace opentxs::blockchain::block
 {
+struct Block::ParsedPatterns {
+    std::vector<Space> data_;
+    std::map<ReadView, Patterns::const_iterator> map_;
+
+    ParsedPatterns(const Block::Patterns& in) noexcept;
+};
+
 auto SetIntersection(
     const api::Core& api,
     const ReadView txid,
-    const Block::Patterns& patterns,
+    const Block::ParsedPatterns& patterns,
     const std::vector<Space>& compare) noexcept -> Block::Matches;
 }  // namespace opentxs::blockchain::block
 

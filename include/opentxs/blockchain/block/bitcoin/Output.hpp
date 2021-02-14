@@ -37,7 +37,7 @@ class Output
 public:
     using ContactID = OTIdentifier;
     using FilterType = Transaction::FilterType;
-    using Patterns = Transaction::Patterns;
+    using ParsedPatterns = Transaction::ParsedPatterns;
     using Match = Transaction::Match;
     using Matches = Transaction::Matches;
     using KeyID = api::client::blockchain::Key;
@@ -51,7 +51,7 @@ public:
         const api::client::Blockchain& blockchain,
         const ReadView txid,
         const FilterType type,
-        const Patterns& elements) const noexcept -> Matches = 0;
+        const ParsedPatterns& elements) const noexcept -> Matches = 0;
     OPENTXS_EXPORT virtual auto GetPatterns() const noexcept
         -> std::vector<PatternID> = 0;
     OPENTXS_EXPORT virtual auto Note(const api::client::Blockchain& blockchain)

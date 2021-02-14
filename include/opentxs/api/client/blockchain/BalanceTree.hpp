@@ -80,10 +80,15 @@ public:
         OPENTXS_EXPORT virtual ~PaymentCodeAccounts() = default;
     };
 
+    using Element = blockchain::BalanceNode::Element;
+
     OPENTXS_EXPORT virtual const HDAccounts& GetHD() const noexcept = 0;
     /// Throws std::out_of_range if no keys are available
-    OPENTXS_EXPORT virtual const blockchain::BalanceNode::Element&
-    GetNextChangeKey(const PasswordPrompt& reason) const noexcept(false) = 0;
+    OPENTXS_EXPORT virtual const Element& GetNextChangeKey(
+        const PasswordPrompt& reason) const noexcept(false) = 0;
+    /// Throws std::out_of_range if no keys are available
+    OPENTXS_EXPORT virtual const Element& GetNextDepositKey(
+        const PasswordPrompt& reason) const noexcept(false) = 0;
     OPENTXS_EXPORT virtual std::string GetDepositAddress(
         const std::string& memo = "") const noexcept = 0;
     OPENTXS_EXPORT virtual std::string GetDepositAddress(

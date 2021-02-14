@@ -217,6 +217,7 @@ enum ContactItemType {
     CITEMTYPE_ETHEREUM_POA = 189;
     CITEMTYPE_PKT = 190;
     CITEMTYPE_TNPKT = 191;
+    CITEMTYPE_REGTEST = 192;
 }
 
 enum ContactItemAttribute {

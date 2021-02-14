@@ -74,8 +74,11 @@ private:
     friend Nym;
 
     struct BlockchainThreadIndex {
+        using Txid = OTData;
+        using ThreadID = OTIdentifier;
+
         mutable std::mutex lock_{};
-        std::map<OTData, std::set<OTIdentifier>> map_{};
+        std::map<Txid, std::set<ThreadID>> map_{};
     };
 
     mutable std::map<std::string, std::unique_ptr<storage::Thread>> threads_;

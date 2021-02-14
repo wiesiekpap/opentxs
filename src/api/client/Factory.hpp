@@ -147,7 +147,7 @@ public:
     auto BitcoinGenerationTransaction(
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::block::Height height,
-        std::vector<OutputBuilder> outputs,
+        std::vector<OutputBuilder>&& outputs,
         const std::string& coinbase,
         const std::int32_t version) const noexcept -> Transaction_p final;
     auto BitcoinTransaction(

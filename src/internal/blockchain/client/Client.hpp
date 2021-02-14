@@ -511,8 +511,6 @@ struct Network : virtual public opentxs::blockchain::Network {
 
     virtual auto Blockchain() const noexcept
         -> const api::client::internal::Blockchain& = 0;
-    virtual auto BlockOracle() const noexcept
-        -> const internal::BlockOracle& = 0;
     virtual auto BroadcastTransaction(
         const block::bitcoin::Transaction& tx) const noexcept -> bool = 0;
     virtual auto Chain() const noexcept -> Type = 0;

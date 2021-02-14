@@ -78,10 +78,7 @@ public:
     {
         return StorageBox::BLOCKCHAIN;
     }
-    auto UUID() const noexcept -> std::string final
-    {
-        return row_id_.first->str();
-    }
+    auto UUID() const noexcept -> std::string final { return txid_->asHex(); }
     auto Workflow() const noexcept -> std::string final { return {}; }
 
     BlockchainBalanceItem(

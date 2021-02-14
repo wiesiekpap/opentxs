@@ -10,7 +10,9 @@ function(add_opentx_test_target target_name cxx-sources)
   )
 
   add_executable(${target_name} ${cxx-sources})
-  target_link_libraries(${target_name} PRIVATE opentxs::libopentxs)
+  target_link_libraries(
+    ${target_name} PRIVATE opentxs::libopentxs Boost::program_options
+  )
 
   if(OT_USE_VCPKG_TARGETS)
     target_link_libraries(${target_name} PRIVATE GTest::gtest)
