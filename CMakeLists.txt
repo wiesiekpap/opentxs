@@ -332,7 +332,20 @@ endif()
 # Source Definitions
 
 set_common_defines()
-hide_symbols("OPENTXS_EXPORT")
+
+if((CMAKE_BUILD_TYPE STREQUAL "Debug") AND (NOT WIN32))
+  set(OPENTXS_HIDDEN_SYMBOLS OFF)
+else()
+  set(OPENTXS_HIDDEN_SYMBOLS ON)
+endif()
+
+if(OPENTXS_HIDDEN_SYMBOLS)
+  hide_symbols("OPENTXS_EXPORT")
+else()
+  add_compile_definitions(
+    "OPENTXS_EXPORT=__attribute__((visibility(\"default\")))"
+  )
+endif()
 
 if(APPLE)
   add_definitions(-DBOOST_STACKTRACE_GNU_SOURCE_NOT_REQUIRED)

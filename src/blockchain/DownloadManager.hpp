@@ -64,6 +64,12 @@ protected:
     using DownloadedData = typename BatchType::Vector;
     using TaskType = typename BatchType::TaskType;
 
+    auto buffer_size() const noexcept
+    {
+        auto lock = Lock{dm_lock_};
+
+        return buffer_.size();
+    }
     // WARNING Call known() and update_position() from the same thread.
     auto known() const noexcept { return dm_known_; }
 
