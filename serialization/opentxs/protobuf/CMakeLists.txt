@@ -165,9 +165,13 @@ set(PROTO_SOURCES
     ZMQEnums.proto
 )
 
-protobuf_generate_cpp(
-  PROTO_SRC PROTO_HEADER EXPORT_MACRO OPENTXS_EXPORT ${PROTO_SOURCES}
-)
+if(OPENTXS_HIDDEN_SYMBOLS)
+  protobuf_generate_cpp(
+    PROTO_SRC PROTO_HEADER EXPORT_MACRO OPENTXS_EXPORT ${PROTO_SOURCES}
+  )
+else()
+  protobuf_generate_cpp(PROTO_SRC PROTO_HEADER ${PROTO_SOURCES})
+endif()
 
 add_library(messages OBJECT ${PROTO_SRC} ${PROTO_HEADER})
 add_library(opentxs::messages ALIAS messages)
