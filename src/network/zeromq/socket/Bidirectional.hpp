@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <zmq.h>
+#include <memory>
 #include <mutex>
 #include <string>
 
@@ -43,10 +45,12 @@ protected:
     ~Bidirectional() override = default;
 
 private:
+    using RawSocket = std::unique_ptr<void, decltype(&::zmq_close)>;
+
     const bool bidirectional_start_thread_;
     const std::string endpoint_;
-    void* push_socket_;
-    void* pull_socket_;
+    RawSocket push_socket_;
+    RawSocket pull_socket_;
     mutable int linger_;
     mutable int send_timeout_;
     mutable int receive_timeout_;

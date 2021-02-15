@@ -87,7 +87,7 @@ public:
     auto Process(const proto::RPCCommand& command) const
         -> proto::RPCResponse final;
 
-    ~RPC() final = default;
+    ~RPC() final;
 
 private:
     friend opentxs::Factory;

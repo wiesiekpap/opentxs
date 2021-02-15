@@ -9,6 +9,7 @@
 
 #include <chrono>
 #include <exception>
+#include <iterator>
 #include <optional>
 #include <stdexcept>
 #include <thread>
