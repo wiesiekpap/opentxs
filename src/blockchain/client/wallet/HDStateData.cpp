@@ -406,7 +406,8 @@ auto HDStateData::update_utxos(
             std::vector<Bip32Index>,
             const block::bitcoin::Transaction*>>{};
 
-    for (const auto& [txid, elementID] : matches) {
+    for (const auto& match : matches) {
+        const auto& [txid, elementID] = match;
         const auto& [index, subchainID] = elementID;
         const auto& [subchain, accountID] = subchainID;
         const auto& element = node_.BalanceElement(subchain, index);
@@ -416,6 +417,9 @@ auto HDStateData::update_utxos(
 
         auto& arg = transactions[txid];
         auto& [outputs, pTX] = arg;
+        auto postcondition = ScopeGuard{[&] {
+            if (nullptr == arg.second) { transactions.erase(match.first); }
+        }};
         const auto& transaction = *pTransaction;
         auto i = Bip32Index{0};
 
@@ -482,6 +486,9 @@ auto HDStateData::update_utxos(
 
     for (const auto& [txid, data] : transactions) {
         auto& [outputs, pTX] = data;
+
+        OT_ASSERT(nullptr != pTX);
+
         auto updated = db_.AddConfirmedTransaction(
             network_.Chain(),
             node_.ID(),

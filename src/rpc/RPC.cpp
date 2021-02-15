@@ -2075,4 +2075,11 @@ void RPC::task_handler(const zmq::Message& in)
     output->AddFrame(message);
     rpc_publisher_->Send(output);
 }
+
+RPC::~RPC()
+{
+    task_subscriber_->Close();
+    rpc_publisher_->Close();
+    push_receiver_->Close();
+}
 }  // namespace opentxs::rpc::implementation

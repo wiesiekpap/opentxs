@@ -9,6 +9,7 @@
 
 #include <zmq.h>
 #include <memory>
+#include <set>
 #include <stdexcept>
 
 #include "internal/network/zeromq/socket/Socket.hpp"

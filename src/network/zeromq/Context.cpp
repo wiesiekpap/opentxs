@@ -358,6 +358,10 @@ auto Context::TaggedReply(
 
 Context::~Context()
 {
-    if (nullptr != context_) { zmq_ctx_shutdown(context_); }
+    if (nullptr != context_) {
+        zmq_ctx_shutdown(context_);
+        // FIXME find the socket that is blocking this: zmq_ctx_term(context_);
+        context_ = nullptr;
+    }
 }
 }  // namespace opentxs::network::zeromq::implementation

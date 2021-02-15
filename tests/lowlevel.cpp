@@ -3,11 +3,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+#include <boost/program_options/options_description.hpp>
 #include <gtest/gtest.h>
 #include <iostream>
 
 #include "Cli.hpp"
 #include "OTLowLevelTestEnvironment.hpp"
+#include "opentxs/Types.hpp"
 
 int main(int argc, char** argv)
 {

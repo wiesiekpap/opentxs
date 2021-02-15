@@ -36,8 +36,20 @@ Bidirectional<InterfaceType, MessageType>::Bidirectional(
     const bool startThread) noexcept
     : bidirectional_start_thread_(startThread)
     , endpoint_(Socket::random_inproc_endpoint())
-    , push_socket_(zmq_socket(context, ZMQ_PUSH))
-    , pull_socket_(zmq_socket(context, ZMQ_PULL))
+    , push_socket_([&] {
+        auto output = RawSocket{zmq_socket(context, ZMQ_PUSH), zmq_close};
+
+        OT_ASSERT(output);
+
+        return output;
+    }())
+    , pull_socket_([&] {
+        auto output = RawSocket{zmq_socket(context, ZMQ_PULL), zmq_close};
+
+        OT_ASSERT(output);
+
+        return output;
+    }())
     , linger_(0)
     , send_timeout_(-1)
     , receive_timeout_(-1)
@@ -113,24 +125,24 @@ auto Bidirectional<InterfaceType, MessageType>::connect(
 template <typename InterfaceType, typename MessageType>
 void Bidirectional<InterfaceType, MessageType>::init() noexcept
 {
-    OT_ASSERT(nullptr != pull_socket_);
-    OT_ASSERT(nullptr != push_socket_);
+    OT_ASSERT(pull_socket_);
+    OT_ASSERT(push_socket_);
 
-    auto bound = bind(pull_socket_, this->lock_, endpoint_);
+    auto bound = bind(pull_socket_.get(), this->lock_, endpoint_);
 
     if (false == bound) {
-        pull_socket_ = nullptr;
-        push_socket_ = nullptr;
+        pull_socket_.reset();
+        push_socket_.reset();
         std::cerr << OT_METHOD_BIDIRECTIONAL << __FUNCTION__ << ": "
                   << zmq_strerror(zmq_errno()) << std::endl;
         return;
     }
 
-    auto connected = connect(push_socket_, this->lock_, endpoint_);
+    auto connected = connect(push_socket_.get(), this->lock_, endpoint_);
 
     if (false == connected) {
-        pull_socket_ = nullptr;
-        push_socket_ = nullptr;
+        pull_socket_.reset();
+        push_socket_.reset();
         std::cerr << OT_METHOD_BIDIRECTIONAL << __FUNCTION__ << ": "
                   << zmq_strerror(zmq_errno()) << std::endl;
         return;
@@ -149,13 +161,18 @@ auto Bidirectional<InterfaceType, MessageType>::process_pull_socket(
     const Lock& lock) noexcept -> bool
 {
     auto msg = Message::Factory();
-    const auto received = Socket::receive_message(lock, pull_socket_, msg);
 
-    if (false == received) { return false; }
+    if (pull_socket_) {
+        const auto have =
+            Socket::receive_message(lock, pull_socket_.get(), msg);
 
-    const auto sent = send(lock, msg);
+        if (false == have) { return false; }
+    } else {
 
-    return sent;
+        return false;
+    }
+
+    return send(lock, msg);
 }
 
 template <typename InterfaceType, typename MessageType>
@@ -180,9 +197,13 @@ auto Bidirectional<InterfaceType, MessageType>::send(
 
     if (false == this->running_.get()) { return false; }
 
-    OT_ASSERT(nullptr != push_socket_);
+    if (push_socket_) {
 
-    return Socket::send_message(lock, push_socket_, message);
+        return Socket::send_message(lock, push_socket_.get(), message);
+    } else {
+
+        return false;
+    }
 }
 
 template <typename InterfaceType, typename MessageType>
@@ -200,8 +221,11 @@ void Bidirectional<InterfaceType, MessageType>::shutdown(
     Lock send(send_lock_);
 
     if (this->running_.get()) {
-        zmq_disconnect(push_socket_, endpoint_.c_str());
-        zmq_unbind(pull_socket_, endpoint_.c_str());
+        if (push_socket_) {
+            zmq_disconnect(push_socket_.get(), endpoint_.c_str());
+        }
+
+        if (pull_socket_) { zmq_unbind(pull_socket_.get(), endpoint_.c_str()); }
     }
 
     this->running_->Off();
@@ -230,7 +254,7 @@ void Bidirectional<InterfaceType, MessageType>::thread() noexcept
         zmq_pollitem_t poll[2]{};
         poll[0].socket = this->socket_;
         poll[0].events = ZMQ_POLLIN;
-        poll[1].socket = pull_socket_;
+        poll[1].socket = pull_socket_.get();
         poll[1].events = ZMQ_POLLIN;
 
         if (false == lock.owns_lock()) { continue; }

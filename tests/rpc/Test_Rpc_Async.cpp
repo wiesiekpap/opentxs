@@ -186,10 +186,9 @@ std::size_t Test_Rpc_Async::push_results_count_{0};
 
 void Test_Rpc_Async::cleanup()
 {
+    notification_socket_->get().Close();
     notification_socket_.reset();
     notification_callback_.reset();
-
-    Sleep(std::chrono::seconds(2));
 }
 
 std::size_t Test_Rpc_Async::get_index(const std::int32_t instance)
