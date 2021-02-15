@@ -225,7 +225,7 @@ Output::Output(
           value,
           std::move(script),
           {},
-          {},
+          std::move(keys),
           {},
           {},
           false)

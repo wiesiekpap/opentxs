@@ -71,7 +71,7 @@ struct Data {
     std::uint32_t p2p_magic_bits_{};
     std::uint16_t default_port_{};
     std::vector<std::string> dns_seeds_{};
-    Amount default_fee_rate_{};
+    Amount default_fee_rate_{};  // satoshis per 1000 bytes
     display::Definition scales_{};
     std::size_t block_download_batch_{};
 };

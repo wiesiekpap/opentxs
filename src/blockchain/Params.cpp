@@ -302,7 +302,7 @@ const Data::ChainData Data::chains_{
           "seed.bitcoin.sprovoost.nl",
           "dnsseed.emzy.de",
       },
-      25000,
+      100000,
       {{
           {u8"BTC", {"", u8"₿", {{10, 8}}, 0, 8}},
           {u8"mBTC", {"", u8"mBTC", {{10, 5}}, 0, 5}},
@@ -819,7 +819,7 @@ const Data::ChainData Data::chains_{
       3669344250,
       18444,
       {},
-      0,
+      1000,
       {{
           {u8"Unit", {"", u8"units", {{10, 8}}, 0, 8}},
       }},
