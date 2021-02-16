@@ -10,13 +10,18 @@
 #include <cstddef>
 #include <functional>
 #include <iterator>
+#include <stdexcept>
+#include <string_view>
+#include <tuple>
 
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Primitives.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/crypto/key/HD.hpp"
+#include "util/Sodium.hpp"
 
 namespace opentxs::crypto::implementation
 {
@@ -30,8 +35,7 @@ HDNode::HDNode(const api::Crypto& crypto) noexcept
     , a_(Context().Factory().Secret(0))
     , b_(Context().Factory().Secret(0))
 {
-    OT_ASSERT(data_.valid(33 + 4));
-    OT_ASSERT(hash_.valid(64));
+    check();
 
     {
         static const auto size = std::size_t{32 + 32 + 33};
@@ -40,6 +44,43 @@ HDNode::HDNode(const api::Crypto& crypto) noexcept
 
         OT_ASSERT(size == a_->size());
         OT_ASSERT(size == b_->size());
+    }
+}
+
+auto HDNode::Assign(const EcdsaCurve& curve, Bip32::Key& output) const
+    noexcept(false) -> void
+{
+    auto& [privateKey, chainCode, publicKey, pathOut, parent] = output;
+    const auto privateOut = ParentPrivate();
+    const auto chainOut = ParentCode();
+    const auto publicOut = ParentPublic();
+
+    if (EcdsaCurve::secp256k1 == curve) {
+        privateKey->Assign(privateOut);
+        publicKey->Assign(publicOut);
+    } else {
+        const auto expanded = sodium::ExpandSeed(
+            {reinterpret_cast<const char*>(privateOut.data()),
+             privateOut.size()},
+            privateKey->WriteInto(Secret::Mode::Mem),
+            publicKey->WriteInto());
+
+        if (false == expanded) {
+            throw std::runtime_error("Failed to expand seed");
+        }
+    }
+
+    chainCode->Assign(chainOut);
+}
+
+auto HDNode::check() const noexcept(false) -> void
+{
+    if (false == data_.valid(33 + 4)) {
+        throw std::runtime_error("Failed to allocate temporary data space");
+    }
+
+    if (false == hash_.valid(64)) {
+        throw std::runtime_error("Failed to allocate temporary hash space");
     }
 }
 

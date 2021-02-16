@@ -217,6 +217,7 @@ auto NymIDSourceAllowedPaymentCode() noexcept -> const VersionMap&
 {
     static const auto output = VersionMap{
         {1, {1, 1}},
+        {2, {1, 3}},
     };
 
     return output;

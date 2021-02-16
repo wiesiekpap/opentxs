@@ -31,6 +31,7 @@ public:
     auto SharedSecret(
         const key::Asymmetric&,
         const key::Asymmetric&,
+        const SecretStyle,
         const PasswordPrompt&,
         Secret&) const noexcept -> bool final
     {

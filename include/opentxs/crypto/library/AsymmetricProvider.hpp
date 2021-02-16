@@ -16,6 +16,7 @@
 #include "opentxs/Proto.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/crypto/NymParameters.hpp"
+#include "opentxs/crypto/Types.hpp"
 
 namespace opentxs
 {
@@ -47,6 +48,7 @@ public:
     OPENTXS_EXPORT virtual bool SharedSecret(
         const key::Asymmetric& publicKey,
         const key::Asymmetric& privateKey,
+        const SecretStyle style,
         const PasswordPrompt& reason,
         Secret& secret) const noexcept = 0;
     OPENTXS_EXPORT virtual bool RandomKeypair(

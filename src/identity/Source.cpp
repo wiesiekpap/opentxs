@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"       // IWYU pragma: associated
 #include "identity/Source.hpp"  // IWYU pragma: associated
 
-#include <cstdint>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -52,12 +51,10 @@ auto Factory::NymIDSource(
     switch (params.SourceType()) {
         case proto::SOURCETYPE_BIP47: {
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-            OT_ASSERT(PaymentCode::DefaultVersion <= 256);
-
             const auto paymentCode = api.Factory().PaymentCode(
                 params.Seed(),
                 params.Nym(),
-                static_cast<std::uint8_t>(PaymentCode::DefaultVersion),
+                params.PaymentCodeVersion(),
                 reason);
 
             return new ReturnType{api.Factory(), paymentCode};
@@ -72,7 +69,7 @@ auto Factory::NymIDSource(
         case proto::SOURCETYPE_PUBKEY:
             switch (params.credentialType()) {
                 case proto::CREDTYPE_LEGACY: {
-                    params.source_keypair_ = api.Factory().Keypair(
+                    params.Keypair() = api.Factory().Keypair(
                         params,
                         crypto::key::Asymmetric::DefaultVersion,
                         proto::KEYROLE_SIGN,
@@ -89,7 +86,7 @@ auto Factory::NymIDSource(
                         throw std::runtime_error("Invalid curve type");
                     }
 
-                    params.source_keypair_ = api.Factory().Keypair(
+                    params.Keypair() = api.Factory().Keypair(
                         params.Seed(),
                         params.Nym(),
                         params.Credset(),
@@ -105,7 +102,7 @@ auto Factory::NymIDSource(
                 }
             }
 
-            if (false == bool(params.source_keypair_.get())) {
+            if (false == bool(params.Keypair().get())) {
                 LogOutput("opentxs::Factory::")(__FUNCTION__)(
                     ": Failed to generate signing keypair")
                     .Flush();
@@ -140,6 +137,7 @@ namespace opentxs::identity::implementation
 const VersionConversionMap Source::key_to_source_version_{
     {1, 1},
     {2, 2},
+    {3, 2},
 };
 
 Source::Source(
@@ -158,7 +156,7 @@ Source::Source(
     const NymParameters& nymParameters) noexcept(false)
     : factory_{factory}
     , type_(nymParameters.SourceType())
-    , pubkey_(nymParameters.source_keypair_->GetPublicKey())
+    , pubkey_(nymParameters.Keypair().GetPublicKey())
     , payment_code_(factory_.PaymentCode(""))
     , version_(key_to_source_version_.at(pubkey_->Version()))
 

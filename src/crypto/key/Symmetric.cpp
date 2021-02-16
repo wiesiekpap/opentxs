@@ -11,11 +11,12 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
-#include "2_Factory.hpp"
 #include "crypto/key/SymmetricNull.hpp"
 #include "internal/api/Api.hpp"
+#include "internal/crypto/key/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Data.hpp"
@@ -39,20 +40,21 @@ template class opentxs::Pimpl<opentxs::crypto::key::Symmetric>;
 
 #define OT_METHOD "opentxs::crypto::key::implementation::Symmetric::"
 
-namespace opentxs
+namespace opentxs::factory
 {
-auto Factory::SymmetricKey() -> crypto::key::Symmetric*
+auto SymmetricKey() noexcept -> std::unique_ptr<crypto::key::Symmetric>
 {
-    return new crypto::key::implementation::SymmetricNull;
+    return std::make_unique<crypto::key::implementation::SymmetricNull>();
 }
 
 using ReturnType = crypto::key::implementation::Symmetric;
 
-auto Factory::SymmetricKey(
+auto SymmetricKey(
     const api::internal::Core& api,
     const crypto::SymmetricProvider& engine,
     const opentxs::PasswordPrompt& reason,
-    const proto::SymmetricMode mode) -> crypto::key::Symmetric*
+    const proto::SymmetricMode mode) noexcept
+    -> std::unique_ptr<crypto::key::Symmetric>
 {
     auto output = std::make_unique<ReturnType>(api, engine);
 
@@ -73,68 +75,62 @@ auto Factory::SymmetricKey(
 
     output->encrypt_key(lock, key, reason);
 
-    return output.release();
+    return std::move(output);
 }
 
-auto Factory::SymmetricKey(
+auto SymmetricKey(
     const api::internal::Core& api,
     const crypto::SymmetricProvider& engine,
-    const proto::SymmetricKey serialized) -> crypto::key::Symmetric*
+    const proto::SymmetricKey serialized) noexcept
+    -> std::unique_ptr<crypto::key::Symmetric>
 {
-    std::unique_ptr<crypto::key::implementation::Symmetric> output;
-    const bool valid = proto::Validate(serialized, VERBOSE);
+    if (proto::Validate(serialized, VERBOSE)) {
 
-    if (valid) {
-        output.reset(new crypto::key::implementation::Symmetric(
-            api, engine, serialized));
+        return std::make_unique<ReturnType>(api, engine, serialized);
     }
 
-    return output.release();
+    return {};
 }
 
-auto Factory::SymmetricKey(
+auto SymmetricKey(
     const api::internal::Core& api,
     const crypto::SymmetricProvider& engine,
     const Secret& seed,
     const std::uint64_t operations,
     const std::uint64_t difficulty,
     const std::size_t size,
-    const proto::SymmetricKeyType type) -> crypto::key::Symmetric*
+    const proto::SymmetricKeyType type) noexcept
+    -> std::unique_ptr<crypto::key::Symmetric>
 {
-    std::unique_ptr<crypto::key::implementation::Symmetric> output;
-    std::string salt{};
-    crypto::key::implementation::Symmetric::Allocate(
-        api, engine.SaltSize(type), salt, false);
-
+    auto salt = std::string{};
+    ReturnType::Allocate(api, engine.SaltSize(type), salt, false);
     const std::uint64_t ops =
         (0 == operations) ? OT_SYMMETRIC_KEY_DEFAULT_OPERATIONS : operations;
     const std::uint64_t mem =
         (0 == difficulty) ? OT_SYMMETRIC_KEY_DEFAULT_DIFFICULTY : difficulty;
 
-    output.reset(new crypto::key::implementation::Symmetric(
-        api, engine, seed, salt, size, ops, mem, type));
-
-    return output.release();
+    return std::make_unique<ReturnType>(
+        api, engine, seed, salt, size, ops, mem, type);
 }
 
-auto Factory::SymmetricKey(
+auto SymmetricKey(
     const api::internal::Core& api,
     const crypto::SymmetricProvider& engine,
     const Secret& raw,
-    const opentxs::PasswordPrompt& reason) -> crypto::key::Symmetric*
+    const opentxs::PasswordPrompt& reason) noexcept
+    -> std::unique_ptr<crypto::key::Symmetric>
 {
-    std::unique_ptr<crypto::key::implementation::Symmetric> output;
-    output.reset(new crypto::key::implementation::Symmetric(api, engine));
+    auto output = std::make_unique<ReturnType>(api, engine);
 
-    if (false == bool(output)) { return nullptr; }
+    if (!output) { return {}; }
 
     Lock lock(output->lock_);
     output->encrypt_key(lock, raw, reason);
     output->key_size_ = raw.size();
 
-    return output.release();
+    return std::move(output);
 }
-}  // namespace opentxs
+}  // namespace opentxs::factory
 
 namespace opentxs::crypto::key
 {

@@ -74,6 +74,10 @@ add_subdirectory(integration)
 add_subdirectory(network/zeromq)
 add_subdirectory(otx)
 
+if(SECP256K1_EXPORT AND BIP32_EXPORT)
+  add_subdirectory(paymentcode)
+endif()
+
 if(OT_ENABLE_RPC)
   add_subdirectory(rpc)
 endif()

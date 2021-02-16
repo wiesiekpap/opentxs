@@ -13,13 +13,33 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
 
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Proto.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
 
 namespace opentxs
 {
+namespace crypto
+{
+namespace key
+{
+class EllipticCurve;
+class HD;
+}  // namespace key
+}  // namespace crypto
+
+namespace identity
+{
+namespace credential
+{
+class Base;
+}  // namespace credential
+}  // namespace identity
+
 namespace proto
 {
 class Credential;
@@ -27,7 +47,9 @@ class PaymentCode;
 class Signature;
 }  // namespace proto
 
+class Data;
 class PaymentCode;
+class PasswordPrompt;
 
 using OTPaymentCode = Pimpl<PaymentCode>;
 }  // namespace opentxs
@@ -37,7 +59,10 @@ namespace opentxs
 class PaymentCode
 {
 public:
+    using ECKey = std::unique_ptr<crypto::key::EllipticCurve>;
+    using HDKey = std::shared_ptr<crypto::key::HD>;
     using Serialized = proto::PaymentCode;
+    using Elements = std::vector<Space>;
 
     OPENTXS_EXPORT static const VersionNumber DefaultVersion;
 
@@ -47,10 +72,45 @@ public:
     OPENTXS_EXPORT virtual bool operator==(
         const proto::PaymentCode& rhs) const noexcept = 0;
 
-    OPENTXS_EXPORT virtual const identifier::Nym& ID() const noexcept = 0;
     OPENTXS_EXPORT virtual std::string asBase58() const noexcept = 0;
+    OPENTXS_EXPORT virtual bool Blind(
+        const PaymentCode& recipient,
+        const crypto::key::EllipticCurve& privateKey,
+        const ReadView outpoint,
+        const AllocateOutput destination,
+        const PasswordPrompt& reason) const noexcept = 0;
+    OPENTXS_EXPORT virtual bool BlindV3(
+        const PaymentCode& recipient,
+        const crypto::key::EllipticCurve& privateKey,
+        const AllocateOutput destination,
+        const PasswordPrompt& reason) const noexcept = 0;
+    OPENTXS_EXPORT virtual std::unique_ptr<PaymentCode>
+    DecodeNotificationElements(
+        const std::uint8_t version,
+        const Elements& elements,
+        const PasswordPrompt& reason) const noexcept = 0;
+    OPENTXS_EXPORT virtual Elements GenerateNotificationElements(
+        const PaymentCode& recipient,
+        const crypto::key::EllipticCurve& privateKey,
+        const PasswordPrompt& reason) const noexcept = 0;
+    OPENTXS_EXPORT virtual const identifier::Nym& ID() const noexcept = 0;
+    OPENTXS_EXPORT virtual HDKey Key() const noexcept = 0;
+    OPENTXS_EXPORT virtual ECKey Incoming(
+        const PaymentCode& sender,
+        const Bip32Index index,
+        const blockchain::Type chain,
+        const PasswordPrompt& reason,
+        const std::uint8_t version = 0) const noexcept = 0;
+    OPENTXS_EXPORT virtual bool Locator(
+        const AllocateOutput destination,
+        const std::uint8_t version = 0) const noexcept = 0;
+    OPENTXS_EXPORT virtual ECKey Outgoing(
+        const PaymentCode& recipient,
+        const Bip32Index index,
+        const blockchain::Type chain,
+        const PasswordPrompt& reason,
+        const std::uint8_t version = 0) const noexcept = 0;
     OPENTXS_EXPORT virtual Serialized Serialize() const noexcept = 0;
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     OPENTXS_EXPORT virtual bool Sign(
         const identity::credential::Base& credential,
         proto::Signature& sig,
@@ -59,21 +119,26 @@ public:
         const Data& data,
         Data& output,
         const PasswordPrompt& reason) const noexcept = 0;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
+    OPENTXS_EXPORT virtual std::unique_ptr<PaymentCode> Unblind(
+        const ReadView blinded,
+        const crypto::key::EllipticCurve& publicKey,
+        const ReadView outpoint,
+        const PasswordPrompt& reason) const noexcept = 0;
+    OPENTXS_EXPORT virtual std::unique_ptr<PaymentCode> UnblindV3(
+        const std::uint8_t version,
+        const ReadView blinded,
+        const crypto::key::EllipticCurve& publicKey,
+        const PasswordPrompt& reason) const noexcept = 0;
     OPENTXS_EXPORT virtual bool Valid() const noexcept = 0;
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     OPENTXS_EXPORT virtual bool Verify(
         const proto::Credential& master,
         const proto::Signature& sourceSignature) const noexcept = 0;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     OPENTXS_EXPORT virtual VersionNumber Version() const noexcept = 0;
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
     OPENTXS_EXPORT virtual bool AddPrivateKeys(
         std::string& seed,
         const Bip32Index index,
         const PasswordPrompt& reason) noexcept = 0;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 
     OPENTXS_EXPORT virtual ~PaymentCode() = default;
 

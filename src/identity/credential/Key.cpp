@@ -10,7 +10,6 @@
 #include <cstdint>
 #include <memory>
 #include <stdexcept>
-#include <utility>
 
 #include "core/contract/Signable.hpp"
 #include "identity/credential/Base.hpp"
@@ -501,9 +500,9 @@ auto Key::signing_key(
     const PasswordPrompt& reason) noexcept(false) -> OTKeypair
 {
     if (useProvided) {
-        if (params.source_keypair_.get()) {
+        if (params.Keypair()) {
 
-            return std::move(params.source_keypair_);
+            return params.Keypair();
         } else {
             throw std::runtime_error("Invalid provided keypair");
         }

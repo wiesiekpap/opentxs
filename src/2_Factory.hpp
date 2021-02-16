@@ -461,31 +461,6 @@ public:
         std::int64_t& serverRefreshInterval,
         std::int64_t& unitPublishInterval,
         std::int64_t& unitRefreshInterval) -> api::network::Dht*;
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
-    static auto Ed25519Key(
-        const api::internal::Core& api,
-        const crypto::EcdsaProvider& ecdsa,
-        const proto::AsymmetricKey& serializedKey) -> crypto::key::Ed25519*;
-    static auto Ed25519Key(
-        const api::internal::Core& api,
-        const crypto::EcdsaProvider& ecdsa,
-        const proto::KeyRole role,
-        const VersionNumber version,
-        const opentxs::PasswordPrompt& reason) -> crypto::key::Ed25519*;
-#if OT_CRYPTO_WITH_BIP32
-    static auto Ed25519Key(
-        const api::internal::Core& api,
-        const crypto::EcdsaProvider& ecdsa,
-        const Secret& privateKey,
-        const Secret& chainCode,
-        const Data& publicKey,
-        const proto::HDPath& path,
-        const Bip32Fingerprint parent,
-        const proto::KeyRole role,
-        const VersionNumber version,
-        const opentxs::PasswordPrompt& reason) -> crypto::key::Ed25519*;
-#endif  // OT_CRYPTO_WITH_BIP32
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
     static auto Envelope(const api::internal::Core& api) noexcept
         -> std::unique_ptr<crypto::Envelope>;
     static auto Envelope(
@@ -494,13 +469,6 @@ public:
         -> std::unique_ptr<crypto::Envelope>;
     static auto FactoryAPIServer(const api::server::internal::Manager& api)
         -> api::internal::Factory*;
-    static auto Keypair() noexcept -> std::unique_ptr<crypto::key::Keypair>;
-    static auto Keypair(
-        const api::internal::Core& api,
-        const proto::KeyRole role,
-        std::unique_ptr<crypto::key::Asymmetric> publicKey,
-        std::unique_ptr<crypto::key::Asymmetric> privateKey) noexcept(false)
-        -> std::unique_ptr<crypto::key::Keypair>;
 #if OT_CASH
     static auto MintLucre(const api::internal::Core& core) -> blind::Mint*;
     static auto MintLucre(
@@ -698,21 +666,6 @@ public:
         const opentxs::PasswordPrompt& reason) -> blind::Purse*;
 #endif
     static auto RPC(const api::Context& native) -> rpc::internal::RPC*;
-#if OT_CRYPTO_SUPPORTED_KEY_RSA
-    static auto RSAKey(
-        const api::internal::Core& api,
-        const crypto::AsymmetricProvider& engine,
-        const proto::AsymmetricKey& input) noexcept
-        -> std::unique_ptr<crypto::key::RSA>;
-    static auto RSAKey(
-        const api::internal::Core& api,
-        const crypto::AsymmetricProvider& engine,
-        const proto::KeyRole input,
-        const VersionNumber version,
-        const NymParameters& options,
-        const opentxs::PasswordPrompt& reason) noexcept
-        -> std::unique_ptr<crypto::key::RSA>;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
     static auto SecondaryCredential(
         const api::internal::Core& api,
         identity::internal::Authority& parent,
@@ -729,31 +682,6 @@ public:
         const identity::credential::internal::Primary& master,
         const proto::Credential& credential)
         -> identity::credential::internal::Secondary*;
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-    static auto Secp256k1Key(
-        const api::internal::Core& api,
-        const crypto::EcdsaProvider& ecdsa,
-        const proto::AsymmetricKey& serializedKey) -> crypto::key::Secp256k1*;
-    static auto Secp256k1Key(
-        const api::internal::Core& api,
-        const crypto::EcdsaProvider& ecdsa,
-        const proto::KeyRole role,
-        const VersionNumber version,
-        const opentxs::PasswordPrompt& reason) -> crypto::key::Secp256k1*;
-#if OT_CRYPTO_WITH_BIP32
-    static auto Secp256k1Key(
-        const api::internal::Core& api,
-        const crypto::EcdsaProvider& ecdsa,
-        const Secret& privateKey,
-        const Secret& chainCode,
-        const Data& publicKey,
-        const proto::HDPath& path,
-        const Bip32Fingerprint parent,
-        const proto::KeyRole role,
-        const VersionNumber version,
-        const opentxs::PasswordPrompt& reason) -> crypto::key::Secp256k1*;
-#endif  // OT_CRYPTO_WITH_BIP32
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     static auto SecurityContract(
         const api::internal::Core& api,
         const Nym_p& nym,
@@ -868,29 +796,6 @@ public:
         const Nym_p& nym,
         const proto::PeerRequest& serialized) noexcept
         -> std::shared_ptr<contract::peer::request::StoreSecret>;
-    static auto SymmetricKey() -> crypto::key::Symmetric*;
-    static auto SymmetricKey(
-        const api::internal::Core& api,
-        const crypto::SymmetricProvider& engine,
-        const opentxs::PasswordPrompt& reason,
-        const proto::SymmetricMode mode) -> crypto::key::Symmetric*;
-    static auto SymmetricKey(
-        const api::internal::Core& api,
-        const crypto::SymmetricProvider& engine,
-        const proto::SymmetricKey serialized) -> crypto::key::Symmetric*;
-    static auto SymmetricKey(
-        const api::internal::Core& api,
-        const crypto::SymmetricProvider& engine,
-        const Secret& seed,
-        const std::uint64_t operations,
-        const std::uint64_t difficulty,
-        const std::size_t size,
-        const proto::SymmetricKeyType type) -> crypto::key::Symmetric*;
-    static auto SymmetricKey(
-        const api::internal::Core& api,
-        const crypto::SymmetricProvider& engine,
-        const Secret& raw,
-        const opentxs::PasswordPrompt& reason) -> crypto::key::Symmetric*;
 #if OT_CASH
     static auto Token(const blind::Token& token, blind::Purse& purse) noexcept
         -> std::unique_ptr<blind::Token>;

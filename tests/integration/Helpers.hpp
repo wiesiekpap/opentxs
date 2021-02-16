@@ -201,9 +201,11 @@ struct User {
                     Reason(), name_, {seed_id_, static_cast<int>(index_)}, type)
                 ->ID();
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-        payment_code_ = api.Factory()
-                            .PaymentCode(seed_id_, index_, 1, Reason())
-                            ->asBase58();
+        payment_code_ =
+            api.Factory()
+                .PaymentCode(
+                    seed_id_, index_, ot::PaymentCode::DefaultVersion, Reason())
+                ->asBase58();
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
         set_introduction_server(api, server);
         init_ = true;

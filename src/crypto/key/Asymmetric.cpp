@@ -12,7 +12,6 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
-#include <string_view>
 #include <utility>
 
 #include "crypto/key/Null.hpp"
@@ -29,6 +28,7 @@
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/crypto/OTSignatureMetadata.hpp"
+#include "opentxs/crypto/SecretStyle.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
@@ -92,9 +92,15 @@ Asymmetric::Asymmetric(
     , m_pMetadata(new OTSignatureMetadata(api_))
     , key_(std::move(pubkey))
     , plaintext_key_(api_.Factory().Secret(0))
-    , encrypted_key_(
-          bool(get) ? get(const_cast<Data&>(key_.get()), plaintext_key_)
-                    : EncryptedKey{})
+    , encrypted_key_([&] {
+        if (has_private_ && get) {
+
+            return get(const_cast<Data&>(key_.get()), plaintext_key_);
+        } else {
+
+            return EncryptedKey{};
+        }
+    }())
 {
     OT_ASSERT(0 < version);
     OT_ASSERT(nullptr != m_pMetadata);
@@ -159,6 +165,40 @@ Asymmetric::Asymmetric(const Asymmetric& rhs) noexcept
               return {};
           })
 {
+}
+
+Asymmetric::Asymmetric(const Asymmetric& rhs, const ReadView newPublic) noexcept
+    : Asymmetric(
+          rhs.api_,
+          rhs.provider_,
+          rhs.type_,
+          rhs.role_,
+          true,
+          false,
+          rhs.version_,
+          rhs.api_.Factory().Data(newPublic),
+          [&](auto&, auto&) -> EncryptedKey { return {}; })
+{
+}
+
+Asymmetric::Asymmetric(
+    const Asymmetric& rhs,
+    OTData&& newPublicKey,
+    OTSecret&& newSecretKey) noexcept
+    : api_(rhs.api_)
+    , provider_(rhs.provider_)
+    , version_(rhs.version_)
+    , type_(rhs.type_)
+    , role_(rhs.role_)
+    , has_public_(false == newPublicKey->empty())
+    , has_private_(false == newSecretKey->empty())
+    , m_pMetadata(new OTSignatureMetadata(api_))
+    , key_(std::move(newPublicKey))
+    , plaintext_key_(std::move(newSecretKey))
+    , encrypted_key_(EncryptedKey{})
+{
+    OT_ASSERT(0 < version_);
+    OT_ASSERT(nullptr != m_pMetadata);
 }
 
 Asymmetric::operator bool() const noexcept
@@ -386,7 +426,34 @@ auto Asymmetric::get_password(
     const PasswordPrompt& reason,
     Secret& password) const noexcept -> bool
 {
-    return provider_.SharedSecret(target, *this, reason, password);
+    return provider_.SharedSecret(
+        target, *this, SecretStyle::Default, reason, password);
+}
+
+auto Asymmetric::get_private_key(const PasswordPrompt& reason) const
+    noexcept(false) -> Secret&
+{
+    if (0 == plaintext_key_->size()) {
+        if (false == bool(encrypted_key_)) {
+            throw std::runtime_error{"Missing encrypted private key"};
+        }
+
+        const auto& privateKey = *encrypted_key_;
+        auto sessionKey = api_.Symmetric().Key(
+            privateKey.key(), proto::SMODE_CHACHA20POLY1305);
+
+        if (false == sessionKey.get()) {
+            throw std::runtime_error{"Failed to extract session key"};
+        }
+
+        auto allocator = plaintext_key_->WriteInto(Secret::Mode::Mem);
+
+        if (false == sessionKey->Decrypt(privateKey, reason, allocator)) {
+            throw std::runtime_error{"Failed to decrypt private key"};
+        }
+    }
+
+    return plaintext_key_;
 }
 
 auto Asymmetric::get_tag(
@@ -398,7 +465,8 @@ auto Asymmetric::get_tag(
     auto hashed = api_.Factory().Secret(0);
     auto password = api_.Factory().Secret(0);
 
-    if (false == provider_.SharedSecret(target, *this, reason, password)) {
+    if (false == provider_.SharedSecret(
+                     target, *this, SecretStyle::Default, reason, password)) {
         LogVerbose(OT_METHOD)(__FUNCTION__)(
             ": Failed to calculate shared secret")
             .Flush();
@@ -472,33 +540,14 @@ auto Asymmetric::Path(proto::HDPath&) const noexcept -> bool
 auto Asymmetric::PrivateKey(const PasswordPrompt& reason) const noexcept
     -> ReadView
 {
-    auto existing = plaintext_key_->Bytes();
+    try {
 
-    if (nullptr != existing.data() && 0 < existing.size()) { return existing; }
-
-    if (false == bool(encrypted_key_)) { return {}; }
-
-    const auto& privateKey = *encrypted_key_;
-    auto sessionKey =
-        api_.Symmetric().Key(privateKey.key(), proto::SMODE_CHACHA20POLY1305);
-
-    if (false == sessionKey.get()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to extract session key.")
-            .Flush();
+        return get_private_key(reason).Bytes();
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
         return {};
     }
-
-    if (false ==
-        sessionKey->Decrypt(
-            privateKey, reason, plaintext_key_->WriteInto(Secret::Mode::Mem))) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decrypt private key")
-            .Flush();
-
-        return {};
-    }
-
-    return plaintext_key_->Bytes();
 }
 
 auto Asymmetric::Serialize() const noexcept

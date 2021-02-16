@@ -7,11 +7,52 @@
 #include "1_Internal.hpp"     // IWYU pragma: associated
 #include "opentxs/Bytes.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
+#include <cstring>
+
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 
 namespace opentxs
 {
+auto copy(const ReadView in, const AllocateOutput out) noexcept -> bool
+{
+    return copy(in, out, in.size());
+}
+
+auto copy(
+    const ReadView in,
+    const AllocateOutput out,
+    const std::size_t limit) noexcept -> bool
+{
+    if ((nullptr == in.data()) || (0 == in.size())) {
+        LogOutput(__FUNCTION__)(": invalid input").Flush();
+
+        return false;
+    }
+
+    if (false == bool(out)) {
+        LogOutput(__FUNCTION__)(": invalid allocator").Flush();
+
+        return false;
+    }
+
+    const auto size = std::min(in.size(), limit);
+    auto write = out(size);
+
+    if (false == write.valid(size)) {
+        LogOutput(__FUNCTION__)(": failed to allocate space").Flush();
+
+        return false;
+    }
+
+    OT_ASSERT(size == write.size());
+
+    std::memcpy(write.data(), in.data(), size);
+
+    return true;
+}
+
 auto preallocated(const std::size_t size, void* out) noexcept -> AllocateOutput
 {
     return [=](const auto in) -> WritableView {

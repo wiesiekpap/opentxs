@@ -71,6 +71,18 @@ public:
         const VersionNumber version =
             opentxs::crypto::key::EllipticCurve::DefaultVersion) const = 0;
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
+    OPENTXS_EXPORT virtual Secp256k1Key InstantiateSecp256k1Key(
+        const ReadView publicKey,
+        const PasswordPrompt& reason,
+        const proto::KeyRole role = proto::KEYROLE_SIGN,
+        const VersionNumber version =
+            opentxs::crypto::key::Secp256k1::DefaultVersion) const noexcept = 0;
+    OPENTXS_EXPORT virtual Secp256k1Key InstantiateSecp256k1Key(
+        const Secret& privateKey,
+        const PasswordPrompt& reason,
+        const proto::KeyRole role = proto::KEYROLE_SIGN,
+        const VersionNumber version =
+            opentxs::crypto::key::Secp256k1::DefaultVersion) const noexcept = 0;
     OPENTXS_EXPORT virtual Secp256k1Key NewSecp256k1Key(
         const std::string& seedID,
         const Secret& seed,

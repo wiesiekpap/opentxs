@@ -18,6 +18,9 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#endif  // OT_BLOCKCHAIN
+#include "opentxs/crypto/Bip44Type.hpp"
+#if OT_BLOCKCHAIN
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
 #endif  // OT_BLOCKCHAIN
@@ -269,6 +272,7 @@ const Data::ChainData Data::chains_{
      {true,
       false,
       opentxs::proto::CITEMTYPE_BTC,
+      Bip44Type::BITCOIN,
       "Bitcoin",
       "BTC",
       486604799,  // 0x1d00ffff
@@ -315,6 +319,7 @@ const Data::ChainData Data::chains_{
      {true,
       true,
       opentxs::proto::CITEMTYPE_TNBTC,
+      Bip44Type::TESTNET,
       "Bitcoin (testnet3)",
       "tnBTC",
       486604799,  // 0x1d00ffff
@@ -358,6 +363,7 @@ const Data::ChainData Data::chains_{
      {true,
       false,
       opentxs::proto::CITEMTYPE_BCH,
+      Bip44Type::BITCOINCASH,
       "Bitcoin Cash",
       "BCH",
       486604799,  // 0x1d00ffff
@@ -402,6 +408,7 @@ const Data::ChainData Data::chains_{
      {true,
       true,
       opentxs::proto::CITEMTYPE_TNBCH,
+      Bip44Type::TESTNET,
       "Bitcoin Cash (testnet3)",
       "tnBCH",
       486604799,  // 0x1d00ffff
@@ -445,6 +452,7 @@ const Data::ChainData Data::chains_{
      {false,
       false,
       opentxs::proto::CITEMTYPE_ETH,
+      Bip44Type::ETHER,
       "Ethereum (frontier)",
       "",
       0,
@@ -464,6 +472,7 @@ const Data::ChainData Data::chains_{
      {false,
       true,
       opentxs::proto::CITEMTYPE_ETHEREUM_ROPSTEN,
+      Bip44Type::TESTNET,
       "Ethereum (ropsten testnet)",
       "",
       0,
@@ -483,6 +492,7 @@ const Data::ChainData Data::chains_{
      {true,
       false,
       opentxs::proto::CITEMTYPE_LTC,
+      Bip44Type::LITECOIN,
       "Litecoin",
       "LTC",
       504365040,  // 0x1e0ffff0
@@ -525,6 +535,7 @@ const Data::ChainData Data::chains_{
      {true,
       true,
       opentxs::proto::CITEMTYPE_TNLTC,
+      Bip44Type::TESTNET,
       "Litecoin (testnet4)",
       "tnLTC",
       504365040,  // 0x1e0ffff0
@@ -565,6 +576,7 @@ const Data::ChainData Data::chains_{
      {true,
       true,  // TODO switch to false when testing is complete
       opentxs::proto::CITEMTYPE_PKT,
+      Bip44Type::PKT,
       "PKT",
       "PKT",
       521142271,  // 0x1f0fffff
@@ -762,6 +774,7 @@ const Data::ChainData Data::chains_{
      {false,
       true,
       opentxs::proto::CITEMTYPE_TNPKT,
+      Bip44Type::TESTNET,
       "PKT (testnet)",
       "tnPKT",
       521142271,  // 0x1f0fffff
@@ -795,6 +808,7 @@ const Data::ChainData Data::chains_{
      {false,
       true,
       opentxs::proto::CITEMTYPE_REGTEST,
+      Bip44Type::TESTNET,
       "Unit Test Simulation",
       "UNITTEST",
       545259519,  // 0x207fffff

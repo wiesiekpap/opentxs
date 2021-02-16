@@ -7,13 +7,18 @@
 #include "1_Internal.hpp"     // IWYU pragma: associated
 #include "crypto/key/HD.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
 #include <cstdint>
 #include <iterator>
 #include <limits>
-#include <string_view>
+#include <stdexcept>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 #include "crypto/key/EllipticCurve.hpp"
 #include "internal/api/Api.hpp"
+#include "internal/crypto/key/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -28,7 +33,13 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
+#if OT_CRYPTO_SUPPORTED_KEY_ED25519
+#include "opentxs/crypto/key/Ed25519.hpp"
+#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 #include "opentxs/crypto/key/HD.hpp"
+#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
+#include "opentxs/crypto/key/Secp256k1.hpp"
+#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/protobuf/AsymmetricKey.pb.h"
 #include "opentxs/protobuf/Ciphertext.pb.h"
@@ -109,6 +120,33 @@ HD::HD(
 {
 }
 
+HD::HD(
+    const api::internal::Core& api,
+    const crypto::EcdsaProvider& ecdsa,
+    const proto::AsymmetricKeyType keyType,
+    const Secret& privateKey,
+    const Data& publicKey,
+    const proto::KeyRole role,
+    const VersionNumber version,
+    key::Symmetric& sessionKey,
+    const PasswordPrompt& reason) noexcept(false)
+    : EllipticCurve(
+          api,
+          ecdsa,
+          keyType,
+          privateKey,
+          publicKey,
+          role,
+          version,
+          sessionKey,
+          reason)
+    , path_(nullptr)
+    , chain_code_(nullptr)
+    , plaintext_chain_code_(api.Factory().Secret(0))
+    , parent_(0)
+{
+}
+
 #if OT_CRYPTO_WITH_BIP32
 HD::HD(
     const api::internal::Core& api,
@@ -154,39 +192,119 @@ HD::HD(const HD& rhs) noexcept
 {
 }
 
+HD::HD(const HD& rhs, const ReadView newPublic) noexcept
+    : EllipticCurve(rhs, newPublic)
+    , path_()
+    , chain_code_()
+    , plaintext_chain_code_(api_.Factory().Secret(0))
+    , parent_()
+{
+}
+
+HD::HD(const HD& rhs, OTSecret&& newSecretKey) noexcept
+    : EllipticCurve(rhs, std::move(newSecretKey))
+    , path_()
+    , chain_code_()
+    , plaintext_chain_code_(api_.Factory().Secret(0))
+    , parent_()
+{
+}
+
 auto HD::Chaincode(const PasswordPrompt& reason) const noexcept -> ReadView
 {
-    auto existing = plaintext_chain_code_->Bytes();
+    try {
 
-    if (nullptr != existing.data() && 0 < existing.size()) { return existing; }
-
-    if (false == bool(encrypted_key_)) { return {}; }
-    if (false == bool(chain_code_)) { return {}; }
-
-    const auto& chaincode = *chain_code_;
-    const auto& privateKey = *encrypted_key_;
-    // Private key data and chain code are encrypted to the same session key,
-    // and this session key is only embedded in the private key ciphertext
-    auto sessionKey =
-        api_.Symmetric().Key(privateKey.key(), proto::SMODE_CHACHA20POLY1305);
-
-    if (false == sessionKey.get()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to extract session key.")
-            .Flush();
+        return get_chain_code(reason).Bytes();
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
         return {};
     }
+}
 
-    auto allocator = plaintext_chain_code_->WriteInto(Secret::Mode::Mem);
+auto HD::ChildKey(const Bip32Index index, const PasswordPrompt& reason)
+    const noexcept -> std::unique_ptr<key::HD>
+{
+    try {
+#if OT_CRYPTO_WITH_BIP32
+        static const auto blank = api_.Factory().Secret(0);
+        const auto serialized = [&] {
+            const auto path = [&] {
+                auto out = Bip32::Path{};
 
-    if (false == sessionKey->Decrypt(chaincode, reason, allocator)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decrypt chain code")
-            .Flush();
+                if (path_) {
+                    std::copy(
+                        path_->child().begin(),
+                        path_->child().end(),
+                        std::back_inserter(out));
+                }
+
+                return out;
+            }();
+
+            if (HasPrivate()) {
+                return api_.Crypto().BIP32().DerivePrivateKey(
+                    *this, {index}, reason);
+            } else {
+                return api_.Crypto().BIP32().DerivePublicKey(
+                    *this, {index}, reason);
+            }
+        }();
+        const auto& [privkey, ccode, pubkey, spath, parent] = serialized;
+        const auto path = [&] {
+            auto out = proto::HDPath{};
+
+            if (path_) {
+                out = *path_;
+                out.add_child(index);
+            }
+
+            return out;
+        }();
+
+        switch (type_) {
+#if OT_CRYPTO_SUPPORTED_KEY_ED25519
+            case proto::AKEYTYPE_ED25519: {
+                return factory::Ed25519Key(
+                    api_,
+                    api_.Crypto().ED25519(),
+                    HasPrivate() ? privkey : blank,
+                    ccode,
+                    pubkey,
+                    path,
+                    parent,
+                    role_,
+                    version_,
+                    reason);
+            }
+#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
+#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
+            case proto::AKEYTYPE_SECP256K1: {
+                return factory::Secp256k1Key(
+                    api_,
+                    api_.Crypto().SECP256K1(),
+                    HasPrivate() ? privkey : blank,
+                    ccode,
+                    pubkey,
+                    path,
+                    parent,
+                    role_,
+                    version_,
+                    reason);
+            }
+#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
+            default: {
+                throw std::runtime_error{"Unsupported key type"};
+            }
+        }
+#else
+        throw std::runtime_error{"HD key support missing but required"};
+#endif
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
         return {};
     }
-
-    return plaintext_chain_code_->Bytes();
 }
 
 auto HD::Depth() const noexcept -> int
@@ -206,6 +324,39 @@ auto HD::erase_private_data() -> void
 auto HD::Fingerprint() const noexcept -> Bip32Fingerprint
 {
     return CalculateFingerprint(api_.Crypto().Hash(), PublicKey());
+}
+
+auto HD::get_chain_code(const PasswordPrompt& reason) const noexcept(false)
+    -> Secret&
+{
+    if (0 == plaintext_chain_code_->size()) {
+        if (false == bool(encrypted_key_)) {
+            throw std::runtime_error{"Missing encrypted private key"};
+        }
+        if (false == bool(chain_code_)) {
+            throw std::runtime_error{"Missing encrypted chain code"};
+        }
+
+        const auto& chaincode = *chain_code_;
+        const auto& privateKey = *encrypted_key_;
+        // Private key data and chain code are encrypted to the same session
+        // key, and this session key is only embedded in the private key
+        // ciphertext
+        auto sessionKey = api_.Symmetric().Key(
+            privateKey.key(), proto::SMODE_CHACHA20POLY1305);
+
+        if (false == sessionKey.get()) {
+            throw std::runtime_error{"Failed to extract session key"};
+        }
+
+        auto allocator = plaintext_chain_code_->WriteInto(Secret::Mode::Mem);
+
+        if (false == sessionKey->Decrypt(chaincode, reason, allocator)) {
+            throw std::runtime_error{"Failed to decrypt chain code"};
+        }
+    }
+
+    return plaintext_chain_code_;
 }
 
 auto HD::get_params() const noexcept -> std::tuple<bool, Bip32Depth, Bip32Index>

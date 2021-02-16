@@ -21,6 +21,7 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/Bip44Type.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/Envelope.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/Language.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/crypto/SecretStyle.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/SeedStrength.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/SeedStyle.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/Types.hpp"

@@ -57,8 +57,11 @@ class HD : virtual public key::HD, public EllipticCurve
 public:
     auto Chaincode(const PasswordPrompt& reason) const noexcept
         -> ReadView final;
+    auto ChildKey(const Bip32Index index, const PasswordPrompt& reason)
+        const noexcept -> std::unique_ptr<key::HD> final;
     auto Depth() const noexcept -> int final;
     auto Fingerprint() const noexcept -> Bip32Fingerprint final;
+    auto Parent() const noexcept -> Bip32Fingerprint final { return parent_; }
     auto Path() const noexcept -> const std::string final;
     auto Path(proto::HDPath& output) const noexcept -> bool final;
     auto Serialize() const noexcept
@@ -80,6 +83,16 @@ protected:
        const VersionNumber version,
        const PasswordPrompt& reason)
     noexcept(false);
+    HD(const api::internal::Core& api,
+       const crypto::EcdsaProvider& ecdsa,
+       const proto::AsymmetricKeyType keyType,
+       const Secret& privateKey,
+       const Data& publicKey,
+       const proto::KeyRole role,
+       const VersionNumber version,
+       key::Symmetric& sessionKey,
+       const PasswordPrompt& reason)
+    noexcept(false);
 #if OT_CRYPTO_WITH_BIP32
     HD(const api::internal::Core& api,
        const crypto::EcdsaProvider& ecdsa,
@@ -96,6 +109,8 @@ protected:
     noexcept(false);
 #endif  // OT_CRYPTO_WITH_BIP32
     HD(const HD&) noexcept;
+    HD(const HD& rhs, const ReadView newPublic) noexcept;
+    HD(const HD& rhs, OTSecret&& newSecretKey) noexcept;
 
 private:
     const std::shared_ptr<const proto::HDPath> path_;
@@ -103,6 +118,8 @@ private:
     mutable OTSecret plaintext_chain_code_;
     const Bip32Fingerprint parent_;
 
+    auto get_chain_code(const PasswordPrompt& reason) const noexcept(false)
+        -> Secret&;
     auto get_params() const noexcept
         -> std::tuple<bool, Bip32Depth, Bip32Index>;
 

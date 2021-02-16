@@ -29,7 +29,7 @@
 #include "opentxs/ui/ContactList.hpp"
 #include "opentxs/ui/ContactListItem.hpp"
 
-#define ALICE_NYM_ID "ot2CyrTzwREHzboZ2RyCT8QsTj3Scaa55JRG"
+#define ALICE_NYM_ID "otysEksLyHmDZyPDTM4TYvcXEcu18bnZw5V"
 #define ALICE_NYM_NAME "Alice"
 #define BOB_PAYMENT_CODE                                                       \
     "PM8TJS2JxQ5ztXUpBBRnpTbcUXbUHy2T1abfrb3KkAAtMEGNbey4oumH7Hc578WgQJhPjBxt" \

@@ -180,6 +180,20 @@ public:
     {
         return {};
     }
+    auto ECDSA() const noexcept -> const opentxs::crypto::EcdsaProvider& final
+    {
+        abort();
+    }
+    auto IncrementPrivate(const Secret&, const PasswordPrompt&) const noexcept
+        -> std::unique_ptr<key::EllipticCurve> final
+    {
+        return {};
+    }
+    auto IncrementPublic(const Secret&) const noexcept
+        -> std::unique_ptr<key::EllipticCurve> final
+    {
+        return {};
+    }
     auto SignDER(
         const ReadView,
         const proto::HashType,
@@ -200,8 +214,14 @@ public:
     {
         return {};
     }
+    auto ChildKey(const Bip32Index, const PasswordPrompt&) const noexcept
+        -> std::unique_ptr<key::HD> final
+    {
+        return {};
+    }
     auto Depth() const noexcept -> int final { return {}; }
     auto Fingerprint() const noexcept -> Bip32Fingerprint final { return {}; }
+    auto Parent() const noexcept -> Bip32Fingerprint final { return {}; }
     auto Xprv(const PasswordPrompt&) const noexcept -> std::string final
     {
         return {};

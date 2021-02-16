@@ -10,8 +10,8 @@
 #include <stdexcept>
 #include <utility>
 
-#include "2_Factory.hpp"
 #include "crypto/key/Null.hpp"
+#include "internal/crypto/key/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/crypto/OTSignatureMetadata.hpp"
@@ -24,16 +24,16 @@
 
 template class opentxs::Pimpl<opentxs::crypto::key::Keypair>;
 
-namespace opentxs
+namespace opentxs::factory
 {
 using ReturnType = crypto::key::implementation::Keypair;
 
-auto Factory::Keypair() noexcept -> std::unique_ptr<crypto::key::Keypair>
+auto Keypair() noexcept -> std::unique_ptr<crypto::key::Keypair>
 {
     return std::make_unique<crypto::key::implementation::NullKeypair>();
 }
 
-auto Factory::Keypair(
+auto Keypair(
     const api::internal::Core& api,
     const proto::KeyRole role,
     std::unique_ptr<crypto::key::Asymmetric> publicKey,
@@ -51,7 +51,7 @@ auto Factory::Keypair(
     return std::make_unique<ReturnType>(
         api, role, std::move(publicKey), std::move(privateKey));
 }
-}  // namespace opentxs
+}  // namespace opentxs::factory
 
 namespace opentxs::crypto::key::implementation
 {

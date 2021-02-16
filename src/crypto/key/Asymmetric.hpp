@@ -198,6 +198,8 @@ protected:
         const key::Asymmetric& target,
         const PasswordPrompt& reason,
         Secret& password) const noexcept -> bool;
+    auto get_private_key(const PasswordPrompt& reason) const noexcept(false)
+        -> Secret&;
     auto get_tag(
         const key::Asymmetric& target,
         const Identifier& credential,
@@ -229,6 +231,11 @@ protected:
         const proto::AsymmetricKey& serializedKey,
         EncryptedExtractor) noexcept(false);
     Asymmetric(const Asymmetric& rhs) noexcept;
+    Asymmetric(const Asymmetric& rhs, const ReadView newPublic) noexcept;
+    Asymmetric(
+        const Asymmetric& rhs,
+        OTData&& newPublicKey,
+        OTSecret&& newSecretKey) noexcept;
 
 private:
     static const std::map<proto::SignatureRole, VersionNumber> sig_version_;

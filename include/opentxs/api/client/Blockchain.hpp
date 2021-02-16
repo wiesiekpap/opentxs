@@ -25,6 +25,7 @@
 #include "opentxs/blockchain/Types.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/crypto/Types.hpp"
 
 namespace opentxs
 {
@@ -66,6 +67,9 @@ public:
         HD = 0,
     };
 
+    // Throws std::out_of_range for invalid chains
+    OPENTXS_EXPORT static Bip44Type Bip44(Chain chain) noexcept(false);
+
     /// Throws std::runtime_error if type is invalid
     OPENTXS_EXPORT virtual const blockchain::BalanceTree& Account(
         const identifier::Nym& nymID,
@@ -100,6 +104,10 @@ public:
         const TxidHex& id,
         const std::string& label) const noexcept = 0;
 #endif  // OT_BLOCKCHAIN
+    OPENTXS_EXPORT virtual std::string CalculateAddress(
+        const opentxs::blockchain::Type chain,
+        const blockchain::AddressStyle format,
+        const Data& pubkey) const noexcept = 0;
     OPENTXS_EXPORT virtual DecodedAddress DecodeAddress(
         const std::string& encoded) const noexcept = 0;
 #if OT_BLOCKCHAIN

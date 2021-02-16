@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"   // IWYU pragma: associated
 #include "api/Factory.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <array>
 #include <cstring>
 #include <stdexcept>
@@ -23,6 +22,7 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #endif  // OT_BLOCKCHAIN
+#include "internal/crypto/key/Factory.hpp"
 #include "internal/network/zeromq/socket/Socket.hpp"
 #include "opentxs/Forward.hpp"
 #include "opentxs/OT.hpp"  // TODO remove
@@ -35,6 +35,7 @@
 #include "opentxs/api/crypto/Asymmetric.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
+#include "opentxs/api/crypto/Hash.hpp"
 #if OT_CASH
 #include "opentxs/blind/Mint.hpp"
 #include "opentxs/blind/Purse.hpp"
@@ -100,6 +101,7 @@
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/Envelope.pb.h"  // IWYU pragma: keep
+#include "opentxs/protobuf/HDPath.pb.h"
 #include "opentxs/protobuf/PaymentCode.pb.h"
 #include "opentxs/protobuf/PeerEnums.pb.h"
 #include "opentxs/protobuf/PeerReply.pb.h"
@@ -969,9 +971,28 @@ auto Factory::Identifier(const ProtobufType& proto) const -> OTIdentifier
 }
 
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-auto Factory::instantiate_secp256k1(const ReadView key) const noexcept
+auto Factory::instantiate_secp256k1(
+    const ReadView key,
+    const ReadView chaincode) const noexcept
     -> std::unique_ptr<opentxs::crypto::key::Secp256k1>
 {
+#if OT_CRYPTO_WITH_BIP32
+    static const auto blank = Secret(0);
+    static const auto path = proto::HDPath{};
+    const auto reason = PasswordPrompt("Instantiating a payment code");
+
+    return factory::Secp256k1Key(
+        api_,
+        api_.Crypto().SECP256K1(),
+        blank,
+        SecretFromBytes(chaincode),
+        Data(key),
+        path,
+        {},
+        proto::KEYROLE_SIGN,
+        opentxs::crypto::key::EllipticCurve::DefaultVersion,
+        reason);
+#else
     using ReturnType = opentxs::crypto::key::Secp256k1;
 
     auto serialized = ReturnType::Serialized{};
@@ -980,9 +1001,8 @@ auto Factory::instantiate_secp256k1(const ReadView key) const noexcept
     serialized.set_mode(proto::KEYMODE_PUBLIC);
     serialized.set_role(proto::KEYROLE_SIGN);
     serialized.set_key(key.data(), key.size());
-    auto output = std::unique_ptr<opentxs::crypto::key::Secp256k1>{
-        opentxs::Factory::Secp256k1Key(
-            api_, api_.Crypto().SECP256K1(), serialized)};
+    auto output =
+        factory::Secp256k1Key(api_, api_.Crypto().SECP256K1(), serialized);
 
     if (false == bool(output)) {
         output = std::make_unique<
@@ -992,6 +1012,7 @@ auto Factory::instantiate_secp256k1(const ReadView key) const noexcept
     OT_ASSERT(output);
 
     return output;
+#endif  // OT_CRYPTO_WITH_BIP32
 }
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 
@@ -1139,7 +1160,7 @@ auto Factory::Keypair(
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to derive private key")
             .Flush();
 
-        return OTKeypair{opentxs::Factory::Keypair().release()};
+        return OTKeypair{factory::Keypair()};
     }
 
     auto& privateKey = *pPrivateKey;
@@ -1149,16 +1170,14 @@ auto Factory::Keypair(
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to derive public key")
             .Flush();
 
-        return OTKeypair{opentxs::Factory::Keypair().release()};
+        return OTKeypair{factory::Keypair()};
     }
 
     try {
-        return OTKeypair{
-            opentxs::Factory::Keypair(
-                api_, role, std::move(pPublicKey), std::move(pPrivateKey))
-                .release()};
+        return OTKeypair{factory::Keypair(
+            api_, role, std::move(pPublicKey), std::move(pPrivateKey))};
     } catch (...) {
-        return OTKeypair{opentxs::Factory::Keypair().release()};
+        return OTKeypair{factory::Keypair()};
     }
 }
 
@@ -1173,7 +1192,7 @@ auto Factory::Keypair(
             ": Failed to instantiate private key")
             .Flush();
 
-        return OTKeypair{opentxs::Factory::Keypair().release()};
+        return OTKeypair{factory::Keypair()};
     }
 
     auto pPublicKey = asymmetric_.InstantiateKey(serializedPubkey);
@@ -1182,18 +1201,17 @@ auto Factory::Keypair(
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to instantiate public key")
             .Flush();
 
-        return OTKeypair{opentxs::Factory::Keypair().release()};
+        return OTKeypair{factory::Keypair()};
     }
 
     try {
-        return OTKeypair{opentxs::Factory::Keypair(
-                             api_,
-                             serializedPrivkey.role(),
-                             std::move(pPublicKey),
-                             std::move(pPrivateKey))
-                             .release()};
+        return OTKeypair{factory::Keypair(
+            api_,
+            serializedPrivkey.role(),
+            std::move(pPublicKey),
+            std::move(pPrivateKey))};
     } catch (...) {
-        return OTKeypair{opentxs::Factory::Keypair().release()};
+        return OTKeypair{factory::Keypair()};
     }
 }
 
@@ -1206,19 +1224,17 @@ auto Factory::Keypair(const proto::AsymmetricKey& serializedPubkey) const
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to instantiate public key")
             .Flush();
 
-        return OTKeypair{opentxs::Factory::Keypair().release()};
+        return OTKeypair{factory::Keypair()};
     }
 
     try {
-        return OTKeypair{
-            opentxs::Factory::Keypair(
-                api_,
-                serializedPubkey.role(),
-                std::move(pPublicKey),
-                std::make_unique<opentxs::crypto::key::implementation::Null>())
-                .release()};
+        return OTKeypair{factory::Keypair(
+            api_,
+            serializedPubkey.role(),
+            std::move(pPublicKey),
+            std::make_unique<opentxs::crypto::key::implementation::Null>())};
     } catch (...) {
-        return OTKeypair{opentxs::Factory::Keypair().release()};
+        return OTKeypair{factory::Keypair()};
     }
 }
 
@@ -1248,7 +1264,7 @@ auto Factory::Keypair(
         default: {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid key role").Flush();
 
-            return OTKeypair{opentxs::Factory::Keypair().release()};
+            return OTKeypair{factory::Keypair()};
         }
     }
 
@@ -1264,7 +1280,7 @@ auto Factory::Keypair(
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to derive private key")
             .Flush();
 
-        return OTKeypair{opentxs::Factory::Keypair().release()};
+        return OTKeypair{factory::Keypair()};
     }
 
     auto& privateKey = *pPrivateKey;
@@ -1274,16 +1290,14 @@ auto Factory::Keypair(
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to derive public key")
             .Flush();
 
-        return OTKeypair{opentxs::Factory::Keypair().release()};
+        return OTKeypair{factory::Keypair()};
     }
 
     try {
-        return OTKeypair{
-            opentxs::Factory::Keypair(
-                api_, role, std::move(pPublicKey), std::move(pPrivateKey))
-                .release()};
+        return OTKeypair{factory::Keypair(
+            api_, role, std::move(pPublicKey), std::move(pPrivateKey))};
     } catch (...) {
-        return OTKeypair{opentxs::Factory::Keypair().release()};
+        return OTKeypair{factory::Keypair()};
     }
 }
 #endif  // OT_CRYPTO_WITH_BIP32
@@ -1445,16 +1459,11 @@ auto Factory::NymID(const opentxs::String& serialized) const -> OTNymID
 
 auto Factory::NymIDFromPaymentCode(const std::string& input) const -> OTNymID
 {
-    auto output = NymID();
-    auto key = Data::Factory();
-    const auto bytes = Data::Factory(
-        api_.Crypto().Encode().IdentifierDecode(input), Data::Mode::Raw);
+    const auto code = PaymentCode(input);
 
-    if (81 != bytes->size()) { return output; }
+    if (0 == code->Version()) { return NymID(); }
 
-    if (bytes->Extract(65, key, 3)) { output->CalculateDigest(key->Bytes()); }
-
-    return output;
+    return code->ID();
 }
 
 auto Factory::Offer() const -> std::unique_ptr<OTOffer>
@@ -1582,20 +1591,38 @@ auto Factory::PaymentCode(const std::string& base58) const noexcept
     -> OTPaymentCode
 {
     using ReturnType = opentxs::implementation::PaymentCode;
-    auto raw = ReturnType::SerializedForBase58{};
-
-    {
+    const auto serialized = [&] {
+        auto out = ReturnType::Base58Preimage{};
         const auto bytes = api_.Crypto().Encode().IdentifierDecode(base58);
 
-        if (0 < bytes.size()) {
-            std::memcpy(
-                &raw, bytes.data(), std::min(sizeof(raw), bytes.size()));
-        }
-    }
+        switch (bytes.size()) {
+            case 81: {
+                static_assert(81 == sizeof(ReturnType::Base58Preimage));
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-    auto key = instantiate_secp256k1({raw.key_.data(), raw.key_.size()});
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
+                std::memcpy(&out, bytes.data(), bytes.size());
+            } break;
+            case 35: {
+                static_assert(35 == sizeof(ReturnType::Base58Preimage_3));
+
+                auto compact = ReturnType::Base58Preimage_3{};
+                std::memcpy(&compact, bytes.data(), bytes.size());
+                const auto& payload = compact.payload_;
+                const auto key = ReadView{
+                    reinterpret_cast<const char*>(payload.key_.data()),
+                    payload.key_.size()};
+                auto code = api_.Factory().Data();
+                api_.Crypto().Hash().Digest(
+                    proto::HASHTYPE_SHA256D, key, code->WriteInto());
+                out = ReturnType::Base58Preimage{
+                    payload.version_, false, key, code->Bytes(), 0, 0};
+            } break;
+            default: {
+            }
+        }
+
+        return out;
+    }();
+    const auto& raw = serialized.payload_;
 
     return OTPaymentCode
     {
@@ -1603,13 +1630,13 @@ auto Factory::PaymentCode(const std::string& base58) const noexcept
             api_,
             raw.version_,
             raw.haveBitmessage(),
-            {raw.key_.data(), raw.key_.size()},
-            {raw.code_.data(), raw.code_.size()},
+            raw.xpub_.Key(),
+            raw.xpub_.Chaincode(),
             raw.bm_version_,
             raw.bm_stream_
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
             ,
-            std::move(key)
+            instantiate_secp256k1(raw.xpub_.Key(), raw.xpub_.Chaincode())
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
                 )
             .release()
@@ -1620,7 +1647,7 @@ auto Factory::PaymentCode(const proto::PaymentCode& serialized) const noexcept
     -> OTPaymentCode
 {
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-    auto key = instantiate_secp256k1(serialized.key());
+    auto key = instantiate_secp256k1(serialized.key(), serialized.chaincode());
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 
     return OTPaymentCode
@@ -1653,7 +1680,7 @@ auto Factory::PaymentCode(
     const std::uint8_t bitmessageStream) const noexcept -> OTPaymentCode
 {
     auto fingerprint{seed};
-    auto pKey = api_.Seeds().GetPaymentCode(fingerprint, nym, reason);
+    auto pKey = api_.Seeds().GetPaymentCode(fingerprint, nym, version, reason);
 
     if (false == bool(pKey)) {
         pKey = std::make_unique<
@@ -1663,15 +1690,13 @@ auto Factory::PaymentCode(
     OT_ASSERT(pKey);
 
     const auto& key = *pKey;
-    auto pubkey = key.PublicKey();
-    auto chaincode = key.Chaincode(reason);
 
     return OTPaymentCode{opentxs::Factory::PaymentCode(
                              api_,
                              version,
                              bitmessage,
-                             std::move(pubkey),
-                             std::move(chaincode),
+                             key.PublicKey(),
+                             key.Chaincode(reason),
                              bitmessageVersion,
                              bitmessageStream,
                              std::move(pKey))
@@ -2169,7 +2194,7 @@ auto Factory::StoreSecret(
 
 auto Factory::SymmetricKey() const -> OTSymmetricKey
 {
-    return OTSymmetricKey{opentxs::Factory::SymmetricKey()};
+    return OTSymmetricKey{factory::SymmetricKey()};
 }
 
 auto Factory::SymmetricKey(
@@ -2177,16 +2202,14 @@ auto Factory::SymmetricKey(
     const opentxs::PasswordPrompt& password,
     const proto::SymmetricMode mode) const -> OTSymmetricKey
 {
-    return OTSymmetricKey{
-        opentxs::Factory::SymmetricKey(api_, engine, password, mode)};
+    return OTSymmetricKey{factory::SymmetricKey(api_, engine, password, mode)};
 }
 
 auto Factory::SymmetricKey(
     const opentxs::crypto::SymmetricProvider& engine,
     const proto::SymmetricKey serialized) const -> OTSymmetricKey
 {
-    return OTSymmetricKey{
-        opentxs::Factory::SymmetricKey(api_, engine, serialized)};
+    return OTSymmetricKey{factory::SymmetricKey(api_, engine, serialized)};
 }
 
 auto Factory::SymmetricKey(
@@ -2197,7 +2220,7 @@ auto Factory::SymmetricKey(
     const std::size_t size,
     const proto::SymmetricKeyType type) const -> OTSymmetricKey
 {
-    return OTSymmetricKey{opentxs::Factory::SymmetricKey(
+    return OTSymmetricKey{factory::SymmetricKey(
         api_, engine, seed, operations, difficulty, size, type)};
 }
 
@@ -2206,8 +2229,7 @@ auto Factory::SymmetricKey(
     const opentxs::Secret& raw,
     const opentxs::PasswordPrompt& reason) const -> OTSymmetricKey
 {
-    return OTSymmetricKey{
-        opentxs::Factory::SymmetricKey(api_, engine, raw, reason)};
+    return OTSymmetricKey{factory::SymmetricKey(api_, engine, raw, reason)};
 }
 
 auto Factory::Trade() const -> std::unique_ptr<OTTrade>

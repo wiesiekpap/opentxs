@@ -22,6 +22,7 @@ set(cxx-install-headers
 )
 set(cxx-headers
     ${cxx-install-headers}
+    "${opentxs_SOURCE_DIR}/src/internal/crypto/key/Factory.hpp"
     Asymmetric.hpp
     EllipticCurve.hpp
     HD.hpp

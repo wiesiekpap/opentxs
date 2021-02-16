@@ -54,28 +54,28 @@ public:
                "pudding laundry stay axis prosper")
         , fingerprint(client_.Exec().Wallet_ImportSeed(seed, ""))
         , nymID_0(client_.Wallet()
-                      .Nym(reason_, "PaycodeNym", {fingerprint, 0})
+                      .Nym(reason_, "PaycodeNym", {fingerprint, 0, 1})
                       ->ID()
                       .str())
         , paycode_0(
               "PM8TJhB2CxWDqR8c5y4kWoJwSGRNYaVATdJM85kqfn2dZ9TdSihbFJraQzjYUMYx"
               "bsrnMfjPK6oZFAPQ1tWqzwTfKbtunvLFCzDJFVXVGbUAKxhsz7P5")
         , nymID_1(client_.Wallet()
-                      .Nym(reason_, "PaycodeNym_1", {fingerprint, 1})
+                      .Nym(reason_, "PaycodeNym_1", {fingerprint, 1, 1})
                       ->ID()
                       .str())
         , paycode_1(
               "PM8TJWedQTvxaoJpt9Wh25HR54oj5vmor6arAByFk4UTgUh1Tna2srsZLUo2xS3V"
               "iBot1ftf4p8ZUN8khB2zvViHXZkrwkfjcePSeEgsYapESKywge9F")
         , nymID_2(client_.Wallet()
-                      .Nym(reason_, "PaycodeNym_2", {fingerprint, 2})
+                      .Nym(reason_, "PaycodeNym_2", {fingerprint, 2, 1})
                       ->ID()
                       .str())
         , paycode_2(
               "PM8TJQmrQ4tSY6Gad59UpzqR8MRMesSYMKXvpMuzdDHByfRXVgvVdiqD5NmjoEH9"
               "V6ZrofFVViBwSg9dvVcP8R2CU1pXejhVQQj3XsWk8sLhAsspqk8F")
         , nymID_3(client_.Wallet()
-                      .Nym(reason_, "PaycodeNym_3", {fingerprint, 3})
+                      .Nym(reason_, "PaycodeNym_3", {fingerprint, 3, 1})
                       ->ID()
                       .str())
         , paycode_3(
@@ -305,7 +305,8 @@ TEST_F(Test_PaymentCode, factory_seed_nym)
     EXPECT_TRUE(nym.get()->Path(path));
 
     auto fingerprint{path.root()};
-    auto privatekey = client_.Seeds().GetPaymentCode(fingerprint, 10, reason_);
+    auto privatekey =
+        client_.Seeds().GetPaymentCode(fingerprint, 10, version, reason_);
 
     ASSERT_TRUE(privatekey);
 }

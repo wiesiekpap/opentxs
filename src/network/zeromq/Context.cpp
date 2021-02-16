@@ -9,8 +9,12 @@
 
 #include <zmq.h>
 #include <cassert>
+#include <chrono>
 #include <cstdint>
+#include <future>
+#include <iostream>
 #include <memory>
+#include <thread>
 
 #include "2_Factory.hpp"
 #include "PairEventListener.hpp"
@@ -360,7 +364,22 @@ Context::~Context()
 {
     if (nullptr != context_) {
         zmq_ctx_shutdown(context_);
-        // FIXME find the socket that is blocking this: zmq_ctx_term(context_);
+        auto promise = std::promise<void>{};
+        auto future = promise.get_future();
+        auto thread = std::thread{[&] {
+            zmq_ctx_term(context_);
+            promise.set_value();
+        }};
+        using Status = std::future_status;
+        constexpr auto limit = std::chrono::seconds{10};
+
+        if (Status::ready != future.wait_for(limit)) {
+            std::cout << "WARNING: zmq_ctx_term timed out.\n";
+            thread.detach();
+        }
+
+        if (thread.joinable()) { thread.join(); }
+
         context_ = nullptr;
     }
 }

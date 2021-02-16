@@ -12,7 +12,9 @@
 #include <memory>
 #include <string>
 
+#include "internal/api/Api.hpp"
 #include "internal/api/crypto/Crypto.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
@@ -49,6 +51,10 @@ namespace opentxs::api::crypto::implementation
 class Asymmetric final : virtual public api::crypto::internal::Asymmetric
 {
 public:
+    auto API() const noexcept -> const api::internal::Core& final
+    {
+        return api_;
+    }
     auto InstantiateECKey(const proto::AsymmetricKey& serialized) const
         -> ECKey final;
     auto InstantiateHDKey(const proto::AsymmetricKey& serialized) const
@@ -74,6 +80,16 @@ public:
         const proto::KeyRole role,
         const VersionNumber version) const -> HDKey final;
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
+    auto InstantiateSecp256k1Key(
+        const ReadView publicKey,
+        const PasswordPrompt& reason,
+        const proto::KeyRole role,
+        const VersionNumber version) const noexcept -> Secp256k1Key final;
+    auto InstantiateSecp256k1Key(
+        const Secret& privateKey,
+        const PasswordPrompt& reason,
+        const proto::KeyRole role,
+        const VersionNumber version) const noexcept -> Secp256k1Key final;
     auto NewSecp256k1Key(
         const std::string& seedID,
         const Secret& seed,
