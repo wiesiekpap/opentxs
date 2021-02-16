@@ -13,6 +13,7 @@
 #include <iosfwd>
 #include <iterator>
 #include <optional>
+#include <sstream>
 
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
@@ -46,6 +47,9 @@ namespace be = boost::endian;
 
 namespace opentxs::blockchain::client::implementation
 {
+const std::size_t
+    Wallet::Proposals::BitcoinTransactionBuilder::p2pkh_output_bytes_{34};
+
 Wallet::Proposals::BitcoinTransactionBuilder::BitcoinTransactionBuilder(
     const api::Core& api,
     const api::client::Blockchain& blockchain,
@@ -171,8 +175,14 @@ auto Wallet::Proposals::BitcoinTransactionBuilder::AddChange() noexcept -> bool
         return false;
     }
 
-    output_value_ += pOutput->Value();
-    output_total_ += pOutput->CalculateSize();
+    {
+        auto& output = *pOutput;
+        output_value_ += output.Value();
+        output_total_ += output.CalculateSize();
+
+        OT_ASSERT(0 < output.Keys().size());
+    }
+
     change_.emplace_back(std::move(pOutput));
     output_count_ = outputs_.size() + change_.size();
 
@@ -195,8 +205,9 @@ auto Wallet::Proposals::BitcoinTransactionBuilder::AddInput(
     const auto& input = *pInput;
     input_count_ = inputs_.size();
     input_total_ += input.CalculateSize();
-    input_value_ += static_cast<std::int64_t>(utxo.second.value());
-    inputs_.emplace_back(std::move(pInput));
+    const auto amount = static_cast<Amount>(utxo.second.value());
+    input_value_ += amount;
+    inputs_.emplace_back(std::move(pInput), amount);
 
     return true;
 }
@@ -205,7 +216,7 @@ auto Wallet::Proposals::BitcoinTransactionBuilder::bip_69() noexcept -> void
 {
     auto inputSort = [](const auto& lhs, const auto& rhs) -> auto
     {
-        return lhs->PreviousOutput() < rhs->PreviousOutput();
+        return lhs.first->PreviousOutput() < rhs.first->PreviousOutput();
     };
     auto outputSort = [](const auto& lhs, const auto& rhs) -> auto
     {
@@ -236,8 +247,11 @@ auto Wallet::Proposals::BitcoinTransactionBuilder::bip_69() noexcept -> void
 auto Wallet::Proposals::BitcoinTransactionBuilder::bytes() const noexcept
     -> std::size_t
 {
+    // NOTE assumes one additional output to account for change
+    const auto outputs = bitcoin::CompactSize{output_count_.Value() + 1};
+
     return fixed_overhead_ + input_count_.Size() + input_total_ +
-           output_count_.Size() + output_total_;
+           outputs.Size() + output_total_ + p2pkh_output_bytes_;
 }
 
 auto Wallet::Proposals::BitcoinTransactionBuilder::CreateOutputs(
@@ -350,6 +364,7 @@ auto Wallet::Proposals::BitcoinTransactionBuilder::FinalizeOutputs() noexcept
 
         auto& change = *change_.begin();
         change->SetValue(excessValue);
+        output_value_ += change->Value();
         outputs_.emplace_back(std::move(change));
     }
 
@@ -360,7 +375,17 @@ auto Wallet::Proposals::BitcoinTransactionBuilder::FinalizeOutputs() noexcept
 auto Wallet::Proposals::BitcoinTransactionBuilder::
     FinalizeTransaction() noexcept -> Transaction
 {
-    auto inputs = factory::BitcoinTransactionInputs(std::move(inputs_));
+    LogTrace(OT_METHOD)(__FUNCTION__)(": ")(print()).Flush();
+    auto inputs = factory::BitcoinTransactionInputs([&] {
+        auto output = std::vector<Input>{};
+        output.reserve(inputs_.size());
+
+        for (auto& [input, value] : inputs_) {
+            output.emplace_back(std::move(input));
+        }
+
+        return output;
+    }());
 
     if (false == bool(inputs)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct inputs")
@@ -435,7 +460,7 @@ auto Wallet::Proposals::BitcoinTransactionBuilder::init_bip143(
             space(inputs_.size() * sizeof(block::bitcoin::Outpoint));
         auto it = preimage.data();
 
-        for (const auto& input : inputs_) {
+        for (const auto& [input, amount] : inputs_) {
             const auto& outpoint = input->PreviousOutput();
             std::memcpy(it, &outpoint, sizeof(outpoint));
             std::advance(it, sizeof(outpoint));
@@ -453,7 +478,7 @@ auto Wallet::Proposals::BitcoinTransactionBuilder::init_bip143(
         auto preimage = space(inputs_.size() * sizeof(std::uint32_t));
         auto it = preimage.data();
 
-        for (const auto& input : inputs_) {
+        for (const auto& [input, value] : inputs_) {
             const auto sequence = input->Sequence();
             std::memcpy(it, &sequence, sizeof(sequence));
             std::advance(it, sizeof(sequence));
@@ -507,7 +532,9 @@ auto Wallet::Proposals::BitcoinTransactionBuilder::init_txcopy(
     auto inputCopy = std::vector<Input>{};
     std::transform(
         std::begin(inputs_), std::end(inputs_), std::back_inserter(inputCopy), [
-        ](const auto& input) -> auto { return input->SignatureVersion(); });
+        ](const auto& input) -> auto {
+            return input.first->SignatureVersion();
+        });
     auto inputs = factory::BitcoinTransactionInputs(std::move(inputCopy));
 
     if (false == bool(inputs)) {
@@ -557,6 +584,36 @@ auto Wallet::Proposals::BitcoinTransactionBuilder::IsFunded() const noexcept
     -> bool
 {
     return input_value_ > (output_value_ + required_fee());
+}
+
+auto Wallet::Proposals::BitcoinTransactionBuilder::print() const noexcept
+    -> std::string
+{
+    auto text = std::stringstream{};
+    text << "\n     version: " << std::to_string(version_.value()) << '\n';
+    text << "   lock time: " << std::to_string(lock_time_.value()) << '\n';
+    text << " input count: " << std::to_string(inputs_.size()) << '\n';
+
+    for (const auto& [input, value] : inputs_) {
+        const auto& outpoint = input->PreviousOutput();
+        text << " * " << outpoint.str()
+             << ", sequence: " << std::to_string(input->Sequence())
+             << ", value: " << std::to_string(value) << '\n';
+    }
+
+    text << "output count: " << std::to_string(outputs_.size()) << '\n';
+
+    for (const auto& output : outputs_) {
+        text << " * bytes: " << std::to_string(output->CalculateSize())
+             << ", value: " << std::to_string(output->Value()) << '\n';
+    }
+
+    text << "total output value: " << std::to_string(output_value_) << '\n';
+    text << " total input value: " << std::to_string(input_value_) << '\n';
+    text << "               fee: "
+         << std::to_string(input_value_ - output_value_);
+
+    return text.str();
 }
 
 auto Wallet::Proposals::BitcoinTransactionBuilder::required_fee() const noexcept
@@ -717,7 +774,7 @@ auto Wallet::Proposals::BitcoinTransactionBuilder::SignInputs() noexcept -> bool
     auto txcopy = Transaction{};
     auto bip143 = std::optional<bitcoin::Bip143Hashes>{};
 
-    for (const auto& input : inputs_) {
+    for (const auto& [input, value] : inputs_) {
         if (false == sign_input(++index, *input, txcopy, bip143)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to sign input")
                 .Flush();

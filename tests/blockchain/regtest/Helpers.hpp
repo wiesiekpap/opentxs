@@ -586,7 +586,8 @@ protected:
     [[maybe_unused]] auto Mine(
         const Height ancestor,
         const std::size_t count,
-        const Generator& gen) noexcept -> bool
+        const Generator& gen,
+        const std::vector<Transaction>& extra = {}) noexcept -> bool
     {
         const auto targetHeight = ancestor + static_cast<Height>(count);
         auto blockFuture = block_.GetFuture(targetHeight);
@@ -612,7 +613,7 @@ protected:
                 *previousHeader,
                 tx,
                 previousHeader->nBits(),
-                {},
+                extra,
                 previousHeader->Version(),
                 [start{ot::Clock::now()}] {
                     return (ot::Clock::now() - start) > std::chrono::minutes(2);

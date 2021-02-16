@@ -21,6 +21,7 @@
 #include <optional>
 #include <queue>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -277,6 +278,8 @@ private:
             using Bip143 = std::optional<bitcoin::Bip143Hashes>;
             using Hash = std::array<std::byte, 32>;
 
+            static const std::size_t p2pkh_output_bytes_;
+
             const api::Core& api_;
             const api::client::Blockchain& blockchain_;
             const internal::WalletDatabase& db_;
@@ -287,7 +290,7 @@ private:
             const be::little_uint32_buf_t lock_time_;
             std::vector<Output> outputs_;
             std::vector<Output> change_;
-            std::vector<Input> inputs_;
+            std::vector<std::pair<Input, Amount>> inputs_;
             const std::size_t fixed_overhead_;
             bitcoin::CompactSize input_count_;
             bitcoin::CompactSize output_count_;
@@ -312,6 +315,7 @@ private:
             auto hash_type() const noexcept -> proto::HashType;
             auto init_bip143(Bip143& bip143) const noexcept -> bool;
             auto init_txcopy(Transaction& txcopy) const noexcept -> bool;
+            auto print() const noexcept -> std::string;
             auto required_fee() const noexcept -> Amount;
             auto sign_input(
                 const int index,

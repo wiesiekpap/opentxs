@@ -285,13 +285,10 @@ auto Network::Disconnect() noexcept -> bool
 
 auto Network::FeeRate() const noexcept -> Amount
 {
-    try {
+    // TODO the hardcoded default fee rate should be a fallback only
+    // if there is no better data available.
 
-        return params::Data::chains_.at(chain_).default_fee_rate_;
-    } catch (...) {
-
-        return 0;
-    }
+    return params::Data::chains_.at(chain_).default_fee_rate_;
 }
 
 auto Network::GetConfirmations(const std::string& txid) const noexcept

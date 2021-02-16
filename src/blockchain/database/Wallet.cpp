@@ -298,10 +298,22 @@ auto Wallet::AddOutgoingTransaction(
     auto& pending = proposal_created_outpoints_[proposalID];
 
     for (const auto& output : transaction.Outputs()) {
-        if (0 == output.Keys().size()) { continue; }
+        ++index;
+
+        if (0 == output.Keys().size()) {
+            LogTrace(OT_METHOD)(__FUNCTION__)(": output ")(index)(
+                " belongs to someone else")
+                .Flush();
+
+            continue;
+        } else {
+            LogTrace(OT_METHOD)(__FUNCTION__)(": output ")(index)(
+                " belongs to me")
+                .Flush();
+        }
 
         const auto outpoint = block::bitcoin::Outpoint{
-            transaction.ID().Bytes(), static_cast<std::uint32_t>(++index)};
+            transaction.ID().Bytes(), static_cast<std::uint32_t>(index)};
         pending.emplace_back(outpoint);
 
         if (auto out = find_output(lock, outpoint); out.has_value()) {
