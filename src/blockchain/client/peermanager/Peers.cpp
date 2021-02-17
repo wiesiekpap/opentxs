@@ -401,10 +401,20 @@ auto PeerManager::Peers::get_peer() const noexcept -> Endpoint
 auto PeerManager::Peers::get_preferred_peer(
     const p2p::Protocol protocol) const noexcept -> Endpoint
 {
-    return database_.Get(
+    auto output = database_.Get(
         protocol,
         {p2p::Network::ipv4, p2p::Network::ipv6},
         preferred_services_);
+
+    if (output && (output->Bytes() == localhost_peer_)) {
+        LogVerbose(OT_METHOD)(__FUNCTION__)(
+            ": Skipping localhost as preferred peer")
+            .Flush();
+
+        return {};
+    }
+
+    return output;
 }
 
 auto PeerManager::Peers::get_preferred_services(
