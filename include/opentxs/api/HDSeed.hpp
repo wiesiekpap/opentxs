@@ -89,6 +89,7 @@ public:
     GetPaymentCode(
         std::string& fingerprint,
         const Bip32Index nym,
+        const std::uint8_t version,
         const PasswordPrompt& reason) const = 0;
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     OPENTXS_EXPORT virtual OTSymmetricKey GetStorageKey(

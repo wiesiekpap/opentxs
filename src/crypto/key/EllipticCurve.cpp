@@ -11,7 +11,10 @@
 #include <utility>
 
 #include "crypto/key/Asymmetric.hpp"
+#include "internal/api/Api.hpp"
+#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -79,7 +82,6 @@ EllipticCurve::EllipticCurve(
     }
 }
 
-#if OT_CRYPTO_WITH_BIP32
 EllipticCurve::EllipticCurve(
     const api::internal::Core& api,
     const crypto::EcdsaProvider& ecdsa,
@@ -96,7 +98,7 @@ EllipticCurve::EllipticCurve(
           keyType,
           role,
           true,
-          true,
+          (false == privateKey.empty()),
           version,
           OTData{publicKey},
           [&](auto&, auto&) -> EncryptedKey {
@@ -104,14 +106,47 @@ EllipticCurve::EllipticCurve(
           })
     , ecdsa_(ecdsa)
 {
-    if (false == bool(encrypted_key_)) {
+    if (has_private_ && !encrypted_key_) {
         throw std::runtime_error("Failed to instantiate encrypted_key_");
     }
 }
-#endif  // OT_CRYPTO_WITH_BIP32
 
 EllipticCurve::EllipticCurve(const EllipticCurve& rhs) noexcept
     : Asymmetric(rhs)
+    , ecdsa_(rhs.ecdsa_)
+{
+}
+
+EllipticCurve::EllipticCurve(
+    const EllipticCurve& rhs,
+    const ReadView newPublic) noexcept
+    : Asymmetric(rhs, newPublic)
+    , ecdsa_(rhs.ecdsa_)
+{
+}
+
+EllipticCurve::EllipticCurve(
+    const EllipticCurve& rhs,
+    OTSecret&& newSecretKey) noexcept
+    : Asymmetric(
+          rhs,
+          [&] {
+              auto pubkey = rhs.api_.Factory().Data();
+              const auto rc = rhs.ecdsa_.ScalarMultiplyBase(
+                  newSecretKey->Bytes(), pubkey->WriteInto());
+
+              if (rc) {
+
+                  return pubkey;
+              } else {
+                  LogOutput(OT_METHOD)(__FUNCTION__)(
+                      ": Failed to calculate public key")
+                      .Flush();
+
+                  return rhs.api_.Factory().Data();
+              }
+          }(),
+          std::move(newSecretKey))
     , ecdsa_(rhs.ecdsa_)
 {
 }
@@ -147,6 +182,48 @@ auto EllipticCurve::extract_key(
     }
 
     return output;
+}
+
+auto EllipticCurve::IncrementPrivate(
+    const Secret& rhs,
+    const PasswordPrompt& reason) const noexcept
+    -> std::unique_ptr<key::EllipticCurve>
+{
+    try {
+        const auto& lhs = get_private_key(reason);
+        auto newKey = api_.Factory().Secret(0);
+        auto rc =
+            ecdsa_.ScalarAdd(lhs.Bytes(), rhs.Bytes(), newKey->WriteInto());
+
+        if (false == rc) {
+            throw std::runtime_error("Failed to increment private key");
+        }
+
+        return replace_secret_key(std::move(newKey));
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+        return {};
+    }
+}
+
+auto EllipticCurve::IncrementPublic(const Secret& rhs) const noexcept
+    -> std::unique_ptr<key::EllipticCurve>
+{
+    try {
+        auto newKey = Space{};
+        auto rc = ecdsa_.PubkeyAdd(key_->Bytes(), rhs.Bytes(), writer(newKey));
+
+        if (false == rc) {
+            throw std::runtime_error("Failed to increment public key");
+        }
+
+        return replace_public_key(reader(newKey));
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+        return {};
+    }
 }
 
 auto EllipticCurve::serialize_public(EllipticCurve* in)

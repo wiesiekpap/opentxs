@@ -6,11 +6,15 @@
 #pragma once
 
 #include <memory>
+#include <utility>
 
+#include "crypto/key/EllipticCurve.hpp"
 #include "crypto/key/HD.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Ed25519.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
@@ -85,6 +89,8 @@ public:
         const api::internal::Core& api,
         const crypto::EcdsaProvider& ecdsa,
         const proto::AsymmetricKey& serializedKey) noexcept(false);
+    Ed25519(const Ed25519& rhs, const ReadView newPublic) noexcept;
+    Ed25519(const Ed25519& rhs, OTSecret&& newSecretKey) noexcept;
 
     ~Ed25519() final = default;
 
@@ -96,6 +102,16 @@ private:
     auto get_public() const -> std::shared_ptr<proto::AsymmetricKey> final
     {
         return serialize_public(clone());
+    }
+    auto replace_public_key(const ReadView newPubkey) const noexcept
+        -> std::unique_ptr<EllipticCurve> final
+    {
+        return std::make_unique<Ed25519>(*this, newPubkey);
+    }
+    auto replace_secret_key(OTSecret&& newSecretKey) const noexcept
+        -> std::unique_ptr<EllipticCurve> final
+    {
+        return std::make_unique<Ed25519>(*this, std::move(newSecretKey));
     }
 
     Ed25519() = delete;

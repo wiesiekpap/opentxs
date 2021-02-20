@@ -140,6 +140,12 @@ using Space = std::vector<std::byte>;
 using Digest = std::function<
     bool(const std::uint32_t, const ReadView, const AllocateOutput)>;
 
+OPENTXS_EXPORT auto copy(const ReadView in, const AllocateOutput out) noexcept
+    -> bool;
+OPENTXS_EXPORT auto copy(
+    const ReadView in,
+    const AllocateOutput out,
+    const std::size_t limit) noexcept -> bool;
 OPENTXS_EXPORT auto preallocated(const std::size_t size, void* out) noexcept
     -> AllocateOutput;
 OPENTXS_EXPORT auto reader(const WritableView& in) noexcept -> ReadView;

@@ -18,6 +18,7 @@
 #include "opentxs/Proto.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/crypto/SecretStyle.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
 
 namespace opentxs
@@ -83,15 +84,21 @@ public:
         const std::uint8_t* key,
         const size_t keySize,
         std::uint8_t* output) const -> bool final;
-    auto RandomizeMemory(void* destination, const std::size_t size) const
-        -> bool final;
 #if OT_CRYPTO_SUPPORTED_KEY_ED25519
+    auto PubkeyAdd(
+        const ReadView pubkey,
+        const ReadView scalar,
+        const AllocateOutput result) const noexcept -> bool final;
     auto RandomKeypair(
         const AllocateOutput privateKey,
         const AllocateOutput publicKey,
         const proto::KeyRole role,
         const NymParameters& options,
         const AllocateOutput params) const noexcept -> bool final;
+#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
+    auto RandomizeMemory(void* destination, const std::size_t size) const
+        -> bool final;
+#if OT_CRYPTO_SUPPORTED_KEY_ED25519
     auto ScalarAdd(
         const ReadView lhs,
         const ReadView rhs,
@@ -101,6 +108,7 @@ public:
     auto SharedSecret(
         const key::Asymmetric& publicKey,
         const key::Asymmetric& privateKey,
+        const SecretStyle style,
         const PasswordPrompt& reason,
         Secret& secret) const noexcept -> bool final;
     auto Sign(

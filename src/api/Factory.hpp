@@ -807,8 +807,8 @@ protected:
 
 private:
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-    auto instantiate_secp256k1(const ReadView key) const noexcept
-        -> std::unique_ptr<opentxs::crypto::key::Secp256k1>;
+    auto instantiate_secp256k1(const ReadView key, const ReadView chaincode)
+        const noexcept -> std::unique_ptr<opentxs::crypto::key::Secp256k1>;
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 
     Factory() = delete;

@@ -14,16 +14,20 @@
 #include <string>
 #include <vector>
 
-#include "2_Factory.hpp"
 #include "internal/api/Api.hpp"
+#include "internal/api/crypto/Crypto.hpp"
+#include "internal/crypto/key/Factory.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Context.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/HDSeed.hpp"
 #include "opentxs/api/Primitives.hpp"
-#include "opentxs/api/crypto/Asymmetric.hpp"
+#include "opentxs/api/crypto/Crypto.hpp"
+#include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
 #include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -54,7 +58,7 @@ namespace opentxs::factory
 {
 auto HDSeed(
     const api::Factory& factory,
-    const api::crypto::Asymmetric& asymmetric,
+    const api::crypto::internal::Asymmetric& asymmetric,
     const api::crypto::Symmetric& symmetric,
     const api::storage::Storage& storage,
     const crypto::Bip32& bip32,
@@ -85,7 +89,7 @@ const HDSeed::LangReverseMap HDSeed::lang_reverse_map_{reverse_map(lang_map_)};
 
 HDSeed::HDSeed(
     [[maybe_unused]] const api::Factory& factory,
-    [[maybe_unused]] const api::crypto::Asymmetric& asymmetric,
+    [[maybe_unused]] const api::crypto::internal::Asymmetric& asymmetric,
     const api::crypto::Symmetric& symmetric,
     const api::storage::Storage& storage,
     const opentxs::crypto::Bip32& bip32,
@@ -310,6 +314,7 @@ auto HDSeed::GetOrCreateDefaultSeed(
 auto HDSeed::GetPaymentCode(
     std::string& fingerprint,
     const Bip32Index nym,
+    const std::uint8_t version,
     const PasswordPrompt& reason) const
     -> std::unique_ptr<opentxs::crypto::key::Secp256k1>
 {
@@ -318,12 +323,53 @@ auto HDSeed::GetPaymentCode(
 
     if (seed->empty()) { return {}; }
 
-    return asymmetric_.NewSecp256k1Key(
+    auto pKey = asymmetric_.NewSecp256k1Key(
         fingerprint,
         seed,
         {HDIndex{Bip43Purpose::PAYCODE, Bip32Child::HARDENED},
          HDIndex{Bip44Type::BITCOIN, Bip32Child::HARDENED},
          HDIndex{nym, Bip32Child::HARDENED}},
+        reason);
+
+    if (!pKey) { return pKey; }
+
+    const auto& key = *pKey;
+
+    switch (version) {
+        case 3: {
+        } break;
+        case 1:
+        case 2:
+        default: {
+            return pKey;
+        }
+    }
+
+    const auto& api = asymmetric_.API();
+    const auto code = [&] {
+        auto out = api.Factory().Secret(0);
+        api.Crypto().Hash().Digest(
+            proto::HASHTYPE_SHA256D, key.PublicKey(), out->WriteInto());
+
+        return out;
+    }();
+    const auto path = [&] {
+        auto out = proto::HDPath{};
+        key.Path(out);
+
+        return out;
+    }();
+
+    return factory::Secp256k1Key(
+        api,
+        api.Crypto().SECP256K1(),
+        api.Factory().SecretFromBytes(key.PrivateKey(reason)),
+        code,
+        api.Factory().Data(key.PublicKey()),
+        path,
+        key.Parent(),
+        key.Role(),
+        key.Version(),
         reason);
 }
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
@@ -343,7 +389,7 @@ auto HDSeed::GetStorageKey(
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to derive storage key.")
             .Flush();
 
-        return OTSymmetricKey{opentxs::Factory::SymmetricKey()};
+        return OTSymmetricKey{opentxs::factory::SymmetricKey()};
     }
 
     const auto& key = *pKey;

@@ -147,6 +147,7 @@
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/crypto/Language.hpp"
+#include "opentxs/crypto/SecretStyle.hpp"
 #include "opentxs/crypto/SeedStrength.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/Types.hpp"

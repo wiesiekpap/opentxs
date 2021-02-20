@@ -8,6 +8,7 @@
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Types.hpp"
 
 namespace opentxs
@@ -28,6 +29,10 @@ class HDNode
 public:
     WritableView data_;
     WritableView hash_;
+
+    auto Assign(const EcdsaCurve& curve, Bip32::Key& out) const noexcept(false)
+        -> void;
+    auto check() const noexcept(false) -> void;
 
     auto Fingerprint() const noexcept -> Bip32Fingerprint;
     auto ParentCode() const noexcept -> ReadView;

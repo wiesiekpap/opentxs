@@ -32,6 +32,7 @@ extern "C" {
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/crypto/SecretStyle.hpp"
 #if OT_CRYPTO_SUPPORTED_KEY_ED25519
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
@@ -438,6 +439,16 @@ auto Sodium::KeySize(const proto::SymmetricMode mode) const -> std::size_t
 }
 
 #if OT_CRYPTO_SUPPORTED_KEY_ED25519
+auto Sodium::PubkeyAdd(
+    [[maybe_unused]] const ReadView pubkey,
+    [[maybe_unused]] const ReadView scalar,
+    [[maybe_unused]] const AllocateOutput result) const noexcept -> bool
+{
+    LogOutput(OT_METHOD)(__FUNCTION__)(": Not implemented").Flush();
+
+    return false;
+}
+
 auto Sodium::RandomKeypair(
     const AllocateOutput privateKey,
     const AllocateOutput publicKey,
@@ -555,9 +566,17 @@ auto Sodium::ScalarMultiplyBase(
 auto Sodium::SharedSecret(
     const key::Asymmetric& publicKey,
     const key::Asymmetric& privateKey,
+    const SecretStyle style,
     const PasswordPrompt& reason,
     Secret& secret) const noexcept -> bool
 {
+    if (SecretStyle::Default != style) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported secret style")
+            .Flush();
+
+        return false;
+    }
+
     if (publicKey.keyType() != proto::AKEYTYPE_ED25519) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Public key is wrong type")
             .Flush();

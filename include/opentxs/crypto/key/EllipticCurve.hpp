@@ -17,6 +17,14 @@ namespace opentxs
 {
 namespace crypto
 {
+class EcdsaProvider;
+}  // namespace crypto
+}  // namespace opentxs
+
+namespace opentxs
+{
+namespace crypto
+{
 namespace key
 {
 class EllipticCurve : virtual public Asymmetric
@@ -27,6 +35,13 @@ public:
 
     OPENTXS_EXPORT virtual std::unique_ptr<EllipticCurve> asPublicEC()
         const noexcept = 0;
+    OPENTXS_EXPORT virtual const crypto::EcdsaProvider& ECDSA()
+        const noexcept = 0;
+    OPENTXS_EXPORT virtual std::unique_ptr<EllipticCurve> IncrementPrivate(
+        const Secret& scalar,
+        const PasswordPrompt& reason) const noexcept = 0;
+    OPENTXS_EXPORT virtual std::unique_ptr<EllipticCurve> IncrementPublic(
+        const Secret& scalar) const noexcept = 0;
     OPENTXS_EXPORT virtual bool SignDER(
         const ReadView preimage,
         const proto::HashType hash,

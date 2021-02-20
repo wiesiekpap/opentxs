@@ -42,8 +42,12 @@ public:
 
     OPENTXS_EXPORT virtual ReadView Chaincode(
         const PasswordPrompt& reason) const noexcept = 0;
+    OPENTXS_EXPORT virtual std::unique_ptr<HD> ChildKey(
+        const Bip32Index index,
+        const PasswordPrompt& reason) const noexcept = 0;
     OPENTXS_EXPORT virtual int Depth() const noexcept = 0;
     OPENTXS_EXPORT virtual Bip32Fingerprint Fingerprint() const noexcept = 0;
+    OPENTXS_EXPORT virtual Bip32Fingerprint Parent() const noexcept = 0;
     OPENTXS_EXPORT virtual std::string Xprv(
         const PasswordPrompt& reason) const noexcept = 0;
     OPENTXS_EXPORT virtual std::string Xpub(

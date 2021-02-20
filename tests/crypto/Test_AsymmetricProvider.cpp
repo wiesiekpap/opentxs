@@ -27,6 +27,7 @@
 #include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
+#include "opentxs/crypto/SecretStyle.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
@@ -174,14 +175,15 @@ public:
         const crypto::key::Asymmetric& keyTwo,
         const ot::Data& expected)
     {
+        constexpr auto style = ot::crypto::SecretStyle::Default;
         auto reason = client_.Factory().PasswordPrompt(__FUNCTION__);
         auto secret1 = client_.Factory().Secret(0);
         auto secret2 = client_.Factory().Secret(0);
-        auto output = lib.SharedSecret(keyOne, keyTwo, reason, secret1);
+        auto output = lib.SharedSecret(keyOne, keyTwo, style, reason, secret1);
 
         if (false == output) { return output; }
 
-        output = lib.SharedSecret(keyTwo, keyOne, reason, secret2);
+        output = lib.SharedSecret(keyTwo, keyOne, style, reason, secret2);
 
         if (false == output) { return output; }
 

@@ -58,9 +58,12 @@ public:
         , AliceID("ot24XFA1wKynjaAB59dx7PwEzGg37U8Q2yXG")
         , BobID("ot274uRuN1VezD47R7SqAH27s2WKP1U5jKWk")
         , EveID("otwz4jCuiVg7UF2i1NgCSvTWeDS29EAHeL6")
-        , FrankID("ot2BqchYuY5r747PnGK3SuM4A8bCLtuGASqY")
-        , Alice(client_.Wallet().Nym(reason_, "Alice", {SeedA_, 0})->ID().str())
-        , Bob(client_.Wallet().Nym(reason_, "Bob", {SeedB_, 0})->ID().str())
+        , FrankID("otogQecfWnoJn5Juy5z5Si3mS53rTb7LgGe")
+        , Alice(client_.Wallet()
+                    .Nym(reason_, "Alice", {SeedA_, 0, 1})
+                    ->ID()
+                    .str())
+        , Bob(client_.Wallet().Nym(reason_, "Bob", {SeedB_, 0, 1})->ID().str())
     {
     }
 };
@@ -146,7 +149,7 @@ TEST_F(Test_CreateNymHD, TestNym_Dave)
 
 TEST_F(Test_CreateNymHD, TestNym_Eve)
 {
-    const auto NymE = client_.Wallet().Nym(reason_, "Eve", {SeedB_, 2});
+    const auto NymE = client_.Wallet().Nym(reason_, "Eve", {SeedB_, 2, 1});
 
     ASSERT_TRUE(NymE);
 
@@ -170,8 +173,8 @@ TEST_F(Test_CreateNymHD, TestNym_Eve)
 
 TEST_F(Test_CreateNymHD, TestNym_Frank)
 {
-    const auto NymF = client_.Wallet().Nym(reason_, "Frank", {SeedB_, 3});
-    const auto NymF2 = client_.Wallet().Nym(reason_, "Frank", {SeedA_, 3});
+    const auto NymF = client_.Wallet().Nym(reason_, "Frank", {SeedB_, 3, 3});
+    const auto NymF2 = client_.Wallet().Nym(reason_, "Frank", {SeedA_, 3, 3});
 
     EXPECT_NE(NymF->ID(), NymF2->ID());
 

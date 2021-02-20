@@ -13,6 +13,7 @@
 #include <string>
 
 #include "internal/api/Api.hpp"
+#include "internal/crypto/key/Factory.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
@@ -68,11 +69,44 @@ public:
     Symmetric(
         const api::internal::Core& api,
         const crypto::SymmetricProvider& engine);
+    Symmetric(
+        const api::internal::Core& api,
+        const crypto::SymmetricProvider& engine,
+        const proto::SymmetricKey serialized);
+    Symmetric(
+        const api::internal::Core& api,
+        const crypto::SymmetricProvider& engine,
+        const Secret& seed,
+        const std::string& salt,
+        const std::size_t size,
+        const std::uint64_t operations,
+        const std::uint64_t difficulty,
+        const proto::SymmetricKeyType type = proto::SKEYTYPE_ARGON2);
 
     ~Symmetric() final = default;
 
 private:
-    friend opentxs::Factory;
+    friend std::unique_ptr<crypto::key::Symmetric> opentxs::factory::
+        SymmetricKey(
+            const api::internal::Core&,
+            const crypto::SymmetricProvider&,
+            const opentxs::PasswordPrompt&,
+            const proto::SymmetricMode) noexcept;
+    friend std::unique_ptr<crypto::key::Symmetric> opentxs::factory::
+        SymmetricKey(
+            const api::internal::Core&,
+            const crypto::SymmetricProvider&,
+            const Secret&,
+            const std::uint64_t,
+            const std::uint64_t,
+            const std::size_t,
+            const proto::SymmetricKeyType) noexcept;
+    friend std::unique_ptr<crypto::key::Symmetric> opentxs::factory::
+        SymmetricKey(
+            const api::internal::Core&,
+            const crypto::SymmetricProvider&,
+            const Secret&,
+            const opentxs::PasswordPrompt&) noexcept;
     friend key::Symmetric;
 
     const api::internal::Core& api_;
@@ -136,19 +170,6 @@ private:
     auto serialize(const Lock& lock, proto::SymmetricKey& output) const -> bool;
     auto unlock(const Lock& lock, const PasswordPrompt& reason) const -> bool;
 
-    Symmetric(
-        const api::internal::Core& api,
-        const crypto::SymmetricProvider& engine,
-        const proto::SymmetricKey serialized);
-    Symmetric(
-        const api::internal::Core& api,
-        const crypto::SymmetricProvider& engine,
-        const Secret& seed,
-        const std::string& salt,
-        const std::size_t size,
-        const std::uint64_t operations,
-        const std::uint64_t difficulty,
-        const proto::SymmetricKeyType type = proto::SKEYTYPE_ARGON2);
     Symmetric(
         const api::internal::Core& api,
         const crypto::SymmetricProvider& engine,

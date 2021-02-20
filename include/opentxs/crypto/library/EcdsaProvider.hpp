@@ -17,6 +17,10 @@ namespace crypto
 class EcdsaProvider : virtual public AsymmetricProvider
 {
 public:
+    OPENTXS_EXPORT virtual bool PubkeyAdd(
+        const ReadView pubkey,
+        const ReadView scalar,
+        const AllocateOutput result) const noexcept = 0;
     OPENTXS_EXPORT virtual bool ScalarAdd(
         const ReadView lhs,
         const ReadView rhs,

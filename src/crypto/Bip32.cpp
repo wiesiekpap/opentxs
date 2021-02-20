@@ -15,8 +15,6 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
-#include <string_view>
-#include <tuple>
 #include <vector>
 
 #include "crypto/HDNode.hpp"
@@ -32,11 +30,11 @@
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
+#include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/HDPath.pb.h"
 #include "util/HDIndex.hpp"
-#include "util/Sodium.hpp"
 
 #define OT_METHOD "opentxs::crypto::implementation::Bip32::"
 
@@ -69,7 +67,7 @@ Bip32::Bip32(const api::Crypto& crypto) noexcept
 {
 }
 
-auto Bip32::ckd_private_hardened(
+auto Bip32::ckd_hardened(
     const HDNode& node,
     const be::big_uint32_buf_t i,
     const WritableView& data) const noexcept -> void
@@ -83,7 +81,7 @@ auto Bip32::ckd_private_hardened(
     std::memcpy(out, &i, sizeof(i));
 }
 
-auto Bip32::ckd_private_normal(
+auto Bip32::ckd_normal(
     const HDNode& node,
     const be::big_uint32_buf_t i,
     const WritableView& data) const noexcept -> void
@@ -110,124 +108,309 @@ auto Bip32::DeriveKey(
     const auto& factory = Context().Factory();
     auto output =
         Key{factory.Secret(0), factory.Secret(0), Data::Factory(), path, 0};
-    auto& [privateKey, chainCode, publicKey, pathOut, parent] = output;
-    auto node = HDNode{crypto_};
-    auto& hash = node.hash_;
-    auto& data = node.data_;
 
-    {
-        const auto init = root_node(
-            EcdsaCurve::secp256k1,
-            seed.Bytes(),
-            node.InitPrivate(),
-            node.InitCode(),
-            node.InitPublic());
+    try {
+        auto& [privateKey, chainCode, publicKey, pathOut, parent] = output;
+        auto node = [&] {
+            auto ret = HDNode{crypto_};
+            const auto init = root_node(
+                EcdsaCurve::secp256k1,
+                seed.Bytes(),
+                ret.InitPrivate(),
+                ret.InitCode(),
+                ret.InitPublic());
 
-        if (false == init) { return output; }
+            if (false == init) {
+                throw std::runtime_error("Failed to derive root node");
+            }
 
-        if (false == data.valid(33 + 4)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to allocate temporary data space")
-                .Flush();
+            ret.check();
 
-            return output;
+            return ret;
+        }();
+
+        for (const auto& child : path) {
+            if (false == derive_private(node, parent, child)) {
+                throw std::runtime_error("Failed to derive child node");
+            }
         }
 
-        if (false == hash.valid(64)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to allocate temporary hash space")
-                .Flush();
-
-            return output;
-        }
+        node.Assign(curve, output);
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
     }
 
-    for (const auto& child : path) {
-        parent = node.Fingerprint();
-        auto i = be::big_uint32_buf_t{child};
+    return output;
+}
 
-        if (IsHard(child)) {
-            ckd_private_hardened(node, i, data);
+auto Bip32::DerivePrivateKey(
+    const key::HD& key,
+    const Path& pathAppend,
+    const PasswordPrompt& reason) const noexcept(false) -> Key
+{
+    const auto curve = [&] {
+        if (proto::AKEYTYPE_ED25519 == key.keyType()) {
+
+            return EcdsaCurve::ed25519;
         } else {
-            ckd_private_normal(node, i, data);
+
+            return EcdsaCurve::secp256k1;
         }
+    }();
+    const auto& factory = Context().Factory();
+    auto output =
+        Key{factory.Secret(0),
+            factory.Secret(0),
+            Data::Factory(),
+            [&] {
+                auto output = Path{};
+                auto path = proto::HDPath{};
 
-        auto success = crypto_.Hash().HMAC(
-            proto::HASHTYPE_SHA512,
-            node.ParentCode(),
-            reader(data),
-            [&hash](const auto) {
-                return WritableView{hash.data(), 64};
-            });
+                if (key.Path(path)) {
+                    for (const auto& child : path.child()) {
+                        output.emplace_back(child);
+                    }
+                }
 
-        if (false == success) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to calculate hash")
-                .Flush();
-
-            return output;
-        }
-
-        try {
-            const auto& ecdsa = provider(EcdsaCurve::secp256k1);
-            success = ecdsa.ScalarAdd(
-                node.ParentPrivate(),
-                {hash.as<char>(), 32},
-                node.ChildPrivate());
-
-            if (false == success) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid scalar").Flush();
+                for (const auto child : pathAppend) {
+                    output.emplace_back(child);
+                }
 
                 return output;
+            }(),
+            0};
+    try {
+        auto& [privateKey, chainCode, publicKey, pathOut, parent] = output;
+        auto node = [&] {
+            auto ret = HDNode{crypto_};
+            const auto privateKey = key.PrivateKey(reason);
+            const auto chainCode = key.Chaincode(reason);
+            const auto publicKey = key.PublicKey();
+
+            if (false == copy(privateKey, ret.InitPrivate())) {
+                throw std::runtime_error("Failed to initialize public key");
             }
 
-            success = ecdsa.ScalarMultiplyBase(
-                reader(node.ChildPrivate()(32)), node.ChildPublic());
+            if (false == copy(chainCode, ret.InitCode())) {
+                throw std::runtime_error("Failed to initialize chain code");
+            }
 
-            if (false == success) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": Failed to calculate public key")
-                    .Flush();
+            if (false == copy(publicKey, ret.InitPublic())) {
+                throw std::runtime_error("Failed to initialize public key");
+            }
+
+            ret.check();
+
+            return ret;
+        }();
+
+        for (const auto& child : pathAppend) {
+            if (false == derive_private(node, parent, child)) {
+                throw std::runtime_error("Failed to derive child node");
+            }
+        }
+
+        node.Assign(curve, output);
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+    }
+
+    return output;
+}
+
+auto Bip32::DerivePublicKey(
+    const key::HD& key,
+    const Path& pathAppend,
+    const PasswordPrompt& reason) const noexcept(false) -> Key
+{
+    const auto curve = [&] {
+        if (proto::AKEYTYPE_ED25519 == key.keyType()) {
+
+            return EcdsaCurve::ed25519;
+        } else {
+
+            return EcdsaCurve::secp256k1;
+        }
+    }();
+    const auto& factory = Context().Factory();
+    auto output =
+        Key{factory.Secret(0),
+            factory.Secret(0),
+            Data::Factory(),
+            [&] {
+                auto output = Path{};
+                auto path = proto::HDPath{};
+
+                if (key.Path(path)) {
+                    for (const auto& child : path.child()) {
+                        output.emplace_back(child);
+                    }
+                }
+
+                for (const auto child : pathAppend) {
+                    output.emplace_back(child);
+                }
 
                 return output;
+            }(),
+            0};
+    try {
+        auto& [privateKey, chainCode, publicKey, pathOut, parent] = output;
+        auto node = [&] {
+            auto ret = HDNode{crypto_};
+            const auto chainCode = key.Chaincode(reason);
+            const auto publicKey = key.PublicKey();
+
+            if (false == copy(chainCode, ret.InitCode())) {
+                throw std::runtime_error("Failed to initialize chain code");
             }
-        } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
-            return output;
+            if (false == copy(publicKey, ret.InitPublic())) {
+                throw std::runtime_error("Failed to initialize public key");
+            }
+
+            ret.check();
+
+            return ret;
+        }();
+
+        for (const auto& child : pathAppend) {
+            if (false == derive_public(node, parent, child)) {
+                throw std::runtime_error("Failed to derive child node");
+            }
         }
 
-        auto code = hash.as<std::byte>();
-        std::advance(code, 32);
-        std::memcpy(node.ChildCode().data(), code, 32);
-        node.Next();
+        node.Assign(curve, output);
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
     }
-
-    const auto privateOut = node.ParentPrivate();
-    const auto chainOut = node.ParentCode();
-    const auto publicOut = node.ParentPublic();
-
-    if (EcdsaCurve::secp256k1 == curve) {
-        privateKey->Assign(privateOut);
-        publicKey->Assign(publicOut);
-    } else {
-        const auto expanded = sodium::ExpandSeed(
-            {reinterpret_cast<const char*>(privateOut.data()),
-             privateOut.size()},
-            privateKey->WriteInto(Secret::Mode::Mem),
-            publicKey->WriteInto());
-
-        if (false == expanded) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to expand seed")
-                .Flush();
-            return output;
-        }
-    }
-
-    chainCode->Assign(chainOut);
 
     return output;
 }
 #endif  // OT_CRYPTO_WITH_BIP32
+
+auto Bip32::derive_private(
+    HDNode& node,
+    Bip32Fingerprint& parent,
+    const Bip32Index child) const noexcept -> bool
+{
+    auto& hash = node.hash_;
+    auto& data = node.data_;
+    parent = node.Fingerprint();
+    auto i = be::big_uint32_buf_t{child};
+
+    if (IsHard(child)) {
+        ckd_hardened(node, i, data);
+    } else {
+        ckd_normal(node, i, data);
+    }
+
+    auto success = crypto_.Hash().HMAC(
+        proto::HASHTYPE_SHA512,
+        node.ParentCode(),
+        reader(data),
+        preallocated(hash.size(), hash.data()));
+
+    if (false == success) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to calculate hash")
+            .Flush();
+
+        return false;
+    }
+
+    try {
+        const auto& ecdsa = provider(EcdsaCurve::secp256k1);
+        success = ecdsa.ScalarAdd(
+            node.ParentPrivate(), {hash.as<char>(), 32}, node.ChildPrivate());
+
+        if (false == success) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid scalar").Flush();
+
+            return false;
+        }
+
+        success = ecdsa.ScalarMultiplyBase(
+            reader(node.ChildPrivate()(32)), node.ChildPublic());
+
+        if (false == success) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": Failed to calculate public key")
+                .Flush();
+
+            return false;
+        }
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+        return false;
+    }
+
+    auto code = hash.as<std::byte>();
+    std::advance(code, 32);
+    std::memcpy(node.ChildCode().data(), code, 32);
+    node.Next();
+
+    return true;
+}
+
+auto Bip32::derive_public(
+    HDNode& node,
+    Bip32Fingerprint& parent,
+    const Bip32Index child) const noexcept -> bool
+{
+    auto& hash = node.hash_;
+    auto& data = node.data_;
+    parent = node.Fingerprint();
+    auto i = be::big_uint32_buf_t{child};
+
+    if (IsHard(child)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Hardened public derivation is not possible")
+            .Flush();
+
+        return false;
+    } else {
+        ckd_normal(node, i, data);
+    }
+
+    auto success = crypto_.Hash().HMAC(
+        proto::HASHTYPE_SHA512,
+        node.ParentCode(),
+        reader(data),
+        preallocated(hash.size(), hash.data()));
+
+    if (false == success) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to calculate hash")
+            .Flush();
+
+        return false;
+    }
+
+    try {
+        const auto& ecdsa = provider(EcdsaCurve::secp256k1);
+        success = ecdsa.PubkeyAdd(
+            node.ParentPublic(), {hash.as<char>(), 32}, node.ChildPublic());
+
+        if (false == success) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": Failed to calculate public key")
+                .Flush();
+
+            return false;
+        }
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+        return false;
+    }
+
+    auto code = hash.as<std::byte>();
+    std::advance(code, 32);
+    std::memcpy(node.ChildCode().data(), code, 32);
+    node.Next();
+
+    return true;
+}
 
 auto Bip32::DeserializePrivate(
     const std::string& serialized,

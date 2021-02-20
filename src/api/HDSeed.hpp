@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <iosfwd>
 #include <map>
 #include <memory>
@@ -31,7 +32,11 @@ namespace api
 {
 namespace crypto
 {
-class Asymmetric;
+namespace internal
+{
+struct Asymmetric;
+}  // namespace internal
+
 class Symmetric;
 }  // namespace crypto
 
@@ -109,6 +114,7 @@ public:
     auto GetPaymentCode(
         std::string& fingerprint,
         const Bip32Index nym,
+        const std::uint8_t version,
         const PasswordPrompt& reason) const
         -> std::unique_ptr<opentxs::crypto::key::Secp256k1> final;
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
@@ -153,7 +159,7 @@ public:
 
     HDSeed(
         const api::Factory& factory,
-        const api::crypto::Asymmetric& asymmetric,
+        const api::crypto::internal::Asymmetric& asymmetric,
         const api::crypto::Symmetric& symmetric,
         const api::storage::Storage& storage,
         const opentxs::crypto::Bip32& bip32,
@@ -177,7 +183,7 @@ private:
 
     const api::crypto::Symmetric& symmetric_;
 #if OT_CRYPTO_WITH_BIP32
-    const api::crypto::Asymmetric& asymmetric_;
+    const api::crypto::internal::Asymmetric& asymmetric_;
 #endif  // OT_CRYPTO_WITH_BIP32
     const api::storage::Storage& storage_;
     const opentxs::crypto::Bip32& bip32_;

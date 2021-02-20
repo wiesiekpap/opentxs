@@ -95,7 +95,7 @@ auto Endpoints(const network::zeromq::Context& zmq, const int instance) noexcept
     -> std::unique_ptr<api::Endpoints>;
 auto HDSeed(
     const api::Factory& factory,
-    const api::crypto::Asymmetric& asymmetric,
+    const api::crypto::internal::Asymmetric& asymmetric,
     const api::crypto::Symmetric& symmetric,
     const api::storage::Storage& storage,
     const crypto::Bip32& bip32,

@@ -33,7 +33,9 @@ add_library(opentxs-core-crypto OBJECT ${cxx-sources} ${cxx-headers})
 target_include_directories(
   opentxs-core-crypto SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
-target_link_libraries(opentxs-core-crypto PRIVATE opentxs::messages)
+target_link_libraries(
+  opentxs-core-crypto PRIVATE opentxs::messages Boost::headers
+)
 add_dependencies(opentxs-core-crypto generated_code)
 
 if(OPENTXS_STANDALONE)

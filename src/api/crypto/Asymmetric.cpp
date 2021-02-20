@@ -10,14 +10,18 @@
 #include <type_traits>
 #include <utility>
 
-#include "2_Factory.hpp"
 #include "crypto/key/Null.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/crypto/Factory.hpp"
+#include "internal/crypto/key/Factory.hpp"
+#include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/core/Secret.hpp"
 #include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
@@ -30,6 +34,7 @@
 #endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 #include "opentxs/crypto/key/Secp256k1.hpp"
+#include "opentxs/crypto/library/EcdsaProvider.hpp"
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 #include "opentxs/protobuf/AsymmetricKey.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
@@ -73,15 +78,13 @@ auto Asymmetric::instantiate_hd_key(
     const proto::KeyRole role,
     const VersionNumber version) const noexcept -> std::unique_ptr<ReturnType>
 {
-    using Pointer = std::unique_ptr<ReturnType>;
-
     const auto& [privkey, ccode, pubkey, path, parent] = serialized;
 
     switch (type) {
         case proto::AKEYTYPE_ED25519:
 #if OT_CRYPTO_SUPPORTED_KEY_ED25519
         {
-            return Pointer{opentxs::Factory::Ed25519Key(
+            return opentxs::factory::Ed25519Key(
                 api_,
                 api_.Crypto().ED25519(),
                 privkey,
@@ -91,7 +94,7 @@ auto Asymmetric::instantiate_hd_key(
                 parent,
                 role,
                 version,
-                reason)};
+                reason);
         }
 #else
             break;
@@ -99,7 +102,7 @@ auto Asymmetric::instantiate_hd_key(
         case proto::AKEYTYPE_SECP256K1:
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
         {
-            return Pointer{opentxs::Factory::Secp256k1Key(
+            return opentxs::factory::Secp256k1Key(
                 api_,
                 api_.Crypto().SECP256K1(),
                 privkey,
@@ -109,7 +112,7 @@ auto Asymmetric::instantiate_hd_key(
                 parent,
                 role,
                 version,
-                reason)};
+                reason);
         }
 #else
             break;
@@ -130,16 +133,12 @@ auto Asymmetric::instantiate_serialized_key(
     -> std::unique_ptr<ReturnType>
 
 {
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519 || OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-    using Pointer = std::unique_ptr<ReturnType>;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519 || OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-
     switch (serialized.type()) {
         case proto::AKEYTYPE_ED25519:
 #if OT_CRYPTO_SUPPORTED_KEY_ED25519
         {
-            return Pointer{opentxs::Factory::Ed25519Key(
-                api_, api_.Crypto().ED25519(), serialized)};
+            return opentxs::factory::Ed25519Key(
+                api_, api_.Crypto().ED25519(), serialized);
         }
 #else
             break;
@@ -147,8 +146,8 @@ auto Asymmetric::instantiate_serialized_key(
         case proto::AKEYTYPE_SECP256K1:
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
         {
-            return Pointer{opentxs::Factory::Secp256k1Key(
-                api_, api_.Crypto().SECP256K1(), serialized)};
+            return opentxs::factory::Secp256k1Key(
+                api_, api_.Crypto().SECP256K1(), serialized);
         }
 #else
             break;
@@ -238,8 +237,8 @@ auto Asymmetric::InstantiateKey(const proto::AsymmetricKey& serialized) const
         }
 #if OT_CRYPTO_SUPPORTED_KEY_RSA
         case (proto::AKEYTYPE_LEGACY): {
-            return std::unique_ptr<ReturnType>{opentxs::Factory::RSAKey(
-                api_, api_.Crypto().RSA(), serialized)};
+            return opentxs::factory::RSAKey(
+                api_, api_.Crypto().RSA(), serialized);
         }
 #endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
         default: {
@@ -273,6 +272,43 @@ auto Asymmetric::NewHDKey(
 }
 
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
+auto Asymmetric::InstantiateSecp256k1Key(
+    const ReadView publicKey,
+    const PasswordPrompt& reason,
+    const proto::KeyRole role,
+    const VersionNumber version) const noexcept -> Secp256k1Key
+{
+    static const auto blank = api_.Factory().Secret(0);
+
+    return factory::Secp256k1Key(
+        api_,
+        api_.Crypto().SECP256K1(),
+        blank,
+        api_.Factory().Data(publicKey),
+        role,
+        version,
+        reason);
+}
+
+auto Asymmetric::InstantiateSecp256k1Key(
+    const Secret& priv,
+    const PasswordPrompt& reason,
+    const proto::KeyRole role,
+    const VersionNumber version) const noexcept -> Secp256k1Key
+{
+    auto pub = api_.Factory().Data();
+    const auto& ecdsa = api_.Crypto().SECP256K1();
+
+    if (false == ecdsa.ScalarMultiplyBase(priv.Bytes(), pub->WriteInto())) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to calculate public key")
+            .Flush();
+
+        return {};
+    }
+
+    return factory::Secp256k1Key(api_, ecdsa, priv, pub, role, version, reason);
+}
+
 auto Asymmetric::NewSecp256k1Key(
     const std::string& seedID,
     const Secret& seed,
@@ -285,7 +321,7 @@ auto Asymmetric::NewSecp256k1Key(
         api_.Crypto().BIP32().DeriveKey(EcdsaCurve::secp256k1, seed, derive);
     const auto& [privkey, ccode, pubkey, path, parent] = serialized;
 
-    return Secp256k1Key{opentxs::Factory::Secp256k1Key(
+    return opentxs::factory::Secp256k1Key(
         api_,
         api_.Crypto().SECP256K1(),
         privkey,
@@ -295,7 +331,7 @@ auto Asymmetric::NewSecp256k1Key(
         parent,
         role,
         version,
-        reason)};
+        reason);
 }
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 #endif  // OT_CRYPTO_WITH_BIP32
@@ -309,19 +345,19 @@ auto Asymmetric::NewKey(
     switch (params.AsymmetricKeyType()) {
 #if OT_CRYPTO_SUPPORTED_KEY_ED25519
         case (proto::AKEYTYPE_ED25519): {
-            return Key{opentxs::Factory::Ed25519Key(
-                api_, api_.Crypto().ED25519(), role, version, reason)};
+            return opentxs::factory::Ed25519Key(
+                api_, api_.Crypto().ED25519(), role, version, reason);
         }
 #endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
         case (proto::AKEYTYPE_SECP256K1): {
-            return Key{opentxs::Factory::Secp256k1Key(
-                api_, api_.Crypto().SECP256K1(), role, version, reason)};
+            return opentxs::factory::Secp256k1Key(
+                api_, api_.Crypto().SECP256K1(), role, version, reason);
         }
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 #if OT_CRYPTO_SUPPORTED_KEY_RSA
         case (proto::AKEYTYPE_LEGACY): {
-            return opentxs::Factory::RSAKey(
+            return opentxs::factory::RSAKey(
                 api_, api_.Crypto().RSA(), role, version, params, reason);
         }
 #endif  // OT_CRYPTO_SUPPORTED_KEY_RSA

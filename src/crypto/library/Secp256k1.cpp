@@ -33,10 +33,29 @@ extern "C" {
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/crypto/SecretStyle.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
 
 #define OT_METHOD "opentxs::crypto::implementation::Secp256k1::"
+
+extern "C" {
+int get_x_value(
+    unsigned char* output,
+    const unsigned char* x32,
+    const unsigned char* y32,
+    void*);
+int get_x_value(
+    unsigned char* output,
+    const unsigned char* x32,
+    const unsigned char* y32,
+    void*)
+{
+    std::memcpy(output, x32, 32);
+
+    return 1;
+}
+}
 
 namespace opentxs::factory
 {
@@ -65,6 +84,84 @@ Secp256k1::Secp256k1(
 {
 }
 
+auto Secp256k1::PubkeyAdd(
+    const ReadView pubkey,
+    const ReadView scalar,
+    const AllocateOutput result) const noexcept -> bool
+{
+    if (false == bool(result)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output allocator")
+            .Flush();
+
+        return false;
+    }
+
+    if ((0 == pubkey.size()) || (nullptr == pubkey.data())) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing pubkey").Flush();
+
+        return false;
+    }
+
+    if ((PrivateKeySize != scalar.size()) || (nullptr == scalar.data())) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid scalar").Flush();
+
+        return false;
+    }
+
+    auto parsed = ::secp256k1_pubkey{};
+    auto rc = 1 == ::secp256k1_ec_pubkey_parse(
+                       context_,
+                       &parsed,
+                       reinterpret_cast<const unsigned char*>(pubkey.data()),
+                       pubkey.size());
+
+    if (false == rc) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid public key").Flush();
+
+        return false;
+    }
+
+    rc = 1 == ::secp256k1_ec_pubkey_tweak_add(
+                  context_,
+                  &parsed,
+                  reinterpret_cast<const unsigned char*>(scalar.data()));
+
+    if (false == rc) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Failed to add scalar to public key")
+            .Flush();
+
+        return false;
+    }
+
+    auto out = result(PublicKeySize);
+
+    if (false == out.valid(PublicKeySize)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Failed to allocate space for result")
+            .Flush();
+
+        return false;
+    }
+
+    auto size = out.size();
+    rc = ::secp256k1_ec_pubkey_serialize(
+        context_,
+        out.as<unsigned char>(),
+        &size,
+        &parsed,
+        SECP256K1_EC_COMPRESSED);
+
+    if (false == rc) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize public key")
+            .Flush();
+
+        return false;
+    }
+
+    return true;
+}
+
 auto Secp256k1::RandomKeypair(
     const AllocateOutput privateKey,
     const AllocateOutput publicKey,
@@ -84,7 +181,6 @@ auto Secp256k1::RandomKeypair(
     auto counter{0};
     auto valid{false};
     auto temp = Context().Factory().Secret(0);
-    const auto null = std::array<std::uint8_t, PrivateKeySize>{};
 
     while (false == valid) {
         temp->Randomize(PrivateKeySize);
@@ -92,15 +188,8 @@ auto Secp256k1::RandomKeypair(
 
         OT_ASSERT(writer.valid(PrivateKeySize));
 
-        // We add the random key to a zero value key because
-        // secp256k1_privkey_tweak_add checks the result to make sure it's in
-        // the correct range for secp256k1.
-        //
-        // This loop should almost always run exactly one time (about 1/(2^128)
-        // chance of randomly generating an invalid key thus requiring a second
-        // attempt)
-        valid = secp256k1_ec_privkey_tweak_add(
-            context_, static_cast<unsigned char*>(writer.data()), null.data());
+        valid = 1 == ::secp256k1_ec_seckey_verify(
+                         context_, writer.as<unsigned char>());
 
         OT_ASSERT(3 > ++counter);
     }
@@ -156,7 +245,7 @@ auto Secp256k1::ScalarAdd(
 
     std::memcpy(key.data(), lhs.data(), lhs.size());
 
-    return 1 == ::secp256k1_ec_privkey_tweak_add(
+    return 1 == ::secp256k1_ec_seckey_tweak_add(
                     context_,
                     key.as<unsigned char>(),
                     reinterpret_cast<const unsigned char*>(rhs.data()));
@@ -211,6 +300,7 @@ auto Secp256k1::ScalarMultiplyBase(
 auto Secp256k1::SharedSecret(
     const key::Asymmetric& publicKey,
     const key::Asymmetric& privateKey,
+    const SecretStyle style,
     const PasswordPrompt& reason,
     Secret& secret) const noexcept -> bool
 {
@@ -253,12 +343,26 @@ auto Secp256k1::SharedSecret(
 
     OT_ASSERT(writer.valid(PrivateKeySize));
 
+    const auto function = [&] {
+        switch (style) {
+            case SecretStyle::X_only: {
+
+                return get_x_value;
+            }
+            case SecretStyle::Default:
+            default: {
+
+                return secp256k1_ecdh_hash_function_sha256;
+            }
+        }
+    }();
+
     return 1 == ::secp256k1_ecdh(
                     context_,
                     static_cast<unsigned char*>(writer.data()),
                     &key,
                     reinterpret_cast<const unsigned char*>(prv.data()),
-                    secp256k1_ecdh_hash_function_sha256,
+                    function,
                     nullptr);
 }
 

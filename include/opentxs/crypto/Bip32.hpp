@@ -27,6 +27,19 @@ namespace opentxs
 {
 namespace crypto
 {
+namespace key
+{
+class HD;
+}  // namespace key
+}  // namespace crypto
+
+class PasswordPrompt;
+}  // namespace opentxs
+
+namespace opentxs
+{
+namespace crypto
+{
 std::string Print(const proto::HDPath& node);
 
 class Bip32
@@ -40,6 +53,16 @@ public:
         const EcdsaCurve& curve,
         const Secret& seed,
         const Path& path) const = 0;
+    /// throws std::runtime_error on invalid inputs
+    OPENTXS_EXPORT virtual Key DerivePrivateKey(
+        const key::HD& parent,
+        const Path& pathAppend,
+        const PasswordPrompt& reason) const noexcept(false) = 0;
+    /// throws std::runtime_error on invalid inputs
+    OPENTXS_EXPORT virtual Key DerivePublicKey(
+        const key::HD& parent,
+        const Path& pathAppend,
+        const PasswordPrompt& reason) const noexcept(false) = 0;
 #endif  // OT_CRYPTO_WITH_BIP32
     OPENTXS_EXPORT virtual bool DeserializePrivate(
         const std::string& serialized,

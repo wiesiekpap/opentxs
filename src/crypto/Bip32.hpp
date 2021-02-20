@@ -27,9 +27,15 @@ class Crypto;
 
 namespace crypto
 {
+namespace key
+{
+class HD;
+}  // namespace key
+
 class EcdsaProvider;
 }  // namespace crypto
 
+class PasswordPrompt;
 class Secret;
 }  // namespace opentxs
 
@@ -45,6 +51,14 @@ public:
         const EcdsaCurve& curve,
         const Secret& seed,
         const Path& path) const -> Key final;
+    auto DerivePrivateKey(
+        const key::HD& parent,
+        const Path& pathAppend,
+        const PasswordPrompt& reason) const noexcept(false) -> Key final;
+    auto DerivePublicKey(
+        const key::HD& parent,
+        const Path& pathAppend,
+        const PasswordPrompt& reason) const noexcept(false) -> Key final;
 #endif  // OT_CRYPTO_WITH_BIP32
     auto DeserializePrivate(
         const std::string& serialized,
@@ -85,15 +99,23 @@ private:
 
     static auto IsHard(const Bip32Index) noexcept -> bool;
 
-    auto ckd_private_hardened(
+    auto ckd_hardened(
         const HDNode& node,
         const be::big_uint32_buf_t i,
         const WritableView& data) const noexcept -> void;
-    auto ckd_private_normal(
+    auto ckd_normal(
         const HDNode& node,
         const be::big_uint32_buf_t i,
         const WritableView& data) const noexcept -> void;
     auto decode(const std::string& serialized) const noexcept -> OTData;
+    auto derive_private(
+        HDNode& node,
+        Bip32Fingerprint& parent,
+        const Bip32Index child) const noexcept -> bool;
+    auto derive_public(
+        HDNode& node,
+        Bip32Fingerprint& parent,
+        const Bip32Index child) const noexcept -> bool;
     auto extract(
         const Data& input,
         Bip32Network& network,

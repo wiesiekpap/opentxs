@@ -29,6 +29,7 @@ extern "C" {
 #include "opentxs/Proto.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/crypto/SecretStyle.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
 
 namespace opentxs
@@ -121,6 +122,7 @@ public:
     auto SharedSecret(
         const key::Asymmetric& publicKey,
         const key::Asymmetric& privateKey,
+        const SecretStyle style,
         const PasswordPrompt& reason,
         Secret& secret) const noexcept -> bool final;
     auto Sign(

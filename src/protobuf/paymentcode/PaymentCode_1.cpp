@@ -52,12 +52,12 @@ auto CheckProto_1(const PaymentCode& input, const bool silent) -> bool
 
 auto CheckProto_2(const PaymentCode& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(2)
+    return CheckProto_1(input, silent);
 }
 
 auto CheckProto_3(const PaymentCode& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(3)
+    return CheckProto_1(input, silent);
 }
 
 auto CheckProto_4(const PaymentCode& input, const bool silent) -> bool

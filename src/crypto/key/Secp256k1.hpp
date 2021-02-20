@@ -6,11 +6,15 @@
 #pragma once
 
 #include <memory>
+#include <utility>
 
+#include "crypto/key/EllipticCurve.hpp"
 #include "crypto/key/HD.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Secp256k1.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
@@ -67,6 +71,15 @@ public:
         const proto::KeyRole role,
         const VersionNumber version,
         const PasswordPrompt& reason) noexcept(false);
+    Secp256k1(
+        const api::internal::Core& api,
+        const crypto::EcdsaProvider& ecdsa,
+        const Secret& privateKey,
+        const Data& publicKey,
+        const proto::KeyRole role,
+        const VersionNumber version,
+        key::Symmetric& sessionKey,
+        const PasswordPrompt& reason) noexcept(false);
 #if OT_CRYPTO_WITH_BIP32
     Secp256k1(
         const api::internal::Core& api,
@@ -81,6 +94,8 @@ public:
         key::Symmetric& sessionKey,
         const PasswordPrompt& reason) noexcept(false);
 #endif  // OT_CRYPTO_WITH_BIP32
+    Secp256k1(const Secp256k1& rhs, const ReadView newPublic) noexcept;
+    Secp256k1(const Secp256k1& rhs, OTSecret&& newSecretKey) noexcept;
 
     ~Secp256k1() final = default;
 
@@ -95,6 +110,16 @@ private:
     auto get_public() const -> std::shared_ptr<proto::AsymmetricKey> final
     {
         return serialize_public(clone());
+    }
+    auto replace_public_key(const ReadView newPubkey) const noexcept
+        -> std::unique_ptr<EllipticCurve> final
+    {
+        return std::make_unique<Secp256k1>(*this, newPubkey);
+    }
+    auto replace_secret_key(OTSecret&& newSecretKey) const noexcept
+        -> std::unique_ptr<EllipticCurve> final
+    {
+        return std::make_unique<Secp256k1>(*this, std::move(newSecretKey));
     }
 
     Secp256k1() = delete;

@@ -27,8 +27,8 @@
 #include "internal/api/client/Client.hpp"
 #include "internal/api/client/Factory.hpp"
 #include "internal/api/client/blockchain/Blockchain.hpp"
-#if OT_BLOCKCHAIN
 #include "internal/blockchain/Params.hpp"
+#if OT_BLOCKCHAIN
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/client/Client.hpp"
 #include "internal/blockchain/client/Factory.hpp"
@@ -121,6 +121,14 @@ auto BlockchainAPI(
         api, activity, contacts, legacy, dataFolder, args);
 }
 }  // namespace opentxs::factory
+
+namespace opentxs::api::client
+{
+auto Blockchain::Bip44(Chain chain) noexcept(false) -> Bip44Type
+{
+    return opentxs::blockchain::params::Data::chains_.at(chain).bip44_;
+}
+}  // namespace opentxs::api::client
 
 namespace opentxs::api::client::implementation
 {

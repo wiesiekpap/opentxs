@@ -26,6 +26,7 @@ extern "C" {
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/crypto/NymParameters.hpp"
+#include "opentxs/crypto/SecretStyle.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/library/HashingProvider.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
@@ -688,9 +689,17 @@ auto OpenSSL::RandomKeypair(
 auto OpenSSL::SharedSecret(
     const key::Asymmetric& publicKey,
     const key::Asymmetric& privateKey,
+    const SecretStyle style,
     const PasswordPrompt& reason,
     Secret& secret) const noexcept -> bool
 {
+    if (SecretStyle::Default != style) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported secret style")
+            .Flush();
+
+        return false;
+    }
+
     if (proto::AKEYTYPE_LEGACY != publicKey.keyType()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid public key type").Flush();
 

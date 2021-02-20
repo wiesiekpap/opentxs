@@ -13,8 +13,10 @@
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
+#include "opentxs/crypto/library/EcdsaProvider.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
 
 namespace opentxs
@@ -64,6 +66,14 @@ public:
     auto asPublicEC() const noexcept
         -> std::unique_ptr<key::EllipticCurve> final;
     virtual auto CreateType() const -> NymParameterType = 0;
+    auto ECDSA() const noexcept -> const crypto::EcdsaProvider& final
+    {
+        return ecdsa_;
+    }
+    auto IncrementPrivate(const Secret& scalar, const PasswordPrompt& reason)
+        const noexcept -> std::unique_ptr<key::EllipticCurve> final;
+    auto IncrementPublic(const Secret& scalar) const noexcept
+        -> std::unique_ptr<key::EllipticCurve> final;
     auto Path() const noexcept -> const std::string override { return {}; }
     auto Path(proto::HDPath&) const noexcept -> bool override { return {}; }
     auto SignDER(
@@ -95,7 +105,6 @@ protected:
         const proto::KeyRole role,
         const VersionNumber version,
         const PasswordPrompt& reason) noexcept(false);
-#if OT_CRYPTO_WITH_BIP32
     EllipticCurve(
         const api::internal::Core& api,
         const crypto::EcdsaProvider& ecdsa,
@@ -106,8 +115,9 @@ protected:
         const VersionNumber version,
         key::Symmetric& sessionKey,
         const PasswordPrompt& reason) noexcept(false);
-#endif  // OT_CRYPTO_WITH_BIP32
     EllipticCurve(const EllipticCurve&) noexcept;
+    EllipticCurve(const EllipticCurve& rhs, const ReadView newPublic) noexcept;
+    EllipticCurve(const EllipticCurve& rhs, OTSecret&& newSecretKey) noexcept;
 
 private:
     friend crypto::EcdsaProvider;
@@ -117,6 +127,11 @@ private:
         const crypto::EcdsaProvider& ecdsa,
         const proto::AsymmetricKey& serialized,
         Data& publicKey) -> std::unique_ptr<proto::Ciphertext>;
+
+    virtual auto replace_public_key(const ReadView newPubkey) const noexcept
+        -> std::unique_ptr<EllipticCurve> = 0;
+    virtual auto replace_secret_key(OTSecret&& newSecretKey) const noexcept
+        -> std::unique_ptr<EllipticCurve> = 0;
 
     EllipticCurve() = delete;
     EllipticCurve(EllipticCurve&&) = delete;

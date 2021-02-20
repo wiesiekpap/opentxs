@@ -11,9 +11,9 @@
 #include <string>
 #include <utility>
 
-#include "2_Factory.hpp"
 #include "crypto/key/Asymmetric.hpp"
 #include "internal/api/Api.hpp"
+#include "internal/crypto/key/Factory.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -22,11 +22,11 @@
 #include "opentxs/protobuf/Ciphertext.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
 
-namespace opentxs
+namespace opentxs::factory
 {
 using ReturnType = crypto::key::implementation::RSA;
 
-auto Factory::RSAKey(
+auto RSAKey(
     const api::internal::Core& api,
     const crypto::AsymmetricProvider& engine,
     const proto::AsymmetricKey& input) noexcept
@@ -41,7 +41,7 @@ auto Factory::RSAKey(
     }
 }
 
-auto Factory::RSAKey(
+auto RSAKey(
     const api::internal::Core& api,
     const crypto::AsymmetricProvider& engine,
     const proto::KeyRole role,
@@ -61,7 +61,7 @@ auto Factory::RSAKey(
         return {};
     }
 }
-}  // namespace opentxs
+}  // namespace opentxs::factory
 
 namespace opentxs::crypto::key::implementation
 {
