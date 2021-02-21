@@ -7,12 +7,16 @@ syntax = "proto2";
 
 package opentxs.proto;
 option java_package = "org.opentransactions.proto";
-option java_outer_classname = "OTBip47Address";
+option java_outer_classname = "OTBlockchainDeterministicAccountData";
 option optimize_for = LITE_RUNTIME;
 
-message Bip47Address {
+import public "BlockchainAccountData.proto";
+import public "HDPath.proto";
+
+message BlockchainDeterministicAccountData {
     optional uint32 version = 1;
-    optional uint32 index = 2;
-    optional string address = 3;
-    repeated string incoming = 4;
+    optional BlockchainAccountData common = 2;
+    optional HDPath path = 5;
+    optional uint32 internalindex = 6;
+    optional uint32 externalindex = 7;
 }

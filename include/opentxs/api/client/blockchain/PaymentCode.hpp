@@ -9,7 +9,12 @@
 #include "opentxs/Forward.hpp"  // IWYU pragma: associated
 
 #include "opentxs/api/client/blockchain/Deterministic.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/blockchain/Blockchain.hpp"
+
+namespace opentxs
+{
+class PaymentCode;
+}  // namespace opentxs
 
 namespace opentxs
 {
@@ -22,9 +27,17 @@ namespace blockchain
 class PaymentCode : virtual public Deterministic
 {
 public:
+    using Txid = opentxs::blockchain::block::Txid;
+
+    OPENTXS_EXPORT virtual bool AddNotification(
+        const Txid& tx) const noexcept = 0;
     OPENTXS_EXPORT virtual bool IsNotified() const noexcept = 0;
-    OPENTXS_EXPORT virtual OTPaymentCode LocalPaymentCode() const noexcept = 0;
-    OPENTXS_EXPORT virtual OTPaymentCode RemotePaymentCode() const noexcept = 0;
+    OPENTXS_EXPORT virtual const opentxs::PaymentCode& Local()
+        const noexcept = 0;
+    OPENTXS_EXPORT virtual bool ReorgNotification(
+        const Txid& tx) const noexcept = 0;
+    OPENTXS_EXPORT virtual const opentxs::PaymentCode& Remote()
+        const noexcept = 0;
 
     OPENTXS_EXPORT ~PaymentCode() override = default;
 

@@ -13,6 +13,11 @@
 
 namespace opentxs
 {
+class PaymentCode;
+}  // namespace opentxs
+
+namespace opentxs
+{
 namespace api
 {
 namespace client

@@ -16,8 +16,14 @@ namespace proto
 {
 OPENTXS_EXPORT const VersionMap& Bip47ChainAllowedBip47Channel() noexcept;
 OPENTXS_EXPORT const VersionMap& Bip47ChannelAllowedBip47Direction() noexcept;
+OPENTXS_EXPORT const VersionMap&
+Bip47ChannelAllowedBlockchainDeterministicAccountData() noexcept;
+OPENTXS_EXPORT const VersionMap& Bip47ChannelAllowedPaymentCode() noexcept;
 OPENTXS_EXPORT const VersionMap& Bip47ContextAllowedBip47Chain() noexcept;
-OPENTXS_EXPORT const VersionMap& Bip47DirectionAllowedBip47Address() noexcept;
+OPENTXS_EXPORT const VersionMap&
+Bip47DirectionAllowedBlockchainAddress() noexcept;
+OPENTXS_EXPORT const VersionMap&
+BlockchainAccountDataAllowedBlockchainActivity() noexcept;
 OPENTXS_EXPORT const VersionMap&
 BlockchainAddressAllowedAsymmetricKey() noexcept;
 OPENTXS_EXPORT const VersionMap&
@@ -26,6 +32,10 @@ OPENTXS_EXPORT const VersionMap&
 BlockchainBlockHeaderAllowedBlockchainBlockLocalData() noexcept;
 OPENTXS_EXPORT const VersionMap&
 BlockchainBlockHeaderAllowedEthereumBlockHeaderFields() noexcept;
+OPENTXS_EXPORT const VersionMap&
+BlockchainDeterministicAccountDataAllowedBlockchainAccountData() noexcept;
+OPENTXS_EXPORT const VersionMap&
+BlockchainDeterministicAccountDataAllowedHDPath() noexcept;
 OPENTXS_EXPORT const VersionMap&
 BlockchainP2PHelloAllowedBlockchainP2PChainState() noexcept;
 OPENTXS_EXPORT const VersionMap& BlockchainTransactionAllowedInput() noexcept;
@@ -43,12 +53,18 @@ BlockchainTransactionOutputAllowedBlockchainWalletKey() noexcept;
 OPENTXS_EXPORT const VersionMap&
 BlockchainTransactionProposalAllowedBlockchainTransaction() noexcept;
 OPENTXS_EXPORT const VersionMap&
+BlockchainTransactionProposalAllowedBlockchainTransactionProposedNotification() noexcept;
+OPENTXS_EXPORT const VersionMap&
 BlockchainTransactionProposalAllowedBlockchainTransactionProposedOutput() noexcept;
 OPENTXS_EXPORT const VersionMap&
+BlockchainTransactionProposedNotificationAllowedHDPath() noexcept;
+OPENTXS_EXPORT const VersionMap&
+BlockchainTransactionProposedNotificationAllowedPaymentCode() noexcept;
+OPENTXS_EXPORT const VersionMap&
 BlockchainTransactionProposedOutputAllowedBlockchainOutputMultisigDetails() noexcept;
-OPENTXS_EXPORT const VersionMap& HDAccountAllowedBlockchainActivity() noexcept;
 OPENTXS_EXPORT const VersionMap& HDAccountAllowedBlockchainAddress() noexcept;
-OPENTXS_EXPORT const VersionMap& HDAccountAllowedHDPath() noexcept;
+OPENTXS_EXPORT const VersionMap&
+HDAccountAllowedBlockchainDeterministicAccountData() noexcept;
 }  // namespace proto
 }  // namespace opentxs
 #endif  // OPENTXS_PROTOBUF_VERIFYBLOCKCHAIN_HPP

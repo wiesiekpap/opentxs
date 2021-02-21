@@ -16,6 +16,7 @@
 #include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/api/client/blockchain/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -70,11 +71,12 @@ auto BalanceList::add(
 auto BalanceList::AddHDNode(
     const identifier::Nym& nym,
     const proto::HDPath& path,
+    const PasswordPrompt& reason,
     Identifier& id) noexcept -> bool
 {
     Lock lock(lock_);
 
-    return get_or_create(lock, nym).AddHDNode(path, id);
+    return get_or_create(lock, nym).AddHDNode(path, reason, id);
 }
 
 auto BalanceList::at(const std::size_t position) const noexcept(false)
@@ -99,10 +101,12 @@ auto BalanceList::at(const Lock& lock, const std::size_t index) noexcept(false)
 
 auto BalanceList::factory(
     const identifier::Nym& nym,
-    const std::set<OTIdentifier>& accounts) const noexcept
+    const Accounts& hd,
+    const Accounts& paymentCode) const noexcept
     -> std::unique_ptr<internal::BalanceTree>
 {
-    return factory::BlockchainBalanceTree(api_, *this, nym, accounts, {}, {});
+    return factory::BlockchainBalanceTree(
+        api_, *this, nym, hd, {}, paymentCode);
 }
 
 auto BalanceList::get_or_create(
@@ -110,7 +114,7 @@ auto BalanceList::get_or_create(
     const identifier::Nym& id) noexcept -> internal::BalanceTree&
 {
     if (0 == index_.count(id)) {
-        auto pTree = factory(id, {});
+        auto pTree = factory(id, {}, {});
 
         OT_ASSERT(pTree);
 
@@ -128,19 +132,23 @@ void BalanceList::init() noexcept
     const auto nyms = api_.Storage().LocalNyms();
 
     for (const auto& id : nyms) {
-        const auto accounts =
-            api_.Storage().BlockchainAccountList(id, Translate(chain_));
-        const auto nymID = identifier::Nym::Factory(id);
-        std::set<OTIdentifier> accountIDs{};
-        std::transform(
-            accounts.begin(),
-            accounts.end(),
-            std::inserter(accountIDs, accountIDs.end()),
-            [](const auto& in) -> OTIdentifier {
-                return Identifier::Factory(in);
-            });
+        const auto nymID = api_.Factory().NymID(id);
+        const auto hdAccounts = [&] {
+            auto out = Accounts{};
+            const auto list =
+                api_.Storage().BlockchainAccountList(id, Translate(chain_));
+            std::transform(
+                list.begin(),
+                list.end(),
+                std::inserter(out, out.end()),
+                [&](const auto& in) { return api_.Factory().Identifier(in); });
 
-        add(lock, nymID, factory(nymID, accountIDs));
+            return out;
+        }();
+        const auto pcAccounts =
+            api_.Storage().Bip47ChannelsByChain(nymID, Translate(chain_));
+
+        add(lock, nymID, factory(nymID, hdAccounts, pcAccounts));
     }
 }
 

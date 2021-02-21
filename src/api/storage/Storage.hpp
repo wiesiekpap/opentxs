@@ -135,33 +135,11 @@ public:
         -> std::set<OTIdentifier> final;
     auto AccountsByUnit(const proto::ContactItemType unit) const
         -> std::set<OTIdentifier> final;
-    auto Bip47AddressToChannel(
-        const identifier::Nym& nymID,
-        const std::string& address) const -> OTIdentifier final;
     auto Bip47Chain(const identifier::Nym& nymID, const Identifier& channelID)
         const -> proto::ContactItemType final;
-    auto Bip47ChannelsByContact(
-        const identifier::Nym& nymID,
-        const Identifier& contactID) const -> Bip47ChannelList final;
     auto Bip47ChannelsByChain(
         const identifier::Nym& nymID,
         const proto::ContactItemType chain) const -> Bip47ChannelList final;
-    auto Bip47ChannelsByLocalPaymentCode(
-        const identifier::Nym& nymID,
-        const std::string& code) const -> Bip47ChannelList final;
-    auto Bip47ChannelsByRemotePaymentCode(
-        const identifier::Nym& nymID,
-        const std::string& code) const -> Bip47ChannelList final;
-    auto Bip47ChannelsList(const identifier::Nym& nymID) const
-        -> ObjectList final;
-    auto Bip47Contact(const identifier::Nym& nymID, const Identifier& channelID)
-        const -> OTIdentifier final;
-    auto Bip47LocalPaymentCode(
-        const identifier::Nym& nymID,
-        const Identifier& channelID) const -> std::string final;
-    auto Bip47RemotePaymentCode(
-        const identifier::Nym& nymID,
-        const Identifier& channelID) const -> std::string final;
     auto BlockchainAccountList(
         const std::string& nymID,
         const proto::ContactItemType type) const -> std::set<std::string> final;
@@ -415,8 +393,8 @@ public:
         const proto::HDAccount& data) const -> bool final;
     auto Store(
         const identifier::Nym& nymID,
-        const proto::Bip47Channel& data,
-        Identifier& channelID) const -> bool final;
+        const Identifier& channelID,
+        const proto::Bip47Channel& data) const -> bool final;
     auto Store(const proto::Contact& data) const -> bool final;
     auto Store(const proto::Context& data) const -> bool final;
     auto Store(const proto::Credential& data) const -> bool final;

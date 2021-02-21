@@ -6,13 +6,10 @@
 #include "opentxs/protobuf/verify/HDAccount.hpp"  // IWYU pragma: associated
 
 #include "opentxs/protobuf/Basic.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/HDAccount.pb.h"
-#include "opentxs/protobuf/verify/BlockchainActivity.hpp"  // IWYU pragma: keep
-#include "opentxs/protobuf/verify/BlockchainAddress.hpp"   // IWYU pragma: keep
-#include "opentxs/protobuf/verify/HDPath.hpp"              // IWYU pragma: keep
+#include "opentxs/protobuf/verify/BlockchainAddress.hpp"  // IWYU pragma: keep
+#include "opentxs/protobuf/verify/BlockchainDeterministicAccountData.hpp"
 #include "opentxs/protobuf/verify/VerifyBlockchain.hpp"
-#include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "protobuf/Check.hpp"
 
 #define PROTO_NAME "hd account"
@@ -21,19 +18,10 @@ namespace opentxs::proto
 {
 auto CheckProto_1(const HDAccount& input, const bool silent) -> bool
 {
-    CHECK_IDENTIFIER(id)
-
-    const bool validChain =
-        ValidContactItemType({6, CONTACTSECTION_CONTRACT}, input.type());
-
-    if ((false == validChain) && (input.type() != CITEMTYPE_REGTEST)) {
-        FAIL_1("invalid type")
-    }
-
-    CHECK_SUBOBJECT(path, HDAccountAllowedHDPath())
+    CHECK_SUBOBJECT(
+        deterministic, HDAccountAllowedBlockchainDeterministicAccountData())
     CHECK_SUBOBJECTS(internaladdress, HDAccountAllowedBlockchainAddress())
-    OPTIONAL_SUBOBJECTS(incoming, HDAccountAllowedBlockchainActivity());
-    OPTIONAL_SUBOBJECTS(outgoing, HDAccountAllowedBlockchainActivity());
+    CHECK_SUBOBJECTS(externaladdress, HDAccountAllowedBlockchainAddress())
 
     return true;
 }

@@ -7,15 +7,17 @@ syntax = "proto2";
 
 package opentxs.proto;
 option java_package = "org.opentransactions.proto";
-option java_outer_classname = "OTHDAccount";
+option java_outer_classname = "OTBlockchainAccountData";
 option optimize_for = LITE_RUNTIME;
 
-import public "BlockchainAddress.proto";
-import public "BlockchainDeterministicAccountData.proto";
+import public "BlockchainActivity.proto";
+import public "ContactEnums.proto";
 
-message HDAccount {
+message BlockchainAccountData {
     optional uint32 version = 1;
-    optional BlockchainDeterministicAccountData deterministic = 2;
-    repeated BlockchainAddress internaladdress = 3;
-    repeated BlockchainAddress externaladdress = 4;
+    optional string id = 2;
+    optional uint64 revision = 3;
+    optional ContactItemType chain = 4;
+    repeated BlockchainActivity unspent = 5;
+    repeated BlockchainActivity spent = 6;
 }

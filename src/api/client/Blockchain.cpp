@@ -60,6 +60,7 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
@@ -1052,7 +1053,7 @@ auto Blockchain::NewHDSubaccount(
     try {
         auto accountID = Identifier::Factory();
         auto& tree = balance_lists_.Get(chain).Nym(nymID);
-        tree.AddHDNode(accountPath, accountID);
+        tree.AddHDNode(accountPath, reason, accountID);
         accounts_.New(chain, accountID, nymID);
 
 #if OT_BLOCKCHAIN
@@ -1075,6 +1076,89 @@ auto Blockchain::NewHDSubaccount(
             .Flush();
 
         return Identifier::Factory();
+    }
+}
+
+auto Blockchain::NewPaymentCodeSubaccount(
+    const identifier::Nym& nymID,
+    const opentxs::PaymentCode& local,
+    const opentxs::PaymentCode& remote,
+    const proto::HDPath path,
+    const Chain chain,
+    const PasswordPrompt& reason) const noexcept -> OTIdentifier
+{
+    LOCK_NYM()
+
+    return new_payment_code(nymLock, nymID, local, remote, path, chain, reason);
+}
+
+auto Blockchain::new_payment_code(
+    const Lock&,
+    const identifier::Nym& nymID,
+    const opentxs::PaymentCode& local,
+    const opentxs::PaymentCode& remote,
+    const proto::HDPath path,
+    const Chain chain,
+    const PasswordPrompt& reason) const noexcept -> OTIdentifier
+{
+    static const auto blank = api_.Factory().Identifier();
+
+    if (false == validate_nym(nymID)) { return blank; }
+
+    if (Chain::Unknown == chain) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid chain").Flush();
+
+        return blank;
+    }
+
+    auto nym = api_.Wallet().Nym(nymID);
+
+    if (false == bool(nym)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Nym does not exist.").Flush();
+
+        return blank;
+    }
+
+    if (0 == path.root().size()) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing root.").Flush();
+
+        return blank;
+    }
+
+    if (3 > path.child().size()) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid path: ")(
+            opentxs::crypto::Print(path))
+            .Flush();
+
+        return blank;
+    }
+
+    try {
+        auto accountID = blank;
+        auto& tree = balance_lists_.Get(chain).Nym(nymID);
+        tree.AddUpdatePaymentCode(local, remote, path, reason, accountID);
+        accounts_.New(chain, accountID, nymID);
+
+#if OT_BLOCKCHAIN
+        {
+            auto work =
+                api_.ZeroMQ().TaggedMessage(WorkType::BlockchainAccountCreated);
+            work->AddFrame(chain);
+            work->AddFrame(nymID);
+            work->AddFrame(AccountType::PaymentCode);
+            work->AddFrame(accountID);
+            new_blockchain_accounts_->Send(work);
+        }
+
+        balances_.RefreshBalance(nymID, chain);
+#endif  // OT_BLOCKCHAIN
+
+        return accountID;
+    } catch (...) {
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": Failed to create account")
+            .Flush();
+
+        return blank;
     }
 }
 
@@ -1120,6 +1204,54 @@ auto Blockchain::p2sh(const Chain chain, const Data& pubkeyHash) const noexcept
 
         return "";
     }
+}
+
+auto Blockchain::PaymentCodeSubaccount(
+    const identifier::Nym& nymID,
+    const Identifier& accountID) const noexcept(false)
+    -> const blockchain::PaymentCode&
+{
+    LOCK_NYM()
+
+    const auto type = api_.Storage().Bip47Chain(nymID, accountID);
+
+    if (proto::CITEMTYPE_ERROR == type) {
+        throw std::out_of_range("Account does not exist");
+    }
+
+    auto& balanceList = balance_lists_.Get(Translate(type));
+    auto& nym = balanceList.Nym(nymID);
+
+    return nym.PaymentCode(accountID);
+}
+
+auto Blockchain::PaymentCodeSubaccount(
+    const identifier::Nym& nymID,
+    const opentxs::PaymentCode& local,
+    const opentxs::PaymentCode& remote,
+    const proto::HDPath path,
+    const Chain chain,
+    const PasswordPrompt& reason) const noexcept(false)
+    -> const blockchain::PaymentCode&
+{
+    LOCK_NYM()
+    const auto accountID =
+        blockchain::internal::PaymentCode::GetID(api_, chain, local, remote);
+    const auto type = api_.Storage().Bip47Chain(nymID, accountID);
+
+    if (proto::CITEMTYPE_ERROR == type) {
+        const auto id = new_payment_code(
+            nymLock, nymID, local, remote, path, chain, reason);
+
+        if (accountID != id) {
+            throw std::out_of_range("Failed to create account");
+        }
+    }
+
+    auto& balanceList = balance_lists_.Get(Translate(type));
+    auto& nym = balanceList.Nym(nymID);
+
+    return nym.PaymentCode(accountID);
 }
 
 #if OT_BLOCKCHAIN

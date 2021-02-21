@@ -128,65 +128,120 @@ auto Wallet::Proposals::BitcoinTransactionBuilder::add_signatures(
     return true;
 }
 
-auto Wallet::Proposals::BitcoinTransactionBuilder::AddChange() noexcept -> bool
+auto Wallet::Proposals::BitcoinTransactionBuilder::AddChange(
+    const Proposal& data) noexcept -> bool
 {
-    const auto reservedKey = db_.ReserveChangeKey(proposal_);
+    try {
+        const auto reservedKey = db_.ReserveChangeKey(proposal_);
 
-    if (false == reservedKey.has_value()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to reserve change key")
-            .Flush();
+        if (false == reservedKey.has_value()) {
+            throw std::runtime_error{"Failed to reserve change key"};
+        }
+
+        auto pOutput = [&] {
+            const auto& keyID = reservedKey.value();
+            const auto& element = blockchain_.GetKey(keyID);
+            auto elements = [&] {
+                namespace bb = opentxs::blockchain::block::bitcoin;
+                namespace bi = bb::internal;
+                auto out = bb::ScriptElements{};
+
+                if (const auto size{data.notification().size()}; 1 < size) {
+                    throw std::runtime_error{
+                        "Multiple notifications not yet supported"};
+                } else if (1 == size) {
+                    const auto& notif = data.notification(0);
+                    const auto recipient =
+                        api_.Factory().PaymentCode(notif.recipient());
+                    const auto message =
+                        std::string{
+                            "Constructing notification transaction to "} +
+                        recipient->asBase58();
+                    const auto reason = api_.Factory().PasswordPrompt(message);
+                    const auto pc = [&] {
+                        auto out = api_.Factory().PaymentCode(notif.sender());
+                        const auto& path = notif.path();
+                        auto seed{path.root()};
+                        const auto rc = out->AddPrivateKeys(
+                            seed, *path.child().rbegin(), reason);
+
+                        if (false == rc) {
+                            throw std::runtime_error{
+                                "Failed to load private keys"};
+                        }
+
+                        return out;
+                    }();
+                    const auto pKey = element.PrivateKey(reason);
+
+                    if (!pKey) {
+                        throw std::runtime_error{
+                            "Failed to load private change key"};
+                    }
+
+                    const auto& key = *pKey;
+                    const auto keys = pc->GenerateNotificationElements(
+                        recipient, key, reason);
+
+                    if (3u != keys.size()) {
+                        throw std::runtime_error{
+                            "Failed to obtain notification elements"};
+                    }
+
+                    out.emplace_back(bi::Opcode(bb::OP::ONE));
+                    out.emplace_back(bi::PushData(reader(keys.at(0))));
+                    out.emplace_back(bi::PushData(reader(keys.at(1))));
+                    out.emplace_back(bi::PushData(reader(keys.at(2))));
+                    out.emplace_back(bi::Opcode(bb::OP::THREE));
+                    out.emplace_back(bi::Opcode(bb::OP::CHECKMULTISIG));
+                } else {
+                    const auto pkh = element.PubkeyHash();
+                    out.emplace_back(bi::Opcode(bb::OP::DUP));
+                    out.emplace_back(bi::Opcode(bb::OP::HASH160));
+                    out.emplace_back(bi::PushData(pkh->Bytes()));
+                    out.emplace_back(bi::Opcode(bb::OP::EQUALVERIFY));
+                    out.emplace_back(bi::Opcode(bb::OP::CHECKSIG));
+                }
+
+                return out;
+            }();
+            auto pScript = factory::BitcoinScript(chain_, std::move(elements));
+
+            if (false == bool(pScript)) {
+                throw std::runtime_error{"Failed to construct script"};
+            }
+
+            return factory::BitcoinTransactionOutput(
+                api_,
+                blockchain_,
+                chain_,
+                outputs_.size(),
+                0,
+                std::move(pScript),
+                {keyID});
+        }();
+
+        if (false == bool(pOutput)) {
+            throw std::runtime_error{"Failed to construct output"};
+        }
+
+        {
+            auto& output = *pOutput;
+            output_value_ += output.Value();
+            output_total_ += output.CalculateSize();
+
+            OT_ASSERT(0 < output.Keys().size());
+        }
+
+        change_.emplace_back(std::move(pOutput));
+        output_count_ = outputs_.size() + change_.size();
+
+        return true;
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
         return false;
     }
-
-    const auto& keyID = reservedKey.value();
-    const auto& element = blockchain_.GetKey(keyID);
-    const auto pkh = element.PubkeyHash();
-    namespace bb = opentxs::blockchain::block::bitcoin;
-    namespace bi = bb::internal;
-    auto elements = bb::ScriptElements{};
-    elements.emplace_back(bi::Opcode(bb::OP::DUP));
-    elements.emplace_back(bi::Opcode(bb::OP::HASH160));
-    elements.emplace_back(bi::PushData(pkh->Bytes()));
-    elements.emplace_back(bi::Opcode(bb::OP::EQUALVERIFY));
-    elements.emplace_back(bi::Opcode(bb::OP::CHECKSIG));
-    auto pScript = factory::BitcoinScript(chain_, std::move(elements));
-
-    if (false == bool(pScript)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct script")
-            .Flush();
-
-        return false;
-    }
-
-    auto pOutput = factory::BitcoinTransactionOutput(
-        api_,
-        blockchain_,
-        chain_,
-        outputs_.size(),
-        0,
-        std::move(pScript),
-        {keyID});
-
-    if (false == bool(pOutput)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct output")
-            .Flush();
-
-        return false;
-    }
-
-    {
-        auto& output = *pOutput;
-        output_value_ += output.Value();
-        output_total_ += output.CalculateSize();
-
-        OT_ASSERT(0 < output.Keys().size());
-    }
-
-    change_.emplace_back(std::move(pOutput));
-    output_count_ = outputs_.size() + change_.size();
-
-    return true;
 }
 
 auto Wallet::Proposals::BitcoinTransactionBuilder::AddInput(

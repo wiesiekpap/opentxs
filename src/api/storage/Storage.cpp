@@ -451,27 +451,6 @@ auto Storage::AccountsByUnit(const proto::ContactItemType unit) const
     return Root().Tree().Accounts().AccountsByUnit(unit);
 }
 
-auto Storage::Bip47AddressToChannel(
-    const identifier::Nym& nymID,
-    const std::string& address) const -> OTIdentifier
-{
-    const bool exists = Root().Tree().Nyms().Exists(nymID.str());
-
-    if (false == exists) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Nym ")(nymID)(" doesn't exist.")
-            .Flush();
-
-        return Identifier::Factory();
-    }
-
-    return Root()
-        .Tree()
-        .Nyms()
-        .Nym(nymID.str())
-        .Bip47Channels()
-        .AddressToChannel(address);
-}
-
 auto Storage::Bip47Chain(
     const identifier::Nym& nymID,
     const Identifier& channelID) const -> proto::ContactItemType
@@ -493,27 +472,6 @@ auto Storage::Bip47Chain(
         .Chain(channelID);
 }
 
-auto Storage::Bip47ChannelsByContact(
-    const identifier::Nym& nymID,
-    const Identifier& contactID) const -> Storage::Bip47ChannelList
-{
-    const bool exists = Root().Tree().Nyms().Exists(nymID.str());
-
-    if (false == exists) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Nym ")(nymID)(" doesn't exist.")
-            .Flush();
-
-        return {};
-    }
-
-    return Root()
-        .Tree()
-        .Nyms()
-        .Nym(nymID.str())
-        .Bip47Channels()
-        .ChannelsByContact(contactID);
-}
-
 auto Storage::Bip47ChannelsByChain(
     const identifier::Nym& nymID,
     const proto::ContactItemType chain) const -> Storage::Bip47ChannelList
@@ -533,126 +491,6 @@ auto Storage::Bip47ChannelsByChain(
         .Nym(nymID.str())
         .Bip47Channels()
         .ChannelsByChain(chain);
-}
-
-auto Storage::Bip47ChannelsByLocalPaymentCode(
-    const identifier::Nym& nymID,
-    const std::string& code) const -> Storage::Bip47ChannelList
-{
-    const bool exists = Root().Tree().Nyms().Exists(nymID.str());
-
-    if (false == exists) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Nym ")(nymID)(" doesn't exist.")
-            .Flush();
-
-        return {};
-    }
-
-    return Root()
-        .Tree()
-        .Nyms()
-        .Nym(nymID.str())
-        .Bip47Channels()
-        .ChannelsByLocalPaymentCode(code);
-}
-
-auto Storage::Bip47ChannelsByRemotePaymentCode(
-    const identifier::Nym& nymID,
-    const std::string& code) const -> Storage::Bip47ChannelList
-{
-    const bool exists = Root().Tree().Nyms().Exists(nymID.str());
-
-    if (false == exists) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Nym ")(nymID)(" doesn't exist.")
-            .Flush();
-
-        return {};
-    }
-
-    return Root()
-        .Tree()
-        .Nyms()
-        .Nym(nymID.str())
-        .Bip47Channels()
-        .ChannelsByRemotePaymentCode(code);
-}
-
-auto Storage::Bip47ChannelsList(const identifier::Nym& nymID) const
-    -> ObjectList
-{
-    const bool exists = Root().Tree().Nyms().Exists(nymID.str());
-
-    if (false == exists) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Nym ")(nymID)(" doesn't exist.")
-            .Flush();
-
-        return {};
-    }
-
-    return Root().Tree().Nyms().Nym(nymID.str()).Bip47Channels().List();
-}
-
-auto Storage::Bip47Contact(
-    const identifier::Nym& nymID,
-    const Identifier& channelID) const -> OTIdentifier
-{
-    const bool exists = Root().Tree().Nyms().Exists(nymID.str());
-
-    if (false == exists) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Nym ")(nymID)(" doesn't exist.")
-            .Flush();
-
-        return Identifier::Factory();
-    }
-
-    return Root()
-        .Tree()
-        .Nyms()
-        .Nym(nymID.str())
-        .Bip47Channels()
-        .Contact(channelID);
-}
-
-auto Storage::Bip47LocalPaymentCode(
-    const identifier::Nym& nymID,
-    const Identifier& channelID) const -> std::string
-{
-    const bool exists = Root().Tree().Nyms().Exists(nymID.str());
-
-    if (false == exists) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Nym ")(nymID)(" doesn't exist.")
-            .Flush();
-
-        return {};
-    }
-
-    return Root()
-        .Tree()
-        .Nyms()
-        .Nym(nymID.str())
-        .Bip47Channels()
-        .LocalPaymentCode(channelID);
-}
-
-auto Storage::Bip47RemotePaymentCode(
-    const identifier::Nym& nymID,
-    const Identifier& channelID) const -> std::string
-{
-    const bool exists = Root().Tree().Nyms().Exists(nymID.str());
-
-    if (false == exists) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Nym ")(nymID)(" doesn't exist.")
-            .Flush();
-
-        return {};
-    }
-
-    return Root()
-        .Tree()
-        .Nyms()
-        .Nym(nymID.str())
-        .Bip47Channels()
-        .RemotePaymentCode(channelID);
 }
 
 auto Storage::blockchain_thread_item_id(
@@ -2168,8 +2006,8 @@ auto Storage::Store(
 
 auto Storage::Store(
     const identifier::Nym& nymID,
-    const proto::Bip47Channel& data,
-    Identifier& channelID) const -> bool
+    const Identifier& channelID,
+    const proto::Bip47Channel& data) const -> bool
 {
     const bool exists = Root().Tree().Nyms().Exists(nymID.str());
 
@@ -2190,7 +2028,7 @@ auto Storage::Store(
         .get()
         .mutable_Bip47Channels()
         .get()
-        .Store(data, channelID);
+        .Store(channelID, data);
 }
 
 auto Storage::Store(const proto::Contact& data) const -> bool

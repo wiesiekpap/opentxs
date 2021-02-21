@@ -23,6 +23,23 @@ auto Bip47ChannelAllowedBip47Direction() noexcept -> const VersionMap&
 
     return output;
 }
+auto Bip47ChannelAllowedBlockchainDeterministicAccountData() noexcept
+    -> const VersionMap&
+{
+    static const auto output = VersionMap{
+        {1, {1, 1}},
+    };
+
+    return output;
+}
+auto Bip47ChannelAllowedPaymentCode() noexcept -> const VersionMap&
+{
+    static const auto output = VersionMap{
+        {1, {1, 3}},
+    };
+
+    return output;
+}
 auto Bip47ContextAllowedBip47Chain() noexcept -> const VersionMap&
 {
     static const auto output = VersionMap{
@@ -31,7 +48,16 @@ auto Bip47ContextAllowedBip47Chain() noexcept -> const VersionMap&
 
     return output;
 }
-auto Bip47DirectionAllowedBip47Address() noexcept -> const VersionMap&
+auto Bip47DirectionAllowedBlockchainAddress() noexcept -> const VersionMap&
+{
+    static const auto output = VersionMap{
+        {1, {1, 1}},
+    };
+
+    return output;
+}
+auto BlockchainAccountDataAllowedBlockchainActivity() noexcept
+    -> const VersionMap&
 {
     static const auto output = VersionMap{
         {1, {1, 1}},
@@ -66,6 +92,24 @@ auto BlockchainBlockHeaderAllowedBlockchainBlockLocalData() noexcept
     return output;
 }
 auto BlockchainBlockHeaderAllowedEthereumBlockHeaderFields() noexcept
+    -> const VersionMap&
+{
+    static const auto output = VersionMap{
+        {1, {1, 1}},
+    };
+
+    return output;
+}
+auto BlockchainDeterministicAccountDataAllowedBlockchainAccountData() noexcept
+    -> const VersionMap&
+{
+    static const auto output = VersionMap{
+        {1, {1, 1}},
+    };
+
+    return output;
+}
+auto BlockchainDeterministicAccountDataAllowedHDPath() noexcept
     -> const VersionMap&
 {
     static const auto output = VersionMap{
@@ -153,7 +197,34 @@ auto BlockchainTransactionProposalAllowedBlockchainTransaction() noexcept
 
     return output;
 }
+auto BlockchainTransactionProposalAllowedBlockchainTransactionProposedNotification() noexcept
+    -> const VersionMap&
+{
+    static const auto output = VersionMap{
+        {1, {1, 1}},
+    };
+
+    return output;
+}
 auto BlockchainTransactionProposalAllowedBlockchainTransactionProposedOutput() noexcept
+    -> const VersionMap&
+{
+    static const auto output = VersionMap{
+        {1, {1, 1}},
+    };
+
+    return output;
+}
+auto BlockchainTransactionProposedNotificationAllowedHDPath() noexcept
+    -> const VersionMap&
+{
+    static const auto output = VersionMap{
+        {1, {1, 1}},
+    };
+
+    return output;
+}
+auto BlockchainTransactionProposedNotificationAllowedPaymentCode() noexcept
     -> const VersionMap&
 {
     static const auto output = VersionMap{
@@ -171,14 +242,6 @@ auto BlockchainTransactionProposedOutputAllowedBlockchainOutputMultisigDetails()
 
     return output;
 }
-auto HDAccountAllowedBlockchainActivity() noexcept -> const VersionMap&
-{
-    static const auto output = VersionMap{
-        {1, {1, 1}},
-    };
-
-    return output;
-}
 auto HDAccountAllowedBlockchainAddress() noexcept -> const VersionMap&
 {
     static const auto output = VersionMap{
@@ -187,7 +250,8 @@ auto HDAccountAllowedBlockchainAddress() noexcept -> const VersionMap&
 
     return output;
 }
-auto HDAccountAllowedHDPath() noexcept -> const VersionMap&
+auto HDAccountAllowedBlockchainDeterministicAccountData() noexcept
+    -> const VersionMap&
 {
     static const auto output = VersionMap{
         {1, {1, 1}},

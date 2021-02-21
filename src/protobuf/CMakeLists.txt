@@ -29,11 +29,11 @@ set(cxx-sources
     bailmentreply/BailmentReply_1.cpp
     basketitem/BasketItem_1.cpp
     basketparams/BasketParams_1.cpp
-    bip47address/Bip47Address_1.cpp
     bip47channel/Bip47Channel_1.cpp
     bip47direction/Bip47Direction_1.cpp
     bitcoinblockheaderfields/BitcoinBlockHeaderFields_1.cpp
     blindedserieslist/BlindedSeriesList.cpp
+    blockchainaccountdata/BlockchainAccountData_1.cpp
     blockchainactivity/BlockchainActivity_1.cpp
     blockchainaddress/BlockchainAddress_1.cpp
     blockchainblockheader/BlockchainBlockHeader_1.cpp
@@ -42,6 +42,7 @@ set(cxx-sources
     blockchainfilterheader/BlockchainFilterHeader_1.cpp
     blockchaininputwitness/BlockchainInputWitness_1.cpp
     blockchainoutputmultisigdetails/BlockchainOutputMultisigDetails_1.cpp
+    blockchaindeterministicaccountdata/BlockchainDeterministicAccountData_1.cpp
     blockchainp2pchainstate/BlockchainP2PChainState_1.cpp
     blockchainp2phello/BlockchainP2PHello_1.cpp
     blockchainp2psync/BlockchainP2PSync_1.cpp
@@ -52,6 +53,7 @@ set(cxx-sources
     blockchaintransactionoutput/BlockchainTransactionOutput_1.cpp
     blockchaintransactionproposal/BlockchainTransactionProposal_1.cpp
     blockchaintransactionproposedoutput/BlockchainTransactionProposedOutput_1.cpp
+    blockchaintransactionproposednotification/BlockchainTransactionProposedNotification_1.cpp
     blockchainwalletkey/BlockchainWalletKey_1.cpp
     childcredentialparameters/ChildCredentialParameters_1.cpp
     ciphertext/Ciphertext_1.cpp

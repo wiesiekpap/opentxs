@@ -29,6 +29,18 @@
 
 namespace opentxs
 {
+namespace api
+{
+namespace client
+{
+namespace blockchain
+{
+class HD;
+class PaymentCode;
+}  // namespace blockchain
+}  // namespace client
+}  // namespace api
+
 namespace blockchain
 {
 namespace block
@@ -39,6 +51,11 @@ class Transaction;
 }  // namespace bitcoin
 }  // namespace block
 }  // namespace blockchain
+
+namespace proto
+{
+class HDPath;
+}  // namespace proto
 
 class Contact;
 }  // namespace opentxs
@@ -149,10 +166,28 @@ public:
         const BlockchainAccountType standard,
         const Chain chain,
         const PasswordPrompt& reason) const noexcept = 0;
+    OPENTXS_EXPORT virtual OTIdentifier NewPaymentCodeSubaccount(
+        const identifier::Nym& nymID,
+        const opentxs::PaymentCode& local,
+        const opentxs::PaymentCode& remote,
+        const proto::HDPath path,
+        const Chain chain,
+        const PasswordPrompt& reason) const noexcept = 0;
     OPENTXS_EXPORT virtual const identifier::Nym& Owner(
         const Identifier& accountID) const noexcept = 0;
     OPENTXS_EXPORT virtual const identifier::Nym& Owner(
         const blockchain::Key& key) const noexcept = 0;
+    /// Throws std::out_of_range if the specified account does not exist
+    OPENTXS_EXPORT virtual const blockchain::PaymentCode& PaymentCodeSubaccount(
+        const identifier::Nym& nymID,
+        const Identifier& accountID) const noexcept(false) = 0;
+    OPENTXS_EXPORT virtual const blockchain::PaymentCode& PaymentCodeSubaccount(
+        const identifier::Nym& nymID,
+        const opentxs::PaymentCode& local,
+        const opentxs::PaymentCode& remote,
+        const proto::HDPath path,
+        const Chain chain,
+        const PasswordPrompt& reason) const noexcept(false) = 0;
 #if OT_BLOCKCHAIN
     OPENTXS_EXPORT virtual bool ProcessTransaction(
         const Chain chain,

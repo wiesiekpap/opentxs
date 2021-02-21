@@ -11,6 +11,7 @@ namespace opentxs
 {
 namespace proto
 {
+class Bip47Channel;
 class HDAccount;
 class HDPath;
 }  // namespace proto
@@ -19,14 +20,15 @@ class HDPath;
 namespace opentxs::api::client::blockchain::implementation
 {
 template <>
-struct BalanceTree::Factory<internal::HD, proto::HDPath> {
+struct BalanceTree::Factory<internal::HD, proto::HDPath, PasswordPrompt> {
     static auto get(
         const api::internal::Core& api,
         const BalanceTree& parent,
+        Identifier& id,
         const proto::HDPath& data,
-        Identifier& id) noexcept -> std::unique_ptr<internal::HD>
+        const PasswordPrompt& reason) noexcept -> std::unique_ptr<internal::HD>
     {
-        return factory::BlockchainHDBalanceNode(api, parent, data, id);
+        return factory::BlockchainHDBalanceNode(api, parent, data, reason, id);
     }
 };
 template <>
@@ -34,10 +36,68 @@ struct BalanceTree::Factory<internal::HD, proto::HDAccount> {
     static auto get(
         const api::internal::Core& api,
         const BalanceTree& parent,
-        const proto::HDAccount& data,
-        Identifier& id) noexcept -> std::unique_ptr<internal::HD>
+        Identifier& id,
+        const proto::HDAccount& data) noexcept -> std::unique_ptr<internal::HD>
     {
         return factory::BlockchainHDBalanceNode(api, parent, data, id);
+    }
+};
+template <>
+struct BalanceTree::Factory<
+    internal::PaymentCode,
+    opentxs::PaymentCode,
+    opentxs::PaymentCode,
+    proto::HDPath,
+    PasswordPrompt> {
+    static auto get(
+        const api::internal::Core& api,
+        const BalanceTree& parent,
+        Identifier& id,
+        const opentxs::PaymentCode& local,
+        const opentxs::PaymentCode& remote,
+        const proto::HDPath& path,
+        const PasswordPrompt& reason) noexcept
+        -> std::unique_ptr<internal::PaymentCode>
+    {
+        static const auto blank = api.Factory().Data();
+
+        return factory::BlockchainPCBalanceNode(
+            api, parent, local, remote, path, blank, reason, id);
+    }
+};
+template <>
+struct BalanceTree::Factory<
+    internal::PaymentCode,
+    opentxs::PaymentCode,
+    opentxs::PaymentCode,
+    proto::HDPath,
+    opentxs::blockchain::block::Txid,
+    PasswordPrompt> {
+    static auto get(
+        const api::internal::Core& api,
+        const BalanceTree& parent,
+        Identifier& id,
+        const opentxs::PaymentCode& local,
+        const opentxs::PaymentCode& remote,
+        const proto::HDPath& path,
+        const opentxs::blockchain::block::Txid& txid,
+        const PasswordPrompt& reason) noexcept
+        -> std::unique_ptr<internal::PaymentCode>
+    {
+        return factory::BlockchainPCBalanceNode(
+            api, parent, local, remote, path, txid, reason, id);
+    }
+};
+template <>
+struct BalanceTree::Factory<internal::PaymentCode, proto::Bip47Channel> {
+    static auto get(
+        const api::internal::Core& api,
+        const BalanceTree& parent,
+        Identifier& id,
+        const proto::Bip47Channel& data) noexcept
+        -> std::unique_ptr<internal::PaymentCode>
+    {
+        return factory::BlockchainPCBalanceNode(api, parent, data, id);
     }
 };
 

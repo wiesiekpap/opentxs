@@ -22,8 +22,6 @@ OPENTXS_EXPORT const VersionMap&
 StorageAccountsAllowedStorageItemHash() noexcept;
 OPENTXS_EXPORT const VersionMap& StorageAccountsAllowedStorageIDList() noexcept;
 OPENTXS_EXPORT const VersionMap&
-StorageBip47ContextsAllowedStorageBip47AddressIndex() noexcept;
-OPENTXS_EXPORT const VersionMap&
 StorageBip47ContextsAllowedStorageItemHash() noexcept;
 OPENTXS_EXPORT const VersionMap&
 StorageBip47ContextsAllowedStorageBip47ChannelList() noexcept;

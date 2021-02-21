@@ -17,6 +17,7 @@ set(cxx-sources
     Blockchain.cpp
     Deterministic.cpp
     HD.cpp
+    PaymentCode.cpp
 )
 
 set(cxx-install-headers
@@ -42,6 +43,7 @@ set(cxx-headers
     BalanceTree.hpp
     Deterministic.hpp
     HD.hpp
+    PaymentCode.hpp
 )
 
 if(OT_BLOCKCHAIN_EXPORT)

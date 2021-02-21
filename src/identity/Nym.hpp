@@ -139,6 +139,7 @@ public:
     auto Name() const -> std::string final;
     auto Path(proto::HDPath& output) const -> bool final;
     auto PaymentCode() const -> std::string final;
+    auto PaymentCodePath(proto::HDPath& output) const -> bool final;
     auto PhoneNumbers(bool active) const -> std::string final;
     auto Revision() const -> std::uint64_t final;
     auto SerializeCredentialIndex(const Mode mode) const -> Serialized final;

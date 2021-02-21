@@ -26,6 +26,7 @@
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/crypto/key/HD.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/AsymmetricKey.pb.h"
+#include "opentxs/protobuf/BlockchainAccountData.pb.h"
 #include "opentxs/protobuf/BlockchainActivity.pb.h"
 
 // #define OT_METHOD
@@ -37,18 +38,53 @@ BalanceNode::BalanceNode(
     const api::internal::Core& api,
     const internal::BalanceTree& parent,
     const BalanceNodeType type,
-    const OTIdentifier id,
-    std::vector<Activity> unspent,
-    std::vector<Activity> spent) noexcept
+    OTIdentifier&& id,
+    const Revision revision,
+    const std::vector<Activity>& unspent,
+    const std::vector<Activity>& spent,
+    Identifier& out) noexcept
     : api_(api)
     , parent_(parent)
-    , chain_(parent.Chain())
+    , chain_(parent_.Chain())
     , type_(type)
-    , id_(id)
+    , id_(std::move(id))
     , lock_()
+    , revision_(revision)
     , unspent_(convert(unspent))
     , spent_(convert(spent))
 {
+    out.Assign(id_);
+}
+
+BalanceNode::BalanceNode(
+    const api::internal::Core& api,
+    const internal::BalanceTree& parent,
+    const BalanceNodeType type,
+    OTIdentifier&& id,
+    Identifier& out) noexcept
+    : BalanceNode(api, parent, type, std::move(id), 0, {}, {}, out)
+{
+}
+
+BalanceNode::BalanceNode(
+    const api::internal::Core& api,
+    const internal::BalanceTree& parent,
+    const BalanceNodeType type,
+    const SerializedType& serialized,
+    Identifier& out) noexcept(false)
+    : BalanceNode(
+          api,
+          parent,
+          type,
+          api.Factory().Identifier(serialized.id()),
+          serialized.revision(),
+          convert(serialized.unspent()),
+          convert(serialized.spent()),
+          out)
+{
+    if (Translate(serialized.chain()) != chain_) {
+        throw std::runtime_error("Wrong account type");
+    }
 }
 
 BalanceNode::Element::Element(
@@ -61,7 +97,7 @@ BalanceNode::Element::Element(
     const Bip32Index index,
     const std::string label,
     const OTIdentifier contact,
-    std::unique_ptr<opentxs::crypto::key::EllipticCurve> key) noexcept(false)
+    const opentxs::crypto::key::EllipticCurve& key) noexcept(false)
     : api_(api)
     , blockchain_(blockchain)
     , parent_(parent)
@@ -72,7 +108,7 @@ BalanceNode::Element::Element(
     , index_(index)
     , label_(label)
     , contact_(contact)
-    , pkey_(key->asPublicEC())
+    , pkey_(key.asPublicEC())
     , key_(*pkey_)
 {
     if (false == bool(key_)) { throw std::runtime_error("No key provided"); }
@@ -85,7 +121,7 @@ BalanceNode::Element::Element(
     const opentxs::blockchain::Type chain,
     const blockchain::Subchain subchain,
     const Bip32Index index,
-    std::unique_ptr<opentxs::crypto::key::HD> key) noexcept(false)
+    const opentxs::crypto::key::EllipticCurve& key) noexcept(false)
     : Element(
           api,
           blockchain,
@@ -95,8 +131,8 @@ BalanceNode::Element::Element(
           subchain,
           index,
           "",
-          Identifier::Factory(),
-          std::move(key))
+          api.Factory().Identifier(),
+          key)
 {
 }
 
@@ -116,8 +152,8 @@ BalanceNode::Element::Element(
           subchain,
           address.index(),
           address.label(),
-          Identifier::Factory(address.contact()),
-          instantiate(api, address.key()))
+          api.Factory().Identifier(address.contact()),
+          *instantiate(api, address.key()))
 {
 }
 
@@ -317,6 +353,16 @@ auto BalanceNode::convert(const proto::BlockchainActivity& in) noexcept
     return output;
 }
 
+auto BalanceNode::convert(const SerializedActivity& in) noexcept
+    -> std::vector<Activity>
+{
+    auto output = std::vector<Activity>{};
+
+    for (const auto& activity : in) { output.emplace_back(convert(activity)); }
+
+    return output;
+}
+
 auto BalanceNode::convert(const std::vector<Activity>& in) noexcept
     -> internal::ActivityMap
 {
@@ -394,6 +440,26 @@ void BalanceNode::process_unspent(
         // Spend was discovered out of order, so correct the value now
         auto& storedValue = spent_.at(coin).second;
         storedValue = std::max(storedValue, value);
+    }
+}
+
+auto BalanceNode::serialize_common(
+    const Lock&,
+    proto::BlockchainAccountData& out) const noexcept -> void
+{
+    out.set_version(BlockchainAccountDataVersion);
+    out.set_id(id_->str());
+    out.set_revision(revision_.load());
+    out.set_chain(Translate(chain_));
+
+    for (const auto& [coin, data] : unspent_) {
+        auto converted = Activity{coin, data.first, data.second};
+        *out.add_unspent() = convert(std::move(converted));
+    }
+
+    for (const auto& [coin, data] : spent_) {
+        auto converted = Activity{coin, data.first, data.second};
+        *out.add_spent() = convert(std::move(converted));
     }
 }
 

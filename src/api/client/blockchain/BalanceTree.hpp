@@ -30,6 +30,7 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 
 namespace opentxs
@@ -55,6 +56,8 @@ namespace opentxs::api::client::blockchain::implementation
 class BalanceTree final : public internal::BalanceTree
 {
 public:
+    using Accounts = std::set<OTIdentifier>;
+
     auto AssociateTransaction(
         const std::vector<Activity>& unspent,
         const std::vector<Activity>& spent,
@@ -96,22 +99,50 @@ public:
     {
         return nym_id_;
     }
+    auto PaymentCode(const Identifier& account) const noexcept(false)
+        -> const blockchain::internal::PaymentCode& final
+    {
+        return payment_code_.at(account);
+    }
     auto Parent() const noexcept -> const internal::BalanceList& final
     {
         return parent_;
     }
 
-    auto AddHDNode(const proto::HDPath& path, Identifier& id) noexcept
-        -> bool final
+    auto AddHDNode(
+        const proto::HDPath& path,
+        const PasswordPrompt& reason,
+        Identifier& id) noexcept -> bool final
     {
-        return hd_.Construct(path, id);
+        return hd_.Construct(id, path, reason);
+    }
+    auto AddUpdatePaymentCode(
+        const opentxs::PaymentCode& local,
+        const opentxs::PaymentCode& remote,
+        const proto::HDPath& path,
+        const PasswordPrompt& reason,
+        Identifier& out) noexcept -> bool final
+    {
+        return payment_code_.Construct(out, local, remote, path, reason);
+    }
+    auto AddUpdatePaymentCode(
+        const opentxs::PaymentCode& local,
+        const opentxs::PaymentCode& remote,
+        const proto::HDPath& path,
+        const opentxs::blockchain::block::Txid& txid,
+        const PasswordPrompt& reason,
+        Identifier& out) noexcept -> bool final
+    {
+        return payment_code_.Construct(out, local, remote, path, txid, reason);
     }
 
     BalanceTree(
         const api::internal::Core& api,
         const internal::BalanceList& parent,
         const identifier::Nym& nym,
-        const std::set<OTIdentifier>& accounts) noexcept;
+        const Accounts& hd,
+        const Accounts& imported,
+        const Accounts& paymentCode) noexcept;
 
     ~BalanceTree() final = default;
 
@@ -168,13 +199,12 @@ private:
 
             return *nodes_.at(index_.at(id));
         }
-        template <typename ArgumentType>
-        auto Construct(const ArgumentType& data, Identifier& id) noexcept
-            -> bool
+        template <typename... Args>
+        auto Construct(Identifier& out, const Args&... args) noexcept -> bool
         {
             Lock lock(lock_);
 
-            return construct(lock, data, id);
+            return construct(lock, out, args...);
         }
 
         NodeGroup(const api::internal::Core& api, BalanceTree& parent) noexcept
@@ -197,14 +227,14 @@ private:
             const Lock& lock,
             const Identifier& id,
             std::unique_ptr<PayloadType> node) noexcept -> bool;
-        template <typename ArgumentType>
+        template <typename... Args>
         auto construct(
             const Lock& lock,
-            const ArgumentType& data,
-            Identifier& id) noexcept -> bool
+            Identifier& id,
+            const Args&... args) noexcept -> bool
         {
-            auto node{Factory<PayloadType, ArgumentType>::get(
-                api_, parent_, data, id)};
+            auto node{
+                Factory<PayloadType, Args...>::get(api_, parent_, id, args...)};
 
             if (false == bool(node)) { return false; }
 
@@ -218,13 +248,13 @@ private:
         }
     };
 
-    template <typename ReturnType, typename ArgumentType>
+    template <typename ReturnType, typename... Args>
     struct Factory {
         static auto get(
             const api::internal::Core& api,
             const BalanceTree& parent,
-            const ArgumentType& data,
-            Identifier& id) noexcept -> std::unique_ptr<ReturnType>;
+            Identifier& id,
+            const Args&... args) noexcept -> std::unique_ptr<ReturnType>;
     };
 
     struct NodeIndex {
@@ -261,7 +291,8 @@ private:
     mutable internal::ActivityMap unspent_;
     mutable internal::ActivityMap spent_;
 
-    void init(const std::set<OTIdentifier>& HDAccounts) noexcept;
+    void init_hd(const Accounts& HDAccounts) noexcept;
+    void init_payment_code(const Accounts& HDAccounts) noexcept;
 
     auto find_best_deposit_address() const noexcept -> const Element&;
     auto find_next_element(Subchain subchain, const PasswordPrompt& reason)

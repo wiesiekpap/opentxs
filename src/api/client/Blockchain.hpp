@@ -43,6 +43,7 @@
 #include "opentxs/api/client/blockchain/BalanceNode.hpp"
 #include "opentxs/api/client/blockchain/BalanceTree.hpp"
 #include "opentxs/api/client/blockchain/HD.hpp"
+#include "opentxs/api/client/blockchain/PaymentCode.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -123,6 +124,7 @@ class HDPath;
 
 class Contact;
 class PasswordPrompt;
+class PaymentCode;
 }  // namespace opentxs
 
 namespace zmq = opentxs::network::zeromq;
@@ -254,6 +256,13 @@ public:
         const BlockchainAccountType standard,
         const Chain chain,
         const PasswordPrompt& reason) const noexcept -> OTIdentifier final;
+    auto NewPaymentCodeSubaccount(
+        const identifier::Nym& nymID,
+        const opentxs::PaymentCode& local,
+        const opentxs::PaymentCode& remote,
+        const proto::HDPath path,
+        const Chain chain,
+        const PasswordPrompt& reason) const noexcept -> OTIdentifier final;
     auto Owner(const Identifier& accountID) const noexcept
         -> const identifier::Nym& final
     {
@@ -264,6 +273,18 @@ public:
     {
         return Owner(api_.Factory().Identifier(std::get<0>(key)));
     }
+    auto PaymentCodeSubaccount(
+        const identifier::Nym& nymID,
+        const Identifier& accountID) const noexcept(false)
+        -> const blockchain::PaymentCode& final;
+    auto PaymentCodeSubaccount(
+        const identifier::Nym& nymID,
+        const opentxs::PaymentCode& local,
+        const opentxs::PaymentCode& remote,
+        const proto::HDPath path,
+        const Chain chain,
+        const PasswordPrompt& reason) const noexcept(false)
+        -> const blockchain::PaymentCode& final;
     auto PubkeyHash(const Chain chain, const Data& pubkey) const noexcept(false)
         -> OTData final;
 #if OT_BLOCKCHAIN
@@ -604,6 +625,14 @@ private:
         -> std::unique_ptr<
             opentxs::blockchain::block::bitcoin::internal::Transaction>;
 #endif  // OT_BLOCKCHAIN
+    auto new_payment_code(
+        const Lock& lock,
+        const identifier::Nym& nymID,
+        const opentxs::PaymentCode& local,
+        const opentxs::PaymentCode& remote,
+        const proto::HDPath path,
+        const Chain chain,
+        const PasswordPrompt& reason) const noexcept -> OTIdentifier;
     auto p2pkh(const Chain chain, const Data& pubkeyHash) const noexcept
         -> std::string;
     auto p2sh(const Chain chain, const Data& scriptHash) const noexcept

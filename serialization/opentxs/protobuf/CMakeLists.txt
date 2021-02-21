@@ -16,15 +16,16 @@ set(PROTO_SOURCES
     BailmentReply.proto
     BasketItem.proto
     BasketParams.proto
-    Bip47Address.proto
     Bip47Channel.proto
     Bip47Direction.proto
     BitcoinBlockHeaderFields.proto
     BlindedSeriesList.proto
+    BlockchainAccountData.proto
     BlockchainActivity.proto
     BlockchainAddress.proto
     BlockchainBlockHeader.proto
     BlockchainBlockLocalData.proto
+    BlockchainDeterministicAccountData.proto
     BlockchainEnums.proto
     BlockchainExternalAddress.proto
     BlockchainFilterHeader.proto
@@ -39,6 +40,7 @@ set(PROTO_SOURCES
     BlockchainTransactionInput.proto
     BlockchainTransactionOutput.proto
     BlockchainTransactionProposal.proto
+    BlockchainTransactionProposedNotification.proto
     BlockchainTransactionProposedOutput.proto
     BlockchainWalletKey.proto
     CashEnums.proto

@@ -39,6 +39,8 @@ namespace proto
 {
 class HDPath;
 }  // namespace proto
+
+class PasswordPrompt;
 }  // namespace opentxs
 
 namespace opentxs::api::client::blockchain::implementation
@@ -77,6 +79,7 @@ public:
     auto AddHDNode(
         const identifier::Nym& nym,
         const proto::HDPath& path,
+        const PasswordPrompt& reason,
         Identifier& id) noexcept -> bool final;
     auto Nym(const identifier::Nym& id) noexcept
         -> internal::BalanceTree& final;
@@ -89,6 +92,8 @@ public:
     ~BalanceList() final = default;
 
 private:
+    using Accounts = std::set<OTIdentifier>;
+
     const client::internal::Blockchain& parent_;
     const api::internal::Core& api_;
     const opentxs::blockchain::Type chain_;
@@ -101,7 +106,8 @@ private:
         -> const internal::BalanceTree&;
     auto factory(
         const identifier::Nym& nym,
-        const std::set<OTIdentifier>& accounts) const noexcept
+        const Accounts& hd,
+        const Accounts& paymentCode) const noexcept
         -> std::unique_ptr<internal::BalanceTree>;
     using blockchain::BalanceList::size;
     auto size(const Lock& lock) const noexcept -> std::size_t;

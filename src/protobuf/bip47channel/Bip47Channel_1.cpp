@@ -9,6 +9,10 @@
 #include "opentxs/protobuf/Bip47Channel.pb.h"
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/verify/Bip47Direction.hpp"  // IWYU pragma: keep
+#include "opentxs/protobuf/verify/BlockchainActivity.hpp"
+#include "opentxs/protobuf/verify/BlockchainDeterministicAccountData.hpp"
+#include "opentxs/protobuf/verify/HDPath.hpp"
+#include "opentxs/protobuf/verify/PaymentCode.hpp"
 #include "opentxs/protobuf/verify/VerifyBlockchain.hpp"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "protobuf/Check.hpp"
@@ -22,17 +26,13 @@ namespace proto
 
 auto CheckProto_1(const Bip47Channel& input, const bool silent) -> bool
 {
-    CHECK_IDENTIFIER(id);
-    CHECK_IDENTIFIER(localpaymentcode);
-    const bool validChain =
-        ValidContactItemType({6, CONTACTSECTION_CONTRACT}, input.chain());
-
-    if (false == validChain) { FAIL_1("invalid type"); }
-
-    CHECK_IDENTIFIER(contact);
-    CHECK_IDENTIFIER(remotepaymentcode);
+    CHECK_SUBOBJECT(
+        deterministic, Bip47ChannelAllowedBlockchainDeterministicAccountData());
+    CHECK_SUBOBJECT(local, Bip47ChannelAllowedPaymentCode());
+    CHECK_SUBOBJECT(remote, Bip47ChannelAllowedPaymentCode());
     CHECK_SUBOBJECT(incoming, Bip47ChannelAllowedBip47Direction());
     CHECK_SUBOBJECT(outgoing, Bip47ChannelAllowedBip47Direction());
+    OPTIONAL_IDENTIFIER(contact);
 
     return true;
 }

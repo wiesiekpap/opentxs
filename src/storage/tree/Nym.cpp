@@ -15,6 +15,8 @@
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/protobuf/BlockchainAccountData.pb.h"
+#include "opentxs/protobuf/BlockchainDeterministicAccountData.pb.h"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
@@ -344,7 +346,7 @@ void Nym::init(const std::string& hash)
     }
 
     for (const auto& account : serialized->hdaccount()) {
-        const auto& id = account.id();
+        const auto& id = account.deterministic().common().id();
         blockchain_accounts_.emplace(
             id, std::make_shared<proto::HDAccount>(account));
     }
@@ -807,7 +809,7 @@ auto Nym::SetAlias(const std::string& alias) -> bool
 auto Nym::Store(const proto::ContactItemType type, const proto::HDAccount& data)
     -> bool
 {
-    const auto& accountID = data.id();
+    const auto& accountID = data.deterministic().common().id();
 
     if (accountID.empty()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid account ID.").Flush();
@@ -832,7 +834,8 @@ auto Nym::Store(const proto::ContactItemType type, const proto::HDAccount& data)
     } else {
         auto& existing = accountItem->second;
 
-        if (existing->revision() > data.revision()) {
+        if (existing->deterministic().common().revision() >
+            data.deterministic().common().revision()) {
             LogOutput(OT_METHOD)(__FUNCTION__)(
                 ": Not saving object with older revision.")
                 .Flush();
