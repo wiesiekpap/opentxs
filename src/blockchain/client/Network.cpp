@@ -341,12 +341,18 @@ auto Network::is_synchronized_blocks() const noexcept -> bool
 
 auto Network::is_synchronized_filters() const noexcept -> bool
 {
-    return filters_.Tip(filters_.DefaultType()).first >= this->target();
+    const auto target = this->target();
+    const auto progress = filters_.Tip(filters_.DefaultType()).first;
+
+    return (progress >= target) || config_.use_sync_server_;
 }
 
 auto Network::is_synchronized_headers() const noexcept -> bool
 {
-    return local_chain_height_.load() >= remote_chain_height_.load();
+    const auto target = remote_chain_height_.load();
+    const auto progress = local_chain_height_.load();
+
+    return (progress >= target) || config_.use_sync_server_;
 }
 
 auto Network::is_synchronized_sync_server() const noexcept -> bool

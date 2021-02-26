@@ -54,7 +54,7 @@ BlockOracle::BlockOracle(
     const internal::BlockDatabase& db,
     const blockchain::Type chain,
     const std::string& shutdown) noexcept
-    : Worker(api, std::chrono::milliseconds{25})
+    : Worker(api, std::chrono::milliseconds{500})
     , network_(network)
     , db_(db)
     , lock_()

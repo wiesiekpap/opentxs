@@ -212,14 +212,28 @@ auto BlockOracle::Cache::StateMachine() const noexcept -> bool
 
     if (false == running_) { return false; }
 
+    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(DisplayString(chain_))(
+        " download queue contains ")(pending_.size())(" blocks.")
+        .Flush();
+
     for (auto& [hash, item] : pending_) {
         auto& [time, promise, future, queued] = item;
         const auto now = Clock::now();
-        const auto timeout = download_timeout_ <= (now - time);
+        namespace c = std::chrono;
+        const auto elapsed = c::duration_cast<c::milliseconds>(now - time);
+        const auto timeout = download_timeout_ <= elapsed;
 
         if (timeout || (false == queued)) {
+            LogVerbose(OT_METHOD)(__FUNCTION__)(": Requesting ")(
+                DisplayString(chain_))(" block ")(hash->asHex())(" from peers")
+                .Flush();
             queued = download(hash);
             time = now;
+        } else {
+            LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(elapsed.count())(
+                " milliseconds elapsed waiting for ")(DisplayString(chain_))(
+                " block ")(hash->asHex())
+                .Flush();
         }
     }
 
