@@ -92,7 +92,7 @@ auto Wallet::Proposals::build_transaction_bitcoin(
         return BuildResult::PermanentFailure;
     }
 
-    if (false == builder.AddChange()) {
+    if (false == builder.AddChange(proposal)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to allocate change output")
             .Flush();
 

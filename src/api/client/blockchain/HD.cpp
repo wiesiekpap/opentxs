@@ -7,9 +7,6 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "api/client/blockchain/HD.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
-#include <atomic>
-#include <map>
 #include <memory>
 #include <set>
 #include <stdexcept>
@@ -21,19 +18,16 @@
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/client/blockchain/Factory.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
-#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/HDSeed.hpp"
 #include "opentxs/api/client/blockchain/BalanceNodeType.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/protobuf/BlockchainActivity.pb.h"
 #include "opentxs/protobuf/BlockchainAddress.pb.h"
-#include "opentxs/protobuf/HDPath.pb.h"
+#include "opentxs/protobuf/HDAccount.pb.h"
 
 #define OT_METHOD "opentxs::api::client::blockchain::implementation::HD::"
 
@@ -45,12 +39,10 @@ auto BlockchainHDBalanceNode(
     const api::internal::Core& api,
     const api::client::blockchain::internal::BalanceTree& parent,
     const proto::HDPath& path,
+    const PasswordPrompt& reason,
     Identifier& id) noexcept
     -> std::unique_ptr<api::client::blockchain::internal::HD>
 {
-    auto reason =
-        api.Factory().PasswordPrompt("Creating a new blockchain account");
-
     try {
         return std::make_unique<ReturnType>(api, parent, path, reason, id);
     } catch (const std::exception& e) {
@@ -68,11 +60,9 @@ auto BlockchainHDBalanceNode(
     -> std::unique_ptr<api::client::blockchain::internal::HD>
 {
     using ReturnType = api::client::blockchain::implementation::HD;
-    auto reason = api.Factory().PasswordPrompt("Loading a blockchain account");
 
     try {
-        return std::make_unique<ReturnType>(
-            api, parent, serialized, reason, id);
+        return std::make_unique<ReturnType>(api, parent, serialized, id);
     } catch (const std::exception& e) {
         LogOutput("opentxs::Factory::")(__FUNCTION__)(": ")(e.what()).Flush();
 
@@ -83,6 +73,9 @@ auto BlockchainHDBalanceNode(
 
 namespace opentxs::api::client::blockchain::implementation
 {
+constexpr auto internalType{Subchain::Internal};
+constexpr auto externalType{Subchain::External};
+
 HD::HD(
     const api::internal::Core& api,
     const internal::BalanceTree& parent,
@@ -94,295 +87,70 @@ HD::HD(
           parent,
           BalanceNodeType::HD,
           Identifier::Factory(Translate(parent.Chain()), path),
-          {},
-          {},
           path,
-          {{Subchain::Internal, 0}, {Subchain::External, 0}},
-          {{Subchain::Internal, 0}, {Subchain::External, 0}})
+          {{internalType, false, {}}, {externalType, true, {}}},
+          id)
     , version_(DefaultVersion)
-    , revision_(0)
-    , internal_addresses_()
-    , external_addresses_()
 {
-    id.Assign(id_);
-    Lock lock(lock_);
-    const auto existing = api_.Storage().BlockchainAccountList(
-        parent_.NymID().str(), Translate(chain_));
-
-    if (0 < existing.count(id_->str())) {
-        throw std::runtime_error("Account already exists");
-    }
-
-#if OT_CRYPTO_WITH_BIP32
-    check_lookahead(lock, Subchain::Internal, reason);
-    check_lookahead(lock, Subchain::External, reason);
-#endif  // OT_CRYPTO_WITH_BIP32
-
-    if (false == save(lock)) {
-        throw std::runtime_error("Failed to save new account");
-    }
-
-    init();
+    init(reason);
 }
 
 HD::HD(
     const api::internal::Core& api,
     const internal::BalanceTree& parent,
     const SerializedType& serialized,
-    const PasswordPrompt& reason,
     Identifier& id) noexcept(false)
     : Deterministic(
           api,
           parent,
           BalanceNodeType::HD,
-          Identifier::Factory(serialized.id()),
-          extract_incoming(serialized),
-          extract_outgoing(serialized),
-          serialized.path(),
-          {{Subchain::Internal, serialized.internaladdress().size()},
-           {Subchain::External, serialized.externaladdress().size()}},
-          {{Subchain::Internal, serialized.internalindex()},
-           {Subchain::External, serialized.externalindex()}})
+          serialized.deterministic(),
+          serialized.internaladdress().size(),
+          serialized.externaladdress().size(),
+          [&] {
+              auto out = ChainData{
+                  {internalType, false, {}}, {externalType, true, {}}};
+
+              for (const auto& address : serialized.internaladdress()) {
+                  out.internal_.map_.emplace(
+                      std::piecewise_construct,
+                      std::forward_as_tuple(address.index()),
+                      std::forward_as_tuple(
+                          api,
+                          parent.Parent().Parent(),
+                          *this,
+                          parent.Chain(),
+                          internalType,
+                          address));
+              }
+
+              for (const auto& address : serialized.externaladdress()) {
+                  out.external_.map_.emplace(
+                      std::piecewise_construct,
+                      std::forward_as_tuple(address.index()),
+                      std::forward_as_tuple(
+                          api,
+                          parent.Parent().Parent(),
+                          *this,
+                          parent.Chain(),
+                          data_.external_.type_,
+                          address));
+              }
+
+              return out;
+          }(),
+          id)
     , version_(serialized.version())
-    , revision_(serialized.revision())
-    , internal_addresses_(extract_internal(
-          api_,
-          parent.Parent().Parent(),
-          *this,
-          chain_,
-          serialized))
-    , external_addresses_(extract_external(
-          api_,
-          parent.Parent().Parent(),
-          *this,
-          chain_,
-          serialized))
 {
-    id.Assign(id_);
-
-    if (Translate(serialized.type()) != chain_) {
-        throw std::runtime_error("Wrong account type");
-    }
+    init();
 }
 
-auto HD::BalanceElement(const Subchain type, const Bip32Index index) const
-    noexcept(false) -> const HD::Element&
+auto HD::account_already_exists(const Lock&) const noexcept -> bool
 {
-    switch (type) {
-        case Subchain::Internal: {
-            return internal_addresses_.at(index);
-        }
-        case Subchain::External: {
-            return external_addresses_.at(index);
-        }
-        default: {
-            throw std::out_of_range("Invalid subchain");
-        }
-    }
-}
+    const auto existing = api_.Storage().BlockchainAccountList(
+        parent_.NymID().str(), Translate(chain_));
 
-auto HD::check_activity(
-    const Lock& lock,
-    const std::vector<Activity>& unspent,
-    std::set<OTIdentifier>& contacts,
-    const PasswordPrompt& reason) const noexcept -> bool
-{
-    try {
-        const auto currentExternal = used_.at(Subchain::External) - 1;
-        const auto currentInternal = used_.at(Subchain::Internal) - 1;
-        auto targetExternal{currentExternal};
-        auto targetInternal{currentInternal};
-
-        for (const auto& [coin, key, value] : unspent) {
-            const auto& [account, subchain, index] = key;
-
-            if (Subchain::External == subchain) {
-                targetExternal = std::max(targetExternal, index);
-
-                try {
-                    auto contact = external_addresses_.at(index).Contact();
-
-                    if (false == contact->empty()) {
-                        contacts.emplace(std::move(contact));
-                    }
-                } catch (...) {
-                }
-            } else if (Subchain::Internal == subchain) {
-                targetInternal = std::max(targetInternal, index);
-            } else {
-
-                return false;
-            }
-        }
-
-        const auto blank = api_.Factory().Identifier();
-        const auto empty = std::string{};
-
-#if OT_CRYPTO_WITH_BIP32
-        for (auto i{currentExternal}; i < targetExternal; ++i) {
-            use_next(lock, Subchain::External, reason, blank, empty);
-        }
-
-        for (auto i{currentInternal}; i < targetInternal; ++i) {
-            use_next(lock, Subchain::Internal, reason, blank, empty);
-        }
-#endif  // OT_CRYPTO_WITH_BIP32
-
-        OT_ASSERT(targetExternal < used_.at(Subchain::External));
-        OT_ASSERT(targetInternal < used_.at(Subchain::Internal));
-
-        return true;
-    } catch (...) {
-
-        return false;
-    }
-}
-
-auto HD::extract_external(
-    const api::internal::Core& api,
-    const client::internal::Blockchain& blockchain,
-    const internal::BalanceNode& parent,
-    const opentxs::blockchain::Type chain,
-    const SerializedType& in) noexcept(false) -> HD::AddressMap
-{
-    AddressMap output{};
-
-    for (const auto& address : in.externaladdress()) {
-        output.emplace(
-            std::piecewise_construct,
-            std::forward_as_tuple(address.index()),
-            std::forward_as_tuple(
-                api, blockchain, parent, chain, Subchain::External, address));
-    }
-
-    return output;
-}
-
-auto HD::extract_incoming(const SerializedType& in) -> std::vector<Activity>
-{
-    std::vector<Activity> output{};
-
-    for (const auto& activity : in.incoming()) {
-        output.emplace_back(convert(activity));
-    }
-
-    return output;
-}
-
-auto HD::extract_internal(
-    const api::internal::Core& api,
-    const client::internal::Blockchain& blockchain,
-    const internal::BalanceNode& parent,
-    const opentxs::blockchain::Type chain,
-    const SerializedType& in) noexcept(false) -> HD::AddressMap
-{
-    AddressMap output{};
-
-    for (const auto& address : in.internaladdress()) {
-        output.emplace(
-            std::piecewise_construct,
-            std::forward_as_tuple(address.index()),
-            std::forward_as_tuple(
-                api, blockchain, parent, chain, Subchain::Internal, address));
-    }
-
-    return output;
-}
-
-auto HD::extract_outgoing(const SerializedType& in) -> std::vector<Activity>
-{
-    std::vector<Activity> output{};
-
-    for (const auto& activity : in.outgoing()) {
-        output.emplace_back(convert(activity));
-    }
-
-    return output;
-}
-
-#if OT_CRYPTO_WITH_BIP32
-auto HD::generate_next(
-    const Lock& lock,
-    const Subchain type,
-    const PasswordPrompt& reason) const noexcept(false) -> Bip32Index
-{
-    auto& index = generated_.at(type);
-
-    if (MaxIndex <= index) { throw std::runtime_error("Account is full"); }
-
-    auto pKey = api_.Seeds().AccountChildKey(
-        path_,
-        (Subchain::Internal == type) ? INTERNAL_CHAIN : EXTERNAL_CHAIN,
-        index,
-        reason);
-
-    if (false == bool(pKey)) {
-        throw std::runtime_error("Failed to generate key");
-    }
-
-    auto& addressMap = (Subchain::Internal == type) ? internal_addresses_
-                                                    : external_addresses_;
-    const auto [it, added] = addressMap.emplace(
-        std::piecewise_construct,
-        std::forward_as_tuple(index),
-        std::forward_as_tuple(
-            api_,
-            parent_.Parent().Parent(),
-            *this,
-            chain_,
-            type,
-            index,
-            std::move(pKey)));
-
-    if (false == added) { throw std::runtime_error("Failed to add key"); }
-
-#if OT_BLOCKCHAIN
-    parent_.Parent().Parent().KeyGenerated(chain_);
-#endif  // OT_BLOCKCHAIN
-
-    return index++;
-}
-#endif  // OT_CRYPTO_WITH_BIP32
-
-auto HD::Key(const Subchain type, const Bip32Index index) const noexcept
-    -> ECKey
-{
-    try {
-        switch (type) {
-            case Subchain::Internal: {
-
-                return internal_addresses_.at(index).Key();
-            }
-            case Subchain::External: {
-
-                return external_addresses_.at(index).Key();
-            }
-            default: {
-                return nullptr;
-            }
-        }
-    } catch (...) {
-
-        return nullptr;
-    }
-}
-
-auto HD::mutable_element(
-    const Lock& lock,
-    const Subchain type,
-    const Bip32Index index) noexcept(false) -> internal::BalanceElement&
-{
-    switch (type) {
-        case Subchain::Internal: {
-            return internal_addresses_.at(index);
-        }
-        case Subchain::External: {
-            return external_addresses_.at(index);
-        }
-        default: {
-            throw std::out_of_range("Invalid subchain");
-        }
-    }
+    return 0 < existing.count(id_->str());
 }
 
 #if OT_CRYPTO_WITH_BIP32
@@ -393,7 +161,7 @@ auto HD::PrivateKey(
 {
     return api_.Seeds().AccountChildKey(
         path_,
-        (Subchain::Internal == type) ? INTERNAL_CHAIN : EXTERNAL_CHAIN,
+        (data_.internal_.type_ == type) ? INTERNAL_CHAIN : EXTERNAL_CHAIN,
         index,
         reason);
 }
@@ -402,31 +170,16 @@ auto HD::PrivateKey(
 auto HD::save(const Lock& lock) const noexcept -> bool
 {
     const auto type = Translate(chain_);
-    SerializedType serialized{};
+    auto serialized = SerializedType{};
     serialized.set_version(version_);
-    serialized.set_id(id_->str());
-    serialized.set_type(type);
-    serialized.set_revision(++revision_);
-    *serialized.mutable_path() = path_;
-    serialized.set_internalindex(used_.at(Subchain::Internal));
-    serialized.set_externalindex(used_.at(Subchain::External));
+    serialize_deterministic(lock, *serialized.mutable_deterministic());
 
-    for (const auto& [index, address] : internal_addresses_) {
+    for (const auto& [index, address] : data_.internal_.map_) {
         *serialized.add_internaladdress() = address.Serialize();
     }
 
-    for (const auto& [index, address] : external_addresses_) {
+    for (const auto& [index, address] : data_.external_.map_) {
         *serialized.add_externaladdress() = address.Serialize();
-    }
-
-    for (const auto& [coin, data] : unspent_) {
-        auto converted = Activity{coin, data.first, data.second};
-        *serialized.add_incoming() = convert(std::move(converted));
-    }
-
-    for (const auto& [coin, data] : spent_) {
-        auto converted = Activity{coin, data.first, data.second};
-        *serialized.add_outgoing() = convert(std::move(converted));
     }
 
     const bool saved =
@@ -440,30 +193,5 @@ auto HD::save(const Lock& lock) const noexcept -> bool
     }
 
     return saved;
-}
-
-void HD::set_metadata(
-    const Lock& lock,
-    const Subchain subchain,
-    const Bip32Index index,
-    const Identifier& contact,
-    const std::string& label) const noexcept
-{
-    const auto blank = api_.Factory().Identifier();
-
-    try {
-        switch (subchain) {
-            case Subchain::Internal: {
-                // Change addresses do not get assigned to contacts
-                internal_addresses_.at(index).SetMetadata(blank, label);
-            } break;
-            case Subchain::External: {
-                external_addresses_.at(index).SetMetadata(contact, label);
-            } break;
-            default: {
-            }
-        }
-    } catch (...) {
-    }
 }
 }  // namespace opentxs::api::client::blockchain::implementation

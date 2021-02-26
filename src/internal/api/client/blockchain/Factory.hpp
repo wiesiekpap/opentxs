@@ -22,6 +22,7 @@ namespace internal
 struct BalanceList;
 struct BalanceTree;
 struct HD;
+struct PaymentCode;
 }  // namespace internal
 }  // namespace blockchain
 
@@ -44,11 +45,15 @@ class Nym;
 
 namespace proto
 {
+class Bip47Channel;
 class HDAccount;
 class HDPath;
 }  // namespace proto
 
+class Data;
 class Identifier;
+class PasswordPrompt;
+class PaymentCode;
 }  // namespace opentxs
 
 namespace opentxs::factory
@@ -70,6 +75,7 @@ auto BlockchainHDBalanceNode(
     const api::internal::Core& api,
     const api::client::blockchain::internal::BalanceTree& parent,
     const proto::HDPath& path,
+    const PasswordPrompt& reason,
     Identifier& id) noexcept
     -> std::unique_ptr<api::client::blockchain::internal::HD>;
 auto BlockchainHDBalanceNode(
@@ -78,4 +84,20 @@ auto BlockchainHDBalanceNode(
     const proto::HDAccount& serialized,
     Identifier& id) noexcept
     -> std::unique_ptr<api::client::blockchain::internal::HD>;
+auto BlockchainPCBalanceNode(
+    const api::internal::Core& api,
+    const api::client::blockchain::internal::BalanceTree& parent,
+    const opentxs::PaymentCode& local,
+    const opentxs::PaymentCode& remote,
+    const proto::HDPath& path,
+    const Data& txid,
+    const PasswordPrompt& reason,
+    Identifier& id) noexcept
+    -> std::unique_ptr<api::client::blockchain::internal::PaymentCode>;
+auto BlockchainPCBalanceNode(
+    const api::internal::Core& api,
+    const api::client::blockchain::internal::BalanceTree& parent,
+    const proto::Bip47Channel& serialized,
+    Identifier& id) noexcept
+    -> std::unique_ptr<api::client::blockchain::internal::PaymentCode>;
 }  // namespace opentxs::factory

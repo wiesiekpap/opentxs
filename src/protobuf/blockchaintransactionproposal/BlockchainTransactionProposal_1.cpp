@@ -8,6 +8,7 @@
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
 #include "opentxs/protobuf/verify/BlockchainTransaction.hpp"  // IWYU pragma: keep
+#include "opentxs/protobuf/verify/BlockchainTransactionProposedNotification.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/BlockchainTransactionProposedOutput.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyBlockchain.hpp"
 #include "protobuf/Check.hpp"
@@ -22,6 +23,9 @@ auto CheckProto_1(const BlockchainTransactionProposal& input, const bool silent)
     CHECK_SUBOBJECTS(
         output,
         BlockchainTransactionProposalAllowedBlockchainTransactionProposedOutput());
+    OPTIONAL_SUBOBJECTS(
+        notification,
+        BlockchainTransactionProposalAllowedBlockchainTransactionProposedNotification());
     OPTIONAL_SUBOBJECT(
         finished, BlockchainTransactionProposalAllowedBlockchainTransaction());
 

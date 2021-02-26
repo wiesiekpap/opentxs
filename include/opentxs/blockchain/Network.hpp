@@ -34,6 +34,8 @@ namespace identifier
 {
 class Nym;
 }  // namespace identifier
+
+class PaymentCode;
 }  // namespace opentxs
 
 namespace opentxs
@@ -70,6 +72,16 @@ public:
     OPENTXS_EXPORT virtual auto SendToAddress(
         const identifier::Nym& sender,
         const std::string& address,
+        const Amount amount,
+        const std::string& memo = {}) const noexcept -> PendingOutgoing = 0;
+    OPENTXS_EXPORT virtual auto SendToPaymentCode(
+        const identifier::Nym& sender,
+        const std::string& recipient,
+        const Amount amount,
+        const std::string& memo = {}) const noexcept -> PendingOutgoing = 0;
+    OPENTXS_EXPORT virtual auto SendToPaymentCode(
+        const identifier::Nym& sender,
+        const PaymentCode& recipient,
         const Amount amount,
         const std::string& memo = {}) const noexcept -> PendingOutgoing = 0;
 

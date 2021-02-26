@@ -20,15 +20,12 @@ namespace proto
 auto CheckProto_1(const StorageBip47ChannelList& input, const bool silent)
     -> bool
 {
-    CHECK_IDENTIFIER(localpaymentcode);
+    CHECK_IDENTIFIER(channelid);
+
     bool validChain =
         ValidContactItemType({6, CONTACTSECTION_CONTRACT}, input.chain());
 
     if (false == validChain) { FAIL_1("invalid chain"); }
-
-    CHECK_IDENTIFIER(contact);
-    CHECK_IDENTIFIER(channelid);
-    CHECK_IDENTIFIER(remotepaymentcode);
 
     return true;
 }

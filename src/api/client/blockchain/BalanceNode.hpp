@@ -5,6 +5,9 @@
 
 #pragma once
 
+#include <atomic>
+#include <cstdint>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <set>
@@ -24,6 +27,7 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/protobuf/BlockchainAccountData.pb.h"
 #include "opentxs/protobuf/BlockchainActivity.pb.h"
 
 namespace opentxs
@@ -61,6 +65,7 @@ class Nym;
 namespace proto
 {
 class AsymmetricKey;
+class BlockchainAccountData;
 }  // namespace proto
 
 class PasswordPrompt;
@@ -158,7 +163,7 @@ protected:
             const opentxs::blockchain::Type chain,
             const blockchain::Subchain subchain,
             const Bip32Index index,
-            std::unique_ptr<opentxs::crypto::key::HD> key) noexcept(false);
+            const opentxs::crypto::key::EllipticCurve& key) noexcept(false);
         Element(
             const api::internal::Core& api,
             const client::internal::Blockchain& blockchain,
@@ -201,9 +206,17 @@ protected:
             const Bip32Index index,
             const std::string label,
             const OTIdentifier contact,
-            std::unique_ptr<opentxs::crypto::key::EllipticCurve>
-                key) noexcept(false);
+            const opentxs::crypto::key::EllipticCurve& key) noexcept(false);
         Element() = delete;
+    };
+
+    using AddressMap = std::map<Bip32Index, Element>;
+    using Revision = std::uint64_t;
+
+    struct AddressData {
+        const Subchain type_{};
+        const bool set_contact_{};
+        AddressMap map_{};
     };
 
     const api::internal::Core& api_;
@@ -212,15 +225,24 @@ protected:
     const BalanceNodeType type_;
     const OTIdentifier id_;
     mutable std::mutex lock_;
+    mutable std::atomic<Revision> revision_;
     mutable internal::ActivityMap unspent_;
     mutable internal::ActivityMap spent_;
+
+    using SerializedActivity =
+        google::protobuf::RepeatedPtrField<proto::BlockchainActivity>;
+    using SerializedType = proto::BlockchainAccountData;
 
     static auto convert(Activity&& in) noexcept -> proto::BlockchainActivity;
     static auto convert(const proto::BlockchainActivity& in) noexcept
         -> Activity;
+    static auto convert(const SerializedActivity& in) noexcept
+        -> std::vector<Activity>;
     static auto convert(const std::vector<Activity>& in) noexcept
         -> internal::ActivityMap;
 
+    virtual auto account_already_exists(const Lock& lock) const noexcept
+        -> bool = 0;
     void process_spent(
         const Lock& lock,
         const Coin& coin,
@@ -232,9 +254,11 @@ protected:
         const blockchain::Key key,
         const Amount value) const noexcept;
     virtual auto save(const Lock& lock) const noexcept -> bool = 0;
+    auto serialize_common(const Lock& lock, SerializedType& out) const noexcept
+        -> void;
 
     // NOTE call only from final constructor bodies
-    void init() noexcept;
+    auto init() noexcept -> void;
     virtual auto mutable_element(
         const Lock& lock,
         const Subchain type,
@@ -245,12 +269,18 @@ protected:
         const api::internal::Core& api,
         const internal::BalanceTree& parent,
         const BalanceNodeType type,
-        const OTIdentifier id,
-        std::vector<Activity> unspent,
-        std::vector<Activity> spent) noexcept;
+        OTIdentifier&& id,
+        Identifier& out) noexcept;
+    BalanceNode(
+        const api::internal::Core& api,
+        const internal::BalanceTree& parent,
+        const BalanceNodeType type,
+        const SerializedType& serialized,
+        Identifier& out) noexcept(false);
 
 private:
-    static const VersionNumber ActivityVersion{1};
+    static constexpr auto ActivityVersion = VersionNumber{1};
+    static constexpr auto BlockchainAccountDataVersion = VersionNumber{1};
 
     virtual auto check_activity(
         const Lock& lock,
@@ -258,6 +288,15 @@ private:
         std::set<OTIdentifier>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool = 0;
 
+    BalanceNode(
+        const api::internal::Core& api,
+        const internal::BalanceTree& parent,
+        const BalanceNodeType type,
+        OTIdentifier&& id,
+        const Revision revision,
+        const std::vector<Activity>& unspent,
+        const std::vector<Activity>& spent,
+        Identifier& out) noexcept;
     BalanceNode() = delete;
     BalanceNode(const BalanceNode&) = delete;
     BalanceNode(BalanceNode&&) = delete;

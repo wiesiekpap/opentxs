@@ -11,17 +11,18 @@ option java_outer_classname = "OTBlockchainTransactionProposedOutput";
 option optimize_for = LITE_RUNTIME;
 
 import public "BlockchainOutputMultisigDetails.proto";
-import public "RPCEnums.proto";
 
 message BlockchainTransactionProposedOutput {
     optional uint32 version = 1;
     optional uint64 amount = 2;
+    optional uint32 index = 3;
+    optional bytes paymentcodechannel = 4;
     oneof style {
-        bytes raw = 3;
-        bytes pubkey = 4;
-        bytes pubkeyhash = 5;
-        bytes scripthash = 6;
-        BlockchainOutputMultisigDetails multisig = 7;
-        bytes data = 8;
+        bytes raw = 5;
+        bytes pubkey = 6;
+        bytes pubkeyhash = 7;
+        bytes scripthash = 8;
+        BlockchainOutputMultisigDetails multisig = 9;
+        bytes data = 10;
     }
 }

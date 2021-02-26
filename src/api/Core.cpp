@@ -212,8 +212,6 @@ auto Core::GetSecret(
 
     auto& callback = *external_password_callback_;
     auto masterPassword = factory_.Secret(256);
-    OTPasswordPrompt prompt{reason};
-
     const std::string password_key{key.empty() ? parent_.ProfileId() : key};
 
     if (twice) {
@@ -222,6 +220,7 @@ auto Core::GetSecret(
         callback.AskOnce(reason, masterPassword, password_key);
     }
 
+    auto prompt = factory_.PasswordPrompt(reason.GetDisplayString());
     prompt->SetPassword(masterPassword);
 
     if (false == master_key_->Unlock(prompt)) {

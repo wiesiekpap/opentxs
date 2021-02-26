@@ -39,14 +39,14 @@ auto BlockchainBalanceTree(
     const api::internal::Core& api,
     const api::client::blockchain::internal::BalanceList& parent,
     const identifier::Nym& id,
-    const std::set<OTIdentifier>& hdAccounts,
-    [[maybe_unused]] const std::set<OTIdentifier>& importedAccounts,
-    [[maybe_unused]] const std::set<OTIdentifier>& paymentCodeAccounts) noexcept
+    const std::set<OTIdentifier>& hd,
+    const std::set<OTIdentifier>& imported,
+    const std::set<OTIdentifier>& pc) noexcept
     -> std::unique_ptr<api::client::blockchain::internal::BalanceTree>
 {
     using ReturnType = api::client::blockchain::implementation::BalanceTree;
 
-    return std::make_unique<ReturnType>(api, parent, id, hdAccounts);
+    return std::make_unique<ReturnType>(api, parent, id, hd, imported, pc);
 }
 }  // namespace opentxs::factory
 
@@ -56,7 +56,9 @@ BalanceTree::BalanceTree(
     const api::internal::Core& api,
     const internal::BalanceList& parent,
     const identifier::Nym& nym,
-    const std::set<OTIdentifier>& accounts) noexcept
+    const Accounts& hd,
+    const Accounts& imported,
+    const Accounts& paymentCode) noexcept
     : api_(api)
     , parent_(parent)
     , chain_(parent.Chain())
@@ -69,7 +71,8 @@ BalanceTree::BalanceTree(
     , unspent_()
     , spent_()
 {
-    init(accounts);
+    init_hd(hd);
+    init_payment_code(paymentCode);
 }
 
 auto BalanceTree::NodeIndex::Add(
@@ -281,11 +284,10 @@ auto BalanceTree::GetDepositAddress(
     return element.Address(AddressStyle::P2PKH);  // TODO
 }
 
-auto BalanceTree::init(const std::set<OTIdentifier>& accounts) noexcept -> void
+auto BalanceTree::init_hd(const Accounts& accounts) noexcept -> void
 {
     for (const auto& accountID : accounts) {
-        std::shared_ptr<proto::HDAccount> account{};
-
+        auto account = std::shared_ptr<proto::HDAccount>{};
         const auto loaded =
             api_.Storage().Load(nym_id_->str(), accountID->str(), account);
 
@@ -294,7 +296,22 @@ auto BalanceTree::init(const std::set<OTIdentifier>& accounts) noexcept -> void
         OT_ASSERT(account);
 
         auto notUsed = Identifier::Factory();
-        hd_.Construct(*account, notUsed);
+        hd_.Construct(notUsed, *account);
+    }
+}
+
+auto BalanceTree::init_payment_code(const Accounts& accounts) noexcept -> void
+{
+    for (const auto& id : accounts) {
+        auto account = std::shared_ptr<proto::Bip47Channel>{};
+        const auto loaded = api_.Storage().Load(nym_id_, id, account);
+
+        if (false == loaded) { continue; }
+
+        OT_ASSERT(account);
+
+        auto notUsed = Identifier::Factory();
+        payment_code_.Construct(notUsed, *account);
     }
 }
 

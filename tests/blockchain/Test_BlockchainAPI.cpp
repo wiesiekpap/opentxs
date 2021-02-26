@@ -5,10 +5,12 @@
 
 #include <gtest/gtest.h>
 #include <cstdint>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <optional>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -422,13 +424,20 @@ TEST_F(Test_BlockchainAPI, TestSeedRoot)
     try {
         const auto& account1 =
             api_.Blockchain().HDSubaccount(alex_, account_1_id_);
+
+        EXPECT_EQ(account1.Path().root(), fingerprint_a_);
+    } catch (const std::exception& e) {
+        std::cout << __LINE__ << ": " << e.what() << '\n';
+        EXPECT_TRUE(false);
+    }
+
+    try {
         const auto& account2 =
             api_.Blockchain().HDSubaccount(daniel_, account_2_id_);
 
-        EXPECT_EQ(account1.Path().root(), fingerprint_a_);
         EXPECT_EQ(account2.Path().root(), fingerprint_a_);
-
-    } catch (...) {
+    } catch (const std::exception& e) {
+        std::cout << __LINE__ << ": " << e.what() << '\n';
         EXPECT_TRUE(false);
     }
 

@@ -257,7 +257,7 @@ private:
 
             auto IsFunded() const noexcept -> bool;
 
-            auto AddChange() noexcept -> bool;
+            auto AddChange(const Proposal& proposal) noexcept -> bool;
             auto AddInput(const UTXO& utxo) noexcept -> bool;
             auto CreateOutputs(const Proposal& proposal) noexcept -> bool;
             auto FinalizeOutputs() noexcept -> void;

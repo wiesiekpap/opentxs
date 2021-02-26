@@ -294,7 +294,7 @@ auto Wallet::Account::state_machine_hd(HDStateData& data) noexcept -> bool
 
                 return false;
             } else {
-                LogVerbose(OT_METHOD)(__FUNCTION__)(": All ")(
+                LogTrace(OT_METHOD)(__FUNCTION__)(": All ")(
                     generated.value() + 1)(" generated keys have been indexed.")
                     .Flush();
             }
@@ -362,7 +362,8 @@ auto Wallet::Account::state_machine_hd(HDStateData& data) noexcept -> bool
 
             return false;
         } else {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": Waiting for block download")
+            LogVerbose(OT_METHOD)(__FUNCTION__)(": Waiting for block ")(
+                id->asHex())(" to download")
                 .Flush();
         }
     }

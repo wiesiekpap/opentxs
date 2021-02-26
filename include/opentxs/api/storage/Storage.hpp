@@ -92,35 +92,12 @@ public:
         const identifier::Server& server) const = 0;
     OPENTXS_EXPORT virtual std::set<OTIdentifier> AccountsByUnit(
         const proto::ContactItemType unit) const = 0;
-    OPENTXS_EXPORT virtual OTIdentifier Bip47AddressToChannel(
-        const identifier::Nym& nymID,
-        const std::string& address) const = 0;
     OPENTXS_EXPORT virtual proto::ContactItemType Bip47Chain(
         const identifier::Nym& nymID,
         const Identifier& channelID) const = 0;
-    OPENTXS_EXPORT virtual Bip47ChannelList Bip47ChannelsByContact(
-        const identifier::Nym& nymID,
-        const Identifier& contactID) const = 0;
     OPENTXS_EXPORT virtual Bip47ChannelList Bip47ChannelsByChain(
         const identifier::Nym& nymID,
         const proto::ContactItemType chain) const = 0;
-    OPENTXS_EXPORT virtual Bip47ChannelList Bip47ChannelsByLocalPaymentCode(
-        const identifier::Nym& nymID,
-        const std::string& code) const = 0;
-    OPENTXS_EXPORT virtual Bip47ChannelList Bip47ChannelsByRemotePaymentCode(
-        const identifier::Nym& nymID,
-        const std::string& code) const = 0;
-    OPENTXS_EXPORT virtual ObjectList Bip47ChannelsList(
-        const identifier::Nym& nymID) const = 0;
-    OPENTXS_EXPORT virtual OTIdentifier Bip47Contact(
-        const identifier::Nym& nymID,
-        const Identifier& channelID) const = 0;
-    OPENTXS_EXPORT virtual std::string Bip47LocalPaymentCode(
-        const identifier::Nym& nymID,
-        const Identifier& channelID) const = 0;
-    OPENTXS_EXPORT virtual std::string Bip47RemotePaymentCode(
-        const identifier::Nym& nymID,
-        const Identifier& channelID) const = 0;
     OPENTXS_EXPORT virtual std::set<std::string> BlockchainAccountList(
         const std::string& nymID,
         const proto::ContactItemType type) const = 0;
@@ -390,8 +367,8 @@ public:
         const proto::HDAccount& data) const = 0;
     OPENTXS_EXPORT virtual bool Store(
         const identifier::Nym& nymID,
-        const proto::Bip47Channel& data,
-        Identifier& channelID) const = 0;
+        const Identifier& channelID,
+        const proto::Bip47Channel& data) const = 0;
     OPENTXS_EXPORT virtual bool Store(const proto::Contact& data) const = 0;
     OPENTXS_EXPORT virtual bool Store(const proto::Context& data) const = 0;
     OPENTXS_EXPORT virtual bool Store(const proto::Credential& data) const = 0;

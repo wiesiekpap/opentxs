@@ -25,7 +25,10 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/blockchain/AddressStyle.hpp"
+#include "opentxs/api/client/blockchain/PaymentCode.hpp"
+#include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/client/BlockOracle.hpp"
@@ -33,7 +36,10 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/crypto/key/EllipticCurve.hpp"
+#include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
@@ -42,12 +48,14 @@
 #include "opentxs/protobuf/BlockchainP2PHello.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposedOutput.pb.h"
+#include "opentxs/protobuf/HDPath.pb.h"
 
 #define OT_METHOD "opentxs::blockchain::client::implementation::Network::"
 
 namespace opentxs::blockchain::client::implementation
 {
 constexpr auto proposal_version_ = VersionNumber{1};
+constexpr auto notification_version_ = VersionNumber{1};
 constexpr auto output_version_ = VersionNumber{1};
 
 struct NullWallet final : public internal::Wallet {
@@ -333,12 +341,18 @@ auto Network::is_synchronized_blocks() const noexcept -> bool
 
 auto Network::is_synchronized_filters() const noexcept -> bool
 {
-    return filters_.Tip(filters_.DefaultType()).first >= this->target();
+    const auto target = this->target();
+    const auto progress = filters_.Tip(filters_.DefaultType()).first;
+
+    return (progress >= target) || config_.use_sync_server_;
 }
 
 auto Network::is_synchronized_headers() const noexcept -> bool
 {
-    return local_chain_height_.load() >= remote_chain_height_.load();
+    const auto target = remote_chain_height_.load();
+    const auto progress = local_chain_height_.load();
+
+    return (progress >= target) || config_.use_sync_server_;
 }
 
 auto Network::is_synchronized_sync_server() const noexcept -> bool
@@ -599,6 +613,114 @@ auto Network::SendToAddress(
     }
 
     return wallet_.ConstructTransaction(proposal);
+}
+
+auto Network::SendToPaymentCode(
+    const opentxs::identifier::Nym& sender,
+    const std::string& recipient,
+    const Amount amount,
+    const std::string& memo) const noexcept -> PendingOutgoing
+{
+    return SendToPaymentCode(
+        sender, api_.Factory().PaymentCode(recipient), amount, memo);
+}
+
+auto Network::SendToPaymentCode(
+    const opentxs::identifier::Nym& nymID,
+    const PaymentCode& recipient,
+    const Amount amount,
+    const std::string& memo) const noexcept -> PendingOutgoing
+{
+    try {
+        const auto pNym = api_.Wallet().Nym(nymID);
+
+        if (!pNym) {
+            throw std::runtime_error{std::string{"Invalid nym "} + nymID.str()};
+        }
+
+        const auto& nym = *pNym;
+        const auto sender = api_.Factory().PaymentCode(nym.PaymentCode());
+
+        if (0 == sender->Version()) {
+            throw std::runtime_error{"Invalid sender payment code"};
+        }
+
+        if (3 > recipient.Version()) {
+            throw std::runtime_error{
+                "Sending to version 1 payment codes not yet supported"};
+        }
+
+        const auto path = [&] {
+            auto out = proto::HDPath{};
+
+            if (false == nym.PaymentCodePath(out)) {
+                throw std::runtime_error{
+                    "Failed to obtain payment code HD path"};
+            }
+
+            return out;
+        }();
+        const auto reason = api_.Factory().PasswordPrompt(
+            std::string{"Sending a transaction to "} + recipient.asBase58());
+        const auto& account = blockchain_.PaymentCodeSubaccount(
+            nymID, sender, recipient, path, chain_, reason);
+        using Subchain = api::client::blockchain::Subchain;
+        constexpr auto subchain{Subchain::Outgoing};
+        const auto index = account.UseNext(subchain, reason);
+
+        if (false == index.has_value()) {
+            throw std::runtime_error{"Failed to allocate next key"};
+        }
+
+        const auto pKey = [&] {
+            const auto& element =
+                account.BalanceElement(subchain, index.value());
+            auto out = element.Key();
+
+            if (!out) { throw std::runtime_error{"Failed to instantiate key"}; }
+
+            return out;
+        }();
+        const auto& key = *pKey;
+        const auto proposal = [&] {
+            auto out = proto::BlockchainTransactionProposal{};
+            out.set_version(proposal_version_);
+            out.set_id([&] {
+                auto id = api_.Factory().Identifier();
+                id->Randomize(32);
+
+                return id->str();
+            }());
+            out.set_initiator(nymID.str());
+            out.set_expires(
+                Clock::to_time_t(Clock::now() + std::chrono::hours(1)));
+            out.set_memo(memo);
+            auto& txout = *out.add_output();
+            txout.set_version(output_version_);
+            txout.set_amount(amount);
+            txout.set_index(index.value());
+            txout.set_paymentcodechannel(account.ID().str());
+            txout.set_pubkey(std::string{key.PublicKey()});
+
+            if (account.IsNotified()) {
+                // TODO preemptive notifications go here
+            } else {
+                auto& notif = *out.add_notification();
+                notif.set_version(notification_version_);
+                *notif.mutable_sender() = sender->Serialize();
+                *notif.mutable_path() = path;
+                *notif.mutable_recipient() = recipient.Serialize();
+            }
+
+            return out;
+        }();
+
+        return wallet_.ConstructTransaction(proposal);
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+        return {};
+    }
 }
 
 auto Network::shutdown(std::promise<void>& promise) noexcept -> void

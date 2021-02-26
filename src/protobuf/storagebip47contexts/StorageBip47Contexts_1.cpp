@@ -8,7 +8,6 @@
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/StorageBip47Contexts.pb.h"
 #include "opentxs/protobuf/verify/Bip47Channel.hpp"  // IWYU pragma: keep
-#include "opentxs/protobuf/verify/StorageBip47AddressIndex.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/StorageBip47ChannelList.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/StorageItemHash.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyStorage.hpp"
@@ -23,8 +22,6 @@ auto CheckProto_1(const StorageBip47Contexts& input, const bool silent) -> bool
     CHECK_SUBOBJECTS(context, StorageBip47ContextsAllowedStorageItemHash());
     CHECK_SUBOBJECTS(
         index, StorageBip47ContextsAllowedStorageBip47ChannelList());
-    CHECK_SUBOBJECTS(
-        address, StorageBip47ContextsAllowedStorageBip47AddressIndex());
 
     return true;
 }

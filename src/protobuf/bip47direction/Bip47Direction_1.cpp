@@ -7,7 +7,7 @@
 
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/Bip47Direction.pb.h"
-#include "opentxs/protobuf/verify/Bip47Address.hpp"  // IWYU pragma: keep
+#include "opentxs/protobuf/verify/BlockchainAddress.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyBlockchain.hpp"
 #include "protobuf/Check.hpp"
 
@@ -20,7 +20,8 @@ namespace proto
 auto CheckProto_1(const Bip47Direction& input, const bool silent) -> bool
 {
     CHECK_IDENTIFIERS(notification)
-    CHECK_SUBOBJECTS(address, Bip47DirectionAllowedBip47Address())
+    CHECK_SUBOBJECTS(address, Bip47DirectionAllowedBlockchainAddress())
+
     return true;
 }
 

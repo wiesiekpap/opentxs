@@ -36,6 +36,9 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/core/util/Tag.hpp"
+#include "opentxs/crypto/Bip32Child.hpp"
+#include "opentxs/crypto/Bip43Purpose.hpp"
+#include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/Authority.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -52,6 +55,7 @@
 #include "opentxs/protobuf/verify/ContactData.hpp"
 #include "opentxs/protobuf/verify/Nym.hpp"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
+#include "util/HDIndex.hpp"
 
 #define OT_METHOD "opentxs::identity::implementation::Nym::"
 
@@ -1043,6 +1047,28 @@ auto Nym::PaymentCode() const -> std::string
     auto paymentCode = api_.Factory().PaymentCode(serialized->paymentcode());
 
     return paymentCode->asBase58();
+}
+
+auto Nym::PaymentCodePath(proto::HDPath& output) const -> bool
+{
+    auto base = proto::HDPath{};
+
+    if (false == Path(base)) { return false; }
+
+    if (2 != base.child().size()) { return false; }
+
+    static const auto expected =
+        HDIndex{Bip43Purpose::NYM, Bip32Child::HARDENED};
+
+    if (expected != base.child(0)) { return false; }
+
+    output.set_version(base.version());
+    output.set_root(base.root());
+    output.add_child(HDIndex{Bip43Purpose::PAYCODE, Bip32Child::HARDENED});
+    output.add_child(HDIndex{Bip44Type::BITCOIN, Bip32Child::HARDENED});
+    output.add_child(base.child(1));
+
+    return false;
 }
 
 auto Nym::PhoneNumbers(bool active) const -> std::string

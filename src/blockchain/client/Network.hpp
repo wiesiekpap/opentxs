@@ -173,6 +173,16 @@ public:
         const std::string& address,
         const Amount amount,
         const std::string& memo) const noexcept -> PendingOutgoing final;
+    auto SendToPaymentCode(
+        const opentxs::identifier::Nym& sender,
+        const std::string& recipient,
+        const Amount amount,
+        const std::string& memo) const noexcept -> PendingOutgoing final;
+    auto SendToPaymentCode(
+        const opentxs::identifier::Nym& sender,
+        const PaymentCode& recipient,
+        const Amount amount,
+        const std::string& memo) const noexcept -> PendingOutgoing final;
     auto Submit(network::zeromq::Message& work) const noexcept -> void final;
     auto UpdateHeight(const block::Height height) const noexcept -> void final;
     auto UpdateLocalHeight(const block::Position position) const noexcept

@@ -113,6 +113,8 @@ public:
 
     OPENTXS_EXPORT virtual bool Path(proto::HDPath& output) const = 0;
     OPENTXS_EXPORT virtual std::string PaymentCode() const = 0;
+    OPENTXS_EXPORT virtual bool PaymentCodePath(
+        proto::HDPath& output) const = 0;
     OPENTXS_EXPORT virtual std::string PhoneNumbers(
         bool active = true) const = 0;
     OPENTXS_EXPORT virtual std::uint64_t Revision() const = 0;

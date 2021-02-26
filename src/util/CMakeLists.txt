@@ -22,6 +22,7 @@ set(cxx-headers
     HDIndex.hpp
     JobCounter.hpp
     LMDB.hpp
+    Latest.hpp
     Polarity.hpp
     ScopeGuard.hpp
     Sodium.hpp

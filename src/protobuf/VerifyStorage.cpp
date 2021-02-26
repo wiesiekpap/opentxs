@@ -39,13 +39,6 @@ auto StorageAccountsAllowedStorageIDList() noexcept -> const VersionMap&
 
     return output;
 }
-auto StorageBip47ContextsAllowedStorageBip47AddressIndex() noexcept
-    -> const VersionMap&
-{
-    static const auto output = VersionMap{{1, {1, 1}}};
-
-    return output;
-}
 auto StorageBip47ContextsAllowedStorageItemHash() noexcept -> const VersionMap&
 {
     static const auto output = VersionMap{{1, {1, 2}}};

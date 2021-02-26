@@ -48,17 +48,8 @@ template <>
 struct less<COIN> {
     auto operator()(const COIN& lhs, const COIN& rhs) const -> bool
     {
-        /* TODO: these lines will cause a segfault in the clang ast parser.
-                const auto & [ lID, lIndex, lAmount ] = lhs;
-                const auto & [ rID, rIndex, rAmount ] = rhs;
-        */
-
-        const auto& lID = std::get<0>(lhs);
-        const auto& lIndex = std::get<1>(lhs);
-        const auto& lAmount = std::get<2>(lhs);
-        const auto& rID = std::get<0>(rhs);
-        const auto& rIndex = std::get<1>(rhs);
-        const auto& rAmount = std::get<2>(rhs);
+        const auto& [lID, lIndex, lAmount] = lhs;
+        const auto& [rID, rIndex, rAmount] = rhs;
 
         if (lID < rID) { return true; }
 
@@ -93,6 +84,17 @@ struct PaymentCode;
 }  // namespace internal
 }  // namespace blockchain
 
+namespace blockchain
+{
+namespace block
+{
+namespace bitcoin
+{
+class Transaction;
+}  // namespace bitcoin
+}  // namespace block
+}  // namespace blockchain
+
 namespace internal
 {
 struct Blockchain;
@@ -104,6 +106,7 @@ namespace internal
 struct Core;
 }  // namespace internal
 
+class Core;
 class Crypto;
 }  // namespace api
 
@@ -119,6 +122,7 @@ class HDPath;
 
 class Identifier;
 class PasswordPrompt;
+class PaymentCode;
 }  // namespace opentxs
 
 namespace opentxs
@@ -129,12 +133,12 @@ auto blockchain_thread_item_id(
     const Data& txid) noexcept -> OTIdentifier;
 }  // namespace opentxs
 
-#if OT_BLOCKCHAIN
 namespace opentxs::api::client::blockchain
 {
+using Chain = opentxs::blockchain::Type;
+#if OT_BLOCKCHAIN
 using Address = opentxs::blockchain::p2p::internal::Address;
 using Address_p = std::unique_ptr<Address>;
-using Chain = opentxs::blockchain::Type;
 using FilterData =
     opentxs::blockchain::client::internal::FilterDatabase::Filter;
 using FilterHash = opentxs::blockchain::client::internal::FilterDatabase::Hash;
@@ -170,8 +174,8 @@ enum Table {
 
 auto ChainToSyncTable(const Chain chain) noexcept(false) -> int;
 auto SyncTables() noexcept -> const std::vector<SyncTableData>&;
-}  // namespace opentxs::api::client::blockchain
 #endif  // OT_BLOCKCHAIN
+}  // namespace opentxs::api::client::blockchain
 
 namespace opentxs::api::client::blockchain::internal
 {
@@ -181,6 +185,7 @@ struct BalanceList : virtual public blockchain::BalanceList {
     virtual auto AddHDNode(
         const identifier::Nym& nym,
         const proto::HDPath& path,
+        const PasswordPrompt& reason,
         Identifier& id) noexcept -> bool = 0;
     virtual auto Nym(const identifier::Nym& id) noexcept -> BalanceTree& = 0;
     virtual auto Parent() const noexcept
@@ -237,7 +242,7 @@ struct BalanceTree : virtual public blockchain::BalanceTree {
         const std::vector<Activity>& spent,
         std::set<OTIdentifier>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool = 0;
-    virtual auto Chain() const noexcept -> opentxs::blockchain::Type = 0;
+    virtual auto Chain() const noexcept -> blockchain::Chain = 0;
     virtual void ClaimAccountID(
         const std::string& id,
         internal::BalanceNode* node) const noexcept = 0;
@@ -245,11 +250,28 @@ struct BalanceTree : virtual public blockchain::BalanceTree {
         -> std::optional<std::pair<Key, Amount>> = 0;
     virtual auto HDChain(const Identifier& account) const noexcept(false)
         -> const blockchain::internal::HD& = 0;
+    virtual auto PaymentCode(const Identifier& account) const noexcept(false)
+        -> const blockchain::internal::PaymentCode& = 0;
     virtual auto Parent() const noexcept
         -> const internal::BalanceList& override = 0;
 
-    virtual auto AddHDNode(const proto::HDPath& path, Identifier& id) noexcept
-        -> bool = 0;
+    virtual auto AddHDNode(
+        const proto::HDPath& path,
+        const PasswordPrompt& reason,
+        Identifier& id) noexcept -> bool = 0;
+    virtual auto AddUpdatePaymentCode(
+        const opentxs::PaymentCode& local,
+        const opentxs::PaymentCode& remote,
+        const proto::HDPath& path,
+        const PasswordPrompt& reason,
+        Identifier& id) noexcept -> bool = 0;
+    virtual auto AddUpdatePaymentCode(
+        const opentxs::PaymentCode& local,
+        const opentxs::PaymentCode& remote,
+        const proto::HDPath& path,
+        const opentxs::blockchain::block::Txid& notification,
+        const PasswordPrompt& reason,
+        Identifier& id) noexcept -> bool = 0;
     virtual auto Node(const Identifier& id) const noexcept(false)
         -> internal::BalanceNode& = 0;
 };
@@ -267,5 +289,10 @@ struct Imported : virtual public blockchain::Imported,
 
 struct PaymentCode : virtual public blockchain::PaymentCode,
                      virtual public Deterministic {
+    static auto GetID(
+        const api::Core& api,
+        const Chain chain,
+        const opentxs::PaymentCode& local,
+        const opentxs::PaymentCode& remote) noexcept -> OTIdentifier;
 };
 }  // namespace opentxs::api::client::blockchain::internal
