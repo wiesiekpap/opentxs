@@ -3,9 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                  // IWYU pragma: associated
-#include "1_Internal.hpp"                // IWYU pragma: associated
-#include "blockchain/client/Wallet.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                         // IWYU pragma: associated
+#include "1_Internal.hpp"                       // IWYU pragma: associated
+#include "blockchain/client/wallet/Wallet.hpp"  // IWYU pragma: associated
 
 #include <boost/endian/buffers.hpp>
 #include <algorithm>
@@ -14,16 +14,20 @@
 #include <iterator>
 #include <optional>
 #include <sstream>
+#include <stdexcept>
 
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Proto.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/blockchain/BalanceNode.hpp"
+#include "opentxs/api/client/blockchain/PaymentCode.hpp"
+#include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"  // IWYU pragma: keep
@@ -32,11 +36,14 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/protobuf/BlockchainOutputMultisigDetails.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
+#include "opentxs/protobuf/BlockchainTransactionProposedNotification.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposedOutput.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
+#include "opentxs/protobuf/HDPath.pb.h"
 #include "util/ScopeGuard.hpp"
 
 #define OT_METHOD                                                              \
@@ -381,6 +388,21 @@ auto Wallet::Proposals::BitcoinTransactionBuilder::CreateOutputs(
                 .Flush();
 
             return false;
+        }
+
+        if (output.has_paymentcodechannel()) {
+            try {
+                const auto accountID =
+                    api_.Factory().Identifier(output.paymentcodechannel());
+                const auto& account = blockchain_.PaymentCodeSubaccount(
+                    blockchain_.Owner(accountID), accountID);
+                static constexpr auto subchain{
+                    api::client::blockchain::Subchain::Outgoing};
+                const auto& element = account.BalanceElement(subchain, 0);
+                pOutput->SetPayee(element.Contact());
+            } catch (const std::exception& e) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            }
         }
 
         output_value_ += pOutput->Value();

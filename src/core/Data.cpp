@@ -177,26 +177,36 @@ auto Data::Factory(const std::string in, const Mode mode) -> OTData
 
 namespace implementation
 {
-Data::Data(const Armored& source)
+Data::Data() noexcept
+    : data_()
+{
+}
+
+Data::Data(const Armored& source) noexcept
+    : data_()
 {
     if (source.Exists()) { source.GetData(*this); }
 }
 
-Data::Data(const void* data, std::size_t size)
+Data::Data(const void* data, std::size_t size) noexcept
     : data_(
           static_cast<const std::uint8_t*>(data),
           static_cast<const std::uint8_t*>(data) + size)
 {
 }
 
-Data::Data(const Vector& sourceVector)
+Data::Data(const Vector& v) noexcept
+    : data_(
+          static_cast<const std::uint8_t*>(v.data()),
+          static_cast<const std::uint8_t*>(v.data()) + v.size())
 {
-    Assign(sourceVector.data(), sourceVector.size());
 }
 
-Data::Data(const std::vector<std::byte>& sourceVector)
+Data::Data(const std::vector<std::byte>& v) noexcept
+    : data_(
+          reinterpret_cast<const std::uint8_t*>(v.data()),
+          reinterpret_cast<const std::uint8_t*>(v.data()) + v.size())
 {
-    Assign(sourceVector.data(), sourceVector.size());
 }
 
 auto Data::operator==(const opentxs::Data& rhs) const noexcept -> bool

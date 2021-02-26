@@ -19,6 +19,8 @@ static const char* pszBase58 =
 
 auto DecodeBase58(const char* psz, std::vector<unsigned char>& vch) -> bool
 {
+    if (nullptr == psz) { return false; }
+
     // Skip leading spaces.
     while (*psz && isspace(*psz)) psz++;
     // Skip and count leading '1's.
@@ -61,6 +63,8 @@ auto DecodeBase58(const char* psz, std::vector<unsigned char>& vch) -> bool
 auto EncodeBase58(const unsigned char* pbegin, const unsigned char* pend)
     -> std::string
 {
+    if ((nullptr == pbegin) || (nullptr == pend)) { return {}; }
+
     // Skip & count leading zeroes.
     int zeroes = 0;
     while (pbegin != pend && *pbegin == 0) {

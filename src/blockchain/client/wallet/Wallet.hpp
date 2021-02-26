@@ -27,7 +27,10 @@
 
 #include "1_Internal.hpp"
 #include "blockchain/bitcoin/CompactSize.hpp"
-#include "blockchain/client/wallet/HDStateData.hpp"
+#include "blockchain/client/wallet/Account.hpp"
+#include "blockchain/client/wallet/Accounts.hpp"
+#include "blockchain/client/wallet/DeterministicStateData.hpp"
+#include "blockchain/client/wallet/SubchainStateData.hpp"
 #include "core/Worker.hpp"
 #include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
@@ -39,6 +42,7 @@
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
@@ -88,6 +92,14 @@ struct Transaction;
 struct Outpoint;
 }  // namespace bitcoin
 }  // namespace block
+
+namespace client
+{
+namespace implementation
+{
+class SubchainStateData;
+}  // namespace implementation
+}  // namespace client
 }  // namespace blockchain
 
 namespace network
@@ -113,47 +125,6 @@ namespace opentxs::blockchain::client::implementation
 class Wallet final : virtual public internal::Wallet, Worker<Wallet, api::Core>
 {
 public:
-    struct Account {
-        using Subchain = internal::WalletDatabase::Subchain;
-        using Task = internal::Wallet::Task;
-        using BalanceTree = api::client::blockchain::internal::BalanceTree;
-
-        auto queue_work(const Task task, const HDStateData& data) noexcept
-            -> void;
-        auto reorg(const block::Position& parent) noexcept -> bool;
-        auto state_machine() noexcept -> bool;
-
-        Account(
-            const api::Core& api,
-            const api::client::Blockchain& blockchain,
-            const BalanceTree& ref,
-            const internal::Network& network,
-            const internal::WalletDatabase& db,
-            const zmq::socket::Push& threadPool,
-            Outstanding&& jobs,
-            const SimpleCallback& taskFinished) noexcept;
-        Account(Account&&) noexcept;
-
-    private:
-        const api::Core& api_;
-        const api::client::Blockchain& blockchain_;
-        const BalanceTree& ref_;
-        const internal::Network& network_;
-        const internal::WalletDatabase& db_;
-        const filter::Type filter_type_;
-        const zmq::socket::Push& thread_pool_;
-        const SimpleCallback& task_finished_;
-        std::map<OTIdentifier, HDStateData> internal_;
-        std::map<OTIdentifier, HDStateData> external_;
-        Outstanding jobs_;
-
-        auto state_machine_hd(HDStateData& data) noexcept -> bool;
-        auto reorg_hd(HDStateData& data, const block::Position& parent) noexcept
-            -> bool;
-
-        Account(const Account&) = delete;
-    };
-
     auto ConstructTransaction(const proto::BlockchainTransactionProposal& tx)
         const noexcept -> std::future<block::pTxid> final;
 
@@ -184,46 +155,6 @@ private:
         reorg = value(WorkType::BlockchainReorg),
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
         shutdown = value(WorkType::Shutdown),
-    };
-
-    struct Accounts {
-        auto Add(const identifier::Nym& nym) noexcept -> bool;
-        auto Add(const zmq::Frame& message) noexcept -> bool;
-        auto Reorg(const block::Position& parent) noexcept -> bool;
-
-        auto state_machine() noexcept -> bool;
-
-        Accounts(
-            const api::Core& api,
-            const api::client::internal::Blockchain& blockchain,
-            const internal::Network& network,
-            const internal::WalletDatabase& db,
-            const zmq::socket::Push& socket,
-            const Type chain,
-            const SimpleCallback& taskFinished) noexcept;
-
-    private:
-        using AccountMap = std::map<OTNymID, Account>;
-
-        const api::Core& api_;
-        const api::client::internal::Blockchain& blockchain_api_;
-        const internal::Network& network_;
-        const internal::WalletDatabase& db_;
-        const zmq::socket::Push& thread_pool_;
-        const SimpleCallback& task_finished_;
-        const Type chain_;
-        JobCounter job_counter_;
-        AccountMap map_;
-
-        static auto init(
-            const api::Core& api,
-            const api::client::internal::Blockchain& blockchain,
-            const internal::Network& network,
-            const internal::WalletDatabase& db,
-            const zmq::socket::Push& socket,
-            const Type chain,
-            JobCounter& jobs,
-            const SimpleCallback& taskFinished) noexcept -> AccountMap;
     };
 
     struct Proposals {
@@ -369,7 +300,7 @@ private:
     const SimpleCallback task_finished_;
     std::atomic_bool enabled_;
     OTZMQPushSocket thread_pool;
-    Accounts accounts_;
+    wallet::Accounts accounts_;
     Proposals proposals_;
 
     auto pipeline(const zmq::Message& in) noexcept -> void;

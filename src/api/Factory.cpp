@@ -9,6 +9,7 @@
 
 #include <array>
 #include <cstring>
+#include <iterator>
 #include <stdexcept>
 #include <utility>
 
@@ -1594,27 +1595,45 @@ auto Factory::PaymentCode(const std::string& base58) const noexcept
     const auto serialized = [&] {
         auto out = ReturnType::Base58Preimage{};
         const auto bytes = api_.Crypto().Encode().IdentifierDecode(base58);
+        const auto* data = reinterpret_cast<const std::byte*>(bytes.data());
 
         switch (bytes.size()) {
             case 81: {
                 static_assert(81 == sizeof(ReturnType::Base58Preimage));
 
-                std::memcpy(&out, bytes.data(), bytes.size());
+                if (*data == ReturnType::Base58Preimage::expected_prefix_) {
+                    const auto version =
+                        std::to_integer<std::uint8_t>(*std::next(data));
+
+                    if ((0u < version) && (3u > version)) {
+                        std::memcpy(
+                            static_cast<void*>(&out), data, bytes.size());
+                    }
+                }
             } break;
             case 35: {
                 static_assert(35 == sizeof(ReturnType::Base58Preimage_3));
 
                 auto compact = ReturnType::Base58Preimage_3{};
-                std::memcpy(&compact, bytes.data(), bytes.size());
-                const auto& payload = compact.payload_;
-                const auto key = ReadView{
-                    reinterpret_cast<const char*>(payload.key_.data()),
-                    payload.key_.size()};
-                auto code = api_.Factory().Data();
-                api_.Crypto().Hash().Digest(
-                    proto::HASHTYPE_SHA256D, key, code->WriteInto());
-                out = ReturnType::Base58Preimage{
-                    payload.version_, false, key, code->Bytes(), 0, 0};
+
+                if (*data == ReturnType::Base58Preimage_3::expected_prefix_) {
+                    const auto version =
+                        std::to_integer<std::uint8_t>(*std::next(data));
+
+                    if (2u < version) {
+                        std::memcpy(
+                            static_cast<void*>(&compact), data, bytes.size());
+                        const auto& payload = compact.payload_;
+                        const auto key = ReadView{
+                            reinterpret_cast<const char*>(payload.key_.data()),
+                            payload.key_.size()};
+                        auto code = api_.Factory().Data();
+                        api_.Crypto().Hash().Digest(
+                            proto::HASHTYPE_SHA256D, key, code->WriteInto());
+                        out = ReturnType::Base58Preimage{
+                            payload.version_, false, key, code->Bytes(), 0, 0};
+                    }
+                }
             } break;
             default: {
             }

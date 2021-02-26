@@ -104,6 +104,10 @@ public:
     {
         const_cast<std::uint32_t&>(index_) = index;
     }
+    auto SetPayee(const Identifier& contact) noexcept -> void final
+    {
+        payee_ = contact;
+    }
     auto SetValue(const std::uint64_t value) noexcept -> void final
     {
         const_cast<std::uint64_t&>(value_) = value;

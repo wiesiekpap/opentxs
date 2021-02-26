@@ -13,6 +13,17 @@
 #include "internal/api/client/blockchain/Factory.hpp"
 #include "opentxs/core/Log.hpp"
 
+namespace opentxs
+{
+namespace api
+{
+namespace internal
+{
+struct Core;
+}  // namespace internal
+}  // namespace api
+}  // namespace opentxs
+
 // #define OT_METHOD
 // "opentxs::api::client::implementation::Blockchain::BalanceLists::"
 

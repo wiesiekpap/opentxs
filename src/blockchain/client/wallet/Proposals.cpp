@@ -3,26 +3,33 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                  // IWYU pragma: associated
-#include "1_Internal.hpp"                // IWYU pragma: associated
-#include "blockchain/client/Wallet.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                         // IWYU pragma: associated
+#include "1_Internal.hpp"                       // IWYU pragma: associated
+#include "blockchain/client/wallet/Wallet.hpp"  // IWYU pragma: associated
 
 #include <chrono>
 #include <optional>
 #include <set>
+#include <stdexcept>
 #include <type_traits>
 #include <vector>
 
+#include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/client/blockchain/PaymentCode.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/protobuf/BlockchainTransaction.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
+#include "opentxs/protobuf/BlockchainTransactionProposedNotification.pb.h"
 #include "util/ScopeGuard.hpp"
 
 #define OT_METHOD                                                              \
@@ -162,7 +169,25 @@ auto Wallet::Proposals::build_transaction_bitcoin(
     }
 
     promise.set_value(transaction.ID());
-    network_.BroadcastTransaction(transaction);
+    const auto sent = network_.BroadcastTransaction(transaction);
+
+    try {
+        if (false == sent) { throw std::runtime_error{"Failed to send tx"}; }
+
+        for (const auto& notif : proposal.notification()) {
+            using PC = api::client::blockchain::internal::PaymentCode;
+            const auto accountID = PC::GetID(
+                api_,
+                chain_,
+                api_.Factory().PaymentCode(notif.sender()),
+                api_.Factory().PaymentCode(notif.recipient()));
+            const auto& account = blockchain_.PaymentCodeSubaccount(
+                api_.Factory().NymID(proposal.initiator()), accountID);
+            account.AddNotification(transaction.ID());
+        }
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+    }
 
     return BuildResult::Success;
 }

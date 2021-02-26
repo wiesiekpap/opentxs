@@ -73,7 +73,7 @@ TEST_F(Test_PaymentCodeAPI, alice)
 
     EXPECT_FALSE(seedID.empty());
 
-    const auto pNym = alice_.Wallet().Nym(reason);
+    const auto pNym = alice_.Wallet().Nym(reason, "Alice", {seedID, 0});
 
     ASSERT_TRUE(pNym);
 
@@ -130,6 +130,10 @@ TEST_F(Test_PaymentCodeAPI, alice)
         const auto& key = *pKey;
 
         EXPECT_EQ(expected->Bytes(), key.PublicKey());
+
+        const auto& element2 = alice_.Blockchain().GetKey(element.KeyID());
+
+        EXPECT_EQ(element.KeyID(), element2.KeyID());
     }
 
     for (auto i{0u}; i < remote.receive_keys_.size(); ++i) {
@@ -143,6 +147,10 @@ TEST_F(Test_PaymentCodeAPI, alice)
         const auto& key = *pKey;
 
         EXPECT_EQ(expected->Bytes(), key.PublicKey());
+
+        const auto& element2 = alice_.Blockchain().GetKey(element.KeyID());
+
+        EXPECT_EQ(element.KeyID(), element2.KeyID());
     }
 }
 
@@ -167,7 +175,7 @@ TEST_F(Test_PaymentCodeAPI, bob)
 
     EXPECT_FALSE(seedID.empty());
 
-    const auto pNym = bob_.Wallet().Nym(reason);
+    const auto pNym = bob_.Wallet().Nym(reason, "Bob", {seedID, 0});
 
     ASSERT_TRUE(pNym);
 
@@ -224,6 +232,10 @@ TEST_F(Test_PaymentCodeAPI, bob)
         const auto& key = *pKey;
 
         EXPECT_EQ(expected->Bytes(), key.PublicKey());
+
+        const auto& element2 = bob_.Blockchain().GetKey(element.KeyID());
+
+        EXPECT_EQ(element.KeyID(), element2.KeyID());
     }
 
     for (auto i{0u}; i < remote.receive_keys_.size(); ++i) {
@@ -237,6 +249,10 @@ TEST_F(Test_PaymentCodeAPI, bob)
         const auto& key = *pKey;
 
         EXPECT_EQ(expected->Bytes(), key.PublicKey());
+
+        const auto& element2 = bob_.Blockchain().GetKey(element.KeyID());
+
+        EXPECT_EQ(element.KeyID(), element2.KeyID());
     }
 }
 }  // namespace

@@ -11,17 +11,17 @@
 
 namespace
 {
-TEST_F(Regtest_fixture_normal, init_opentxs) {}
+TEST_F(Regtest_fixture_single, init_opentxs) {}
 
-TEST_F(Regtest_fixture_normal, start_chains) { EXPECT_TRUE(Start()); }
+TEST_F(Regtest_fixture_single, start_chains) { EXPECT_TRUE(Start()); }
 
-TEST_F(Regtest_fixture_normal, connect_peers) { EXPECT_TRUE(Connect()); }
+TEST_F(Regtest_fixture_single, connect_peers) { EXPECT_TRUE(Connect()); }
 
-TEST_F(Regtest_fixture_normal, mine) { EXPECT_TRUE(Mine(0, 10)); }
+TEST_F(Regtest_fixture_single, mine) { EXPECT_TRUE(Mine(0, 10)); }
 
-TEST_F(Regtest_fixture_normal, extend) { EXPECT_TRUE(Mine(10, 5)); }
+TEST_F(Regtest_fixture_single, extend) { EXPECT_TRUE(Mine(10, 5)); }
 
-TEST_F(Regtest_fixture_normal, reorg) { EXPECT_TRUE(Mine(12, 5)); }
+TEST_F(Regtest_fixture_single, reorg) { EXPECT_TRUE(Mine(12, 5)); }
 
-TEST_F(Regtest_fixture_normal, shutdown) { Shutdown(); }
+TEST_F(Regtest_fixture_single, shutdown) { Shutdown(); }
 }  // namespace

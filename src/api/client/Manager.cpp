@@ -242,6 +242,7 @@ void Manager::Init()
     StartContacts();
     StartActivity();
     pair_->init();
+    blockchain_->Init();
 #if OT_BLOCKCHAIN
     StartBlockchain();
 #endif  // OT_BLOCKCHAIN

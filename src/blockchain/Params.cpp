@@ -10,7 +10,6 @@
 #include <set>
 #include <type_traits>
 
-#if OT_BLOCKCHAIN
 #include "opentxs/Bytes.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
@@ -18,14 +17,10 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
-#endif  // OT_BLOCKCHAIN
 #include "opentxs/crypto/Bip44Type.hpp"
-#if OT_BLOCKCHAIN
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
-#endif  // OT_BLOCKCHAIN
 
-#if OT_BLOCKCHAIN
 namespace opentxs::blockchain
 {
 auto BlockHash(
@@ -263,7 +258,6 @@ auto TransactionHash(
     }
 }
 }  // namespace opentxs::blockchain
-#endif  // OT_BLOCKCHAIN
 
 namespace opentxs::blockchain::params
 {

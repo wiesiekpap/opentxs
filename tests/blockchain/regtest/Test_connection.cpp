@@ -9,15 +9,15 @@
 
 namespace
 {
-TEST_F(Regtest_fixture_normal, init_opentxs) {}
+TEST_F(Regtest_fixture_single, init_opentxs) {}
 
-TEST_F(Regtest_fixture_normal, start_chains) { EXPECT_TRUE(Start()); }
+TEST_F(Regtest_fixture_single, start_chains) { EXPECT_TRUE(Start()); }
 
-TEST_F(Regtest_fixture_normal, connect_peers) { EXPECT_TRUE(Connect()); }
+TEST_F(Regtest_fixture_single, connect_peers) { EXPECT_TRUE(Connect()); }
 
-TEST_F(Regtest_fixture_normal, client_disconnection_timeout)
+TEST_F(Regtest_fixture_single, client_disconnection_timeout)
 {
-    EXPECT_TRUE(client_.Blockchain().Stop(test_chain_));
+    EXPECT_TRUE(client_1_.Blockchain().Stop(test_chain_));
 
     const auto start = ot::Clock::now();
     const auto limit = std::chrono::minutes{1};
@@ -35,5 +35,5 @@ TEST_F(Regtest_fixture_normal, client_disconnection_timeout)
     EXPECT_EQ(count, 0);
 }
 
-TEST_F(Regtest_fixture_normal, shutdown) { Shutdown(); }
+TEST_F(Regtest_fixture_single, shutdown) { Shutdown(); }
 }  // namespace

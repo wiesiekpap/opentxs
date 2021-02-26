@@ -24,6 +24,7 @@
 #include "api/client/blockchain/SyncServer.hpp"
 #include "core/Worker.hpp"
 #endif  // OT_BLOCKCHAIN
+#include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/client/Factory.hpp"
 #include "internal/api/client/blockchain/Blockchain.hpp"
@@ -795,9 +796,14 @@ auto Blockchain::GetKey(const blockchain::Key& id) const noexcept(false)
 
             return hd.BalanceElement(subchain, index);
         }
-        case AccountType::Error:
+        case AccountType::PaymentCode: {
+            const auto& pc =
+                PaymentCodeSubaccount(accounts_.Owner(account), account);
+
+            return pc.BalanceElement(subchain, index);
+        }
         case AccountType::Imported:
-        case AccountType::PaymentCode:
+        case AccountType::Error:
         default: {
         }
     }
@@ -898,6 +904,8 @@ auto Blockchain::IndexItem(const ReadView bytes) const noexcept -> PatternID
     return output;
 }
 #endif  // OT_BLOCKCHAIN
+
+auto Blockchain::Init() noexcept -> void { accounts_.Populate(); }
 
 auto Blockchain::init_path(
     const std::string& root,
@@ -1054,7 +1062,7 @@ auto Blockchain::NewHDSubaccount(
         auto accountID = Identifier::Factory();
         auto& tree = balance_lists_.Get(chain).Nym(nymID);
         tree.AddHDNode(accountPath, reason, accountID);
-        accounts_.New(chain, accountID, nymID);
+        accounts_.New(AccountType::HD, chain, accountID, nymID);
 
 #if OT_BLOCKCHAIN
         {
@@ -1137,7 +1145,7 @@ auto Blockchain::new_payment_code(
         auto accountID = blank;
         auto& tree = balance_lists_.Get(chain).Nym(nymID);
         tree.AddUpdatePaymentCode(local, remote, path, reason, accountID);
-        accounts_.New(chain, accountID, nymID);
+        accounts_.New(AccountType::PaymentCode, chain, accountID, nymID);
 
 #if OT_BLOCKCHAIN
         {
@@ -1160,6 +1168,17 @@ auto Blockchain::new_payment_code(
 
         return blank;
     }
+}
+
+auto Blockchain::Owner(const blockchain::Key& key) const noexcept
+    -> const identifier::Nym&
+{
+    const auto& [account, subchain, index] = key;
+    static const auto blank = api_.Factory().NymID();
+
+    if (blockchain::Subchain::Outgoing == subchain) { return blank; }
+
+    return Owner(api_.Factory().Identifier(account));
 }
 
 auto Blockchain::p2pkh(const Chain chain, const Data& pubkeyHash) const noexcept
@@ -1211,8 +1230,6 @@ auto Blockchain::PaymentCodeSubaccount(
     const Identifier& accountID) const noexcept(false)
     -> const blockchain::PaymentCode&
 {
-    LOCK_NYM()
-
     const auto type = api_.Storage().Bip47Chain(nymID, accountID);
 
     if (proto::CITEMTYPE_ERROR == type) {
@@ -1248,10 +1265,10 @@ auto Blockchain::PaymentCodeSubaccount(
         }
     }
 
-    auto& balanceList = balance_lists_.Get(Translate(type));
-    auto& nym = balanceList.Nym(nymID);
+    auto& balanceList = balance_lists_.Get(chain);
+    auto& tree = balanceList.Nym(nymID);
 
-    return nym.PaymentCode(accountID);
+    return tree.PaymentCode(accountID);
 }
 
 #if OT_BLOCKCHAIN
@@ -1400,6 +1417,48 @@ auto Blockchain::PubkeyHash(
     return output;
 }
 
+auto Blockchain::RecipientContact(const blockchain::Key& key) const noexcept
+    -> OTIdentifier
+{
+    static const auto blank = api_.Factory().Identifier();
+    const auto& [account, subchain, index] = key;
+    using Subchain = api::client::blockchain::Subchain;
+
+    if (Subchain::Notification == subchain) { return blank; }
+
+    const auto accountID = api_.Factory().Identifier(account);
+    const auto& owner = Owner(accountID);
+
+    try {
+        if (owner.empty()) {
+            throw std::runtime_error{"Failed to load account owner"};
+        }
+
+        const auto& element = GetKey(key);
+
+        switch (subchain) {
+            case Subchain::Internal:
+            case Subchain::External:
+            case Subchain::Incoming: {
+
+                return contacts_.NymToContact(owner);
+            }
+            case Subchain::Outgoing: {
+
+                return element.Contact();
+            }
+            default: {
+
+                return blank;
+            }
+        }
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+        return blank;
+    }
+}
+
 auto Blockchain::reverse(const StyleMap& in) noexcept -> StyleReverseMap
 {
     auto output = StyleReverseMap{};
@@ -1463,7 +1522,51 @@ auto Blockchain::RestoreNetworks() const noexcept -> void
         Start(chain, peer);
     }
 }
+#endif  // OT_BLOCKCHAIN
 
+auto Blockchain::SenderContact(const blockchain::Key& key) const noexcept
+    -> OTIdentifier
+{
+    static const auto blank = api_.Factory().Identifier();
+    const auto& [account, subchain, index] = key;
+    using Subchain = api::client::blockchain::Subchain;
+
+    if (Subchain::Notification == subchain) { return blank; }
+
+    const auto accountID = api_.Factory().Identifier(account);
+    const auto& owner = Owner(accountID);
+
+    try {
+        if (owner.empty()) {
+            throw std::runtime_error{"Failed to load account owner"};
+        }
+
+        const auto& element = GetKey(key);
+
+        switch (subchain) {
+            case Subchain::Internal:
+            case Subchain::Outgoing: {
+
+                return contacts_.NymToContact(owner);
+            }
+            case Subchain::External:
+            case Subchain::Incoming: {
+
+                return element.Contact();
+            }
+            default: {
+
+                return blank;
+            }
+        }
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+        return blank;
+    }
+}
+
+#if OT_BLOCKCHAIN
 auto Blockchain::Start(const Chain type, const std::string& seednode)
     const noexcept -> bool
 {

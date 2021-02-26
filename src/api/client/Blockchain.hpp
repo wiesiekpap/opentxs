@@ -80,13 +80,13 @@ struct SyncClient;
 struct SyncServer;
 }  // namespace blockchain
 
+class Activity;
+}  // namespace client
+
 namespace internal
 {
 struct Core;
 }  // namespace internal
-
-class Activity;
-}  // namespace client
 
 class Core;
 class Legacy;
@@ -269,10 +269,7 @@ public:
         return accounts_.Owner(accountID);
     }
     auto Owner(const blockchain::Key& key) const noexcept
-        -> const identifier::Nym& final
-    {
-        return Owner(api_.Factory().Identifier(std::get<0>(key)));
-    }
+        -> const identifier::Nym& final;
     auto PaymentCodeSubaccount(
         const identifier::Nym& nymID,
         const Identifier& accountID) const noexcept(false)
@@ -296,6 +293,10 @@ public:
         const Chain chain,
         const Tx& transaction,
         const PasswordPrompt& reason) const noexcept -> bool final;
+#endif  // OT_BLOCKCHAIN
+    auto RecipientContact(const blockchain::Key& key) const noexcept
+        -> OTIdentifier final;
+#if OT_BLOCKCHAIN
     auto Reorg() const noexcept -> const zmq::socket::Publish& final
     {
         return reorg_;
@@ -306,6 +307,10 @@ public:
         const opentxs::blockchain::block::Height target) const noexcept
         -> void final;
     auto RestoreNetworks() const noexcept -> void final;
+#endif  // OT_BLOCKCHAIN
+    auto SenderContact(const blockchain::Key& key) const noexcept
+        -> OTIdentifier final;
+#if OT_BLOCKCHAIN
     auto Start(const Chain type, const std::string& seednode) const noexcept
         -> bool final;
     auto StartSyncServer(
@@ -339,6 +344,8 @@ public:
         const opentxs::blockchain::Type chain,
         const std::string& address) const noexcept -> void final;
 #endif  // OT_BLOCKCHAIN
+
+    auto Init() noexcept -> void final;
 
     Blockchain(
         const api::internal::Core& api,
@@ -376,12 +383,15 @@ private:
         auto List(const identifier::Nym& nymID, const Chain chain)
             const noexcept -> std::set<OTIdentifier>;
         auto New(
+            const AccountType type,
             const Chain chain,
             const Identifier& account,
             const identifier::Nym& owner) const noexcept -> void;
         auto Owner(const Identifier& accountID) const noexcept
             -> const identifier::Nym&;
         auto Type(const Identifier& accountID) const noexcept -> AccountType;
+
+        auto Populate() noexcept -> void;
 
         AccountCache(const api::Core& api) noexcept;
 

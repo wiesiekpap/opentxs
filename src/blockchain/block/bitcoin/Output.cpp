@@ -22,10 +22,12 @@
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "opentxs/Bytes.hpp"
+#include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/blockchain/BalanceNode.hpp"
+#include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/core/Log.hpp"
@@ -253,7 +255,9 @@ auto Output::AssociatedLocalNyms(
     std::vector<OTNymID>& output) const noexcept -> void
 {
     std::for_each(std::begin(keys_), std::end(keys_), [&](const auto& key) {
-        output.emplace_back(blockchain.Owner(key));
+        const auto& owner = blockchain.Owner(key);
+
+        if (false == owner.empty()) { output.emplace_back(owner); }
     });
 }
 
@@ -269,19 +273,17 @@ auto Output::AssociatedRemoteContacts(
             std::end(contacts),
             std::back_inserter(output));
     });
-    std::for_each(std::begin(keys_), std::end(keys_), [&](const auto& id) {
-        try {
-            const auto& key = blockchain.GetKey(id);
-            auto contact = key.Contact();
 
-            if (false == contact->empty()) {
-                output.emplace_back(std::move(contact));
-            }
-        } catch (...) {
-        }
-    });
+    {
+        auto payer = Payer(blockchain);
 
-    if (false == payer_->empty()) { output.emplace_back(payer_); }
+        if (false == payer->empty()) { output.emplace_back(std::move(payer)); }
+    }
+    {
+        auto payee = Payee(blockchain);
+
+        if (false == payee->empty()) { output.emplace_back(std::move(payee)); }
+    }
 }
 
 auto Output::CalculateSize() const noexcept -> std::size_t
@@ -492,26 +494,36 @@ auto Output::Serialize(
 auto Output::set_payee(const api::client::Blockchain& blockchain) const noexcept
     -> void
 {
-    // TODO handle multisig and other strange cases
-    // TODO handle BIP-47
+    auto& id = payee_;
 
-    if (1 != keys_.size()) { return; }
+    if (false == id->empty()) { return; }
 
-    payee_ = blockchain.Owner(*keys_.cbegin());
+    for (const auto& key : keys_) {
+        auto candidate = blockchain.RecipientContact(key);
+
+        if (candidate->empty()) { continue; }
+
+        id = std::move(candidate);
+
+        return;
+    }
 }
 
 auto Output::set_payer(const api::client::Blockchain& blockchain) const noexcept
     -> void
 {
-    // TODO handle multisig and other strange cases
-    // TODO handle BIP-47
+    auto& id = payer_;
 
-    if (1 != keys_.size()) { return; }
+    if (false == id->empty()) { return; }
 
-    try {
-        const auto& key = blockchain.GetKey(*keys_.cbegin());
-        payer_ = key.Contact();
-    } catch (...) {
+    for (const auto& key : keys_) {
+        auto candidate = blockchain.SenderContact(key);
+
+        if (candidate->empty()) { continue; }
+
+        id = std::move(candidate);
+
+        return;
     }
 }
 }  // namespace opentxs::blockchain::block::bitcoin::implementation

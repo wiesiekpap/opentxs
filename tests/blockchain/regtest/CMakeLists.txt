@@ -23,3 +23,7 @@ endif()
 add_opentx_test(
   unittests-opentxs-blockchain-regtest-send-receive-hd Test_send_hd.cpp
 )
+
+add_opentx_test(
+  unittests-opentxs-blockchain-regtest-payment-code Test_payment_code.cpp
+)

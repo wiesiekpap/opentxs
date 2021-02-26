@@ -3,17 +3,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                  // IWYU pragma: associated
-#include "1_Internal.hpp"                // IWYU pragma: associated
-#include "blockchain/client/Wallet.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                         // IWYU pragma: associated
+#include "1_Internal.hpp"                       // IWYU pragma: associated
+#include "blockchain/client/wallet/Wallet.hpp"  // IWYU pragma: associated
 
 #include <atomic>
 #include <chrono>
-#include <cstdint>
 #include <future>
 #include <memory>
 
-#include "blockchain/client/wallet/HDStateData.hpp"
 #include "core/Worker.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/client/Client.hpp"
@@ -30,7 +28,6 @@
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
-#include "util/ScopeGuard.hpp"
 
 #define OT_METHOD "opentxs::blockchain::client::implementation::Wallet::"
 
@@ -51,52 +48,6 @@ auto BlockchainWallet(
         api, blockchain, parent, db, chain, shutdown);
 }
 }  // namespace opentxs::factory
-
-namespace opentxs::blockchain::client::internal
-{
-auto Wallet::ProcessThreadPool(const zmq::Message& in) noexcept -> void
-{
-    const auto body = in.Body();
-
-    if (2 > body.size()) {
-        LogOutput("opentxs::blockchain::client::internal:Wallet::")(
-            __FUNCTION__)(": Invalid message")
-            .Flush();
-
-        OT_FAIL;
-    }
-
-    auto* pData = reinterpret_cast<implementation::HDStateData*>(
-        body.at(1).as<std::uintptr_t>());
-
-    OT_ASSERT(nullptr != pData);
-
-    auto& data = *pData;
-    auto postcondition = ScopeGuard{[&] {
-        data.running_.store(false);
-        data.task_finished_();
-        --data.job_counter_;
-    }};
-
-    switch (body.at(0).as<Task>()) {
-        case Task::index: {
-            data.index();
-        } break;
-        case Task::scan: {
-            data.scan();
-        } break;
-        case Task::process: {
-            data.process();
-        } break;
-        case Task::reorg: {
-            data.reorg();
-        } break;
-        default: {
-            OT_FAIL;
-        }
-    }
-}
-}  // namespace opentxs::blockchain::client::internal
 
 namespace opentxs::blockchain::client::implementation
 {

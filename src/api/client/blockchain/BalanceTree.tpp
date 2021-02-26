@@ -125,7 +125,7 @@ auto BalanceTree::NodeGroup<InterfaceType, PayloadType>::add(
     }
 
     nodes_.emplace_back(std::move(node));
-    const std::size_t position = nodes_.size() - 1;
+    const auto position = std::size_t{nodes_.size() - 1u};
     index_.emplace(id, position);
 
     return true;

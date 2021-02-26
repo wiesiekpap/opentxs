@@ -3,371 +3,209 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                  // IWYU pragma: associated
-#include "1_Internal.hpp"                // IWYU pragma: associated
-#include "blockchain/client/Wallet.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                          // IWYU pragma: associated
+#include "1_Internal.hpp"                        // IWYU pragma: associated
+#include "blockchain/client/wallet/Account.hpp"  // IWYU pragma: associated
 
-#include <atomic>
-#include <chrono>
-#include <cstdint>
-#include <future>
 #include <map>
-#include <optional>
-#include <queue>
-#include <type_traits>
 #include <utility>
-#include <vector>
 
-#include "blockchain/client/wallet/HDStateData.hpp"
+#include "blockchain/client/wallet/DeterministicStateData.hpp"
+#include "blockchain/client/wallet/SubchainStateData.hpp"
 #include "internal/blockchain/client/Client.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/api/client/blockchain/BalanceTree.hpp"
+#include "opentxs/api/client/blockchain/Deterministic.hpp"
 #include "opentxs/api/client/blockchain/HD.hpp"
+#include "opentxs/api/client/blockchain/PaymentCode.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"  // IWYU pragma: keep
-#include "opentxs/blockchain/client/BlockOracle.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
-#include "opentxs/network/zeromq/socket/Push.hpp"
+#include "util/JobCounter.hpp"
 
-#define OT_METHOD                                                              \
-    "opentxs::blockchain::client::implementation::Wallet::Account::"
+#define OT_METHOD "opentxs::blockchain::client::wallet::Account::"
 
-namespace opentxs::blockchain::client::implementation
+namespace opentxs::blockchain::client::wallet
 {
-Wallet::Account::Account(
+using Subchain = internal::WalletDatabase::Subchain;
+
+struct Account::Imp {
+    using Map = std::map<OTIdentifier, DeterministicStateData>;
+
+    const api::Core& api_;
+    const api::client::Blockchain& blockchain_;
+    const BalanceTree& ref_;
+    const internal::Network& network_;
+    const internal::WalletDatabase& db_;
+    const filter::Type filter_type_;
+    const network::zeromq::socket::Push& thread_pool_;
+    const SimpleCallback& task_finished_;
+    Map internal_;
+    Map external_;
+    Map outgoing_;
+    Map incoming_;
+    Outstanding jobs_;
+
+    auto get(
+        const api::client::blockchain::Deterministic& account,
+        const Subchain subchain,
+        Map& map) noexcept -> DeterministicStateData&
+    {
+        auto it = map.find(account.ID());
+
+        if (map.end() != it) { return it->second; }
+
+        return instantiate(account, subchain, map);
+    }
+    auto instantiate(
+        const api::client::blockchain::Deterministic& account,
+        const Subchain subchain,
+        Map& map) noexcept -> DeterministicStateData&
+    {
+        auto [it, added] = map.try_emplace(
+            account.ID(),
+            api_,
+            blockchain_,
+            network_,
+            db_,
+            account,
+            task_finished_,
+            jobs_,
+            thread_pool_,
+            filter_type_,
+            subchain);
+
+        OT_ASSERT(added);
+
+        return it->second;
+    }
+    auto reorg(const block::Position& parent) noexcept -> bool
+    {
+        auto output{false};
+
+        for (const auto& account : ref_.GetHD()) {
+            const auto& id = account.ID();
+            LogVerbose(OT_METHOD)(__FUNCTION__)(": Processing HD account ")(id)
+                .Flush();
+            output |= get(account, Subchain::Internal, internal_)
+                          .reorg_.Queue(parent);
+            output |= get(account, Subchain::External, external_)
+                          .reorg_.Queue(parent);
+        }
+
+        for (const auto& account : ref_.GetPaymentCode()) {
+            const auto& id = account.ID();
+            LogVerbose(OT_METHOD)(__FUNCTION__)(
+                ": Processing payment code account ")(id)
+                .Flush();
+            output |= get(account, Subchain::Outgoing, outgoing_)
+                          .reorg_.Queue(parent);
+            output |= get(account, Subchain::Incoming, incoming_)
+                          .reorg_.Queue(parent);
+        }
+
+        return output;
+    }
+    auto state_machine() noexcept -> bool
+    {
+        auto output{false};
+
+        for (const auto& account : ref_.GetHD()) {
+            const auto& id = account.ID();
+            LogVerbose(OT_METHOD)(__FUNCTION__)(": Processing HD account ")(id)
+                .Flush();
+            output |=
+                get(account, Subchain::Internal, internal_).state_machine();
+            output |=
+                get(account, Subchain::External, external_).state_machine();
+        }
+
+        for (const auto& account : ref_.GetPaymentCode()) {
+            const auto& id = account.ID();
+            LogVerbose(OT_METHOD)(__FUNCTION__)(
+                ": Processing payment code account ")(id)
+                .Flush();
+            output |=
+                get(account, Subchain::Outgoing, outgoing_).state_machine();
+            output |=
+                get(account, Subchain::Incoming, incoming_).state_machine();
+        }
+
+        return output;
+    }
+
+    Imp(const api::Core& api,
+        const api::client::Blockchain& blockchain,
+        const BalanceTree& ref,
+        const internal::Network& network,
+        const internal::WalletDatabase& db,
+        const zmq::socket::Push& threadPool,
+        const filter::Type filter,
+        Outstanding&& jobs,
+        const SimpleCallback& taskFinished) noexcept
+        : api_(api)
+        , blockchain_(blockchain)
+        , ref_(ref)
+        , network_(network)
+        , db_(db)
+        , filter_type_(network.FilterOracleInternal().DefaultType())
+        , thread_pool_(threadPool)
+        , task_finished_(taskFinished)
+        , internal_()
+        , external_()
+        , outgoing_()
+        , incoming_()
+        , jobs_(std::move(jobs))
+    {
+        for (const auto& account : ref_.GetHD()) {
+            instantiate(account, Subchain::Internal, internal_);
+            instantiate(account, Subchain::External, external_);
+        }
+
+        for (const auto& account : ref_.GetPaymentCode()) {
+            instantiate(account, Subchain::Outgoing, outgoing_);
+            instantiate(account, Subchain::Incoming, incoming_);
+        }
+    }
+};
+
+Account::Account(
     const api::Core& api,
     const api::client::Blockchain& blockchain,
     const BalanceTree& ref,
     const internal::Network& network,
     const internal::WalletDatabase& db,
     const zmq::socket::Push& threadPool,
+    const filter::Type filter,
     Outstanding&& jobs,
     const SimpleCallback& taskFinished) noexcept
-    : api_(api)
-    , blockchain_(blockchain)
-    , ref_(ref)
-    , network_(network)
-    , db_(db)
-    , filter_type_(network.FilterOracleInternal().DefaultType())
-    , thread_pool_(threadPool)
-    , task_finished_(taskFinished)
-    , internal_()
-    , external_()
-    , jobs_(std::move(jobs))
+    : imp_(std::make_unique<Imp>(
+          api,
+          blockchain,
+          ref,
+          network,
+          db,
+          threadPool,
+          filter,
+          std::move(jobs),
+          taskFinished))
 {
-    for (const auto& subaccount : ref_.GetHD()) {
-        const auto& id = subaccount.ID();
-        internal_.try_emplace(
-            id,
-            api_,
-            blockchain_,
-            network_,
-            db_,
-            subaccount,
-            task_finished_,
-            jobs_,
-            filter_type_,
-            Subchain::Internal);
-        external_.try_emplace(
-            id,
-            api_,
-            blockchain_,
-            network_,
-            db_,
-            subaccount,
-            task_finished_,
-            jobs_,
-            filter_type_,
-            Subchain::External);
-    }
+    OT_ASSERT(imp_);
 }
 
-Wallet::Account::Account(Account&& rhs) noexcept
-    : api_(rhs.api_)
-    , blockchain_(rhs.blockchain_)
-    , ref_(rhs.ref_)
-    , network_(rhs.network_)
-    , db_(rhs.db_)
-    , filter_type_(rhs.filter_type_)
-    , thread_pool_(rhs.thread_pool_)
-    , task_finished_(rhs.task_finished_)
-    , internal_(std::move(rhs.internal_))
-    , external_(std::move(rhs.external_))
-    , jobs_(std::move(rhs.jobs_))
+Account::Account(Account&& rhs) noexcept
+    : imp_(std::move(rhs.imp_))
 {
+    OT_ASSERT(imp_);
 }
 
-auto Wallet::Account::queue_work(
-    const Task task,
-    const HDStateData& data) noexcept -> void
+auto Account::reorg(const block::Position& parent) noexcept -> bool
 {
-    while (jobs_.limited()) { Sleep(std::chrono::microseconds(100)); }
-
-    using Pool = internal::ThreadPool;
-
-    auto work = Pool::MakeWork(api_, network_.Chain(), Pool::Work::HDAccount);
-    work->AddFrame(task);
-    work->AddFrame(reinterpret_cast<std::uintptr_t>(&data));
-    thread_pool_.Send(work);
-    ++jobs_;
+    return imp_->reorg(parent);
 }
 
-auto Wallet::Account::reorg(const block::Position& parent) noexcept -> bool
-{
-    auto output{false};
+auto Account::state_machine() noexcept -> bool { return imp_->state_machine(); }
 
-    for (const auto& subaccount : ref_.GetHD()) {
-        const auto& id = subaccount.ID();
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Processing account ")(id)
-            .Flush();
-
-        {
-            auto it = internal_.find(id);
-
-            if (internal_.end() == it) {
-                auto [it2, added] = internal_.try_emplace(
-                    id,
-                    api_,
-                    blockchain_,
-                    network_,
-                    db_,
-                    subaccount,
-                    task_finished_,
-                    jobs_,
-                    filter_type_,
-                    Subchain::Internal);
-                it = it2;
-            }
-
-            output |= reorg_hd(it->second, parent);
-        }
-
-        {
-            auto it = external_.find(id);
-
-            if (external_.end() == it) {
-                auto [it2, added] = external_.try_emplace(
-                    id,
-                    api_,
-                    blockchain_,
-                    network_,
-                    db_,
-                    subaccount,
-                    task_finished_,
-                    jobs_,
-                    filter_type_,
-                    Subchain::External);
-                it = it2;
-            }
-
-            output |= reorg_hd(it->second, parent);
-        }
-    }
-
-    return output;
-}
-
-auto Wallet::Account::reorg_hd(
-    HDStateData& data,
-    const block::Position& parent) noexcept -> bool
-{
-    return data.reorg_.Queue(parent);
-}
-
-auto Wallet::Account::state_machine() noexcept -> bool
-{
-    auto output{false};
-
-    for (const auto& subaccount : ref_.GetHD()) {
-        const auto& id = subaccount.ID();
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Processing account ")(id)
-            .Flush();
-
-        {
-            auto it = internal_.find(id);
-
-            if (internal_.end() == it) {
-                auto [it2, added] = internal_.try_emplace(
-                    id,
-                    api_,
-                    blockchain_,
-                    network_,
-                    db_,
-                    subaccount,
-                    task_finished_,
-                    jobs_,
-                    filter_type_,
-                    Subchain::Internal);
-                it = it2;
-            }
-
-            output |= state_machine_hd(it->second);
-        }
-
-        {
-            auto it = external_.find(id);
-
-            if (external_.end() == it) {
-                auto [it2, added] = external_.try_emplace(
-                    id,
-                    api_,
-                    blockchain_,
-                    network_,
-                    db_,
-                    subaccount,
-                    task_finished_,
-                    jobs_,
-                    filter_type_,
-                    Subchain::External);
-                it = it2;
-            }
-
-            output |= state_machine_hd(it->second);
-        }
-    }
-
-    return output;
-}
-
-auto Wallet::Account::state_machine_hd(HDStateData& data) noexcept -> bool
-{
-    const auto& node = data.node_;
-    const auto subchain = data.subchain_;
-    auto& reorg = data.reorg_;
-    auto& running = data.running_;
-    auto& lastIndexed = data.last_indexed_;
-    auto& lastScanned = data.last_scanned_;
-    auto& requestBlocks = data.blocks_to_request_;
-    auto& outstanding = data.outstanding_blocks_;
-    auto& queue = data.process_block_queue_;
-
-    if (running) {
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Task is running").Flush();
-
-        return false;
-    }
-
-    if (false == reorg.Empty()) {
-        running.store(true);
-        queue_work(Task::reorg, data);
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Reorg queued").Flush();
-
-        return false;
-    }
-
-    {
-        for (const auto& hash : requestBlocks) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": Requesting block ")(
-                hash->asHex())(" queue position: ")(outstanding.size())
-                .Flush();
-
-            if (0 == outstanding.count(hash)) {
-                auto [it, added] = outstanding.emplace(
-                    hash, network_.BlockOracle().LoadBitcoin(hash));
-
-                OT_ASSERT(added);
-
-                queue.push(it);
-            }
-        }
-
-        requestBlocks.clear();
-    }
-
-    {
-        lastIndexed =
-            db_.SubchainLastIndexed(node.ID(), subchain, filter_type_);
-        const auto generated = node.LastGenerated(subchain);
-
-        if (generated.has_value()) {
-            if ((false == lastIndexed.has_value()) ||
-                (lastIndexed.value() != generated.value())) {
-                LogVerbose(OT_METHOD)(__FUNCTION__)(": Subchain has ")(
-                    generated.value() + 1)(" keys generated, but only ")(
-                    lastIndexed.value_or(0))(" have been indexed.")
-                    .Flush();
-                running.store(true);
-                queue_work(Task::index, data);
-                LogTrace(OT_METHOD)(__FUNCTION__)(": Index queued").Flush();
-
-                return false;
-            } else {
-                LogTrace(OT_METHOD)(__FUNCTION__)(": All ")(
-                    generated.value() + 1)(" generated keys have been indexed.")
-                    .Flush();
-            }
-        }
-    }
-
-    {
-        auto needScan{false};
-
-        if (lastScanned.has_value()) {
-            const auto bestFilter =
-                network_.FilterOracleInternal().FilterTip(filter_type_);
-
-            if (lastScanned == bestFilter) {
-                LogVerbose(OT_METHOD)(__FUNCTION__)(
-                    ": Subchain has been scanned to the newest downloaded "
-                    "filter ")(bestFilter.second->asHex())(" at height ")(
-                    bestFilter.first)
-                    .Flush();
-            } else {
-                const auto [ancestor, best] =
-                    network_.HeaderOracleInternal().CommonParent(
-                        lastScanned.value());
-                lastScanned = ancestor;
-
-                if (lastScanned == best) {
-                    LogVerbose(OT_METHOD)(__FUNCTION__)(
-                        ": Subchain has been scanned to current best block ")(
-                        best.second->asHex())(" at height ")(best.first)
-                        .Flush();
-                } else {
-                    needScan = true;
-                    LogVerbose(OT_METHOD)(__FUNCTION__)(
-                        ": Subchain scanning progress: ")(
-                        lastScanned.value().first)
-                        .Flush();
-                }
-            }
-        } else {
-            needScan = true;
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
-                ": Subchain scanning progress: ")(0)
-                .Flush();
-        }
-
-        if (needScan) {
-            running.store(true);
-            queue_work(Task::scan, data);
-            LogTrace(OT_METHOD)(__FUNCTION__)(": Scan queued").Flush();
-
-            return false;
-        }
-    }
-
-    if (false == queue.empty()) {
-        const auto& [id, future] = *queue.front();
-
-        if (std::future_status::ready ==
-            future.wait_for(std::chrono::milliseconds(1))) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": Ready to process block")
-                .Flush();
-            running.store(true);
-            queue_work(Task::process, data);
-            LogTrace(OT_METHOD)(__FUNCTION__)(": Process queued").Flush();
-
-            return false;
-        } else {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": Waiting for block ")(
-                id->asHex())(" to download")
-                .Flush();
-        }
-    }
-
-    return false;
-}
-}  // namespace opentxs::blockchain::client::implementation
+Account::~Account() = default;
+}  // namespace opentxs::blockchain::client::wallet

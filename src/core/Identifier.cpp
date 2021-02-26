@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <sstream>
 #include <type_traits>
 #include <utility>
 
@@ -330,29 +331,34 @@ namespace opentxs::implementation
 {
 Identifier::Identifier()
     : ot_super()
+    , type_(DefaultType)
 {
 }
 
 Identifier::Identifier(const std::string& theStr)
     : ot_super()
+    , type_(DefaultType)
 {
     SetString(theStr);
 }
 
 Identifier::Identifier(const String& theStr)
     : ot_super()
+    , type_(DefaultType)
 {
     SetString(theStr);
 }
 
 Identifier::Identifier(const Contract& theContract)
     : ot_super()  // Get the contract's ID into this identifier.
+    , type_(DefaultType)
 {
     (const_cast<Contract&>(theContract)).GetIdentifier(*this);
 }
 
 Identifier::Identifier(const identity::Nym& theNym)
     : ot_super()  // Get the Nym's ID into this identifier.
+    , type_(DefaultType)
 {
     (const_cast<identity::Nym&>(theNym)).GetIdentifier(*this);
 }
@@ -367,6 +373,7 @@ Identifier::Identifier(
     const proto::ContactItemType type,
     const proto::HDPath& path)
     : ot_super()
+    , type_(DefaultType)
 {
     CalculateDigest(path_to_data(type, path)->Bytes(), DefaultType);
 }
@@ -387,13 +394,14 @@ auto Identifier::clone() const -> Identifier*
 auto Identifier::contract_contents_to_identifier(const Contract& in)
     -> Identifier*
 {
-    auto output = new Identifier();
+    auto output = std::make_unique<Identifier>();
 
-    OT_ASSERT(nullptr != output);
+    OT_ASSERT(output);
 
-    output->CalculateDigest(String::Factory(in)->Bytes());
+    const auto preimage = String::Factory(in);
+    output->CalculateDigest(preimage->Bytes(), DefaultType);
 
-    return output;
+    return output.release();
 }
 
 // This Identifier is stored in binary form.
@@ -401,19 +409,13 @@ auto Identifier::contract_contents_to_identifier(const Contract& in)
 // Just call this function.
 void Identifier::GetString(String& id) const
 {
-    auto data = Data::Factory();
-    data->Assign(&type_, sizeof(type_));
+    const auto value = to_string();
 
-    OT_ASSERT(1 == data->size());
-
-    if (0 == size()) { return; }
-
-    data->Concatenate(this->data(), size());
-
-    auto output = String::Factory("ot");
-    output->Concatenate(String::Factory(
-        Context().Crypto().Encode().IdentifierEncode(data).c_str()));
-    id.swap(output);
+    if (0 == value.size()) {
+        id.Release();
+    } else {
+        id.Set(value.c_str());
+    }
 }
 
 auto Identifier::IDToHashType(const ID type) -> proto::HashType
@@ -484,18 +486,34 @@ void Identifier::SetString(const std::string& encoded)
     }
 }
 
-auto Identifier::str() const -> std::string
-{
-    auto output = String::Factory();
-    GetString(output);
-
-    return output->Get();
-}
+auto Identifier::str() const -> std::string { return to_string(); }
 
 void Identifier::swap(opentxs::Identifier& rhs)
 {
     auto& input = dynamic_cast<Identifier&>(rhs);
     ot_super::swap(std::move(input));
     std::swap(type_, input.type_);
+}
+
+auto Identifier::to_string() const noexcept -> std::string
+{
+    const auto preimage = [&] {
+        auto out = Data::Factory();
+
+        if (0 == size()) { return out; }
+
+        out->Assign(&type_, sizeof(type_));
+        out->Concatenate(data(), size());
+
+        return out;
+    }();
+    auto ss = std::stringstream{};
+
+    if (0 < preimage->size()) {
+        ss << "ot";
+        ss << Context().Crypto().Encode().IdentifierEncode(preimage);
+    }
+
+    return ss.str();
 }
 }  // namespace opentxs::implementation

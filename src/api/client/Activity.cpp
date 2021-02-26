@@ -190,6 +190,8 @@ auto Activity::AddBlockchainTransaction(
     eLock lock(shared_lock_);
 
     for (const auto& nym : transaction.AssociatedLocalNyms(api)) {
+        OT_ASSERT(false == nym->empty());
+
         if (false == add_blockchain_transaction(lock, api, nym, transaction)) {
             return false;
         }
