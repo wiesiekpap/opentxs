@@ -324,6 +324,12 @@ auto BlockchainAccountActivity::startup() noexcept -> void { load_thread(); }
 auto BlockchainAccountActivity::ValidateAddress(
     const std::string& in) const noexcept -> bool
 {
+    {
+        const auto code = Widget::api_.Factory().PaymentCode(in);
+
+        if (0 < code->Version()) { return true; }
+    }
+
     using Style = api::client::blockchain::AddressStyle;
 
     const auto [data, style, chains] =
