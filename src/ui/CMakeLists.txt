@@ -16,6 +16,11 @@ endif()
 
 add_subdirectory(contact)
 add_subdirectory(contactlist)
+
+if(OT_QT_EXPORT)
+  add_subdirectory(displayscale)
+endif()
+
 add_subdirectory(messagablelist)
 add_subdirectory(payablelist)
 add_subdirectory(profile)

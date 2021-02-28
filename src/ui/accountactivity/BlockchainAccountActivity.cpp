@@ -73,7 +73,15 @@ BlockchainAccountActivity::BlockchainAccountActivity(
     const identifier::Nym& nymID,
     const Identifier& accountID,
     const SimpleCallback& cb) noexcept
-    : AccountActivity(api, nymID, accountID, AccountType::Blockchain, cb)
+    : AccountActivity(
+          api,
+          nymID,
+          accountID,
+          AccountType::Blockchain,
+          cb,
+          display::Definition{
+              blockchain::params::Data::chains_.at(ui::Chain(api, accountID))
+                  .scales_})
     , chain_(ui::Chain(Widget::api_, accountID))
     , balance_cb_(zmq::ListenCallback::Factory(
           [this](const auto& in) { pipeline_->Push(in); }))
@@ -303,10 +311,8 @@ auto BlockchainAccountActivity::Send(
     const std::string& memo) const noexcept -> bool
 {
     try {
-        const auto& scale =
-            blockchain::params::Data::chains_.at(chain_).scales_;
 
-        return Send(address, scale.Import(amount), memo);
+        return Send(address, scales_.Import(amount), memo);
     } catch (...) {
 
         return false;
@@ -346,10 +352,8 @@ auto BlockchainAccountActivity::ValidateAmount(
     const std::string& text) const noexcept -> std::string
 {
     try {
-        const auto& scale =
-            blockchain::params::Data::chains_.at(chain_).scales_;
 
-        return scale.Format(scale.Import(text));
+        return scales_.Format(scales_.Import(text));
     } catch (...) {
 
         return {};

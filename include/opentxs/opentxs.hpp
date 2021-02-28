@@ -515,6 +515,9 @@
 #include "opentxs/ui/ActivitySummaryItem.hpp"
 #include "opentxs/ui/ActivityThread.hpp"
 #include "opentxs/ui/ActivityThreadItem.hpp"
+#if OT_QT
+#include "opentxs/ui/AmountValidator.hpp"
+#endif  // OT_QT
 #include "opentxs/ui/BalanceItem.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/ui/BlockchainSelection.hpp"
@@ -527,6 +530,10 @@
 #include "opentxs/ui/ContactListItem.hpp"
 #include "opentxs/ui/ContactSection.hpp"
 #include "opentxs/ui/ContactSubsection.hpp"
+#if OT_QT
+#include "opentxs/ui/DestinationValidator.hpp"
+#include "opentxs/ui/DisplayScale.hpp"
+#endif  // OT_QT
 #include "opentxs/ui/IssuerItem.hpp"
 #include "opentxs/ui/ListRow.hpp"
 #include "opentxs/ui/MessagableList.hpp"

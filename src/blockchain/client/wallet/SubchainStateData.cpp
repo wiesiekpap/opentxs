@@ -578,4 +578,9 @@ auto SubchainStateData::state_machine() noexcept -> bool
 
     return false;
 }
+
+SubchainStateData::~SubchainStateData()
+{
+    while (0 < job_counter_) { Sleep(std::chrono::microseconds(100)); }
+}
 }  // namespace opentxs::blockchain::client::wallet

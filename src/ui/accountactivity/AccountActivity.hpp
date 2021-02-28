@@ -14,6 +14,7 @@
 
 #include "1_Internal.hpp"
 #include "core/Worker.hpp"
+#include "display/Definition.hpp"
 #include "internal/ui/UI.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/SharedPimpl.hpp"
@@ -26,6 +27,11 @@
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/ui/AccountActivity.hpp"
+#if OT_QT
+#include "opentxs/ui/AmountValidator.hpp"
+#include "opentxs/ui/DestinationValidator.hpp"
+#include "opentxs/ui/DisplayScale.hpp"
+#endif  // OT_QT
 #include "opentxs/util/WorkType.hpp"
 #include "ui/base/List.hpp"
 #include "ui/base/Widget.hpp"
@@ -94,6 +100,13 @@ class AccountActivity : public AccountActivityList,
                         protected Worker<AccountActivity>
 {
 public:
+    const display::Definition scales_;
+#if OT_QT
+    DisplayScaleQt scales_qt_;
+    AmountValidator amount_validator_;
+    DestinationValidator destination_validator_;
+#endif  // OT_QT
+
     auto AccountID() const noexcept -> std::string final
     {
         return account_id_->str();
@@ -204,7 +217,8 @@ protected:
         const identifier::Nym& nymID,
         const Identifier& accountID,
         const AccountType type,
-        const SimpleCallback& cb) noexcept;
+        const SimpleCallback& cb,
+        display::Definition&& scales) noexcept;
 
 private:
     friend Worker<AccountActivity>;

@@ -111,7 +111,7 @@ public:
 
     auto state_machine() noexcept -> bool;
 
-    virtual ~SubchainStateData() = default;
+    virtual ~SubchainStateData();
 
 protected:
     using WalletDatabase = internal::WalletDatabase;

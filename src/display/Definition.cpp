@@ -67,16 +67,11 @@ auto Definition::Format(
     }
 }
 
-auto Definition::GetScales() const noexcept -> std::map<Index, Name>
+auto Definition::GetScales() const noexcept -> const Map&
 {
-    auto output = std::map<Index, Name>{};
-    auto index = Index{0};
+    imp_->Populate();
 
-    for (const auto& [name, scale] : imp_->scales_) {
-        output.emplace(index++, name);
-    }
-
-    return output;
+    return imp_->cached_.value();
 }
 
 auto Definition::Import(const std::string& formatted, const Index scale) const

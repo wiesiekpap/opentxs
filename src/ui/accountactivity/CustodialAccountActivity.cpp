@@ -65,7 +65,7 @@ CustodialAccountActivity::CustodialAccountActivity(
     const identifier::Nym& nymID,
     const Identifier& accountID,
     const SimpleCallback& cb) noexcept
-    : AccountActivity(api, nymID, accountID, AccountType::Custodial, cb)
+    : AccountActivity(api, nymID, accountID, AccountType::Custodial, cb, {})
     , alias_()
 {
     init({

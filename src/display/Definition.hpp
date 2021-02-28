@@ -26,6 +26,7 @@ public:
     using Index = unsigned int;
     using Name = std::string;
     using NamedScale = std::pair<Name, Scale>;
+    using Map = std::map<Index, Name>;
     using Scales = std::vector<NamedScale>;
     using OptionalInt = Scale::OptionalInt;
 
@@ -35,7 +36,7 @@ public:
         const OptionalInt minDecimals = std::nullopt,
         const OptionalInt maxDecimals = std::nullopt) const noexcept(false)
         -> std::string;
-    auto GetScales() const noexcept -> std::map<Index, Name>;
+    auto GetScales() const noexcept -> const Map&;
     auto Import(const std::string& formatted, const Index scale = 0) const
         noexcept(false) -> Amount;
 
