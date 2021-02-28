@@ -27,6 +27,9 @@
 #include "blockchain/bitcoin/CompactSize.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/block/Block.hpp"
+#include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -431,6 +434,7 @@ Input::Input(
     , size_(size)
     , normalized_size_()
     , keys_(std::move(keys))
+    , payer_(api_.Factory().Identifier())
 {
     if (false == bool(script_)) {
         throw std::runtime_error("Invalid input script");
@@ -558,6 +562,7 @@ Input::Input(
     , size_()
     , normalized_size_()
     , keys_(rhs.keys_)
+    , payer_(rhs.payer_)
 {
 }
 
@@ -585,7 +590,9 @@ auto Input::AssociatedLocalNyms(
     std::vector<OTNymID>& output) const noexcept -> void
 {
     std::for_each(std::begin(keys_), std::end(keys_), [&](const auto& key) {
-        output.emplace_back(blockchain.Owner(key));
+        const auto& owner = blockchain.Owner(key);
+
+        if (false == owner.empty()) { output.emplace_back(owner); }
     });
 }
 
@@ -601,6 +608,11 @@ auto Input::AssociatedRemoteContacts(
             std::end(contacts),
             std::back_inserter(output));
     });
+    {
+        auto payer = Payer(blockchain);
+
+        if (false == payer->empty()) { output.emplace_back(std::move(payer)); }
+    }
 }
 
 auto Input::AssociatePreviousOutput(
@@ -816,6 +828,24 @@ auto Input::NetBalanceChange(
     }
 
     return 0;
+}
+
+auto Input::Payer(const api::client::Blockchain& blockchain) const noexcept
+    -> OTIdentifier
+{
+    if (payer_->empty()) {
+        for (const auto& key : keys_) {
+            auto candidate = blockchain.RecipientContact(key);
+
+            if (candidate->empty()) { continue; }
+
+            payer_ = std::move(candidate);
+
+            break;
+        }
+    }
+
+    return payer_;
 }
 
 auto Input::ReplaceScript() noexcept -> bool

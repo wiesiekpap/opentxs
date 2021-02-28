@@ -67,6 +67,8 @@ namespace proto
 class BlockchainBlockHeader;
 class BlockchainTransactionOutput;
 }  // namespace proto
+
+class Identifier;
 }  // namespace opentxs
 
 namespace opentxs::blockchain::block::bitcoin::internal
@@ -147,6 +149,7 @@ struct Output : virtual public bitcoin::Output {
     virtual auto MergeMetadata(const SerializeType& rhs) noexcept -> void = 0;
     virtual auto SetIndex(const std::uint32_t index) noexcept -> void = 0;
     virtual auto SetValue(const std::uint64_t value) noexcept -> void = 0;
+    virtual auto SetPayee(const Identifier& contact) noexcept -> void = 0;
 
     ~Output() override = default;
 };

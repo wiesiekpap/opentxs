@@ -1068,7 +1068,7 @@ auto Nym::PaymentCodePath(proto::HDPath& output) const -> bool
     output.add_child(HDIndex{Bip44Type::BITCOIN, Bip32Child::HARDENED});
     output.add_child(base.child(1));
 
-    return false;
+    return true;
 }
 
 auto Nym::PhoneNumbers(bool active) const -> std::string

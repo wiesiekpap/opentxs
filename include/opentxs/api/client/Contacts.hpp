@@ -19,6 +19,11 @@
 
 namespace opentxs
 {
+class PaymentCode;
+}  // namespace opentxs
+
+namespace opentxs
+{
 namespace api
 {
 namespace client
@@ -55,6 +60,11 @@ public:
     /** Returns an existing contact ID if it exists, or creates a new one */
     OPENTXS_EXPORT virtual OTIdentifier NymToContact(
         const identifier::Nym& nymID) const = 0;
+    /** Returns an existing contact ID if it exists, or creates a new one */
+    OPENTXS_EXPORT virtual OTIdentifier PaymentCodeToContact(
+        const PaymentCode& code) const = 0;
+    OPENTXS_EXPORT virtual OTIdentifier PaymentCodeToContact(
+        const std::string& code) const = 0;
     OPENTXS_EXPORT virtual std::shared_ptr<const opentxs::Contact> Update(
         const identity::Nym::Serialized& nym) const = 0;
 

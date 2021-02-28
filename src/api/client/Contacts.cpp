@@ -57,7 +57,15 @@ Contacts::Contacts(const api::client::internal::Manager& api)
     , blockchain_()
 #endif  // OT_BLOCKCHAIN
     , contact_map_()
-    , contact_name_map_(build_name_map(api.Storage()))
+    , contact_name_map_([&] {
+        auto output = ContactNameMap{};
+
+        for (const auto& [id, alias] : api_.Storage().ContactList()) {
+            output.emplace(api_.Factory().Identifier(id), alias);
+        }
+
+        return output;
+    }())
     , publisher_(api.ZeroMQ().PublishSocket())
 {
     // WARNING: do not access api_.Wallet() during construction
@@ -82,18 +90,6 @@ auto Contacts::add_contact(const rLock& lock, opentxs::Contact* contact) const
     it.second.reset(contact);
 
     return contact_map_.find(id);
-}
-
-auto Contacts::build_name_map(const api::storage::Storage& storage)
-    -> Contacts::ContactNameMap
-{
-    ContactNameMap output;
-
-    for (const auto& [id, alias] : storage.ContactList()) {
-        output.emplace(Identifier::Factory(id), alias);
-    }
-
-    return output;
 }
 
 void Contacts::check_identifiers(
@@ -174,7 +170,8 @@ auto Contacts::Contact(const Identifier& id) const
 
 auto Contacts::ContactID(const identifier::Nym& nymID) const -> OTIdentifier
 {
-    return Identifier::Factory(api_.Storage().ContactOwnerNym(nymID.str()));
+    return api_.Factory().Identifier(
+        api_.Storage().ContactOwnerNym(nymID.str()));
 }
 
 auto Contacts::ContactList() const -> ObjectList
@@ -241,7 +238,7 @@ void Contacts::init_nym_map(const rLock& lock)
     LogDetail(OT_METHOD)(__FUNCTION__)(": Upgrading indices.").Flush();
 
     for (const auto& it : api_.Storage().ContactList()) {
-        const auto& contactID = Identifier::Factory(it.first);
+        const auto& contactID = api_.Factory().Identifier(it.first);
         auto loaded = load_contact(lock, contactID);
 
         if (contact_map_.end() == loaded) {
@@ -444,7 +441,7 @@ auto Contacts::new_contact(
         if (false == contactID.empty()) {
 
             return update_existing_contact(
-                lock, label, code, Identifier::Factory(contactID));
+                lock, label, code, api_.Factory().Identifier(contactID));
         }
     }
 
@@ -535,8 +532,7 @@ auto Contacts::NewContactFromAddress(
 
     OT_ASSERT(newContact);
 
-    const auto newContactID = Identifier::Factory(newContact->ID());
-    auto& it = contact_map_.at(newContactID);
+    auto& it = contact_map_.at(newContact->ID());
     auto& contact = *it.second;
 
     if (false == contact.AddBlockchainAddress(address, currency)) {
@@ -577,9 +573,11 @@ auto Contacts::NymToContact(const identifier::Nym& nymID) const -> OTIdentifier
 
     const auto contact = NewContact(label, nymID, code);
 
-    if (contact) { return Identifier::Factory(contact->ID()); }
+    if (contact) { return contact->ID(); }
 
-    return Identifier::Factory();
+    static const auto blank = api_.Factory().Identifier();
+
+    return blank;
 }
 
 auto Contacts::obtain_contact(const rLock& lock, const Identifier& id) const
@@ -594,6 +592,26 @@ auto Contacts::obtain_contact(const rLock& lock, const Identifier& id) const
     if (contact_map_.end() != it) { return it; }
 
     return load_contact(lock, id);
+}
+
+auto Contacts::PaymentCodeToContact(const std::string& serialized) const
+    -> OTIdentifier
+{
+    static const auto blank = api_.Factory().Identifier();
+    const auto code = api_.Factory().PaymentCode(serialized);
+
+    if (0 == code->Version()) { return blank; }
+
+    return PaymentCodeToContact(code);
+}
+
+auto Contacts::PaymentCodeToContact(const PaymentCode& code) const
+    -> OTIdentifier
+{
+    // NOTE for now we assume that payment codes are always nym id sources. This
+    // won't always be true.
+
+    return NymToContact(code.ID());
 }
 
 void Contacts::refresh_indices(const rLock& lock, opentxs::Contact& contact)
@@ -702,7 +720,7 @@ auto Contacts::Update(const proto::Nym& serialized) const
     const auto& nymID = nym->ID();
     rLock lock(lock_);
     const auto contactIdentifier = api_.Storage().ContactOwnerNym(nymID.str());
-    const auto contactID = Identifier::Factory(contactIdentifier);
+    const auto contactID = api_.Factory().Identifier(contactIdentifier);
     const auto label = Contact::ExtractLabel(*nym);
 
     if (contactIdentifier.empty()) {
@@ -779,7 +797,7 @@ void Contacts::update_nym_map(
     const auto contactIdentifier = api_.Storage().ContactOwnerNym(nymID.str());
     const bool exists = (false == contactIdentifier.empty());
     const auto& incomingID = contact.ID();
-    const auto contactID = Identifier::Factory(contactIdentifier);
+    const auto contactID = api_.Factory().Identifier(contactIdentifier);
     const bool same = (incomingID == contactID);
 
     if (exists && (false == same)) {

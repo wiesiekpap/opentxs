@@ -22,6 +22,7 @@ enum class Subchain : std::uint8_t {
     External = 2,
     Incoming = 3,
     Outgoing = 4,
+    Notification = 5,
     None = 255,
 };
 }  // namespace blockchain

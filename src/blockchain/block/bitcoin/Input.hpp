@@ -78,6 +78,8 @@ public:
     auto NetBalanceChange(
         const api::client::Blockchain& blockchain,
         const identifier::Nym& nym) const noexcept -> opentxs::Amount final;
+    auto Payer(const api::client::Blockchain& blockchain) const noexcept
+        -> OTIdentifier;
     auto PreviousOutput() const noexcept -> const Outpoint& final
     {
         return previous_;
@@ -192,6 +194,7 @@ private:
     mutable std::optional<std::size_t> size_;
     mutable std::optional<std::size_t> normalized_size_;
     mutable boost::container::flat_set<KeyID> keys_;
+    mutable OTIdentifier payer_;
 
     auto serialize(const AllocateOutput destination, const bool normalized)
         const noexcept -> std::optional<std::size_t>;

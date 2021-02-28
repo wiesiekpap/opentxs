@@ -88,6 +88,8 @@ class Publish;
 class Message;
 }  // namespace zeromq
 }  // namespace network
+
+class PaymentCode;
 }  // namespace opentxs
 
 namespace zmq = opentxs::network::zeromq;

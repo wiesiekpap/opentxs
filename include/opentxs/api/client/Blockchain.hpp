@@ -58,6 +58,7 @@ class HDPath;
 }  // namespace proto
 
 class Contact;
+class Identifier;
 }  // namespace opentxs
 
 namespace opentxs
@@ -193,6 +194,12 @@ public:
         const Chain chain,
         const Tx& transaction,
         const PasswordPrompt& reason) const noexcept = 0;
+#endif  // OT_BLOCKCHAIN
+    OPENTXS_EXPORT virtual OTIdentifier RecipientContact(
+        const blockchain::Key& key) const noexcept = 0;
+    OPENTXS_EXPORT virtual OTIdentifier SenderContact(
+        const blockchain::Key& key) const noexcept = 0;
+#if OT_BLOCKCHAIN
     OPENTXS_EXPORT virtual bool Start(
         const Chain type,
         const std::string& seednode = "") const noexcept = 0;

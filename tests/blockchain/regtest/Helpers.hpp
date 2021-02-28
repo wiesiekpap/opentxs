@@ -96,48 +96,74 @@ class PeerListener
 public:
     std::future<void> done_;
     std::atomic_int miner_peers_;
-    std::atomic_int client_peers_;
+    std::atomic_int client_1_peers_;
+    std::atomic_int client_2_peers_;
 
     PeerListener(
+        const int clientCount,
         const ot::api::client::Manager& miner,
-        const ot::api::client::Manager& client)
+        const ot::api::client::Manager& client1,
+        const ot::api::client::Manager& client2)
         : promise_()
         , done_(promise_.get_future())
         , miner_peers_(0)
-        , client_peers_(0)
+        , client_1_peers_(0)
+        , client_2_peers_(0)
+        , client_count_(clientCount)
+        , lock_()
         , miner_cb_(ot::network::zeromq::ListenCallback::Factory(
               [this](auto&) { cb(miner_peers_); }))
-        , client_cb_(ot::network::zeromq::ListenCallback::Factory(
-              [this](auto&) { cb(client_peers_); }))
+        , client_1_cb_(ot::network::zeromq::ListenCallback::Factory(
+              [this](auto&) { cb(client_1_peers_); }))
+        , client_2_cb_(ot::network::zeromq::ListenCallback::Factory(
+              [this](auto&) { cb(client_2_peers_); }))
         , m_socket_(miner.ZeroMQ().SubscribeSocket(miner_cb_))
-        , c_socket_(client.ZeroMQ().SubscribeSocket(client_cb_))
+        , c1_socket_(client1.ZeroMQ().SubscribeSocket(client_1_cb_))
+        , c2_socket_(client2.ZeroMQ().SubscribeSocket(client_2_cb_))
     {
         if (false == m_socket_->Start(miner.Endpoints().BlockchainPeer())) {
             throw std::runtime_error("Error connecting to miner socket");
         }
 
-        if (false == c_socket_->Start(client.Endpoints().BlockchainPeer())) {
-            throw std::runtime_error("Error connecting to client socket");
+        if (false == c1_socket_->Start(client1.Endpoints().BlockchainPeer())) {
+            throw std::runtime_error("Error connecting to client1 socket");
+        }
+
+        if (false == c2_socket_->Start(client2.Endpoints().BlockchainPeer())) {
+            throw std::runtime_error("Error connecting to client2 socket");
         }
     }
 
     ~PeerListener()
     {
-        c_socket_->Close();
+        c2_socket_->Close();
+        c1_socket_->Close();
         m_socket_->Close();
     }
 
 private:
+    const int client_count_;
+    mutable std::mutex lock_;
     ot::OTZMQListenCallback miner_cb_;
-    ot::OTZMQListenCallback client_cb_;
+    ot::OTZMQListenCallback client_1_cb_;
+    ot::OTZMQListenCallback client_2_cb_;
     ot::OTZMQSubscribeSocket m_socket_;
-    ot::OTZMQSubscribeSocket c_socket_;
+    ot::OTZMQSubscribeSocket c1_socket_;
+    ot::OTZMQSubscribeSocket c2_socket_;
 
     auto cb(std::atomic_int& counter) noexcept -> void
     {
         ++counter;
 
-        if ((0 < miner_peers_) && (0 < client_peers_)) { promise_.set_value(); }
+        auto lock = ot::Lock{lock_};
+
+        if (client_count_ != miner_peers_) { return; }
+
+        if ((0 < client_count_) && (0 == client_1_peers_)) { return; }
+
+        if ((1 < client_count_) && (0 == client_2_peers_)) { return; }
+
+        promise_.set_value();
     }
 };
 
@@ -146,6 +172,7 @@ class BlockListener
 public:
     using Height = b::block::Height;
     using Position = b::block::Position;
+    using Future = std::future<Position>;
 
     [[maybe_unused]] auto GetFuture(const Height height) noexcept
     {
@@ -490,6 +517,7 @@ class WalletListener
 {
 public:
     using Height = b::block::Height;
+    using Future = std::future<Height>;
 
     [[maybe_unused]] auto GetFuture(const Height height) noexcept
     {
@@ -545,37 +573,77 @@ protected:
     using Transaction = ot::api::Factory::Transaction_p;
     using Generator = std::function<Transaction(Height)>;
 
+    const ot::ArgList client_args_;
+    const int client_count_;
     const ot::api::client::Manager& miner_;
-    const ot::api::client::Manager& client_;
+    const ot::api::client::Manager& client_1_;
+    const ot::api::client::Manager& client_2_;
     const b::p2p::Address& address_;
     const PeerListener& connection_;
     const Generator default_;
     MinedBlocks& mined_blocks_;
-    BlockListener& block_;
-    WalletListener& wallet_;
+    BlockListener& block_1_;
+    BlockListener& block_2_;
+    WalletListener& wallet_1_;
+    WalletListener& wallet_2_;
 
     [[maybe_unused]] virtual auto Connect() noexcept -> bool
     {
-        const auto& miner = miner_.Blockchain().GetChain(test_chain_);
-        const auto listenMiner = miner.Listen(address_);
+        const auto miner = [&]() -> std::function<bool()> {
+            const auto& miner = miner_.Blockchain().GetChain(test_chain_);
+            const auto listen = miner.Listen(address_);
 
-        EXPECT_TRUE(listenMiner);
+            EXPECT_TRUE(listen);
 
-        const auto& client = client_.Blockchain().GetChain(test_chain_);
-        const auto listenClient = client.AddPeer(address_);
+            return [=] {
+                EXPECT_EQ(connection_.miner_peers_, client_count_);
 
-        EXPECT_TRUE(listenClient);
+                return listen && (client_count_ == connection_.miner_peers_);
+            };
+        }();
+        const auto client1 = [&]() -> std::function<bool()> {
+            if (0 < client_count_) {
+                const auto& client =
+                    client_1_.Blockchain().GetChain(test_chain_);
+                const auto added = client.AddPeer(address_);
+
+                EXPECT_TRUE(added);
+
+                return [=] {
+                    EXPECT_EQ(connection_.client_1_peers_, 1);
+
+                    return added && (1 == connection_.client_1_peers_);
+                };
+            } else {
+
+                return [] { return true; };
+            }
+        }();
+        const auto client2 = [&]() -> std::function<bool()> {
+            if (1 < client_count_) {
+                const auto& client =
+                    client_2_.Blockchain().GetChain(test_chain_);
+                const auto added = client.AddPeer(address_);
+
+                EXPECT_TRUE(added);
+
+                return [=] {
+                    EXPECT_EQ(connection_.client_2_peers_, 1);
+
+                    return added && (1 == connection_.client_2_peers_);
+                };
+            } else {
+
+                return [] { return true; };
+            }
+        }();
 
         const auto status = connection_.done_.wait_for(std::chrono::minutes{5});
         const auto future = (std::future_status::ready == status);
 
         EXPECT_TRUE(future);
-        EXPECT_EQ(connection_.miner_peers_, 1);
-        EXPECT_EQ(connection_.client_peers_, 1);
 
-        return listenMiner && listenClient && future &&
-               (1 == connection_.miner_peers_) &&
-               (1 == connection_.client_peers_);
+        return future && miner() && client1() && client2();
     }
     [[maybe_unused]] auto Mine(
         const Height ancestor,
@@ -590,8 +658,22 @@ protected:
         const std::vector<Transaction>& extra = {}) noexcept -> bool
     {
         const auto targetHeight = ancestor + static_cast<Height>(count);
-        auto blockFuture = block_.GetFuture(targetHeight);
-        auto walletFuture = wallet_.GetFuture(targetHeight);
+
+        auto blocks = std::vector<BlockListener::Future>{};
+        auto wallets = std::vector<WalletListener::Future>{};
+        blocks.reserve(client_count_);
+        wallets.reserve(client_count_);
+
+        if (0 < client_count_) {
+            blocks.emplace_back(block_1_.GetFuture(targetHeight));
+            wallets.emplace_back(wallet_1_.GetFuture(targetHeight));
+        }
+
+        if (1 < client_count_) {
+            blocks.emplace_back(block_2_.GetFuture(targetHeight));
+            wallets.emplace_back(wallet_2_.GetFuture(targetHeight));
+        }
+
         const auto& network = miner_.Blockchain().GetChain(test_chain_);
         const auto& headerOracle = network.HeaderOracle();
         auto previousHeader =
@@ -624,7 +706,7 @@ protected:
             promise.set_value(block->Header().Hash());
             const auto added = network.AddBlock(block);
 
-            OT_ASSERT(added);
+            EXPECT_TRUE(added);
 
             previousHeader = block->Header().as_Bitcoin();
 
@@ -635,20 +717,20 @@ protected:
         constexpr auto limit = std::chrono::minutes(5);
         using Status = std::future_status;
 
-        {
-            OT_ASSERT(blockFuture.wait_for(limit) == Status::ready);
+        for (auto& future : blocks) {
+            OT_ASSERT(future.wait_for(limit) == Status::ready);
 
-            const auto [height, hash] = blockFuture.get();
+            const auto [height, hash] = future.get();
 
             EXPECT_EQ(hash, previousHeader->Hash());
 
             output &= (hash == previousHeader->Hash());
         }
 
-        {
-            OT_ASSERT(walletFuture.wait_for(limit) == Status::ready);
+        for (auto& future : wallets) {
+            OT_ASSERT(future.wait_for(limit) == Status::ready);
 
-            const auto height = walletFuture.get();
+            const auto height = future.get();
 
             EXPECT_EQ(height, targetHeight);
 
@@ -660,25 +742,61 @@ protected:
 
     [[maybe_unused]] virtual auto Shutdown() noexcept -> void
     {
-        wallet_listener_.reset();
-        block_listener_.reset();
+        wallet_listener_.clear();
+        block_listener_.clear();
         mined_block_cache_.reset();
         peer_listener_.reset();
         listen_address_.reset();
     }
     [[maybe_unused]] auto Start() noexcept -> bool
     {
-        const auto startMiner = miner_.Blockchain().Start(test_chain_);
-        const auto startClient = client_.Blockchain().Start(test_chain_);
+        const auto miner = [&]() -> std::function<bool()> {
+            const auto start = miner_.Blockchain().Start(test_chain_);
 
-        EXPECT_TRUE(startMiner);
-        EXPECT_TRUE(startClient);
+            return [=] {
+                EXPECT_TRUE(start);
 
-        return startMiner && startClient;
+                return start;
+            };
+        }();
+        const auto client1 = [&]() -> std::function<bool()> {
+            if (0 < client_count_) {
+                const auto start = client_1_.Blockchain().Start(test_chain_);
+
+                return [=] {
+                    EXPECT_TRUE(start);
+
+                    return start;
+                };
+            } else {
+
+                return [] { return true; };
+            }
+        }();
+        const auto client2 = [&]() -> std::function<bool()> {
+            if (1 < client_count_) {
+                const auto start = client_2_.Blockchain().Start(test_chain_);
+
+                return [=] {
+                    EXPECT_TRUE(start);
+
+                    return start;
+                };
+            } else {
+
+                return [] { return true; };
+            }
+        }();
+
+        return miner() && client1() && client2();
     }
 
-    [[maybe_unused]] Regtest_fixture_base(const ot::ArgList& clientArgs)
-        : miner_(ot::Context().StartClient(
+    [[maybe_unused]] Regtest_fixture_base(
+        const int clientCount,
+        const ot::ArgList& clientArgs)
+        : client_args_(clientArgs)
+        , client_count_(clientCount)
+        , miner_(ot::Context().StartClient(
               [] {
                   auto args = OTTestEnvironment::test_args_;
                   auto& level = args[OPENTXS_ARG_BLOCK_STORAGE_LEVEL];
@@ -690,9 +808,10 @@ protected:
                   return args;
               }(),
               0))
-        , client_(ot::Context().StartClient(clientArgs, 1))
+        , client_1_(ot::Context().StartClient(client_args_, 1))
+        , client_2_(ot::Context().StartClient(client_args_, 2))
         , address_(init_address(miner_))
-        , connection_(init_peer(miner_, client_))
+        , connection_(init_peer(client_count_, miner_, client_1_, client_2_))
         , default_([&](Height height) -> Transaction {
             using OutputBuilder = ot::api::Factory::OutputBuilder;
 
@@ -712,17 +831,22 @@ protected:
                 }());
         })
         , mined_blocks_(init_mined())
-        , block_(init_block(client_))
-        , wallet_(init_wallet(client_))
+        , block_1_(init_block(0, client_1_))
+        , block_2_(init_block(1, client_2_))
+        , wallet_1_(init_wallet(0, client_1_))
+        , wallet_2_(init_wallet(1, client_2_))
     {
     }
 
 private:
+    using BlockListen = std::map<int, std::unique_ptr<BlockListener>>;
+    using WalletListen = std::map<int, std::unique_ptr<WalletListener>>;
+
     static std::unique_ptr<const ot::OTBlockchainAddress> listen_address_;
     static std::unique_ptr<const PeerListener> peer_listener_;
     static std::unique_ptr<MinedBlocks> mined_block_cache_;
-    static std::unique_ptr<BlockListener> block_listener_;
-    static std::unique_ptr<WalletListener> wallet_listener_;
+    static BlockListen block_listener_;
+    static WalletListen wallet_listener_;
 
     static auto init_address(const ot::api::Core& api) noexcept
         -> const b::p2p::Address&
@@ -747,15 +871,16 @@ private:
 
         return *listen_address_;
     }
-    static auto init_block(const ot::api::Core& api) noexcept -> BlockListener&
+    static auto init_block(const int index, const ot::api::Core& api) noexcept
+        -> BlockListener&
     {
-        if (false == bool(block_listener_)) {
-            block_listener_ = std::make_unique<BlockListener>(api);
-        }
+        auto& p = block_listener_[index];
 
-        OT_ASSERT(block_listener_);
+        if (false == bool(p)) { p = std::make_unique<BlockListener>(api); }
 
-        return *block_listener_;
+        OT_ASSERT(p);
+
+        return *p;
     }
     static auto init_mined() noexcept -> MinedBlocks&
     {
@@ -768,35 +893,38 @@ private:
         return *mined_block_cache_;
     }
     static auto init_peer(
+        const int clientCount,
         const ot::api::client::Manager& miner,
-        const ot::api::client::Manager& client) noexcept -> const PeerListener&
+        const ot::api::client::Manager& client1,
+        const ot::api::client::Manager& client2) noexcept -> const PeerListener&
     {
         if (false == bool(peer_listener_)) {
-            peer_listener_ = std::make_unique<PeerListener>(miner, client);
+            peer_listener_ = std::make_unique<PeerListener>(
+                clientCount, miner, client1, client2);
         }
 
         OT_ASSERT(peer_listener_);
 
         return *peer_listener_;
     }
-    static auto init_wallet(const ot::api::Core& api) noexcept
+    static auto init_wallet(const int index, const ot::api::Core& api) noexcept
         -> WalletListener&
     {
-        if (false == bool(wallet_listener_)) {
-            wallet_listener_ = std::make_unique<WalletListener>(api);
-        }
+        auto& p = wallet_listener_[index];
 
-        OT_ASSERT(wallet_listener_);
+        if (false == bool(p)) { p = std::make_unique<WalletListener>(api); }
 
-        return *wallet_listener_;
+        OT_ASSERT(p);
+
+        return *p;
     }
 };
 
 class Regtest_fixture_normal : public Regtest_fixture_base
 {
 protected:
-    [[maybe_unused]] Regtest_fixture_normal()
-        : Regtest_fixture_base([] {
+    [[maybe_unused]] Regtest_fixture_normal(const int clientCount)
+        : Regtest_fixture_base(clientCount, [] {
             auto args = OTTestEnvironment::test_args_;
             auto& level = args[OPENTXS_ARG_BLOCK_STORAGE_LEVEL];
             level.clear();
@@ -804,6 +932,15 @@ protected:
 
             return args;
         }())
+    {
+    }
+};
+
+class Regtest_fixture_single : public Regtest_fixture_normal
+{
+protected:
+    [[maybe_unused]] Regtest_fixture_single()
+        : Regtest_fixture_normal(1)
     {
     }
 };
@@ -817,7 +954,7 @@ protected:
     [[maybe_unused]] auto Connect() noexcept -> bool final
     {
         auto output = Regtest_fixture_base::Connect();
-        output &= client_.Blockchain().StartSyncServer(
+        output &= client_1_.Blockchain().StartSyncServer(
             sync_server_sync_,
             sync_server_sync_public_,
             sync_server_update_,
@@ -834,22 +971,24 @@ protected:
     }
 
     [[maybe_unused]] Regtest_fixture_sync()
-        : Regtest_fixture_base([] {
-            auto args = OTTestEnvironment::test_args_;
-            auto& level = args[OPENTXS_ARG_BLOCK_STORAGE_LEVEL];
-            level.clear();
-            level.emplace("2");
-            auto& sync = args[OPENTXS_ARG_BLOCKCHAIN_SYNC];
-            sync.clear();
-            sync.emplace();
+        : Regtest_fixture_base(
+              1,
+              [] {
+                  auto args = OTTestEnvironment::test_args_;
+                  auto& level = args[OPENTXS_ARG_BLOCK_STORAGE_LEVEL];
+                  level.clear();
+                  level.emplace("2");
+                  auto& sync = args[OPENTXS_ARG_BLOCKCHAIN_SYNC];
+                  sync.clear();
+                  sync.emplace();
 
-            return args;
-        }())
+                  return args;
+              }())
         , sync_sub_(
               [&]() -> SyncSubscriber& {
                   if (!sync_subscriber_) {
                       sync_subscriber_ = std::make_unique<SyncSubscriber>(
-                          client_, mined_blocks_);
+                          client_1_, mined_blocks_);
                   }
 
                   return *sync_subscriber_;
@@ -860,7 +999,7 @@ protected:
               [&]() -> SyncRequestor& {
                   if (!sync_requestor_) {
                       sync_requestor_ = std::make_unique<SyncRequestor>(
-                          client_, mined_blocks_);
+                          client_1_, mined_blocks_);
                   }
 
                   return *sync_requestor_;
@@ -882,8 +1021,8 @@ std::unique_ptr<const ot::OTBlockchainAddress>
     Regtest_fixture_base::listen_address_{};
 std::unique_ptr<const PeerListener> Regtest_fixture_base::peer_listener_{};
 std::unique_ptr<MinedBlocks> Regtest_fixture_base::mined_block_cache_{};
-std::unique_ptr<BlockListener> Regtest_fixture_base::block_listener_{};
-std::unique_ptr<WalletListener> Regtest_fixture_base::wallet_listener_{};
+Regtest_fixture_base::BlockListen Regtest_fixture_base::block_listener_{};
+Regtest_fixture_base::WalletListen Regtest_fixture_base::wallet_listener_{};
 std::unique_ptr<SyncSubscriber> Regtest_fixture_sync::sync_subscriber_{};
 std::unique_ptr<SyncRequestor> Regtest_fixture_sync::sync_requestor_{};
 }  // namespace

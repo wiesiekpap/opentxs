@@ -46,16 +46,23 @@ auto Blockchain::AccountCache::build_account_map(
 
     auto& output = map.value();
     std::for_each(std::begin(nyms), std::end(nyms), [&](const auto& nym) {
-        const auto& accounts =
+        const auto hd =
             api_.Storage().BlockchainAccountList(nym->str(), Translate(chain));
-        std::for_each(
-            std::begin(accounts), std::end(accounts), [&](const auto& account) {
-                auto& set = output[nym];
-                auto accountID = api_.Factory().Identifier(account);
-                account_index_.emplace(accountID, nym);
-                account_type_.emplace(accountID, AccountType::HD);
-                set.emplace(std::move(accountID));
-            });
+        std::for_each(std::begin(hd), std::end(hd), [&](const auto& account) {
+            auto& set = output[nym];
+            auto accountID = api_.Factory().Identifier(account);
+            account_index_.emplace(accountID, nym);
+            account_type_.emplace(accountID, AccountType::HD);
+            set.emplace(std::move(accountID));
+        });
+        const auto pc =
+            api_.Storage().Bip47ChannelsByChain(nym, Translate(chain));
+        std::for_each(std::begin(pc), std::end(pc), [&](const auto& accountID) {
+            auto& set = output[nym];
+            account_index_.emplace(accountID, nym);
+            account_type_.emplace(accountID, AccountType::PaymentCode);
+            set.emplace(std::move(accountID));
+        });
     });
 }
 
@@ -86,6 +93,7 @@ auto Blockchain::AccountCache::List(
 }
 
 auto Blockchain::AccountCache::New(
+    const AccountType type,
     const Chain chain,
     const Identifier& account,
     const identifier::Nym& owner) const noexcept -> void
@@ -93,7 +101,7 @@ auto Blockchain::AccountCache::New(
     Lock lock(lock_);
     get_account_map(lock, chain)[owner].emplace(account);
     account_index_.emplace(account, owner);
-    account_type_.emplace(account, AccountType::HD);
+    account_type_.emplace(account, type);
 }
 
 auto Blockchain::AccountCache::Owner(const Identifier& accountID) const noexcept
@@ -107,6 +115,16 @@ auto Blockchain::AccountCache::Owner(const Identifier& accountID) const noexcept
     } catch (...) {
 
         return blank;
+    }
+}
+
+auto Blockchain::AccountCache::Populate() noexcept -> void
+{
+    Lock lock(lock_);
+
+    for (const auto& chain : opentxs::blockchain::SupportedChains()) {
+        auto& map = account_map_[chain];
+        build_account_map(lock, chain, map);
     }
 }
 

@@ -11,6 +11,7 @@
 #include <chrono>
 #include <cstdint>
 #include <iomanip>
+#include <optional>
 #include <sstream>
 #include <stdexcept>
 #include <type_traits>
@@ -27,6 +28,7 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/blockchain/AddressStyle.hpp"
+#include "opentxs/api/client/blockchain/BalanceNode.hpp"
 #include "opentxs/api/client/blockchain/PaymentCode.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
@@ -47,8 +49,10 @@
 #include "opentxs/protobuf/BlockchainP2PChainState.pb.h"
 #include "opentxs/protobuf/BlockchainP2PHello.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
+#include "opentxs/protobuf/BlockchainTransactionProposedNotification.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposedOutput.pb.h"
 #include "opentxs/protobuf/HDPath.pb.h"
+#include "opentxs/protobuf/PaymentCode.pb.h"
 
 #define OT_METHOD "opentxs::blockchain::client::implementation::Network::"
 

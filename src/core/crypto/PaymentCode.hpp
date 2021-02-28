@@ -190,6 +190,8 @@ public:
     };
 
     struct Base58Preimage {
+        static constexpr auto expected_prefix_ = std::byte{0x47};
+
         std::uint8_t prefix_;
         BinaryPreimage payload_;
 
@@ -199,7 +201,7 @@ public:
         }
 
         Base58Preimage(BinaryPreimage&& data) noexcept
-            : prefix_(0x47)
+            : prefix_(std::to_integer<std::uint8_t>(expected_prefix_))
             , payload_(std::move(data))
         {
             static_assert(81 == sizeof(Base58Preimage));
@@ -227,6 +229,8 @@ public:
     };
 
     struct Base58Preimage_3 {
+        static constexpr auto expected_prefix_ = std::byte{0x22};
+
         std::uint8_t prefix_;
         BinaryPreimage_3 payload_;
 
@@ -236,7 +240,7 @@ public:
         }
 
         Base58Preimage_3(BinaryPreimage_3&& data) noexcept
-            : prefix_(0x22)
+            : prefix_(std::to_integer<std::uint8_t>(expected_prefix_))
             , payload_(std::move(data))
         {
             static_assert(35 == sizeof(Base58Preimage_3));

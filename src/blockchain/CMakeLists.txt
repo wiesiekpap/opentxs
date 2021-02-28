@@ -14,6 +14,7 @@ endif()
 set(cxx-sources Params.cpp)
 
 set(cxx-install-headers
+    "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/Blockchain.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/BlockchainType.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/BloomUpdateFlag.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/FilterType.hpp"
@@ -41,7 +42,6 @@ if(OT_BLOCKCHAIN_EXPORT)
   list(
     APPEND
     cxx-install-headers
-    "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/Blockchain.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/BloomFilter.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/Network.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/NumericHash.hpp"
@@ -68,12 +68,12 @@ add_dependencies(opentxs-blockchain generated_code)
 
 if(OT_BLOCKCHAIN_EXPORT)
   target_link_libraries(opentxs-blockchain PRIVATE lmdb)
+endif()
 
-  if(OPENTXS_STANDALONE)
-    install(
-      FILES ${cxx-install-headers}
-      DESTINATION include/opentxs/blockchain
-      COMPONENT dev
-    )
-  endif()
+if(OPENTXS_STANDALONE)
+  install(
+    FILES ${cxx-install-headers}
+    DESTINATION include/opentxs/blockchain
+    COMPONENT dev
+  )
 endif()

@@ -85,12 +85,19 @@ public:
     auto str() const -> std::string final;
     auto Type() const -> const ID& final { return type_; }
 
-    auto CalculateDigest(const ReadView bytes, const ID type = DefaultType)
-        -> bool final;
+    auto CalculateDigest(const ReadView bytes, const ID type) -> bool final;
     void SetString(const std::string& encoded) final;
     void SetString(const String& encoded) final;
     using ot_super::swap;
     void swap(opentxs::Identifier& rhs) final;
+
+    explicit Identifier(const std::string& rhs);
+    explicit Identifier(const String& rhs);
+    explicit Identifier(const identity::Nym& nym);
+    explicit Identifier(const Contract& contract);
+    explicit Identifier(const Vector& data, const ID type);
+    Identifier(const proto::ContactItemType type, const proto::HDPath& path);
+    Identifier();
 
     ~Identifier() final = default;
 
@@ -100,12 +107,13 @@ private:
     friend opentxs::identifier::Server;
     friend opentxs::identifier::UnitDefinition;
 
-    static const ID DefaultType{ID::blake2b};
-    static const std::size_t MinimumSize{10};
+    static constexpr auto DefaultType = ID{ID::blake2b};
+    static constexpr auto MinimumSize = std::size_t{10};
 
-    ID type_{DefaultType};
+    ID type_;
 
     auto clone() const -> Identifier* final;
+    auto to_string() const noexcept -> std::string;
 
     static auto contract_contents_to_identifier(const Contract& in)
         -> Identifier*;
@@ -114,13 +122,6 @@ private:
         const proto::ContactItemType type,
         const proto::HDPath& path) -> OTData;
 
-    explicit Identifier(const std::string& rhs);
-    explicit Identifier(const String& rhs);
-    explicit Identifier(const identity::Nym& nym);
-    explicit Identifier(const Contract& contract);
-    explicit Identifier(const Vector& data, const ID type);
-    Identifier(const proto::ContactItemType type, const proto::HDPath& path);
-    Identifier();
     Identifier(const Identifier& rhs) = delete;
     Identifier(Identifier&& rhs) = delete;
     auto operator=(const Identifier& rhs) -> Identifier& = delete;

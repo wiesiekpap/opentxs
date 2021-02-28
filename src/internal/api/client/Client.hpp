@@ -190,6 +190,8 @@ struct Blockchain : virtual public api::client::Blockchain {
         const std::string& address) const noexcept -> void = 0;
 #endif  // OT_BLOCKCHAIN
 
+    virtual auto Init() noexcept -> void = 0;
+
     ~Blockchain() override = default;
 };
 struct Contacts : virtual public api::client::Contacts {

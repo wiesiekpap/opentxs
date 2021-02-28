@@ -35,6 +35,7 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
@@ -282,7 +283,13 @@ auto BlockchainAccountActivity::Send(
 {
     try {
         const auto& network = Widget::api_.Blockchain().GetChain(chain_);
-        network.SendToAddress(primary_id_, address, amount, memo);
+        const auto recipient = Widget::api_.Factory().PaymentCode(address);
+
+        if (0 < recipient->Version()) {
+            network.SendToPaymentCode(primary_id_, recipient, amount, memo);
+        } else {
+            network.SendToAddress(primary_id_, address, amount, memo);
+        }
 
         return true;
     } catch (...) {

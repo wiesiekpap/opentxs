@@ -59,6 +59,7 @@
 #include "opentxs/blind/Purse.hpp"
 #include "opentxs/blind/Token.hpp"
 #endif  // OT_CASH
+#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/BloomFilter.hpp"

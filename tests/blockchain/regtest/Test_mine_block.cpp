@@ -22,11 +22,11 @@
 
 namespace
 {
-TEST_F(Regtest_fixture_normal, init_opentxs) {}
+TEST_F(Regtest_fixture_single, init_opentxs) {}
 
-TEST_F(Regtest_fixture_normal, start_chains) { EXPECT_TRUE(Start()); }
+TEST_F(Regtest_fixture_single, start_chains) { EXPECT_TRUE(Start()); }
 
-TEST_F(Regtest_fixture_normal, generate_block)
+TEST_F(Regtest_fixture_single, generate_block)
 {
     const auto& network = miner_.Blockchain().GetChain(test_chain_);
     const auto& headerOracle = network.HeaderOracle();
@@ -123,5 +123,5 @@ TEST_F(Regtest_fixture_normal, generate_block)
     EXPECT_TRUE(recovered);
 }
 
-TEST_F(Regtest_fixture_normal, shutdown) { Shutdown(); }
+TEST_F(Regtest_fixture_single, shutdown) { Shutdown(); }
 }  // namespace

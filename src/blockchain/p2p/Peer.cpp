@@ -314,6 +314,7 @@ auto Peer::pipeline(zmq::Message& message) noexcept -> void
             transmit(message);
         } break;
         case Task::ReceiveMessage: {
+            activity_.Bump();
             process_message(message);
         } break;
         case Task::Heartbeat:

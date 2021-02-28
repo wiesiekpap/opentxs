@@ -31,6 +31,8 @@ namespace storage
 {
 class Storage;
 }  // namespace storage
+
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -77,6 +79,10 @@ public:
         -> std::shared_ptr<const opentxs::Contact> final;
 #endif  // OT_BLOCKCHAIN
     auto NymToContact(const identifier::Nym& nymID) const -> OTIdentifier final;
+    auto PaymentCodeToContact(const PaymentCode& code) const
+        -> OTIdentifier final;
+    auto PaymentCodeToContact(const std::string& code) const
+        -> OTIdentifier final;
     auto Update(const proto::Nym& nym) const
         -> std::shared_ptr<const opentxs::Contact> final;
 
@@ -99,9 +105,6 @@ private:
     mutable ContactMap contact_map_{};
     mutable ContactNameMap contact_name_map_;
     OTZMQPublishSocket publisher_;
-
-    static auto build_name_map(const api::storage::Storage& storage)
-        -> ContactNameMap;
 
     void check_identifiers(
         const Identifier& inputNymID,

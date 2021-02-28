@@ -111,15 +111,15 @@ public:
 protected:
     using Vector = std::vector<std::uint8_t>;
 
-    Vector data_{};
+    Vector data_;
 
     void Initialize();
 
-    Data() = default;
-    explicit Data(const void* data, std::size_t size);
-    explicit Data(const Armored& source);
-    explicit Data(const Vector& sourceVector);
-    explicit Data(const std::vector<std::byte>& sourceVector);
+    Data() noexcept;
+    explicit Data(const void* data, std::size_t size) noexcept;
+    explicit Data(const Armored& source) noexcept;
+    explicit Data(const Vector& sourceVector) noexcept;
+    explicit Data(const std::vector<std::byte>& sourceVector) noexcept;
 
 private:
     friend opentxs::Data;

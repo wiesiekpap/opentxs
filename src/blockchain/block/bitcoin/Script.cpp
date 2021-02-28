@@ -16,6 +16,7 @@
 #include <numeric>
 #include <sstream>
 #include <stdexcept>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -27,6 +28,7 @@
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/core/crypto/PaymentCode.hpp"
 
 namespace be = boost::endian;
 
@@ -736,6 +738,35 @@ auto Script::get_type(
             OT_FAIL;
         }
     }
+}
+
+auto Script::IsNotification(
+    const std::uint8_t version,
+    const PaymentCode& recipient) const noexcept -> bool
+{
+    if (Pattern::PayToMultisig != Type()) { return false; }
+
+    if (M().value_or(0) != 1u) { return false; }
+    if (N().value_or(0) != 3u) { return false; }
+
+    const auto key = MultisigPubkey(1);
+
+    if (false == key.has_value()) { return false; }
+
+    const auto bytes = key.value();
+
+    if ((33u != bytes.size()) && (65u != bytes.size())) { return false; }
+
+    const auto expect = [&] {
+        auto out = Space{};
+        recipient.Locator(writer(out), version);
+
+        return out;
+    }();
+
+    if (32u != expect.size()) { return false; }
+
+    return 0 == std::memcmp(expect.data(), std::next(bytes.data()), 32);
 }
 
 auto Script::is_data_push(const value_type& element) noexcept -> bool

@@ -28,6 +28,8 @@ class Manager;
 
 class Core;
 }  // namespace api
+
+class PaymentCode;
 }  // namespace opentxs
 
 namespace opentxs
@@ -81,6 +83,9 @@ public:
         const api::Core& api,
         const api::client::Blockchain& blockchain) const noexcept
         -> std::vector<PatternID> = 0;
+    OPENTXS_EXPORT virtual auto IsNotification(
+        const std::uint8_t version,
+        const PaymentCode& recipient) const noexcept -> bool = 0;
     /// Value only present for Multisig patterns
     OPENTXS_EXPORT virtual auto M() const noexcept
         -> std::optional<std::uint8_t> = 0;

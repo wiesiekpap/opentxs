@@ -65,16 +65,17 @@ protected:
     }
 
     Regtest_fixture_hd()
-        : alex_([&]() -> const ot::identity::Nym& {
+        : Regtest_fixture_normal(1)
+        , alex_([&]() -> const ot::identity::Nym& {
             if (!alex_p_) {
                 const auto reason =
-                    client_.Factory().PasswordPrompt(__FUNCTION__);
+                    client_1_.Factory().PasswordPrompt(__FUNCTION__);
 
-                alex_p_ = client_.Wallet().Nym(reason, "Alex");
+                alex_p_ = client_1_.Wallet().Nym(reason, "Alex");
 
                 OT_ASSERT(alex_p_)
 
-                client_.Blockchain().NewHDSubaccount(
+                client_1_.Blockchain().NewHDSubaccount(
                     alex_p_->ID(),
                     ot::BlockchainAccountType::BIP44,
                     test_chain_,
@@ -85,9 +86,9 @@ protected:
 
             return *alex_p_;
         }())
-        , expected_account_(client_.UI().BlockchainAccountID(test_chain_))
-        , expected_notary_(client_.UI().BlockchainNotaryID(test_chain_))
-        , expected_unit_(client_.UI().BlockchainUnitID(test_chain_))
+        , expected_account_(client_1_.UI().BlockchainAccountID(test_chain_))
+        , expected_notary_(client_1_.UI().BlockchainNotaryID(test_chain_))
+        , expected_unit_(client_1_.UI().BlockchainUnitID(test_chain_))
         , expected_display_unit_(u8"UNITTEST")
         , expected_account_name_(u8"This device")
         , expected_notary_name_(u8"Unit Test Simulation")
@@ -102,12 +103,12 @@ protected:
                 height,
                 [&] {
                     auto output = std::vector<OutputBuilder>{};
-                    const auto& account = client_.Blockchain()
+                    const auto& account = client_1_.Blockchain()
                                               .Account(alex_.ID(), test_chain_)
                                               .GetHD()
                                               .at(0);
                     const auto reason =
-                        client_.Factory().PasswordPrompt(__FUNCTION__);
+                        client_1_.Factory().PasswordPrompt(__FUNCTION__);
                     const auto keys =
                         std::set<ot::api::client::blockchain::Key>{};
                     static const auto amount =
@@ -152,9 +153,11 @@ protected:
         })
     {
         auto target = ot::Bip32Index{99};
-        const auto& account =
-            client_.Blockchain().Account(alex_.ID(), test_chain_).GetHD().at(0);
-        const auto reason = client_.Factory().PasswordPrompt(__FUNCTION__);
+        const auto& account = client_1_.Blockchain()
+                                  .Account(alex_.ID(), test_chain_)
+                                  .GetHD()
+                                  .at(0);
+        const auto reason = client_1_.Factory().PasswordPrompt(__FUNCTION__);
         auto index = account.LastGenerated(Subchain::External);
 
         while ((false == index.has_value()) || (index.value() < target)) {
@@ -179,10 +182,10 @@ TEST_F(Regtest_fixture_hd, connect_peers) { EXPECT_TRUE(Connect()); }
 TEST_F(Regtest_fixture_hd, init_account_list)
 {
     account_list_.expected_ += 1;
-    client_.UI().AccountList(
+    client_1_.UI().AccountList(
         alex_.ID(), make_cb(account_list_, u8"account_list_"));
     wait_for_counter(account_list_);
-    const auto& widget = client_.UI().AccountList(alex_.ID());
+    const auto& widget = client_1_.UI().AccountList(alex_.ID());
     auto row = widget.First();
 
     ASSERT_TRUE(row->Valid());
@@ -202,13 +205,13 @@ TEST_F(Regtest_fixture_hd, init_account_list)
 TEST_F(Regtest_fixture_hd, init_account_activity)
 {
     account_activity_.expected_ += 0;
-    client_.UI().AccountActivity(
+    client_1_.UI().AccountActivity(
         alex_.ID(),
-        client_.UI().BlockchainAccountID(test_chain_),
+        client_1_.UI().BlockchainAccountID(test_chain_),
         make_cb(account_activity_, u8"account_activity_"));
     wait_for_counter(account_activity_);
     const auto& widget =
-        client_.UI().AccountActivity(alex_.ID(), expected_account_);
+        client_1_.UI().AccountActivity(alex_.ID(), expected_account_);
 
     EXPECT_EQ(widget.AccountID(), expected_account_.str());
     EXPECT_EQ(widget.Balance(), 0);
@@ -260,7 +263,7 @@ TEST_F(Regtest_fixture_hd, mine)
 
 TEST_F(Regtest_fixture_hd, block)
 {
-    const auto& blockchain = client_.Blockchain().GetChain(test_chain_);
+    const auto& blockchain = client_1_.Blockchain().GetChain(test_chain_);
     const auto blockHash = blockchain.HeaderOracle().BestHash(1);
 
     ASSERT_FALSE(blockHash->empty());
@@ -286,7 +289,7 @@ TEST_F(Regtest_fixture_hd, block)
 TEST_F(Regtest_fixture_hd, account_list_after_receive)
 {
     wait_for_counter(account_list_);
-    const auto& widget = client_.UI().AccountList(alex_.ID());
+    const auto& widget = client_1_.UI().AccountList(alex_.ID());
     auto row = widget.First();
 
     ASSERT_TRUE(row->Valid());
@@ -307,7 +310,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_receive)
 {
     wait_for_counter(account_activity_);
     const auto& widget =
-        client_.UI().AccountActivity(alex_.ID(), expected_account_);
+        client_1_.UI().AccountActivity(alex_.ID(), expected_account_);
 
     EXPECT_EQ(widget.AccountID(), expected_account_.str());
     EXPECT_EQ(widget.Balance(), 10000004950);
@@ -353,7 +356,7 @@ TEST_F(Regtest_fixture_hd, spend)
     account_list_.expected_ += 1;
     account_activity_.expected_ += 2;
     const auto& widget =
-        client_.UI().AccountActivity(alex_.ID(), expected_account_);
+        client_1_.UI().AccountActivity(alex_.ID(), expected_account_);
     static constexpr auto sendAmount{u8"14 units"};
 
     ASSERT_FALSE(widget.ValidateAmount(sendAmount).empty());
@@ -364,7 +367,7 @@ TEST_F(Regtest_fixture_hd, spend)
 TEST_F(Regtest_fixture_hd, account_list_after_spend)
 {
     wait_for_counter(account_list_);
-    const auto& widget = client_.UI().AccountList(alex_.ID());
+    const auto& widget = client_1_.UI().AccountList(alex_.ID());
     auto row = widget.First();
 
     ASSERT_TRUE(row->Valid());
@@ -385,7 +388,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_unconfirmed_spend)
 {
     wait_for_counter(account_activity_);
     const auto& widget =
-        client_.UI().AccountActivity(alex_.ID(), expected_account_);
+        client_1_.UI().AccountActivity(alex_.ID(), expected_account_);
 
     EXPECT_EQ(widget.AccountID(), expected_account_.str());
     EXPECT_EQ(widget.Balance(), 8600002652);
@@ -426,7 +429,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_unconfirmed_spend)
     ASSERT_FALSE(row->Last());
 
     transactions_.emplace_back(
-        client_.Factory().Data(row->UUID(), ot::StringStyle::Hex));
+        client_1_.Factory().Data(row->UUID(), ot::StringStyle::Hex));
     row = widget.Next();
 
     EXPECT_EQ(row->Amount(), 10000004950);
@@ -447,7 +450,7 @@ TEST_F(Regtest_fixture_hd, confirm)
     const auto extra = [&] {
         auto output = std::vector<Transaction>{};
         const auto& pTX = output.emplace_back(
-            client_.Blockchain().LoadTransactionBitcoin(txid));
+            client_1_.Blockchain().LoadTransactionBitcoin(txid));
 
         OT_ASSERT(pTX);
 
@@ -460,7 +463,7 @@ TEST_F(Regtest_fixture_hd, confirm)
 TEST_F(Regtest_fixture_hd, account_list_after_confirmed_spend)
 {
     wait_for_counter(account_list_);
-    const auto& widget = client_.UI().AccountList(alex_.ID());
+    const auto& widget = client_1_.UI().AccountList(alex_.ID());
     auto row = widget.First();
 
     ASSERT_TRUE(row->Valid());
@@ -481,7 +484,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_confirmed_spend)
 {
     wait_for_counter(account_activity_);
     const auto& widget =
-        client_.UI().AccountActivity(alex_.ID(), expected_account_);
+        client_1_.UI().AccountActivity(alex_.ID(), expected_account_);
 
     EXPECT_EQ(widget.AccountID(), expected_account_.str());
     EXPECT_EQ(widget.Balance(), 8600002652);
@@ -522,7 +525,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_confirmed_spend)
     ASSERT_FALSE(row->Last());
 
     transactions_.emplace_back(
-        client_.Factory().Data(row->UUID(), ot::StringStyle::Hex));
+        client_1_.Factory().Data(row->UUID(), ot::StringStyle::Hex));
     row = widget.Next();
 
     EXPECT_EQ(row->Amount(), 10000004950);
