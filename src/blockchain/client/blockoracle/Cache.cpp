@@ -30,7 +30,7 @@
 namespace opentxs::blockchain::client::implementation
 {
 const std::size_t BlockOracle::Cache::cache_limit_{16};
-const std::chrono::seconds BlockOracle::Cache::download_timeout_{60};
+const std::chrono::seconds BlockOracle::Cache::download_timeout_{15};
 
 BlockOracle::Cache::Cache(
     const api::Core& api,
