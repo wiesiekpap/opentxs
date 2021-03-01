@@ -136,6 +136,10 @@ list(
   $<TARGET_OBJECTS:proto-verify>
 )
 
+if(OT_QT_EXPORT)
+  list(APPEND object-deps $<TARGET_OBJECTS:opentxs-ui-displayscale>)
+endif()
+
 if(OT_ENABLE_RPC)
   list(APPEND object-deps $<TARGET_OBJECTS:opentxs-rpc>)
 endif()

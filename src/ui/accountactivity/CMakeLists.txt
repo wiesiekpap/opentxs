@@ -42,6 +42,32 @@ if(OT_BLOCKCHAIN_EXPORT)
 endif()
 
 if(OT_WITH_QT)
+  list(
+    APPEND
+    ot-qobject-install-headers
+    "${opentxs_SOURCE_DIR}/include/opentxs/ui/AmountValidator.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/ui/DestinationValidator.hpp"
+  )
+  list(
+    APPEND
+    cxx-install-headers
+    "${opentxs_SOURCE_DIR}/include/opentxs/ui/AmountValidator.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/ui/DestinationValidator.hpp"
+  )
+  list(
+    APPEND
+    cxx-sources
+    AmountValidator.cpp
+    BlockchainDestinationValidator.cpp
+    CustodialDestinationValidator.cpp
+    DestinationValidator.cpp
+  )
+  list(
+    APPEND
+    cxx-headers
+    AmountValidator.hpp
+    DestinationValidator.hpp
+  )
   qt5_wrap_cpp(MOC_SRCS ${ot-qobject-install-headers})
 else()
   set(MOC_SRCS "")
@@ -56,20 +82,12 @@ target_include_directories(
 )
 
 if(OT_QT_EXPORT)
-  target_compile_definitions(
-    opentxs-ui-accountactivity PRIVATE ${Qt5Core_DEFINITIONS}
-  )
-  target_compile_definitions(
-    opentxs-ui-accountactivity PRIVATE ${Qt5Gui_DEFINITIONS}
-  )
-  target_compile_definitions(
-    opentxs-ui-accountactivity PRIVATE ${Qt5Widgets_DEFINITIONS}
+  target_link_libraries(
+    opentxs-ui-accountactivity PRIVATE Qt5::Core Qt5::Gui Qt5::Widgets
   )
 
   if(OT_QML_EXPORT)
-    target_compile_definitions(
-      opentxs-ui-accountactivity PRIVATE ${Qt5Qml_DEFINITIONS}
-    )
+    target_link_libraries(opentxs-ui-accountactivity PRIVATE Qt5::Qml)
     target_compile_definitions(
       opentxs-ui-accountactivity PRIVATE -DOT_WITH_QML=1
     )

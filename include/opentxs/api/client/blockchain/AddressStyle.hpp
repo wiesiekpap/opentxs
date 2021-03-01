@@ -21,6 +21,7 @@ enum class AddressStyle : std::uint16_t {
     P2PKH = 1,
     P2SH = 2,
     P2WPKH = 3,
+    P2WSH = 4,
 };
 }  // namespace blockchain
 }  // namespace client

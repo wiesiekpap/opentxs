@@ -7,7 +7,6 @@
 #define OPENTXS_UI_ACCOUNTACTIVITY_HPP
 
 #ifndef Q_MOC_RUN
-
 #include "opentxs/Forward.hpp"  // IWYU pragma: associated
 
 #include <tuple>
@@ -38,6 +37,9 @@ class BalanceItem;
 
 #if OT_QT
 class AccountActivityQt;
+class AmountValidator;
+class DestinationValidator;
+class DisplayScaleQt;
 #endif
 }  // namespace ui
 }  // namespace opentxs
@@ -119,6 +121,11 @@ class OPENTXS_EXPORT opentxs::ui::AccountActivityQt final
     : public QIdentityProxyModel
 {
     Q_OBJECT
+    Q_PROPERTY(
+        AmountValidator* amountValidator READ getAmountValidator CONSTANT)
+    Q_PROPERTY(
+        DestinationValidator* destValidator READ getDestValidator CONSTANT)
+    Q_PROPERTY(DisplayScaleQt* scaleModel READ getScaleModel CONSTANT)
     Q_PROPERTY(QString accountID READ accountID NOTIFY updated)
     Q_PROPERTY(int balancePolarity READ balancePolarity NOTIFY updated)
 #if OT_BLOCKCHAIN
@@ -172,6 +179,9 @@ public:
     QList<int> depositChains() const noexcept;
 #endif  // OT_BLOCKCHAIN
     QString displayBalance() const noexcept;
+    AmountValidator* getAmountValidator() const noexcept;
+    DestinationValidator* getDestValidator() const noexcept;
+    DisplayScaleQt* getScaleModel() const noexcept;
 #if OT_BLOCKCHAIN
     Q_INVOKABLE bool sendToAddress(
         const QString& address,

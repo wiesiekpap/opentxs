@@ -65,6 +65,10 @@ auto AccountActivityQt::displayBalance() const noexcept -> QString
 {
     return parent_.DisplayBalance().c_str();
 }
+auto AccountActivityQt::getAmountValidator() const noexcept -> AmountValidator*
+{
+    return &parent_.amount_validator_;
+}
 #if OT_BLOCKCHAIN
 auto AccountActivityQt::getDepositAddress(const int chain) const noexcept
     -> QString
@@ -72,6 +76,15 @@ auto AccountActivityQt::getDepositAddress(const int chain) const noexcept
     return parent_.DepositAddress(static_cast<blockchain::Type>(chain)).c_str();
 }
 #endif  // OT_BLOCKCHAIN
+auto AccountActivityQt::getDestValidator() const noexcept
+    -> DestinationValidator*
+{
+    return &parent_.destination_validator_;
+}
+auto AccountActivityQt::getScaleModel() const noexcept -> DisplayScaleQt*
+{
+    return &parent_.scales_qt_;
+}
 auto AccountActivityQt::init() noexcept -> void
 {
 #if OT_BLOCKCHAIN
@@ -127,7 +140,8 @@ AccountActivity::AccountActivity(
     const identifier::Nym& nymID,
     const Identifier& accountID,
     const AccountType type,
-    const SimpleCallback& cb) noexcept
+    const SimpleCallback& cb,
+    display::Definition&& scales) noexcept
     : AccountActivityList(
           api,
           nymID,
@@ -145,6 +159,16 @@ AccountActivity::AccountActivity(
 #endif  // OT_QT
           )
     , Worker(api, {})
+    , scales_(std::move(scales))
+#if OT_QT
+    , scales_qt_(scales_)
+    , amount_validator_(*this)
+    , destination_validator_(
+          api,
+          static_cast<std::int8_t>(type),
+          static_cast<std::uint32_t>(Chain(api, accountID)),
+          *this)
+#endif  // OT_QT
     , balance_(0)
     , account_id_(accountID)
     , type_(type)

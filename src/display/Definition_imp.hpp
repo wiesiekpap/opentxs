@@ -9,12 +9,21 @@
 #include "1_Internal.hpp"          // IWYU pragma: associated
 #include "display/Definition.hpp"  // IWYU pragma: associated
 
+#include <mutex>
+#include <optional>
+
+#include "opentxs/core/Log.hpp"
+
+#define OT_METHOD "opentxs::display::Definition::"
+
 namespace opentxs::display
 {
 struct Definition::Imp {
     using Scales = std::vector<NamedScale>;
 
-    Scales scales_;
+    const Scales scales_;
+    mutable std::mutex lock_;
+    mutable std::optional<Map> cached_;
 
     auto Import(const std::string& in, const Index index) const noexcept(false)
         -> Amount
@@ -27,14 +36,35 @@ struct Definition::Imp {
             throw std::out_of_range("Invalid scale index");
         }
     }
+    auto Populate() const noexcept -> void
+    {
+        auto lock = Lock{lock_};
+
+        if (false == cached_.has_value()) {
+            auto map = Map{};
+            auto index = Index{0};
+
+            for (const auto& [name, scale] : scales_) {
+                map.emplace(index++, name);
+            }
+
+            cached_.emplace(std::move(map));
+
+            OT_ASSERT(cached_.has_value());
+        }
+    }
 
     Imp(Scales&& scales) noexcept
         : scales_(std::move(scales))
+        , lock_()
+        , cached_()
     {
     }
 
     Imp(const Imp& rhs) noexcept
         : scales_(rhs.scales_)
+        , lock_()
+        , cached_()
     {
     }
 };

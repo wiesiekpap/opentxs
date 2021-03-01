@@ -254,10 +254,7 @@ endif()
 
 if(OT_WITH_BLOCKCHAIN)
   if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
-    if(ANDROID
-       OR APPLE
-       OR WIN32
-    )
+    if(ANDROID OR WIN32)
       set(OPENTXS_BLOCK_STORAGE_ENABLED 0)
       set(OPENTXS_DEFAULT_BLOCK_STORAGE_POLICY 0)
     else()

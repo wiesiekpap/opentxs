@@ -52,6 +52,12 @@ set(cxx-headers
 
 add_library(opentxs-api-client OBJECT ${cxx-sources} ${cxx-headers})
 
+if(OT_QT_EXPORT)
+  target_link_libraries(
+    opentxs-api-client PRIVATE Qt5::Core Qt5::Gui Qt5::Widgets
+  )
+endif()
+
 if(OT_BLOCKCHAIN_EXPORT)
   target_link_libraries(opentxs-api-client PRIVATE lmdb)
 endif()

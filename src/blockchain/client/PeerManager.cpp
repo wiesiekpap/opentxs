@@ -250,16 +250,16 @@ auto PeerManager::peer_target(
     switch (policy) {
         case api::client::blockchain::BlockStorage::All: {
 
-            return 4;
+            return 6;
         }
         case api::client::blockchain::BlockStorage::Cache: {
 
-            return 2;
+            return 4;
         }
         case api::client::blockchain::BlockStorage::None:
         default: {
 
-            return 1;
+            return 2;
         }
     }
 }
