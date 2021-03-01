@@ -32,6 +32,11 @@ namespace opentxs::crypto::implementation
 class Bip39 final : public opentxs::crypto::Bip39
 {
 public:
+    using WordList = std::vector<const char*>;
+    using Words = std::map<Language, WordList>;
+
+    OPENTXS_EXPORT static const Words words_;
+
     auto GetSuggestions(const Language lang, const std::string_view word)
         const noexcept -> Suggestions final;
     auto LongestWord(const Language lang) const noexcept -> std::size_t final;
@@ -46,12 +51,9 @@ public:
     ~Bip39() final = default;
 
 private:
-    using WordList = std::vector<const char*>;
-    using Words = std::map<Language, WordList>;
     using LongestWords = std::map<Language, std::size_t>;
     using MnemonicWords = std::vector<std::string>;
 
-    static const Words words_;
     static const LongestWords longest_words_;
     static const std::size_t BitsPerWord;
     static const std::uint8_t ByteBits;
