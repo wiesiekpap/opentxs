@@ -69,10 +69,15 @@ auto Threads::AddIndex(const Data& txid, const Identifier& thread) noexcept
     -> bool
 {
     Lock lock(blockchain_.lock_);
+
+    OT_ASSERT(false == txid.empty());
+
     auto& vector = blockchain_.map_[txid];
 
     if (thread.empty()) {
         if (0 < vector.size()) { vector.clear(); }
+
+        OT_ASSERT(0 == vector.size());
     } else {
         for (auto i = vector.begin(); i != vector.end();) {
             if ((*i)->empty()) {
@@ -81,9 +86,9 @@ auto Threads::AddIndex(const Data& txid, const Identifier& thread) noexcept
                 ++i;
             }
         }
-    }
 
-    vector.emplace(thread);
+        vector.emplace(thread);
+    }
 
     return true;
 }
@@ -215,6 +220,9 @@ void Threads::init(const std::string& hash)
 
         auto txid = Data::Factory();
         txid->Assign(index->txid());
+
+        OT_ASSERT(false == txid->empty());
+
         auto& data = blockchain_.map_[std::move(txid)];
 
         for (const auto& thread : index->thread()) {
@@ -438,6 +446,8 @@ auto Threads::serialize() const -> proto::StorageNymList
         index.set_version(1);
         index.set_txid(std::string{txid->Bytes()});
         std::for_each(std::begin(data), std::end(data), [&](const auto& id) {
+            OT_ASSERT(false == id->empty());
+
             index.add_thread(std::string{id->Bytes()});
         });
 
