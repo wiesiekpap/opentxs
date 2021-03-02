@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "ui/accountlist/AccountListItem.hpp"  // IWYU pragma: associated
 
+#if OT_QT
+#include <QObject>
+#endif  // OT_QT
 #include <memory>
 #include <string>
 
@@ -18,6 +21,9 @@
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#if OT_QT
+#include "opentxs/ui/qt/AccountList.hpp"
+#endif  // OT_QT
 #include "ui/base/Widget.hpp"
 #if OT_QT
 #include "util/Polarity.hpp"  // IWYU pragma: keep

@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"                    // IWYU pragma: associated
 #include "ui/accountsummary/IssuerItem.hpp"  // IWYU pragma: associated
 
+#if OT_QT
+#include <QObject>
+#endif  // OT_QT
 #include <algorithm>
 #include <atomic>
 #include <iterator>
@@ -34,6 +37,9 @@
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/protobuf/ContactEnums.pb.h"
+#if OT_QT
+#include "opentxs/ui/qt/AccountSummary.hpp"
+#endif  // OT_QT
 #include "ui/base/Combined.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::IssuerItem::"

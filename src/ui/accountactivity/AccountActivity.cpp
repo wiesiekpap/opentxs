@@ -7,7 +7,15 @@
 #include "1_Internal.hpp"                          // IWYU pragma: associated
 #include "ui/accountactivity/AccountActivity.hpp"  // IWYU pragma: associated
 
+#if OT_QT
+#include <QList>
+#include <QObject>
+#include <QString>
+#endif  // OT_QT
+#include <algorithm>
 #include <future>
+#include <iterator>
+#include <memory>
 #include <utility>
 
 #include "internal/api/client/Client.hpp"
@@ -18,6 +26,9 @@
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#if OT_QT
+#include "opentxs/ui/qt/AccountActivity.hpp"
+#endif  // OT_QT
 #include "util/Work.hpp"
 
 // #define OT_METHOD "opentxs::ui::implementation::AccountActivity::"

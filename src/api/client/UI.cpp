@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"     // IWYU pragma: associated
 #include "api/client/UI.hpp"  // IWYU pragma: associated
 
+#if OT_WITH_QML
+#include <QQmlEngine>
+#endif  // OT_WITH_QML
 #include <functional>
 #include <map>
 #include <memory>
@@ -121,6 +124,7 @@ UI::UI(
     , payable_lists_qt_()
     , activity_threads_qt_()
     , profiles_qt_()
+    , seed_validators_()
     , unit_lists_qt_()
 #if OT_BLOCKCHAIN
     , blockchain_selection_qt_()
@@ -869,6 +873,26 @@ auto UI::ProfileQt(const identifier::Nym& nymID, const SimpleCallback cb)
     }
 
     return it->second.get();
+}
+
+auto UI::SeedValidator(
+    const opentxs::crypto::SeedStyle type,
+    const opentxs::crypto::Language lang) const noexcept
+    -> const ui::SeedValidator*
+{
+    Lock lock(lock_);
+    auto& langMap = seed_validators_[type];
+    const auto [it, added] = langMap.try_emplace(
+        lang,
+        api_,
+        static_cast<std::uint8_t>(type),
+        static_cast<std::uint8_t>(lang));
+    auto* out = &(it->second);
+#if OT_WITH_QML
+    QQmlEngine::setObjectOwnership(out, QQmlEngine::CppOwnership);
+#endif  // OT_WITH_QML
+
+    return out;
 }
 #endif
 

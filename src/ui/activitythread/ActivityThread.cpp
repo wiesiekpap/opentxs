@@ -7,6 +7,10 @@
 #include "1_Internal.hpp"                        // IWYU pragma: associated
 #include "ui/activitythread/ActivityThread.hpp"  // IWYU pragma: associated
 
+#if OT_QT
+#include <QString>
+#endif  // OT_QT
+#include <algorithm>
 #include <chrono>
 #include <memory>
 #include <ostream>
@@ -40,6 +44,9 @@
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/StorageThread.pb.h"
 #include "opentxs/protobuf/StorageThreadItem.pb.h"
+#if OT_QT
+#include "opentxs/ui/qt/ActivityThread.hpp"
+#endif  // OT_QT
 #include "ui/base/List.hpp"
 
 template class std::

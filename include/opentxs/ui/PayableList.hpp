@@ -6,7 +6,6 @@
 #ifndef OPENTXS_UI_PAYABLELIST_HPP
 #define OPENTXS_UI_PAYABLELIST_HPP
 
-#ifndef Q_MOC_RUN
 #include "opentxs/Forward.hpp"  // IWYU pragma: associated
 
 #include "opentxs/SharedPimpl.hpp"
@@ -22,17 +21,8 @@ namespace opentxs
 {
 namespace ui
 {
-namespace implementation
-{
-class PayableList;
-}  // namespace implementation
-
 class PayableList;
 class PayableListItem;
-
-#if OT_QT
-class PayableListQt;
-#endif
 }  // namespace ui
 }  // namespace opentxs
 
@@ -61,39 +51,4 @@ private:
 };
 }  // namespace ui
 }  // namespace opentxs
-#endif
-
-#if OT_QT || defined(Q_MOC_RUN)
-class OPENTXS_EXPORT opentxs::ui::PayableListQt final
-    : public QIdentityProxyModel
-{
-    Q_OBJECT
-
-signals:
-    void updated() const;
-
-public:
-    // Table layout: name, payment code
-    enum Roles {
-        ContactIDRole = Qt::UserRole + 0,
-        SectionRole = Qt::UserRole + 1,
-    };
-
-    PayableListQt(implementation::PayableList& parent) noexcept;
-
-    ~PayableListQt() final = default;
-
-private:
-    friend opentxs::Factory;
-
-    implementation::PayableList& parent_;
-
-    void notify() const noexcept;
-
-    PayableListQt(const PayableListQt&) = delete;
-    PayableListQt(PayableListQt&&) = delete;
-    PayableListQt& operator=(const PayableListQt&) = delete;
-    PayableListQt& operator=(PayableListQt&&) = delete;
-};
-#endif
 #endif

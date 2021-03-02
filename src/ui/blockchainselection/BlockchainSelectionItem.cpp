@@ -7,10 +7,16 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "ui/blockchainselection/BlockchainSelectionItem.hpp"  // IWYU pragma: associated
 
+#if OT_QT
+#include <QObject>
+#endif  // OT_QT
 #include <memory>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Log.hpp"
+#if OT_QT
+#include "opentxs/ui/qt/BlockchainSelection.hpp"
+#endif  // OT_QT
 #include "ui/base/Widget.hpp"
 
 // #define OT_METHOD "opentxs::ui::implementation::BlockchainSelectionItem::"

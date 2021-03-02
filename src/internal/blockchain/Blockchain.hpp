@@ -147,6 +147,7 @@ struct SerializedBloomFilter {
     SerializedBloomFilter() noexcept;
 };
 
+#if OT_BLOCKCHAIN
 struct Database : virtual public client::internal::BlockDatabase,
                   virtual public client::internal::FilterDatabase,
                   virtual public client::internal::HeaderDatabase,
@@ -156,6 +157,7 @@ struct Database : virtual public client::internal::BlockDatabase,
 
     ~Database() override = default;
 };
+#endif  // OT_BLOCKCHAIN
 
 using FilterParams = std::pair<std::uint8_t, std::uint32_t>;
 

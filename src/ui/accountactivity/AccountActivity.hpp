@@ -5,6 +5,9 @@
 
 #pragma once
 
+#if OT_QT
+#include <QHash>
+#endif  // OT_QT
 #include <atomic>
 #include <functional>
 #include <set>
@@ -28,9 +31,9 @@
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/ui/AccountActivity.hpp"
 #if OT_QT
-#include "opentxs/ui/AmountValidator.hpp"
-#include "opentxs/ui/DestinationValidator.hpp"
-#include "opentxs/ui/DisplayScale.hpp"
+#include "opentxs/ui/qt/AmountValidator.hpp"
+#include "opentxs/ui/qt/DestinationValidator.hpp"
+#include "opentxs/ui/qt/DisplayScale.hpp"
 #endif  // OT_QT
 #include "opentxs/util/WorkType.hpp"
 #include "ui/base/List.hpp"

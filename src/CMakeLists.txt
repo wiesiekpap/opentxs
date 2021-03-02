@@ -138,6 +138,7 @@ list(
 
 if(OT_QT_EXPORT)
   list(APPEND object-deps $<TARGET_OBJECTS:opentxs-ui-displayscale>)
+  list(APPEND object-deps $<TARGET_OBJECTS:opentxs-ui-seedvalidator>)
 endif()
 
 if(OT_ENABLE_RPC)
@@ -186,7 +187,6 @@ set(cxx-install-headers
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/opentxs/Pimpl.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/opentxs/Proto.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/opentxs/Proto.tpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/opentxs/Qt.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/opentxs/Shared.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/opentxs/SharedPimpl.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/opentxs/Types.hpp"

@@ -7,6 +7,10 @@
 #include "1_Internal.hpp"                            // IWYU pragma: associated
 #include "ui/activitythread/ActivityThreadItem.hpp"  // IWYU pragma: associated
 
+#if OT_QT
+#include <QDateTime>
+#include <QObject>
+#endif  // OT_QT
 #include <tuple>
 #include <utility>
 
@@ -15,6 +19,9 @@
 #include "opentxs/api/client/Activity.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
+#if OT_QT
+#include "opentxs/ui/qt/ActivityThread.hpp"
+#endif  // OT_QT
 #include "ui/base/Widget.hpp"
 #if OT_QT
 #include "util/Polarity.hpp"  // IWYU pragma: keep

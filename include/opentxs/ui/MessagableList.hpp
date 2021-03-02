@@ -6,7 +6,6 @@
 #ifndef OPENTXS_UI_MESSAGABLELIST_HPP
 #define OPENTXS_UI_MESSAGABLELIST_HPP
 
-#ifndef Q_MOC_RUN
 #include "opentxs/Forward.hpp"  // IWYU pragma: associated
 
 #include "opentxs/SharedPimpl.hpp"
@@ -22,17 +21,8 @@ namespace opentxs
 {
 namespace ui
 {
-namespace implementation
-{
-class MessagableList;
-}  // namespace implementation
-
 class ContactListItem;
 class MessagableList;
-
-#if OT_QT
-class MessagableListQt;
-#endif
 }  // namespace ui
 }  // namespace opentxs
 
@@ -61,40 +51,4 @@ private:
 };
 }  // namespace ui
 }  // namespace opentxs
-#endif
-
-#if OT_QT || defined(Q_MOC_RUN)
-class OPENTXS_EXPORT opentxs::ui::MessagableListQt final
-    : public QIdentityProxyModel
-{
-    Q_OBJECT
-
-signals:
-    void updated() const;
-
-public:
-    // List layout
-    enum Roles {
-        ContactIDRole = Qt::UserRole + 0,
-        SectionRole = Qt::UserRole + 1,
-    };
-
-    MessagableListQt(implementation::MessagableList& parent) noexcept;
-
-    ~MessagableListQt() final = default;
-
-private:
-    friend opentxs::Factory;
-
-    implementation::MessagableList& parent_;
-
-    void notify() const noexcept;
-
-    MessagableListQt() = delete;
-    MessagableListQt(const MessagableListQt&) = delete;
-    MessagableListQt(MessagableListQt&&) = delete;
-    MessagableListQt& operator=(const MessagableListQt&) = delete;
-    MessagableListQt& operator=(MessagableListQt&&) = delete;
-};
-#endif
 #endif

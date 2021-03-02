@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "ui/accountactivity/BlockchainBalanceItem.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
 #include <memory>
 #include <string>
 

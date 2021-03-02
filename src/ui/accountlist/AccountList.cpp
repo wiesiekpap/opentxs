@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "ui/accountlist/AccountList.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
 #include <future>
 #include <memory>
 #include <set>
@@ -41,6 +42,9 @@
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#if OT_QT
+#include "opentxs/ui/qt/AccountList.hpp"
+#endif  // OT_QT
 #include "ui/base/List.hpp"
 #include "util/Blank.hpp"
 

@@ -6,8 +6,6 @@
 #ifndef OPENTXS_UI_UNITLIST_HPP
 #define OPENTXS_UI_UNITLIST_HPP
 
-#ifndef Q_MOC_RUN
-
 #include "opentxs/Forward.hpp"  // IWYU pragma: associated
 
 #include "opentxs/SharedPimpl.hpp"
@@ -23,17 +21,8 @@ namespace opentxs
 {
 namespace ui
 {
-namespace implementation
-{
-class UnitList;
-}  // namespace implementation
-
 class UnitList;
 class UnitListItem;
-
-#if OT_QT
-class UnitListQt;
-#endif
 }  // namespace ui
 }  // namespace opentxs
 
@@ -62,37 +51,4 @@ private:
 };
 }  // namespace ui
 }  // namespace opentxs
-#endif
-
-#if OT_QT || defined(Q_MOC_RUN)
-class OPENTXS_EXPORT opentxs::ui::UnitListQt final : public QIdentityProxyModel
-{
-    Q_OBJECT
-
-signals:
-    void updated() const;
-
-public:
-    enum Columns {
-        UnitNameColumn = 0,
-    };
-    enum Roles {
-        UnitIDRole = Qt::UserRole,
-    };
-
-    UnitListQt(implementation::UnitList& parent) noexcept;
-
-    ~UnitListQt() final = default;
-
-private:
-    implementation::UnitList& parent_;
-
-    void notify() const noexcept;
-
-    UnitListQt(const UnitListQt&) = delete;
-    UnitListQt(UnitListQt&&) = delete;
-    UnitListQt& operator=(const UnitListQt&) = delete;
-    UnitListQt& operator=(UnitListQt&&) = delete;
-};
-#endif
 #endif

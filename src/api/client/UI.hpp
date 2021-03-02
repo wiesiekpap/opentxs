@@ -29,6 +29,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/crypto/Types.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/protobuf/ContactEnums.pb.h"
@@ -37,7 +38,9 @@
 #include "opentxs/ui/AccountSummary.hpp"
 #include "opentxs/ui/ActivitySummary.hpp"
 #include "opentxs/ui/ActivityThread.hpp"
+#if OT_BLOCKCHAIN
 #include "opentxs/ui/BlockchainSelection.hpp"
+#endif  // OT_BLOCKCHAIN
 #include "opentxs/ui/Blockchains.hpp"
 #include "opentxs/ui/Contact.hpp"
 #include "opentxs/ui/ContactList.hpp"
@@ -47,6 +50,26 @@
 #include "opentxs/ui/Profile.hpp"
 #include "opentxs/ui/Types.hpp"
 #include "opentxs/ui/UnitList.hpp"
+#if OT_QT
+#include "opentxs/ui/qt/AccountActivity.hpp"
+#include "opentxs/ui/qt/AccountList.hpp"
+#include "opentxs/ui/qt/AccountSummary.hpp"
+#include "opentxs/ui/qt/ActivitySummary.hpp"
+#include "opentxs/ui/qt/ActivityThread.hpp"
+#include "opentxs/ui/qt/BlankModel.hpp"
+#if OT_BLOCKCHAIN
+#include "opentxs/ui/qt/BlockchainSelection.hpp"
+#endif  // OT_BLOCKCHAIN
+#include "opentxs/ui/qt/Contact.hpp"
+#include "opentxs/ui/qt/ContactList.hpp"
+#include "opentxs/ui/qt/MessagableList.hpp"
+#include "opentxs/ui/qt/PayableList.hpp"
+#include "opentxs/ui/qt/Profile.hpp"
+#include "opentxs/ui/qt/SeedValidator.hpp"
+#include "opentxs/ui/qt/UnitList.hpp"
+#endif  // OT_QT
+
+class QAbstractItemModel;
 
 namespace opentxs
 {
@@ -197,6 +220,10 @@ public:
         const SimpleCallback cb) const noexcept -> ui::PayableListQt* final;
     auto ProfileQt(const identifier::Nym& nymID, const SimpleCallback cb)
         const noexcept -> ui::ProfileQt* final;
+    auto SeedValidator(
+        const opentxs::crypto::SeedStyle type,
+        const opentxs::crypto::Language lang) const noexcept
+        -> const ui::SeedValidator* final;
     auto UnitListQt(const identifier::Nym& nym, const SimpleCallback cb)
         const noexcept -> ui::UnitListQt* final;
 #endif  // OT_QT
@@ -292,6 +319,9 @@ private:
         std::map<MessagableListKey, MessagableListQtValue>;
     using PayableListQtMap = std::map<PayableListKey, PayableListQtValue>;
     using ProfileQtMap = std::map<ProfileKey, ProfileQtValue>;
+    using SeedValidatorMap = std::map<
+        opentxs::crypto::SeedStyle,
+        std::map<opentxs::crypto::Language, ui::SeedValidator>>;
     using UnitListQtMap = std::map<UnitListKey, UnitListQtValue>;
 #if OT_BLOCKCHAIN
     using BlockchainSelectionQtPointer =
@@ -359,6 +389,7 @@ private:
     mutable PayableListQtMap payable_lists_qt_;
     mutable ActivityThreadQtMap activity_threads_qt_;
     mutable ProfileQtMap profiles_qt_;
+    mutable SeedValidatorMap seed_validators_;
     mutable UnitListQtMap unit_lists_qt_;
 #if OT_BLOCKCHAIN
     mutable BlockchainSelectionQtType blockchain_selection_qt_;

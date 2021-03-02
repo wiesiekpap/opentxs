@@ -30,6 +30,9 @@
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
+#if OT_QT
+#include "opentxs/ui/qt/UnitList.hpp"
+#endif  // OT_QT
 #include "opentxs/util/WorkType.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::UnitList::"

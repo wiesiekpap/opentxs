@@ -6,11 +6,10 @@
 #ifndef OPENTXS_UI_LIST_HPP
 #define OPENTXS_UI_LIST_HPP
 
+#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+
 #include <cassert>
 #include <limits>
-
-#ifndef Q_MOC_RUN
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Types.hpp"
 #include "opentxs/ui/Widget.hpp"
@@ -41,49 +40,4 @@ private:
 };
 }  // namespace ui
 }  // namespace opentxs
-#endif
-
-#if OT_QT || defined(Q_MOC_RUN)
-namespace opentxs
-{
-namespace ui
-{
-struct OPENTXS_EXPORT BlankModel final : public QAbstractItemModel {
-    Q_OBJECT
-
-public:
-    int columnCount(const QModelIndex& = QModelIndex()) const noexcept final
-    {
-        return static_cast<int>(columns_);
-    }
-    QVariant data(const QModelIndex&, int = Qt::DisplayRole)
-        const noexcept final
-    {
-        return {};
-    }
-    QModelIndex index(int, int, const QModelIndex& = QModelIndex())
-        const noexcept final
-    {
-        return {};
-    }
-    QModelIndex parent(const QModelIndex&) const noexcept final { return {}; }
-    int rowCount(const QModelIndex& = QModelIndex()) const noexcept final
-    {
-        return 0;
-    }
-
-    BlankModel(const std::size_t columns)
-        : columns_(columns)
-    {
-        assert(columns_ <= std::numeric_limits<int>::max());
-    }
-
-private:
-    const std::size_t columns_;
-
-    BlankModel() = delete;
-};
-}  // namespace ui
-}  // namespace opentxs
-#endif
 #endif

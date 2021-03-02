@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "ui/payablelist/PayableListItem.hpp"  // IWYU pragma: associated
 
+#if OT_QT
+#include <QObject>
+#endif  // OT_QT
 #include <memory>
 
 #include "internal/api/client/Client.hpp"

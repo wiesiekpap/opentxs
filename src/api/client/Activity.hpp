@@ -153,11 +153,6 @@ private:
     mutable std::map<OTNymID, OTZMQPublishSocket> blockchain_publishers_;
 #endif  // OT_BLOCKCHAIN
 
-    /**   Migrate nym-based thread IDs to contact-based thread IDs
-     *
-     *    This method should only be called by the Contacts on startup
-     */
-    void MigrateLegacyThreads() const noexcept final;
     void activity_preload_thread(
         OTPasswordPrompt reason,
         const OTIdentifier nymID,

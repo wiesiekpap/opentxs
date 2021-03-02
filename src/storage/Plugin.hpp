@@ -109,14 +109,17 @@ auto opentxs::api::storage::Driver::LoadProto(
     std::shared_ptr<T>& serialized,
     const bool checking) const -> bool
 {
-    std::string raw;
-    const bool loaded = Load(hash, checking, raw);
-    bool valid = false;
+    auto raw = std::string{};
+    const auto loaded = Load(hash, checking, raw);
+    auto valid{false};
 
     if (loaded) {
         serialized.reset(new T);
         serialized->ParseFromArray(raw.data(), static_cast<int>(raw.size()));
         valid = proto::Validate<T>(*serialized, VERBOSE);
+    } else {
+
+        return false;
     }
 
     if (!valid) {

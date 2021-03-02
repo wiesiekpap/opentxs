@@ -6,11 +6,9 @@
 #ifndef OPENTXS_UI_PROFILE_HPP
 #define OPENTXS_UI_PROFILE_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
-#ifndef Q_MOC_RUN
 #include "opentxs/Forward.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -20,10 +18,6 @@
 #include "opentxs/ui/List.hpp"
 
 #ifdef SWIG
-#include <algorithm>
-#include <tuple>
-#include <vector>
-
 // clang-format off
 %extend opentxs::ui::Profile {
     bool AddClaim(
@@ -85,17 +79,8 @@ namespace opentxs
 {
 namespace ui
 {
-namespace implementation
-{
-class Profile;
-}  // namespace implementation
-
 class Profile;
 class ProfileSection;
-
-#if OT_QT
-class ProfileQt;
-#endif
 }  // namespace ui
 }  // namespace opentxs
 
@@ -162,40 +147,4 @@ private:
 };
 }  // namespace ui
 }  // namespace opentxs
-#endif
-
-#if OT_QT || defined(Q_MOC_RUN)
-class OPENTXS_EXPORT opentxs::ui::ProfileQt final : public QIdentityProxyModel
-{
-    Q_OBJECT
-    Q_PROPERTY(QString displayName READ displayName NOTIFY updated)
-    Q_PROPERTY(QString nymID READ nymID NOTIFY updated)
-    Q_PROPERTY(QString paymentCode READ paymentCode NOTIFY updated)
-
-signals:
-    void updated() const;
-
-public:
-    // Tree layout
-    QString displayName() const noexcept;
-    QString nymID() const noexcept;
-    QString paymentCode() const noexcept;
-
-    ProfileQt(implementation::Profile& parent) noexcept;
-
-    ~ProfileQt() final = default;
-
-private:
-    friend opentxs::Factory;
-
-    implementation::Profile& parent_;
-
-    void notify() const noexcept;
-
-    ProfileQt(const ProfileQt&) = delete;
-    ProfileQt(ProfileQt&&) = delete;
-    ProfileQt& operator=(const ProfileQt&) = delete;
-    ProfileQt& operator=(ProfileQt&&) = delete;
-};
-#endif
 #endif

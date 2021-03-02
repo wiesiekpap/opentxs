@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"          // IWYU pragma: associated
 #include "ui/contact/Contact.hpp"  // IWYU pragma: associated
 
+#if OT_QT
+#include <QString>
+#endif  // OT_QT
 #include <map>
 #include <memory>
 #include <set>
@@ -27,6 +30,9 @@
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/protobuf/ContactEnums.pb.h"
+#if OT_QT
+#include "opentxs/ui/qt/Contact.hpp"
+#endif  // OT_QT
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::Contact::"

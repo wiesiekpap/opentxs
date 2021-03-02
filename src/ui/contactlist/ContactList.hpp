@@ -8,6 +8,10 @@
 
 #pragma once
 
+#if OT_QT
+#include <QAbstractItemModel>
+#include <QHash>
+#endif  // OT_QT
 #include <iosfwd>
 #include <map>
 #include <memory>

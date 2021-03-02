@@ -8,6 +8,9 @@
 
 #pragma once
 
+#if OT_QT
+#include <QVariant>
+#endif  // OT_QT
 #include <string>
 
 #include "1_Internal.hpp"

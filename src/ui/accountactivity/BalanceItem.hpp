@@ -5,6 +5,9 @@
 
 #pragma once
 
+#if OT_QT
+#include <QVariant>
+#endif  // OT_QT
 #include <chrono>
 #include <memory>
 #include <string>

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "crypto/Bip39.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -256,7 +257,7 @@ TEST_F(Test_BIP39, match_arrive)
 TEST_F(Test_BIP39, match_arrived)
 {
     const auto test = std::string{"arrived"};
-    const auto expected = std::vector<std::string>{"arrive"};
+    const auto expected = std::vector<std::string>{};
     const auto suggestions = api_.Seeds().ValidateWord(type_, lang_, test);
 
     EXPECT_EQ(suggestions, expected);
@@ -278,5 +279,16 @@ TEST_F(Test_BIP39, match_empty_string)
     const auto suggestions = api_.Seeds().ValidateWord(type_, lang_, test);
 
     EXPECT_EQ(suggestions, expected);
+}
+
+TEST_F(Test_BIP39, validate_en_list)
+{
+    using Bip39 = opentxs::crypto::implementation::Bip39;
+
+    for (const auto* word : Bip39::words_.at(lang_)) {
+        const auto matches = api_.Seeds().ValidateWord(type_, lang_, word);
+
+        EXPECT_EQ(matches.size(), 1);
+    }
 }
 }  // namespace

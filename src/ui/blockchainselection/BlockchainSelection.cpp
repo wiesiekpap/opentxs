@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "ui/blockchainselection/BlockchainSelection.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
 #include <future>
 #include <memory>
 #include <set>
@@ -26,6 +27,9 @@
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/ui/Blockchains.hpp"
+#if OT_QT
+#include "opentxs/ui/qt/BlockchainSelection.hpp"
+#endif  // OT_QT
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::BlockchainSelection::"

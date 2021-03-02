@@ -8,6 +8,9 @@
 
 #pragma once
 
+#if OT_QT
+#include <QHash>
+#endif  // OT_QT
 #include <map>
 #include <utility>
 

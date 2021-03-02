@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "ui/contactlist/ContactList.hpp"  // IWYU pragma: associated
 
+#if OT_QT
+#include <QString>
+#endif  // OT_QT
 #include <future>
 #include <list>
 #include <memory>
@@ -31,6 +34,9 @@
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#if OT_QT
+#include "opentxs/ui/qt/ContactList.hpp"
+#endif  // OT_QT
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::ContactList::"

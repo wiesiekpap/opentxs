@@ -28,6 +28,9 @@
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/protobuf/ContactEnums.pb.h"
+#if OT_QT
+#include "opentxs/ui/qt/PayableList.hpp"
+#endif  // OT_QT
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::PayableList::"

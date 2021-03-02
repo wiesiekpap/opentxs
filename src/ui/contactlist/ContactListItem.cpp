@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "ui/contactlist/ContactListItem.hpp"  // IWYU pragma: associated
 
+#if OT_QT
+#include <QObject>
+#endif  // OT_QT
 #include <locale>
 #include <memory>
 
@@ -14,6 +17,9 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
+#if OT_QT
+#include "opentxs/ui/qt/ContactList.hpp"
+#endif  // OT_QT
 
 //#define OT_METHOD "opentxs::ui::implementation::ContactListItem::"
 

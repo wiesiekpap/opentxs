@@ -64,11 +64,11 @@ macro(opentxs_link_target target_name)
 
   if(OT_QT_EXPORT)
     target_link_libraries(
-      ${target_name} PRIVATE ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES}
+      ${target_name} PRIVATE Qt5::Core Qt5::Gui
     )
 
     if(OT_QML_EXPORT)
-      target_link_libraries(${target_name} PRIVATE ${Qt5Qml_LIBRARIES})
+      target_link_libraries(${target_name} PRIVATE Qt5::Qml)
     endif()
   endif()
 

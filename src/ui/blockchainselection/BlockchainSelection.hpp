@@ -8,6 +8,9 @@
 
 #pragma once
 
+#if OT_QT
+#include <QHash>
+#endif  // OT_QT
 #include <map>
 #include <memory>
 #include <set>
@@ -23,10 +26,8 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
-#if OT_BLOCKCHAIN
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
-#endif  // OT_BLOCKCHAIN
 #include "opentxs/ui/BlockchainSelection.hpp"
 #include "opentxs/ui/Blockchains.hpp"
 #include "opentxs/util/WorkType.hpp"

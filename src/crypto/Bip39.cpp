@@ -219,8 +219,12 @@ auto Bip39::GetSuggestions(const Language lang, const std::string_view word)
         if (0 == words.size()) { return {}; }
 
         for (const auto candidate : words) {
+            const auto csize = std::strlen(candidate);
+            const auto size = word.size();
+
+            if (csize < size) { continue; }
+
             const auto start = word.data();
-            const auto size = std::min(word.size(), std::strlen(candidate));
             const auto end = start + size;
             const auto prefix = std::distance(
                 start, std::mismatch(start, end, candidate).first);
@@ -228,6 +232,13 @@ auto Bip39::GetSuggestions(const Language lang, const std::string_view word)
             if (0 > prefix) { continue; }
 
             if (size == static_cast<std::size_t>(prefix)) {
+                if (csize == size) {
+                    output.clear();
+                    output.emplace_back(candidate);
+
+                    return output;
+                }
+
                 output.emplace_back(candidate);
             }
         }

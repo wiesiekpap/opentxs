@@ -12,9 +12,7 @@
 #include <optional>
 #include <set>
 
-#if OT_BLOCKCHAIN
-#include "internal/blockchain/Blockchain.hpp"
-#endif  // OT_BLOCKCHAIN
+#include "internal/blockchain/Params.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -26,7 +24,6 @@
 
 namespace opentxs::ui
 {
-#if OT_BLOCKCHAIN
 auto AccountID(const api::Core& api, const blockchain::Type chain) noexcept
     -> const Identifier&
 {
@@ -130,10 +127,14 @@ auto UnitID(const api::Core& api, const blockchain::Type chain) noexcept
 
     auto [it, notUsed] = map.emplace(chain, api.Factory().UnitID());
     auto& output = it->second;
-    const auto preimage = blockchain::internal::Ticker(chain);
-    output->CalculateDigest(preimage);
+
+    try {
+        const auto preimage =
+            blockchain::params::Data::chains_.at(chain).display_ticker_;
+        output->CalculateDigest(preimage);
+    } catch (...) {
+    }
 
     return output;
 }
-#endif  // OT_BLOCKCHAIN
 }  // namespace opentxs::ui

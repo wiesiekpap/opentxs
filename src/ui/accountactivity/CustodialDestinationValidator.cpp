@@ -7,11 +7,10 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "ui/accountactivity/DestinationValidator.hpp"  // IWYU pragma: associated
 
-#include "internal/api/client/Client.hpp"
-#include "opentxs/api/Core.hpp"
+#include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "ui/accountactivity/AccountActivity.hpp"
 
 // #define OT_METHOD "opentxs::ui::CustodialDestionationValidator::"
 
