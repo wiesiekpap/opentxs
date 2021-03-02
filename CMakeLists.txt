@@ -301,7 +301,7 @@ endif()
 if(OT_WITH_QT)
   find_package(
     Qt5
-    COMPONENTS Core Gui Widgets
+    COMPONENTS Core Gui
     REQUIRED
   )
 
@@ -312,17 +312,6 @@ if(OT_WITH_QT)
       REQUIRED
     )
   endif()
-
-  set_target_properties(
-    Qt5::Core PROPERTIES MAP_IMPORTED_CONFIG_COVERAGE "RELEASE"
-  )
-  list(
-    GET
-    Qt5Core_INCLUDE_DIRS
-    0
-    QT_INCLUDE_DIR
-  )
-  include_directories(SYSTEM "${QT_INCLUDE_DIR}")
 endif()
 
 # -----------------------------------------------------------------------------

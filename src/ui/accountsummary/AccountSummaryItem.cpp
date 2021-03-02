@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"                            // IWYU pragma: associated
 #include "ui/accountsummary/AccountSummaryItem.hpp"  // IWYU pragma: associated
 
+#if OT_QT
+#include <QObject>
+#endif  // OT_QT
 #include <atomic>
 #include <memory>
 #include <utility>
@@ -18,6 +21,9 @@
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#if OT_QT
+#include "opentxs/ui/qt/AccountSummary.hpp"
+#endif  // OT_QT
 #include "ui/base/Widget.hpp"
 
 namespace opentxs::factory

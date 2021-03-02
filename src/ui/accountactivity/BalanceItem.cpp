@@ -7,6 +7,12 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "ui/accountactivity/BalanceItem.hpp"  // IWYU pragma: associated
 
+#if OT_QT
+#include <QDateTime>
+#include <QObject>
+#include <QStringList>
+#endif  // OT_QT
+#include <algorithm>
 #include <chrono>
 #include <memory>
 #include <string>
@@ -26,6 +32,9 @@
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/protobuf/PaymentWorkflow.pb.h"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
+#if OT_QT
+#include "opentxs/ui/qt/AccountActivity.hpp"
+#endif  // OT_QT
 #if OT_BLOCKCHAIN
 #include "ui/accountactivity/BlockchainBalanceItem.hpp"
 #endif  // OT_QT

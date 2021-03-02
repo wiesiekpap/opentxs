@@ -13,6 +13,8 @@
 
 #include "opentxs/opentxs_export.hpp"  // IWYU pragma: keep
 
+class QObject;
+
 namespace opentxs
 {
 namespace ui

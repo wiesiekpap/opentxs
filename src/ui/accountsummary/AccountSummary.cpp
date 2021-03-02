@@ -27,6 +27,9 @@
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/protobuf/ContactEnums.pb.h"
+#if OT_QT
+#include "opentxs/ui/qt/AccountSummary.hpp"
+#endif  // OT_QT
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::AccountSummary::"

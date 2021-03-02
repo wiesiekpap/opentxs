@@ -8,10 +8,6 @@
 
 #include "opentxs/Forward.hpp"  // IWYU pragma: associated
 
-#if OT_QT
-#include "opentxs/Qt.hpp"
-#endif
-
 #include <chrono>
 #include <cstdint>
 #include <functional>

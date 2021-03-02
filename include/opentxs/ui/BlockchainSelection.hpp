@@ -6,8 +6,6 @@
 #ifndef OPENTXS_UI_BLOCKCHAINSELECTION_HPP
 #define OPENTXS_UI_BLOCKCHAINSELECTION_HPP
 
-#ifndef Q_MOC_RUN
-
 #include "opentxs/Forward.hpp"  // IWYU pragma: associated
 
 #include "opentxs/SharedPimpl.hpp"
@@ -25,17 +23,8 @@ namespace opentxs
 {
 namespace ui
 {
-namespace implementation
-{
-class BlockchainSelection;
-}  // namespace implementation
-
 class BlockchainSelection;
 class BlockchainSelectionItem;
-
-#if OT_QT
-class BlockchainSelectionQt;
-#endif
 }  // namespace ui
 }  // namespace opentxs
 
@@ -71,51 +60,4 @@ private:
 };
 }  // namespace ui
 }  // namespace opentxs
-#endif
-
-#if OT_QT || defined(Q_MOC_RUN)
-class OPENTXS_EXPORT opentxs::ui::BlockchainSelectionQt final
-    : public QIdentityProxyModel
-{
-    Q_OBJECT
-
-signals:
-    void updated() const;
-
-public:
-    // User roles return the same data for all columns
-    //
-    // TypeRole: int (blockchain::Type)
-    //
-    // Qt::DisplayRole, NameColumn: QString
-    // Qt::DisplayRole, EnabledColumn: bool
-    // Qt::DisplayRole, TestnetColumn: bool
-
-    enum Columns {
-        NameColumn = 0,
-        EnabledColumn = 1,
-        TestnetColumn = 2,
-    };
-    enum Roles {
-        TypeRole = Qt::UserRole + 0,
-    };
-
-    Q_INVOKABLE bool disableChain(const int chain) const noexcept;
-    Q_INVOKABLE bool enableChain(const int chain) const noexcept;
-
-    BlockchainSelectionQt(implementation::BlockchainSelection& parent) noexcept;
-
-    ~BlockchainSelectionQt() final = default;
-
-private:
-    implementation::BlockchainSelection& parent_;
-
-    void notify() const noexcept;
-
-    BlockchainSelectionQt(const BlockchainSelectionQt&) = delete;
-    BlockchainSelectionQt(BlockchainSelectionQt&&) = delete;
-    BlockchainSelectionQt& operator=(const BlockchainSelectionQt&) = delete;
-    BlockchainSelectionQt& operator=(BlockchainSelectionQt&&) = delete;
-};
-#endif
 #endif

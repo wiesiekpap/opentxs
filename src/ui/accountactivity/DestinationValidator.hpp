@@ -5,19 +5,35 @@
 
 #pragma once
 
+#if OT_QT
+#include <QString>
+#include <QValidator>
+#endif  // OT_QT
+#include <memory>
+
 #include "1_Internal.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/ui/DestinationValidator.hpp"
+#include "opentxs/ui/qt/DestinationValidator.hpp"
+#include "ui/accountactivity/AccountActivity.hpp"
 
 namespace opentxs
 {
-namespace implementation
+namespace api
+{
+namespace client
+{
+class Manager;
+}  // namespace client
+}  // namespace api
+
+namespace ui
 {
 namespace implementation
 {
 class AccountActivity;
 }  // namespace implementation
-}  // namespace implementation
+}  // namespace ui
 }  // namespace opentxs
 
 namespace opentxs::ui

@@ -6,8 +6,6 @@
 #ifndef OPENTXS_UI_ACTIVITYSUMMARY_HPP
 #define OPENTXS_UI_ACTIVITYSUMMARY_HPP
 
-#ifndef Q_MOC_RUN
-
 #include "opentxs/Forward.hpp"  // IWYU pragma: associated
 
 #include "opentxs/SharedPimpl.hpp"
@@ -23,17 +21,8 @@ namespace opentxs
 {
 namespace ui
 {
-namespace implementation
-{
-class ActivitySummary;
-}  // namespace implementation
-
 class ActivitySummary;
 class ActivitySummaryItem;
-
-#if OT_QT
-class ActivitySummaryQt;
-#endif
 }  // namespace ui
 }  // namespace opentxs
 
@@ -64,33 +53,4 @@ private:
 };
 }  // namespace ui
 }  // namespace opentxs
-#endif
-
-#if OT_QT || defined(Q_MOC_RUN)
-class OPENTXS_EXPORT opentxs::ui::ActivitySummaryQt final
-    : public QIdentityProxyModel
-{
-    Q_OBJECT
-
-signals:
-    void updated() const;
-
-public:
-    ActivitySummaryQt(implementation::ActivitySummary& parent) noexcept;
-
-    ~ActivitySummaryQt() final = default;
-
-private:
-    friend opentxs::Factory;
-
-    implementation::ActivitySummary& parent_;
-
-    void notify() const noexcept;
-
-    ActivitySummaryQt(const ActivitySummaryQt&) = delete;
-    ActivitySummaryQt(ActivitySummaryQt&&) = delete;
-    ActivitySummaryQt& operator=(const ActivitySummaryQt&) = delete;
-    ActivitySummaryQt& operator=(ActivitySummaryQt&&) = delete;
-};
-#endif
 #endif

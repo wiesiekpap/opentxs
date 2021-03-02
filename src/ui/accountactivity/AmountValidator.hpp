@@ -5,8 +5,23 @@
 
 #pragma once
 
+#if OT_QT
+#include <QString>
+#include <QValidator>
+#endif  // OT_QT
+#include <algorithm>
+#include <atomic>
+#include <optional>
+#include <stdexcept>
+#include <string>
+
 #include "1_Internal.hpp"
+#include "display/Definition.hpp"
+#include "opentxs/core/Log.hpp"
+#include "opentxs/core/LogSource.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
+#include "opentxs/ui/qt/AmountValidator.hpp"
+#include "ui/accountactivity/AccountActivity.hpp"
 
 namespace opentxs
 {

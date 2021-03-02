@@ -7,20 +7,24 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "ui/accountactivity/DestinationValidator.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
-#include <cctype>
-#include <cstring>
+#if OT_QT
+#include <QObject>
+#endif  // OT_QT
+#include <map>
 #include <sstream>
 #include <string>
+#include <type_traits>
+#include <utility>
 
-#include "internal/api/client/Client.hpp"
-#include "internal/blockchain/Params.hpp"
-#include "opentxs/api/Core.hpp"
+#include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/blockchain/AddressStyle.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/core/Data.hpp"
+#include "opentxs/core/Log.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
-#include "ui/accountactivity/AccountActivity.hpp"
 
 // #define OT_METHOD "opentxs::ui::BlockchainDestinationValidator::"
 

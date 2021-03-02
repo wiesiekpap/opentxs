@@ -6,7 +6,6 @@
 #ifndef OPENTXS_UI_CONTACTLIST_HPP
 #define OPENTXS_UI_CONTACTLIST_HPP
 
-#ifndef Q_MOC_RUN
 #include "opentxs/Forward.hpp"  // IWYU pragma: associated
 
 #include "opentxs/SharedPimpl.hpp"
@@ -22,17 +21,8 @@ namespace opentxs
 {
 namespace ui
 {
-namespace implementation
-{
-class ContactList;
-}  // namespace implementation
-
 class ContactList;
 class ContactListItem;
-
-#if OT_QT
-class ContactListQt;
-#endif
 }  // namespace ui
 }  // namespace opentxs
 
@@ -65,45 +55,4 @@ private:
 };
 }  // namespace ui
 }  // namespace opentxs
-#endif
-
-#if OT_QT || defined(Q_MOC_RUN)
-class OPENTXS_EXPORT opentxs::ui::ContactListQt final
-    : public QIdentityProxyModel
-{
-    Q_OBJECT
-
-signals:
-    void updated() const;
-
-public:
-    // List layout
-    enum Roles {
-        ContactIDRole = Qt::UserRole + 0,
-        SectionRole = Qt::UserRole + 1,
-    };
-
-    Q_INVOKABLE QString addContact(
-        const QString& label,
-        const QString& paymentCode = "",
-        const QString& nymID = "") const noexcept;
-
-    ContactListQt(implementation::ContactList& parent) noexcept;
-
-    ~ContactListQt() final = default;
-
-private:
-    friend opentxs::Factory;
-
-    implementation::ContactList& parent_;
-
-    void notify() const noexcept;
-
-    ContactListQt() = delete;
-    ContactListQt(const ContactListQt&) = delete;
-    ContactListQt(ContactListQt&&) = delete;
-    ContactListQt& operator=(const ContactListQt&) = delete;
-    ContactListQt& operator=(ContactListQt&&) = delete;
-};
-#endif
 #endif

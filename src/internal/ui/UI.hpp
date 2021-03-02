@@ -5,9 +5,15 @@
 
 #pragma once
 
+#if OT_QT
+#include <QAbstractItemModel>
+#include <QModelIndex>
+#include <QObject>
 #if OT_WITH_QML
-#include <QtQml/QQmlEngine>
-#endif
+#include <QQmlEngine>
+#endif  // OT_WITH_QML
+#include <QVariant>
+#endif  // OT_QT
 #include <chrono>
 #include <cstdint>
 #include <memory>
@@ -118,6 +124,19 @@ class PayableList;
 class Profile;
 class UnitList;
 }  // namespace implementation
+
+class AccountActivityQt;
+class AccountListQt;
+class AccountSummaryQt;
+class ActivitySummaryQt;
+class ActivityThreadQt;
+class BlockchainSelectionQt;
+class ContactListQt;
+class ContactQt;
+class MessagableListQt;
+class PayableListQt;
+class ProfileQt;
+class UnitListQt;
 }  // namespace ui
 
 class Flag;
@@ -175,7 +194,6 @@ struct UnitList;
 struct UnitListItem;
 }  // namespace opentxs::ui::internal
 
-#if OT_BLOCKCHAIN
 namespace opentxs::ui
 {
 auto AccountID(const api::Core& api, const blockchain::Type chain) noexcept
@@ -188,7 +206,6 @@ auto NotaryID(const api::Core& api, const blockchain::Type chain) noexcept
 auto UnitID(const api::Core& api, const blockchain::Type chain) noexcept
     -> const identifier::UnitDefinition&;
 }  // namespace opentxs::ui
-#endif  // OT_BLOCKCHAIN
 
 namespace opentxs::ui::implementation
 {

@@ -8,6 +8,10 @@
 
 #pragma once
 
+#if OT_QT
+#include <QHash>
+#include <QVariant>
+#endif  // OT_QT
 #include <atomic>
 #include <map>
 #include <memory>

@@ -53,9 +53,14 @@ set(cxx-headers
 add_library(opentxs-api-client OBJECT ${cxx-sources} ${cxx-headers})
 
 if(OT_QT_EXPORT)
-  target_link_libraries(
-    opentxs-api-client PRIVATE Qt5::Core Qt5::Gui Qt5::Widgets
-  )
+  target_link_libraries(opentxs-api-client PRIVATE Qt5::Core Qt5::Gui)
+
+  if(OT_QML_EXPORT)
+    target_link_libraries(opentxs-api-client PUBLIC Qt5::Qml)
+    target_compile_definitions(opentxs-api-client PRIVATE -DOT_WITH_QML=1)
+  else()
+    target_compile_definitions(opentxs-api-client PRIVATE -DOT_WITH_QML=0)
+  endif()
 endif()
 
 if(OT_BLOCKCHAIN_EXPORT)
@@ -68,12 +73,6 @@ target_link_libraries(
 target_include_directories(
   opentxs-api-client SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
-
-if(OT_QML_EXPORT)
-  target_compile_definitions(opentxs-api-client PRIVATE -DOT_WITH_QML=1)
-else()
-  target_compile_definitions(opentxs-api-client PRIVATE -DOT_WITH_QML=0)
-endif()
 
 add_dependencies(opentxs-api-client generated_code)
 

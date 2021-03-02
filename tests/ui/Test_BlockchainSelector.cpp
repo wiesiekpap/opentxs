@@ -3,15 +3,19 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
+
+#if OT_QT
+#include <QString>
+#include <QVariant>
+#endif  // OT_QT
 #include <gtest/gtest.h>
 #include <atomic>
-#include <memory>
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "UIHelpers.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/SharedPimpl.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/UI.hpp"
@@ -20,6 +24,9 @@
 #include "opentxs/ui/BlockchainSelection.hpp"
 #include "opentxs/ui/BlockchainSelectionItem.hpp"
 #include "opentxs/ui/Blockchains.hpp"
+#if OT_QT
+#include "opentxs/ui/qt/BlockchainSelection.hpp"
+#endif  // OT_QT
 
 namespace
 {

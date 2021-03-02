@@ -6,10 +6,6 @@
 #ifndef OPENTXS_UI_CONTACT_HPP
 #define OPENTXS_UI_CONTACT_HPP
 
-#ifndef Q_MOC_RUN
-
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Forward.hpp"  // IWYU pragma: associated
 
 #include <string>
@@ -28,17 +24,8 @@ namespace opentxs
 {
 namespace ui
 {
-namespace implementation
-{
-class Contact;
-}  // namespace implementation
-
 class Contact;
 class ContactSection;
-
-#if OT_QT
-class ContactQt;
-#endif
 }  // namespace ui
 }  // namespace opentxs
 
@@ -70,41 +57,4 @@ private:
 };
 }  // namespace ui
 }  // namespace opentxs
-#endif
-
-#if OT_QT || defined(Q_MOC_RUN)
-class OPENTXS_EXPORT opentxs::ui::ContactQt final : public QIdentityProxyModel
-{
-    Q_OBJECT
-    Q_PROPERTY(QString displayName READ displayName NOTIFY updated)
-    Q_PROPERTY(QString contactID READ contactID NOTIFY updated)
-    Q_PROPERTY(QString paymentCode READ paymentCode NOTIFY updated)
-
-signals:
-    void updated() const;
-
-public:
-    // Tree layout
-    QString displayName() const noexcept;
-    QString contactID() const noexcept;
-    QString paymentCode() const noexcept;
-
-    ContactQt(implementation::Contact& parent) noexcept;
-
-    ~ContactQt() final = default;
-
-private:
-    friend opentxs::Factory;
-
-    implementation::Contact& parent_;
-
-    void notify() const noexcept;
-
-    ContactQt() = delete;
-    ContactQt(const ContactQt&) = delete;
-    ContactQt(ContactQt&&) = delete;
-    ContactQt& operator=(const ContactQt&) = delete;
-    ContactQt& operator=(ContactQt&&) = delete;
-};
-#endif
 #endif

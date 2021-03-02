@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                          // IWYU pragma: associated
 #include "ui/activitysummary/ActivitySummary.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
 #include <chrono>
 #include <list>
 #include <memory>
@@ -30,6 +31,9 @@
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/protobuf/StorageThread.pb.h"
 #include "opentxs/protobuf/StorageThreadItem.pb.h"
+#if OT_QT
+#include "opentxs/ui/qt/ActivitySummary.hpp"
+#endif  // OT_QT
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::ActivitySummary::"

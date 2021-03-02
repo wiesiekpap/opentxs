@@ -15,6 +15,7 @@
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/Types.hpp"
 #endif  // OT_BLOCKCHAIN
+#include "opentxs/crypto/Types.hpp"
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/ui/Types.hpp"
 
@@ -42,6 +43,8 @@
 %ignore opentxs::api::client::UI::PayableList;
 // clang-format on
 #endif  // SWIG
+
+class QAbstractItemModel;
 
 namespace opentxs
 {
@@ -87,6 +90,7 @@ class ContactQt;
 class MessagableListQt;
 class PayableListQt;
 class ProfileQt;
+class SeedValidator;
 class UnitListQt;
 #endif
 }  // namespace ui
@@ -205,6 +209,10 @@ public:
     OPENTXS_EXPORT virtual ui::ProfileQt* ProfileQt(
         const identifier::Nym& nymID,
         const SimpleCallback updateCB = {}) const noexcept = 0;
+    /// Caller does not own this pointer
+    OPENTXS_EXPORT virtual const ui::SeedValidator* SeedValidator(
+        const opentxs::crypto::SeedStyle type,
+        const opentxs::crypto::Language lang) const noexcept = 0;
     /// Caller does not own this pointer
     OPENTXS_EXPORT virtual ui::UnitListQt* UnitListQt(
         const identifier::Nym& nym,

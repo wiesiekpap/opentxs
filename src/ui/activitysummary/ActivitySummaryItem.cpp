@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "ui/activitysummary/ActivitySummaryItem.hpp"  // IWYU pragma: associated
 
+#if OT_QT
+#include <QDateTime>
+#endif  // OT_QT
 #include <atomic>
 #include <chrono>
 #include <memory>

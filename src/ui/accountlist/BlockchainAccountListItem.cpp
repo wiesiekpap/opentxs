@@ -7,12 +7,18 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "ui/accountlist/BlockchainAccountListItem.hpp"  // IWYU pragma: associated
 
+#if OT_QT
+#include <QObject>
+#endif  // OT_QT
 #include <memory>
 #include <string>
 
 #include "internal/api/client/Client.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#if OT_QT
+#include "opentxs/ui/qt/AccountList.hpp"
+#endif  // OT_QT
 #include "ui/base/Widget.hpp"
 #if OT_QT
 #include "util/Polarity.hpp"  // IWYU pragma: keep

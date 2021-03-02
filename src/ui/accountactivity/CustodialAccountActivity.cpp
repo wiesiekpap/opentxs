@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "ui/accountactivity/CustodialAccountActivity.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <future>

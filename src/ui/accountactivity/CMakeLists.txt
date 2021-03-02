@@ -10,11 +10,9 @@ set(cxx-sources
     CustodialAccountActivity.cpp
     TransferBalanceItem.cpp
 )
-set(ot-qobject-install-headers
-    "${opentxs_SOURCE_DIR}/include/opentxs/ui/AccountActivity.hpp"
-)
+set(ot-qobject-install-headers "")
 set(cxx-install-headers
-    ${ot-qobject-install-headers}
+    "${opentxs_SOURCE_DIR}/include/opentxs/ui/AccountActivity.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/BalanceItem.hpp"
 )
 set(cxx-headers
@@ -45,14 +43,9 @@ if(OT_WITH_QT)
   list(
     APPEND
     ot-qobject-install-headers
-    "${opentxs_SOURCE_DIR}/include/opentxs/ui/AmountValidator.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/ui/DestinationValidator.hpp"
-  )
-  list(
-    APPEND
-    cxx-install-headers
-    "${opentxs_SOURCE_DIR}/include/opentxs/ui/AmountValidator.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/ui/DestinationValidator.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/ui/qt/AccountActivity.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/ui/qt/AmountValidator.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/ui/qt/DestinationValidator.hpp"
   )
   list(
     APPEND
@@ -74,7 +67,11 @@ else()
 endif()
 
 add_library(
-  opentxs-ui-accountactivity OBJECT ${cxx-sources} ${cxx-headers} ${MOC_SRCS}
+  opentxs-ui-accountactivity OBJECT
+  ${cxx-sources}
+  ${cxx-headers}
+  ${MOC_SRCS}
+  ${ot-qobject-install-headers}
 )
 target_link_libraries(opentxs-ui-accountactivity PRIVATE opentxs::messages)
 target_include_directories(
@@ -82,12 +79,10 @@ target_include_directories(
 )
 
 if(OT_QT_EXPORT)
-  target_link_libraries(
-    opentxs-ui-accountactivity PRIVATE Qt5::Core Qt5::Gui Qt5::Widgets
-  )
+  target_link_libraries(opentxs-ui-accountactivity PUBLIC Qt5::Core Qt5::Gui)
 
   if(OT_QML_EXPORT)
-    target_link_libraries(opentxs-ui-accountactivity PRIVATE Qt5::Qml)
+    target_link_libraries(opentxs-ui-accountactivity PUBLIC Qt5::Qml)
     target_compile_definitions(
       opentxs-ui-accountactivity PRIVATE -DOT_WITH_QML=1
     )
@@ -108,4 +103,11 @@ if(OPENTXS_STANDALONE)
     DESTINATION include/opentxs/ui
     COMPONENT dev
   )
+  if(OT_QT_EXPORT)
+    install(
+      FILES ${ot-qobject-install-headers}
+      DESTINATION include/opentxs/ui/qt
+      COMPONENT dev
+    )
+  endif()
 endif()

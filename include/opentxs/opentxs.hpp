@@ -12,7 +12,6 @@
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Proto.tpp"
-#include "opentxs/Qt.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Core.hpp"
@@ -515,9 +514,6 @@
 #include "opentxs/ui/ActivitySummaryItem.hpp"
 #include "opentxs/ui/ActivityThread.hpp"
 #include "opentxs/ui/ActivityThreadItem.hpp"
-#if OT_QT
-#include "opentxs/ui/AmountValidator.hpp"
-#endif  // OT_QT
 #include "opentxs/ui/BalanceItem.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/ui/BlockchainSelection.hpp"
@@ -530,10 +526,6 @@
 #include "opentxs/ui/ContactListItem.hpp"
 #include "opentxs/ui/ContactSection.hpp"
 #include "opentxs/ui/ContactSubsection.hpp"
-#if OT_QT
-#include "opentxs/ui/DestinationValidator.hpp"
-#include "opentxs/ui/DisplayScale.hpp"
-#endif  // OT_QT
 #include "opentxs/ui/IssuerItem.hpp"
 #include "opentxs/ui/ListRow.hpp"
 #include "opentxs/ui/MessagableList.hpp"
@@ -547,6 +539,27 @@
 #include "opentxs/ui/UnitList.hpp"
 #include "opentxs/ui/UnitListItem.hpp"
 #include "opentxs/ui/Widget.hpp"
+#if OT_QT
+#include "opentxs/ui/qt/AccountActivity.hpp"
+#include "opentxs/ui/qt/AccountList.hpp"
+#include "opentxs/ui/qt/AccountSummary.hpp"
+#include "opentxs/ui/qt/ActivitySummary.hpp"
+#include "opentxs/ui/qt/ActivityThread.hpp"
+#include "opentxs/ui/qt/AmountValidator.hpp"
+#include "opentxs/ui/qt/BlankModel.hpp"
+#if OT_BLOCKCHAIN
+#include "opentxs/ui/qt/BlockchainSelection.hpp"
+#endif  // OT_BLOCKCHAIN
+#include "opentxs/ui/qt/Contact.hpp"
+#include "opentxs/ui/qt/ContactList.hpp"
+#include "opentxs/ui/qt/DestinationValidator.hpp"
+#include "opentxs/ui/qt/DisplayScale.hpp"
+#include "opentxs/ui/qt/MessagableList.hpp"
+#include "opentxs/ui/qt/PayableList.hpp"
+#include "opentxs/ui/qt/Profile.hpp"
+#include "opentxs/ui/qt/SeedValidator.hpp"
+#include "opentxs/ui/qt/UnitList.hpp"
+#endif  // OT_QT
 #include "opentxs/util/Signals.hpp"
 #endif
 // IWYU pragma: end_exports

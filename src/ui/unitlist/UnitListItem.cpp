@@ -7,7 +7,14 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "ui/unitlist/UnitListItem.hpp"  // IWYU pragma: associated
 
+#if OT_QT
+#include <QObject>
+#endif  // OT_QT
 #include <memory>
+
+#if OT_QT
+#include "opentxs/ui/qt/UnitList.hpp"
+#endif  // OT_QT
 
 // #define OT_METHOD "opentxs::ui::implementation::UnitListItem::"
 

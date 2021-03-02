@@ -19,6 +19,7 @@ add_subdirectory(contactlist)
 
 if(OT_QT_EXPORT)
   add_subdirectory(displayscale)
+  add_subdirectory(seedvalidator)
 endif()
 
 add_subdirectory(messagablelist)

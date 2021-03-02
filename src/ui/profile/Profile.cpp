@@ -7,6 +7,10 @@
 #include "1_Internal.hpp"          // IWYU pragma: associated
 #include "ui/profile/Profile.hpp"  // IWYU pragma: associated
 
+#if OT_QT
+#include <QString>
+#endif  // OT_QT
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <set>
@@ -32,6 +36,9 @@
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/ui/Profile.hpp"
 #include "opentxs/ui/ProfileSection.hpp"
+#if OT_QT
+#include "opentxs/ui/qt/Profile.hpp"
+#endif  // OT_QT
 #include "ui/base/List.hpp"
 
 template struct std::pair<int, std::string>;

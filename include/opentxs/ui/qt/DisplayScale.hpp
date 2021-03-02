@@ -6,11 +6,16 @@
 #ifndef OPENTXS_UI_DISPLAYSCALE_HPP
 #define OPENTXS_UI_DISPLAYSCALE_HPP
 
+#include <QAbstractItemModel>
 #include <QAbstractListModel>
 #include <QModelIndex>
+#include <QObject>
+#include <QString>
 #include <QVariant>
 
 #include "opentxs/opentxs_export.hpp"  // IWYU pragma: keep
+
+class QObject;
 
 namespace opentxs
 {
