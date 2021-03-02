@@ -4,6 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 set(cxx-sources
+    Gatekeeper.cpp
     JobCounter.cpp
     LMDB.cpp
     ScopeGuard.cpp
@@ -19,6 +20,7 @@ set(cxx-headers
     AsyncValue.hpp
     Blank.hpp
     Container.hpp
+    Gatekeeper.hpp
     HDIndex.hpp
     JobCounter.hpp
     LMDB.hpp

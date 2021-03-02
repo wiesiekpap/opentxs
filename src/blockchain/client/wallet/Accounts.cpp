@@ -29,6 +29,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/protobuf/HDPath.pb.h"
+#include "util/Gatekeeper.hpp"
 #include "util/JobCounter.hpp"
 
 // #define OT_METHOD "opentxs::blockchain::client::wallet::Accounts::"
@@ -36,24 +37,12 @@
 namespace opentxs::blockchain::client::wallet
 {
 struct Accounts::Imp {
-    using AccountMap = std::map<OTNymID, wallet::Account>;
-    using PCMap = std::map<OTIdentifier, NotificationStateData>;
-
-    const api::Core& api_;
-    const api::client::internal::Blockchain& blockchain_api_;
-    const internal::Network& network_;
-    const internal::WalletDatabase& db_;
-    const network::zeromq::socket::Push& thread_pool_;
-    const SimpleCallback& task_finished_;
-    const Type chain_;
-    const filter::Type filter_type_;
-    JobCounter job_counter_;
-    AccountMap map_;
-    Outstanding pc_counter_;
-    PCMap payment_codes_;
-
     auto Add(const identifier::Nym& nym) noexcept -> bool
     {
+        auto ticket = gatekeeper_.get();
+
+        if (ticket) { return false; }
+
         auto [it, added] = map_.try_emplace(
             nym,
             api_,
@@ -85,6 +74,88 @@ struct Accounts::Imp {
 
         return Add(id);
     }
+    auto Reorg(const block::Position& parent) noexcept -> bool
+    {
+        auto ticket = gatekeeper_.get();
+
+        if (ticket) { return false; }
+
+        auto output{false};
+
+        for (auto& [nym, account] : map_) { output |= account.reorg(parent); }
+
+        for (auto& [code, account] : payment_codes_) {
+            output |= account.reorg_.Queue(parent);
+        }
+
+        return output;
+    }
+    auto shutdown() noexcept -> void
+    {
+        gatekeeper_.shutdown();
+        payment_codes_.clear();
+    }
+    auto state_machine() noexcept -> bool
+    {
+        auto ticket = gatekeeper_.get();
+
+        if (ticket) { return false; }
+
+        auto output{false};
+
+        for (auto& [code, account] : payment_codes_) {
+            output |= account.state_machine();
+        }
+
+        for (auto& [nym, account] : map_) { output |= account.state_machine(); }
+
+        return output;
+    }
+
+    Imp(const api::Core& api,
+        const api::client::internal::Blockchain& blockchain,
+        const internal::Network& network,
+        const internal::WalletDatabase& db,
+        const network::zeromq::socket::Push& socket,
+        const Type chain,
+        const SimpleCallback& taskFinished) noexcept
+        : api_(api)
+        , blockchain_api_(blockchain)
+        , network_(network)
+        , db_(db)
+        , thread_pool_(socket)
+        , task_finished_(taskFinished)
+        , chain_(chain)
+        , filter_type_(network_.FilterOracleInternal().DefaultType())
+        , job_counter_()
+        , map_()
+        , pc_counter_(job_counter_.Allocate())
+        , payment_codes_()
+        , gatekeeper_()
+    {
+        for (const auto& id : api_.Wallet().LocalNyms()) { Add(id); }
+    }
+
+    ~Imp() { shutdown(); }
+
+private:
+    using AccountMap = std::map<OTNymID, wallet::Account>;
+    using PCMap = std::map<OTIdentifier, NotificationStateData>;
+
+    const api::Core& api_;
+    const api::client::internal::Blockchain& blockchain_api_;
+    const internal::Network& network_;
+    const internal::WalletDatabase& db_;
+    const network::zeromq::socket::Push& thread_pool_;
+    const SimpleCallback& task_finished_;
+    const Type chain_;
+    const filter::Type filter_type_;
+    JobCounter job_counter_;
+    AccountMap map_;
+    Outstanding pc_counter_;
+    PCMap payment_codes_;
+    Gatekeeper gatekeeper_;
+
     auto index_nym(const identifier::Nym& id) noexcept -> void
     {
         const auto pNym = api_.Wallet().Nym(id);
@@ -121,53 +192,6 @@ struct Accounts::Imp {
                 return out;
             }());
     }
-    auto Reorg(const block::Position& parent) noexcept -> bool
-    {
-        auto output{false};
-
-        for (auto& [nym, account] : map_) { output |= account.reorg(parent); }
-
-        for (auto& [code, account] : payment_codes_) {
-            output |= account.reorg_.Queue(parent);
-        }
-
-        return output;
-    }
-    auto state_machine() noexcept -> bool
-    {
-        auto output{false};
-
-        for (auto& [code, account] : payment_codes_) {
-            output |= account.state_machine();
-        }
-
-        for (auto& [nym, account] : map_) { output |= account.state_machine(); }
-
-        return output;
-    }
-
-    Imp(const api::Core& api,
-        const api::client::internal::Blockchain& blockchain,
-        const internal::Network& network,
-        const internal::WalletDatabase& db,
-        const network::zeromq::socket::Push& socket,
-        const Type chain,
-        const SimpleCallback& taskFinished) noexcept
-        : api_(api)
-        , blockchain_api_(blockchain)
-        , network_(network)
-        , db_(db)
-        , thread_pool_(socket)
-        , task_finished_(taskFinished)
-        , chain_(chain)
-        , filter_type_(network_.FilterOracleInternal().DefaultType())
-        , job_counter_()
-        , map_()
-        , pc_counter_(job_counter_.Allocate())
-        , payment_codes_()
-    {
-        for (const auto& id : api_.Wallet().LocalNyms()) { Add(id); }
-    }
 };
 
 Accounts::Accounts(
@@ -203,5 +227,5 @@ auto Accounts::state_machine() noexcept -> bool
     return imp_->state_machine();
 }
 
-Accounts::~Accounts() = default;
+Accounts::~Accounts() { imp_->shutdown(); }
 }  // namespace opentxs::blockchain::client::wallet

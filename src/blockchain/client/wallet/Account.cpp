@@ -22,6 +22,7 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "util/Gatekeeper.hpp"
 #include "util/JobCounter.hpp"
 
 #define OT_METHOD "opentxs::blockchain::client::wallet::Account::"
@@ -31,57 +32,12 @@ namespace opentxs::blockchain::client::wallet
 using Subchain = internal::WalletDatabase::Subchain;
 
 struct Account::Imp {
-    using Map = std::map<OTIdentifier, DeterministicStateData>;
-
-    const api::Core& api_;
-    const api::client::Blockchain& blockchain_;
-    const BalanceTree& ref_;
-    const internal::Network& network_;
-    const internal::WalletDatabase& db_;
-    const filter::Type filter_type_;
-    const network::zeromq::socket::Push& thread_pool_;
-    const SimpleCallback& task_finished_;
-    Map internal_;
-    Map external_;
-    Map outgoing_;
-    Map incoming_;
-    Outstanding jobs_;
-
-    auto get(
-        const api::client::blockchain::Deterministic& account,
-        const Subchain subchain,
-        Map& map) noexcept -> DeterministicStateData&
-    {
-        auto it = map.find(account.ID());
-
-        if (map.end() != it) { return it->second; }
-
-        return instantiate(account, subchain, map);
-    }
-    auto instantiate(
-        const api::client::blockchain::Deterministic& account,
-        const Subchain subchain,
-        Map& map) noexcept -> DeterministicStateData&
-    {
-        auto [it, added] = map.try_emplace(
-            account.ID(),
-            api_,
-            blockchain_,
-            network_,
-            db_,
-            account,
-            task_finished_,
-            jobs_,
-            thread_pool_,
-            filter_type_,
-            subchain);
-
-        OT_ASSERT(added);
-
-        return it->second;
-    }
     auto reorg(const block::Position& parent) noexcept -> bool
     {
+        auto ticket = gatekeeper_.get();
+
+        if (ticket) { return false; }
+
         auto output{false};
 
         for (const auto& account : ref_.GetHD()) {
@@ -107,8 +63,20 @@ struct Account::Imp {
 
         return output;
     }
+    auto shutdown() noexcept -> void
+    {
+        gatekeeper_.shutdown();
+        internal_.clear();
+        external_.clear();
+        outgoing_.clear();
+        incoming_.clear();
+    }
     auto state_machine() noexcept -> bool
     {
+        auto ticket = gatekeeper_.get();
+
+        if (ticket) { return false; }
+
         auto output{false};
 
         for (const auto& account : ref_.GetHD()) {
@@ -157,6 +125,7 @@ struct Account::Imp {
         , outgoing_()
         , incoming_()
         , jobs_(std::move(jobs))
+        , gatekeeper_()
     {
         for (const auto& account : ref_.GetHD()) {
             instantiate(account, Subchain::Internal, internal_);
@@ -167,6 +136,59 @@ struct Account::Imp {
             instantiate(account, Subchain::Outgoing, outgoing_);
             instantiate(account, Subchain::Incoming, incoming_);
         }
+    }
+    ~Imp() { shutdown(); }
+
+private:
+    using Map = std::map<OTIdentifier, DeterministicStateData>;
+
+    const api::Core& api_;
+    const api::client::Blockchain& blockchain_;
+    const BalanceTree& ref_;
+    const internal::Network& network_;
+    const internal::WalletDatabase& db_;
+    const filter::Type filter_type_;
+    const network::zeromq::socket::Push& thread_pool_;
+    const SimpleCallback& task_finished_;
+    Map internal_;
+    Map external_;
+    Map outgoing_;
+    Map incoming_;
+    Outstanding jobs_;
+    Gatekeeper gatekeeper_;
+
+    auto get(
+        const api::client::blockchain::Deterministic& account,
+        const Subchain subchain,
+        Map& map) noexcept -> DeterministicStateData&
+    {
+        auto it = map.find(account.ID());
+
+        if (map.end() != it) { return it->second; }
+
+        return instantiate(account, subchain, map);
+    }
+    auto instantiate(
+        const api::client::blockchain::Deterministic& account,
+        const Subchain subchain,
+        Map& map) noexcept -> DeterministicStateData&
+    {
+        auto [it, added] = map.try_emplace(
+            account.ID(),
+            api_,
+            blockchain_,
+            network_,
+            db_,
+            account,
+            task_finished_,
+            jobs_,
+            thread_pool_,
+            filter_type_,
+            subchain);
+
+        OT_ASSERT(added);
+
+        return it->second;
     }
 };
 
@@ -207,5 +229,5 @@ auto Account::reorg(const block::Position& parent) noexcept -> bool
 
 auto Account::state_machine() noexcept -> bool { return imp_->state_machine(); }
 
-Account::~Account() = default;
+Account::~Account() { imp_->shutdown(); }
 }  // namespace opentxs::blockchain::client::wallet
