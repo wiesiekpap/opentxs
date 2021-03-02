@@ -133,8 +133,6 @@ auto Translate(const proto::ContactItemType type) noexcept -> blockchain::Type;
 namespace opentxs::api::client::internal
 {
 struct Activity : virtual public api::client::Activity {
-    virtual void MigrateLegacyThreads() const = 0;
-
     ~Activity() override = default;
 };
 struct Blockchain : virtual public api::client::Blockchain {

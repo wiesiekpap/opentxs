@@ -213,22 +213,29 @@ void Threads::init(const std::string& hash)
     Lock lock(blockchain_.lock_);
 
     for (const auto& hash : input->localnymid()) {
-        auto index = std::shared_ptr<proto::StorageBlockchainTransactions>{};
-        auto loaded = driver_.LoadProto(hash, index, false);
+        try {
+            auto index =
+                std::shared_ptr<proto::StorageBlockchainTransactions>{};
+            auto loaded = driver_.LoadProto(hash, index, false);
 
-        OT_ASSERT(loaded && index);
+            OT_ASSERT(loaded && index);
 
-        auto txid = Data::Factory();
-        txid->Assign(index->txid());
+            auto txid = Data::Factory();
+            txid->Assign(index->txid());
 
-        OT_ASSERT(false == txid->empty());
+            OT_ASSERT(false == txid->empty());
 
-        auto& data = blockchain_.map_[std::move(txid)];
+            auto& data = blockchain_.map_[std::move(txid)];
 
-        for (const auto& thread : index->thread()) {
-            auto threadID = Identifier::Factory();
-            threadID->Assign(thread);
-            data.emplace(std::move(threadID));
+            for (const auto& thread : index->thread()) {
+                auto threadID = Identifier::Factory();
+                threadID->Assign(thread);
+                data.emplace(std::move(threadID));
+            }
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+            continue;
         }
     }
 }

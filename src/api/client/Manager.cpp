@@ -286,10 +286,6 @@ auto Manager::ServerAction() const -> const api::client::ServerAction&
 
 void Manager::StartActivity()
 {
-    OT_ASSERT(activity_)
-
-    activity_->MigrateLegacyThreads();
-
     OT_ASSERT(dht_)
 
     Scheduler::Start(storage_.get(), dht_.get());
