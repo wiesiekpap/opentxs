@@ -171,6 +171,13 @@ auto UI::UpdateManager::ActivateUICallback(
     pipeline_->Push(widget.str());
 }
 
+auto UI::UpdateManager::ClearUICallbacks(
+    const Identifier& widget) const noexcept -> void
+{
+    Lock lock(lock_);
+    map_.erase(widget);
+}
+
 auto UI::UpdateManager::pipeline(zmq::Message& in) noexcept -> void
 {
     if (0 == in.size()) { return; }
@@ -898,24 +905,31 @@ auto UI::SeedValidator(
 
 auto UI::Shutdown() noexcept -> void
 {
+    const auto clearCallbacks = [](auto& map) {
+        for (auto& [key, widget] : map) {
+            if (widget) { widget->ClearCallbacks(); }
+        }
+    };
+    auto lock = Lock{lock_};
 #if OT_BLOCKCHAIN
-    const_cast<BlockchainSelectionMap&>(blockchain_selection_).clear();
-#if OT_QT
-    const_cast<BlockchainSelectionQtType&>(blockchain_selection_qt_).clear();
-#endif  // OT_QT
+    clearCallbacks(blockchain_selection_);
 #endif  // OT_BLOCKCHAIN
-    unit_lists_.clear();
-    profiles_.clear();
-    activity_threads_.clear();
-    payable_lists_.clear();
-    messagable_lists_.clear();
-    contact_lists_.clear();
-    contacts_.clear();
-    activity_summaries_.clear();
-    account_summaries_.clear();
-    account_lists_.clear();
-    accounts_.clear();
+    clearCallbacks(unit_lists_);
+    clearCallbacks(profiles_);
+    clearCallbacks(activity_threads_);
+    clearCallbacks(payable_lists_);
+    clearCallbacks(messagable_lists_);
+    clearCallbacks(contact_lists_);
+    clearCallbacks(contacts_);
+    clearCallbacks(activity_summaries_);
+    clearCallbacks(account_summaries_);
+    clearCallbacks(account_lists_);
+    clearCallbacks(accounts_);
+
 #if OT_QT
+#if OT_BLOCKCHAIN
+    blockchain_selection_qt_.clear();
+#endif  // OT_BLOCKCHAIN
     unit_lists_qt_.clear();
     profiles_qt_.clear();
     activity_threads_qt_.clear();
@@ -928,6 +942,21 @@ auto UI::Shutdown() noexcept -> void
     account_lists_qt_.clear();
     accounts_qt_.clear();
 #endif  // OT_QT
+
+#if OT_BLOCKCHAIN
+    blockchain_selection_.clear();
+#endif  // OT_BLOCKCHAIN
+    unit_lists_.clear();
+    profiles_.clear();
+    activity_threads_.clear();
+    payable_lists_.clear();
+    messagable_lists_.clear();
+    contact_lists_.clear();
+    contacts_.clear();
+    activity_summaries_.clear();
+    account_summaries_.clear();
+    account_lists_.clear();
+    accounts_.clear();
 }
 
 auto UI::unit_list(

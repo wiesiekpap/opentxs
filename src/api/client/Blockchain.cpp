@@ -264,7 +264,14 @@ Blockchain::Blockchain(
         return {};
     }())
     , balances_(*this, api_)
-    , enabled_callbacks_(api_)
+    , chain_state_publisher_([&] {
+        auto out = api_.ZeroMQ().PublishSocket();
+        auto rc = out->Start(api_.Endpoints().BlockchainStateChange());
+
+        OT_ASSERT(rc);
+
+        return out;
+    }())
     , last_hello_([&] {
         auto output = LastHello{};
 
@@ -706,11 +713,9 @@ auto Blockchain::disable(const Lock& lock, const Chain type) const noexcept
 
     stop(lock, type);
 
-    if (db_.Disable(type)) {
-        enabled_callbacks_.Execute(type, false);
+    if (db_.Disable(type)) { return true; }
 
-        return true;
-    }
+    LogOutput(OT_METHOD)(__FUNCTION__)(": Database update failure").Flush();
 
     return false;
 }
@@ -740,13 +745,24 @@ auto Blockchain::enable(
         return false;
     }
 
-    if (start(lock, type, seednode)) {
-        enabled_callbacks_.Execute(type, true);
+    return start(lock, type, seednode);
+}
 
-        return true;
-    }
+auto Blockchain::EnabledChains() const noexcept -> std::set<Chain>
+{
+    auto out = std::set<Chain>{};
+    const auto data = [&] {
+        auto lock = Lock{lock_};
 
-    return false;
+        return db_.LoadEnabledChains();
+    }();
+    std::transform(
+        data.begin(),
+        data.end(),
+        std::inserter(out, out.begin()),
+        [](const auto value) { return value.first; });
+
+    return out;
 }
 #endif  // OT_BLOCKCHAIN
 
@@ -1417,6 +1433,16 @@ auto Blockchain::PubkeyHash(
     return output;
 }
 
+#if OT_BLOCKCHAIN
+auto Blockchain::publish_chain_state(Chain type, bool state) const -> void
+{
+    auto work = api_.ZeroMQ().TaggedMessage(WorkType::BlockchainStateChange);
+    work->AddFrame(type);
+    work->AddFrame(state);
+    chain_state_publisher_->Send(work);
+}
+#endif  // OT_BLOCKCHAIN
+
 auto Blockchain::RecipientContact(const blockchain::Key& key) const noexcept
     -> OTIdentifier
 {
@@ -1633,6 +1659,10 @@ auto Blockchain::start(
                 type,
                 factory::BlockchainNetworkBitcoin(
                     api_, *this, type, config, seednode, endpoint));
+            LogVerbose(OT_METHOD)(__FUNCTION__)(": started chain ")(
+                static_cast<std::uint32_t>(type))
+                .Flush();
+            publish_chain_state(type, true);
 
             return it->second->Connect();
         }
@@ -1685,6 +1715,10 @@ auto Blockchain::stop(const Lock& lock, const Chain type) const noexcept -> bool
     it->second->Shutdown().get();
     thread_pool_.Stop(type).get();
     networks_.erase(it);
+    LogVerbose(OT_METHOD)(__FUNCTION__)(": stopped chain ")(
+        static_cast<std::uint32_t>(type))
+        .Flush();
+    publish_chain_state(type, false);
 
     return true;
 }

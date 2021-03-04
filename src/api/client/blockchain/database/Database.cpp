@@ -388,10 +388,8 @@ auto Database::Disable(const Chain type) const noexcept -> bool
 {
     const auto key = std::size_t{static_cast<std::uint32_t>(type)};
     const auto value = Space{false_byte_};
-    const auto view =
-        ReadView{reinterpret_cast<const char*>(value.data()), value.size()};
 
-    return imp_.lmdb_.Store(Enabled, key, view).first;
+    return imp_.lmdb_.Store(Enabled, key, reader(value)).first;
 }
 
 auto Database::Enable(const Chain type, const std::string& seednode)
@@ -402,15 +400,14 @@ auto Database::Enable(const Chain type, const std::string& seednode)
     const auto key = std::size_t{static_cast<std::uint32_t>(type)};
     const auto value = [&] {
         auto output = space(sizeof(true_byte_) + seednode.size());
+        output.at(0) = true_byte_;
         auto it = std::next(output.data(), sizeof(true_byte_));
         std::memcpy(it, seednode.data(), seednode.size());
 
         return output;
     }();
-    const auto view =
-        ReadView{reinterpret_cast<const char*>(value.data()), value.size()};
 
-    return imp_.lmdb_.Store(Enabled, key, view).first;
+    return imp_.lmdb_.Store(Enabled, key, reader(value)).first;
 }
 
 auto Database::Find(

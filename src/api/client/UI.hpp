@@ -159,6 +159,10 @@ public:
     auto BlockchainUnitID(const opentxs::blockchain::Type chain) const noexcept
         -> const identifier::UnitDefinition& final;
 #endif  // OT_BLOCKCHAIN
+    auto ClearUICallbacks(const Identifier& widget) const noexcept -> void final
+    {
+        update_manager_.ClearUICallbacks(widget);
+    }
     auto Contact(const Identifier& contactID, const SimpleCallback cb)
         const noexcept -> const ui::Contact& final;
     auto ContactList(const identifier::Nym& nymID, const SimpleCallback cb)
@@ -342,6 +346,7 @@ private:
     struct UpdateManager {
         auto ActivateUICallback(const Identifier& widget) const noexcept
             -> void;
+        auto ClearUICallbacks(const Identifier& widget) const noexcept -> void;
         auto RegisterUICallback(
             const Identifier& widget,
             const SimpleCallback& cb) const noexcept -> void;

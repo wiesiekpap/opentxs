@@ -133,13 +133,17 @@ public:
         auto operator=(const MessageProcessor&) -> MessageProcessor& = delete;
     };
 
-    void SetCallback(SimpleCallback cb) const noexcept final
+    auto ClearCallbacks() const noexcept -> void final
+    {
+        ui_.ClearUICallbacks(widget_id_);
+    }
+    auto SetCallback(SimpleCallback cb) const noexcept -> void final
     {
         ui_.RegisterUICallback(WidgetID(), cb);
     }
     auto WidgetID() const noexcept -> OTIdentifier final { return widget_id_; }
 
-    ~Widget() override = default;
+    ~Widget() override;
 
 protected:
     using ListenerDefinition = std::pair<std::string, MessageFunctor*>;

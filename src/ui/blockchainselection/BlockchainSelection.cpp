@@ -7,6 +7,12 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "ui/blockchainselection/BlockchainSelection.hpp"  // IWYU pragma: associated
 
+#if OT_QT
+#include <QAbstractItemModel>
+#include <QDebug>
+#include <QObject>
+#include <QVariant>
+#endif  // OT_QT
 #include <algorithm>
 #include <future>
 #include <memory>
@@ -23,8 +29,10 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
+#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/ui/Blockchains.hpp"
 #if OT_QT
@@ -65,19 +73,69 @@ auto BlockchainSelectionQtModel(
 #if OT_QT
 namespace opentxs::ui
 {
-QT_PROXY_MODEL_WRAPPER(
+QT_PROXY_MODEL_WRAPPER_EXTRA(
     BlockchainSelectionQt,
     implementation::BlockchainSelection)
 
-auto BlockchainSelectionQt::disableChain(const int chain) const noexcept -> bool
+auto BlockchainSelectionQt::disableChain(const int chain) noexcept -> bool
 {
     return parent_.Disable(static_cast<blockchain::Type>(chain));
 }
 
-auto BlockchainSelectionQt::enableChain(const int chain) const noexcept -> bool
+auto BlockchainSelectionQt::enableChain(const int chain) noexcept -> bool
 {
     return parent_.Enable(static_cast<blockchain::Type>(chain));
 }
+
+auto BlockchainSelectionQt::enabledCount() const noexcept -> int
+{
+    return static_cast<int>(parent_.EnabledCount());
+}
+
+auto BlockchainSelectionQt::flags(const QModelIndex& index) const
+    -> Qt::ItemFlags
+{
+    return parent_.flags(index) | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable;
+}
+
+auto BlockchainSelectionQt::init() noexcept -> void
+{
+    parent_.Set([this](auto chain, auto enabled, auto total) -> void {
+        const auto type = static_cast<int>(static_cast<std::uint32_t>(chain));
+
+        if (enabled) {
+            emit chainEnabled(type);
+        } else {
+            emit chainDisabled(type);
+        }
+
+        emit enabledChanged(static_cast<int>(total));
+    });
+}
+
+auto BlockchainSelectionQt::setData(
+    const QModelIndex& index,
+    const QVariant& value,
+    int role) -> bool
+{
+    if (false == index.isValid()) { return false; }
+
+    if (role == Qt::CheckStateRole) {
+        const auto chain = data(index, TypeRole).toInt();
+
+        if (static_cast<Qt::CheckState>(value.toInt()) == Qt::Checked) {
+
+            return enableChain(chain);
+        } else {
+
+            return disableChain(chain);
+        }
+    }
+
+    return false;
+}
+
+BlockchainSelectionQt::~BlockchainSelectionQt() { parent_.Set({}); }
 }  // namespace opentxs::ui
 #endif
 
@@ -97,13 +155,23 @@ BlockchainSelection::BlockchainSelection(
           ,
           Roles{
               {BlockchainSelectionQt::TypeRole, "type"},
+              {BlockchainSelectionQt::IsTestnet, "testnet"},
           },
-          3
+          1
 #endif
           )
     , Worker(api, {})
     , blockchain_(blockchain)
     , filter_(filter(type))
+    , chain_state_([&] {
+        auto out = std::map<blockchain::Type, bool>{};
+
+        for (const auto chain : filter_) { out[chain] = false; }
+
+        return out;
+    }())
+    , enabled_count_(0)
+    , enabled_callback_()
 {
     init_executor({api.Endpoints().BlockchainStateChange()});
     pipeline_->Push(MakeWork(Work::init));
@@ -121,21 +189,56 @@ auto BlockchainSelection::construct_row(
 auto BlockchainSelection::Disable(const blockchain::Type type) const noexcept
     -> bool
 {
-    const auto output = blockchain_.Disable(type);
+    const auto work = [&] {
+        auto out = Widget::api_.ZeroMQ().TaggedMessage(Work::disable);
+        out->AddFrame(type);
 
-    if (output) { process_state(type, false); }
+        return out;
+    }();
+    pipeline_->Push(work);
 
-    return output;
+    return true;
+}
+
+auto BlockchainSelection::disable(const Message& in) noexcept -> void
+{
+    const auto body = in.Body();
+
+    OT_ASSERT(1 < body.size());
+
+    const auto chain = body.at(1).as<blockchain::Type>();
+    process_state(chain, false);
+    blockchain_.Disable(chain);
 }
 
 auto BlockchainSelection::Enable(const blockchain::Type type) const noexcept
     -> bool
 {
-    const auto output = blockchain_.Enable(type);
+    const auto work = [&] {
+        auto out = Widget::api_.ZeroMQ().TaggedMessage(Work::enable);
+        out->AddFrame(type);
 
-    if (output) { process_state(type, true); }
+        return out;
+    }();
+    pipeline_->Push(work);
 
-    return output;
+    return true;
+}
+
+auto BlockchainSelection::enable(const Message& in) noexcept -> void
+{
+    const auto body = in.Body();
+
+    OT_ASSERT(1 < body.size());
+
+    const auto chain = body.at(1).as<blockchain::Type>();
+    process_state(chain, true);
+    blockchain_.Enable(chain);
+}
+
+auto BlockchainSelection::EnabledCount() const noexcept -> std::size_t
+{
+    return enabled_count_.load();
 }
 
 auto BlockchainSelection::filter(const ui::Blockchains type) noexcept
@@ -187,18 +290,24 @@ auto BlockchainSelection::pipeline(const Message& in) noexcept -> void
     const auto work = body.at(0).as<Work>();
 
     switch (work) {
+        case Work::shutdown: {
+            running_->Off();
+            shutdown(shutdown_promise_);
+        } break;
         case Work::statechange: {
             process_state(in);
+        } break;
+        case Work::enable: {
+            enable(in);
+        } break;
+        case Work::disable: {
+            disable(in);
         } break;
         case Work::init: {
             startup();
         } break;
         case Work::statemachine: {
             do_work();
-        } break;
-        case Work::shutdown: {
-            running_->Off();
-            shutdown(shutdown_promise_);
         } break;
         default: {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Unhandled type: ")(
@@ -225,6 +334,26 @@ auto BlockchainSelection::process_state(
 {
     if (0 == filter_.count(chain)) { return; }
 
+    auto& isEnabled = chain_state_.at(chain);
+
+    if (isEnabled) {
+        if (enabled) {
+            // Do nothing
+        } else {
+            isEnabled = false;
+            --enabled_count_;
+            enabled_callback_.run(chain, enabled, enabled_count_.load());
+        }
+    } else {
+        if (enabled) {
+            isEnabled = true;
+            ++enabled_count_;
+            enabled_callback_.run(chain, enabled, enabled_count_.load());
+        } else {
+            // Do nothing
+        }
+    }
+
     auto custom = CustomData{};
     custom.emplace_back(new bool{enabled});
     const_cast<BlockchainSelection&>(*this).add_item(
@@ -233,15 +362,15 @@ auto BlockchainSelection::process_state(
         custom);
 }
 
+auto BlockchainSelection::Set(const EnabledCallback& cb) const noexcept -> void
+{
+    enabled_callback_.set(cb);
+}
+
 auto BlockchainSelection::startup() noexcept -> void
 {
     for (const auto& chain : filter_) {
-        auto custom = CustomData{};
-        custom.emplace_back(new bool{blockchain_.IsEnabled(chain)});
-        add_item(
-            chain,
-            {blockchain::IsTestnet(chain), blockchain::DisplayString(chain)},
-            custom);
+        process_state(chain, blockchain_.IsEnabled(chain));
     }
 
     finish_startup();

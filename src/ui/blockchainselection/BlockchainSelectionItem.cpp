@@ -57,25 +57,17 @@ auto BlockchainSelectionItem::qt_data(const int column, int role) const noexcept
     -> QVariant
 {
     switch (role) {
+        case Qt::DisplayRole: {
+            return Name().c_str();
+        }
+        case Qt::CheckStateRole: {
+            return IsEnabled();
+        }
         case BlockchainSelectionQt::TypeRole: {
             return static_cast<int>(static_cast<std::uint32_t>(Type()));
         }
-        case Qt::DisplayRole: {
-            switch (column) {
-                case BlockchainSelectionQt::NameColumn: {
-                    return Name().c_str();
-                }
-                case BlockchainSelectionQt::EnabledColumn: {
-                    return IsEnabled();
-                }
-                case BlockchainSelectionQt::TestnetColumn: {
-                    return IsTestnet();
-                }
-                default: {
-                }
-            }
-
-            [[fallthrough]];
+        case BlockchainSelectionQt::IsTestnet: {
+            return IsTestnet();
         }
         default: {
         }

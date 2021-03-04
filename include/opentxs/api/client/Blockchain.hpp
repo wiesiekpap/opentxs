@@ -133,6 +133,7 @@ public:
     OPENTXS_EXPORT virtual bool Enable(
         const Chain type,
         const std::string& seednode = "") const noexcept = 0;
+    OPENTXS_EXPORT virtual std::set<Chain> EnabledChains() const noexcept = 0;
 #endif  // OT_BLOCKCHAIN
     OPENTXS_EXPORT virtual std::string EncodeAddress(
         const Style style,

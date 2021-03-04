@@ -34,6 +34,7 @@ namespace ui
 class Widget
 {
 public:
+    OPENTXS_EXPORT virtual void ClearCallbacks() const noexcept = 0;
     OPENTXS_EXPORT virtual void SetCallback(
         SimpleCallback cb) const noexcept = 0;
     OPENTXS_EXPORT virtual OTIdentifier WidgetID() const noexcept = 0;
