@@ -6,6 +6,7 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #if OT_QT
+#include <QObject>
 #include <QString>
 #include <QVariant>
 #endif  // OT_QT
@@ -63,7 +64,7 @@ public:
                 make_cb(counter_main_, "Blockchain selector (main)");
 
             if (init) {
-                counter_main_.expected_ = 3;
+                counter_main_.expected_ = 4;
                 init = false;
             }
 
@@ -76,7 +77,7 @@ public:
                 make_cb(counter_test_, "Blockchain selector (test)");
 
             if (init) {
-                counter_test_.expected_ = 4;
+                counter_test_.expected_ = 3;
                 init = false;
             }
 
@@ -135,6 +136,17 @@ TEST_F(Test_BlockchainSelector, initial_state_all)
     row = model.Next();
 
     {
+        EXPECT_EQ(row->Name(), "PKT");
+        EXPECT_FALSE(row->IsEnabled());
+        EXPECT_FALSE(row->IsTestnet());
+        EXPECT_EQ(row->Type(), ot::blockchain::Type::PKT);
+    }
+
+    ASSERT_FALSE(row->Last());
+
+    row = model.Next();
+
+    {
         EXPECT_EQ(row->Name(), "Bitcoin (testnet3)");
         EXPECT_FALSE(row->IsEnabled());
         EXPECT_TRUE(row->IsTestnet());
@@ -163,17 +175,6 @@ TEST_F(Test_BlockchainSelector, initial_state_all)
         EXPECT_EQ(row->Type(), ot::blockchain::Type::Litecoin_testnet4);
     }
 
-    ASSERT_FALSE(row->Last());
-
-    row = model.Next();
-
-    {
-        EXPECT_EQ(row->Name(), "PKT");
-        EXPECT_FALSE(row->IsEnabled());
-        EXPECT_TRUE(row->IsTestnet());  // TODO temporary for testing
-        EXPECT_EQ(row->Type(), ot::blockchain::Type::PKT);
-    }
-
     EXPECT_TRUE(row->Last());
 }
 
@@ -187,7 +188,7 @@ TEST_F(Test_BlockchainSelector, initial_state_all_qt)
 
     const auto& widget = *pWidget;
 
-    ASSERT_EQ(widget.columnCount(), 3);
+    ASSERT_EQ(widget.columnCount(), 1);
     ASSERT_EQ(widget.rowCount(), 7);
 
     using Model = ot::ui::BlockchainSelectionQt;
@@ -196,17 +197,14 @@ TEST_F(Test_BlockchainSelector, initial_state_all_qt)
         const auto row{0};
         const auto expected{ot::blockchain::Type::Bitcoin};
 
-        ASSERT_TRUE(widget.hasIndex(row, Model::NameColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::EnabledColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::TestnetColumn));
+        ASSERT_TRUE(widget.hasIndex(row, 0));
 
-        const auto type =
-            widget.data(widget.index(row, Model::NameColumn), Model::TypeRole);
-        const auto name = widget.data(widget.index(row, Model::NameColumn));
+        const auto type = widget.data(widget.index(row, 0), Model::TypeRole);
+        const auto name = widget.data(widget.index(row, 0), Qt::DisplayRole);
         const auto enabled =
-            widget.data(widget.index(row, Model::EnabledColumn));
+            widget.data(widget.index(row, 0), Qt::CheckStateRole);
         const auto testnet =
-            widget.data(widget.index(row, Model::TestnetColumn));
+            widget.data(widget.index(row, 0), Model::IsTestnet);
 
         EXPECT_EQ(type.toInt(), static_cast<int>(expected));
         EXPECT_EQ(
@@ -219,17 +217,14 @@ TEST_F(Test_BlockchainSelector, initial_state_all_qt)
         const auto row{1};
         const auto expected{ot::blockchain::Type::BitcoinCash};
 
-        ASSERT_TRUE(widget.hasIndex(row, Model::NameColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::EnabledColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::TestnetColumn));
+        ASSERT_TRUE(widget.hasIndex(row, 0));
 
-        const auto type =
-            widget.data(widget.index(row, Model::NameColumn), Model::TypeRole);
-        const auto name = widget.data(widget.index(row, Model::NameColumn));
+        const auto type = widget.data(widget.index(row, 0), Model::TypeRole);
+        const auto name = widget.data(widget.index(row, 0), Qt::DisplayRole);
         const auto enabled =
-            widget.data(widget.index(row, Model::EnabledColumn));
+            widget.data(widget.index(row, 0), Qt::CheckStateRole);
         const auto testnet =
-            widget.data(widget.index(row, Model::TestnetColumn));
+            widget.data(widget.index(row, 0), Model::IsTestnet);
 
         EXPECT_EQ(type.toInt(), static_cast<int>(expected));
         EXPECT_EQ(
@@ -242,17 +237,14 @@ TEST_F(Test_BlockchainSelector, initial_state_all_qt)
         const auto row{2};
         const auto expected{ot::blockchain::Type::Litecoin};
 
-        ASSERT_TRUE(widget.hasIndex(row, Model::NameColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::EnabledColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::TestnetColumn));
+        ASSERT_TRUE(widget.hasIndex(row, 0));
 
-        const auto type =
-            widget.data(widget.index(row, Model::NameColumn), Model::TypeRole);
-        const auto name = widget.data(widget.index(row, Model::NameColumn));
+        const auto type = widget.data(widget.index(row, 0), Model::TypeRole);
+        const auto name = widget.data(widget.index(row, 0), Qt::DisplayRole);
         const auto enabled =
-            widget.data(widget.index(row, Model::EnabledColumn));
+            widget.data(widget.index(row, 0), Qt::CheckStateRole);
         const auto testnet =
-            widget.data(widget.index(row, Model::TestnetColumn));
+            widget.data(widget.index(row, 0), Model::IsTestnet);
 
         EXPECT_EQ(type.toInt(), static_cast<int>(expected));
         EXPECT_EQ(
@@ -263,42 +255,36 @@ TEST_F(Test_BlockchainSelector, initial_state_all_qt)
     }
     {
         const auto row{3};
-        const auto expected{ot::blockchain::Type::Bitcoin_testnet3};
+        const auto expected{ot::blockchain::Type::PKT};
 
-        ASSERT_TRUE(widget.hasIndex(row, Model::NameColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::EnabledColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::TestnetColumn));
+        ASSERT_TRUE(widget.hasIndex(row, 0));
 
-        const auto type =
-            widget.data(widget.index(row, Model::NameColumn), Model::TypeRole);
-        const auto name = widget.data(widget.index(row, Model::NameColumn));
+        const auto type = widget.data(widget.index(row, 0), Model::TypeRole);
+        const auto name = widget.data(widget.index(row, 0), Qt::DisplayRole);
         const auto enabled =
-            widget.data(widget.index(row, Model::EnabledColumn));
+            widget.data(widget.index(row, 0), Qt::CheckStateRole);
         const auto testnet =
-            widget.data(widget.index(row, Model::TestnetColumn));
+            widget.data(widget.index(row, 0), Model::IsTestnet);
 
         EXPECT_EQ(type.toInt(), static_cast<int>(expected));
         EXPECT_EQ(
             name.toString().toStdString(),
             ot::blockchain::DisplayString(expected));
         EXPECT_FALSE(enabled.toBool());
-        EXPECT_TRUE(testnet.toBool());
+        EXPECT_FALSE(testnet.toBool());
     }
     {
         const auto row{4};
-        const auto expected{ot::blockchain::Type::BitcoinCash_testnet3};
+        const auto expected{ot::blockchain::Type::Bitcoin_testnet3};
 
-        ASSERT_TRUE(widget.hasIndex(row, Model::NameColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::EnabledColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::TestnetColumn));
+        ASSERT_TRUE(widget.hasIndex(row, 0));
 
-        const auto type =
-            widget.data(widget.index(row, Model::NameColumn), Model::TypeRole);
-        const auto name = widget.data(widget.index(row, Model::NameColumn));
+        const auto type = widget.data(widget.index(row, 0), Model::TypeRole);
+        const auto name = widget.data(widget.index(row, 0), Qt::DisplayRole);
         const auto enabled =
-            widget.data(widget.index(row, Model::EnabledColumn));
+            widget.data(widget.index(row, 0), Qt::CheckStateRole);
         const auto testnet =
-            widget.data(widget.index(row, Model::TestnetColumn));
+            widget.data(widget.index(row, 0), Model::IsTestnet);
 
         EXPECT_EQ(type.toInt(), static_cast<int>(expected));
         EXPECT_EQ(
@@ -309,19 +295,16 @@ TEST_F(Test_BlockchainSelector, initial_state_all_qt)
     }
     {
         const auto row{5};
-        const auto expected{ot::blockchain::Type::Litecoin_testnet4};
+        const auto expected{ot::blockchain::Type::BitcoinCash_testnet3};
 
-        ASSERT_TRUE(widget.hasIndex(row, Model::NameColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::EnabledColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::TestnetColumn));
+        ASSERT_TRUE(widget.hasIndex(row, 0));
 
-        const auto type =
-            widget.data(widget.index(row, Model::NameColumn), Model::TypeRole);
-        const auto name = widget.data(widget.index(row, Model::NameColumn));
+        const auto type = widget.data(widget.index(row, 0), Model::TypeRole);
+        const auto name = widget.data(widget.index(row, 0), Qt::DisplayRole);
         const auto enabled =
-            widget.data(widget.index(row, Model::EnabledColumn));
+            widget.data(widget.index(row, 0), Qt::CheckStateRole);
         const auto testnet =
-            widget.data(widget.index(row, Model::TestnetColumn));
+            widget.data(widget.index(row, 0), Model::IsTestnet);
 
         EXPECT_EQ(type.toInt(), static_cast<int>(expected));
         EXPECT_EQ(
@@ -332,26 +315,23 @@ TEST_F(Test_BlockchainSelector, initial_state_all_qt)
     }
     {
         const auto row{6};
-        const auto expected{ot::blockchain::Type::PKT};
+        const auto expected{ot::blockchain::Type::Litecoin_testnet4};
 
-        ASSERT_TRUE(widget.hasIndex(row, Model::NameColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::EnabledColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::TestnetColumn));
+        ASSERT_TRUE(widget.hasIndex(row, 0));
 
-        const auto type =
-            widget.data(widget.index(row, Model::NameColumn), Model::TypeRole);
-        const auto name = widget.data(widget.index(row, Model::NameColumn));
+        const auto type = widget.data(widget.index(row, 0), Model::TypeRole);
+        const auto name = widget.data(widget.index(row, 0), Qt::DisplayRole);
         const auto enabled =
-            widget.data(widget.index(row, Model::EnabledColumn));
+            widget.data(widget.index(row, 0), Qt::CheckStateRole);
         const auto testnet =
-            widget.data(widget.index(row, Model::TestnetColumn));
+            widget.data(widget.index(row, 0), Model::IsTestnet);
 
         EXPECT_EQ(type.toInt(), static_cast<int>(expected));
         EXPECT_EQ(
             name.toString().toStdString(),
             ot::blockchain::DisplayString(expected));
         EXPECT_FALSE(enabled.toBool());
-        EXPECT_TRUE(testnet.toBool());  // TODO temporary for testing
+        EXPECT_TRUE(testnet.toBool());
     }
 }
 #endif  // OT_QT
@@ -392,6 +372,17 @@ TEST_F(Test_BlockchainSelector, initial_state_main)
         EXPECT_EQ(row->Type(), ot::blockchain::Type::Litecoin);
     }
 
+    ASSERT_FALSE(row->Last());
+
+    row = model.Next();
+
+    {
+        EXPECT_EQ(row->Name(), "PKT");
+        EXPECT_FALSE(row->IsEnabled());
+        EXPECT_FALSE(row->IsTestnet());
+        EXPECT_EQ(row->Type(), ot::blockchain::Type::PKT);
+    }
+
     EXPECT_TRUE(row->Last());
 }
 
@@ -405,8 +396,8 @@ TEST_F(Test_BlockchainSelector, initial_state_main_qt)
 
     const auto& widget = *pWidget;
 
-    ASSERT_EQ(widget.columnCount(), 3);
-    ASSERT_EQ(widget.rowCount(), 3);
+    ASSERT_EQ(widget.columnCount(), 1);
+    ASSERT_EQ(widget.rowCount(), 4);
 
     using Model = ot::ui::BlockchainSelectionQt;
 
@@ -414,17 +405,14 @@ TEST_F(Test_BlockchainSelector, initial_state_main_qt)
         const auto row{0};
         const auto expected{ot::blockchain::Type::Bitcoin};
 
-        ASSERT_TRUE(widget.hasIndex(row, Model::NameColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::EnabledColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::TestnetColumn));
+        ASSERT_TRUE(widget.hasIndex(row, 0));
 
-        const auto type =
-            widget.data(widget.index(row, Model::NameColumn), Model::TypeRole);
-        const auto name = widget.data(widget.index(row, Model::NameColumn));
+        const auto type = widget.data(widget.index(row, 0), Model::TypeRole);
+        const auto name = widget.data(widget.index(row, 0), Qt::DisplayRole);
         const auto enabled =
-            widget.data(widget.index(row, Model::EnabledColumn));
+            widget.data(widget.index(row, 0), Qt::CheckStateRole);
         const auto testnet =
-            widget.data(widget.index(row, Model::TestnetColumn));
+            widget.data(widget.index(row, 0), Model::IsTestnet);
 
         EXPECT_EQ(type.toInt(), static_cast<int>(expected));
         EXPECT_EQ(
@@ -437,17 +425,14 @@ TEST_F(Test_BlockchainSelector, initial_state_main_qt)
         const auto row{1};
         const auto expected{ot::blockchain::Type::BitcoinCash};
 
-        ASSERT_TRUE(widget.hasIndex(row, Model::NameColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::EnabledColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::TestnetColumn));
+        ASSERT_TRUE(widget.hasIndex(row, 0));
 
-        const auto type =
-            widget.data(widget.index(row, Model::NameColumn), Model::TypeRole);
-        const auto name = widget.data(widget.index(row, Model::NameColumn));
+        const auto type = widget.data(widget.index(row, 0), Model::TypeRole);
+        const auto name = widget.data(widget.index(row, 0), Qt::DisplayRole);
         const auto enabled =
-            widget.data(widget.index(row, Model::EnabledColumn));
+            widget.data(widget.index(row, 0), Qt::CheckStateRole);
         const auto testnet =
-            widget.data(widget.index(row, Model::TestnetColumn));
+            widget.data(widget.index(row, 0), Model::IsTestnet);
 
         EXPECT_EQ(type.toInt(), static_cast<int>(expected));
         EXPECT_EQ(
@@ -460,17 +445,34 @@ TEST_F(Test_BlockchainSelector, initial_state_main_qt)
         const auto row{2};
         const auto expected{ot::blockchain::Type::Litecoin};
 
-        ASSERT_TRUE(widget.hasIndex(row, Model::NameColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::EnabledColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::TestnetColumn));
+        ASSERT_TRUE(widget.hasIndex(row, 0));
 
-        const auto type =
-            widget.data(widget.index(row, Model::NameColumn), Model::TypeRole);
-        const auto name = widget.data(widget.index(row, Model::NameColumn));
+        const auto type = widget.data(widget.index(row, 0), Model::TypeRole);
+        const auto name = widget.data(widget.index(row, 0), Qt::DisplayRole);
         const auto enabled =
-            widget.data(widget.index(row, Model::EnabledColumn));
+            widget.data(widget.index(row, 0), Qt::CheckStateRole);
         const auto testnet =
-            widget.data(widget.index(row, Model::TestnetColumn));
+            widget.data(widget.index(row, 0), Model::IsTestnet);
+
+        EXPECT_EQ(type.toInt(), static_cast<int>(expected));
+        EXPECT_EQ(
+            name.toString().toStdString(),
+            ot::blockchain::DisplayString(expected));
+        EXPECT_FALSE(enabled.toBool());
+        EXPECT_FALSE(testnet.toBool());
+    }
+    {
+        const auto row{3};
+        const auto expected{ot::blockchain::Type::PKT};
+
+        ASSERT_TRUE(widget.hasIndex(row, 0));
+
+        const auto type = widget.data(widget.index(row, 0), Model::TypeRole);
+        const auto name = widget.data(widget.index(row, 0), Qt::DisplayRole);
+        const auto enabled =
+            widget.data(widget.index(row, 0), Qt::CheckStateRole);
+        const auto testnet =
+            widget.data(widget.index(row, 0), Model::IsTestnet);
 
         EXPECT_EQ(type.toInt(), static_cast<int>(expected));
         EXPECT_EQ(
@@ -518,17 +520,6 @@ TEST_F(Test_BlockchainSelector, initial_state_test)
         EXPECT_EQ(row->Type(), ot::blockchain::Type::Litecoin_testnet4);
     }
 
-    ASSERT_FALSE(row->Last());
-
-    row = model.Next();
-
-    {
-        EXPECT_EQ(row->Name(), "PKT");
-        EXPECT_FALSE(row->IsEnabled());
-        EXPECT_TRUE(row->IsTestnet());  // TODO temporary for testing
-        EXPECT_EQ(row->Type(), ot::blockchain::Type::PKT);
-    }
-
     EXPECT_TRUE(row->Last());
 }
 
@@ -542,8 +533,8 @@ TEST_F(Test_BlockchainSelector, initial_state_test_qt)
 
     const auto& widget = *pWidget;
 
-    ASSERT_EQ(widget.columnCount(), 3);
-    ASSERT_EQ(widget.rowCount(), 4);
+    ASSERT_EQ(widget.columnCount(), 1);
+    ASSERT_EQ(widget.rowCount(), 3);
 
     using Model = ot::ui::BlockchainSelectionQt;
 
@@ -551,17 +542,14 @@ TEST_F(Test_BlockchainSelector, initial_state_test_qt)
         const auto row{0};
         const auto expected{ot::blockchain::Type::Bitcoin_testnet3};
 
-        ASSERT_TRUE(widget.hasIndex(row, Model::NameColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::EnabledColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::TestnetColumn));
+        ASSERT_TRUE(widget.hasIndex(row, 0));
 
-        const auto type =
-            widget.data(widget.index(row, Model::NameColumn), Model::TypeRole);
-        const auto name = widget.data(widget.index(row, Model::NameColumn));
+        const auto type = widget.data(widget.index(row, 0), Model::TypeRole);
+        const auto name = widget.data(widget.index(row, 0), Qt::DisplayRole);
         const auto enabled =
-            widget.data(widget.index(row, Model::EnabledColumn));
+            widget.data(widget.index(row, 0), Qt::CheckStateRole);
         const auto testnet =
-            widget.data(widget.index(row, Model::TestnetColumn));
+            widget.data(widget.index(row, 0), Model::IsTestnet);
 
         EXPECT_EQ(type.toInt(), static_cast<int>(expected));
         EXPECT_EQ(
@@ -574,17 +562,14 @@ TEST_F(Test_BlockchainSelector, initial_state_test_qt)
         const auto row{1};
         const auto expected{ot::blockchain::Type::BitcoinCash_testnet3};
 
-        ASSERT_TRUE(widget.hasIndex(row, Model::NameColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::EnabledColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::TestnetColumn));
+        ASSERT_TRUE(widget.hasIndex(row, 0));
 
-        const auto type =
-            widget.data(widget.index(row, Model::NameColumn), Model::TypeRole);
-        const auto name = widget.data(widget.index(row, Model::NameColumn));
+        const auto type = widget.data(widget.index(row, 0), Model::TypeRole);
+        const auto name = widget.data(widget.index(row, 0), Qt::DisplayRole);
         const auto enabled =
-            widget.data(widget.index(row, Model::EnabledColumn));
+            widget.data(widget.index(row, 0), Qt::CheckStateRole);
         const auto testnet =
-            widget.data(widget.index(row, Model::TestnetColumn));
+            widget.data(widget.index(row, 0), Model::IsTestnet);
 
         EXPECT_EQ(type.toInt(), static_cast<int>(expected));
         EXPECT_EQ(
@@ -597,17 +582,14 @@ TEST_F(Test_BlockchainSelector, initial_state_test_qt)
         const auto row{2};
         const auto expected{ot::blockchain::Type::Litecoin_testnet4};
 
-        ASSERT_TRUE(widget.hasIndex(row, Model::NameColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::EnabledColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::TestnetColumn));
+        ASSERT_TRUE(widget.hasIndex(row, 0));
 
-        const auto type =
-            widget.data(widget.index(row, Model::NameColumn), Model::TypeRole);
-        const auto name = widget.data(widget.index(row, Model::NameColumn));
+        const auto type = widget.data(widget.index(row, 0), Model::TypeRole);
+        const auto name = widget.data(widget.index(row, 0), Qt::DisplayRole);
         const auto enabled =
-            widget.data(widget.index(row, Model::EnabledColumn));
+            widget.data(widget.index(row, 0), Qt::CheckStateRole);
         const auto testnet =
-            widget.data(widget.index(row, Model::TestnetColumn));
+            widget.data(widget.index(row, 0), Model::IsTestnet);
 
         EXPECT_EQ(type.toInt(), static_cast<int>(expected));
         EXPECT_EQ(
@@ -615,29 +597,6 @@ TEST_F(Test_BlockchainSelector, initial_state_test_qt)
             ot::blockchain::DisplayString(expected));
         EXPECT_FALSE(enabled.toBool());
         EXPECT_TRUE(testnet.toBool());
-    }
-    {
-        const auto row{3};
-        const auto expected{ot::blockchain::Type::PKT};
-
-        ASSERT_TRUE(widget.hasIndex(row, Model::NameColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::EnabledColumn));
-        ASSERT_TRUE(widget.hasIndex(row, Model::TestnetColumn));
-
-        const auto type =
-            widget.data(widget.index(row, Model::NameColumn), Model::TypeRole);
-        const auto name = widget.data(widget.index(row, Model::NameColumn));
-        const auto enabled =
-            widget.data(widget.index(row, Model::EnabledColumn));
-        const auto testnet =
-            widget.data(widget.index(row, Model::TestnetColumn));
-
-        EXPECT_EQ(type.toInt(), static_cast<int>(expected));
-        EXPECT_EQ(
-            name.toString().toStdString(),
-            ot::blockchain::DisplayString(expected));
-        EXPECT_FALSE(enabled.toBool());
-        EXPECT_TRUE(testnet.toBool());  // TODO temporary for testing
     }
 }
 #endif  // OT_QT

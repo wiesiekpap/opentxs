@@ -11,8 +11,12 @@
 #if OT_QT
 #include <QHash>
 #endif  // OT_QT
+#include <atomic>
+#include <functional>
+#include <iosfwd>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <set>
 #include <string>
 #include <utility>
@@ -86,8 +90,13 @@ class BlockchainSelection final : public BlockchainSelectionList,
                                   Worker<BlockchainSelection>
 {
 public:
+    using EnabledCallback =
+        std::function<void(blockchain::Type, bool, std::size_t)>;
+
     auto Disable(const blockchain::Type type) const noexcept -> bool final;
     auto Enable(const blockchain::Type type) const noexcept -> bool final;
+    auto EnabledCount() const noexcept -> std::size_t;
+    auto Set(const EnabledCallback& cb) const noexcept -> void;
 
     BlockchainSelection(
         const api::client::internal::Manager& api,
@@ -100,15 +109,39 @@ public:
 private:
     friend Worker<BlockchainSelection>;
 
+    struct Callback {
+        auto run(blockchain::Type chain, bool enabled, std::size_t total)
+            const noexcept -> void
+        {
+            auto lock = Lock{lock_};
+
+            if (cb_) { cb_(chain, enabled, total); }
+        }
+        auto set(const EnabledCallback& cb) noexcept -> void
+        {
+            auto lock = Lock{lock_};
+            cb_ = cb;
+        }
+
+    private:
+        mutable std::mutex lock_{};
+        EnabledCallback cb_{};
+    };
+
     enum class Work : OTZMQWorkType {
+        shutdown = value(WorkType::Shutdown),
         statechange = value(WorkType::BlockchainStateChange),
+        enable = OT_ZMQ_INTERNAL_SIGNAL + 0,
+        disable = OT_ZMQ_INTERNAL_SIGNAL + 1,
         init = OT_ZMQ_INIT_SIGNAL,
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
-        shutdown = value(WorkType::Shutdown),
     };
 
     const api::client::internal::Blockchain& blockchain_;
     const std::set<blockchain::Type> filter_;
+    mutable std::map<blockchain::Type, bool> chain_state_;
+    mutable std::atomic<std::size_t> enabled_count_;
+    mutable Callback enabled_callback_;
 
     static auto filter(const ui::Blockchains type) noexcept
         -> std::set<blockchain::Type>;
@@ -120,6 +153,8 @@ private:
         const BlockchainSelectionRowID& id,
         const BlockchainSelectionSortKey& index,
         CustomData& custom) const noexcept -> RowPointer final;
+    auto disable(const Message& in) noexcept -> void;
+    auto enable(const Message& in) noexcept -> void;
     auto pipeline(const Message& in) noexcept -> void;
     auto process_state(const Message& in) noexcept -> void;
     auto startup() noexcept -> void;

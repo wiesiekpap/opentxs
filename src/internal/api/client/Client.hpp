@@ -240,6 +240,8 @@ struct Pair : virtual public opentxs::api::client::Pair {
 struct UI : virtual public opentxs::api::client::UI {
     virtual auto ActivateUICallback(const Identifier& widget) const noexcept
         -> void = 0;
+    virtual auto ClearUICallbacks(const Identifier& widget) const noexcept
+        -> void = 0;
     virtual auto RegisterUICallback(
         const Identifier& widget,
         const SimpleCallback& cb) const noexcept -> void = 0;

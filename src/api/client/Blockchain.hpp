@@ -216,6 +216,7 @@ public:
     auto Disable(const Chain type) const noexcept -> bool final;
     auto Enable(const Chain type, const std::string& seednode) const noexcept
         -> bool final;
+    auto EnabledChains() const noexcept -> std::set<Chain> final;
 #endif  // OT_BLOCKCHAIN
     auto EncodeAddress(const Style style, const Chain chain, const Data& data)
         const noexcept -> std::string final;
@@ -595,7 +596,7 @@ private:
     std::unique_ptr<blockchain::SyncClient> sync_client_;
     std::unique_ptr<blockchain::SyncServer> sync_server_;
     BalanceOracle balances_;
-    mutable EnableCallbacks enabled_callbacks_;
+    OTZMQPublishSocket chain_state_publisher_;
     mutable LastHello last_hello_;
     std::atomic_bool running_;
     std::thread heartbeat_;
@@ -648,6 +649,7 @@ private:
     auto p2sh(const Chain chain, const Data& scriptHash) const noexcept
         -> std::string;
 #if OT_BLOCKCHAIN
+    auto publish_chain_state(Chain type, bool state) const -> void;
     auto reconcile_activity_threads(const Lock& lock, const Txid& txid)
         const noexcept -> bool;
     auto reconcile_activity_threads(

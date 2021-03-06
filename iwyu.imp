@@ -13,6 +13,7 @@
 { "include": ["@<opendht/.*>", "private", "<opendht.h>", "public"] },
 { "include": ["@<sodium/.*>", "private", "<sodium.h>", "public"] },
 { "include": ["@<gtest/.*>", "private", "<gtest/gtest.h>", "public"] },
+{ "include": ["<QtCore/qglobal.h>", "private", "<QDebug>", "public"] },
 { "include": ["<qabstractitemmodel.h>", "private", "<QAbstractItemModel>", "public"] },
 { "include": ["<qchar.h>", "private", "<QChar>", "public"] },
 { "include": ["<qdatetime.h>", "private", "<QDateTime>", "public"] },

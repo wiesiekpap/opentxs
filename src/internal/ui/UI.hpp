@@ -776,7 +776,8 @@ struct UnitListItem : virtual public Row, virtual public ui::UnitListItem {
 namespace blank
 {
 struct Widget : virtual public ui::Widget {
-    void SetCallback(SimpleCallback) const noexcept final {}
+    auto ClearCallbacks() const noexcept -> void final {}
+    auto SetCallback(SimpleCallback) const noexcept -> void final {}
     auto WidgetID() const noexcept -> OTIdentifier override
     {
         return Identifier::Factory();

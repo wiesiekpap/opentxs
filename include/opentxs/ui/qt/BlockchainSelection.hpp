@@ -7,8 +7,11 @@
 #define OPENTXS_UI_BLOCKCHAINSELECTIONQT_HPP
 
 #include <QIdentityProxyModel>
+#include <QVariant>
 
 #include "opentxs/opentxs_export.hpp"  // IWYU pragma: keep
+
+class QModelIndex;
 
 namespace opentxs
 {
@@ -27,39 +30,44 @@ class OPENTXS_EXPORT opentxs::ui::BlockchainSelectionQt final
     : public QIdentityProxyModel
 {
     Q_OBJECT
+    Q_PROPERTY(int enabledCount READ enabledCount NOTIFY enabledChanged)
 
 signals:
+    void chainEnabled(int chain);
+    void chainDisabled(int chain);
+    void enabledChanged(int enabledCount);
     void updated() const;
 
 public:
-    // User roles return the same data for all columns
+    // One column
     //
-    // TypeRole: int (blockchain::Type)
-    //
-    // Qt::DisplayRole, NameColumn: QString
-    // Qt::DisplayRole, EnabledColumn: bool
-    // Qt::DisplayRole, TestnetColumn: bool
-
-    enum Columns {
-        NameColumn = 0,
-        EnabledColumn = 1,
-        TestnetColumn = 2,
-    };
+    // Qt::DisplayRole and Qt::CheckStateRole are implemented in addition to the
+    // roles below:
     enum Roles {
-        TypeRole = Qt::UserRole + 0,
+        TypeRole = Qt::UserRole + 0,   // int, opentxs::blockchain::Type
+        IsTestnet = Qt::UserRole + 1,  // bool
     };
 
-    Q_INVOKABLE bool disableChain(const int chain) const noexcept;
-    Q_INVOKABLE bool enableChain(const int chain) const noexcept;
+    auto enabledCount() const noexcept -> int;
+    auto flags(const QModelIndex& index) const -> Qt::ItemFlags final;
+
+    /// chain is an opentxs::blockchain::Type, retrievable as TypeRole
+    Q_INVOKABLE bool disableChain(const int chain) noexcept;
+    /// chain is an opentxs::blockchain::Type, retrievable as TypeRole
+    Q_INVOKABLE bool enableChain(const int chain) noexcept;
+    auto setData(const QModelIndex& index, const QVariant& value, int role)
+        -> bool final;
 
     BlockchainSelectionQt(implementation::BlockchainSelection& parent) noexcept;
 
-    ~BlockchainSelectionQt() final = default;
+    ~BlockchainSelectionQt() final;
 
 private:
     implementation::BlockchainSelection& parent_;
 
-    void notify() const noexcept;
+    auto notify() const noexcept -> void;
+
+    auto init() noexcept -> void;
 
     BlockchainSelectionQt(const BlockchainSelectionQt&) = delete;
     BlockchainSelectionQt(BlockchainSelectionQt&&) = delete;

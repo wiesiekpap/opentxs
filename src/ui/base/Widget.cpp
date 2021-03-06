@@ -45,4 +45,6 @@ auto Widget::setup_listeners(const ListenerDefinitions& definitions) noexcept
         OT_ASSERT(listening)
     }
 }
+
+Widget::~Widget() { ClearCallbacks(); }
 }  // namespace opentxs::ui::implementation

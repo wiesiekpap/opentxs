@@ -51,7 +51,6 @@ if(OT_BLOCKCHAIN_EXPORT)
     APPEND
     cxx-sources
     BalanceOracle.cpp
-    EnableCallbacks.cpp
     SyncClient.cpp
     SyncServer.cpp
     ThreadPoolManager.cpp

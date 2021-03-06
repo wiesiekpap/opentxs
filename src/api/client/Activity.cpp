@@ -11,7 +11,6 @@
 #include <iterator>
 #include <list>
 #include <map>
-#include <set>
 #include <thread>
 #include <type_traits>
 #include <utility>
