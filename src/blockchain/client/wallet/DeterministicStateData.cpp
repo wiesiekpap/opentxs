@@ -22,6 +22,7 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/client/blockchain/BalanceNode.hpp"
 #include "opentxs/api/client/blockchain/Deterministic.hpp"
+#include "opentxs/api/client/blockchain/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
@@ -128,6 +129,8 @@ auto DeterministicStateData::handle_confirmed_matches(
         auto i = Bip32Index{0};
 
         for (const auto& output : transaction.Outputs()) {
+            if (Subchain::Outgoing == subchain_) { continue; }
+
             const auto& script = output.Script();
 
             switch (script.Type()) {
@@ -160,8 +163,34 @@ auto DeterministicStateData::handle_confirmed_matches(
 
                     // TODO mark key as used
                 } break;
+                case block::bitcoin::Script::Pattern::PayToMultisig: {
+                    const auto m = script.M();
+                    const auto n = script.N();
+
+                    OT_ASSERT(m.has_value());
+                    OT_ASSERT(n.has_value());
+
+                    if (1u != m.value() || (3u != n.value())) {
+                        // TODO handle non-payment code multisig eventually
+
+                        continue;
+                    }
+
+                    const auto pKey = element.Key();
+
+                    OT_ASSERT(pKey);
+
+                    const auto& key = *pKey;
+
+                    if (key.PublicKey() == script.MultisigPubkey(0).value()) {
+                        outputs.emplace_back(i);
+
+                        if (nullptr == pTX) { pTX = pTransaction.get(); }
+                    }
+
+                    // TODO mark key as used
+                } break;
                 case block::bitcoin::Script::Pattern::PayToScriptHash:
-                case block::bitcoin::Script::Pattern::PayToMultisig:
                 default: {
                 }
             };

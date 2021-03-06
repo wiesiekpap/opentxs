@@ -83,6 +83,7 @@ BlockchainAccountActivity::BlockchainAccountActivity(
               blockchain::params::Data::chains_.at(ui::Chain(api, accountID))
                   .scales_})
     , chain_(ui::Chain(Widget::api_, accountID))
+    , confirmed_(0)
     , balance_cb_(zmq::ListenCallback::Factory(
           [this](const auto& in) { pipeline_->Push(in); }))
     , balance_socket_(Widget::api_.ZeroMQ().DealerSocket(
@@ -194,7 +195,7 @@ auto BlockchainAccountActivity::process_balance(const Message& in) noexcept
     OT_ASSERT(4 < body.size());
 
     const auto chain = body.at(1).as<blockchain::Type>();
-    [[maybe_unused]] const auto confirmed = body.at(2).as<Amount>();
+    const auto confirmed = body.at(2).as<Amount>();
     const auto unconfirmed = body.at(3).as<Amount>();
     const auto nym = [&] {
         auto output = Widget::api_.Factory().NymID();
@@ -207,8 +208,9 @@ auto BlockchainAccountActivity::process_balance(const Message& in) noexcept
     OT_ASSERT(primary_id_ == nym);
 
     const auto oldBalance = balance_.exchange(unconfirmed);
+    const auto oldConfirmed = confirmed_.exchange(confirmed);
 
-    if (oldBalance != unconfirmed) {
+    if ((oldBalance != unconfirmed) || (oldConfirmed != confirmed)) {
         // TODO notify Qt of property change
         UpdateNotify();
     }

@@ -10,9 +10,11 @@
 #include <boost/container/flat_set.hpp>
 #include <boost/container/vector.hpp>
 #include <algorithm>
+#include <iosfwd>
 #include <iterator>
 #include <map>
 #include <numeric>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -30,6 +32,7 @@
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
+#include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -257,6 +260,7 @@ auto Wallet::AddConfirmedTransaction(
         return false;
     }
 
+    print(lock);
     blockchain_.UpdateBalance(chain_, get_balance(lock));
 
     for (const auto& [nym, balance] : get_balances(lock)) {
@@ -371,6 +375,7 @@ auto Wallet::AddOutgoingTransaction(
     }
 
     dedup(pending);
+    print(lock);
     blockchain_.UpdateBalance(chain_, get_balance(lock));
 
     for (const auto& [nym, balance] : get_balances(lock)) {
@@ -907,6 +912,69 @@ auto Wallet::pattern_id(const SubchainID& subchain, const Bip32Index index)
     output->CalculateDigest(preimage->Bytes());
 
     return output;
+}
+
+auto Wallet::print(const Lock&) const noexcept -> void
+{
+    struct Output {
+        std::stringstream text_{};
+        std::size_t total_{};
+    };
+    auto output = std::map<TxoState, Output>{};
+
+    for (const auto& data : outputs_) {
+        const auto& outpoint = data.first;
+        const auto& [state, position, proto] = data.second;
+        auto& out = output[state];
+        out.text_ << "\n * " << outpoint.str() << ' ';
+        out.text_ << " value: " << std::to_string(proto.value());
+        out.total_ += proto.value();
+        const auto pScript = factory::BitcoinScript(chain_, proto.script());
+
+        OT_ASSERT(pScript);
+
+        const auto& script = *pScript;
+        out.text_ << ", type: ";
+        using Pattern = block::bitcoin::Script::Pattern;
+
+        switch (script.Type()) {
+            case Pattern::PayToMultisig: {
+                out.text_ << "P2MS";
+            } break;
+            case Pattern::PayToPubkey: {
+                out.text_ << "P2PK";
+            } break;
+            case Pattern::PayToPubkeyHash: {
+                out.text_ << "P2PKH";
+            } break;
+            case Pattern::PayToScriptHash: {
+                out.text_ << "P2SH";
+            } break;
+            default: {
+                out.text_ << "unknown";
+            }
+        }
+    }
+
+    const auto& unconfirmed = output[TxoState::UnconfirmedNew];
+    const auto& confirmed = output[TxoState::ConfirmedNew];
+    const auto& pending = output[TxoState::UnconfirmedSpend];
+    const auto& spent = output[TxoState::ConfirmedSpend];
+    LogTrace(OT_METHOD)(__FUNCTION__)(": Instance ")(api_.Instance())(
+        " TXO database contents:")
+        .Flush();
+    LogTrace(OT_METHOD)(__FUNCTION__)(": Unconfirmed available value: ")(
+        unconfirmed.total_)(unconfirmed.text_.str())
+        .Flush();
+    LogTrace(OT_METHOD)(__FUNCTION__)(": Confirmed available value: ")(
+        confirmed.total_)(confirmed.text_.str())
+        .Flush();
+    LogTrace(OT_METHOD)(__FUNCTION__)(": Unconfirmed spent value: ")(
+        pending.total_)(pending.text_.str())
+        .Flush();
+    LogTrace(OT_METHOD)(__FUNCTION__)(": Confirmed spent value: ")(
+        spent.total_)(spent.text_.str())
+        .Flush();
 }
 
 auto Wallet::ReleaseChangeKey(const Identifier& proposal, const KeyID key)

@@ -111,6 +111,8 @@ public:
         return witness_;
     }
 
+    auto AddMultisigSignatures(const Signatures& signatures) noexcept
+        -> bool final;
     auto AddSignatures(const Signatures& signatures) noexcept -> bool final;
     auto AssociatePreviousOutput(
         const api::client::Blockchain& blockchain,

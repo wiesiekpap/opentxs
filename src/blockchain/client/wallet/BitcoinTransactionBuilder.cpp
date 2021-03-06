@@ -15,6 +15,7 @@
 #include <optional>
 #include <sstream>
 #include <stdexcept>
+#include <string_view>
 
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
@@ -32,6 +33,7 @@
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
@@ -91,8 +93,46 @@ auto Wallet::Proposals::BitcoinTransactionBuilder::add_signatures(
     block::bitcoin::internal::Input& input) const noexcept -> bool
 {
     const auto reason = api_.Factory().PasswordPrompt(__FUNCTION__);
+    const auto& output = input.Spends();
+    using Pattern = block::bitcoin::Script::Pattern;
 
-    OT_ASSERT(0 < input.Keys().size());
+    switch (output.Script().Type()) {
+        case Pattern::PayToPubkeyHash: {
+            return add_signatures_p2pkh(
+                preimage, sigHash, reason, output, input);
+        }
+        case Pattern::PayToPubkey: {
+            return add_signatures_p2pk(
+                preimage, sigHash, reason, output, input);
+        }
+        case Pattern::PayToMultisig: {
+            return add_signatures_p2ms(
+                preimage, sigHash, reason, output, input);
+        }
+        default: {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported input type")
+                .Flush();
+
+            return false;
+        }
+    }
+}
+
+auto Wallet::Proposals::BitcoinTransactionBuilder::add_signatures_p2ms(
+    const ReadView preimage,
+    const blockchain::bitcoin::SigHash& sigHash,
+    const PasswordPrompt& reason,
+    const block::bitcoin::internal::Output& spends,
+    block::bitcoin::internal::Input& input) const noexcept -> bool
+{
+    const auto& script = spends.Script();
+
+    if ((1u != script.M().value()) || (3u != script.N().value())) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported multisig pattern")
+            .Flush();
+
+        return false;
+    }
 
     auto keys = std::vector<OTData>{};
     auto signatures = std::vector<Space>{};
@@ -105,6 +145,142 @@ auto Wallet::Proposals::BitcoinTransactionBuilder::add_signatures(
         OT_ASSERT(pKey);
 
         const auto& key = *pKey;
+
+        if (key.PublicKey() != script.MultisigPubkey(0).value()) {
+
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Pubkey mismatch").Flush();
+
+            continue;
+        }
+
+        auto& sig = signatures.emplace_back();
+        sig.reserve(80);
+        const auto haveSig = key.SignDER(preimage, hash_type(), sig, reason);
+
+        if (false == haveSig) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to obtain signature")
+                .Flush();
+
+            return false;
+        }
+
+        sig.emplace_back(sigHash.flags_);
+
+        OT_ASSERT(0 < key.PublicKey().size());
+
+        views.emplace_back(reader(sig), ReadView{});
+    }
+
+    if (0 == views.size()) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": No keys available for signing")
+            .Flush();
+
+        return false;
+    }
+
+    if (false == input.AddMultisigSignatures(views)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to apply signature")
+            .Flush();
+
+        return false;
+    }
+
+    return true;
+}
+
+auto Wallet::Proposals::BitcoinTransactionBuilder::add_signatures_p2pk(
+    const ReadView preimage,
+    const blockchain::bitcoin::SigHash& sigHash,
+    const PasswordPrompt& reason,
+    const block::bitcoin::internal::Output& spends,
+    block::bitcoin::internal::Input& input) const noexcept -> bool
+{
+    auto keys = std::vector<OTData>{};
+    auto signatures = std::vector<Space>{};
+    auto views = block::bitcoin::internal::Input::Signatures{};
+
+    for (const auto& id : input.Keys()) {
+        const auto& node = blockchain_.GetKey(id);
+        const auto pKey = node.PrivateKey(reason);
+
+        OT_ASSERT(pKey);
+
+        const auto& key = *pKey;
+
+        if (key.PublicKey() != spends.Script().Pubkey().value()) {
+
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Pubkey mismatch").Flush();
+
+            continue;
+        }
+
+        auto& sig = signatures.emplace_back();
+        sig.reserve(80);
+        const auto haveSig = key.SignDER(preimage, hash_type(), sig, reason);
+
+        if (false == haveSig) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to obtain signature")
+                .Flush();
+
+            return false;
+        }
+
+        sig.emplace_back(sigHash.flags_);
+
+        OT_ASSERT(0 < key.PublicKey().size());
+
+        views.emplace_back(reader(sig), ReadView{});
+    }
+
+    if (0 == views.size()) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": No keys available for signing")
+            .Flush();
+
+        return false;
+    }
+
+    if (false == input.AddSignatures(views)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to apply signature")
+            .Flush();
+
+        return false;
+    }
+
+    return true;
+}
+
+auto Wallet::Proposals::BitcoinTransactionBuilder::add_signatures_p2pkh(
+    const ReadView preimage,
+    const blockchain::bitcoin::SigHash& sigHash,
+    const PasswordPrompt& reason,
+    const block::bitcoin::internal::Output& spends,
+    block::bitcoin::internal::Input& input) const noexcept -> bool
+{
+    auto keys = std::vector<OTData>{};
+    auto signatures = std::vector<Space>{};
+    auto views = block::bitcoin::internal::Input::Signatures{};
+
+    for (const auto& id : input.Keys()) {
+        const auto& node = blockchain_.GetKey(id);
+        const auto pKey = node.PrivateKey(reason);
+
+        OT_ASSERT(pKey);
+
+        const auto& key = *pKey;
+
+        {
+            auto hash = Space{};
+            PubkeyHash(api_, chain_, key.PublicKey(), writer(hash));
+
+            if (reader(hash) != spends.Script().PubkeyHash().value()) {
+
+                LogOutput(OT_METHOD)(__FUNCTION__)(": Pubkey hash mismatch")
+                    .Flush();
+
+                continue;
+            }
+        }
+
         const auto& pubkey =
             keys.emplace_back(api_.Factory().Data(key.PublicKey()));
         auto& sig = signatures.emplace_back();
@@ -123,6 +299,13 @@ auto Wallet::Proposals::BitcoinTransactionBuilder::add_signatures(
         OT_ASSERT(0 < key.PublicKey().size());
 
         views.emplace_back(reader(sig), pubkey->Bytes());
+    }
+
+    if (0 == views.size()) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": No keys available for signing")
+            .Flush();
+
+        return false;
     }
 
     if (false == input.AddSignatures(views)) {

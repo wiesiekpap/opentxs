@@ -370,6 +370,7 @@ private:
         const noexcept -> std::optional<OutputMap::iterator>;
     auto pattern_id(const SubchainID& subchain, const Bip32Index index)
         const noexcept -> pPatternID;
+    auto print(const Lock& lock) const noexcept -> void;
     auto rollback(
         const Lock& lock,
         const SubchainID& subchain,

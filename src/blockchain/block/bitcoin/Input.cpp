@@ -566,15 +566,37 @@ Input::Input(
 {
 }
 
+auto Input::AddMultisigSignatures(const Signatures& signatures) noexcept -> bool
+{
+    auto elements = ScriptElements{};
+    elements.emplace_back(internal::Opcode(OP::ZERO));
+
+    for (const auto& [sig, key] : signatures) {
+        if (false == valid(sig)) { return false; }
+
+        elements.emplace_back(internal::PushData(sig));
+    }
+
+    auto& script =
+        const_cast<std::unique_ptr<const internal::Script>&>(script_);
+    script = factory::BitcoinScript(chain_, std::move(elements), false, false);
+    size_ = std::nullopt;
+
+    return bool(script);
+}
+
 auto Input::AddSignatures(const Signatures& signatures) noexcept -> bool
 {
     // TODO add to witness if segwit
 
     auto elements = ScriptElements{};
 
-    for (const auto& [lhs, rhs] : signatures) {
-        elements.emplace_back(internal::PushData(lhs));
-        elements.emplace_back(internal::PushData(rhs));
+    for (const auto& [sig, key] : signatures) {
+        if (false == valid(sig)) { return false; }
+
+        elements.emplace_back(internal::PushData(sig));
+
+        if (valid(key)) { elements.emplace_back(internal::PushData(key)); }
     }
 
     auto& script =
