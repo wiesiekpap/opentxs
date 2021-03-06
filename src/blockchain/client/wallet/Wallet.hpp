@@ -116,6 +116,8 @@ namespace proto
 class BlockchainTransactionOutput;
 class BlockchainTransactionProposal;
 }  // namespace proto
+
+class PasswordPrompt;
 }  // namespace opentxs
 
 namespace be = boost::endian;
@@ -236,6 +238,24 @@ private:
             auto add_signatures(
                 const ReadView preimage,
                 const blockchain::bitcoin::SigHash& sigHash,
+                block::bitcoin::internal::Input& input) const noexcept -> bool;
+            auto add_signatures_p2ms(
+                const ReadView preimage,
+                const blockchain::bitcoin::SigHash& sigHash,
+                const PasswordPrompt& reason,
+                const block::bitcoin::internal::Output& spends,
+                block::bitcoin::internal::Input& input) const noexcept -> bool;
+            auto add_signatures_p2pk(
+                const ReadView preimage,
+                const blockchain::bitcoin::SigHash& sigHash,
+                const PasswordPrompt& reason,
+                const block::bitcoin::internal::Output& spends,
+                block::bitcoin::internal::Input& input) const noexcept -> bool;
+            auto add_signatures_p2pkh(
+                const ReadView preimage,
+                const blockchain::bitcoin::SigHash& sigHash,
+                const PasswordPrompt& reason,
+                const block::bitcoin::internal::Output& spends,
                 block::bitcoin::internal::Input& input) const noexcept -> bool;
             auto bytes() const noexcept -> std::size_t;
             auto dust() const noexcept -> std::size_t;

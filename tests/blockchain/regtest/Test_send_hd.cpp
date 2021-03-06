@@ -445,7 +445,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_unconfirmed_spend)
 TEST_F(Regtest_fixture_hd, confirm)
 {
     account_list_.expected_ += 0;
-    account_activity_.expected_ += 0;
+    account_activity_.expected_ += 1;
     const auto& txid = transactions_.at(1).get();
     const auto extra = [&] {
         auto output = std::vector<Transaction>{};
@@ -458,26 +458,6 @@ TEST_F(Regtest_fixture_hd, confirm)
     }();
 
     EXPECT_TRUE(Mine(1, 1, default_, extra));
-}
-
-TEST_F(Regtest_fixture_hd, account_list_after_confirmed_spend)
-{
-    wait_for_counter(account_list_);
-    const auto& widget = client_1_.UI().AccountList(alex_.ID());
-    auto row = widget.First();
-
-    ASSERT_TRUE(row->Valid());
-    EXPECT_EQ(row->AccountID(), expected_account_.str());
-    EXPECT_EQ(row->Balance(), 8600002652);
-    EXPECT_EQ(row->ContractID(), expected_unit_.str());
-    EXPECT_EQ(row->DisplayBalance(), u8"86.000 026 52 units");
-    EXPECT_EQ(row->DisplayUnit(), expected_display_unit_);
-    EXPECT_EQ(row->Name(), expected_account_name_);
-    EXPECT_EQ(row->NotaryID(), expected_notary_.str());
-    EXPECT_EQ(row->NotaryName(), expected_notary_name_);
-    EXPECT_EQ(row->Type(), expected_account_type_);
-    EXPECT_EQ(row->Unit(), expected_unit_type_);
-    EXPECT_TRUE(row->Last());
 }
 
 TEST_F(Regtest_fixture_hd, account_activity_after_confirmed_spend)
@@ -536,6 +516,26 @@ TEST_F(Regtest_fixture_hd, account_activity_after_confirmed_spend)
     EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
     EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
     EXPECT_EQ(row->UUID(), transactions_.at(0)->asHex());
+}
+
+TEST_F(Regtest_fixture_hd, account_list_after_confirmed_spend)
+{
+    wait_for_counter(account_list_);
+    const auto& widget = client_1_.UI().AccountList(alex_.ID());
+    auto row = widget.First();
+
+    ASSERT_TRUE(row->Valid());
+    EXPECT_EQ(row->AccountID(), expected_account_.str());
+    EXPECT_EQ(row->Balance(), 8600002652);
+    EXPECT_EQ(row->ContractID(), expected_unit_.str());
+    EXPECT_EQ(row->DisplayBalance(), u8"86.000 026 52 units");
+    EXPECT_EQ(row->DisplayUnit(), expected_display_unit_);
+    EXPECT_EQ(row->Name(), expected_account_name_);
+    EXPECT_EQ(row->NotaryID(), expected_notary_.str());
+    EXPECT_EQ(row->NotaryName(), expected_notary_name_);
+    EXPECT_EQ(row->Type(), expected_account_type_);
+    EXPECT_EQ(row->Unit(), expected_unit_type_);
+    EXPECT_TRUE(row->Last());
 }
 
 TEST_F(Regtest_fixture_hd, shutdown) { Shutdown(); }

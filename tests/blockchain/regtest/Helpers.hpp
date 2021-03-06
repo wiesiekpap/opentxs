@@ -638,10 +638,11 @@ protected:
             }
         }();
 
-        const auto status = connection_.done_.wait_for(std::chrono::minutes{5});
+        static constexpr auto limit = std::chrono::seconds{30};
+        const auto status = connection_.done_.wait_for(limit);
         const auto future = (std::future_status::ready == status);
 
-        EXPECT_TRUE(future);
+        OT_ASSERT(future);
 
         return future && miner() && client1() && client2();
     }

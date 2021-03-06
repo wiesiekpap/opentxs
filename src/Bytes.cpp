@@ -91,6 +91,10 @@ auto space(const ReadView bytes) noexcept -> Space
 
     return {it, it + bytes.size()};
 }
+auto valid(const ReadView view) noexcept -> bool
+{
+    return (nullptr != view.data()) && (0 < view.size());
+}
 auto writer(std::string& in) noexcept -> AllocateOutput
 {
     return [&in](const auto size) -> WritableView {

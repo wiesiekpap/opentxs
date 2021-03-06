@@ -94,6 +94,8 @@ struct Input : virtual public bitcoin::Input {
         const noexcept -> std::unique_ptr<Input> = 0;
     virtual auto Spends() const noexcept(false) -> const Output& = 0;
 
+    virtual auto AddMultisigSignatures(const Signatures& signatures) noexcept
+        -> bool = 0;
     virtual auto AddSignatures(const Signatures& signatures) noexcept
         -> bool = 0;
     virtual auto AssociatePreviousOutput(

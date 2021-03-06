@@ -204,6 +204,7 @@ private:
     };
 
     const blockchain::Type chain_;
+    mutable std::atomic<Amount> confirmed_;
     OTZMQListenCallback balance_cb_;
     OTZMQDealerSocket balance_socket_;
     Progress progress_;
