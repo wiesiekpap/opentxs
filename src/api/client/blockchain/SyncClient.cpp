@@ -16,6 +16,7 @@
 #include <memory>
 #include <mutex>
 #include <set>
+#include <stdexcept>
 #include <thread>
 #include <utility>
 
@@ -34,6 +35,7 @@
 #include "opentxs/protobuf/BlockchainP2PHello.pb.h"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/verify/BlockchainP2PHello.hpp"
+#include "opentxs/util/WorkType.hpp"
 #include "util/AsyncValue.hpp"
 #include "util/ScopeGuard.hpp"
 
@@ -49,8 +51,7 @@ struct SyncClient::Imp {
     {
         if (false == init_.value_.get()) { return; }
 
-        auto msg = api_.ZeroMQ().Message();
-        msg->StartBody();
+        auto msg = api_.ZeroMQ().TaggedMessage(WorkType::SyncRequest);
         msg->AddFrame(data);
         auto lock = Lock{lock_};
         OTSocket::send_message(lock, sync_.get(), msg);
@@ -150,53 +151,76 @@ private:
         }();
         const auto body = incoming->Body();
 
-        if (2 > body.size()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message").Flush();
+        try {
+            if (3 > body.size()) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message").Flush();
 
-            return;
-        }
-
-        const auto hello =
-            proto::Factory<proto::BlockchainP2PHello>(body.at(0));
-
-        if (false == proto::Validate(hello, VERBOSE)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid hello").Flush();
-
-            return;
-        }
-
-        const auto hasEndpoint = (0 < body.at(1).size());
-        const auto hasSyncData = 2 < body.size();
-
-        {
-            auto lock = Lock{lock_};
-            for (const auto& state : hello.state()) {
-                have_sync_[static_cast<Chain>(state.chain())] = true;
+                return;
             }
 
-            if (update_endpoint_.empty() && hasEndpoint) {
-                update_endpoint_ = body.at(1).Bytes();
-                LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": Received update endpoint ")(update_endpoint_)
-                    .Flush();
-            }
+            const auto type = body.at(0).as<WorkType>();
 
-            if ((false == update_connected_) &&
-                (false == update_endpoint_.empty())) {
-                update_connected_ =
-                    (0 ==
-                     ::zmq_connect(update_.get(), update_endpoint_.c_str()));
-
-                if (false == update_connected_) {
+            switch (type) {
+                case WorkType::SyncAcknowledgement:
+                case WorkType::SyncReply:
+                case WorkType::NewBlock: {
+                    break;
+                }
+                default: {
                     LogOutput(OT_METHOD)(__FUNCTION__)(
-                        ": failed to connect update endpoint to ")(
-                        update_endpoint_)
+                        ": Unsupported message type ")(value(type))
                         .Flush();
+
+                    return;
                 }
             }
-        }
 
-        if (hasSyncData) { parent_.ProcessSyncData(std::move(incoming)); }
+            const auto hello =
+                proto::Factory<proto::BlockchainP2PHello>(body.at(1));
+
+            if (false == proto::Validate(hello, VERBOSE)) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid hello").Flush();
+
+                return;
+            }
+
+            const auto hasEndpoint = (WorkType::SyncAcknowledgement == type) &&
+                                     (0 < body.at(2).size());
+            const auto hasSyncData =
+                (WorkType::SyncReply == type) && (3 < body.size());
+
+            {
+                auto lock = Lock{lock_};
+                for (const auto& state : hello.state()) {
+                    have_sync_[static_cast<Chain>(state.chain())] = true;
+                }
+
+                if (update_endpoint_.empty() && hasEndpoint) {
+                    update_endpoint_ = body.at(2).Bytes();
+                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                        ": Received update endpoint ")(update_endpoint_)
+                        .Flush();
+                }
+
+                if ((false == update_connected_) &&
+                    (false == update_endpoint_.empty())) {
+                    update_connected_ =
+                        (0 == ::zmq_connect(
+                                  update_.get(), update_endpoint_.c_str()));
+
+                    if (false == update_connected_) {
+                        LogOutput(OT_METHOD)(__FUNCTION__)(
+                            ": failed to connect update endpoint to ")(
+                            update_endpoint_)
+                            .Flush();
+                    }
+                }
+            }
+
+            if (hasSyncData) { parent_.ProcessSyncData(std::move(incoming)); }
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        }
     }
     auto thread() noexcept -> void
     {

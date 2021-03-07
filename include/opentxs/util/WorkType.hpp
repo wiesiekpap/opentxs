@@ -41,6 +41,10 @@ enum class WorkType : OTZMQWorkType {
     DHTRequestNym = 24,
     DHTRequestServer = 25,
     DHTRequestUnit = 26,
+    SyncRequest = 1024,
+    SyncAcknowledgement = 1025,
+    SyncReply = 1026,
+    NewBlock = 1027,
 };
 
 constexpr auto value(const WorkType in) noexcept

@@ -35,28 +35,40 @@ TEST_F(Regtest_fixture_sync, sync_genesis)
         const auto& msg = sync_req_.get(++sync_req_.checked_);
         const auto body = msg.Body();
 
-        ASSERT_EQ(body.size(), 2);
+        ASSERT_GE(body.size(), 1);
 
-        const auto hello = ot::proto::Factory<Hello>(body.at(0));
+        const auto type = body.at(0).as<ot::WorkType>();
+
+        EXPECT_EQ(type, ot::WorkType::SyncAcknowledgement);
+        ASSERT_GE(body.size(), 2);
+
+        const auto hello = ot::proto::Factory<Hello>(body.at(1));
 
         EXPECT_TRUE(ot::proto::Validate(hello, ot::VERBOSE));
         ASSERT_EQ(hello.state_size(), 1);
         EXPECT_TRUE(sync_req_.check(hello.state(0), pos));
-        EXPECT_EQ(std::string{body.at(1).Bytes()}, sync_server_update_public_);
+        ASSERT_GE(body.size(), 3);
+        EXPECT_EQ(std::string{body.at(2).Bytes()}, sync_server_update_public_);
     }
 
     {
         const auto& msg = sync_req_.get(++sync_req_.checked_);
         const auto body = msg.Body();
 
-        ASSERT_EQ(body.size(), 2);
+        ASSERT_GE(body.size(), 1);
 
-        const auto hello = ot::proto::Factory<Hello>(body.at(0));
+        const auto type = body.at(0).as<ot::WorkType>();
+
+        EXPECT_EQ(type, ot::WorkType::SyncReply);
+        ASSERT_GE(body.size(), 2);
+
+        const auto hello = ot::proto::Factory<Hello>(body.at(1));
 
         EXPECT_TRUE(ot::proto::Validate(hello, ot::VERBOSE));
         ASSERT_EQ(hello.state_size(), 1);
         EXPECT_TRUE(sync_req_.check(hello.state(0), pos));
-        EXPECT_EQ(body.at(1).size(), 0);
+        ASSERT_GE(body.size(), 3);
+        EXPECT_EQ(body.at(2).size(), 0);
     }
 }
 
@@ -88,39 +100,50 @@ TEST_F(Regtest_fixture_sync, sync_full)
         const auto& msg = sync_req_.get(++sync_req_.checked_);
         const auto body = msg.Body();
 
-        ASSERT_EQ(body.size(), 2);
+        ASSERT_GE(body.size(), 1);
 
-        const auto hello = ot::proto::Factory<Hello>(body.at(0));
+        const auto type = body.at(0).as<ot::WorkType>();
+
+        EXPECT_EQ(type, ot::WorkType::SyncAcknowledgement);
+        ASSERT_GE(body.size(), 2);
+
+        const auto hello = ot::proto::Factory<Hello>(body.at(1));
 
         EXPECT_TRUE(ot::proto::Validate(hello, ot::VERBOSE));
         ASSERT_EQ(hello.state_size(), 1);
         EXPECT_TRUE(sync_req_.check(hello.state(0), 9));
-        EXPECT_EQ(std::string{body.at(1).Bytes()}, sync_server_update_public_);
+
+        ASSERT_GE(body.size(), 3);
+        EXPECT_EQ(std::string{body.at(2).Bytes()}, sync_server_update_public_);
     }
 
     {
         const auto& msg = sync_req_.get(++sync_req_.checked_);
         const auto body = msg.Body();
 
+        const auto type = body.at(0).as<ot::WorkType>();
+
+        EXPECT_EQ(type, ot::WorkType::SyncReply);
         ASSERT_GE(body.size(), 2);
 
-        const auto hello = ot::proto::Factory<Hello>(body.at(0));
+        const auto hello = ot::proto::Factory<Hello>(body.at(1));
 
         EXPECT_TRUE(ot::proto::Validate(hello, ot::VERBOSE));
         ASSERT_EQ(hello.state_size(), 1);
         EXPECT_TRUE(sync_req_.check(hello.state(0), 9));
-        EXPECT_EQ(body.at(1).size(), 0);
-        ASSERT_EQ(body.size(), 12);
-        EXPECT_TRUE(sync_req_.check(body.at(2), 0));
-        EXPECT_TRUE(sync_req_.check(body.at(3), 1));
-        EXPECT_TRUE(sync_req_.check(body.at(4), 2));
-        EXPECT_TRUE(sync_req_.check(body.at(5), 3));
-        EXPECT_TRUE(sync_req_.check(body.at(6), 4));
-        EXPECT_TRUE(sync_req_.check(body.at(7), 5));
-        EXPECT_TRUE(sync_req_.check(body.at(8), 6));
-        EXPECT_TRUE(sync_req_.check(body.at(9), 7));
-        EXPECT_TRUE(sync_req_.check(body.at(10), 8));
-        EXPECT_TRUE(sync_req_.check(body.at(11), 9));
+        ASSERT_GE(body.size(), 3);
+        EXPECT_EQ(body.at(2).size(), 0);
+        ASSERT_EQ(body.size(), 13);
+        EXPECT_TRUE(sync_req_.check(body.at(3), 0));
+        EXPECT_TRUE(sync_req_.check(body.at(4), 1));
+        EXPECT_TRUE(sync_req_.check(body.at(5), 2));
+        EXPECT_TRUE(sync_req_.check(body.at(6), 3));
+        EXPECT_TRUE(sync_req_.check(body.at(7), 4));
+        EXPECT_TRUE(sync_req_.check(body.at(8), 5));
+        EXPECT_TRUE(sync_req_.check(body.at(9), 6));
+        EXPECT_TRUE(sync_req_.check(body.at(10), 7));
+        EXPECT_TRUE(sync_req_.check(body.at(11), 8));
+        EXPECT_TRUE(sync_req_.check(body.at(12), 9));
     }
 }
 
@@ -136,33 +159,45 @@ TEST_F(Regtest_fixture_sync, sync_partial)
         const auto& msg = sync_req_.get(++sync_req_.checked_);
         const auto body = msg.Body();
 
-        ASSERT_EQ(body.size(), 2);
+        ASSERT_GE(body.size(), 1);
 
-        const auto hello = ot::proto::Factory<Hello>(body.at(0));
+        const auto type = body.at(0).as<ot::WorkType>();
+
+        EXPECT_EQ(type, ot::WorkType::SyncAcknowledgement);
+        ASSERT_GE(body.size(), 2);
+
+        const auto hello = ot::proto::Factory<Hello>(body.at(1));
 
         EXPECT_TRUE(ot::proto::Validate(hello, ot::VERBOSE));
         ASSERT_EQ(hello.state_size(), 1);
         EXPECT_TRUE(sync_req_.check(hello.state(0), 9));
-        EXPECT_EQ(std::string{body.at(1).Bytes()}, sync_server_update_public_);
+        ASSERT_GE(body.size(), 3);
+        EXPECT_EQ(std::string{body.at(2).Bytes()}, sync_server_update_public_);
     }
 
     {
         const auto& msg = sync_req_.get(++sync_req_.checked_);
         const auto body = msg.Body();
 
+        ASSERT_GE(body.size(), 1);
+
+        const auto type = body.at(0).as<ot::WorkType>();
+
+        EXPECT_EQ(type, ot::WorkType::SyncReply);
         ASSERT_GE(body.size(), 2);
 
-        const auto hello = ot::proto::Factory<Hello>(body.at(0));
+        const auto hello = ot::proto::Factory<Hello>(body.at(1));
 
         EXPECT_TRUE(ot::proto::Validate(hello, ot::VERBOSE));
         ASSERT_EQ(hello.state_size(), 1);
         EXPECT_TRUE(sync_req_.check(hello.state(0), 9));
-        EXPECT_EQ(body.at(1).size(), 0);
-        ASSERT_EQ(body.size(), 6);
-        EXPECT_TRUE(sync_req_.check(body.at(2), 6));
-        EXPECT_TRUE(sync_req_.check(body.at(3), 7));
-        EXPECT_TRUE(sync_req_.check(body.at(4), 8));
-        EXPECT_TRUE(sync_req_.check(body.at(5), 9));
+        ASSERT_GE(body.size(), 3);
+        EXPECT_EQ(body.at(2).size(), 0);
+        ASSERT_EQ(body.size(), 7);
+        EXPECT_TRUE(sync_req_.check(body.at(3), 6));
+        EXPECT_TRUE(sync_req_.check(body.at(4), 7));
+        EXPECT_TRUE(sync_req_.check(body.at(5), 8));
+        EXPECT_TRUE(sync_req_.check(body.at(6), 9));
     }
 }
 
@@ -193,33 +228,45 @@ TEST_F(Regtest_fixture_sync, sync_reorg)
         const auto& msg = sync_req_.get(++sync_req_.checked_);
         const auto body = msg.Body();
 
-        ASSERT_EQ(body.size(), 2);
+        ASSERT_GE(body.size(), 1);
 
-        const auto hello = ot::proto::Factory<Hello>(body.at(0));
+        const auto type = body.at(0).as<ot::WorkType>();
+
+        EXPECT_EQ(type, ot::WorkType::SyncAcknowledgement);
+        ASSERT_GE(body.size(), 2);
+
+        const auto hello = ot::proto::Factory<Hello>(body.at(1));
 
         EXPECT_TRUE(ot::proto::Validate(hello, ot::VERBOSE));
         ASSERT_EQ(hello.state_size(), 1);
         EXPECT_TRUE(sync_req_.check(hello.state(0), 13));
-        EXPECT_EQ(std::string{body.at(1).Bytes()}, sync_server_update_public_);
+        ASSERT_GE(body.size(), 3);
+        EXPECT_EQ(std::string{body.at(2).Bytes()}, sync_server_update_public_);
     }
 
     {
         const auto& msg = sync_req_.get(++sync_req_.checked_);
         const auto body = msg.Body();
 
+        ASSERT_GE(body.size(), 1);
+
+        const auto type = body.at(0).as<ot::WorkType>();
+
+        EXPECT_EQ(type, ot::WorkType::SyncReply);
         ASSERT_GE(body.size(), 2);
 
-        const auto hello = ot::proto::Factory<Hello>(body.at(0));
+        const auto hello = ot::proto::Factory<Hello>(body.at(1));
 
         EXPECT_TRUE(ot::proto::Validate(hello, ot::VERBOSE));
         ASSERT_EQ(hello.state_size(), 1);
         EXPECT_TRUE(sync_req_.check(hello.state(0), 13));
-        EXPECT_EQ(body.at(1).size(), 0);
-        ASSERT_EQ(body.size(), 6);
-        EXPECT_TRUE(sync_req_.check(body.at(2), 10));
-        EXPECT_TRUE(sync_req_.check(body.at(3), 11));
-        EXPECT_TRUE(sync_req_.check(body.at(4), 12));
-        EXPECT_TRUE(sync_req_.check(body.at(5), 13));
+        ASSERT_GE(body.size(), 3);
+        EXPECT_EQ(body.at(2).size(), 0);
+        ASSERT_EQ(body.size(), 7);
+        EXPECT_TRUE(sync_req_.check(body.at(3), 10));
+        EXPECT_TRUE(sync_req_.check(body.at(4), 11));
+        EXPECT_TRUE(sync_req_.check(body.at(5), 12));
+        EXPECT_TRUE(sync_req_.check(body.at(6), 13));
     }
 }
 
