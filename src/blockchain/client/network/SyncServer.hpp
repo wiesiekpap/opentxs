@@ -285,31 +285,54 @@ private:
         }();
         const auto body = incoming->Body();
 
-        if (1 > body.size()) { return; }
+        if (2 > body.size()) { return; }
 
-        const auto hello =
-            proto::Factory<proto::BlockchainP2PHello>(body.at(0));
+        try {
+            const auto type = body.at(0).as<WorkType>();
 
-        if (false == proto::Validate(hello, VERBOSE)) { return; }
+            switch (type) {
+                case WorkType::SyncRequest: {
+                    break;
+                }
+                default: {
+                    LogOutput(SYNC_SERVER)(__FUNCTION__)(
+                        ": Unsupported message type ")(value(type))
+                        .Flush();
 
-        for (const auto& state : hello.state()) {
-            const auto chain = static_cast<blockchain::Type>(state.chain());
+                    return;
+                }
+            }
 
-            if (chain_ != chain) { continue; }
+            const auto hello =
+                proto::Factory<proto::BlockchainP2PHello>(body.at(1));
 
-            const auto position = block::Position{
-                static_cast<block::Height>(state.height()),
-                api_.Factory().Data(state.hash(), StringStyle::Raw)};
-            const auto [needSync, parent, hello] = this->hello(lock, position);
-            const auto& [height, hash] = parent;
-            auto reply = api_.ZeroMQ().ReplyMessage(incoming);
-            reply->AddFrame(hello);
-            reply->AddFrame();
-            auto send{true};
+            if (false == proto::Validate(hello, VERBOSE)) { return; }
 
-            if (needSync) { send = db_.LoadSync(height, reply); }
+            for (const auto& state : hello.state()) {
+                const auto chain = static_cast<blockchain::Type>(state.chain());
 
-            if (send) { OTSocket::send_message(lock, socket_.get(), reply); }
+                if (chain_ != chain) { continue; }
+
+                const auto position = block::Position{
+                    static_cast<block::Height>(state.height()),
+                    api_.Factory().Data(state.hash(), StringStyle::Raw)};
+                const auto [needSync, parent, hello] =
+                    this->hello(lock, position);
+                const auto& [height, hash] = parent;
+                auto reply =
+                    api_.ZeroMQ().TaggedReply(incoming, WorkType::SyncReply);
+                reply->AddFrame(hello);
+                reply->AddFrame();
+                auto send{true};
+
+                if (needSync) { send = db_.LoadSync(height, reply); }
+
+                if (send) {
+                    OTSocket::send_message(lock, socket_.get(), reply);
+                }
+            }
+        } catch (const std::exception& e) {
+            LogOutput(SYNC_SERVER)(__FUNCTION__)(": ")(e.what()).Flush();
         }
     }
     auto queue_processing(DownloadedData&& data) noexcept -> void
@@ -318,6 +341,7 @@ private:
 
         const auto& tip = data.back();
         auto items = std::vector<proto::BlockchainP2PSync>{};
+        auto previousFilterHeader = api_.Factory().Data();
 
         for (const auto& task : data) {
             try {
@@ -331,6 +355,19 @@ private:
                 }
 
                 const auto& header = *pHeader;
+
+                if (previousFilterHeader->empty()) {
+                    previousFilterHeader =
+                        filter_.LoadFilterHeader(type_, header.ParentHash());
+
+                    if (previousFilterHeader->empty()) {
+                        throw std::runtime_error(
+                            std::string{"failed to previous filter header for "
+                                        "block  "} +
+                            task->position_.second->asHex());
+                    }
+                }
+
                 const auto& pGCS = task->data_.get();
 
                 if (false == bool(pGCS)) {
@@ -356,13 +393,18 @@ private:
             }
         }
 
+        if (previousFilterHeader->empty() || (0 == items.size())) {
+            LogOutput(SYNC_SERVER)(__FUNCTION__)(": missing data").Flush();
+
+            return;
+        }
+
         const auto& pos = tip->position_;
         const auto stored = db_.StoreSync(pos, items);
 
         if (false == stored) { OT_FAIL; }
 
-        auto work = api_.ZeroMQ().Message();
-        work->StartBody();
+        auto work = api_.ZeroMQ().TaggedMessage(WorkType::NewBlock);
         auto hello = [&] {
             auto output = proto::BlockchainP2PHello{};
             output.set_version(sync_hello_version_);
@@ -376,6 +418,7 @@ private:
             return output;
         }();
         work->AddFrame(hello);
+        work->AddFrame(previousFilterHeader);
 
         for (const auto& item : items) { work->AddFrame(item); }
 

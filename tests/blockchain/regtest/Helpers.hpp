@@ -69,6 +69,7 @@
 #include "opentxs/protobuf/verify/BlockchainP2PChainState.hpp"
 #include "opentxs/protobuf/verify/BlockchainP2PHello.hpp"
 #include "opentxs/protobuf/verify/BlockchainP2PSync.hpp"
+#include "opentxs/util/WorkType.hpp"
 
 namespace b = ot::blockchain;
 namespace zmq = ot::network::zeromq;
@@ -332,8 +333,7 @@ struct SyncRequestor {
     }
     [[maybe_unused]] auto request(const Position& pos) const noexcept -> bool
     {
-        auto msg = api_.ZeroMQ().Message();
-        msg->StartBody();
+        auto msg = api_.ZeroMQ().TaggedMessage(ot::WorkType::SyncRequest);
         msg->AddFrame([&] {
             auto hello = Hello{};
             hello.set_version(1);
@@ -462,7 +462,7 @@ private:
     {
         auto body = in.Body();
 
-        if (2 > body.size()) {
+        if (3 > body.size()) {
             ++errors_;
 
             return;
@@ -472,37 +472,53 @@ private:
             auto counter{-1};
 
             for (const auto& frame : body) {
-                if (0 == ++counter) {
-                    const auto hello = ot::proto::Factory<Hello>(frame);
+                switch (++counter) {
+                    case 0: {
+                        const auto type = frame.as<ot::WorkType>();
 
-                    if (false == ot::proto::Validate(hello, ot::VERBOSE)) {
-                        throw std::runtime_error("invalid hello");
-                    }
+                        if (type != ot::WorkType::NewBlock) {
+                            throw std::runtime_error("invalid type");
+                        }
+                    } break;
+                    case 1: {
+                        const auto hello = ot::proto::Factory<Hello>(frame);
 
-                    if (1 != hello.state().size()) {
-                        throw std::runtime_error("wrong state count");
-                    }
+                        if (false == ot::proto::Validate(hello, ot::VERBOSE)) {
+                            throw std::runtime_error("invalid hello");
+                        }
 
-                    const auto& state = hello.state().at(0);
-                    constexpr auto chain =
-                        static_cast<std::uint32_t>(test_chain_);
+                        if (1 != hello.state().size()) {
+                            throw std::runtime_error("wrong state count");
+                        }
 
-                    if (state.chain() != chain) {
-                        throw std::runtime_error("wrong chain");
-                    }
-                } else {
-                    const auto state = ot::proto::Factory<State>(frame);
+                        const auto& state = hello.state().at(0);
+                        constexpr auto chain =
+                            static_cast<std::uint32_t>(test_chain_);
 
-                    if (false == ot::proto::Validate(state, ot::VERBOSE)) {
-                        throw std::runtime_error("invalid state");
-                    }
+                        if (state.chain() != chain) {
+                            throw std::runtime_error("wrong chain");
+                        }
+                    } break;
+                    case 2: {
+                        if (0 == frame.size()) {
+                            throw std::runtime_error(
+                                "invalid previous cfheader");
+                        }
+                    } break;
+                    default: {
+                        const auto state = ot::proto::Factory<State>(frame);
 
-                    const auto index = updated_++;
-                    const auto future = cache_.get(index);
-                    const auto hash = future.get();
+                        if (false == ot::proto::Validate(state, ot::VERBOSE)) {
+                            throw std::runtime_error("invalid state");
+                        }
 
-                    if (state.hash() != hash->str()) {
-                        std::runtime_error("wrong hash");
+                        const auto index = updated_++;
+                        const auto future = cache_.get(index);
+                        const auto hash = future.get();
+
+                        if (state.hash() != hash->str()) {
+                            std::runtime_error("wrong hash");
+                        }
                     }
                 }
             }

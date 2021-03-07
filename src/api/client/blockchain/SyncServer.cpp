@@ -14,6 +14,7 @@
 #include <memory>
 #include <mutex>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <thread>
 #include <tuple>
@@ -30,12 +31,14 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/protobuf/BlockchainP2PChainState.pb.h"
 #include "opentxs/protobuf/BlockchainP2PHello.pb.h"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/verify/BlockchainP2PHello.hpp"
+#include "opentxs/util/WorkType.hpp"
 #include "util/ScopeGuard.hpp"
 
 #define OT_METHOD "opentxs::api::client::blockchain::SyncServer::Imp::"
@@ -172,32 +175,52 @@ private:
         }();
         const auto body = incoming->Body();
 
-        if (1 > body.size()) { return; }
+        if (2 > body.size()) { return; }
 
-        const auto hello =
-            proto::Factory<proto::BlockchainP2PHello>(body.at(0));
+        try {
+            const auto type = body.at(0).as<WorkType>();
 
-        if (false == proto::Validate(hello, VERBOSE)) { return; }
-
-        {
-            auto outgoing = api_.ZeroMQ().ReplyMessage(incoming);
-            outgoing->AddFrame(parent_.Hello());
-            outgoing->AddFrame(update_public_endpoint_);
-            OTSocket::send_message(lock, socket, outgoing);
-        }
-
-        for (const auto& state : hello.state()) {
-            const auto chain = static_cast<Chain>(state.chain());
-
-            try {
-                const auto& [endpoint, enabled, internal] = map_.at(chain);
-
-                if (enabled) {
-                    OTSocket::send_message(
-                        lock, internal.get(), OTZMQMessage{incoming});
+            switch (type) {
+                case WorkType::SyncRequest: {
+                    break;
                 }
-            } catch (...) {
+                default: {
+                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                        ": Unsupported message type ")(value(type))
+                        .Flush();
+
+                    return;
+                }
             }
+
+            const auto hello =
+                proto::Factory<proto::BlockchainP2PHello>(body.at(1));
+
+            if (false == proto::Validate(hello, VERBOSE)) { return; }
+
+            {
+                auto outgoing = api_.ZeroMQ().TaggedReply(
+                    incoming, WorkType::SyncAcknowledgement);
+                outgoing->AddFrame(parent_.Hello());
+                outgoing->AddFrame(update_public_endpoint_);
+                OTSocket::send_message(lock, socket, outgoing);
+            }
+
+            for (const auto& state : hello.state()) {
+                const auto chain = static_cast<Chain>(state.chain());
+
+                try {
+                    const auto& [endpoint, enabled, internal] = map_.at(chain);
+
+                    if (enabled) {
+                        OTSocket::send_message(
+                            lock, internal.get(), OTZMQMessage{incoming});
+                    }
+                } catch (...) {
+                }
+            }
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
         }
     }
     auto process_internal(const Lock& lock, void* socket) noexcept -> void

@@ -1308,7 +1308,7 @@ auto Blockchain::ProcessSyncData(OTZMQMessage&& in) const noexcept -> void
 {
     const auto b = in->Body();
 
-    OT_ASSERT(2 < b.size());
+    OT_ASSERT(3 < b.size());
 
     using Network = opentxs::blockchain::client::internal::Network;
     auto chain = std::optional<Chain>{std::nullopt};
@@ -1317,9 +1317,9 @@ auto Blockchain::ProcessSyncData(OTZMQMessage&& in) const noexcept -> void
     using Height = opentxs::blockchain::block::Height;
     auto height = Height{-1};
     auto work = MakeWork(api_, Network::Task::SyncData);
-    work->AddFrame(b.at(0));
+    work->AddFrame(b.at(1));
 
-    for (auto i{std::next(b.begin(), 2)}; i != b.end(); std::advance(i, 1)) {
+    for (auto i{std::next(b.begin(), 3)}; i != b.end(); std::advance(i, 1)) {
         const auto sync = proto::Factory<proto::BlockchainP2PSync>(*i);
 
         if (false == proto::Validate(sync, VERBOSE)) {
