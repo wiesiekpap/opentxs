@@ -165,7 +165,6 @@ protected:
         auto lock = Lock{dm_lock_};
         {
             const auto& start = positions.front();
-            const auto& end = positions.back();
 
             if (dm_known_.first >= start.first) {
                 auto next = std::ptrdiff_t{-1};
@@ -222,21 +221,28 @@ protected:
                     next_ = std::min(next_, index);
                 }
             }
-
-            dm_known_ = end;
-
-            OT_ASSERT(dm_done_.first <= dm_known_.first);
         }
 
         auto previous =
             (0 == buffer_.size()) ? dm_previous_ : buffer_.back()->output_;
 
         for (auto& position : positions) {
-            auto& task = buffer_.emplace_back(std::make_shared<TaskType>(
-                std::move(position), std::move(previous), log_.data(), extra));
-            previous = task->output_;
-            downcast().check_task(*task);
+            if ((0 == max_queue_) || (buffer_.size() < max_queue_)) {
+                auto& task = buffer_.emplace_back(std::make_shared<TaskType>(
+                    std::move(position),
+                    std::move(previous),
+                    log_.data(),
+                    extra));
+                previous = task->output_;
+                downcast().check_task(*task);
+            } else {
+                break;
+            }
         }
+
+        dm_known_ = buffer_.back()->position_;
+
+        OT_ASSERT(dm_done_.first <= dm_known_.first);
 
         downcast().trigger_state_machine();
     }
@@ -244,8 +250,12 @@ protected:
     Manager(
         const Position& position,
         Finished&& previous,
-        const std::string& log) noexcept
+        const std::string& log,
+        const std::size_t max,
+        const std::size_t min) noexcept
         : log_(log)
+        , max_queue_(max)
+        , minimum_write_(min)
         , dm_lock_()
         , dm_previous_(std::move(previous))
         , dm_done_(position)
@@ -276,6 +286,8 @@ private:
     using BatchID = typename BatchType::ID;
 
     const std::string log_;
+    const std::size_t max_queue_;
+    const std::size_t minimum_write_;
     mutable std::mutex dm_lock_;
     Finished dm_previous_;
     Position dm_done_;
@@ -435,7 +447,19 @@ private:
             process.emplace_back(pTask);
         }
 
-        downcast().queue_processing(std::move(process));
+        if ((0 < minimum_write_) && (process.size() != buffer_.size()) &&
+            (process.size() < minimum_write_)) {
+            LogTrace(DOWNLOAD_MANAGER)(__FUNCTION__)(": ")(process.size())(" ")(
+                log_)(" jobs does not match the minimum value of ")(
+                minimum_write_)(" or the buffer size of ")(buffer_.size())
+                .Flush();
+
+            for (auto& pTask : process) {
+                pTask->state_.store(State::Downloaded);
+            }
+        } else {
+            downcast().queue_processing(std::move(process));
+        }
 
         if (caught_up(lock)) { return false; }
 

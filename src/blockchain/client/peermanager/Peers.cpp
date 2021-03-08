@@ -324,7 +324,7 @@ auto PeerManager::Peers::get_dns_peer() const noexcept -> Endpoint
 
         return {};
     } catch (const boost::system::system_error& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogDebug(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
         return {};
     } catch (...) {

@@ -83,7 +83,9 @@ public:
 
                   return Finished{promise.get_future()};
               }(),
-              "sync server")
+              "sync server",
+              10000,
+              2000)
         , SyncWorker(api, std::chrono::milliseconds{20})
         , db_(db)
         , header_(header)

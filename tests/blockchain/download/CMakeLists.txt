@@ -8,5 +8,9 @@ add_opentx_test(
 )
 
 add_opentx_test(
+  unittests-opentxs-blockchain-download-manager-limits Test_Limits.cpp
+)
+
+add_opentx_test(
   unittests-opentxs-blockchain-download-manager-order Test_OutOfOrder.cpp
 )

@@ -59,7 +59,9 @@ public:
 
                   return Finished{promise.get_future()};
               }(),
-              "cfheader")
+              "cfheader",
+              20000,
+              10000)
         , HeaderWorker(api, std::chrono::milliseconds{20})
         , db_(db)
         , header_(header)

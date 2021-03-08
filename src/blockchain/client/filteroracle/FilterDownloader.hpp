@@ -79,7 +79,9 @@ public:
 
                   return Finished{promise.get_future()};
               }(),
-              "cfilter")
+              "cfilter",
+              20000,
+              10000)
         , FilterWorker(api, std::chrono::milliseconds{20})
         , db_(db)
         , header_(header)

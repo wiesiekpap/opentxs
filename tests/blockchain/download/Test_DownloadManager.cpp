@@ -14,7 +14,7 @@
 #include "blockchain/DownloadTask.hpp"
 
 constexpr auto batchSize{3};
-auto manager_ = DownloadManager{batchSize};
+auto manager_ = DownloadManager{batchSize, 0, 0};
 
 TEST(Test_DownloadManager, initial_state)
 {
