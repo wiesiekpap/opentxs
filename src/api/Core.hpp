@@ -23,6 +23,7 @@
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/HDSeed.hpp"
+#include "opentxs/api/ThreadPool.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
@@ -98,6 +99,10 @@ public:
     auto Symmetric() const -> const api::crypto::Symmetric& final
     {
         return symmetric_;
+    }
+    auto ThreadPool() const noexcept -> const api::ThreadPool& final
+    {
+        return parent_.ThreadPool();
     }
     auto Wallet() const -> const api::Wallet& final;
     auto ZeroMQ() const -> const opentxs::network::zeromq::Context& final

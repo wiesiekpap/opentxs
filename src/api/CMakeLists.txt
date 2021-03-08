@@ -22,6 +22,7 @@ set(cxx-sources
     Scheduler.cpp
     Settings.cpp
     StorageParent.cpp
+    ThreadPool.cpp
     Wallet.cpp
     ZMQ.cpp
 )
@@ -35,6 +36,7 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/Periodic.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/Primitives.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/Settings.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/api/ThreadPool.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/Wallet.hpp"
 )
 set(cxx-headers
@@ -53,6 +55,7 @@ set(cxx-headers
     Scheduler.hpp
     Settings.hpp
     StorageParent.hpp
+    ThreadPool.hpp
     Wallet.hpp
     ZMQ.hpp
 )

@@ -12,6 +12,7 @@
 #include <stdexcept>
 
 #include "internal/api/Api.hpp"
+#include "internal/api/Factory.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 

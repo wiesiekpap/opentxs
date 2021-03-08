@@ -58,7 +58,6 @@ public:
         const noexcept -> std::string final;
     auto InternalBlockchainFilterUpdated(const opentxs::blockchain::Type chain)
         const noexcept -> std::string final;
-    auto InternalBlockchainThreadPool() const noexcept -> std::string final;
     auto InternalProcessPushNotification() const noexcept -> std::string final;
     auto InternalPushNotification() const noexcept -> std::string final;
     auto IssuerUpdate() const noexcept -> std::string final;

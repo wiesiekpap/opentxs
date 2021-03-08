@@ -17,7 +17,7 @@
 #include "api/Scheduler.hpp"
 #include "api/StorageParent.hpp"
 #include "api/ZMQ.hpp"
-#include "core/Shutdown.hpp"
+#include "internal/api/Factory.hpp"
 #include "internal/api/storage/Storage.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -159,7 +159,6 @@ void Core::bump_password_timer(const opentxs::Lock& lock) const
 
 void Core::cleanup()
 {
-    shutdown_sender_.Activate();
     dht_.reset();
     wallet_.reset();
     seeds_.reset();

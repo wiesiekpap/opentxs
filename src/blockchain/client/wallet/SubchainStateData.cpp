@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "internal/api/Api.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
@@ -423,9 +424,9 @@ auto SubchainStateData::queue_work(const Task task, const char* log) noexcept
         if ((Clock::now() - start) > limit) { OT_FAIL; }
     }
 
-    using Pool = internal::ThreadPool;
-
-    auto work = Pool::MakeWork(api_, network_.Chain(), Pool::Work::HDAccount);
+    using Pool = api::internal::ThreadPool;
+    auto work =
+        Pool::MakeWork(api_.ZeroMQ(), value(Pool::Work::BlockchainWallet));
     work->AddFrame(task);
     work->AddFrame(reinterpret_cast<std::uintptr_t>(this));
     running_.store(true);

@@ -28,6 +28,7 @@
 #include "opentxs/api/Legacy.hpp"
 #include "opentxs/api/Primitives.hpp"
 #include "opentxs/api/Settings.hpp"
+#include "opentxs/api/ThreadPool.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/network/ZAP.hpp"
 #include "opentxs/api/server/Manager.hpp"
@@ -90,6 +91,10 @@ public:
 #endif  // OT_CRYPTO_WITH_BIP32
     auto StartServer(const ArgList& args, const int instance, const bool inproc)
         const -> const api::server::Manager& final;
+    auto ThreadPool() const noexcept -> const api::ThreadPool& final
+    {
+        return *thread_pool_;
+    }
     auto ZAP() const -> const api::network::ZAP& final;
     auto ZMQ() const -> const opentxs::network::zeromq::Context& final
     {
@@ -116,6 +121,7 @@ private:
     OTZMQContext zmq_context_;
     mutable std::unique_ptr<Signals> signal_handler_;
     std::unique_ptr<api::internal::Log> log_;
+    std::unique_ptr<api::internal::ThreadPool> thread_pool_;
     std::unique_ptr<api::Crypto> crypto_;
     std::unique_ptr<api::Primitives> factory_;
     std::unique_ptr<api::Legacy> legacy_;

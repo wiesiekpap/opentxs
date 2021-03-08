@@ -242,11 +242,6 @@ public:
     virtual std::string InternalBlockchainFilterUpdated(
         const opentxs::blockchain::Type chain) const noexcept = 0;
 
-    /** Load balancing thread pool shared by all blockchains
-     *
-     */
-    virtual std::string InternalBlockchainThreadPool() const noexcept = 0;
-
     /** Push notification processing
      *
      *  This socket is for use by the Sync and ServerConnection classes only

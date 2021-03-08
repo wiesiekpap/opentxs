@@ -19,6 +19,7 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/ThreadPool.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -77,7 +78,7 @@ Wallet::Wallet(
           task_finished_)
     , proposals_(api, blockchain_api_, parent_, db_, chain_)
 {
-    auto zmq = thread_pool->Start(blockchain.ThreadPool().Endpoint());
+    auto zmq = thread_pool->Start(api_.ThreadPool().Endpoint());
 
     OT_ASSERT(zmq);
 
@@ -174,6 +175,9 @@ auto Wallet::process_reorg(const zmq::Message& in) noexcept -> void
 auto Wallet::shutdown(std::promise<void>& promise) noexcept -> void
 {
     if (running_->Off()) {
+        LogDetail("Shutting down ")(DisplayString(chain_))(" wallet").Flush();
+        accounts_.shutdown();
+
         try {
             promise.set_value();
         } catch (...) {

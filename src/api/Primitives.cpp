@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "internal/api/Api.hpp"
+#include "internal/api/Factory.hpp"
 #include "internal/core/Core.hpp"
 #include "opentxs/api/Primitives.hpp"
 

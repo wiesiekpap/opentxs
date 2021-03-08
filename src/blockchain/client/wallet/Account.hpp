@@ -72,6 +72,7 @@ public:
     using BalanceTree = api::client::blockchain::internal::BalanceTree;
 
     auto reorg(const block::Position& parent) noexcept -> bool;
+    auto shutdown() noexcept -> void;
     auto state_machine() noexcept -> bool;
 
     Account(

@@ -27,6 +27,7 @@ extern "C" {
 
 #include "2_Factory.hpp"
 #include "internal/api/Api.hpp"
+#include "internal/api/Factory.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/client/Factory.hpp"
 #include "internal/api/crypto/Factory.hpp"
@@ -95,6 +96,7 @@ Context::Context(
     , zmq_context_(opentxs::Factory::ZMQContext())
     , signal_handler_(nullptr)
     , log_(factory::Log(zmq_context_, get_arg(args, OPENTXS_ARG_LOGENDPOINT)))
+    , thread_pool_()
     , crypto_(nullptr)
     , factory_(nullptr)
     , legacy_(factory::Legacy(home_))
@@ -224,6 +226,7 @@ void Context::Init()
     }
 
     Init_Log(argLevel);
+    thread_pool_ = factory::ThreadPool(zmq_context_);
     init_pid();
     Init_Crypto();
     Init_Factory();
@@ -570,6 +573,8 @@ Context::~Context()
 {
     client_.clear();
     server_.clear();
+    thread_pool_->Shutdown();
+    thread_pool_.reset();
     LogSource::Shutdown();
     log_.reset();
 }

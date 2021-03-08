@@ -144,11 +144,13 @@ private:
             } break;
             case BlockOracle::Work::block:
             case BlockOracle::Work::reorg: {
-                process_position(in);
+                if (dm_enabled()) { process_position(in); }
+
                 run_if_enabled();
             } break;
             case BlockOracle::Work::heartbeat: {
-                process_position();
+                if (dm_enabled()) { process_position(); }
+
                 run_if_enabled();
             } break;
             case BlockOracle::Work::statemachine: {
@@ -176,7 +178,7 @@ private:
     auto process_position() noexcept -> void
     {
         auto current = known();
-        auto hashes = header_.BestChain(current);
+        auto hashes = header_.BestChain(current, 2000);
 
         OT_ASSERT(0 < hashes.size());
 

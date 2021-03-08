@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "internal/api/Api.hpp"
+#include "internal/api/Factory.hpp"
 #include "internal/api/crypto/Crypto.hpp"
 #include "internal/crypto/key/Factory.hpp"
 #include "opentxs/OT.hpp"

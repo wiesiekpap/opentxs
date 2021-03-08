@@ -9,7 +9,6 @@
 
 #include <chrono>
 #include <exception>
-#include <iterator>
 #include <optional>
 #include <stdexcept>
 #include <thread>
@@ -17,6 +16,7 @@
 
 #include "blockchain/DownloadManager.hpp"
 #include "blockchain/DownloadTask.hpp"
+#include "internal/api/Api.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -136,11 +136,13 @@ auto FilterOracle::BlockIndexer::pipeline(const zmq::Message& in) noexcept
             shutdown(shutdown_promise_);
         } break;
         case Work::heartbeat: {
-            process_position(block_.Tip());
+            if (dm_enabled()) { process_position(block_.Tip()); }
+
             run_if_enabled();
         } break;
         case Work::full_block: {
-            process_position(in);
+            if (dm_enabled()) { process_position(in); }
+
             run_if_enabled();
         } break;
         case Work::statemachine: {
@@ -181,7 +183,7 @@ auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
 
     while (searching) {
         try {
-            hashes = header_.Ancestors(compare, pos);
+            hashes = header_.Ancestors(compare, pos, 2000u);
 
             OT_ASSERT(0 < hashes.size());
         } catch (const std::exception& e) {
@@ -320,8 +322,9 @@ auto FilterOracle::BlockIndexer::send_to_thread_pool(
 
     if (false == running_.get()) { return; }
 
-    using Pool = internal::ThreadPool;
-    auto work = Pool::MakeWork(api_, chain_, Pool::Work::CalculateBlockFilters);
+    using Pool = api::internal::ThreadPool;
+    auto work =
+        Pool::MakeWork(api_.ZeroMQ(), value(Pool::Work::CalculateBlockFilters));
     work->AddFrame(reinterpret_cast<std::uintptr_t>(&parent_));
     work->AddFrame(reinterpret_cast<std::uintptr_t>(&job));
     thread_pool_.Send(work);

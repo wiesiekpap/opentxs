@@ -945,7 +945,7 @@ protected:
             auto args = OTTestEnvironment::test_args_;
             auto& level = args[OPENTXS_ARG_BLOCK_STORAGE_LEVEL];
             level.clear();
-            level.emplace("0");
+            level.emplace("1");
 
             return args;
         }())

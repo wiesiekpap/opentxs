@@ -18,7 +18,7 @@ extern "C" {
 #include <cstdlib>
 #include <memory>
 
-#include "internal/api/Api.hpp"
+#include "internal/api/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Legacy.hpp"
 #include "opentxs/core/Log.hpp"

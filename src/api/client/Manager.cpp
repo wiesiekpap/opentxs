@@ -18,6 +18,7 @@
 #include "api/Core.hpp"
 #include "api/Scheduler.hpp"
 #include "api/StorageParent.hpp"
+#include "core/Shutdown.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/client/Factory.hpp"
@@ -37,8 +38,11 @@
 #include "opentxs/client/OT_API.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
+
+#define OT_METHOD "opentxs::api::client::implementation::Manager::"
 
 namespace opentxs::factory
 {
@@ -158,6 +162,9 @@ auto Manager::Blockchain() const -> const api::client::Blockchain&
 
 void Manager::Cleanup()
 {
+    LogDetail(OT_METHOD)(__FUNCTION__)(": Shutting down and cleaning up.")
+        .Flush();
+    shutdown_sender_.Activate();
     ui_->Shutdown();
     ui_.reset();
     pair_.reset();
@@ -166,6 +173,7 @@ void Manager::Cleanup()
     otapi_exec_.reset();
     ot_api_.reset();
     workflow_.reset();
+    blockchain_->Shutdown();
 #if OT_BLOCKCHAIN
     contacts_->prepare_shutdown();
 #endif  // OT_BLOCKCHAIN

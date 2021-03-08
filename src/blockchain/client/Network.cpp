@@ -847,8 +847,9 @@ auto Network::state_machine_headers() noexcept -> void
     constexpr auto rateLimit = std::chrono::seconds{1};
     const auto interval = Clock::now() - headers_requested_;
     const auto requestHeaders = [&] {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Requesting ")(
-            DisplayString(chain_))(" block headers from all connected peers")
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": Requesting ")(DisplayString(
+            chain_))(" block headers from all connected peers (instance ")(
+            api_.Instance())(")")
             .Flush();
         waiting_for_headers_->On();
         peer_.RequestHeaders();
@@ -859,7 +860,8 @@ auto Network::state_machine_headers() noexcept -> void
         if (interval < limit) { return; }
 
         LogDetail(OT_METHOD)(__FUNCTION__)(": ")(DisplayString(chain_))(
-            " headers not received before timeout")
+            " headers not received before timeout (instance ")(api_.Instance())(
+            ")")
             .Flush();
         requestHeaders();
     } else if ((false == is_synchronized_headers()) && (interval > rateLimit)) {

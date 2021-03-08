@@ -17,6 +17,14 @@ namespace opentxs
 {
 namespace api
 {
+class ThreadPool;
+}  // namespace api
+}  // namespace opentxs
+
+namespace opentxs
+{
+namespace api
+{
 class Core : virtual public Periodic
 {
 public:
@@ -33,6 +41,8 @@ public:
         const std::chrono::seconds& timeout) const = 0;
     OPENTXS_EXPORT virtual const storage::Storage& Storage() const = 0;
     OPENTXS_EXPORT virtual const crypto::Symmetric& Symmetric() const = 0;
+    OPENTXS_EXPORT virtual const api::ThreadPool& ThreadPool()
+        const noexcept = 0;
     OPENTXS_EXPORT virtual const api::Wallet& Wallet() const = 0;
     OPENTXS_EXPORT virtual const opentxs::network::zeromq::Context& ZeroMQ()
         const = 0;

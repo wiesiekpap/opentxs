@@ -19,6 +19,7 @@ extern "C" {
 #include <iostream>
 #include <memory>
 
+#include "internal/api/Factory.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"

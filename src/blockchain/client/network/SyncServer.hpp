@@ -84,8 +84,8 @@ public:
                   return Finished{promise.get_future()};
               }(),
               "sync server",
-              10000,
-              2000)
+              2000,
+              1000)
         , SyncWorker(api, std::chrono::milliseconds{20})
         , db_(db)
         , header_(header)
@@ -199,7 +199,8 @@ private:
                 shutdown(shutdown_promise_);
             } break;
             case Work::heartbeat: {
-                process_position(filter_.Tip(type_));
+                if (dm_enabled()) { process_position(filter_.Tip(type_)); }
+
                 run_if_enabled();
             } break;
             case Work::filter: {
@@ -230,9 +231,13 @@ private:
     }
     auto process_position(const Position& pos) noexcept -> void
     {
+        LogTrace(SYNC_SERVER)(__FUNCTION__)(": processing block ")(
+            pos.second->asHex())(" at height ")(pos.first)
+            .Flush();
+
         try {
             auto current = known();
-            auto hashes = header_.Ancestors(current, pos);
+            auto hashes = header_.Ancestors(current, pos, 2000);
             LogTrace(SYNC_SERVER)(__FUNCTION__)(
                 ": current position best known position is block ")(
                 current.second->asHex())(" at height ")(current.first)

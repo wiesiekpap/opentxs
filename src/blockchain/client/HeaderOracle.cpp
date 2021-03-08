@@ -107,11 +107,30 @@ HeaderOracle::HeaderOracle(
 
 auto HeaderOracle::Ancestors(
     const block::Position& start,
-    const block::Position& target) const noexcept(false) -> Positions
+    const block::Position& target,
+    const std::size_t limit) const noexcept(false) -> Positions
 {
+    Lock lock(lock_);
     const auto check =
         std::max<block::Height>(std::min(start.first, target.first), 0);
-    Lock lock(lock_);
+    const auto fast = is_in_best_chain(lock, target.second).first &&
+                      is_in_best_chain(lock, start.second).first &&
+                      (start.first < target.first);
+
+    if (fast) {
+        auto output = best_chain(lock, start, limit);
+        lock.unlock();
+
+        while ((1 < output.size()) && (output.back().first > target.first)) {
+            output.pop_back();
+        }
+
+        OT_ASSERT(0 < output.size());
+        OT_ASSERT(output.front().first <= check);
+
+        return output;
+    }
+
     auto cache = std::deque<block::Position>{};
     auto current = database_.LoadHeader(target.second);
     auto sibling = database_.LoadHeader(start.second);
@@ -344,10 +363,20 @@ auto HeaderOracle::BestChain() const noexcept -> block::Position
     return best_chain(lock);
 }
 
-auto HeaderOracle::BestChain(const block::Position& tip) const noexcept(false)
-    -> Positions
+auto HeaderOracle::BestChain(
+    const block::Position& tip,
+    const std::size_t limit) const noexcept(false) -> Positions
 {
     Lock lock(lock_);
+
+    return best_chain(lock, tip, limit);
+}
+
+auto HeaderOracle::best_chain(
+    const Lock& lock,
+    const block::Position& tip,
+    const std::size_t limit) const noexcept -> Positions
+{
     const auto [youngest, best] = common_parent(lock, tip);
     static const auto blank = api_.Factory().Data();
     auto height{youngest.first};
@@ -355,6 +384,8 @@ auto HeaderOracle::BestChain(const block::Position& tip) const noexcept(false)
 
     for (auto& hash : best_hashes(lock, height, blank, 0)) {
         output.emplace_back(height++, std::move(hash));
+
+        if ((0u < limit) && (output.size() == limit)) { break; }
     }
 
     return output;
