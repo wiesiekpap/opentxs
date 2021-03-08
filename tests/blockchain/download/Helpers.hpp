@@ -45,12 +45,13 @@ struct DownloadManager : public ManagerType {
 
         return *it;
     }
-    auto GetPosition(std::size_t index) const noexcept -> const bb::Position&
+    [[maybe_unused]] auto GetPosition(std::size_t index) const noexcept
+        -> const bb::Position&
     {
         return generated_positions_.at(index);
     }
 
-    auto GetBatch() noexcept -> BatchType
+    [[maybe_unused]] auto GetBatch() noexcept -> BatchType
     {
         auto output = allocate_batch();
 
@@ -58,7 +59,7 @@ struct DownloadManager : public ManagerType {
 
         return output;
     }
-    auto MakePositions(
+    [[maybe_unused]] auto MakePositions(
         bb::Height start,
         std::vector<std::string> hashes) noexcept
     {
@@ -75,7 +76,7 @@ struct DownloadManager : public ManagerType {
 
         return output;
     }
-    auto ProcessData(
+    [[maybe_unused]] auto ProcessData(
         std::optional<std::size_t> items = std::nullopt,
         std::optional<FinishedType> output = std::nullopt) noexcept -> bool
     {
@@ -98,13 +99,18 @@ struct DownloadManager : public ManagerType {
 
         return true;
     }
-    auto RunStateMachine() noexcept { return state_machine(); }
-    auto UpdatePosition(Positions&& in, Previous prior = std::nullopt) noexcept
+    [[maybe_unused]] auto RunStateMachine() noexcept { return state_machine(); }
+    [[maybe_unused]] auto UpdatePosition(
+        Positions&& in,
+        Previous prior = std::nullopt) noexcept
     {
         update_position(std::move(in), 0, std::move(prior));
     }
 
-    DownloadManager(std::size_t batch) noexcept
+    DownloadManager(
+        std::size_t batch,
+        std::size_t max,
+        std::size_t min) noexcept
         : ManagerType(
               genesis_,
               [] {
@@ -113,7 +119,9 @@ struct DownloadManager : public ManagerType {
 
                   return promise.get_future();
               }(),
-              "test")
+              "test",
+              max,
+              min)
         , batch_ready_(false)
         , state_machine_triggers_(0)
         , ready_()

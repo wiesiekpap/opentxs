@@ -14,7 +14,7 @@
 constexpr auto batchSize{1};
 constexpr auto count_{3};
 auto index_{1};
-auto manager_ = DownloadManager{batchSize};
+auto manager_ = DownloadManager{batchSize, 0, 0};
 const auto AddBlocks = [] {
     manager_.UpdatePosition(manager_.MakePositions(index_, [] {
         auto output = std::vector<std::string>{};

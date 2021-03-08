@@ -52,7 +52,9 @@ public:
 
                   return Finished{promise.get_future()};
               }(),
-              "block")
+              "block",
+              2000,
+              1000)
         , BlockWorker(api, std::chrono::milliseconds{20})
         , db_(db)
         , header_(header)

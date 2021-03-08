@@ -61,7 +61,9 @@ FilterOracle::BlockIndexer::BlockIndexer(
 
               return Finished{promise.get_future()};
           }(),
-          "filter")
+          "filter",
+          2000,
+          1000)
     , BlockWorker(api, std::chrono::milliseconds{20})
     , db_(db)
     , header_(header)
@@ -165,10 +167,6 @@ auto FilterOracle::BlockIndexer::process_position(
 auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
     -> void
 {
-    static constexpr auto limit{1000u};
-
-    if (buffer_size() >= (2u * limit)) { return; }
-
     const auto current = known();
     auto compare{current};
     LogTrace(OT_METHOD)(__FUNCTION__)(":  Current position: ")(current.first)(
@@ -233,10 +231,6 @@ auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
 
         const auto height = first.first - 1;
         compare = block::Position{height, header_.BestHash(height)};
-    }
-
-    if (limit < hashes.size()) {
-        hashes.erase(std::next(hashes.begin(), limit + 1u), hashes.end());
     }
 
     update_position(std::move(hashes), type_, std::move(prior));
