@@ -8,7 +8,9 @@
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/ThreadPool.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
+#include "util/Work.hpp"
 
 namespace opentxs
 {
@@ -82,31 +84,21 @@ struct Factory : virtual public api::Factory {
 struct Log {
     virtual ~Log() = default;
 };
-}  // namespace opentxs::api::internal
 
-namespace opentxs::factory
+struct ThreadPool : virtual public api::ThreadPool {
+    enum class Work : OTZMQWorkType {
+        BlockchainWallet = OT_ZMQ_INTERNAL_SIGNAL + 0,
+        SyncDataFiltersIncoming = OT_ZMQ_INTERNAL_SIGNAL + 1,
+        CalculateBlockFilters = OT_ZMQ_INTERNAL_SIGNAL + 2,
+    };
+
+    virtual auto Shutdown() noexcept -> void = 0;
+
+    ~ThreadPool() override = default;
+};
+
+constexpr auto value(ThreadPool::Work in) noexcept
 {
-auto Context(
-    Flag& running,
-    const ArgList& args,
-    OTCaller* externalPasswordCallback = nullptr) noexcept
-    -> std::unique_ptr<api::internal::Context>;
-auto Endpoints(const network::zeromq::Context& zmq, const int instance) noexcept
-    -> std::unique_ptr<api::Endpoints>;
-auto HDSeed(
-    const api::Factory& factory,
-    const api::crypto::internal::Asymmetric& asymmetric,
-    const api::crypto::Symmetric& symmetric,
-    const api::storage::Storage& storage,
-    const crypto::Bip32& bip32,
-    const crypto::Bip39& bip39) noexcept -> std::unique_ptr<api::HDSeed>;
-auto Legacy(const std::string& home) noexcept -> std::unique_ptr<api::Legacy>;
-auto Log(
-    const network::zeromq::Context& zmq,
-    const std::string& endpoint) noexcept
-    -> std::unique_ptr<api::internal::Log>;
-auto Primitives(const api::Crypto& crypto) noexcept
-    -> std::unique_ptr<api::Primitives>;
-auto Settings(const api::Legacy& legacy, const String& path) noexcept
-    -> std::unique_ptr<api::Settings>;
-}  // namespace opentxs::factory
+    return static_cast<OTZMQWorkType>(in);
+}
+}  // namespace opentxs::api::internal

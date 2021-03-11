@@ -37,7 +37,7 @@ public:
     {
         try {
             auto current = known();
-            auto hashes = header_.Ancestors(current, pos);
+            auto hashes = header_.Ancestors(current, pos, 20000);
 
             OT_ASSERT(0 < hashes.size());
 

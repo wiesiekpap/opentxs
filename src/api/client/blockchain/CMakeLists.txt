@@ -53,7 +53,6 @@ if(OT_BLOCKCHAIN_EXPORT)
     BalanceOracle.cpp
     SyncClient.cpp
     SyncServer.cpp
-    ThreadPoolManager.cpp
   )
   list(
     APPEND

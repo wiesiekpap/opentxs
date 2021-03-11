@@ -151,9 +151,6 @@ public:
     // Style, preferred prefix, additional prefixes
     using StyleMap = std::map<StylePair, std::pair<Prefix, std::set<Prefix>>>;
     using StyleReverseMap = std::map<Prefix, std::set<StylePair>>;
-#if OT_BLOCKCHAIN
-    using ThreadPoolType = opentxs::blockchain::client::internal::ThreadPool;
-#endif  // OT_BLOCKCHAIN
 
     static auto reverse(const StyleMap& in) noexcept -> StyleReverseMap;
 
@@ -320,10 +317,6 @@ public:
         const std::string& updateEndpoint,
         const std::string& publicUpdateEndpoint) const noexcept -> bool final;
     auto Stop(const Chain type) const noexcept -> bool final;
-    auto ThreadPool() const noexcept -> const ThreadPoolType& final
-    {
-        return thread_pool_;
-    }
     auto UpdateBalance(
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::Balance balance) const noexcept -> void final
@@ -347,6 +340,7 @@ public:
 #endif  // OT_BLOCKCHAIN
 
     auto Init() noexcept -> void final;
+    auto Shutdown() noexcept -> void final;
 
     Blockchain(
         const api::internal::Core& api,
@@ -488,78 +482,6 @@ private:
         auto operator=(const EnableCallbacks&) -> EnableCallbacks& = delete;
         auto operator=(EnableCallbacks&&) -> EnableCallbacks& = delete;
     };
-    struct ThreadPoolManager final : virtual public ThreadPoolType {
-        auto Endpoint() const noexcept -> std::string final;
-        auto Reset(const Chain chain) const noexcept -> void final;
-        auto Stop(const Chain chain) const noexcept -> Future final;
-
-        auto Shutdown() noexcept -> void;
-
-        ThreadPoolManager(const api::Core& api) noexcept;
-        ~ThreadPoolManager() final;
-
-    private:
-        using NetworkData = std::tuple<
-            bool,
-            int,
-            std::promise<void>,
-            std::shared_future<void>,
-            std::mutex>;
-        using NetworkMap = std::map<Chain, NetworkData>;
-
-        struct Worker {
-            Worker(NetworkData& data) noexcept
-                : data_(data)
-                , not_moved_from_(true)
-            {
-                auto& [active, running, promise, future, mutex] = data_;
-                ++running;
-            }
-            Worker(Worker&& rhs) noexcept
-                : data_(rhs.data_)
-                , not_moved_from_(true)
-            {
-                rhs.not_moved_from_ = false;
-            }
-
-            ~Worker()
-            {
-                if (not_moved_from_) {
-                    auto& [active, running, promise, future, mutex] = data_;
-                    Lock lock(mutex);
-                    const auto tasks = --running;
-
-                    if ((false == active) && (0 == tasks)) {
-                        promise.set_value();
-                    }
-                }
-            }
-
-        private:
-            NetworkData& data_;
-            bool not_moved_from_;
-
-            Worker(const Worker&) = delete;
-        };
-
-        const api::Core& api_;
-        mutable NetworkMap map_;
-        std::atomic<bool> running_;
-        OTZMQPushSocket int_;
-        mutable std::vector<OTZMQPullSocket> workers_;
-        OTZMQListenCallback cbi_;
-        OTZMQListenCallback cbe_;
-        OTZMQPullSocket ext_;
-        mutable bool init_;
-        mutable std::mutex lock_;
-
-        static auto init() noexcept -> NetworkMap;
-
-        auto startup() const noexcept -> void;
-
-        auto callback(zmq::Message& in) noexcept -> void;
-        auto run(const Chain chain) noexcept -> std::optional<Worker>;
-    };
 #endif  // OT_BLOCKCHAIN
 
     static const AddressMap address_prefix_map_;
@@ -578,7 +500,6 @@ private:
     mutable BalanceLists balance_lists_;
 #if OT_BLOCKCHAIN
     const std::string key_generated_endpoint_;
-    ThreadPoolManager thread_pool_;
     opentxs::blockchain::client::internal::IO io_;
     blockchain::database::implementation::Database db_;
     OTZMQPublishSocket reorg_;

@@ -23,7 +23,7 @@
 #include "blockchain/client/filteroracle/FilterCheckpoints.hpp"
 #include "blockchain/client/filteroracle/FilterDownloader.hpp"
 #include "blockchain/client/filteroracle/HeaderDownloader.hpp"
-#include "internal/api/client/Client.hpp"
+#include "internal/api/Api.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/client/Client.hpp"
 #include "internal/blockchain/client/Factory.hpp"
@@ -33,6 +33,7 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/ThreadPool.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
@@ -151,7 +152,7 @@ FilterOracle::FilterOracle(
     , thread_pool_([&] {
         auto socket =
             api_.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Connect);
-        const auto started = socket->Start(blockchain.ThreadPool().Endpoint());
+        const auto started = socket->Start(api_.ThreadPool().Endpoint());
 
         OT_ASSERT(started);
 
@@ -594,9 +595,9 @@ auto FilterOracle::ProcessSyncData(const ParsedSyncData& parsed) const noexcept
 
             if (false == running_) { return; }
 
-            using Pool = internal::ThreadPool;
+            using Pool = api::internal::ThreadPool;
             auto work = Pool::MakeWork(
-                api_, chain_, Pool::Work::SyncDataFiltersIncoming);
+                api_.ZeroMQ(), value(Pool::Work::SyncDataFiltersIncoming));
             work->AddFrame(reinterpret_cast<std::uintptr_t>(this));
             work->AddFrame(reinterpret_cast<std::uintptr_t>(&job));
             thread_pool_->Send(work);
@@ -852,7 +853,7 @@ auto FilterOracle::ProcessThreadPool(const zmq::Message& in) noexcept -> void
     const auto header = in.Header();
     const auto body = in.Body();
 
-    if (2 > header.size()) {
+    if (1 > header.size()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message").Flush();
 
         OT_FAIL;
@@ -874,9 +875,9 @@ auto FilterOracle::ProcessThreadPool(const zmq::Message& in) noexcept -> void
     OT_ASSERT(nullptr != pFilterOracle);
 
     const auto& filterOracle = *pFilterOracle;
-    using Work = internal::ThreadPool::Work;
+    using Work = api::internal::ThreadPool::Work;
 
-    switch (header.at(1).as<Work>()) {
+    switch (header.at(header.size() - 1u).as<Work>()) {
         case Work::SyncDataFiltersIncoming: {
             auto* pData = reinterpret_cast<Imp::SyncClientFilterData*>(
                 body.at(1).as<std::uintptr_t>());

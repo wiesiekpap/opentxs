@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
+#include <future>
 #include <iterator>
 #include <map>
 #include <set>
@@ -17,6 +18,7 @@
 #include <stdexcept>
 #include <string_view>
 #include <thread>
+#include <tuple>
 #include <type_traits>
 
 #if OT_BLOCKCHAIN
@@ -41,6 +43,9 @@
 #include "opentxs/api/Endpoints.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/api/Factory.hpp"
+#if OT_BLOCKCHAIN
+#include "opentxs/api/ThreadPool.hpp"
+#endif  // OT_BLOCKCHAIN
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Activity.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"
@@ -195,7 +200,6 @@ Blockchain::Blockchain(
 #if OT_BLOCKCHAIN
     , key_generated_endpoint_(opentxs::network::zeromq::socket::implementation::
                                   Socket::random_inproc_endpoint())
-    , thread_pool_(api_)
     , io_(api_)
     , db_(api_, *this, legacy, dataFolder, args)
     , reorg_(api_.ZeroMQ().PublishSocket())
@@ -314,6 +318,23 @@ Blockchain::Blockchain(
     OT_ASSERT(listen);
 
     if (sync_client_) { sync_client_->Heartbeat(Hello()); }
+
+    using Work = api::internal::ThreadPool::Work;
+    using Wallet = opentxs::blockchain::client::internal::Wallet;
+    using Filters = opentxs::blockchain::client::internal::FilterOracle;
+    constexpr auto value = [](auto work) {
+        return static_cast<OTZMQWorkType>(work);
+    };
+    const auto& pool = api_.ThreadPool();
+    pool.Register(value(Work::BlockchainWallet), [](const auto& work) {
+        Wallet::ProcessThreadPool(work);
+    });
+    pool.Register(value(Work::SyncDataFiltersIncoming), [](const auto& work) {
+        Filters::ProcessThreadPool(work);
+    });
+    pool.Register(value(Work::CalculateBlockFilters), [](const auto& work) {
+        Filters::ProcessThreadPool(work);
+    });
 #endif  // OT_BLOCKCHAIN
 }
 
@@ -1592,6 +1613,23 @@ auto Blockchain::SenderContact(const blockchain::Key& key) const noexcept
     }
 }
 
+auto Blockchain::Shutdown() noexcept -> void
+{
+#if OT_BLOCKCHAIN
+    if (running_.exchange(false)) {
+        if (heartbeat_.joinable()) { heartbeat_.join(); }
+
+        LogVerbose("Shutting down ")(networks_.size())(" blockchain clients")
+            .Flush();
+
+        for (auto& [chain, network] : networks_) { network->Shutdown().get(); }
+
+        networks_.clear();
+        io_.Shutdown();
+    }
+#endif  // OT_BLOCKCHAIN
+}
+
 #if OT_BLOCKCHAIN
 auto Blockchain::Start(const Chain type, const std::string& seednode)
     const noexcept -> bool
@@ -1619,8 +1657,6 @@ auto Blockchain::start(
 
         return true;
     }
-
-    thread_pool_.Reset(type);
 
     namespace p2p = opentxs::blockchain::p2p;
 
@@ -1713,7 +1749,6 @@ auto Blockchain::stop(const Lock& lock, const Chain type) const noexcept -> bool
     if (sync_server_) { sync_server_->Disable(type); }
 
     it->second->Shutdown().get();
-    thread_pool_.Stop(type).get();
     networks_.erase(it);
     LogVerbose(OT_METHOD)(__FUNCTION__)(": stopped chain ")(
         static_cast<std::uint32_t>(type))
@@ -1778,22 +1813,5 @@ auto Blockchain::validate_nym(const identifier::Nym& nymID) const noexcept
     return false;
 }
 
-Blockchain::~Blockchain()
-{
-#if OT_BLOCKCHAIN
-    running_ = false;
-
-    if (heartbeat_.joinable()) { heartbeat_.join(); }
-
-    LogVerbose("Shutting down ")(networks_.size())(" blockchain clients")
-        .Flush();
-
-    for (auto& [chain, network] : networks_) { network->Shutdown().get(); }
-
-    networks_.clear();
-    thread_pool_.Shutdown();
-    io_.Shutdown();
-
-#endif  // OT_BLOCKCHAIN
-}
+Blockchain::~Blockchain() { Shutdown(); }
 }  // namespace opentxs::api::client::implementation

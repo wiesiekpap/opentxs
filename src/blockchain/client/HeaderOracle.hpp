@@ -67,11 +67,13 @@ namespace opentxs::blockchain::client::implementation
 class HeaderOracle final : virtual public internal::HeaderOracle
 {
 public:
-    auto Ancestors(const block::Position& start, const block::Position& target)
-        const noexcept(false) -> Positions final;
+    auto Ancestors(
+        const block::Position& start,
+        const block::Position& target,
+        const std::size_t limit) const noexcept(false) -> Positions final;
     auto BestChain() const noexcept -> block::Position final;
-    auto BestChain(const block::Position& tip) const noexcept(false)
-        -> Positions final;
+    auto BestChain(const block::Position& tip, const std::size_t limit) const
+        noexcept(false) -> Positions final;
     auto BestHash(const block::Height height) const noexcept
         -> block::pHash final;
     auto BestHashes(const block::Height start, const std::size_t limit = 0)
@@ -141,6 +143,10 @@ private:
         const block::Header& candidate) noexcept -> bool;
 
     auto best_chain(const Lock& lock) const noexcept -> block::Position;
+    auto best_chain(
+        const Lock& lock,
+        const block::Position& tip,
+        const std::size_t limit) const noexcept -> Positions;
     auto best_hashes(
         const Lock& lock,
         const block::Height start,

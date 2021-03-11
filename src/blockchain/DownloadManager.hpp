@@ -70,6 +70,7 @@ protected:
 
         return buffer_.size();
     }
+    auto dm_enabled() const noexcept -> bool { return enabled_; }
     // WARNING Call known() and update_position() from the same thread.
     auto known() const noexcept { return dm_known_; }
 
@@ -255,7 +256,6 @@ protected:
         const std::size_t min) noexcept
         : log_(log)
         , max_queue_(max)
-        , minimum_write_(min)
         , dm_lock_()
         , dm_previous_(std::move(previous))
         , dm_done_(position)
@@ -287,7 +287,6 @@ private:
 
     const std::string log_;
     const std::size_t max_queue_;
-    const std::size_t minimum_write_;
     mutable std::mutex dm_lock_;
     Finished dm_previous_;
     Position dm_done_;
@@ -447,19 +446,7 @@ private:
             process.emplace_back(pTask);
         }
 
-        if ((0 < minimum_write_) && (process.size() != buffer_.size()) &&
-            (process.size() < minimum_write_)) {
-            LogTrace(DOWNLOAD_MANAGER)(__FUNCTION__)(": ")(process.size())(" ")(
-                log_)(" jobs does not match the minimum value of ")(
-                minimum_write_)(" or the buffer size of ")(buffer_.size())
-                .Flush();
-
-            for (auto& pTask : process) {
-                pTask->state_.store(State::Downloaded);
-            }
-        } else {
-            downcast().queue_processing(std::move(process));
-        }
+        downcast().queue_processing(std::move(process));
 
         if (caught_up(lock)) { return false; }
 

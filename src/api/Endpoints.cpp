@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <memory>
 
-#include "internal/api/Api.hpp"
+#include "internal/api/Factory.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 
@@ -26,7 +26,6 @@
 #define BLOCKCHAIN_REORG_ENDPOINT "blockchain/reorg"
 #define BLOCKCHAIN_STATE_ENDPOINT "blockchain/state"
 #define BLOCKCHAIN_SYNC_ENDPOINT "blockchain/sync"
-#define BLOCKCHAIN_THREAD_POOL_ENDPOINT "blockchain/thread_pool"
 #define BLOCKCHAIN_TRANSACTIONS_ENDPOINT "blockchain/transactions"
 #define CONNECTION_STATUS_ENDPOINT "connectionstatus"
 #define CONTACT_UPDATE_ENDPOINT "contactupdate"
@@ -202,12 +201,6 @@ auto Endpoints::InternalBlockchainFilterUpdated(
                 std::to_string(static_cast<std::uint32_t>(chain));
 
     return build_inproc_path(path, ENDPOINT_VERSION_1);
-}
-
-auto Endpoints::InternalBlockchainThreadPool() const noexcept -> std::string
-{
-    return build_inproc_path(
-        BLOCKCHAIN_THREAD_POOL_ENDPOINT, ENDPOINT_VERSION_1);
 }
 
 auto Endpoints::InternalProcessPushNotification() const noexcept -> std::string

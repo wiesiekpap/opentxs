@@ -569,28 +569,6 @@ struct SyncDatabase {
     virtual ~SyncDatabase() = default;
 };
 
-struct ThreadPool {
-    using Future = std::shared_future<void>;
-
-    enum class Work : OTZMQWorkType {
-        HDAccount = OT_ZMQ_INTERNAL_SIGNAL + 0,
-        SyncDataFiltersIncoming = OT_ZMQ_INTERNAL_SIGNAL + 1,
-        CalculateBlockFilters = OT_ZMQ_INTERNAL_SIGNAL + 2,
-    };
-
-    static auto Capacity() noexcept -> std::size_t;
-    static auto MakeWork(
-        const api::Core& api,
-        const blockchain::Type chain,
-        const Work type) noexcept -> OTZMQMessage;
-
-    virtual auto Endpoint() const noexcept -> std::string = 0;
-    virtual auto Reset(const Type chain) const noexcept -> void = 0;
-    virtual auto Stop(const Type chain) const noexcept -> Future = 0;
-
-    virtual ~ThreadPool() = default;
-};
-
 struct Wallet {
     enum class Task : OTZMQWorkType {
         index = OT_ZMQ_INTERNAL_SIGNAL + 0,

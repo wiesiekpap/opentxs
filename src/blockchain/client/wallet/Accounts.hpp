@@ -70,6 +70,7 @@ public:
     auto Add(const network::zeromq::Frame& message) noexcept -> bool;
     auto Reorg(const block::Position& parent) noexcept -> bool;
 
+    auto shutdown() noexcept -> void;
     auto state_machine() noexcept -> bool;
 
     Accounts(

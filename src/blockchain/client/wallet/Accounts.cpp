@@ -94,6 +94,8 @@ struct Accounts::Imp {
     {
         gatekeeper_.shutdown();
         payment_codes_.clear();
+
+        for (auto& [id, account] : map_) { account.shutdown(); }
     }
     auto state_machine() noexcept -> bool
     {
@@ -221,6 +223,8 @@ auto Accounts::Reorg(const block::Position& parent) noexcept -> bool
 {
     return imp_->Reorg(parent);
 }
+
+auto Accounts::shutdown() noexcept -> void { imp_->shutdown(); }
 
 auto Accounts::state_machine() noexcept -> bool
 {

@@ -48,7 +48,8 @@ public:
      */
     OPENTXS_EXPORT virtual Positions Ancestors(
         const block::Position& start,
-        const block::Position& target) const noexcept(false) = 0;
+        const block::Position& target,
+        const std::size_t limit = 0) const noexcept(false) = 0;
     OPENTXS_EXPORT virtual block::Position BestChain() const noexcept = 0;
     /** Determine which blocks have updated since the provided position
      *
@@ -64,8 +65,9 @@ public:
      *  \throws std::runtime_error if the specified tip does not exist in the
      *  database
      */
-    OPENTXS_EXPORT virtual Positions BestChain(const block::Position& tip) const
-        noexcept(false) = 0;
+    OPENTXS_EXPORT virtual Positions BestChain(
+        const block::Position& tip,
+        const std::size_t limit = 0) const noexcept(false) = 0;
     OPENTXS_EXPORT virtual block::pHash BestHash(
         const block::Height height) const noexcept = 0;
     OPENTXS_EXPORT virtual Hashes BestHashes(

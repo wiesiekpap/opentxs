@@ -176,7 +176,7 @@ private:
     auto process_position() noexcept -> void
     {
         auto current = known();
-        auto hashes = header_.BestChain(current);
+        auto hashes = header_.BestChain(current, 20000);
 
         OT_ASSERT(0 < hashes.size());
 

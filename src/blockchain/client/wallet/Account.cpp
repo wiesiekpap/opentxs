@@ -227,6 +227,8 @@ auto Account::reorg(const block::Position& parent) noexcept -> bool
     return imp_->reorg(parent);
 }
 
+auto Account::shutdown() noexcept -> void { imp_->shutdown(); }
+
 auto Account::state_machine() noexcept -> bool { return imp_->state_machine(); }
 
 Account::~Account() { imp_->shutdown(); }

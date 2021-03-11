@@ -25,6 +25,7 @@
 #include "api/Core.hpp"
 #include "api/Scheduler.hpp"
 #include "api/StorageParent.hpp"
+#include "core/Shutdown.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/storage/Storage.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -161,6 +162,7 @@ void Manager::Cleanup()
 {
     LogDetail(OT_METHOD)(__FUNCTION__)(": Shutting down and cleaning up.")
         .Flush();
+    shutdown_sender_.Activate();
     message_processor_.cleanup();
     message_processor_p_.reset();
     server_p_.reset();

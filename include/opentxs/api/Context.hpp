@@ -23,6 +23,7 @@ namespace opentxs
 namespace api
 {
 class Primitives;
+class ThreadPool;
 }  // namespace api
 
 namespace proto
@@ -86,6 +87,8 @@ public:
         const ArgList& args,
         const int instance,
         const bool inproc = false) const = 0;
+    OPENTXS_EXPORT virtual const api::ThreadPool& ThreadPool()
+        const noexcept = 0;
     /** Access ZAP configuration API */
     OPENTXS_EXPORT virtual const api::network::ZAP& ZAP() const = 0;
     OPENTXS_EXPORT virtual const opentxs::network::zeromq::Context& ZMQ()

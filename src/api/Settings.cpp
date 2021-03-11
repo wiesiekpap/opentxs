@@ -10,13 +10,11 @@
 #include <simpleini/SimpleIni.h>
 #include <cinttypes>
 #include <cstdint>
-// NOTE: cstdlib HAS to be included here above SimpleIni, since for some reason
-// it uses stdlib functions without including that header.
 #include <cstdlib>  // IWYU pragma: keep
 #include <memory>
 #include <ostream>
 
-#include "internal/api/Api.hpp"
+#include "internal/api/Factory.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Legacy.hpp"
 #include "opentxs/core/Log.hpp"
