@@ -83,7 +83,7 @@ Header::BitcoinFormat::BitcoinFormat(
     const bitcoin::Command command,
     const std::size_t payload,
     const OTData checksum) noexcept(false)
-    : magic_(params::Data::chains_.at(network).p2p_magic_bits_)
+    : magic_(params::Data::Chains().at(network).p2p_magic_bits_)
     , command_(SerializeCommand(command))
     , length_(payload)
     , checksum_()
@@ -123,7 +123,7 @@ auto Header::BitcoinFormat::Network() const noexcept -> blockchain::Type
     {
         auto output = std::map<std::uint32_t, blockchain::Type>{};
 
-        for (const auto& [chain, data] : params::Data::chains_) {
+        for (const auto& [chain, data] : params::Data::Chains()) {
             if (0 != data.p2p_magic_bits_) {
                 output.emplace(data.p2p_magic_bits_, chain);
             }

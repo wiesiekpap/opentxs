@@ -79,9 +79,9 @@ BlockchainAccountActivity::BlockchainAccountActivity(
           accountID,
           AccountType::Blockchain,
           cb,
-          display::Definition{
-              blockchain::params::Data::chains_.at(ui::Chain(api, accountID))
-                  .scales_})
+          display::Definition{blockchain::params::Data::Chains()
+                                  .at(ui::Chain(api, accountID))
+                                  .scales_})
     , chain_(ui::Chain(Widget::api_, accountID))
     , confirmed_(0)
     , balance_cb_(zmq::ListenCallback::Factory(

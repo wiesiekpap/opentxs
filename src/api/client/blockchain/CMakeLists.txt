@@ -7,19 +7,27 @@ if(OT_BLOCKCHAIN_EXPORT)
   add_subdirectory(database)
 endif()
 
-set(cxx-sources
-    AccountCache.cpp
-    BalanceList.cpp
-    BalanceLists.cpp
-    BalanceNode.cpp
-    BalanceTree.cpp
-    BalanceTree.tpp
-    Blockchain.cpp
-    Deterministic.cpp
-    HD.cpp
-    PaymentCode.cpp
+add_library(
+  opentxs-api-client-blockchain OBJECT
+  "${opentxs_SOURCE_DIR}/src/internal/api/client/blockchain/Blockchain.hpp"
+  "${opentxs_SOURCE_DIR}/src/internal/api/client/blockchain/Factory.hpp"
+  "AccountCache.cpp"
+  "BalanceList.cpp"
+  "BalanceList.hpp"
+  "BalanceLists.cpp"
+  "BalanceNode.cpp"
+  "BalanceNode.hpp"
+  "BalanceTree.cpp"
+  "BalanceTree.hpp"
+  "BalanceTree.tpp"
+  "Blockchain.cpp"
+  "Deterministic.cpp"
+  "Deterministic.hpp"
+  "HD.cpp"
+  "HD.hpp"
+  "PaymentCode.cpp"
+  "PaymentCode.hpp"
 )
-
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/blockchain/AddressStyle.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/blockchain/BalanceList.hpp"
@@ -34,46 +42,29 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/blockchain/Subchain.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/blockchain/Types.hpp"
 )
-set(cxx-headers
-    ${cxx-install-headers}
-    "${opentxs_SOURCE_DIR}/src/internal/api/client/blockchain/Blockchain.hpp"
-    "${opentxs_SOURCE_DIR}/src/internal/api/client/blockchain/Factory.hpp"
-    BalanceList.hpp
-    BalanceNode.hpp
-    BalanceTree.hpp
-    Deterministic.hpp
-    HD.hpp
-    PaymentCode.hpp
-)
-
-if(OT_BLOCKCHAIN_EXPORT)
-  list(
-    APPEND
-    cxx-sources
-    BalanceOracle.cpp
-    SyncClient.cpp
-    SyncServer.cpp
-  )
-  list(
-    APPEND
-    cxx-headers
-    SyncClient.hpp
-    SyncServer.hpp
-  )
-endif()
-
-add_library(opentxs-api-client-blockchain OBJECT ${cxx-sources} ${cxx-headers})
 target_link_libraries(opentxs-api-client-blockchain PRIVATE opentxs::messages)
-
-if(OT_BLOCKCHAIN_EXPORT)
-  target_link_libraries(
-    opentxs-api-client-blockchain PRIVATE "${OT_ZMQ_TARGET}" Boost::headers
-  )
-endif()
-
 target_include_directories(
   opentxs-api-client-blockchain SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
+
+if(OT_BLOCKCHAIN_EXPORT)
+  target_sources(
+    opentxs-api-client-blockchain
+    PRIVATE
+      "BalanceOracle.cpp"
+      "SyncClient.cpp"
+      "SyncClient.hpp"
+      "SyncServer.cpp"
+      "SyncServer.hpp"
+  )
+  target_link_libraries(
+    opentxs-api-client-blockchain PRIVATE "${OT_ZMQ_TARGET}" Boost::headers
+  )
+  target_link_libraries(opentxs PUBLIC "${OT_ZMQ_TARGET}")
+endif()
+
+target_sources(opentxs-api-client-blockchain PRIVATE ${cxx-install-headers})
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-api-client-blockchain>)
 add_dependencies(opentxs-api-client-blockchain generated_code)
 
 if(OPENTXS_STANDALONE)

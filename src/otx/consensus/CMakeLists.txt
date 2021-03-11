@@ -3,12 +3,18 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set(cxx-sources
-    Base.cpp
-    Client.cpp
-    ManagedNumber.cpp
-    Server.cpp
-    TransactionStatement.cpp
+add_library(
+  opentxs-otx-consensus OBJECT
+  "${opentxs_SOURCE_DIR}/src/internal/otx/consensus/Consensus.hpp"
+  "Base.cpp"
+  "Base.hpp"
+  "Client.cpp"
+  "Client.hpp"
+  "ManagedNumber.cpp"
+  "ManagedNumber.hpp"
+  "Server.cpp"
+  "Server.hpp"
+  "TransactionStatement.cpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/otx/consensus/Base.hpp"
@@ -17,20 +23,12 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/otx/consensus/Server.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/otx/consensus/TransactionStatement.hpp"
 )
-set(cxx-headers
-    ${cxx-install-headers}
-    "${opentxs_SOURCE_DIR}/src/internal/otx/consensus/Consensus.hpp"
-    Base.hpp
-    Client.hpp
-    ManagedNumber.hpp
-    Server.hpp
-)
-
-add_library(opentxs-otx-consensus OBJECT ${cxx-sources} ${cxx-headers})
 target_link_libraries(opentxs-otx-consensus PRIVATE opentxs::messages)
 target_include_directories(
   opentxs-otx-consensus SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
+target_sources(opentxs-otx-consensus PRIVATE ${cxx-install-headers})
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-otx-consensus>)
 add_dependencies(opentxs-otx-consensus generated_code)
 
 if(OPENTXS_STANDALONE)

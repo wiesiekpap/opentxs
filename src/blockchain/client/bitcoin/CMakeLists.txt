@@ -3,14 +3,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set(cxx-sources Network.cpp)
-
-set(cxx-headers Network.hpp)
-
 add_library(
-  opentxs-blockchain-client-bitcoin OBJECT ${cxx-sources} ${cxx-headers}
+  opentxs-blockchain-client-bitcoin OBJECT "Network.cpp" "Network.hpp"
 )
 target_link_libraries(
   opentxs-blockchain-client-bitcoin PRIVATE Boost::headers opentxs::messages
+)
+target_sources(opentxs-blockchain-client-bitcoin PRIVATE ${cxx-install-headers})
+target_sources(
+  opentxs PRIVATE $<TARGET_OBJECTS:opentxs-blockchain-client-bitcoin>
 )
 add_dependencies(opentxs-blockchain-client-bitcoin generated_code)

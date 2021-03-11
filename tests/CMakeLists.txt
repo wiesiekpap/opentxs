@@ -3,9 +3,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-function(add_opentx_test_target target_name cxx-sources)
+function(
+  add_opentx_test_target
+  target_name
+  cxx-sources
+)
   include_directories(
-    ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/tests
+    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/tests
     ${GTEST_INCLUDE_DIRS}
   )
 
@@ -20,8 +25,6 @@ function(add_opentx_test_target target_name cxx-sources)
     target_link_libraries(${target_name} PRIVATE GTest::GTest)
   endif()
 
-  opentxs_link_target(${target_name})
-
   target_include_directories(
     ${target_name} SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
   )
@@ -30,29 +33,45 @@ function(add_opentx_test_target target_name cxx-sources)
                               ${PROJECT_BINARY_DIR}/tests
   )
 
-  if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
+  if(${CMAKE_CXX_COMPILER_ID}
+     MATCHES
+     Clang
+  )
     target_compile_options(
       ${target_name} PRIVATE -Wno-suggest-destructor-override
     )
   endif()
 
   add_test(
-    ${target_name} ${PROJECT_BINARY_DIR}/tests/${target_name}
+    ${target_name}
+    ${PROJECT_BINARY_DIR}/tests/${target_name}
     --gtest_output=xml:gtestresults.xml
   )
 endfunction()
 
-function(add_opentx_test target_name file_name)
-  set(cxx-sources "${PROJECT_SOURCE_DIR}/tests/main.cpp" "${file_name}"
-                  "${PROJECT_SOURCE_DIR}/tests/OTTestEnvironment.cpp"
+function(
+  add_opentx_test
+  target_name
+  file_name
+)
+  set(cxx-sources
+      "${PROJECT_SOURCE_DIR}/tests/main.cpp"
+      "${file_name}"
+      "${PROJECT_SOURCE_DIR}/tests/OTTestEnvironment.cpp"
   )
 
   add_opentx_test_target("${target_name}" "${cxx-sources}")
 endfunction()
 
-function(add_opentx_low_level_test target_name file_name)
-  set(cxx-sources "${PROJECT_SOURCE_DIR}/tests/lowlevel.cpp" "${file_name}"
-                  "${PROJECT_SOURCE_DIR}/tests/OTLowLevelTestEnvironment.cpp"
+function(
+  add_opentx_low_level_test
+  target_name
+  file_name
+)
+  set(cxx-sources
+      "${PROJECT_SOURCE_DIR}/tests/lowlevel.cpp"
+      "${file_name}"
+      "${PROJECT_SOURCE_DIR}/tests/OTLowLevelTestEnvironment.cpp"
   )
 
   add_opentx_test_target("${target_name}" "${cxx-sources}")

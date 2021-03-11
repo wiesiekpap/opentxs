@@ -145,7 +145,7 @@ private:
         } else {
             const auto inproc = make_endpoint();
             const auto port =
-                params::Data::chains_.at(parent_.chain_).default_port_;
+                params::Data::Chains().at(parent_.chain_).default_port_;
             const auto zmq = inproc + ':' + std::to_string(port);
             auto address = factory::BlockchainAddress(
                 api_,

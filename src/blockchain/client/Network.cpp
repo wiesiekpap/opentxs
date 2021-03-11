@@ -182,7 +182,8 @@ Network::Network(
         }
     }())
     , local_chain_height_(0)
-    , remote_chain_height_(params::Data::chains_.at(chain_).checkpoint_.height_)
+    , remote_chain_height_(
+          params::Data::Chains().at(chain_).checkpoint_.height_)
     , waiting_for_headers_(Flag::Factory(false))
     , headers_requested_(Clock::now())
     , headers_received_()
@@ -300,7 +301,7 @@ auto Network::FeeRate() const noexcept -> Amount
     // TODO the hardcoded default fee rate should be a fallback only
     // if there is no better data available.
 
-    return params::Data::chains_.at(chain_).default_fee_rate_;
+    return params::Data::Chains().at(chain_).default_fee_rate_;
 }
 
 auto Network::GetConfirmations(const std::string& txid) const noexcept

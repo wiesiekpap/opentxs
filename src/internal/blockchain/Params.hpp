@@ -51,13 +51,6 @@ struct Data {
         std::string filter_header_{};
     };
 
-    static const ChainData chains_;
-#if OT_BLOCKCHAIN
-    static const FilterData genesis_filters_;
-    static const FilterTypes bip158_types_;
-    static const ServiceBits service_bits_;
-#endif  // OT_BLOCKCHAIN
-
     bool supported_{};
     bool testnet_{};
     proto::ContactItemType proto_{};
@@ -77,5 +70,14 @@ struct Data {
     Amount default_fee_rate_{};  // satoshis per 1000 bytes
     display::Definition scales_{};
     std::size_t block_download_batch_{};
+
+#if OT_BLOCKCHAIN
+    static auto Bip158() noexcept -> const FilterTypes&;
+#endif  // OT_BLOCKCHAIN
+    static auto Chains() noexcept -> const ChainData&;
+#if OT_BLOCKCHAIN
+    static auto Filters() noexcept -> const FilterData&;
+    static auto Services() noexcept -> const ServiceBits&;
+#endif  // OT_BLOCKCHAIN
 };
 }  // namespace opentxs::blockchain::params

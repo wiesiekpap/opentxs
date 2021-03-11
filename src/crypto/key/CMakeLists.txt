@@ -3,12 +3,21 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set(cxx-sources
-    Asymmetric.cpp
-    EllipticCurve.cpp
-    HD.cpp
-    Keypair.cpp
-    Symmetric.cpp
+add_library(
+  opentxs-crypto-key OBJECT
+  "${opentxs_SOURCE_DIR}/src/internal/crypto/key/Factory.hpp"
+  "Asymmetric.cpp"
+  "Asymmetric.hpp"
+  "EllipticCurve.cpp"
+  "EllipticCurve.hpp"
+  "HD.cpp"
+  "HD.hpp"
+  "Keypair.cpp"
+  "Keypair.hpp"
+  "Null.hpp"
+  "Symmetric.cpp"
+  "Symmetric.hpp"
+  "SymmetricNull.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/key/Asymmetric.hpp"
@@ -20,44 +29,29 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/key/Secp256k1.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/key/Symmetric.hpp"
 )
-set(cxx-headers
-    ${cxx-install-headers}
-    "${opentxs_SOURCE_DIR}/src/internal/crypto/key/Factory.hpp"
-    Asymmetric.hpp
-    EllipticCurve.hpp
-    HD.hpp
-    Keypair.hpp
-    Null.hpp
-    Symmetric.hpp
-    SymmetricNull.hpp
-)
-
-if(RSA_EXPORT)
-  list(APPEND cxx-sources RSA.cpp)
-  list(APPEND cxx-headers RSA.hpp)
-endif()
-
-if(ED25519_EXPORT)
-  list(APPEND cxx-sources Ed25519.cpp)
-  list(APPEND cxx-headers Ed25519.hpp)
-endif()
-
-if(SECP256K1_EXPORT)
-  list(APPEND cxx-sources Secp256k1.cpp)
-  list(APPEND cxx-headers Secp256k1.hpp)
-endif()
-
-add_library(opentxs-crypto-key OBJECT ${cxx-sources} ${cxx-headers})
-
-if(OPENSSL_EXPORT)
-  target_include_directories(
-    opentxs-crypto-key SYSTEM PRIVATE "${OPENSSL_INCLUDE_DIR}"
-  )
-endif()
-
 target_link_libraries(
   opentxs-crypto-key PRIVATE opentxs::messages unofficial-sodium::sodium
 )
+
+if(RSA_EXPORT)
+  target_sources(opentxs-crypto-key PRIVATE "RSA.cpp" "RSA.hpp")
+endif()
+
+if(ED25519_EXPORT)
+  target_sources(opentxs-crypto-key PRIVATE "Ed25519.cpp" "Ed25519.hpp")
+endif()
+
+if(SECP256K1_EXPORT)
+  target_sources(opentxs-crypto-key PRIVATE "Secp256k1.cpp" "Secp256k1.hpp")
+endif()
+
+if(OPENSSL_EXPORT)
+  target_link_libraries(opentxs-crypto-key PRIVATE OpenSSL::Crypto)
+  target_link_libraries(opentxs PRIVATE OpenSSL::Crypto)
+endif()
+
+target_sources(opentxs-crypto-key PRIVATE ${cxx-install-headers})
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-crypto-key>)
 add_dependencies(opentxs-crypto-key generated_code)
 
 if(OPENTXS_STANDALONE)

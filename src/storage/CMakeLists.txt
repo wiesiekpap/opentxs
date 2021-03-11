@@ -6,10 +6,12 @@
 add_subdirectory(drivers)
 add_subdirectory(tree)
 
-set(cxx-sources Plugin.cpp)
-set(cxx-install-headers "")
-set(cxx-header ${cxx-install-headers} Plugin.hpp StorageConfig.hpp)
-
-add_library(opentxs-storage OBJECT ${cxx-sources} ${cxx-headers})
+add_library(
+  opentxs-storage OBJECT
+  "Plugin.cpp"
+  "Plugin.hpp"
+  "StorageConfig.hpp"
+)
 target_link_libraries(opentxs-storage PRIVATE opentxs::messages)
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-storage>)
 add_dependencies(opentxs-storage generated_code)

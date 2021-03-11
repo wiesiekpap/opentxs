@@ -44,10 +44,12 @@ swig_link_libraries(${OTX_WRAPPER_NAME} ${JAVA_LIBRARIES})
 set(MOD_NAME ${SWIG_MODULE_${OTX_WRAPPER_NAME}_REAL_NAME})
 
 target_link_libraries(${MOD_NAME} PRIVATE opentxs::libopentxs)
-opentxs_link_target("${MOD_NAME}")
 target_include_directories(
-  ${MOD_NAME} SYSTEM PRIVATE "${JNI_INCLUDE_DIRS}" "${JAVA_INCLUDE_PATH}"
-                             "${JAVA_INCLUDE_PATH2}"
+  ${MOD_NAME} SYSTEM
+  PRIVATE
+    "${JNI_INCLUDE_DIRS}"
+    "${JAVA_INCLUDE_PATH}"
+    "${JAVA_INCLUDE_PATH2}"
 )
 
 if(NOT ANDROID)
@@ -68,10 +70,16 @@ if(NOT MSVC)
       -Wno-zero-as-null-pointer-constant
   )
 
-  if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
+  if(${CMAKE_CXX_COMPILER_ID}
+     MATCHES
+     Clang
+  )
     target_compile_options(
-      ${MOD_NAME} PRIVATE -Wno-deprecated-dynamic-exception-spec
-                          -Wno-missing-noreturn -Wno-used-but-marked-unused
+      ${MOD_NAME}
+      PRIVATE
+        -Wno-deprecated-dynamic-exception-spec
+        -Wno-missing-noreturn
+        -Wno-used-but-marked-unused
     )
   endif()
 endif()

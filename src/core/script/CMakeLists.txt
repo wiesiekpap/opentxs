@@ -3,19 +3,20 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set(cxx-sources
-    OTStash.cpp
-    OTStashItem.cpp
-    OTAgent.cpp
-    OTBylaw.cpp
-    OTClause.cpp
-    OTParty.cpp
-    OTPartyAccount.cpp
-    OTScript.cpp
-    OTScriptable.cpp
-    OTScriptChai.cpp
-    OTSmartContract.cpp
-    OTVariable.cpp
+add_library(
+  opentxs-core-script OBJECT
+  "OTAgent.cpp"
+  "OTBylaw.cpp"
+  "OTClause.cpp"
+  "OTParty.cpp"
+  "OTPartyAccount.cpp"
+  "OTScript.cpp"
+  "OTScriptChai.cpp"
+  "OTScriptable.cpp"
+  "OTSmartContract.cpp"
+  "OTStash.cpp"
+  "OTStashItem.cpp"
+  "OTVariable.cpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/core/script/OTAgent.hpp"
@@ -31,15 +32,15 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/core/script/OTStashItem.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/script/OTVariable.hpp"
 )
-set(cxx-headers ${cxx-install-headers})
-
-add_library(opentxs-script OBJECT ${cxx-sources} ${cxx-headers})
+target_link_libraries(opentxs-core-script PRIVATE opentxs::messages)
 target_include_directories(
-  opentxs-script SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/ChaiScript/include"
-                                "${opentxs_SOURCE_DIR}/deps/"
+  opentxs-core-script SYSTEM
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/ChaiScript/include"
+          "${opentxs_SOURCE_DIR}/deps/"
 )
-target_link_libraries(opentxs-script PRIVATE opentxs::messages)
-add_dependencies(opentxs-script generated_code)
+target_sources(opentxs-core-script PRIVATE ${cxx-install-headers})
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-core-script>)
+add_dependencies(opentxs-core-script generated_code)
 
 if(OPENTXS_STANDALONE)
   install(

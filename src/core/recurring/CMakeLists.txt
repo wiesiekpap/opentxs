@@ -3,19 +3,18 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set(cxx-sources OTAgreement.cpp OTPaymentPlan.cpp)
+add_library(opentxs-core-recurring OBJECT "OTAgreement.cpp" "OTPaymentPlan.cpp")
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/core/recurring/OTAgreement.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/recurring/OTPaymentPlan.hpp"
 )
-set(cxx-headers ${cxx-install-headers})
-
-add_library(opentxs-recurring OBJECT ${cxx-sources} ${cxx-headers})
+target_link_libraries(opentxs-core-recurring PRIVATE opentxs::messages)
 target_include_directories(
-  opentxs-recurring SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+  opentxs-core-recurring SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
-target_link_libraries(opentxs-recurring PRIVATE opentxs::messages)
-add_dependencies(opentxs-recurring generated_code)
+target_sources(opentxs-core-recurring PRIVATE ${cxx-install-headers})
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-core-recurring>)
+add_dependencies(opentxs-core-recurring generated_code)
 
 if(OPENTXS_STANDALONE)
   install(

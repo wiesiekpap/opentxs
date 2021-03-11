@@ -3,7 +3,5 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set(c-sources base64.c)
-set(c-headers base64.h)
-
-add_library(base64 OBJECT ${c-sources} ${c-headers})
+add_library(base64 OBJECT "base64.c" "base64.h")
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:base64>)

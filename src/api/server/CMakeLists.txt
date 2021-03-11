@@ -3,24 +3,26 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set(cxx-sources Factory.cpp Manager.cpp Wallet.cpp)
+add_library(
+  opentxs-api-server OBJECT
+  "${opentxs_SOURCE_DIR}/src/internal/api/server/Server.hpp"
+  "Factory.cpp"
+  "Factory.hpp"
+  "Manager.cpp"
+  "Manager.hpp"
+  "Wallet.cpp"
+  "Wallet.hpp"
+)
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/server/Manager.hpp"
 )
-set(cxx-headers
-    ${cxx-install-headers}
-    "${opentxs_SOURCE_DIR}/src/internal/api/server/Server.hpp"
-    Factory.hpp
-    Manager.hpp
-    Wallet.hpp
-)
-
-add_library(opentxs-api-server OBJECT ${cxx-sources} ${cxx-headers})
 target_link_libraries(opentxs-api-server PRIVATE opentxs::messages)
 target_include_directories(
   opentxs-api-server SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
 
+target_sources(opentxs-api-server PRIVATE ${cxx-install-headers})
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-api-server>)
 add_dependencies(opentxs-api-server generated_code)
 
 if(OPENTXS_STANDALONE)

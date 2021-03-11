@@ -76,8 +76,7 @@ auto Filters::CurrentTip(const filter::Type type) const noexcept
 auto Filters::import_genesis(const blockchain::Type chain) const noexcept
     -> void
 {
-    for (const auto& [style, genesis] :
-         params::Data::genesis_filters_.at(chain)) {
+    for (const auto& [style, genesis] : params::Data::Filters().at(chain)) {
         const auto needHeader =
             blank_position_.first == CurrentHeaderTip(style).first;
         const auto needFilter =

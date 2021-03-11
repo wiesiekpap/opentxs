@@ -49,7 +49,7 @@ auto GenesisBlockHeader(
         case blockchain::Type::PKT_testnet:
         case blockchain::Type::UnitTest: {
             const auto& hex =
-                blockchain::params::Data::chains_.at(type).genesis_header_hex_;
+                blockchain::params::Data::Chains().at(type).genesis_header_hex_;
             const auto data = api.Factory().Data(hex, StringStyle::Hex);
 
             return factory::BitcoinBlockHeader(api, type, data->Bytes());

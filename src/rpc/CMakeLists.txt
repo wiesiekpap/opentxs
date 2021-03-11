@@ -3,18 +3,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set(cxx-sources RPC.cpp)
-set(cxx-install-headers "")
-set(cxx-headers
-    ${cxx-install-headers}
-    ${opentxs_SOURCE_DIR}/src/internal/rpc/RPC.hpp
-    RPC.hpp
-    RPC.tpp
+add_library(
+  opentxs-rpc OBJECT
+  "${opentxs_SOURCE_DIR}/src/internal/rpc/RPC.hpp"
+  "RPC.cpp"
+  "RPC.hpp"
+  "RPC.tpp"
 )
-
-add_library(opentxs-rpc OBJECT ${cxx-sources} ${cxx-headers})
 target_link_libraries(opentxs-rpc PRIVATE opentxs::messages)
 target_include_directories(
   opentxs-rpc SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-rpc>)
 add_dependencies(opentxs-rpc generated_code)

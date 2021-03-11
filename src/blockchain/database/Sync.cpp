@@ -43,7 +43,7 @@ Sync::Sync(
     , blank_position_(make_blank<block::Position>::value(api))
     , chain_(type)
     , genesis_([&] {
-        const auto& hex = params::Data::chains_.at(chain_).genesis_hash_hex_;
+        const auto& hex = params::Data::Chains().at(chain_).genesis_hash_hex_;
 
         return api_.Factory().Data(hex, StringStyle::Hex);
     }())

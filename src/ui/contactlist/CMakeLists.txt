@@ -3,46 +3,38 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set(cxx-sources ContactList.cpp ContactListItem.cpp)
-set(ot-qobject-install-headers "")
+add_library(
+  opentxs-ui-contactlist OBJECT
+  "ContactList.cpp"
+  "ContactList.hpp"
+  "ContactListItem.cpp"
+  "ContactListItem.hpp"
+)
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/ContactList.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/ContactListItem.hpp"
 )
-set(cxx-headers ${cxx-install-headers} ContactList.hpp ContactListItem.hpp)
-
-if(OT_WITH_QT)
-  list(
-    APPEND ot-qobject-install-headers
-    "${opentxs_SOURCE_DIR}/include/opentxs/ui/qt/ContactList.hpp"
-  )
-  qt5_wrap_cpp(MOC_SRCS ${ot-qobject-install-headers})
-else()
-  set(MOC_SRCS "")
-endif()
-
-add_library(
-  opentxs-ui-contactlist OBJECT
-  ${cxx-sources}
-  ${cxx-headers}
-  ${MOC_SRCS}
-  ${ot-qobject-install-headers}
-)
 target_link_libraries(opentxs-ui-contactlist PRIVATE opentxs::messages)
 
-if(OT_QT_EXPORT)
-  target_link_libraries(opentxs-ui-contactlist PUBLIC Qt5::Core)
+if(OT_WITH_QT)
+  set(ot-qobject-install-headers
+      "${opentxs_SOURCE_DIR}/include/opentxs/ui/qt/ContactList.hpp"
+  )
+  qt5_wrap_cpp(MOC_SRCS ${ot-qobject-install-headers})
+  target_sources(opentxs-ui-contactlist PRIVATE ${MOC_SRCS})
 
-  if(OT_QML_EXPORT)
-    target_link_libraries(opentxs-ui-contactlist PUBLIC Qt5::Qml)
-    target_compile_definitions(opentxs-ui-contactlist PRIVATE -DOT_WITH_QML=1)
-  else()
-    target_compile_definitions(opentxs-ui-contactlist PRIVATE -DOT_WITH_QML=0)
+  if(OPENTXS_STANDALONE)
+    install(
+      FILES ${ot-qobject-install-headers}
+      DESTINATION include/opentxs/ui/qt
+      COMPONENT dev
+    )
   endif()
-else()
-  target_compile_definitions(opentxs-ui-contactlist PRIVATE -DOT_WITH_QML=0)
 endif()
 
+opentxs_set_qt(opentxs-ui-contactlist)
+target_sources(opentxs-ui-contactlist PRIVATE ${cxx-install-headers})
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-contactlist>)
 add_dependencies(opentxs-ui-contactlist generated_code)
 
 if(OPENTXS_STANDALONE)
@@ -51,11 +43,4 @@ if(OPENTXS_STANDALONE)
     DESTINATION include/opentxs/ui
     COMPONENT dev
   )
-  if(OT_QT_EXPORT)
-    install(
-      FILES ${ot-qobject-install-headers}
-      DESTINATION include/opentxs/ui/qt
-      COMPONENT dev
-    )
-  endif()
 endif()

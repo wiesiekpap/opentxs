@@ -12,15 +12,28 @@ protobuf_generate_cpp(
   Moneychanger.proto
 )
 
-add_library(otprotob OBJECT ${cxx-sources} ${cxx-headers})
-target_include_directories(otprotob SYSTEM PUBLIC "${Protobuf_INCLUDE_DIRS}")
+add_library(opentxs-core-otprotob OBJECT ${cxx-sources} ${cxx-headers})
+target_link_libraries(opentxs-core-otprotob PUBLIC protobuf::libprotobuf-lite)
+target_link_libraries(opentxs PUBLIC protobuf::libprotobuf-lite)
+target_include_directories(
+  opentxs-core-otprotob SYSTEM PUBLIC "${CMAKE_CURRENT_BINARY_DIR}"
+)
 
 if(MSVC)
-  target_compile_options(otprotob PRIVATE "/wd4244" "/wd4267")
+  target_compile_options(opentxs-core-otprotob PRIVATE "/wd4244" "/wd4267")
 else()
-  target_compile_options(otprotob PRIVATE "-Wno-effc++")
+  target_compile_options(opentxs-core-otprotob PRIVATE "-Wno-effc++")
 endif()
 
-if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
-  target_compile_options(otprotob PRIVATE -Wno-suggest-destructor-override)
+if(${CMAKE_CXX_COMPILER_ID}
+   MATCHES
+   Clang
+)
+  target_compile_options(
+    opentxs-core-otprotob PRIVATE -Wno-extra-semi
+                                  -Wno-suggest-destructor-override
+  )
 endif()
+
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-core-otprotob>)
+add_dependencies(generated_code opentxs-core-otprotob)

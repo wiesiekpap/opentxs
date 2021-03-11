@@ -130,7 +130,7 @@ auto UnitID(const api::Core& api, const blockchain::Type chain) noexcept
 
     try {
         const auto preimage =
-            blockchain::params::Data::chains_.at(chain).display_ticker_;
+            blockchain::params::Data::Chains().at(chain).display_ticker_;
         output->CalculateDigest(preimage);
     } catch (...) {
     }

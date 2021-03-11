@@ -151,7 +151,7 @@ auto VerifyChecksum(
 {
     auto checksum = Data::Factory();
 
-    switch (params::Data::chains_.at(header.Network()).p2p_protocol_) {
+    switch (params::Data::Chains().at(header.Network()).p2p_protocol_) {
         case p2p::Protocol::bitcoin: {
             if (0 == payload.size()) {
                 checksum = Data::Factory("0x5df6e0e2", Data::Mode::Hex);

@@ -56,7 +56,8 @@ constexpr auto sync_map_ = [] {
     for (const auto& chain : opentxs::blockchain::DefinedChains()) {
         auto& [table, name] = map[chain];
         table = offset + static_cast<int>(chain);
-        name = opentxs::blockchain::params::Data::chains_.at(chain)
+        name = opentxs::blockchain::params::Data::Chains()
+                   .at(chain)
                    .display_string_;
     }
 

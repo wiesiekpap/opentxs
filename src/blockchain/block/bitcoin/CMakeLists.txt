@@ -3,18 +3,28 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set(cxx-sources
-    Block.cpp
-    BlockParser.cpp
-    Header.cpp
-    Input.cpp
-    Inputs.cpp
-    Output.cpp
-    Outputs.cpp
-    Script.cpp
-    Transaction.cpp
+add_library(
+  opentxs-blockchain-block-bitcoin OBJECT
+  "${opentxs_SOURCE_DIR}/src/internal/blockchain/block/bitcoin/Bitcoin.hpp"
+  "Block.cpp"
+  "Block.hpp"
+  "BlockParser.cpp"
+  "BlockParser.hpp"
+  "Header.cpp"
+  "Header.hpp"
+  "Input.cpp"
+  "Input.hpp"
+  "Inputs.cpp"
+  "Inputs.hpp"
+  "Output.cpp"
+  "Output.hpp"
+  "Outputs.cpp"
+  "Outputs.hpp"
+  "Script.cpp"
+  "Script.hpp"
+  "Transaction.cpp"
+  "Transaction.hpp"
 )
-
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/bitcoin/Block.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/bitcoin/Header.hpp"
@@ -26,25 +36,12 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/bitcoin/Transaction.hpp"
 )
 
-set(cxx-headers
-    ${cxx-install-headers}
-    "${opentxs_SOURCE_DIR}/src/internal/blockchain/block/bitcoin/Bitcoin.hpp"
-    Block.hpp
-    BlockParser.hpp
-    Header.hpp
-    Input.hpp
-    Inputs.hpp
-    Output.hpp
-    Outputs.hpp
-    Script.hpp
-    Transaction.hpp
-)
-
-add_library(
-  opentxs-blockchain-block-bitcoin OBJECT ${cxx-sources} ${cxx-headers}
-)
 target_link_libraries(
   opentxs-blockchain-block-bitcoin PRIVATE Boost::headers opentxs::messages
+)
+target_sources(opentxs-blockchain-block-bitcoin PRIVATE ${cxx-install-headers})
+target_sources(
+  opentxs PRIVATE $<TARGET_OBJECTS:opentxs-blockchain-block-bitcoin>
 )
 add_dependencies(opentxs-blockchain-block-bitcoin generated_code)
 

@@ -3,18 +3,23 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set(cxx-sources Client.cpp Server.cpp)
+add_library(
+  opentxs-network-zeromq-curve OBJECT
+  "Client.cpp"
+  "Client.hpp"
+  "Server.cpp"
+  "Server.hpp"
+)
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/curve/Client.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/curve/Server.hpp"
 )
-set(cxx-headers ${cxx-install-headers} Client.hpp Server.hpp)
-
-add_library(opentxs-network-zeromq-curve OBJECT ${cxx-sources} ${cxx-headers})
-
 target_link_libraries(
   opentxs-network-zeromq-curve PRIVATE opentxs::messages "${OT_ZMQ_TARGET}"
 )
+target_link_libraries(opentxs PUBLIC "${OT_ZMQ_TARGET}")
+target_sources(opentxs-network-zeromq-curve PRIVATE ${cxx-install-headers})
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-network-zeromq-curve>)
 add_dependencies(opentxs-network-zeromq-curve generated_code)
 
 if(OPENTXS_STANDALONE)

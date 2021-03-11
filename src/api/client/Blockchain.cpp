@@ -133,7 +133,7 @@ namespace opentxs::api::client
 {
 auto Blockchain::Bip44(Chain chain) noexcept(false) -> Bip44Type
 {
-    return opentxs::blockchain::params::Data::chains_.at(chain).bip44_;
+    return opentxs::blockchain::params::Data::Chains().at(chain).bip44_;
 }
 }  // namespace opentxs::api::client
 
@@ -1660,7 +1660,8 @@ auto Blockchain::start(
 
     namespace p2p = opentxs::blockchain::p2p;
 
-    switch (opentxs::blockchain::params::Data::chains_.at(type).p2p_protocol_) {
+    switch (
+        opentxs::blockchain::params::Data::Chains().at(type).p2p_protocol_) {
         case p2p::Protocol::bitcoin: {
             auto endpoint = std::string{};
 

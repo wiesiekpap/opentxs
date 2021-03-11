@@ -11,8 +11,13 @@ if(OT_BLOCKCHAIN_EXPORT)
   add_subdirectory(p2p)
 endif()
 
-set(cxx-sources Params.cpp)
-
+add_library(
+  opentxs-blockchain OBJECT
+  "${opentxs_SOURCE_DIR}/src/internal/blockchain/Params.hpp"
+  "DownloadManager.hpp"
+  "DownloadTask.hpp"
+  "Params.cpp"
+)
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/Blockchain.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/BlockchainType.hpp"
@@ -20,25 +25,24 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/FilterType.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/Types.hpp"
 )
-
-set(cxx-headers
-    ${cxx-install-headers}
-    "${opentxs_SOURCE_DIR}/src/internal/blockchain/Params.hpp"
-    "DownloadManager.hpp"
-    "DownloadTask.hpp"
+target_link_libraries(
+  opentxs-blockchain PRIVATE Boost::headers opentxs::messages
 )
 
 if(OT_BLOCKCHAIN_EXPORT)
-  list(
-    APPEND
-    cxx-sources
-    Blockchain.cpp
-    BloomFilter.cpp
-    GCS.cpp
-    NumericHash.cpp
-    Work.cpp
+  target_sources(
+    opentxs-blockchain
+    PRIVATE
+      "${opentxs_SOURCE_DIR}/src/internal/blockchain/Blockchain.hpp"
+      "Blockchain.cpp"
+      "BloomFilter.cpp"
+      "GCS.cpp"
+      "GCS.hpp"
+      "NumericHash.cpp"
+      "NumericHash.hpp"
+      "Work.cpp"
+      "Work.hpp"
   )
-
   list(
     APPEND
     cxx-install-headers
@@ -47,28 +51,13 @@ if(OT_BLOCKCHAIN_EXPORT)
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/NumericHash.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/Work.hpp"
   )
-
-  list(
-    APPEND
-    cxx-headers
-    ${cxx-install-headers}
-    "${opentxs_SOURCE_DIR}/src/internal/blockchain/Blockchain.hpp"
-    GCS.hpp
-    NumericHash.hpp
-    Work.hpp
-  )
-endif()
-
-add_library(opentxs-blockchain OBJECT ${cxx-sources} ${cxx-headers})
-target_link_libraries(
-  opentxs-blockchain PRIVATE Boost::headers opentxs::messages
-)
-
-add_dependencies(opentxs-blockchain generated_code)
-
-if(OT_BLOCKCHAIN_EXPORT)
   target_link_libraries(opentxs-blockchain PRIVATE lmdb)
+  target_link_libraries(opentxs PUBLIC lmdb)
 endif()
+
+target_sources(opentxs-blockchain PRIVATE ${cxx-install-headers})
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-blockchain>)
+add_dependencies(opentxs-blockchain generated_code)
 
 if(OPENTXS_STANDALONE)
   install(

@@ -3,11 +3,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set(cxx-sources
-    Callback.cpp
-    Handler.cpp
-    Reply.cpp
-    Request.cpp
+add_library(
+  opentxs-network-zeromq-zap OBJECT
+  "Callback.cpp"
+  "Callback.hpp"
+  "Handler.cpp"
+  "Handler.hpp"
+  "Reply.cpp"
+  "Reply.hpp"
+  "Request.cpp"
+  "Request.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/zap/Callback.hpp"
@@ -16,19 +21,12 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/zap/Request.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/zap/ZAP.hpp"
 )
-set(cxx-headers
-    ${cxx-install-headers}
-    ${CMAKE_CURRENT_SOURCE_DIR}/Callback.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Handler.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Reply.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Request.hpp
-)
-
-add_library(opentxs-network-zeromq-zap OBJECT ${cxx-sources} ${cxx-headers})
-
 target_link_libraries(
   opentxs-network-zeromq-zap PRIVATE opentxs::messages "${OT_ZMQ_TARGET}"
 )
+target_link_libraries(opentxs PUBLIC "${OT_ZMQ_TARGET}")
+target_sources(opentxs-network-zeromq-zap PRIVATE ${cxx-install-headers})
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-network-zeromq-zap>)
 add_dependencies(opentxs-network-zeromq-zap generated_code)
 
 if(OPENTXS_STANDALONE)

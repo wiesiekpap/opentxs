@@ -19,7 +19,7 @@ namespace opentxs
 auto Translate(const blockchain::Type type) noexcept -> proto::ContactItemType
 {
     try {
-        return blockchain::params::Data::chains_.at(type).proto_;
+        return blockchain::params::Data::Chains().at(type).proto_;
     } catch (...) {
         return proto::CITEMTYPE_UNKNOWN;
     }
@@ -34,7 +34,7 @@ auto Translate(const proto::ContactItemType type) noexcept -> blockchain::Type
     {
         auto output = Map{};
 
-        for (const auto& [chain, data] : blockchain::params::Data::chains_) {
+        for (const auto& [chain, data] : blockchain::params::Data::Chains()) {
             output.emplace(data.proto_, chain);
         }
 

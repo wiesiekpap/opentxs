@@ -117,7 +117,7 @@ std::int32_t NumericHash::MaxTarget(const blockchain::Type chain) noexcept
 {
     try {
 
-        return params::Data::chains_.at(chain).nBits_;
+        return params::Data::Chains().at(chain).nBits_;
     } catch (...) {
 
         return {};

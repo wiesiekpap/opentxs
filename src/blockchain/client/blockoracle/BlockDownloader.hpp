@@ -88,7 +88,7 @@ private:
     auto batch_size(const std::size_t in) const noexcept -> std::size_t
     {
         const auto limit =
-            params::Data::chains_.at(chain_).block_download_batch_;
+            params::Data::Chains().at(chain_).block_download_batch_;
 
         if (in < 10) {
 

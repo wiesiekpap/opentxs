@@ -3,71 +3,54 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set(cxx-sources
-    ActivityThread.cpp
-    ActivityThreadItem.cpp
-    MailItem.cpp
-    PaymentItem.cpp
-    PendingSend.cpp
+add_library(
+  opentxs-ui-activitythread OBJECT
+  "ActivityThread.cpp"
+  "ActivityThread.hpp"
+  "ActivityThreadItem.cpp"
+  "ActivityThreadItem.hpp"
+  "MailItem.cpp"
+  "MailItem.hpp"
+  "PaymentItem.cpp"
+  "PaymentItem.hpp"
+  "PendingSend.cpp"
+  "PendingSend.hpp"
 )
-set(ot-qobject-install-headers "")
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/ActivityThread.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/ActivityThreadItem.hpp"
-)
-set(cxx-headers
-    ${cxx-install-headers}
-    ActivityThread.hpp
-    ActivityThreadItem.hpp
-    MailItem.hpp
-    PaymentItem.hpp
-    PendingSend.hpp
-)
-
-if(OT_BLOCKCHAIN_EXPORT)
-  list(APPEND cxx-sources BlockchainActivityThreadItem.cpp)
-  list(APPEND cxx-headers BlockchainActivityThreadItem.hpp)
-endif()
-
-if(OT_WITH_QT)
-  list(
-    APPEND ot-qobject-install-headers
-    "${opentxs_SOURCE_DIR}/include/opentxs/ui/qt/ActivityThread.hpp"
-  )
-  qt5_wrap_cpp(MOC_SRCS ${ot-qobject-install-headers})
-else()
-  set(MOC_SRCS "")
-endif()
-
-add_library(
-  opentxs-ui-activitythread OBJECT
-  ${cxx-sources}
-  ${cxx-headers}
-  ${MOC_SRCS}
-  ${ot-qobject-install-headers}
 )
 target_link_libraries(opentxs-ui-activitythread PRIVATE opentxs::messages)
 target_include_directories(
   opentxs-ui-activitythread SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
 
-if(OT_QT_EXPORT)
-  target_link_libraries(opentxs-ui-activitythread PUBLIC Qt5::Core)
-
-  if(OT_QML_EXPORT)
-    target_link_libraries(opentxs-ui-activitythread PUBLIC Qt5::Qml)
-    target_compile_definitions(
-      opentxs-ui-activitythread PRIVATE -DOT_WITH_QML=1
-    )
-  else()
-    target_compile_definitions(
-      opentxs-ui-activitythread PRIVATE -DOT_WITH_QML=0
-    )
-  endif()
-else()
-  target_compile_definitions(opentxs-ui-activitythread PRIVATE -DOT_WITH_QML=0)
+if(OT_BLOCKCHAIN_EXPORT)
+  target_sources(
+    opentxs-ui-activitythread PRIVATE "BlockchainActivityThreadItem.cpp"
+                                      "BlockchainActivityThreadItem.hpp"
+  )
 endif()
 
+if(OT_WITH_QT)
+  set(ot-qobject-install-headers
+      "${opentxs_SOURCE_DIR}/include/opentxs/ui/qt/ActivityThread.hpp"
+  )
+  qt5_wrap_cpp(MOC_SRCS ${ot-qobject-install-headers})
+  target_sources(opentxs-ui-activitythread PRIVATE ${MOC_SRCS})
+
+  if(OPENTXS_STANDALONE)
+    install(
+      FILES ${ot-qobject-install-headers}
+      DESTINATION include/opentxs/ui/qt
+      COMPONENT dev
+    )
+  endif()
+endif()
+
+opentxs_set_qt(opentxs-ui-activitythread)
+target_sources(opentxs-ui-activitythread PRIVATE ${cxx-install-headers})
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-activitythread>)
 add_dependencies(opentxs-ui-activitythread generated_code)
 
 if(OPENTXS_STANDALONE)
@@ -76,11 +59,4 @@ if(OPENTXS_STANDALONE)
     DESTINATION include/opentxs/ui
     COMPONENT dev
   )
-  if(OT_QT_EXPORT)
-    install(
-      FILES ${ot-qobject-install-headers}
-      DESTINATION include/opentxs/ui/qt
-      COMPONENT dev
-    )
-  endif()
 endif()

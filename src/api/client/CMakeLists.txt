@@ -5,20 +5,35 @@
 
 add_subdirectory(blockchain)
 
-set(cxx-sources
-    Activity.cpp
-    Blockchain.cpp
-    Client.cpp
-    Contacts.cpp
-    Factory.cpp
-    Issuer.cpp
-    Manager.cpp
-    OTX.cpp
-    Pair.cpp
-    ServerAction.cpp
-    UI.cpp
-    Wallet.cpp
-    Workflow.cpp
+add_library(
+  opentxs-api-client OBJECT
+  "Activity.cpp"
+  "${opentxs_SOURCE_DIR}/src/internal/api/client/Client.hpp"
+  "${opentxs_SOURCE_DIR}/src/internal/api/client/Factory.hpp"
+  "Activity.hpp"
+  "Blockchain.cpp"
+  "Blockchain.hpp"
+  "Client.cpp"
+  "Contacts.cpp"
+  "Contacts.hpp"
+  "Factory.cpp"
+  "Factory.hpp"
+  "Issuer.cpp"
+  "Issuer.hpp"
+  "Manager.cpp"
+  "Manager.hpp"
+  "OTX.cpp"
+  "OTX.hpp"
+  "Pair.cpp"
+  "Pair.hpp"
+  "ServerAction.cpp"
+  "ServerAction.hpp"
+  "UI.cpp"
+  "UI.hpp"
+  "Wallet.cpp"
+  "Wallet.hpp"
+  "Workflow.cpp"
+  "Workflow.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/Activity.hpp"
@@ -32,31 +47,20 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/UI.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/Workflow.hpp"
 )
-set(cxx-headers
-    ${cxx-install-headers}
-    "${opentxs_SOURCE_DIR}/src/internal/api/client/Client.hpp"
-    "${opentxs_SOURCE_DIR}/src/internal/api/client/Factory.hpp"
-    Activity.hpp
-    Blockchain.hpp
-    Contacts.hpp
-    Factory.hpp
-    Issuer.hpp
-    Manager.hpp
-    OTX.hpp
-    Pair.hpp
-    ServerAction.hpp
-    UI.hpp
-    Wallet.hpp
-    Workflow.hpp
+target_link_libraries(
+  opentxs-api-client PRIVATE Boost::headers opentxs::messages
 )
-
-add_library(opentxs-api-client OBJECT ${cxx-sources} ${cxx-headers})
+target_include_directories(
+  opentxs-api-client SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+)
 
 if(OT_QT_EXPORT)
   target_link_libraries(opentxs-api-client PRIVATE Qt5::Core Qt5::Gui)
+  target_link_libraries(opentxs PRIVATE Qt5::Core Qt5::Gui)
 
   if(OT_QML_EXPORT)
     target_link_libraries(opentxs-api-client PUBLIC Qt5::Qml)
+    target_link_libraries(opentxs PUBLIC Qt5::Qml)
     target_compile_definitions(opentxs-api-client PRIVATE -DOT_WITH_QML=1)
   else()
     target_compile_definitions(opentxs-api-client PRIVATE -DOT_WITH_QML=0)
@@ -65,15 +69,11 @@ endif()
 
 if(OT_BLOCKCHAIN_EXPORT)
   target_link_libraries(opentxs-api-client PRIVATE lmdb)
+  target_link_libraries(opentxs PRIVATE lmdb)
 endif()
 
-target_link_libraries(
-  opentxs-api-client PRIVATE Boost::headers opentxs::messages
-)
-target_include_directories(
-  opentxs-api-client SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
-)
-
+target_sources(opentxs-api-client PRIVATE ${cxx-install-headers})
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-api-client>)
 add_dependencies(opentxs-api-client generated_code)
 
 if(OPENTXS_STANDALONE)

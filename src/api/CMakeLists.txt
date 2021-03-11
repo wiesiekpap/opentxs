@@ -9,22 +9,40 @@ add_subdirectory(network)
 add_subdirectory(server)
 add_subdirectory(storage)
 
-set(cxx-sources
-    Context.cpp
-    Core.cpp
-    Endpoints.cpp
-    Factory.cpp
-    HDSeed.cpp
-    Legacy.cpp
-    Log.cpp
-    Periodic.cpp
-    Primitives.cpp
-    Scheduler.cpp
-    Settings.cpp
-    StorageParent.cpp
-    ThreadPool.cpp
-    Wallet.cpp
-    ZMQ.cpp
+add_library(
+  opentxs-api OBJECT
+  "${opentxs_SOURCE_DIR}/include/opentxs/api/Legacy.hpp"
+  "${opentxs_SOURCE_DIR}/src/internal/api/Api.hpp"
+  "Context.cpp"
+  "Context.hpp"
+  "Core.cpp"
+  "Core.hpp"
+  "Endpoints.cpp"
+  "Endpoints.hpp"
+  "Factory.cpp"
+  "Factory.hpp"
+  "HDSeed.cpp"
+  "HDSeed.hpp"
+  "Legacy.cpp"
+  "Legacy.hpp"
+  "Log.cpp"
+  "Log.hpp"
+  "Periodic.cpp"
+  "Periodic.hpp"
+  "Primitives.cpp"
+  "Primitives.hpp"
+  "Scheduler.cpp"
+  "Scheduler.hpp"
+  "Settings.cpp"
+  "Settings.hpp"
+  "StorageParent.cpp"
+  "StorageParent.hpp"
+  "ThreadPool.cpp"
+  "ThreadPool.hpp"
+  "Wallet.cpp"
+  "Wallet.hpp"
+  "ZMQ.cpp"
+  "ZMQ.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/Context.hpp"
@@ -39,39 +57,22 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/ThreadPool.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/Wallet.hpp"
 )
-set(cxx-headers
-    ${cxx-install-headers}
-    "${opentxs_SOURCE_DIR}/include/opentxs/api/Legacy.hpp"
-    "${opentxs_SOURCE_DIR}/src/internal/api/Api.hpp"
-    Context.hpp
-    Core.hpp
-    Endpoints.hpp
-    Factory.hpp
-    HDSeed.hpp
-    Legacy.hpp
-    Log.hpp
-    Periodic.hpp
-    Primitives.hpp
-    Scheduler.hpp
-    Settings.hpp
-    StorageParent.hpp
-    ThreadPool.hpp
-    Wallet.hpp
-    ZMQ.hpp
-)
 
-add_library(opentxs-api OBJECT ${cxx-sources} ${cxx-headers})
+target_link_libraries(opentxs-api PRIVATE Boost::headers opentxs::messages)
+target_link_libraries(opentxs PUBLIC Boost::filesystem)
 target_include_directories(
   opentxs-api SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
-target_link_libraries(opentxs-api PRIVATE Boost::headers opentxs::messages)
-add_dependencies(opentxs-api generated_code)
 
 if(OT_ENABLE_RPC)
   target_compile_definitions(opentxs-api PRIVATE OT_RPC=1)
 else()
   target_compile_definitions(opentxs-api PRIVATE OT_RPC=0)
 endif()
+
+target_sources(opentxs-api PRIVATE ${cxx-install-headers})
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-api>)
+add_dependencies(opentxs-api generated_code)
 
 if(OPENTXS_STANDALONE)
   install(
