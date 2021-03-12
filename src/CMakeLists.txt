@@ -86,6 +86,11 @@ file(
   "${CMAKE_CURRENT_SOURCE_DIR}/crypto/library/trezor/COPYING"
   TREZOR_LICENSE_TEXT
 )
+file(
+  READ
+  "${opentxs_SOURCE_DIR}/deps/LICENSE.bech32"
+  BECH32_LICENSE_TEXT
+)
 configure_file(
   "License.cpp.in"
   "${CMAKE_CURRENT_BINARY_DIR}/License.cpp"

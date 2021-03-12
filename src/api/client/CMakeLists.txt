@@ -48,10 +48,15 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/Workflow.hpp"
 )
 target_link_libraries(
-  opentxs-api-client PRIVATE Boost::headers opentxs::messages
+  opentxs-api-client
+  PRIVATE
+    Boost::headers
+    opentxs::messages
+    bech32
 )
 target_include_directories(
   opentxs-api-client SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+                                    "${opentxs_SOURCE_DIR}/deps/bech32/ref/c++"
 )
 
 if(OT_QT_EXPORT)

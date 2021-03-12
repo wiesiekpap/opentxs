@@ -25,4 +25,5 @@ message BlockchainTransactionProposedOutput {
         BlockchainOutputMultisigDetails multisig = 9;
         bytes data = 10;
     }
+    optional bool segwit = 11;
 }

@@ -21,6 +21,8 @@
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/client/blockchain/AddressStyle.hpp"
+#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
@@ -43,6 +45,8 @@ struct Data {
     using ServiceBits = std::
         map<blockchain::Type, std::map<p2p::bitcoin::Service, p2p::Service>>;
 #endif  // OT_BLOCKCHAIN
+    using Style = api::client::blockchain::AddressStyle;
+    using ScriptMap = boost::container::flat_map<Style, bool>;
 
     struct Checkpoint {
         block::Height height_{};
@@ -70,6 +74,7 @@ struct Data {
     Amount default_fee_rate_{};  // satoshis per 1000 bytes
     display::Definition scales_{};
     std::size_t block_download_batch_{};
+    ScriptMap scripts_{};
 
 #if OT_BLOCKCHAIN
     static auto Bip158() noexcept -> const FilterTypes&;

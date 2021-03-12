@@ -1423,6 +1423,7 @@ auto LicenseData() noexcept -> const LicenseMap&
     {
         {"base58 (via Bitcoin)", R"~!~(@BASE58_LICENSE_TEXT@)~!~"},
             {"base64 (via Apple)", R"~!~(@BASE64_LICENSE_TEXT@)~!~"},
+            {"bech32", R"~!~(@BECH32_LICENSE_TEXT@)~!~"},
 #if OT_SCRIPT_CHAI
             {"Chaiscript", R"~!~(@CHAISCRIPT_LICENSE_TEXT@)~!~"},
 #endif  // OT_SCRIPT_CHAI

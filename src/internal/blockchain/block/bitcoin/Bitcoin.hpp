@@ -268,16 +268,14 @@ auto BitcoinBlockHeader(
 OPENTXS_EXPORT auto BitcoinScript(
     const blockchain::Type chain,
     const ReadView bytes,
-    const bool outputScript = true,
-    const bool isGeneration = false,
+    const blockchain::block::bitcoin::Script::Position role,
     const bool allowInvalidOpcodes = true,
     const bool mute = false) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Script>;
 OPENTXS_EXPORT auto BitcoinScript(
     const blockchain::Type chain,
     blockchain::block::bitcoin::ScriptElements&& elements,
-    const bool outputScript = true,
-    const bool isGeneration = false) noexcept
+    const blockchain::block::bitcoin::Script::Position role) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Script>;
 auto BitcoinTransaction(
     const api::Core& api,

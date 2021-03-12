@@ -150,6 +150,8 @@ OPENTXS_EXPORT auto preallocated(const std::size_t size, void* out) noexcept
     -> AllocateOutput;
 OPENTXS_EXPORT auto reader(const WritableView& in) noexcept -> ReadView;
 OPENTXS_EXPORT auto reader(const Space& in) noexcept -> ReadView;
+OPENTXS_EXPORT auto reader(const std::vector<std::uint8_t>& in) noexcept
+    -> ReadView;
 OPENTXS_EXPORT auto space(const std::size_t size) noexcept -> Space;
 OPENTXS_EXPORT auto space(const ReadView bytes) noexcept -> Space;
 OPENTXS_EXPORT auto valid(const ReadView view) noexcept -> bool;

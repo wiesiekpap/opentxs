@@ -182,6 +182,13 @@ private:
     static const VersionNumber outpoint_version_;
     static const VersionNumber key_version_;
 
+    enum class Redeem : std::uint8_t {
+        None,
+        MaybeP2WSH,
+        P2SH_P2WSH,
+        P2SH_P2WPKH,
+    };
+
     const api::Core& api_;
     const blockchain::Type chain_;
     const VersionNumber serialize_version_;
@@ -198,6 +205,8 @@ private:
     mutable boost::container::flat_set<KeyID> keys_;
     mutable OTIdentifier payer_;
 
+    auto classify() const noexcept -> Redeem;
+    auto is_bip16() const noexcept;
     auto serialize(const AllocateOutput destination, const bool normalized)
         const noexcept -> std::optional<std::size_t>;
 

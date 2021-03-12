@@ -132,6 +132,8 @@ private:
         -> Pattern;
     static auto evaluate_script_hash(const ScriptElements& script) noexcept
         -> Pattern;
+    static auto evaluate_segwit(const ScriptElements& script) noexcept
+        -> Pattern;
     static auto first_opcode(const ScriptElements& script) noexcept -> OP;
     static auto get_type(
         const Position role,
@@ -145,6 +147,7 @@ private:
         -> bool;
     static auto potential_script_hash(const ScriptElements& script) noexcept
         -> bool;
+    static auto potential_segwit(const ScriptElements& script) noexcept -> bool;
     static auto to_number(const OP opcode) noexcept -> std::uint8_t;
     static auto validate(
         const ScriptElement& element,

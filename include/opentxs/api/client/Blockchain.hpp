@@ -72,7 +72,7 @@ class Blockchain
 public:
     using Chain = opentxs::blockchain::Type;
     using Style = blockchain::AddressStyle;
-    using DecodedAddress = std::tuple<OTData, Style, std::set<Chain>>;
+    using DecodedAddress = std::tuple<OTData, Style, std::set<Chain>, bool>;
     using ContactList = std::set<OTIdentifier>;
 #if OT_BLOCKCHAIN
     using Tx = opentxs::blockchain::block::bitcoin::Transaction;

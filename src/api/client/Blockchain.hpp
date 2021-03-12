@@ -151,6 +151,8 @@ public:
     // Style, preferred prefix, additional prefixes
     using StyleMap = std::map<StylePair, std::pair<Prefix, std::set<Prefix>>>;
     using StyleReverseMap = std::map<Prefix, std::set<StylePair>>;
+    using HrpMap = std::map<Chain, std::string>;
+    using HrpReverseMap = std::map<std::string, Chain>;
 
     static auto reverse(const StyleMap& in) noexcept -> StyleReverseMap;
 
@@ -488,12 +490,15 @@ private:
     static const AddressReverseMap address_prefix_reverse_map_;
     static const StyleMap address_style_map_;
     static const StyleReverseMap address_style_reverse_map_;
+    static const HrpMap hrp_map_;
+    static const HrpReverseMap hrp_reverse_map_;
 
     const api::internal::Core& api_;
 #if OT_BLOCKCHAIN
     const api::client::Activity& activity_;
 #endif  // OT_BLOCKCHAIN
     const api::client::Contacts& contacts_;
+    const DecodedAddress blank_;
     mutable std::mutex lock_;
     mutable IDLock nym_lock_;
     mutable AccountCache accounts_;
@@ -525,6 +530,10 @@ private:
 
     auto address_prefix(const Style style, const Chain chain) const
         noexcept(false) -> OTData;
+    auto decode_bech23(const std::string& encoded) const noexcept
+        -> std::optional<DecodedAddress>;
+    auto decode_legacy(const std::string& encoded) const noexcept
+        -> std::optional<DecodedAddress>;
     auto bip44_type(const proto::ContactItemType type) const noexcept
         -> Bip44Type;
     void init_path(

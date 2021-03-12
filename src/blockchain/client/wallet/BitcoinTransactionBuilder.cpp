@@ -395,7 +395,9 @@ auto Wallet::Proposals::BitcoinTransactionBuilder::AddChange(
 
                 return out;
             }();
-            auto pScript = factory::BitcoinScript(chain_, std::move(elements));
+            using Position = block::bitcoin::Script::Position;
+            auto pScript = factory::BitcoinScript(
+                chain_, std::move(elements), Position::Output);
 
             if (false == bool(pScript)) {
                 throw std::runtime_error{"Failed to construct script"};
@@ -509,26 +511,43 @@ auto Wallet::Proposals::BitcoinTransactionBuilder::CreateOutputs(
 
     for (const auto& output : proposal.output()) {
         auto pScript = std::unique_ptr<bi::Script>{};
+        using Position = block::bitcoin::Script::Position;
 
         if (output.has_raw()) {
-            pScript = factory::BitcoinScript(chain_, output.raw());
+            pScript =
+                factory::BitcoinScript(chain_, output.raw(), Position::Output);
         } else {
             auto elements = bb::ScriptElements{};
 
             if (output.has_pubkeyhash()) {
-                elements.emplace_back(bi::Opcode(bb::OP::DUP));
-                elements.emplace_back(bi::Opcode(bb::OP::HASH160));
-                elements.emplace_back(bi::PushData(output.pubkeyhash()));
-                elements.emplace_back(bi::Opcode(bb::OP::EQUALVERIFY));
-                elements.emplace_back(bi::Opcode(bb::OP::CHECKSIG));
+                if (output.segwit()) {  // P2WPKH
+                    elements.emplace_back(bi::Opcode(bb::OP::ZERO));
+                    elements.emplace_back(bi::PushData(output.pubkeyhash()));
+                } else {  // P2PKH
+                    elements.emplace_back(bi::Opcode(bb::OP::DUP));
+                    elements.emplace_back(bi::Opcode(bb::OP::HASH160));
+                    elements.emplace_back(bi::PushData(output.pubkeyhash()));
+                    elements.emplace_back(bi::Opcode(bb::OP::EQUALVERIFY));
+                    elements.emplace_back(bi::Opcode(bb::OP::CHECKSIG));
+                }
             } else if (output.has_scripthash()) {
-                elements.emplace_back(bi::Opcode(bb::OP::HASH160));
-                elements.emplace_back(bi::PushData(output.scripthash()));
-                elements.emplace_back(bi::Opcode(bb::OP::EQUAL));
+                if (output.segwit()) {  // P2WSH
+                    elements.emplace_back(bi::Opcode(bb::OP::ZERO));
+                    elements.emplace_back(bi::PushData(output.scripthash()));
+                } else {  // P2SH
+                    elements.emplace_back(bi::Opcode(bb::OP::HASH160));
+                    elements.emplace_back(bi::PushData(output.scripthash()));
+                    elements.emplace_back(bi::Opcode(bb::OP::EQUAL));
+                }
             } else if (output.has_pubkey()) {
-                elements.emplace_back(bi::PushData(output.pubkey()));
-                elements.emplace_back(bi::Opcode(bb::OP::CHECKSIG));
-            } else if (output.has_multisig()) {
+                if (output.segwit()) {  // P2TR
+                    elements.emplace_back(bi::Opcode(bb::OP::ONE));
+                    elements.emplace_back(bi::PushData(output.pubkey()));
+                } else {  // P2PK
+                    elements.emplace_back(bi::PushData(output.pubkey()));
+                    elements.emplace_back(bi::Opcode(bb::OP::CHECKSIG));
+                }
+            } else if (output.has_multisig()) {  // P2MS
                 const auto& ms = output.multisig();
                 const auto M = static_cast<std::uint8_t>(ms.m());
                 const auto N = static_cast<std::uint8_t>(ms.n());
@@ -547,7 +566,8 @@ auto Wallet::Proposals::BitcoinTransactionBuilder::CreateOutputs(
                 return false;
             }
 
-            pScript = factory::BitcoinScript(chain_, std::move(elements));
+            pScript = factory::BitcoinScript(
+                chain_, std::move(elements), Position::Output);
         }
 
         if (false == bool(pScript)) {

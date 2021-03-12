@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"             // IWYU pragma: associated
 #include "api/client/Blockchain.hpp"  // IWYU pragma: associated
 
+#include <bech32.h>
+#include <boost/container/flat_map.hpp>
+#include <segwit_addr.h>
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
@@ -180,6 +183,17 @@ const Blockchain::StyleMap Blockchain::address_style_map_{
 };
 const Blockchain::StyleReverseMap Blockchain::address_style_reverse_map_{
     ReturnType::reverse(address_style_map_)};
+const Blockchain::HrpMap Blockchain::hrp_map_{
+    {Chain::Bitcoin, "bc"},
+    {Chain::Bitcoin_testnet3, "tb"},
+    {Chain::Litecoin, "ltc"},
+    {Chain::Litecoin_testnet4, "tltc"},
+    {Chain::PKT, "pkt"},
+    {Chain::PKT_testnet, "tpk"},
+    {Chain::UnitTest, "bcrt"},
+};
+const Blockchain::HrpReverseMap Blockchain::hrp_reverse_map_{
+    reverse_map(hrp_map_)};
 
 Blockchain::Blockchain(
     const api::internal::Core& api,
@@ -193,6 +207,7 @@ Blockchain::Blockchain(
     , activity_(activity)
 #endif  // OT_BLOCKCHAIN
     , contacts_(contacts)
+    , blank_(api_.Factory().Data(), Style::Unknown, {}, false)
     , lock_()
     , nym_lock_()
     , accounts_(api_)
@@ -675,44 +690,166 @@ auto Blockchain::check_hello(const Lock&) const noexcept -> Chains
 auto Blockchain::DecodeAddress(const std::string& encoded) const noexcept
     -> DecodedAddress
 {
-    auto output = DecodedAddress{api_.Factory().Data(), Style::Unknown, {}};
-    auto& [data, style, chains] = output;
-    const auto bytes = api_.Factory().Data(
-        api_.Crypto().Encode().IdentifierDecode(encoded), StringStyle::Raw);
-    auto type = api_.Factory().Data();
+    static constexpr auto check =
+        [](DecodedAddress& output) -> DecodedAddress& {
+        auto& [data, style, chains, supported] = output;
+        supported = false;
 
-    switch (bytes->size()) {
-        case 21: {
-            bytes->Extract(1, type, 0);
-            auto prefix{Prefix::Unknown};
+        if (0 == data->size()) { return output; }
+        if (Style::Unknown == style) { return output; }
+        if (0 == chains.size()) { return output; }
 
+        const auto& params = opentxs::blockchain::params::Data::Chains();
+
+        for (const auto& chain : chains) {
             try {
-                prefix = address_prefix_reverse_map_.at(type->asHex());
+                if (false == params.at(chain).scripts_.at(style)) {
+
+                    return output;
+                }
             } catch (...) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": Unable to decode version byte (")(type->asHex())
-                    .Flush();
 
                 return output;
             }
+        }
 
-            const auto& map = address_style_reverse_map_.at(prefix);
+        supported = true;
 
-            for (const auto& [decodeStyle, decodeChain] : map) {
-                style = decodeStyle;
-                chains.emplace(decodeChain);
+        return output;
+    };
+    auto output = decode_bech23(encoded);
+
+    if (output.has_value()) { return check(output.value()); }
+
+    output = decode_legacy(encoded);
+
+    if (output.has_value()) { return check(output.value()); }
+
+    return blank_;
+}
+
+auto Blockchain::decode_bech23(const std::string& encoded) const noexcept
+    -> std::optional<DecodedAddress>
+{
+    auto output{blank_};
+    auto& [data, style, chains, supported] = output;
+
+    try {
+        const auto result = bech32::decode(encoded);
+        using Encoding = bech32::Encoding;
+
+        switch (result.encoding) {
+            case Encoding::BECH32:
+            case Encoding::BECH32M: {
+            } break;
+            case Encoding::INVALID:
+            default: {
+                throw std::runtime_error("not bech32");
+            }
+        }
+
+        const auto [version, bytes] = segwit_addr::decode(result.hrp, encoded);
+
+        try {
+            switch (version) {
+                case 0: {
+                    switch (bytes.size()) {
+                        case 20: {
+                            style = Style::P2WPKH;
+                        } break;
+                        case 32: {
+                            style = Style::P2WSH;
+                        } break;
+                        default: {
+                            throw std::runtime_error{
+                                "unknown version 0 program"};
+                        }
+                    }
+                } break;
+                case 1: {
+                    switch (bytes.size()) {
+                        case 32: {
+                            style = Style::P2TR;
+                        } break;
+                        default: {
+                            throw std::runtime_error{
+                                "unknown version 1 program"};
+                        }
+                    }
+                } break;
+                case -1:
+                default: {
+                    throw std::runtime_error{"Unsupported version"};
+                }
             }
 
-            bytes->Extract(20, data, 1);
-        } break;
-        default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to decode address (")(
-                bytes->asHex())
-                .Flush();
-        }
-    }
+            copy(reader(bytes), data->WriteInto());
+            chains.emplace(hrp_reverse_map_.at(result.hrp));
 
-    return output;
+            return std::move(output);
+        } catch (const std::exception& e) {
+            LogTrace(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+            return blank_;
+        }
+    } catch (const std::exception& e) {
+        LogTrace(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+        return std::nullopt;
+    }
+}
+
+auto Blockchain::decode_legacy(const std::string& encoded) const noexcept
+    -> std::optional<DecodedAddress>
+{
+    auto output{blank_};
+    auto& [data, style, chains, supported] = output;
+
+    try {
+        const auto bytes = api_.Factory().Data(
+            api_.Crypto().Encode().IdentifierDecode(encoded), StringStyle::Raw);
+        auto type = api_.Factory().Data();
+
+        if (0 == bytes->size()) { throw std::runtime_error("not base58"); }
+
+        try {
+            switch (bytes->size()) {
+                case 21: {
+                    bytes->Extract(1, type, 0);
+                    auto prefix{Prefix::Unknown};
+
+                    try {
+                        prefix = address_prefix_reverse_map_.at(type->asHex());
+                    } catch (...) {
+                        throw std::runtime_error(
+                            "unable to decode version byte");
+                    }
+
+                    const auto& map = address_style_reverse_map_.at(prefix);
+
+                    for (const auto& [decodeStyle, decodeChain] : map) {
+                        style = decodeStyle;
+                        chains.emplace(decodeChain);
+                    }
+
+                    bytes->Extract(20, data, 1);
+                } break;
+                default: {
+                    throw std::runtime_error("unknown address format");
+                }
+            }
+
+            return std::move(output);
+        } catch (const std::exception& e) {
+            LogTrace(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+            return blank_;
+        }
+    } catch (const std::exception& e) {
+        LogTrace(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+        return std::nullopt;
+    }
 }
 
 #if OT_BLOCKCHAIN
@@ -1033,7 +1170,7 @@ auto Blockchain::LoadTransactionBitcoin(const Txid& txid) const noexcept
 auto Blockchain::LookupContacts(const std::string& address) const noexcept
     -> ContactList
 {
-    const auto [pubkeyHash, style, chain] = DecodeAddress(address);
+    const auto [pubkeyHash, style, chain, supported] = DecodeAddress(address);
 
     return LookupContacts(pubkeyHash);
 }

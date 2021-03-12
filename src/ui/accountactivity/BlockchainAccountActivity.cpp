@@ -340,14 +340,14 @@ auto BlockchainAccountActivity::ValidateAddress(
 
     using Style = api::client::blockchain::AddressStyle;
 
-    const auto [data, style, chains] =
+    const auto [data, style, chains, supported] =
         Widget::api_.Blockchain().DecodeAddress(in);
 
     if (Style::Unknown == style) { return false; }
 
     if (0 == chains.count(chain_)) { return false; }
 
-    return true;
+    return supported;
 }
 
 auto BlockchainAccountActivity::ValidateAmount(

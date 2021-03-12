@@ -73,3 +73,18 @@ if(${CMAKE_CXX_COMPILER_ID}
 endif()
 
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:external-hashes>)
+
+add_library(
+  bech32 OBJECT
+  "bech32/ref/c++/bech32.cpp"
+  "bech32/ref/c++/bech32.h"
+  "bech32/ref/c++/segwit_addr.cpp"
+  "bech32/ref/c++/segwit_addr.h"
+)
+target_include_directories(
+  bech32 SYSTEM INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/bech32/ref/c++"
+)
+if(NOT MSVC)
+  target_compile_options(bech32 PRIVATE -Wno-effc++ -Wno-unused-variable)
+endif()
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:bech32>)

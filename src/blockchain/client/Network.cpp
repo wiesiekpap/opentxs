@@ -578,9 +578,10 @@ auto Network::SendToAddress(
     const Amount amount,
     const std::string& memo) const noexcept -> PendingOutgoing
 {
-    const auto [data, style, chains] = blockchain_.DecodeAddress(address);
+    const auto [data, style, chains, supported] =
+        blockchain_.DecodeAddress(address);
 
-    if (0 == chains.count(chain_)) {
+    if ((0 == chains.count(chain_)) || (!supported)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Address ")(address)(
             " not valid for ")(DisplayString(chain_))
             .Flush();
@@ -603,9 +604,17 @@ auto Network::SendToAddress(
     output.set_amount(amount);
 
     switch (style) {
+        case Style::P2WPKH: {
+            output.set_segwit(true);
+            [[fallthrough]];
+        }
         case Style::P2PKH: {
             output.set_pubkeyhash(data->str());
         } break;
+        case Style::P2WSH: {
+            output.set_segwit(true);
+            [[fallthrough]];
+        }
         case Style::P2SH: {
             output.set_scripthash(data->str());
         } break;

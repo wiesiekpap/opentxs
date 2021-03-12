@@ -337,7 +337,8 @@ auto Contact::AddBlockchainAddress(
     const proto::ContactItemType currency) -> bool
 {
     const auto& api = api_;
-    auto [bytes, style, chains] = api.Blockchain().DecodeAddress(address);
+    auto [bytes, style, chains, supported] =
+        api.Blockchain().DecodeAddress(address);
     const auto bad =
         bytes->empty() || (AddressStyle::Unknown == style) || chains.empty();
 
