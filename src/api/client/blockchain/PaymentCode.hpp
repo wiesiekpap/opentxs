@@ -13,6 +13,7 @@
 #include <functional>
 #include <list>
 #include <map>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -94,6 +95,12 @@ public:
         return local_.get().Key();
     }
 #endif  // OT_CRYPTO_WITH_BIP32
+    auto Reserve(
+        const Subchain type,
+        const PasswordPrompt& reason,
+        const Identifier& contact,
+        const std::string& label,
+        const Time time) const noexcept -> std::optional<Bip32Index> final;
 
     PaymentCode(
         const api::internal::Core& api,
@@ -130,10 +137,10 @@ private:
     mutable Latest local_;
     Latest remote_;
 
-    auto account_already_exists(const Lock& lock) const noexcept -> bool final;
+    auto account_already_exists(const rLock& lock) const noexcept -> bool final;
     auto get_contact() const noexcept -> OTIdentifier;
     auto has_private(const PasswordPrompt& reason) const noexcept -> bool;
-    auto save(const Lock& lock) const noexcept -> bool final;
+    auto save(const rLock& lock) const noexcept -> bool final;
     auto set_deterministic_contact(Element& element) const noexcept
         -> void final
     {

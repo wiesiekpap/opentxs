@@ -417,13 +417,13 @@ TEST_F(Test_BlockchainActivity, setup_blockchain_account)
     const auto& account =
         api_.Blockchain().HDSubaccount(nym_1_id(), account_1_id());
     const auto indexOne =
-        account.UseNext(Subchain::External, reason_, contact_5_id());
-    const auto indexTwo = account.UseNext(Subchain::External, reason_);
-    const auto indexThree = account.UseNext(
+        account.Reserve(Subchain::External, reason_, contact_5_id());
+    const auto indexTwo = account.Reserve(Subchain::External, reason_);
+    const auto indexThree = account.Reserve(
         Subchain::External, reason_, contact_6_id(), u8"Free Ross");
-    const auto indexFour = account.UseNext(Subchain::External, reason_);
-    const auto indexFive = account.UseNext(Subchain::External, reason_);
-    const auto indexSix = account.UseNext(Subchain::External, reason_);
+    const auto indexFour = account.Reserve(Subchain::External, reason_);
+    const auto indexFive = account.Reserve(Subchain::External, reason_);
+    const auto indexSix = account.Reserve(Subchain::External, reason_);
 
     ASSERT_TRUE(indexOne.has_value());
     ASSERT_TRUE(indexTwo.has_value());

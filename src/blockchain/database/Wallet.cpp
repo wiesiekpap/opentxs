@@ -590,10 +590,11 @@ auto Wallet::CancelProposal(const Identifier& id) const noexcept -> bool
 
         try {
             auto& used = change_keys_.at(id);
-            std::move(
-                std::begin(used),
-                std::end(used),
-                std::back_inserter(available));
+
+            for (auto& key : used) {
+                blockchain_.Release(key);
+                available.emplace_back(std::move(key));
+            }
             change_keys_.erase(id);
         } catch (...) {
         }
@@ -1196,6 +1197,15 @@ auto Wallet::rollback(
         }
 
         const auto& txid = api_.Factory().Data(id.Txid());
+
+        for (const auto& sKey : data.key()) {
+            using Subchain = api::client::blockchain::Subchain;
+            blockchain_.Unconfirm(
+                {sKey.subaccount(),
+                 static_cast<Subchain>(sKey.subchain()),
+                 sKey.index()},
+                txid);
+        }
 
         if (false == delete_from_vector(history, txid)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(

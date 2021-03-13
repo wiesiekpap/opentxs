@@ -21,6 +21,7 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/blockchain/PaymentCode.hpp"
+#include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -30,6 +31,7 @@
 #include "opentxs/protobuf/BlockchainTransaction.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposedNotification.pb.h"
+#include "opentxs/protobuf/BlockchainTransactionProposedOutput.pb.h"
 #include "util/ScopeGuard.hpp"
 
 #define OT_METHOD                                                              \
@@ -89,21 +91,40 @@ auto Wallet::Proposals::build_transaction_bitcoin(
     Proposal& proposal,
     std::promise<block::pTxid>& promise) const noexcept -> BuildResult
 {
+    auto output = BuildResult::Success;
     auto builder = BitcoinTransactionBuilder{
         api_, blockchain_, db_, id, chain_, network_.FeeRate()};
+
+    for (const auto& output : proposal.output()) {
+        if (false == output.has_paymentcodechannel()) { continue; }
+
+        using Subchain = api::client::blockchain::Subchain;
+        builder.keys_to_reclaim_.emplace(
+            output.paymentcodechannel(), Subchain::Outgoing, output.index());
+    }
+
+    auto post = ScopeGuard{[&] {
+        if (BuildResult::PermanentFailure != output) { return; }
+
+        for (const auto& key : builder.keys_to_reclaim_) {
+            blockchain_.Release(key);
+        }
+    }};
 
     if (false == builder.CreateOutputs(proposal)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to create outputs")
             .Flush();
+        output = BuildResult::PermanentFailure;
 
-        return BuildResult::PermanentFailure;
+        return output;
     }
 
     if (false == builder.AddChange(proposal)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to allocate change output")
             .Flush();
+        output = BuildResult::PermanentFailure;
 
-        return BuildResult::PermanentFailure;
+        return output;
     }
 
     while (false == builder.IsFunded()) {
@@ -111,14 +132,16 @@ auto Wallet::Proposals::build_transaction_bitcoin(
 
         if (false == utxo.has_value()) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Insufficient funds").Flush();
+            output = BuildResult::PermanentFailure;
 
-            return BuildResult::PermanentFailure;
+            return output;
         }
 
         if (false == builder.AddInput(utxo.value())) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to add input").Flush();
+            output = BuildResult::PermanentFailure;
 
-            return BuildResult::PermanentFailure;
+            return output;
         }
     }
 
@@ -128,8 +151,9 @@ auto Wallet::Proposals::build_transaction_bitcoin(
 
     if (false == builder.SignInputs()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to sign inputs").Flush();
+        output = BuildResult::PermanentFailure;
 
-        return BuildResult::PermanentFailure;
+        return output;
     }
 
     auto pTransaction = builder.FinalizeTransaction();
@@ -138,8 +162,9 @@ auto Wallet::Proposals::build_transaction_bitcoin(
         LogOutput(OT_METHOD)(__FUNCTION__)(
             ": Failed to instantiate transaction")
             .Flush();
+        output = BuildResult::PermanentFailure;
 
-        return BuildResult::PermanentFailure;
+        return output;
     }
 
     const auto& transaction = *pTransaction;
@@ -148,8 +173,9 @@ auto Wallet::Proposals::build_transaction_bitcoin(
     if (false == proto.has_value()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize transaction")
             .Flush();
+        output = BuildResult::PermanentFailure;
 
-        return BuildResult::PermanentFailure;
+        return output;
     }
 
     *proposal.mutable_finished() = proto.value();
@@ -157,15 +183,17 @@ auto Wallet::Proposals::build_transaction_bitcoin(
     if (!db_.AddProposal(id, proposal)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Database error (proposal)")
             .Flush();
+        output = BuildResult::PermanentFailure;
 
-        return BuildResult::PermanentFailure;
+        return output;
     }
 
     if (!db_.AddOutgoingTransaction(chain_, id, proposal, transaction)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Database error (transaction)")
             .Flush();
+        output = BuildResult::PermanentFailure;
 
-        return BuildResult::PermanentFailure;
+        return output;
     }
 
     promise.set_value(transaction.ID());
@@ -189,7 +217,7 @@ auto Wallet::Proposals::build_transaction_bitcoin(
         LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
     }
 
-    return BuildResult::Success;
+    return output;
 }
 
 auto Wallet::Proposals::cleanup(const Lock& lock) noexcept -> void
@@ -277,8 +305,17 @@ auto Wallet::Proposals::Run() noexcept -> bool
 auto Wallet::Proposals::send(const Lock& lock) noexcept -> void
 {
     for (auto it{pending_.begin()}; it != pending_.end();) {
+        auto wipe{false};
         auto erase{false};
         auto loop = ScopeGuard{[&]() {
+            const auto& [id, promise] = *it;
+
+            if (wipe) {
+                db_.CancelProposal(id);
+                db_.DeleteProposal(id);
+                erase = true;
+            }
+
             if (erase) {
                 it = pending_.erase(it);
             } else {
@@ -293,20 +330,26 @@ auto Wallet::Proposals::send(const Lock& lock) noexcept -> void
         auto& data = *serialized;
 
         if (is_expired(data)) {
-            db_.CancelProposal(id);
-            db_.DeleteProposal(id);
-            erase = true;
+            wipe = true;
 
             continue;
         }
 
         if (auto builder = get_builder(); builder) {
-            const auto result = builder(id, data, promise);
+            switch (builder(id, data, promise)) {
+                case BuildResult::PermanentFailure: {
+                    wipe = true;
+                    [[fallthrough]];
+                }
+                case BuildResult::TemporaryFailure: {
 
-            if (BuildResult::TemporaryFailure != result) { erase = true; }
-
-            if (BuildResult::Success == result) {
-                confirming_.emplace(std::move(id), Clock::now());
+                    continue;
+                }
+                case BuildResult::Success:
+                default: {
+                    confirming_.emplace(std::move(id), Clock::now());
+                    erase = true;
+                }
             }
         }
     }

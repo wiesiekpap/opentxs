@@ -171,7 +171,7 @@ protected:
                     static const auto amount =
                         ot::blockchain::Amount{10000000000};
                     const auto index =
-                        account.UseNext(Subchain::External, reason);
+                        account.Reserve(Subchain::External, reason);
 
                     EXPECT_TRUE(index.has_value());
 
@@ -352,7 +352,6 @@ TEST_F(Regtest_payment_code, alice_after_send)
 
     ASSERT_TRUE(row->Valid());
     EXPECT_EQ(row->Amount(), -1000000316);
-    EXPECT_EQ(row->Contacts().size(), 0);
     EXPECT_EQ(row->DisplayAmount(), u8"-10.000 003 16 units");
     EXPECT_EQ(row->Memo(), "");
     EXPECT_EQ(row->Workflow(), "");
@@ -375,59 +374,6 @@ TEST_F(Regtest_payment_code, alice_after_send)
     EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
     EXPECT_EQ(row->UUID(), transactions_.at(0)->asHex());
     EXPECT_TRUE(row->Last());
-
-    const auto& tree = client_1_.Blockchain().Account(alice_.ID(), test_chain_);
-    const auto& pc = tree.GetPaymentCode();
-
-    ASSERT_EQ(pc.size(), 1);
-
-    const auto& account = pc.at(0);
-    constexpr auto lookahead = ot::Bip32Index{4};
-
-    EXPECT_EQ(
-        account.Type(),
-        ot::api::client::blockchain::BalanceNodeType::PaymentCode);
-    EXPECT_TRUE(account.IsNotified());
-
-    {
-        constexpr auto subchain{Subchain::Incoming};
-
-        const auto gen = account.LastGenerated(subchain);
-        const auto used = account.LastUsed(subchain);
-
-        ASSERT_TRUE(gen.has_value());
-        EXPECT_FALSE(used.has_value());
-        EXPECT_EQ(gen.value(), lookahead);
-    }
-    {
-        constexpr auto subchain{Subchain::Outgoing};
-
-        const auto gen = account.LastGenerated(subchain);
-        const auto used = account.LastUsed(subchain);
-
-        ASSERT_TRUE(gen.has_value());
-        ASSERT_TRUE(used.has_value());
-        EXPECT_EQ(gen.value(), lookahead + 1u);
-        EXPECT_EQ(used.value(), 0u);
-    }
-    {
-        constexpr auto subchain{Subchain::External};
-
-        const auto gen = account.LastGenerated(subchain);
-        const auto used = account.LastUsed(subchain);
-
-        EXPECT_FALSE(gen.has_value());
-        EXPECT_FALSE(used.has_value());
-    }
-    {
-        constexpr auto subchain{Subchain::Internal};
-
-        const auto gen = account.LastGenerated(subchain);
-        const auto used = account.LastUsed(subchain);
-
-        EXPECT_FALSE(gen.has_value());
-        EXPECT_FALSE(used.has_value());
-    }
 }
 
 TEST_F(Regtest_payment_code, first_outgoing_transaction)
@@ -519,11 +465,55 @@ TEST_F(Regtest_payment_code, bob_after_receive)
     EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
     EXPECT_EQ(row->UUID(), transactions_.at(1)->asHex());
     EXPECT_TRUE(row->Last());
+
+    const auto& tree = client_2_.Blockchain().Account(bob_.ID(), test_chain_);
+    const auto& pc = tree.GetPaymentCode();
+
+    ASSERT_EQ(pc.size(), 1);
+
+    const auto& account = pc.at(0);
+    const auto lookahead = account.Lookahead() - 1u;
+
+    EXPECT_EQ(
+        account.Type(),
+        ot::api::client::blockchain::BalanceNodeType::PaymentCode);
+    EXPECT_FALSE(account.IsNotified());
+
+    {
+        constexpr auto subchain{Subchain::Incoming};
+
+        const auto gen = account.LastGenerated(subchain);
+
+        ASSERT_TRUE(gen.has_value());
+        EXPECT_EQ(gen.value(), lookahead);
+    }
+    {
+        constexpr auto subchain{Subchain::Outgoing};
+
+        const auto gen = account.LastGenerated(subchain);
+
+        ASSERT_TRUE(gen.has_value());
+        EXPECT_EQ(gen.value(), lookahead);
+    }
+    {
+        constexpr auto subchain{Subchain::External};
+
+        const auto gen = account.LastGenerated(subchain);
+
+        EXPECT_FALSE(gen.has_value());
+    }
+    {
+        constexpr auto subchain{Subchain::Internal};
+
+        const auto gen = account.LastGenerated(subchain);
+
+        EXPECT_FALSE(gen.has_value());
+    }
 }
 
 TEST_F(Regtest_payment_code, alice_after_confirm)
 {
-    wait_for_counter(account_activity_alice_);
+    wait_for_counter(account_activity_alice_, false);
     const auto& widget =
         client_1_.UI().AccountActivity(alice_.ID(), expected_account_);
 
@@ -576,6 +566,50 @@ TEST_F(Regtest_payment_code, alice_after_confirm)
     EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
     EXPECT_EQ(row->UUID(), transactions_.at(0)->asHex());
     EXPECT_TRUE(row->Last());
+
+    const auto& tree = client_1_.Blockchain().Account(alice_.ID(), test_chain_);
+    const auto& pc = tree.GetPaymentCode();
+
+    ASSERT_EQ(pc.size(), 1);
+
+    const auto& account = pc.at(0);
+    const auto lookahead = account.Lookahead() - 1;
+
+    EXPECT_EQ(
+        account.Type(),
+        ot::api::client::blockchain::BalanceNodeType::PaymentCode);
+    EXPECT_TRUE(account.IsNotified());
+
+    {
+        constexpr auto subchain{Subchain::Incoming};
+
+        const auto gen = account.LastGenerated(subchain);
+
+        ASSERT_TRUE(gen.has_value());
+        EXPECT_EQ(gen.value(), lookahead);
+    }
+    {
+        constexpr auto subchain{Subchain::Outgoing};
+
+        const auto gen = account.LastGenerated(subchain);
+
+        ASSERT_TRUE(gen.has_value());
+        EXPECT_EQ(gen.value(), lookahead);
+    }
+    {
+        constexpr auto subchain{Subchain::External};
+
+        const auto gen = account.LastGenerated(subchain);
+
+        EXPECT_FALSE(gen.has_value());
+    }
+    {
+        constexpr auto subchain{Subchain::Internal};
+
+        const auto gen = account.LastGenerated(subchain);
+
+        EXPECT_FALSE(gen.has_value());
+    }
 }
 
 TEST_F(Regtest_payment_code, second_send_to_bob)
@@ -624,7 +658,6 @@ TEST_F(Regtest_payment_code, alice_after_second_send)
 
     ASSERT_TRUE(row->Valid());
     EXPECT_EQ(row->Amount(), -1500000236);
-    EXPECT_EQ(row->Contacts().size(), 0);
     EXPECT_EQ(row->DisplayAmount(), u8"-15.000 002 36 units");
     EXPECT_EQ(row->Memo(), "");
     EXPECT_EQ(row->Workflow(), "");
@@ -667,7 +700,7 @@ TEST_F(Regtest_payment_code, alice_after_second_send)
     ASSERT_EQ(pc.size(), 1);
 
     const auto& account = pc.at(0);
-    constexpr auto lookahead = ot::Bip32Index{4};
+    const auto lookahead = account.Lookahead() - 1u;
 
     EXPECT_EQ(
         account.Type(),
@@ -678,40 +711,31 @@ TEST_F(Regtest_payment_code, alice_after_second_send)
         constexpr auto subchain{Subchain::Incoming};
 
         const auto gen = account.LastGenerated(subchain);
-        const auto used = account.LastUsed(subchain);
 
         ASSERT_TRUE(gen.has_value());
-        EXPECT_FALSE(used.has_value());
         EXPECT_EQ(gen.value(), lookahead);
     }
     {
         constexpr auto subchain{Subchain::Outgoing};
 
         const auto gen = account.LastGenerated(subchain);
-        const auto used = account.LastUsed(subchain);
 
         ASSERT_TRUE(gen.has_value());
-        ASSERT_TRUE(used.has_value());
-        EXPECT_EQ(gen.value(), lookahead + 2u);
-        EXPECT_EQ(used.value(), 1u);
+        EXPECT_EQ(gen.value(), lookahead);
     }
     {
         constexpr auto subchain{Subchain::External};
 
         const auto gen = account.LastGenerated(subchain);
-        const auto used = account.LastUsed(subchain);
 
         EXPECT_FALSE(gen.has_value());
-        EXPECT_FALSE(used.has_value());
     }
     {
         constexpr auto subchain{Subchain::Internal};
 
         const auto gen = account.LastGenerated(subchain);
-        const auto used = account.LastUsed(subchain);
 
         EXPECT_FALSE(gen.has_value());
-        EXPECT_FALSE(used.has_value());
     }
 }
 

@@ -680,7 +680,7 @@ auto Network::SendToPaymentCode(
             nymID, sender, recipient, path, chain_, reason);
         using Subchain = api::client::blockchain::Subchain;
         constexpr auto subchain{Subchain::Outgoing};
-        const auto index = account.UseNext(subchain, reason);
+        const auto index = account.Reserve(subchain, reason);
 
         if (false == index.has_value()) {
             throw std::runtime_error{"Failed to allocate next key"};
@@ -714,7 +714,12 @@ auto Network::SendToPaymentCode(
             txout.set_amount(amount);
             txout.set_index(index.value());
             txout.set_paymentcodechannel(account.ID().str());
-            txout.set_pubkey(std::string{key.PublicKey()});
+            const auto pubkey = api_.Factory().Data(key.PublicKey());
+            LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(
+                " using derived public key ")(pubkey->asHex())(" at index ")(
+                index.value())(" for outgoing transaction")
+                .Flush();
+            txout.set_pubkey(pubkey->str());
 
             if (account.IsNotified()) {
                 // TODO preemptive notifications go here

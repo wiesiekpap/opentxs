@@ -28,6 +28,7 @@
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
@@ -292,9 +293,9 @@ auto SubchainStateData::index_element(
     const Bip32Index index,
     WalletDatabase::ElementMap& output) noexcept -> void
 {
-    const auto pubkeyHash = input.PubkeyHash();
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(id_)(
-        " indexing public key with hash ")(pubkeyHash->asHex())
+    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(id_)(" indexing public key ")(
+        api_.Factory().Data(input.Key()->PublicKey())->asHex())(" at index ")(
+        index)
         .Flush();
     auto& list = output[index];
     auto scripts = std::vector<std::unique_ptr<const block::bitcoin::Script>>{};
@@ -483,23 +484,13 @@ auto SubchainStateData::scan() noexcept -> void
     const auto first =
         last_scanned_.has_value()
             ? block::Position{startHeight, headers.BestHash(startHeight)}
-            : block::Position{1, headers.BestHash(1)};
+            : block::Position{0, headers.BestHash(0)};
     const auto stopHeight = std::min(
         std::min(startHeight + 9999, best.first),
         filters.FilterTip(filter_type_).first);
-
-    if (first.second->empty()) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(id_)(
-            " resetting due to reorg")
-            .Flush();
-
-        return;
-    } else {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(id_)(
-            " scanning filters from ")(startHeight)(" to ")(stopHeight)
-            .Flush();
-    }
-
+    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(id_)(" scanning filters from ")(
+        startHeight)(" to ")(stopHeight)
+        .Flush();
     const auto elements = db_.GetPatterns(id_, subchain_, filter_type_);
     const auto utxos = db_.GetUnspentOutputs();
     auto highestTested =

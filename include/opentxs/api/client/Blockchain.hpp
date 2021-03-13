@@ -19,9 +19,7 @@
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/client/blockchain/BalanceNode.hpp"
-#if OT_BLOCKCHAIN
 #include "opentxs/blockchain/Blockchain.hpp"
-#endif                                   // OT_BLOCKCHAIN
 #include "opentxs/blockchain/Types.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -74,12 +72,10 @@ public:
     using Style = blockchain::AddressStyle;
     using DecodedAddress = std::tuple<OTData, Style, std::set<Chain>, bool>;
     using ContactList = std::set<OTIdentifier>;
-#if OT_BLOCKCHAIN
     using Tx = opentxs::blockchain::block::bitcoin::Transaction;
     using Txid = opentxs::blockchain::block::Txid;
     using TxidHex = std::string;
     using PatternID = opentxs::blockchain::PatternID;
-#endif  // OT_BLOCKCHAIN
 
     enum class AccountType : std::uint8_t {
         HD = 0,
@@ -99,12 +95,10 @@ public:
         const identifier::Nym& nym,
         const Identifier& thread,
         const std::string& threadItemID) const noexcept = 0;
-#if OT_BLOCKCHAIN
     OPENTXS_EXPORT virtual std::string ActivityDescription(
         const identifier::Nym& nym,
         const Chain chain,
         const Tx& transaction) const noexcept = 0;
-#endif  // OT_BLOCKCHAIN
     OPENTXS_EXPORT virtual bool AssignContact(
         const identifier::Nym& nymID,
         const Identifier& accountID,
@@ -117,33 +111,30 @@ public:
         const blockchain::Subchain subchain,
         const Bip32Index index,
         const std::string& label) const noexcept = 0;
-#if OT_BLOCKCHAIN
     OPENTXS_EXPORT virtual bool AssignTransactionMemo(
         const TxidHex& id,
         const std::string& label) const noexcept = 0;
-#endif  // OT_BLOCKCHAIN
     OPENTXS_EXPORT virtual std::string CalculateAddress(
         const opentxs::blockchain::Type chain,
         const blockchain::AddressStyle format,
         const Data& pubkey) const noexcept = 0;
+    OPENTXS_EXPORT virtual bool Confirm(
+        const blockchain::Key key,
+        const opentxs::blockchain::block::Txid& tx) const noexcept = 0;
     OPENTXS_EXPORT virtual DecodedAddress DecodeAddress(
         const std::string& encoded) const noexcept = 0;
-#if OT_BLOCKCHAIN
     OPENTXS_EXPORT virtual bool Disable(const Chain type) const noexcept = 0;
     OPENTXS_EXPORT virtual bool Enable(
         const Chain type,
         const std::string& seednode = "") const noexcept = 0;
     OPENTXS_EXPORT virtual std::set<Chain> EnabledChains() const noexcept = 0;
-#endif  // OT_BLOCKCHAIN
     OPENTXS_EXPORT virtual std::string EncodeAddress(
         const Style style,
         const Chain chain,
         const Data& data) const noexcept = 0;
-#if OT_BLOCKCHAIN
     /// throws std::out_of_range if chain has not been started
     OPENTXS_EXPORT virtual const opentxs::blockchain::Network& GetChain(
         const Chain type) const noexcept(false) = 0;
-#endif  // OT_BLOCKCHAIN
     /// Throws std::out_of_range if the specified key does not exist
     OPENTXS_EXPORT virtual const blockchain::BalanceNode::Element& GetKey(
         const blockchain::Key& id) const noexcept(false) = 0;
@@ -151,7 +142,6 @@ public:
     OPENTXS_EXPORT virtual const blockchain::HD& HDSubaccount(
         const identifier::Nym& nymID,
         const Identifier& accountID) const noexcept(false) = 0;
-#if OT_BLOCKCHAIN
     OPENTXS_EXPORT virtual PatternID IndexItem(
         const ReadView bytes) const noexcept = 0;
     OPENTXS_EXPORT virtual std::unique_ptr<const Tx> LoadTransactionBitcoin(
@@ -162,7 +152,6 @@ public:
         const std::string& address) const noexcept = 0;
     OPENTXS_EXPORT virtual ContactList LookupContacts(
         const Data& pubkeyHash) const noexcept = 0;
-#endif  // OT_BLOCKCHAIN
     OPENTXS_EXPORT virtual OTIdentifier NewHDSubaccount(
         const identifier::Nym& nymID,
         const BlockchainAccountType standard,
@@ -190,17 +179,16 @@ public:
         const proto::HDPath path,
         const Chain chain,
         const PasswordPrompt& reason) const noexcept(false) = 0;
-#if OT_BLOCKCHAIN
     OPENTXS_EXPORT virtual bool ProcessTransaction(
         const Chain chain,
         const Tx& transaction,
         const PasswordPrompt& reason) const noexcept = 0;
-#endif  // OT_BLOCKCHAIN
     OPENTXS_EXPORT virtual OTIdentifier RecipientContact(
         const blockchain::Key& key) const noexcept = 0;
+    OPENTXS_EXPORT virtual bool Release(
+        const blockchain::Key key) const noexcept = 0;
     OPENTXS_EXPORT virtual OTIdentifier SenderContact(
         const blockchain::Key& key) const noexcept = 0;
-#if OT_BLOCKCHAIN
     OPENTXS_EXPORT virtual bool Start(
         const Chain type,
         const std::string& seednode = "") const noexcept = 0;
@@ -210,7 +198,10 @@ public:
         const std::string& updateEndpoint,
         const std::string& publicUpdateEndpoint) const noexcept = 0;
     OPENTXS_EXPORT virtual bool Stop(const Chain type) const noexcept = 0;
-#endif  // OT_BLOCKCHAIN
+    OPENTXS_EXPORT virtual bool Unconfirm(
+        const blockchain::Key key,
+        const opentxs::blockchain::block::Txid& tx,
+        const Time time = Clock::now()) const noexcept = 0;
 
     OPENTXS_EXPORT virtual ~Blockchain() = default;
 

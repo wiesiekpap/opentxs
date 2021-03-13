@@ -69,10 +69,15 @@ public:
     }
     void ClaimAccountID(const std::string& id, internal::BalanceNode* node)
         const noexcept final;
-    auto GetDepositAddress(const std::string& memo) const noexcept
-        -> std::string final;
-    auto GetDepositAddress(const Identifier& contact, const std::string& memo)
-        const noexcept -> std::string final;
+    auto GetDepositAddress(
+        const AddressStyle style,
+        const PasswordPrompt& reason,
+        const std::string& memo) const noexcept -> std::string final;
+    auto GetDepositAddress(
+        const AddressStyle style,
+        const Identifier& contact,
+        const PasswordPrompt& reason,
+        const std::string& memo) const noexcept -> std::string final;
     auto GetHD() const noexcept -> const HDAccounts& final { return hd_; }
     auto GetImported() const noexcept -> const ImportedAccounts& final
     {
@@ -134,6 +139,16 @@ public:
         Identifier& out) noexcept -> bool final
     {
         return payment_code_.Construct(out, local, remote, path, txid, reason);
+    }
+    auto HDChain(const Identifier& account) noexcept(false)
+        -> blockchain::internal::HD& final
+    {
+        return hd_.at(account);
+    }
+    auto PaymentCode(const Identifier& account) noexcept(false)
+        -> blockchain::internal::PaymentCode& final
+    {
+        return payment_code_.at(account);
     }
 
     BalanceTree(
@@ -294,9 +309,11 @@ private:
     void init_hd(const Accounts& HDAccounts) noexcept;
     void init_payment_code(const Accounts& HDAccounts) noexcept;
 
-    auto find_best_deposit_address() const noexcept -> const Element&;
-    auto find_next_element(Subchain subchain, const PasswordPrompt& reason)
-        const noexcept(false) -> const Element&;
+    auto find_next_element(
+        Subchain subchain,
+        const Identifier& contact,
+        const std::string& label,
+        const PasswordPrompt& reason) const noexcept(false) -> const Element&;
 
     BalanceTree() = delete;
     BalanceTree(const BalanceTree&) = delete;

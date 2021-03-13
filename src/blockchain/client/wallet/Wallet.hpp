@@ -20,6 +20,7 @@
 #include <mutex>
 #include <optional>
 #include <queue>
+#include <set>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -37,6 +38,7 @@
 #include "internal/blockchain/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
@@ -187,6 +189,9 @@ private:
                 proto::BlockchainTransactionOutput>;
             using Transaction =
                 std::unique_ptr<block::bitcoin::internal::Transaction>;
+            using KeyID = api::client::blockchain::Key;
+
+            std::set<KeyID> keys_to_reclaim_;
 
             auto IsFunded() const noexcept -> bool;
 

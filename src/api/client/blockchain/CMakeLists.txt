@@ -23,6 +23,7 @@ add_library(
   "Blockchain.cpp"
   "Deterministic.cpp"
   "Deterministic.hpp"
+  "Element.cpp"
   "HD.cpp"
   "HD.hpp"
   "PaymentCode.cpp"
@@ -42,7 +43,9 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/blockchain/Subchain.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/blockchain/Types.hpp"
 )
-target_link_libraries(opentxs-api-client-blockchain PRIVATE opentxs::messages)
+target_link_libraries(
+  opentxs-api-client-blockchain PRIVATE opentxs::messages Boost::headers
+)
 target_include_directories(
   opentxs-api-client-blockchain SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
@@ -58,7 +61,7 @@ if(OT_BLOCKCHAIN_EXPORT)
       "SyncServer.hpp"
   )
   target_link_libraries(
-    opentxs-api-client-blockchain PRIVATE "${OT_ZMQ_TARGET}" Boost::headers
+    opentxs-api-client-blockchain PRIVATE "${OT_ZMQ_TARGET}"
   )
   target_link_libraries(opentxs PUBLIC "${OT_ZMQ_TARGET}")
 endif()

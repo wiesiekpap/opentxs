@@ -14,12 +14,14 @@
 #include <set>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
 #include "internal/blockchain/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/blockchain/BalanceNode.hpp"
 #include "opentxs/api/client/blockchain/Deterministic.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"  // IWYU pragma: keep
@@ -144,11 +146,10 @@ auto DeterministicStateData::handle_confirmed_matches(
 
                     if (key.PublicKey() == script.Pubkey().value()) {
                         outputs.emplace_back(i);
+                        blockchain_.Confirm(element.KeyID(), txid);
 
                         if (nullptr == pTX) { pTX = pTransaction.get(); }
                     }
-
-                    // TODO mark key as used
                 } break;
                 case block::bitcoin::Script::Pattern::PayToPubkeyHash: {
                     const auto hash = element.PubkeyHash();
@@ -157,11 +158,10 @@ auto DeterministicStateData::handle_confirmed_matches(
 
                     if (hash->Bytes() == script.PubkeyHash().value()) {
                         outputs.emplace_back(i);
+                        blockchain_.Confirm(element.KeyID(), txid);
 
                         if (nullptr == pTX) { pTX = pTransaction.get(); }
                     }
-
-                    // TODO mark key as used
                 } break;
                 case block::bitcoin::Script::Pattern::PayToMultisig: {
                     const auto m = script.M();
@@ -184,11 +184,10 @@ auto DeterministicStateData::handle_confirmed_matches(
 
                     if (key.PublicKey() == script.MultisigPubkey(0).value()) {
                         outputs.emplace_back(i);
+                        blockchain_.Confirm(element.KeyID(), txid);
 
                         if (nullptr == pTX) { pTX = pTransaction.get(); }
                     }
-
-                    // TODO mark key as used
                 } break;
                 case block::bitcoin::Script::Pattern::PayToScriptHash:
                 default: {

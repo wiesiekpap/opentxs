@@ -221,7 +221,7 @@ PaymentCode::PaymentCode(
     init();
 }
 
-auto PaymentCode::account_already_exists(const Lock&) const noexcept -> bool
+auto PaymentCode::account_already_exists(const rLock&) const noexcept -> bool
 {
     const auto existing =
         api_.Storage().Bip47ChannelsByChain(parent_.NymID(), Translate(chain_));
@@ -231,7 +231,7 @@ auto PaymentCode::account_already_exists(const Lock&) const noexcept -> bool
 
 auto PaymentCode::AddNotification(const Txid& tx) const noexcept -> bool
 {
-    auto lock = Lock{lock_};
+    auto lock = rLock{lock_};
 
     if (0 < outgoing_notifications_.count(tx)) { return true; }
 
@@ -274,7 +274,7 @@ auto PaymentCode::has_private(const PasswordPrompt& reason) const noexcept
 
 auto PaymentCode::IsNotified() const noexcept -> bool
 {
-    auto lock = Lock{lock_};
+    auto lock = rLock{lock_};
 
     return 0 < outgoing_notifications_.size();
 }
@@ -307,7 +307,7 @@ auto PaymentCode::PrivateKey(
 
 auto PaymentCode::ReorgNotification(const Txid& tx) const noexcept -> bool
 {
-    auto lock = Lock{lock_};
+    auto lock = rLock{lock_};
 
     if (0 == outgoing_notifications_.count(tx)) { return true; }
 
@@ -319,7 +319,17 @@ auto PaymentCode::ReorgNotification(const Txid& tx) const noexcept -> bool
     return out;
 }
 
-auto PaymentCode::save(const Lock& lock) const noexcept -> bool
+auto PaymentCode::Reserve(
+    const Subchain type,
+    const PasswordPrompt& reason,
+    const Identifier&,
+    const std::string& label,
+    const Time time) const noexcept -> std::optional<Bip32Index>
+{
+    return Deterministic::Reserve(type, reason, get_contact(), label, time);
+}
+
+auto PaymentCode::save(const rLock& lock) const noexcept -> bool
 {
     auto serialized = SerializedType{};
     serialized.set_version(version_);

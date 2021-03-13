@@ -34,6 +34,7 @@ if(OT_BLOCKCHAIN_EXPORT)
       "BlockchainBalanceItem.cpp"
       "BlockchainBalanceItem.hpp"
   )
+  target_link_libraries(opentxs-ui-accountactivity PRIVATE Boost::headers)
 endif()
 
 if(OT_WITH_QT)

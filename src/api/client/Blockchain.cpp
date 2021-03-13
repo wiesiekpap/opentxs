@@ -61,6 +61,7 @@
 #include "opentxs/blockchain/FilterType.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/client/FilterOracle.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
@@ -399,12 +400,12 @@ auto Blockchain::ActivityDescription(
     return {};
 }
 
-#if OT_BLOCKCHAIN
 auto Blockchain::ActivityDescription(
     const identifier::Nym& nym,
     const Chain chain,
     const Tx& transaction) const noexcept -> std::string
 {
+#if OT_BLOCKCHAIN
     auto output = std::stringstream{};
     const auto amount = transaction.NetBalanceChange(*this, nym);
     const auto memo = transaction.Memo(*this);
@@ -421,8 +422,11 @@ auto Blockchain::ActivityDescription(
     if (false == memo.empty()) { output << ": " << memo; }
 
     return output.str();
-}
+#else
+
+    return {};
 #endif  // OT_BLOCKCHAIN
+}
 
 auto Blockchain::address_prefix(const Style style, const Chain chain) const
     noexcept(false) -> OTData
@@ -511,11 +515,11 @@ auto Blockchain::AssignLabel(
     }
 }
 
-#if OT_BLOCKCHAIN
 auto Blockchain::AssignTransactionMemo(
     const TxidHex& id,
     const std::string& label) const noexcept -> bool
 {
+#if OT_BLOCKCHAIN
     auto lock = Lock{lock_};
     auto pTransaction = load_transaction(lock, id);
 
@@ -532,8 +536,11 @@ auto Blockchain::AssignTransactionMemo(
     broadcast_update_signal(transaction);
 
     return true;
-}
+#else
+
+    return false;
 #endif  // OT_BLOCKCHAIN
+}
 
 auto Blockchain::BalanceTree(const identifier::Nym& nymID, const Chain chain)
     const noexcept(false) -> const blockchain::internal::BalanceTree&
@@ -686,6 +693,21 @@ auto Blockchain::check_hello(const Lock&) const noexcept -> Chains
     return output;
 }
 #endif  // OT_BLOCKCHAIN
+
+auto Blockchain::Confirm(
+    const blockchain::Key key,
+    const opentxs::blockchain::block::Txid& tx) const noexcept -> bool
+{
+    try {
+        const auto [id, subchain, index] = key;
+        const auto accountID = api_.Factory().Identifier(id);
+
+        return get_node(accountID).Confirm(subchain, index, tx);
+    } catch (...) {
+
+        return false;
+    }
+}
 
 auto Blockchain::DecodeAddress(const std::string& encoded) const noexcept
     -> DecodedAddress
@@ -852,14 +874,19 @@ auto Blockchain::decode_legacy(const std::string& encoded) const noexcept
     }
 }
 
-#if OT_BLOCKCHAIN
 auto Blockchain::Disable(const Chain type) const noexcept -> bool
 {
+#if OT_BLOCKCHAIN
     auto lock = Lock{lock_};
 
     return disable(lock, type);
+#else
+
+    return false;
+#endif  // OT_BLOCKCHAIN
 }
 
+#if OT_BLOCKCHAIN
 auto Blockchain::disable(const Lock& lock, const Chain type) const noexcept
     -> bool
 {
@@ -877,15 +904,22 @@ auto Blockchain::disable(const Lock& lock, const Chain type) const noexcept
 
     return false;
 }
+#endif  // OT_BLOCKCHAIN
 
 auto Blockchain::Enable(const Chain type, const std::string& seednode)
     const noexcept -> bool
 {
+#if OT_BLOCKCHAIN
     auto lock = Lock{lock_};
 
     return enable(lock, type, seednode);
+#else
+
+    return false;
+#endif  // OT_BLOCKCHAIN
 }
 
+#if OT_BLOCKCHAIN
 auto Blockchain::enable(
     const Lock& lock,
     const Chain type,
@@ -905,10 +939,12 @@ auto Blockchain::enable(
 
     return start(lock, type, seednode);
 }
+#endif  // OT_BLOCKCHAIN
 
 auto Blockchain::EnabledChains() const noexcept -> std::set<Chain>
 {
     auto out = std::set<Chain>{};
+#if OT_BLOCKCHAIN
     const auto data = [&] {
         auto lock = Lock{lock_};
 
@@ -919,10 +955,10 @@ auto Blockchain::EnabledChains() const noexcept -> std::set<Chain>
         data.end(),
         std::inserter(out, out.begin()),
         [](const auto value) { return value.first; });
+#endif  // OT_BLOCKCHAIN
 
     return out;
 }
-#endif  // OT_BLOCKCHAIN
 
 auto Blockchain::EncodeAddress(
     const Style style,
@@ -948,15 +984,18 @@ auto Blockchain::EncodeAddress(
     }
 }
 
-#if OT_BLOCKCHAIN
 auto Blockchain::GetChain(const Chain type) const noexcept(false)
     -> const opentxs::blockchain::Network&
 {
+#if OT_BLOCKCHAIN
     auto lock = Lock{lock_};
 
     return *networks_.at(type);
-}
+#else
+
+    throw std::out_of_range{"No blockchain support"};
 #endif  // OT_BLOCKCHAIN
+}
 
 auto Blockchain::GetKey(const blockchain::Key& id) const noexcept(false)
     -> const blockchain::BalanceNode::Element&
@@ -975,6 +1014,47 @@ auto Blockchain::GetKey(const blockchain::Key& id) const noexcept(false)
                 PaymentCodeSubaccount(accounts_.Owner(account), account);
 
             return pc.BalanceElement(subchain, index);
+        }
+        case AccountType::Imported:
+        case AccountType::Error:
+        default: {
+        }
+    }
+
+    throw std::out_of_range("key not found");
+}
+
+auto Blockchain::get_node(const Identifier& accountID) const noexcept(false)
+    -> blockchain::internal::BalanceNode&
+{
+    const auto& nymID = accounts_.Owner(accountID);
+
+    switch (accounts_.Type(accountID)) {
+        case AccountType::HD: {
+            const auto type = api_.Storage().BlockchainAccountType(
+                nymID.str(), accountID.str());
+
+            if (proto::CITEMTYPE_ERROR == type) {
+                throw std::out_of_range("Account does not exist");
+            }
+
+            auto& balanceList = balance_lists_.Get(Translate(type));
+            auto& nym = const_cast<blockchain::internal::BalanceTree&>(
+                balanceList.Nym(nymID));
+
+            return nym.HDChain(accountID);
+        }
+        case AccountType::PaymentCode: {
+            const auto type = api_.Storage().Bip47Chain(nymID, accountID);
+
+            if (proto::CITEMTYPE_ERROR == type) {
+                throw std::out_of_range("Account does not exist");
+            }
+
+            auto& balanceList = balance_lists_.Get(Translate(type));
+            auto& nym = balanceList.Nym(nymID);
+
+            return nym.PaymentCode(accountID);
         }
         case AccountType::Imported:
         case AccountType::Error:
@@ -1063,10 +1143,12 @@ auto Blockchain::hello(const Lock&, const Chains& chains) const noexcept
 
     return output;
 }
+#endif  // OT_BLOCKCHAIN
 
 auto Blockchain::IndexItem(const ReadView bytes) const noexcept -> PatternID
 {
     auto output = PatternID{};
+#if OT_BLOCKCHAIN
     const auto hashed = api_.Crypto().Hash().HMAC(
         proto::HASHTYPE_SIPHASH24,
         db_.HashKey(),
@@ -1074,10 +1156,10 @@ auto Blockchain::IndexItem(const ReadView bytes) const noexcept -> PatternID
         preallocated(sizeof(output), &output));
 
     OT_ASSERT(hashed);
+#endif  // OT_BLOCKCHAIN
 
     return output;
 }
-#endif  // OT_BLOCKCHAIN
 
 auto Blockchain::Init() noexcept -> void { accounts_.Populate(); }
 
@@ -1150,21 +1232,32 @@ auto Blockchain::load_transaction(const Lock& lock, const Txid& txid)
 
     return factory::BitcoinTransaction(api_, *this, serialized.value());
 }
+#endif  // OT_BLOCKCHAIN
 
 auto Blockchain::LoadTransactionBitcoin(const TxidHex& txid) const noexcept
     -> std::unique_ptr<const Tx>
 {
+#if OT_BLOCKCHAIN
     auto lock = Lock{lock_};
 
     return load_transaction(lock, txid);
+#else
+
+    return {};
+#endif  // OT_BLOCKCHAIN
 }
 
 auto Blockchain::LoadTransactionBitcoin(const Txid& txid) const noexcept
     -> std::unique_ptr<const Tx>
 {
+#if OT_BLOCKCHAIN
     auto lock = Lock{lock_};
 
     return load_transaction(lock, txid);
+#else
+
+    return {};
+#endif  // OT_BLOCKCHAIN
 }
 
 auto Blockchain::LookupContacts(const std::string& address) const noexcept
@@ -1178,9 +1271,12 @@ auto Blockchain::LookupContacts(const std::string& address) const noexcept
 auto Blockchain::LookupContacts(const Data& pubkeyHash) const noexcept
     -> ContactList
 {
+#if OT_BLOCKCHAIN
     return db_.LookupContact(pubkeyHash);
-}
+#else
+    return {};
 #endif  // OT_BLOCKCHAIN
+}
 
 auto Blockchain::NewHDSubaccount(
     const identifier::Nym& nymID,
@@ -1531,12 +1627,14 @@ auto Blockchain::ProcessSyncData(OTZMQMessage&& in) const noexcept -> void
         return;
     }
 }
+#endif  // OT_BLOCKCHAIN
 
 auto Blockchain::ProcessTransaction(
     const Chain chain,
     const Tx& in,
     const PasswordPrompt& reason) const noexcept -> bool
 {
+#if OT_BLOCKCHAIN
     auto lock = Lock{lock_};
     auto pTransaction = in.clone();
 
@@ -1566,9 +1664,11 @@ auto Blockchain::ProcessTransaction(
     }
 
     return reconcile_activity_threads(lock, transaction);
-}
+#else
 
+    return false;
 #endif  // OT_BLOCKCHAIN
+}
 
 auto Blockchain::PubkeyHash(
     [[maybe_unused]] const Chain chain,
@@ -1681,7 +1781,22 @@ auto Blockchain::reconcile_activity_threads(
 
     return true;
 }
+#endif  // OT_BLOCKCHAIN
 
+auto Blockchain::Release(const blockchain::Key key) const noexcept -> bool
+{
+    try {
+        const auto [id, subchain, index] = key;
+        const auto accountID = api_.Factory().Identifier(id);
+
+        return get_node(accountID).Unreserve(subchain, index);
+    } catch (...) {
+
+        return false;
+    }
+}
+
+#if OT_BLOCKCHAIN
 auto Blockchain::ReportProgress(
     const Chain chain,
     const opentxs::blockchain::block::Height current,
@@ -1767,15 +1882,20 @@ auto Blockchain::Shutdown() noexcept -> void
 #endif  // OT_BLOCKCHAIN
 }
 
-#if OT_BLOCKCHAIN
 auto Blockchain::Start(const Chain type, const std::string& seednode)
     const noexcept -> bool
 {
+#if OT_BLOCKCHAIN
     auto lock = Lock{lock_};
 
     return start(lock, type, seednode);
+#else
+
+    return false;
+#endif  // OT_BLOCKCHAIN
 }
 
+#if OT_BLOCKCHAIN
 auto Blockchain::start(
     const Lock& lock,
     const Chain type,
@@ -1848,6 +1968,7 @@ auto Blockchain::start(
 
     return false;
 }
+#endif  // OT_BLOCKCHAIN
 
 auto Blockchain::StartSyncServer(
     const std::string& sync,
@@ -1855,6 +1976,7 @@ auto Blockchain::StartSyncServer(
     const std::string& update,
     const std::string& publicUpdate) const noexcept -> bool
 {
+#if OT_BLOCKCHAIN
     auto lock = Lock{lock_};
 
     if (sync_server_) {
@@ -1865,17 +1987,24 @@ auto Blockchain::StartSyncServer(
               "initialization time by passing the ")(
         OPENTXS_ARG_BLOCKCHAIN_SYNC)(" option.")
         .Flush();
+#endif  // OT_BLOCKCHAIN
 
     return false;
 }
 
 auto Blockchain::Stop(const Chain type) const noexcept -> bool
 {
+#if OT_BLOCKCHAIN
     auto lock = Lock{lock_};
 
     return stop(lock, type);
+#else
+
+    return false;
+#endif  // OT_BLOCKCHAIN
 }
 
+#if OT_BLOCKCHAIN
 auto Blockchain::stop(const Lock& lock, const Chain type) const noexcept -> bool
 {
     auto it = networks_.find(type);
@@ -1896,6 +2025,22 @@ auto Blockchain::stop(const Lock& lock, const Chain type) const noexcept -> bool
     return true;
 }
 #endif  // OT_BLOCKCHAIN
+
+auto Blockchain::Unconfirm(
+    const blockchain::Key key,
+    const opentxs::blockchain::block::Txid& tx,
+    const Time time) const noexcept -> bool
+{
+    try {
+        const auto [id, subchain, index] = key;
+        const auto accountID = api_.Factory().Identifier(id);
+
+        return get_node(accountID).Unconfirm(subchain, index, tx, time);
+    } catch (...) {
+
+        return false;
+    }
+}
 
 auto Blockchain::UpdateElement(
     [[maybe_unused]] std::vector<ReadView>& pubkeyHashes) const noexcept -> void

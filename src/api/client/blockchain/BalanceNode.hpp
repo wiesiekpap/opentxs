@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <boost/container/flat_set.hpp>
 #include <atomic>
 #include <cstdint>
 #include <map>
@@ -21,6 +22,7 @@
 #include "opentxs/api/client/blockchain/BalanceNode.hpp"
 #include "opentxs/api/client/blockchain/BalanceTree.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
+#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
@@ -95,6 +97,11 @@ public:
     {
         return {};
     }
+
+    auto Confirm(
+        const Subchain type,
+        const Bip32Index index,
+        const Txid& tx) noexcept -> bool final;
     auto SetContact(
         const Subchain type,
         const Bip32Index index,
@@ -104,6 +111,13 @@ public:
         const Bip32Index index,
         const std::string& label) noexcept(false) -> bool final;
     auto Type() const noexcept -> BalanceNodeType final { return type_; }
+    auto Unconfirm(
+        const Subchain type,
+        const Bip32Index index,
+        const Txid& tx,
+        const Time time) noexcept -> bool final;
+    auto Unreserve(const Subchain type, const Bip32Index index) noexcept
+        -> bool final;
     auto UpdateElement(std::vector<ReadView>& pubkeyHashes) const noexcept
         -> void final;
 
@@ -111,16 +125,29 @@ public:
 
 protected:
     struct Element final : virtual public internal::BalanceElement {
+        enum class Availability {
+            NeverUsed,
+            Reissue,
+            StaleUnconfirmed,
+            MetadataConflict,
+            Reserved,
+            Used,
+        };
+
         auto Address(const AddressStyle format) const noexcept
             -> std::string final;
+        auto Confirmed() const noexcept -> Txids final;
         auto Contact() const noexcept -> OTIdentifier final;
         auto Elements() const noexcept -> std::set<OTData> final;
+        auto elements(const rLock& lock) const noexcept -> std::set<OTData>;
         auto ID() const noexcept -> const Identifier& final
         {
             return parent_.ID();
         }
         auto IncomingTransactions() const noexcept
             -> std::set<std::string> final;
+        auto IsAvailable(const Identifier& contact, const std::string& memo)
+            const noexcept -> Availability;
         auto Index() const noexcept -> Bip32Index final { return index_; }
         auto Key() const noexcept -> ECKey final;
         auto KeyID() const noexcept -> blockchain::Key final
@@ -128,6 +155,7 @@ protected:
             return {ID().str(), subchain_, index_};
         }
         auto Label() const noexcept -> std::string final;
+        auto LastActivity() const noexcept -> Time final;
         auto NymID() const noexcept -> const identifier::Nym& final
         {
             return parent_.Parent().NymID();
@@ -147,14 +175,17 @@ protected:
         {
             return subchain_;
         }
+        auto Unconfirmed() const noexcept -> Txids final;
 
-        auto elements(const Lock& lock) const noexcept -> std::set<OTData>;
-
-        void SetContact(const Identifier& id) noexcept final;
-        void SetLabel(const std::string& label) noexcept final;
-        void SetMetadata(
+        auto Confirm(const Txid& tx) noexcept -> bool final;
+        auto Reserve(const Time time) noexcept -> bool final;
+        auto SetContact(const Identifier& id) noexcept -> void final;
+        auto SetLabel(const std::string& label) noexcept -> void final;
+        auto SetMetadata(
             const Identifier& contact,
-            const std::string& label) noexcept final;
+            const std::string& label) noexcept -> void final;
+        auto Unconfirm(const Txid& tx, const Time time) noexcept -> bool final;
+        auto Unreserve() noexcept -> bool final;
 
         Element(
             const api::internal::Core& api,
@@ -174,13 +205,16 @@ protected:
         ~Element() final = default;
 
     private:
+        using pTxid = opentxs::blockchain::block::pTxid;
+        using Transactions = boost::container::flat_set<pTxid>;
+
         static const VersionNumber DefaultVersion{1};
 
         const api::internal::Core& api_;
         const client::internal::Blockchain& blockchain_;
         const internal::BalanceNode& parent_;
         const opentxs::blockchain::Type chain_;
-        mutable std::mutex lock_;
+        mutable std::recursive_mutex lock_;
         const VersionNumber version_;
         const blockchain::Subchain subchain_;
         const Bip32Index index_;
@@ -188,13 +222,16 @@ protected:
         OTIdentifier contact_;
         std::shared_ptr<opentxs::crypto::key::EllipticCurve> pkey_;
         opentxs::crypto::key::EllipticCurve& key_;
+        Time timestamp_;
+        Transactions unconfirmed_;
+        Transactions confirmed_;
 
         static auto instantiate(
             const api::internal::Core& api,
             const proto::AsymmetricKey& serialized) noexcept(false)
             -> std::unique_ptr<opentxs::crypto::key::EllipticCurve>;
 
-        auto update_element(Lock& lock) const noexcept -> void;
+        auto update_element(rLock& lock) const noexcept -> void;
 
         Element(
             const api::internal::Core& api,
@@ -206,7 +243,10 @@ protected:
             const Bip32Index index,
             const std::string label,
             const OTIdentifier contact,
-            const opentxs::crypto::key::EllipticCurve& key) noexcept(false);
+            const opentxs::crypto::key::EllipticCurve& key,
+            const Time time,
+            Transactions&& unconfirmed,
+            Transactions&& confirmed) noexcept(false);
         Element() = delete;
     };
 
@@ -224,7 +264,7 @@ protected:
     const opentxs::blockchain::Type chain_;
     const BalanceNodeType type_;
     const OTIdentifier id_;
-    mutable std::mutex lock_;
+    mutable std::recursive_mutex lock_;
     mutable std::atomic<Revision> revision_;
     mutable internal::ActivityMap unspent_;
     mutable internal::ActivityMap spent_;
@@ -241,26 +281,26 @@ protected:
     static auto convert(const std::vector<Activity>& in) noexcept
         -> internal::ActivityMap;
 
-    virtual auto account_already_exists(const Lock& lock) const noexcept
+    virtual auto account_already_exists(const rLock& lock) const noexcept
         -> bool = 0;
     void process_spent(
-        const Lock& lock,
+        const rLock& lock,
         const Coin& coin,
         const blockchain::Key key,
         const Amount value) const noexcept;
     void process_unspent(
-        const Lock& lock,
+        const rLock& lock,
         const Coin& coin,
         const blockchain::Key key,
         const Amount value) const noexcept;
-    virtual auto save(const Lock& lock) const noexcept -> bool = 0;
-    auto serialize_common(const Lock& lock, SerializedType& out) const noexcept
+    virtual auto save(const rLock& lock) const noexcept -> bool = 0;
+    auto serialize_common(const rLock& lock, SerializedType& out) const noexcept
         -> void;
 
     // NOTE call only from final constructor bodies
     auto init() noexcept -> void;
     virtual auto mutable_element(
-        const Lock& lock,
+        const rLock& lock,
         const Subchain type,
         const Bip32Index index) noexcept(false)
         -> internal::BalanceElement& = 0;
@@ -283,10 +323,23 @@ private:
     static constexpr auto BlockchainAccountDataVersion = VersionNumber{1};
 
     virtual auto check_activity(
-        const Lock& lock,
+        const rLock& lock,
         const std::vector<Activity>& unspent,
         std::set<OTIdentifier>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool = 0;
+
+    virtual auto confirm(
+        const rLock& lock,
+        const Subchain type,
+        const Bip32Index index) noexcept -> void
+    {
+    }
+    virtual auto unconfirm(
+        const rLock& lock,
+        const Subchain type,
+        const Bip32Index index) noexcept -> void
+    {
+    }
 
     BalanceNode(
         const api::internal::Core& api,
