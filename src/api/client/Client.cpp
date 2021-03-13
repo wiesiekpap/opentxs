@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -19,7 +19,7 @@ namespace opentxs
 auto Translate(const blockchain::Type type) noexcept -> proto::ContactItemType
 {
     try {
-        return blockchain::params::Data::chains_.at(type).proto_;
+        return blockchain::params::Data::Chains().at(type).proto_;
     } catch (...) {
         return proto::CITEMTYPE_UNKNOWN;
     }
@@ -34,7 +34,7 @@ auto Translate(const proto::ContactItemType type) noexcept -> blockchain::Type
     {
         auto output = Map{};
 
-        for (const auto& [chain, data] : blockchain::params::Data::chains_) {
+        for (const auto& [chain, data] : blockchain::params::Data::Chains()) {
             output.emplace(data.proto_, chain);
         }
 

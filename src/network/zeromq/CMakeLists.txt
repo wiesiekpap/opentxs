@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2020 The Open-Transactions developers
+# Copyright (c) 2010-2021 The Open-Transactions developers
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -7,19 +7,29 @@ add_subdirectory(curve)
 add_subdirectory(socket)
 add_subdirectory(zap)
 
-set(cxx-sources
-    Context.cpp
-    Frame.cpp
-    FrameIterator.cpp
-    FrameSection.cpp
-    ListenCallback.cpp
-    ListenCallbackSwig.cpp
-    Message.cpp
-    PairEventCallback.cpp
-    PairEventCallbackSwig.cpp
-    PairEventListener.cpp
-    Proxy.cpp
-    ReplyCallback.cpp
+add_library(
+  opentxs-network-zeromq OBJECT
+  "Context.cpp"
+  "Context.hpp"
+  "Frame.cpp"
+  "Frame.hpp"
+  "FrameIterator.cpp"
+  "FrameSection.cpp"
+  "ListenCallback.cpp"
+  "ListenCallback.hpp"
+  "ListenCallbackSwig.cpp"
+  "ListenCallbackSwig.hpp"
+  "Message.cpp"
+  "PairEventCallback.cpp"
+  "PairEventCallback.hpp"
+  "PairEventCallbackSwig.cpp"
+  "PairEventCallbackSwig.hpp"
+  "PairEventListener.cpp"
+  "PairEventListener.hpp"
+  "Proxy.cpp"
+  "Proxy.hpp"
+  "ReplyCallback.cpp"
+  "ReplyCallback.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/Context.hpp"
@@ -35,24 +45,12 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/Proxy.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/ReplyCallback.hpp"
 )
-set(cxx-headers
-    ${cxx-install-headers}
-    Context.hpp
-    Frame.hpp
-    ListenCallback.hpp
-    ListenCallbackSwig.hpp
-    PairEventCallback.hpp
-    PairEventCallbackSwig.hpp
-    PairEventListener.hpp
-    Proxy.hpp
-    ReplyCallback.hpp
-)
-
-add_library(opentxs-network-zeromq OBJECT ${cxx-sources} ${cxx-headers})
-
 target_link_libraries(
   opentxs-network-zeromq PRIVATE opentxs::messages "${OT_ZMQ_TARGET}"
 )
+target_link_libraries(opentxs PUBLIC "${OT_ZMQ_TARGET}")
+target_sources(opentxs-network-zeromq PRIVATE ${cxx-install-headers})
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-network-zeromq>)
 add_dependencies(opentxs-network-zeromq generated_code)
 
 if(OPENTXS_STANDALONE)

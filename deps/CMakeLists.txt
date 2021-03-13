@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2020 The Open-Transactions developers
+# Copyright (c) 2010-2021 The Open-Transactions developers
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -7,19 +7,16 @@ add_subdirectory(irrxml)
 add_subdirectory(base64)
 
 if(CASH_LUCRE_EXPORT)
-  # Build lucre as library
-  set(lucre-sources ${CMAKE_CURRENT_SOURCE_DIR}/lucre/src/bankimp.cpp)
-
-  add_library(lucre OBJECT ${lucre-sources})
+  add_library(lucre OBJECT "lucre/src/bankimp.cpp")
+  target_link_libraries(lucre PRIVATE OpenSSL::Crypto)
+  target_include_directories(
+    lucre SYSTEM PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/lucre/include/lucre/"
+  )
 
   if(OT_OPENSSL_FLAVOR_LIBRESSL)
     target_compile_definitions(lucre PUBLIC OT_BUNDLED_LIBRESSL)
   endif()
 
-  target_include_directories(
-    lucre SYSTEM PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/lucre/include/lucre/"
-                         "${OPENSSL_INCLUDE_DIR}"
-  )
   if(NOT MSVC)
     target_compile_options(
       lucre
@@ -33,18 +30,22 @@ if(CASH_LUCRE_EXPORT)
     )
   endif()
 
-  if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
+  if(${CMAKE_CXX_COMPILER_ID}
+     MATCHES
+     Clang
+  )
     target_compile_options(
       lucre PRIVATE -Wno-shorten-64-to-32 -Wno-string-conversion
     )
   endif()
+
+  target_sources(opentxs PRIVATE $<TARGET_OBJECTS:lucre>)
 endif(CASH_LUCRE_EXPORT)
 
-set(hashes-sources ${CMAKE_CURRENT_SOURCE_DIR}/smhasher/src/MurmurHash3.cpp)
-
-set(hashes-headers ${CMAKE_CURRENT_SOURCE_DIR}/smhasher/src/MurmurHash3.h)
-
-add_library(external-hashes OBJECT ${hashes-sources} ${hashes-headers})
+add_library(
+  external-hashes OBJECT "smhasher/src/MurmurHash3.cpp"
+                         "smhasher/src/MurmurHash3.h"
+)
 
 if(NOT MSVC)
   target_compile_options(
@@ -61,9 +62,29 @@ if(NOT MSVC)
   )
 endif()
 
-if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
+if(${CMAKE_CXX_COMPILER_ID}
+   MATCHES
+   Clang
+)
   target_compile_options(
     external-hashes PRIVATE -Wno-reserved-id-macro
                             -Wno-shadow-field-in-constructor
   )
 endif()
+
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:external-hashes>)
+
+add_library(
+  bech32 OBJECT
+  "bech32/ref/c++/bech32.cpp"
+  "bech32/ref/c++/bech32.h"
+  "bech32/ref/c++/segwit_addr.cpp"
+  "bech32/ref/c++/segwit_addr.h"
+)
+target_include_directories(
+  bech32 SYSTEM INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/bech32/ref/c++"
+)
+if(NOT MSVC)
+  target_compile_options(bech32 PRIVATE -Wno-effc++ -Wno-unused-variable)
+endif()
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:bech32>)

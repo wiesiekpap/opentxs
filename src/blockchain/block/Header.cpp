@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -49,7 +49,7 @@ auto GenesisBlockHeader(
         case blockchain::Type::PKT_testnet:
         case blockchain::Type::UnitTest: {
             const auto& hex =
-                blockchain::params::Data::chains_.at(type).genesis_header_hex_;
+                blockchain::params::Data::Chains().at(type).genesis_header_hex_;
             const auto data = api.Factory().Data(hex, StringStyle::Hex);
 
             return factory::BitcoinBlockHeader(api, type, data->Bytes());

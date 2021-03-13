@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -21,7 +21,6 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <type_traits>
 #include <utility>
 
 #include "blockchain/bitcoin/CompactSize.hpp"
@@ -53,6 +52,7 @@ namespace be = boost::endian;
 namespace opentxs::factory
 {
 using ReturnType = blockchain::block::bitcoin::implementation::Input;
+using Position = blockchain::block::bitcoin::Script::Position;
 
 auto BitcoinTransactionInput(
     const api::Core& api,
@@ -135,7 +135,7 @@ auto BitcoinTransactionInput(
         sequence.value_or(0xffffffff),
         blockchain::block::bitcoin::Outpoint{spends.first},
         std::vector<Space>{},
-        BitcoinScript(chain, std::move(elements)),
+        BitcoinScript(chain, std::move(elements), Position::Input),
         ReturnType::default_version_,
         std::move(pPrevOut),
         std::move(keys));
@@ -182,7 +182,7 @@ auto BitcoinTransactionInput(
                 buf.value(),
                 blockchain::block::bitcoin::Outpoint{outpoint},
                 std::move(witness),
-                factory::BitcoinScript(chain, script, false, false),
+                factory::BitcoinScript(chain, script, Position::Input),
                 ReturnType::default_version_,
                 outpoint.size() + cs.Total() + sequence.size());
         }
@@ -256,7 +256,10 @@ auto BitcoinTransactionInput(
                     outpoint.txid(),
                     static_cast<std::uint32_t>(outpoint.index())},
                 std::move(witness),
-                factory::BitcoinScript(chain, in.script(), false, coinbase),
+                factory::BitcoinScript(
+                    chain,
+                    in.script(),
+                    coinbase ? Position::Coinbase : Position::Input),
                 Space{},
                 in.version(),
                 std::nullopt,
@@ -524,7 +527,10 @@ Input::Input(
           sequence,
           std::move(previous),
           std::move(witness),
-          factory::BitcoinScript(chain, ScriptElements{}, false, true),
+          factory::BitcoinScript(
+              chain,
+              ScriptElements{},
+              Script::Position::Coinbase),
           Space{
               reinterpret_cast<const std::byte*>(coinbase.data()),
               reinterpret_cast<const std::byte*>(coinbase.data()) +
@@ -579,7 +585,8 @@ auto Input::AddMultisigSignatures(const Signatures& signatures) noexcept -> bool
 
     auto& script =
         const_cast<std::unique_ptr<const internal::Script>&>(script_);
-    script = factory::BitcoinScript(chain_, std::move(elements), false, false);
+    script = factory::BitcoinScript(
+        chain_, std::move(elements), Script::Position::Input);
     size_ = std::nullopt;
 
     return bool(script);
@@ -601,7 +608,8 @@ auto Input::AddSignatures(const Signatures& signatures) noexcept -> bool
 
     auto& script =
         const_cast<std::unique_ptr<const internal::Script>&>(script_);
-    script = factory::BitcoinScript(chain_, std::move(elements), false, false);
+    script = factory::BitcoinScript(
+        chain_, std::move(elements), Script::Position::Input);
     size_ = std::nullopt;
 
     return bool(script);
@@ -683,6 +691,47 @@ auto Input::CalculateSize(const bool normalized) const noexcept -> std::size_t
     return output.value();
 }
 
+auto Input::classify() const noexcept -> Redeem
+{
+    if (0u == witness_.size()) { return Redeem::None; }
+
+    switch (script_->size()) {
+        case 0: {
+
+            return Redeem::MaybeP2WSH;
+        }
+        case 2: {
+            const auto& program = script_->at(0);
+            const auto& payload = script_->at(1);
+
+            if (OP::ZERO != program.opcode_) { return Redeem::None; }
+
+            if (false == payload.data_.has_value()) { return Redeem::None; }
+
+            const auto& hash = payload.data_.value();
+
+            switch (hash.size()) {
+                case 20: {
+
+                    return Redeem::P2SH_P2WPKH;
+                }
+                case 32: {
+
+                    return Redeem::P2SH_P2WSH;
+                }
+                default: {
+
+                    return Redeem::None;
+                }
+            }
+        }
+        default: {
+
+            return Redeem::None;
+        }
+    }
+}
+
 auto Input::ExtractElements(const filter::Type style) const noexcept
     -> std::vector<Space>
 {
@@ -698,19 +747,7 @@ auto Input::ExtractElements(const filter::Type style) const noexcept
             output = script_->ExtractElements(style);
 
             for (const auto& data : witness_) {
-                auto it{data.data()};
-
                 switch (data.size()) {
-                    case 65: {
-                        std::advance(it, 1);
-                        [[fallthrough]];
-                    }
-                    case 64: {
-                        output.emplace_back(it, it + 32);
-                        std::advance(it, 32);
-                        output.emplace_back(it, it + 32);
-                        [[fallthrough]];
-                    }
                     case 33:
                     case 32:
                     case 20: {
@@ -718,6 +755,31 @@ auto Input::ExtractElements(const filter::Type style) const noexcept
                     } break;
                     default: {
                     }
+                }
+            }
+
+            if (const auto type{classify()}; type != Redeem::None) {
+                OT_ASSERT(1 < witness_.size());
+
+                const auto& bytes = *witness_.crbegin();
+                const auto pSub = factory::BitcoinScript(
+                    chain_,
+                    reader(bytes),
+                    Script::Position::Redeem,
+                    true,
+                    true);
+
+                if (pSub) {
+                    const auto& sub = *pSub;
+                    auto temp = sub.ExtractElements(style);
+                    output.insert(
+                        output.end(),
+                        std::make_move_iterator(temp.begin()),
+                        std::make_move_iterator(temp.end()));
+                } else if (Redeem::MaybeP2WSH != type) {
+                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                        ": Invalid redeem script")
+                        .Flush();
                 }
             }
 
@@ -1011,7 +1073,9 @@ auto Input::SignatureVersion() const noexcept
     -> std::unique_ptr<internal::Input>
 {
     return std::make_unique<Input>(
-        *this, factory::BitcoinScript(chain_, ScriptElements{}, false, false));
+        *this,
+        factory::BitcoinScript(
+            chain_, ScriptElements{}, Script::Position::Input));
 }
 
 auto Input::SignatureVersion(std::unique_ptr<internal::Script> subscript)

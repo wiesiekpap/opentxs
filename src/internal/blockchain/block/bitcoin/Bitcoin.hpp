@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -268,16 +268,14 @@ auto BitcoinBlockHeader(
 OPENTXS_EXPORT auto BitcoinScript(
     const blockchain::Type chain,
     const ReadView bytes,
-    const bool outputScript = true,
-    const bool isGeneration = false,
+    const blockchain::block::bitcoin::Script::Position role,
     const bool allowInvalidOpcodes = true,
     const bool mute = false) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Script>;
 OPENTXS_EXPORT auto BitcoinScript(
     const blockchain::Type chain,
     blockchain::block::bitcoin::ScriptElements&& elements,
-    const bool outputScript = true,
-    const bool isGeneration = false) noexcept
+    const blockchain::block::bitcoin::Script::Position role) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Script>;
 auto BitcoinTransaction(
     const api::Core& api,

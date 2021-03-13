@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -42,15 +42,11 @@ using ReturnType = blockchain::block::bitcoin::implementation::Script;
 auto BitcoinScript(
     const blockchain::Type chain,
     const ReadView bytes,
-    const bool isOutput,
-    const bool isCoinbase,
+    const blockchain::block::bitcoin::Script::Position role,
     const bool allowInvalidOpcodes,
     const bool mute) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Script>
 {
-    const auto role = isOutput ? ReturnType::Position::Output
-                               : (isCoinbase ? ReturnType::Position::Coinbase
-                                             : ReturnType::Position::Input);
     auto elements = blockchain::block::bitcoin::ScriptElements{};
 
     if ((nullptr == bytes.data()) || (0 == bytes.size()) ||
@@ -187,8 +183,7 @@ auto BitcoinScript(
 auto BitcoinScript(
     const blockchain::Type chain,
     blockchain::block::bitcoin::ScriptElements&& elements,
-    const bool isOutput,
-    const bool isCoinbase) noexcept
+    const blockchain::block::bitcoin::Script::Position role) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Script>
 {
     if (false == ReturnType::validate(elements)) {
@@ -197,10 +192,6 @@ auto BitcoinScript(
 
         return {};
     }
-
-    const auto role = isOutput ? ReturnType::Position::Output
-                               : (isCoinbase ? ReturnType::Position::Coinbase
-                                             : ReturnType::Position::Input);
 
     if ((0 == elements.size()) && (ReturnType::Position::Output == role)) {
         LogVerbose("opentxs::factory::")(__FUNCTION__)(": Empty input").Flush();
@@ -588,6 +579,42 @@ auto Script::evaluate_script_hash(const ScriptElements& script) noexcept
     return Pattern::PayToScriptHash;
 }
 
+auto Script::evaluate_segwit(const ScriptElements& script) noexcept -> Pattern
+{
+    OT_ASSERT(2 == script.size());
+
+    const auto& opcode = script.at(0).opcode_;
+    const auto& program = script.at(1).data_.value();
+
+    switch (to_number(opcode)) {
+        case 0: {
+            switch (program.size()) {
+                case 20: {
+                    return Pattern::PayToWitnessPubkeyHash;
+                }
+                case 32: {
+                    return Pattern::PayToWitnessScriptHash;
+                }
+                default: {
+                }
+            }
+        } break;
+        case 1: {
+            switch (program.size()) {
+                case 32: {
+                    return Pattern::PayToTaproot;
+                }
+                default: {
+                }
+            }
+        } break;
+        default: {
+        }
+    }
+
+    return Pattern::Custom;
+}
+
 auto Script::ExtractElements(const filter::Type style) const noexcept
     -> std::vector<Space>
 {
@@ -719,6 +746,7 @@ auto Script::get_type(
 
             return Pattern::Input;
         }
+        case Position::Redeem:
         case Position::Output: {
             if (potential_pubkey_hash(script)) {
                 return evaluate_pubkey_hash(script);
@@ -726,6 +754,8 @@ auto Script::get_type(
                 return evaluate_script_hash(script);
             } else if (potential_data(script)) {
                 return evaluate_data(script);
+            } else if (potential_segwit(script)) {
+                return evaluate_segwit(script);
             } else if (potential_pubkey(script)) {
                 return evaluate_pubkey(script);
             } else if (potential_multisig(script)) {
@@ -942,18 +972,72 @@ auto Script::potential_script_hash(const ScriptElements& script) noexcept
            (OP::EQUAL == last_opcode(script)) && (3 == script.size());
 }
 
+auto Script::potential_segwit(const ScriptElements& script) noexcept -> bool
+{
+    if (2 != script.size()) { return false; }
+
+    switch (first_opcode(script)) {
+        case OP::ZERO:
+        case OP::ONE:
+        case OP::TWO:
+        case OP::THREE:
+        case OP::FOUR:
+        case OP::FIVE:
+        case OP::SIX:
+        case OP::SEVEN:
+        case OP::EIGHT:
+        case OP::NINE:
+        case OP::TEN:
+        case OP::ELEVEN:
+        case OP::TWELVE:
+        case OP::THIRTEEN:
+        case OP::FOURTEEN:
+        case OP::FIFTEEN:
+        case OP::SIXTEEN: {
+        } break;
+        default: {
+
+            return false;
+        }
+    }
+
+    const auto& element = script.at(1);
+
+    if (false == element.data_.has_value()) { return false; }
+
+    const auto& program = element.data_.value();
+
+    return (1u < program.size()) && (41u > program.size());
+}
+
 auto Script::Pubkey() const noexcept -> std::optional<ReadView>
 {
-    if (Pattern::PayToPubkey != type_) { return {}; }
-
-    return get_data(0);
+    switch (type_) {
+        case Pattern::PayToPubkey: {
+            return get_data(0);
+        }
+        case Pattern::PayToTaproot: {
+            return get_data(1);
+        }
+        default: {
+            return {};
+        }
+    }
 }
 
 auto Script::PubkeyHash() const noexcept -> std::optional<ReadView>
 {
-    if (Pattern::PayToPubkeyHash != type_) { return {}; }
-
-    return get_data(2);
+    switch (type_) {
+        case Pattern::PayToPubkeyHash: {
+            return get_data(2);
+        }
+        case Pattern::PayToWitnessPubkeyHash: {
+            return get_data(1);
+        }
+        default: {
+            return {};
+        }
+    }
 }
 
 auto Script::RedeemScript() const noexcept -> std::unique_ptr<bitcoin::Script>
@@ -966,14 +1050,20 @@ auto Script::RedeemScript() const noexcept -> std::unique_ptr<bitcoin::Script>
     if (false == is_data_push(element)) { return {}; }
 
     return factory::BitcoinScript(
-        chain_, reader(element.data_.value()), false, false, true, true);
+        chain_, reader(element.data_.value()), Position::Redeem, true, true);
 }
 
 auto Script::ScriptHash() const noexcept -> std::optional<ReadView>
 {
-    if (Pattern::PayToScriptHash != type_) { return {}; }
-
-    return get_data(1);
+    switch (type_) {
+        case Pattern::PayToScriptHash:
+        case Pattern::PayToWitnessScriptHash: {
+            return get_data(1);
+        }
+        default: {
+            return {};
+        }
+    }
 }
 
 auto Script::Serialize(const AllocateOutput destination) const noexcept -> bool

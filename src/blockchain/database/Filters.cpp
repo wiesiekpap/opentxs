@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -76,8 +76,7 @@ auto Filters::CurrentTip(const filter::Type type) const noexcept
 auto Filters::import_genesis(const blockchain::Type chain) const noexcept
     -> void
 {
-    for (const auto& [style, genesis] :
-         params::Data::genesis_filters_.at(chain)) {
+    for (const auto& [style, genesis] : params::Data::Filters().at(chain)) {
         const auto needHeader =
             blank_position_.first == CurrentHeaderTip(style).first;
         const auto needFilter =

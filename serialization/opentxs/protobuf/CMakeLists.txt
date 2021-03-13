@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2020 The Open-Transactions developers
+# Copyright (c) 2010-2021 The Open-Transactions developers
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -172,14 +172,25 @@ if(OPENTXS_HIDDEN_SYMBOLS)
     PROTO_SRC PROTO_HEADER EXPORT_MACRO OPENTXS_EXPORT ${PROTO_SOURCES}
   )
 else()
-  protobuf_generate_cpp(PROTO_SRC PROTO_HEADER ${PROTO_SOURCES})
+  protobuf_generate_cpp(
+    PROTO_SRC
+    PROTO_HEADER
+    ${PROTO_SOURCES}
+  )
 endif()
 
 add_library(messages OBJECT ${PROTO_SRC} ${PROTO_HEADER})
-add_library(opentxs::messages ALIAS messages)
+add_library(
+  opentxs::messages
+  ALIAS
+  messages
+)
+target_link_libraries(messages PUBLIC protobuf::libprotobuf-lite)
 target_include_directories(
-  messages SYSTEM PUBLIC "${Protobuf_INCLUDE_DIR}"
-                         "${opentxs_BINARY_DIR}/serialization"
+  messages SYSTEM PUBLIC "${opentxs_BINARY_DIR}/serialization"
+)
+target_include_directories(
+  opentxs SYSTEM PRIVATE "${opentxs_BINARY_DIR}/serialization"
 )
 
 if(MSVC)
@@ -198,13 +209,19 @@ else()
   )
 endif()
 
-if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
+if(${CMAKE_CXX_COMPILER_ID}
+   MATCHES
+   Clang
+)
   target_compile_options(messages PRIVATE -Wno-suggest-destructor-override)
 endif()
 
 set_target_properties(
   messages PROPERTIES MSVC_RUNTIME_LIBRARY "${MSVC_RUNTIME_DEFAULT}"
 )
+
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:messages>)
+add_dependencies(generated_code messages)
 
 if(OPENTXS_STANDALONE)
   install(

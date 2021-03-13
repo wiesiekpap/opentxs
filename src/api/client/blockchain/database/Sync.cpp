@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -115,12 +115,11 @@ auto Sync::import_genesis(const Chain chain) noexcept -> void
 
     const auto items = [&] {
         using Params = opentxs::blockchain::params::Data;
-        const auto& data = Params::chains_.at(chain);
+        const auto& data = Params::Chains().at(chain);
         constexpr auto filterType =
             opentxs::blockchain::filter::Type::Extended_opentxs;
         auto gcs = [&] {
-            const auto& filter =
-                Params::genesis_filters_.at(chain).at(filterType);
+            const auto& filter = Params::Filters().at(chain).at(filterType);
             const auto bytes =
                 api_.Factory().Data(filter.second, StringStyle::Hex);
             const auto blockHash =

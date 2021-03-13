@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -929,7 +929,9 @@ auto Wallet::print(const Lock&) const noexcept -> void
         out.text_ << "\n * " << outpoint.str() << ' ';
         out.text_ << " value: " << std::to_string(proto.value());
         out.total_ += proto.value();
-        const auto pScript = factory::BitcoinScript(chain_, proto.script());
+        using Position = block::bitcoin::Script::Position;
+        const auto pScript =
+            factory::BitcoinScript(chain_, proto.script(), Position::Output);
 
         OT_ASSERT(pScript);
 

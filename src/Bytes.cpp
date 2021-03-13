@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -75,6 +75,10 @@ auto reader(const Space& in) noexcept -> ReadView
 auto reader(const WritableView& in) noexcept -> ReadView
 {
     return {in.as<const char>(), in.size()};
+}
+auto reader(const std::vector<std::uint8_t>& in) noexcept -> ReadView
+{
+    return {reinterpret_cast<const char*>(in.data()), in.size()};
 }
 auto space(const std::size_t size) noexcept -> Space
 {

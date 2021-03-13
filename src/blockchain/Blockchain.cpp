@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -46,7 +46,7 @@ auto DisplayString(const Type type) noexcept -> std::string
 {
     try {
 
-        return params::Data::chains_.at(type).display_string_;
+        return params::Data::Chains().at(type).display_string_;
     } catch (...) {
 
         return "Unknown";
@@ -56,7 +56,7 @@ auto IsTestnet(const Type type) noexcept -> bool
 {
     try {
 
-        return params::Data::chains_.at(type).testnet_;
+        return params::Data::Chains().at(type).testnet_;
     } catch (...) {
 
         return false;
@@ -66,7 +66,7 @@ auto TickerSymbol(const Type type) noexcept -> std::string
 {
     try {
 
-        return params::Data::chains_.at(type).display_ticker_;
+        return params::Data::Chains().at(type).display_ticker_;
     } catch (...) {
 
         return "Unknown";
@@ -366,7 +366,7 @@ auto DefaultFilter(const Type type) noexcept -> filter::Type
 {
     try {
 
-        return params::Data::chains_.at(type).default_filter_type_;
+        return params::Data::Chains().at(type).default_filter_type_;
     } catch (...) {
         return filter::Type::Unknown;
     }
@@ -455,7 +455,7 @@ auto Format(const Type chain, const opentxs::Amount amount) noexcept
     -> std::string
 {
     try {
-        const auto& definition = params::Data::chains_.at(chain).scales_;
+        const auto& definition = params::Data::Chains().at(chain).scales_;
 
         return definition.Format(amount);
     } catch (...) {
@@ -494,7 +494,7 @@ auto Grind(const std::function<void()> function) noexcept -> void
 auto Serialize(const Type chain, const filter::Type type) noexcept(false)
     -> std::uint8_t
 {
-    return params::Data::bip158_types_.at(chain).at(type);
+    return params::Data::Bip158().at(chain).at(type);
 }
 
 auto Serialize(const block::Position& in) noexcept -> Space
@@ -512,7 +512,7 @@ auto Ticker(const Type chain) noexcept -> std::string
 {
     try {
 
-        return params::Data::chains_.at(chain).display_ticker_;
+        return params::Data::Chains().at(chain).display_ticker_;
     } catch (...) {
 
         return {};

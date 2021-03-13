@@ -1,61 +1,46 @@
-# Copyright (c) 2010-2020 The Open-Transactions developers
+# Copyright (c) 2010-2021 The Open-Transactions developers
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set(cxx-sources
-    Contact.cpp
-    ContactItem.cpp
-    ContactSection.cpp
-    ContactSubsection.cpp
+add_library(
+  opentxs-ui-contact OBJECT
+  "Contact.cpp"
+  "Contact.hpp"
+  "ContactItem.cpp"
+  "ContactItem.hpp"
+  "ContactSection.cpp"
+  "ContactSection.hpp"
+  "ContactSubsection.cpp"
+  "ContactSubsection.hpp"
 )
-set(ot-qobject-install-headers "")
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/Contact.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/ContactItem.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/ContactSection.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/ContactSubsection.hpp"
 )
-set(cxx-headers
-    ${cxx-install-headers}
-    Contact.hpp
-    ContactItem.hpp
-    ContactSection.hpp
-    ContactSubsection.hpp
-)
-
-if(OT_WITH_QT)
-  list(
-    APPEND ot-qobject-install-headers
-    "${opentxs_SOURCE_DIR}/include/opentxs/ui/qt/Contact.hpp"
-  )
-  qt5_wrap_cpp(MOC_SRCS ${ot-qobject-install-headers})
-else()
-  set(MOC_SRCS "")
-endif()
-
-add_library(
-  opentxs-ui-contact OBJECT
-  ${cxx-sources}
-  ${cxx-headers}
-  ${MOC_SRCS}
-  ${ot-qobject-install-headers}
-)
 target_link_libraries(opentxs-ui-contact PRIVATE opentxs::messages)
 
-if(OT_QT_EXPORT)
-  target_link_libraries(opentxs-ui-contact PUBLIC Qt5::Core)
+if(OT_WITH_QT)
+  set(ot-qobject-install-headers
+      "${opentxs_SOURCE_DIR}/include/opentxs/ui/qt/Contact.hpp"
+  )
+  qt5_wrap_cpp(MOC_SRCS ${ot-qobject-install-headers})
+  target_sources(opentxs-ui-contact PRIVATE ${MOC_SRCS})
 
-  if(OT_QML_EXPORT)
-    target_link_libraries(opentxs-ui-contact PUBLIC Qt5::Qml)
-    target_compile_definitions(opentxs-ui-contact PRIVATE -DOT_WITH_QML=1)
-  else()
-    target_compile_definitions(opentxs-ui-contact PRIVATE -DOT_WITH_QML=0)
+  if(OPENTXS_STANDALONE)
+    install(
+      FILES ${ot-qobject-install-headers}
+      DESTINATION include/opentxs/ui/qt
+      COMPONENT dev
+    )
   endif()
-else()
-  target_compile_definitions(opentxs-ui-contact PRIVATE -DOT_WITH_QML=0)
 endif()
 
+opentxs_set_qt(opentxs-ui-contact)
+target_sources(opentxs-ui-contact PRIVATE ${cxx-install-headers})
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-contact>)
 add_dependencies(opentxs-ui-contact generated_code)
 
 if(OPENTXS_STANDALONE)
@@ -64,11 +49,4 @@ if(OPENTXS_STANDALONE)
     DESTINATION include/opentxs/ui
     COMPONENT dev
   )
-  if(OT_QT_EXPORT)
-    install(
-      FILES ${ot-qobject-install-headers}
-      DESTINATION include/opentxs/ui/qt
-      COMPONENT dev
-    )
-  endif()
 endif()

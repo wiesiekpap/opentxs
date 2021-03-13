@@ -1,29 +1,27 @@
-# Copyright (c) 2010-2020 The Open-Transactions developers
+# Copyright (c) 2010-2021 The Open-Transactions developers
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set(cxx-sources "DisplayScale.cpp")
-set(ot-qobject-install-headers
+set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/qt/DisplayScale.hpp"
 )
-set(cxx-install-headers ${ot-qobject-install-headers})
-set(cxx-headers ${cxx-install-headers} "")
-
-qt5_wrap_cpp(MOC_SRCS ${ot-qobject-install-headers})
-
+qt5_wrap_cpp(MOC_SRCS ${cxx-install-headers})
 add_library(
-  opentxs-ui-displayscale OBJECT ${cxx-sources} ${cxx-headers} ${MOC_SRCS}
+  opentxs-ui-displayscale OBJECT
+  "DisplayScale.cpp"
+  ${MOC_SRCS}
+  ${cxx-install-headers}
 )
 target_link_libraries(
-  opentxs-ui-displayscale
-  PUBLIC Qt5::Core
-  PRIVATE opentxs::messages
+  opentxs-ui-displayscale PRIVATE Qt5::Core opentxs::messages
 )
+target_link_libraries(opentxs PRIVATE Qt5::Core)
 target_include_directories(
   opentxs-ui-displayscale SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
 
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-displayscale>)
 add_dependencies(opentxs-ui-displayscale generated_code)
 
 if(OPENTXS_STANDALONE)

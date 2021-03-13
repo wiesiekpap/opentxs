@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2020 The Open-Transactions developers
+# Copyright (c) 2010-2021 The Open-Transactions developers
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -14,34 +14,49 @@ add_subdirectory(trade)
 add_subdirectory(transaction)
 add_subdirectory(util)
 
-set(cxx-sources
-    Account.cpp
-    AccountList.cpp
-    AccountVisitor.cpp
-    Armored.cpp
-    Cheque.cpp
-    Contract.cpp
-    Data.cpp
-    Flag.cpp
-    Identifier.cpp
-    Instrument.cpp
-    Item.cpp
-    Ledger.cpp
-    Log.cpp
-    LogSource.cpp
-    Message.cpp
-    NumList.cpp
-    NymFile.cpp
-    OTStorage.cpp
-    OTTrackable.cpp
-    OTTransaction.cpp
-    OTTransactionType.cpp
-    PasswordPrompt.cpp
-    Secret.cpp
-    Shutdown.cpp
-    StateMachine.cpp
-    String.cpp
-    StringXML.cpp
+add_library(
+  opentxs-core OBJECT
+  "${opentxs_SOURCE_DIR}/include/opentxs/core/UniqueQueue.hpp"
+  "${opentxs_SOURCE_DIR}/src/internal/core/Core.hpp"
+  "${opentxs_SOURCE_DIR}/src/internal/core/identifier/Identifier.hpp"
+  "Account.cpp"
+  "AccountList.cpp"
+  "AccountVisitor.cpp"
+  "Armored.cpp"
+  "Armored.hpp"
+  "Cheque.cpp"
+  "Contract.cpp"
+  "Data.cpp"
+  "Data.hpp"
+  "Flag.cpp"
+  "Flag.hpp"
+  "Identifier.cpp"
+  "Identifier.hpp"
+  "Instrument.cpp"
+  "Item.cpp"
+  "Ledger.cpp"
+  "Log.cpp"
+  "LogSource.cpp"
+  "Message.cpp"
+  "NumList.cpp"
+  "NymFile.cpp"
+  "NymFile.hpp"
+  "OTStorage.cpp"
+  "OTTrackable.cpp"
+  "OTTransaction.cpp"
+  "OTTransactionType.cpp"
+  "PasswordPrompt.cpp"
+  "Secret.cpp"
+  "Secret.hpp"
+  "Shutdown.cpp"
+  "Shutdown.hpp"
+  "StateMachine.cpp"
+  "StateMachine.hpp"
+  "String.cpp"
+  "String.hpp"
+  "StringXML.cpp"
+  "StringXML.hpp"
+  "Worker.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/core/Account.hpp"
@@ -73,34 +88,21 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/core/String.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/StringXML.hpp"
 )
-set(cxx-headers
-    "${cxx-install-headers}"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/UniqueQueue.hpp"
-    "${opentxs_SOURCE_DIR}/src/internal/core/identifier/Identifier.hpp"
-    "${opentxs_SOURCE_DIR}/src/internal/core/Core.hpp"
-    "Armored.hpp"
-    "Data.hpp"
-    "Flag.hpp"
-    "Identifier.hpp"
-    "NymFile.hpp"
-    "Secret.hpp"
-    "Shutdown.hpp"
-    "StateMachine.hpp"
-    "String.hpp"
-    "StringXML.hpp"
-    "Worker.hpp"
-)
-
-add_library(opentxs-core OBJECT ${cxx-sources} ${cxx-headers})
-target_include_directories(
-  opentxs-core SYSTEM
-  PRIVATE "${ZLIB_INCLUDE_DIRS}" "${CMAKE_CURRENT_BINARY_DIR}/otprotob"
-          "${opentxs_SOURCE_DIR}/deps/"
-)
 target_link_libraries(
-  opentxs-core PRIVATE Boost::headers opentxs::messages
-                       unofficial-sodium::sodium
+  opentxs-core
+  PRIVATE
+    Boost::headers
+    ZLIB::ZLIB
+    opentxs-core-otprotob
+    opentxs::messages
+    unofficial-sodium::sodium
 )
+target_link_libraries(opentxs PUBLIC ZLIB::ZLIB unofficial-sodium::sodium)
+target_include_directories(
+  opentxs-core SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+)
+target_sources(opentxs-core PRIVATE ${cxx-install-headers})
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-core>)
 add_dependencies(opentxs-core generated_code)
 
 if(OPENTXS_STANDALONE)

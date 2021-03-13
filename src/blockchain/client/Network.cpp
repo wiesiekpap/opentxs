@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -182,7 +182,8 @@ Network::Network(
         }
     }())
     , local_chain_height_(0)
-    , remote_chain_height_(params::Data::chains_.at(chain_).checkpoint_.height_)
+    , remote_chain_height_(
+          params::Data::Chains().at(chain_).checkpoint_.height_)
     , waiting_for_headers_(Flag::Factory(false))
     , headers_requested_(Clock::now())
     , headers_received_()
@@ -300,7 +301,7 @@ auto Network::FeeRate() const noexcept -> Amount
     // TODO the hardcoded default fee rate should be a fallback only
     // if there is no better data available.
 
-    return params::Data::chains_.at(chain_).default_fee_rate_;
+    return params::Data::Chains().at(chain_).default_fee_rate_;
 }
 
 auto Network::GetConfirmations(const std::string& txid) const noexcept
@@ -577,9 +578,10 @@ auto Network::SendToAddress(
     const Amount amount,
     const std::string& memo) const noexcept -> PendingOutgoing
 {
-    const auto [data, style, chains] = blockchain_.DecodeAddress(address);
+    const auto [data, style, chains, supported] =
+        blockchain_.DecodeAddress(address);
 
-    if (0 == chains.count(chain_)) {
+    if ((0 == chains.count(chain_)) || (!supported)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Address ")(address)(
             " not valid for ")(DisplayString(chain_))
             .Flush();
@@ -602,9 +604,17 @@ auto Network::SendToAddress(
     output.set_amount(amount);
 
     switch (style) {
+        case Style::P2WPKH: {
+            output.set_segwit(true);
+            [[fallthrough]];
+        }
         case Style::P2PKH: {
             output.set_pubkeyhash(data->str());
         } break;
+        case Style::P2WSH: {
+            output.set_segwit(true);
+            [[fallthrough]];
+        }
         case Style::P2SH: {
             output.set_scripthash(data->str());
         } break;

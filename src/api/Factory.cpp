@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -377,7 +377,9 @@ auto Factory::BitcoinScriptNullData(
         elements.emplace_back(bb::internal::PushData(element));
     }
 
-    return factory::BitcoinScript(chain, std::move(elements));
+    using Position = opentxs::blockchain::block::bitcoin::Script::Position;
+
+    return factory::BitcoinScript(chain, std::move(elements), Position::Output);
 }
 
 auto Factory::BitcoinScriptP2MS(
@@ -419,8 +421,9 @@ auto Factory::BitcoinScriptP2MS(
 
     elements.emplace_back(bb::internal::Opcode(static_cast<bb::OP>(N + 80)));
     elements.emplace_back(bb::internal::Opcode(bb::OP::CHECKMULTISIG));
+    using Position = opentxs::blockchain::block::bitcoin::Script::Position;
 
-    return factory::BitcoinScript(chain, std::move(elements));
+    return factory::BitcoinScript(chain, std::move(elements), Position::Output);
 }
 
 auto Factory::BitcoinScriptP2PK(
@@ -433,8 +436,9 @@ auto Factory::BitcoinScriptP2PK(
     auto elements = bb::ScriptElements{};
     elements.emplace_back(bb::internal::PushData(key.PublicKey()));
     elements.emplace_back(bb::internal::Opcode(bb::OP::CHECKSIG));
+    using Position = opentxs::blockchain::block::bitcoin::Script::Position;
 
-    return factory::BitcoinScript(chain, std::move(elements));
+    return factory::BitcoinScript(chain, std::move(elements), Position::Output);
 }
 
 auto Factory::BitcoinScriptP2PKH(
@@ -460,8 +464,9 @@ auto Factory::BitcoinScriptP2PKH(
     elements.emplace_back(bb::internal::PushData(reader(hash)));
     elements.emplace_back(bb::internal::Opcode(bb::OP::EQUALVERIFY));
     elements.emplace_back(bb::internal::Opcode(bb::OP::CHECKSIG));
+    using Position = opentxs::blockchain::block::bitcoin::Script::Position;
 
-    return factory::BitcoinScript(chain, std::move(elements));
+    return factory::BitcoinScript(chain, std::move(elements), Position::Output);
 }
 
 auto Factory::BitcoinScriptP2SH(
@@ -493,8 +498,9 @@ auto Factory::BitcoinScriptP2SH(
     elements.emplace_back(bb::internal::Opcode(bb::OP::HASH160));
     elements.emplace_back(bb::internal::PushData(reader(hash)));
     elements.emplace_back(bb::internal::Opcode(bb::OP::EQUAL));
+    using Position = opentxs::blockchain::block::bitcoin::Script::Position;
 
-    return factory::BitcoinScript(chain, std::move(elements));
+    return factory::BitcoinScript(chain, std::move(elements), Position::Output);
 }
 
 auto Factory::BlockchainAddress(

@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -30,6 +30,7 @@
 #include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
+#include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -42,6 +43,7 @@
 namespace opentxs::factory
 {
 using ReturnType = blockchain::block::bitcoin::implementation::Output;
+using Position = opentxs::blockchain::block::bitcoin::Script::Position;
 
 auto BitcoinTransactionOutput(
     const api::Core& api,
@@ -130,7 +132,7 @@ auto BitcoinTransactionOutput(
             in.version(),
             in.index(),
             value,
-            factory::BitcoinScript(chain, in.script(), true, false),
+            factory::BitcoinScript(chain, in.script(), Position::Output),
             sizeof(value) + cs.Total(),
             std::move(keys),
             std::move(pkh),
@@ -200,7 +202,7 @@ Output::Output(
           version,
           index,
           value,
-          factory::BitcoinScript(chain, in, true, false),
+          factory::BitcoinScript(chain, in, Script::Position::Output),
           size,
           {},
           {},

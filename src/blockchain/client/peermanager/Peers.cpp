@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -85,7 +85,7 @@ PeerManager::Peers::Peers(
     , connected_()
     , incoming_zmq_()
 {
-    const auto& data = params::Data::chains_.at(chain_);
+    const auto& data = params::Data::Chains().at(chain_);
     database_.AddOrUpdate(Endpoint{factory::BlockchainAddress(
         api_,
         data.p2p_protocol_,
@@ -220,7 +220,7 @@ auto PeerManager::Peers::get_default_peer() const noexcept -> Endpoint
 {
     if (localhost_peer_.get() == default_peer_) { return {}; }
 
-    const auto& data = params::Data::chains_.at(chain_);
+    const auto& data = params::Data::Chains().at(chain_);
 
     return Endpoint{factory::BlockchainAddress(
         api_,
@@ -237,7 +237,7 @@ auto PeerManager::Peers::get_default_peer() const noexcept -> Endpoint
 auto PeerManager::Peers::get_dns_peer() const noexcept -> Endpoint
 {
     try {
-        const auto& data = params::Data::chains_.at(chain_);
+        const auto& data = params::Data::Chains().at(chain_);
         const auto& dns = data.dns_seeds_;
 
         if (0 == dns.size()) {
@@ -343,7 +343,7 @@ auto PeerManager::Peers::get_fallback_peer(
 
 auto PeerManager::Peers::get_peer() const noexcept -> Endpoint
 {
-    const auto protocol = params::Data::chains_.at(chain_).p2p_protocol_;
+    const auto protocol = params::Data::Chains().at(chain_).p2p_protocol_;
     auto pAddress = get_default_peer();
 
     if (pAddress) {
@@ -438,7 +438,7 @@ auto PeerManager::Peers::is_not_connected(
 auto PeerManager::Peers::peer_factory(Endpoint endpoint, const int id) noexcept
     -> std::unique_ptr<p2p::internal::Peer>
 {
-    switch (params::Data::chains_.at(chain_).p2p_protocol_) {
+    switch (params::Data::Chains().at(chain_).p2p_protocol_) {
         case p2p::Protocol::bitcoin: {
             return factory::BitcoinP2PPeerLegacy(
                 api_,

@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -56,7 +56,8 @@ constexpr auto sync_map_ = [] {
     for (const auto& chain : opentxs::blockchain::DefinedChains()) {
         auto& [table, name] = map[chain];
         table = offset + static_cast<int>(chain);
-        name = opentxs::blockchain::params::Data::chains_.at(chain)
+        name = opentxs::blockchain::params::Data::Chains()
+                   .at(chain)
                    .display_string_;
     }
 

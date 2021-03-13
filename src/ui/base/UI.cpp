@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -130,7 +130,7 @@ auto UnitID(const api::Core& api, const blockchain::Type chain) noexcept
 
     try {
         const auto preimage =
-            blockchain::params::Data::chains_.at(chain).display_ticker_;
+            blockchain::params::Data::Chains().at(chain).display_ticker_;
         output->CalculateDigest(preimage);
     } catch (...) {
     }

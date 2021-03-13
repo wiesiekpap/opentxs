@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -150,6 +150,8 @@ OPENTXS_EXPORT auto preallocated(const std::size_t size, void* out) noexcept
     -> AllocateOutput;
 OPENTXS_EXPORT auto reader(const WritableView& in) noexcept -> ReadView;
 OPENTXS_EXPORT auto reader(const Space& in) noexcept -> ReadView;
+OPENTXS_EXPORT auto reader(const std::vector<std::uint8_t>& in) noexcept
+    -> ReadView;
 OPENTXS_EXPORT auto space(const std::size_t size) noexcept -> Space;
 OPENTXS_EXPORT auto space(const ReadView bytes) noexcept -> Space;
 OPENTXS_EXPORT auto valid(const ReadView view) noexcept -> bool;

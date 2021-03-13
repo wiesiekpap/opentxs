@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2020 The Open-Transactions developers
+# Copyright (c) 2010-2021 The Open-Transactions developers
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -34,7 +34,11 @@ if(CMAKE_CROSSCOMPILING)
   set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE NEVER)
 endif()
 
-find_package(SWIG 4.0.0 REQUIRED)
+find_package(
+  SWIG
+  4.0.0
+  REQUIRED
+)
 
 if(CMAKE_CROSSCOMPILING)
   set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM

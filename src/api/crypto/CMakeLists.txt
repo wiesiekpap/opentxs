@@ -1,17 +1,24 @@
-# Copyright (c) 2010-2020 The Open-Transactions developers
+# Copyright (c) 2010-2021 The Open-Transactions developers
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_subdirectory(base58)
 
-set(cxx-sources
-    Asymmetric.cpp
-    Config.cpp
-    Crypto.cpp
-    Encode.cpp
-    Hash.cpp
-    Symmetric.cpp
+add_library(
+  opentxs-api-crypto OBJECT
+  "Asymmetric.cpp"
+  "Asymmetric.hpp"
+  "Config.cpp"
+  "Config.hpp"
+  "Crypto.cpp"
+  "Crypto.hpp"
+  "Encode.cpp"
+  "Encode.hpp"
+  "Hash.cpp"
+  "Hash.hpp"
+  "Symmetric.cpp"
+  "Symmetric.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/crypto/Asymmetric.hpp"
@@ -22,22 +29,11 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/crypto/Symmetric.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/crypto/Util.hpp"
 )
-set(cxx-headers
-    ${cxx-install-headers}
-    Asymmetric.hpp
-    Config.hpp
-    Crypto.hpp
-    Encode.hpp
-    Hash.hpp
-    Symmetric.hpp
-)
-
-add_library(opentxs-api-crypto OBJECT ${cxx-sources} ${cxx-headers})
-target_include_directories(
-  opentxs-api-crypto SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
-)
 target_link_libraries(
   opentxs-api-crypto PRIVATE Boost::headers opentxs::messages
+)
+target_include_directories(
+  opentxs-api-crypto SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
 
 if(OPENSSL_EXPORT)
@@ -50,6 +46,8 @@ else()
   )
 endif()
 
+target_sources(opentxs-api-crypto PRIVATE ${cxx-install-headers})
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-api-crypto>)
 add_dependencies(opentxs-api-crypto generated_code)
 
 if(OPENTXS_STANDALONE)

@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -72,7 +72,7 @@ auto HeaderOracle::GenesisBlockHash(const blockchain::Type type)
             if (cache.end() != it) { return it->second; }
         }
 
-        const auto& data = params::Data::chains_.at(type);
+        const auto& data = params::Data::Chains().at(type);
         const auto [it, added] = cache.emplace(
             type, Data::Factory(data.genesis_hash_hex_, Data::Mode::Hex));
 
@@ -724,7 +724,7 @@ auto HeaderOracle::evaluate_candidate(
 
 auto HeaderOracle::GetDefaultCheckpoint() const noexcept -> CheckpointData
 {
-    const auto& checkpoint = params::Data::chains_.at(chain_).checkpoint_;
+    const auto& checkpoint = params::Data::Chains().at(chain_).checkpoint_;
 
     return CheckpointData{
         checkpoint.height_,

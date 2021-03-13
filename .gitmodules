@@ -19,3 +19,6 @@
 [submodule "deps/vcpkg"]
 	path = deps/vcpkg
 	url = https://github.com/microsoft/vcpkg
+[submodule "src/api/client/blockchain/bech32"]
+	path = deps/bech32
+	url = https://github.com/sipa/bech32

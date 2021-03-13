@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -83,7 +83,7 @@ Header::BitcoinFormat::BitcoinFormat(
     const bitcoin::Command command,
     const std::size_t payload,
     const OTData checksum) noexcept(false)
-    : magic_(params::Data::chains_.at(network).p2p_magic_bits_)
+    : magic_(params::Data::Chains().at(network).p2p_magic_bits_)
     , command_(SerializeCommand(command))
     , length_(payload)
     , checksum_()
@@ -123,7 +123,7 @@ auto Header::BitcoinFormat::Network() const noexcept -> blockchain::Type
     {
         auto output = std::map<std::uint32_t, blockchain::Type>{};
 
-        for (const auto& [chain, data] : params::Data::chains_) {
+        for (const auto& [chain, data] : params::Data::Chains()) {
             if (0 != data.p2p_magic_bits_) {
                 output.emplace(data.p2p_magic_bits_, chain);
             }

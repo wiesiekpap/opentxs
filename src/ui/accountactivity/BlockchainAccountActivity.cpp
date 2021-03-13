@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -79,9 +79,9 @@ BlockchainAccountActivity::BlockchainAccountActivity(
           accountID,
           AccountType::Blockchain,
           cb,
-          display::Definition{
-              blockchain::params::Data::chains_.at(ui::Chain(api, accountID))
-                  .scales_})
+          display::Definition{blockchain::params::Data::Chains()
+                                  .at(ui::Chain(api, accountID))
+                                  .scales_})
     , chain_(ui::Chain(Widget::api_, accountID))
     , confirmed_(0)
     , balance_cb_(zmq::ListenCallback::Factory(
@@ -340,14 +340,14 @@ auto BlockchainAccountActivity::ValidateAddress(
 
     using Style = api::client::blockchain::AddressStyle;
 
-    const auto [data, style, chains] =
+    const auto [data, style, chains, supported] =
         Widget::api_.Blockchain().DecodeAddress(in);
 
     if (Style::Unknown == style) { return false; }
 
     if (0 == chains.count(chain_)) { return false; }
 
-    return true;
+    return supported;
 }
 
 auto BlockchainAccountActivity::ValidateAmount(

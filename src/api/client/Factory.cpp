@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -141,6 +141,7 @@ auto Factory::BitcoinGenerationTransaction(
     auto outputs = std::vector<std::unique_ptr<
         opentxs::blockchain::block::bitcoin::internal::Output>>{};
     auto index{-1};
+    using Position = opentxs::blockchain::block::bitcoin::Script::Position;
 
     for (auto& [amount, pScript, keys] : scripts) {
         if (false == bool(pScript)) { return {}; }
@@ -154,7 +155,7 @@ auto Factory::BitcoinGenerationTransaction(
             chain,
             static_cast<std::uint32_t>(++index),
             amount,
-            factory::BitcoinScript(chain, reader(bytes)),
+            factory::BitcoinScript(chain, reader(bytes), Position::Output),
             std::move(keys)));
     }
 

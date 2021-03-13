@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -151,7 +151,7 @@ auto VerifyChecksum(
 {
     auto checksum = Data::Factory();
 
-    switch (params::Data::chains_.at(header.Network()).p2p_protocol_) {
+    switch (params::Data::Chains().at(header.Network()).p2p_protocol_) {
         case p2p::Protocol::bitcoin: {
             if (0 == payload.size()) {
                 checksum = Data::Factory("0x5df6e0e2", Data::Mode::Hex);

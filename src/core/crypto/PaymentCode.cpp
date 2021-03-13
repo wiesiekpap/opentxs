@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -983,7 +983,7 @@ auto PaymentCode::shared_secret_payment_v3(
     auto secret = shared_secret_mask_v1(local, remote, reason);
     auto hmac = api_.Factory().Secret({});
     const auto bip44 = be::big_uint32_buf_t{static_cast<std::uint32_t>(
-        blockchain::params::Data::chains_.at(chain).bip44_)};
+        blockchain::params::Data::Chains().at(chain).bip44_)};
 
     static_assert(sizeof(bip44) == sizeof(std::uint32_t));
 

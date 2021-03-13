@@ -1,4 +1,4 @@
-# Copyright (c) 2010-2020 The Open-Transactions developers
+# Copyright (c) 2010-2021 The Open-Transactions developers
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -45,11 +45,11 @@ add_opentx_test(unittests-opentxs-network-zeromq-router Test_RouterSocket.cpp)
 add_opentx_test(
   unittests-opentxs-network-zeromq-routerdealer Test_RouterDealer.cpp
 )
-
-if(OPENTXS_ALL_TESTS)
-  add_opentx_test(unittests-opentxs-network-zeromq-stress Test_Stress.cpp)
-endif()
-
+add_opentx_test(unittests-opentxs-network-zeromq-stress Test_Stress.cpp)
 add_opentx_test(
   unittests-opentxs-network-zeromq-subscribe Test_SubscribeSocket.cpp
+)
+
+set_tests_properties(
+  unittests-opentxs-network-zeromq-stress PROPERTIES DISABLED TRUE
 )

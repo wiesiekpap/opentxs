@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -64,7 +64,7 @@ struct BlockchainDestinationValidator final : public Super {
         }
 
         const auto decoded = api_.Blockchain().DecodeAddress(candidate);
-        const auto& [data, style, chains] = decoded;
+        const auto& [data, style, chains, supported] = decoded;
 
         if (0 == data->size()) {
             text << "unknown";
@@ -93,6 +93,9 @@ struct BlockchainDestinationValidator final : public Super {
             case Style::P2WSH: {
                 text << "P2WSH";
             } break;
+            case Style::P2TR: {
+                text << "P2TR";
+            } break;
             case Style::Unknown:
             default: {
                 text << "unsupported";
@@ -103,9 +106,15 @@ struct BlockchainDestinationValidator final : public Super {
         }
 
         if (validChain) {
-            reset(text.str());
+            if (supported) {
+                reset(text.str());
 
-            return QValidator::State::Acceptable;
+                return QValidator::State::Acceptable;
+            } else {
+                text << " not supported on " << chain;
+
+                return QValidator::State::Invalid;
+            }
         } else {
             text = std::stringstream{};
             text << "This address is only valid on ";

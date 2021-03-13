@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -46,7 +46,7 @@ Blocks::Blocks(
     , blank_position_(make_blank<block::Position>::value(api))
     , chain_(type)
     , genesis_([&] {
-        const auto& hex = params::Data::chains_.at(chain_).genesis_hash_hex_;
+        const auto& hex = params::Data::Chains().at(chain_).genesis_hash_hex_;
 
         return api_.Factory().Data(hex, StringStyle::Hex);
     }())
@@ -60,7 +60,7 @@ auto Blocks::LoadBitcoin(const block::Hash& block) const noexcept
     -> std::shared_ptr<const block::bitcoin::Block>
 {
     if (block == genesis_) {
-        const auto& hex = params::Data::chains_.at(chain_).genesis_block_hex_;
+        const auto& hex = params::Data::Chains().at(chain_).genesis_block_hex_;
         const auto data = api_.Factory().Data(hex, StringStyle::Hex);
 
         if (data->empty()) {

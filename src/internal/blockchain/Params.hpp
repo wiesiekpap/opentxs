@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -21,6 +21,8 @@
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/client/blockchain/AddressStyle.hpp"
+#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
@@ -43,6 +45,8 @@ struct Data {
     using ServiceBits = std::
         map<blockchain::Type, std::map<p2p::bitcoin::Service, p2p::Service>>;
 #endif  // OT_BLOCKCHAIN
+    using Style = api::client::blockchain::AddressStyle;
+    using ScriptMap = boost::container::flat_map<Style, bool>;
 
     struct Checkpoint {
         block::Height height_{};
@@ -50,13 +54,6 @@ struct Data {
         std::string previous_block_hash_{};
         std::string filter_header_{};
     };
-
-    static const ChainData chains_;
-#if OT_BLOCKCHAIN
-    static const FilterData genesis_filters_;
-    static const FilterTypes bip158_types_;
-    static const ServiceBits service_bits_;
-#endif  // OT_BLOCKCHAIN
 
     bool supported_{};
     bool testnet_{};
@@ -77,5 +74,15 @@ struct Data {
     Amount default_fee_rate_{};  // satoshis per 1000 bytes
     display::Definition scales_{};
     std::size_t block_download_batch_{};
+    ScriptMap scripts_{};
+
+#if OT_BLOCKCHAIN
+    static auto Bip158() noexcept -> const FilterTypes&;
+#endif  // OT_BLOCKCHAIN
+    static auto Chains() noexcept -> const ChainData&;
+#if OT_BLOCKCHAIN
+    static auto Filters() noexcept -> const FilterData&;
+    static auto Services() noexcept -> const ServiceBits&;
+#endif  // OT_BLOCKCHAIN
 };
 }  // namespace opentxs::blockchain::params

@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -55,6 +55,9 @@ public:
         PayToPubkey,
         PayToPubkeyHash,
         PayToScriptHash,
+        PayToWitnessPubkeyHash,
+        PayToWitnessScriptHash,
+        PayToTaproot,
         Input = 253,
         Empty = 254,
         Malformed = 255,
@@ -64,6 +67,7 @@ public:
         Coinbase = 0,
         Input = 1,
         Output = 2,
+        Redeem = 3,
     };
 
     OPENTXS_EXPORT virtual auto at(const std::size_t position) const
@@ -95,17 +99,19 @@ public:
     /// Value only present for Multisig patterns
     OPENTXS_EXPORT virtual auto N() const noexcept
         -> std::optional<std::uint8_t> = 0;
-    /// Value only present for PayToPubkey patterns
+    /// Value only present for PayToPubkey and PayToTaproot patterns
     OPENTXS_EXPORT virtual auto Pubkey() const noexcept
         -> std::optional<ReadView> = 0;
-    /// Value only present for PayToPubkeyHash patterns
+    /// Value only present for PayToPubkeyHash and PayToWitnessPubkeyHash
+    /// patterns
     OPENTXS_EXPORT virtual auto PubkeyHash() const noexcept
         -> std::optional<ReadView> = 0;
     /// Value only present for input scripts which spend PayToScriptHash outputs
     OPENTXS_EXPORT virtual auto RedeemScript() const noexcept
         -> std::unique_ptr<Script> = 0;
     OPENTXS_EXPORT virtual auto Role() const noexcept -> Position = 0;
-    /// Value only present for PayToScriptHash patterns
+    /// Value only present for PayToScriptHash and PayToWitnessScriptHash
+    /// patterns
     OPENTXS_EXPORT virtual auto ScriptHash() const noexcept
         -> std::optional<ReadView> = 0;
     OPENTXS_EXPORT virtual auto Serialize(

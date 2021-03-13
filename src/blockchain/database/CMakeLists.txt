@@ -1,29 +1,31 @@
-# Copyright (c) 2010-2020 The Open-Transactions developers
+# Copyright (c) 2010-2021 The Open-Transactions developers
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set(cxx-sources
-    Blocks.cpp
-    Database.cpp
-    Filters.cpp
-    Headers.cpp
-    Sync.cpp
-    Wallet.cpp
+add_library(
+  opentxs-blockchain-database OBJECT
+  "${opentxs_SOURCE_DIR}/src/internal/blockchain/database/Database.hpp"
+  "Blocks.cpp"
+  "Blocks.hpp"
+  "Database.cpp"
+  "Database.hpp"
+  "Filters.cpp"
+  "Filters.hpp"
+  "Headers.cpp"
+  "Headers.hpp"
+  "Sync.cpp"
+  "Sync.hpp"
+  "Wallet.cpp"
+  "Wallet.hpp"
 )
-
-set(cxx-headers
-    "${opentxs_SOURCE_DIR}/src/internal/blockchain/database/Database.hpp"
-    Blocks.hpp
-    Database.hpp
-    Filters.hpp
-    Headers.hpp
-    Sync.hpp
-    Wallet.hpp
-)
-
-add_library(opentxs-blockchain-database OBJECT ${cxx-sources} ${cxx-headers})
 target_link_libraries(
-  opentxs-blockchain-database PRIVATE Boost::headers opentxs::messages lmdb
+  opentxs-blockchain-database
+  PRIVATE
+    Boost::headers
+    opentxs::messages
+    lmdb
 )
+target_link_libraries(opentxs PUBLIC lmdb)
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-blockchain-database>)
 add_dependencies(opentxs-blockchain-database generated_code)

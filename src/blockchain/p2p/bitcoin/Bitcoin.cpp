@@ -1,4 +1,4 @@
-// Copyright (c) 2010-2020 The Open-Transactions developers
+// Copyright (c) 2010-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -260,7 +260,7 @@ auto TranslateServices(
         it = cache.find(chain);
 
         if (cache.end() == it) {
-            const auto& bits = params::Data::service_bits_.at(chain);
+            const auto& bits = params::Data::Services().at(chain);
             auto [it2, added] = cache.emplace(chain, InnerMap{});
 
             OT_ASSERT(added);
@@ -300,7 +300,7 @@ auto TranslateServices(
         std::end(input),
         [&output, chain](const auto& in) -> void {
             try {
-                output.emplace(params::Data::service_bits_.at(chain).at(in));
+                output.emplace(params::Data::Services().at(chain).at(in));
             } catch (...) {
             }
         });

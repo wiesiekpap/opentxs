@@ -1,21 +1,18 @@
-# Copyright (c) 2010-2020 The Open-Transactions developers
+# Copyright (c) 2010-2021 The Open-Transactions developers
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set(cxx-sources irrXML.cpp)
+add_library(irrxml OBJECT "irrXML.cpp")
 set(cxx-install-headers
-    CXMLReaderImpl.hpp
-    fast_atof.hpp
-    heapsort.hpp
-    irrArray.hpp
-    irrString.hpp
-    irrTypes.hpp
-    irrXML.hpp
+    "CXMLReaderImpl.hpp"
+    "fast_atof.hpp"
+    "heapsort.hpp"
+    "irrArray.hpp"
+    "irrString.hpp"
+    "irrTypes.hpp"
+    "irrXML.hpp"
 )
-set(cxx-headers ${cxx-install-headers})
-
-add_library(irrxml OBJECT ${cxx-sources} ${cxx-headers})
 
 if(NOT MSVC)
   target_compile_options(
@@ -33,7 +30,10 @@ if(NOT MSVC)
   )
 endif()
 
-if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
+if(${CMAKE_CXX_COMPILER_ID}
+   MATCHES
+   Clang
+)
   target_compile_options(
     irrxml
     PRIVATE
@@ -45,6 +45,9 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
       -Wno-suggest-override
   )
 endif()
+
+target_sources(irrxml PRIVATE ${cxx-install-headers})
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:irrxml>)
 
 if(OPENTXS_STANDALONE)
   install(
