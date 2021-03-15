@@ -36,7 +36,12 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 
-#define BITMASK(n) ((1 << (n)) - 1)
+constexpr auto BITMASK(std::uint64_t n) noexcept -> std::uint64_t
+{
+    constexpr auto one = std::uint64_t{1u};
+
+    return (one << n) - one;
+}
 
 namespace mp = boost::multiprecision;
 
@@ -109,16 +114,16 @@ BitReader::BitReader(std::uint8_t* data, int len)
 {
 }
 
-auto BitReader::eof() -> bool { return (len_ == 0 && n_ == 0); }
+auto BitReader::eof() -> bool { return (len_ == 0u && n_ == 0u); }
 
 auto BitReader::read(std::size_t nbits) -> std::uint64_t
 {
     // nbits is the number of bits the programmer is trying to read from our
     // internal data and, interpreted as big endian, return to the caller in
     // native format. Let's say he's trying to read 19 bits.
-    OT_ASSERT(nbits < 32);
+    OT_ASSERT(nbits < 32u);
 
-    std::uint64_t ret{0};
+    auto ret = std::uint64_t{0u};
 
     // The first loop iteration, nbits is therefore 19.
     while (nbits) {
@@ -129,26 +134,26 @@ auto BitReader::read(std::size_t nbits) -> std::uint64_t
         if (!n_) {
             // Let's say the raw data contains 500 bytes. so len_ is 500,
             // and definitely larger than 4 bytes.
-            if (len_ > 4) {
+            if (len_ > 4u) {
                 // We grab the next 4 bytes from the raw data into a
                 // uint32_t. The first byte is left-shifted 24 bits. The
                 // second 16 bits, the third 8 bits, and the fourth 0 bits,
                 // which are all OR'd together.
-                accum_ = (static_cast<std::uint32_t>(data_[0]) << 24) |
-                         (static_cast<std::uint32_t>(data_[1]) << 16) |
-                         (static_cast<std::uint32_t>(data_[2]) << 8) |
+                accum_ = (static_cast<std::uint32_t>(data_[0]) << 24u) |
+                         (static_cast<std::uint32_t>(data_[1]) << 16u) |
+                         (static_cast<std::uint32_t>(data_[2]) << 8u) |
                          (static_cast<std::uint32_t>(data_[3]));
                 // The data iterator is incremented by 4 bytes.
-                data_ += 4;
+                data_ += 4u;
                 // The length we're trying to read is decremented by 4
                 // bytes.
-                len_ -= 4;
+                len_ -= 4u;
                 // The number of bits in accum_ are incremented by 32.
-                n_ += 32;
+                n_ += 32u;
             }
             // If the raw data didn't even contain 4 bytes, then does it at
             // least contain more than 0?
-            else if (len_ > 0) {
+            else if (len_ > 0u) {
                 // Dereference data, grab one byte to accum_, and increment
                 // the data pointer.
                 accum_ = *data_++;
@@ -157,9 +162,9 @@ auto BitReader::read(std::size_t nbits) -> std::uint64_t
                 --len_;
                 // n_ records that we now have 8 more bits of data in
                 // accum_.
-                n_ += 8;
+                n_ += 8u;
             } else {
-                return 0;
+                return 0u;
             }
         }
 
@@ -167,7 +172,7 @@ auto BitReader::read(std::size_t nbits) -> std::uint64_t
         // bits the programmer is trying to read. We choose the smaller. So
         // if there are 10 bits in accum_, and he's trying to read 19,
         // 'toread' gets set to 10.
-        std::size_t toread = std::min(n_, nbits);
+        const auto toread = std::min<std::size_t>(n_, nbits);
         // ret is 0 on the first loop iteration. So this does nothing. But
         // subsequent iterations will, say, left-shift 10 bits to make room
         // for the 10 being read from accum_.
@@ -202,21 +207,21 @@ BitWriter::BitWriter(Space& output)
 
 void BitWriter::flush()
 {
-    if (n_ > 0) {
+    if (n_ > 0u) {
         // Assert n is smaller than 8 because if it were larger, it should
         // already have been handled in the write function. Remember, n_ is
         // the number of bits stored in accum_.
-        OT_ASSERT(n_ < 8);
+        OT_ASSERT(n_ < 8u);
 
         auto result{static_cast<std::uint8_t>(accum_ & BITMASK(n_))};
-        result <<= (8 - n_);
+        result <<= (8u - n_);
 
         output_.emplace_back(std::byte{result});
 
         // Since we read all the n_ bits out of accum_, we set both back to
         // 0.
-        n_ = 0;
-        accum_ = 0;
+        n_ = 0u;
+        accum_ = 0u;
     }
 }
 
@@ -278,19 +283,19 @@ void BitWriter::write(std::size_t nbits, std::uint64_t value)
 
         // BY THIS POINT, what we've done is either write ALL of our new
         // bits to accum_, OR wrote as many as would fit.
-        while (n_ >= 8) {
+        while (n_ >= 8u) {
             // Why n_ - 8? n_ contains the number of bits in accum_. We know
             // that it's at least 8 (or larger). Say there are 19 bits in
             // accum_. n_ -8 would be 11. So accum_ is right-shifted 11 bits
             // in order to get the most significant 8 bits first. Those 8
             // bits are bitmasked and copied into result.
-            std::uint8_t result = (accum_ >> (n_ - 8)) & BITMASK(8);
+            std::uint8_t result = (accum_ >> (n_ - 8u)) & BITMASK(8u);
 
             // result is then concatenated to output_.
             output_.emplace_back(std::byte{result});
             // n_ (the number of bits containing data in accum_) is
             // decremented by 8, so from 19 to 11.
-            n_ -= 8;
+            n_ -= 8u;
 
             // Here accum_ is bitmasked by n_, or say 11 bits. That's
             // because the most significant 8 bits from the original 19 were
@@ -309,7 +314,7 @@ SerializedBloomFilter::SerializedBloomFilter(
     , tweak_(tweak)
     , flags_(static_cast<std::uint8_t>(update))
 {
-    static_assert(9 == sizeof(SerializedBloomFilter));
+    static_assert(9u == sizeof(SerializedBloomFilter));
 }
 
 SerializedBloomFilter::SerializedBloomFilter() noexcept
@@ -317,14 +322,14 @@ SerializedBloomFilter::SerializedBloomFilter() noexcept
     , tweak_()
     , flags_()
 {
-    static_assert(9 == sizeof(SerializedBloomFilter));
+    static_assert(9u == sizeof(SerializedBloomFilter));
 }
 
 auto BlockHashToFilterKey(const ReadView hash) noexcept(false) -> ReadView
 {
-    if (16 > hash.size()) { throw std::runtime_error("Hash too short"); }
+    if (16u > hash.size()) { throw std::runtime_error("Hash too short"); }
 
-    return ReadView{hash.data(), 16};
+    return ReadView{hash.data(), 16u};
 }
 
 auto DecodeSerializedCfilter(const ReadView bytes) noexcept(false)
@@ -332,14 +337,14 @@ auto DecodeSerializedCfilter(const ReadView bytes) noexcept(false)
 {
     auto output = std::pair<std::uint32_t, ReadView>{};
     auto it = reinterpret_cast<const std::byte*>(bytes.data());
-    auto expectedSize = std::size_t{1};
+    auto expectedSize = std::size_t{1u};
 
     if (expectedSize > bytes.size()) {
         throw std::runtime_error("Empty input");
     }
 
-    auto elementCount = std::size_t{0};
-    auto csBytes = std::size_t{0};
+    auto elementCount = std::size_t{0u};
+    auto csBytes = std::size_t{0u};
     const auto haveElementCount = bitcoin::DecodeCompactSizeFromPayload(
         it, expectedSize, bytes.size(), elementCount, csBytes);
 
@@ -355,7 +360,7 @@ auto DecodeSerializedCfilter(const ReadView bytes) noexcept(false)
     }
 #pragma GCC diagnostic pop
 
-    const auto dataSize = bytes.size() - (1 + csBytes);
+    const auto dataSize = bytes.size() - (1u + csBytes);
     output.first = static_cast<std::uint32_t>(elementCount);
     output.second = {reinterpret_cast<const char*>(it), dataSize};
 
@@ -380,7 +385,7 @@ auto Deserialize(const Type chain, const std::uint8_t type) noexcept
             return DefaultFilter(chain);
         };
         case 88: {
-            return filter::Type::Extended_opentxs;
+            return filter::Type::ES;
         }
         default: {
             return filter::Type::Unknown;
@@ -393,7 +398,7 @@ auto Deserialize(const api::Core& api, const ReadView in) noexcept
 {
     auto output = make_blank<block::Position>::value(api);
 
-    if ((nullptr == in.data()) || (0 == in.size())) { return output; }
+    if ((nullptr == in.data()) || (0u == in.size())) { return output; }
 
     if (in.size() < sizeof(output.first)) { return output; }
 
@@ -401,7 +406,7 @@ auto Deserialize(const api::Core& api, const ReadView in) noexcept
     auto it = reinterpret_cast<const std::byte*>(in.data());
     std::memcpy(&output.first, it, sizeof(output.first));
 
-    if (0 < size) {
+    if (0u < size) {
         std::advance(it, sizeof(output.first));
         auto bytes = output.second->WriteInto()(size);
 
@@ -418,11 +423,11 @@ auto FilterHashToHeader(
     const ReadView hash,
     const ReadView previous) noexcept -> OTData
 {
-    static const auto blank = std::array<std::uint8_t, 32>{};
+    static const auto blank = std::array<std::uint8_t, 32u>{};
     auto preimage = api.Factory().Data(hash);
     auto output = api.Factory().Data();
 
-    if (0 == previous.size()) {
+    if (0u == previous.size()) {
         preimage->Concatenate(blank.data(), blank.size());
     } else {
         preimage->Concatenate(previous.data(), previous.size());
@@ -467,14 +472,14 @@ auto Format(const Type chain, const opentxs::Amount amount) noexcept
 auto GetFilterParams(const filter::Type type) noexcept(false) -> FilterParams
 {
     static const auto gcs_bits_ = std::map<filter::Type, std::uint8_t>{
-        {filter::Type::Basic_BIP158, 19},
-        {filter::Type::Basic_BCHVariant, 19},
-        {filter::Type::Extended_opentxs, 23},
+        {filter::Type::Basic_BIP158, 19u},
+        {filter::Type::Basic_BCHVariant, 19u},
+        {filter::Type::ES, 23u},
     };
     static const auto gcs_fp_rate_ = std::map<filter::Type, std::uint32_t>{
-        {filter::Type::Basic_BIP158, 784931},
-        {filter::Type::Basic_BCHVariant, 784931},
-        {filter::Type::Extended_opentxs, 12558895},
+        {filter::Type::Basic_BIP158, 784931u},
+        {filter::Type::Basic_BCHVariant, 784931u},
+        {filter::Type::ES, 12558895u},
     };
 
     return {gcs_bits_.at(type), gcs_fp_rate_.at(type)};

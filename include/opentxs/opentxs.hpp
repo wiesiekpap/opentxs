@@ -84,6 +84,7 @@
 #include "opentxs/blockchain/client/BlockOracle.hpp"
 #include "opentxs/blockchain/client/FilterOracle.hpp"
 #include "opentxs/blockchain/client/HeaderOracle.hpp"
+#include "opentxs/blockchain/client/Wallet.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/blockchain/p2p/Peer.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"

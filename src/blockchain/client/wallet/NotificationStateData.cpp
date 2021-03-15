@@ -17,6 +17,7 @@
 #include <utility>
 #include <vector>
 
+#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -24,6 +25,8 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/client/blockchain/BalanceList.hpp"
+#include "opentxs/api/client/blockchain/BalanceTree.hpp"
 #include "opentxs/api/client/blockchain/PaymentCode.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/FilterType.hpp"
@@ -46,7 +49,7 @@ namespace opentxs::blockchain::client::wallet
 {
 NotificationStateData::NotificationStateData(
     const api::Core& api,
-    const api::client::Blockchain& blockchain,
+    const api::client::internal::Blockchain& blockchain,
     const internal::Network& network,
     const WalletDatabase& db,
     const SimpleCallback& taskFinished,
@@ -62,16 +65,17 @@ NotificationStateData::NotificationStateData(
           blockchain,
           network,
           db,
+          OTNymID{nym},
           calculate_id(api, chain, code),
           taskFinished,
           jobCounter,
           threadPool,
           filter,
           Subchain::Notification)
-    , nym_(nym)
     , path_(std::move(path))
     , code_(std::move(code))
 {
+    init();
 }
 
 auto NotificationStateData::calculate_id(
@@ -146,12 +150,13 @@ auto NotificationStateData::handle_confirmed_matches(
     const block::Position& position,
     const block::Block::Matches& confirmed) noexcept -> void
 {
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(confirmed.size())(
+    const auto& [utxo, general] = confirmed;
+    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(general.size())(
         " confirmed matches for ")(code_->asBase58())(" on ")(
         DisplayString(network_.Chain()))
         .Flush();
 
-    if (0u == confirmed.size()) { return; }
+    if (0u == general.size()) { return; }
 
     const auto reason = api_.Factory().PasswordPrompt(
         "Decoding payment code notification transaction");
@@ -168,7 +173,7 @@ auto NotificationStateData::handle_confirmed_matches(
         OT_FAIL;
     }
 
-    for (const auto& [txid, elementID] : confirmed) {
+    for (const auto& [txid, elementID] : general) {
         const auto& [version, subchainID] = elementID;
         LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(
             DisplayString(network_.Chain()))(" transaction ")(txid->asHex())(
@@ -213,12 +218,20 @@ auto NotificationStateData::handle_confirmed_matches(
                     code_->asBase58())
                     .Flush();
                 const auto& account = blockchain_.PaymentCodeSubaccount(
-                    nym_, code_, sender, path_, network_.Chain(), reason);
+                    owner_, code_, sender, path_, network_.Chain(), reason);
                 LogVerbose(OT_METHOD)(__FUNCTION__)(": Created new account ")(
                     account.ID())
                     .Flush();
             }
         }
     }
+}
+
+auto NotificationStateData::type() const noexcept -> std::stringstream
+{
+    auto output = std::stringstream{};
+    output << "Payment code notification";
+
+    return output;
 }
 }  // namespace opentxs::blockchain::client::wallet

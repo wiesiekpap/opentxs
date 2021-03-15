@@ -68,7 +68,9 @@ Frame::Frame(const ProtobufType& input) noexcept
 Frame::Frame(const void* data, const std::size_t bytes) noexcept
     : Frame(bytes)
 {
-    std::memcpy(zmq_msg_data(&message_), data, zmq_msg_size(&message_));
+    if (0u < bytes) {
+        std::memcpy(zmq_msg_data(&message_), data, zmq_msg_size(&message_));
+    }
 }
 
 Frame::operator std::string() const noexcept { return std::string{Bytes()}; }

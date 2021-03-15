@@ -43,7 +43,10 @@ namespace blockchain
 class Deterministic;
 }  // namespace blockchain
 
-class Blockchain;
+namespace internal
+{
+struct Blockchain;
+}  // namespace internal
 }  // namespace client
 
 class Core;
@@ -97,7 +100,7 @@ public:
 
     NotificationStateData(
         const api::Core& api,
-        const api::client::Blockchain& blockchain,
+        const api::client::internal::Blockchain& blockchain,
         const internal::Network& network,
         const WalletDatabase& db,
         const SimpleCallback& taskFinished,
@@ -112,9 +115,10 @@ public:
     ~NotificationStateData() final = default;
 
 private:
-    const OTNymID nym_;
     const proto::HDPath path_;
     OTPaymentCode code_;
+
+    auto type() const noexcept -> std::stringstream final;
 
     auto check_index() noexcept -> bool final;
     auto handle_confirmed_matches(

@@ -73,6 +73,8 @@ class Identifier;
 
 namespace opentxs::blockchain::block::bitcoin::internal
 {
+auto EncodeBip34(block::Height height) noexcept -> Space;
+
 struct Input : virtual public bitcoin::Input {
     using Signature = std::pair<ReadView, ReadView>;
     using Signatures = std::vector<Signature>;
@@ -87,7 +89,6 @@ struct Input : virtual public bitcoin::Input {
     virtual auto NetBalanceChange(
         const api::client::Blockchain& blockchain,
         const identifier::Nym& nym) const noexcept -> opentxs::Amount = 0;
-    virtual auto PrintScript() const noexcept -> std::string = 0;
     virtual auto SignatureVersion() const noexcept
         -> std::unique_ptr<Input> = 0;
     virtual auto SignatureVersion(std::unique_ptr<internal::Script> subscript)
@@ -143,7 +144,6 @@ struct Output : virtual public bitcoin::Output {
     virtual auto NetBalanceChange(
         const api::client::Blockchain& blockchain,
         const identifier::Nym& nym) const noexcept -> opentxs::Amount = 0;
-    virtual auto PrintScript() const noexcept -> std::string = 0;
     virtual auto SigningSubscript() const noexcept
         -> std::unique_ptr<internal::Script> = 0;
 
@@ -187,7 +187,6 @@ struct Script : virtual public bitcoin::Script {
         -> std::vector<OTData> = 0;
     virtual auto SigningSubscript(const blockchain::Type chain) const noexcept
         -> std::unique_ptr<Script> = 0;
-    virtual auto str() const noexcept -> std::string = 0;
 
     ~Script() override = default;
 };
@@ -292,7 +291,7 @@ OPENTXS_EXPORT auto BitcoinTransaction(
     const api::Core& api,
     const api::client::Blockchain& blockchain,
     const blockchain::Type chain,
-    const bool isGeneration,
+    const std::size_t position,
     const Time& time,
     blockchain::bitcoin::EncodedTransaction&& parsed) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Transaction>;
@@ -353,7 +352,7 @@ OPENTXS_EXPORT auto BitcoinTransactionOutput(
     const api::Core& api,
     const api::client::Blockchain& blockchain,
     const blockchain::Type chain,
-    const proto::BlockchainTransactionOutput) noexcept
+    const proto::BlockchainTransactionOutput& in) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Output>;
 auto BitcoinTransactionOutputs(
     std::vector<std::unique_ptr<blockchain::block::bitcoin::internal::Output>>&&

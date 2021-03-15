@@ -191,7 +191,7 @@ struct Test_BlockchainActivity : public ::testing::Test {
             api_,
             api_.Blockchain(),
             ot::blockchain::Type::Bitcoin,
-            false,
+            std::numeric_limits<std::size_t>::max(),
             time,
             ot::blockchain::bitcoin::EncodedTransaction::Deserialize(
                 api_,
@@ -225,7 +225,7 @@ struct Test_BlockchainActivity : public ::testing::Test {
             api_,
             api_.Blockchain(),
             ot::blockchain::Type::Bitcoin,
-            false,
+            std::numeric_limits<std::size_t>::max(),
             time,
             ot::blockchain::bitcoin::EncodedTransaction::Deserialize(
                 api_,

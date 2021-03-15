@@ -40,6 +40,7 @@ public:
     auto BlockchainBalance() const noexcept -> std::string final;
     auto BlockchainPeer() const noexcept -> std::string final;
     auto BlockchainReorg() const noexcept -> std::string final;
+    auto BlockchainScanProgress() const noexcept -> std::string final;
     auto BlockchainStateChange() const noexcept -> std::string final;
     auto BlockchainSyncProgress() const noexcept -> std::string final;
     auto BlockchainTransactions() const noexcept -> std::string final;

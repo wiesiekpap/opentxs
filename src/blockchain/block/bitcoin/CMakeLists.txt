@@ -6,6 +6,7 @@
 add_library(
   opentxs-blockchain-block-bitcoin OBJECT
   "${opentxs_SOURCE_DIR}/src/internal/blockchain/block/bitcoin/Bitcoin.hpp"
+  "Bitcoin.cpp"
   "Block.cpp"
   "Block.hpp"
   "BlockParser.cpp"

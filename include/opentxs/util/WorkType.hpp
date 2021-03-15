@@ -25,22 +25,23 @@ enum class WorkType : OTZMQWorkType {
     ActivityThreadUpdated = 8,
     UIModelUpdated = 9,
     WorkflowAccountUpdate = 10,
-    BlockchainAccountCreated = 11,
-    BlockchainBalance = 12,
-    BlockchainNewHeader = 13,
-    BlockchainNewTransaction = 14,
-    BlockchainPeerAdded = 15,
-    BlockchainReorg = 16,
-    BlockchainStateChange = 17,
-    BlockchainSyncProgress = 18,
-    OTXConnectionStatus = 19,
-    OTXTaskComplete = 20,
-    OTXSearchNym = 21,
-    OTXSearchServer = 22,
-    OTXSearchUnit = 23,
-    DHTRequestNym = 24,
-    DHTRequestServer = 25,
-    DHTRequestUnit = 26,
+    BlockchainAccountCreated = 128,
+    BlockchainBalance = 129,
+    BlockchainNewHeader = 130,
+    BlockchainNewTransaction = 131,
+    BlockchainPeerAdded = 132,
+    BlockchainReorg = 133,
+    BlockchainStateChange = 134,
+    BlockchainSyncProgress = 145,
+    BlockchainWalletScanProgress = 136,
+    OTXConnectionStatus = 256,
+    OTXTaskComplete = 257,
+    OTXSearchNym = 258,
+    OTXSearchServer = 259,
+    OTXSearchUnit = 260,
+    DHTRequestNym = 1021,
+    DHTRequestServer = 1022,
+    DHTRequestUnit = 1023,
     SyncRequest = 1024,
     SyncAcknowledgement = 1025,
     SyncReply = 1026,
@@ -158,12 +159,21 @@ constexpr auto value(const WorkType in) noexcept
  *          1: chain type as blockchain::Type
  *          2: state as bool (enabled = true)
  *
- *   BlockchainSyncProgress: reports the wallet sync progress for a particular
- *                           blockchain
+ *   BlockchainSyncProgress: reports the cfilter sync progress
  *       * Additional frames:
  *          1: chain type as blockchain::Type
  *          2: current progress as blockchain::block::Height
  *          3: target height as blockchain::block::Height
+ *
+ *   BlockchainWalletScanProgress: reports the blockchain wallet scan progress
+ *       * Additional frames:
+ *          1: chain type as blockchain::Type
+ *          2: account owner as identifier::Nym (encoded as byte sequence)
+ *          3: account id as Identifier (encoded as byte sequence)
+ *          4: subchain type as api::client::blockchain::Subchain
+ *          5: last scan height as blockchain::block::Height
+ *          6: last scan hash as blockchain::block::Hash (encoded as byte
+ *             sequence)
  *
  *   OTXConnectionStatus: reports state changes to notary connections
  *       * Additional frames:

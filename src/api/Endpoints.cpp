@@ -24,6 +24,7 @@
 #define BLOCKCHAIN_FILTER_UPDATED "blockchain/filter/"
 #define BLOCKCHAIN_PEER_ENDPOINT "blockchain/peer/"
 #define BLOCKCHAIN_REORG_ENDPOINT "blockchain/reorg"
+#define BLOCKCHAIN_SCAN_ENDPOINT "blockchain/scan"
 #define BLOCKCHAIN_STATE_ENDPOINT "blockchain/state"
 #define BLOCKCHAIN_SYNC_ENDPOINT "blockchain/sync"
 #define BLOCKCHAIN_TRANSACTIONS_ENDPOINT "blockchain/transactions"
@@ -114,6 +115,11 @@ auto Endpoints::BlockchainPeer() const noexcept -> std::string
 auto Endpoints::BlockchainReorg() const noexcept -> std::string
 {
     return build_inproc_path(BLOCKCHAIN_REORG_ENDPOINT, ENDPOINT_VERSION_1);
+}
+
+auto Endpoints::BlockchainScanProgress() const noexcept -> std::string
+{
+    return build_inproc_path(BLOCKCHAIN_SCAN_ENDPOINT, ENDPOINT_VERSION_1);
 }
 
 auto Endpoints::BlockchainStateChange() const noexcept -> std::string

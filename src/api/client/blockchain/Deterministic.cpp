@@ -76,6 +76,34 @@ Deterministic::Deterministic(
 {
 }
 
+#if OT_CRYPTO_WITH_BIP32
+auto Deterministic::accept(
+    const rLock& lock,
+    const Subchain type,
+    const std::size_t preallocate,
+    const Identifier& contact,
+    const std::string& label,
+    const Time time,
+    const Bip32Index index,
+    const PasswordPrompt& reason) const noexcept -> std::optional<Bip32Index>
+{
+    check_lookahead(lock, type, preallocate, reason);
+    set_metadata(lock, type, index, contact, label);
+    auto& element =
+        const_cast<Deterministic&>(*this).element(lock, type, index);
+    element.Reserve(time);
+
+    if (save(lock)) {
+        LogTrace(OT_METHOD)(__FUNCTION__)(": Accepted index ")(index).Flush();
+
+        return index;
+    } else {
+
+        return std::nullopt;
+    }
+}
+#endif  // OT_CRYPTO_WITH_BIP32
+
 auto Deterministic::BalanceElement(const Subchain type, const Bip32Index index)
     const noexcept(false) -> const Element&
 {
@@ -83,6 +111,92 @@ auto Deterministic::BalanceElement(const Subchain type, const Bip32Index index)
 
     return element(lock, type, index);
 }
+
+#if OT_CRYPTO_WITH_BIP32
+auto Deterministic::check(
+    const rLock& lock,
+    const Subchain type,
+    const std::size_t preallocate,
+    const Identifier& contact,
+    const std::string& label,
+    const Time time,
+    const Bip32Index candidate,
+    const PasswordPrompt& reason,
+    Fallback& fallback,
+    std::size_t& gap) const noexcept(false) -> std::optional<Bip32Index>
+{
+    using Status = Element::Availability;
+    const auto accept = [&](Bip32Index index) {
+        return this->accept(
+            lock, type, preallocate, contact, label, time, index, reason);
+    };
+
+    if (is_generated(lock, type, candidate)) {
+        LogTrace(OT_METHOD)(__FUNCTION__)(": Examining generated index ")(
+            candidate)
+            .Flush();
+        const auto& element = this->element(lock, type, candidate);
+        const auto status = element.IsAvailable(contact, label);
+
+        switch (status) {
+            case Status::NeverUsed: {
+                LogTrace(OT_METHOD)(__FUNCTION__)(": index ")(candidate)(
+                    " was never used")
+                    .Flush();
+
+                return accept(candidate);
+            }
+            case Status::Reissue: {
+                LogTrace(OT_METHOD)(__FUNCTION__)(": Recycling unused index ")(
+                    candidate)
+                    .Flush();
+
+                return accept(candidate);
+            }
+            case Status::Used: {
+                LogTrace(OT_METHOD)(__FUNCTION__)(": index ")(candidate)(
+                    " has confirmed transactions")
+                    .Flush();
+                gap = 0;
+
+                throw std::runtime_error("Not acceptable");
+            }
+            case Status::MetadataConflict: {
+                LogTrace(OT_METHOD)(__FUNCTION__)(": index ")(candidate)(
+                    " can not be used")
+                    .Flush();
+                ++gap;
+
+                throw std::runtime_error("Not acceptable");
+            }
+            case Status::Reserved: {
+                LogTrace(OT_METHOD)(__FUNCTION__)(": index ")(candidate)(
+                    " is reserved")
+                    .Flush();
+                ++gap;
+
+                throw std::runtime_error("Not acceptable");
+            }
+            case Status::StaleUnconfirmed:
+            default: {
+                LogTrace(OT_METHOD)(__FUNCTION__)(": saving index ")(candidate)(
+                    " as a fallback")
+                    .Flush();
+                fallback[status].emplace(candidate);
+                ++gap;
+
+                throw std::runtime_error("Not acceptable");
+            }
+        }
+    } else {
+        LogTrace(OT_METHOD)(__FUNCTION__)(": Generating index ")(candidate)
+            .Flush();
+        generate(lock, type, candidate, reason);
+
+        return accept(candidate);
+    }
+}
+#endif  // OT_CRYPTO_WITH_BIP32
 
 auto Deterministic::check_activity(
     const rLock& lock,
@@ -125,8 +239,8 @@ void Deterministic::check_lookahead(
     const PasswordPrompt& reason) const noexcept(false)
 {
 #if OT_CRYPTO_WITH_BIP32
-    check_lookahead(lock, data_.internal_.type_, reason);
-    check_lookahead(lock, data_.external_.type_, reason);
+    check_lookahead(lock, data_.internal_.type_, 0, reason);
+    check_lookahead(lock, data_.external_.type_, 0, reason);
 #endif  // OT_CRYPTO_WITH_BIP32
 }
 
@@ -134,9 +248,12 @@ void Deterministic::check_lookahead(
 void Deterministic::check_lookahead(
     const rLock& lock,
     const Subchain type,
+    const std::size_t preallocate,
     const PasswordPrompt& reason) const noexcept(false)
 {
-    while (need_lookahead(lock, type)) { generate_next(lock, type, reason); }
+    while (need_lookahead(lock, type, preallocate)) {
+        generate_next(lock, type, reason);
+    }
 }
 #endif  // OT_CRYPTO_WITH_BIP32
 
@@ -386,15 +503,19 @@ auto Deterministic::mutable_element(
 }
 
 #if OT_CRYPTO_WITH_BIP32
-auto Deterministic::need_lookahead(const rLock& lock, const Subchain type)
-    const noexcept -> bool
+auto Deterministic::need_lookahead(
+    const rLock& lock,
+    const Subchain type,
+    const std::size_t preallocate) const noexcept -> bool
 {
-    return window_ > (generated_.at(type) - used_.at(type));
+    return std::max<Bip32Index>(window_, preallocate) >
+           (generated_.at(type) - used_.at(type));
 }
 #endif  // OT_CRYPTO_WITH_BIP32
 
 auto Deterministic::Reserve(
     const Subchain type,
+    const std::size_t preallocate,
     const PasswordPrompt& reason,
     const Identifier& contact,
     const std::string& label,
@@ -403,7 +524,7 @@ auto Deterministic::Reserve(
 #if OT_CRYPTO_WITH_BIP32
     auto lock = rLock{lock_};
 
-    return use_next(lock, type, reason, contact, label, time);
+    return use_next(lock, type, preallocate, reason, contact, label, time);
 #else
 
     return std::nullopt;
@@ -483,103 +604,45 @@ auto Deterministic::unconfirm(
 auto Deterministic::use_next(
     const rLock& lock,
     const Subchain type,
+    const std::size_t preallocate,
     const PasswordPrompt& reason,
     const Identifier& contact,
     const std::string& label,
     const Time time) const noexcept -> std::optional<Bip32Index>
 {
     try {
-        const auto accept = [&](Bip32Index index) -> std::optional<Bip32Index> {
-            check_lookahead(lock, type, reason);
-            set_metadata(lock, type, index, contact, label);
-            auto& element =
-                const_cast<Deterministic&>(*this).element(lock, type, index);
-            element.Reserve(time);
-
-            if (save(lock)) {
-                LogTrace(OT_METHOD)(__FUNCTION__)(": Accepted index ")(index)
-                    .Flush();
-
-                return index;
-            } else {
-
-                return std::nullopt;
-            }
-        };
         auto gap = std::size_t{0};
         auto candidate = used_.at(type);
-        using Status = Element::Availability;
-        auto fallback = std::map<Status, std::set<Bip32Index>>{};
+        auto fallback = Fallback{};
 
         while (gap < window_) {
-            if (is_generated(lock, type, candidate)) {
-                LogTrace(OT_METHOD)(__FUNCTION__)(
-                    ": Examining generated index ")(candidate)
-                    .Flush();
-                const auto& element = this->element(lock, type, candidate);
-                const auto status = element.IsAvailable(contact, label);
+            try {
 
-                switch (status) {
-                    case Status::NeverUsed: {
-                        LogTrace(OT_METHOD)(__FUNCTION__)(": index ")(
-                            candidate)(" was never used")
-                            .Flush();
+                return check(
+                    lock,
+                    type,
+                    preallocate,
+                    contact,
+                    label,
+                    time,
+                    candidate,
+                    reason,
+                    fallback,
+                    gap);
+            } catch (...) {
+                ++candidate;
 
-                        return accept(candidate);
-                    }
-                    case Status::Reissue: {
-                        LogTrace(OT_METHOD)(__FUNCTION__)(
-                            ": Recycling unused index ")(candidate)
-                            .Flush();
-
-                        return accept(candidate);
-                    }
-                    case Status::Used: {
-                        LogTrace(OT_METHOD)(__FUNCTION__)(": index ")(
-                            candidate)(" has confirmed transactions")
-                            .Flush();
-                        gap = 0;
-                        ++candidate;
-
-                        continue;
-                    }
-                    case Status::MetadataConflict: {
-                        LogTrace(OT_METHOD)(__FUNCTION__)(": index ")(
-                            candidate)(" can not be used")
-                            .Flush();
-                        ++gap;
-                        ++candidate;
-                    } break;
-                    case Status::Reserved: {
-                        LogTrace(OT_METHOD)(__FUNCTION__)(": index ")(
-                            candidate)(" is reserved")
-                            .Flush();
-                        ++gap;
-                        ++candidate;
-                    } break;
-                    case Status::StaleUnconfirmed:
-                    default: {
-                        LogTrace(OT_METHOD)(__FUNCTION__)(": saving index ")(
-                            candidate)(" as a fallback")
-                            .Flush();
-                        fallback[status].emplace(candidate);
-                        ++gap;
-                        ++candidate;
-                    }
-                }
-            } else {
-                LogTrace(OT_METHOD)(__FUNCTION__)(": Generating index ")(
-                    candidate)
-                    .Flush();
-                generate(lock, type, candidate, reason);
-
-                return accept(candidate);
+                continue;
             }
         }
 
         LogTrace(OT_METHOD)(__FUNCTION__)(
             ": Gap limit reached. Searching for acceptable fallback")
             .Flush();
+        const auto accept = [&](Bip32Index index) {
+            return this->accept(
+                lock, type, preallocate, contact, label, time, index, reason);
+        };
 
         if (auto& set = fallback[Status::StaleUnconfirmed]; 0 < set.size()) {
             LogTrace(OT_METHOD)(__FUNCTION__)(
@@ -594,7 +657,28 @@ auto Deterministic::use_next(
             "limit")
             .Flush();
 
-        return accept(generate_next(lock, type, reason));
+        while (candidate < max_index_) {
+            try {
+
+                return check(
+                    lock,
+                    type,
+                    preallocate,
+                    contact,
+                    label,
+                    time,
+                    candidate,
+                    reason,
+                    fallback,
+                    gap);
+            } catch (...) {
+                ++candidate;
+
+                continue;
+            }
+        }
+
+        return {};
     } catch (...) {
 
         return {};

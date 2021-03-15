@@ -312,6 +312,13 @@ public:
         const opentxs::blockchain::block::Height current,
         const opentxs::blockchain::block::Height target) const noexcept
         -> void final;
+    auto ReportScan(
+        const Chain chain,
+        const identifier::Nym& owner,
+        const Identifier& account,
+        const blockchain::Subchain subchain,
+        const opentxs::blockchain::block::Position& progress) const noexcept
+        -> void final;
     auto RestoreNetworks() const noexcept -> void final;
 #endif  // OT_BLOCKCHAIN
     auto SenderContact(const blockchain::Key& key) const noexcept
@@ -522,6 +529,7 @@ private:
     OTZMQPublishSocket peer_updates_;
     OTZMQPublishSocket key_updates_;
     OTZMQPublishSocket sync_updates_;
+    OTZMQPublishSocket scan_updates_;
     OTZMQPublishSocket new_blockchain_accounts_;
     const Config base_config_;
     mutable std::map<Chain, Config> config_;

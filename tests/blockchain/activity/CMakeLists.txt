@@ -7,3 +7,13 @@ add_opentx_test(unittests-opentxs-blockchain-activity-labels Test_Labels.cpp)
 add_opentx_test(unittests-opentxs-blockchain-activity-merge Test_Merge.cpp)
 add_opentx_test(unittests-opentxs-blockchain-activity-threads Test_Threads.cpp)
 add_opentx_test(unittests-opentxs-blockchain-activity-ui Test_UI.cpp)
+
+set_tests_properties(
+  unittests-opentxs-blockchain-activity-merge PROPERTIES DISABLED TRUE
+)
+set_tests_properties(
+  unittests-opentxs-blockchain-activity-threads PROPERTIES DISABLED TRUE
+)
+set_tests_properties(
+  unittests-opentxs-blockchain-activity-ui PROPERTIES DISABLED TRUE
+)

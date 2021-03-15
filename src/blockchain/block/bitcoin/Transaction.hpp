@@ -67,6 +67,10 @@ public:
         const api::client::Contacts& contacts,
         const identifier::Nym& nym) const noexcept
         -> std::vector<OTIdentifier> final;
+    auto BlockPosition() const noexcept -> std::optional<std::size_t> final
+    {
+        return position_;
+    }
     auto CalculateSize() const noexcept -> std::size_t final
     {
         return calculate_size(false);
@@ -82,7 +86,6 @@ public:
     auto ExtractElements(const filter::Type style) const noexcept
         -> std::vector<Space> final;
     auto FindMatches(
-        const api::client::Blockchain& blockchain,
         const FilterType type,
         const Patterns& txos,
         const ParsedPatterns& elements) const noexcept -> Matches final;
@@ -97,6 +100,7 @@ public:
     {
         return *inputs_;
     }
+    auto Keys() const noexcept -> std::vector<KeyID> final;
     auto Locktime() const noexcept -> std::uint32_t final { return lock_time_; }
     auto Memo(const api::client::Blockchain& blockchain) const noexcept
         -> std::string final;
@@ -133,9 +137,15 @@ public:
         const api::client::Blockchain& blockchain,
         const blockchain::Type chain,
         const SerializeType& rhs) noexcept -> void final;
+    auto Print() const noexcept -> std::string final;
+    auto SetKeyData(const KeyData& data) noexcept -> void final;
     auto SetMemo(const std::string& memo) noexcept -> void final
     {
         memo_ = memo;
+    }
+    auto SetPosition(std::size_t position) noexcept -> void final
+    {
+        const_cast<std::optional<std::size_t>&>(position_) = position;
     }
 
     Transaction(
@@ -151,13 +161,64 @@ public:
         const std::string& memo,
         std::unique_ptr<internal::Inputs> inputs,
         std::unique_ptr<internal::Outputs> outputs,
-        std::vector<blockchain::Type>&& chains) noexcept(false);
+        std::vector<blockchain::Type>&& chains,
+        std::optional<std::size_t>&& position = std::nullopt) noexcept(false);
     Transaction(const Transaction&) noexcept;
 
     ~Transaction() final = default;
 
 private:
+    struct Cache {
+        template <typename F>
+        auto normalized(F cb) noexcept -> const Identifier&
+        {
+            auto lock = rLock{lock_};
+            auto& output = normalized_id_;
+
+            if (false == output.has_value()) { output = cb(); }
+
+            return output.value();
+        }
+        auto reset_size() noexcept -> void
+        {
+            auto lock = rLock{lock_};
+            size_ = std::nullopt;
+            normalized_size_ = std::nullopt;
+        }
+        template <typename F>
+        auto size(const bool normalize, F cb) noexcept -> std::size_t
+        {
+            auto lock = rLock{lock_};
+
+            auto& output = normalize ? normalized_size_ : size_;
+
+            if (false == output.has_value()) { output = cb(); }
+
+            return output.value();
+        }
+
+        Cache() noexcept = default;
+        Cache(const Cache& rhs) noexcept
+            : lock_()
+            , normalized_id_()
+            , size_()
+            , normalized_size_()
+        {
+            auto lock = rLock{rhs.lock_};
+            normalized_id_ = rhs.normalized_id_;
+            size_ = rhs.size_;
+            normalized_size_ = rhs.normalized_size_;
+        }
+
+    private:
+        mutable std::recursive_mutex lock_{};
+        std::optional<OTIdentifier> normalized_id_{};
+        std::optional<std::size_t> size_{};
+        std::optional<std::size_t> normalized_size_{};
+    };
+
     const api::Core& api_;
+    const std::optional<std::size_t> position_;
     const VersionNumber serialize_version_;
     const bool is_generation_;
     const std::int32_t version_;
@@ -168,11 +229,9 @@ private:
     const Time time_;
     const std::unique_ptr<internal::Inputs> inputs_;
     const std::unique_ptr<internal::Outputs> outputs_;
-    mutable std::optional<OTIdentifier> normalized_id_;
-    mutable std::optional<std::size_t> size_;
-    mutable std::optional<std::size_t> normalized_size_;
     std::string memo_;
     std::vector<blockchain::Type> chains_;
+    mutable Cache cache_;
 
     static auto calculate_witness_size(const Space& witness) noexcept
         -> std::size_t;

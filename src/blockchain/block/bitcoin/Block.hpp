@@ -103,10 +103,10 @@ public:
     auto ExtractElements(const FilterType style) const noexcept
         -> std::vector<Space> final;
     auto FindMatches(
-        const api::client::Blockchain& blockchain,
         const FilterType type,
         const Patterns& outpoints,
         const Patterns& scripts) const noexcept -> Matches final;
+    auto Print() const noexcept -> std::string override;
     auto Serialize(AllocateOutput bytes) const noexcept -> bool final;
     auto size() const noexcept -> std::size_t final { return index_.size(); }
 

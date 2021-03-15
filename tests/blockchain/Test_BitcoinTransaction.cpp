@@ -107,6 +107,9 @@ struct Test_BitcoinTransaction : public ::testing::Test {
     const ot::OTData in_script_2_;
     const ot::OTData in_script_3_;
 
+    using Pattern = ot::blockchain::block::bitcoin::Script::Pattern;
+    using Position = ot::blockchain::block::bitcoin::Script::Position;
+
     Test_BitcoinTransaction()
         : api_(dynamic_cast<const ot::api::client::internal::Manager&>(
               ot::Context().StartClient({}, 0)))
@@ -134,7 +137,7 @@ TEST_F(Test_BitcoinTransaction, serialization)
         api_,
         api_.Blockchain(),
         ot::blockchain::Type::Bitcoin,
-        false,
+        std::numeric_limits<std::size_t>::max(),
         ot::Clock::now(),
         ot::blockchain::bitcoin::EncodedTransaction::Deserialize(
             api_, ot::blockchain::Type::Bitcoin, tx_bytes_->Bytes()));
@@ -162,12 +165,8 @@ TEST_F(Test_BitcoinTransaction, serialization)
 
             const auto& script1 = input1.Script();
 
-            EXPECT_EQ(
-                ot::blockchain::block::bitcoin::Script::Pattern::Input,
-                script1.Type());
-            EXPECT_EQ(
-                ot::blockchain::block::bitcoin::Script::Position::Input,
-                script1.Role());
+            EXPECT_EQ(Pattern::Input, script1.Type());
+            EXPECT_EQ(Position::Input, script1.Role());
 
             auto bytes1 = ot::Space{};
 
@@ -193,12 +192,8 @@ TEST_F(Test_BitcoinTransaction, serialization)
 
             const auto& script2 = input2.Script();
 
-            EXPECT_EQ(
-                ot::blockchain::block::bitcoin::Script::Pattern::Input,
-                script2.Type());
-            EXPECT_EQ(
-                ot::blockchain::block::bitcoin::Script::Position::Input,
-                script2.Role());
+            EXPECT_EQ(Pattern::Input, script2.Type());
+            EXPECT_EQ(Position::Input, script2.Role());
 
             auto bytes2 = ot::Space{};
 
@@ -224,12 +219,8 @@ TEST_F(Test_BitcoinTransaction, serialization)
 
             const auto& script3 = input3.Script();
 
-            EXPECT_EQ(
-                ot::blockchain::block::bitcoin::Script::Pattern::Input,
-                script3.Type());
-            EXPECT_EQ(
-                ot::blockchain::block::bitcoin::Script::Position::Input,
-                script3.Role());
+            EXPECT_EQ(Pattern::Input, script3.Type());
+            EXPECT_EQ(Position::Input, script3.Role());
 
             auto bytes3 = ot::Space{};
 
@@ -255,13 +246,8 @@ TEST_F(Test_BitcoinTransaction, serialization)
 
             const auto& script4 = output1.Script();
 
-            EXPECT_EQ(
-                ot::blockchain::block::bitcoin::Script::Pattern::
-                    PayToPubkeyHash,
-                script4.Type());
-            EXPECT_EQ(
-                ot::blockchain::block::bitcoin::Script::Position::Output,
-                script4.Role());
+            EXPECT_EQ(Pattern::PayToPubkeyHash, script4.Type());
+            EXPECT_EQ(Position::Output, script4.Role());
             EXPECT_TRUE(script4.PubkeyHash().has_value());
         }
 
@@ -272,13 +258,8 @@ TEST_F(Test_BitcoinTransaction, serialization)
 
             const auto& script5 = output2.Script();
 
-            EXPECT_EQ(
-                ot::blockchain::block::bitcoin::Script::Pattern::
-                    PayToPubkeyHash,
-                script5.Type());
-            EXPECT_EQ(
-                ot::blockchain::block::bitcoin::Script::Position::Output,
-                script5.Role());
+            EXPECT_EQ(Pattern::PayToPubkeyHash, script5.Type());
+            EXPECT_EQ(Position::Output, script5.Role());
             EXPECT_TRUE(script5.PubkeyHash().has_value());
         }
     }
@@ -318,12 +299,8 @@ TEST_F(Test_BitcoinTransaction, serialization)
 
             const auto& script1 = input1.Script();
 
-            EXPECT_EQ(
-                ot::blockchain::block::bitcoin::Script::Pattern::Input,
-                script1.Type());
-            EXPECT_EQ(
-                ot::blockchain::block::bitcoin::Script::Position::Input,
-                script1.Role());
+            EXPECT_EQ(Pattern::Input, script1.Type());
+            EXPECT_EQ(Position::Input, script1.Role());
 
             auto bytes1 = ot::Space{};
 
@@ -349,12 +326,8 @@ TEST_F(Test_BitcoinTransaction, serialization)
 
             const auto& script2 = input2.Script();
 
-            EXPECT_EQ(
-                ot::blockchain::block::bitcoin::Script::Pattern::Input,
-                script2.Type());
-            EXPECT_EQ(
-                ot::blockchain::block::bitcoin::Script::Position::Input,
-                script2.Role());
+            EXPECT_EQ(Pattern::Input, script2.Type());
+            EXPECT_EQ(Position::Input, script2.Role());
 
             auto bytes2 = ot::Space{};
 
@@ -380,12 +353,8 @@ TEST_F(Test_BitcoinTransaction, serialization)
 
             const auto& script3 = input3.Script();
 
-            EXPECT_EQ(
-                ot::blockchain::block::bitcoin::Script::Pattern::Input,
-                script3.Type());
-            EXPECT_EQ(
-                ot::blockchain::block::bitcoin::Script::Position::Input,
-                script3.Role());
+            EXPECT_EQ(Pattern::Input, script3.Type());
+            EXPECT_EQ(Position::Input, script3.Role());
 
             auto bytes3 = ot::Space{};
 
@@ -411,13 +380,8 @@ TEST_F(Test_BitcoinTransaction, serialization)
 
             const auto& script4 = output1.Script();
 
-            EXPECT_EQ(
-                ot::blockchain::block::bitcoin::Script::Pattern::
-                    PayToPubkeyHash,
-                script4.Type());
-            EXPECT_EQ(
-                ot::blockchain::block::bitcoin::Script::Position::Output,
-                script4.Role());
+            EXPECT_EQ(Pattern::PayToPubkeyHash, script4.Type());
+            EXPECT_EQ(Position::Output, script4.Role());
             EXPECT_TRUE(script4.PubkeyHash().has_value());
         }
 
@@ -428,13 +392,8 @@ TEST_F(Test_BitcoinTransaction, serialization)
 
             const auto& script5 = output2.Script();
 
-            EXPECT_EQ(
-                ot::blockchain::block::bitcoin::Script::Pattern::
-                    PayToPubkeyHash,
-                script5.Type());
-            EXPECT_EQ(
-                ot::blockchain::block::bitcoin::Script::Position::Output,
-                script5.Role());
+            EXPECT_EQ(Pattern::PayToPubkeyHash, script5.Type());
+            EXPECT_EQ(Position::Output, script5.Role());
             EXPECT_TRUE(script5.PubkeyHash().has_value());
         }
     }
@@ -463,7 +422,7 @@ TEST_F(Test_BitcoinTransaction, normalized_id)
         api_,
         api_.Blockchain(),
         ot::blockchain::Type::Bitcoin,
-        false,
+        std::numeric_limits<std::size_t>::max(),
         ot::Clock::now(),
         ot::blockchain::bitcoin::EncodedTransaction::Deserialize(
             api_, ot::blockchain::Type::Bitcoin, tx_bytes_->Bytes()));
@@ -471,7 +430,7 @@ TEST_F(Test_BitcoinTransaction, normalized_id)
         api_,
         api_.Blockchain(),
         ot::blockchain::Type::Bitcoin,
-        false,
+        std::numeric_limits<std::size_t>::max(),
         ot::Clock::now(),
         ot::blockchain::bitcoin::EncodedTransaction::Deserialize(
             api_, ot::blockchain::Type::Bitcoin, mutated_bytes_->Bytes()));

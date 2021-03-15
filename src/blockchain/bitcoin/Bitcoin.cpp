@@ -423,8 +423,12 @@ auto EncodedTransaction::wtxid_preimage() const noexcept -> Space
         std::advance(it, sizeof(outpoint));
         std::memcpy(it, bytes.data(), bytes.size());
         std::advance(it, bytes.size());
-        std::memcpy(it, script.data(), script.size());
-        std::advance(it, script.size());
+
+        if (0u < script.size()) {
+            std::memcpy(it, script.data(), script.size());
+            std::advance(it, script.size());
+        }
+
         std::memcpy(it, static_cast<const void*>(&sequence), sizeof(sequence));
         std::advance(it, sizeof(sequence));
     }
@@ -441,8 +445,11 @@ auto EncodedTransaction::wtxid_preimage() const noexcept -> Space
         std::advance(it, sizeof(value));
         std::memcpy(it, bytes.data(), bytes.size());
         std::advance(it, bytes.size());
-        std::memcpy(it, script.data(), script.size());
-        std::advance(it, script.size());
+
+        if (0u < script.size()) {
+            std::memcpy(it, script.data(), script.size());
+            std::advance(it, script.size());
+        }
     }
 
     if (segwit_flag_.has_value()) {
@@ -467,8 +474,10 @@ auto EncodedTransaction::wtxid_preimage() const noexcept -> Space
                     std::advance(it, bytes.size());
                 }
 
-                std::memcpy(it, item.item_.data(), item.item_.size());
-                std::advance(it, item.item_.size());
+                if (0u < item.item_.size()) {
+                    std::memcpy(it, item.item_.data(), item.item_.size());
+                    std::advance(it, item.item_.size());
+                }
             }
         }
     }
@@ -498,8 +507,12 @@ auto EncodedTransaction::txid_preimage() const noexcept -> Space
         std::advance(it, sizeof(outpoint));
         std::memcpy(it, bytes.data(), bytes.size());
         std::advance(it, bytes.size());
-        std::memcpy(it, script.data(), script.size());
-        std::advance(it, script.size());
+
+        if (0u < script.size()) {
+            std::memcpy(it, script.data(), script.size());
+            std::advance(it, script.size());
+        }
+
         std::memcpy(it, static_cast<const void*>(&sequence), sizeof(sequence));
         std::advance(it, sizeof(sequence));
     }
@@ -516,7 +529,11 @@ auto EncodedTransaction::txid_preimage() const noexcept -> Space
         std::advance(it, sizeof(value));
         std::memcpy(it, bytes.data(), bytes.size());
         std::advance(it, bytes.size());
-        std::memcpy(it, script.data(), script.size());
+
+        if (0u < script.size()) {
+            std::memcpy(it, script.data(), script.size());
+        }
+
         std::advance(it, script.size());
     }
 

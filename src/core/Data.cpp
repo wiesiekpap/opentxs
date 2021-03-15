@@ -211,52 +211,32 @@ Data::Data(const std::vector<std::byte>& v) noexcept
 
 auto Data::operator==(const opentxs::Data& rhs) const noexcept -> bool
 {
-    if (data_.size() != rhs.size()) { return false; }
-
-    if (0 == data_.size()) { return true; }
-
-    return 0 == std::memcmp(data_.data(), rhs.data(), data_.size());
+    return 0 == spaceship(rhs);
 }
 
 auto Data::operator!=(const opentxs::Data& rhs) const noexcept -> bool
 {
-    return !operator==(rhs);
+    return 0 != spaceship(rhs);
 }
 
 auto Data::operator<(const opentxs::Data& rhs) const noexcept -> bool
 {
-    if (data_.size() < rhs.size()) { return true; }
-
-    if (data_.size() > rhs.size()) { return false; }
-
-    return 0 > std::memcmp(data_.data(), rhs.data(), data_.size());
+    return 0 > spaceship(rhs);
 }
 
 auto Data::operator>(const opentxs::Data& rhs) const noexcept -> bool
 {
-    if (data_.size() < rhs.size()) { return false; }
-
-    if (data_.size() > rhs.size()) { return true; }
-
-    return 0 < std::memcmp(data_.data(), rhs.data(), data_.size());
+    return 0 < spaceship(rhs);
 }
 
 auto Data::operator<=(const opentxs::Data& rhs) const noexcept -> bool
 {
-    if (data_.size() < rhs.size()) { return true; }
-
-    if (data_.size() > rhs.size()) { return false; }
-
-    return 0 >= std::memcmp(data_.data(), rhs.data(), data_.size());
+    return 0 >= spaceship(rhs);
 }
 
 auto Data::operator>=(const opentxs::Data& rhs) const noexcept -> bool
 {
-    if (data_.size() < rhs.size()) { return false; }
-
-    if (data_.size() > rhs.size()) { return true; }
-
-    return 0 <= std::memcmp(data_.data(), rhs.data(), data_.size());
+    return 0 <= spaceship(rhs);
 }
 
 auto Data::operator+=(const opentxs::Data& rhs) -> Data&
@@ -476,6 +456,18 @@ void Data::SetSize(const std::size_t size)
     Release();
 
     if (size > 0) { data_.assign(size, 0); }
+}
+
+auto Data::spaceship(const opentxs::Data& rhs) const noexcept -> int
+{
+    const auto lSize = data_.size();
+    const auto rSize = rhs.size();
+
+    if ((0u == lSize) && (0u == rSize)) { return 0; }
+    if (lSize < rSize) { return -1; }
+    if (lSize > rSize) { return 1; }
+
+    return std::memcmp(data_.data(), rhs.data(), data_.size());
 }
 
 auto Data::str() const -> std::string

@@ -66,8 +66,16 @@ auto BitcoinBlock(
         }
 
         const auto& gen = *pGen;
+        using Tx = blockchain::block::bitcoin::Transaction;
+
+        {
+            auto& mGen = const_cast<Tx&>(gen);
+            mGen.SetPosition(0);
+        }
+
         auto index = Block::TxidIndex{};
         auto map = Block::TransactionMap{};
+        auto position = std::size_t{0};
 
         {
             const auto& id = gen.ID();
@@ -79,6 +87,11 @@ auto BitcoinBlock(
         for (const auto& tx : extra) {
             if (false == bool(tx)) {
                 throw std::runtime_error{"Invalid transaction"};
+            }
+
+            {
+                auto& mTx = const_cast<Tx&>(*tx);
+                mTx.SetPosition(++position);
             }
 
             const auto& id = tx->ID();
@@ -241,11 +254,11 @@ auto SetIntersection(
         std::begin(compare),
         std::end(compare),
         std::back_inserter(matches));
-    output.reserve(matches.size());
+    output.second.reserve(matches.size());
     std::transform(
         std::begin(matches),
         std::end(matches),
-        std::back_inserter(output),
+        std::back_inserter(output.second),
         [&](const auto& match) -> Block::Match {
             return {
                 api.Factory().Data(txid), parsed.map_.at(reader(match))->first};
@@ -502,7 +515,6 @@ auto Block::ExtractElements(const FilterType style) const noexcept
 }
 
 auto Block::FindMatches(
-    const api::client::Blockchain& blockchain,
     const FilterType style,
     const Patterns& outpoints,
     const Patterns& patterns) const noexcept -> Matches
@@ -514,17 +526,23 @@ auto Block::FindMatches(
         transactions_.size())(" transactions")
         .Flush();
     auto output = Matches{};
+    auto& [inputs, outputs] = output;
     const auto parsed = ParsedPatterns{patterns};
 
     for (const auto& [txid, tx] : transactions_) {
-        auto temp = tx->FindMatches(blockchain, style, outpoints, parsed);
-        output.insert(
-            output.end(),
-            std::make_move_iterator(temp.begin()),
-            std::make_move_iterator(temp.end()));
+        auto temp = tx->FindMatches(style, outpoints, parsed);
+        inputs.insert(
+            inputs.end(),
+            std::make_move_iterator(temp.first.begin()),
+            std::make_move_iterator(temp.first.end()));
+        outputs.insert(
+            outputs.end(),
+            std::make_move_iterator(temp.second.begin()),
+            std::make_move_iterator(temp.second.end()));
     }
 
-    dedup(output);
+    dedup(inputs);
+    dedup(outputs);
 
     return output;
 }
@@ -536,6 +554,22 @@ auto Block::get_or_calculate_size() const noexcept -> CalculatedSize
     OT_ASSERT(size_.has_value());
 
     return size_.value();
+}
+
+auto Block::Print() const noexcept -> std::string
+{
+    auto out = std::stringstream{};
+    out << "header" << '\n' << header_.Print();
+    auto count{0};
+    const auto total = size();
+
+    for (const auto& tx : *this) {
+        out << "transaction " << std::to_string(++count);
+        out << " of " << std::to_string(total) << '\n';
+        out << tx->Print();
+    }
+
+    return out.str();
 }
 
 auto Block::Serialize(AllocateOutput bytes) const noexcept -> bool

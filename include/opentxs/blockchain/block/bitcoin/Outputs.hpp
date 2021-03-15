@@ -32,6 +32,8 @@ public:
     using ParsedPatterns = Transaction::ParsedPatterns;
     using Match = Transaction::Match;
     using Matches = Transaction::Matches;
+    using KeyID = Transaction::KeyID;
+    using KeyData = Transaction::KeyData;
 
     OPENTXS_EXPORT virtual auto at(const std::size_t position) const
         noexcept(false) -> const value_type& = 0;
@@ -44,12 +46,12 @@ public:
     OPENTXS_EXPORT virtual auto ExtractElements(
         const filter::Type style) const noexcept -> std::vector<Space> = 0;
     OPENTXS_EXPORT virtual auto FindMatches(
-        const api::client::Blockchain& blockchain,
         const ReadView txid,
         const FilterType type,
         const ParsedPatterns& elements) const noexcept -> Matches = 0;
     OPENTXS_EXPORT virtual auto GetPatterns() const noexcept
         -> std::vector<PatternID> = 0;
+    OPENTXS_EXPORT virtual auto Keys() const noexcept -> std::vector<KeyID> = 0;
     OPENTXS_EXPORT virtual auto Serialize(const AllocateOutput destination)
         const noexcept -> std::optional<std::size_t> = 0;
     OPENTXS_EXPORT virtual auto Serialize(
@@ -59,6 +61,7 @@ public:
 
     virtual auto at(const std::size_t position) noexcept(false)
         -> value_type& = 0;
+    virtual auto SetKeyData(const KeyData& data) noexcept -> void = 0;
 
     virtual ~Outputs() = default;
 

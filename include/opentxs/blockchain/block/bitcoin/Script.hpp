@@ -10,6 +10,7 @@
 
 #include <cstdint>
 #include <optional>
+#include <string>
 #include <tuple>
 
 #include "opentxs/Bytes.hpp"
@@ -99,6 +100,7 @@ public:
     /// Value only present for Multisig patterns
     OPENTXS_EXPORT virtual auto N() const noexcept
         -> std::optional<std::uint8_t> = 0;
+    OPENTXS_EXPORT virtual auto Print() const noexcept -> std::string = 0;
     /// Value only present for PayToPubkey and PayToTaproot patterns
     OPENTXS_EXPORT virtual auto Pubkey() const noexcept
         -> std::optional<ReadView> = 0;

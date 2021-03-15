@@ -218,12 +218,66 @@ Blockchain::Blockchain(
                                   Socket::random_inproc_endpoint())
     , io_(api_)
     , db_(api_, *this, legacy, dataFolder, args)
-    , reorg_(api_.ZeroMQ().PublishSocket())
-    , transaction_updates_(api_.ZeroMQ().PublishSocket())
-    , peer_updates_(api_.ZeroMQ().PublishSocket())
-    , key_updates_(api_.ZeroMQ().PublishSocket())
-    , sync_updates_(api_.ZeroMQ().PublishSocket())
-    , new_blockchain_accounts_(api_.ZeroMQ().PublishSocket())
+    , reorg_([&] {
+        auto out = api_.ZeroMQ().PublishSocket();
+        const auto listen = out->Start(api_.Endpoints().BlockchainReorg());
+
+        OT_ASSERT(listen);
+
+        return out;
+    }())
+    , transaction_updates_([&] {
+        auto out = api_.ZeroMQ().PublishSocket();
+        const auto listen =
+            out->Start(api_.Endpoints().BlockchainTransactions());
+
+        OT_ASSERT(listen);
+
+        return out;
+    }())
+    , peer_updates_([&] {
+        auto out = api_.ZeroMQ().PublishSocket();
+        const auto listen = out->Start(api_.Endpoints().BlockchainPeer());
+
+        OT_ASSERT(listen);
+
+        return out;
+    }())
+    , key_updates_([&] {
+        auto out = api_.ZeroMQ().PublishSocket();
+        const auto listen = out->Start(key_generated_endpoint_);
+
+        OT_ASSERT(listen);
+
+        return out;
+    }())
+    , sync_updates_([&] {
+        auto out = api_.ZeroMQ().PublishSocket();
+        const auto listen =
+            out->Start(api_.Endpoints().BlockchainSyncProgress());
+
+        OT_ASSERT(listen);
+
+        return out;
+    }())
+    , scan_updates_([&] {
+        auto out = api_.ZeroMQ().PublishSocket();
+        const auto listen =
+            out->Start(api_.Endpoints().BlockchainScanProgress());
+
+        OT_ASSERT(listen);
+
+        return out;
+    }())
+    , new_blockchain_accounts_([&] {
+        auto out = api_.ZeroMQ().PublishSocket();
+        const auto listen =
+            out->Start(api_.Endpoints().BlockchainAccountCreated());
+
+        OT_ASSERT(listen);
+
+        return out;
+    }())
     , base_config_([&] {
         auto output = opentxs::blockchain::client::internal::Config{};
         const auto sync = [&] {
@@ -307,32 +361,6 @@ Blockchain::Blockchain(
 {
     // WARNING: do not access api_.Wallet() during construction
 #if OT_BLOCKCHAIN
-    auto listen = reorg_->Start(api_.Endpoints().BlockchainReorg());
-
-    OT_ASSERT(listen);
-
-    listen =
-        transaction_updates_->Start(api_.Endpoints().BlockchainTransactions());
-
-    OT_ASSERT(listen);
-
-    listen = peer_updates_->Start(api_.Endpoints().BlockchainPeer());
-
-    OT_ASSERT(listen);
-
-    listen = key_updates_->Start(key_generated_endpoint_);
-
-    OT_ASSERT(listen);
-
-    listen = sync_updates_->Start(api_.Endpoints().BlockchainSyncProgress());
-
-    OT_ASSERT(listen);
-
-    listen = new_blockchain_accounts_->Start(
-        api_.Endpoints().BlockchainAccountCreated());
-
-    OT_ASSERT(listen);
-
     if (sync_client_) { sync_client_->Heartbeat(Hello()); }
 
     using Work = api::internal::ThreadPool::Work;
@@ -1813,6 +1841,29 @@ auto Blockchain::ReportProgress(
         last_hello_[chain] = Clock::now();
         sync_client_->Heartbeat(hello(lock, {chain}));
     }
+}
+
+auto Blockchain::ReportScan(
+    const Chain chain,
+    const identifier::Nym& owner,
+    const Identifier& account,
+    const blockchain::Subchain subchain,
+    const opentxs::blockchain::block::Position& progress) const noexcept -> void
+{
+    OT_ASSERT(false == owner.empty());
+    OT_ASSERT(false == account.empty());
+
+    const auto id = account.Bytes();
+    const auto hash = progress.second->Bytes();
+    auto work =
+        api_.ZeroMQ().TaggedMessage(WorkType::BlockchainWalletScanProgress);
+    work->AddFrame(chain);
+    work->AddFrame(owner.data(), owner.size());
+    work->AddFrame(id.data(), id.size());
+    work->AddFrame(subchain);
+    work->AddFrame(progress.first);
+    work->AddFrame(hash.data(), hash.size());
+    scan_updates_->Send(work);
 }
 
 auto Blockchain::RestoreNetworks() const noexcept -> void

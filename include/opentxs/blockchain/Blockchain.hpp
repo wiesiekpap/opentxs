@@ -298,7 +298,7 @@ using pTxid = blockchain::pHash;
 /// the new position.
 bool operator>(const Position& lhs, const Position& rhs) noexcept;
 
-pHash BlankHash() noexcept;
+OPENTXS_EXPORT pHash BlankHash() noexcept;
 }  // namespace block
 
 namespace filter

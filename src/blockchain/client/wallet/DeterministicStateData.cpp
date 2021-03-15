@@ -18,11 +18,14 @@
 #include <utility>
 #include <vector>
 
+#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/client/blockchain/BalanceList.hpp"
 #include "opentxs/api/client/blockchain/BalanceNode.hpp"
+#include "opentxs/api/client/blockchain/BalanceTree.hpp"
 #include "opentxs/api/client/blockchain/Deterministic.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/FilterType.hpp"
@@ -49,7 +52,7 @@ namespace opentxs::blockchain::client::wallet
 {
 DeterministicStateData::DeterministicStateData(
     const api::Core& api,
-    const api::client::Blockchain& blockchain,
+    const api::client::internal::Blockchain& blockchain,
     const internal::Network& network,
     const WalletDatabase& db,
     const api::client::blockchain::Deterministic& node,
@@ -63,6 +66,7 @@ DeterministicStateData::DeterministicStateData(
           blockchain,
           network,
           db,
+          OTNymID{node.Parent().NymID()},
           OTIdentifier{node.ID()},
           taskFinished,
           jobCounter,
@@ -71,6 +75,7 @@ DeterministicStateData::DeterministicStateData(
           subchain)
     , node_(node)
 {
+    init();
 }
 
 auto DeterministicStateData::check_index() noexcept -> bool
@@ -81,7 +86,7 @@ auto DeterministicStateData::check_index() noexcept -> bool
     if (generated.has_value()) {
         if ((false == last_indexed_.has_value()) ||
             (last_indexed_.value() != generated.value())) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(id_)(" has ")(
+            LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(" has ")(
                 generated.value() + 1)(" keys generated, but only ")(
                 last_indexed_.value_or(0))(" have been indexed.")
                 .Flush();
@@ -89,12 +94,12 @@ auto DeterministicStateData::check_index() noexcept -> bool
 
             return queue_work(Task::index, job);
         } else {
-            LogTrace(OT_METHOD)(__FUNCTION__)(": ")(id_)(" all ")(
+            LogTrace(OT_METHOD)(__FUNCTION__)(": ")(name_)(" all ")(
                 generated.value() + 1)(" generated keys have been indexed.")
                 .Flush();
         }
     } else {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(id_)(
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
             " no generated keys present")
             .Flush();
     }
@@ -107,13 +112,14 @@ auto DeterministicStateData::handle_confirmed_matches(
     const block::Position& position,
     const block::Block::Matches& confirmed) noexcept -> void
 {
+    const auto& [utxo, general] = confirmed;
     auto transactions = std::map<
         block::pTxid,
         std::pair<
             std::vector<Bip32Index>,
             const block::bitcoin::Transaction*>>{};
 
-    for (const auto& match : confirmed) {
+    for (const auto& match : general) {
         const auto& [txid, elementID] = match;
         const auto& [index, subchainID] = elementID;
         const auto& [subchain, accountID] = subchainID;
@@ -128,6 +134,8 @@ auto DeterministicStateData::handle_confirmed_matches(
             if (nullptr == arg.second) { transactions.erase(match.first); }
         }};
         const auto& transaction = *pTransaction;
+        // TODO
+        // set_key_data(const_cast<block::bitcoin::Transaction&>(transaction));
         auto i = Bip32Index{0};
 
         for (const auto& output : transaction.Outputs()) {
@@ -198,22 +206,10 @@ auto DeterministicStateData::handle_confirmed_matches(
         }
     }
 
-    auto unspent = std::set<blockchain::block::bitcoin::Outpoint>{};
+    for (const auto& [tx, outpoint, element] : utxo) {
+        auto& pTx = transactions[tx].second;
 
-    for (const auto& utxo : db_.GetUnspentOutputs()) {
-        unspent.insert(utxo.first);
-    }
-
-    for (const auto& transaction : block) {
-        OT_ASSERT(transaction);
-
-        for (const auto& input : transaction->Inputs()) {
-            if (0 < unspent.count(input.PreviousOutput())) {
-                auto& pTx = transactions[transaction->ID()].second;
-
-                if (nullptr == pTx) { pTx = transaction.get(); }
-            }
-        }
+        if (nullptr == pTx) { pTx = block.at(tx->Bytes()).get(); }
     }
 
     for (const auto& [txid, data] : transactions) {
@@ -221,12 +217,18 @@ auto DeterministicStateData::handle_confirmed_matches(
 
         OT_ASSERT(nullptr != pTX);
 
+        const auto& tx = *pTX;
+        const auto index = tx.BlockPosition();
+
+        OT_ASSERT(index.has_value());
+
         auto updated = db_.AddConfirmedTransaction(
             network_.Chain(),
             id_,
             subchain_,
             filter_type_,
             position,
+            index.value(),
             outputs,
             *pTX);
 
@@ -242,11 +244,11 @@ auto DeterministicStateData::index() noexcept -> void
     auto elements = WalletDatabase::ElementMap{};
 
     if (last > first) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(id_)(
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
             " indexing elements from ")(first)(" to ")(last)
             .Flush();
     } else {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(id_)(
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
             " subchain is fully indexed to item ")(last)
             .Flush();
     }
@@ -257,5 +259,26 @@ auto DeterministicStateData::index() noexcept -> void
     }
 
     db_.SubchainAddElements(id_, subchain_, filter_type_, elements);
+}
+
+auto DeterministicStateData::type() const noexcept -> std::stringstream
+{
+    auto output = std::stringstream{};
+
+    switch (subchain_) {
+        case Subchain::Internal:
+        case Subchain::External: {
+            output << "HD";
+        } break;
+        case Subchain::Incoming:
+        case Subchain::Outgoing: {
+            output << "Payment code";
+        } break;
+        default: {
+            OT_FAIL;
+        }
+    }
+
+    return output;
 }
 }  // namespace opentxs::blockchain::client::wallet

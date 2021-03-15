@@ -49,7 +49,7 @@ const auto genesis_block_data_ = boost::container::flat_map<
            {"014756c0",
             "2b5adc66021d5c775f630efd91518cf6ce3e9f525bbf54d9f0d709451e305e4"
             "8"}},
-          {ot::blockchain::filter::Type::Extended_opentxs,
+          {ot::blockchain::filter::Type::ES,
            {"042547f6de198130360443dfcdc0",
             "18e0f10a66d223e36d0333dfe3e2546135f632f53e1e44ba016022f0a404628"
             "a"}},
@@ -68,7 +68,7 @@ const auto genesis_block_data_ = boost::container::flat_map<
            {"017fa880",
             "9f3c30f0c37fb977cf3e1a3173c631e8ff119ad3088b6f5b2bced0802139c20"
             "2"}},
-          {ot::blockchain::filter::Type::Extended_opentxs,
+          {ot::blockchain::filter::Type::ES,
            {"049dc75e0d584a300293ef3d3980",
             "0354578634dd178058ad5f3addf0d97c45911f483c99a1022ce51502e142e99"
             "f"}},
@@ -87,7 +87,7 @@ const auto genesis_block_data_ = boost::container::flat_map<
            {"019dfca8",
             "50b781aed7b7129012a6d20e2d040027937f3affaee573779908ebb77945582"
             "1"}},
-          {ot::blockchain::filter::Type::Extended_opentxs,
+          {ot::blockchain::filter::Type::ES,
            {"04e2f587e146bf6c662d35278a40",
             "a1310188d76ce653283a3086aa6f1ba30b6934990a093e1789a78a43b926131"
             "5"}},
@@ -106,7 +106,7 @@ const auto genesis_block_data_ = boost::container::flat_map<
            {"017fa880",
             "9f3c30f0c37fb977cf3e1a3173c631e8ff119ad3088b6f5b2bced0802139c20"
             "2"}},
-          {ot::blockchain::filter::Type::Extended_opentxs,
+          {ot::blockchain::filter::Type::ES,
            {"049dc75e0d584a300293ef3d3980",
             "0354578634dd178058ad5f3addf0d97c45911f483c99a1022ce51502e142e99"
             "f"}},
@@ -125,7 +125,7 @@ const auto genesis_block_data_ = boost::container::flat_map<
            {"019dfca8",
             "50b781aed7b7129012a6d20e2d040027937f3affaee573779908ebb77945582"
             "1"}},
-          {ot::blockchain::filter::Type::Extended_opentxs,
+          {ot::blockchain::filter::Type::ES,
            {"04e2f587e146bf6c662d35278a40",
             "a1310188d76ce653283a3086aa6f1ba30b6934990a093e1789a78a43b926131"
             "5"}},
@@ -144,7 +144,7 @@ const auto genesis_block_data_ = boost::container::flat_map<
            {"019e8738",
             "8aa75530308cf8247a151c37c24e7aaa281ae3b5cecedb581aacb3a0d07c245"
             "1"}},
-          {ot::blockchain::filter::Type::Extended_opentxs,
+          {ot::blockchain::filter::Type::ES,
            {"049de8963322099e81f3bf7c4600",
             "5a71cc36ad0b35d4c99b335ff69c3ed89e667b9772dbbf40396a1b4f2b2c308"
             "0"}},
@@ -163,7 +163,7 @@ const auto genesis_block_data_ = boost::container::flat_map<
            {"014c8c60",
             "02d023da9d271b849f717089aad7e03a515dac982c9fb2cfd952e2ce1c61879"
             "2"}},
-          {ot::blockchain::filter::Type::Extended_opentxs,
+          {ot::blockchain::filter::Type::ES,
            {"048b3d6095a4b01eb30ce44017c0",
             "042bce138093a271d8d7f730f7f9f9ab8c7240f297b47aea4440dceec623aca"
             "3"}},
@@ -338,7 +338,7 @@ const auto genesis_block_data_ = boost::container::flat_map<
            {"01902168",
             "526b0656def40fcb65ef87a75337001fae57a1d17dc17e103fb536cfddedd36"
             "c"}},
-          {ot::blockchain::filter::Type::Extended_opentxs,
+          {ot::blockchain::filter::Type::ES,
            {"02649a429ba06300",
             "d8a96cd0b19de626e7d84c964cf1da0e09b90c589bd3e23bcf1c931779a4751"
             "2"}},

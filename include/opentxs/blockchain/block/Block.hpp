@@ -9,6 +9,7 @@
 #include "opentxs/Forward.hpp"  // IWYU pragma: associated
 
 #include <map>
+#include <string>
 #include <tuple>
 #include <vector>
 
@@ -35,7 +36,14 @@ public:
     using Pattern = std::pair<ElementID, Space>;
     using Patterns = std::vector<Pattern>;
     using Match = std::pair<pTxid, ElementID>;
-    using Matches = std::vector<Match>;
+    using Outpoint = Space;
+    using InputMatch = std::tuple<pTxid, Outpoint, ElementID>;
+    using InputMatches = std::vector<InputMatch>;
+    using OutputMatches = std::vector<Match>;
+    using Matches = std::pair<InputMatches, OutputMatches>;
+    using KeyID = api::client::blockchain::Key;
+    using ContactID = OTIdentifier;
+    using KeyData = std::map<KeyID, std::pair<ContactID, ContactID>>;
 
     struct ParsedPatterns;
 
@@ -44,13 +52,13 @@ public:
     OPENTXS_EXPORT virtual auto ExtractElements(
         const FilterType style) const noexcept -> std::vector<Space> = 0;
     OPENTXS_EXPORT virtual auto FindMatches(
-        const api::client::Blockchain& blockchain,
         const FilterType type,
         const Patterns& txos,
         const Patterns& elements) const noexcept -> Matches = 0;
     OPENTXS_EXPORT virtual auto Header() const noexcept
         -> const block::Header& = 0;
     OPENTXS_EXPORT virtual auto ID() const noexcept -> const block::Hash& = 0;
+    OPENTXS_EXPORT virtual auto Print() const noexcept -> std::string = 0;
     OPENTXS_EXPORT virtual auto Serialize(AllocateOutput bytes) const noexcept
         -> bool = 0;
 

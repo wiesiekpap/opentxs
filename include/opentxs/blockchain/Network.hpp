@@ -27,6 +27,7 @@ namespace client
 class BlockOracle;
 class FilterOracle;
 class HeaderOracle;
+class Wallet;
 }  // namespace client
 }  // namespace blockchain
 
@@ -84,6 +85,8 @@ public:
         const PaymentCode& recipient,
         const Amount amount,
         const std::string& memo = {}) const noexcept -> PendingOutgoing = 0;
+    OPENTXS_EXPORT virtual auto Wallet() const noexcept
+        -> const client::Wallet& = 0;
 
     OPENTXS_EXPORT virtual auto Connect() noexcept -> bool = 0;
     OPENTXS_EXPORT virtual auto Disconnect() noexcept -> bool = 0;

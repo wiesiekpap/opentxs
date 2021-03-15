@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <map>
@@ -25,6 +26,9 @@
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/crypto/Crypto.hpp"
+#include "opentxs/api/crypto/Hash.hpp"
+#include "opentxs/api/crypto/Util.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/BloomFilter.hpp"
@@ -38,6 +42,8 @@ namespace
 {
 const auto params_ = ot::blockchain::internal::GetFilterParams(
     ot::blockchain::filter::Type::Basic_BIP158);
+using Hash = ot::OTData;
+auto stress_test_ = std::vector<Hash>{};
 
 class Test_Filters : public ::testing::Test
 {
@@ -529,5 +535,87 @@ TEST_F(Test_Filters, hash)
     const auto hash_b = bc::FilterToHash(api_, preimage->Bytes());
 
     EXPECT_EQ(hash_a.get(), hash_b.get());
+}
+
+TEST_F(Test_Filters, init_array)
+{
+    constexpr auto count{10000000u};
+    stress_test_.reserve(count);
+
+    {
+        auto& first = stress_test_.emplace_back(api_.Factory().Data());
+        first->SetSize(32);
+
+        ASSERT_TRUE(
+            api_.Crypto().Util().RandomizeMemory(first->data(), first->size()));
+    }
+
+    while (stress_test_.size() < count) {
+        const auto& previous = stress_test_.back();
+        auto& next = stress_test_.emplace_back(api_.Factory().Data());
+
+        EXPECT_TRUE(api_.Crypto().Hash().Digest(
+            ot::proto::HASHTYPE_SHA256, previous->Bytes(), next->WriteInto()));
+    }
+}
+
+TEST_F(Test_Filters, test_set_intersection)
+{
+    namespace bc = ot::blockchain::internal;
+
+    const auto params = ot::blockchain::internal::GetFilterParams(
+        ot::blockchain::filter::Type::ES);
+    const auto hash = [&] {
+        auto out = api_.Factory().Data();
+        out->SetSize(32);
+        api_.Crypto().Util().RandomizeMemory(out->data(), out->size());
+
+        return out;
+    }();
+    const auto pGCS = ot::factory::GCS(
+        api_,
+        params.first,
+        params.second,
+        bc::BlockHashToFilterKey(hash->Bytes()),
+        stress_test_);
+
+    ASSERT_TRUE(pGCS);
+
+    const auto& gcs = *pGCS;
+    const auto subset = [&] {
+        constexpr auto count{1000u};
+        auto copy{stress_test_};
+        auto stop{count};
+        auto begin{copy.begin()};
+        auto end{copy.end()};
+        std::size_t left = std::distance(begin, end);
+
+        while (stop--) {
+            auto r = begin;
+            std::advance(r, rand() % left);
+            std::swap(*begin, *r);
+            ++begin;
+            --left;
+        }
+
+        auto out = decltype(copy){copy.begin(), std::next(copy.begin(), count)};
+
+        return out;
+    }();
+
+    const auto targets = [&] {
+        auto out = ot::blockchain::client::GCS::Targets{};
+        out.reserve(subset.size());
+        std::transform(
+            subset.begin(),
+            subset.end(),
+            std::back_inserter(out),
+            [](const auto& i) { return i->Bytes(); });
+
+        return out;
+    }();
+    const auto matches = gcs.Match(targets);
+
+    EXPECT_EQ(matches.size(), targets.size());
 }
 }  // namespace

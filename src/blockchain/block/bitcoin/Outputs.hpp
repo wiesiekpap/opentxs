@@ -74,11 +74,11 @@ public:
     auto ExtractElements(const filter::Type style) const noexcept
         -> std::vector<Space> final;
     auto FindMatches(
-        const api::client::Blockchain& blockchain,
         const ReadView txid,
         const FilterType type,
         const ParsedPatterns& elements) const noexcept -> Matches final;
     auto GetPatterns() const noexcept -> std::vector<PatternID> final;
+    auto Keys() const noexcept -> std::vector<KeyID> final;
     auto NetBalanceChange(
         const api::client::Blockchain& blockchain,
         const identifier::Nym& nym) const noexcept -> opentxs::Amount final;
@@ -87,6 +87,7 @@ public:
     auto Serialize(
         const api::client::Blockchain& blockchain,
         proto::BlockchainTransaction& destination) const noexcept -> bool final;
+    auto SetKeyData(const KeyData& data) noexcept -> void final;
     auto size() const noexcept -> std::size_t final { return outputs_.size(); }
 
     auto at(const std::size_t position) noexcept(false) -> value_type& final
@@ -110,8 +111,40 @@ public:
     ~Outputs() final = default;
 
 private:
+    struct Cache {
+        auto reset_size() noexcept -> void
+        {
+            auto lock = Lock{lock_};
+            size_ = std::nullopt;
+        }
+        template <typename F>
+        auto size(F cb) noexcept -> std::size_t
+        {
+            auto lock = Lock{lock_};
+
+            auto& output = size_;
+
+            if (false == output.has_value()) { output = cb(); }
+
+            return output.value();
+        }
+
+        Cache() noexcept = default;
+        Cache(const Cache& rhs) noexcept
+            : lock_()
+            , size_()
+        {
+            auto lock = Lock{rhs.lock_};
+            size_ = rhs.size_;
+        }
+
+    private:
+        mutable std::mutex lock_{};
+        std::optional<std::size_t> size_{};
+    };
+
     const OutputList outputs_;
-    mutable std::optional<std::size_t> size_;
+    mutable Cache cache_;
 
     static auto clone(const OutputList& rhs) noexcept -> OutputList;
 

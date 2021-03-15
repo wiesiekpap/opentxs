@@ -35,12 +35,13 @@ namespace bitcoin
 class Output
 {
 public:
-    using ContactID = OTIdentifier;
+    using ContactID = Transaction::ContactID;
     using FilterType = Transaction::FilterType;
     using ParsedPatterns = Transaction::ParsedPatterns;
     using Match = Transaction::Match;
     using Matches = Transaction::Matches;
-    using KeyID = api::client::blockchain::Key;
+    using KeyID = Transaction::KeyID;
+    using KeyData = Transaction::KeyData;
     using SerializeType = proto::BlockchainTransactionOutput;
 
     OPENTXS_EXPORT virtual auto CalculateSize() const noexcept
@@ -48,7 +49,6 @@ public:
     OPENTXS_EXPORT virtual auto ExtractElements(
         const filter::Type style) const noexcept -> std::vector<Space> = 0;
     OPENTXS_EXPORT virtual auto FindMatches(
-        const api::client::Blockchain& blockchain,
         const ReadView txid,
         const FilterType type,
         const ParsedPatterns& elements) const noexcept -> Matches = 0;
@@ -57,10 +57,9 @@ public:
     OPENTXS_EXPORT virtual auto Note(const api::client::Blockchain& blockchain)
         const noexcept -> std::string = 0;
     OPENTXS_EXPORT virtual auto Keys() const noexcept -> std::vector<KeyID> = 0;
-    OPENTXS_EXPORT virtual auto Payee(const api::client::Blockchain& blockchain)
-        const noexcept -> ContactID = 0;
-    OPENTXS_EXPORT virtual auto Payer(const api::client::Blockchain& blockchain)
-        const noexcept -> ContactID = 0;
+    OPENTXS_EXPORT virtual auto Payee() const noexcept -> ContactID = 0;
+    OPENTXS_EXPORT virtual auto Payer() const noexcept -> ContactID = 0;
+    OPENTXS_EXPORT virtual auto Print() const noexcept -> std::string = 0;
     OPENTXS_EXPORT virtual auto Serialize(const AllocateOutput destination)
         const noexcept -> std::optional<std::size_t> = 0;
     OPENTXS_EXPORT virtual auto Serialize(
@@ -69,6 +68,8 @@ public:
     OPENTXS_EXPORT virtual auto Script() const noexcept
         -> const bitcoin::Script& = 0;
     OPENTXS_EXPORT virtual auto Value() const noexcept -> std::int64_t = 0;
+
+    virtual auto SetKeyData(const KeyData& data) noexcept -> void = 0;
 
     virtual ~Output() = default;
 

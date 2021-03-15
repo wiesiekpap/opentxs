@@ -27,7 +27,10 @@ struct BalanceTree;
 }  // namespace internal
 }  // namespace blockchain
 
-class Blockchain;
+namespace internal
+{
+struct Blockchain;
+}  // namespace internal
 }  // namespace client
 
 class Core;
@@ -77,7 +80,7 @@ public:
 
     Account(
         const api::Core& api,
-        const api::client::Blockchain& blockchain,
+        const api::client::internal::Blockchain& blockchain,
         const BalanceTree& ref,
         const internal::Network& network,
         const internal::WalletDatabase& db,

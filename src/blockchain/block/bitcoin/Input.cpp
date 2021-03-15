@@ -28,8 +28,6 @@
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -391,7 +389,7 @@ auto Outpoint::str() const noexcept -> std::string
             << std::to_integer<int>(byte);
     }
 
-    out << ':' << Index();
+    out << ':' << std::dec << Index();
 
     return out.str();
 }
@@ -434,11 +432,7 @@ Input::Input(
     , sequence_(sequence)
     , pubkey_hashes_(std::move(pubkeyHashes))
     , script_hash_(std::move(scriptHash))
-    , previous_output_(std::move(output))
-    , size_(size)
-    , normalized_size_()
-    , keys_(std::move(keys))
-    , payer_(api_.Factory().Identifier())
+    , cache_(api, std::move(output), std::move(size), std::move(keys))
 {
     if (false == bool(script_)) {
         throw std::runtime_error("Invalid input script");
@@ -564,12 +558,7 @@ Input::Input(
     , sequence_(rhs.sequence_)
     , pubkey_hashes_(rhs.pubkey_hashes_)
     , script_hash_(rhs.script_hash_)
-    , previous_output_(
-          rhs.previous_output_ ? rhs.previous_output_->clone() : nullptr)
-    , size_()
-    , normalized_size_()
-    , keys_(rhs.keys_)
-    , payer_(rhs.payer_)
+    , cache_(rhs.cache_)
 {
 }
 
@@ -588,7 +577,7 @@ auto Input::AddMultisigSignatures(const Signatures& signatures) noexcept -> bool
         const_cast<std::unique_ptr<const internal::Script>&>(script_);
     script = factory::BitcoinScript(
         chain_, std::move(elements), Script::Position::Input);
-    size_ = std::nullopt;
+    cache_.reset_size();
 
     return bool(script);
 }
@@ -611,7 +600,7 @@ auto Input::AddSignatures(const Signatures& signatures) noexcept -> bool
         const_cast<std::unique_ptr<const internal::Script>&>(script_);
     script = factory::BitcoinScript(
         chain_, std::move(elements), Script::Position::Input);
-    size_ = std::nullopt;
+    cache_.reset_size();
 
     return bool(script);
 }
@@ -620,7 +609,7 @@ auto Input::AssociatedLocalNyms(
     const api::client::Blockchain& blockchain,
     std::vector<OTNymID>& output) const noexcept -> void
 {
-    std::for_each(std::begin(keys_), std::end(keys_), [&](const auto& key) {
+    cache_.for_each_key([&](const auto& key) {
         const auto& owner = blockchain.Owner(key);
 
         if (false == owner.empty()) { output.emplace_back(owner); }
@@ -639,11 +628,10 @@ auto Input::AssociatedRemoteContacts(
             std::end(contacts),
             std::back_inserter(output));
     });
-    {
-        auto payer = Payer(blockchain);
 
-        if (false == payer->empty()) { output.emplace_back(std::move(payer)); }
-    }
+    auto payer = cache_.payer();
+
+    if (false == payer->empty()) { output.emplace_back(std::move(payer)); }
 }
 
 auto Input::AssociatePreviousOutput(
@@ -656,40 +644,21 @@ auto Input::AssociatePreviousOutput(
         return false;
     }
 
-    if (false == bool(previous_output_)) {
-        previous_output_ =
-            factory::BitcoinTransactionOutput(api_, blockchain, chain_, in);
-    }
-
-    // NOTE this should only happen during unit testing
-    if (keys_.empty()) {
-        OT_ASSERT(0 < in.key_size());
-
-        for (const auto& key : in.key()) {
-            keys_.emplace(
-                key.subaccount(),
-                static_cast<api::client::blockchain::Subchain>(
-                    static_cast<std::uint8_t>(key.subchain())),
-                key.index());
-        }
-    }
-
-    return bool(previous_output_);
+    return cache_.associate(blockchain, in, [&] {
+        return factory::BitcoinTransactionOutput(api_, blockchain, chain_, in);
+    });
 }
 
 auto Input::CalculateSize(const bool normalized) const noexcept -> std::size_t
 {
-    auto& output = normalized ? normalized_size_ : size_;
-
-    if (false == output.has_value()) {
+    return cache_.size(normalized, [&] {
         const auto data = (0 < coinbase_.size()) ? coinbase_.size()
                                                  : script_->CalculateSize();
         const auto cs = blockchain::bitcoin::CompactSize(data);
-        output = sizeof(previous_) + (normalized ? 1 : cs.Total()) +
-                 sizeof(sequence_);
-    }
 
-    return output.value();
+        return sizeof(previous_) + (normalized ? 1 : cs.Total()) +
+               sizeof(sequence_);
+    });
 }
 
 auto Input::classify() const noexcept -> Redeem
@@ -733,6 +702,76 @@ auto Input::classify() const noexcept -> Redeem
     }
 }
 
+auto Input::decode_coinbase() const noexcept -> std::string
+{
+    const auto size = coinbase_.size();
+
+    if (0u == size) { return {}; }
+
+    auto out = std::stringstream{};
+    const auto hex = [&] {
+        const auto data = api_.Factory().Data(reader(coinbase_));
+        out << "      hex: " << data->asHex();
+
+        return out.str();
+    };
+
+    const auto first = std::to_integer<std::uint8_t>(coinbase_.front());
+    auto* data = reinterpret_cast<const char*>(coinbase_.data());
+
+    switch (first) {
+        case 1u: {
+            if (1u >= size) { return hex(); }
+
+            auto buf = be::little_int8_buf_t{};
+            std::advance(data, 1);
+            std::memcpy(&buf, data, sizeof(buf));
+            std::advance(data, sizeof(buf));
+            out << "      height: " << std::to_string(buf.value()) << ' ';
+
+            if (2u < size) { out << ReadView{data, size - 2u}; }
+        } break;
+        case 2u: {
+            if (2u >= size) { return hex(); }
+
+            auto buf = be::little_int16_buf_t{};
+            std::advance(data, 1);
+            std::memcpy(&buf, data, sizeof(buf));
+            std::advance(data, sizeof(buf));
+            out << "      height: " << std::to_string(buf.value()) << ' ';
+
+            if (3u < size) { out << ReadView{data, size - 3u}; }
+        } break;
+        case 3u: {
+            if (3u >= size) { return hex(); }
+
+            auto buf = be::little_int32_buf_t{};
+            std::advance(data, 1);
+            std::memcpy(&buf, data, sizeof(buf));
+            std::advance(data, sizeof(buf));
+            out << "      height: " << std::to_string(buf.value()) << ' ';
+
+            if (4u < size) { out << ReadView{data, size - 4u}; }
+        } break;
+        case 4u: {
+            if (4u >= size) { return hex(); }
+
+            auto buf = be::little_int32_buf_t{};
+            std::advance(data, 1);
+            std::memcpy(&buf, data, sizeof(buf));
+            std::advance(data, sizeof(buf));
+            out << "      height: " << std::to_string(buf.value()) << ' ';
+
+            if (5u < size) { out << ReadView{data, size - 5u}; }
+        } break;
+        default: {
+            out << "      text: " << reader(coinbase_);
+        }
+    }
+
+    return out.str();
+}
+
 auto Input::ExtractElements(const filter::Type style) const noexcept
     -> std::vector<Space>
 {
@@ -741,7 +780,7 @@ auto Input::ExtractElements(const filter::Type style) const noexcept
     if (Script::Position::Coinbase == script_->Role()) { return output; }
 
     switch (style) {
-        case filter::Type::Extended_opentxs: {
+        case filter::Type::ES: {
 
             LogTrace(OT_METHOD)(__FUNCTION__)(": processing input script")
                 .Flush();
@@ -810,36 +849,26 @@ auto Input::FindMatches(
     const ReadView txid,
     const FilterType type,
     const Patterns& txos,
-    const ParsedPatterns& patterns) const noexcept -> Matches
+    const ParsedPatterns&) const noexcept -> Matches
 {
-    auto output = SetIntersection(api_, txid, patterns, ExtractElements(type));
-    LogTrace(OT_METHOD)(__FUNCTION__)(": Verified ")(output.size())(
-        " pattern matches")
-        .Flush();
+    auto matches = Matches{};
+    auto& [inputs, outputs] = matches;
 
-    if (0 < txos.size()) {
-        auto outpoint = std::vector<Space>{};
-        auto it = reinterpret_cast<const std::byte*>(&previous_);
-        outpoint.emplace_back(it, it + sizeof(previous_));
-        auto temp = SetIntersection(api_, txid, txos, outpoint);
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Verified ")(temp.size())(
-            " outpoint matches")
-            .Flush();
-        output.insert(
-            output.end(),
-            std::make_move_iterator(temp.begin()),
-            std::make_move_iterator(temp.end()));
+    for (const auto& [element, outpoint] : txos) {
+        if (reader(outpoint) != previous_.Bytes()) { continue; }
+
+        inputs.emplace_back(
+            api_.Factory().Data(txid), space(previous_.Bytes()), element);
+        const auto& [index, subchainID] = element;
+        const auto& [subchain, account] = subchainID;
+        cache_.add({account->str(), subchain, index});
     }
 
-    std::for_each(
-        std::begin(output), std::end(output), [this](const auto& match) {
-            const auto& [txid, element] = match;
-            const auto& [index, subchainID] = element;
-            const auto& [subchain, account] = subchainID;
-            keys_.emplace(KeyID{account->str(), subchain, index});
-        });
+    LogTrace(OT_METHOD)(__FUNCTION__)(": Verified ")(inputs.size())(
+        " outpoint matches")
+        .Flush();
 
-    return output;
+    return matches;
 }
 
 auto Input::GetPatterns() const noexcept -> std::vector<PatternID>
@@ -871,93 +900,65 @@ auto Input::index_elements(const api::client::Blockchain& blockchain) noexcept
     }
 }
 
-auto Input::Keys() const noexcept -> std::vector<KeyID>
-{
-    auto output = std::vector<KeyID>{};
-    std::transform(
-        std::begin(keys_), std::end(keys_), std::back_inserter(output), [
-        ](const auto& key) -> auto { return key; });
-
-    return output;
-}
-
 auto Input::MergeMetadata(
     const api::client::Blockchain& blockchain,
     const SerializeType& rhs) noexcept -> void
 {
-    std::for_each(
-        std::begin(rhs.key()), std::end(rhs.key()), [this](const auto& key) {
-            keys_.emplace(
-                key.subaccount(),
-                static_cast<api::client::blockchain::Subchain>(
-                    static_cast<std::uint8_t>(key.subchain())),
-                key.index());
-        });
-
-    if (rhs.has_spends() && (false == bool(previous_output_))) {
-        previous_output_ = factory::BitcoinTransactionOutput(
+    cache_.merge(blockchain, rhs, [&] {
+        return factory::BitcoinTransactionOutput(
             api_, blockchain, chain_, rhs.spends());
-    }
+    });
 }
 
-auto Input::NetBalanceChange(
-    const api::client::Blockchain& blockchain,
-    const identifier::Nym& nym) const noexcept -> opentxs::Amount
+auto Input::Print() const noexcept -> std::string
 {
-    if (false == bool(previous_output_)) { return 0; }
+    auto out = std::stringstream{};
+    out << "    outpoint: " << previous_.str() << '\n';
+    auto count{0};
+    const auto total = witness_.size();
 
-    for (const auto& key : keys_) {
-        if (blockchain.Owner(key) == nym) {
-            return -1 * previous_output_->Value();
-        }
+    for (const auto& witness : witness_) {
+        const auto bytes = api_.Factory().Data(reader(witness));
+        out << "    witness " << std::to_string(++count);
+        out << " of " << std::to_string(total) << '\n';
+        out << "      " << bytes->asHex() << '\n';
     }
 
-    return 0;
-}
-
-auto Input::Payer(const api::client::Blockchain& blockchain) const noexcept
-    -> OTIdentifier
-{
-    if (payer_->empty()) {
-        for (const auto& key : keys_) {
-            auto candidate = blockchain.RecipientContact(key);
-
-            if (candidate->empty()) { continue; }
-
-            payer_ = std::move(candidate);
-
-            break;
-        }
+    if (Script::Position::Coinbase == script_->Role()) {
+        out << "    coinbase: " << '\n';
+        out << decode_coinbase() << '\n';
+        ;
+    } else {
+        out << "    script: " << '\n';
+        out << script_->Print();
     }
 
-    return payer_;
+    out << "    sequence: " << std::to_string(sequence_) << '\n';
+
+    return out.str();
 }
 
 auto Input::ReplaceScript() noexcept -> bool
 {
-    if (false == bool(previous_output_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": previous output missing").Flush();
+    try {
+        const auto& output = cache_.spends();
+        auto subscript = output.SigningSubscript();
+
+        if (false == bool(subscript)) {
+            throw std::runtime_error("Failed to obtain signing subscript");
+        }
+
+        auto& script =
+            const_cast<std::unique_ptr<const internal::Script>&>(script_);
+        script.reset(subscript.release());
+        cache_.reset_size();
+
+        return true;
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
         return false;
     }
-
-    const auto& output = *previous_output_;
-    auto subscript = output.SigningSubscript();
-
-    if (false == bool(subscript)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to obtain signing subscript")
-            .Flush();
-
-        return false;
-    }
-
-    auto& script =
-        const_cast<std::unique_ptr<const internal::Script>&>(script_);
-    script.reset(subscript.release());
-    size_ = std::nullopt;
-
-    return true;
 }
 
 auto Input::serialize(const AllocateOutput destination, const bool normalized)
@@ -1038,8 +1039,7 @@ auto Input::Serialize(
     outpoint.set_version(outpoint_version_);
     outpoint.set_txid(std::string{previous_.Txid()});
     outpoint.set_index(previous_.Index());
-
-    for (const auto& key : keys_) {
+    cache_.for_each_key([&](const auto& key) {
         const auto& [accountID, subchain, index] = key;
         auto& serializedKey = *out.add_key();
         serializedKey.set_version(key_version_);
@@ -1048,7 +1048,7 @@ auto Input::Serialize(
         serializedKey.set_subaccount(accountID);
         serializedKey.set_subchain(static_cast<std::uint32_t>(subchain));
         serializedKey.set_index(index);
-    }
+    });
 
     for (const auto& id : pubkey_hashes_) { out.add_pubkey_hash(id); }
 
@@ -1056,9 +1056,10 @@ auto Input::Serialize(
 
     out.set_indexed(true);
 
-    if (previous_output_) {
+    try {
         auto& spends = *out.mutable_spends();
-        previous_output_->Serialize(blockchain, spends);
+        cache_.spends().Serialize(blockchain, spends);
+    } catch (...) {
     }
 
     return true;
@@ -1083,12 +1084,5 @@ auto Input::SignatureVersion(std::unique_ptr<internal::Script> subscript)
     const noexcept -> std::unique_ptr<internal::Input>
 {
     return std::make_unique<Input>(*this, std::move(subscript));
-}
-
-auto Input::Spends() const noexcept(false) -> const internal::Output&
-{
-    if (previous_output_) { return *previous_output_; }
-
-    throw std::out_of_range("No previous output");
 }
 }  // namespace opentxs::blockchain::block::bitcoin::implementation

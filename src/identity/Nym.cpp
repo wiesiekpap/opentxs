@@ -1322,7 +1322,11 @@ auto Nym::SocialMediaProfiles(const proto::ContactItemType type, bool active)
 auto Nym::SocialMediaProfileTypes() const
     -> const std::set<proto::ContactItemType>
 {
-    sLock lock(shared_lock_);
+    eLock lock(shared_lock_);
+
+    if (false == bool(contact_data_)) { init_claims(lock); }
+
+    OT_ASSERT(contact_data_);
 
     return contact_data_->SocialMediaProfileTypes();
 }

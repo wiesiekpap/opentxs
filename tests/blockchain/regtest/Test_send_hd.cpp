@@ -19,14 +19,18 @@
 #include "opentxs/api/client/blockchain/HD.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/bitcoin/Input.hpp"
+#include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/client/BlockOracle.hpp"
+#include "opentxs/blockchain/client/Wallet.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/ui/AccountActivity.hpp"
@@ -41,11 +45,15 @@ class Regtest_fixture_hd : public Regtest_fixture_normal
 {
 protected:
     using Subchain = ot::api::client::blockchain::Subchain;
+    using Outpoint = ot::blockchain::block::bitcoin::Outpoint;
+    using UTXO = ot::blockchain::client::Wallet::UTXO;
 
     static ot::Nym_p alex_p_;
     static std::deque<ot::blockchain::block::pTxid> transactions_;
+    static std::unique_ptr<ScanListener> listener_p_;
 
     const ot::identity::Nym& alex_;
+    const ot::api::client::blockchain::HD& account_;
     const ot::Identifier& expected_account_;
     const ot::identifier::Server& expected_notary_;
     const ot::identifier::UnitDefinition& expected_unit_;
@@ -56,9 +64,15 @@ protected:
     const ot::AccountType expected_account_type_;
     const ot::proto::ContactItemType expected_unit_type_;
     const Generator hd_generator_;
+    const GetBytes get_p2pk_bytes_;
+    const GetBytes get_p2pkh_bytes_;
+    const GetPattern get_p2pk_patterns_;
+    const GetPattern get_p2pkh_patterns_;
+    ScanListener& listener_;
 
     auto Shutdown() noexcept -> void final
     {
+        listener_p_.reset();
         transactions_.clear();
         alex_p_.reset();
         Regtest_fixture_normal::Shutdown();
@@ -86,6 +100,10 @@ protected:
 
             return *alex_p_;
         }())
+        , account_(client_1_.Blockchain()
+                       .Account(alex_.ID(), test_chain_)
+                       .GetHD()
+                       .at(0))
         , expected_account_(client_1_.UI().BlockchainAccountID(test_chain_))
         , expected_notary_(client_1_.UI().BlockchainNotaryID(test_chain_))
         , expected_unit_(client_1_.UI().BlockchainUnitID(test_chain_))
@@ -103,10 +121,6 @@ protected:
                 height,
                 [&] {
                     auto output = std::vector<OutputBuilder>{};
-                    const auto& account = client_1_.Blockchain()
-                                              .Account(alex_.ID(), test_chain_)
-                                              .GetHD()
-                                              .at(0);
                     const auto reason =
                         client_1_.Factory().PasswordPrompt(__FUNCTION__);
                     const auto keys =
@@ -116,8 +130,12 @@ protected:
                     using Index = ot::Bip32Index;
 
                     for (auto i = Index{0}; i < Index{100}; ++i) {
-                        const auto& element =
-                            account.BalanceElement(Subchain::External, i);
+                        const auto index = account_.Reserve(
+                            Subchain::External,
+                            client_1_.Factory().PasswordPrompt(""));
+
+                        const auto& element = account_.BalanceElement(
+                            Subchain::External, index.value_or(0));
                         const auto key = element.Key();
 
                         OT_ASSERT(key);
@@ -142,8 +160,7 @@ protected:
 
                     return output;
                 }(),
-                "The Industrial Revolution and its consequences have been a "
-                "disaster for the human race.");
+                coinbase_fun_);
 
             OT_ASSERT(output);
 
@@ -151,25 +168,45 @@ protected:
 
             return output;
         })
+        , get_p2pk_bytes_([&](const auto& script, auto index) {
+            if (0 == index) {
+
+                return script.Pubkey();
+            } else {
+
+                return script.PubkeyHash();
+            }
+        })
+        , get_p2pkh_bytes_([&](const auto& script, auto index) {
+            return script.PubkeyHash();
+        })
+        , get_p2pk_patterns_([&](auto index) {
+            if (0 == index) {
+
+                return Pattern::PayToPubkey;
+            } else {
+
+                return Pattern::PayToPubkeyHash;
+            }
+        })
+        , get_p2pkh_patterns_(
+              [&](auto index) { return Pattern::PayToPubkeyHash; })
+        , listener_([&]() -> ScanListener& {
+            if (!listener_p_) {
+                listener_p_ = std::make_unique<ScanListener>(client_1_);
+            }
+
+            OT_ASSERT(listener_p_);
+
+            return *listener_p_;
+        }())
     {
-        auto target = ot::Bip32Index{99};
-        const auto& account = client_1_.Blockchain()
-                                  .Account(alex_.ID(), test_chain_)
-                                  .GetHD()
-                                  .at(0);
-        const auto reason = client_1_.Factory().PasswordPrompt(__FUNCTION__);
-        auto index = account.LastGenerated(Subchain::External);
-
-        while ((false == index.has_value()) || (index.value() < target)) {
-            index = account.GenerateNext(Subchain::External, reason);
-
-            OT_ASSERT(index.has_value());
-        }
     }
 };
 
 ot::Nym_p Regtest_fixture_hd::alex_p_{};
 std::deque<ot::blockchain::block::pTxid> Regtest_fixture_hd::transactions_{};
+std::unique_ptr<ScanListener> Regtest_fixture_hd::listener_p_{};
 
 namespace
 {
@@ -254,14 +291,16 @@ TEST_F(Regtest_fixture_hd, init_account_activity)
 
 TEST_F(Regtest_fixture_hd, mine)
 {
+    auto future = listener_.get_future(account_, Subchain::External, 1);
     constexpr auto count{1};
     account_list_.expected_ += count;
     account_activity_.expected_ += (2 * count);
 
     EXPECT_TRUE(Mine(0, count, hd_generator_));
+    EXPECT_TRUE(listener_.wait(future));
 }
 
-TEST_F(Regtest_fixture_hd, block)
+TEST_F(Regtest_fixture_hd, first_block)
 {
     const auto& blockchain = client_1_.Blockchain().GetChain(test_chain_);
     const auto blockHash = blockchain.HeaderOracle().BestHash(1);
@@ -283,7 +322,161 @@ TEST_F(Regtest_fixture_hd, block)
     const auto& tx = *pTx;
 
     EXPECT_EQ(tx.ID(), transactions_.at(0));
-    ASSERT_EQ(tx.Outputs().size(), 100);
+    EXPECT_EQ(tx.BlockPosition(), 0);
+    EXPECT_EQ(tx.Outputs().size(), 100);
+}
+
+TEST_F(Regtest_fixture_hd, wallet_after_receive)
+{
+    const auto& network = client_1_.Blockchain().GetChain(test_chain_);
+    const auto& wallet = network.Wallet();
+    const auto& nym = alex_.ID();
+    const auto& account = account_.ID();
+    const auto blankNym = client_1_.Factory().NymID();
+    const auto blankAccount = client_1_.Factory().Identifier();
+    using Balance = ot::blockchain::Balance;
+    const auto balance = Balance{10000004950, 10000004950};
+    const auto noBalance = Balance{0, 0};
+    using Index = ot::Bip32Index;
+    const auto outpointsConfirmedNew = [&] {
+        auto out = std::vector<Outpoint>{};
+        const auto& txid = transactions_.at(0);
+
+        for (auto i = Index{0}; i < Index{100}; ++i) {
+            out.emplace_back(txid->Bytes(), i);
+        }
+
+        return out;
+    }();
+    const auto keysConfirmedNew = [&] {
+        auto out = std::vector<ot::OTData>{};
+
+        for (auto i = Index{0}; i < Index{100}; ++i) {
+            const auto& element =
+                account_.BalanceElement(Subchain::External, i + 2u);
+
+            switch (i) {
+                case 0: {
+                    const auto k = element.Key();
+
+                    OT_ASSERT(k);
+
+                    out.emplace_back(client_1_.Factory().Data(k->PublicKey()));
+                } break;
+                default: {
+                    out.emplace_back(element.PubkeyHash());
+                }
+            }
+        }
+
+        return out;
+    }();
+    const auto testConfirmedNew = [&](const auto& utxos) -> bool {
+        return TestUTXOs(
+            outpointsConfirmedNew,
+            keysConfirmedNew,
+            utxos,
+            get_p2pk_bytes_,
+            get_p2pk_patterns_,
+            [](const auto index) -> std::int64_t {
+                const auto amount = ot::blockchain::Amount{100000000};
+
+                return amount + index;
+            });
+    };
+
+    ASSERT_EQ(outpointsConfirmedNew.size(), 100u);
+    ASSERT_EQ(keysConfirmedNew.size(), 100u);
+
+    EXPECT_EQ(wallet.GetBalance(), balance);
+    EXPECT_EQ(network.GetBalance(), balance);
+    EXPECT_EQ(wallet.GetBalance(nym), balance);
+    EXPECT_EQ(network.GetBalance(nym), balance);
+    EXPECT_EQ(wallet.GetBalance(nym, account), balance);
+    EXPECT_EQ(wallet.GetBalance(blankNym), noBalance);
+    EXPECT_EQ(network.GetBalance(blankNym), noBalance);
+    EXPECT_EQ(wallet.GetBalance(blankNym, blankAccount), noBalance);
+    EXPECT_EQ(wallet.GetBalance(nym, blankAccount), noBalance);
+    EXPECT_EQ(wallet.GetBalance(blankNym, account), noBalance);
+
+    using TxoState = ot::blockchain::client::Wallet::TxoState;
+    auto type = TxoState::All;
+
+    EXPECT_EQ(wallet.GetOutputs(type).size(), 100u);
+    EXPECT_EQ(wallet.GetOutputs(nym, type).size(), 100u);
+    EXPECT_EQ(wallet.GetOutputs(nym, account, type).size(), 100u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
+
+    EXPECT_TRUE(testConfirmedNew(wallet.GetOutputs(type)));
+    EXPECT_TRUE(testConfirmedNew(wallet.GetOutputs(nym, type)));
+    EXPECT_TRUE(testConfirmedNew(wallet.GetOutputs(nym, account, type)));
+
+    type = TxoState::UnconfirmedNew;
+
+    EXPECT_EQ(wallet.GetOutputs(type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, account, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
+
+    type = TxoState::UnconfirmedSpend;
+
+    EXPECT_EQ(wallet.GetOutputs(type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, account, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
+
+    type = TxoState::ConfirmedNew;
+
+    EXPECT_EQ(wallet.GetOutputs(type).size(), 100u);
+    EXPECT_EQ(wallet.GetOutputs(nym, type).size(), 100u);
+    EXPECT_EQ(wallet.GetOutputs(nym, account, type).size(), 100u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
+
+    EXPECT_TRUE(testConfirmedNew(wallet.GetOutputs(type)));
+    EXPECT_TRUE(testConfirmedNew(wallet.GetOutputs(nym, type)));
+    EXPECT_TRUE(testConfirmedNew(wallet.GetOutputs(nym, account, type)));
+
+    type = TxoState::ConfirmedSpend;
+
+    EXPECT_EQ(wallet.GetOutputs(type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, account, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
+
+    type = TxoState::OrphanedNew;
+
+    EXPECT_EQ(wallet.GetOutputs(type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, account, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
+
+    type = TxoState::OrphanedSpend;
+
+    EXPECT_EQ(wallet.GetOutputs(type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, account, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
 }
 
 TEST_F(Regtest_fixture_hd, account_list_after_receive)
@@ -355,13 +548,242 @@ TEST_F(Regtest_fixture_hd, spend)
 {
     account_list_.expected_ += 1;
     account_activity_.expected_ += 2;
+    const auto& network = client_1_.Blockchain().GetChain(test_chain_);
     const auto& widget =
         client_1_.UI().AccountActivity(alex_.ID(), expected_account_);
-    static constexpr auto sendAmount{u8"14 units"};
+    constexpr auto sendAmount{u8"14 units"};
+    constexpr auto address{"mipcBbFg9gMiCh81Kj8tqqdgoZub1ZJRfn"};
 
     ASSERT_FALSE(widget.ValidateAmount(sendAmount).empty());
-    EXPECT_TRUE(widget.Send(
-        "mipcBbFg9gMiCh81Kj8tqqdgoZub1ZJRfn", sendAmount, memo_outgoing_));
+    ASSERT_TRUE(widget.ValidateAddress(address));
+
+    auto future =
+        network.SendToAddress(alex_.ID(), address, 1400000000, memo_outgoing_);
+    const auto& txid = transactions_.emplace_back(future.get());
+
+    EXPECT_FALSE(txid->empty());
+}
+
+TEST_F(Regtest_fixture_hd, wallet_after_unconfirmed_spend)
+{
+    const auto& network = client_1_.Blockchain().GetChain(test_chain_);
+    const auto& wallet = network.Wallet();
+    const auto& nym = alex_.ID();
+    const auto& account = account_.ID();
+    const auto blankNym = client_1_.Factory().NymID();
+    const auto blankAccount = client_1_.Factory().Identifier();
+    using Balance = ot::blockchain::Balance;
+    const auto balance = Balance{10000004950, 8600002652};
+    const auto noBalance = Balance{0, 0};
+    using Index = ot::Bip32Index;
+    const auto outpointsUnconfirmedNew = [&] {
+        auto out = std::vector<Outpoint>{};
+        const auto& txid = transactions_.at(1);
+        out.emplace_back(txid->Bytes(), 0);
+
+        return out;
+    }();
+    const auto outpointsUnconfirmedSpend = [&] {
+        auto out = std::vector<Outpoint>{};
+        const auto& txid = transactions_.at(0);
+
+        for (auto i = Index{0}; i < Index{15}; ++i) {
+            out.emplace_back(txid->Bytes(), i);
+        }
+
+        return out;
+    }();
+    const auto outpointsConfirmedNew = [&] {
+        auto out = std::vector<Outpoint>{};
+        const auto& txid = transactions_.at(0);
+
+        for (auto i = Index{15}; i < Index{100}; ++i) {
+            out.emplace_back(txid->Bytes(), i);
+        }
+
+        return out;
+    }();
+    const auto keysUnconfirmedNew = [&] {
+        auto out = std::vector<ot::OTData>{};
+        const auto& element = account_.BalanceElement(Subchain::Internal, 0);
+        out.emplace_back(element.PubkeyHash());
+
+        return out;
+    }();
+    const auto keysUnconfirmedSpend = [&] {
+        auto out = std::vector<ot::OTData>{};
+
+        for (auto i = Index{0}; i < Index{15}; ++i) {
+            const auto& element =
+                account_.BalanceElement(Subchain::External, i + 2u);
+
+            switch (i) {
+                case 0: {
+                    const auto k = element.Key();
+
+                    OT_ASSERT(k);
+
+                    out.emplace_back(client_1_.Factory().Data(k->PublicKey()));
+                } break;
+                default: {
+                    out.emplace_back(element.PubkeyHash());
+                }
+            }
+        }
+
+        return out;
+    }();
+    const auto keysConfirmedNew = [&] {
+        auto out = std::vector<ot::OTData>{};
+
+        for (auto i = Index{15}; i < Index{100}; ++i) {
+            const auto& element =
+                account_.BalanceElement(Subchain::External, i + 2u);
+            out.emplace_back(element.PubkeyHash());
+        }
+
+        return out;
+    }();
+    const auto testUnconfirmedNew = [&](const auto& utxos) -> bool {
+        return TestUTXOs(
+            outpointsUnconfirmedNew,
+            keysUnconfirmedNew,
+            utxos,
+            get_p2pkh_bytes_,
+            get_p2pkh_patterns_,
+            [](const auto index) -> std::int64_t {
+                const auto amount = ot::blockchain::Amount{99997807};
+
+                return amount;
+            });
+    };
+    const auto testUnconfirmedSpend = [&](const auto& utxos) -> bool {
+        return TestUTXOs(
+            outpointsUnconfirmedSpend,
+            keysUnconfirmedSpend,
+            utxos,
+            get_p2pk_bytes_,
+            get_p2pk_patterns_,
+            [](const auto index) -> std::int64_t {
+                const auto amount = ot::blockchain::Amount{100000000};
+
+                return amount + index;
+            });
+    };
+    const auto testConfirmedNew = [&](const auto& utxos) -> bool {
+        return TestUTXOs(
+            outpointsConfirmedNew,
+            keysConfirmedNew,
+            utxos,
+            get_p2pkh_bytes_,
+            get_p2pkh_patterns_,
+            [](const auto index) -> std::int64_t {
+                const auto amount = ot::blockchain::Amount{100000000};
+
+                return amount + index + 15;
+            });
+    };
+
+    ASSERT_EQ(outpointsUnconfirmedSpend.size(), 15u);
+    ASSERT_EQ(keysUnconfirmedSpend.size(), 15u);
+    ASSERT_EQ(outpointsUnconfirmedNew.size(), 1u);
+    ASSERT_EQ(keysUnconfirmedNew.size(), 1u);
+    ASSERT_EQ(outpointsConfirmedNew.size(), 85u);
+    ASSERT_EQ(keysConfirmedNew.size(), 85u);
+
+    EXPECT_EQ(wallet.GetBalance(), balance);
+    EXPECT_EQ(network.GetBalance(), balance);
+    EXPECT_EQ(wallet.GetBalance(nym), balance);
+    EXPECT_EQ(network.GetBalance(nym), balance);
+    EXPECT_EQ(wallet.GetBalance(nym, account), balance);
+    EXPECT_EQ(wallet.GetBalance(blankNym), noBalance);
+    EXPECT_EQ(network.GetBalance(blankNym), noBalance);
+    EXPECT_EQ(wallet.GetBalance(blankNym, blankAccount), noBalance);
+    EXPECT_EQ(wallet.GetBalance(nym, blankAccount), noBalance);
+    EXPECT_EQ(wallet.GetBalance(blankNym, account), noBalance);
+
+    using TxoState = ot::blockchain::client::Wallet::TxoState;
+    auto type = TxoState::All;
+
+    EXPECT_EQ(wallet.GetOutputs(type).size(), 101u);
+    EXPECT_EQ(wallet.GetOutputs(nym, type).size(), 101u);
+    EXPECT_EQ(wallet.GetOutputs(nym, account, type).size(), 101u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
+
+    type = TxoState::UnconfirmedNew;
+
+    EXPECT_EQ(wallet.GetOutputs(type).size(), 1u);
+    EXPECT_EQ(wallet.GetOutputs(nym, type).size(), 1u);
+    EXPECT_EQ(wallet.GetOutputs(nym, account, type).size(), 1u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
+
+    EXPECT_TRUE(testUnconfirmedNew(wallet.GetOutputs(type)));
+    EXPECT_TRUE(testUnconfirmedNew(wallet.GetOutputs(nym, type)));
+    EXPECT_TRUE(testUnconfirmedNew(wallet.GetOutputs(nym, account, type)));
+
+    type = TxoState::UnconfirmedSpend;
+
+    EXPECT_EQ(wallet.GetOutputs(type).size(), 15u);
+    EXPECT_EQ(wallet.GetOutputs(nym, type).size(), 15u);
+    EXPECT_EQ(wallet.GetOutputs(nym, account, type).size(), 15u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
+
+    EXPECT_TRUE(testUnconfirmedSpend(wallet.GetOutputs(type)));
+    EXPECT_TRUE(testUnconfirmedSpend(wallet.GetOutputs(nym, type)));
+    EXPECT_TRUE(testUnconfirmedSpend(wallet.GetOutputs(nym, account, type)));
+
+    type = TxoState::ConfirmedNew;
+
+    EXPECT_EQ(wallet.GetOutputs(type).size(), 85u);
+    EXPECT_EQ(wallet.GetOutputs(nym, type).size(), 85u);
+    EXPECT_EQ(wallet.GetOutputs(nym, account, type).size(), 85u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
+
+    EXPECT_TRUE(testConfirmedNew(wallet.GetOutputs(type)));
+    EXPECT_TRUE(testConfirmedNew(wallet.GetOutputs(nym, type)));
+    EXPECT_TRUE(testConfirmedNew(wallet.GetOutputs(nym, account, type)));
+
+    type = TxoState::ConfirmedSpend;
+
+    EXPECT_EQ(wallet.GetOutputs(type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, account, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
+
+    type = TxoState::OrphanedNew;
+
+    EXPECT_EQ(wallet.GetOutputs(type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, account, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
+
+    type = TxoState::OrphanedSpend;
+
+    EXPECT_EQ(wallet.GetOutputs(type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, account, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
 }
 
 TEST_F(Regtest_fixture_hd, account_list_after_spend)
@@ -444,6 +866,8 @@ TEST_F(Regtest_fixture_hd, account_activity_after_unconfirmed_spend)
 
 TEST_F(Regtest_fixture_hd, confirm)
 {
+    auto future1 = listener_.get_future(account_, Subchain::External, 2);
+    auto future2 = listener_.get_future(account_, Subchain::Internal, 2);
     account_list_.expected_ += 0;
     account_activity_.expected_ += 1;
     const auto& txid = transactions_.at(1).get();
@@ -458,6 +882,213 @@ TEST_F(Regtest_fixture_hd, confirm)
     }();
 
     EXPECT_TRUE(Mine(1, 1, default_, extra));
+    EXPECT_TRUE(listener_.wait(future1));
+    EXPECT_TRUE(listener_.wait(future2));
+}
+
+TEST_F(Regtest_fixture_hd, wallet_after_confirmed_spend)
+{
+    const auto& network = client_1_.Blockchain().GetChain(test_chain_);
+    const auto& wallet = network.Wallet();
+    const auto& nym = alex_.ID();
+    const auto& account = account_.ID();
+    const auto blankNym = client_1_.Factory().NymID();
+    const auto blankAccount = client_1_.Factory().Identifier();
+    using Balance = ot::blockchain::Balance;
+    const auto balance = Balance{8600002652, 8600002652};
+    const auto noBalance = Balance{0, 0};
+    using Index = ot::Bip32Index;
+    const auto outpointsConfirmedNew = [&] {
+        auto out = std::vector<Outpoint>{};
+        {
+            const auto& txid = transactions_.at(0);
+
+            for (auto i = Index{15}; i < Index{100}; ++i) {
+                out.emplace_back(txid->Bytes(), i);
+            }
+        }
+        {
+            const auto& txid = transactions_.at(1);
+            out.emplace_back(txid->Bytes(), 0);
+        }
+
+        return out;
+    }();
+    const auto outpointsConfirmedSpend = [&] {
+        const auto& txid = transactions_.at(0);
+
+        auto out = std::vector<Outpoint>{};
+
+        for (auto i = Index{0}; i < Index{15}; ++i) {
+            out.emplace_back(txid->Bytes(), i);
+        }
+
+        return out;
+    }();
+    const auto keysConfirmedNew = [&] {
+        auto out = std::vector<ot::OTData>{};
+
+        for (auto i = Index{15}; i < Index{100}; ++i) {
+            const auto& element =
+                account_.BalanceElement(Subchain::External, i + 2u);
+            out.emplace_back(element.PubkeyHash());
+        }
+
+        const auto& element = account_.BalanceElement(Subchain::Internal, 0);
+        out.emplace_back(element.PubkeyHash());
+
+        return out;
+    }();
+    const auto keysConfirmedSpend = [&] {
+        auto out = std::vector<ot::OTData>{};
+
+        for (auto i = Index{0}; i < Index{15}; ++i) {
+            const auto& element =
+                account_.BalanceElement(Subchain::External, i + 2u);
+
+            switch (i) {
+                case 0: {
+                    const auto k = element.Key();
+
+                    OT_ASSERT(k);
+
+                    out.emplace_back(client_1_.Factory().Data(k->PublicKey()));
+                } break;
+                default: {
+                    out.emplace_back(element.PubkeyHash());
+                }
+            }
+        }
+
+        return out;
+    }();
+    const auto testConfirmedNew = [&](const auto& utxos) -> bool {
+        return TestUTXOs(
+            outpointsConfirmedNew,
+            keysConfirmedNew,
+            utxos,
+            get_p2pkh_bytes_,
+            get_p2pkh_patterns_,
+            [](const auto index) -> std::int64_t {
+                const auto amount = ot::blockchain::Amount{100000000};
+
+                if (index < 85) {
+
+                    return amount + index + 15;
+                } else {
+
+                    return ot::blockchain::Amount{99997807};
+                }
+            });
+    };
+    const auto testConfirmedSpend = [&](const auto& utxos) -> bool {
+        return TestUTXOs(
+            outpointsConfirmedSpend,
+            keysConfirmedSpend,
+            utxos,
+            get_p2pk_bytes_,
+            get_p2pk_patterns_,
+            [](const auto index) -> std::int64_t {
+                const auto amount = ot::blockchain::Amount{100000000};
+
+                return amount + index;
+            });
+    };
+
+    ASSERT_EQ(outpointsConfirmedNew.size(), 86u);
+    ASSERT_EQ(keysConfirmedNew.size(), 86u);
+    ASSERT_EQ(outpointsConfirmedSpend.size(), 15u);
+    ASSERT_EQ(keysConfirmedSpend.size(), 15u);
+
+    EXPECT_EQ(wallet.GetBalance(), balance);
+    EXPECT_EQ(network.GetBalance(), balance);
+    EXPECT_EQ(wallet.GetBalance(nym), balance);
+    EXPECT_EQ(network.GetBalance(nym), balance);
+    EXPECT_EQ(wallet.GetBalance(nym, account), balance);
+    EXPECT_EQ(wallet.GetBalance(blankNym), noBalance);
+    EXPECT_EQ(network.GetBalance(blankNym), noBalance);
+    EXPECT_EQ(wallet.GetBalance(blankNym, blankAccount), noBalance);
+    EXPECT_EQ(wallet.GetBalance(nym, blankAccount), noBalance);
+    EXPECT_EQ(wallet.GetBalance(blankNym, account), noBalance);
+
+    using TxoState = ot::blockchain::client::Wallet::TxoState;
+    auto type = TxoState::All;
+
+    EXPECT_EQ(wallet.GetOutputs(type).size(), 101u);
+    EXPECT_EQ(wallet.GetOutputs(nym, type).size(), 101u);
+    EXPECT_EQ(wallet.GetOutputs(nym, account, type).size(), 101u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
+
+    type = TxoState::UnconfirmedNew;
+
+    EXPECT_EQ(wallet.GetOutputs(type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, account, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
+
+    type = TxoState::UnconfirmedSpend;
+
+    EXPECT_EQ(wallet.GetOutputs(type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, account, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
+
+    type = TxoState::ConfirmedNew;
+
+    EXPECT_EQ(wallet.GetOutputs(type).size(), 86u);
+    EXPECT_EQ(wallet.GetOutputs(nym, type).size(), 86u);
+    EXPECT_EQ(wallet.GetOutputs(nym, account, type).size(), 86u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
+
+    EXPECT_TRUE(testConfirmedNew(wallet.GetOutputs(type)));
+    EXPECT_TRUE(testConfirmedNew(wallet.GetOutputs(nym, type)));
+    EXPECT_TRUE(testConfirmedNew(wallet.GetOutputs(nym, account, type)));
+
+    type = TxoState::ConfirmedSpend;
+
+    EXPECT_EQ(wallet.GetOutputs(type).size(), 15u);
+    EXPECT_EQ(wallet.GetOutputs(nym, type).size(), 15u);
+    EXPECT_EQ(wallet.GetOutputs(nym, account, type).size(), 15u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
+
+    EXPECT_TRUE(testConfirmedSpend(wallet.GetOutputs(type)));
+    EXPECT_TRUE(testConfirmedSpend(wallet.GetOutputs(nym, type)));
+    EXPECT_TRUE(testConfirmedSpend(wallet.GetOutputs(nym, account, type)));
+
+    type = TxoState::OrphanedNew;
+
+    EXPECT_EQ(wallet.GetOutputs(type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, account, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
+
+    type = TxoState::OrphanedSpend;
+
+    EXPECT_EQ(wallet.GetOutputs(type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, account, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
+    EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
 }
 
 TEST_F(Regtest_fixture_hd, account_activity_after_confirmed_spend)

@@ -65,6 +65,16 @@ public:
         const PasswordPrompt& reason,
         const Identifier& contact,
         const std::string& label,
+        const Time time) const noexcept -> std::optional<Bip32Index> final
+    {
+        return Reserve(type, 0, reason, contact, label, time);
+    }
+    auto Reserve(
+        const Subchain type,
+        const std::size_t preallocate,
+        const PasswordPrompt& reason,
+        const Identifier& contact,
+        const std::string& label,
         const Time time) const noexcept -> std::optional<Bip32Index> override;
     auto RootNode(const PasswordPrompt& reason) const noexcept
         -> HDKey override;
@@ -103,6 +113,7 @@ protected:
     auto check_lookahead(
         const rLock& lock,
         const Subchain type,
+        const std::size_t preallocate,
         const PasswordPrompt& reason) const noexcept(false) -> void;
 #endif  // OT_CRYPTO_WITH_BIP32
     auto element(const rLock& lock, const Subchain type, const Bip32Index index)
@@ -116,8 +127,10 @@ protected:
         return index < generated_.at(type);
     }
 #if OT_CRYPTO_WITH_BIP32
-    auto need_lookahead(const rLock& lock, const Subchain type) const noexcept
-        -> bool;
+    auto need_lookahead(
+        const rLock& lock,
+        const Subchain type,
+        const std::size_t preallocate) const noexcept -> bool;
 #endif  // OT_CRYPTO_WITH_BIP32
     auto serialize_deterministic(const rLock& lock, SerializedType& out)
         const noexcept -> void;
@@ -125,6 +138,7 @@ protected:
     auto use_next(
         const rLock& lock,
         const Subchain type,
+        const std::size_t preallocate,
         const PasswordPrompt& reason,
         const Identifier& contact,
         const std::string& label,
@@ -157,6 +171,9 @@ protected:
         Identifier& out) noexcept(false);
 
 private:
+    using Status = Element::Availability;
+    using Fallback = std::map<Status, std::set<Bip32Index>>;
+
     static constexpr auto BlockchainDeterministicAccountDataVersion =
         VersionNumber{1};
 
@@ -165,6 +182,29 @@ private:
         const AddressMap& map,
         std::set<OTIdentifier>& contacts) noexcept -> void;
 
+#if OT_CRYPTO_WITH_BIP32
+    auto accept(
+        const rLock& lock,
+        const Subchain type,
+        const std::size_t preallocate,
+        const Identifier& contact,
+        const std::string& label,
+        const Time time,
+        const Bip32Index index,
+        const PasswordPrompt& reason) const noexcept
+        -> std::optional<Bip32Index>;
+    auto check(
+        const rLock& lock,
+        const Subchain type,
+        const std::size_t preallocate,
+        const Identifier& contact,
+        const std::string& label,
+        const Time time,
+        const Bip32Index index,
+        const PasswordPrompt& reason,
+        Fallback& fallback,
+        std::size_t& gap) const noexcept(false) -> std::optional<Bip32Index>;
+#endif  // OT_CRYPTO_WITH_BIP32
     auto check_activity(
         const rLock& lock,
         const std::vector<Activity>& unspent,

@@ -68,16 +68,6 @@ auto GenesisBlockHeader(
 }
 }  // namespace opentxs::factory
 
-namespace opentxs::blockchain::block
-{
-auto BlankHash() noexcept -> pHash
-{
-    return Data::Factory(
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
-        Data::Mode::Hex);
-}
-}  // namespace opentxs::blockchain::block
-
 namespace opentxs::blockchain::block::implementation
 {
 Header::Header(

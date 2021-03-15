@@ -10,6 +10,7 @@
 #include <mutex>
 #include <optional>
 #include <queue>
+#include <sstream>
 #include <vector>
 
 #include "internal/blockchain/Blockchain.hpp"
@@ -32,7 +33,10 @@ namespace api
 {
 namespace client
 {
-class Blockchain;
+namespace internal
+{
+struct Blockchain;
+}  // namespace internal
 }  // namespace client
 
 class Core;
@@ -76,7 +80,8 @@ namespace opentxs::blockchain::client::wallet
 class SubchainStateData
 {
 public:
-    using Subchain = internal::WalletDatabase::Subchain;
+    using WalletDatabase = internal::WalletDatabase;
+    using Subchain = WalletDatabase::Subchain;
     using OutstandingMap =
         std::map<block::pHash, BlockOracle::BitcoinBlockFuture>;
     using ProcessQueue = std::queue<OutstandingMap::iterator>;
@@ -92,6 +97,7 @@ public:
         std::queue<block::Position> parents_{};
     };
 
+    const OTNymID owner_;
     const OTIdentifier id_;
     const Subchain subchain_;
     Outstanding& job_counter_;
@@ -114,28 +120,46 @@ public:
     virtual ~SubchainStateData();
 
 protected:
-    using WalletDatabase = internal::WalletDatabase;
     using Task = internal::Wallet::Task;
+    using Patterns = WalletDatabase::Patterns;
+    using UTXOs = std::vector<WalletDatabase::UTXO>;
+    using Targets = client::GCS::Targets;
+    using Tested = WalletDatabase::MatchingIndices;
 
     const api::Core& api_;
-    const api::client::Blockchain& blockchain_;
+    const api::client::internal::Blockchain& blockchain_;
     const internal::Network& network_;
-    const internal::WalletDatabase& db_;
+    const WalletDatabase& db_;
     const filter::Type filter_type_;
+    const std::string name_;
+    const block::Position null_position_;
+
+    auto describe() const noexcept -> std::string;
+    auto get_account_targets() const noexcept
+        -> std::tuple<Patterns, UTXOs, Targets>;
+    auto get_block_targets(const block::Hash& id, const UTXOs& utxos)
+        const noexcept -> std::pair<Patterns, Targets>;
+    auto get_block_targets(const block::Hash& id, Tested& tested) const noexcept
+        -> std::tuple<Patterns, UTXOs, Targets, Patterns>;
+    virtual auto type() const noexcept -> std::stringstream = 0;
+    auto set_key_data(block::bitcoin::Transaction& tx) const noexcept -> void;
 
     auto index_element(
         const filter::Type type,
         const api::client::blockchain::BalanceNode::Element& input,
         const Bip32Index index,
         WalletDatabase::ElementMap& output) noexcept -> void;
+    // NOTE call from all and only final constructor bodies
+    auto init() noexcept -> void;
     auto queue_work(const Task task, const char* log) noexcept -> bool;
 
     SubchainStateData(
         const api::Core& api,
-        const api::client::Blockchain& blockchain,
+        const api::client::internal::Blockchain& blockchain,
         const internal::Network& network,
         const WalletDatabase& db,
-        const OTIdentifier&& id,
+        OTNymID&& owner,
+        OTIdentifier&& id,
         const SimpleCallback& taskFinished,
         Outstanding& jobCounter,
         const zmq::socket::Push& threadPool,
@@ -144,11 +168,18 @@ protected:
 
 private:
     const zmq::socket::Push& thread_pool_;
+    block::Position last_reported_;
 
     auto get_targets(
-        const internal::WalletDatabase::Patterns& keys,
-        const std::vector<internal::WalletDatabase::UTXO>& unspent)
-        const noexcept -> client::GCS::Targets;
+        const Patterns& elements,
+        const std::vector<WalletDatabase::UTXO>& utxos,
+        Targets& targets) const noexcept -> void;
+    auto get_targets(
+        const Patterns& elements,
+        const std::vector<WalletDatabase::UTXO>& utxos,
+        Targets& targets,
+        Patterns& outpoints,
+        Tested& tested) const noexcept -> void;
 
     auto check_blocks() noexcept -> bool;
     virtual auto check_index() noexcept -> bool = 0;
@@ -159,6 +190,7 @@ private:
         const block::bitcoin::Block& block,
         const block::Position& position,
         const block::Block::Matches& confirmed) noexcept -> void = 0;
+    auto report_scan() noexcept -> void;
 
     SubchainStateData() = delete;
     SubchainStateData(const SubchainStateData&) = delete;

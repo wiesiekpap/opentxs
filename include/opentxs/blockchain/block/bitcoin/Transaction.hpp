@@ -9,7 +9,10 @@
 #include "opentxs/Forward.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
+#include <map>
 #include <optional>
+#include <string>
+#include <tuple>
 #include <vector>
 
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -57,6 +60,9 @@ public:
     using ParsedPatterns = block::Block::ParsedPatterns;
     using Match = block::Block::Match;
     using Matches = block::Block::Matches;
+    using KeyID = block::Block::KeyID;
+    using ContactID = block::Block::ContactID;
+    using KeyData = block::Block::KeyData;
     using SerializeType = proto::BlockchainTransaction;
 
     OPENTXS_EXPORT virtual auto AssociatedLocalNyms(
@@ -67,6 +73,8 @@ public:
         const api::client::Contacts& contacts,
         const identifier::Nym& nym) const noexcept
         -> std::vector<OTIdentifier> = 0;
+    OPENTXS_EXPORT virtual auto BlockPosition() const noexcept
+        -> std::optional<std::size_t> = 0;
     OPENTXS_EXPORT virtual auto CalculateSize() const noexcept
         -> std::size_t = 0;
     OPENTXS_EXPORT virtual auto Chains() const noexcept
@@ -74,7 +82,6 @@ public:
     OPENTXS_EXPORT virtual auto ExtractElements(
         const filter::Type style) const noexcept -> std::vector<Space> = 0;
     OPENTXS_EXPORT virtual auto FindMatches(
-        const api::client::Blockchain& blockchain,
         const FilterType type,
         const Patterns& txos,
         const ParsedPatterns& elements) const noexcept -> Matches = 0;
@@ -85,6 +92,7 @@ public:
         -> const Identifier& = 0;
     OPENTXS_EXPORT virtual auto Inputs() const noexcept
         -> const bitcoin::Inputs& = 0;
+    OPENTXS_EXPORT virtual auto Keys() const noexcept -> std::vector<KeyID> = 0;
     OPENTXS_EXPORT virtual auto Locktime() const noexcept -> std::uint32_t = 0;
     OPENTXS_EXPORT virtual auto Memo(const api::client::Blockchain& blockchain)
         const noexcept -> std::string = 0;
@@ -93,6 +101,7 @@ public:
         const identifier::Nym& nym) const noexcept -> opentxs::Amount = 0;
     OPENTXS_EXPORT virtual auto Outputs() const noexcept
         -> const bitcoin::Outputs& = 0;
+    OPENTXS_EXPORT virtual auto Print() const noexcept -> std::string = 0;
     OPENTXS_EXPORT virtual auto SegwitFlag() const noexcept -> std::byte = 0;
     OPENTXS_EXPORT virtual auto Serialize(const AllocateOutput destination)
         const noexcept -> std::optional<std::size_t> = 0;
@@ -104,6 +113,9 @@ public:
     OPENTXS_EXPORT virtual auto WTXID() const noexcept -> const Txid& = 0;
     virtual auto clone() const noexcept
         -> std::unique_ptr<internal::Transaction> = 0;
+
+    virtual auto SetPosition(std::size_t position) noexcept -> void = 0;
+    virtual auto SetKeyData(const KeyData& data) noexcept -> void = 0;
 
     virtual ~Transaction() = default;
 

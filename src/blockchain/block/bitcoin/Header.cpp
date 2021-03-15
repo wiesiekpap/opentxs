@@ -11,6 +11,7 @@
 #include <array>
 #include <cstring>
 #include <ctime>
+#include <iomanip>
 #include <limits>
 #include <stdexcept>
 #include <string_view>
@@ -540,6 +541,21 @@ auto Header::preimage(const SerializedType& in) -> BitcoinFormat
         in.bitcoin().timestamp(),
         in.bitcoin().nbits(),
         in.bitcoin().nonce()};
+}
+
+auto Header::Print() const noexcept -> std::string
+{
+    const auto time = Clock::to_time_t(timestamp_);
+    auto out = std::stringstream{};
+    out << "  version: " << std::to_string(block_version_) << '\n';
+    out << "  parent: " << parent_hash_->asHex() << '\n';
+    out << "  merkle: " << merkle_root_->asHex() << '\n';
+    out << "  time: " << std::put_time(std::localtime(&time), "%Y-%m-%d %X");
+    out << '\n';
+    out << "  nBits: " << std::to_string(nbits_) << '\n';
+    out << "  nonce: " << std::to_string(nonce_) << '\n';
+
+    return out.str();
 }
 
 auto Header::Serialize() const noexcept -> Header::SerializedType

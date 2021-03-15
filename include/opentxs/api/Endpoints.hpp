@@ -89,6 +89,18 @@ public:
      */
     OPENTXS_EXPORT virtual std::string BlockchainReorg() const noexcept = 0;
 
+    /** Blockchain wallet scan progress
+     *
+     *  A subscribe socket can connect to this endpoint to receive
+     *  BlockchainWalletScanProgress tagged messages
+     *
+     *  See opentxs/util/WorkTypes.hpp for message format documentation
+     *
+     *  This endpoint is active for client sessions only.
+     */
+    OPENTXS_EXPORT virtual std::string BlockchainScanProgress()
+        const noexcept = 0;
+
     /** Blockchain enabled state change
      *
      *  A subscribe socket can connect to this endpoint to receive

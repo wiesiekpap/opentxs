@@ -44,6 +44,13 @@ public:
         const Identifier& contact = Identifier::Factory(),
         const std::string& label = {},
         const Time time = Clock::now()) const noexcept = 0;
+    OPENTXS_EXPORT virtual std::optional<Bip32Index> Reserve(
+        const Subchain type,
+        const std::size_t preallocate,
+        const PasswordPrompt& reason,
+        const Identifier& contact = Identifier::Factory(),
+        const std::string& label = {},
+        const Time time = Clock::now()) const noexcept = 0;
     OPENTXS_EXPORT virtual HDKey RootNode(
         const PasswordPrompt& reason) const noexcept = 0;
 
