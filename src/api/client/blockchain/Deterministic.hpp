@@ -6,6 +6,7 @@
 #pragma once
 
 #include <atomic>
+#include <iosfwd>
 #include <map>
 #include <optional>
 #include <set>
@@ -47,29 +48,26 @@ namespace opentxs::api::client::blockchain::implementation
 class Deterministic : virtual public internal::Deterministic, public BalanceNode
 {
 public:
+    auto Floor(const Subchain type) const noexcept
+        -> std::optional<Bip32Index> final;
     auto BalanceElement(const Subchain type, const Bip32Index index) const
         noexcept(false) -> const Element& final;
-#if OT_CRYPTO_WITH_BIP32
     auto GenerateNext(const Subchain type, const PasswordPrompt& reason)
         const noexcept -> std::optional<Bip32Index> final;
-#endif  // OT_CRYPTO_WITH_BIP32
     auto Key(const Subchain type, const Bip32Index index) const noexcept
         -> ECKey final;
     auto LastGenerated(const Subchain type) const noexcept
         -> std::optional<Bip32Index> final;
-    auto LastUsed(const Subchain type) const noexcept
-        -> std::optional<Bip32Index> final;
+    auto Lookahead() const noexcept -> std::size_t final { return window_; }
     auto Path() const noexcept -> proto::HDPath final { return path_; }
-#if OT_CRYPTO_WITH_BIP32
-    auto RootNode(const PasswordPrompt& reason) const noexcept
-        -> HDKey override;
-    auto UseNext(
+    auto Reserve(
         const Subchain type,
         const PasswordPrompt& reason,
         const Identifier& contact,
-        const std::string& label) const noexcept
-        -> std::optional<Bip32Index> final;
-#endif  // OT_CRYPTO_WITH_BIP32
+        const std::string& label,
+        const Time time) const noexcept -> std::optional<Bip32Index> override;
+    auto RootNode(const PasswordPrompt& reason) const noexcept
+        -> HDKey override;
 
     ~Deterministic() override = default;
 
@@ -82,8 +80,8 @@ protected:
         AddressData external_{};
     };
 
-    static const Bip32Index Lookahead{5};
-    static const Bip32Index MaxIndex{2147483648};
+    static constexpr Bip32Index window_{20};
+    static constexpr Bip32Index max_index_{2147483648};
 
     const proto::HDPath path_;
 #if OT_CRYPTO_WITH_BIP32
@@ -99,37 +97,44 @@ protected:
         proto::HDPath& path) -> HDKey;
 #endif  // OT_CRYPTO_WITH_BIP32
 
-    auto bump_generated(const Lock& lock, const Subchain type) const noexcept
-        -> std::optional<Bip32Index>
-    {
-        return bump(lock, type, generated_);
-    }
-    auto bump_used(const Lock& lock, const Subchain type) const noexcept
-        -> std::optional<Bip32Index>
-    {
-        return bump(lock, type, used_);
-    }
-    auto check_lookahead(const Lock& lock, const PasswordPrompt& reason) const
+    auto check_lookahead(const rLock& lock, const PasswordPrompt& reason) const
         noexcept(false) -> void;
 #if OT_CRYPTO_WITH_BIP32
     auto check_lookahead(
-        const Lock& lock,
+        const rLock& lock,
         const Subchain type,
         const PasswordPrompt& reason) const noexcept(false) -> void;
-    auto need_lookahead(const Lock& lock, const Subchain type) const noexcept
+#endif  // OT_CRYPTO_WITH_BIP32
+    auto element(const rLock& lock, const Subchain type, const Bip32Index index)
+        const noexcept(false) -> const Element&
+    {
+        return const_cast<Deterministic*>(this)->element(lock, type, index);
+    }
+    auto is_generated(const rLock&, const Subchain type, Bip32Index index)
+        const noexcept
+    {
+        return index < generated_.at(type);
+    }
+#if OT_CRYPTO_WITH_BIP32
+    auto need_lookahead(const rLock& lock, const Subchain type) const noexcept
         -> bool;
 #endif  // OT_CRYPTO_WITH_BIP32
-    auto serialize_deterministic(const Lock& lock, SerializedType& out)
+    auto serialize_deterministic(const rLock& lock, SerializedType& out)
         const noexcept -> void;
 #if OT_CRYPTO_WITH_BIP32
     auto use_next(
-        const Lock& lock,
+        const rLock& lock,
         const Subchain type,
         const PasswordPrompt& reason,
         const Identifier& contact,
-        const std::string& label) const noexcept -> std::optional<Bip32Index>;
+        const std::string& label,
+        const Time time) const noexcept -> std::optional<Bip32Index>;
 #endif  // OT_CRYPTO_WITH_BIP32
 
+    auto element(
+        const rLock& lock,
+        const Subchain type,
+        const Bip32Index index) noexcept(false) -> Element&;
     using BalanceNode::init;
     auto init(const PasswordPrompt& reason) noexcept(false) -> void;
 
@@ -160,21 +165,28 @@ private:
         const AddressMap& map,
         std::set<OTIdentifier>& contacts) noexcept -> void;
 
-    auto bump(const Lock& lock, const Subchain type, IndexMap map)
-        const noexcept -> std::optional<Bip32Index>;
     auto check_activity(
-        const Lock& lock,
+        const rLock& lock,
         const std::vector<Activity>& unspent,
         std::set<OTIdentifier>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool final;
+    auto confirm(
+        const rLock& lock,
+        const Subchain type,
+        const Bip32Index index) noexcept -> void final;
 #if OT_CRYPTO_WITH_BIP32
+    auto generate(
+        const rLock& lock,
+        const Subchain type,
+        const Bip32Index index,
+        const PasswordPrompt& reason) const noexcept(false) -> Bip32Index;
     auto generate_next(
-        const Lock& lock,
+        const rLock& lock,
         const Subchain type,
         const PasswordPrompt& reason) const noexcept(false) -> Bip32Index;
 #endif  // OT_CRYPTO_WITH_BIP32
     auto mutable_element(
-        const Lock& lock,
+        const rLock& lock,
         const Subchain type,
         const Bip32Index index) noexcept(false)
         -> internal::BalanceElement& final;
@@ -184,11 +196,15 @@ private:
     {
     }
     auto set_metadata(
-        const Lock& lock,
+        const rLock& lock,
         const Subchain subchain,
         const Bip32Index index,
         const Identifier& contact,
         const std::string& label) const noexcept -> void;
+    auto unconfirm(
+        const rLock& lock,
+        const Subchain type,
+        const Bip32Index index) noexcept -> void final;
 
     Deterministic() = delete;
     Deterministic(const Deterministic&) = delete;

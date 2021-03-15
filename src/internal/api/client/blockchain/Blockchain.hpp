@@ -194,6 +194,7 @@ struct BalanceList : virtual public blockchain::BalanceList {
 
 struct BalanceElement : virtual public blockchain::BalanceNode::Element {
     using SerializedType = proto::BlockchainAddress;
+    using Txid = blockchain::BalanceNode::Txid;
 
     virtual auto Elements() const noexcept -> std::set<OTData> = 0;
     virtual auto ID() const noexcept -> const Identifier& = 0;
@@ -202,11 +203,16 @@ struct BalanceElement : virtual public blockchain::BalanceNode::Element {
     virtual auto NymID() const noexcept -> const identifier::Nym& = 0;
     virtual auto Serialize() const noexcept -> SerializedType = 0;
 
-    virtual void SetContact(const Identifier& id) noexcept = 0;
-    virtual void SetLabel(const std::string& label) noexcept = 0;
-    virtual void SetMetadata(
+    virtual auto Confirm(const Txid& tx) noexcept -> bool = 0;
+    virtual auto Reserve(const Time time) noexcept -> bool = 0;
+    virtual auto SetContact(const Identifier& id) noexcept -> void = 0;
+    virtual auto SetLabel(const std::string& label) noexcept -> void = 0;
+    virtual auto SetMetadata(
         const Identifier& contact,
-        const std::string& label) noexcept = 0;
+        const std::string& label) noexcept -> void = 0;
+    virtual auto Unconfirm(const Txid& tx, const Time time) noexcept
+        -> bool = 0;
+    virtual auto Unreserve() noexcept -> bool = 0;
 };
 
 struct BalanceNode : virtual public blockchain::BalanceNode {
@@ -224,6 +230,10 @@ struct BalanceNode : virtual public blockchain::BalanceNode {
         const Bip32Index index,
         const PasswordPrompt& reason) const noexcept -> ECKey = 0;
 
+    virtual auto Confirm(
+        const Subchain type,
+        const Bip32Index index,
+        const Txid& tx) noexcept -> bool = 0;
     virtual auto SetContact(
         const Subchain type,
         const Bip32Index index,
@@ -234,6 +244,13 @@ struct BalanceNode : virtual public blockchain::BalanceNode {
         const std::string& label) noexcept(false) -> bool = 0;
     virtual auto UpdateElement(
         std::vector<ReadView>& pubkeyHashes) const noexcept -> void = 0;
+    virtual auto Unconfirm(
+        const Subchain type,
+        const Bip32Index index,
+        const Txid& tx,
+        const Time time) noexcept -> bool = 0;
+    virtual auto Unreserve(const Subchain type, const Bip32Index index) noexcept
+        -> bool = 0;
 };
 
 struct BalanceTree : virtual public blockchain::BalanceTree {
@@ -272,8 +289,12 @@ struct BalanceTree : virtual public blockchain::BalanceTree {
         const opentxs::blockchain::block::Txid& notification,
         const PasswordPrompt& reason,
         Identifier& id) noexcept -> bool = 0;
+    virtual auto HDChain(const Identifier& account) noexcept(false)
+        -> blockchain::internal::HD& = 0;
     virtual auto Node(const Identifier& id) const noexcept(false)
         -> internal::BalanceNode& = 0;
+    virtual auto PaymentCode(const Identifier& account) noexcept(false)
+        -> blockchain::internal::PaymentCode& = 0;
 };
 
 struct Deterministic : virtual public blockchain::Deterministic,

@@ -4,6 +4,8 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <algorithm>
+#include <chrono>
 #include <cstdint>
 #include <iostream>
 #include <map>
@@ -32,13 +34,17 @@
 #include "opentxs/api/client/blockchain/AddressStyle.hpp"
 #include "opentxs/api/client/blockchain/BalanceNode.hpp"
 #include "opentxs/api/client/blockchain/BalanceTree.hpp"
+#include "opentxs/api/client/blockchain/Deterministic.hpp"
 #include "opentxs/api/client/blockchain/HD.hpp"
+#include "opentxs/api/client/blockchain/PaymentCode.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"
+#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
+#include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/HD.hpp"
@@ -51,6 +57,11 @@ namespace ot = opentxs;
 
 namespace
 {
+struct AddressData {
+    std::vector<ot::Time> times_{};
+    std::vector<ot::OTIdentifier> txids_{};
+};
+
 bool init_{false};
 const ot::proto::ContactItemType individual_{ot::proto::CITEMTYPE_INDIVIDUAL};
 const ot::blockchain::Type btc_chain_{ot::blockchain::Type::Bitcoin};
@@ -76,6 +87,8 @@ std::unique_ptr<ot::OTIdentifier> account_4_id_p_{nullptr};
 std::unique_ptr<ot::OTIdentifier> account_5_id_p_{nullptr};
 std::unique_ptr<ot::OTIdentifier> account_6_id_p_{nullptr};
 std::unique_ptr<ot::OTIdentifier> account_7_id_p_{nullptr};
+std::unique_ptr<ot::OTIdentifier> account_8_id_p_{nullptr};
+AddressData address_data_{};
 const std::string fingerprint_a_{};
 const std::string fingerprint_b_{};
 const std::string fingerprint_c_{};
@@ -90,6 +103,7 @@ const std::string memo_2_{"memo 2"};
 const std::string memo_3_{"memo 3"};
 const std::string memo_4_{"memo 4"};
 const std::string empty_string_{};
+constexpr auto zero_time_ = ot::Time{};
 const std::vector<std::string> alex_external_{
     "1K9teXNg8iKYwUPregT8QTmMepb376oTuX",
     "1GgpoMuPBfaa4ZT6ZeKaTY8NH9Ldx4Q89t",
@@ -192,6 +206,7 @@ public:
     ot::Identifier& account_5_id_;  // chris, bch, bip44 *
     ot::Identifier& account_6_id_;  // bob, btc, bip32 *
     ot::Identifier& account_7_id_;  // chris, ltc, bip44
+    ot::Identifier& account_8_id_;  // alex, btc, bip44
     const ThreadVectors threads_;
 
     static const ot::api::client::Manager& init()
@@ -262,10 +277,190 @@ public:
                 new ot::OTIdentifier{api.Factory().Identifier()});
             account_7_id_p_.reset(
                 new ot::OTIdentifier{api.Factory().Identifier()});
+            account_8_id_p_.reset(
+                new ot::OTIdentifier{api.Factory().Identifier()});
             init_ = true;
         }
 
         return api;
+    }
+
+    auto check_deterministic_account(
+        const ot::identifier::Nym& nym,
+        const ot::blockchain::Type chain,
+        const ot::Identifier& accountID,
+        const ot::Identifier& contactID,
+        const std::vector<std::string>& external,
+        const std::vector<std::string>& internal,
+        const Subchain subchain1,
+        const Subchain subchain2,
+        const std::string label1,
+        const std::string label2) const noexcept -> bool
+    {
+        auto output = true;
+        const auto& account =
+            api_.Blockchain().Account(nym, chain).GetHD().at(accountID);
+
+        EXPECT_EQ(account.ID(), accountID);
+
+        output &= (account.ID() == accountID);
+        output &= check_initial_state(account, subchain1);
+        output &= check_initial_state(account, subchain2);
+
+        for (ot::Bip32Index i{0}; i < external.size(); ++i) {
+            const auto label{label1 + std::to_string(i)};
+            output &= check_hd_index(
+                accountID, contactID, external, account, subchain1, i, label);
+        }
+
+        auto floor = account.Floor(subchain1);
+
+        EXPECT_EQ(floor.value_or(1), 0);
+
+        output &= (floor.value_or(1) == 0);
+
+        for (ot::Bip32Index i{0}; i < internal.size(); ++i) {
+            const auto label{label2 + std::to_string(i)};
+            output &= check_hd_index(
+                accountID, contactID, internal, account, subchain2, i, label);
+        }
+
+        floor = account.Floor(subchain2);
+
+        EXPECT_EQ(floor.value_or(1), 0);
+
+        output &= (floor.value_or(1) == 0);
+
+        return output;
+    }
+    auto check_hd_account(
+        const ot::identifier::Nym& nym,
+        const ot::blockchain::Type chain,
+        const ot::Identifier& accountID,
+        const ot::Identifier& contactID,
+        const std::vector<std::string>& external,
+        const std::vector<std::string>& internal) const noexcept -> bool
+    {
+        return check_deterministic_account(
+            nym,
+            chain,
+            accountID,
+            contactID,
+            external,
+            internal,
+            Subchain::External,
+            Subchain::Internal,
+            "receive ",
+            "change ");
+    }
+    auto check_hd_index(
+        const ot::Identifier& accountID,
+        const ot::Identifier& contactID,
+        const std::vector<std::string>& expected,
+        const ot::api::client::blockchain::HD& account,
+        const Subchain subchain,
+        const ot::Bip32Index i,
+        const std::string& label) const noexcept -> bool
+    {
+        auto output = true;
+        auto index = account.Reserve(subchain, reason_, contactID, label);
+        auto generated = account.LastGenerated(subchain);
+
+        EXPECT_TRUE(index);
+
+        if (!index) { return false; }
+
+        EXPECT_EQ(i, index.value());
+        EXPECT_TRUE(generated);
+
+        output &= (i == index.value());
+
+        if (!generated) { return false; }
+
+        const auto& target = expected.at(i);
+        const auto [bytes, style, chains, supported] =
+            api_.Blockchain().DecodeAddress(target);
+
+        EXPECT_GT(chains.size(), 0u);
+
+        if (chains.size() == 0u) { return false; }
+
+        const auto& chain = *chains.cbegin();
+        const auto encoded =
+            api_.Blockchain().EncodeAddress(style, chain, bytes);
+
+        EXPECT_EQ(target, encoded);
+
+        output &= (target == encoded);
+        const auto locator =
+            ot::api::client::blockchain::Key{accountID.str(), subchain, i};
+        const auto& element = account.BalanceElement(subchain, i);
+
+        EXPECT_EQ(element.Address(AddressStyle::P2PKH), target);
+        EXPECT_EQ(element.Confirmed().size(), 0);
+        EXPECT_EQ(element.Index(), i);
+        EXPECT_TRUE(element.Key());
+        EXPECT_EQ(element.KeyID(), locator);
+        EXPECT_EQ(element.Label(), label);
+        EXPECT_NE(element.LastActivity(), zero_time_);
+        EXPECT_TRUE(element.PrivateKey(reason_));
+        EXPECT_EQ(element.PubkeyHash(), bytes);
+        EXPECT_EQ(element.Subchain(), subchain);
+        EXPECT_EQ(element.Unconfirmed().size(), 0);
+
+        output &= (element.Address(AddressStyle::P2PKH) == target);
+        output &= (element.Confirmed().size() == 0);
+        output &= (element.Index() == i);
+        output &= bool(element.Key());
+        output &= (element.KeyID() == locator);
+        output &= (element.Label() == label);
+        output &= (element.LastActivity() != zero_time_);
+        output &= bool(element.PrivateKey(reason_));
+        output &= (element.PubkeyHash() == bytes);
+        output &= (element.Subchain() == subchain);
+        output &= (element.Unconfirmed().size() == 0);
+
+        if (Subchain::Internal != subchain) {
+            EXPECT_EQ(element.Contact()->str(), contactID.str());
+
+            output &= (element.Contact() == contactID);
+        }
+
+        return output;
+    }
+    auto check_initial_state(
+        const ot::api::client::blockchain::Deterministic& account,
+        const Subchain subchain) const noexcept -> bool
+    {
+        auto output = true;
+        const auto expected = account.Lookahead() - 1u;
+        const auto gen = account.LastGenerated(subchain).value_or(0u);
+        const auto floor = account.Floor(subchain);
+
+        EXPECT_EQ(gen, expected);
+        EXPECT_TRUE(floor);
+        EXPECT_EQ(floor.value_or(1), 0);
+
+        output &= (gen == expected);
+        output &= bool(floor);
+        output &= (floor.value_or(1) == 0);
+
+        for (auto i = ot::Bip32Index{0u}; i < gen; ++i) {
+            const auto& element = account.BalanceElement(subchain, i);
+
+            EXPECT_EQ(element.LastActivity(), zero_time_);
+
+            output &= (element.LastActivity() == zero_time_);
+        }
+
+        return output;
+    }
+    auto random() const noexcept -> ot::OTIdentifier
+    {
+        auto out = api_.Factory().Identifier();
+        out->Randomize(32);
+
+        return out;
     }
 
     Test_BlockchainAPI()
@@ -290,6 +485,7 @@ public:
         , account_5_id_(account_5_id_p_->get())
         , account_6_id_(account_6_id_p_->get())
         , account_7_id_(account_7_id_p_->get())
+        , account_8_id_(account_8_id_p_->get())
         , threads_({
               {0,
                {
@@ -586,73 +782,13 @@ TEST_F(Test_BlockchainAPI, TestBip32_standard_3)
 
 TEST_F(Test_BlockchainAPI, testBip32_SeedA)
 {
-    const auto& account =
-        api_.Blockchain().Account(alex_, btc_chain_).GetHD().at(0);
-
-    EXPECT_EQ(account.ID(), account_1_id_);
-    EXPECT_FALSE(account.LastUsed(Subchain::External));
-    EXPECT_FALSE(account.LastUsed(Subchain::Internal));
-    EXPECT_TRUE(account.LastGenerated(Subchain::External));
-    EXPECT_TRUE(account.LastGenerated(Subchain::Internal));
-
-    std::optional<ot::Bip32Index> index{};
-    std::optional<ot::Bip32Index> last{};
-    std::optional<ot::Bip32Index> generated{};
-
-    for (ot::Bip32Index i{0}; i < 10; ++i) {
-        const auto label{std::string{"receive "} + std::to_string(i)};
-        index =
-            account.UseNext(Subchain::External, reason_, contact_bob_, label);
-        last = account.LastUsed(Subchain::External);
-        generated = account.LastGenerated(Subchain::External);
-
-        ASSERT_TRUE(index);
-        EXPECT_EQ(i, index.value());
-        ASSERT_TRUE(last);
-        EXPECT_EQ(i, last.value());
-        ASSERT_TRUE(generated);
-        EXPECT_TRUE(generated.value() > last.value());
-
-        const auto& element = account.BalanceElement(Subchain::External, i);
-        const auto& target = alex_external_.at(i);
-
-        EXPECT_EQ(element.Address(AddressStyle::P2PKH), target);
-
-        const auto [bytes, style, chains, supported] =
-            api_.Blockchain().DecodeAddress(target);
-
-        ASSERT_GT(chains.size(), 0);
-
-        const auto& chain = *chains.cbegin();
-        const auto encoded =
-            api_.Blockchain().EncodeAddress(style, chain, bytes);
-
-        EXPECT_EQ(target, encoded);
-        EXPECT_EQ(element.Contact()->str(), contact_bob_.str());
-        EXPECT_EQ(element.Label(), label);
-    }
-
-    for (ot::Bip32Index i{0}; i < 10; ++i) {
-        const auto label{std::string{"change "} + std::to_string(i)};
-        index =
-            account.UseNext(Subchain::Internal, reason_, contact_bob_, label);
-        last = account.LastUsed(Subchain::Internal);
-        generated = account.LastGenerated(Subchain::Internal);
-
-        ASSERT_TRUE(index);
-        EXPECT_EQ(i, index.value());
-        ASSERT_TRUE(last);
-        EXPECT_EQ(i, last.value());
-        ASSERT_TRUE(generated);
-        EXPECT_TRUE(generated.value() > last.value());
-
-        const auto& element = account.BalanceElement(Subchain::Internal, i);
-
-        EXPECT_EQ(element.Address(AddressStyle::P2PKH), alex_internal_.at(i));
-        EXPECT_EQ(element.Contact()->str(), empty_id_.str());
-        EXPECT_EQ(element.Label(), label);
-        EXPECT_TRUE(element.PrivateKey(reason_));
-    }
+    EXPECT_TRUE(check_hd_account(
+        alex_,
+        btc_chain_,
+        account_1_id_,
+        contact_bob_,
+        alex_external_,
+        alex_internal_));
 }
 
 TEST_F(Test_BlockchainAPI, testBip32_SeedB)
@@ -666,185 +802,35 @@ TEST_F(Test_BlockchainAPI, testBip32_SeedB)
 
     EXPECT_EQ(list.size(), 1);
     EXPECT_EQ(list.count(account_6_id_), 1);
-
-    const auto& account =
-        api_.Blockchain().Account(bob_, btc_chain_).GetHD().at(0);
-
-    EXPECT_EQ(account.ID(), account_6_id_);
-    EXPECT_FALSE(account.LastUsed(Subchain::External));
-    EXPECT_FALSE(account.LastUsed(Subchain::Internal));
-    EXPECT_TRUE(account.LastGenerated(Subchain::External));
-    EXPECT_TRUE(account.LastGenerated(Subchain::Internal));
-
-    std::optional<ot::Bip32Index> index{};
-    std::optional<ot::Bip32Index> last{};
-    std::optional<ot::Bip32Index> generated{};
-
-    for (ot::Bip32Index i{0}; i < 10; ++i) {
-        const auto label{std::string{"receive "} + std::to_string(i)};
-        index =
-            account.UseNext(Subchain::External, reason_, contact_alex_, label);
-        last = account.LastUsed(Subchain::External);
-        generated = account.LastGenerated(Subchain::External);
-
-        ASSERT_TRUE(index);
-        EXPECT_EQ(i, index.value());
-        ASSERT_TRUE(last);
-        EXPECT_EQ(i, last.value());
-        ASSERT_TRUE(generated);
-        EXPECT_TRUE(generated.value() > last.value());
-
-        const auto& element = account.BalanceElement(Subchain::External, i);
-
-        EXPECT_EQ(element.Address(AddressStyle::P2PKH), bob_external_.at(i));
-        EXPECT_EQ(element.Contact()->str(), contact_alex_.str());
-        EXPECT_EQ(element.Label(), label);
-        EXPECT_TRUE(element.PrivateKey(reason_));
-    }
-
-    for (ot::Bip32Index i{0}; i < 10; ++i) {
-        const auto label{std::string{"change "} + std::to_string(i)};
-        index =
-            account.UseNext(Subchain::Internal, reason_, contact_alex_, label);
-        last = account.LastUsed(Subchain::Internal);
-        generated = account.LastGenerated(Subchain::Internal);
-
-        ASSERT_TRUE(index);
-        EXPECT_EQ(i, index.value());
-        ASSERT_TRUE(last);
-        EXPECT_EQ(i, last.value());
-        ASSERT_TRUE(generated);
-        EXPECT_TRUE(generated.value() > last.value());
-
-        const auto& element = account.BalanceElement(Subchain::Internal, i);
-
-        EXPECT_EQ(element.Address(AddressStyle::P2PKH), bob_internal_.at(i));
-        EXPECT_EQ(element.Contact()->str(), empty_id_.str());
-        EXPECT_EQ(element.Label(), label);
-        EXPECT_TRUE(element.PrivateKey(reason_));
-    }
+    EXPECT_TRUE(check_hd_account(
+        bob_,
+        btc_chain_,
+        account_6_id_,
+        contact_alex_,
+        bob_external_,
+        bob_internal_));
 }
 
 TEST_F(Test_BlockchainAPI, testBip44_btc)
 {
-    const auto& account =
-        api_.Blockchain().Account(chris_, btc_chain_).GetHD().at(account_4_id_);
-
-    EXPECT_EQ(account.ID(), account_4_id_);
-    EXPECT_FALSE(account.LastUsed(Subchain::External));
-    EXPECT_FALSE(account.LastUsed(Subchain::Internal));
-    EXPECT_TRUE(account.LastGenerated(Subchain::External));
-    EXPECT_TRUE(account.LastGenerated(Subchain::Internal));
-
-    std::optional<ot::Bip32Index> index{};
-    std::optional<ot::Bip32Index> last{};
-    std::optional<ot::Bip32Index> generated{};
-
-    for (ot::Bip32Index i{0}; i < 2; ++i) {
-        const auto label{std::string{"receive "} + std::to_string(i)};
-        index = account.UseNext(
-            Subchain::External, reason_, contact_daniel_, label);
-        last = account.LastUsed(Subchain::External);
-        generated = account.LastGenerated(Subchain::External);
-
-        ASSERT_TRUE(index);
-        EXPECT_EQ(i, index.value());
-        ASSERT_TRUE(last);
-        EXPECT_EQ(i, last.value());
-        ASSERT_TRUE(generated);
-        EXPECT_TRUE(generated.value() > last.value());
-
-        const auto& element = account.BalanceElement(Subchain::External, i);
-
-        EXPECT_EQ(
-            element.Address(AddressStyle::P2PKH), chris_btc_external_.at(i));
-        EXPECT_EQ(element.Contact()->str(), contact_daniel_.str());
-        EXPECT_EQ(element.Label(), label);
-        EXPECT_TRUE(element.PrivateKey(reason_));
-    }
-
-    for (ot::Bip32Index i{0}; i < 2; ++i) {
-        const auto label{std::string{"change "} + std::to_string(i)};
-        index = account.UseNext(
-            Subchain::Internal, reason_, contact_daniel_, label);
-        last = account.LastUsed(Subchain::Internal);
-        generated = account.LastGenerated(Subchain::Internal);
-
-        ASSERT_TRUE(index);
-        EXPECT_EQ(i, index.value());
-        ASSERT_TRUE(last);
-        EXPECT_EQ(i, last.value());
-        ASSERT_TRUE(generated);
-        EXPECT_TRUE(generated.value() > last.value());
-
-        const auto& element = account.BalanceElement(Subchain::Internal, i);
-
-        EXPECT_EQ(
-            element.Address(AddressStyle::P2PKH), chris_btc_internal_.at(i));
-        EXPECT_EQ(element.Contact()->str(), empty_id_.str());
-        EXPECT_EQ(element.Label(), label);
-        EXPECT_TRUE(element.PrivateKey(reason_));
-    }
+    EXPECT_TRUE(check_hd_account(
+        chris_,
+        btc_chain_,
+        account_4_id_,
+        contact_daniel_,
+        chris_btc_external_,
+        chris_btc_internal_));
 }
 
 TEST_F(Test_BlockchainAPI, testBip44_bch)
 {
-    const auto& account =
-        api_.Blockchain().Account(chris_, bch_chain_).GetHD().at(account_5_id_);
-
-    EXPECT_EQ(account.ID(), account_5_id_);
-    EXPECT_FALSE(account.LastUsed(Subchain::External));
-    EXPECT_FALSE(account.LastUsed(Subchain::Internal));
-    EXPECT_TRUE(account.LastGenerated(Subchain::External));
-    EXPECT_TRUE(account.LastGenerated(Subchain::Internal));
-
-    std::optional<ot::Bip32Index> index{};
-    std::optional<ot::Bip32Index> last{};
-    std::optional<ot::Bip32Index> generated{};
-
-    for (ot::Bip32Index i{0}; i < 2; ++i) {
-        const auto label{std::string{"receive "} + std::to_string(i)};
-        index = account.UseNext(Subchain::External, reason_, empty_id_, label);
-        last = account.LastUsed(Subchain::External);
-        generated = account.LastGenerated(Subchain::External);
-
-        ASSERT_TRUE(index);
-        EXPECT_EQ(i, index.value());
-        ASSERT_TRUE(last);
-        EXPECT_EQ(i, last.value());
-        ASSERT_TRUE(generated);
-        EXPECT_TRUE(generated.value() > last.value());
-
-        const auto& element = account.BalanceElement(Subchain::External, i);
-
-        EXPECT_EQ(
-            element.Address(AddressStyle::P2PKH), chris_bch_external_.at(i));
-        EXPECT_EQ(element.Contact()->str(), empty_id_.str());
-        EXPECT_EQ(element.Label(), label);
-        EXPECT_TRUE(element.PrivateKey(reason_));
-    }
-
-    for (ot::Bip32Index i{0}; i < 2; ++i) {
-        const auto label{std::string{"change "} + std::to_string(i)};
-        index = account.UseNext(Subchain::Internal, reason_, empty_id_, label);
-        last = account.LastUsed(Subchain::Internal);
-        generated = account.LastGenerated(Subchain::Internal);
-
-        ASSERT_TRUE(index);
-        EXPECT_EQ(i, index.value());
-        ASSERT_TRUE(last);
-        EXPECT_EQ(i, last.value());
-        ASSERT_TRUE(generated);
-        EXPECT_TRUE(generated.value() > last.value());
-
-        const auto& element = account.BalanceElement(Subchain::Internal, i);
-
-        EXPECT_EQ(
-            element.Address(AddressStyle::P2PKH), chris_bch_internal_.at(i));
-        EXPECT_EQ(element.Contact()->str(), empty_id_.str());
-        EXPECT_EQ(element.Label(), label);
-        EXPECT_TRUE(element.PrivateKey(reason_));
-    }
+    EXPECT_TRUE(check_hd_account(
+        chris_,
+        bch_chain_,
+        account_5_id_,
+        empty_id_,
+        chris_bch_external_,
+        chris_bch_internal_));
 }
 
 TEST_F(Test_BlockchainAPI, testBip44_ltc)
@@ -858,76 +844,13 @@ TEST_F(Test_BlockchainAPI, testBip44_ltc)
 
     EXPECT_EQ(list.size(), 1);
     EXPECT_EQ(list.count(account_7_id_), 1);
-
-    const auto& account =
-        api_.Blockchain().Account(chris_, ltc_chain_).GetHD().at(account_7_id_);
-
-    EXPECT_EQ(account.ID(), account_7_id_);
-    EXPECT_FALSE(account.LastUsed(Subchain::External));
-    EXPECT_FALSE(account.LastUsed(Subchain::Internal));
-    EXPECT_TRUE(account.LastGenerated(Subchain::External));
-    EXPECT_TRUE(account.LastGenerated(Subchain::Internal));
-
-    std::optional<ot::Bip32Index> index{};
-    std::optional<ot::Bip32Index> last{};
-    std::optional<ot::Bip32Index> generated{};
-
-    for (ot::Bip32Index i{0}; i < 2; ++i) {
-        const auto label{empty_string_};
-        index =
-            account.UseNext(Subchain::External, reason_, contact_alex_, label);
-        last = account.LastUsed(Subchain::External);
-        generated = account.LastGenerated(Subchain::External);
-
-        ASSERT_TRUE(index);
-        EXPECT_EQ(i, index.value());
-        ASSERT_TRUE(last);
-        EXPECT_EQ(i, last.value());
-        ASSERT_TRUE(generated);
-        EXPECT_TRUE(generated.value() > last.value());
-
-        const auto& element = account.BalanceElement(Subchain::External, i);
-        const auto& target = chris_ltc_external_.at(i);
-
-        EXPECT_EQ(element.Address(AddressStyle::P2PKH), target);
-
-        const auto [bytes, style, chains, supported] =
-            api_.Blockchain().DecodeAddress(target);
-
-        ASSERT_GT(chains.size(), 0);
-
-        const auto& chain = *chains.cbegin();
-        const auto encoded =
-            api_.Blockchain().EncodeAddress(style, chain, bytes);
-
-        EXPECT_EQ(target, encoded);
-        EXPECT_EQ(element.Contact()->str(), contact_alex_.str());
-        EXPECT_EQ(element.Label(), label);
-        EXPECT_TRUE(element.PrivateKey(reason_));
-    }
-
-    for (ot::Bip32Index i{0}; i < 2; ++i) {
-        const auto label{std::string{"change "} + std::to_string(i)};
-        index =
-            account.UseNext(Subchain::Internal, reason_, contact_alex_, label);
-        last = account.LastUsed(Subchain::Internal);
-        generated = account.LastGenerated(Subchain::Internal);
-
-        ASSERT_TRUE(index);
-        EXPECT_EQ(i, index.value());
-        ASSERT_TRUE(last);
-        EXPECT_EQ(i, last.value());
-        ASSERT_TRUE(generated);
-        EXPECT_TRUE(generated.value() > last.value());
-
-        const auto& element = account.BalanceElement(Subchain::Internal, i);
-
-        EXPECT_EQ(
-            element.Address(AddressStyle::P2PKH), chris_ltc_internal_.at(i));
-        EXPECT_EQ(element.Contact()->str(), empty_id_.str());
-        EXPECT_EQ(element.Label(), label);
-        EXPECT_TRUE(element.PrivateKey(reason_));
-    }
+    EXPECT_TRUE(check_hd_account(
+        chris_,
+        ltc_chain_,
+        account_7_id_,
+        contact_alex_,
+        chris_ltc_external_,
+        chris_ltc_internal_));
 }
 
 TEST_F(Test_BlockchainAPI, AccountList)
@@ -955,6 +878,436 @@ TEST_F(Test_BlockchainAPI, AccountList)
     list = api_.Blockchain().AccountList(daniel_, ltc_chain_);
 
     EXPECT_EQ(list.size(), 0);
+}
+
+TEST_F(Test_BlockchainAPI, reserve_addresses)
+{
+    const auto& nym = alex_;
+    const auto chain = btc_chain_;
+    account_8_id_.Assign(api_.Blockchain().NewHDSubaccount(
+        nym, ot::BlockchainAccountType::BIP44, chain, reason_));
+    const auto& accountID = account_8_id_;
+    const auto subchain = Subchain::External;
+
+    ASSERT_FALSE(accountID.empty());
+
+    auto list = api_.Blockchain().AccountList(nym, chain);
+
+    EXPECT_EQ(list.count(accountID), 1);
+
+    const auto& account =
+        api_.Blockchain().Account(nym, chain).GetHD().at(accountID);
+
+    ASSERT_EQ(account.ID(), accountID);
+    ASSERT_EQ(account.Lookahead(), 20u);
+
+    auto& times = address_data_.times_;
+    times.emplace_back(ot::Clock::now() - std::chrono::hours{24u * 8});
+    times.emplace_back(ot::Clock::now() - std::chrono::hours{24u * 3});
+    times.emplace_back(ot::Clock::now() - std::chrono::hours{24u * 1});
+
+    auto counter{-1};
+
+    for (const auto& time : times) {
+        {  // contact only matches, no transactions
+            const auto index =
+                account.Reserve(subchain, reason_, random(), "mismatch", time);
+
+            ASSERT_TRUE(index.has_value());
+            EXPECT_EQ(index.value(), ++counter);
+        }
+        {  // metadata match, no transactions
+            const auto index =
+                account.Reserve(subchain, reason_, random(), "match", time);
+
+            ASSERT_TRUE(index.has_value());
+            EXPECT_EQ(index.value(), ++counter);
+        }
+        {  // metadata mismatch, no transactions
+            const auto index =
+                account.Reserve(subchain, reason_, random(), "mismatch", time);
+
+            ASSERT_TRUE(index.has_value());
+            EXPECT_EQ(index.value(), ++counter);
+        }
+        {  // no metadata, no transactions
+            const auto index =
+                account.Reserve(subchain, reason_, random(), "", time);
+
+            ASSERT_TRUE(index.has_value());
+            EXPECT_EQ(index.value(), ++counter);
+        }
+        {  // no metadata, unconfirmed transactions
+            const auto index =
+                account.Reserve(subchain, reason_, random(), "", time);
+
+            ASSERT_TRUE(index.has_value());
+            EXPECT_EQ(index.value(), ++counter);
+        }
+        {  // metadata mismatch, unconfirmed transactions
+            const auto index =
+                account.Reserve(subchain, reason_, random(), "mismatch", time);
+
+            ASSERT_TRUE(index.has_value());
+            EXPECT_EQ(index.value(), ++counter);
+        }
+        {  // metadata match, unconfirmed transactions
+            const auto index =
+                account.Reserve(subchain, reason_, random(), "match", time);
+
+            ASSERT_TRUE(index.has_value());
+            EXPECT_EQ(index.value(), ++counter);
+        }
+        {  // metadata match, confirmed transactions
+            const auto index =
+                account.Reserve(subchain, reason_, random(), "match", time);
+
+            ASSERT_TRUE(index.has_value());
+            EXPECT_EQ(index.value(), ++counter);
+        }
+    }
+}
+
+TEST_F(Test_BlockchainAPI, set_metadata)
+{
+    const auto& nym = alex_;
+    const auto chain = btc_chain_;
+    const auto& accountID = account_8_id_;
+    const auto& account =
+        api_.Blockchain().Account(nym, chain).GetHD().at(accountID);
+    const auto subchain = Subchain::External;
+    const auto setContact =
+        std::vector<ot::Bip32Index>{0, 1, 6, 8, 9, 14, 16, 17, 22};
+    const auto clearContact = std::vector<ot::Bip32Index>{3, 4, 11, 12, 19, 20};
+    const auto unconfirmed =
+        std::vector<std::pair<ot::Bip32Index, ot::Bip32Index>>{
+            {4, 0},
+            {5, 0},
+            {6, 0},
+            {12, 1},
+            {13, 1},
+            {14, 1},
+            {20, 2},
+            {21, 2},
+            {22, 2},
+        };
+    const auto confirmed = std::vector<ot::Bip32Index>{7, 15, 23};
+
+    for (const auto& index : setContact) {
+        EXPECT_TRUE(api_.Blockchain().AssignContact(
+            nym, accountID, subchain, index, contact_bob_));
+
+        const auto& element = account.BalanceElement(subchain, index);
+
+        EXPECT_EQ(element.Contact(), contact_bob_);
+    }
+
+    for (const auto& index : clearContact) {
+        EXPECT_TRUE(api_.Blockchain().AssignContact(
+            nym, accountID, subchain, index, empty_id_));
+
+        const auto& element = account.BalanceElement(subchain, index);
+
+        EXPECT_EQ(element.Contact(), empty_id_);
+    }
+
+    for (const auto& [index, time] : unconfirmed) {
+        const auto& txid = address_data_.txids_.emplace_back(random());
+
+        EXPECT_TRUE(api_.Blockchain().Unconfirm(
+            {accountID.str(), subchain, index},
+            txid,
+            address_data_.times_.at(time)));
+
+        const auto& element = account.BalanceElement(subchain, index);
+        const auto transactions = element.Unconfirmed();
+
+        ASSERT_EQ(transactions.size(), 1);
+        EXPECT_EQ(transactions.front(), txid);
+    }
+
+    ASSERT_GT(address_data_.txids_.size(), 0);
+
+    auto tIndex = address_data_.txids_.size() - 1u;
+
+    for (const auto& index : confirmed) {
+        const auto& txid = address_data_.txids_.emplace_back(random());
+
+        EXPECT_TRUE(api_.Blockchain().Unconfirm(
+            {accountID.str(), subchain, index}, txid));
+
+        const auto& element = account.BalanceElement(subchain, index);
+        const auto transactions = element.Unconfirmed();
+
+        ASSERT_EQ(transactions.size(), 1);
+        EXPECT_EQ(transactions.front(), txid);
+    }
+
+    for (const auto& index : confirmed) {
+        const auto& txid = address_data_.txids_.at(++tIndex);
+
+        EXPECT_TRUE(api_.Blockchain().Confirm(
+            {accountID.str(), subchain, index}, txid));
+
+        const auto& element = account.BalanceElement(subchain, index);
+        const auto transactions = element.Confirmed();
+
+        ASSERT_EQ(transactions.size(), 1);
+        EXPECT_EQ(transactions.front(), txid);
+        EXPECT_EQ(element.Unconfirmed().size(), 0);
+    }
+}
+
+TEST_F(Test_BlockchainAPI, reserve)
+{
+    const auto& nym = alex_;
+    const auto chain = btc_chain_;
+    const auto& accountID = account_8_id_;
+    const auto& account =
+        api_.Blockchain().Account(nym, chain).GetHD().at(accountID);
+    const auto subchain = Subchain::External;
+
+    {
+        auto index = account.Reserve(subchain, reason_);
+
+        ASSERT_TRUE(index.has_value());
+        EXPECT_EQ(index.value(), 3);
+    }
+    {
+        auto index = account.Reserve(subchain, reason_);
+
+        ASSERT_TRUE(index.has_value());
+        EXPECT_EQ(index.value(), 11);
+    }
+
+    for (auto i = 24u; i < 44u; ++i) {
+        auto index = account.Reserve(subchain, reason_);
+
+        ASSERT_TRUE(index.has_value());
+        EXPECT_EQ(index.value(), i);
+    }
+
+    {
+        auto index = account.Reserve(subchain, reason_, contact_bob_, "match");
+
+        ASSERT_TRUE(index.has_value());
+        EXPECT_EQ(index.value(), 1);
+    }
+    {
+        auto index = account.Reserve(subchain, reason_);
+
+        ASSERT_TRUE(index.has_value());
+        EXPECT_EQ(index.value(), 4);
+    }
+    {
+        auto index = account.Reserve(subchain, reason_);
+
+        ASSERT_TRUE(index.has_value());
+        EXPECT_EQ(index.value(), 44);
+    }
+    {
+        auto index = account.Reserve(subchain, reason_, contact_bob_, "match");
+
+        ASSERT_TRUE(index.has_value());
+        EXPECT_EQ(index.value(), 6);
+    }
+    {
+        auto index = account.Reserve(subchain, reason_, contact_bob_, "match");
+
+        ASSERT_TRUE(index.has_value());
+        EXPECT_EQ(index.value(), 9);
+    }
+    {
+        auto index = account.Reserve(subchain, reason_, contact_bob_, "match");
+
+        ASSERT_TRUE(index.has_value());
+        EXPECT_EQ(index.value(), 45);
+    }
+}
+
+TEST_F(Test_BlockchainAPI, release)
+{
+    const auto& nym = alex_;
+    const auto chain = btc_chain_;
+    const auto& accountID = account_8_id_;
+    const auto& bc = api_.Blockchain();
+    const auto& account = bc.Account(nym, chain).GetHD().at(accountID);
+    const auto subchain = Subchain::External;
+
+    EXPECT_FALSE(bc.Release({accountID.str(), subchain, 7}));
+    EXPECT_FALSE(bc.Release({accountID.str(), subchain, 15}));
+    EXPECT_FALSE(bc.Release({accountID.str(), subchain, 23}));
+    EXPECT_TRUE(bc.Release({accountID.str(), subchain, 0}));
+    EXPECT_TRUE(bc.Release({accountID.str(), subchain, 2}));
+    EXPECT_TRUE(bc.Release({accountID.str(), subchain, 5}));
+    EXPECT_TRUE(bc.Release({accountID.str(), subchain, 8}));
+    EXPECT_TRUE(bc.Release({accountID.str(), subchain, 10}));
+    EXPECT_TRUE(bc.Release({accountID.str(), subchain, 12}));
+    EXPECT_TRUE(bc.Release({accountID.str(), subchain, 13}));
+    EXPECT_TRUE(bc.Release({accountID.str(), subchain, 14}));
+    EXPECT_TRUE(bc.Release({accountID.str(), subchain, 16}));
+    EXPECT_TRUE(bc.Release({accountID.str(), subchain, 17}));
+    EXPECT_TRUE(bc.Release({accountID.str(), subchain, 18}));
+    EXPECT_TRUE(bc.Release({accountID.str(), subchain, 19}));
+    EXPECT_TRUE(bc.Release({accountID.str(), subchain, 20}));
+    EXPECT_TRUE(bc.Release({accountID.str(), subchain, 21}));
+    EXPECT_TRUE(bc.Release({accountID.str(), subchain, 22}));
+
+    {
+        auto index = account.Reserve(subchain, reason_);
+
+        ASSERT_TRUE(index.has_value());
+        EXPECT_EQ(index.value(), 0);
+    }
+    {
+        auto index = account.Reserve(subchain, reason_);
+
+        ASSERT_TRUE(index.has_value());
+        EXPECT_EQ(index.value(), 2);
+    }
+    {
+        auto index = account.Reserve(subchain, reason_);
+
+        ASSERT_TRUE(index.has_value());
+        EXPECT_EQ(index.value(), 8);
+    }
+    {
+        auto index = account.Reserve(subchain, reason_);
+
+        ASSERT_TRUE(index.has_value());
+        EXPECT_EQ(index.value(), 10);
+    }
+    {
+        auto index = account.Reserve(subchain, reason_);
+
+        ASSERT_TRUE(index.has_value());
+        EXPECT_EQ(index.value(), 16);
+    }
+    {
+        auto index = account.Reserve(subchain, reason_);
+
+        ASSERT_TRUE(index.has_value());
+        EXPECT_EQ(index.value(), 17);
+    }
+    {
+        auto index = account.Reserve(subchain, reason_);
+
+        ASSERT_TRUE(index.has_value());
+        EXPECT_EQ(index.value(), 18);
+    }
+    {
+        auto index = account.Reserve(subchain, reason_);
+
+        ASSERT_TRUE(index.has_value());
+        EXPECT_EQ(index.value(), 19);
+    }
+    {
+        auto index = account.Reserve(subchain, reason_);
+
+        ASSERT_TRUE(index.has_value());
+        EXPECT_EQ(index.value(), 5);
+    }
+}
+
+TEST_F(Test_BlockchainAPI, floor)
+{
+    const auto& nym = alex_;
+    const auto chain = btc_chain_;
+    const auto& accountID = account_8_id_;
+    const auto& bc = api_.Blockchain();
+    const auto& account = bc.Account(nym, chain).GetHD().at(accountID);
+    const auto subchain = Subchain::External;
+    auto& txids = address_data_.txids_;
+
+    EXPECT_TRUE(bc.Confirm(
+        {accountID.str(), subchain, 6}, txids.emplace_back(random())));
+    EXPECT_EQ(account.Floor(subchain).value_or(999), 0);
+    EXPECT_TRUE(bc.Confirm(
+        {accountID.str(), subchain, 5}, txids.emplace_back(random())));
+    EXPECT_EQ(account.Floor(subchain).value_or(999), 0);
+    EXPECT_TRUE(bc.Confirm(
+        {accountID.str(), subchain, 4}, txids.emplace_back(random())));
+    EXPECT_EQ(account.Floor(subchain).value_or(999), 0);
+    EXPECT_TRUE(bc.Confirm(
+        {accountID.str(), subchain, 3}, txids.emplace_back(random())));
+    EXPECT_EQ(account.Floor(subchain).value_or(999), 0);
+    EXPECT_TRUE(bc.Confirm(
+        {accountID.str(), subchain, 2}, txids.emplace_back(random())));
+    EXPECT_EQ(account.Floor(subchain).value_or(999), 0);
+    EXPECT_TRUE(bc.Confirm(
+        {accountID.str(), subchain, 1}, txids.emplace_back(random())));
+    EXPECT_EQ(account.Floor(subchain).value_or(999), 0);
+    EXPECT_TRUE(bc.Confirm(
+        {accountID.str(), subchain, 0}, txids.emplace_back(random())));
+    EXPECT_EQ(account.Floor(subchain).value_or(999), 8);
+    ASSERT_EQ(account.BalanceElement(subchain, 7).Confirmed().size(), 1);
+    EXPECT_TRUE(bc.Unconfirm(
+        {accountID.str(), subchain, 7},
+        account.BalanceElement(subchain, 7).Confirmed().front()));
+    EXPECT_EQ(account.BalanceElement(subchain, 7).Confirmed().size(), 0);
+    EXPECT_EQ(account.Floor(subchain).value_or(999), 7);
+    EXPECT_TRUE(bc.Confirm({accountID.str(), subchain, 7}, txids.at(0)));
+    EXPECT_EQ(account.Floor(subchain).value_or(999), 8);
+    EXPECT_TRUE(bc.Confirm({accountID.str(), subchain, 7}, txids.at(1)));
+    EXPECT_EQ(account.Floor(subchain).value_or(999), 8);
+    EXPECT_TRUE(bc.Unconfirm({accountID.str(), subchain, 7}, txids.at(1)));
+    EXPECT_EQ(account.Floor(subchain).value_or(999), 8);
+    ASSERT_EQ(account.BalanceElement(subchain, 15).Confirmed().size(), 1);
+    EXPECT_TRUE(bc.Unconfirm(
+        {accountID.str(), subchain, 15},
+        account.BalanceElement(subchain, 15).Confirmed().front()));
+    EXPECT_EQ(account.BalanceElement(subchain, 15).Confirmed().size(), 0);
+    EXPECT_EQ(account.Floor(subchain).value_or(999), 8);
+    ASSERT_EQ(account.BalanceElement(subchain, 0).Confirmed().size(), 1);
+    EXPECT_TRUE(bc.Unconfirm(
+        {accountID.str(), subchain, 0},
+        account.BalanceElement(subchain, 0).Confirmed().front()));
+    EXPECT_EQ(account.BalanceElement(subchain, 0).Confirmed().size(), 0);
+    EXPECT_EQ(account.Floor(subchain).value_or(999), 0);
+    EXPECT_TRUE(bc.Confirm(
+        {accountID.str(), subchain, 0}, txids.emplace_back(random())));
+    EXPECT_EQ(account.Floor(subchain).value_or(999), 8);
+
+    {
+        auto index = account.Reserve(subchain, reason_);
+
+        ASSERT_TRUE(index.has_value());
+        EXPECT_EQ(index.value(), 12);
+    }
+}
+
+TEST_F(Test_BlockchainAPI, paymentcode)
+{
+    const auto& nym = alex_;
+    const auto& chain = btc_chain_;
+    const auto pNym = api_.Wallet().Nym(nym);
+    const auto accountID = api_.Blockchain().NewPaymentCodeSubaccount(
+        nym,
+        api_.Factory().PaymentCode(pNym->PaymentCode()),
+        api_.Factory().PaymentCode(
+            "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu"),
+        [&] {
+            auto out = ot::proto::HDPath{};
+            pNym->PaymentCodePath(out);
+
+            return out;
+        }(),
+        chain,
+        reason_);
+
+    ASSERT_FALSE(accountID->empty());
+
+    const auto& account =
+        api_.Blockchain().Account(nym, chain).GetPaymentCode().at(accountID);
+
+    EXPECT_EQ(account.ID(), accountID);
+    EXPECT_TRUE(check_initial_state(account, Subchain::Outgoing));
+    EXPECT_TRUE(check_initial_state(account, Subchain::Incoming));
+
+    const auto index = account.Reserve(Subchain::Outgoing, reason_);
+
+    ASSERT_TRUE(index.has_value());
+    EXPECT_EQ(index.value(), 0u);
 }
 }  // namespace
 #endif  // OT_CRYPTO_WITH_BIP32

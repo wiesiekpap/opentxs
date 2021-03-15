@@ -13,6 +13,7 @@
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
+#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -28,20 +29,26 @@ namespace blockchain
 class BalanceNode
 {
 public:
+    using Txid = opentxs::blockchain::block::Txid;
+    using Txids = std::vector<opentxs::blockchain::block::pTxid>;
+
     struct Element {
         OPENTXS_EXPORT virtual std::string Address(
             const AddressStyle format) const noexcept = 0;
+        OPENTXS_EXPORT virtual Txids Confirmed() const noexcept = 0;
         OPENTXS_EXPORT virtual OTIdentifier Contact() const noexcept = 0;
         OPENTXS_EXPORT virtual Bip32Index Index() const noexcept = 0;
         OPENTXS_EXPORT virtual ECKey Key() const noexcept = 0;
         OPENTXS_EXPORT virtual blockchain::Key KeyID() const noexcept = 0;
         OPENTXS_EXPORT virtual std::string Label() const noexcept = 0;
+        OPENTXS_EXPORT virtual Time LastActivity() const noexcept = 0;
         OPENTXS_EXPORT virtual const BalanceNode& Parent() const noexcept = 0;
         OPENTXS_EXPORT virtual ECKey PrivateKey(
             const PasswordPrompt& reason) const noexcept = 0;
         OPENTXS_EXPORT virtual OTData PubkeyHash() const noexcept = 0;
         OPENTXS_EXPORT virtual blockchain::Subchain Subchain()
             const noexcept = 0;
+        OPENTXS_EXPORT virtual Txids Unconfirmed() const noexcept = 0;
 
         virtual ~Element() = default;
 

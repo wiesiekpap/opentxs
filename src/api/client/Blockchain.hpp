@@ -74,6 +74,11 @@ namespace client
 {
 namespace blockchain
 {
+namespace internal
+{
+struct BalanceNode;
+}  // namespace internal
+
 class BalanceTree;
 class HD;
 struct SyncClient;
@@ -170,12 +175,10 @@ public:
         const identifier::Nym& nym,
         const Identifier& thread,
         const std::string& threadItemID) const noexcept -> std::string final;
-#if OT_BLOCKCHAIN
     auto ActivityDescription(
         const identifier::Nym& nym,
         const Chain chain,
         const Tx& transaction) const noexcept -> std::string final;
-#endif  // OT_BLOCKCHAIN
     auto AssignContact(
         const identifier::Nym& nymID,
         const Identifier& accountID,
@@ -188,10 +191,8 @@ public:
         const blockchain::Subchain subchain,
         const Bip32Index index,
         const std::string& label) const noexcept -> bool final;
-#if OT_BLOCKCHAIN
     auto AssignTransactionMemo(const std::string& id, const std::string& label)
         const noexcept -> bool final;
-#endif  // OT_BLOCKCHAIN
     auto BalanceTree(const identifier::Nym& nymID, const Chain chain) const
         noexcept(false) -> const blockchain::internal::BalanceTree& final;
 #if OT_BLOCKCHAIN
@@ -205,31 +206,33 @@ public:
         const Chain chain,
         const blockchain::AddressStyle format,
         const Data& pubkey) const noexcept -> std::string final;
+    auto Confirm(
+        const blockchain::Key key,
+        const opentxs::blockchain::block::Txid& tx) const noexcept
+        -> bool final;
     auto Contacts() const noexcept -> const api::client::Contacts& final
     {
         return contacts_;
     }
     auto DecodeAddress(const std::string& encoded) const noexcept
         -> DecodedAddress final;
-#if OT_BLOCKCHAIN
     auto Disable(const Chain type) const noexcept -> bool final;
     auto Enable(const Chain type, const std::string& seednode) const noexcept
         -> bool final;
     auto EnabledChains() const noexcept -> std::set<Chain> final;
-#endif  // OT_BLOCKCHAIN
     auto EncodeAddress(const Style style, const Chain chain, const Data& data)
         const noexcept -> std::string final;
-#if OT_BLOCKCHAIN
     auto GetChain(const Chain type) const noexcept(false)
         -> const opentxs::blockchain::Network& final;
-#endif  // OT_BLOCKCHAIN
     auto GetKey(const blockchain::Key& id) const noexcept(false)
         -> const blockchain::BalanceNode::Element& final;
     auto HDSubaccount(const identifier::Nym& nymID, const Identifier& accountID)
         const noexcept(false) -> const blockchain::HD& final;
 #if OT_BLOCKCHAIN
     auto Hello() const noexcept -> proto::BlockchainP2PHello;
+#endif  // OT_BLOCKCHAIN
     auto IndexItem(const ReadView bytes) const noexcept -> PatternID final;
+#if OT_BLOCKCHAIN
     auto IO() const noexcept
         -> const opentxs::blockchain::client::internal::IO& final
     {
@@ -242,6 +245,7 @@ public:
         return key_generated_endpoint_;
     }
     auto KeyGenerated(const Chain chain) const noexcept -> void final;
+#endif  // OT_BLOCKCHAIN
     auto LoadTransactionBitcoin(const TxidHex& id) const noexcept
         -> std::unique_ptr<const Tx> final;
     auto LoadTransactionBitcoin(const Txid& id) const noexcept
@@ -250,7 +254,6 @@ public:
         -> ContactList final;
     auto LookupContacts(const Data& pubkeyHash) const noexcept
         -> ContactList final;
-#endif  // OT_BLOCKCHAIN
     auto NewHDSubaccount(
         const identifier::Nym& nymID,
         const BlockchainAccountType standard,
@@ -289,11 +292,11 @@ public:
     auto ProcessMergedContact(const Contact& parent, const Contact& child)
         const noexcept -> bool final;
     auto ProcessSyncData(OTZMQMessage&& in) const noexcept -> void;
+#endif  // OT_BLOCKCHAIN
     auto ProcessTransaction(
         const Chain chain,
         const Tx& transaction,
         const PasswordPrompt& reason) const noexcept -> bool final;
-#endif  // OT_BLOCKCHAIN
     auto RecipientContact(const blockchain::Key& key) const noexcept
         -> OTIdentifier final;
 #if OT_BLOCKCHAIN
@@ -301,6 +304,9 @@ public:
     {
         return reorg_;
     }
+#endif  // OT_BLOCKCHAIN
+    auto Release(const blockchain::Key key) const noexcept -> bool final;
+#if OT_BLOCKCHAIN
     auto ReportProgress(
         const Chain chain,
         const opentxs::blockchain::block::Height current,
@@ -310,7 +316,6 @@ public:
 #endif  // OT_BLOCKCHAIN
     auto SenderContact(const blockchain::Key& key) const noexcept
         -> OTIdentifier final;
-#if OT_BLOCKCHAIN
     auto Start(const Chain type, const std::string& seednode) const noexcept
         -> bool final;
     auto StartSyncServer(
@@ -319,6 +324,7 @@ public:
         const std::string& updateEndpoint,
         const std::string& publicUpdateEndpoint) const noexcept -> bool final;
     auto Stop(const Chain type) const noexcept -> bool final;
+#if OT_BLOCKCHAIN
     auto UpdateBalance(
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::Balance balance) const noexcept -> void final
@@ -340,6 +346,10 @@ public:
         const opentxs::blockchain::Type chain,
         const std::string& address) const noexcept -> void final;
 #endif  // OT_BLOCKCHAIN
+    auto Unconfirm(
+        const blockchain::Key key,
+        const opentxs::blockchain::block::Txid& tx,
+        const Time time) const noexcept -> bool final;
 
     auto Init() noexcept -> void final;
     auto Shutdown() noexcept -> void final;
@@ -556,6 +566,10 @@ private:
     auto disable(const Lock& lock, const Chain type) const noexcept -> bool;
     auto enable(const Lock& lock, const Chain type, const std::string& seednode)
         const noexcept -> bool;
+#endif  // OT_BLOCKCHAIN
+    auto get_node(const Identifier& accountID) const noexcept(false)
+        -> blockchain::internal::BalanceNode&;
+#if OT_BLOCKCHAIN
     auto heartbeat() const noexcept -> void;
     auto hello(const Lock&, const Chains& chains) const noexcept
         -> proto::BlockchainP2PHello;

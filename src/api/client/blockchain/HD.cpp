@@ -18,6 +18,7 @@
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/client/blockchain/Factory.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/HDSeed.hpp"
 #include "opentxs/api/client/blockchain/BalanceNodeType.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"
@@ -145,7 +146,7 @@ HD::HD(
     init();
 }
 
-auto HD::account_already_exists(const Lock&) const noexcept -> bool
+auto HD::account_already_exists(const rLock&) const noexcept -> bool
 {
     const auto existing = api_.Storage().BlockchainAccountList(
         parent_.NymID().str(), Translate(chain_));
@@ -153,21 +154,24 @@ auto HD::account_already_exists(const Lock&) const noexcept -> bool
     return 0 < existing.count(id_->str());
 }
 
-#if OT_CRYPTO_WITH_BIP32
 auto HD::PrivateKey(
     const Subchain type,
     const Bip32Index index,
     const PasswordPrompt& reason) const noexcept -> ECKey
 {
+#if OT_CRYPTO_WITH_BIP32
     return api_.Seeds().AccountChildKey(
         path_,
         (data_.internal_.type_ == type) ? INTERNAL_CHAIN : EXTERNAL_CHAIN,
         index,
         reason);
-}
-#endif  // OT_CRYPTO_WITH_BIP32
+#else
 
-auto HD::save(const Lock& lock) const noexcept -> bool
+    return {};
+#endif  // OT_CRYPTO_WITH_BIP32
+}
+
+auto HD::save(const rLock& lock) const noexcept -> bool
 {
     const auto type = Translate(chain_);
     auto serialized = SerializedType{};

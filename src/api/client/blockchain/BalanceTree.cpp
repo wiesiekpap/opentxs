@@ -181,49 +181,24 @@ auto BalanceTree::ClaimAccountID(
     node_index_.Add(id, node);
 }
 
-auto BalanceTree::find_best_deposit_address() const noexcept -> const Element&
-{
-    try {
-        const auto reason = api_.Factory().PasswordPrompt(__FUNCTION__);
-
-        return find_next_element(Subchain::External, reason);
-    } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
-
-        OT_FAIL;
-    }
-}
-
 auto BalanceTree::find_next_element(
     Subchain subchain,
+    const Identifier& contact,
+    const std::string& label,
     const PasswordPrompt& reason) const noexcept(false) -> const Element&
 {
     // TODO Add a mechanism for setting a default subaccount in case more than
     // one is present. Also handle cases where only an imported subaccount
     // exists
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunreachable-code-loop-increment"
     for (const auto& account : hd_) {
-        const auto last = account.LastUsed(subchain);
+        const auto index = account.Reserve(subchain, reason, contact, label);
 
-        if (last.has_value()) {
-#if OT_CRYPTO_WITH_BIP32
-            const auto next = account.GenerateNext(subchain, reason);
+        if (index.has_value()) {
 
-            if (next.has_value()) {
-
-                return account.BalanceElement(subchain, next.value());
-            }
-#else
-            return account.BalanceElement(subchain, 0);
-#endif
-        } else {
-
-            return account.BalanceElement(subchain, 0);
+            return account.BalanceElement(subchain, index.value());
         }
     }
-#pragma GCC diagnostic pop
 
     throw std::runtime_error("No available element for selected subchain");
 }
@@ -231,57 +206,39 @@ auto BalanceTree::find_next_element(
 auto BalanceTree::GetNextChangeKey(const PasswordPrompt& reason) const
     noexcept(false) -> const Element&
 {
-    return find_next_element(Subchain::Internal, reason);
+    static const auto blank = api_.Factory().Identifier();
+
+    return find_next_element(Subchain::Internal, blank, "", reason);
 }
 
 auto BalanceTree::GetNextDepositKey(const PasswordPrompt& reason) const
     noexcept(false) -> const Element&
 {
-    return find_next_element(Subchain::External, reason);
-}
+    static const auto blank = api_.Factory().Identifier();
 
-auto BalanceTree::GetDepositAddress(const std::string& memo) const noexcept
-    -> std::string
-{
-    const auto& element = find_best_deposit_address();
-
-    if (false == memo.empty()) {
-        parent_.Parent().AssignLabel(
-            nym_id_,
-            element.Parent().ID(),
-            element.Subchain(),
-            element.Index(),
-            memo);
-    }
-
-    return element.Address(AddressStyle::P2PKH);  // TODO
+    return find_next_element(Subchain::External, blank, "", reason);
 }
 
 auto BalanceTree::GetDepositAddress(
-    const Identifier& contact,
+    const AddressStyle style,
+    const PasswordPrompt& reason,
     const std::string& memo) const noexcept -> std::string
 {
-    const auto& element = find_best_deposit_address();
+    static const auto blank = api_.Factory().Identifier();
 
-    if (false == contact.empty()) {
-        parent_.Parent().AssignContact(
-            nym_id_,
-            element.Parent().ID(),
-            element.Subchain(),
-            element.Index(),
-            contact);
-    }
+    return GetDepositAddress(style, blank, reason, memo);
+}
 
-    if (false == memo.empty()) {
-        parent_.Parent().AssignLabel(
-            nym_id_,
-            element.Parent().ID(),
-            element.Subchain(),
-            element.Index(),
-            memo);
-    }
+auto BalanceTree::GetDepositAddress(
+    const AddressStyle style,
+    const Identifier& contact,
+    const PasswordPrompt& reason,
+    const std::string& memo) const noexcept -> std::string
+{
+    const auto& element =
+        find_next_element(Subchain::External, contact, memo, reason);
 
-    return element.Address(AddressStyle::P2PKH);  // TODO
+    return element.Address(style);
 }
 
 auto BalanceTree::init_hd(const Accounts& accounts) noexcept -> void

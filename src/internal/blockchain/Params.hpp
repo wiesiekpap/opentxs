@@ -47,6 +47,7 @@ struct Data {
 #endif  // OT_BLOCKCHAIN
     using Style = api::client::blockchain::AddressStyle;
     using ScriptMap = boost::container::flat_map<Style, bool>;
+    using StylePref = std::vector<std::pair<Style, std::string>>;
 
     struct Checkpoint {
         block::Height height_{};
@@ -75,6 +76,7 @@ struct Data {
     display::Definition scales_{};
     std::size_t block_download_batch_{};
     ScriptMap scripts_{};
+    StylePref styles_{};
 
 #if OT_BLOCKCHAIN
     static auto Bip158() noexcept -> const FilterTypes&;

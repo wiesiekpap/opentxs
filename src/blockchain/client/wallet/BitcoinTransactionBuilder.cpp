@@ -66,7 +66,8 @@ Wallet::Proposals::BitcoinTransactionBuilder::BitcoinTransactionBuilder(
     const Identifier& proposal,
     const Type chain,
     const Amount feeRate) noexcept
-    : api_(api)
+    : keys_to_reclaim_()
+    , api_(api)
     , blockchain_(blockchain)
     , db_(db)
     , proposal_(proposal)

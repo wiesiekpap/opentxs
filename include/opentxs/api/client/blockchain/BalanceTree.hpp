@@ -9,10 +9,12 @@
 #include "opentxs/Forward.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Types.hpp"
+#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
 
 namespace opentxs
 {
+class PasswordPrompt;
 class PaymentCode;
 }  // namespace opentxs
 
@@ -95,9 +97,13 @@ public:
     OPENTXS_EXPORT virtual const Element& GetNextDepositKey(
         const PasswordPrompt& reason) const noexcept(false) = 0;
     OPENTXS_EXPORT virtual std::string GetDepositAddress(
+        const AddressStyle style,
+        const PasswordPrompt& reason,
         const std::string& memo = "") const noexcept = 0;
     OPENTXS_EXPORT virtual std::string GetDepositAddress(
+        const AddressStyle style,
         const Identifier& contact,
+        const PasswordPrompt& reason,
         const std::string& memo = "") const noexcept = 0;
     OPENTXS_EXPORT virtual const ImportedAccounts& GetImported()
         const noexcept = 0;

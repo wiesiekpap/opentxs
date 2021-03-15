@@ -65,12 +65,10 @@ public:
     using Element = implementation::BalanceNode::Element;
     using SerializedType = proto::HDAccount;
 
-#if OT_CRYPTO_WITH_BIP32
     auto PrivateKey(
         const Subchain type,
         const Bip32Index index,
         const PasswordPrompt& reason) const noexcept -> ECKey final;
-#endif  // OT_CRYPTO_WITH_BIP32
 
     HD(const api::internal::Core& api,
        const internal::BalanceTree& parent,
@@ -91,8 +89,8 @@ private:
 
     VersionNumber version_;
 
-    auto account_already_exists(const Lock& lock) const noexcept -> bool final;
-    auto save(const Lock& lock) const noexcept -> bool final;
+    auto account_already_exists(const rLock& lock) const noexcept -> bool final;
+    auto save(const rLock& lock) const noexcept -> bool final;
 
     HD(const HD&) = delete;
     HD(HD&&) = delete;
