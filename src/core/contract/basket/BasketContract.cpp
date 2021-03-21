@@ -15,16 +15,16 @@
 
 #include "2_Factory.hpp"
 #include "core/contract/UnitDefinition.hpp"
+#include "internal/core/contract/Contract.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/core/contract/UnitType.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/basket/BasketContract.hpp"
 #include "opentxs/protobuf/BasketItem.pb.h"
 #include "opentxs/protobuf/BasketParams.pb.h"
 #include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
-#include "opentxs/protobuf/ContractEnums.pb.h"
 #include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/protobuf/UnitDefinition.pb.h"
 #include "opentxs/protobuf/verify/UnitDefinition.hpp"
@@ -44,7 +44,7 @@ auto Factory::BasketContract(
     const std::string& symbol,
     const std::string& terms,
     const std::uint64_t weight,
-    const proto::ContactItemType unitOfAccount,
+    const contact::ContactItemType unitOfAccount,
     const VersionNumber version) noexcept
     -> std::shared_ptr<contract::unit::Basket>
 {
@@ -149,7 +149,7 @@ Basket::Basket(
     const std::string& symbol,
     const std::string& terms,
     const std::uint64_t weight,
-    const proto::ContactItemType unitOfAccount,
+    const contact::ContactItemType unitOfAccount,
     const VersionNumber version)
     : Unit(api, nym, shortname, name, symbol, terms, unitOfAccount, version)
     , subcontracts_()
@@ -195,7 +195,8 @@ auto Basket::BasketID() const -> OTIdentifier
 auto Basket::IDVersion(const Lock& lock) const -> SerializedType
 {
     auto contract = Unit::IDVersion(lock);
-    contract.set_type(proto::UNITTYPE_BASKET);
+    contract.set_type(
+        contract::internal::translate(contract::UnitType::Basket));
     auto basket = contract.mutable_basket();
     basket->set_version(1);
     basket->set_weight(weight_);

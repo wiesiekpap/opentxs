@@ -41,7 +41,6 @@
 #include "opentxs/network/zeromq/socket/Request.hpp"
 #include "opentxs/network/zeromq/socket/Request.tpp"
 #include "opentxs/network/zeromq/socket/Sender.tpp"
-#include "opentxs/protobuf/CashEnums.pb.h"
 #include "opentxs/protobuf/ContactEnums.pb.h"
 
 namespace opentxs
@@ -185,7 +184,7 @@ public:
         const PasswordPrompt& reason,
         const std::string name,
         const NymParameters& parameters,
-        const proto::ContactItemType type) const -> Nym_p final;
+        const contact::ContactItemType type) const -> Nym_p final;
     auto mutable_Nym(const identifier::Nym& id, const PasswordPrompt& reason)
         const -> NymData final;
     auto Nymfile(const identifier::Nym& id, const PasswordPrompt& reason) const
@@ -264,7 +263,7 @@ public:
         const identifier::Server& server,
         const identifier::UnitDefinition& unit,
         const PasswordPrompt& reason,
-        const proto::CashType type) const -> Editor<blind::Purse> final;
+        const blind::CashType type) const -> Editor<blind::Purse> final;
 #endif
     auto RemoveServer(const identifier::Server& id) const -> bool final;
     auto RemoveUnitDefinition(const identifier::UnitDefinition& id) const
@@ -310,7 +309,7 @@ public:
         const std::string& tla,
         const std::uint32_t power,
         const std::string& fraction,
-        const proto::ContactItemType unitOfAccount,
+        const contact::ContactItemType unitOfAccount,
         const PasswordPrompt& reason,
         const VersionNumber version = contract::Unit::DefaultVersion) const
         -> OTUnitDefinition final;
@@ -320,13 +319,13 @@ public:
         const std::string& name,
         const std::string& symbol,
         const std::string& terms,
-        const proto::ContactItemType unitOfAccount,
+        const contact::ContactItemType unitOfAccount,
         const PasswordPrompt& reason,
         const VersionNumber version = contract::Unit::DefaultVersion) const
         -> OTUnitDefinition final;
     auto CurrencyTypeBasedOnUnitType(
         const identifier::UnitDefinition& contractID) const
-        -> proto::ContactItemType final;
+        -> contact::ContactItemType final;
 
     auto LoadCredential(
         const std::string& id,
@@ -352,9 +351,9 @@ protected:
         const identifier::Nym& remoteNymID) const
         -> std::shared_ptr<otx::context::Base>;
     auto extract_unit(const identifier::UnitDefinition& contractID) const
-        -> proto::ContactItemType;
+        -> contact::ContactItemType;
     auto extract_unit(const contract::Unit& contract) const
-        -> proto::ContactItemType;
+        -> contact::ContactItemType;
     void save(
         const PasswordPrompt& reason,
         otx::context::internal::Base* context) const;

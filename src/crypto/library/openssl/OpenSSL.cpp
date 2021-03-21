@@ -28,8 +28,8 @@ extern "C" {
 #include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/library/HashingProvider.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
 
 #define OT_METHOD "opentxs::OpenSSL::"
 
@@ -162,7 +162,7 @@ auto OpenSSL::DH::init_keys(
     return true;
 }
 
-auto OpenSSL::MD::init_digest(const proto::HashType hash) noexcept -> bool
+auto OpenSSL::MD::init_digest(const crypto::HashType hash) noexcept -> bool
 {
     hash_ = HashTypeToOpenSSLType(hash);
 
@@ -177,7 +177,7 @@ auto OpenSSL::MD::init_digest(const proto::HashType hash) noexcept -> bool
 }
 
 auto OpenSSL::MD::init_sign(
-    const proto::HashType hash,
+    const crypto::HashType hash,
     const key::Asymmetric& key,
     const PasswordPrompt& reason) noexcept -> bool
 {
@@ -198,7 +198,7 @@ auto OpenSSL::MD::init_sign(
 }
 
 auto OpenSSL::MD::init_verify(
-    const proto::HashType hash,
+    const crypto::HashType hash,
     const key::Asymmetric& key) noexcept -> bool
 {
     if (false == init_digest(hash)) { return false; }
@@ -217,27 +217,27 @@ auto OpenSSL::MD::init_verify(
         key_);
 }
 
-auto OpenSSL::HashTypeToOpenSSLType(const proto::HashType hashType) noexcept
+auto OpenSSL::HashTypeToOpenSSLType(const crypto::HashType hashType) noexcept
     -> const EVP_MD*
 {
     switch (hashType) {
         // NOTE: libressl doesn't support these yet
-        // case proto::HASHTYPE_BLAKE2B256: {
+        // case crypto::HashType::Blake2b256: {
         //     return ::EVP_blake2s256();
         // }
-        // case proto::HASHTYPE_BLAKE2B512: {
+        // case crypto::HashType::Blake2b512: {
         //     return ::EVP_blake2b512();
         // }
-        case proto::HASHTYPE_RIPEMD160: {
+        case crypto::HashType::Ripemd160: {
             return ::EVP_ripemd160();
         }
-        case proto::HASHTYPE_SHA256: {
+        case crypto::HashType::Sha256: {
             return ::EVP_sha256();
         }
-        case proto::HASHTYPE_SHA512: {
+        case crypto::HashType::Sha512: {
             return ::EVP_sha512();
         }
-        case proto::HASHTYPE_SHA1: {
+        case crypto::HashType::Sha1: {
             return ::EVP_sha1();
         }
         default: {
@@ -247,7 +247,7 @@ auto OpenSSL::HashTypeToOpenSSLType(const proto::HashType hashType) noexcept
 }
 
 auto OpenSSL::Digest(
-    const proto::HashType type,
+    const crypto::HashType type,
     const std::uint8_t* input,
     const size_t inputSize,
     std::uint8_t* output) const -> bool
@@ -288,7 +288,7 @@ auto OpenSSL::Digest(
 
 // Calculate an HMAC given some input data and a key
 auto OpenSSL::HMAC(
-    const proto::HashType hashType,
+    const crypto::HashType hashType,
     const std::uint8_t* input,
     const size_t inputSize,
     const std::uint8_t* key,
@@ -361,7 +361,7 @@ auto OpenSSL::PKCS5_PBKDF2_HMAC(
     const void* salt,
     const std::size_t saltSize,
     const std::size_t iterations,
-    const proto::HashType hashType,
+    const crypto::HashType hashType,
     const std::size_t bytes,
     void* output) const noexcept -> bool
 {
@@ -417,7 +417,7 @@ auto OpenSSL::RIPEMD160(
     const std::size_t inputSize,
     std::uint8_t* output) const -> bool
 {
-    return Digest(proto::HASHTYPE_RIPEMD160, input, inputSize, output);
+    return Digest(crypto::HashType::Ripemd160, input, inputSize, output);
 }
 
 #if OT_CRYPTO_SUPPORTED_KEY_RSA
@@ -673,11 +673,11 @@ auto OpenSSL::primes(const int bits) -> int
 auto OpenSSL::RandomKeypair(
     const AllocateOutput privateKey,
     const AllocateOutput publicKey,
-    const proto::KeyRole role,
+    const crypto::key::asymmetric::Role role,
     const NymParameters& options,
     const AllocateOutput params) const noexcept -> bool
 {
-    if (proto::KEYROLE_ENCRYPT == role) {
+    if (crypto::key::asymmetric::Role::Encrypt == role) {
 
         return make_dh_key(privateKey, publicKey, params, options);
     } else {
@@ -700,26 +700,26 @@ auto OpenSSL::SharedSecret(
         return false;
     }
 
-    if (proto::AKEYTYPE_LEGACY != publicKey.keyType()) {
+    if (crypto::key::asymmetric::Algorithm::Legacy != publicKey.keyType()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid public key type").Flush();
 
         return false;
     }
 
-    if (proto::KEYROLE_ENCRYPT != publicKey.Role()) {
+    if (crypto::key::asymmetric::Role::Encrypt != publicKey.Role()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid public key role").Flush();
 
         return false;
     }
 
-    if (proto::AKEYTYPE_LEGACY != privateKey.keyType()) {
+    if (crypto::key::asymmetric::Algorithm::Legacy != privateKey.keyType()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid private key type")
             .Flush();
 
         return false;
     }
 
-    if (proto::KEYROLE_ENCRYPT != publicKey.Role()) {
+    if (crypto::key::asymmetric::Role::Encrypt != privateKey.Role()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid private key role")
             .Flush();
 
@@ -787,20 +787,20 @@ auto OpenSSL::Sign(
     [[maybe_unused]] const api::internal::Core& api,
     const ReadView in,
     const key::Asymmetric& key,
-    const proto::HashType type,
+    const crypto::HashType type,
     const AllocateOutput signature,
     const PasswordPrompt& reason) const -> bool
 {
-    if (proto::AKEYTYPE_LEGACY != key.keyType()) {
+    if (crypto::key::asymmetric::Algorithm::Legacy != key.keyType()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid key type").Flush();
 
         return false;
     }
 
     switch (type) {
-        case proto::HASHTYPE_BLAKE2B160:
-        case proto::HASHTYPE_BLAKE2B256:
-        case proto::HASHTYPE_BLAKE2B512: {
+        case crypto::HashType::Blake2b160:
+        case crypto::HashType::Blake2b256:
+        case crypto::HashType::Blake2b512: {
             LogVerbose(OT_METHOD)(__FUNCTION__)(": Unsupported hash algorithm.")
                 .Flush();
 
@@ -871,12 +871,12 @@ auto OpenSSL::Verify(
     const Data& in,
     const key::Asymmetric& key,
     const Data& sig,
-    const proto::HashType type) const -> bool
+    const crypto::HashType type) const -> bool
 {
     switch (type) {
-        case proto::HASHTYPE_BLAKE2B160:
-        case proto::HASHTYPE_BLAKE2B256:
-        case proto::HASHTYPE_BLAKE2B512: {
+        case crypto::HashType::Blake2b160:
+        case crypto::HashType::Blake2b256:
+        case crypto::HashType::Blake2b512: {
             LogVerbose(OT_METHOD)(__FUNCTION__)(": Unsupported hash algorithm.")
                 .Flush();
 

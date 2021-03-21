@@ -18,13 +18,14 @@
 
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
+#include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
 
 namespace opentxs
 {
@@ -70,7 +71,7 @@ namespace identity
 class Nym
 {
 public:
-    using KeyTypes = std::vector<proto::AsymmetricKeyType>;
+    using KeyTypes = std::vector<crypto::key::asymmetric::Algorithm>;
     using AuthorityKeys = std::pair<OTIdentifier, KeyTypes>;
     using NymKeys = std::pair<OTNymID, std::vector<AuthorityKeys>>;
     using Serialized = proto::Nym;
@@ -92,7 +93,7 @@ public:
     OPENTXS_EXPORT virtual std::string BestEmail() const = 0;
     OPENTXS_EXPORT virtual std::string BestPhoneNumber() const = 0;
     OPENTXS_EXPORT virtual std::string BestSocialMediaProfile(
-        const proto::ContactItemType type) const = 0;
+        const contact::ContactItemType type) const = 0;
     OPENTXS_EXPORT virtual const_iterator cbegin() const noexcept = 0;
     OPENTXS_EXPORT virtual const_iterator cend() const noexcept = 0;
     OPENTXS_EXPORT virtual const opentxs::ContactData& Claims() const = 0;
@@ -101,7 +102,7 @@ public:
     OPENTXS_EXPORT virtual VersionNumber ContactCredentialVersion() const = 0;
     OPENTXS_EXPORT virtual VersionNumber ContactDataVersion() const = 0;
     OPENTXS_EXPORT virtual std::set<OTIdentifier> Contracts(
-        const proto::ContactItemType currency,
+        const contact::ContactItemType currency,
         const bool onlyActive) const = 0;
     OPENTXS_EXPORT virtual std::string EmailAddresses(
         bool active = true) const = 0;
@@ -111,16 +112,21 @@ public:
         identifier::Nym& theIdentifier) const = 0;
     OPENTXS_EXPORT virtual void GetIdentifier(String& theIdentifier) const = 0;
     OPENTXS_EXPORT virtual const crypto::key::Asymmetric& GetPrivateAuthKey(
-        proto::AsymmetricKeyType keytype = proto::AKEYTYPE_NULL) const = 0;
+        crypto::key::asymmetric::Algorithm keytype =
+            crypto::key::asymmetric::Algorithm::Null) const = 0;
     OPENTXS_EXPORT virtual const crypto::key::Asymmetric& GetPrivateEncrKey(
-        proto::AsymmetricKeyType keytype = proto::AKEYTYPE_NULL) const = 0;
+        crypto::key::asymmetric::Algorithm keytype =
+            crypto::key::asymmetric::Algorithm::Null) const = 0;
     OPENTXS_EXPORT virtual const crypto::key::Asymmetric& GetPrivateSignKey(
-        proto::AsymmetricKeyType keytype = proto::AKEYTYPE_NULL) const = 0;
+        crypto::key::asymmetric::Algorithm keytype =
+            crypto::key::asymmetric::Algorithm::Null) const = 0;
 
     OPENTXS_EXPORT virtual const crypto::key::Asymmetric& GetPublicAuthKey(
-        proto::AsymmetricKeyType keytype = proto::AKEYTYPE_NULL) const = 0;
+        crypto::key::asymmetric::Algorithm keytype =
+            crypto::key::asymmetric::Algorithm::Null) const = 0;
     OPENTXS_EXPORT virtual const crypto::key::Asymmetric& GetPublicEncrKey(
-        proto::AsymmetricKeyType keytype = proto::AKEYTYPE_NULL) const = 0;
+        crypto::key::asymmetric::Algorithm keytype =
+            crypto::key::asymmetric::Algorithm::Null) const = 0;
     // OT uses the signature's metadata to narrow down its search for the
     // correct public key.
     // 'S' (signing key) or
@@ -131,7 +137,8 @@ public:
         const Signature& theSignature,
         char cKeyType = '0') const = 0;
     OPENTXS_EXPORT virtual const crypto::key::Asymmetric& GetPublicSignKey(
-        proto::AsymmetricKeyType keytype = proto::AKEYTYPE_NULL) const = 0;
+        crypto::key::asymmetric::Algorithm keytype =
+            crypto::key::asymmetric::Algorithm::Null) const = 0;
     OPENTXS_EXPORT virtual bool HasCapability(
         const NymCapability& capability) const = 0;
     OPENTXS_EXPORT virtual const identifier::Nym& ID() const = 0;
@@ -149,15 +156,15 @@ public:
     OPENTXS_EXPORT virtual void SerializeNymIDSource(Tag& parent) const = 0;
     OPENTXS_EXPORT virtual bool Sign(
         const ProtobufType& input,
-        const proto::SignatureRole role,
+        const crypto::SignatureRole role,
         proto::Signature& signature,
         const PasswordPrompt& reason,
-        const proto::HashType hash = proto::HASHTYPE_ERROR) const = 0;
+        const crypto::HashType hash = crypto::HashType::Error) const = 0;
     OPENTXS_EXPORT virtual std::size_t size() const noexcept = 0;
     OPENTXS_EXPORT virtual std::string SocialMediaProfiles(
-        const proto::ContactItemType type,
+        const contact::ContactItemType type,
         bool active = true) const = 0;
-    OPENTXS_EXPORT virtual const std::set<proto::ContactItemType>
+    OPENTXS_EXPORT virtual const std::set<contact::ContactItemType>
     SocialMediaProfileTypes() const = 0;
     OPENTXS_EXPORT virtual const identity::Source& Source() const = 0;
     OPENTXS_EXPORT virtual OTSecret TransportKey(
@@ -167,7 +174,7 @@ public:
     OPENTXS_EXPORT virtual bool Unlock(
         const crypto::key::Asymmetric& dhKey,
         const std::uint32_t tag,
-        const proto::AsymmetricKeyType type,
+        const crypto::key::asymmetric::Algorithm type,
         const crypto::key::Symmetric& key,
         PasswordPrompt& reason) const noexcept = 0;
     OPENTXS_EXPORT virtual bool Verify(
@@ -184,7 +191,7 @@ public:
         const PasswordPrompt& reason) = 0;
     OPENTXS_EXPORT virtual bool AddContract(
         const identifier::UnitDefinition& instrumentDefinitionID,
-        const proto::ContactItemType currency,
+        const contact::ContactItemType currency,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active = true) = 0;
@@ -195,7 +202,7 @@ public:
         const bool active) = 0;
     OPENTXS_EXPORT virtual bool AddPaymentCode(
         const opentxs::PaymentCode& code,
-        const proto::ContactItemType currency,
+        const contact::ContactItemType currency,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active = true) = 0;
@@ -210,7 +217,7 @@ public:
         const bool primary) = 0;
     OPENTXS_EXPORT virtual bool AddSocialMediaProfile(
         const std::string& value,
-        const proto::ContactItemType type,
+        const contact::ContactItemType type,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active) = 0;
@@ -224,7 +231,7 @@ public:
         const proto::ContactData& data,
         const PasswordPrompt& reason) = 0;
     OPENTXS_EXPORT virtual bool SetScope(
-        const proto::ContactItemType type,
+        const contact::ContactItemType type,
         const std::string& name,
         const PasswordPrompt& reason,
         const bool primary) = 0;

@@ -60,6 +60,7 @@
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
+#include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
@@ -69,11 +70,8 @@
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
-#include "opentxs/protobuf/CashEnums.pb.h"
-#include "opentxs/protobuf/ContactEnums.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
-#include "opentxs/protobuf/PeerEnums.pb.h"
 
 namespace opentxs
 {
@@ -186,7 +184,7 @@ public:
     auto AsymmetricKey(
         const NymParameters& params,
         const opentxs::PasswordPrompt& reason,
-        const proto::KeyRole role,
+        const opentxs::crypto::key::asymmetric::Role role,
         const VersionNumber version) const -> OTAsymmetricKey final;
     auto AsymmetricKey(const proto::AsymmetricKey& serialized) const
         -> OTAsymmetricKey final;
@@ -231,7 +229,7 @@ public:
         const std::string& symbol,
         const std::string& terms,
         const std::uint64_t weight,
-        const proto::ContactItemType unitOfAccount,
+        const contact::ContactItemType unitOfAccount,
         const VersionNumber version) const noexcept(false)
         -> OTBasketContract final;
     auto BasketContract(
@@ -367,7 +365,7 @@ public:
     auto ConnectionRequest(
         const Nym_p& nym,
         const identifier::Nym& recipient,
-        const proto::ConnectionInfoType type,
+        const contract::peer::ConnectionInfoType type,
         const identifier::Server& server,
         const opentxs::PasswordPrompt& reason) const noexcept(false)
         -> OTConnectionRequest final;
@@ -389,7 +387,7 @@ public:
         const std::string& tla,
         const std::uint32_t power,
         const std::string& fraction,
-        const proto::ContactItemType unitOfAccount,
+        const contact::ContactItemType unitOfAccount,
         const VersionNumber version,
         const opentxs::PasswordPrompt& reason) const noexcept(false)
         -> OTCurrencyContract final;
@@ -450,7 +448,7 @@ public:
     auto Keypair(
         const NymParameters& nymParameters,
         const VersionNumber version,
-        const proto::KeyRole role,
+        const opentxs::crypto::key::asymmetric::Role role,
         const opentxs::PasswordPrompt& reason) const -> OTKeypair final;
     auto Keypair(
         const proto::AsymmetricKey& serializedPubkey,
@@ -464,7 +462,7 @@ public:
         const Bip32Index credset,
         const Bip32Index credindex,
         const EcdsaCurve& curve,
-        const proto::KeyRole role,
+        const opentxs::crypto::key::asymmetric::Role role,
         const opentxs::PasswordPrompt& reason) const -> OTKeypair final;
 #endif  // OT_CRYPTO_WITH_BIP32
     auto Ledger(
@@ -624,7 +622,7 @@ public:
         const blind::Mint& mint,
         const Amount totalValue,
         const opentxs::PasswordPrompt& reason,
-        const proto::CashType type) const
+        const blind::CashType type) const
         -> std::unique_ptr<blind::Purse> final;
     auto Purse(const proto::Purse& serialized) const
         -> std::unique_ptr<blind::Purse> final;
@@ -633,7 +631,7 @@ public:
         const identifier::Server& server,
         const identifier::UnitDefinition& unit,
         const opentxs::PasswordPrompt& reason,
-        const proto::CashType type) const
+        const blind::CashType type) const
         -> std::unique_ptr<blind::Purse> final;
 #endif  // OT_CASH
     auto ReplyAcknowledgement(
@@ -641,7 +639,7 @@ public:
         const identifier::Nym& initiator,
         const opentxs::Identifier& request,
         const identifier::Server& server,
-        const proto::PeerRequestType type,
+        const contract::peer::PeerRequestType type,
         const bool& ack,
         const opentxs::PasswordPrompt& reason) const noexcept(false)
         -> OTReplyAcknowledgement final;
@@ -669,7 +667,7 @@ public:
         const std::string& name,
         const std::string& symbol,
         const std::string& terms,
-        const proto::ContactItemType unitOfAccount,
+        const contact::ContactItemType unitOfAccount,
         const VersionNumber version,
         const opentxs::PasswordPrompt& reason) const noexcept(false)
         -> OTSecurityContract final;
@@ -694,7 +692,7 @@ public:
     auto StoreSecret(
         const Nym_p& nym,
         const identifier::Nym& recipientID,
-        const proto::SecretType type,
+        const contract::peer::SecretType type,
         const std::string& primary,
         const std::string& secondary,
         const identifier::Server& server,
@@ -710,7 +708,8 @@ public:
     auto SymmetricKey(
         const opentxs::crypto::SymmetricProvider& engine,
         const opentxs::PasswordPrompt& password,
-        const proto::SymmetricMode mode) const -> OTSymmetricKey final;
+        const opentxs::crypto::key::symmetric::Algorithm mode) const
+        -> OTSymmetricKey final;
     auto SymmetricKey(
         const opentxs::crypto::SymmetricProvider& engine,
         const proto::SymmetricKey serialized) const -> OTSymmetricKey final;
@@ -720,7 +719,8 @@ public:
         const std::uint64_t operations,
         const std::uint64_t difficulty,
         const std::size_t size,
-        const proto::SymmetricKeyType type) const -> OTSymmetricKey final;
+        const opentxs::crypto::key::symmetric::Source type) const
+        -> OTSymmetricKey final;
     auto SymmetricKey(
         const opentxs::crypto::SymmetricProvider& engine,
         const opentxs::Secret& raw,

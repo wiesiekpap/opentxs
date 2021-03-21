@@ -13,10 +13,12 @@
 
 #include "2_Factory.hpp"
 #include "core/contract/peer/PeerRequest.hpp"
+#include "internal/core/contract/peer/Peer.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/core/contract/peer/PeerRequestType.hpp"
+#include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/PeerEnums.pb.h"
 #include "opentxs/protobuf/PeerRequest.pb.h"
 #include "opentxs/protobuf/StoreSecret.pb.h"
 #include "opentxs/protobuf/verify/PeerRequest.hpp"
@@ -32,7 +34,7 @@ auto Factory::StoreSecret(
     const api::internal::Core& api,
     const Nym_p& nym,
     const identifier::Nym& recipientID,
-    const proto::SecretType type,
+    const contract::peer::SecretType type,
     const std::string& primary,
     const std::string& secondary,
     const identifier::Server& server,
@@ -101,7 +103,7 @@ StoreSecret::StoreSecret(
     const api::internal::Core& api,
     const Nym_p& nym,
     const identifier::Nym& recipientID,
-    const proto::SecretType type,
+    const SecretType type,
     const std::string& primary,
     const std::string& secondary,
     const identifier::Server& serverID)
@@ -111,7 +113,7 @@ StoreSecret::StoreSecret(
           CURRENT_VERSION,
           recipientID,
           serverID,
-          proto::PEERREQUEST_STORESECRET)
+          contract::peer::PeerRequestType::StoreSecret)
     , secret_type_(type)
     , primary_(primary)
     , secondary_(secondary)
@@ -125,7 +127,7 @@ StoreSecret::StoreSecret(
     const Nym_p& nym,
     const SerializedType& serialized)
     : Request(api, nym, serialized)
-    , secret_type_(serialized.storesecret().type())
+    , secret_type_(internal::translate(serialized.storesecret().type()))
     , primary_(serialized.storesecret().primary())
     , secondary_(serialized.storesecret().secondary())
 {
@@ -146,7 +148,7 @@ auto StoreSecret::IDVersion(const Lock& lock) const -> SerializedType
     auto contract = Request::IDVersion(lock);
     auto& storesecret = *contract.mutable_storesecret();
     storesecret.set_version(version_);
-    storesecret.set_type(secret_type_);
+    storesecret.set_type(internal::translate(secret_type_));
     storesecret.set_primary(primary_);
     storesecret.set_secondary(secondary_);
 

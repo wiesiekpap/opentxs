@@ -24,7 +24,6 @@
 #include "opentxs/core/StringXML.hpp"
 #include "opentxs/core/crypto/Signature.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
 
 namespace irr
 {
@@ -91,7 +90,7 @@ public:
         String& strOutput,
         const String& strContents,
         const String& strContractType,
-        const proto::HashType hashType,
+        const crypto::HashType hashType,
         const listOfSignatures& listSignatures);
     OPENTXS_EXPORT static bool LoadEncodedTextField(
         irr::io::IrrXMLReader*& xml,
@@ -290,7 +289,7 @@ public:
     OPENTXS_EXPORT bool SignContract(
         const crypto::key::Asymmetric& theKey,
         Signature& theSignature,
-        const proto::HashType hashType,
+        const crypto::HashType hashType,
         const PasswordPrompt& reason);
 
     /** Calculates a hash of m_strRawFile (the xml portion of the contract plus
@@ -330,7 +329,7 @@ public:
     OPENTXS_EXPORT bool VerifySignature(
         const crypto::key::Asymmetric& theKey,
         const Signature& theSignature,
-        const proto::HashType hashType) const;
+        const crypto::HashType hashType) const;
     OPENTXS_EXPORT Nym_p GetContractPublicNym() const;
 
 protected:
@@ -355,7 +354,7 @@ protected:
     OTString m_strRawFile;
 
     /** The Hash algorithm used for the signature */
-    proto::HashType m_strSigHashType{proto::HASHTYPE_ERROR};
+    crypto::HashType m_strSigHashType{crypto::HashType::Error};
 
     /** CONTRACT, MESSAGE, TRANSACTION, LEDGER, TRANSACTION ITEM */
     OTString m_strContractType{String::Factory("CONTRACT")};

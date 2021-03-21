@@ -22,7 +22,7 @@ extern "C" {
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/crypto/Signature.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "util/Sodium.hpp"
 
 #define OT_METHOD "opentxs::crypto::AsymmetricProvider::"
@@ -30,18 +30,19 @@ extern "C" {
 namespace opentxs::crypto
 {
 auto AsymmetricProvider::CurveToKeyType(const EcdsaCurve& curve)
-    -> proto::AsymmetricKeyType
+    -> crypto::key::asymmetric::Algorithm
 {
-    proto::AsymmetricKeyType output = proto::AKEYTYPE_ERROR;
+    crypto::key::asymmetric::Algorithm output =
+        crypto::key::asymmetric::Algorithm::Error;
 
     switch (curve) {
         case (EcdsaCurve::secp256k1): {
-            output = proto::AKEYTYPE_SECP256K1;
+            output = key::asymmetric::Algorithm::Secp256k1;
 
             break;
         }
         case (EcdsaCurve::ed25519): {
-            output = proto::AKEYTYPE_ED25519;
+            output = key::asymmetric::Algorithm::ED25519;
 
             break;
         }
@@ -52,18 +53,18 @@ auto AsymmetricProvider::CurveToKeyType(const EcdsaCurve& curve)
     return output;
 }
 
-auto AsymmetricProvider::KeyTypeToCurve(const proto::AsymmetricKeyType& type)
-    -> EcdsaCurve
+auto AsymmetricProvider::KeyTypeToCurve(
+    const crypto::key::asymmetric::Algorithm& type) -> EcdsaCurve
 {
     EcdsaCurve output = EcdsaCurve::invalid;
 
     switch (type) {
-        case (proto::AKEYTYPE_SECP256K1): {
+        case (key::asymmetric::Algorithm::Secp256k1): {
             output = EcdsaCurve::secp256k1;
 
             break;
         }
-        case (proto::AKEYTYPE_ED25519): {
+        case (key::asymmetric::Algorithm::ED25519): {
             output = EcdsaCurve::ed25519;
 
             break;
@@ -116,7 +117,7 @@ auto AsymmetricProvider::SignContract(
     const String& strContractUnsigned,
     const key::Asymmetric& theKey,
     Signature& theSignature,  // output
-    const proto::HashType hashType,
+    const crypto::HashType hashType,
     const PasswordPrompt& reason) const -> bool
 {
     auto plaintext = Data::Factory(
@@ -145,7 +146,7 @@ auto AsymmetricProvider::VerifyContractSignature(
     const String& strContractToVerify,
     const key::Asymmetric& theKey,
     const Signature& theSignature,
-    const proto::HashType hashType) const -> bool
+    const crypto::HashType hashType) const -> bool
 {
     auto plaintext = Data::Factory(
         strContractToVerify.Get(),

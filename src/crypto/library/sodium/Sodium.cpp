@@ -24,6 +24,7 @@ extern "C" {
 #include "crypto/library/AsymmetricProvider.hpp"
 #include "crypto/library/EcdsaProvider.hpp"
 #endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
+#include "internal/crypto/key/Key.hpp"
 #include "internal/crypto/library/Factory.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -33,16 +34,20 @@ extern "C" {
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
+#include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
+#include "opentxs/crypto/key/symmetric/Source.hpp"
+#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #if OT_CRYPTO_SUPPORTED_KEY_ED25519
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 #include "opentxs/crypto/library/HashingProvider.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
 #if OT_CRYPTO_SUPPORTED_KEY_ED25519
 #include "util/Sodium.hpp"
 #endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
+#include "util/Container.hpp"
 
 #define OT_METHOD "opentxs::crypto::implementation::Sodium::"
 
@@ -81,13 +86,14 @@ auto Sodium::Decrypt(
     const auto& mac = ciphertext.tag();
     const auto& mode = ciphertext.mode();
 
-    if (KeySize(mode) != keySize) {
+    if (KeySize(opentxs::crypto::key::internal::translate(mode)) != keySize) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect key size.").Flush();
 
         return false;
     }
 
-    if (IvSize(mode) != nonce.size()) {
+    if (IvSize(opentxs::crypto::key::internal::translate(mode)) !=
+        nonce.size()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect nonce size.").Flush();
 
         return false;
@@ -124,7 +130,7 @@ auto Sodium::Derive(
     const std::size_t saltSize,
     const std::uint64_t operations,
     const std::uint64_t difficulty,
-    const proto::SymmetricKeyType type,
+    const crypto::key::symmetric::Source type,
     std::uint8_t* output,
     std::size_t outputSize) const -> bool
 {
@@ -160,15 +166,15 @@ auto Sodium::Derive(
 }
 
 auto Sodium::Digest(
-    const proto::HashType hashType,
+    const crypto::HashType hashType,
     const std::uint8_t* input,
     const size_t inputSize,
     std::uint8_t* output) const -> bool
 {
     switch (hashType) {
-        case (proto::HASHTYPE_BLAKE2B160):
-        case (proto::HASHTYPE_BLAKE2B256):
-        case (proto::HASHTYPE_BLAKE2B512): {
+        case (crypto::HashType::Blake2b160):
+        case (crypto::HashType::Blake2b256):
+        case (crypto::HashType::Blake2b512): {
             return (
                 0 == ::crypto_generichash(
                          output,
@@ -178,13 +184,13 @@ auto Sodium::Digest(
                          nullptr,
                          0));
         }
-        case (proto::HASHTYPE_SHA256): {
+        case (crypto::HashType::Sha256): {
             return (0 == ::crypto_hash_sha256(output, input, inputSize));
         }
-        case (proto::HASHTYPE_SHA512): {
+        case (crypto::HashType::Sha512): {
             return (0 == ::crypto_hash_sha512(output, input, inputSize));
         }
-        case (proto::HASHTYPE_SHA1): {
+        case (crypto::HashType::Sha1): {
             return sha1(input, inputSize, output);
         }
         default: {
@@ -206,14 +212,15 @@ auto Sodium::Encrypt(
     OT_ASSERT(nullptr != input);
     OT_ASSERT(nullptr != key);
 
-    const auto& mode = ciphertext.mode();
+    const auto& mode =
+        opentxs::crypto::key::internal::translate(ciphertext.mode());
     const auto& nonce = ciphertext.iv();
     auto& tag = *ciphertext.mutable_tag();
     auto& output = *ciphertext.mutable_data();
 
     bool result = false;
 
-    if (mode == proto::SMODE_ERROR) {
+    if (mode == opentxs::crypto::key::symmetric::Algorithm::Error) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect mode.").Flush();
 
         return result;
@@ -239,7 +246,7 @@ auto Sodium::Encrypt(
     OT_ASSERT(false == tag.empty());
 
     switch (mode) {
-        case (proto::SMODE_CHACHA20POLY1305): {
+        case (opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305): {
             return (
                 0 == crypto_aead_chacha20poly1305_ietf_encrypt_detached(
                          reinterpret_cast<unsigned char*>(output.data()),
@@ -255,7 +262,7 @@ auto Sodium::Encrypt(
         }
         default: {
             LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Unsupported encryption mode (")(mode)(").")
+                ": Unsupported encryption mode (")(value(mode))(").")
                 .Flush();
         }
     }
@@ -319,7 +326,7 @@ auto Sodium::Generate(
 }
 
 auto Sodium::HMAC(
-    const proto::HashType hashType,
+    const crypto::HashType hashType,
     const std::uint8_t* input,
     const size_t inputSize,
     const std::uint8_t* key,
@@ -327,9 +334,9 @@ auto Sodium::HMAC(
     std::uint8_t* output) const -> bool
 {
     switch (hashType) {
-        case (proto::HASHTYPE_BLAKE2B160):
-        case (proto::HASHTYPE_BLAKE2B256):
-        case (proto::HASHTYPE_BLAKE2B512): {
+        case (crypto::HashType::Blake2b160):
+        case (crypto::HashType::Blake2b256):
+        case (crypto::HashType::Blake2b512): {
             return (
                 0 == ::crypto_generichash(
                          output,
@@ -339,7 +346,7 @@ auto Sodium::HMAC(
                          key,
                          keySize));
         }
-        case (proto::HASHTYPE_SHA256): {
+        case (crypto::HashType::Sha256): {
             auto success{false};
             auto state = crypto_auth_hmacsha256_state{};
             success = (0 == crypto_auth_hmacsha256_init(&state, key, keySize));
@@ -364,7 +371,7 @@ auto Sodium::HMAC(
 
             return (0 == ::crypto_auth_hmacsha256_final(&state, output));
         }
-        case (proto::HASHTYPE_SHA512): {
+        case (crypto::HashType::Sha512): {
             auto success{false};
             auto state = crypto_auth_hmacsha512_state{};
             success = (0 == crypto_auth_hmacsha512_init(&state, key, keySize));
@@ -389,7 +396,7 @@ auto Sodium::HMAC(
 
             return (0 == ::crypto_auth_hmacsha512_final(&state, output));
         }
-        case (proto::HASHTYPE_SIPHASH24): {
+        case (crypto::HashType::SipHash24): {
             if (crypto_shorthash_KEYBYTES < keySize) {
                 LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect key size: ")(
                     keySize)(" vs expected ")(crypto_shorthash_KEYBYTES)
@@ -413,30 +420,32 @@ auto Sodium::HMAC(
     return false;
 }
 
-auto Sodium::IvSize(const proto::SymmetricMode mode) const -> std::size_t
+auto Sodium::IvSize(const opentxs::crypto::key::symmetric::Algorithm mode) const
+    -> std::size_t
 {
     switch (mode) {
-        case (proto::SMODE_CHACHA20POLY1305): {
+        case (opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305): {
             return crypto_aead_chacha20poly1305_IETF_NPUBBYTES;
         }
         default: {
             LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Unsupported encryption mode (")(mode)(").")
+                ": Unsupported encryption mode (")(value(mode))(").")
                 .Flush();
         }
     }
     return 0;
 }
 
-auto Sodium::KeySize(const proto::SymmetricMode mode) const -> std::size_t
+auto Sodium::KeySize(
+    const opentxs::crypto::key::symmetric::Algorithm mode) const -> std::size_t
 {
     switch (mode) {
-        case (proto::SMODE_CHACHA20POLY1305): {
+        case (opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305): {
             return crypto_aead_chacha20poly1305_IETF_KEYBYTES;
         }
         default: {
             LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Unsupported encryption mode (")(mode)(").")
+                ": Unsupported encryption mode (")(value(mode))(").")
                 .Flush();
         }
     }
@@ -457,7 +466,7 @@ auto Sodium::PubkeyAdd(
 auto Sodium::RandomKeypair(
     const AllocateOutput privateKey,
     const AllocateOutput publicKey,
-    const proto::KeyRole,
+    const opentxs::crypto::key::asymmetric::Role,
     const NymParameters&,
     const AllocateOutput) const noexcept -> bool
 {
@@ -476,16 +485,17 @@ auto Sodium::RandomizeMemory(void* destination, const std::size_t size) const
     return true;
 }
 
-auto Sodium::SaltSize(const proto::SymmetricKeyType type) const -> std::size_t
+auto Sodium::SaltSize(const crypto::key::symmetric::Source type) const
+    -> std::size_t
 {
     switch (type) {
-        case (proto::SKEYTYPE_ARGON2): {
+        case (crypto::key::symmetric::Source::Argon2): {
 
             return crypto_pwhash_SALTBYTES;
         }
         default: {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported key type (")(
-                type)(").")
+                value(type))(").")
                 .Flush();
         }
     }
@@ -582,14 +592,14 @@ auto Sodium::SharedSecret(
         return false;
     }
 
-    if (publicKey.keyType() != proto::AKEYTYPE_ED25519) {
+    if (publicKey.keyType() != crypto::key::asymmetric::Algorithm::ED25519) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Public key is wrong type")
             .Flush();
 
         return false;
     }
 
-    if (privateKey.keyType() != proto::AKEYTYPE_ED25519) {
+    if (privateKey.keyType() != crypto::key::asymmetric::Algorithm::ED25519) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Private key is wrong type")
             .Flush();
 
@@ -684,11 +694,11 @@ auto Sodium::Sign(
     const api::internal::Core& api,
     const ReadView plaintext,
     const key::Asymmetric& key,
-    const proto::HashType hash,
+    const crypto::HashType hash,
     const AllocateOutput signature,
     const PasswordPrompt& reason) const -> bool
 {
-    if (proto::AKEYTYPE_ED25519 != key.keyType()) {
+    if (crypto::key::asymmetric::Algorithm::ED25519 != key.keyType()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid key type").Flush();
 
         return false;
@@ -702,9 +712,9 @@ auto Sodium::Sign(
         return false;
     }
 
-    if (proto::HASHTYPE_BLAKE2B256 != hash) {
+    if (crypto::HashType::Blake2b256 != hash) {
         LogVerbose(OT_METHOD)(__FUNCTION__)(": Unsupported hash function: ")(
-            hash)
+            value(hash))
             .Flush();
 
         return false;
@@ -762,15 +772,16 @@ auto Sodium::Sign(
 }
 #endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 
-auto Sodium::TagSize(const proto::SymmetricMode mode) const -> std::size_t
+auto Sodium::TagSize(
+    const opentxs::crypto::key::symmetric::Algorithm mode) const -> std::size_t
 {
     switch (mode) {
-        case (proto::SMODE_CHACHA20POLY1305): {
+        case (opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305): {
             return crypto_aead_chacha20poly1305_IETF_ABYTES;
         }
         default: {
             LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Unsupported encryption mode (")(mode)(").")
+                ": Unsupported encryption mode (")(value(mode))(").")
                 .Flush();
         }
     }
@@ -782,17 +793,17 @@ auto Sodium::Verify(
     const Data& plaintext,
     const key::Asymmetric& key,
     const Data& signature,
-    const proto::HashType type) const -> bool
+    const crypto::HashType type) const -> bool
 {
-    if (proto::AKEYTYPE_ED25519 != key.keyType()) {
+    if (crypto::key::asymmetric::Algorithm::ED25519 != key.keyType()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid key type").Flush();
 
         return false;
     }
 
-    if (proto::HASHTYPE_BLAKE2B256 != type) {
+    if (crypto::HashType::Blake2b256 != type) {
         LogVerbose(OT_METHOD)(__FUNCTION__)(": Unsupported hash function: ")(
-            type)
+            value(type))
             .Flush();
 
         return false;

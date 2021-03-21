@@ -21,9 +21,9 @@
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
+#include "opentxs/crypto/Types.hpp"
 #include "opentxs/protobuf/AsymmetricKey.pb.h"
 #include "opentxs/protobuf/Ciphertext.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
 
 #define OT_METHOD "opentxs::crypto::key::implementation::EllipticCurve::"
 
@@ -53,8 +53,8 @@ EllipticCurve::EllipticCurve(
 EllipticCurve::EllipticCurve(
     const api::internal::Core& api,
     const crypto::EcdsaProvider& ecdsa,
-    const proto::AsymmetricKeyType keyType,
-    const proto::KeyRole role,
+    const crypto::key::asymmetric::Algorithm keyType,
+    const crypto::key::asymmetric::Role role,
     const VersionNumber version,
     const PasswordPrompt& reason) noexcept(false)
     : Asymmetric(
@@ -85,10 +85,10 @@ EllipticCurve::EllipticCurve(
 EllipticCurve::EllipticCurve(
     const api::internal::Core& api,
     const crypto::EcdsaProvider& ecdsa,
-    const proto::AsymmetricKeyType keyType,
+    const crypto::key::asymmetric::Algorithm keyType,
     const Secret& privateKey,
     const Data& publicKey,
-    const proto::KeyRole role,
+    const crypto::key::asymmetric::Role role,
     const VersionNumber version,
     key::Symmetric& sessionKey,
     const PasswordPrompt& reason) noexcept(false)
@@ -114,10 +114,10 @@ EllipticCurve::EllipticCurve(
 EllipticCurve::EllipticCurve(
     const api::internal::Core& api,
     const crypto::EcdsaProvider& ecdsa,
-    const proto::AsymmetricKeyType keyType,
+    const crypto::key::asymmetric::Algorithm keyType,
     const Secret& privateKey,
     const Data& publicKey,
-    const proto::KeyRole role,
+    const crypto::key::asymmetric::Role role,
     const VersionNumber version) noexcept(false)
     : Asymmetric(
           api,
@@ -262,7 +262,7 @@ auto EllipticCurve::serialize_public(EllipticCurve* in)
 
 auto EllipticCurve::SignDER(
     const ReadView preimage,
-    const proto::HashType hash,
+    const crypto::HashType hash,
     Space& output,
     const PasswordPrompt& reason) const noexcept -> bool
 {

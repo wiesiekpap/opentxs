@@ -29,6 +29,7 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip39.hpp"
@@ -430,7 +431,9 @@ public:
 
             EXPECT_TRUE(input->DecodeHex(hash));
             EXPECT_TRUE(crypto_.Hash().Digest(
-                ot::proto::HASHTYPE_RIPEMD160, preimage, output->WriteInto()));
+                ot::crypto::HashType::Ripemd160,
+                preimage,
+                output->WriteInto()));
             EXPECT_EQ(output.get(), input.get());
         }
 
@@ -460,11 +463,11 @@ public:
             const auto serialized =
                 library.DeriveKey(ot::EcdsaCurve::secp256k1, seed, {});
             auto pKey = client_.Asymmetric().InstantiateKey(
-                ot::proto::AKEYTYPE_SECP256K1,
+                ot::crypto::key::asymmetric::Algorithm::Secp256k1,
                 seedID,
                 serialized,
                 reason_,
-                ot::proto::KEYROLE_SIGN,
+                ot::crypto::key::asymmetric::Role::Sign,
                 ot::crypto::key::EllipticCurve::DefaultVersion);
 
             EXPECT_TRUE(pKey);
@@ -475,7 +478,9 @@ public:
 
             EXPECT_TRUE(key.HasPrivate());
             EXPECT_TRUE(key.HasPublic());
-            EXPECT_EQ(ot::proto::AKEYTYPE_SECP256K1, key.keyType());
+            EXPECT_EQ(
+                ot::crypto::key::asymmetric::Algorithm::Secp256k1,
+                key.keyType());
             EXPECT_TRUE(compare_private(library, xprv, key.Xprv(reason_)));
         }
 
@@ -578,11 +583,11 @@ public:
                 const auto serialized =
                     library.DeriveKey(ot::EcdsaCurve::secp256k1, seed, rawPath);
                 auto pKey = client_.Asymmetric().InstantiateKey(
-                    ot::proto::AKEYTYPE_SECP256K1,
+                    ot::crypto::key::asymmetric::Algorithm::Secp256k1,
                     seedID,
                     serialized,
                     reason_,
-                    ot::proto::KEYROLE_SIGN,
+                    ot::crypto::key::asymmetric::Role::Sign,
                     ot::crypto::key::EllipticCurve::DefaultVersion);
 
                 EXPECT_TRUE(pKey);
@@ -593,7 +598,9 @@ public:
 
                 EXPECT_TRUE(key.HasPrivate());
                 EXPECT_TRUE(key.HasPublic());
-                EXPECT_EQ(ot::proto::AKEYTYPE_SECP256K1, key.keyType());
+                EXPECT_EQ(
+                    ot::crypto::key::asymmetric::Algorithm::Secp256k1,
+                    key.keyType());
                 EXPECT_TRUE(
                     compare_private(library, expectPrv, key.Xprv(reason_)));
                 EXPECT_TRUE(

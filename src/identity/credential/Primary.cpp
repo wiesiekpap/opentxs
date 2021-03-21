@@ -14,6 +14,7 @@
 #include "core/contract/Signable.hpp"
 #include "identity/credential/Key.hpp"
 #include "internal/api/Api.hpp"
+#include "internal/crypto/key/Key.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -22,17 +23,20 @@
 #include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
+#include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/Source.hpp"
+#include "opentxs/identity/SourceProofType.hpp"
+#include "opentxs/identity/SourceType.hpp"
 #include "opentxs/identity/credential/Base.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Credential.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/HDPath.pb.h"
 #include "opentxs/protobuf/MasterCredentialParameters.pb.h"
 #include "opentxs/protobuf/NymIDSource.pb.h"
 #include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/protobuf/SourceProof.pb.h"
 #include "opentxs/protobuf/verify/Credential.hpp"
+#include "util/Container.hpp"
 
 #define OT_METHOD "opentxs::identity::credential::implementation::Primary::"
 
@@ -105,10 +109,10 @@ Primary::Primary(
           source,
           params,
           version,
-          proto::CREDROLE_MASTERKEY,
+          identity::CredentialRole::MasterKey,
           reason,
           "",
-          proto::SOURCETYPE_PUBKEY == params.SourceType())
+          identity::SourceType::PubKey == params.SourceType())
     , source_proof_(source_proof(params))
 {
     {
@@ -175,7 +179,8 @@ auto Primary::serialize(
     OT_ASSERT(output);
 
     auto& serialized = *output;
-    serialized.set_role(proto::CREDROLE_MASTERKEY);
+    serialized.set_role(opentxs::identity::credential::internal::translate(
+        identity::CredentialRole::MasterKey));
     auto& masterData = *serialized.mutable_masterdata();
     masterData.set_version(credential_to_master_params_.at(version_));
     *masterData.mutable_source() = *(source_.Serialize());
@@ -207,19 +212,62 @@ auto Primary::source_proof(const NymParameters& params) -> proto::SourceProof
 {
     auto output = proto::SourceProof{};
     output.set_version(1);
-    output.set_type(params.SourceProofType());
+    output.set_type(translate(params.SourceProofType()));
 
     return output;
 }
 
+auto Primary::sourceprooftype_map() noexcept -> const SourceProofTypeMap&
+{
+    static const auto map = SourceProofTypeMap{
+        {identity::SourceProofType::Error, proto::SOURCEPROOFTYPE_ERROR},
+        {identity::SourceProofType::SelfSignature,
+         proto::SOURCEPROOFTYPE_SELF_SIGNATURE},
+        {identity::SourceProofType::Signature,
+         proto::SOURCEPROOFTYPE_SIGNATURE},
+    };
+
+    return map;
+}
+
+auto Primary::translate(const identity::SourceProofType in) noexcept
+    -> proto::SourceProofType
+{
+    try {
+        return sourceprooftype_map().at(in);
+    } catch (...) {
+        return proto::SOURCEPROOFTYPE_ERROR;
+    }
+}
+
+auto Primary::translate(const proto::SourceProofType in) noexcept
+    -> identity::SourceProofType
+{
+    static const auto map = reverse_arbitrary_map<
+        identity::SourceProofType,
+        proto::SourceProofType,
+        SourceProofTypeReverseMap>(sourceprooftype_map());
+
+    try {
+        return map.at(in);
+    } catch (...) {
+        return identity::SourceProofType::Error;
+    }
+}
+
 auto Primary::Verify(
     const proto::Credential& credential,
-    const proto::CredentialRole& role,
+    const identity::CredentialRole& role,
     const Identifier& masterID,
     const proto::Signature& masterSig) const -> bool
 {
     if (!proto::Validate<proto::Credential>(
-            credential, VERBOSE, proto::KEYMODE_PUBLIC, role, false)) {
+            credential,
+            VERBOSE,
+            opentxs::crypto::key::internal::translate(
+                crypto::key::asymmetric::Mode::Public),
+            opentxs::identity::credential::internal::translate(role),
+            false)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid credential syntax.")
             .Flush();
 
@@ -251,11 +299,11 @@ auto Primary::verify_against_source(const Lock& lock) const -> bool
     auto hasSourceSignature{true};
 
     switch (source_.Type()) {
-        case proto::SOURCETYPE_PUBKEY: {
+        case identity::SourceType::PubKey: {
             pSerialized = serialize(lock, AS_PUBLIC, WITH_SIGNATURES);
             hasSourceSignature = false;
         } break;
-        case proto::SOURCETYPE_BIP47: {
+        case identity::SourceType::Bip47: {
             pSerialized = serialize(lock, AS_PUBLIC, WITHOUT_SIGNATURES);
         } break;
         default: {

@@ -8,15 +8,31 @@
 #include <optional>
 
 #include "opentxs/core/Secret.hpp"  // IWYU pragma: keep
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/identity/credential/Base.hpp"
 #include "opentxs/identity/credential/Contact.hpp"
 #include "opentxs/identity/credential/Key.hpp"
 #include "opentxs/identity/credential/Primary.hpp"
 #include "opentxs/identity/credential/Secondary.hpp"
 #include "opentxs/identity/credential/Verification.hpp"
+#include "opentxs/protobuf/Enums.pb.h"
 
 namespace opentxs::identity::credential::internal
 {
+using CredentialRoleMap = std::map<CredentialRole, proto::CredentialRole>;
+using CredentialRoleReverseMap =
+    std::map<proto::CredentialRole, CredentialRole>;
+using CredentialTypeMap = std::map<CredentialType, proto::CredentialType>;
+using CredentialTypeReverseMap =
+    std::map<proto::CredentialType, CredentialType>;
+
+auto credentialrole_map() noexcept -> const CredentialRoleMap&;
+auto credentialtype_map() noexcept -> const CredentialTypeMap&;
+auto translate(CredentialRole in) noexcept -> proto::CredentialRole;
+auto translate(CredentialType in) noexcept -> proto::CredentialType;
+auto translate(proto::CredentialRole in) noexcept -> CredentialRole;
+auto translate(proto::CredentialType in) noexcept -> CredentialType;
+
 struct Base : virtual public identity::credential::Base {
     virtual void ReleaseSignatures(const bool onlyPrivate) = 0;
 

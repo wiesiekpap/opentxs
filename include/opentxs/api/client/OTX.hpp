@@ -19,9 +19,10 @@
 
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/identifier/Server.hpp"
-#include "opentxs/protobuf/ConsensusEnums.pb.h"
-#include "opentxs/protobuf/PeerEnums.pb.h"
+#include "opentxs/otx/Types.hpp"
 
 #define OT_CHEQUE_DAYS 30
 #define OT_CHEQUE_HOURS 24 * OT_CHEQUE_DAYS
@@ -55,7 +56,7 @@ class OTX
 public:
     using TaskID = int;
     using MessageID = OTIdentifier;
-    using Result = std::pair<proto::LastReplyStatus, std::shared_ptr<Message>>;
+    using Result = std::pair<otx::LastReplyStatus, std::shared_ptr<Message>>;
     using Future = std::shared_future<Result>;
     using BackgroundTask = std::pair<TaskID, Future>;
     using Finished = std::shared_future<void>;
@@ -183,13 +184,13 @@ public:
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::Nym& targetNymID,
-        const proto::ConnectionInfoType& type,
+        const contract::peer::ConnectionInfoType& type,
         const SetID setID = {}) const = 0;
     OPENTXS_EXPORT virtual BackgroundTask InitiateStoreSecret(
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::Nym& targetNymID,
-        const proto::SecretType& type,
+        const contract::peer::SecretType& type,
         const std::string& primary,
         const std::string& secondary,
         const SetID setID = {}) const = 0;
@@ -199,7 +200,8 @@ public:
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::UnitDefinition& unitID,
-        const proto::ContactItemType advertise = proto::CITEMTYPE_ERROR,
+        const contact::ContactItemType advertise =
+            contact::ContactItemType::Error,
         const std::string& label = "") const = 0;
     OPENTXS_EXPORT virtual BackgroundTask MessageContact(
         const identifier::Nym& senderNymID,

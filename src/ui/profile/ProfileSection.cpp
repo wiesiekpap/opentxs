@@ -17,12 +17,13 @@
 #include <utility>
 
 #include "internal/ui/UI.hpp"
+#include "internal/contact/Contact.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactSection.hpp"
+#include "opentxs/contact/ContactSectionName.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/ui/ProfileSection.hpp"
 #include "ui/base/Combined.hpp"
@@ -51,9 +52,9 @@ auto ProfileSectionWidget(
 namespace opentxs::ui
 {
 static const std::
-    map<proto::ContactSectionName, std::set<proto::ContactItemType>>
+    map<contact::ContactSectionName, std::set<proto::ContactItemType>>
         allowed_types_{
-            {proto::CONTACTSECTION_COMMUNICATION,
+            {contact::ContactSectionName::Communication,
              {
                  proto::CITEMTYPE_PHONE,
                  proto::CITEMTYPE_EMAIL,
@@ -68,7 +69,7 @@ static const std::
                  proto::CITEMTYPE_WECHAT,
                  proto::CITEMTYPE_KAKAOTALK,
              }},
-            {proto::CONTACTSECTION_PROFILE,
+            {contact::ContactSectionName::Profile,
              {
                  proto::CITEMTYPE_FACEBOOK,  proto::CITEMTYPE_GOOGLE,
                  proto::CITEMTYPE_LINKEDIN,  proto::CITEMTYPE_VK,
@@ -85,9 +86,9 @@ static const std::
         };
 
 static const std::
-    map<proto::ContactSectionName, std::map<proto::ContactItemType, int>>
+    map<contact::ContactSectionName, std::map<proto::ContactItemType, int>>
         sort_keys_{
-            {proto::CONTACTSECTION_COMMUNICATION,
+            {contact::ContactSectionName::Communication,
              {
                  {proto::CITEMTYPE_PHONE, 0},
                  {proto::CITEMTYPE_EMAIL, 1},
@@ -102,7 +103,7 @@ static const std::
                  {proto::CITEMTYPE_WHATSAPP, 10},
                  {proto::CITEMTYPE_BITMESSAGE, 11},
              }},
-            {proto::CONTACTSECTION_PROFILE,
+            {contact::ContactSectionName::Profile,
              {
                  {proto::CITEMTYPE_FACEBOOK, 0},
                  {proto::CITEMTYPE_TWITTER, 1},
@@ -130,14 +131,16 @@ static const std::
         };
 
 auto ProfileSection::AllowedItems(
-    const proto::ContactSectionName section,
+    const contact::ContactSectionName section,
     const std::string& lang) noexcept -> ProfileSection::ItemTypeList
 {
     ItemTypeList output{};
 
     try {
         for (const auto& type : allowed_types_.at(section)) {
-            output.emplace_back(type, proto::TranslateItemType(type, lang));
+            output.emplace_back(
+                contact::internal::translate(type),
+                proto::TranslateItemType(type, lang));
         }
     } catch (const std::out_of_range&) {
     }
@@ -166,7 +169,7 @@ ProfileSection::ProfileSection(
 }
 
 auto ProfileSection::AddClaim(
-    const proto::ContactItemType type,
+    const contact::ContactItemType type,
     const std::string& value,
     const bool primary,
     const bool active) const noexcept -> bool
@@ -177,7 +180,8 @@ auto ProfileSection::AddClaim(
 auto ProfileSection::check_type(const ProfileSectionRowID type) noexcept -> bool
 {
     try {
-        return 1 == allowed_types_.at(type.first).count(type.second);
+        return 1 == allowed_types_.at(type.first)
+                        .count(contact::internal::translate(type.second));
     } catch (const std::out_of_range&) {
     }
 
@@ -197,7 +201,7 @@ auto ProfileSection::Delete(const int type, const std::string& claimID)
 {
     rLock lock{recursive_lock_};
     const ProfileSectionRowID key{
-        row_id_, static_cast<proto::ContactItemType>(type)};
+        row_id_, static_cast<contact::ContactItemType>(type)};
     auto& group = lookup(lock, key);
 
     if (false == group.Valid()) { return false; }
@@ -213,7 +217,8 @@ auto ProfileSection::Items(const std::string& lang) const noexcept
 
 auto ProfileSection::Name(const std::string& lang) const noexcept -> std::string
 {
-    return proto::TranslateSectionName(row_id_, lang);
+    return proto::TranslateSectionName(
+        contact::internal::translate(row_id_), lang);
 }
 
 auto ProfileSection::process_section(
@@ -255,7 +260,7 @@ auto ProfileSection::SetActive(
 {
     rLock lock{recursive_lock_};
     const ProfileSectionRowID key{
-        row_id_, static_cast<proto::ContactItemType>(type)};
+        row_id_, static_cast<contact::ContactItemType>(type)};
     auto& group = lookup(lock, key);
 
     if (false == group.Valid()) { return false; }
@@ -270,7 +275,7 @@ auto ProfileSection::SetPrimary(
 {
     rLock lock{recursive_lock_};
     const ProfileSectionRowID key{
-        row_id_, static_cast<proto::ContactItemType>(type)};
+        row_id_, static_cast<contact::ContactItemType>(type)};
     auto& group = lookup(lock, key);
 
     if (false == group.Valid()) { return false; }
@@ -285,7 +290,7 @@ auto ProfileSection::SetValue(
 {
     rLock lock{recursive_lock_};
     const ProfileSectionRowID key{
-        row_id_, static_cast<proto::ContactItemType>(type)};
+        row_id_, static_cast<contact::ContactItemType>(type)};
     auto& group = lookup(lock, key);
 
     if (false == group.Valid()) { return false; }
@@ -295,7 +300,8 @@ auto ProfileSection::SetValue(
 
 auto ProfileSection::sort_key(const ProfileSectionRowID type) noexcept -> int
 {
-    return sort_keys_.at(type.first).at(type.second);
+    return sort_keys_.at(type.first)
+        .at(contact::internal::translate(type.second));
 }
 
 void ProfileSection::startup(const opentxs::ContactSection section) noexcept

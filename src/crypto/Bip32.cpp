@@ -32,7 +32,7 @@
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/protobuf/HDPath.pb.h"
 #include "util/HDIndex.hpp"
 
@@ -149,7 +149,8 @@ auto Bip32::DerivePrivateKey(
     const PasswordPrompt& reason) const noexcept(false) -> Key
 {
     const auto curve = [&] {
-        if (proto::AKEYTYPE_ED25519 == key.keyType()) {
+        if (opentxs::crypto::key::asymmetric::Algorithm::ED25519 ==
+            key.keyType()) {
 
             return EcdsaCurve::ed25519;
         } else {
@@ -224,7 +225,7 @@ auto Bip32::DerivePublicKey(
     const PasswordPrompt& reason) const noexcept(false) -> Key
 {
     const auto curve = [&] {
-        if (proto::AKEYTYPE_ED25519 == key.keyType()) {
+        if (crypto::key::asymmetric::Algorithm::ED25519 == key.keyType()) {
 
             return EcdsaCurve::ed25519;
         } else {
@@ -306,7 +307,7 @@ auto Bip32::derive_private(
     }
 
     auto success = crypto_.Hash().HMAC(
-        proto::HASHTYPE_SHA512,
+        crypto::HashType::Sha512,
         node.ParentCode(),
         reader(data),
         preallocated(hash.size(), hash.data()));
@@ -374,7 +375,7 @@ auto Bip32::derive_public(
     }
 
     auto success = crypto_.Hash().HMAC(
-        proto::HASHTYPE_SHA512,
+        crypto::HashType::Sha512,
         node.ParentCode(),
         reader(data),
         preallocated(hash.size(), hash.data()));
@@ -550,8 +551,9 @@ auto Bip32::root_node(
     static const auto rootKey = std::string{"Bitcoin seed"};
     auto node = Space{};
 
-    if (false == crypto_.Hash().HMAC(
-                     proto::HASHTYPE_SHA512, rootKey, entropy, writer(node))) {
+    if (false ==
+        crypto_.Hash().HMAC(
+            crypto::HashType::Sha512, rootKey, entropy, writer(node))) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to instantiate root node")
             .Flush();
 

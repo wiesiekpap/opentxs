@@ -15,6 +15,8 @@
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/crypto/NymParameters.hpp"
+#include "opentxs/crypto/HashType.hpp"
+#include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/identity/credential/Base.hpp"
 
@@ -28,21 +30,22 @@ class Key : virtual public Base
 {
 public:
     OPENTXS_EXPORT virtual const crypto::key::Keypair& GetKeypair(
-        const proto::AsymmetricKeyType type,
-        const proto::KeyRole role) const = 0;
+        const crypto::key::asymmetric::Algorithm type,
+        const opentxs::crypto::key::asymmetric::Role role) const = 0;
     OPENTXS_EXPORT virtual const crypto::key::Keypair& GetKeypair(
-        const proto::KeyRole role) const = 0;
+        const opentxs::crypto::key::asymmetric::Role role) const = 0;
     OPENTXS_EXPORT virtual std::int32_t GetPublicKeysBySignature(
         crypto::key::Keypair::Keys& listOutput,
         const opentxs::Signature& theSignature,
         char cKeyType = '0') const = 0;
     OPENTXS_EXPORT virtual bool Sign(
         const GetPreimage input,
-        const proto::SignatureRole role,
+        const crypto::SignatureRole role,
         proto::Signature& signature,
         const PasswordPrompt& reason,
-        proto::KeyRole key = proto::KEYROLE_SIGN,
-        const proto::HashType hash = proto::HASHTYPE_ERROR) const = 0;
+        opentxs::crypto::key::asymmetric::Role key =
+            opentxs::crypto::key::asymmetric::Role::Sign,
+        const crypto::HashType hash = crypto::HashType::Error) const = 0;
 
     OPENTXS_EXPORT ~Key() override = default;
 

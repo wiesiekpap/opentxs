@@ -19,7 +19,9 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
+#include "opentxs/crypto/Types.hpp"
+#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
+#include "opentxs/identity/Types.hpp"
 
 namespace opentxs
 {
@@ -65,7 +67,7 @@ class Sodium final : virtual public crypto::Sodium,
 {
 public:
     auto Digest(
-        const proto::HashType hashType,
+        const crypto::HashType hashType,
         const std::uint8_t* input,
         const size_t inputSize,
         std::uint8_t* output) const -> bool final;
@@ -78,7 +80,7 @@ public:
         const std::size_t bytes,
         AllocateOutput writer) const noexcept -> bool final;
     auto HMAC(
-        const proto::HashType hashType,
+        const crypto::HashType hashType,
         const std::uint8_t* input,
         const size_t inputSize,
         const std::uint8_t* key,
@@ -92,7 +94,7 @@ public:
     auto RandomKeypair(
         const AllocateOutput privateKey,
         const AllocateOutput publicKey,
-        const proto::KeyRole role,
+        const opentxs::crypto::key::asymmetric::Role role,
         const NymParameters& options,
         const AllocateOutput params) const noexcept -> bool final;
 #endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
@@ -115,14 +117,14 @@ public:
         const api::internal::Core& api,
         const ReadView plaintext,
         const key::Asymmetric& key,
-        const proto::HashType hash,
+        const crypto::HashType hash,
         const AllocateOutput signature,
         const PasswordPrompt& reason) const -> bool final;
     auto Verify(
         const Data& plaintext,
         const key::Asymmetric& theKey,
         const Data& signature,
-        const proto::HashType hashType) const -> bool final;
+        const crypto::HashType hashType) const -> bool final;
 #endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 
     Sodium(const api::Crypto& crypto) noexcept;
@@ -130,15 +132,15 @@ public:
     ~Sodium() final = default;
 
 private:
-    static const proto::SymmetricMode DEFAULT_MODE{
-        proto::SMODE_CHACHA20POLY1305};
+    static const opentxs::crypto::key::symmetric::Algorithm DEFAULT_MODE{
+        opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305};
 
     auto Decrypt(
         const proto::Ciphertext& ciphertext,
         const std::uint8_t* key,
         const std::size_t keySize,
         std::uint8_t* plaintext) const -> bool final;
-    auto DefaultMode() const -> proto::SymmetricMode final
+    auto DefaultMode() const -> opentxs::crypto::key::symmetric::Algorithm final
     {
         return DEFAULT_MODE;
     }
@@ -149,7 +151,7 @@ private:
         const std::size_t saltSize,
         const std::uint64_t operations,
         const std::uint64_t difficulty,
-        const proto::SymmetricKeyType type,
+        const crypto::key::symmetric::Source type,
         std::uint8_t* output,
         std::size_t outputSize) const -> bool final;
     auto Encrypt(
@@ -158,15 +160,18 @@ private:
         const std::uint8_t* key,
         const std::size_t keySize,
         proto::Ciphertext& ciphertext) const -> bool final;
-    auto IvSize(const proto::SymmetricMode mode) const -> std::size_t final;
-    auto KeySize(const proto::SymmetricMode mode) const -> std::size_t final;
-    auto SaltSize(const proto::SymmetricKeyType type) const
+    auto IvSize(const opentxs::crypto::key::symmetric::Algorithm mode) const
+        -> std::size_t final;
+    auto KeySize(const opentxs::crypto::key::symmetric::Algorithm mode) const
+        -> std::size_t final;
+    auto SaltSize(const crypto::key::symmetric::Source type) const
         -> std::size_t final;
     auto sha1(
         const std::uint8_t* input,
         const std::size_t inputSize,
         std::uint8_t* output) const -> bool;
-    auto TagSize(const proto::SymmetricMode mode) const -> std::size_t final;
+    auto TagSize(const opentxs::crypto::key::symmetric::Algorithm mode) const
+        -> std::size_t final;
 
     Sodium() = delete;
     Sodium(const Sodium&) = delete;

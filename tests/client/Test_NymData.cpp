@@ -13,6 +13,7 @@
 #include "1_Internal.hpp"
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "internal/api/client/Client.hpp"
+#include "internal/contact/Contact.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -23,6 +24,8 @@
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactItem.hpp"
+#include "opentxs/contact/ContactItemAttribute.hpp"
+#include "opentxs/contact/ContactSectionName.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -73,12 +76,14 @@ TEST_F(Test_NymData, AddClaim)
 {
     ot::Claim claim = std::make_tuple(
         std::string(""),
-        ot::proto::CONTACTSECTION_CONTRACT,
-        ot::proto::CITEMTYPE_USD,
+        ot::contact::internal::translate(
+            ot::contact::ContactSectionName::Contract),
+        ot::contact::internal::translate(ot::contact::ContactItemType::USD),
         std::string("claimValue"),
         NULL_START,
         NULL_END,
-        std::set<std::uint32_t>{ot::proto::CITEMATTR_ACTIVE});
+        std::set<std::uint32_t>{
+            static_cast<uint32_t>(ot::contact::ContactItemAttribute::Active)});
 
     auto added = nymData_.AddClaim(claim, reason_);
     EXPECT_TRUE(added);
@@ -87,22 +92,26 @@ TEST_F(Test_NymData, AddClaim)
 TEST_F(Test_NymData, AddContract)
 {
     auto added = nymData_.AddContract(
-        "", ot::proto::CITEMTYPE_USD, false, false, reason_);
+        "", ot::contact::ContactItemType::USD, false, false, reason_);
     EXPECT_FALSE(added);
 
     const auto identifier1(ot::identifier::UnitDefinition::Factory(
         ot::identity::credential::Contact::ClaimID(
             client_,
             "testNym",
-            ot::proto::CONTACTSECTION_CONTRACT,
-            ot::proto::CITEMTYPE_USD,
+            ot::contact::ContactSectionName::Contract,
+            ot::contact::ContactItemType::USD,
             NULL_START,
             NULL_END,
             "instrumentDefinitionID1",
             "")));
 
     added = nymData_.AddContract(
-        identifier1->str(), ot::proto::CITEMTYPE_USD, false, false, reason_);
+        identifier1->str(),
+        ot::contact::ContactItemType::USD,
+        false,
+        false,
+        reason_);
     EXPECT_TRUE(added);
 }
 
@@ -125,11 +134,11 @@ TEST_F(Test_NymData, asPublicNym)
 TEST_F(Test_NymData, AddPaymentCode)
 {
     auto added = nymData_.AddPaymentCode(
-        "", ot::proto::CITEMTYPE_USD, false, false, reason_);
+        "", ot::contact::ContactItemType::USD, false, false, reason_);
     EXPECT_FALSE(added);
 
     added = nymData_.AddPaymentCode(
-        paymentCode, ot::proto::CITEMTYPE_USD, false, false, reason_);
+        paymentCode, ot::contact::ContactItemType::USD, false, false, reason_);
     EXPECT_TRUE(added);
 }
 
@@ -148,8 +157,8 @@ TEST_F(Test_NymData, AddPreferredOTServer)
         ot::identity::credential::Contact::ClaimID(
             client_,
             "testNym",
-            ot::proto::CONTACTSECTION_COMMUNICATION,
-            ot::proto::CITEMTYPE_OPENTXS,
+            ot::contact::ContactSectionName::Communication,
+            ot::contact::ContactItemType::Opentxs,
             NULL_START,
             NULL_END,
             "localhost",
@@ -166,11 +175,15 @@ TEST_F(Test_NymData, AddPreferredOTServer)
 TEST_F(Test_NymData, AddSocialMediaProfile)
 {
     auto added = nymData_.AddSocialMediaProfile(
-        "profile1", ot::proto::CITEMTYPE_TWITTER, false, false, reason_);
+        "profile1",
+        ot::contact::ContactItemType::Twitter,
+        false,
+        false,
+        reason_);
     EXPECT_TRUE(added);
 
     added = nymData_.AddSocialMediaProfile(
-        "", ot::proto::CITEMTYPE_TWITTER, false, false, reason_);
+        "", ot::contact::ContactItemType::Twitter, false, false, reason_);
     EXPECT_FALSE(added);
 }
 
@@ -203,15 +216,15 @@ TEST_F(Test_NymData, BestPhoneNumber)
 TEST_F(Test_NymData, BestSocialMediaProfile)
 {
     auto added = nymData_.AddSocialMediaProfile(
-        "profile1", ot::proto::CITEMTYPE_YAHOO, false, false, reason_);
+        "profile1", ot::contact::ContactItemType::Yahoo, false, false, reason_);
     EXPECT_TRUE(added);
 
     added = nymData_.AddSocialMediaProfile(
-        "profile2", ot::proto::CITEMTYPE_YAHOO, false, true, reason_);
+        "profile2", ot::contact::ContactItemType::Yahoo, false, true, reason_);
     EXPECT_TRUE(added);
 
     std::string profile =
-        nymData_.BestSocialMediaProfile(ot::proto::CITEMTYPE_YAHOO);
+        nymData_.BestSocialMediaProfile(ot::contact::ContactItemType::Yahoo);
     // First profile added is made primary.
     EXPECT_STREQ("profile1", profile.c_str());
 }
@@ -231,12 +244,14 @@ TEST_F(Test_NymData, DeleteClaim)
 {
     ot::Claim claim = std::make_tuple(
         std::string(""),
-        ot::proto::CONTACTSECTION_CONTRACT,
-        ot::proto::CITEMTYPE_USD,
+        ot::contact::internal::translate(
+            ot::contact::ContactSectionName::Contract),
+        ot::contact::internal::translate(ot::contact::ContactItemType::USD),
         std::string("claimValue"),
         NULL_START,
         NULL_END,
-        std::set<std::uint32_t>{ot::proto::CITEMATTR_ACTIVE});
+        std::set<std::uint32_t>{
+            static_cast<uint32_t>(ot::contact::ContactItemAttribute::Active)});
 
     auto added = nymData_.AddClaim(claim, reason_);
     ASSERT_TRUE(added);
@@ -245,8 +260,8 @@ TEST_F(Test_NymData, DeleteClaim)
         ot::identity::credential::Contact::ClaimID(
             client_,
             "testNym",
-            ot::proto::CONTACTSECTION_CONTRACT,
-            ot::proto::CITEMTYPE_USD,
+            ot::contact::ContactSectionName::Contract,
+            ot::contact::ContactItemType::USD,
             NULL_START,
             NULL_END,
             "claimValue",
@@ -286,62 +301,70 @@ TEST_F(Test_NymData, HaveContract)
         ot::identity::credential::Contact::ClaimID(
             client_,
             "testNym",
-            ot::proto::CONTACTSECTION_CONTRACT,
-            ot::proto::CITEMTYPE_USD,
+            ot::contact::ContactSectionName::Contract,
+            ot::contact::ContactItemType::USD,
             NULL_START,
             NULL_END,
             "instrumentDefinitionID1",
             "")));
 
     auto added = nymData_.AddContract(
-        identifier1->str(), ot::proto::CITEMTYPE_USD, false, false, reason_);
+        identifier1->str(),
+        ot::contact::ContactItemType::USD,
+        false,
+        false,
+        reason_);
     ASSERT_TRUE(added);
 
     auto haveContract = nymData_.HaveContract(
-        identifier1, ot::proto::CITEMTYPE_USD, true, true);
+        identifier1, ot::contact::ContactItemType::USD, true, true);
     EXPECT_TRUE(haveContract);
 
     haveContract = nymData_.HaveContract(
-        identifier1, ot::proto::CITEMTYPE_USD, true, false);
+        identifier1, ot::contact::ContactItemType::USD, true, false);
     EXPECT_TRUE(haveContract);
 
     haveContract = nymData_.HaveContract(
-        identifier1, ot::proto::CITEMTYPE_USD, false, true);
+        identifier1, ot::contact::ContactItemType::USD, false, true);
     EXPECT_TRUE(haveContract);
 
     haveContract = nymData_.HaveContract(
-        identifier1, ot::proto::CITEMTYPE_USD, false, false);
+        identifier1, ot::contact::ContactItemType::USD, false, false);
     EXPECT_TRUE(haveContract);
 
     const auto identifier2(ot::identifier::UnitDefinition::Factory(
         ot::identity::credential::Contact::ClaimID(
             client_,
             "testNym",
-            ot::proto::CONTACTSECTION_CONTRACT,
-            ot::proto::CITEMTYPE_USD,
+            ot::contact::ContactSectionName::Contract,
+            ot::contact::ContactItemType::USD,
             NULL_START,
             NULL_END,
             "instrumentDefinitionID2",
             "")));
 
     added = nymData_.AddContract(
-        identifier2->str(), ot::proto::CITEMTYPE_USD, false, false, reason_);
+        identifier2->str(),
+        ot::contact::ContactItemType::USD,
+        false,
+        false,
+        reason_);
     ASSERT_TRUE(added);
 
     haveContract = nymData_.HaveContract(
-        identifier2, ot::proto::CITEMTYPE_USD, false, false);
+        identifier2, ot::contact::ContactItemType::USD, false, false);
     EXPECT_TRUE(haveContract);
 
     haveContract = nymData_.HaveContract(
-        identifier2, ot::proto::CITEMTYPE_USD, true, false);
+        identifier2, ot::contact::ContactItemType::USD, true, false);
     EXPECT_FALSE(haveContract);
 
     haveContract = nymData_.HaveContract(
-        identifier2, ot::proto::CITEMTYPE_USD, false, true);
+        identifier2, ot::contact::ContactItemType::USD, false, true);
     EXPECT_FALSE(haveContract);
 
     haveContract = nymData_.HaveContract(
-        identifier2, ot::proto::CITEMTYPE_USD, true, true);
+        identifier2, ot::contact::ContactItemType::USD, true, true);
     EXPECT_FALSE(haveContract);
 }
 
@@ -355,14 +378,14 @@ TEST_F(Test_NymData, Nym)
 TEST_F(Test_NymData, PaymentCode)
 {
     auto added = nymData_.AddPaymentCode(
-        paymentCode, ot::proto::CITEMTYPE_BTC, true, true, reason_);
+        paymentCode, ot::contact::ContactItemType::BTC, true, true, reason_);
     ASSERT_TRUE(added);
 
-    auto paymentcode = nymData_.PaymentCode(ot::proto::CITEMTYPE_BTC);
+    auto paymentcode = nymData_.PaymentCode(ot::contact::ContactItemType::BTC);
     EXPECT_TRUE(!paymentcode.empty());
     EXPECT_STREQ(paymentCode.c_str(), paymentcode.c_str());
 
-    paymentcode = nymData_.PaymentCode(ot::proto::CITEMTYPE_USD);
+    paymentcode = nymData_.PaymentCode(ot::contact::ContactItemType::USD);
     EXPECT_TRUE(paymentcode.empty());
 }
 
@@ -400,8 +423,8 @@ TEST_F(Test_NymData, PreferredOTServer)
         ot::identity::credential::Contact::ClaimID(
             client_,
             "testNym",
-            ot::proto::CONTACTSECTION_COMMUNICATION,
-            ot::proto::CITEMTYPE_OPENTXS,
+            ot::contact::ContactSectionName::Communication,
+            ot::contact::ContactItemType::Opentxs,
             NULL_START,
             NULL_END,
             "localhost",
@@ -441,36 +464,55 @@ TEST_F(Test_NymData, SetContactData)
 TEST_F(Test_NymData, SetScope)
 {
     auto set = nymData_.SetScope(
-        ot::proto::CITEMTYPE_ORGANIZATION, "organizationScope", true, reason_);
+        ot::contact::ContactItemType::Organization,
+        "organizationScope",
+        true,
+        reason_);
     EXPECT_TRUE(set);
 
     set = nymData_.SetScope(
-        ot::proto::CITEMTYPE_BUSINESS, "businessScope", false, reason_);
+        ot::contact::ContactItemType::Business,
+        "businessScope",
+        false,
+        reason_);
     EXPECT_TRUE(set);
 }
 
 TEST_F(Test_NymData, SocialMediaProfiles)
 {
     auto added = nymData_.AddSocialMediaProfile(
-        "profile1", ot::proto::CITEMTYPE_FACEBOOK, false, false, reason_);
+        "profile1",
+        ot::contact::ContactItemType::Facebook,
+        false,
+        false,
+        reason_);
     EXPECT_TRUE(added);
 
     added = nymData_.AddSocialMediaProfile(
-        "profile2", ot::proto::CITEMTYPE_FACEBOOK, false, false, reason_);
+        "profile2",
+        ot::contact::ContactItemType::Facebook,
+        false,
+        false,
+        reason_);
     EXPECT_TRUE(added);
 
     added = nymData_.AddSocialMediaProfile(
-        "profile3", ot::proto::CITEMTYPE_FACEBOOK, true, false, reason_);
+        "profile3",
+        ot::contact::ContactItemType::Facebook,
+        true,
+        false,
+        reason_);
     EXPECT_TRUE(added);
 
-    auto profiles =
-        nymData_.SocialMediaProfiles(ot::proto::CITEMTYPE_FACEBOOK, false);
+    auto profiles = nymData_.SocialMediaProfiles(
+        ot::contact::ContactItemType::Facebook, false);
     EXPECT_TRUE(
         profiles.find("profile1") != std::string::npos &&
         profiles.find("profile2") != std::string::npos &&
         profiles.find("profile3") != std::string::npos);
 
-    profiles = nymData_.SocialMediaProfiles(ot::proto::CITEMTYPE_FACEBOOK);
+    profiles =
+        nymData_.SocialMediaProfiles(ot::contact::ContactItemType::Facebook);
     // First profile added is made primary and active.
     EXPECT_TRUE(
         profiles.find("profile1") != std::string::npos &&
@@ -482,14 +524,26 @@ TEST_F(Test_NymData, SocialMediaProfileTypes)
 {
     std::set<ot::proto::ContactItemType> profileTypes =
         ot::proto::AllowedItemTypes().at(ot::proto::ContactSectionVersion(
-            CONTACT_CONTACT_DATA_VERSION, ot::proto::CONTACTSECTION_PROFILE));
+            CONTACT_CONTACT_DATA_VERSION,
+            ot::contact::internal::translate(
+                ot::contact::ContactSectionName::Profile)));
 
-    EXPECT_EQ(profileTypes, nymData_.SocialMediaProfileTypes());
+    std::set<ot::contact::ContactItemType> output;
+    std::transform(
+        profileTypes.begin(),
+        profileTypes.end(),
+        std::inserter(output, output.end()),
+        [](ot::proto::ContactItemType itemtype)
+            -> ot::contact::ContactItemType {
+            return ot::contact::internal::translate(itemtype);
+        });
+
+    EXPECT_EQ(output, nymData_.SocialMediaProfileTypes());
 }
 
 TEST_F(Test_NymData, Type)
 {
-    EXPECT_EQ(ot::proto::CITEMTYPE_INDIVIDUAL, nymData_.Type());
+    EXPECT_EQ(ot::contact::ContactItemType::Individual, nymData_.Type());
 }
 
 TEST_F(Test_NymData, Valid) { EXPECT_TRUE(nymData_.Valid()); }

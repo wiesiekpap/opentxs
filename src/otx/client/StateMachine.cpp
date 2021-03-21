@@ -32,6 +32,7 @@
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/client/OT_API.hpp"
+#include "opentxs/contact/ContactSectionName.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -48,8 +49,8 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/ext/OTPayment.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
-#include "opentxs/protobuf/ConsensusEnums.pb.h"
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/UnitDefinition.pb.h"
 #include "otx/client/StateMachine.hpp"
@@ -97,7 +98,7 @@
                                                                                \
     Result result = op_.GetFuture().get();                                     \
     const auto success =                                                       \
-        proto::LASTREPLYSTATUS_MESSAGESUCCESS == std::get<0>(result);
+        otx::LastReplyStatus::MessageSuccess == std::get<0>(result);
 
 #define DO_OPERATION_TASK_DONE(a, ...)                                         \
     auto started = op_.a(__VA_ARGS__);                                         \
@@ -129,7 +130,7 @@
                                                                                \
     Result result = op_.GetFuture().get();                                     \
     const auto success =                                                       \
-        proto::LASTREPLYSTATUS_MESSAGESUCCESS == std::get<0>(result);
+        otx::LastReplyStatus::MessageSuccess == std::get<0>(result);
 
 #define SHUTDOWN()                                                             \
     {                                                                          \
@@ -363,8 +364,8 @@ auto StateMachine::check_server_name(const otx::context::Server& context) const
 
         DO_OPERATION(
             AddClaim,
-            proto::CONTACTSECTION_SCOPE,
-            proto::CITEMTYPE_SERVER,
+            contact::ContactSectionName::Scope,
+            contact::ContactItemType::Server,
             String::Factory(myName),
             true);
 
@@ -501,14 +502,14 @@ auto StateMachine::download_nymbox(const TaskID taskID) const -> bool
 
     Result result{future->get()};
     const auto success =
-        proto::LASTREPLYSTATUS_MESSAGESUCCESS == std::get<0>(result);
+        otx::LastReplyStatus::MessageSuccess == std::get<0>(result);
 
     return finish_task(taskID, success, std::move(result));
 }
 
 auto StateMachine::error_result() const -> StateMachine::Result
 {
-    Result output{proto::LASTREPLYSTATUS_NOTSENT, nullptr};
+    Result output{otx::LastReplyStatus::NotSent, nullptr};
 
     return output;
 }
@@ -662,7 +663,7 @@ auto StateMachine::issue_unit_definition(
 
         DO_OPERATION(IssueUnitDefinition, serialized, args);
 
-        if (success && (proto::CITEMTYPE_ERROR != advertise)) {
+        if (success && (contact::ContactItemType::Error != advertise)) {
             OT_ASSERT(result.second);
 
             const auto& reply = *result.second;

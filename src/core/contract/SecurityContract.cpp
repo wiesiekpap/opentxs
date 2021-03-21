@@ -12,10 +12,9 @@
 
 #include "2_Factory.hpp"
 #include "core/contract/UnitDefinition.hpp"
+#include "internal/core/contract/Contract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
-#include "opentxs/protobuf/ContractEnums.pb.h"
 #include "opentxs/protobuf/EquityParams.pb.h"
 #include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/protobuf/UnitDefinition.pb.h"
@@ -32,7 +31,7 @@ auto Factory::SecurityContract(
     const std::string& name,
     const std::string& symbol,
     const std::string& terms,
-    const proto::ContactItemType unitOfAccount,
+    const contact::ContactItemType unitOfAccount,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::shared_ptr<contract::unit::Security>
@@ -91,7 +90,7 @@ Security::Security(
     const std::string& name,
     const std::string& symbol,
     const std::string& terms,
-    const proto::ContactItemType unitOfAccount,
+    const contact::ContactItemType unitOfAccount,
     const VersionNumber version)
     : Unit(api, nym, shortname, name, symbol, terms, unitOfAccount, version)
 {
@@ -117,7 +116,7 @@ Security::Security(const Security& rhs)
 auto Security::IDVersion(const Lock& lock) const -> proto::UnitDefinition
 {
     auto contract = Unit::IDVersion(lock);
-    contract.set_type(Type());
+    contract.set_type(contract::internal::translate(Type()));
     auto& security = *contract.mutable_security();
     security.set_version(1);
     security.set_type(proto::EQUITYTYPE_SHARES);

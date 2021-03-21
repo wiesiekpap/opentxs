@@ -96,7 +96,8 @@ public:
         const EcdsaCurve& curve,
         const Path& path,
         const PasswordPrompt& reason,
-        const proto::KeyRole role = proto::KEYROLE_SIGN,
+        const opentxs::crypto::key::asymmetric::Role role =
+            opentxs::crypto::key::asymmetric::Role::Sign,
         const VersionNumber version =
             opentxs::crypto::key::EllipticCurve::DefaultVersion) const
         -> std::unique_ptr<opentxs::crypto::key::HD> final;

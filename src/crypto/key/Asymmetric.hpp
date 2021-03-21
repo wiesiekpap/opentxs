@@ -19,7 +19,8 @@
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
+#include "opentxs/crypto/Types.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/protobuf/Signature.pb.h"
 
 namespace opentxs
@@ -64,11 +65,11 @@ class Asymmetric : virtual public key::Asymmetric
 {
 public:
     auto CalculateHash(
-        const proto::HashType hashType,
+        const crypto::HashType hashType,
         const PasswordPrompt& password) const noexcept -> OTData final;
     auto CalculateTag(
         const identity::Authority& nym,
-        const proto::AsymmetricKeyType type,
+        const crypto::key::asymmetric::Algorithm type,
         const PasswordPrompt& reason,
         std::uint32_t& tag,
         Secret& password) const noexcept -> bool final;
@@ -94,37 +95,40 @@ public:
         -> bool override;
     auto HasPrivate() const noexcept -> bool final { return has_private_; }
     auto HasPublic() const noexcept -> bool final { return has_public_; }
-    auto keyType() const noexcept -> proto::AsymmetricKeyType final
+    auto keyType() const noexcept -> crypto::key::asymmetric::Algorithm final
     {
         return type_;
     }
     auto NewSignature(
         const Identifier& credentialID,
-        const proto::SignatureRole role,
-        const proto::HashType hash) const -> proto::Signature;
+        const crypto::SignatureRole role,
+        const crypto::HashType hash) const -> proto::Signature;
     auto Params() const noexcept -> ReadView override { return {}; }
     auto Path() const noexcept -> const std::string override;
     auto Path(proto::HDPath& output) const noexcept -> bool override;
     auto PrivateKey(const PasswordPrompt& reason) const noexcept
         -> ReadView final;
     auto PublicKey() const noexcept -> ReadView final { return key_->Bytes(); }
-    auto Role() const noexcept -> proto::KeyRole final { return role_; }
+    auto Role() const noexcept -> opentxs::crypto::key::asymmetric::Role final
+    {
+        return role_;
+    }
     auto Serialize() const noexcept
         -> std::shared_ptr<proto::AsymmetricKey> override;
-    auto SigHashType() const noexcept -> proto::HashType override
+    auto SigHashType() const noexcept -> crypto::HashType override
     {
-        return proto::HASHTYPE_BLAKE2B256;
+        return crypto::HashType::Blake2b256;
     }
     auto Sign(
         const GetPreimage input,
-        const proto::SignatureRole role,
+        const crypto::SignatureRole role,
         proto::Signature& signature,
         const Identifier& credential,
         const PasswordPrompt& reason,
-        const proto::HashType hash) const noexcept -> bool final;
+        const crypto::HashType hash) const noexcept -> bool final;
     auto Sign(
         const ReadView preimage,
-        const proto::HashType hash,
+        const crypto::HashType hash,
         const AllocateOutput output,
         const PasswordPrompt& reason) const noexcept -> bool final;
     auto TransportKey(
@@ -149,8 +153,8 @@ protected:
     const api::internal::Core& api_;
     const crypto::AsymmetricProvider& provider_;
     const VersionNumber version_;
-    const proto::AsymmetricKeyType type_;
-    const proto::KeyRole role_;
+    const crypto::key::asymmetric::Algorithm type_;
+    const opentxs::crypto::key::asymmetric::Role role_;
     bool has_public_;
     bool has_private_;
     OTSignatureMetadata* m_pMetadata;
@@ -162,7 +166,7 @@ protected:
         const api::internal::Core& api,
         const crypto::AsymmetricProvider& provider,
         const NymParameters& options,
-        const proto::KeyRole role,
+        const crypto::key::asymmetric::Role role,
         const AllocateOutput publicKey,
         const AllocateOutput privateKey,
         const Secret& prv,
@@ -189,7 +193,7 @@ protected:
     static auto generate_key(
         const crypto::AsymmetricProvider& provider,
         const NymParameters& options,
-        const proto::KeyRole role,
+        const crypto::key::asymmetric::Role role,
         const AllocateOutput publicKey,
         const AllocateOutput privateKey,
         const AllocateOutput params) noexcept(false) -> void;
@@ -211,8 +215,8 @@ protected:
     Asymmetric(
         const api::internal::Core& api,
         const crypto::AsymmetricProvider& engine,
-        const proto::AsymmetricKeyType keyType,
-        const proto::KeyRole role,
+        const crypto::key::asymmetric::Algorithm keyType,
+        const crypto::key::asymmetric::Role role,
         const bool hasPublic,
         const bool hasPrivate,
         const VersionNumber version,
@@ -221,8 +225,8 @@ protected:
     Asymmetric(
         const api::internal::Core& api,
         const crypto::AsymmetricProvider& engine,
-        const proto::AsymmetricKeyType keyType,
-        const proto::KeyRole role,
+        const crypto::key::asymmetric::Algorithm keyType,
+        const crypto::key::asymmetric::Role role,
         const VersionNumber version,
         EncryptedExtractor) noexcept(false);
     Asymmetric(
@@ -238,9 +242,23 @@ protected:
         OTSecret&& newSecretKey) noexcept;
 
 private:
-    static const std::map<proto::SignatureRole, VersionNumber> sig_version_;
+    using HashTypeMap = std::map<crypto::HashType, proto::HashType>;
+    using HashTypeReverseMap = std::map<proto::HashType, crypto::HashType>;
+    using SignatureRoleMap =
+        std::map<crypto::SignatureRole, proto::SignatureRole>;
+
+    static const std::map<crypto::SignatureRole, VersionNumber> sig_version_;
 
     auto SerializeKeyToData(const proto::AsymmetricKey& rhs) const -> OTData;
+
+    static auto hashtype_map() noexcept -> const HashTypeMap&;
+    static auto signaturerole_map() noexcept -> const SignatureRoleMap&;
+    static auto translate(const crypto::SignatureRole in) noexcept
+        -> proto::SignatureRole;
+    static auto translate(const crypto::HashType in) noexcept
+        -> proto::HashType;
+    static auto translate(const proto::HashType in) noexcept
+        -> crypto::HashType;
 
     Asymmetric() = delete;
     Asymmetric(Asymmetric&&) = delete;

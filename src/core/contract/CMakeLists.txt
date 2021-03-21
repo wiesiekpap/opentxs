@@ -9,6 +9,7 @@ add_subdirectory(peer)
 add_library(
   opentxs-core-contract OBJECT
   "${opentxs_SOURCE_DIR}/src/internal/core/contract/Contract.hpp"
+  "Contract.cpp"
   "CurrencyContract.cpp"
   "CurrencyContract.hpp"
   "SecurityContract.cpp"
@@ -22,10 +23,13 @@ add_library(
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/core/contract/CurrencyContract.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/core/contract/ProtocolVersion.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/contract/SecurityContract.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/contract/ServerContract.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/contract/Signable.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/core/contract/Types.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/contract/UnitDefinition.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/core/contract/UnitType.hpp"
 )
 target_link_libraries(opentxs-core-contract PRIVATE opentxs::messages)
 target_include_directories(

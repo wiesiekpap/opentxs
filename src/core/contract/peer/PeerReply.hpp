@@ -14,9 +14,9 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
+#include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
-#include "opentxs/protobuf/PeerEnums.pb.h"
 
 namespace opentxs
 {
@@ -56,7 +56,7 @@ public:
     auto Contract() const -> SerializedType override;
     auto Name() const -> std::string final { return id_->str(); }
     auto Serialize() const -> OTData final;
-    auto Type() const -> proto::PeerRequestType final { return type_; }
+    auto Type() const -> PeerRequestType final { return type_; }
     void SetAlias(const std::string&) final {}
 
     ~Reply() override = default;
@@ -73,7 +73,7 @@ protected:
         const VersionNumber version,
         const identifier::Nym& initiator,
         const identifier::Server& server,
-        const proto::PeerRequestType& type,
+        const PeerRequestType& type,
         const Identifier& request,
         const std::string& conditions = {});
     Reply(
@@ -90,7 +90,7 @@ private:
     const OTNymID recipient_;
     const OTServerID server_;
     const OTIdentifier cookie_;
-    const proto::PeerRequestType type_;
+    const PeerRequestType type_;
 
     static auto GetID(
         const api::internal::Core& api,

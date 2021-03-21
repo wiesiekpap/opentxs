@@ -26,8 +26,11 @@
 #endif  // OT_CRYPTO_WITH_BIP32
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
+#include "opentxs/crypto/key/Types.hpp"
+#include "opentxs/identity/CredentialType.hpp"
 #include "opentxs/identity/credential/Base.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
+#include "opentxs/identity/SourceType.hpp"
+#include "opentxs/identity/Types.hpp"
 
 namespace opentxs
 {
@@ -45,12 +48,13 @@ namespace opentxs
 class NymParameters
 {
 public:
-    OPENTXS_EXPORT proto::AsymmetricKeyType AsymmetricKeyType() const noexcept;
+    OPENTXS_EXPORT crypto::key::asymmetric::Algorithm Algorithm()
+        const noexcept;
     OPENTXS_EXPORT NymParameters
     ChangeType(const NymParameterType type) const noexcept;
     OPENTXS_EXPORT std::shared_ptr<proto::ContactData> ContactData()
         const noexcept;
-    OPENTXS_EXPORT proto::CredentialType credentialType() const noexcept;
+    OPENTXS_EXPORT identity::CredentialType credentialType() const noexcept;
 #if OT_CRYPTO_WITH_BIP32
     OPENTXS_EXPORT Bip32Index CredIndex() const noexcept;
     OPENTXS_EXPORT Bip32Index Credset() const noexcept;
@@ -77,8 +81,8 @@ public:
     OPENTXS_EXPORT crypto::SeedStrength SeedStrength() const noexcept;
     OPENTXS_EXPORT crypto::SeedStyle SeedStyle() const noexcept;
 #endif  // OT_CRYPTO_WITH_BIP32
-    OPENTXS_EXPORT proto::SourceProofType SourceProofType() const noexcept;
-    OPENTXS_EXPORT proto::SourceType SourceType() const noexcept;
+    OPENTXS_EXPORT identity::SourceProofType SourceProofType() const noexcept;
+    OPENTXS_EXPORT identity::SourceType SourceType() const noexcept;
 #if OT_CRYPTO_WITH_BIP32
     OPENTXS_EXPORT bool UseAutoIndex() const noexcept;
 #endif  // OT_CRYPTO_WITH_BIP32
@@ -130,35 +134,35 @@ public:
             NymParameterType::error
 #endif
         ,
-        const proto::CredentialType credential =
+        const identity::CredentialType credential =
 #if OT_CRYPTO_WITH_BIP32
-            proto::CREDTYPE_HD
+            identity::CredentialType::HD
 #else
-            proto::CREDTYPE_LEGACY
+            identity::CredentialType::Legacy
 #endif
         ,
-        const proto::SourceType source =
+        const identity::SourceType source =
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-            proto::SOURCETYPE_BIP47
+            identity::SourceType::Bip47
 #else
-            proto::SOURCETYPE_PUBKEY
+            identity::SourceType::PubKey
 #endif
         ,
         const std::uint8_t pcVersion = 0) noexcept;
     OPENTXS_EXPORT NymParameters(
-        proto::AsymmetricKeyType key,
-        proto::CredentialType credential =
+        crypto::key::asymmetric::Algorithm key,
+        identity::CredentialType credential =
 #if OT_CRYPTO_WITH_BIP32
-            proto::CREDTYPE_HD
+            identity::CredentialType::HD
 #else
-            proto::CREDTYPE_LEGACY
+            identity::CredentialType::Legacy
 #endif
         ,
-        const proto::SourceType source =
+        const identity::SourceType source =
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-            proto::SOURCETYPE_BIP47
+            identity::SourceType::Bip47
 #else
-            proto::SOURCETYPE_PUBKEY
+            identity::SourceType::PubKey
 #endif
         ,
         const std::uint8_t pcVersion = 0) noexcept;

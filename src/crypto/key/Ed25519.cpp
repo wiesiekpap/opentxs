@@ -17,7 +17,7 @@
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/key/Ed25519.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "util/Sodium.hpp"
 
 namespace opentxs::factory
@@ -45,7 +45,7 @@ auto Ed25519Key(
 auto Ed25519Key(
     const api::internal::Core& api,
     const crypto::EcdsaProvider& ecdsa,
-    const proto::KeyRole input,
+    const crypto::key::asymmetric::Role input,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::unique_ptr<crypto::key::Ed25519>
@@ -71,7 +71,7 @@ auto Ed25519Key(
     const Data& publicKey,
     const proto::HDPath& path,
     const Bip32Fingerprint parent,
-    const proto::KeyRole role,
+    const crypto::key::asymmetric::Role role,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::unique_ptr<crypto::key::Ed25519>
@@ -107,10 +107,16 @@ Ed25519::Ed25519(
 Ed25519::Ed25519(
     const api::internal::Core& api,
     const crypto::EcdsaProvider& ecdsa,
-    const proto::KeyRole role,
+    const crypto::key::asymmetric::Role role,
     const VersionNumber version,
     const PasswordPrompt& reason) noexcept(false)
-    : ot_super(api, ecdsa, proto::AKEYTYPE_ED25519, role, version, reason)
+    : ot_super(
+          api,
+          ecdsa,
+          crypto::key::asymmetric::Algorithm::ED25519,
+          role,
+          version,
+          reason)
 {
 }
 
@@ -123,14 +129,14 @@ Ed25519::Ed25519(
     const Data& publicKey,
     const proto::HDPath& path,
     const Bip32Fingerprint parent,
-    const proto::KeyRole role,
+    const crypto::key::asymmetric::Role role,
     const VersionNumber version,
     key::Symmetric& sessionKey,
     const PasswordPrompt& reason) noexcept(false)
     : ot_super(
           api,
           ecdsa,
-          proto::AKEYTYPE_ED25519,
+          crypto::key::asymmetric::Algorithm::ED25519,
           privateKey,
           chainCode,
           publicKey,

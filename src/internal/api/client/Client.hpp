@@ -8,6 +8,7 @@
 #include <functional>
 #include <future>
 #include <iosfwd>
+#include <map>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -26,6 +27,7 @@
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/client/Pair.hpp"
+#include "opentxs/api/client/Types.hpp"
 #include "opentxs/api/client/UI.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -38,7 +40,7 @@
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
+#include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 
 namespace opentxs
 {
@@ -64,6 +66,28 @@ struct BalanceTree;
 
 namespace internal
 {
+using PaymentWorkflowStateMap =
+    std::map<api::client::PaymentWorkflowState, proto::PaymentWorkflowState>;
+using PaymentWorkflowStateReverseMap =
+    std::map<proto::PaymentWorkflowState, api::client::PaymentWorkflowState>;
+using PaymentWorkflowTypeMap =
+    std::map<api::client::PaymentWorkflowType, proto::PaymentWorkflowType>;
+using PaymentWorkflowTypeReverseMap =
+    std::map<proto::PaymentWorkflowType, api::client::PaymentWorkflowType>;
+
+auto paymentworkflowstate_map() noexcept -> const PaymentWorkflowStateMap&;
+auto paymentworkflowtype_map() noexcept -> const PaymentWorkflowTypeMap&;
+OPENTXS_EXPORT auto translate(
+    const api::client::PaymentWorkflowState in) noexcept
+    -> proto::PaymentWorkflowState;
+OPENTXS_EXPORT auto translate(
+    const api::client::PaymentWorkflowType in) noexcept
+    -> proto::PaymentWorkflowType;
+OPENTXS_EXPORT auto translate(const proto::PaymentWorkflowState in) noexcept
+    -> api::client::PaymentWorkflowState;
+OPENTXS_EXPORT auto translate(const proto::PaymentWorkflowType in) noexcept
+    -> api::client::PaymentWorkflowType;
+
 struct Blockchain;
 struct UI;
 }  // namespace internal
@@ -126,8 +150,10 @@ class UniqueQueue;
 
 namespace opentxs
 {
-auto Translate(const blockchain::Type type) noexcept -> proto::ContactItemType;
-auto Translate(const proto::ContactItemType type) noexcept -> blockchain::Type;
+auto Translate(const blockchain::Type type) noexcept
+    -> contact::ContactItemType;
+auto Translate(const contact::ContactItemType type) noexcept
+    -> blockchain::Type;
 }  // namespace opentxs
 
 namespace opentxs::api::client::internal

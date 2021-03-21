@@ -20,14 +20,14 @@
 
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/client/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
-#include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 
 namespace opentxs
 {
@@ -80,7 +80,7 @@ public:
         const Identifier& accountID) const = 0;
     OPENTXS_EXPORT virtual OTNymID AccountSigner(
         const Identifier& accountID) const = 0;
-    OPENTXS_EXPORT virtual proto::ContactItemType AccountUnit(
+    OPENTXS_EXPORT virtual contact::ContactItemType AccountUnit(
         const Identifier& accountID) const = 0;
     OPENTXS_EXPORT virtual std::set<OTIdentifier> AccountsByContract(
         const identifier::UnitDefinition& contract) const = 0;
@@ -91,17 +91,17 @@ public:
     OPENTXS_EXPORT virtual std::set<OTIdentifier> AccountsByServer(
         const identifier::Server& server) const = 0;
     OPENTXS_EXPORT virtual std::set<OTIdentifier> AccountsByUnit(
-        const proto::ContactItemType unit) const = 0;
-    OPENTXS_EXPORT virtual proto::ContactItemType Bip47Chain(
+        const contact::ContactItemType unit) const = 0;
+    OPENTXS_EXPORT virtual contact::ContactItemType Bip47Chain(
         const identifier::Nym& nymID,
         const Identifier& channelID) const = 0;
     OPENTXS_EXPORT virtual Bip47ChannelList Bip47ChannelsByChain(
         const identifier::Nym& nymID,
-        const proto::ContactItemType chain) const = 0;
+        const contact::ContactItemType chain) const = 0;
     OPENTXS_EXPORT virtual std::set<std::string> BlockchainAccountList(
         const std::string& nymID,
-        const proto::ContactItemType type) const = 0;
-    OPENTXS_EXPORT virtual proto::ContactItemType BlockchainAccountType(
+        const contact::ContactItemType type) const = 0;
+    OPENTXS_EXPORT virtual contact::ContactItemType BlockchainAccountType(
         const std::string& nymID,
         const std::string& accountID) const = 0;
     OPENTXS_EXPORT virtual std::vector<OTIdentifier> BlockchainThreadMap(
@@ -281,16 +281,17 @@ public:
         const std::string& accountID) const = 0;
     OPENTXS_EXPORT virtual std::set<std::string> PaymentWorkflowsByState(
         const std::string& nymID,
-        const proto::PaymentWorkflowType type,
-        const proto::PaymentWorkflowState state) const = 0;
+        const api::client::PaymentWorkflowType type,
+        const api::client::PaymentWorkflowState state) const = 0;
     OPENTXS_EXPORT virtual std::set<std::string> PaymentWorkflowsByUnit(
         const std::string& nymID,
         const std::string& unitID) const = 0;
-    OPENTXS_EXPORT virtual std::
-        pair<proto::PaymentWorkflowType, proto::PaymentWorkflowState>
-        PaymentWorkflowState(
-            const std::string& nymID,
-            const std::string& workflowID) const = 0;
+    OPENTXS_EXPORT virtual std::pair<
+        api::client::PaymentWorkflowType,
+        api::client::PaymentWorkflowState>
+    PaymentWorkflowState(
+        const std::string& nymID,
+        const std::string& workflowID) const = 0;
     OPENTXS_EXPORT virtual bool RelabelThread(
         const std::string& threadID,
         const std::string& label) const = 0;
@@ -360,10 +361,10 @@ public:
         const identifier::Nym& issuerNym,
         const identifier::Server& server,
         const identifier::UnitDefinition& contract,
-        const proto::ContactItemType unit) const = 0;
+        const contact::ContactItemType unit) const = 0;
     OPENTXS_EXPORT virtual bool Store(
         const std::string& nymID,
-        const proto::ContactItemType type,
+        const contact::ContactItemType type,
         const proto::HDAccount& data) const = 0;
     OPENTXS_EXPORT virtual bool Store(
         const identifier::Nym& nymID,

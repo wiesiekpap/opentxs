@@ -26,13 +26,13 @@
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/ContactSection.hpp"
+#include "opentxs/contact/ContactSectionName.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/Source.hpp"
 #include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/Nym.pb.h"
 #include "opentxs/protobuf/verify/Nym.hpp"
@@ -58,8 +58,8 @@ public:
 
     bool test_nym(
         const ot::NymParameterType type,
-        const ot::proto::CredentialType cred,
-        const ot::proto::SourceType source,
+        const ot::identity::CredentialType cred,
+        const ot::identity::SourceType source,
         const std::string& name = "Nym")
     {
         const auto params = ot::NymParameters{type, cred, source};
@@ -84,7 +84,7 @@ public:
         {
             const auto& claims = nym.Claims();
             const auto pSection =
-                claims.Section(ot::proto::CONTACTSECTION_SCOPE);
+                claims.Section(ot::contact::ContactSectionName::Scope);
 
             EXPECT_TRUE(pSection);
 
@@ -94,7 +94,8 @@ public:
 
             EXPECT_EQ(1, section.Size());
 
-            const auto pGroup = section.Group(ot::proto::CITEMTYPE_INDIVIDUAL);
+            const auto pGroup =
+                section.Group(ot::contact::ContactItemType::Individual);
 
             EXPECT_TRUE(pGroup);
 
@@ -120,7 +121,7 @@ public:
         const auto reason = api.Factory().PasswordPrompt(__FUNCTION__);
         const auto alias = std::string{"alias"};
         std::unique_ptr<ot::identity::internal::Nym> pNym(ot::Factory::Nym(
-            api, {}, ot::proto::CITEMTYPE_INDIVIDUAL, alias, reason));
+            api, {}, ot::contact::ContactItemType::Individual, alias, reason));
 
         EXPECT_TRUE(pNym);
 
@@ -235,7 +236,8 @@ TEST_F(Test_Nym, default_params)
     EXPECT_EQ(1, nym.Revision());
     EXPECT_TRUE(nym.Name().empty());
 
-    const auto pSection = claims.Section(ot::proto::CONTACTSECTION_SCOPE);
+    const auto pSection =
+        claims.Section(ot::contact::ContactSectionName::Scope);
 
     EXPECT_FALSE(pSection);
 }
@@ -246,24 +248,24 @@ TEST_F(Test_Nym, secp256k1_hd_bip47)
 {
     EXPECT_TRUE(test_nym(
         ot::NymParameterType::secp256k1,
-        ot::proto::CREDTYPE_HD,
-        ot::proto::SOURCETYPE_BIP47));
+        ot::identity::CredentialType::HD,
+        ot::identity::SourceType::Bip47));
 }
 
 TEST_F(Test_Nym, secp256k1_hd_self_signed)
 {
     EXPECT_TRUE(test_nym(
         ot::NymParameterType::secp256k1,
-        ot::proto::CREDTYPE_HD,
-        ot::proto::SOURCETYPE_PUBKEY));
+        ot::identity::CredentialType::HD,
+        ot::identity::SourceType::PubKey));
 }
 
 TEST_F(Test_Nym, secp256k1_legacy_bip47)
 {
     EXPECT_FALSE(test_nym(
         ot::NymParameterType::secp256k1,
-        ot::proto::CREDTYPE_LEGACY,
-        ot::proto::SOURCETYPE_BIP47));
+        ot::identity::CredentialType::Legacy,
+        ot::identity::SourceType::Bip47));
 }
 #endif  // OT_CRYPTO_WITH_BIP32
 
@@ -271,8 +273,8 @@ TEST_F(Test_Nym, secp256k1_legacy_self_signed)
 {
     EXPECT_TRUE(test_nym(
         ot::NymParameterType::secp256k1,
-        ot::proto::CREDTYPE_LEGACY,
-        ot::proto::SOURCETYPE_PUBKEY));
+        ot::identity::CredentialType::Legacy,
+        ot::identity::SourceType::PubKey));
 }
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 
@@ -283,8 +285,8 @@ TEST_F(Test_Nym, ed25519_hd_bip47)
 {
     EXPECT_TRUE(test_nym(
         ot::NymParameterType::ed25519,
-        ot::proto::CREDTYPE_HD,
-        ot::proto::SOURCETYPE_BIP47));
+        ot::identity::CredentialType::HD,
+        ot::identity::SourceType::Bip47));
 }
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 
@@ -292,16 +294,16 @@ TEST_F(Test_Nym, ed25519_hd_self_signed)
 {
     EXPECT_TRUE(test_nym(
         ot::NymParameterType::ed25519,
-        ot::proto::CREDTYPE_HD,
-        ot::proto::SOURCETYPE_PUBKEY));
+        ot::identity::CredentialType::HD,
+        ot::identity::SourceType::PubKey));
 }
 
 TEST_F(Test_Nym, ed25519_legacy_bip47)
 {
     EXPECT_FALSE(test_nym(
         ot::NymParameterType::ed25519,
-        ot::proto::CREDTYPE_LEGACY,
-        ot::proto::SOURCETYPE_BIP47));
+        ot::identity::CredentialType::Legacy,
+        ot::identity::SourceType::Bip47));
 }
 #endif  // OT_CRYPTO_WITH_BIP32
 
@@ -309,8 +311,8 @@ TEST_F(Test_Nym, ed25519_legacy_self_signed)
 {
     EXPECT_TRUE(test_nym(
         ot::NymParameterType::ed25519,
-        ot::proto::CREDTYPE_LEGACY,
-        ot::proto::SOURCETYPE_PUBKEY));
+        ot::identity::CredentialType::Legacy,
+        ot::identity::SourceType::PubKey));
 }
 #endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 
@@ -319,8 +321,8 @@ TEST_F(Test_Nym, rsa_legacy_self_signed)
 {
     EXPECT_TRUE(test_nym(
         ot::NymParameterType::rsa,
-        ot::proto::CREDTYPE_LEGACY,
-        ot::proto::SOURCETYPE_PUBKEY));
+        ot::identity::CredentialType::Legacy,
+        ot::identity::SourceType::PubKey));
 }
 #endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 }  // namespace

@@ -34,6 +34,8 @@
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Contacts.hpp"
+#include "opentxs/api/client/PaymentWorkflowState.hpp"
+#include "opentxs/api/client/PaymentWorkflowType.hpp"
 #include "opentxs/api/client/Workflow.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/client/NymData.hpp"
@@ -42,6 +44,7 @@
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactGroup.hpp"  // IWYU pragma: keep
 #include "opentxs/contact/ContactItem.hpp"
+#include "opentxs/contact/ContactSectionName.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Flag.hpp"
@@ -55,12 +58,14 @@
 #include "opentxs/core/contract/peer/BailmentNotice.hpp"
 #include "opentxs/core/contract/peer/BailmentReply.hpp"
 #include "opentxs/core/contract/peer/BailmentRequest.hpp"
+#include "opentxs/core/contract/peer/ConnectionInfoType.hpp"
 #include "opentxs/core/contract/peer/ConnectionReply.hpp"
 #include "opentxs/core/contract/peer/ConnectionRequest.hpp"
 #include "opentxs/core/contract/peer/NoticeAcknowledgement.hpp"
 #include "opentxs/core/contract/peer/OutBailmentReply.hpp"
 #include "opentxs/core/contract/peer/OutBailmentRequest.hpp"
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
+#include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -75,13 +80,11 @@
 #include "opentxs/network/zeromq/socket/Pull.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/otx/Reply.hpp"
+#include "opentxs/otx/ServerReplyType.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
-#include "opentxs/protobuf/ConsensusEnums.pb.h"
-#include "opentxs/protobuf/ContactEnums.pb.h"
-#include "opentxs/protobuf/OTXEnums.pb.h"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
-#include "opentxs/protobuf/PeerEnums.pb.h"
 #include "opentxs/protobuf/ServerContract.pb.h"
 #include "opentxs/protobuf/ServerReply.pb.h"
 #include "opentxs/util/WorkType.hpp"
@@ -838,15 +841,15 @@ auto OTX::DepositCheques(const identifier::Nym& nymID) const -> std::size_t
     std::size_t output{0};
     const auto workflows = client_.Workflow().List(
         nymID,
-        proto::PAYMENTWORKFLOWTYPE_INCOMINGCHEQUE,
-        proto::PAYMENTWORKFLOWSTATE_CONVEYED);
+        api::client::PaymentWorkflowType::IncomingCheque,
+        api::client::PaymentWorkflowState::Conveyed);
 
     for (const auto& id : workflows) {
         const auto chequeState =
             client_.Workflow().LoadChequeByWorkflow(nymID, id);
         const auto& [state, cheque] = chequeState;
 
-        if (proto::PAYMENTWORKFLOWSTATE_CONVEYED != state) { continue; }
+        if (api::client::PaymentWorkflowState::Conveyed != state) { continue; }
 
         OT_ASSERT(cheque)
 
@@ -868,7 +871,7 @@ auto OTX::DepositCheques(
         const auto chequeState = client_.Workflow().LoadCheque(nymID, id);
         const auto& [state, cheque] = chequeState;
 
-        if (proto::PAYMENTWORKFLOWSTATE_CONVEYED != state) { continue; }
+        if (api::client::PaymentWorkflowState::Conveyed != state) { continue; }
 
         OT_ASSERT(cheque)
 
@@ -1362,7 +1365,7 @@ auto OTX::InitiateRequestConnection(
     const identifier::Nym& localNymID,
     const identifier::Server& serverID,
     const identifier::Nym& targetNymID,
-    const proto::ConnectionInfoType& type,
+    const contract::peer::ConnectionInfoType& type,
     const SetID setID) const -> OTX::BackgroundTask
 {
     CHECK_SERVER(localNymID, serverID)
@@ -1392,7 +1395,7 @@ auto OTX::InitiateStoreSecret(
     const identifier::Nym& localNymID,
     const identifier::Server& serverID,
     const identifier::Nym& targetNymID,
-    const proto::SecretType& type,
+    const contract::peer::SecretType& type,
     const std::string& primary,
     const std::string& secondary,
     const SetID setID) const -> OTX::BackgroundTask
@@ -1446,7 +1449,7 @@ auto OTX::IssueUnitDefinition(
     const identifier::Nym& localNymID,
     const identifier::Server& serverID,
     const identifier::UnitDefinition& unitID,
-    const proto::ContactItemType advertise,
+    const contact::ContactItemType advertise,
     const std::string& label) const -> OTX::BackgroundTask
 {
     CHECK_ARGS(localNymID, serverID, unitID)
@@ -1675,12 +1678,13 @@ void OTX::process_notification(const zmq::Message& message) const
         client_.Wallet().mutable_ServerContext(nymID, serverID, reason_);
 
     switch (notification->Type()) {
-        case proto::SERVERREPLY_PUSH: {
+        case otx::ServerReplyType::Push: {
             context.get().ProcessNotification(client_, notification, reason_);
         } break;
         default: {
             LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Unsupported server reply type: ")(notification->Type())(".")
+                ": Unsupported server reply type: ")(
+                value(notification->Type()))(".")
                 .Flush();
         }
     }
@@ -1879,8 +1883,8 @@ auto OTX::refresh_contacts() const -> bool
                 if (false == bool(data)) { continue; }
 
                 const auto serverGroup = data->Group(
-                    proto::CONTACTSECTION_COMMUNICATION,
-                    proto::CITEMTYPE_OPENTXS);
+                    contact::ContactSectionName::Communication,
+                    contact::ContactItemType::Opentxs);
 
                 if (false == bool(serverGroup)) {
 
@@ -2294,7 +2298,7 @@ void OTX::update_task(
                 promise.set_value(std::move(result));
             } break;
             case ThreadStatus::SHUTDOWN: {
-                Result cancel{proto::LASTREPLYSTATUS_UNKNOWN, nullptr};
+                Result cancel{otx::LastReplyStatus::Unknown, nullptr};
                 promise.set_value(std::move(cancel));
             } break;
             case ThreadStatus::Error:

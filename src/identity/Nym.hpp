@@ -23,11 +23,11 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/Source.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
 
 namespace opentxs
@@ -87,7 +87,7 @@ public:
     auto begin() const noexcept -> const_iterator final { return cbegin(); }
     auto BestEmail() const -> std::string final;
     auto BestPhoneNumber() const -> std::string final;
-    auto BestSocialMediaProfile(const proto::ContactItemType type) const
+    auto BestSocialMediaProfile(const contact::ContactItemType type) const
         -> std::string final;
     auto cbegin() const noexcept -> const_iterator final
     {
@@ -106,33 +106,39 @@ public:
         return contact_credential_to_contact_data_version_.at(
             ContactCredentialVersion());
     }
-    auto Contracts(const proto::ContactItemType currency, const bool onlyActive)
-        const -> std::set<OTIdentifier> final;
+    auto Contracts(
+        const contact::ContactItemType currency,
+        const bool onlyActive) const -> std::set<OTIdentifier> final;
     auto EmailAddresses(bool active) const -> std::string final;
     auto EncryptionTargets() const noexcept -> NymKeys final;
     auto end() const noexcept -> const_iterator final { return cend(); }
     void GetIdentifier(identifier::Nym& theIdentifier) const final;
     void GetIdentifier(String& theIdentifier) const final;
     auto GetPrivateAuthKey(
-        proto::AsymmetricKeyType keytype = proto::AKEYTYPE_NULL) const
+        crypto::key::asymmetric::Algorithm keytype =
+            crypto::key::asymmetric::Algorithm::Null) const
         -> const crypto::key::Asymmetric& final;
     auto GetPrivateEncrKey(
-        proto::AsymmetricKeyType keytype = proto::AKEYTYPE_NULL) const
+        crypto::key::asymmetric::Algorithm keytype =
+            crypto::key::asymmetric::Algorithm::Null) const
         -> const crypto::key::Asymmetric& final;
     auto GetPrivateSignKey(
-        proto::AsymmetricKeyType keytype = proto::AKEYTYPE_NULL) const
+        crypto::key::asymmetric::Algorithm keytype =
+            crypto::key::asymmetric::Algorithm::Null) const
         -> const crypto::key::Asymmetric& final;
     auto GetPublicAuthKey(
-        proto::AsymmetricKeyType keytype = proto::AKEYTYPE_NULL) const
+        crypto::key::asymmetric::Algorithm keytype =
+            crypto::key::asymmetric::Algorithm::Null) const
         -> const crypto::key::Asymmetric& final;
     auto GetPublicEncrKey(
-        proto::AsymmetricKeyType keytype = proto::AKEYTYPE_NULL) const
+        crypto::key::asymmetric::Algorithm keytype =
+            crypto::key::asymmetric::Algorithm::Null) const
         -> const crypto::key::Asymmetric& final;
     auto GetPublicKeysBySignature(
         crypto::key::Keypair::Keys& listOutput,
         const Signature& theSignature,
         char cKeyType) const -> std::int32_t final;
-    auto GetPublicSignKey(proto::AsymmetricKeyType keytype) const
+    auto GetPublicSignKey(crypto::key::asymmetric::Algorithm keytype) const
         -> const crypto::key::Asymmetric& final;
     auto HasCapability(const NymCapability& capability) const -> bool final;
     auto ID() const -> const identifier::Nym& final { return id_; }
@@ -145,17 +151,17 @@ public:
     auto SerializeCredentialIndex(const Mode mode) const -> Serialized final;
     void SerializeNymIDSource(Tag& parent) const final;
     auto size() const noexcept -> std::size_t final { return active_.size(); }
-    auto SocialMediaProfiles(const proto::ContactItemType type, bool active)
+    auto SocialMediaProfiles(const contact::ContactItemType type, bool active)
         const -> std::string final;
     auto SocialMediaProfileTypes() const
-        -> const std::set<proto::ContactItemType> final;
+        -> const std::set<contact::ContactItemType> final;
     auto Source() const -> const identity::Source& final { return source_; }
     auto TransportKey(Data& pubkey, const PasswordPrompt& reason) const
         -> OTSecret final;
     auto Unlock(
         const crypto::key::Asymmetric& dhKey,
         const std::uint32_t tag,
-        const proto::AsymmetricKeyType type,
+        const crypto::key::asymmetric::Algorithm type,
         const crypto::key::Symmetric& key,
         PasswordPrompt& reason) const noexcept -> bool final;
     auto VerifyPseudonym() const -> bool final;
@@ -169,7 +175,7 @@ public:
         -> bool final;
     auto AddContract(
         const identifier::UnitDefinition& instrumentDefinitionID,
-        const proto::ContactItemType currency,
+        const contact::ContactItemType currency,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active) -> bool final;
@@ -180,7 +186,7 @@ public:
         const bool active) -> bool final;
     auto AddPaymentCode(
         const opentxs::PaymentCode& code,
-        const proto::ContactItemType currency,
+        const contact::ContactItemType currency,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active) -> bool final;
@@ -195,7 +201,7 @@ public:
         const bool active) -> bool final;
     auto AddSocialMediaProfile(
         const std::string& value,
-        const proto::ContactItemType type,
+        const contact::ContactItemType type,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active) -> bool final;
@@ -209,16 +215,16 @@ public:
         const proto::ContactData& data,
         const PasswordPrompt& reason) -> bool final;
     auto SetScope(
-        const proto::ContactItemType type,
+        const contact::ContactItemType type,
         const std::string& name,
         const PasswordPrompt& reason,
         const bool primary) -> bool final;
     auto Sign(
         const ProtobufType& input,
-        const proto::SignatureRole role,
+        const crypto::SignatureRole role,
         proto::Signature& signature,
         const PasswordPrompt& reason,
-        const proto::HashType hash) const -> bool final;
+        const crypto::HashType hash) const -> bool final;
     auto Verify(const ProtobufType& input, proto::Signature& signature) const
         -> bool final;
 
@@ -274,14 +280,20 @@ private:
         const PasswordPrompt& reason) noexcept(false) -> NymParameters;
 
     template <typename T>
-    auto get_private_auth_key(const T& lock, proto::AsymmetricKeyType keytype)
-        const -> const crypto::key::Asymmetric&;
+    auto get_private_auth_key(
+        const T& lock,
+        crypto::key::asymmetric::Algorithm keytype) const
+        -> const crypto::key::Asymmetric&;
     template <typename T>
-    auto get_private_sign_key(const T& lock, proto::AsymmetricKeyType keytype)
-        const -> const crypto::key::Asymmetric&;
+    auto get_private_sign_key(
+        const T& lock,
+        crypto::key::asymmetric::Algorithm keytype) const
+        -> const crypto::key::Asymmetric&;
     template <typename T>
-    auto get_public_sign_key(const T& lock, proto::AsymmetricKeyType keytype)
-        const -> const crypto::key::Asymmetric&;
+    auto get_public_sign_key(
+        const T& lock,
+        crypto::key::asymmetric::Algorithm keytype) const
+        -> const crypto::key::Asymmetric&;
     auto has_capability(const eLock& lock, const NymCapability& capability)
         const -> bool;
     void init_claims(const eLock& lock) const;

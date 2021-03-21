@@ -23,7 +23,6 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
 #include "ui/base/Combined.hpp"
 #include "ui/base/List.hpp"
 #include "ui/base/RowType.hpp"
@@ -97,7 +96,7 @@ public:
     {
         return primary_id_;
     }
-    auto Section() const noexcept -> proto::ContactSectionName final
+    auto Section() const noexcept -> contact::ContactSectionName final
     {
         return row_id_.first;
     }
@@ -107,7 +106,7 @@ public:
         const noexcept -> bool final;
     auto SetValue(const std::string& claimID, const std::string& value)
         const noexcept -> bool final;
-    auto Type() const noexcept -> proto::ContactItemType final
+    auto Type() const noexcept -> contact::ContactItemType final
     {
         return row_id_.second;
     }

@@ -21,6 +21,8 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
+#include "opentxs/crypto/HashType.hpp"
+#include "opentxs/crypto/Types.hpp"
 
 namespace opentxs
 {
@@ -62,13 +64,13 @@ public:
     OPENTXS_EXPORT virtual std::unique_ptr<Asymmetric> asPublic()
         const noexcept = 0;
     OPENTXS_EXPORT virtual OTData CalculateHash(
-        const proto::HashType hashType,
+        const crypto::HashType hashType,
         const PasswordPrompt& reason) const noexcept = 0;
     OPENTXS_EXPORT virtual bool CalculateID(
         Identifier& theOutput) const noexcept = 0;
     OPENTXS_EXPORT virtual bool CalculateTag(
         const identity::Authority& nym,
-        const proto::AsymmetricKeyType type,
+        const crypto::key::asymmetric::Algorithm type,
         const PasswordPrompt& reason,
         std::uint32_t& tag,
         Secret& password) const noexcept = 0;
@@ -89,7 +91,7 @@ public:
         const NymCapability& capability) const noexcept = 0;
     OPENTXS_EXPORT virtual bool HasPrivate() const noexcept = 0;
     OPENTXS_EXPORT virtual bool HasPublic() const noexcept = 0;
-    OPENTXS_EXPORT virtual proto::AsymmetricKeyType keyType()
+    OPENTXS_EXPORT virtual crypto::key::asymmetric::Algorithm keyType()
         const noexcept = 0;
     OPENTXS_EXPORT virtual ReadView Params() const noexcept = 0;
     OPENTXS_EXPORT virtual const std::string Path() const noexcept = 0;
@@ -97,20 +99,22 @@ public:
     OPENTXS_EXPORT virtual ReadView PrivateKey(
         const PasswordPrompt& reason) const noexcept = 0;
     OPENTXS_EXPORT virtual ReadView PublicKey() const noexcept = 0;
-    OPENTXS_EXPORT virtual proto::KeyRole Role() const noexcept = 0;
+    OPENTXS_EXPORT virtual opentxs::crypto::key::asymmetric::Role Role()
+        const noexcept = 0;
     OPENTXS_EXPORT virtual std::shared_ptr<proto::AsymmetricKey> Serialize()
         const noexcept = 0;
-    OPENTXS_EXPORT virtual proto::HashType SigHashType() const noexcept = 0;
+    OPENTXS_EXPORT virtual crypto::HashType SigHashType() const noexcept = 0;
     OPENTXS_EXPORT virtual bool Sign(
         const GetPreimage input,
-        const proto::SignatureRole role,
+        const crypto::SignatureRole role,
         proto::Signature& signature,
         const Identifier& credential,
         const PasswordPrompt& reason,
-        const proto::HashType hash = proto::HASHTYPE_ERROR) const noexcept = 0;
+        const crypto::HashType hash =
+            crypto::HashType::Error) const noexcept = 0;
     OPENTXS_EXPORT virtual bool Sign(
         const ReadView preimage,
-        const proto::HashType hash,
+        const crypto::HashType hash,
         const AllocateOutput output,
         const PasswordPrompt& reason) const noexcept = 0;
     OPENTXS_EXPORT virtual bool TransportKey(

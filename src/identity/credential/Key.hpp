@@ -17,7 +17,8 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
+#include "opentxs/identity/Types.hpp"
 
 namespace opentxs
 {
@@ -59,14 +60,15 @@ class Key : virtual public credential::internal::Key,
             public credential::implementation::Base
 {
 public:
-    auto GetKeypair(const proto::KeyRole role) const
+    auto GetKeypair(const opentxs::crypto::key::asymmetric::Role role) const
         -> const crypto::key::Keypair& final
     {
-        return GetKeypair(proto::AKEYTYPE_NULL, role);
+        return GetKeypair(crypto::key::asymmetric::Algorithm::Null, role);
     }
     auto GetKeypair(
-        const proto::AsymmetricKeyType type,
-        const proto::KeyRole role) const -> const crypto::key::Keypair& final;
+        const crypto::key::asymmetric::Algorithm type,
+        const opentxs::crypto::key::asymmetric::Role role) const
+        -> const crypto::key::Keypair& final;
     auto GetPublicKeysBySignature(
         crypto::key::Keypair::Keys& listOutput,
         const opentxs::Signature& theSignature,
@@ -76,14 +78,14 @@ public:
     auto Verify(
         const Data& plaintext,
         const proto::Signature& sig,
-        const proto::KeyRole key) const -> bool final;
+        const opentxs::crypto::key::asymmetric::Role key) const -> bool final;
     auto Sign(
         const GetPreimage input,
-        const proto::SignatureRole role,
+        const crypto::SignatureRole role,
         proto::Signature& signature,
         const PasswordPrompt& reason,
-        proto::KeyRole key,
-        const proto::HashType hash) const -> bool final;
+        opentxs::crypto::key::asymmetric::Role key,
+        const crypto::HashType hash) const -> bool final;
     auto TransportKey(
         Data& publicKey,
         Secret& privateKey,
@@ -118,7 +120,7 @@ protected:
         const identity::Source& source,
         const NymParameters& nymParameters,
         const VersionNumber version,
-        const proto::CredentialRole role,
+        const identity::CredentialRole role,
         const PasswordPrompt& reason,
         const std::string& masterID,
         const bool useProvidedSigningKey = false) noexcept(false);

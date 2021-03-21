@@ -270,7 +270,9 @@ auto Core::make_master_key(
 
         encrypted = *existing;
 
-        return symmetric.Key(existing->key(), proto::SMODE_CHACHA20POLY1305);
+        return symmetric.Key(
+            existing->key(),
+            opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305);
     }
 
     master_secret = factory.Secret(0);
@@ -283,13 +285,14 @@ auto Core::make_master_key(
     auto masterPassword = factory.Secret(0);
     caller.AskTwice(reason, masterPassword, parent.ProfileId());
     reason->SetPassword(masterPassword);
-    auto output = symmetric.Key(reason, proto::SMODE_CHACHA20POLY1305);
+    auto output = symmetric.Key(
+        reason, opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305);
     auto saved = output->Encrypt(
         master_secret.value()->Bytes(),
         reason,
         encrypted,
         true,
-        proto::SMODE_CHACHA20POLY1305);
+        opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305);
 
     OT_ASSERT(saved);
 

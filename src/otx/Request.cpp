@@ -12,6 +12,7 @@
 
 #include "core/contract/Signable.hpp"
 #include "internal/api/Api.hpp"
+#include "internal/otx/OTX.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
@@ -20,12 +21,12 @@
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/Request.hpp"
+#include "opentxs/otx/Types.hpp"
 #include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/Nym.pb.h"
-#include "opentxs/protobuf/OTXEnums.pb.h"
 #include "opentxs/protobuf/ServerRequest.pb.h"
 #include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/protobuf/verify/ServerRequest.hpp"
@@ -43,7 +44,7 @@ auto Request::Factory(
     const api::internal::Core& api,
     const Nym_p signer,
     const identifier::Server& server,
-    const proto::ServerRequestType type,
+    const otx::ServerRequestType type,
     const RequestNumber number,
     const PasswordPrompt& reason) -> OTXRequest
 {
@@ -77,7 +78,7 @@ Request::Request(
     const Nym_p signer,
     const identifier::Nym& initiator,
     const identifier::Server& server,
-    const proto::ServerRequestType type,
+    const otx::ServerRequestType type,
     const RequestNumber number)
     : Signable(api, signer, DefaultVersion, "", "")
     , initiator_(initiator)
@@ -106,7 +107,7 @@ Request::Request(
               : Signatures{})
     , initiator_((nym_) ? nym_->ID() : api.Factory().NymID().get())
     , server_(api.Factory().ServerID(serialized.server()))
-    , type_(serialized.type())
+    , type_(otx::internal::translate(serialized.type()))
     , number_(serialized.request())
     , include_nym_(Flag::Factory(false))
 {
@@ -172,7 +173,7 @@ auto Request::id_version(const Lock& lock) const -> proto::ServerRequest
     proto::ServerRequest output{};
     output.set_version(version_);
     output.clear_id();  // Must be blank
-    output.set_type(type_);
+    output.set_type(otx::internal::translate(type_));
     output.set_nym(initiator_->str());
     output.set_server(server_->str());
     output.set_request(number_);
@@ -226,8 +227,8 @@ auto Request::update_signature(const Lock& lock, const PasswordPrompt& reason)
     signatures_.clear();
     auto serialized = signature_version(lock);
     auto& signature = *serialized.mutable_signature();
-    success =
-        nym_->Sign(serialized, proto::SIGROLE_SERVERREQUEST, signature, reason);
+    success = nym_->Sign(
+        serialized, crypto::SignatureRole::ServerRequest, signature, reason);
 
     if (success) {
         signatures_.emplace_front(new proto::Signature(signature));

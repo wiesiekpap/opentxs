@@ -28,12 +28,13 @@
 #include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/contact/ContactData.hpp"
+#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/protobuf/Contact.pb.h"
-#include "opentxs/protobuf/ContactEnums.pb.h"
 
 namespace opentxs
 {
@@ -70,11 +71,11 @@ public:
     OPENTXS_EXPORT static std::shared_ptr<ContactItem> Best(
         const ContactGroup& group);
     OPENTXS_EXPORT static std::string ExtractLabel(const identity::Nym& nym);
-    OPENTXS_EXPORT static proto::ContactItemType ExtractType(
+    OPENTXS_EXPORT static contact::ContactItemType ExtractType(
         const identity::Nym& nym);
     OPENTXS_EXPORT static std::string PaymentCode(
         const ContactData& data,
-        const proto::ContactItemType currency);
+        const contact::ContactItemType currency);
 
     OPENTXS_EXPORT Contact(
         const api::client::internal::Manager& api,
@@ -89,7 +90,7 @@ public:
     OPENTXS_EXPORT std::string BestEmail() const;
     OPENTXS_EXPORT std::string BestPhoneNumber() const;
     OPENTXS_EXPORT std::string BestSocialMediaProfile(
-        const proto::ContactItemType type) const;
+        const contact::ContactItemType type) const;
     OPENTXS_EXPORT std::vector<BlockchainAddress> BlockchainAddresses() const;
     OPENTXS_EXPORT std::shared_ptr<ContactData> Data() const;
     OPENTXS_EXPORT std::string EmailAddresses(bool active = true) const;
@@ -99,21 +100,24 @@ public:
     OPENTXS_EXPORT std::vector<OTNymID> Nyms(
         const bool includeInactive = false) const;
     OPENTXS_EXPORT std::string PaymentCode(
-        const proto::ContactItemType currency = proto::CITEMTYPE_BTC) const;
+        const contact::ContactItemType currency =
+            contact::ContactItemType::BTC) const;
     OPENTXS_EXPORT std::vector<std::string> PaymentCodes(
-        const proto::ContactItemType currency = proto::CITEMTYPE_BTC) const;
+        const contact::ContactItemType currency =
+            contact::ContactItemType::BTC) const;
     OPENTXS_EXPORT std::string PhoneNumbers(bool active = true) const;
     OPENTXS_EXPORT std::string Print() const;
     OPENTXS_EXPORT std::string SocialMediaProfiles(
-        const proto::ContactItemType type,
+        const contact::ContactItemType type,
         bool active = true) const;
-    OPENTXS_EXPORT const std::set<proto::ContactItemType>
+    OPENTXS_EXPORT const std::set<contact::ContactItemType>
     SocialMediaProfileTypes() const;
-    OPENTXS_EXPORT proto::ContactItemType Type() const;
+    OPENTXS_EXPORT contact::ContactItemType Type() const;
 
     OPENTXS_EXPORT bool AddBlockchainAddress(
         const std::string& address,
-        const proto::ContactItemType currency = proto::CITEMTYPE_UNKNOWN);
+        const contact::ContactItemType currency =
+            contact::ContactItemType::Unknown);
     OPENTXS_EXPORT bool AddBlockchainAddress(
         const api::client::blockchain::AddressStyle& style,
         const blockchain::Type chain,
@@ -129,7 +133,7 @@ public:
     OPENTXS_EXPORT bool AddPaymentCode(
         const opentxs::PaymentCode& code,
         const bool primary,
-        const proto::ContactItemType currency = proto::CITEMTYPE_BTC,
+        const contact::ContactItemType currency = contact::ContactItemType::BTC,
         const bool active = true);
     OPENTXS_EXPORT bool AddPhoneNumber(
         const std::string& value,
@@ -137,58 +141,19 @@ public:
         const bool active);
     OPENTXS_EXPORT bool AddSocialMediaProfile(
         const std::string& value,
-        const proto::ContactItemType type,
+        const contact::ContactItemType type,
         const bool primary,
         const bool active);
     OPENTXS_EXPORT bool RemoveNym(const identifier::Nym& nymID);
     OPENTXS_EXPORT void SetLabel(const std::string& label);
     OPENTXS_EXPORT void Update(const identity::Nym::Serialized& nym);
 
-    OPENTXS_EXPORT ~Contact() = default;
+    OPENTXS_EXPORT ~Contact();
 
 private:
-    const api::client::internal::Manager& api_;
-    VersionNumber version_{0};
-    std::string label_{""};
-    mutable std::mutex lock_{};
-    const OTIdentifier id_;
-    OTIdentifier parent_;
-    OTNymID primary_nym_;
-    std::map<OTNymID, Nym_p> nyms_;
-    std::set<OTIdentifier> merged_children_;
-    std::unique_ptr<ContactData> contact_data_{};
-    mutable std::shared_ptr<ContactData> cached_contact_data_{};
-    std::atomic<std::uint64_t> revision_{0};
+    struct Imp;
 
-    static VersionNumber check_version(
-        const VersionNumber in,
-        const VersionNumber targetVersion);
-    static OTIdentifier generate_id(const api::internal::Core& api);
-    static BlockchainAddress translate(
-        const api::client::internal::Manager& api,
-        const proto::ContactItemType chain,
-        const std::string& value,
-        const std::string& subtype) noexcept(false);
-
-    std::shared_ptr<ContactGroup> payment_codes(
-        const Lock& lock,
-        const proto::ContactItemType currency) const;
-    std::shared_ptr<ContactData> merged_data(const Lock& lock) const;
-    proto::ContactItemType type(const Lock& lock) const;
-    bool verify_write_lock(const Lock& lock) const;
-
-    bool add_nym(const Lock& lock, const Nym_p& nym, const bool primary);
-    bool add_claim(const std::shared_ptr<ContactItem>& item);
-    bool add_claim(const Lock& lock, const std::shared_ptr<ContactItem>& item);
-    void add_nym_claim(
-        const Lock& lock,
-        const identifier::Nym& nymID,
-        const bool primary);
-    void add_verified_claim(
-        const Lock& lock,
-        const std::shared_ptr<ContactItem>& item);
-    void init_nyms();
-    void update_label(const Lock& lock, const identity::Nym& nym);
+    std::unique_ptr<Imp> imp_;
 
     Contact() = delete;
     Contact(const Contact&) = delete;

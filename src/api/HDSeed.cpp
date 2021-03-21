@@ -16,6 +16,7 @@
 #include "internal/api/Factory.hpp"
 #include "internal/api/crypto/Crypto.hpp"
 #include "internal/crypto/key/Factory.hpp"
+#include "internal/crypto/key/Key.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Context.hpp"
@@ -35,9 +36,11 @@
 #include "opentxs/crypto/Bip39.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
+#include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/Language.hpp"      // IWYU pragma: keep
 #include "opentxs/crypto/SeedStrength.hpp"  // IWYU pragma: keep
 #include "opentxs/crypto/SeedStyle.hpp"     // IWYU pragma: keep
+#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/crypto/key/Secp256k1.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
@@ -208,7 +211,7 @@ auto HDSeed::GetHDKey(
     const EcdsaCurve& curve,
     const Path& path,
     const PasswordPrompt& reason,
-    const proto::KeyRole role,
+    const opentxs::crypto::key::asymmetric::Role role,
     const VersionNumber version) const
     -> std::unique_ptr<opentxs::crypto::key::HD>
 {
@@ -295,7 +298,9 @@ auto HDSeed::GetPaymentCode(
     const auto code = [&] {
         auto out = api.Factory().Secret(0);
         api.Crypto().Hash().Digest(
-            proto::HASHTYPE_SHA256D, key.PublicKey(), out->WriteInto());
+            opentxs::crypto::HashType::Sha256D,
+            key.PublicKey(),
+            out->WriteInto());
 
         return out;
     }();
