@@ -11,6 +11,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <string>
 #include <vector>
 
 #include "opentxs/blockchain/Types.hpp"
@@ -32,7 +33,7 @@ namespace block
 {
 namespace bitcoin
 {
-struct Outpoint {
+struct OPENTXS_EXPORT Outpoint {
     std::array<std::byte, 32> txid_{};
     std::array<std::byte, 4> index_{};
 
@@ -61,7 +62,8 @@ class Input
 {
 public:
     using FilterType = Transaction::FilterType;
-    using KeyID = api::client::blockchain::Key;
+    using KeyID = Transaction::KeyID;
+    using KeyData = Transaction::KeyData;
     using Match = Transaction::Match;
     using Matches = Transaction::Matches;
     using Patterns = Transaction::Patterns;
@@ -83,6 +85,7 @@ public:
     OPENTXS_EXPORT virtual auto Keys() const noexcept -> std::vector<KeyID> = 0;
     OPENTXS_EXPORT virtual auto PreviousOutput() const noexcept
         -> const Outpoint& = 0;
+    OPENTXS_EXPORT virtual auto Print() const noexcept -> std::string = 0;
     OPENTXS_EXPORT virtual auto Serialize(const AllocateOutput destination)
         const noexcept -> std::optional<std::size_t> = 0;
     OPENTXS_EXPORT virtual auto Serialize(
@@ -97,6 +100,8 @@ public:
     OPENTXS_EXPORT virtual auto Sequence() const noexcept -> std::uint32_t = 0;
     OPENTXS_EXPORT virtual auto Witness() const noexcept
         -> const std::vector<Space>& = 0;
+
+    virtual auto SetKeyData(const KeyData& data) noexcept -> void = 0;
 
     virtual ~Input() = default;
 

@@ -215,7 +215,7 @@ auto BlockFilter::translate_filter(const FilterType type) noexcept(false)
         case FilterType::Basic_BCHVariant: {
             return FiltersBCH;
         }
-        case FilterType::Extended_opentxs: {
+        case FilterType::ES: {
             return FiltersOpentxs;
         }
         default: {
@@ -234,7 +234,7 @@ auto BlockFilter::translate_header(const FilterType type) noexcept(false)
         case FilterType::Basic_BCHVariant: {
             return FilterHeadersBCH;
         }
-        case FilterType::Extended_opentxs: {
+        case FilterType::ES: {
             return FilterHeadersOpentxs;
         }
         default: {

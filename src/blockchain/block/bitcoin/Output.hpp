@@ -18,6 +18,8 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/Core.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -60,25 +62,22 @@ public:
     auto ExtractElements(const filter::Type style) const noexcept
         -> std::vector<Space> final;
     auto FindMatches(
-        const api::client::Blockchain& blockchain,
         const ReadView txid,
         const FilterType type,
         const ParsedPatterns& patterns) const noexcept -> Matches final;
     auto GetPatterns() const noexcept -> std::vector<PatternID> final;
-    auto Keys() const noexcept -> std::vector<KeyID> final;
+    auto Keys() const noexcept -> std::vector<KeyID> final
+    {
+        return cache_.keys();
+    }
     auto NetBalanceChange(
         const api::client::Blockchain& blockchain,
         const identifier::Nym& nym) const noexcept -> opentxs::Amount final;
     auto Note(const api::client::Blockchain& blockchain) const noexcept
         -> std::string final;
-    auto Payee(const api::client::Blockchain& blockchain) const noexcept
-        -> ContactID final;
-    auto Payer(const api::client::Blockchain& blockchain) const noexcept
-        -> ContactID final;
-    auto PrintScript() const noexcept -> std::string final
-    {
-        return script_->str();
-    }
+    auto Payee() const noexcept -> ContactID final { return cache_.payee(); }
+    auto Payer() const noexcept -> ContactID final { return cache_.payer(); }
+    auto Print() const noexcept -> std::string final;
     auto Serialize(const AllocateOutput destination) const noexcept
         -> std::optional<std::size_t> final;
     auto Serialize(
@@ -97,16 +96,20 @@ public:
 
     auto ForTestingOnlyAddKey(const KeyID& key) noexcept -> void final
     {
-        keys_.insert(key);
+        cache_.add(KeyID{key});
     }
     auto MergeMetadata(const SerializeType& rhs) noexcept -> void final;
     auto SetIndex(const std::uint32_t index) noexcept -> void final
     {
         const_cast<std::uint32_t&>(index_) = index;
     }
+    auto SetKeyData(const KeyData& data) noexcept -> void final
+    {
+        cache_.set(data);
+    }
     auto SetPayee(const Identifier& contact) noexcept -> void final
     {
-        payee_ = contact;
+        cache_.set_payee(contact);
     }
     auto SetValue(const std::uint64_t value) noexcept -> void final
     {
@@ -149,6 +152,130 @@ public:
     ~Output() final = default;
 
 private:
+    struct Cache {
+        template <typename F>
+        auto for_each_key(F cb) const noexcept -> void
+        {
+            auto lock = Lock{lock_};
+            std::for_each(std::begin(keys_), std::end(keys_), cb);
+        }
+        auto keys() const noexcept -> std::vector<KeyID>
+        {
+            auto lock = Lock{lock_};
+            auto output = std::vector<KeyID>{};
+            std::transform(
+                std::begin(keys_),
+                std::end(keys_),
+                std::back_inserter(output),
+                [](const auto& key) -> auto { return key; });
+
+            return output;
+        }
+        auto payee() const noexcept -> OTIdentifier
+        {
+            auto lock = Lock{lock_};
+
+            return payee_;
+        }
+        auto payer() const noexcept -> OTIdentifier
+        {
+            auto lock = Lock{lock_};
+
+            return payer_;
+        }
+
+        auto add(KeyID&& key) noexcept -> void
+        {
+            auto lock = Lock{lock_};
+            keys_.emplace(std::move(key));
+        }
+        auto reset_size() noexcept -> void
+        {
+            auto lock = Lock{lock_};
+            size_ = std::nullopt;
+        }
+        auto set(const KeyData& data) noexcept -> void
+        {
+            auto lock = Lock{lock_};
+            const auto havePayee = [&] { return !payee_->empty(); };
+            const auto havePayer = [&] { return !payer_->empty(); };
+
+            for (const auto& key : keys_) {
+                if (havePayee() && havePayer()) { return; }
+
+                try {
+                    const auto& [sender, recipient] = data.at(key);
+
+                    if (false == sender->empty()) {
+                        if (payer_->empty()) { payer_ = sender; }
+                    }
+
+                    if (false == recipient->empty()) {
+                        if (payee_->empty()) { payee_ = recipient; }
+                    }
+                } catch (...) {
+                }
+            }
+        }
+        auto set_payee(const Identifier& contact) noexcept -> void
+        {
+            auto lock = Lock{lock_};
+
+            payee_ = contact;
+        }
+        template <typename F>
+        auto size(F cb) noexcept -> std::size_t
+        {
+            auto lock = Lock{lock_};
+
+            auto& output = size_;
+
+            if (false == output.has_value()) { output = cb(); }
+
+            return output.value();
+        }
+
+        Cache(
+            const api::Core& api,
+            std::optional<std::size_t>&& size,
+            boost::container::flat_set<KeyID>&& keys) noexcept
+            : lock_()
+            , size_(std::move(size))
+            , payee_(api.Factory().Identifier())
+            , payer_(api.Factory().Identifier())
+            , keys_(std::move(keys))
+        {
+        }
+        Cache(const Cache& rhs) noexcept
+            : lock_()
+            , size_()
+            , payee_([&] {
+                auto lock = Lock{rhs.lock_};
+
+                return rhs.payee_;
+            }())
+            , payer_([&] {
+                auto lock = Lock{rhs.lock_};
+
+                return rhs.payer_;
+            }())
+            , keys_()
+        {
+            auto lock = Lock{rhs.lock_};
+            size_ = rhs.size_;
+            keys_ = rhs.keys_;
+        }
+
+    private:
+        mutable std::mutex lock_{};
+        std::optional<std::size_t> size_{};
+        OTIdentifier payee_;
+        OTIdentifier payer_;
+        boost::container::flat_set<KeyID> keys_;
+
+        Cache() noexcept = delete;
+    };
+
     static const VersionNumber default_version_;
     static const VersionNumber key_version_;
 
@@ -160,15 +287,7 @@ private:
     const std::unique_ptr<const internal::Script> script_;
     const boost::container::flat_set<PatternID> pubkey_hashes_;
     const std::optional<PatternID> script_hash_;
-    mutable std::optional<std::size_t> size_;
-    mutable OTIdentifier payee_;
-    mutable OTIdentifier payer_;
-    mutable boost::container::flat_set<KeyID> keys_;
-
-    auto set_payee(const api::client::Blockchain& blockchain) const noexcept
-        -> void;
-    auto set_payer(const api::client::Blockchain& blockchain) const noexcept
-        -> void;
+    mutable Cache cache_;
 
     auto index_elements(const api::client::Blockchain& blockchain) noexcept
         -> void;

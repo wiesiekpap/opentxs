@@ -137,11 +137,15 @@ auto Sodium::Derive(
         return false;
     }
 
+    static const auto blank = char{};
+    const auto empty = ((nullptr == input) || (0u == inputSize));
+    const auto* ptr = empty ? &blank : reinterpret_cast<const char*>(input);
+    const auto effective = empty ? 0u : inputSize;
     const auto success = 0 == crypto_pwhash(
                                   output,
                                   outputSize,
-                                  reinterpret_cast<const char*>(input),
-                                  inputSize,
+                                  ptr,
+                                  effective,
                                   salt,
                                   operations,
                                   difficulty,

@@ -23,8 +23,6 @@
 #include "internal/blockchain/block/Block.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/blockchain/BalanceNode.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"
@@ -106,7 +104,7 @@ auto BitcoinTransactionOutput(
     const api::Core& api,
     const api::client::Blockchain& blockchain,
     const blockchain::Type chain,
-    const proto::BlockchainTransactionOutput in) noexcept
+    const proto::BlockchainTransactionOutput& in) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Output>
 {
     try {
@@ -174,10 +172,7 @@ Output::Output(
     , script_(std::move(script))
     , pubkey_hashes_(std::move(pubkeyHashes))
     , script_hash_(std::move(scriptHash))
-    , size_(size)
-    , payee_(api_.Factory().Identifier())
-    , payer_(api_.Factory().Identifier())
-    , keys_(std::move(keys))
+    , cache_(api, std::move(size), std::move(keys))
 {
     if (false == bool(script_)) {
         throw std::runtime_error("Invalid output script");
@@ -245,10 +240,7 @@ Output::Output(const Output& rhs) noexcept
     , script_(rhs.script_->clone())
     , pubkey_hashes_(rhs.pubkey_hashes_)
     , script_hash_(rhs.script_hash_)
-    , size_(rhs.size_)
-    , payee_(rhs.payee_)
-    , payer_(rhs.payer_)
-    , keys_(rhs.keys_)
+    , cache_(rhs.cache_)
 {
 }
 
@@ -256,7 +248,7 @@ auto Output::AssociatedLocalNyms(
     const api::client::Blockchain& blockchain,
     std::vector<OTNymID>& output) const noexcept -> void
 {
-    std::for_each(std::begin(keys_), std::end(keys_), [&](const auto& key) {
+    cache_.for_each_key([&](const auto& key) {
         const auto& owner = blockchain.Owner(key);
 
         if (false == owner.empty()) { output.emplace_back(owner); }
@@ -276,27 +268,21 @@ auto Output::AssociatedRemoteContacts(
             std::back_inserter(output));
     });
 
-    {
-        auto payer = Payer(blockchain);
+    auto payer = cache_.payer();
+    auto payee = cache_.payee();
 
-        if (false == payer->empty()) { output.emplace_back(std::move(payer)); }
-    }
-    {
-        auto payee = Payee(blockchain);
-
-        if (false == payee->empty()) { output.emplace_back(std::move(payee)); }
-    }
+    if (false == payee->empty()) { output.emplace_back(std::move(payee)); }
+    if (false == payer->empty()) { output.emplace_back(std::move(payer)); }
 }
 
 auto Output::CalculateSize() const noexcept -> std::size_t
 {
-    if (false == size_.has_value()) {
+    return cache_.size([&] {
         const auto scriptCS =
             blockchain::bitcoin::CompactSize(script_->CalculateSize());
-        size_ = sizeof(value_) + scriptCS.Total();
-    }
 
-    return size_.value();
+        return sizeof(value_) + scriptCS.Total();
+    });
 }
 
 auto Output::ExtractElements(const filter::Type style) const noexcept
@@ -306,25 +292,24 @@ auto Output::ExtractElements(const filter::Type style) const noexcept
 }
 
 auto Output::FindMatches(
-    const api::client::Blockchain& blockchain,
     const ReadView txid,
     const FilterType type,
     const ParsedPatterns& patterns) const noexcept -> Matches
 {
     const auto output =
         SetIntersection(api_, txid, patterns, ExtractElements(type));
-    LogTrace(OT_METHOD)(__FUNCTION__)(": Verified ")(output.size())(
+    LogTrace(OT_METHOD)(__FUNCTION__)(": Verified ")(output.second.size())(
         " pattern matches")
         .Flush();
     std::for_each(
-        std::begin(output), std::end(output), [this](const auto& match) {
+        std::begin(output.second),
+        std::end(output.second),
+        [this](const auto& match) {
             const auto& [txid, element] = match;
             const auto& [index, subchainID] = element;
             const auto& [subchain, account] = subchainID;
-            keys_.emplace(KeyID{account->str(), subchain, index});
+            cache_.add({account->str(), subchain, index});
         });
-    set_payee(blockchain);
-    set_payer(blockchain);
 
     return output;
 }
@@ -356,25 +341,15 @@ auto Output::index_elements(const api::client::Blockchain& blockchain) noexcept
     }
 }
 
-auto Output::Keys() const noexcept -> std::vector<KeyID>
-{
-    auto output = std::vector<KeyID>{};
-    std::transform(
-        std::begin(keys_), std::end(keys_), std::back_inserter(output), [
-        ](const auto& key) -> auto { return key; });
-
-    return output;
-}
-
 auto Output::MergeMetadata(const SerializeType& rhs) noexcept -> void
 {
     std::for_each(
         std::begin(rhs.key()), std::end(rhs.key()), [this](const auto& key) {
-            keys_.emplace(KeyID{
-                key.subaccount(),
-                static_cast<api::client::blockchain::Subchain>(
-                    static_cast<std::uint8_t>(key.subchain())),
-                key.index()});
+            cache_.add(
+                {key.subaccount(),
+                 static_cast<api::client::blockchain::Subchain>(
+                     static_cast<std::uint8_t>(key.subchain())),
+                 key.index()});
         });
 }
 
@@ -382,43 +357,51 @@ auto Output::NetBalanceChange(
     const api::client::Blockchain& blockchain,
     const identifier::Nym& nym) const noexcept -> opentxs::Amount
 {
-    for (const auto& key : keys_) {
-        if (nym == blockchain.Owner(key)) { return value_; }
-    }
+    auto done{false};
+    auto output = opentxs::Amount{0};
+    cache_.for_each_key([&](const auto& key) {
+        if (done) { return; }
 
-    return 0;
+        if (nym == blockchain.Owner(key)) {
+            done = true;
+            output = value_;
+        }
+    });
+
+    return output;
 }
 
 auto Output::Note(const api::client::Blockchain& blockchain) const noexcept
     -> std::string
 {
-    for (const auto& id : keys_) {
+    auto done{false};
+    auto output = std::string{};
+    cache_.for_each_key([&](const auto& key) {
+        if (done) { return; }
+
         try {
-            const auto& element = blockchain.GetKey(id);
+            const auto& element = blockchain.GetKey(key);
             const auto note = element.Label();
 
-            if (false == note.empty()) { return note; }
+            if (false == note.empty()) {
+                done = true;
+                output = note;
+            }
         } catch (...) {
         }
-    }
+    });
 
-    return {};
+    return output;
 }
 
-auto Output::Payee(const api::client::Blockchain& blockchain) const noexcept
-    -> ContactID
+auto Output::Print() const noexcept -> std::string
 {
-    if (payee_->empty()) { set_payee(blockchain); }
+    auto out = std::stringstream{};
+    out << "    value: " << std::to_string(value_) << '\n';
+    out << "    script: " << '\n';
+    out << script_->Print();
 
-    return payee_;
-}
-
-auto Output::Payer(const api::client::Blockchain& blockchain) const noexcept
-    -> ContactID
-{
-    if (payer_->empty()) { set_payer(blockchain); }
-
-    return payer_;
+    return out.str();
 }
 
 auto Output::Serialize(const AllocateOutput destination) const noexcept
@@ -473,7 +456,7 @@ auto Output::Serialize(
         return false;
     }
 
-    for (const auto& key : keys_) {
+    cache_.for_each_key([&](const auto& key) {
         const auto& [accountID, subchain, index] = key;
         auto& serializedKey = *out.add_key();
         serializedKey.set_version(key_version_);
@@ -482,7 +465,7 @@ auto Output::Serialize(
         serializedKey.set_subaccount(accountID);
         serializedKey.set_subchain(static_cast<std::uint32_t>(subchain));
         serializedKey.set_index(index);
-    }
+    });
 
     for (const auto& id : pubkey_hashes_) { out.add_pubkey_hash(id); }
 
@@ -491,41 +474,5 @@ auto Output::Serialize(
     out.set_indexed(true);
 
     return true;
-}
-
-auto Output::set_payee(const api::client::Blockchain& blockchain) const noexcept
-    -> void
-{
-    auto& id = payee_;
-
-    if (false == id->empty()) { return; }
-
-    for (const auto& key : keys_) {
-        auto candidate = blockchain.RecipientContact(key);
-
-        if (candidate->empty()) { continue; }
-
-        id = std::move(candidate);
-
-        return;
-    }
-}
-
-auto Output::set_payer(const api::client::Blockchain& blockchain) const noexcept
-    -> void
-{
-    auto& id = payer_;
-
-    if (false == id->empty()) { return; }
-
-    for (const auto& key : keys_) {
-        auto candidate = blockchain.SenderContact(key);
-
-        if (candidate->empty()) { continue; }
-
-        id = std::move(candidate);
-
-        return;
-    }
 }
 }  // namespace opentxs::blockchain::block::bitcoin::implementation

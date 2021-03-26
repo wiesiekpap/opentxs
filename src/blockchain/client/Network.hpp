@@ -204,6 +204,10 @@ public:
     {
         return stop_worker();
     }
+    auto Wallet() const noexcept -> const client::Wallet& final
+    {
+        return wallet_;
+    }
 
     ~Network() override;
 

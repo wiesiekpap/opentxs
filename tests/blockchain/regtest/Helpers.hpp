@@ -39,6 +39,8 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/client/blockchain/BalanceList.hpp"
+#include "opentxs/api/client/blockchain/BalanceTree.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -48,8 +50,11 @@
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
-#include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/block/bitcoin/Input.hpp"
+#include "opentxs/blockchain/block/bitcoin/Output.hpp"
+#include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/client/HeaderOracle.hpp"
+#include "opentxs/blockchain/client/Wallet.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
@@ -81,6 +86,8 @@ using Position = ot::blockchain::block::Position;
 using Hello = ot::proto::BlockchainP2PHello;
 using State = ot::proto::BlockchainP2PChainState;
 using Sync = ot::proto::BlockchainP2PSync;
+using Pattern = ot::blockchain::block::bitcoin::Script::Pattern;
+using FilterType = ot::blockchain::filter::Type;
 
 constexpr auto test_chain_{b::Type::UnitTest};
 constexpr auto sync_server_sync_{"inproc://sync_server_endpoint/sync"};
@@ -89,6 +96,8 @@ constexpr auto sync_server_sync_public_{
 constexpr auto sync_server_update_{"inproc://sync_server_endpoint/update"};
 constexpr auto sync_server_update_public_{
     "inproc://sync_server_public_endpoint/update"};
+constexpr auto coinbase_fun_{"The Industrial Revolution and its consequences "
+                             "have been a disaster for the human race."};
 
 class PeerListener
 {
@@ -298,8 +307,7 @@ struct SyncRequestor {
         const zmq::Frame& frame,
         const std::size_t index) const noexcept -> bool
     {
-        constexpr auto filterType{
-            ot::blockchain::filter::Type::Extended_opentxs};
+        constexpr auto filterType{ot::blockchain::filter::Type::ES};
         const auto& chain = api_.Blockchain().GetChain(test_chain_);
         const auto header =
             chain.HeaderOracle().LoadHeader(cache_.get(index).get());
@@ -582,12 +590,184 @@ private:
     ot::OTZMQSubscribeSocket socket_;
 };
 
+struct ScanListener {
+    using Callback = ot::network::zeromq::ListenCallback;
+    using Account = ot::api::client::blockchain::BalanceNode;
+    using Subchain = ot::api::client::blockchain::Subchain;
+    using Height = ot::blockchain::block::Height;
+    using Future = std::future<void>;
+
+    [[maybe_unused]] auto wait(const Future& future) const noexcept -> bool
+    {
+        constexpr auto limit = std::chrono::minutes{5};
+        using Status = std::future_status;
+
+        if (Status::ready == future.wait_for(limit)) {
+
+            return true;
+        } else {
+
+            return false;
+        }
+    }
+
+    [[maybe_unused]] auto get_future(
+        const Account& account,
+        Subchain subchain,
+        Height target) noexcept -> Future
+    {
+        auto lock = ot::Lock{lock_};
+        const auto& nym = account.Parent().NymID();
+        const auto chain = account.Parent().Parent().Chain();
+        const auto& id = account.ID();
+        auto& map = map_[nym][chain][id];
+        auto it = [&] {
+            if (auto i = map.find(subchain); i != map.end()) {
+
+                return i;
+            } else {
+                return map.try_emplace(subchain, -1, api_.Factory().Data())
+                    .first;
+            }
+        }();
+
+        return it->second.reset(target);
+    }
+
+    [[maybe_unused]] ScanListener(const ot::api::Core& api) noexcept
+        : api_(api)
+        , cb_(Callback::Factory([&](auto& msg) { cb(msg); }))
+        , socket_([&] {
+            auto out = api_.ZeroMQ().SubscribeSocket(cb_);
+            const auto rc =
+                out->Start(api_.Endpoints().BlockchainScanProgress());
+
+            OT_ASSERT(rc);
+
+            return out;
+        }())
+        , lock_()
+        , map_()
+    {
+    }
+
+private:
+    using Chain = ot::blockchain::Type;
+    using Position = ot::blockchain::block::Position;
+    using Promise = std::promise<void>;
+
+    struct Data {
+        Position pos_;
+        Height target_;
+        Promise promise_;
+
+        auto reset(Height target) noexcept -> Future
+        {
+            target_ = target;
+            promise_ = {};
+
+            return promise_.get_future();
+        }
+        auto test() noexcept -> void
+        {
+            if (pos_.first == target_) {
+                try {
+                    promise_.set_value();
+                } catch (...) {
+                }
+            }
+        }
+
+        Data(Height height, ot::OTData&& hash) noexcept
+            : pos_(height, std::move(hash))
+            , target_()
+            , promise_()
+        {
+        }
+        [[maybe_unused]] Data(Data&&) = default;
+
+    private:
+        Data() = delete;
+        Data(const Data&) = delete;
+        auto operator=(const Data&) -> Data& = delete;
+        auto operator=(Data&&) -> Data& = delete;
+    };
+
+    using SubchainMap = std::map<Subchain, Data>;
+    using AccountMap = std::map<ot::OTIdentifier, SubchainMap>;
+    using ChainMap = std::map<Chain, AccountMap>;
+    using Map = std::map<ot::OTNymID, ChainMap>;
+
+    const ot::api::Core& api_;
+    const ot::OTZMQListenCallback cb_;
+    const ot::OTZMQSubscribeSocket socket_;
+    mutable std::mutex lock_;
+    Map map_;
+
+    auto cb(const ot::network::zeromq::Message& in) noexcept -> void
+    {
+        const auto body = in.Body();
+
+        OT_ASSERT(body.size() == 7u);
+
+        const auto chain = body.at(1).as<Chain>();
+        auto nymID = [&] {
+            auto out = api_.Factory().NymID();
+            out->Assign(body.at(2).Bytes());
+
+            OT_ASSERT(false == out->empty());
+
+            return out;
+        }();
+        auto accountID = [&] {
+            auto out = api_.Factory().Identifier();
+            out->Assign(body.at(3).Bytes());
+
+            OT_ASSERT(false == out->empty());
+
+            return out;
+        }();
+        const auto sub = body.at(4).as<Subchain>();
+        const auto height = body.at(5).as<Height>();
+        auto hash = [&] {
+            auto out = api_.Factory().Data();
+            out->Assign(body.at(6).Bytes());
+
+            OT_ASSERT(false == out->empty());
+
+            return out;
+        }();
+        auto lock = ot::Lock{lock_};
+        auto& map = map_[std::move(nymID)][chain][std::move(accountID)];
+        auto it = [&] {
+            if (auto i = map.find(sub); i != map.end()) {
+                if (height > i->second.pos_.first) {
+                    i->second.pos_ = Position{height, std::move(hash)};
+                }
+
+                return i;
+            } else {
+                return map.try_emplace(sub, height, std::move(hash)).first;
+            }
+        }();
+
+        it->second.test();
+    }
+};
+
 class Regtest_fixture_base : public ::testing::Test
 {
 protected:
     using Height = b::block::Height;
     using Transaction = ot::api::Factory::Transaction_p;
     using Generator = std::function<Transaction(Height)>;
+    using Outpoint = ot::blockchain::block::bitcoin::Outpoint;
+    using Script = ot::blockchain::block::bitcoin::Script;
+    using UTXO = ot::blockchain::client::Wallet::UTXO;
+    using GetAmount = std::function<std::int64_t(int)>;
+    using GetPattern = std::function<Pattern(int)>;
+    using GetBytes =
+        std::function<std::optional<ot::ReadView>(const Script&, int)>;
 
     const ot::ArgList client_args_;
     const int client_count_;
@@ -731,7 +911,7 @@ protected:
         }
 
         auto output = true;
-        constexpr auto limit = std::chrono::minutes(5);
+        constexpr auto limit = std::chrono::minutes(30);
         using Status = std::future_status;
 
         for (auto& future : blocks) {
@@ -755,6 +935,52 @@ protected:
         }
 
         return output;
+    }
+    [[maybe_unused]] auto TestUTXOs(
+        const std::vector<Outpoint>& outpoints,
+        const std::vector<ot::OTData>& keys,
+        const std::vector<UTXO>& utxos,
+        const GetBytes getData,
+        const GetPattern getPattern,
+        const GetAmount amount) const noexcept -> bool
+    {
+        auto out = true;
+        auto index{-1};
+
+        for (const auto& [outpoint, pOutput] : utxos) {
+            const auto& expected = outpoints.at(++index);
+            out &= (outpoint == expected);
+            EXPECT_EQ(outpoint.str(), expected.str());
+            EXPECT_TRUE(pOutput);
+
+            if (!pOutput) { return false; }
+
+            const auto& output = *pOutput;
+            out &= (output.Value() == amount(index));
+
+            EXPECT_EQ(output.Value(), amount(index));
+
+            const auto& script = output.Script();
+            using Position = ot::blockchain::block::bitcoin::Script::Position;
+            out &= (script.Role() == Position::Output);
+
+            EXPECT_EQ(script.Role(), Position::Output);
+
+            const auto data = getData(script, index);
+            const auto pattern = getPattern(index);
+
+            EXPECT_TRUE(data.has_value());
+
+            if (false == data.has_value()) { return false; }
+
+            out &= (data.value() == keys.at(index)->Bytes());
+            out &= (script.Type() == pattern);
+
+            EXPECT_EQ(data.value(), keys.at(index)->Bytes());
+            EXPECT_EQ(script.Type(), pattern);
+        }
+
+        return out;
     }
 
     [[maybe_unused]] virtual auto Shutdown() noexcept -> void
@@ -833,7 +1059,9 @@ protected:
             using OutputBuilder = ot::api::Factory::OutputBuilder;
 
             return miner_.Factory().BitcoinGenerationTransaction(
-                test_chain_, height, [&] {
+                test_chain_,
+                height,
+                [&] {
                     auto output = std::vector<OutputBuilder>{};
                     const auto text = std::string{"null"};
                     const auto keys =
@@ -845,7 +1073,8 @@ protected:
                         keys);
 
                     return output;
-                }());
+                }(),
+                coinbase_fun_);
         })
         , mined_blocks_(init_mined())
         , block_1_(init_block(0, client_1_))

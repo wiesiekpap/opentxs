@@ -18,6 +18,9 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/Core.hpp"
+#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
@@ -26,6 +29,9 @@
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/protobuf/BlockchainTransactionInput.pb.h"
+#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
+#include "opentxs/protobuf/BlockchainWalletKey.pb.h"
 
 namespace opentxs
 {
@@ -74,20 +80,22 @@ public:
         const Patterns& txos,
         const ParsedPatterns& elements) const noexcept -> Matches final;
     auto GetPatterns() const noexcept -> std::vector<PatternID> final;
-    auto Keys() const noexcept -> std::vector<KeyID> final;
+    auto Keys() const noexcept -> std::vector<KeyID> final
+    {
+        return cache_.keys();
+    }
     auto NetBalanceChange(
         const api::client::Blockchain& blockchain,
-        const identifier::Nym& nym) const noexcept -> opentxs::Amount final;
-    auto Payer(const api::client::Blockchain& blockchain) const noexcept
-        -> OTIdentifier;
+        const identifier::Nym& nym) const noexcept -> opentxs::Amount final
+    {
+        return cache_.net_balance_change(blockchain, nym);
+    }
+    auto Payer() const noexcept -> OTIdentifier { return cache_.payer(); }
     auto PreviousOutput() const noexcept -> const Outpoint& final
     {
         return previous_;
     }
-    auto PrintScript() const noexcept -> std::string final
-    {
-        return script_->str();
-    }
+    auto Print() const noexcept -> std::string final;
     auto Serialize(const AllocateOutput destination) const noexcept
         -> std::optional<std::size_t> final;
     auto SerializeNormalized(const AllocateOutput destination) const noexcept
@@ -96,6 +104,10 @@ public:
         const api::client::Blockchain& blockchain,
         const std::uint32_t index,
         SerializeType& destination) const noexcept -> bool final;
+    auto SetKeyData(const KeyData& data) noexcept -> void final
+    {
+        return cache_.set(data);
+    }
     auto SignatureVersion() const noexcept
         -> std::unique_ptr<internal::Input> final;
     auto SignatureVersion(std::unique_ptr<internal::Script> subscript)
@@ -105,7 +117,10 @@ public:
         return *script_;
     }
     auto Sequence() const noexcept -> std::uint32_t final { return sequence_; }
-    auto Spends() const noexcept(false) -> const internal::Output& final;
+    auto Spends() const noexcept(false) -> const internal::Output& final
+    {
+        return cache_.spends();
+    }
     auto Witness() const noexcept -> const std::vector<Space>& final
     {
         return witness_;
@@ -179,6 +194,195 @@ public:
     ~Input() final = default;
 
 private:
+    struct Cache {
+        template <typename F>
+        auto for_each_key(F cb) const noexcept -> void
+        {
+            auto lock = rLock{lock_};
+            std::for_each(std::begin(keys_), std::end(keys_), cb);
+        }
+        auto keys() const noexcept -> std::vector<KeyID>
+        {
+            auto lock = rLock{lock_};
+            auto output = std::vector<KeyID>{};
+            std::transform(
+                std::begin(keys_),
+                std::end(keys_),
+                std::back_inserter(output),
+                [](const auto& key) -> auto { return key; });
+
+            return output;
+        }
+        auto net_balance_change(
+            const api::client::Blockchain& blockchain,
+            const identifier::Nym& nym) const noexcept -> opentxs::Amount
+        {
+            auto lock = rLock{lock_};
+
+            if (false == bool(previous_output_)) { return 0; }
+
+            for (const auto& key : keys_) {
+                if (blockchain.Owner(key) == nym) {
+                    return -1 * previous_output_->Value();
+                }
+            }
+
+            return 0;
+        }
+        auto payer() const noexcept -> OTIdentifier
+        {
+            auto lock = rLock{lock_};
+
+            return payer_;
+        }
+        auto spends() const noexcept(false) -> const internal::Output&
+        {
+            auto lock = rLock{lock_};
+
+            if (previous_output_) {
+
+                return *previous_output_;
+            } else {
+
+                throw std::runtime_error("previous output missing");
+            }
+        }
+
+        auto add(KeyID&& key) noexcept -> void
+        {
+            auto lock = rLock{lock_};
+            keys_.emplace(std::move(key));
+        }
+        template <typename F>
+        auto associate(
+            const api::client::Blockchain& blockchain,
+            const proto::BlockchainTransactionOutput& in,
+            F cb) noexcept -> bool
+        {
+            auto lock = rLock{lock_};
+
+            if (false == bool(previous_output_)) { previous_output_ = cb(); }
+
+            // NOTE this should only happen during unit testing
+            if (keys_.empty()) {
+                OT_ASSERT(0 < in.key_size());
+
+                for (const auto& key : in.key()) {
+                    keys_.emplace(
+                        key.subaccount(),
+                        static_cast<api::client::blockchain::Subchain>(
+                            static_cast<std::uint8_t>(key.subchain())),
+                        key.index());
+                }
+            }
+
+            return bool(previous_output_);
+        }
+        template <typename F>
+        auto merge(
+            const api::client::Blockchain& blockchain,
+            const SerializeType& rhs,
+            F cb) noexcept -> void
+        {
+            auto lock = rLock{lock_};
+            std::for_each(
+                std::begin(rhs.key()),
+                std::end(rhs.key()),
+                [this](const auto& key) {
+                    keys_.emplace(
+                        key.subaccount(),
+                        static_cast<api::client::blockchain::Subchain>(
+                            static_cast<std::uint8_t>(key.subchain())),
+                        key.index());
+                });
+
+            if (rhs.has_spends() && (false == bool(previous_output_))) {
+                previous_output_ = cb();
+            }
+        }
+        auto reset_size() noexcept -> void
+        {
+            auto lock = rLock{lock_};
+            size_ = std::nullopt;
+            normalized_size_ = std::nullopt;
+        }
+        auto set(const KeyData& data) noexcept -> void
+        {
+            auto lock = rLock{lock_};
+
+            if (payer_->empty()) {
+                for (const auto& key : keys_) {
+                    try {
+                        const auto& [sender, recipient] = data.at(key);
+
+                        if (recipient->empty()) { continue; }
+
+                        payer_ = recipient;
+
+                        return;
+                    } catch (...) {
+                    }
+                }
+            }
+        }
+        template <typename F>
+        auto size(const bool normalize, F cb) noexcept -> std::size_t
+        {
+            auto lock = rLock{lock_};
+            auto& output = normalize ? normalized_size_ : size_;
+
+            if (false == output.has_value()) { output = cb(); }
+
+            return output.value();
+        }
+
+        Cache(
+            const api::Core& api,
+            std::unique_ptr<const internal::Output>&& output,
+            std::optional<std::size_t>&& size,
+            boost::container::flat_set<KeyID>&& keys) noexcept
+            : lock_()
+            , previous_output_(std::move(output))
+            , size_(std::move(size))
+            , normalized_size_()
+            , keys_(std::move(keys))
+            , payer_(api.Factory().Identifier())
+        {
+        }
+        Cache(const Cache& rhs) noexcept
+            : lock_()
+            , previous_output_()
+            , size_()
+            , normalized_size_()
+            , keys_()
+            , payer_([&] {
+                auto lock = rLock{rhs.lock_};
+
+                return rhs.payer_;
+            }())
+        {
+            auto lock = rLock{rhs.lock_};
+
+            if (rhs.previous_output_) {
+                previous_output_ = rhs.previous_output_->clone();
+            }
+
+            size_ = rhs.size_;
+            normalized_size_ = rhs.normalized_size_;
+            keys_ = rhs.keys_;
+        }
+
+    private:
+        mutable std::recursive_mutex lock_{};
+        std::unique_ptr<const internal::Output> previous_output_;
+        std::optional<std::size_t> size_;
+        std::optional<std::size_t> normalized_size_;
+        boost::container::flat_set<KeyID> keys_;
+        OTIdentifier payer_;
+
+        Cache() = delete;
+    };
+
     static const VersionNumber outpoint_version_;
     static const VersionNumber key_version_;
 
@@ -199,13 +403,10 @@ private:
     const std::uint32_t sequence_;
     const boost::container::flat_set<PatternID> pubkey_hashes_;
     const std::optional<PatternID> script_hash_;
-    mutable std::unique_ptr<const internal::Output> previous_output_;
-    mutable std::optional<std::size_t> size_;
-    mutable std::optional<std::size_t> normalized_size_;
-    mutable boost::container::flat_set<KeyID> keys_;
-    mutable OTIdentifier payer_;
+    mutable Cache cache_;
 
     auto classify() const noexcept -> Redeem;
+    auto decode_coinbase() const noexcept -> std::string;
     auto is_bip16() const noexcept;
     auto serialize(const AllocateOutput destination, const bool normalized)
         const noexcept -> std::optional<std::size_t>;

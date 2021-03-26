@@ -134,7 +134,7 @@ auto BitcoinTransaction(
     const api::Core& api,
     const api::client::Blockchain& blockchain,
     const blockchain::Type chain,
-    const bool isGeneration,
+    const std::size_t position,
     const Time& time,
     blockchain::bitcoin::EncodedTransaction&& parsed) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Transaction>
@@ -173,7 +173,7 @@ auto BitcoinTransaction(
                         reader(input.script_),
                         ReadView{
                             reinterpret_cast<const char*>(&seq), sizeof(seq)},
-                        isGeneration && (0 == counter),
+                        (0 == position) && (0 == counter),
                         std::move(witness)));
                 ++counter;
                 inputBytes += input.size();
@@ -216,7 +216,7 @@ auto BitcoinTransaction(
         return std::make_unique<ReturnType>(
             api,
             ReturnType::default_version_,
-            isGeneration,
+            0 == position,
             parsed.version_.value(),
             parsed.segwit_flag_.value_or(std::byte{0x0}),
             parsed.lock_time_.value(),
@@ -228,7 +228,16 @@ auto BitcoinTransaction(
                 std::move(instantiatedInputs), inputBytes),
             factory::BitcoinTransactionOutputs(
                 std::move(instantiatedOutputs), outputBytes),
-            std::vector<blockchain::Type>{chain});
+            std::vector<blockchain::Type>{chain},
+            [&]() -> std::optional<std::size_t> {
+                if (std::numeric_limits<std::size_t>::max() == position) {
+
+                    return std::nullopt;
+                } else {
+
+                    return position;
+                }
+            }());
     } catch (const std::exception& e) {
         LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
 
@@ -347,8 +356,10 @@ Transaction::Transaction(
     const std::string& memo,
     std::unique_ptr<internal::Inputs> inputs,
     std::unique_ptr<internal::Outputs> outputs,
-    std::vector<blockchain::Type>&& chains) noexcept(false)
+    std::vector<blockchain::Type>&& chains,
+    std::optional<std::size_t>&& position) noexcept(false)
     : api_(api)
+    , position_(std::move(position))
     , serialize_version_(serializeVersion)
     , is_generation_(isGeneration)
     , version_(version)
@@ -359,11 +370,9 @@ Transaction::Transaction(
     , time_(time)
     , inputs_(std::move(inputs))
     , outputs_(std::move(outputs))
-    , normalized_id_()
-    , size_()
-    , normalized_size_()
     , memo_(memo)
     , chains_(std::move(chains))
+    , cache_()
 {
     if (0 == chains_.size()) { throw std::runtime_error("missing chains"); }
 
@@ -378,6 +387,7 @@ Transaction::Transaction(
 
 Transaction::Transaction(const Transaction& rhs) noexcept
     : api_(rhs.api_)
+    , position_(rhs.position_)
     , serialize_version_(rhs.serialize_version_)
     , is_generation_(rhs.is_generation_)
     , version_(rhs.version_)
@@ -388,11 +398,9 @@ Transaction::Transaction(const Transaction& rhs) noexcept
     , time_(rhs.time_)
     , inputs_(rhs.inputs_->clone())
     , outputs_(rhs.outputs_->clone())
-    , normalized_id_(rhs.normalized_id_)
-    , size_(rhs.size_)
-    , normalized_size_(rhs.normalized_size_)
     , memo_(rhs.memo_)
     , chains_(rhs.chains_)
+    , cache_(rhs.cache_)
 {
 }
 
@@ -425,18 +433,15 @@ auto Transaction::AssociatedRemoteContacts(
 auto Transaction::calculate_size(const bool normalize) const noexcept
     -> std::size_t
 {
-    auto& output = normalize ? normalized_size_ : size_;
-    const bool isSegwit =
-        (false == normalize) && (std::byte{0x00} != segwit_flag_);
+    return cache_.size(normalize, [&] {
+        const bool isSegwit =
+            (false == normalize) && (std::byte{0x00} != segwit_flag_);
 
-    if (false == output.has_value()) {
-        output = sizeof(version_) + inputs_->CalculateSize(normalize) +
-                 outputs_->CalculateSize() +
-                 (isSegwit ? calculate_witness_size() : std::size_t{0}) +
-                 sizeof(lock_time_);
-    }
-
-    return output.value();
+        return sizeof(version_) + inputs_->CalculateSize(normalize) +
+               outputs_->CalculateSize() +
+               (isSegwit ? calculate_witness_size() : std::size_t{0}) +
+               sizeof(lock_time_);
+    });
 }
 
 auto Transaction::calculate_witness_size(const Space& in) noexcept
@@ -472,18 +477,17 @@ auto Transaction::calculate_witness_size() const noexcept -> std::size_t
 
 auto Transaction::IDNormalized() const noexcept -> const Identifier&
 {
-    if (false == normalized_id_.has_value()) {
+    return cache_.normalized([&] {
         auto preimage = Space{};
         const auto serialized = serialize(writer(preimage), true);
 
         OT_ASSERT(serialized);
 
-        normalized_id_ = api_.Factory().Identifier();
-        auto& output = normalized_id_.value().get();
-        output.CalculateDigest(reader(preimage), ID::sha256);
-    }
+        auto output = api_.Factory().Identifier();
+        output->CalculateDigest(reader(preimage), ID::sha256);
 
-    return normalized_id_.value();
+        return output;
+    });
 }
 
 auto Transaction::ExtractElements(const filter::Type style) const noexcept
@@ -502,7 +506,7 @@ auto Transaction::ExtractElements(const filter::Type style) const noexcept
         std::make_move_iterator(temp.begin()),
         std::make_move_iterator(temp.end()));
 
-    if (filter::Type::Extended_opentxs == style) {
+    if (filter::Type::ES == style) {
         const auto* data = static_cast<const std::byte*>(txid_->data());
         output.emplace_back(data, data + txid_->size());
     }
@@ -516,7 +520,6 @@ auto Transaction::ExtractElements(const filter::Type style) const noexcept
 }
 
 auto Transaction::FindMatches(
-    const api::client::Blockchain& blockchain,
     const FilterType style,
     const Patterns& txos,
     const ParsedPatterns& elements) const noexcept -> Matches
@@ -526,16 +529,20 @@ auto Transaction::FindMatches(
         inputs_->size())(" inputs for transaction ")(txid_->asHex())
         .Flush();
     auto output = inputs_->FindMatches(txid_->Bytes(), style, txos, elements);
+    auto& [inputs, outputs] = output;
     LogTrace(OT_METHOD)(__FUNCTION__)(": Verifying ")(
         elements.data_.size() + txos.size())(" potential matches in ")(
         inputs_->size())(" output for transaction ")(txid_->asHex())
         .Flush();
-    auto temp =
-        outputs_->FindMatches(blockchain, txid_->Bytes(), style, elements);
-    output.insert(
-        output.end(),
-        std::make_move_iterator(temp.begin()),
-        std::make_move_iterator(temp.end()));
+    auto temp = outputs_->FindMatches(txid_->Bytes(), style, elements);
+    inputs.insert(
+        inputs.end(),
+        std::make_move_iterator(temp.first.begin()),
+        std::make_move_iterator(temp.first.end()));
+    outputs.insert(
+        outputs.end(),
+        std::make_move_iterator(temp.second.begin()),
+        std::make_move_iterator(temp.second.end()));
 
     return output;
 }
@@ -563,7 +570,7 @@ auto Transaction::GetPreimageBTC(
     }
 
     auto copy = Transaction{*this};
-    copy.size_ = std::nullopt;
+    copy.cache_.reset_size();
 
     if (false == copy.inputs_->ReplaceScript(index)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(
@@ -585,6 +592,16 @@ auto Transaction::GetPreimageBTC(
     copy.Serialize(writer(output));
 
     return output;
+}
+
+auto Transaction::Keys() const noexcept -> std::vector<KeyID>
+{
+    auto out = inputs_->Keys();
+    auto keys = outputs_->Keys();
+    std::move(keys.begin(), keys.end(), std::back_inserter(out));
+    dedup(out);
+
+    return out;
 }
 
 auto Transaction::Memo(const api::client::Blockchain& blockchain) const noexcept
@@ -655,6 +672,33 @@ auto Transaction::NetBalanceChange(
 {
     return inputs_->NetBalanceChange(blockchain, nym) +
            outputs_->NetBalanceChange(blockchain, nym);
+}
+
+auto Transaction::Print() const noexcept -> std::string
+{
+    auto out = std::stringstream{};
+    out << "  version: " << std::to_string(version_) << '\n';
+    auto count{0};
+    const auto inputs = Inputs().size();
+    const auto outputs = Outputs().size();
+
+    for (const auto& input : Inputs()) {
+        out << "  input " << std::to_string(++count);
+        out << " of " << std::to_string(inputs) << '\n';
+        out << input.Print();
+    }
+
+    count = 0;
+
+    for (const auto& output : Outputs()) {
+        out << "  output " << std::to_string(++count);
+        out << " of " << std::to_string(outputs) << '\n';
+        out << output.Print();
+    }
+
+    out << "  locktime: " << std::to_string(lock_time_) << '\n';
+
+    return out.str();
 }
 
 auto Transaction::serialize(
@@ -793,7 +837,10 @@ auto Transaction::serialize(
                     return std::nullopt;
                 }
 
-                std::memcpy(it, push.data(), push.size());
+                if (0u < push.size()) {
+                    std::memcpy(it, push.data(), push.size());
+                }
+
                 std::advance(it, push.size());
                 remaining -= push.size();
             }
@@ -855,5 +902,11 @@ auto Transaction::Serialize(const api::client::Blockchain& blockchain)
     output.set_is_generation(is_generation_);
 
     return std::move(output);
+}
+
+auto Transaction::SetKeyData(const KeyData& data) noexcept -> void
+{
+    inputs_->SetKeyData(data);
+    outputs_->SetKeyData(data);
 }
 }  // namespace opentxs::blockchain::block::bitcoin::implementation

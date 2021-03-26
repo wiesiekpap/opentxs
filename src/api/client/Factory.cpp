@@ -108,20 +108,15 @@ auto Factory::BitcoinGenerationTransaction(
     const auto locktime = boost::endian::little_uint32_buf_t{0};
     const auto sequence = boost::endian::little_uint32_buf_t{0xffffffff};
     const auto& blockchain = client_.Blockchain();
-    // NOTE: BIP-0034
     const auto cb = [&] {
-        // TODO stop hardcoding 3 bytes
-        OT_ASSERT(height <= 8388607);
-        static_assert(sizeof(height) >= 3);
-
-        const auto incoming = std::min<std::size_t>(coinbase.size(), 96u);
-        auto output = space(incoming + 4u);
+        const auto bip34 =
+            opentxs::blockchain::block::bitcoin::internal::EncodeBip34(height);
+        auto output = space(bip34.size() + coinbase.size());
         auto it = output.data();
-        *it = std::byte{0x3};
-        std::advance(it, 1);
-        std::memcpy(it, &height, 3);
-        std::advance(it, 3);
-        std::memcpy(it, coinbase.data(), incoming);
+        std::memcpy(it, bip34.data(), bip34.size());
+        std::advance(it, bip34.size());
+        std::memcpy(it, coinbase.data(), coinbase.size());
+        output.resize(std::min<std::size_t>(output.size(), 100u));
 
         return output;
     }();

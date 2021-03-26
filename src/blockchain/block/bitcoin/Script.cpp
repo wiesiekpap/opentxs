@@ -88,7 +88,7 @@ auto BitcoinScript(
                                                ? std::min(pushSize, remaining)
                                                : pushSize;
 
-                if ((read + effectiveSize) > target) {
+                if (((read + effectiveSize) > target)) {
                     logger("opentxs::factory::")(__FUNCTION__)(
                         ": Incomplete direct data push")
                         .Flush();
@@ -97,7 +97,11 @@ auto BitcoinScript(
                 }
 
                 data = space(effectiveSize);
-                std::memcpy(data.value().data(), it, effectiveSize);
+
+                if (0u < effectiveSize) {
+                    std::memcpy(data.value().data(), it, effectiveSize);
+                }
+
                 read += effectiveSize;
                 std::advance(it, effectiveSize);
 
@@ -627,7 +631,7 @@ auto Script::ExtractElements(const filter::Type style) const noexcept
     auto output = std::vector<Space>{};
 
     switch (style) {
-        case filter::Type::Extended_opentxs: {
+        case filter::Type::ES: {
             LogTrace(OT_METHOD)(__FUNCTION__)(": processing data pushes")
                 .Flush();
 
@@ -1010,6 +1014,41 @@ auto Script::potential_segwit(const ScriptElements& script) noexcept -> bool
     return (1u < program.size()) && (41u > program.size());
 }
 
+auto Script::Print() const noexcept -> std::string
+{
+    auto output = std::stringstream{};
+
+    for (const auto& [opcode, invalid, push, data] : elements_) {
+        output << "      op: "
+               << std::to_string(static_cast<std::uint8_t>(opcode));
+
+        if (invalid) {
+            output << " invalid: "
+                   << std::to_string(
+                          std::to_integer<std::uint8_t>(invalid.value()));
+        }
+
+        if (push) {
+            auto bytes = std::uint64_t{};
+            std::memcpy(
+                &bytes,
+                push.value().data(),
+                std::min(push.value().size(), sizeof(bytes)));
+            output << " push bytes: " << bytes;
+        }
+
+        if (data) {
+            auto item = Data::Factory();
+            item->Assign(reader(data.value()));
+            output << " (" << item->size() << ") bytes : " << item->asHex();
+        }
+
+        output << '\n';
+    }
+
+    return output.str();
+}
+
 auto Script::Pubkey() const noexcept -> std::optional<ReadView>
 {
     switch (type_) {
@@ -1110,7 +1149,11 @@ auto Script::Serialize(const AllocateOutput destination) const noexcept -> bool
 
         if (data.has_value()) {
             const auto& value = data.value();
-            std::memcpy(static_cast<void*>(it), value.data(), value.size());
+
+            if (0u < value.size()) {
+                std::memcpy(static_cast<void*>(it), value.data(), value.size());
+            }
+
             std::advance(it, value.size());
         }
     }
@@ -1124,40 +1167,6 @@ auto Script::SigningSubscript(const blockchain::Type chain) const noexcept
     // TODO handle OP_CODESEPERATOR shit
 
     return clone();
-}
-
-auto Script::str() const noexcept -> std::string
-{
-    auto output = std::stringstream{};
-
-    for (const auto& [opcode, invalid, push, data] : elements_) {
-        output << "op: " << std::to_string(static_cast<std::uint8_t>(opcode));
-
-        if (invalid) {
-            output << " invalid: "
-                   << std::to_string(
-                          std::to_integer<std::uint8_t>(invalid.value()));
-        }
-
-        if (push) {
-            auto bytes = std::uint64_t{};
-            std::memcpy(
-                &bytes,
-                push.value().data(),
-                std::min(push.value().size(), sizeof(bytes)));
-            output << " push bytes: " << bytes;
-        }
-
-        if (data) {
-            auto item = Data::Factory();
-            item->Assign(reader(data.value()));
-            output << " (" << item->size() << ") bytes : " << item->asHex();
-        }
-
-        output << '\n';
-    }
-
-    return output.str();
 }
 
 auto Script::to_number(const OP opcode) noexcept -> std::uint8_t

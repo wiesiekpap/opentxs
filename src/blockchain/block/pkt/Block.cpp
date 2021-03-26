@@ -188,7 +188,9 @@ auto Block::serialize_post_header(ByteIterator& it, std::size_t& remaining)
 
         {
             const auto size{proof.size()};
-            std::memcpy(it, proof.data(), size);
+
+            if (0u < size) { std::memcpy(it, proof.data(), size); }
+
             remaining -= size;
             std::advance(it, size);
         }

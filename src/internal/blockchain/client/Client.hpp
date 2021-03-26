@@ -32,8 +32,8 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
-#if OT_BLOCKCHAIN
 #include "opentxs/blockchain/Blockchain.hpp"
+#if OT_BLOCKCHAIN
 #include "opentxs/blockchain/Network.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/blockchain/Types.hpp"
@@ -41,6 +41,7 @@
 #include "opentxs/blockchain/client/BlockOracle.hpp"
 #include "opentxs/blockchain/client/FilterOracle.hpp"
 #include "opentxs/blockchain/client/HeaderOracle.hpp"
+#include "opentxs/blockchain/client/Wallet.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/core/Data.hpp"
@@ -172,7 +173,7 @@ struct make_blank<blockchain::block::Position> {
     {
         return {
             make_blank<blockchain::block::Height>::value(api),
-            make_blank<blockchain::block::pHash>::value(api)};
+            blockchain::block::BlankHash()};
     }
 };
 }  // namespace opentxs
@@ -569,7 +570,7 @@ struct SyncDatabase {
     virtual ~SyncDatabase() = default;
 };
 
-struct Wallet {
+struct Wallet : virtual public client::Wallet {
     enum class Task : OTZMQWorkType {
         index = OT_ZMQ_INTERNAL_SIGNAL + 0,
         scan = OT_ZMQ_INTERNAL_SIGNAL + 1,
@@ -586,7 +587,7 @@ struct Wallet {
     virtual auto Init() noexcept -> void = 0;
     virtual auto Shutdown() noexcept -> std::shared_future<void> = 0;
 
-    virtual ~Wallet() = default;
+    ~Wallet() override = default;
 };
 
 struct WalletDatabase {
@@ -604,6 +605,12 @@ struct WalletDatabase {
         blockchain::block::bitcoin::Outpoint,
         proto::BlockchainTransactionOutput>;
     using KeyID = api::client::blockchain::Key;
+    using State = client::Wallet::TxoState;
+
+    enum class Spend : bool {
+        ConfirmedOnly = false,
+        UnconfirmedToo = true,
+    };
 
     static const VersionNumber DefaultIndexVersion;
 
@@ -613,6 +620,7 @@ struct WalletDatabase {
         const Subchain subchain,
         const FilterType type,
         const block::Position& block,
+        const std::size_t blockIndex,
         const std::vector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction,
         const VersionNumber version = DefaultIndexVersion) const noexcept
@@ -631,13 +639,20 @@ struct WalletDatabase {
         -> bool = 0;
     virtual auto CompletedProposals() const noexcept
         -> std::set<OTIdentifier> = 0;
-    virtual auto DeleteProposal(const Identifier& id) const noexcept
-        -> bool = 0;
     virtual auto ForgetProposals(
         const std::set<OTIdentifier>& ids) const noexcept -> bool = 0;
     virtual auto GetBalance() const noexcept -> Balance = 0;
     virtual auto GetBalance(const identifier::Nym& owner) const noexcept
         -> Balance = 0;
+    virtual auto GetBalance(const identifier::Nym& owner, const NodeID& node)
+        const noexcept -> Balance = 0;
+    virtual auto GetOutputs(State type) const noexcept -> std::vector<UTXO> = 0;
+    virtual auto GetOutputs(const identifier::Nym& owner, State type)
+        const noexcept -> std::vector<UTXO> = 0;
+    virtual auto GetOutputs(
+        const identifier::Nym& owner,
+        const Identifier& node,
+        State type) const noexcept -> std::vector<UTXO> = 0;
     virtual auto GetPatterns(
         const NodeID& balanceNode,
         const Subchain subchain,
@@ -645,6 +660,12 @@ struct WalletDatabase {
         const VersionNumber version = DefaultIndexVersion) const noexcept
         -> Patterns = 0;
     virtual auto GetUnspentOutputs() const noexcept -> std::vector<UTXO> = 0;
+    virtual auto GetUnspentOutputs(
+        const NodeID& balanceNode,
+        const Subchain subchain,
+        const FilterType type,
+        const VersionNumber version = DefaultIndexVersion) const noexcept
+        -> std::vector<UTXO> = 0;
     virtual auto GetUntestedPatterns(
         const NodeID& balanceNode,
         const Subchain subchain,
@@ -658,17 +679,15 @@ struct WalletDatabase {
         -> std::vector<proto::BlockchainTransactionProposal> = 0;
     virtual auto LookupContact(const Data& pubkeyHash) const noexcept
         -> std::set<OTIdentifier> = 0;
-    virtual auto ReleaseChangeKey(const Identifier& proposal, const KeyID key)
-        const noexcept -> bool = 0;
     virtual auto ReorgTo(
         const NodeID& balanceNode,
         const Subchain subchain,
         const FilterType type,
         const std::vector<block::Position>& reorg) const noexcept -> bool = 0;
-    virtual auto ReserveChangeKey(const Identifier& proposal) const noexcept
-        -> std::optional<KeyID> = 0;
-    virtual auto ReserveUTXO(const Identifier& proposal) const noexcept
-        -> std::optional<UTXO> = 0;
+    virtual auto ReserveUTXO(
+        const identifier::Nym& spender,
+        const Identifier& proposal,
+        const Spend policy) const noexcept -> std::optional<UTXO> = 0;
     virtual auto SetDefaultFilterType(const FilterType type) const noexcept
         -> bool = 0;
     virtual auto SubchainAddElements(

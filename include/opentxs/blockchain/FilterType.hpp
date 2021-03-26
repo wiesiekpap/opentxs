@@ -19,7 +19,7 @@ namespace filter
 enum class Type : TypeEnum {
     Basic_BIP158 = 0,
     Basic_BCHVariant = 1,
-    Extended_opentxs = 88,
+    ES = 88,
     Unknown = std::numeric_limits<TypeEnum>::max(),
 };
 }  // namespace filter

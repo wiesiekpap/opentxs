@@ -321,12 +321,14 @@ auto PaymentCode::ReorgNotification(const Txid& tx) const noexcept -> bool
 
 auto PaymentCode::Reserve(
     const Subchain type,
+    const std::size_t preallocate,
     const PasswordPrompt& reason,
     const Identifier&,
     const std::string& label,
     const Time time) const noexcept -> std::optional<Bip32Index>
 {
-    return Deterministic::Reserve(type, reason, get_contact(), label, time);
+    return Deterministic::Reserve(
+        type, preallocate, reason, get_contact(), label, time);
 }
 
 auto PaymentCode::save(const rLock& lock) const noexcept -> bool

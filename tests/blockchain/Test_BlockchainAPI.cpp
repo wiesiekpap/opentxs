@@ -88,6 +88,7 @@ std::unique_ptr<ot::OTIdentifier> account_5_id_p_{nullptr};
 std::unique_ptr<ot::OTIdentifier> account_6_id_p_{nullptr};
 std::unique_ptr<ot::OTIdentifier> account_7_id_p_{nullptr};
 std::unique_ptr<ot::OTIdentifier> account_8_id_p_{nullptr};
+std::unique_ptr<ot::OTIdentifier> account_9_id_p_{nullptr};
 AddressData address_data_{};
 const std::string fingerprint_a_{};
 const std::string fingerprint_b_{};
@@ -207,6 +208,7 @@ public:
     ot::Identifier& account_6_id_;  // bob, btc, bip32 *
     ot::Identifier& account_7_id_;  // chris, ltc, bip44
     ot::Identifier& account_8_id_;  // alex, btc, bip44
+    ot::Identifier& account_9_id_;  // alex, bch, bip44
     const ThreadVectors threads_;
 
     static const ot::api::client::Manager& init()
@@ -278,6 +280,8 @@ public:
             account_7_id_p_.reset(
                 new ot::OTIdentifier{api.Factory().Identifier()});
             account_8_id_p_.reset(
+                new ot::OTIdentifier{api.Factory().Identifier()});
+            account_9_id_p_.reset(
                 new ot::OTIdentifier{api.Factory().Identifier()});
             init_ = true;
         }
@@ -486,6 +490,7 @@ public:
         , account_6_id_(account_6_id_p_->get())
         , account_7_id_(account_7_id_p_->get())
         , account_8_id_(account_8_id_p_->get())
+        , account_9_id_(account_9_id_p_->get())
         , threads_({
               {0,
                {
@@ -1308,6 +1313,39 @@ TEST_F(Test_BlockchainAPI, paymentcode)
 
     ASSERT_TRUE(index.has_value());
     EXPECT_EQ(index.value(), 0u);
+}
+
+TEST_F(Test_BlockchainAPI, preallocate)
+{
+    const auto& nym = alex_;
+    const auto chain = bch_chain_;
+    account_9_id_.Assign(api_.Blockchain().NewHDSubaccount(
+        nym, ot::BlockchainAccountType::BIP44, chain, reason_));
+    const auto& accountID = account_9_id_;
+
+    ASSERT_FALSE(accountID.empty());
+
+    auto list = api_.Blockchain().AccountList(nym, chain);
+
+    EXPECT_EQ(list.count(accountID), 1);
+
+    const auto& account =
+        api_.Blockchain().Account(nym, chain).GetHD().at(accountID);
+
+    ASSERT_EQ(account.ID(), accountID);
+
+    auto first{true};
+    constexpr auto count{1000u};
+    constexpr auto subchain{Subchain::External};
+
+    for (auto i{0u}; i < count; ++i) {
+        const auto index =
+            account.Reserve(subchain, first ? count : 0u, reason_);
+        first = false;
+
+        ASSERT_TRUE(index.has_value());
+        ASSERT_EQ(index.value(), i);
+    }
 }
 }  // namespace
 #endif  // OT_CRYPTO_WITH_BIP32

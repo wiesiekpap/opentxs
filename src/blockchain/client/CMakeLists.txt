@@ -39,6 +39,7 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/client/BlockOracle.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/client/FilterOracle.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/client/HeaderOracle.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/client/Wallet.hpp"
 )
 
 target_link_libraries(

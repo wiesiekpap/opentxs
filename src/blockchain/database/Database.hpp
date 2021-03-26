@@ -113,7 +113,7 @@ class Identifier;
 
 namespace opentxs::blockchain::implementation
 {
-class Database final : virtual public internal::Database
+class Database final : public internal::Database
 {
 public:
     auto AddConfirmedTransaction(
@@ -122,6 +122,7 @@ public:
         const Subchain subchain,
         const FilterType type,
         const block::Position& block,
+        const std::size_t blockIndex,
         const std::vector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction,
         const VersionNumber version) const noexcept -> bool final
@@ -133,6 +134,7 @@ public:
             type,
             version,
             block,
+            blockIndex,
             outputIndices,
             transaction);
     }
@@ -206,10 +208,6 @@ public:
     {
         return wallet_.CancelProposal(id);
     }
-    auto DeleteProposal(const Identifier& id) const noexcept -> bool final
-    {
-        return wallet_.DeleteProposal(id);
-    }
     auto FilterHeaderTip(const filter::Type type) const noexcept
         -> block::Position final
     {
@@ -245,6 +243,27 @@ public:
     {
         return wallet_.GetBalance(owner);
     }
+    auto GetBalance(const identifier::Nym& owner, const NodeID& node)
+        const noexcept -> Balance final
+    {
+        return wallet_.GetBalance(owner, node);
+    }
+    auto GetOutputs(State type) const noexcept -> std::vector<UTXO> final
+    {
+        return wallet_.GetOutputs(type);
+    }
+    auto GetOutputs(const identifier::Nym& owner, State type) const noexcept
+        -> std::vector<UTXO> final
+    {
+        return wallet_.GetOutputs(owner, type);
+    }
+    auto GetOutputs(
+        const identifier::Nym& owner,
+        const Identifier& node,
+        State type) const noexcept -> std::vector<UTXO> final
+    {
+        return wallet_.GetOutputs(owner, node, type);
+    }
     auto GetPatterns(
         const NodeID& balanceNode,
         const Subchain subchain,
@@ -256,6 +275,14 @@ public:
     auto GetUnspentOutputs() const noexcept -> std::vector<UTXO> final
     {
         return wallet_.GetUnspentOutputs();
+    }
+    auto GetUnspentOutputs(
+        const NodeID& balanceNode,
+        const Subchain subchain,
+        const FilterType type,
+        const VersionNumber version) const noexcept -> std::vector<UTXO> final
+    {
+        return wallet_.GetUnspentOutputs(balanceNode, subchain, type, version);
     }
     auto GetUntestedPatterns(
         const NodeID& balanceNode,
@@ -343,11 +370,6 @@ public:
     {
         return headers_.RecentHashes();
     }
-    auto ReleaseChangeKey(const Identifier& proposal, const KeyID key)
-        const noexcept -> bool final
-    {
-        return wallet_.ReleaseChangeKey(proposal, key);
-    }
     auto ReorgSync(const Height height) const noexcept -> bool final
     {
         return sync_.Reorg(height);
@@ -360,15 +382,12 @@ public:
     {
         return wallet_.ReorgTo(balanceNode, subchain, type, reorg);
     }
-    auto ReserveChangeKey(const Identifier& proposal) const noexcept
-        -> std::optional<KeyID> final
+    auto ReserveUTXO(
+        const identifier::Nym& spender,
+        const Identifier& proposal,
+        const Spend policy) const noexcept -> std::optional<UTXO> final
     {
-        return wallet_.ReserveChangeKey(proposal);
-    }
-    auto ReserveUTXO(const Identifier& proposal) const noexcept
-        -> std::optional<UTXO> final
-    {
-        return wallet_.ReserveUTXO(proposal);
+        return wallet_.ReserveUTXO(spender, proposal, policy);
     }
     auto SetBlockTip(const block::Position& position) const noexcept
         -> bool final

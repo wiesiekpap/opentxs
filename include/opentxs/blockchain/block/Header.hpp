@@ -11,6 +11,7 @@
 #include "opentxs/Forward.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
+#include <string>
 
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Proto.hpp"
@@ -72,6 +73,7 @@ public:
     OPENTXS_EXPORT virtual const block::Hash& ParentHash() const noexcept = 0;
     OPENTXS_EXPORT virtual OTWork ParentWork() const noexcept = 0;
     OPENTXS_EXPORT virtual block::Position Position() const noexcept = 0;
+    OPENTXS_EXPORT virtual std::string Print() const noexcept = 0;
     OPENTXS_EXPORT virtual SerializedType Serialize() const noexcept = 0;
     OPENTXS_EXPORT virtual auto Serialize(
         const AllocateOutput destination) const noexcept -> bool = 0;

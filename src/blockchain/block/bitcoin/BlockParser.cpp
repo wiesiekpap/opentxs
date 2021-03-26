@@ -83,6 +83,10 @@ auto parse_transactions(
 
     if (0 == transactionCount) { throw std::runtime_error("Empty block"); }
 
+    if (transactionCount > std::numeric_limits<int>::max()) {
+        throw std::runtime_error("too many transactions");
+    }
+
     auto counter = int{-1};
     auto output = ParsedTransactions{};
     auto& [index, transactions] = output;
@@ -103,7 +107,7 @@ auto parse_transactions(
                 api,
                 blockchain,
                 chain,
-                (0 == ++counter),
+                ++counter,
                 header.Timestamp(),
                 std::move(data)));
     }

@@ -151,13 +151,12 @@ TEST_F(Test_NumericHash, nBits_5)
         "00000000ffff0000000000000000000000000000000000000000000000000000"};
 
     const ot::OTNumericHash number{ot::factory::NumericHashNBits(nBits)};
+    const auto work = std::unique_ptr<opentxs::blockchain::Work>(
+        ot::factory::Work(ot::blockchain::Type::Bitcoin, number));
 
+    ASSERT_TRUE(work);
     EXPECT_EQ(decimal, number->Decimal());
     EXPECT_EQ(hex, number->asHex());
-    EXPECT_STREQ(
-        "1",
-        ot::factory::Work(ot::blockchain::Type::Bitcoin, number)
-            ->Decimal()
-            .c_str());
+    EXPECT_STREQ("1", work->Decimal().c_str());
 }
 }  // namespace

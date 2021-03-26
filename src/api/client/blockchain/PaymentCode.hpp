@@ -89,18 +89,20 @@ public:
         const Subchain type,
         const Bip32Index index,
         const PasswordPrompt& reason) const noexcept -> ECKey final;
+    using Deterministic::Reserve;
+    auto Reserve(
+        const Subchain type,
+        const std::size_t preallocate,
+        const PasswordPrompt& reason,
+        const Identifier& contact,
+        const std::string& label,
+        const Time time) const noexcept -> std::optional<Bip32Index> final;
 #if OT_CRYPTO_WITH_BIP32
     auto RootNode(const PasswordPrompt& reason) const noexcept -> HDKey final
     {
         return local_.get().Key();
     }
 #endif  // OT_CRYPTO_WITH_BIP32
-    auto Reserve(
-        const Subchain type,
-        const PasswordPrompt& reason,
-        const Identifier& contact,
-        const std::string& label,
-        const Time time) const noexcept -> std::optional<Bip32Index> final;
 
     PaymentCode(
         const api::internal::Core& api,

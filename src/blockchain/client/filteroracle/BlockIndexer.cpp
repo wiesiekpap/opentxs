@@ -241,6 +241,8 @@ auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
 auto FilterOracle::BlockIndexer::queue_processing(
     DownloadedData&& data) noexcept -> void
 {
+    if (0u == data.size()) { return; }
+
     auto filters = std::vector<internal::FilterDatabase::Filter>{};
     auto headers = std::vector<internal::FilterDatabase::Header>{};
     auto cache = std::vector<BlockIndexerData>{};

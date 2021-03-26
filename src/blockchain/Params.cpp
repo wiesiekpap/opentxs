@@ -17,6 +17,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
@@ -259,6 +260,16 @@ auto TransactionHash(
 }
 }  // namespace opentxs::blockchain
 
+namespace opentxs::blockchain::block
+{
+auto BlankHash() noexcept -> pHash
+{
+    return Data::Factory(
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
+        Data::Mode::Hex);
+}
+}  // namespace opentxs::blockchain::block
+
 namespace opentxs::blockchain::params
 {
 #if OT_BLOCKCHAIN
@@ -268,49 +279,49 @@ auto Data::Bip158() noexcept -> const FilterTypes&
         {Type::Bitcoin,
          {
              {filter::Type::Basic_BIP158, 0x0},
-             {filter::Type::Extended_opentxs, 0x58},
+             {filter::Type::ES, 0x58},
          }},
         {Type::Bitcoin_testnet3,
          {
              {filter::Type::Basic_BIP158, 0x0},
-             {filter::Type::Extended_opentxs, 0x58},
+             {filter::Type::ES, 0x58},
          }},
         {Type::BitcoinCash,
          {
              {filter::Type::Basic_BCHVariant, 0x0},
-             {filter::Type::Extended_opentxs, 0x58},
+             {filter::Type::ES, 0x58},
          }},
         {Type::BitcoinCash_testnet3,
          {
              {filter::Type::Basic_BCHVariant, 0x0},
-             {filter::Type::Extended_opentxs, 0x58},
+             {filter::Type::ES, 0x58},
          }},
         {Type::Ethereum_frontier, {}},
         {Type::Ethereum_ropsten, {}},
         {Type::Litecoin,
          {
              {filter::Type::Basic_BIP158, 0x0},
-             {filter::Type::Extended_opentxs, 0x58},
+             {filter::Type::ES, 0x58},
          }},
         {Type::Litecoin_testnet4,
          {
              {filter::Type::Basic_BIP158, 0x0},
-             {filter::Type::Extended_opentxs, 0x58},
+             {filter::Type::ES, 0x58},
          }},
         {Type::PKT,
          {
              {filter::Type::Basic_BIP158, 0x0},
-             {filter::Type::Extended_opentxs, 0x58},
+             {filter::Type::ES, 0x58},
          }},
         {Type::PKT_testnet,
          {
              {filter::Type::Basic_BIP158, 0x0},
-             {filter::Type::Extended_opentxs, 0x58},
+             {filter::Type::ES, 0x58},
          }},
         {Type::UnitTest,
          {
              {filter::Type::Basic_BIP158, 0x0},
-             {filter::Type::Extended_opentxs, 0x58},
+             {filter::Type::ES, 0x58},
          }},
     };
 
@@ -350,7 +361,7 @@ auto Data::Chains() noexcept -> const ChainData&
               "0",
               "014ccfa63ff505fb37a4d6715da6aff2eee9ef85fa25c6007d7934119c4ec7f"
               "7"},
-             filter::Type::Extended_opentxs,
+             filter::Type::ES,
              p2p::Protocol::bitcoin,
              3652501241,
              8333,
@@ -413,7 +424,7 @@ auto Data::Chains() noexcept -> const ChainData&
               "0",
               "28a92fbfb2d5442153598973bd37e96ab0ad3e5e2dabcc27e1662cb35890d24"
               "c"},
-             filter::Type::Extended_opentxs,
+             filter::Type::ES,
              p2p::Protocol::bitcoin,
              118034699,
              18333,
@@ -473,7 +484,7 @@ auto Data::Chains() noexcept -> const ChainData&
               "0",
               "1f713c7d671dadd55108f16aaae015f686e800dd6f232c74305fb97ba4212de"
               "b"},
-             filter::Type::Extended_opentxs,
+             filter::Type::ES,
              p2p::Protocol::bitcoin,
              3908297187,
              8333,
@@ -534,7 +545,7 @@ auto Data::Chains() noexcept -> const ChainData&
               "0",
               "1f713c7d671dadd55108f16aaae015f686e800dd6f232c74305fb97ba4212de"
               "b"},
-             filter::Type::Extended_opentxs,
+             filter::Type::ES,
              p2p::Protocol::bitcoin,
              4109624820,
              18333,
@@ -654,7 +665,7 @@ auto Data::Chains() noexcept -> const ChainData&
               "a",
               "10cd5534e31f83c8d0ecf808d542d8dfebdb8ab7b86c17c7c60bacbdad835f7"
               "f"},
-             filter::Type::Extended_opentxs,
+             filter::Type::ES,
              p2p::Protocol::bitcoin,
              3686187259,
              9333,
@@ -713,7 +724,7 @@ auto Data::Chains() noexcept -> const ChainData&
               "9",
               "7390ab2c14b779b2671cad4d6f88d948aef9f459a093bd84057346178a86e3d"
               "b"},
-             filter::Type::Extended_opentxs,
+             filter::Type::ES,
              p2p::Protocol::bitcoin,
              4056470269,
              19335,
@@ -942,7 +953,7 @@ auto Data::Chains() noexcept -> const ChainData&
               "e",
               "09fac5d72bd9280fda54bef1f7e3922893c85f12354e84b0cb9c717e4fba5ea"
               "4"},
-             filter::Type::Extended_opentxs,
+             filter::Type::ES,
              p2p::Protocol::bitcoin,
              137298172,
              64764,
@@ -991,7 +1002,7 @@ auto Data::Chains() noexcept -> const ChainData&
               "0000000000000000000000000000000000000000000000000000000000000000"
               "526b0656def40fcb65ef87a75337001fae57a1d17dc17e103fb536cfddedd36"
               "c"},
-             filter::Type::Extended_opentxs,
+             filter::Type::ES,
              p2p::Protocol::bitcoin,
              118034940,
              64764,
@@ -1049,7 +1060,7 @@ auto Data::Chains() noexcept -> const ChainData&
               "0",
               "18e0f10a66d223e36d0333dfe3e2546135f632f53e1e44ba016022f0a404628"
               "a"},
-             filter::Type::Extended_opentxs,
+             filter::Type::ES,
              p2p::Protocol::bitcoin,
              3669344250,
              18444,
@@ -1085,7 +1096,7 @@ auto Data::Filters() noexcept -> const FilterData&
               {"9f3c30f0c37fb977cf3e1a3173c631e8ff119ad3088b6f5b2bced0802139c20"
                "2",
                "017fa880"}},
-             {filter::Type::Extended_opentxs,
+             {filter::Type::ES,
               {"0354578634dd178058ad5f3addf0d97c45911f483c99a1022ce51502e142e99"
                "f",
                "049dc75e0d584a300293ef3d3980"}},
@@ -1096,7 +1107,7 @@ auto Data::Filters() noexcept -> const FilterData&
               {"9f3c30f0c37fb977cf3e1a3173c631e8ff119ad3088b6f5b2bced0802139c20"
                "2",
                "017fa880"}},
-             {filter::Type::Extended_opentxs,
+             {filter::Type::ES,
               {"0354578634dd178058ad5f3addf0d97c45911f483c99a1022ce51502e142e99"
                "f",
                "049dc75e0d584a300293ef3d3980"}},
@@ -1107,7 +1118,7 @@ auto Data::Filters() noexcept -> const FilterData&
               {"8aa75530308cf8247a151c37c24e7aaa281ae3b5cecedb581aacb3a0d07c245"
                "1",
                "019e8738"}},
-             {filter::Type::Extended_opentxs,
+             {filter::Type::ES,
               {"5a71cc36ad0b35d4c99b335ff69c3ed89e667b9772dbbf40396a1b4f2b2c308"
                "0",
                "049de8963322099e81f3bf7c4600"}},
@@ -1118,7 +1129,7 @@ auto Data::Filters() noexcept -> const FilterData&
               {"50b781aed7b7129012a6d20e2d040027937f3affaee573779908ebb77945582"
                "1",
                "019dfca8"}},
-             {filter::Type::Extended_opentxs,
+             {filter::Type::ES,
               {"a1310188d76ce653283a3086aa6f1ba30b6934990a093e1789a78a43b926131"
                "5",
                "04e2f587e146bf6c662d35278a40"}},
@@ -1129,7 +1140,7 @@ auto Data::Filters() noexcept -> const FilterData&
               {"50b781aed7b7129012a6d20e2d040027937f3affaee573779908ebb77945582"
                "1",
                "019dfca8"}},
-             {filter::Type::Extended_opentxs,
+             {filter::Type::ES,
               {"a1310188d76ce653283a3086aa6f1ba30b6934990a093e1789a78a43b926131"
                "5",
                "04e2f587e146bf6c662d35278a40"}},
@@ -1140,7 +1151,7 @@ auto Data::Filters() noexcept -> const FilterData&
               {"02d023da9d271b849f717089aad7e03a515dac982c9fb2cfd952e2ce1c61879"
                "2",
                "014c8c60"}},
-             {filter::Type::Extended_opentxs,
+             {filter::Type::ES,
               {"042bce138093a271d8d7f730f7f9f9ab8c7240f297b47aea4440dceec623aca"
                "3",
                "048b3d6095a4b01eb30ce44017c0"}},
@@ -1151,7 +1162,7 @@ auto Data::Filters() noexcept -> const FilterData&
               {"526b0656def40fcb65ef87a75337001fae57a1d17dc17e103fb536cfddedd36"
                "c",
                "01902168"}},
-             {filter::Type::Extended_opentxs,
+             {filter::Type::ES,
               {"d8a96cd0b19de626e7d84c964cf1da0e09b90c589bd3e23bcf1c931779a4751"
                "2",
                "02649a429ba06300"}},
@@ -1162,7 +1173,7 @@ auto Data::Filters() noexcept -> const FilterData&
               {"526b0656def40fcb65ef87a75337001fae57a1d17dc17e103fb536cfddedd36"
                "c",
                "01902168"}},
-             {filter::Type::Extended_opentxs,
+             {filter::Type::ES,
               {"d8a96cd0b19de626e7d84c964cf1da0e09b90c589bd3e23bcf1c931779a4751"
                "2",
                "02649a429ba06300"}},
@@ -1177,7 +1188,7 @@ auto Data::Filters() noexcept -> const FilterData&
               {"2b5adc66021d5c775f630efd91518cf6ce3e9f525bbf54d9f0d709451e305e4"
                "8",
                "014756c0"}},
-             {filter::Type::Extended_opentxs,
+             {filter::Type::ES,
               {"18e0f10a66d223e36d0333dfe3e2546135f632f53e1e44ba016022f0a404628"
                "a",
                "042547f6de198130360443dfcdc0"}},

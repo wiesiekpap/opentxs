@@ -116,8 +116,7 @@ auto Sync::import_genesis(const Chain chain) noexcept -> void
     const auto items = [&] {
         using Params = opentxs::blockchain::params::Data;
         const auto& data = Params::Chains().at(chain);
-        constexpr auto filterType =
-            opentxs::blockchain::filter::Type::Extended_opentxs;
+        constexpr auto filterType = opentxs::blockchain::filter::Type::ES;
         auto gcs = [&] {
             const auto& filter = Params::Filters().at(chain).at(filterType);
             const auto bytes =

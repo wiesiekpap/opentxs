@@ -94,7 +94,7 @@ auto PayDividendVisitor::Trigger(
     OT_ASSERT(!GetNymID().empty());
     const auto& theSenderNymID = (GetNymID());
     OT_ASSERT(!GetMemo()->empty());
-    const String& strMemo = (GetMemo());
+    const auto strMemo = GetMemo();
     // Note: theSenderNymID is the originator of the Dividend Payout.
     // However, all the actual vouchers will be from "the server Nym" and
     // not from theSenderNymID. So then why is it even here? Because anytime

@@ -53,8 +53,7 @@ namespace opentxs::blockchain::block::bitcoin::implementation
 Inputs::Inputs(InputList&& inputs, std::optional<std::size_t> size) noexcept(
     false)
     : inputs_(std::move(inputs))
-    , size_(size)
-    , normalized_size_()
+    , cache_()
 {
     for (const auto& input : inputs_) {
         if (false == bool(input)) { throw std::runtime_error("invalid input"); }
@@ -63,8 +62,7 @@ Inputs::Inputs(InputList&& inputs, std::optional<std::size_t> size) noexcept(
 
 Inputs::Inputs(const Inputs& rhs) noexcept
     : inputs_(clone(rhs.inputs_))
-    , size_(rhs.size_)
-    , normalized_size_(rhs.normalized_size_)
+    , cache_(rhs.cache_)
 {
 }
 
@@ -76,7 +74,7 @@ auto Inputs::AnyoneCanPay(const std::size_t index) noexcept -> bool
         auto replace = InputList{};
         replace.emplace_back(inputs.at(index).release());
         inputs.swap(replace);
-        size_ = std::nullopt;
+        cache_.reset_size();
 
         return true;
     } catch (...) {
@@ -123,20 +121,17 @@ auto Inputs::AssociatePreviousOutput(
 
 auto Inputs::CalculateSize(const bool normalized) const noexcept -> std::size_t
 {
-    auto& output = normalized ? normalized_size_ : size_;
-
-    if (false == output.has_value()) {
+    return cache_.size(normalized, [&] {
         const auto cs = blockchain::bitcoin::CompactSize(size());
-        output = std::accumulate(
+
+        return std::accumulate(
             cbegin(),
             cend(),
             cs.Size(),
             [=](const std::size_t& lhs, const auto& rhs) -> std::size_t {
                 return lhs + rhs.CalculateSize(normalized);
             });
-    }
-
-    return output.value();
+    });
 }
 
 auto Inputs::clone(const InputList& rhs) noexcept -> InputList
@@ -181,17 +176,23 @@ auto Inputs::FindMatches(
     const ParsedPatterns& patterns) const noexcept -> Matches
 {
     auto output = Matches{};
+    auto& [inputs, outputs] = output;
     auto index{-1};
 
     for (const auto& txin : *this) {
         auto temp = txin.FindMatches(txid, type, txos, patterns);
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Verified ")(temp.size())(
-            " matches in input ")(++index)
+        LogTrace(OT_METHOD)(__FUNCTION__)(": Verified ")(
+            temp.second.size() +
+            temp.first.size())(" matches in input ")(++index)
             .Flush();
-        output.insert(
-            output.end(),
-            std::make_move_iterator(temp.begin()),
-            std::make_move_iterator(temp.end()));
+        inputs.insert(
+            inputs.end(),
+            std::make_move_iterator(temp.first.begin()),
+            std::make_move_iterator(temp.first.end()));
+        outputs.insert(
+            outputs.end(),
+            std::make_move_iterator(temp.second.begin()),
+            std::make_move_iterator(temp.second.end()));
     }
 
     return output;
@@ -211,6 +212,19 @@ auto Inputs::GetPatterns() const noexcept -> std::vector<PatternID>
     return output;
 }
 
+auto Inputs::Keys() const noexcept -> std::vector<KeyID>
+{
+    auto out = std::vector<KeyID>{};
+
+    for (const auto& input : *this) {
+        auto keys = input.Keys();
+        std::move(keys.begin(), keys.end(), std::back_inserter(out));
+        dedup(out);
+    }
+
+    return out;
+}
+
 auto Inputs::NetBalanceChange(
     const api::client::Blockchain& blockchain,
     const identifier::Nym& nym) const noexcept -> opentxs::Amount
@@ -227,7 +241,7 @@ auto Inputs::NetBalanceChange(
 auto Inputs::ReplaceScript(const std::size_t index) noexcept -> bool
 {
     try {
-        size_ = std::nullopt;
+        cache_.reset_size();
 
         return inputs_.at(index)->ReplaceScript();
     } catch (...) {
@@ -314,5 +328,10 @@ auto Inputs::SerializeNormalized(const AllocateOutput destination)
     const noexcept -> std::optional<std::size_t>
 {
     return serialize(destination, true);
+}
+
+auto Inputs::SetKeyData(const KeyData& data) noexcept -> void
+{
+    for (auto& input : inputs_) { input->SetKeyData(data); }
 }
 }  // namespace opentxs::blockchain::block::bitcoin::implementation

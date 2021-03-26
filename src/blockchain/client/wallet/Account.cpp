@@ -104,7 +104,7 @@ struct Account::Imp {
     }
 
     Imp(const api::Core& api,
-        const api::client::Blockchain& blockchain,
+        const api::client::internal::Blockchain& blockchain,
         const BalanceTree& ref,
         const internal::Network& network,
         const internal::WalletDatabase& db,
@@ -143,7 +143,7 @@ private:
     using Map = std::map<OTIdentifier, DeterministicStateData>;
 
     const api::Core& api_;
-    const api::client::Blockchain& blockchain_;
+    const api::client::internal::Blockchain& blockchain_;
     const BalanceTree& ref_;
     const internal::Network& network_;
     const internal::WalletDatabase& db_;
@@ -194,7 +194,7 @@ private:
 
 Account::Account(
     const api::Core& api,
-    const api::client::Blockchain& blockchain,
+    const api::client::internal::Blockchain& blockchain,
     const BalanceTree& ref,
     const internal::Network& network,
     const internal::WalletDatabase& db,

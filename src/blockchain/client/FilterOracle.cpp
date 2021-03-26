@@ -130,7 +130,7 @@ FilterOracle::FilterOracle(
     , default_type_([&] {
         if (config.generate_cfilters_ || config.use_sync_server_) {
 
-            return filter::Type::Extended_opentxs;
+            return filter::Type::ES;
         }
 
         return blockchain::internal::DefaultFilter(chain_);

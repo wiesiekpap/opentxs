@@ -31,7 +31,7 @@ OTFlag running_{Flag::Factory(true)};
 auto Context() -> const api::Context&
 {
     if (nullptr == instance_pointer_) {
-        std::runtime_error("Context is not initialized");
+        throw std::runtime_error("Context is not initialized");
     }
 
     return *instance_pointer_;

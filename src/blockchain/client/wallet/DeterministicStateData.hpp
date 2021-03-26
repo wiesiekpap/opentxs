@@ -38,7 +38,10 @@ namespace blockchain
 class Deterministic;
 }  // namespace blockchain
 
-class Blockchain;
+namespace internal
+{
+struct Blockchain;
+}  // namespace internal
 }  // namespace client
 
 class Core;
@@ -87,7 +90,7 @@ public:
 
     DeterministicStateData(
         const api::Core& api,
-        const api::client::Blockchain& blockchain,
+        const api::client::internal::Blockchain& blockchain,
         const internal::Network& network,
         const WalletDatabase& db,
         const api::client::blockchain::Deterministic& node,
@@ -100,6 +103,8 @@ public:
     ~DeterministicStateData() final = default;
 
 private:
+    auto type() const noexcept -> std::stringstream final;
+
     auto check_index() noexcept -> bool final;
     auto handle_confirmed_matches(
         const block::bitcoin::Block& block,

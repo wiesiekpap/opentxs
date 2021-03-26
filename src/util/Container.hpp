@@ -27,6 +27,41 @@ auto dedup(std::vector<T>& vector) noexcept -> void
     vector.erase(std::unique(vector.begin(), vector.end()), vector.end());
 }
 
+template <typename Store, typename Interface>
+auto insert_sorted(std::vector<Store>& vector, const Interface& key) noexcept
+    -> void
+{
+    static const auto less = std::less<Interface>{};
+
+    for (auto i{vector.begin()}; i != vector.end(); std::advance(i, 1)) {
+        const auto& val = *i;
+
+        if (less(val, key)) {
+
+            continue;
+        } else if (less(key, val)) {
+            vector.insert(i, key);
+
+            return;
+        } else {
+
+            return;
+        }
+    }
+
+    vector.emplace_back(key);
+}
+
+template <typename Store, typename Interface>
+auto remove(std::vector<Store>& vector, const Interface& key) noexcept
+    -> std::size_t
+{
+    const auto before{vector.size()};
+    vector.erase(std::remove(vector.begin(), vector.end(), key), vector.end());
+
+    return vector.size() - before;
+}
+
 template <typename Key, typename Value>
 auto reverse_map(const std::map<Key, Value>& map) noexcept
     -> std::map<Value, Key>

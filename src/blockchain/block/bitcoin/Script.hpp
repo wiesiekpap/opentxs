@@ -82,6 +82,7 @@ public:
     auto MultisigPubkey(const std::size_t position) const noexcept
         -> std::optional<ReadView> final;
     auto N() const noexcept -> std::optional<std::uint8_t> final;
+    auto Print() const noexcept -> std::string final;
     auto Pubkey() const noexcept -> std::optional<ReadView> final;
     auto PubkeyHash() const noexcept -> std::optional<ReadView> final;
     auto RedeemScript() const noexcept
@@ -97,7 +98,6 @@ public:
     auto SigningSubscript(const blockchain::Type chain) const noexcept
         -> std::unique_ptr<internal::Script> final;
     auto size() const noexcept -> std::size_t final { return elements_.size(); }
-    auto str() const noexcept -> std::string final;
     auto Type() const noexcept -> Pattern final { return type_; }
     auto Value(const std::size_t position) const noexcept
         -> std::optional<ReadView> final;

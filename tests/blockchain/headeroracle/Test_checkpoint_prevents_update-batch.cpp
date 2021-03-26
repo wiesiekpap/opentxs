@@ -19,7 +19,7 @@ TEST_F(Test_HeaderOracle, checkpoint_prevents_update_batch)
     const auto [height1, hash1] = header_oracle_.GetCheckpoint();
 
     EXPECT_EQ(height1, -1);
-    EXPECT_TRUE(hash1->empty());
+    EXPECT_EQ(hash1, ot::blockchain::block::BlankHash());
     EXPECT_TRUE(header_oracle_.AddCheckpoint(4, get_block_hash(BLOCK_8)));
 
     const auto [height2, hash2] = header_oracle_.GetCheckpoint();

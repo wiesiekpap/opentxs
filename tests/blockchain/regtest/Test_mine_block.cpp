@@ -55,8 +55,7 @@ TEST_F(Regtest_fixture_single, generate_block)
 
             return output;
         }(),
-        "The Industrial Revolution and its consequences have been a disaster "
-        "for the human race.");
+        coinbase_fun_);
 
     ASSERT_TRUE(tx);
 
@@ -67,7 +66,7 @@ TEST_F(Regtest_fixture_single, generate_block)
 
         const auto& input = inputs.at(0);
 
-        EXPECT_EQ(input.Coinbase().size(), 91);
+        EXPECT_EQ(input.Coinbase().size(), 89);
     }
 
     {

@@ -33,6 +33,8 @@
 #include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
+#include "opentxs/blockchain/block/bitcoin/Input.hpp"
+#include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/client/BlockOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -72,6 +74,30 @@ struct NullWallet final : public internal::Wallet {
         promise.set_value(api_.Factory().Data());
 
         return promise.get_future();
+    }
+    auto GetBalance() const noexcept -> Balance final { return {}; }
+    auto GetBalance(const identifier::Nym&) const noexcept -> Balance final
+    {
+        return {};
+    }
+    auto GetBalance(const identifier::Nym&, const Identifier&) const noexcept
+        -> Balance final
+    {
+        return {};
+    }
+    auto GetOutputs(TxoState) const noexcept -> std::vector<UTXO> final
+    {
+        return {};
+    }
+    auto GetOutputs(const identifier::Nym&, TxoState) const noexcept
+        -> std::vector<UTXO> final
+    {
+        return {};
+    }
+    auto GetOutputs(const identifier::Nym&, const Identifier&, TxoState)
+        const noexcept -> std::vector<UTXO> final
+    {
+        return {};
     }
     auto Init() noexcept -> void final {}
     auto Shutdown() noexcept -> std::shared_future<void> final
@@ -463,7 +489,7 @@ auto Network::process_filter_update(network::zeromq::Message& in) noexcept
         display << std::setprecision(3) << progress << "%";
 
         if (false == config_.disable_wallet_) {
-            LogNormal(DisplayString(chain_))(" chain sync progress: ")(height)(
+            LogDetail(DisplayString(chain_))(" chain sync progress: ")(height)(
                 " of ")(target)(" (")(display.str())(")")
                 .Flush();
         }
@@ -578,6 +604,15 @@ auto Network::SendToAddress(
     const Amount amount,
     const std::string& memo) const noexcept -> PendingOutgoing
 {
+    const auto pNym = api_.Wallet().Nym(sender);
+
+    if (!pNym) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid sender ")(sender.str())
+            .Flush();
+
+        return {};
+    }
+
     const auto [data, style, chains, supported] =
         blockchain_.DecodeAddress(address);
 
@@ -594,7 +629,7 @@ auto Network::SendToAddress(
     auto proposal = proto::BlockchainTransactionProposal{};
     proposal.set_version(proposal_version_);
     proposal.set_id(id->str());
-    proposal.set_initiator(sender.str());
+    proposal.set_initiator(sender.data(), sender.size());
     proposal.set_expires(
         Clock::to_time_t(Clock::now() + std::chrono::hours(1)));
     proposal.set_memo(memo);
@@ -705,7 +740,7 @@ auto Network::SendToPaymentCode(
 
                 return id->str();
             }());
-            out.set_initiator(nymID.str());
+            out.set_initiator(nymID.data(), nymID.size());
             out.set_expires(
                 Clock::to_time_t(Clock::now() + std::chrono::hours(1)));
             out.set_memo(memo);

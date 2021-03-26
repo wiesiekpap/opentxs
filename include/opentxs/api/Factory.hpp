@@ -68,6 +68,7 @@ namespace block
 {
 namespace bitcoin
 {
+class Block;
 class Transaction;
 }  // namespace bitcoin
 }  // namespace block
@@ -177,7 +178,8 @@ public:
     OPENTXS_EXPORT virtual auto BitcoinBlock(
         const opentxs::blockchain::Type chain,
         const ReadView bytes) const noexcept
-        -> std::shared_ptr<const blockchain::block::bitcoin::Block> = 0;
+        -> std::shared_ptr<
+            const opentxs::blockchain::block::bitcoin::Block> = 0;
     using Transaction_p =
         std::shared_ptr<const opentxs::blockchain::block::bitcoin::Transaction>;
     using AbortFunction = std::function<bool()>;
@@ -186,12 +188,12 @@ public:
         const Transaction_p generationTransaction,
         const std::uint32_t nBits,
         const std::vector<Transaction_p>& extraTransactions = {},
-        const std::int32_t version = 1,
+        const std::int32_t version = 2,
         const AbortFunction abort = {}) const noexcept
         -> std::shared_ptr<
             const opentxs::blockchain::block::bitcoin::Block> = 0;
     using OutputBuilder = std::tuple<
-        blockchain::Amount,
+        opentxs::blockchain::Amount,
         std::unique_ptr<const opentxs::blockchain::block::bitcoin::Script>,
         std::set<api::client::blockchain::Key>>;
     OPENTXS_EXPORT virtual auto BitcoinGenerationTransaction(

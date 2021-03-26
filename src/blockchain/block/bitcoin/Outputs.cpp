@@ -55,7 +55,7 @@ Outputs::Outputs(
     OutputList&& outputs,
     std::optional<std::size_t> size) noexcept(false)
     : outputs_(std::move(outputs))
-    , size_(size)
+    , cache_()
 {
     for (const auto& output : outputs_) {
         if (false == bool(output)) {
@@ -66,7 +66,7 @@ Outputs::Outputs(
 
 Outputs::Outputs(const Outputs& rhs) noexcept
     : outputs_(clone(rhs.outputs_))
-    , size_(rhs.size_)
+    , cache_(rhs.cache_)
 {
 }
 
@@ -92,18 +92,17 @@ auto Outputs::AssociatedRemoteContacts(
 
 auto Outputs::CalculateSize() const noexcept -> std::size_t
 {
-    if (false == size_.has_value()) {
+    return cache_.size([&] {
         const auto cs = blockchain::bitcoin::CompactSize(size());
-        size_ = std::accumulate(
+
+        return std::accumulate(
             cbegin(),
             cend(),
             cs.Size(),
             [](const std::size_t& lhs, const auto& rhs) -> std::size_t {
                 return lhs + rhs.CalculateSize();
             });
-    }
-
-    return size_.value();
+    });
 }
 
 auto Outputs::clone(const OutputList& rhs) noexcept -> OutputList
@@ -142,7 +141,6 @@ auto Outputs::ExtractElements(const filter::Type style) const noexcept
 }
 
 auto Outputs::FindMatches(
-    const api::client::Blockchain& blockchain,
     const ReadView txid,
     const FilterType type,
     const ParsedPatterns& patterns) const noexcept -> Matches
@@ -151,14 +149,14 @@ auto Outputs::FindMatches(
     auto index{-1};
 
     for (const auto& txout : *this) {
-        auto temp = txout.FindMatches(blockchain, txid, type, patterns);
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Verified ")(temp.size())(
+        auto temp = txout.FindMatches(txid, type, patterns);
+        LogTrace(OT_METHOD)(__FUNCTION__)(": Verified ")(temp.second.size())(
             " matches in output ")(++index)
             .Flush();
-        output.insert(
-            output.end(),
-            std::make_move_iterator(temp.begin()),
-            std::make_move_iterator(temp.end()));
+        output.second.insert(
+            output.second.end(),
+            std::make_move_iterator(temp.second.begin()),
+            std::make_move_iterator(temp.second.end()));
     }
 
     return output;
@@ -190,6 +188,19 @@ auto Outputs::GetPatterns() const noexcept -> std::vector<PatternID>
     dedup(output);
 
     return output;
+}
+
+auto Outputs::Keys() const noexcept -> std::vector<KeyID>
+{
+    auto out = std::vector<KeyID>{};
+
+    for (const auto& output : *this) {
+        auto keys = output.Keys();
+        std::move(keys.begin(), keys.end(), std::back_inserter(out));
+        dedup(out);
+    }
+
+    return out;
 }
 
 auto Outputs::NetBalanceChange(
@@ -264,5 +275,10 @@ auto Outputs::Serialize(
     }
 
     return true;
+}
+
+auto Outputs::SetKeyData(const KeyData& data) noexcept -> void
+{
+    for (auto& output : outputs_) { output->SetKeyData(data); }
 }
 }  // namespace opentxs::blockchain::block::bitcoin::implementation

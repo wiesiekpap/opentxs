@@ -128,7 +128,8 @@ private:
 
     auto check_sub(const std::size_t pos, const std::size_t target) const
         -> bool;
-    void concatenate(const Vector& data);
+    auto concatenate(const Vector& data) -> void;
+    auto spaceship(const opentxs::Data& rhs) const noexcept -> int;
 
     Data(const Data& rhs) = delete;
     Data(Data&& rhs) = delete;

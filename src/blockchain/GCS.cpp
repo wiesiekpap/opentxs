@@ -52,6 +52,11 @@ constexpr auto bitmask(const std::uint64_t n) -> std::uint64_t
 {
     return (1u << n) - 1u;
 }
+
+constexpr auto range(std::uint32_t N, std::uint32_t M) noexcept -> std::uint64_t
+{
+    return std::uint64_t{N} * std::uint64_t{M};
+}
 }  // namespace opentxs
 
 namespace opentxs::factory
@@ -301,12 +306,13 @@ auto HashedSetConstruct(
     -> std::vector<std::uint64_t>
 {
     auto output = std::vector<std::uint64_t>{};
-    const auto range = std::uint64_t{N} * std::uint64_t{M};
     std::transform(
         std::begin(items),
         std::end(items),
         std::back_inserter(output),
-        [&](const auto& item) { return HashToRange(api, key, range, item); });
+        [&](const auto& item) {
+            return HashToRange(api, key, range(N, M), item);
+        });
     std::sort(output.begin(), output.end());
 
     return output;
@@ -434,7 +440,7 @@ auto GCS::hashed_set_construct(const std::vector<ReadView>& elements)
 auto GCS::hash_to_range(const ReadView in) const noexcept -> std::uint64_t
 {
     return gcs::HashToRange(
-        api_, key_->Bytes(), count_ * false_positive_rate_, in);
+        api_, key_->Bytes(), range(count_, false_positive_rate_), in);
 }
 
 auto GCS::Header(const ReadView previous) const noexcept -> OTData
@@ -492,7 +498,23 @@ auto GCS::Test(const Data& target) const noexcept -> bool
 
 auto GCS::Test(const ReadView target) const noexcept -> bool
 {
-    return test(hashed_set_construct({target}));
+    const auto set = hashed_set_construct({target});
+
+    OT_ASSERT(1 == set.size());
+
+    const auto& hash = set.front();
+
+    for (const auto& element : decompress()) {
+        if (element == hash) {
+
+            return true;
+        } else if (element > hash) {
+
+            return false;
+        }
+    }
+
+    return false;
 }
 
 auto GCS::Test(const std::vector<OTData>& targets) const noexcept -> bool

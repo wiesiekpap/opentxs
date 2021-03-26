@@ -14,6 +14,7 @@
 
 #include "core/Worker.hpp"
 #include "internal/api/client/Client.hpp"
+#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/client/Client.hpp"
 #include "internal/blockchain/client/Factory.hpp"
 #include "opentxs/api/Core.hpp"
@@ -99,6 +100,61 @@ auto Wallet::ConstructTransaction(
     trigger();
 
     return output;
+}
+
+auto Wallet::convert(const DBUTXOs& in) const noexcept -> std::vector<UTXO>
+{
+    auto out = std::vector<UTXO>{};
+    out.reserve(in.size());
+    std::transform(
+        in.begin(),
+        in.end(),
+        std::back_inserter(out),
+        [this](const auto& utxo) {
+            const auto& [outpoint, proto] = utxo;
+            auto converted = UTXO{
+                outpoint,
+                factory::BitcoinTransactionOutput(
+                    api_, blockchain_api_, chain_, proto)};
+
+            OT_ASSERT(converted.second);
+
+            return converted;
+        });
+
+    return out;
+}
+
+auto Wallet::GetBalance() const noexcept -> Balance { return db_.GetBalance(); }
+
+auto Wallet::GetBalance(const identifier::Nym& owner) const noexcept -> Balance
+{
+    return db_.GetBalance(owner);
+}
+
+auto Wallet::GetBalance(const identifier::Nym& owner, const Identifier& node)
+    const noexcept -> Balance
+{
+    return db_.GetBalance(owner, node);
+}
+
+auto Wallet::GetOutputs(TxoState type) const noexcept -> std::vector<UTXO>
+{
+    return convert(db_.GetOutputs(type));
+}
+
+auto Wallet::GetOutputs(const identifier::Nym& owner, TxoState type)
+    const noexcept -> std::vector<UTXO>
+{
+    return convert(db_.GetOutputs(owner, type));
+}
+
+auto Wallet::GetOutputs(
+    const identifier::Nym& owner,
+    const Identifier& node,
+    TxoState type) const noexcept -> std::vector<UTXO>
+{
+    return convert(db_.GetOutputs(owner, node, type));
 }
 
 auto Wallet::Init() noexcept -> void

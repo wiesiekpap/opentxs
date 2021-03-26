@@ -80,6 +80,7 @@ public:
         const Patterns& txos,
         const ParsedPatterns& elements) const noexcept -> Matches final;
     auto GetPatterns() const noexcept -> std::vector<PatternID> final;
+    auto Keys() const noexcept -> std::vector<KeyID> final;
     auto NetBalanceChange(
         const api::client::Blockchain& blockchain,
         const identifier::Nym& nym) const noexcept -> opentxs::Amount final;
@@ -109,6 +110,7 @@ public:
         inputs_.at(rhs.index())->MergeMetadata(blockchain, rhs);
     }
     auto ReplaceScript(const std::size_t index) noexcept -> bool final;
+    auto SetKeyData(const KeyData& data) noexcept -> void final;
 
     Inputs(InputList&& inputs, std::optional<std::size_t> size = {}) noexcept(
         false);
@@ -117,9 +119,44 @@ public:
     ~Inputs() final = default;
 
 private:
+    struct Cache {
+        auto reset_size() noexcept -> void
+        {
+            auto lock = rLock{lock_};
+            size_ = std::nullopt;
+            normalized_size_ = std::nullopt;
+        }
+        template <typename F>
+        auto size(const bool normalize, F cb) noexcept -> std::size_t
+        {
+            auto lock = rLock{lock_};
+
+            auto& output = normalize ? normalized_size_ : size_;
+
+            if (false == output.has_value()) { output = cb(); }
+
+            return output.value();
+        }
+
+        Cache() noexcept = default;
+        Cache(const Cache& rhs) noexcept
+            : lock_()
+            , size_()
+            , normalized_size_()
+        {
+            auto lock = rLock{rhs.lock_};
+            size_ = rhs.size_;
+            normalized_size_ = rhs.normalized_size_;
+        }
+
+    private:
+        mutable std::recursive_mutex lock_{};
+        std::optional<std::size_t> size_{};
+        std::optional<std::size_t> normalized_size_{};
+    };
+
     const InputList inputs_;
-    mutable std::optional<std::size_t> size_;
-    mutable std::optional<std::size_t> normalized_size_;
+    mutable Cache cache_;
 
     static auto clone(const InputList& rhs) noexcept -> InputList;
 
