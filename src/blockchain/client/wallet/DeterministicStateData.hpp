@@ -6,6 +6,7 @@
 #pragma once
 
 #include <atomic>
+#include <iosfwd>
 #include <map>
 #include <mutex>
 #include <optional>

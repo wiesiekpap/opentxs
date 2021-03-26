@@ -20,6 +20,7 @@
 #include <map>
 #include <numeric>
 #include <optional>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <type_traits>

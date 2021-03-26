@@ -84,7 +84,12 @@ add_library(
 target_include_directories(
   bech32 SYSTEM INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/bech32/ref/c++"
 )
+
 if(NOT MSVC)
   target_compile_options(bech32 PRIVATE -Wno-effc++ -Wno-unused-variable)
 endif()
+
+set_target_properties(
+  bech32 PROPERTIES C_INCLUDE_WHAT_YOU_USE "" CXX_INCLUDE_WHAT_YOU_USE ""
+)
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:bech32>)

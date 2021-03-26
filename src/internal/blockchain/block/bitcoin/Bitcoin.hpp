@@ -6,26 +6,46 @@
 #pragma once
 
 #include <boost/endian/buffers.hpp>
+#include <cstdint>
 #include <functional>
+#include <iosfwd>
 #include <memory>
 #include <optional>
+#include <set>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/core/Data.hpp"
+#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 
 namespace opentxs
 {
+namespace api
+{
+namespace client
+{
+class Blockchain;
+}  // namespace client
+
+class Core;
+}  // namespace api
+
 namespace blockchain
 {
 namespace bitcoin
@@ -40,6 +60,8 @@ struct EncodedTransaction;
 
 namespace block
 {
+class Header;
+
 namespace bitcoin
 {
 namespace internal
@@ -53,11 +75,11 @@ class Block;
 class Header;
 class Input;
 class Inputs;
-struct Outpoint;
 class Output;
 class Outputs;
 class Script;
 class Transaction;
+struct Outpoint;
 }  // namespace bitcoin
 }  // namespace block
 }  // namespace blockchain
@@ -65,6 +87,8 @@ class Transaction;
 namespace proto
 {
 class BlockchainBlockHeader;
+class BlockchainTransaction;
+class BlockchainTransactionInput;
 class BlockchainTransactionOutput;
 }  // namespace proto
 

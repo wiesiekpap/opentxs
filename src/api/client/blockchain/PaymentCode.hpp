@@ -11,6 +11,7 @@
 #include <atomic>
 #include <cstdint>
 #include <functional>
+#include <iosfwd>
 #include <list>
 #include <map>
 #include <optional>

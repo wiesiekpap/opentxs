@@ -96,6 +96,11 @@ option(
   OFF
 )
 option(
+  OT_IWYU
+  "Enable include-what-you-use static analysis"
+  OFF
+)
+option(
   OT_DHT
   "Enable OpenDHT support"
   OFF
@@ -233,6 +238,45 @@ option(
   ${OT_ENABLE_RPC_DEFAULT}
 )
 
+if(OT_IWYU)
+  find_program(opentxs_iwyu_path NAMES include-what-you-use REQUIRED)
+  find_program(opentxs_fix_includes_path NAMES fix_includes.py REQUIRED)
+
+  if(opentxs_iwyu_path)
+    set(OPENTXS_IWYU_ARGS
+        "${opentxs_iwyu_path}"
+        "-Xiwyu"
+        "--mapping_file=${CMAKE_CURRENT_SOURCE_DIR}/iwyu.imp"
+    )
+    set(CMAKE_C_INCLUDE_WHAT_YOU_USE "${OPENTXS_IWYU_ARGS}")
+    set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "${OPENTXS_IWYU_ARGS}")
+  endif()
+
+  if(opentxs_fix_includes_path)
+    set(OPENTXS_FIX_INCLUDES_ARGS
+        "${opentxs_fix_includes_path}"
+        "-b"
+        "--nocomments"
+        "--safe_headers"
+        "--reorder"
+        "<"
+        "${CMAKE_CURRENT_BINARY_DIR}/iwyu.txt"
+    )
+  else()
+    set(OPENTXS_FIX_INCLUDES_ARGS "OFF")
+  endif()
+
+  add_custom_target(
+    fix_includes
+    COMMAND "${OPENTXS_FIX_INCLUDES_ARGS}"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+    COMMAND_EXPAND_LISTS
+  )
+else()
+  set(OPENTXS_IWYU_ARGS "OFF")
+  set(OPENTXS_FIX_INCLUDES_ARGS "OFF")
+endif()
+
 # -----------------------------------------------------------------------------
 # Set compiler options
 
@@ -270,8 +314,6 @@ endif()
 
 print_build_details(OPENTXS_PEDANTIC_BUILD OPENTXS_BUILD_TESTS)
 
-message(STATUS "Valgrind integration:     ${OT_VALGRIND}")
-
 message(STATUS "Network plugins------------------------------")
 message(STATUS "DHT:                      ${OT_DHT}")
 
@@ -308,6 +350,48 @@ message(STATUS "Java binding:             ${OT_WITH_JAVA}")
 
 message(STATUS "Extra ---------------------------------------")
 message(STATUS "RPC server:               ${OT_ENABLE_RPC}")
+
+message(STATUS "Developer -----------------------------------")
+message(STATUS "Valgrind integration:     ${OT_VALGRIND}")
+message(STATUS "iwyu:                     ${OPENTXS_IWYU_ARGS}")
+message(STATUS "fix_includes:             ${OPENTXS_FIX_INCLUDES_ARGS}")
+
+if(OT_IWYU)
+  message(STATUS "")
+  message(STATUS "iwyu instructions:")
+  message(
+    STATUS
+      "  1. Save build output when compiling: cmake --build . -- -k 0 | tee iwyu.txt"
+  )
+  message(
+    STATUS
+      "  2. Run the fix_includes target to apply automatic fixes: cmake --build . --target fix_includes"
+  )
+  message(STATUS "")
+  message(STATUS "fix_includes caveats (requires manual editing to fix):")
+  message(
+    STATUS
+      "  1. iwyu always suggests pre-c++11 standard library paths. (<string.h> vs <cstring>)"
+  )
+  message(
+    STATUS
+      "  2. iwyu will sometimes suggest bracket includes when we want quote includes."
+  )
+  message(
+    STATUS
+      "  3. iwyu will sometimes suggest platform-specific headers instead of standard headers. (<bits/exception.h> vs <stdexcept>) Add new cases to iwyu.imp when they occur."
+  )
+  message(
+    STATUS
+      "  4. iwyu will suggest forward declarations simultaneously in source files and their associated headers. cpp files should not have forward declarations."
+  )
+  message(
+    STATUS
+      "  5. The way iwyu sorts forward declarations is cursed. Sort namespaces before types and add one blank line between two namespaces at the same level or between the last namespace and the types."
+  )
+  message(STATUS "  6. Run clang-format on any files that fix_includes edited.")
+  message(STATUS "")
+endif()
 
 # -----------------------------------------------------------------------------
 # Dependencies

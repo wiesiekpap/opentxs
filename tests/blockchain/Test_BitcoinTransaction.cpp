@@ -5,6 +5,8 @@
 
 #include <gtest/gtest.h>
 #include <cstring>
+#include <iosfwd>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <string>

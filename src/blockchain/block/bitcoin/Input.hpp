@@ -6,13 +6,19 @@
 #pragma once
 
 #include <boost/container/flat_set.hpp>
+#include <boost/container/vector.hpp>
+#include <algorithm>
 #include <cstdint>
 #include <functional>
 #include <iosfwd>
+#include <iterator>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <set>
+#include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
@@ -21,6 +27,7 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
@@ -28,6 +35,7 @@
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/protobuf/BlockchainTransactionInput.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"

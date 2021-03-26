@@ -6,6 +6,7 @@
 #include <boost/endian/buffers.hpp>
 #include <gtest/gtest.h>
 #include <cstdint>
+#include <memory>
 #include <string>
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep

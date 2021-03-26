@@ -7,15 +7,16 @@
 #include "1_Internal.hpp"                          // IWYU pragma: associated
 #include "blockchain/client/wallet/Proposals.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
 #include <chrono>
 #include <deque>
 #include <functional>
 #include <map>
 #include <mutex>
 #include <optional>
-#include <queue>
 #include <set>
 #include <stdexcept>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
