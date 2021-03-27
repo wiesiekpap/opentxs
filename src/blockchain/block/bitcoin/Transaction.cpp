@@ -11,8 +11,10 @@
 #include <algorithm>
 #include <cstring>
 #include <iterator>
+#include <limits>
 #include <map>
 #include <numeric>
+#include <sstream>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>

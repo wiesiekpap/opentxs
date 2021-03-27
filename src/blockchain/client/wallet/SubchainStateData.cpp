@@ -21,13 +21,14 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/blockchain/Subchain.hpp"
+#include "opentxs/api/client/blockchain/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
+#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
@@ -36,6 +37,7 @@
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"  // IWYU pragma: keep
+#include "opentxs/protobuf/BlockchainWalletKey.pb.h"
 #include "util/JobCounter.hpp"
 #include "util/ScopeGuard.hpp"
 

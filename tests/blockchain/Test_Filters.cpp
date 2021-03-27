@@ -5,9 +5,10 @@
 
 #include <gtest/gtest.h>
 #include <algorithm>
-#include <array>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <string>
@@ -37,6 +38,7 @@
 #include "opentxs/blockchain/client/FilterOracle.hpp"
 #include "opentxs/blockchain/client/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/protobuf/Enums.pb.h"
 
 namespace
 {

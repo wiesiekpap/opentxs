@@ -6,13 +6,18 @@
 #pragma once
 
 #include <boost/container/flat_set.hpp>
+#include <boost/container/vector.hpp>
+#include <algorithm>
 #include <cstdint>
 #include <functional>
 #include <iosfwd>
+#include <iterator>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"

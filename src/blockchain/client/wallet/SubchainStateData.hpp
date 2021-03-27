@@ -11,6 +11,9 @@
 #include <optional>
 #include <queue>
 #include <sstream>
+#include <string>
+#include <tuple>
+#include <utility>
 #include <vector>
 
 #include "internal/blockchain/Blockchain.hpp"
@@ -25,6 +28,7 @@
 #include "opentxs/blockchain/client/FilterOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 
 namespace opentxs
@@ -49,6 +53,7 @@ namespace block
 namespace bitcoin
 {
 class Block;
+class Transaction;
 }  // namespace bitcoin
 }  // namespace block
 

@@ -6,6 +6,7 @@
 #pragma once
 
 #include <atomic>
+#include <iosfwd>
 #include <map>
 #include <mutex>
 #include <optional>
@@ -70,6 +71,11 @@ struct Network;
 }  // namespace internal
 }  // namespace client
 }  // namespace blockchain
+
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
 
 namespace network
 {

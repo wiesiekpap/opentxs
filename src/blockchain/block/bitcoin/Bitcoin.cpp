@@ -8,7 +8,10 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"  // IWYU pragma: associated
 
 #include <boost/endian/buffers.hpp>
+#include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <iterator>
 #include <limits>
 
 #include "opentxs/core/Log.hpp"

@@ -7,13 +7,19 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/database/wallet/Transaction.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
+#include <map>
 #include <mutex>
+#include <optional>
+#include <vector>
 
-#include "api/client/blockchain/database/Database.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/core/LogSource.hpp"
 #include "util/Container.hpp"
 
 #define OT_METHOD "opentxs::blockchain::database::wallet::Transaction::"

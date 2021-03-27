@@ -7,10 +7,13 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "blockchain/client/wallet/Wallet.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <future>
+#include <iterator>
 #include <memory>
+#include <utility>
 
 #include "core/Worker.hpp"
 #include "internal/api/client/Client.hpp"

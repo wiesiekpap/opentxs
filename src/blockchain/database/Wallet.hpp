@@ -37,6 +37,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
+#include "opentxs/blockchain/client/Wallet.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -82,6 +83,7 @@ class BlockchainTransactionOutput;
 class BlockchainTransactionProposal;
 }  // namespace proto
 
+class Data;
 class Identifier;
 }  // namespace opentxs
 

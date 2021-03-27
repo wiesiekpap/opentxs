@@ -30,5 +30,6 @@
 { "include": ["<bits/exception.h>", "private", "<stdexcept>", "public"] },
 { "include": ["<ext/alloc_traits.h>", "private", "<memory>", "public"] },
 { "include": ["<ext/new_allocator.h>", "private", "<new>", "public"] },
-{ "include": ["<ext/type_traits.h>", "private", "<type_traits>", "public"] }
+{ "include": ["<ext/type_traits.h>", "private", "<type_traits>", "public"] },
+{ "symbol": ["__forced_unwind", "private", "<stdexcept>", "public"] }
 ]

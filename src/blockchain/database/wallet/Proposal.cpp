@@ -7,6 +7,12 @@
 #include "1_Internal.hpp"                           // IWYU pragma: associated
 #include "blockchain/database/wallet/Proposal.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
+#include <iterator>
+#include <map>
+#include <utility>
+
+#include "opentxs/Types.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
 

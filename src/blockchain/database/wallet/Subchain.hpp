@@ -5,9 +5,16 @@
 
 #pragma once
 
+#include <memory>
+#include <mutex>
+#include <optional>
+
 #include "internal/blockchain/client/Client.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/core/Identifier.hpp"
+#include "opentxs/crypto/Types.hpp"
 
 namespace opentxs
 {

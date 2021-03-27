@@ -27,6 +27,7 @@
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Network.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/client/Wallet.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/Message.hpp"

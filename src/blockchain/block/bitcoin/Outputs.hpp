@@ -7,6 +7,7 @@
 
 #include <iosfwd>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <vector>
 

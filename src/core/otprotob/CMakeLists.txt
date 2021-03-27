@@ -35,5 +35,9 @@ if(${CMAKE_CXX_COMPILER_ID}
   )
 endif()
 
+set_target_properties(
+  opentxs-core-otprotob PROPERTIES C_INCLUDE_WHAT_YOU_USE ""
+                                   CXX_INCLUDE_WHAT_YOU_USE ""
+)
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-core-otprotob>)
 add_dependencies(generated_code opentxs-core-otprotob)

@@ -5,9 +5,11 @@
 
 #pragma once
 
+#include <memory>
 #include <mutex>
 #include <optional>
 #include <set>
+#include <vector>
 
 #include "opentxs/core/Identifier.hpp"
 

@@ -7,44 +7,17 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "blockchain/database/Wallet.hpp"  // IWYU pragma: associated
 
-#include <boost/container/flat_set.hpp>
-#include <boost/container/vector.hpp>
-#include <algorithm>
 #include <iosfwd>
-#include <iterator>
-#include <map>
-#include <numeric>
-#include <sstream>
+#include <mutex>
 #include <stdexcept>
-#include <string>
-#include <tuple>
-#include <type_traits>
+#include <utility>
 
-#include "internal/api/client/Client.hpp"
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "internal/blockchain/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/blockchain/BalanceNode.hpp"
-#include "opentxs/api/client/blockchain/BalanceTree.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/blockchain/block/bitcoin/Input.hpp"
-#include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
-#include "opentxs/blockchain/block/bitcoin/Output.hpp"
-#include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
-#include "opentxs/blockchain/block/bitcoin/Script.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/crypto/key/EllipticCurve.hpp"
-#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
-#include "opentxs/protobuf/BlockchainWalletKey.pb.h"
-#include "util/Container.hpp"
 
 #define OT_METHOD "opentxs::blockchain::database::Wallet::"
 

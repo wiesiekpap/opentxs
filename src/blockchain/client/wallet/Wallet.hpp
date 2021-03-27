@@ -45,6 +45,7 @@
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
+#include "opentxs/blockchain/client/Wallet.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -71,6 +72,11 @@ struct Blockchain;
 class Core;
 }  // namespace api
 
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
+
 namespace network
 {
 namespace zeromq
@@ -83,6 +89,8 @@ namespace proto
 {
 class BlockchainTransactionProposal;
 }  // namespace proto
+
+class Identifier;
 }  // namespace opentxs
 
 namespace opentxs::blockchain::client::implementation

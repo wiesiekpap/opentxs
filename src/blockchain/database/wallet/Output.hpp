@@ -6,11 +6,19 @@
 #pragma once
 
 #include <cstdint>
+#include <iosfwd>
+#include <memory>
+#include <mutex>
+#include <optional>
 #include <vector>
 
 #include "internal/blockchain/client/Client.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/client/Wallet.hpp"
+#include "opentxs/core/Identifier.hpp"
 
 namespace opentxs
 {

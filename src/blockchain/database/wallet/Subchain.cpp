@@ -8,9 +8,18 @@
 #include "blockchain/database/wallet/Subchain.hpp"  // IWYU pragma: associated
 
 #include <boost/container/flat_set.hpp>
+#include <boost/container/vector.hpp>
+#include <algorithm>
+#include <iterator>
+#include <map>
+#include <utility>
+#include <vector>
 
+#include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/core/Data.hpp"
+#include "opentxs/core/Log.hpp"
 
 // #define OT_METHOD "opentxs::blockchain::database::SubchainData::"
 

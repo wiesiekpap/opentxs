@@ -13,7 +13,9 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <sstream>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -24,9 +26,6 @@
 #include "opentxs/Proto.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/blockchain/BalanceList.hpp"
-#include "opentxs/api/client/blockchain/BalanceTree.hpp"
 #include "opentxs/api/client/blockchain/PaymentCode.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/FilterType.hpp"
@@ -39,6 +38,7 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"  // IWYU pragma: keep
 #include "opentxs/protobuf/HDPath.pb.h"

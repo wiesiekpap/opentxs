@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include <cxxabi.h>
+
 #include "0_stdafx.hpp"                         // IWYU pragma: associated
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "blockchain/block/bitcoin/Header.hpp"  // IWYU pragma: associated
@@ -13,6 +15,7 @@
 #include <ctime>
 #include <iomanip>
 #include <limits>
+#include <sstream>
 #include <stdexcept>
 #include <string_view>
 #include <utility>

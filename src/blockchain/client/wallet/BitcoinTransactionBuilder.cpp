@@ -20,13 +20,13 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 #include "blockchain/bitcoin/CompactSize.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "internal/blockchain/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Proto.hpp"
@@ -36,6 +36,7 @@
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/blockchain/BalanceNode.hpp"
+#include "opentxs/api/client/blockchain/BalanceTree.hpp"
 #include "opentxs/api/client/blockchain/PaymentCode.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
@@ -50,7 +51,9 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
+#include "opentxs/identity/Nym.hpp"
 #include "opentxs/protobuf/BlockchainOutputMultisigDetails.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposedNotification.pb.h"

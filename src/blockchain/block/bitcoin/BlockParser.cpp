@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <limits>
 #include <map>
 #include <stdexcept>
 #include <vector>

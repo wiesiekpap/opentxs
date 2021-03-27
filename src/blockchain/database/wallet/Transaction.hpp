@@ -7,9 +7,11 @@
 
 #include <memory>
 
+#include "api/client/blockchain/database/Database.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
 
 namespace opentxs
 {

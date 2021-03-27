@@ -5,12 +5,10 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include <utility>
 
 #include "Helpers.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/client/HeaderOracle.hpp"
-#include "opentxs/core/Data.hpp"
 
 TEST_F(Test_HeaderOracle, checkpoint_prevents_update)
 {

@@ -11,8 +11,7 @@
 #include <map>
 #include <memory>
 #include <optional>
-#include <set>
-#include <string>
+#include <sstream>
 #include <string_view>
 #include <type_traits>
 #include <utility>
@@ -22,16 +21,12 @@
 #include "internal/blockchain/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/blockchain/BalanceList.hpp"
 #include "opentxs/api/client/blockchain/BalanceNode.hpp"
 #include "opentxs/api/client/blockchain/BalanceTree.hpp"
 #include "opentxs/api/client/blockchain/Deterministic.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
-#include "opentxs/blockchain/block/bitcoin/Input.hpp"
-#include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
@@ -40,6 +35,7 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"  // IWYU pragma: keep
