@@ -55,8 +55,6 @@ struct Context : virtual public api::Context {
 };
 
 struct Core : virtual public api::Core {
-    const proto::Ciphertext encrypted_secret_{};
-
     virtual auto GetInternalPasswordCallback() const
         -> INTERNAL_PASSWORD_CALLBACK* = 0;
     virtual auto GetSecret(

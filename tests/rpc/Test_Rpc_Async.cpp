@@ -201,9 +201,9 @@ const api::Core& Test_Rpc_Async::get_session(const std::int32_t instance)
     auto is_server = instance % 2;
 
     if (is_server) {
-        return ot::Context().Server(get_index(instance));
+        return ot::Context().Server(static_cast<int>(get_index(instance)));
     } else {
-        return ot::Context().Client(get_index(instance));
+        return ot::Context().Client(static_cast<int>(get_index(instance)));
     }
 }
 
@@ -254,8 +254,10 @@ void Test_Rpc_Async::setup()
 {
     const api::Context& ot = ot::Context();
 
-    auto& intro_server = ot.StartServer(ArgList(), ot.Servers(), true);
-    auto& server = ot.StartServer(ArgList(), ot.Servers(), true);
+    auto& intro_server =
+        ot.StartServer(ArgList(), static_cast<int>(ot.Servers()), true);
+    auto& server =
+        ot.StartServer(ArgList(), static_cast<int>(ot.Servers()), true);
     auto reasonServer = server.Factory().PasswordPrompt(__FUNCTION__);
 #if OT_CASH
     intro_server.SetMintKeySize(OT_MINT_KEY_SIZE_TEST);
@@ -280,7 +282,8 @@ void Test_Rpc_Async::setup()
     ASSERT_EQ(1, response.status_size());
     ASSERT_EQ(proto::RPCRESPONSE_SUCCESS, response.status(0).code());
 
-    auto& senderClient = ot.Client(get_index(response.session()));
+    auto& senderClient =
+        ot.Client(static_cast<int>(get_index(response.session())));
     auto reasonS = senderClient.Factory().PasswordPrompt(__FUNCTION__);
 
     cookie = ot::Identifier::Random()->str();
@@ -293,7 +296,8 @@ void Test_Rpc_Async::setup()
     ASSERT_EQ(1, response.status_size());
     ASSERT_EQ(proto::RPCRESPONSE_SUCCESS, response.status(0).code());
 
-    auto& receiverClient = ot.Client(get_index(response.session()));
+    auto& receiverClient =
+        ot.Client(static_cast<int>(get_index(response.session())));
     auto reasonR = receiverClient.Factory().PasswordPrompt(__FUNCTION__);
 
     auto client_a_server_contract =
@@ -383,7 +387,7 @@ TEST_F(Test_Rpc_Async, Create_Issuer_Account)
     auto command = init(proto::RPCCOMMAND_ISSUEUNITDEFINITION);
     command.set_session(sender_session_);
     command.set_owner(sender_nym_id_->str());
-    auto& server = ot_.Server(get_index(server_));
+    auto& server = ot_.Server(static_cast<int>(get_index(server_)));
     command.set_notary(server.ID().str());
     command.set_unit(unit_definition_id_->str());
     command.add_identifier(ISSUER_ACCOUNT_LABEL);
@@ -436,7 +440,7 @@ TEST_F(Test_Rpc_Async, Send_Payment_Cheque_No_Contact)
 
 TEST_F(Test_Rpc_Async, Send_Payment_Cheque_No_Account_Owner)
 {
-    auto& client_a = ot_.Client(get_index(sender_session_));
+    auto& client_a = ot_.Client(static_cast<int>(get_index(sender_session_)));
     auto command = init(proto::RPCCOMMAND_SENDPAYMENT);
     command.set_session(sender_session_);
 
@@ -476,7 +480,7 @@ TEST_F(Test_Rpc_Async, Send_Payment_Cheque_No_Account_Owner)
 
 TEST_F(Test_Rpc_Async, Send_Payment_Cheque_No_Path)
 {
-    auto& client_a = ot_.Client(get_index(sender_session_));
+    auto& client_a = ot_.Client(static_cast<int>(get_index(sender_session_)));
     auto command = init(proto::RPCCOMMAND_SENDPAYMENT);
     command.set_session(sender_session_);
 
@@ -516,7 +520,7 @@ TEST_F(Test_Rpc_Async, Send_Payment_Cheque_No_Path)
 
 TEST_F(Test_Rpc_Async, Send_Payment_Cheque)
 {
-    auto& client_a = ot_.Client(get_index(sender_session_));
+    auto& client_a = ot_.Client(static_cast<int>(get_index(sender_session_)));
     auto command = init(proto::RPCCOMMAND_SENDPAYMENT);
     command.set_session(sender_session_);
     auto& client_b = get_session(receiver_session_);
@@ -584,7 +588,7 @@ TEST_F(Test_Rpc_Async, Send_Payment_Cheque)
 
 TEST_F(Test_Rpc_Async, Get_Pending_Payments)
 {
-    auto& client_b = ot_.Client(get_index(receiver_session_));
+    auto& client_b = ot_.Client(static_cast<int>(get_index(receiver_session_)));
 
     // Make sure the workflows on the client are up-to-date.
     client_b.OTX().Refresh();
@@ -755,11 +759,12 @@ TEST_F(Test_Rpc_Async, Accept_Pending_Payments)
 
 TEST_F(Test_Rpc_Async, Get_Account_Activity)
 {
-    const auto& client = ot_.Client(get_index(receiver_session_));
+    const auto& client =
+        ot_.Client(static_cast<int>(get_index(receiver_session_)));
     client.OTX().Refresh();
     client.OTX().ContextIdle(receiver_nym_id_, server_id_).get();
 
-    auto& client_a = ot_.Client(get_index(sender_session_));
+    auto& client_a = ot_.Client(static_cast<int>(get_index(sender_session_)));
 
     const auto& workflow = client_a.Workflow();
     std::set<OTIdentifier> workflows;
@@ -824,7 +829,7 @@ TEST_F(Test_Rpc_Async, Get_Account_Activity)
 
     // Destination account.
 
-    auto& client_b = ot_.Client(get_index(receiver_session_));
+    auto& client_b = ot_.Client(static_cast<int>(get_index(receiver_session_)));
     client_b.OTX().ContextIdle(receiver_nym_id_, server_id_).get();
 
     const auto& receiverworkflow = client_b.Workflow();
@@ -889,10 +894,10 @@ TEST_F(Test_Rpc_Async, Accept_2_Pending_Payments)
 {
     // Send 1 payment
 
-    auto& client_a = ot_.Client(get_index(sender_session_));
+    auto& client_a = ot_.Client(static_cast<int>(get_index(sender_session_)));
     auto command = init(proto::RPCCOMMAND_SENDPAYMENT);
     command.set_session(sender_session_);
-    auto& client_b = ot_.Client(get_index(receiver_session_));
+    auto& client_b = ot_.Client(static_cast<int>(get_index(receiver_session_)));
 
     ASSERT_FALSE(receiver_nym_id_->empty());
 
@@ -1074,14 +1079,14 @@ TEST_F(Test_Rpc_Async, Create_Account)
     auto command = init(proto::RPCCOMMAND_CREATEACCOUNT);
     command.set_session(sender_session_);
 
-    auto& client_a = ot_.Client(get_index(sender_session_));
+    auto& client_a = ot_.Client(static_cast<int>(get_index(sender_session_)));
     auto reason = client_a.Factory().PasswordPrompt(__FUNCTION__);
     auto nym_id = client_a.Wallet().Nym(reason, TEST_NYM_6)->ID().str();
 
     ASSERT_FALSE(nym_id.empty());
 
     command.set_owner(nym_id);
-    auto& server = ot_.Server(get_index(server_));
+    auto& server = ot_.Server(static_cast<int>(get_index(server_)));
     command.set_notary(server.ID().str());
     command.set_unit(unit_definition_id_->str());
     command.add_identifier(USER_ACCOUNT_LABEL);

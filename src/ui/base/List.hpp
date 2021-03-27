@@ -628,10 +628,18 @@ private:
         auto& [dest, toRow] = to;
         auto item = source->item_.get();
         const auto samePosition{(fromRow == toRow) || ((fromRow + 1) == toRow)};
-#if OT_QT
 
+        OT_ASSERT(std::numeric_limits<int>::max() >= fromRow);
+        OT_ASSERT(std::numeric_limits<int>::max() >= toRow);
+
+#if OT_QT
         if (false == samePosition) {
-            emit_begin_move_rows(me(), fromRow, fromRow, me(), toRow);
+            emit_begin_move_rows(
+                me(),
+                static_cast<int>(fromRow),
+                static_cast<int>(fromRow),
+                me(),
+                static_cast<int>(toRow));
         }
 #endif  // OT_QT
 
@@ -642,8 +650,9 @@ private:
         if (samePosition) {
             if (changed) {
                 emit_data_changed(
-                    createIndex(fromRow, 0, item),
-                    createIndex(fromRow, column_count_, item));
+                    createIndex(static_cast<int>(fromRow), 0, item),
+                    createIndex(
+                        static_cast<int>(fromRow), column_count_, item));
             }
         } else {
             emit_end_move_rows();

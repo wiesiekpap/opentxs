@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
@@ -342,9 +343,12 @@ Version::BitcoinFormat_209::BitcoinFormat_209() noexcept
 
 Version::BitcoinFormat_209::BitcoinFormat_209(
     const block::Height height) noexcept
-    : height_(height)
+    : height_(static_cast<std::uint32_t>(height))
 {
     static_assert(4 == sizeof(BitcoinFormat_209));
+    static_assert(sizeof(height_) == sizeof(std::uint32_t));
+
+    OT_ASSERT(std::numeric_limits<std::uint32_t>::max() >= height);
 }
 
 auto Version::payload() const noexcept -> OTData

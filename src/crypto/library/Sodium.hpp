@@ -164,7 +164,7 @@ private:
         -> std::size_t final;
     auto sha1(
         const std::uint8_t* input,
-        const size_t inputSize,
+        const std::size_t inputSize,
         std::uint8_t* output) const -> bool;
     auto TagSize(const proto::SymmetricMode mode) const -> std::size_t final;
 

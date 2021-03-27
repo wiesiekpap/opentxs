@@ -80,7 +80,7 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
                                                                                \
         return false;                                                          \
     }
-#define _CHECK_STRING(a, min, max)                                             \
+#define CHECK_STRING_(a, min, max)                                             \
     {                                                                          \
         if (input.has_##a() && (0 < input.a().size())) {                       \
             if ((min > input.a().size()) || (max < input.a().size())) {        \
@@ -90,7 +90,7 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
         }                                                                      \
     }
 
-#define _CHECK_SUBOBJECT(a, b, ...)                                            \
+#define CHECK_SUBOBJECT_(a, b, ...)                                            \
     {                                                                          \
         if (input.has_##a()) {                                                 \
             try {                                                              \
@@ -112,7 +112,7 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
         }                                                                      \
     }
 
-#define _CHECK_SUBOBJECTS(a, b, ...)                                           \
+#define CHECK_SUBOBJECTS_(a, b, ...)                                           \
     {                                                                          \
         for (const auto& it : input.a()) {                                     \
             try {                                                              \
@@ -270,12 +270,12 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
 
 #define MAX_IDENTIFIER(a)                                                      \
     {                                                                          \
-        _CHECK_STRING(a, 0, MAX_PLAUSIBLE_IDENTIFIER);                         \
+        CHECK_STRING_(a, 0, MAX_PLAUSIBLE_IDENTIFIER);                         \
     }
 
 #define OPTIONAL_IDENTIFIER(a)                                                 \
     {                                                                          \
-        _CHECK_STRING(a, MIN_PLAUSIBLE_IDENTIFIER, MAX_PLAUSIBLE_IDENTIFIER);  \
+        CHECK_STRING_(a, MIN_PLAUSIBLE_IDENTIFIER, MAX_PLAUSIBLE_IDENTIFIER);  \
     }
 
 #define OPTIONAL_IDENTIFIERS(a)                                                \
@@ -291,12 +291,12 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
 
 #define OPTIONAL_KEY(a)                                                        \
     {                                                                          \
-        _CHECK_STRING(a, MIN_PLAUSIBLE_KEYSIZE, MAX_PLAUSIBLE_KEYSIZE);        \
+        CHECK_STRING_(a, MIN_PLAUSIBLE_KEYSIZE, MAX_PLAUSIBLE_KEYSIZE);        \
     }
 
 #define OPTIONAL_NAME(a)                                                       \
     {                                                                          \
-        _CHECK_STRING(a, 1, MAX_VALID_CONTACT_VALUE);                          \
+        CHECK_STRING_(a, 1, MAX_VALID_CONTACT_VALUE);                          \
     }
 
 #define OPTIONAL_NAMES(a)                                                      \
@@ -311,32 +311,32 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
 
 #define OPTIONAL_SCRIPT(a)                                                     \
     {                                                                          \
-        _CHECK_STRING(a, MIN_PLAUSIBLE_SCRIPT, MAX_PLAUSIBLE_SCRIPT);          \
+        CHECK_STRING_(a, MIN_PLAUSIBLE_SCRIPT, MAX_PLAUSIBLE_SCRIPT);          \
     }
 
 #define OPTIONAL_SUBOBJECT(a, b)                                               \
     {                                                                          \
-        _CHECK_SUBOBJECT(a, b, silent);                                        \
+        CHECK_SUBOBJECT_(a, b, silent);                                        \
     }
 
 #define OPTIONAL_SUBOBJECT_VA(a, b, ...)                                       \
     {                                                                          \
-        _CHECK_SUBOBJECT(a, b, silent, __VA_ARGS__);                           \
+        CHECK_SUBOBJECT_(a, b, silent, __VA_ARGS__);                           \
     }
 
 #define OPTIONAL_SUBOBJECTS(a, b)                                              \
     {                                                                          \
-        _CHECK_SUBOBJECTS(a, b, silent);                                       \
+        CHECK_SUBOBJECTS_(a, b, silent);                                       \
     }
 
 #define OPTIONAL_SUBOBJECTS_VA(a, b, ...)                                      \
     {                                                                          \
-        _CHECK_SUBOBJECTS(a, b, silent, __VA_ARGS__);                          \
+        CHECK_SUBOBJECTS_(a, b, silent, __VA_ARGS__);                          \
     }
 
 #define REQUIRED_SIZE(a, b)                                                    \
     {                                                                          \
-        _CHECK_STRING(a, b, b);                                                \
+        CHECK_STRING_(a, b, b);                                                \
     }
 
 #define UNDEFINED_VERSION(b)                                                   \

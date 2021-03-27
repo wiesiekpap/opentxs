@@ -8,6 +8,7 @@
 #include "api/crypto/Hash.hpp"  // IWYU pragma: associated
 
 #include <cstring>
+#include <limits>
 #include <memory>
 #include <string_view>
 #include <vector>
@@ -281,7 +282,12 @@ auto Hash::MurmurHash3_32(
     const Data& data,
     std::uint32_t& output) const noexcept -> void
 {
-    MurmurHash3_x86_32(data.data(), data.size(), key, &output);
+    const auto size = data.size();
+
+    OT_ASSERT(size <= std::numeric_limits<int>::max());
+
+    MurmurHash3_x86_32(
+        data.data(), static_cast<int>(data.size()), key, &output);
 }
 
 auto Hash::PKCS5_PBKDF2_HMAC(

@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <cstring>
 #include <iterator>
+#include <limits>
 #include <type_traits>
 #include <vector>
 
@@ -165,9 +166,11 @@ void BloomFilter::AddElement(const Data& in) noexcept
 auto BloomFilter::hash(const Data& input, std::size_t hash_index) const noexcept
     -> std::uint32_t
 {
-    auto seed = seed_ * hash_index;
+    OT_ASSERT(std::numeric_limits<std::uint32_t>::max() >= hash_index);
+
+    auto seed = seed_ * static_cast<std::uint32_t>(hash_index);
     seed += tweak_;
-    std::uint32_t hash{};
+    auto hash = std::uint32_t{};
     api_.Crypto().Hash().MurmurHash3_32(seed, input, hash);
 
     return hash;

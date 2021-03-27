@@ -87,6 +87,18 @@ if(OPENSSL_EXPORT)
   endif()
 endif()
 
+if(${CMAKE_CXX_COMPILER_ID}
+   MATCHES
+   Clang
+)
+  set_source_files_properties(
+    "Ripemd160.cpp" PROPERTIES COMPILE_FLAGS "-Wno-reserved-id-macro"
+  )
+  set_source_files_properties(
+    "Pbkdf2.cpp" PROPERTIES COMPILE_FLAGS "-Wno-reserved-id-macro"
+  )
+endif()
+
 target_sources(opentxs-crypto-library PRIVATE ${cxx-install-headers})
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-crypto-library>)
 add_dependencies(opentxs-crypto-library generated_code)

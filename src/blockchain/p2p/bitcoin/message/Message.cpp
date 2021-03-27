@@ -8,6 +8,7 @@
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"  // IWYU pragma: associated
 
 #include <cstring>
+#include <limits>
 #include <memory>
 #include <stdexcept>
 
@@ -108,10 +109,13 @@ FilterRequest::FilterRequest(
     const block::Height start,
     const filter::Hash& stop) noexcept(false)
     : type_(blockchain::internal::Serialize(chain, type))
-    , start_(start)
+    , start_(static_cast<std::uint32_t>(start))
     , stop_()
 {
     static_assert(37 == sizeof(FilterRequest));
+    static_assert(sizeof(std::uint32_t) == sizeof(start_));
+
+    OT_ASSERT(std::numeric_limits<std::uint32_t>::max() >= start);
 
     if (stop.size() != stop_.size()) {
         throw std::runtime_error("Invalid stop hash");

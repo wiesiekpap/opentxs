@@ -62,7 +62,8 @@ Frame::Frame(const std::size_t bytes) noexcept
 Frame::Frame(const ProtobufType& input) noexcept
     : Frame(input.ByteSize())
 {
-    input.SerializeToArray(zmq_msg_data(&message_), zmq_msg_size(&message_));
+    input.SerializeToArray(
+        zmq_msg_data(&message_), static_cast<int>(zmq_msg_size(&message_)));
 }
 
 Frame::Frame(const void* data, const std::size_t bytes) noexcept

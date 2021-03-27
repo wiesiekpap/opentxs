@@ -8,6 +8,7 @@
 #include "storage/drivers/StorageSqlite3.hpp"  // IWYU pragma: associated
 
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <string>
 #include <vector>
@@ -56,9 +57,17 @@ auto StorageSqlite3::bind_key(
     const std::string& key,
     const std::size_t start) const -> std::string
 {
+    OT_ASSERT(std::numeric_limits<int>::max() >= key.size());
+    OT_ASSERT(std::numeric_limits<int>::max() >= start);
+
     sqlite3_stmt* statement{nullptr};
     sqlite3_prepare_v2(db_, source.c_str(), -1, &statement, nullptr);
-    sqlite3_bind_text(statement, start, key.c_str(), key.size(), SQLITE_STATIC);
+    sqlite3_bind_text(
+        statement,
+        static_cast<int>(start),
+        key.c_str(),
+        static_cast<int>(key.size()),
+        SQLITE_STATIC);
     const auto output = expand_sql(statement);
     sqlite3_finalize(statement);
 
@@ -227,14 +236,16 @@ auto StorageSqlite3::Select(
 
 void StorageSqlite3::set_data(std::stringstream& sql) const
 {
+    OT_ASSERT(std::numeric_limits<int>::max() >= pending_.size());
+
     sqlite3_stmt* data{nullptr};
     std::stringstream dataSQL{};
     const std::string tablename{GetTableName(transaction_bucket_.get())};
     dataSQL << "INSERT OR REPLACE INTO '" << tablename << "' (k, v) VALUES ";
-    std::size_t counter{0};
-    const auto size = pending_.size();
+    auto counter{0};
+    const auto size = static_cast<int>(pending_.size());
 
-    for (std::size_t i = 0; i < size; ++i) {
+    for (auto i{0}; i < size; ++i) {
         dataSQL << "(?" << ++counter << ", ?";
         dataSQL << ++counter << ")";
 
@@ -251,13 +262,25 @@ void StorageSqlite3::set_data(std::stringstream& sql) const
     for (const auto& it : pending_) {
         const auto& key = it.first;
         const auto& value = it.second;
+
+        OT_ASSERT(std::numeric_limits<int>::max() >= key.size());
+        OT_ASSERT(std::numeric_limits<int>::max() >= value.size());
+
         auto bound = sqlite3_bind_text(
-            data, ++counter, key.c_str(), key.size(), SQLITE_STATIC);
+            data,
+            ++counter,
+            key.c_str(),
+            static_cast<int>(key.size()),
+            SQLITE_STATIC);
 
         OT_ASSERT(SQLITE_OK == bound);
 
         bound = sqlite3_bind_blob(
-            data, ++counter, value.c_str(), value.size(), SQLITE_STATIC);
+            data,
+            ++counter,
+            value.c_str(),
+            static_cast<int>(value.size()),
+            SQLITE_STATIC);
 
         OT_ASSERT(SQLITE_OK == bound);
     }
@@ -270,6 +293,10 @@ void StorageSqlite3::set_root(
     const std::string& rootHash,
     std::stringstream& sql) const
 {
+    OT_ASSERT(
+        std::numeric_limits<int>::max() >= config_.sqlite3_root_key_.size());
+    OT_ASSERT(std::numeric_limits<int>::max() >= rootHash.size());
+
     sqlite3_stmt* root{nullptr};
     std::stringstream rootSQL{};
     rootSQL << "INSERT OR REPLACE INTO '" << config_.sqlite3_control_table_
@@ -279,13 +306,17 @@ void StorageSqlite3::set_root(
         root,
         1,
         config_.sqlite3_root_key_.c_str(),
-        config_.sqlite3_root_key_.size(),
+        static_cast<int>(config_.sqlite3_root_key_.size()),
         SQLITE_STATIC);
 
     OT_ASSERT(SQLITE_OK == bound)
 
     bound = sqlite3_bind_blob(
-        root, 2, rootHash.c_str(), rootHash.size(), SQLITE_STATIC);
+        root,
+        2,
+        rootHash.c_str(),
+        static_cast<int>(rootHash.size()),
+        SQLITE_STATIC);
 
     OT_ASSERT(SQLITE_OK == bound)
 
@@ -335,13 +366,22 @@ auto StorageSqlite3::Upsert(
     const std::string& tablename,
     const std::string& value) const -> bool
 {
+    OT_ASSERT(std::numeric_limits<int>::max() >= key.size());
+    OT_ASSERT(std::numeric_limits<int>::max() >= value.size());
+
     sqlite3_stmt* statement;
     const std::string query =
         "insert or replace into `" + tablename + "` (k, v) values (?1, ?2);";
 
     sqlite3_prepare_v2(db_, query.c_str(), -1, &statement, nullptr);
-    sqlite3_bind_text(statement, 1, key.c_str(), key.size(), SQLITE_STATIC);
-    sqlite3_bind_blob(statement, 2, value.c_str(), value.size(), SQLITE_STATIC);
+    sqlite3_bind_text(
+        statement, 1, key.c_str(), static_cast<int>(key.size()), SQLITE_STATIC);
+    sqlite3_bind_blob(
+        statement,
+        2,
+        value.c_str(),
+        static_cast<int>(value.size()),
+        SQLITE_STATIC);
     LogVerbose(OT_METHOD)(__FUNCTION__)(expand_sql(statement)).Flush();
     const auto result = sqlite3_step(statement);
     sqlite3_finalize(statement);

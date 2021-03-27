@@ -463,10 +463,12 @@ private:
             return output;
         }();
 
+        OT_ASSERT(std::numeric_limits<int>::max() >= poll.size());
+
         while (zmq_running_) {
             constexpr auto timeout = std::chrono::milliseconds{250};
-            const auto events =
-                ::zmq_poll(poll.data(), poll.size(), timeout.count());
+            const auto events = ::zmq_poll(
+                poll.data(), static_cast<int>(poll.size()), timeout.count());
 
             if (0 > events) {
                 const auto error = ::zmq_errno();

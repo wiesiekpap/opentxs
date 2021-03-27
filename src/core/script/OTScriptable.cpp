@@ -2273,8 +2273,8 @@ void OTScriptable::UpdateContentsToTag(Tag& parent, bool bCalculatingID) const
 
     TagPtr pTag(new Tag("scriptableContract"));
 
-    std::uint32_t sizePartyMap = m_mapParties.size();
-    std::uint32_t sizeBylawMap = m_mapBylaws.size();
+    const auto sizePartyMap = m_mapParties.size();
+    const auto sizeBylawMap = m_mapBylaws.size();
 
     pTag->add_attribute(
         "specifyInstrumentDefinitionID",

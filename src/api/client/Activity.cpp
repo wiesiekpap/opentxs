@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <limits>
 #include <list>
 #include <map>
 #include <thread>
@@ -834,10 +835,12 @@ void Activity::thread_preload_thread(
         return;
     }
 
-    for (auto i = (size - start); i > 0; --i) {
+    OT_ASSERT((size - start) <= std::numeric_limits<int>::max());
+
+    for (auto i = (size - start); i > 0u; --i) {
         if (cached >= count) { break; }
 
-        const auto& item = thread->item(i - 1);
+        const auto& item = thread->item(static_cast<int>(i - 1u));
         const auto& box = static_cast<StorageBox>(item.box());
 
         switch (box) {

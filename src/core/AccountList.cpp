@@ -56,8 +56,7 @@ void AccountList::Serialize(Tag& parent) const
 {
     auto acctType = String::Factory();
     TranslateAccountTypeToString(acctType_, acctType);
-
-    std::uint32_t sizeMapAcctIDs = mapAcctIDs_.size();
+    const auto sizeMapAcctIDs = mapAcctIDs_.size();
 
     TagPtr pTag(new Tag("accountList"));
 

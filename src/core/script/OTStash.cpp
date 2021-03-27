@@ -68,7 +68,7 @@ OTStash::OTStash(
 
 void OTStash::Serialize(Tag& parent) const
 {
-    std::uint32_t sizeMapStashItems = m_mapStashItems.size();
+    const auto sizeMapStashItems = m_mapStashItems.size();
 
     TagPtr pTag(new Tag("stash"));
 

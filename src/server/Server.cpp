@@ -935,7 +935,7 @@ auto Server::GetConnectInfo(
         notUsed);
     port = (MAX_TCP_PORT < port) ? DEFAULT_COMMAND_PORT : port;
     port = (MIN_TCP_PORT > port) ? DEFAULT_COMMAND_PORT : port;
-    nPort = port;
+    nPort = static_cast<std::uint32_t>(port);
     manager_.Config().Save();
 
     return (haveIP && havePort);

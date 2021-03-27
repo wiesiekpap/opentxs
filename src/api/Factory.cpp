@@ -864,8 +864,9 @@ auto Factory::Data(const opentxs::Armored& input) const -> OTData
 auto Factory::Data(const ProtobufType& input) const -> OTData
 {
     auto output = Data::Factory();
-    output->SetSize(input.ByteSize());
-    input.SerializeToArray(output->data(), output->size());
+    const auto size{input.ByteSize()};
+    output->SetSize(size);
+    input.SerializeToArray(output->data(), size);
 
     return output;
 }

@@ -13,6 +13,7 @@ extern "C" {
 #include <openssl/ossl_typ.h>
 }
 
+#include <limits>
 #include <utility>
 
 #include "2_Factory.hpp"
@@ -102,7 +103,13 @@ auto Lucre::AddDenomination(
     const std::size_t keySize,
     const PasswordPrompt& reason) -> bool
 {
+    if (std::numeric_limits<int>::max() < keySize) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid key size").Flush();
+        return false;
+    }
+
     bool bReturnValue = false;
+    const auto size = static_cast<int>(keySize);
 
     // Let's make sure it doesn't already exist
     auto theArmor = Armored::Factory();
@@ -120,7 +127,7 @@ auto Lucre::AddDenomination(
         return false;
     }
 
-    if ((keySize / 8) < (MIN_COIN_LENGTH + DIGEST_LENGTH)) {
+    if ((size / 8) < (MIN_COIN_LENGTH + DIGEST_LENGTH)) {
 
         LogOutput(OT_METHOD)(__FUNCTION__)(": Prime must be at least ")(
             (MIN_COIN_LENGTH + DIGEST_LENGTH) * 8)(" bits.")
@@ -128,7 +135,7 @@ auto Lucre::AddDenomination(
         return false;
     }
 
-    if (keySize % 8) {
+    if (size % 8) {
         LogOutput(OT_METHOD)(__FUNCTION__)(
             ": Prime length must be a multiple of 8.")
             .Flush();
@@ -149,7 +156,7 @@ auto Lucre::AddDenomination(
     crypto::implementation::OpenSSL_BIO bioPublic = BIO_new(BIO_s_mem());
 
     // Generate the mint private key information
-    Bank bank(keySize / 8);
+    Bank bank(size / 8);
     bank.WriteBIO(bio);
 
     // Generate the mint public key information

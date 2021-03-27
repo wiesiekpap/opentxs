@@ -17,9 +17,9 @@ namespace proto
 auto CheckProto_1(const BlockchainBlockLocalData& input, const bool silent)
     -> bool
 {
-    if (input.has_work()) { _CHECK_STRING(work, 0, MAX_PLAUSIBLE_WORK); }
+    if (input.has_work()) { CHECK_STRING_(work, 0, MAX_PLAUSIBLE_WORK); }
     if (input.has_inherit_work()) {
-        _CHECK_STRING(inherit_work, 0, MAX_PLAUSIBLE_WORK);
+        CHECK_STRING_(inherit_work, 0, MAX_PLAUSIBLE_WORK);
     }
 
     return true;

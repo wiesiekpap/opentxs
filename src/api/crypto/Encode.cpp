@@ -8,6 +8,7 @@
 #include "api/crypto/Encode.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
+#include <limits>
 #include <memory>
 #include <regex>
 #include <sstream>
@@ -57,12 +58,16 @@ auto Encode::Base64Encode(
     const std::uint8_t* inputStart,
     const std::size_t& size) const -> std::string
 {
-    std::string output;
-    output.resize(::Base64encode_len(size));
+    auto output = std::string{};
+
+    if (std::numeric_limits<int>::max() < size) { return {}; }
+
+    const auto bytes = static_cast<int>(size);
+    output.resize(::Base64encode_len(bytes));
     ::Base64encode(
         const_cast<char*>(output.data()),
         reinterpret_cast<const char*>(inputStart),
-        size);
+        bytes);
 
     return BreakLines(output);
 }

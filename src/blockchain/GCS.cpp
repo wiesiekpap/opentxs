@@ -353,7 +353,7 @@ GCS::GCS(
     , api_(api)
     , bits_(bits)
     , false_positive_rate_(fpRate)
-    , count_(elements.size())
+    , count_(static_cast<std::uint32_t>(elements.size()))
     , elements_(gcs::HashedSetConstruct(
           api_,
           key,

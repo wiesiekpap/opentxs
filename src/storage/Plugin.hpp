@@ -114,8 +114,10 @@ auto opentxs::api::storage::Driver::LoadProto(
     auto valid{false};
 
     if (loaded) {
-        serialized.reset(new T);
-        serialized->ParseFromArray(raw.data(), static_cast<int>(raw.size()));
+        serialized = proto::DynamicFactory<T>(raw.data(), raw.size());
+
+        OT_ASSERT(serialized);
+
         valid = proto::Validate<T>(*serialized, VERBOSE);
     } else {
 

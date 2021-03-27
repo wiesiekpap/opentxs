@@ -50,8 +50,8 @@ TransferBalanceItem::TransferBalanceItem(
 auto TransferBalanceItem::effective_amount() const noexcept -> opentxs::Amount
 {
     sLock lock(shared_lock_);
-    auto amount{0};
-    opentxs::Amount sign{0};
+    auto amount = opentxs::Amount{0};
+    auto sign = opentxs::Amount{0};
 
     if (transfer_) { amount = transfer_->GetAmount(); }
 

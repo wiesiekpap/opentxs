@@ -59,7 +59,7 @@ auto remove(std::vector<Store>& vector, const Interface& key) noexcept
     const auto before{vector.size()};
     vector.erase(std::remove(vector.begin(), vector.end(), key), vector.end());
 
-    return vector.size() - before;
+    return before - vector.size();
 }
 
 template <typename Key, typename Value>

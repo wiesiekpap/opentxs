@@ -10,6 +10,7 @@
 #include <zmq.h>
 #include <atomic>
 #include <chrono>
+#include <limits>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -84,10 +85,12 @@ struct SyncServer::Imp {
             return output;
         }();
 
+        OT_ASSERT(std::numeric_limits<int>::max() >= poll.size());
+
         while (running_) {
             constexpr auto timeout = std::chrono::milliseconds{10};
-            const auto events =
-                ::zmq_poll(poll.data(), poll.size(), timeout.count());
+            const auto events = ::zmq_poll(
+                poll.data(), static_cast<int>(poll.size()), timeout.count());
 
             if (0 > events) {
                 const auto error = ::zmq_errno();

@@ -8,6 +8,7 @@
 #include "api/client/blockchain/Deterministic.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
+#include <limits>
 #include <memory>
 #include <stdexcept>
 #include <tuple>
@@ -508,7 +509,9 @@ auto Deterministic::need_lookahead(
     const Subchain type,
     const std::size_t preallocate) const noexcept -> bool
 {
-    return std::max<Bip32Index>(window_, preallocate) >
+    if (std::numeric_limits<Bip32Index>::max() < preallocate) { return false; }
+
+    return std::max(window_, static_cast<Bip32Index>(preallocate)) >
            (generated_.at(type) - used_.at(type));
 }
 #endif  // OT_CRYPTO_WITH_BIP32

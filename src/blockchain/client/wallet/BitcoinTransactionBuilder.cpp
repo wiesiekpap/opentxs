@@ -14,6 +14,7 @@
 #include <cstring>
 #include <iosfwd>
 #include <iterator>
+#include <limits>
 #include <optional>
 #include <set>
 #include <sstream>
@@ -163,11 +164,16 @@ struct BitcoinTransactionBuilder::Imp {
                     throw std::runtime_error{"Failed to construct script"};
                 }
 
+                if (std::numeric_limits<std::uint32_t>::max() <
+                    outputs_.size()) {
+                    throw std::runtime_error{"too many outputs"};
+                }
+
                 return factory::BitcoinTransactionOutput(
                     api_,
                     blockchain_,
                     chain_,
-                    outputs_.size(),
+                    static_cast<std::uint32_t>(outputs_.size()),
                     0,
                     std::move(pScript),
                     {keyID});

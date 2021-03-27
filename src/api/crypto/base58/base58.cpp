@@ -38,7 +38,7 @@ auto DecodeBase58(const char* psz, std::vector<unsigned char>& vch) -> bool
         const char* ch = strchr(pszBase58, *psz);
         if (ch == nullptr) return false;
         // Apply "b256 = b256 * 58 + ch".
-        int carry = ch - pszBase58;
+        auto carry = static_cast<int>(ch - pszBase58);
         for (auto it = b256.rbegin(); it != b256.rend(); it++) {
             carry += static_cast<int>(58 * (*it));
             *it = static_cast<unsigned char>(carry % 256);
