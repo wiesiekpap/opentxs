@@ -14,9 +14,7 @@
 
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 #include "opentxs/crypto/key/Secp256k1.hpp"
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 #if OT_CRYPTO_WITH_BIP32
 #include "opentxs/crypto/Bip32.hpp"
 #endif  // OT_CRYPTO_WITH_BIP32

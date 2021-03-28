@@ -1095,8 +1095,8 @@ auto RPC::get_seeds(const proto::RPCCommand& command) const
     const auto& hdseeds = session.Seeds();
 
     for (const auto& id : command.identifier()) {
-        auto words = hdseeds.Words(reason, id);
-        auto passphrase = hdseeds.Passphrase(reason, id);
+        auto words = hdseeds.Words(id, reason);
+        auto passphrase = hdseeds.Passphrase(id, reason);
 
         if (false == words.empty() || false == passphrase.empty()) {
             auto& seed = *output.add_seed();

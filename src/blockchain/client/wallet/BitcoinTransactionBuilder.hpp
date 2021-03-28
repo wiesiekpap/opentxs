@@ -44,6 +44,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -104,9 +105,8 @@ namespace opentxs::blockchain::client::wallet
 class BitcoinTransactionBuilder
 {
 public:
-    using UTXO = std::pair<
-        blockchain::block::bitcoin::Outpoint,
-        proto::BlockchainTransactionOutput>;
+    using UTXO = std::
+        pair<blockchain::block::Outpoint, proto::BlockchainTransactionOutput>;
     using Transaction = std::unique_ptr<block::bitcoin::internal::Transaction>;
     using KeyID = api::client::blockchain::Key;
     using Proposal = proto::BlockchainTransactionProposal;

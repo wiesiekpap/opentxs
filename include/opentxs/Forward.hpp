@@ -106,7 +106,6 @@ class Output;
 class Outputs;
 class Script;
 class Transaction;
-struct Outpoint;
 }  // namespace bitcoin
 
 class Block;

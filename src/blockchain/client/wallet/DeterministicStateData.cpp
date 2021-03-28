@@ -135,8 +135,9 @@ auto DeterministicStateData::handle_confirmed_matches(
         auto i = Bip32Index{0};
 
         for (const auto& output : transaction.Outputs()) {
-            if (Subchain::Outgoing == subchain_) { continue; }
+            if (Subchain::Outgoing == subchain_) { break; }
 
+            auto post = ScopeGuard{[&] { ++i; }};
             const auto& script = output.Script();
 
             switch (script.Type()) {
@@ -197,8 +198,6 @@ auto DeterministicStateData::handle_confirmed_matches(
                 default: {
                 }
             };
-
-            ++i;
         }
     }
 

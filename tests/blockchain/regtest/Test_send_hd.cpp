@@ -19,14 +19,13 @@
 #include "opentxs/api/client/blockchain/HD.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/blockchain/block/bitcoin/Input.hpp"
-#include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/client/BlockOracle.hpp"
 #include "opentxs/blockchain/client/Wallet.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -45,7 +44,6 @@ class Regtest_fixture_hd : public Regtest_fixture_normal
 {
 protected:
     using Subchain = ot::api::client::blockchain::Subchain;
-    using Outpoint = ot::blockchain::block::bitcoin::Outpoint;
     using UTXO = ot::blockchain::client::Wallet::UTXO;
 
     static ot::Nym_p alex_p_;

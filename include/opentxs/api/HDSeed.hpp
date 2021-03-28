@@ -22,9 +22,7 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/crypto/key/HD.hpp"
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 #include "opentxs/crypto/key/Secp256k1.hpp"
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 #include "opentxs/crypto/key/Symmetric.hpp"
 
 namespace opentxs
@@ -48,14 +46,16 @@ public:
     using SupportedStrengths = std::map<Strength, std::string>;
     using Matches = std::vector<std::string>;
 
-#if OT_CRYPTO_WITH_BIP32
     OPENTXS_EXPORT virtual std::unique_ptr<opentxs::crypto::key::HD>
     AccountChildKey(
         const proto::HDPath& path,
         const BIP44Chain internal,
         const Bip32Index index,
         const PasswordPrompt& reason) const = 0;
-#endif  // OT_CRYPTO_WITH_BIP32
+    OPENTXS_EXPORT virtual std::unique_ptr<opentxs::crypto::key::HD> AccountKey(
+        const proto::HDPath& path,
+        const BIP44Chain internal,
+        const PasswordPrompt& reason) const = 0;
     OPENTXS_EXPORT virtual const SupportedSeeds& AllowedSeedTypes()
         const noexcept = 0;
     OPENTXS_EXPORT virtual const SupportedLanguages& AllowedLanguages(
@@ -63,39 +63,33 @@ public:
     OPENTXS_EXPORT virtual const SupportedStrengths& AllowedSeedStrength(
         const Style type) const noexcept = 0;
     OPENTXS_EXPORT virtual std::string Bip32Root(
-        const PasswordPrompt& reason,
-        const std::string& fingerprint = "") const = 0;
+        const std::string& seedID,
+        const PasswordPrompt& reason) const = 0;
     OPENTXS_EXPORT virtual std::string DefaultSeed() const = 0;
-#if OT_CRYPTO_WITH_BIP32
     OPENTXS_EXPORT virtual std::unique_ptr<opentxs::crypto::key::HD> GetHDKey(
-        std::string& fingerprint,
+        const std::string& seedID,
         const EcdsaCurve& curve,
         const Path& path,
         const PasswordPrompt& reason,
         const proto::KeyRole role = proto::KEYROLE_SIGN,
         const VersionNumber version =
             opentxs::crypto::key::EllipticCurve::DefaultVersion) const = 0;
-#endif  // OT_CRYPTO_WITH_BIP32
     OPENTXS_EXPORT virtual OTSecret GetOrCreateDefaultSeed(
-        std::string& fingerprint,
+        std::string& seedID,
         Style& type,
         Language& lang,
         Bip32Index& index,
         const Strength strength,
         const PasswordPrompt& reason) const = 0;
-#if OT_CRYPTO_WITH_BIP32
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     OPENTXS_EXPORT virtual std::unique_ptr<opentxs::crypto::key::Secp256k1>
     GetPaymentCode(
-        std::string& fingerprint,
+        const std::string& seedID,
         const Bip32Index nym,
         const std::uint8_t version,
         const PasswordPrompt& reason) const = 0;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     OPENTXS_EXPORT virtual OTSymmetricKey GetStorageKey(
-        std::string& seed,
+        const std::string& seedID,
         const PasswordPrompt& reason) const = 0;
-#endif  // OT_CRYPTO_WITH_BIP32
     OPENTXS_EXPORT virtual std::string ImportRaw(
         const Secret& entropy,
         const PasswordPrompt& reason) const = 0;
@@ -114,14 +108,14 @@ public:
         const Strength strength,
         const PasswordPrompt& reason) const = 0;
     OPENTXS_EXPORT virtual std::string Passphrase(
-        const PasswordPrompt& reason,
-        const std::string& fingerprint) const = 0;
+        const std::string& seedID,
+        const PasswordPrompt& reason) const = 0;
     OPENTXS_EXPORT virtual OTSecret Seed(
-        std::string& fingerprint,
+        const std::string& seedID,
         Bip32Index& index,
         const PasswordPrompt& reason) const = 0;
     OPENTXS_EXPORT virtual bool UpdateIndex(
-        std::string& seed,
+        const std::string& seedID,
         const Bip32Index index,
         const PasswordPrompt& reason) const = 0;
     OPENTXS_EXPORT virtual Matches ValidateWord(
@@ -132,8 +126,8 @@ public:
         const Style type,
         const Strength strength) const noexcept = 0;
     OPENTXS_EXPORT virtual std::string Words(
-        const PasswordPrompt& reason,
-        const std::string& fingerprint) const = 0;
+        const std::string& seedID,
+        const PasswordPrompt& reason) const = 0;
 
     OPENTXS_EXPORT virtual ~HDSeed() = default;
 

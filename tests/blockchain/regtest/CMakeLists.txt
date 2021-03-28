@@ -19,9 +19,14 @@ add_opentx_test(
 add_opentx_test(
   unittests-opentxs-blockchain-regtest-send-receive-hd Test_send_hd.cpp
 )
+add_opentx_test(unittests-opentxs-blockchain-regtest-stress Test_hd_stress.cpp)
 
 if(NOT WIN32)
   add_opentx_test(
     unittests-opentxs-blockchain-regtest-sync-server Test_sync_server.cpp
   )
 endif()
+
+set_tests_properties(
+  unittests-opentxs-blockchain-regtest-stress PROPERTIES DISABLED TRUE
+)

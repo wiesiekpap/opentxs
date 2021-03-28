@@ -62,14 +62,24 @@ auto remove(std::vector<Store>& vector, const Interface& key) noexcept
     return before - vector.size();
 }
 
-template <typename Key, typename Value>
-auto reverse_map(const std::map<Key, Value>& map) noexcept
-    -> std::map<Value, Key>
+template <
+    typename Key,
+    typename Value,
+    typename Out = std::map<Value, Key>,
+    typename In = std::map<Key, Value>>
+auto reverse_arbitrary_map(const In& map) noexcept -> Out
 {
-    std::map<Value, Key> output{};
+    auto output = Out{};
 
     for (const auto& [key, value] : map) { output.emplace(value, key); }
 
     return output;
+}
+
+template <typename Key, typename Value>
+auto reverse_map(const std::map<Key, Value>& map) noexcept
+    -> std::map<Value, Key>
+{
+    return reverse_arbitrary_map<Key, Value>(map);
 }
 }  // namespace opentxs

@@ -17,6 +17,7 @@
 #include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 
@@ -36,7 +37,6 @@ public:
     using Pattern = std::pair<ElementID, Space>;
     using Patterns = std::vector<Pattern>;
     using Match = std::pair<pTxid, ElementID>;
-    using Outpoint = Space;
     using InputMatch = std::tuple<pTxid, Outpoint, ElementID>;
     using InputMatches = std::vector<InputMatch>;
     using OutputMatches = std::vector<Match>;

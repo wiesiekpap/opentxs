@@ -15,6 +15,7 @@ add_opentx_test(unittests-opentxs-blockchain-api Test_BlockchainAPI.cpp)
 add_opentx_test(unittests-opentxs-blockchain-address Test_Address.cpp)
 
 if(OT_BLOCKCHAIN_EXPORT)
+  add_opentx_test(unittests-opentxs-blockchain-bip44 Test_BIP44.cpp)
   add_opentx_test(unittests-opentxs-blockchain-blockheader Test_BlockHeader.cpp)
   add_opentx_test(
     unittests-opentxs-blockchain-blocks-bitcoin Test_BitcoinBlocks.cpp

@@ -458,11 +458,9 @@ void Server::CreateMainFile(bool& mainFileExists)
         .Flush();
 
 #if OT_CRYPTO_WITH_BIP32
-    const std::string defaultFingerprint = manager_.Storage().DefaultSeed();
-    const std::string words =
-        manager_.Seeds().Words(reason_, defaultFingerprint);
-    const std::string passphrase =
-        manager_.Seeds().Passphrase(reason_, defaultFingerprint);
+    const auto seedID = manager_.Storage().DefaultSeed();
+    const auto words = manager_.Seeds().Words(seedID, reason_);
+    const auto passphrase = manager_.Seeds().Passphrase(seedID, reason_);
 #else
     const std::string words;
     const std::string passphrase;

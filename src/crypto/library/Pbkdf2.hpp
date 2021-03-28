@@ -6,6 +6,7 @@
 #pragma once
 
 #include <iosfwd>
+#include <mutex>
 
 #include "internal/crypto/library/Pbkdf2.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
@@ -28,9 +29,11 @@ public:
     ~Pbkdf2() override = default;
 
 protected:
-    Pbkdf2() noexcept = default;
+    Pbkdf2() noexcept;
 
 private:
+    mutable std::mutex pbkdf_lock_;
+
     Pbkdf2(const Pbkdf2&) = delete;
     Pbkdf2(Pbkdf2&&) = delete;
     auto operator=(const Pbkdf2&) -> Pbkdf2& = delete;

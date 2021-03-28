@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "crypto/Bip32Vectors.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -695,12 +696,11 @@ TEST_F(Test_BlockchainAPI, TestChainDiff)
     EXPECT_EQ(list.count(account_5_id_), 1);
 }
 
-// https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#test-vector-1
 TEST_F(Test_BlockchainAPI, TestBip32_standard_1)
 {
+    const auto& test = bip32_test_cases_.at(0);
     const std::string empty{};
-    auto bytes = api_.Factory().Data(
-        "0x000102030405060708090a0b0c0d0e0f", ot::StringStyle::Hex);
+    auto bytes = api_.Factory().Data(test.seed_, ot::StringStyle::Hex);
     auto seed = api_.Factory().SecretFromBytes(bytes->Bytes());
     const auto fingerprint = api_.Seeds().ImportRaw(seed, reason_);
 
@@ -728,25 +728,18 @@ TEST_F(Test_BlockchainAPI, TestBip32_standard_1)
     ASSERT_TRUE(pRoot);
 
     const auto& root = *pRoot;
-    const std::string xpub{
-        "xpub68Gmy5EdvgibQVfPdqkBBCHxA5htiqg55crXYuXoQRKfDBFA1WEjWgP6LHhwBZeNK1"
-        "VTsfTFUHCdrfp1bgwQ9xv5ski8PX9rL2dZXvgGDnw"};
-    const std::string xprv{
-        "xprv9uHRZZhk6KAJC1avXpDAp4MDc3sQKNxDiPvvkX8Br5ngLNv1TxvUxt4cV1rGL5hj6K"
-        "CesnDYUhd7oWgT11eZG7XnxHrnYeSvkzY7d2bhkJ7"};
+    const auto& expected = test.children_.at(1);
 
-    EXPECT_EQ(xpub, root.Xpub(reason_));
-    EXPECT_EQ(xprv, root.Xprv(reason_));
+    EXPECT_EQ(expected.xpub_, root.Xpub(reason_));
+    EXPECT_EQ(expected.xprv_, root.Xprv(reason_));
 }
 
 // https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#test-vector-3
 TEST_F(Test_BlockchainAPI, TestBip32_standard_3)
 {
+    const auto& test = bip32_test_cases_.at(2);
     const std::string empty{};
-    auto bytes = api_.Factory().Data(
-        "0x4b381541583be4423346c643850da4b320e46a87ae3d2a4e6da11eba819cd4acba45"
-        "d239319ac14f863b8d5ab5a0d0c64d2e8a1e7d1457df2e5a3c51c73235be",
-        ot::StringStyle::Hex);
+    auto bytes = api_.Factory().Data(test.seed_, ot::StringStyle::Hex);
     auto seed = api_.Factory().SecretFromBytes(bytes->Bytes());
     const auto fingerprint = api_.Seeds().ImportRaw(seed, reason_);
 
@@ -774,15 +767,10 @@ TEST_F(Test_BlockchainAPI, TestBip32_standard_3)
     ASSERT_TRUE(pRoot);
 
     const auto& root = *pRoot;
-    const std::string xpub{
-        "xpub68NZiKmJWnxxS6aaHmn81bvJeTESw724CRDs6HbuccFQN9Ku14VQrADWgqbhhTHBao"
-        "hPX4CjNLf9fq9MYo6oDaPPLPxSb7gwQN3ih19Zm4Y"};
-    const std::string xprv{
-        "xprv9uPDJpEQgRQfDcW7BkF7eTya6RPxXeJCqCJGHuCJ4GiRVLzkTXBAJMu2qaMWPrS7AA"
-        "NYqdq6vcBcBUdJCVVFceUvJFjaPdGZ2y9WACViL4L"};
+    const auto& expected = test.children_.at(1);
 
-    EXPECT_EQ(xpub, root.Xpub(reason_));
-    EXPECT_EQ(xprv, root.Xprv(reason_));
+    EXPECT_EQ(expected.xpub_, root.Xpub(reason_));
+    EXPECT_EQ(expected.xprv_, root.Xprv(reason_));
 }
 
 TEST_F(Test_BlockchainAPI, testBip32_SeedA)

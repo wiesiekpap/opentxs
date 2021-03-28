@@ -30,7 +30,6 @@
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Issuer.hpp"
 #include "opentxs/api/client/Pair.hpp"
-#include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
@@ -1367,13 +1366,14 @@ auto Pair::store_secret(
     auto& [success, requestID] = output;
 
     auto setID = [&](const Identifier& in) -> void { output.second = in; };
+    const auto seedID = client_.Seeds().DefaultSeed();
     auto [taskID, future] = client_.OTX().InitiateStoreSecret(
         localNymID,
         serverID,
         issuerNymID,
         proto::SECRETTYPE_BIP39,
-        client_.Seeds().Words(reason, client_.Storage().DefaultSeed()),
-        client_.Seeds().Passphrase(reason, client_.Storage().DefaultSeed()),
+        client_.Seeds().Words(seedID, reason),
+        client_.Seeds().Passphrase(seedID, reason),
         setID);
 
     if (0 == taskID) { return output; }

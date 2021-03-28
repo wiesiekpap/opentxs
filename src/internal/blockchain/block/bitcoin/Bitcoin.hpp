@@ -24,6 +24,7 @@
 #include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
@@ -79,8 +80,9 @@ class Output;
 class Outputs;
 class Script;
 class Transaction;
-struct Outpoint;
 }  // namespace bitcoin
+
+struct Outpoint;
 }  // namespace block
 }  // namespace blockchain
 
@@ -242,9 +244,8 @@ struct Transaction : virtual public bitcoin::Transaction {
 namespace opentxs::factory
 {
 #if OT_BLOCKCHAIN
-using UTXO = std::pair<
-    blockchain::block::bitcoin::Outpoint,
-    proto::BlockchainTransactionOutput>;
+using UTXO =
+    std::pair<blockchain::block::Outpoint, proto::BlockchainTransactionOutput>;
 using Transaction_p =
     std::shared_ptr<const opentxs::blockchain::block::bitcoin::Transaction>;
 using AbortFunction = std::function<bool()>;
