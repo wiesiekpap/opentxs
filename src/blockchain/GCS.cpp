@@ -272,11 +272,7 @@ auto siphash(
     if (16 != key.size()) { throw std::runtime_error("Invalid key"); }
 
     auto output = std::uint64_t{};
-    auto writer = [&output](const auto size) -> WritableView {
-        if (sizeof(output) != size) { throw std::out_of_range("wrong size"); }
-
-        return {&output, sizeof(output)};
-    };
+    auto writer = preallocated(sizeof(output), &output);
 
     if (false == api.Crypto().Hash().HMAC(
                      proto::HASHTYPE_SIPHASH24, key, item, writer)) {

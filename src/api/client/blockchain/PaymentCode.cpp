@@ -16,6 +16,7 @@
 #include <utility>
 
 #include "api/client/blockchain/Deterministic.hpp"
+#include "api/client/blockchain/Element.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/client/blockchain/Factory.hpp"
@@ -166,31 +167,37 @@ PaymentCode::PaymentCode(
           [&] {
               auto out = ChainData{
                   {internalType, false, {}}, {externalType, false, {}}};
+              auto& internal = out.internal_.map_;
+              auto& external = out.external_.map_;
+              internal.reserve(serialized.outgoing().address().size());
+              external.reserve(serialized.incoming().address().size());
 
               for (const auto& address : serialized.outgoing().address()) {
-                  out.internal_.map_.emplace(
+                  internal.emplace(
                       std::piecewise_construct,
                       std::forward_as_tuple(address.index()),
                       std::forward_as_tuple(
-                          api,
-                          parent.Parent().Parent(),
-                          *this,
-                          parent.Chain(),
-                          internalType,
-                          address));
+                          std::make_unique<implementation::Element>(
+                              api,
+                              parent.Parent().Parent(),
+                              *this,
+                              parent.Chain(),
+                              internalType,
+                              address)));
               }
 
               for (const auto& address : serialized.incoming().address()) {
-                  out.external_.map_.emplace(
+                  external.emplace(
                       std::piecewise_construct,
                       std::forward_as_tuple(address.index()),
                       std::forward_as_tuple(
-                          api,
-                          parent.Parent().Parent(),
-                          *this,
-                          parent.Chain(),
-                          data_.external_.type_,
-                          address));
+                          std::make_unique<implementation::Element>(
+                              api,
+                              parent.Parent().Parent(),
+                              *this,
+                              parent.Chain(),
+                              data_.external_.type_,
+                              address)));
               }
 
               return out;
@@ -321,14 +328,14 @@ auto PaymentCode::ReorgNotification(const Txid& tx) const noexcept -> bool
 
 auto PaymentCode::Reserve(
     const Subchain type,
-    const std::size_t preallocate,
+    const std::size_t batch,
     const PasswordPrompt& reason,
     const Identifier&,
     const std::string& label,
-    const Time time) const noexcept -> std::optional<Bip32Index>
+    const Time time) const noexcept -> Batch
 {
     return Deterministic::Reserve(
-        type, preallocate, reason, get_contact(), label, time);
+        type, batch, reason, get_contact(), label, time);
 }
 
 auto PaymentCode::save(const rLock& lock) const noexcept -> bool
@@ -349,7 +356,7 @@ auto PaymentCode::save(const rLock& lock) const noexcept -> bool
         }
 
         for (const auto& [index, address] : data_.external_.map_) {
-            *dir.add_address() = address.Serialize();
+            *dir.add_address() = address->Serialize();
         }
     }
 
@@ -363,7 +370,7 @@ auto PaymentCode::save(const rLock& lock) const noexcept -> bool
         }
 
         for (const auto& [index, address] : data_.internal_.map_) {
-            *dir.add_address() = address.Serialize();
+            *dir.add_address() = address->Serialize();
         }
     }
 

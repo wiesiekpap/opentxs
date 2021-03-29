@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <boost/container/flat_map.hpp>
 #include <atomic>
 #include <iosfwd>
 #include <map>
@@ -51,7 +52,7 @@ public:
     auto Floor(const Subchain type) const noexcept
         -> std::optional<Bip32Index> final;
     auto BalanceElement(const Subchain type, const Bip32Index index) const
-        noexcept(false) -> const Element& final;
+        noexcept(false) -> const internal::BalanceElement& final;
     auto GenerateNext(const Subchain type, const PasswordPrompt& reason)
         const noexcept -> std::optional<Bip32Index> final;
     auto Key(const Subchain type, const Bip32Index index) const noexcept
@@ -65,17 +66,14 @@ public:
         const PasswordPrompt& reason,
         const Identifier& contact,
         const std::string& label,
-        const Time time) const noexcept -> std::optional<Bip32Index> final
-    {
-        return Reserve(type, 0, reason, contact, label, time);
-    }
+        const Time time) const noexcept -> std::optional<Bip32Index> final;
     auto Reserve(
         const Subchain type,
-        const std::size_t preallocate,
+        const std::size_t batch,
         const PasswordPrompt& reason,
         const Identifier& contact,
         const std::string& label,
-        const Time time) const noexcept -> std::optional<Bip32Index> override;
+        const Time time) const noexcept -> Batch override;
     auto RootNode(const PasswordPrompt& reason) const noexcept
         -> HDKey override;
 
@@ -90,8 +88,9 @@ protected:
         AddressData external_{};
     };
 
-    static constexpr Bip32Index window_{20};
-    static constexpr Bip32Index max_index_{2147483648};
+    static constexpr Bip32Index window_{20u};
+    static constexpr Bip32Index max_allocation_{2000u};
+    static constexpr Bip32Index max_index_{2147483648u};
 
     const proto::HDPath path_;
 #if OT_CRYPTO_WITH_BIP32
@@ -100,6 +99,8 @@ protected:
     mutable ChainData data_;
     mutable IndexMap generated_;
     mutable IndexMap used_;
+    mutable boost::container::flat_map<Subchain, std::optional<Bip32Index>>
+        last_allocation_;
 
 #if OT_CRYPTO_WITH_BIP32
     static auto instantiate_key(
@@ -107,17 +108,13 @@ protected:
         proto::HDPath& path) -> HDKey;
 #endif  // OT_CRYPTO_WITH_BIP32
 
-    auto check_lookahead(const rLock& lock, const PasswordPrompt& reason) const
-        noexcept(false) -> void;
-#if OT_CRYPTO_WITH_BIP32
     auto check_lookahead(
         const rLock& lock,
         const Subchain type,
-        const std::size_t preallocate,
+        Batch& generated,
         const PasswordPrompt& reason) const noexcept(false) -> void;
-#endif  // OT_CRYPTO_WITH_BIP32
     auto element(const rLock& lock, const Subchain type, const Bip32Index index)
-        const noexcept(false) -> const Element&
+        const noexcept(false) -> const internal::BalanceElement&
     {
         return const_cast<Deterministic*>(this)->element(lock, type, index);
     }
@@ -126,29 +123,25 @@ protected:
     {
         return index < generated_.at(type);
     }
-#if OT_CRYPTO_WITH_BIP32
-    auto need_lookahead(
-        const rLock& lock,
-        const Subchain type,
-        const std::size_t preallocate) const noexcept -> bool;
-#endif  // OT_CRYPTO_WITH_BIP32
+    auto need_lookahead(const rLock& lock, const Subchain type) const noexcept
+        -> Bip32Index;
     auto serialize_deterministic(const rLock& lock, SerializedType& out)
         const noexcept -> void;
 #if OT_CRYPTO_WITH_BIP32
     auto use_next(
         const rLock& lock,
         const Subchain type,
-        const std::size_t preallocate,
         const PasswordPrompt& reason,
         const Identifier& contact,
         const std::string& label,
-        const Time time) const noexcept -> std::optional<Bip32Index>;
+        const Time time,
+        Batch& generated) const noexcept -> std::optional<Bip32Index>;
 #endif  // OT_CRYPTO_WITH_BIP32
 
     auto element(
         const rLock& lock,
         const Subchain type,
-        const Bip32Index index) noexcept(false) -> Element&;
+        const Bip32Index index) noexcept(false) -> internal::BalanceElement&;
     using BalanceNode::init;
     auto init(const PasswordPrompt& reason) noexcept(false) -> void;
 
@@ -171,7 +164,7 @@ protected:
         Identifier& out) noexcept(false);
 
 private:
-    using Status = Element::Availability;
+    using Status = internal::BalanceElement::Availability;
     using Fallback = std::map<Status, std::set<Bip32Index>>;
 
     static constexpr auto BlockchainDeterministicAccountDataVersion =
@@ -186,51 +179,58 @@ private:
     auto accept(
         const rLock& lock,
         const Subchain type,
-        const std::size_t preallocate,
         const Identifier& contact,
         const std::string& label,
         const Time time,
         const Bip32Index index,
+        Batch& generated,
         const PasswordPrompt& reason) const noexcept
         -> std::optional<Bip32Index>;
     auto check(
         const rLock& lock,
         const Subchain type,
-        const std::size_t preallocate,
         const Identifier& contact,
         const std::string& label,
         const Time time,
         const Bip32Index index,
         const PasswordPrompt& reason,
         Fallback& fallback,
-        std::size_t& gap) const noexcept(false) -> std::optional<Bip32Index>;
+        std::size_t& gap,
+        Batch& generated) const noexcept(false) -> std::optional<Bip32Index>;
 #endif  // OT_CRYPTO_WITH_BIP32
     auto check_activity(
         const rLock& lock,
         const std::vector<Activity>& unspent,
         std::set<OTIdentifier>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool final;
+    auto check_lookahead(
+        const rLock& lock,
+        Batch& generated,
+        const PasswordPrompt& reason) const noexcept(false) -> void;
     auto confirm(
         const rLock& lock,
         const Subchain type,
         const Bip32Index index) noexcept -> void final;
-#if OT_CRYPTO_WITH_BIP32
-    auto generate(
+    [[nodiscard]] auto finish_allocation(const rLock& lock, Batch& generated)
+        const noexcept -> bool;
+    [[nodiscard]] auto generate(
         const rLock& lock,
         const Subchain type,
         const Bip32Index index,
         const PasswordPrompt& reason) const noexcept(false) -> Bip32Index;
-    auto generate_next(
+    [[nodiscard]] auto generate_next(
         const rLock& lock,
         const Subchain type,
         const PasswordPrompt& reason) const noexcept(false) -> Bip32Index;
-#endif  // OT_CRYPTO_WITH_BIP32
     auto mutable_element(
         const rLock& lock,
         const Subchain type,
         const Bip32Index index) noexcept(false)
         -> internal::BalanceElement& final;
-    virtual auto set_deterministic_contact(Element&) const noexcept -> void {}
+    virtual auto set_deterministic_contact(
+        internal::BalanceElement&) const noexcept -> void
+    {
+    }
     virtual auto set_deterministic_contact(
         std::set<OTIdentifier>&) const noexcept -> void
     {

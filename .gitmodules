@@ -22,3 +22,6 @@
 [submodule "src/api/client/blockchain/bech32"]
 	path = deps/bech32
 	url = https://github.com/sipa/bech32
+[submodule "deps/robin-hood"]
+	path = deps/robin-hood
+	url = https://github.com/martinus/robin-hood-hashing

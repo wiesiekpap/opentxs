@@ -1303,7 +1303,7 @@ TEST_F(Test_BlockchainAPI, paymentcode)
     EXPECT_EQ(index.value(), 0u);
 }
 
-TEST_F(Test_BlockchainAPI, preallocate)
+TEST_F(Test_BlockchainAPI, batch)
 {
     const auto& nym = alex_;
     const auto chain = bch_chain_;
@@ -1322,17 +1322,27 @@ TEST_F(Test_BlockchainAPI, preallocate)
 
     ASSERT_EQ(account.ID(), accountID);
 
-    auto first{true};
     constexpr auto count{1000u};
     constexpr auto subchain{Subchain::External};
+    const auto indices = account.Reserve(subchain, count, reason_);
+    const auto gen = account.LastGenerated(subchain);
+
+    ASSERT_TRUE(gen.has_value());
+    EXPECT_EQ(gen.value(), count - 1u);
+    ASSERT_TRUE(indices.size() == count);
 
     for (auto i{0u}; i < count; ++i) {
-        const auto index =
-            account.Reserve(subchain, first ? count : 0u, reason_);
-        first = false;
+        const auto index = indices.at(i);
 
-        ASSERT_TRUE(index.has_value());
-        ASSERT_EQ(index.value(), i);
+        EXPECT_EQ(index, i);
+
+        try {
+            account.BalanceElement(subchain, index);
+
+            EXPECT_TRUE(true);
+        } catch (...) {
+            EXPECT_TRUE(false);
+        }
     }
 }
 }  // namespace

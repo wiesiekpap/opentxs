@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "api/client/blockchain/Deterministic.hpp"
+#include "api/client/blockchain/Element.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/client/blockchain/Factory.hpp"
@@ -113,31 +114,37 @@ HD::HD(
           [&] {
               auto out = ChainData{
                   {internalType, false, {}}, {externalType, true, {}}};
+              auto& internal = out.internal_.map_;
+              auto& external = out.external_.map_;
+              internal.reserve(serialized.internaladdress().size());
+              external.reserve(serialized.externaladdress().size());
 
               for (const auto& address : serialized.internaladdress()) {
-                  out.internal_.map_.emplace(
+                  internal.emplace(
                       std::piecewise_construct,
                       std::forward_as_tuple(address.index()),
                       std::forward_as_tuple(
-                          api,
-                          parent.Parent().Parent(),
-                          *this,
-                          parent.Chain(),
-                          internalType,
-                          address));
+                          std::make_unique<implementation::Element>(
+                              api,
+                              parent.Parent().Parent(),
+                              *this,
+                              parent.Chain(),
+                              internalType,
+                              address)));
               }
 
               for (const auto& address : serialized.externaladdress()) {
-                  out.external_.map_.emplace(
+                  external.emplace(
                       std::piecewise_construct,
                       std::forward_as_tuple(address.index()),
                       std::forward_as_tuple(
-                          api,
-                          parent.Parent().Parent(),
-                          *this,
-                          parent.Chain(),
-                          data_.external_.type_,
-                          address));
+                          std::make_unique<implementation::Element>(
+                              api,
+                              parent.Parent().Parent(),
+                              *this,
+                              parent.Chain(),
+                              data_.external_.type_,
+                              address)));
               }
 
               return out;
@@ -211,11 +218,11 @@ auto HD::save(const rLock& lock) const noexcept -> bool
     serialize_deterministic(lock, *serialized.mutable_deterministic());
 
     for (const auto& [index, address] : data_.internal_.map_) {
-        *serialized.add_internaladdress() = address.Serialize();
+        *serialized.add_internaladdress() = address->Serialize();
     }
 
     for (const auto& [index, address] : data_.external_.map_) {
-        *serialized.add_externaladdress() = address.Serialize();
+        *serialized.add_externaladdress() = address->Serialize();
     }
 
     const bool saved =

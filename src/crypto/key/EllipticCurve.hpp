@@ -65,6 +65,10 @@ public:
     }
     auto asPublicEC() const noexcept
         -> std::unique_ptr<key::EllipticCurve> final;
+    auto CloneEC() const noexcept -> std::unique_ptr<key::EllipticCurve> final
+    {
+        return std::unique_ptr<key::EllipticCurve>{clone_ec()};
+    }
     virtual auto CreateType() const -> NymParameterType = 0;
     auto ECDSA() const noexcept -> const crypto::EcdsaProvider& final
     {

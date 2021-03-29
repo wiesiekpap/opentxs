@@ -43,9 +43,11 @@
 #include "paymentcode/VectorsV3.hpp"
 
 constexpr auto blocks_ = std::uint64_t{10u};
-constexpr auto tx_per_block_ = std::uint64_t{512u};
+constexpr auto tx_per_block_ = std::uint64_t{500u};
+constexpr auto transaction_count_ = blocks_ * tx_per_block_;
 constexpr auto amount_ = std::uint64_t{100000000u};
 bool first_block_{true};
+Counter account_activity_{};
 
 class Regtest_stress : public Regtest_fixture_normal
 {
@@ -77,6 +79,32 @@ protected:
     const GetPattern get_p2pk_patterns_;
     ScanListener& listener_alice_;
     ScanListener& listener_bob_;
+
+    auto GetAddresses() noexcept -> std::vector<std::string>
+    {
+        auto output = std::vector<std::string>{};
+        output.reserve(tx_per_block_);
+        const auto reason = client_2_.Factory().PasswordPrompt(__FUNCTION__);
+        const auto& bob = client_2_.Blockchain()
+                              .Account(bob_.ID(), test_chain_)
+                              .GetHD()
+                              .at(0);
+        const auto indices =
+            bob.Reserve(Subchain::External, tx_per_block_, reason);
+
+        OT_ASSERT(indices.size() == tx_per_block_);
+
+        for (const auto index : indices) {
+            const auto& element = bob.BalanceElement(Subchain::External, index);
+            using Style = ot::api::client::blockchain::AddressStyle;
+            const auto& address =
+                output.emplace_back(element.Address(Style::P2PKH));
+
+            OT_ASSERT(false == address.empty());
+        }
+
+        return output;
+    }
 
     auto Shutdown() noexcept -> void final
     {
@@ -187,7 +215,6 @@ protected:
                         client_1_.Factory().PasswordPrompt(__FUNCTION__);
                     const auto keys =
                         std::set<ot::api::client::blockchain::Key>{};
-                    auto first{true};
                     const auto target = [] {
                         if (first_block_) {
                             first_block_ = false;
@@ -198,18 +225,14 @@ protected:
                             return tx_per_block_;
                         }
                     }();
+                    const auto indices = alice_account_.Reserve(
+                        Subchain::External, target, reason);
 
-                    for (auto i{0u}; i < target; ++i) {
-                        const auto index = alice_account_.Reserve(
-                            Subchain::External,
-                            first ? tx_per_block_ : 0u,
-                            reason);
-                        first = false;
+                    OT_ASSERT(indices.size() == target);
 
-                        EXPECT_TRUE(index.has_value());
-
+                    for (const auto index : indices) {
                         const auto& element = alice_account_.BalanceElement(
-                            Subchain::External, index.value_or(0));
+                            Subchain::External, index);
                         const auto key = element.Key();
 
                         OT_ASSERT(key);
@@ -433,9 +456,7 @@ TEST_F(Regtest_stress, alice_after_receive_wallet)
 TEST_F(Regtest_stress, generate_transactions)
 {
     namespace c = std::chrono;
-    const auto& bob = client_2_.Blockchain().Account(bob_.ID(), test_chain_);
     const auto& alice = client_1_.Blockchain().GetChain(test_chain_);
-    const auto reasonB = client_2_.Factory().PasswordPrompt(__FUNCTION__);
     const auto previous{1u};
     const auto stop = previous + blocks_;
     auto future1 =
@@ -450,27 +471,29 @@ TEST_F(Regtest_stress, generate_transactions)
     for (auto b{0u}; b < blocks_; ++b) {
         std::cout << "Block " << std::to_string(previous + b + 1) << '\n';
         const auto start = ot::Clock::now();
-
-        for (auto t{0u}; t < tx_per_block_; ++t) {
-            using Style = ot::api::client::blockchain::AddressStyle;
-            futures.at(t) = alice.SendToAddress(
-                alice_.ID(),
-                bob.GetDepositAddress(Style::P2PKH, reasonB),
-                amount_);
-        }
-
+        const auto destinations = GetAddresses();
         const auto addresses = ot::Clock::now();
         std::cout
             << std::to_string(
                    c::duration_cast<c::seconds>(addresses - start).count())
             << " sec to calculate receiving addresses\n";
 
+        for (auto t{0u}; t < tx_per_block_; ++t) {
+            futures.at(t) =
+                alice.SendToAddress(alice_.ID(), destinations.at(t), amount_);
+        }
+
+        const auto init = ot::Clock::now();
+        std::cout << std::to_string(
+                         c::duration_cast<c::seconds>(init - addresses).count())
+                  << " sec to queue outgoing transactions\n";
+
         {
             auto f{-1};
 
             for (auto& future : futures) {
                 using State = std::future_status;
-                constexpr auto limit = std::chrono::minutes{5};
+                constexpr auto limit = std::chrono::minutes{10};
 
                 while (State::ready != future.wait_for(limit)) { ; }
 
@@ -489,8 +512,8 @@ TEST_F(Regtest_stress, generate_transactions)
 
         const auto sigs = ot::Clock::now();
         std::cout << std::to_string(
-                         c::duration_cast<c::seconds>(sigs - addresses).count())
-                  << " sec to sign transactions\n";
+                         c::duration_cast<c::seconds>(sigs - init).count())
+                  << " sec to sign and broadcast transactions\n";
         const auto extra = [&] {
             auto output = std::vector<Transaction>{};
 
@@ -529,201 +552,30 @@ TEST_F(Regtest_stress, generate_transactions)
     EXPECT_TRUE(listener_bob_.wait(future1));
 }
 
-/*
 TEST_F(Regtest_stress, bob_after_receive)
 {
-    const auto& widget =
-        client_2_.UI().AccountActivity(bob_.ID(), expected_account_);
+    account_activity_.expected_ += transaction_count_ + 1u;
+    const auto& widget = client_2_.UI().AccountActivity(
+        bob_.ID(),
+        expected_account_,
+        make_cb(account_activity_, u8"account_activity_"));
+    constexpr auto expectedTotal = amount_ * transaction_count_;
 
-    EXPECT_EQ(widget.AccountID(), expected_account_.str());
-    EXPECT_EQ(widget.Balance(), 1000000000);
+    EXPECT_TRUE(wait_for_counter(account_activity_));
+    EXPECT_EQ(widget.Balance(), expectedTotal);
     EXPECT_EQ(widget.BalancePolarity(), 1);
-    EXPECT_EQ(widget.ContractID(), expected_unit_.str());
-    EXPECT_FALSE(widget.DepositAddress().empty());
-    EXPECT_FALSE(widget.DepositAddress(test_chain_).empty());
-    EXPECT_TRUE(widget.DepositAddress(ot::blockchain::Type::Bitcoin).empty());
-
-    const auto deposit = widget.DepositChains();
-
-    ASSERT_EQ(deposit.size(), 1);
-    EXPECT_EQ(deposit.at(0), test_chain_);
-    EXPECT_EQ(widget.DisplayBalance(), u8"10 units");
-    EXPECT_EQ(widget.DisplayUnit(), expected_display_unit_);
-    EXPECT_EQ(widget.Name(), expected_account_name_);
-    EXPECT_EQ(widget.NotaryID(), expected_notary_.str());
-    EXPECT_EQ(widget.NotaryName(), expected_notary_name_);
-    EXPECT_EQ(widget.SyncPercentage(), 100);
-
-    constexpr auto progress = std::pair<int, int>{2, 2};
-
-    EXPECT_EQ(widget.SyncProgress(), progress);
-    EXPECT_EQ(widget.Type(), expected_account_type_);
-    EXPECT_EQ(widget.Unit(), expected_unit_type_);
 
     auto row = widget.First();
 
     ASSERT_TRUE(row->Valid());
-    EXPECT_EQ(row->Amount(), 1000000000);
-    ASSERT_EQ(row->Contacts().size(), 1);
+    EXPECT_EQ(row->Amount(), amount_);
 
-    const auto contacts = row->Contacts();
-    const auto& contact = contacts.front();
+    while (false == row->Last()) {
+        row = widget.Next();
 
-    EXPECT_FALSE(contact.empty());
-    // TODO verify contact id
-    EXPECT_EQ(row->DisplayAmount(), u8"10 units");
-    EXPECT_EQ(row->Memo(), "");
-    EXPECT_EQ(row->Workflow(), "");
-    EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
-    EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-    EXPECT_EQ(row->UUID(), transactions_.at(1)->asHex());
-    EXPECT_TRUE(row->Last());
-
-    const auto& tree = client_2_.Blockchain().Account(bob_.ID(), test_chain_);
-    const auto& pc = tree.GetPaymentCode();
-
-    ASSERT_EQ(pc.size(), 1);
-
-    const auto& account = pc.at(0);
-    const auto lookahead = account.Lookahead() - 1u;
-
-    EXPECT_EQ(
-        account.Type(),
-        ot::api::client::blockchain::BalanceNodeType::PaymentCode);
-    EXPECT_FALSE(account.IsNotified());
-
-    {
-        constexpr auto subchain{Subchain::Incoming};
-
-        const auto gen = account.LastGenerated(subchain);
-
-        ASSERT_TRUE(gen.has_value());
-        EXPECT_EQ(gen.value(), lookahead);
-    }
-    {
-        constexpr auto subchain{Subchain::Outgoing};
-
-        const auto gen = account.LastGenerated(subchain);
-
-        ASSERT_TRUE(gen.has_value());
-        EXPECT_EQ(gen.value(), lookahead);
-    }
-    {
-        constexpr auto subchain{Subchain::External};
-
-        const auto gen = account.LastGenerated(subchain);
-
-        EXPECT_FALSE(gen.has_value());
-    }
-    {
-        constexpr auto subchain{Subchain::Internal};
-
-        const auto gen = account.LastGenerated(subchain);
-
-        EXPECT_FALSE(gen.has_value());
+        EXPECT_EQ(row->Amount(), amount_);
     }
 }
-
-TEST_F(Regtest_stress, alice_after_send)
-{
-    const auto& widget =
-        client_1_.UI().AccountActivity(alice_.ID(), expected_account_);
-
-    EXPECT_EQ(widget.AccountID(), expected_account_.str());
-    EXPECT_EQ(widget.Balance(), 8999999684);
-    EXPECT_EQ(widget.BalancePolarity(), 1);
-    EXPECT_EQ(widget.ContractID(), expected_unit_.str());
-    EXPECT_FALSE(widget.DepositAddress().empty());
-    EXPECT_FALSE(widget.DepositAddress(test_chain_).empty());
-    EXPECT_TRUE(widget.DepositAddress(ot::blockchain::Type::Bitcoin).empty());
-
-    const auto deposit = widget.DepositChains();
-
-    ASSERT_EQ(deposit.size(), 1);
-    EXPECT_EQ(deposit.at(0), test_chain_);
-    EXPECT_EQ(widget.DisplayBalance(), u8"89.999 996 84 units");
-    EXPECT_EQ(widget.DisplayUnit(), expected_display_unit_);
-    EXPECT_EQ(widget.Name(), expected_account_name_);
-    EXPECT_EQ(widget.NotaryID(), expected_notary_.str());
-    EXPECT_EQ(widget.NotaryName(), expected_notary_name_);
-    EXPECT_EQ(widget.SyncPercentage(), 100);
-
-    constexpr auto progress = std::pair<int, int>{2, 2};
-
-    EXPECT_EQ(widget.SyncProgress(), progress);
-    EXPECT_EQ(widget.Type(), expected_account_type_);
-    EXPECT_EQ(widget.Unit(), expected_unit_type_);
-
-    auto row = widget.First();
-
-    ASSERT_TRUE(row->Valid());
-    EXPECT_EQ(row->Amount(), -1000000316);
-    EXPECT_EQ(row->Contacts().size(), 0);
-    EXPECT_EQ(row->DisplayAmount(), u8"-10.000 003 16 units");
-    EXPECT_EQ(row->Memo(), "");
-    EXPECT_EQ(row->Workflow(), "");
-    EXPECT_EQ(row->Text(), "Outgoing Unit Test Simulation transaction");
-    EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-    EXPECT_EQ(row->UUID(), transactions_.at(1)->asHex());
-    ASSERT_FALSE(row->Last());
-
-    row = widget.Next();
-
-    EXPECT_EQ(row->Amount(), 10000000000);
-    EXPECT_EQ(row->Contacts().size(), 0);
-    EXPECT_EQ(row->DisplayAmount(), u8"100 units");
-    EXPECT_EQ(row->Memo(), "");
-    EXPECT_EQ(row->Workflow(), "");
-    EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
-    EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-    EXPECT_EQ(row->UUID(), transactions_.at(0)->asHex());
-    EXPECT_TRUE(row->Last());
-
-    const auto& tree = client_1_.Blockchain().Account(alice_.ID(), test_chain_);
-    const auto& pc = tree.GetPaymentCode();
-
-    ASSERT_EQ(pc.size(), 1);
-
-    const auto& account = pc.at(0);
-    const auto lookahead = account.Lookahead() - 1;
-
-    EXPECT_EQ(
-        account.Type(),
-        ot::api::client::blockchain::BalanceNodeType::PaymentCode);
-    EXPECT_TRUE(account.IsNotified());
-
-    {
-        constexpr auto subchain{Subchain::Incoming};
-
-        const auto gen = account.LastGenerated(subchain);
-
-        ASSERT_TRUE(gen.has_value());
-        EXPECT_EQ(gen.value(), lookahead);
-    }
-    {
-        constexpr auto subchain{Subchain::Outgoing};
-
-        const auto gen = account.LastGenerated(subchain);
-
-        ASSERT_TRUE(gen.has_value());
-        EXPECT_EQ(gen.value(), lookahead);
-    }
-    {
-        constexpr auto subchain{Subchain::External};
-
-        const auto gen = account.LastGenerated(subchain);
-
-        EXPECT_FALSE(gen.has_value());
-    }
-    {
-        constexpr auto subchain{Subchain::Internal};
-
-        const auto gen = account.LastGenerated(subchain);
-
-        EXPECT_FALSE(gen.has_value());
-    }
-}
-*/
 
 TEST_F(Regtest_stress, shutdown) { Shutdown(); }
 }  // namespace
