@@ -22,8 +22,9 @@ namespace block
 namespace bitcoin
 {
 class Output;
-struct Outpoint;
 }  // namespace bitcoin
+
+struct Outpoint;
 }  // namespace block
 }  // namespace blockchain
 
@@ -54,8 +55,8 @@ public:
         All = 255,
     };
 
-    using UTXO = std::
-        pair<block::bitcoin::Outpoint, std::unique_ptr<block::bitcoin::Output>>;
+    using UTXO =
+        std::pair<block::Outpoint, std::unique_ptr<block::bitcoin::Output>>;
 
     OPENTXS_EXPORT virtual auto GetBalance() const noexcept -> Balance = 0;
     OPENTXS_EXPORT virtual auto GetBalance(

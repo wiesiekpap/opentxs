@@ -9,6 +9,7 @@
 
 #include <chrono>
 #include <cstdint>
+#include <limits>
 #include <list>
 #include <map>
 #include <memory>
@@ -8563,8 +8564,17 @@ auto Notary::process_token_deposit(
     Account& depositAccount,
     blind::Token& token) -> bool
 {
+    if (std::numeric_limits<std::uint32_t>::max() < token.Series()) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": invalid series (")(
+            token.Series())(")")
+            .Flush();
+
+        return false;
+    }
+
     const auto amount = token.Value();
-    auto pMint = manager_.GetPrivateMint(token.Unit(), token.Series());
+    auto pMint = manager_.GetPrivateMint(
+        token.Unit(), static_cast<std::uint32_t>(token.Series()));
 
     if (false == bool(pMint)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to get or load Mint.")
@@ -8654,8 +8664,18 @@ auto Notary::process_token_withdrawal(
 {
     auto& token = *pToken;
     const auto series = token.Series();
+
+    if (std::numeric_limits<std::uint32_t>::max() < series) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": invalid series (")(series)("): ")(
+            unit)
+            .Flush();
+
+        return false;
+    }
+
     const auto value = token.Value();
-    auto pMint = manager_.GetPrivateMint(unit, series);
+    auto pMint =
+        manager_.GetPrivateMint(unit, static_cast<std::uint32_t>(series));
 
     if (false == bool(pMint)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to find Mint (series ")(

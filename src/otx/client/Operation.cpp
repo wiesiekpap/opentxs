@@ -2097,7 +2097,7 @@ auto Operation::process_inbox(
     OT_ASSERT(ledgerType::inbox == inbox->GetType());
     OT_ASSERT(ledgerType::outbox == outbox->GetType());
 
-    const std::size_t count =
+    const auto count =
         (inbox->GetTransactionCount() > 0) ? inbox->GetTransactionCount() : 0;
 
     if (1 > count) {
@@ -2128,7 +2128,7 @@ auto Operation::process_inbox(
 
     Cleanup cleanup(recoverNumber, context);
 
-    for (std::size_t i = 0; i < count; ++i) {
+    for (auto i = std::int32_t{0}; i < count; ++i) {
         auto transaction = inbox->GetTransactionByIndex(i);
 
         if (false == bool(transaction)) {

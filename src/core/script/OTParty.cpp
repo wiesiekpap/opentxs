@@ -1526,8 +1526,8 @@ void OTParty::Serialize(
 {
     TagPtr pTag(new Tag("party"));
 
-    std::uint32_t numAgents = m_mapAgents.size();
-    std::uint32_t numAccounts = m_mapPartyAccounts.size();
+    const auto numAgents = m_mapAgents.size();
+    const auto numAccounts = m_mapPartyAccounts.size();
 
     pTag->add_attribute("name", GetPartyName());
     pTag->add_attribute(

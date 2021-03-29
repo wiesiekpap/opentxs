@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                          // IWYU pragma: associated
 #include "blockchain/client/wallet/Proposals.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <chrono>
 #include <deque>
 #include <functional>
@@ -153,13 +152,18 @@ private:
         auto Delete(const Identifier& id) noexcept -> void
         {
             auto lock = Lock{lock_};
+            auto copy = OTIdentifier{id};
 
-            if (0 < ids_.count(id)) {
-                ids_.erase(id);
-                data_.erase(std::remove_if(
-                    data_.begin(), data_.end(), [&](const auto& data) {
-                        return data.first == id;
-                    }));
+            if (0 < ids_.count(copy)) {
+                ids_.erase(copy);
+
+                for (auto i{data_.begin()}; i != data_.end();) {
+                    if (i->first == copy) {
+                        i = data_.erase(i);
+                    } else {
+                        ++i;
+                    }
+                }
             }
         }
         auto Pop() noexcept -> Data

@@ -11,6 +11,7 @@
 #include <atomic>
 #include <cstdint>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -27,6 +28,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/protobuf/HDAccount.pb.h"
 
 namespace opentxs
@@ -88,6 +90,8 @@ private:
     static const VersionNumber DefaultVersion{1};
 
     VersionNumber version_;
+    mutable std::unique_ptr<opentxs::crypto::key::HD> cached_internal_;
+    mutable std::unique_ptr<opentxs::crypto::key::HD> cached_external_;
 
     auto account_already_exists(const rLock& lock) const noexcept -> bool final;
     auto save(const rLock& lock) const noexcept -> bool final;

@@ -31,7 +31,7 @@
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/blockchain/block/bitcoin/Input.hpp"
+#include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #endif  // OT_BLOCKCHAIN
@@ -101,8 +101,7 @@ auto Factory::BitcoinGenerationTransaction(
     const std::string& coinbase,
     const std::int32_t version) const noexcept -> Transaction_p
 {
-    static const auto outpoint =
-        opentxs::blockchain::block::bitcoin::Outpoint{};
+    static const auto outpoint = opentxs::blockchain::block::Outpoint{};
 
     const auto serializedVersion = boost::endian::little_int32_buf_t{version};
     const auto locktime = boost::endian::little_uint32_buf_t{0};

@@ -33,6 +33,7 @@
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/protobuf/Ciphertext.pb.h"
 
 namespace opentxs
 {
@@ -120,6 +121,11 @@ protected:
     std::unique_ptr<api::HDSeed> seeds_;
     std::unique_ptr<api::Wallet> wallet_;
     std::unique_ptr<api::network::Dht> dht_;
+
+private:
+    proto::Ciphertext encrypted_secret_;
+
+protected:
     mutable std::mutex master_key_lock_;
     mutable std::optional<OTSecret> master_secret_;
     mutable OTSymmetricKey master_key_;
@@ -131,7 +137,7 @@ protected:
     static auto make_master_key(
         const api::internal::Context& parent,
         const api::Factory& factory,
-        const proto::Ciphertext& encrypted_secret_,
+        proto::Ciphertext& encrypted_secret_,
         std::optional<OTSecret>& master_secret_,
         const api::crypto::Symmetric& symmetric,
         const api::storage::Storage& storage) -> OTSymmetricKey;

@@ -19,6 +19,14 @@
 
 namespace opentxs
 {
+namespace blockchain
+{
+namespace block
+{
+struct Outpoint;
+}  // namespace block
+}  // namespace blockchain
+
 namespace proto
 {
 class BlockchainTransactionInput;
@@ -33,31 +41,6 @@ namespace block
 {
 namespace bitcoin
 {
-struct OPENTXS_EXPORT Outpoint {
-    std::array<std::byte, 32> txid_{};
-    std::array<std::byte, 4> index_{};
-
-    auto operator<(const Outpoint& rhs) const noexcept -> bool;
-    auto operator<=(const Outpoint& rhs) const noexcept -> bool;
-    auto operator>(const Outpoint& rhs) const noexcept -> bool;
-    auto operator>=(const Outpoint& rhs) const noexcept -> bool;
-    auto operator==(const Outpoint& rhs) const noexcept -> bool;
-    auto operator!=(const Outpoint& rhs) const noexcept -> bool;
-
-    auto Bytes() const noexcept -> ReadView;
-    auto Index() const noexcept -> std::uint32_t;
-    auto Txid() const noexcept -> ReadView;
-    auto str() const noexcept -> std::string;
-
-    Outpoint(const ReadView serialized) noexcept(false);
-    Outpoint(const ReadView txid, const std::uint32_t index) noexcept(false);
-    Outpoint() noexcept;
-    Outpoint(const Outpoint&) noexcept;
-    Outpoint(Outpoint&&) noexcept;
-    Outpoint& operator=(const Outpoint&) noexcept;
-    Outpoint& operator=(Outpoint&&) noexcept;
-};
-
 class Input
 {
 public:

@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iterator>
+#include <limits>
 #include <memory>
 #include <ratio>
 #include <string>
@@ -2606,7 +2607,9 @@ auto OT_API::GenerateBasketExchange(
         // We need a transaction number just to send this thing. Plus, we need a
         // number for each sub-account to the basket, as well as the basket's
         // main account. That is: 1 + theBasket.Count() + 1
-        const std::size_t currencies = contract->Currencies().size();
+        const auto currencies = contract->Currencies().size();
+
+        OT_ASSERT(std::numeric_limits<std::int32_t>::max() >= currencies);
 
         if (context.get().AvailableNumbers() < (2 + currencies)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(
@@ -2616,7 +2619,9 @@ auto OT_API::GenerateBasketExchange(
                 .Flush();
         } else {
             pRequestBasket.reset(api_.Factory()
-                                     .Basket(currencies, contract->Weight())
+                                     .Basket(
+                                         static_cast<std::int32_t>(currencies),
+                                         contract->Weight())
                                      .release());
             OT_ASSERT_MSG(
                 false != bool(pRequestBasket),

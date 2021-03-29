@@ -654,7 +654,7 @@ auto Unit::FormatAmountLocale(
 
     str_output = Unit::formatLongAmount(
         amount,
-        static_cast<std::int64_t>(std::pow(10, DecimalPower())),
+        static_cast<std::int32_t>(std::pow(10, DecimalPower())),
         DecimalPower(),
         (proto::UNITTYPE_CURRENCY == Type()) ? primary_unit_symbol_.c_str()
                                              : nullptr,
@@ -689,7 +689,7 @@ auto Unit::FormatAmountWithoutSymbolLocale(
 
     str_output = Unit::formatLongAmount(
         amount,
-        static_cast<std::int64_t>(std::pow(10, DecimalPower())),
+        static_cast<std::int32_t>(std::pow(10, DecimalPower())),
         DecimalPower(),
         nullptr,
         strSeparator->Get(),
@@ -804,7 +804,7 @@ auto Unit::StringToAmountLocale(
     bool bSuccess = Unit::ParseFormatted(
         amount,
         str_input,
-        static_cast<std::int64_t>(std::pow(10, DecimalPower())),
+        static_cast<std::int32_t>(std::pow(10, DecimalPower())),
         DecimalPower(),
         strSeparator->Get(),
         strDecimalPoint->Get());

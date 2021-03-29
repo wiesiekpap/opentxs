@@ -8,6 +8,7 @@
 #include "server/MessageProcessor.hpp"  // IWYU pragma: associated
 
 #include <chrono>
+#include <limits>
 #include <memory>
 #include <ostream>
 #include <stdexcept>
@@ -337,8 +338,13 @@ auto MessageProcessor::process_message(
 {
     if (messageString.size() < 1) { return true; }
 
+    if (std::numeric_limits<std::uint32_t>::max() < messageString.size()) {
+        return true;
+    }
+
     auto armored = Armored::Factory();
-    armored->MemSet(messageString.data(), messageString.size());
+    armored->MemSet(
+        messageString.data(), static_cast<std::uint32_t>(messageString.size()));
     auto serialized = String::Factory();
     armored->GetString(serialized);
     auto request{server_.API().Factory().Message()};

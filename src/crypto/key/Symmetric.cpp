@@ -8,6 +8,7 @@
 #include "crypto/key/Symmetric.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
+#include <limits>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -286,12 +287,14 @@ auto Symmetric::Allocate(const std::size_t size, Data& container) -> bool
 
 auto Symmetric::Allocate(const std::size_t size, String& container) -> bool
 {
-    std::vector<char> blank{};
+    if (std::numeric_limits<std::uint32_t>::max() < size) { return false; }
+
+    auto blank = std::vector<char>{};
     blank.assign(size, 0x7f);
 
     OT_ASSERT(blank.size() == size);
 
-    container.Set(blank.data(), blank.size());
+    container.Set(blank.data(), static_cast<std::uint32_t>(blank.size()));
 
     return (size == container.GetLength());
 }
@@ -444,10 +447,18 @@ auto Symmetric::encrypt(
         ciphertext.set_mode(mode);
     }
 
-    if ((0 == ivSize) || (nullptr == iv)) {
-        auto blankIV = api_.Factory().Secret(0);
-        blankIV->Randomize(engine_.IvSize(ciphertext.mode()));
-        ciphertext.set_iv(blankIV->data(), blankIV->size());
+    if ((0u == ivSize) || (nullptr == iv)) {
+        const auto random = [&] {
+            auto out = api_.Factory().Secret(0);
+            const auto size = engine_.IvSize(ciphertext.mode());
+            out->Randomize(size);
+
+            OT_ASSERT(out->size() == size);
+
+            return out;
+        }();
+
+        ciphertext.set_iv(random->data(), random->size());
     } else {
         ciphertext.set_iv(iv, ivSize);
     }
@@ -473,7 +484,7 @@ auto Symmetric::Encrypt(
     const ReadView iv) const -> bool
 {
     Lock lock(lock_);
-    const bool success = encrypt(
+    auto success = encrypt(
         lock,
         reinterpret_cast<const std::uint8_t*>(plaintext.data()),
         plaintext.size(),
@@ -484,7 +495,9 @@ auto Symmetric::Encrypt(
         ciphertext,
         true);
 
-    if (success && attachKey) { serialize(lock, *ciphertext.mutable_key()); }
+    if (success && attachKey) {
+        success &= serialize(lock, *ciphertext.mutable_key());
+    }
 
     return success;
 }
@@ -561,9 +574,12 @@ auto Symmetric::get_password(
         OT_ASSERT(nullptr != callback);
 
         auto bytes = buffer->Bytes();
+
+        OT_ASSERT(std::numeric_limits<int>::max() >= bytes.size());
+
         const auto length = (*callback)(
             const_cast<char*>(bytes.data()),
-            bytes.size(),
+            static_cast<int>(bytes.size()),
             0,
             const_cast<PasswordPrompt*>(&reason));
         bool result = false;
@@ -642,9 +658,11 @@ auto Symmetric::serialize(const Lock& lock, proto::SymmetricKey& output) const
 
     if (!encrypted) { return false; }
 
+    OT_ASSERT(std::numeric_limits<std::uint32_t>::max() >= key_size_);
+
     output.set_version(version_);
     output.set_type(type_);
-    output.set_size(key_size_);
+    output.set_size(static_cast<std::uint32_t>(key_size_));
     *output.mutable_key() = *encrypted;
 
     if (salt) { output.set_salt(*salt); }

@@ -9,6 +9,7 @@
 #include "opentxs/crypto/Types.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
+#include <limits>
 
 namespace opentxs
 {
@@ -17,6 +18,7 @@ namespace crypto
 enum class SeedStyle : std::uint8_t {
     BIP32 = 0,
     BIP39 = 1,
+    Error = std::numeric_limits<std::uint8_t>::max(),
 };
 }  // namespace crypto
 }  // namespace opentxs

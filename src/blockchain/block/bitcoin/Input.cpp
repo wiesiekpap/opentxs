@@ -10,11 +10,9 @@
 #include <boost/container/vector.hpp>
 #include <boost/endian/buffers.hpp>
 #include <algorithm>
-#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <iomanip>
 #include <iterator>
 #include <optional>
 #include <set>
@@ -33,6 +31,7 @@
 #include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
@@ -134,7 +133,7 @@ auto BitcoinTransactionInput(
         blockchain,
         chain,
         sequence.value_or(0xffffffff),
-        blockchain::block::bitcoin::Outpoint{spends.first},
+        blockchain::block::Outpoint{spends.first},
         std::vector<Space>{},
         BitcoinScript(chain, std::move(elements), Position::Input),
         ReturnType::default_version_,
@@ -169,7 +168,7 @@ auto BitcoinTransactionInput(
                 blockchain,
                 chain,
                 buf.value(),
-                blockchain::block::bitcoin::Outpoint{outpoint},
+                blockchain::block::Outpoint{outpoint},
                 std::move(witness),
                 script,
                 ReturnType::default_version_,
@@ -181,7 +180,7 @@ auto BitcoinTransactionInput(
                 blockchain,
                 chain,
                 buf.value(),
-                blockchain::block::bitcoin::Outpoint{outpoint},
+                blockchain::block::Outpoint{outpoint},
                 std::move(witness),
                 factory::BitcoinScript(chain, script, Position::Input),
                 ReturnType::default_version_,
@@ -225,7 +224,7 @@ auto BitcoinTransactionInput(
                 blockchain,
                 chain,
                 in.sequence(),
-                blockchain::block::bitcoin::Outpoint{
+                blockchain::block::Outpoint{
                     outpoint.txid(),
                     static_cast<std::uint32_t>(outpoint.index())},
                 std::move(witness),
@@ -253,7 +252,7 @@ auto BitcoinTransactionInput(
                 blockchain,
                 chain,
                 in.sequence(),
-                blockchain::block::bitcoin::Outpoint{
+                blockchain::block::Outpoint{
                     outpoint.txid(),
                     static_cast<std::uint32_t>(outpoint.index())},
                 std::move(witness),
@@ -280,127 +279,6 @@ auto BitcoinTransactionInput(
     }
 }
 }  // namespace opentxs::factory
-
-namespace opentxs::blockchain::block::bitcoin
-{
-Outpoint::Outpoint() noexcept
-    : txid_()
-    , index_()
-{
-}
-Outpoint::Outpoint(const Outpoint& rhs) noexcept
-    : txid_(rhs.txid_)
-    , index_(rhs.index_)
-{
-}
-Outpoint::Outpoint(Outpoint&& rhs) noexcept
-    : Outpoint(rhs)  // copy constructor, rhs is an lvalue
-{
-}
-Outpoint::Outpoint(const ReadView in) noexcept(false)
-    : txid_()
-    , index_()
-{
-    if (in.size() < sizeof(*this)) {
-        throw std::runtime_error("Invalid bytes");
-    }
-
-    std::memcpy(static_cast<void*>(this), in.data(), sizeof(*this));
-}
-Outpoint::Outpoint(const ReadView txid, const std::uint32_t index) noexcept(
-    false)
-    : txid_()
-    , index_()
-{
-    if (txid_.size() != txid.size()) {
-        throw std::runtime_error("Invalid txid");
-    }
-
-    const auto buf = be::little_uint32_buf_t{index};
-
-    static_assert(sizeof(index_) == sizeof(buf));
-
-    std::memcpy(static_cast<void*>(txid_.data()), txid.data(), txid_.size());
-    std::memcpy(static_cast<void*>(index_.data()), &buf, index_.size());
-}
-Outpoint& Outpoint::operator=(const Outpoint& rhs) noexcept
-{
-    if (&rhs != this) {
-        txid_ = rhs.txid_;
-        index_ = rhs.index_;
-    }
-
-    return *this;
-}
-Outpoint& Outpoint::operator=(Outpoint&& rhs) noexcept
-{
-    return operator=(rhs);  // copy assignment, rhs is an lvalue
-}
-auto Outpoint::Bytes() const noexcept -> ReadView
-{
-    return ReadView{reinterpret_cast<const char*>(this), sizeof(*this)};
-}
-
-auto Outpoint::operator<(const Outpoint& rhs) const noexcept -> bool
-{
-    return 0 > std::memcmp(this, &rhs, sizeof(*this));
-}
-
-auto Outpoint::operator<=(const Outpoint& rhs) const noexcept -> bool
-{
-    return 0 >= std::memcmp(this, &rhs, sizeof(*this));
-}
-
-auto Outpoint::operator>(const Outpoint& rhs) const noexcept -> bool
-{
-    return 0 < std::memcmp(this, &rhs, sizeof(*this));
-}
-
-auto Outpoint::operator>=(const Outpoint& rhs) const noexcept -> bool
-{
-    return 0 <= std::memcmp(this, &rhs, sizeof(*this));
-}
-
-auto Outpoint::operator==(const Outpoint& rhs) const noexcept -> bool
-{
-    return 0 == std::memcmp(this, &rhs, sizeof(*this));
-}
-
-auto Outpoint::operator!=(const Outpoint& rhs) const noexcept -> bool
-{
-    return 0 != std::memcmp(this, &rhs, sizeof(*this));
-}
-
-auto Outpoint::Index() const noexcept -> std::uint32_t
-{
-    auto buf = be::little_uint32_buf_t{};
-
-    static_assert(sizeof(index_) == sizeof(buf));
-
-    std::memcpy(static_cast<void*>(&buf), index_.data(), index_.size());
-
-    return buf.value();
-}
-
-auto Outpoint::str() const noexcept -> std::string
-{
-    auto out = std::stringstream{};
-
-    for (const auto byte : txid_) {
-        out << std::hex << std::setfill('0') << std::setw(2)
-            << std::to_integer<int>(byte);
-    }
-
-    out << ':' << std::dec << Index();
-
-    return out.str();
-}
-
-auto Outpoint::Txid() const noexcept -> ReadView
-{
-    return {reinterpret_cast<const char*>(txid_.data()), txid_.size()};
-}
-}  // namespace opentxs::blockchain::block::bitcoin
 
 namespace opentxs::blockchain::block::bitcoin::implementation
 {
@@ -860,7 +738,7 @@ auto Input::FindMatches(
         if (reader(outpoint) != previous_.Bytes()) { continue; }
 
         inputs.emplace_back(
-            api_.Factory().Data(txid), space(previous_.Bytes()), element);
+            api_.Factory().Data(txid), previous_.Bytes(), element);
         const auto& [index, subchainID] = element;
         const auto& [subchain, account] = subchainID;
         cache_.add({account->str(), subchain, index});

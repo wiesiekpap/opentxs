@@ -15,7 +15,6 @@ extern "C" {
 #include <boost/filesystem.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/system/error_code.hpp>
-#include <cstdint>
 #include <fstream>
 #include <ios>
 #include <memory>
@@ -110,7 +109,7 @@ auto StorageFS::read_file(const std::string& filename) const -> std::string
 
         if ((0 >= pos) || (0xFFFFFFFF <= pos)) { return {}; }
 
-        std::uint32_t size(pos);
+        auto size(pos);
         file.seekg(0, std::ios::beg);
         std::vector<char> bytes(size);
         file.read(&bytes[0], size);

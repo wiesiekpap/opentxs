@@ -17,6 +17,7 @@ extern "C" {
 #include <cassert>
 #include <fstream>  // IWYU pragma: keep
 #include <functional>
+#include <limits>
 #include <map>
 #include <mutex>
 #include <set>
@@ -451,9 +452,10 @@ void Context::start_client(const Lock& lock, const ArgList& args) const
     OT_ASSERT(verify_lock(lock))
     OT_ASSERT(crypto_);
     OT_ASSERT(legacy_);
+    OT_ASSERT(std::numeric_limits<int>::max() > client_.size());
 
     auto merged_args = merge_arglist(args);
-    const int next = client_.size();
+    const auto next = static_cast<int>(client_.size());
     const auto instance = client_instance(next);
     client_.emplace_back(factory::ClientManager(
         *this,
@@ -471,8 +473,8 @@ auto Context::StartClient(const ArgList& args, const int instance) const
 {
     Lock lock(lock_);
 
-    const std::size_t count = std::max(0, instance);
-    const std::size_t effective = std::min(count, client_.size());
+    const auto count = std::max<std::size_t>(0u, instance);
+    const auto effective = std::min<std::size_t>(count, client_.size());
 
     if (effective == client_.size()) {
         ArgList arguments{args};
@@ -516,11 +518,12 @@ auto Context::StartClient(
 
 void Context::start_server(const Lock& lock, const ArgList& args) const
 {
-    OT_ASSERT(verify_lock(lock))
+    OT_ASSERT(verify_lock(lock));
     OT_ASSERT(crypto_);
+    OT_ASSERT(std::numeric_limits<int>::max() > server_.size());
 
     const auto merged_args = merge_arglist(args);
-    const auto next{server_.size()};
+    const auto next = static_cast<int>(server_.size());
     const auto instance{server_instance(next)};
     server_.emplace_back(opentxs::Factory::ServerManager(
         *this,
@@ -540,10 +543,13 @@ auto Context::StartServer(
 {
     Lock lock(lock_);
 
-    const std::size_t count = std::max(0, instance);
-    const std::size_t effective = std::min(count, server_.size());
+    OT_ASSERT(std::numeric_limits<int>::max() > server_.size());
 
-    if (effective == server_.size()) {
+    const auto size = static_cast<int>(server_.size());
+    const auto count = std::max<int>(0, instance);
+    const auto effective = std::min(count, size);
+
+    if (effective == size) {
         ArgList arguments{args};
 
         if (inproc) {

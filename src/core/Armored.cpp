@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <cstring>
 #include <fstream>
+#include <limits>
 #include <stdexcept>
 #include <string>
 
@@ -294,7 +295,8 @@ auto Armored::GetString(opentxs::String& strData, bool bLineBreaks) const
         return false;
     }
 
-    std::string str_uncompressed;
+    auto str_uncompressed = std::string{};
+
     try {
         str_uncompressed = decompress_string(str_decoded);
     } catch (const std::runtime_error&) {
@@ -303,7 +305,12 @@ auto Armored::GetString(opentxs::String& strData, bool bLineBreaks) const
         return false;
     }
 
-    strData.Set(str_uncompressed.c_str(), str_uncompressed.length());
+    OT_ASSERT(
+        std::numeric_limits<std::uint32_t>::max() >= str_uncompressed.length());
+
+    strData.Set(
+        str_uncompressed.c_str(),
+        static_cast<std::uint32_t>(str_uncompressed.length()));
 
     return true;
 }
@@ -475,7 +482,9 @@ auto Armored::SetData(const Data& theData, bool) -> bool
         return false;
     }
 
-    Set(string.data(), string.size());
+    OT_ASSERT(std::numeric_limits<std::uint32_t>::max() >= string.size());
+
+    Set(string.data(), static_cast<std::uint32_t>(string.size()));
 
     return true;
 }
@@ -542,7 +551,9 @@ auto Armored::SetString(
         return false;
     }
 
-    Set(pString.data(), pString.size());
+    OT_ASSERT(std::numeric_limits<std::uint32_t>::max() >= pString.size());
+
+    Set(pString.data(), static_cast<std::uint32_t>(pString.size()));
 
     return true;
 }

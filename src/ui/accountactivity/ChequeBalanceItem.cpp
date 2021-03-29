@@ -50,8 +50,8 @@ ChequeBalanceItem::ChequeBalanceItem(
 auto ChequeBalanceItem::effective_amount() const noexcept -> opentxs::Amount
 {
     sLock lock(shared_lock_);
-    auto amount{0};
-    opentxs::Amount sign{0};
+    auto amount = opentxs::Amount{0};
+    auto sign = opentxs::Amount{0};
 
     if (cheque_) { amount = cheque_->GetAmount(); }
 

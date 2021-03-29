@@ -29,6 +29,7 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/blockchain/BalanceNode.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
@@ -192,11 +193,12 @@ struct Output::Imp {
             // until scanning is complete for all subchains.
         }
 
-        for (const auto index : outputIndices) {
+        for (const auto& index : outputIndices) {
             const auto outpoint = Outpoint{copy.ID().Bytes(), index};
             const auto& output = copy.Outputs().at(index);
 
             OT_ASSERT((0 < output.Keys().size()));
+            OT_ASSERT(outpoint.Index() == index);
 
             if (auto out = find_output(lock, outpoint); out.has_value()) {
                 auto& serialized = out.value()->second;
@@ -249,8 +251,6 @@ struct Output::Imp {
             }
 
             insert_sorted(fifo_index_[block.first], FIFO{blockIndex, outpoint});
-
-            // OT_ASSERT(verify_outpoint(lock, outpoint));  // FIXME
         }
 
         const auto reason = api_.Factory().PasswordPrompt(
@@ -470,8 +470,6 @@ struct Output::Imp {
                 outpoint.str())
                 .Flush();
 
-            // OT_ASSERT(verify_outpoint(lock, outpoint));  // FIXME
-
             return output;
         };
         const auto confirmed = [&]() -> std::optional<UTXO> {
@@ -642,7 +640,7 @@ struct Output::Imp {
 private:
     struct FIFO {
         std::uint64_t index_{};
-        block::bitcoin::Outpoint outpoint_{};
+        block::Outpoint outpoint_{};
 
         auto operator<(const FIFO& rhs) const noexcept -> bool
         {
@@ -663,7 +661,7 @@ private:
 
     using SubchainID = Identifier;
     using pSubchainID = OTIdentifier;
-    using Outpoint = block::bitcoin::Outpoint;
+    using Outpoint = block::Outpoint;
     using Outpoints = std::vector<Outpoint>;
     using TxoState = client::Wallet::TxoState;
     using Output = std::
@@ -1276,9 +1274,10 @@ private:
                 static_cast<api::client::blockchain::Subchain>(sKey.subchain()),
                 sKey.index()};
             try {
-                const auto& key = blockchain_.GetKey(id);
-                const auto pubkey = api_.Factory().Data(key.Key()->PublicKey());
-                const auto hash = key.PubkeyHash();
+                const auto& element = blockchain_.GetKey(id);
+                const auto pubkey =
+                    api_.Factory().Data(element.Key()->PublicKey());
+                const auto hash = element.PubkeyHash();
                 LogOutput(OT_METHOD)(__FUNCTION__)(": output ")(outpoint.str())(
                     " can be spent using public key ")(std::get<2>(id))(
                     " from subchain ")(static_cast<std::uint32_t>(std::get<1>(

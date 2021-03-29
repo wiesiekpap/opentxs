@@ -5,8 +5,6 @@
 
 #pragma once
 
-#if OT_STORAGE_LMDB
-
 extern "C" {
 #include <lmdb.h>  // IWYU pragma: export
 }
@@ -42,7 +40,7 @@ using ReadCallback =
 using Result = std::pair<bool, int>;
 using Table = int;
 using Databases = std::map<Table, MDB_dbi>;
-using TablesToInit = std::vector<std::pair<Table, std::size_t>>;
+using TablesToInit = std::vector<std::pair<Table, unsigned int>>;
 using TableNames = std::map<Table, const std::string>;
 using UpdateCallback = std::function<Space(const ReadView data)>;
 
@@ -163,8 +161,7 @@ private:
     mutable std::mutex lock_;
 
     auto get_database(const Table table) const noexcept -> MDB_dbi;
-    auto init_db(const Table table, const std::size_t flags) noexcept
-        -> MDB_dbi;
+    auto init_db(const Table table, unsigned int flags) noexcept -> MDB_dbi;
     void init_environment(
         const std::string& folder,
         const std::size_t tables,
@@ -177,4 +174,3 @@ private:
     auto operator=(LMDB&&) -> LMDB& = delete;
 };
 }  // namespace opentxs::storage::lmdb
-#endif  // OT_STORAGE_LMDB

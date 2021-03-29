@@ -98,11 +98,11 @@ namespace bitcoin
 class Block;
 class Header;
 class Transaction;
-struct Outpoint;
 }  // namespace bitcoin
 
 class Block;
 class Header;
+struct Outpoint;
 }  // namespace block
 
 namespace client
@@ -601,9 +601,8 @@ struct WalletDatabase {
     using Pattern = std::pair<ElementID, Space>;
     using Patterns = std::vector<Pattern>;
     using MatchingIndices = std::vector<Bip32Index>;
-    using UTXO = std::pair<
-        blockchain::block::bitcoin::Outpoint,
-        proto::BlockchainTransactionOutput>;
+    using UTXO = std::
+        pair<blockchain::block::Outpoint, proto::BlockchainTransactionOutput>;
     using KeyID = api::client::blockchain::Key;
     using State = client::Wallet::TxoState;
 

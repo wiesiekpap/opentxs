@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <limits>
 #include <set>
 #include <stdexcept>
 #include <type_traits>
@@ -854,7 +855,16 @@ auto Purse::Verify(const api::server::internal::Manager& server) const -> bool
             return false;
         }
 
-        auto pMint = server.GetPrivateMint(unit_, token.Series());
+        const auto series = token.Series();
+
+        if (std::numeric_limits<std::uint32_t>::max() < series) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid series").Flush();
+
+            return false;
+        }
+
+        auto pMint =
+            server.GetPrivateMint(unit_, static_cast<std::uint32_t>(series));
 
         if (false == bool(pMint)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect token series")

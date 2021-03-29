@@ -8,7 +8,6 @@
 
 #include "opentxs/Forward.hpp"  // IWYU pragma: associated
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 #include "opentxs/crypto/key/HD.hpp"
 
 namespace opentxs
@@ -35,4 +34,3 @@ private:
 }  // namespace crypto
 }  // namespace opentxs
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-#endif

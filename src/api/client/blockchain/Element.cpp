@@ -58,12 +58,11 @@ BalanceNode::Element::Element(
     , label_(label)
     , contact_(contact)
     , pkey_(key.asPublicEC())
-    , key_(*pkey_)
     , timestamp_(time)
     , unconfirmed_(std::move(unconfirmed))
     , confirmed_(std::move(confirmed))
 {
-    if (false == bool(key_)) { throw std::runtime_error("No key provided"); }
+    if (false == bool(pkey_)) { throw std::runtime_error("No key provided"); }
 }
 
 BalanceNode::Element::Element(
@@ -134,8 +133,10 @@ BalanceNode::Element::Element(
 auto BalanceNode::Element::Address(const AddressStyle format) const noexcept
     -> std::string
 {
+    auto lock = rLock{lock_};
+
     return blockchain_.CalculateAddress(
-        chain_, format, api_.Factory().Data(key_.PublicKey()));
+        chain_, format, api_.Factory().Data(pkey_->PublicKey()));
 }
 
 auto BalanceNode::Element::Confirmed() const noexcept -> Txids
@@ -177,7 +178,7 @@ auto BalanceNode::Element::elements(const rLock&) const noexcept
     -> std::set<OTData>
 {
     auto output = std::set<OTData>{};
-    auto pubkey = api_.Factory().Data(key_.PublicKey());
+    auto pubkey = api_.Factory().Data(pkey_->PublicKey());
 
     try {
         output.emplace(blockchain_.PubkeyHash(chain_, pubkey));
@@ -281,9 +282,30 @@ auto BalanceNode::Element::LastActivity() const noexcept -> Time
     return timestamp_;
 }
 
+auto BalanceNode::Element::PrivateKey(
+    const PasswordPrompt& reason) const noexcept -> ECKey
+{
+    auto lock = rLock{lock_};
+
+    if (false == pkey_->HasPrivate()) {
+        auto key = parent_.PrivateKey(subchain_, index_, reason);
+
+        if (!key) { return {}; }
+
+        pkey_ = std::move(key);
+
+        OT_ASSERT(pkey_);
+    }
+
+    OT_ASSERT(pkey_->HasPrivate());
+
+    return pkey_;
+}
+
 auto BalanceNode::Element::PubkeyHash() const noexcept -> OTData
 {
-    const auto key = api_.Factory().Data(key_.PublicKey());
+    auto lock = rLock{lock_};
+    const auto key = api_.Factory().Data(pkey_->PublicKey());
 
     return blockchain_.PubkeyHash(chain_, key);
 }
@@ -299,16 +321,25 @@ auto BalanceNode::Element::Reserve(const Time time) noexcept -> bool
 auto BalanceNode::Element::Serialize() const noexcept
     -> BalanceNode::Element::SerializedType
 {
-    auto serialized = key_.Serialize();
+    auto lock = rLock{lock_};
+    const auto key = [&] {
+        if (pkey_->HasPrivate()) {
 
-    OT_ASSERT(serialized);
+            return pkey_->asPublicEC()->Serialize();
+        } else {
+
+            return pkey_->Serialize();
+        }
+    }();
+
+    OT_ASSERT(key);
 
     SerializedType output{};
     output.set_version((DefaultVersion > version_) ? DefaultVersion : version_);
     output.set_index(index_);
     output.set_label(label_);
     output.set_contact(contact_->str());
-    *output.mutable_key() = *serialized;
+    *output.mutable_key() = *key;
     output.set_modified(Clock::to_time_t(timestamp_));
 
     for (const auto& txid : unconfirmed_) {

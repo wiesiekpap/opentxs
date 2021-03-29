@@ -45,8 +45,8 @@ OPENTXS_EXPORT bool Check(
     const bool silent,
     Args&&... params) noexcept
 {
-    if (!input.has_version()) {
-        PrintErrorMessage("protobuf", "missing version.");
+    if (false == input.has_version()) {
+        PrintErrorMessage("protobuf", "missing version");
 
         return false;
     }

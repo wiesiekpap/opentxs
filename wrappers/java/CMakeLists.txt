@@ -79,6 +79,9 @@ if(NOT MSVC)
       PRIVATE
         -Wno-deprecated-dynamic-exception-spec
         -Wno-missing-noreturn
+        -Wno-reserved-id-macro
+        -Wno-suggest-destructor-override
+        -Wno-suggest-override
         -Wno-used-but-marked-unused
     )
   endif()

@@ -469,7 +469,9 @@ auto Headers::load_bitcoin_header(const block::Hash& hash) const
     auto proto = common_.LoadBlockHeader(hash);
     const auto haveMeta =
         lmdb_.Load(BlockHeaderMetadata, hash.Bytes(), [&](const auto data) {
-            proto.mutable_local()->ParseFromArray(data.data(), data.size());
+            *proto.mutable_local() =
+                proto::Factory<proto::BlockchainBlockLocalData>(
+                    data.data(), data.size());
         });
 
     if (false == haveMeta) {
@@ -491,7 +493,9 @@ auto Headers::load_header(const block::Hash& hash) const
     auto proto = common_.LoadBlockHeader(hash);
     const auto haveMeta =
         lmdb_.Load(BlockHeaderMetadata, hash.Bytes(), [&](const auto data) {
-            proto.mutable_local()->ParseFromArray(data.data(), data.size());
+            *proto.mutable_local() =
+                proto::Factory<proto::BlockchainBlockLocalData>(
+                    data.data(), data.size());
         });
 
     if (false == haveMeta) {

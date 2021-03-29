@@ -12,6 +12,7 @@ extern "C" {
 }
 
 #include <cstddef>
+#include <limits>
 #include <vector>
 
 #include "opentxs/Pimpl.hpp"
@@ -62,8 +63,10 @@ void OpenSSL_BIO::read_bio(
     std::size_t& total,
     std::vector<std::byte>& output)
 {
+    OT_ASSERT(std::numeric_limits<int>::max() >= amount);
+
     output.resize(output.size() + amount);
-    read = BIO_read(*this, &output[total], amount);
+    read = BIO_read(*this, &output[total], static_cast<int>(amount));
     total += read;
 }
 
@@ -97,7 +100,12 @@ auto OpenSSL_BIO::ToString() -> OTString
     if (0 < size) {
         bytes.resize(size + 1);
         bytes[size] = static_cast<std::byte>(0x0);
-        output->Set(reinterpret_cast<const char*>(bytes.data()), bytes.size());
+
+        OT_ASSERT(std::numeric_limits<std::uint32_t>::max() >= bytes.size());
+
+        output->Set(
+            reinterpret_cast<const char*>(bytes.data()),
+            static_cast<std::uint32_t>(bytes.size()));
     }
 
     return output;

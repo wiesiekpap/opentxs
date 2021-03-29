@@ -15,6 +15,7 @@ extern "C" {
 #include <cstring>
 #include <limits>
 
+#include "opentxs/Types.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 
@@ -22,6 +23,11 @@ extern "C" {
 
 namespace opentxs::crypto::implementation
 {
+Ripemd160::Ripemd160() noexcept
+    : ripemd_lock_()
+{
+}
+
 auto Ripemd160::RIPEMD160(
     const std::uint8_t* input,
     const std::size_t size,
@@ -35,6 +41,7 @@ auto Ripemd160::RIPEMD160(
         return false;
     }
 
+    auto lock = Lock{ripemd_lock_};
     auto hash = std::array<std::uint8_t, RIPEMD160_DIGEST_LENGTH>{};
     ::ripemd160(input, static_cast<SizeType>(size), hash.data());
     std::memcpy(output, hash.data(), hash.size());

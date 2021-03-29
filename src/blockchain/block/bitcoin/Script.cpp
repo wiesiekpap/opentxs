@@ -157,8 +157,11 @@ auto BitcoinScript(
                         return {};
                     }
 
-                    data = space(effectiveSize);
-                    std::memcpy(data.value().data(), it, effectiveSize);
+                    if (0u < effectiveSize) {
+                        data = space(effectiveSize);
+                        std::memcpy(data.value().data(), it, effectiveSize);
+                    }
+
                     read += effectiveSize;
                     std::advance(it, effectiveSize);
                 }

@@ -122,6 +122,7 @@ Core::Core(
           server_refresh_interval_,
           unit_publish_interval_,
           unit_refresh_interval_))
+    , encrypted_secret_()
     , master_key_lock_()
     , master_secret_()
     , master_key_(make_master_key(
@@ -250,7 +251,7 @@ auto Core::GetSecret(
 auto Core::make_master_key(
     const api::internal::Context& parent,
     const api::Factory& factory,
-    const proto::Ciphertext& encrypted_secret,
+    proto::Ciphertext& encrypted_secret,
     std::optional<OTSecret>& master_secret,
     const api::crypto::Symmetric& symmetric,
     const api::storage::Storage& storage) -> OTSymmetricKey
@@ -260,11 +261,13 @@ auto Core::make_master_key(
 
     OT_ASSERT(nullptr != external_password_callback_);
 
-    auto& encrypted = const_cast<proto::Ciphertext&>(encrypted_secret);
-    std::shared_ptr<proto::Ciphertext> existing{};
+    auto& encrypted = encrypted_secret;
+    auto existing = std::shared_ptr<proto::Ciphertext>{};
     const auto have = storage.Load(existing, true);
 
     if (have) {
+        OT_ASSERT(existing);
+
         encrypted = *existing;
 
         return symmetric.Key(existing->key(), proto::SMODE_CHACHA20POLY1305);

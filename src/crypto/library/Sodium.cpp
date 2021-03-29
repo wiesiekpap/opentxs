@@ -15,6 +15,7 @@ extern "C" {
 #include <array>
 #include <cstring>
 #include <functional>
+#include <limits>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -662,11 +663,16 @@ auto Sodium::SharedSecret(
 
 auto Sodium::sha1(
     const std::uint8_t* input,
-    const size_t size,
+    const std::size_t size,
     std::uint8_t* output) const -> bool
 {
+    if (std::numeric_limits<std::uint32_t>::max() < size) { return false; }
+
     auto hex = std::array<char, SHA1_HEX_SIZE>{};
-    ::sha1().add(input, size).finalize().print_hex(hex.data());
+    ::sha1()
+        .add(input, static_cast<std::uint32_t>(size))
+        .finalize()
+        .print_hex(hex.data());
     const auto hash = Data::Factory(hex.data(), Data::Mode::Hex);
     std::memcpy(output, hash->data(), hash->size());
 

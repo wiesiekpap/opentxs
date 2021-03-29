@@ -51,6 +51,7 @@
 #include "opentxs/blockchain/Network.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
+#include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
@@ -766,7 +767,7 @@ protected:
     using Height = b::block::Height;
     using Transaction = ot::api::Factory::Transaction_p;
     using Generator = std::function<Transaction(Height)>;
-    using Outpoint = ot::blockchain::block::bitcoin::Outpoint;
+    using Outpoint = ot::blockchain::block::Outpoint;
     using Script = ot::blockchain::block::bitcoin::Script;
     using UTXO = ot::blockchain::client::Wallet::UTXO;
     using GetAmount = std::function<std::int64_t(int)>;

@@ -916,7 +916,7 @@ auto RPC::get_client(const std::int32_t instance) const
     } else {
         try {
             return &dynamic_cast<const api::client::internal::Manager&>(
-                ot_.Client(get_index(instance)));
+                ot_.Client(static_cast<int>(get_index(instance))));
         } catch (...) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Error: provided instance ")(
                 instance)(" is not a valid client session.")
@@ -1095,8 +1095,8 @@ auto RPC::get_seeds(const proto::RPCCommand& command) const
     const auto& hdseeds = session.Seeds();
 
     for (const auto& id : command.identifier()) {
-        auto words = hdseeds.Words(reason, id);
-        auto passphrase = hdseeds.Passphrase(reason, id);
+        auto words = hdseeds.Words(id, reason);
+        auto passphrase = hdseeds.Passphrase(id, reason);
 
         if (false == words.empty() || false == passphrase.empty()) {
             auto& seed = *output.add_seed();
@@ -1125,7 +1125,7 @@ auto RPC::get_server(const std::int32_t instance) const
         return nullptr;
     } else {
         try {
-            return &ot_.Server(get_index(instance));
+            return &ot_.Server(static_cast<int>(get_index(instance)));
         } catch (...) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Error: provided instance ")(
                 instance)(" is not a valid server session.")
@@ -1193,9 +1193,9 @@ auto RPC::get_server_password(const proto::RPCCommand& command) const
 auto RPC::get_session(const std::int32_t instance) const -> const api::Core&
 {
     if (is_server_session(instance)) {
-        return ot_.Server(get_index(instance));
+        return ot_.Server(static_cast<int>(get_index(instance)));
     } else {
-        return ot_.Client(get_index(instance));
+        return ot_.Client(static_cast<int>(get_index(instance)));
     }
 }
 
@@ -1416,7 +1416,7 @@ auto RPC::list_client_sessions(const proto::RPCCommand& command) const
     for (std::size_t i = 0; i < ot_.Clients(); ++i) {
         proto::SessionData& data = *output.add_sessions();
         data.set_version(SESSION_DATA_VERSION);
-        data.set_instance(ot_.Client(i).Instance());
+        data.set_instance(ot_.Client(static_cast<int>(i)).Instance());
     }
 
     if (0 == output.sessions_size()) {
@@ -1513,7 +1513,7 @@ auto RPC::list_server_sessions(const proto::RPCCommand& command) const
     for (std::size_t i = 0; i < ot_.Servers(); ++i) {
         auto& data = *output.add_sessions();
         data.set_version(SESSION_DATA_VERSION);
-        data.set_instance(ot_.Server(i).Instance());
+        data.set_instance(ot_.Server(static_cast<int>(i)).Instance());
     }
 
     if (0 == output.sessions_size()) {

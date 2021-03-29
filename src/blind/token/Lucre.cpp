@@ -14,6 +14,7 @@ extern "C" {
 
 #include <algorithm>
 #include <cctype>
+#include <limits>
 #include <regex>
 #include <stdexcept>
 #include <vector>
@@ -127,11 +128,15 @@ Lucre::Lucre(
           nullptr)
 {
     const auto& lucre = in.lucre();
+    OT_ASSERT(
+        std::numeric_limits<std::uint32_t>::max() >= lucre.signature().size());
 
     if (lucre.has_signature()) {
         LogInsane(OT_METHOD)(__FUNCTION__)(": This token has a signature")
             .Flush();
-        signature_->Set(lucre.signature().data(), lucre.signature().size());
+        signature_->Set(
+            lucre.signature().data(),
+            static_cast<std::uint32_t>(lucre.signature().size()));
     } else {
         LogInsane(OT_METHOD)(__FUNCTION__)(
             ": This token does not have a signature")

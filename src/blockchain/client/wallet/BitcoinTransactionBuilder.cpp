@@ -14,6 +14,7 @@
 #include <cstring>
 #include <iosfwd>
 #include <iterator>
+#include <limits>
 #include <optional>
 #include <set>
 #include <sstream>
@@ -163,11 +164,16 @@ struct BitcoinTransactionBuilder::Imp {
                     throw std::runtime_error{"Failed to construct script"};
                 }
 
+                if (std::numeric_limits<std::uint32_t>::max() <
+                    outputs_.size()) {
+                    throw std::runtime_error{"too many outputs"};
+                }
+
                 return factory::BitcoinTransactionOutput(
                     api_,
                     blockchain_,
                     chain_,
-                    outputs_.size(),
+                    static_cast<std::uint32_t>(outputs_.size()),
                     0,
                     std::move(pScript),
                     {keyID});
@@ -208,6 +214,9 @@ struct BitcoinTransactionBuilder::Imp {
         }
 
         const auto& input = *pInput;
+        LogTrace(OT_METHOD)(__FUNCTION__)(": adding previous output ")(
+            utxo.first.str())(" to transaction")
+            .Flush();
         input_count_ = inputs_.size();
         input_total_ += input.CalculateSize();
         const auto amount = static_cast<Amount>(utxo.second.value());
@@ -634,31 +643,21 @@ private:
         auto views = block::bitcoin::internal::Input::Signatures{};
 
         for (const auto& id : input.Keys()) {
-            const auto& node = blockchain_.GetKey(id);
+            const auto& element = blockchain_.GetKey(id);
 
-            OT_ASSERT(node.KeyID() == id);
+            OT_ASSERT(element.KeyID() == id);
 
-            const auto pKey = node.PrivateKey(reason);
+            const auto pPublic = validate(
+                Match::ByValue, element, input.PreviousOutput(), spends);
 
-            OT_ASSERT(pKey);
+            if (!pPublic) { continue; }
+
+            const auto& pub = *pPublic;
+            const auto pKey = get_private_key(pub, element, reason);
+
+            if (!pKey) { continue; }
 
             const auto& key = *pKey;
-
-            {
-                const auto expected =
-                    api_.Factory().Data(spends.Script().Pubkey().value());
-                const auto bytes = api_.Factory().Data(key.PublicKey());
-
-                if (expected != bytes) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
-                        ": Pubkey mismatch. Expected ")(expected->asHex())(
-                        " got ")(bytes->asHex())
-                        .Flush();
-
-                    continue;
-                }
-            }
-
             auto& sig = signatures.emplace_back();
             sig.reserve(80);
             const auto haveSig =
@@ -709,35 +708,21 @@ private:
         auto views = block::bitcoin::internal::Input::Signatures{};
 
         for (const auto& id : input.Keys()) {
-            const auto& node = blockchain_.GetKey(id);
+            const auto& element = blockchain_.GetKey(id);
 
-            OT_ASSERT(node.KeyID() == id);
+            OT_ASSERT(element.KeyID() == id);
 
-            const auto pKey = node.PrivateKey(reason);
+            const auto pPublic = validate(
+                Match::ByHash, element, input.PreviousOutput(), spends);
 
-            OT_ASSERT(pKey);
+            if (!pPublic) { continue; }
+
+            const auto& pub = *pPublic;
+            const auto pKey = get_private_key(pub, element, reason);
+
+            if (!pKey) { continue; }
 
             const auto& key = *pKey;
-
-            {
-                const auto expected =
-                    api_.Factory().Data(spends.Script().PubkeyHash().value());
-                const auto hash = [&] {
-                    auto out = api_.Factory().Data();
-                    PubkeyHash(api_, chain_, key.PublicKey(), out->WriteInto());
-
-                    return out;
-                }();
-
-                if (expected != hash) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
-                        ": Pubkey hash mismatch. Expected ")(expected->asHex())(
-                        ", got ")(hash->asHex())
-                        .Flush();
-
-                    continue;
-                }
-            }
 
             const auto& pubkey =
                 keys.emplace_back(api_.Factory().Data(key.PublicKey()));
@@ -806,6 +791,39 @@ private:
 
         return nullptr;
     }
+    auto get_private_key(
+        const crypto::key::EllipticCurve& pubkey,
+        const api::client::blockchain::BalanceNode::Element& element,
+        const PasswordPrompt& reason) const noexcept
+        -> api::client::blockchain::ECKey
+    {
+        auto pKey = element.PrivateKey(reason);
+
+        if (!pKey) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": failed to obtain private key")
+                .Flush();
+
+            return {};
+        }
+
+        const auto& key = *pKey;
+
+        if (key.PublicKey() != pubkey.PublicKey()) {
+            const auto got = api_.Factory().Data(key.PublicKey());
+            const auto expected = api_.Factory().Data(pubkey.PublicKey());
+            const auto [account, subchain, index] = element.KeyID();
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": Derived private key for account ")(account)(" subchain ")(
+                static_cast<std::uint32_t>(subchain))(" index ")(index)(
+                " does not correspond to the expected public key. Got ")(
+                got->asHex())(" expected ")(expected->asHex())
+                .Flush();
+
+            OT_FAIL;
+        }
+
+        return pKey;
+    }
     auto hash_type() const noexcept -> proto::HashType
     {
         return proto::HASHTYPE_SHA256D;
@@ -831,8 +849,7 @@ private:
         };
 
         {
-            auto preimage =
-                space(inputs_.size() * sizeof(block::bitcoin::Outpoint));
+            auto preimage = space(inputs_.size() * sizeof(block::Outpoint));
             auto it = preimage.data();
 
             for (const auto& [input, amount] : inputs_) {
@@ -1124,6 +1141,68 @@ private:
         std::copy(sigHash.begin(), sigHash.end(), std::back_inserter(preimage));
 
         return add_signatures(reader(preimage), sigHash, input);
+    }
+    enum class Match : bool { ByValue, ByHash };
+    auto validate(
+        const Match match,
+        const api::client::blockchain::BalanceNode::Element& element,
+        const block::Outpoint& outpoint,
+        const block::bitcoin::internal::Output& output) const noexcept
+        -> api::client::blockchain::ECKey
+    {
+        const auto [account, subchain, index] = element.KeyID();
+        LogTrace(OT_METHOD)(__FUNCTION__)(": considering spend key ")(index)(
+            " from subchain ")(static_cast<std::uint32_t>(subchain))(
+            " of account ")(account)(" for previous output ")(outpoint.str())
+            .Flush();
+
+        auto pKey = element.Key();
+
+        if (!pKey) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": missing public key").Flush();
+
+            return {};
+        }
+
+        const auto& key = *pKey;
+
+        if (Match::ByValue == match) {
+            const auto expected = output.Script().Pubkey();
+
+            if (false == expected.has_value()) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(": wrong output script type")
+                    .Flush();
+
+                return {};
+            }
+
+            if (key.PublicKey() != expected.value()) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ": Provided public key does not match expected value")
+                    .Flush();
+
+                return {};
+            }
+        } else {
+            const auto expected = output.Script().PubkeyHash();
+
+            if (false == expected.has_value()) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(": wrong output script type")
+                    .Flush();
+
+                return {};
+            }
+
+            if (element.PubkeyHash()->Bytes() != expected.value()) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ": Provided public key does not match expected hash")
+                    .Flush();
+
+                return {};
+            }
+        }
+
+        return pKey;
     }
 
     auto bip_69() noexcept -> void

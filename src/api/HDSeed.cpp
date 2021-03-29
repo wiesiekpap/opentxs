@@ -7,12 +7,10 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "api/HDSeed.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
-#include <iomanip>
-#include <iostream>
 #include <memory>
+#include <stdexcept>
 #include <string>
-#include <vector>
+#include <utility>
 
 #include "internal/api/Api.hpp"
 #include "internal/api/Factory.hpp"
@@ -33,7 +31,6 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
-#include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip39.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
@@ -44,13 +41,8 @@
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/crypto/key/Secp256k1.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/Ciphertext.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/HDPath.pb.h"
-#include "opentxs/protobuf/Seed.pb.h"
-#include "opentxs/protobuf/verify/Seed.hpp"
-#include "util/Container.hpp"
 #include "util/HDIndex.hpp"  // IWYU pragma: keep
 
 #define OT_METHOD "opentxs::api::implementation::HDSeed::"
@@ -74,41 +66,26 @@ auto HDSeed(
 
 namespace opentxs::api::implementation
 {
-const proto::SymmetricMode HDSeed::DEFAULT_ENCRYPTION_MODE =
-    proto::SMODE_CHACHA20POLY1305;
-const std::string HDSeed::DEFAULT_PASSPHRASE = "";
-const HDSeed::SeedMap HDSeed::seed_map_{
-    {Style::BIP32, proto::SEEDTYPE_RAW},
-    {Style::BIP39, proto::SEEDTYPE_BIP39},
-};
-const HDSeed::SeedReverseMap HDSeed::seed_reverse_map_{reverse_map(seed_map_)};
-const HDSeed::LangMap HDSeed::lang_map_{
-    {Language::none, proto::SEEDLANG_NONE},
-    {Language::en, proto::SEEDLANG_EN},
-};
-const HDSeed::LangReverseMap HDSeed::lang_reverse_map_{reverse_map(lang_map_)};
-
 HDSeed::HDSeed(
-    [[maybe_unused]] const api::Factory& factory,
+    const api::Factory& factory,
     [[maybe_unused]] const api::crypto::internal::Asymmetric& asymmetric,
     const api::crypto::Symmetric& symmetric,
     const api::storage::Storage& storage,
     const opentxs::crypto::Bip32& bip32,
     const opentxs::crypto::Bip39& bip39)
-    : symmetric_(symmetric)
+    : factory_(factory)
+    , symmetric_(symmetric)
 #if OT_CRYPTO_WITH_BIP32
     , asymmetric_(asymmetric)
 #endif  // OT_CRYPTO_WITH_BIP32
     , storage_(storage)
     , bip32_(bip32)
     , bip39_(bip39)
-    , binary_secret_(opentxs::Context().Factory().Secret(0))
-    , text_secret_(opentxs::Context().Factory().Secret(0))
-    , lock_()
+    , seed_lock_()
+    , seeds_()
 {
 }
 
-#if OT_CRYPTO_WITH_BIP32
 auto HDSeed::AccountChildKey(
     const proto::HDPath& rootPath,
     const BIP44Chain internal,
@@ -116,18 +93,40 @@ auto HDSeed::AccountChildKey(
     const PasswordPrompt& reason) const
     -> std::unique_ptr<opentxs::crypto::key::HD>
 {
+#if OT_CRYPTO_WITH_BIP32
+    auto parent = AccountKey(rootPath, internal, reason);
+
+    if (!parent) { return {}; }
+
+    return parent->ChildKey(index, reason);
+#else
+
+    return {};
+#endif  // OT_CRYPTO_WITH_BIP32
+}
+
+auto HDSeed::AccountKey(
+    const proto::HDPath& rootPath,
+    const BIP44Chain internal,
+    const PasswordPrompt& reason) const
+    -> std::unique_ptr<opentxs::crypto::key::HD>
+{
+#if OT_CRYPTO_WITH_BIP32
     std::string fingerprint{rootPath.root()};
-    const Bip32Index change = internal ? 1 : 0;
+    const auto change =
+        (INTERNAL_CHAIN == internal) ? Bip32Index{1u} : Bip32Index{0u};
     Path path{};
 
     for (const auto& child : rootPath.child()) { path.emplace_back(child); }
 
     path.emplace_back(change);
-    path.emplace_back(index);
 
     return GetHDKey(fingerprint, EcdsaCurve::secp256k1, path, reason);
-}
+#else
+
+    return {};
 #endif  // OT_CRYPTO_WITH_BIP32
+}
 
 auto HDSeed::AllowedSeedTypes() const noexcept -> const SupportedSeeds&
 {
@@ -180,95 +179,32 @@ auto HDSeed::AllowedSeedStrength(const Style type) const noexcept
     }
 }
 
-auto HDSeed::Bip32Root(
-    const PasswordPrompt& reason,
-    const std::string& fingerprint) const -> std::string
+auto HDSeed::Bip32Root(const std::string& seedID, const PasswordPrompt& reason)
+    const -> std::string
 {
-    // TODO: make fingerprint non-const
-    std::string input(fingerprint);
-    Bip32Index notUsed = 0;
-    const auto seed = Seed(input, notUsed, reason);
+    auto lock = Lock{seed_lock_};
 
-    if (seed->empty()) { return ""; }
+    try {
+        const auto& seed = get_seed(lock, seedID, reason);
+        const auto entropy = factory_.Data(seed.Entropy().Bytes());
 
-    auto start = reinterpret_cast<const unsigned char*>(seed->data());
-    const auto end = start + seed->size();
+        return entropy->asHex();
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
-    std::vector<unsigned char> bytes(start, end);
-    std::ostringstream stream;
-    stream << std::hex << std::setfill('0');
-
-    for (int byte : bytes) { stream << std::setw(2) << byte; }
-
-    return stream.str();
-}
-
-auto HDSeed::decrypt_seed(
-    const proto::Seed& seed,
-    Secret& words,
-    Secret& phrase,
-    Secret& raw,
-    const PasswordPrompt& reason) const -> bool
-{
-    if (false == proto::Validate(seed, VERBOSE)) { return false; }
-
-    const auto& cwords = seed.words();
-    const auto& cphrase = seed.passphrase();
-    const auto& craw = seed.raw();
-    const auto& session = (3 > seed.version()) ? cwords : craw;
-    auto key = symmetric_.Key(session.key(), session.mode());
-    bool decrypted{false};
-
-    OT_ASSERT(key.get());
-
-    if (seed.has_words()) {
-        decrypted =
-            key->Decrypt(cwords, reason, words.WriteInto(Secret::Mode::Text));
-
-        if (false == decrypted) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decrypt words.")
-                .Flush();
-
-            return false;
-        }
+        return {};
     }
-
-    if (seed.has_passphrase()) {
-        decrypted =
-            key->Decrypt(cphrase, reason, phrase.WriteInto(Secret::Mode::Text));
-
-        if (false == decrypted) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to decrypt passphrase.")
-                .Flush();
-
-            return false;
-        }
-    }
-
-    if (seed.has_raw()) {
-        decrypted =
-            key->Decrypt(craw, reason, raw.WriteInto(Secret::Mode::Mem));
-
-        if (false == decrypted) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decrypt entropy.")
-                .Flush();
-
-            return false;
-        }
-    }
-
-    return true;
 }
 
 auto HDSeed::DefaultSeed() const -> std::string
 {
+    auto lock = Lock{seed_lock_};
+
     return storage_.DefaultSeed();
 }
 
-#if OT_CRYPTO_WITH_BIP32
 auto HDSeed::GetHDKey(
-    std::string& fingerprint,
+    const std::string& fingerprint,
     const EcdsaCurve& curve,
     const Path& path,
     const PasswordPrompt& reason,
@@ -276,6 +212,7 @@ auto HDSeed::GetHDKey(
     const VersionNumber version) const
     -> std::unique_ptr<opentxs::crypto::key::HD>
 {
+#if OT_CRYPTO_WITH_BIP32
     Bip32Index notUsed{0};
     auto seed = Seed(fingerprint, notUsed, reason);
 
@@ -283,42 +220,50 @@ auto HDSeed::GetHDKey(
 
     return asymmetric_.NewHDKey(
         fingerprint, seed, curve, path, reason, role, version);
+#else
+
+    return {};
+#endif  // OT_CRYPTO_WITH_BIP32
 }
 
-#endif  // OT_CRYPTO_WITH_BIP32
 auto HDSeed::GetOrCreateDefaultSeed(
-    std::string& fingerprint,
+    std::string& seedID,
     Style& type,
     Language& lang,
     Bip32Index& index,
     const Strength strength,
     const PasswordPrompt& reason) const -> OTSecret
 {
-    Lock lock(lock_);
-    fingerprint = DefaultSeed();
+    auto lock = Lock{seed_lock_};
+    seedID = storage_.DefaultSeed();
 
-    if (fingerprint.empty()) {
-        fingerprint = NewSeed(type, lang, strength, reason);
+    if (seedID.empty()) {
+        seedID = new_seed(lock, type, lang, strength, reason);
     }
 
-    if (fingerprint.empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to create seed.").Flush();
+    try {
+        if (seedID.empty()) {
+            throw std::runtime_error{"Failed to create seed"};
+        }
 
-        return {binary_secret_};
+        const auto& seed = get_seed(lock, seedID, reason);
+
+        return seed.Entropy();
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+        return factory_.Secret(0);
     }
-
-    return load_seed(fingerprint, index, type, lang, reason);
 }
 
-#if OT_CRYPTO_WITH_BIP32
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 auto HDSeed::GetPaymentCode(
-    std::string& fingerprint,
+    const std::string& fingerprint,
     const Bip32Index nym,
     const std::uint8_t version,
     const PasswordPrompt& reason) const
     -> std::unique_ptr<opentxs::crypto::key::Secp256k1>
 {
+#if OT_CRYPTO_WITH_BIP32 && OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     Bip32Index notUsed{0};
     auto seed = Seed(fingerprint, notUsed, reason);
 
@@ -372,13 +317,17 @@ auto HDSeed::GetPaymentCode(
         key.Role(),
         key.Version(),
         reason);
+#else
+
+    return {};
+#endif  // OT_CRYPTO_WITH_BIP32 && OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 
 auto HDSeed::GetStorageKey(
-    std::string& fingerprint,
+    const std::string& fingerprint,
     const PasswordPrompt& reason) const -> OTSymmetricKey
 {
+#if OT_CRYPTO_WITH_BIP32
     auto pKey = GetHDKey(
         fingerprint,
         EcdsaCurve::secp256k1,
@@ -397,35 +346,58 @@ auto HDSeed::GetStorageKey(
 
     return symmetric_.Key(
         opentxs::Context().Factory().SecretFromBytes(key.PrivateKey(reason)));
-}
+#else
+
+    return factory_.SymmetricKey();
 #endif  // OT_CRYPTO_WITH_BIP32
+}
+
+auto HDSeed::get_seed(
+    const Lock& lock,
+    const std::string& seedID,
+    const PasswordPrompt& reason) const noexcept(false)
+    -> opentxs::crypto::Seed&
+{
+    auto proto = std::shared_ptr<proto::Seed>{};
+
+    if (auto it{seeds_.find(seedID)}; it != seeds_.end()) { return it->second; }
+
+    if (false == storage_.Load(seedID, proto) || (false == bool(proto))) {
+        throw std::runtime_error{std::string{"Failed to load seed "} + seedID};
+    }
+
+    auto seed = opentxs::crypto::Seed{
+        bip39_, symmetric_, factory_, storage_, *proto, reason};
+    auto id = seed.ID().str();
+
+    OT_ASSERT(id == seedID);
+
+    const auto [it, added] = seeds_.try_emplace(std::move(id), std::move(seed));
+
+    if (false == added) {
+        throw std::runtime_error{"failed to instantiate seed"};
+    }
+
+    return it->second;
+}
 
 auto HDSeed::ImportRaw(const Secret& entropy, const PasswordPrompt& reason)
     const -> std::string
 {
-    if (16 > entropy.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Entropy too short (")(
-            entropy.size())(")")
-            .Flush();
+    auto lock = Lock{seed_lock_};
+
+    try {
+        auto seed = opentxs::crypto::Seed{
+            bip32_, bip39_, symmetric_, factory_, storage_, entropy, reason};
+        const auto id = seed.ID().str();
+        seeds_.try_emplace(id, std::move(seed));
+
+        return id;
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
         return {};
     }
-
-    if (64 < entropy.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Entropy too long (")(
-            entropy.size())(")")
-            .Flush();
-
-        return {};
-    }
-
-    return save_seed(
-        text_secret_,
-        text_secret_,
-        entropy,
-        Style::BIP32,
-        Language::none,
-        reason);
 }
 
 auto HDSeed::ImportSeed(
@@ -435,71 +407,9 @@ auto HDSeed::ImportSeed(
     const Language lang,
     const PasswordPrompt& reason) const -> std::string
 {
-    return save_seed(words, passphrase, binary_secret_, type, lang, reason);
-}
-
-auto HDSeed::load_seed(
-    std::string& fingerprint,
-    Bip32Index& index,
-    Style& type,
-    Language& lang,
-    const PasswordPrompt& reason) const -> OTSecret
-{
-    auto serialized = serialized_seed(fingerprint, index, reason);
-
-    if (false == bool(serialized)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load seed (")(
-            fingerprint)(")")
-            .Flush();
-
-        return {binary_secret_};
-    }
-
-    if (4 > serialized->version()) {
-        if (serialized->has_words()) {
-            type = Style::BIP39;
-        } else {
-            type = Style::BIP32;
-        }
-
-        lang = Language::en;
-    } else {
-        type = translate(serialized->type());
-        lang = translate(serialized->lang());
-    }
-
-    auto seed{binary_secret_};
-    auto words{text_secret_}, phrase{text_secret_}, raw{binary_secret_};
-
-    if (false == decrypt_seed(*serialized, words, phrase, raw, reason)) {
-        return {binary_secret_};
-    }
-
-    const auto extracted = seed_to_data(words, phrase, raw, seed);
-
-    if (extracted) { return seed; }
-
-    return {binary_secret_};
-}
-
-auto HDSeed::LongestWord(const Style type, const Language lang) const noexcept
-    -> std::size_t
-{
-    if (Style::BIP39 != type) { return {}; }
-
-    return bip39_.LongestWord(lang);
-}
-
-auto HDSeed::NewSeed(
-    const Style type,
-    const Language lang,
-    const Strength strength,
-    const PasswordPrompt& reason) const -> std::string
-{
     switch (type) {
         case Style::BIP39: {
-            break;
-        }
+        } break;
         default: {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported seed type")
                 .Flush();
@@ -508,195 +418,151 @@ auto HDSeed::NewSeed(
         }
     }
 
-    auto entropy{binary_secret_}, words{text_secret_}, phrase{text_secret_};
-    static constexpr auto bitsPerByte{8u};
-    entropy->Randomize(static_cast<std::size_t>(strength) / bitsPerByte);
-    phrase->AssignText(DEFAULT_PASSPHRASE);
+    auto lock = Lock{seed_lock_};
 
-    if (false == bip39_.SeedToWords(entropy, words, lang)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Unable to convert entropy to word list.")
-            .Flush();
+    try {
+        auto seed = opentxs::crypto::Seed{
+            bip32_,
+            bip39_,
+            symmetric_,
+            factory_,
+            storage_,
+            type,
+            lang,
+            words,
+            passphrase,
+            reason};
+        const auto id = seed.ID().str();
+        seeds_.try_emplace(id, std::move(seed));
+
+        return id;
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
         return {};
     }
-
-    return save_seed(words, phrase, binary_secret_, type, lang, reason);
 }
 
-auto HDSeed::Passphrase(
-    const PasswordPrompt& reason,
-    const std::string& fingerprint) const -> std::string
+auto HDSeed::LongestWord(const Style type, const Language lang) const noexcept
+    -> std::size_t
 {
-    // TODO: make fingerprint non-const
-    std::string input(fingerprint);
-    Bip32Index notUsed = 0;
-    auto seed = serialized_seed(input, notUsed, reason);
+    switch (type) {
+        case Style::BIP39: {
 
-    if (false == bool(seed)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load seed (")(
-            fingerprint)(")")
-            .Flush();
+            return bip39_.LongestWord(lang);
+        }
+        case Style::BIP32: {
 
-        return {};
+            return 130u;
+        }
+        default: {
+
+            return {};
+        }
     }
-
-    auto words{text_secret_}, phrase{text_secret_}, raw{binary_secret_};
-
-    if (!decrypt_seed(*seed, words, phrase, raw, reason)) { return ""; }
-
-    return std::string{phrase->Bytes()};
 }
 
-auto HDSeed::save_seed(
-    const Secret& words,
-    const Secret& passphrase,
-    const Secret& raw,
+auto HDSeed::NewSeed(
     const Style type,
     const Language lang,
+    const Strength strength,
     const PasswordPrompt& reason) const -> std::string
 {
-    auto seed{binary_secret_};
-    const bool haveRaw = (0 < raw.size());
-    const bool haveWords = (0 < words.size());
-    const bool havePhrase = (0 < passphrase.size());
+    auto lock = Lock{seed_lock_};
 
-    if (haveRaw) {
-        seed = raw;
-    } else {
-        bip39_.WordsToSeed(words, seed, passphrase);
-    }
+    return new_seed(lock, type, lang, strength, reason);
+}
 
-    OT_ASSERT(0 < seed->size());
-
-    auto fingerprint{bip32_.SeedID(seed->Bytes())->str()};
-    auto key = symmetric_.Key(reason, DEFAULT_ENCRYPTION_MODE);
-
-    OT_ASSERT(key.get());
-
-    proto::Seed serialized;
-    serialized.set_version(DefaultVersion);
-    serialized.set_index(0);
-    serialized.set_fingerprint(fingerprint);
-    bool encrypted{false};
-    auto& encryptedRaw = *serialized.mutable_raw();
-    encrypted = key->Encrypt(seed->Bytes(), reason, encryptedRaw);
-
-    if (false == encrypted) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to encrypt entropy.")
-            .Flush();
-
-        return "";
-    }
-
-    if (haveWords) {
-        auto& encryptedWords = *serialized.mutable_words();
-        encrypted = key->Encrypt(words.Bytes(), reason, encryptedWords, false);
-
-        if (false == encrypted) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to encrypt seed.")
+auto HDSeed::new_seed(
+    const Lock&,
+    const Style type,
+    const Language lang,
+    const Strength strength,
+    const PasswordPrompt& reason) const noexcept -> std::string
+{
+    switch (type) {
+        case Style::BIP39: {
+        } break;
+        default: {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported seed type")
                 .Flush();
 
-            return "";
+            return {};
         }
     }
 
-    if (havePhrase) {
-        auto& encryptedPassphrase = *serialized.mutable_passphrase();
-        encrypted = key->Encrypt(
-            passphrase.Bytes(), reason, encryptedPassphrase, false);
+    try {
+        auto seed = opentxs::crypto::Seed{
+            bip32_,
+            bip39_,
+            symmetric_,
+            factory_,
+            storage_,
+            lang,
+            strength,
+            reason};
+        const auto id = seed.ID().str();
+        seeds_.try_emplace(id, std::move(seed));
 
-        if (false == encrypted) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to encrypt passphrase.")
-                .Flush();
+        return id;
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
-            return "";
-        }
+        return {};
     }
+}
 
-    serialized.set_type(translate(type));
-    serialized.set_lang(translate(lang));
-    const bool stored = storage_.Store(serialized, fingerprint);
+auto HDSeed::Passphrase(const std::string& seedID, const PasswordPrompt& reason)
+    const -> std::string
+{
+    auto lock = Lock{seed_lock_};
 
-    if (false == stored) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to store seed.").Flush();
+    try {
+        const auto& seed = get_seed(lock, seedID, reason);
 
-        return "";
+        return std::string{seed.Phrase().Bytes()};
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+        return {};
     }
-
-    return fingerprint;
 }
 
 auto HDSeed::Seed(
-    std::string& fingerprint,
+    const std::string& seedID,
     Bip32Index& index,
     const PasswordPrompt& reason) const -> OTSecret
 {
-    auto type = Style{};
-    auto lang = Language{};
+    auto lock = Lock{seed_lock_};
 
-    return load_seed(fingerprint, index, type, lang, reason);
-}
+    try {
+        const auto& seed = get_seed(lock, seedID, reason);
+        index = seed.Index();
 
-auto HDSeed::seed_to_data(
-    const Secret& words,
-    const Secret& passphrase,
-    const Secret& raw,
-    Secret& output) const -> bool
-{
-    if (0 < raw.size()) {
-        output.Assign(raw);
-    } else {
-        bip39_.WordsToSeed(words, output, passphrase);
+        return seed.Entropy();
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+        return factory_.Secret(0);
     }
-
-    return true;
-}
-
-auto HDSeed::serialized_seed(
-    std::string& fingerprint,
-    Bip32Index& index,
-    const PasswordPrompt& reason) const -> std::shared_ptr<proto::Seed>
-{
-    auto serialized = std::shared_ptr<proto::Seed>{};
-    storage_.Load(fingerprint, serialized);
-
-    if (serialized) { index = serialized->index(); }
-
-    return serialized;
 }
 
 auto HDSeed::UpdateIndex(
-    std::string& seed,
+    const std::string& seedID,
     const Bip32Index index,
     const PasswordPrompt& reason) const -> bool
 {
-    Bip32Index oldIndex = 0;
-    auto serialized = serialized_seed(seed, oldIndex, reason);
+    auto lock = Lock{seed_lock_};
 
-    if (false == bool(serialized)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load seed (")(seed)(")")
-            .Flush();
+    try {
+        auto& seed = get_seed(lock, seedID, reason);
 
-        return false;
-    }
-
-    if (oldIndex > index) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Index values must always increase.")
-            .Flush();
+        return seed.IncrementIndex(index);
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
         return false;
     }
-
-    serialized->set_index(index);
-
-    if (DefaultVersion > serialized->version()) {
-        serialized->set_version(DefaultVersion);
-    }
-
-    return storage_.Store(*serialized, seed);
 }
 
 auto HDSeed::ValidateWord(
@@ -731,26 +597,19 @@ auto HDSeed::WordCount(const Style type, const Strength strength) const noexcept
     }
 }
 
-auto HDSeed::Words(const PasswordPrompt& reason, const std::string& fingerprint)
+auto HDSeed::Words(const std::string& seedID, const PasswordPrompt& reason)
     const -> std::string
 {
-    // TODO: make fingerprint non-const
-    std::string input(fingerprint);
-    Bip32Index notUsed;
-    auto seed = serialized_seed(input, notUsed, reason);
+    auto lock = Lock{seed_lock_};
 
-    if (false == bool(seed)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load seed (")(
-            fingerprint)(")")
-            .Flush();
+    try {
+        const auto& seed = get_seed(lock, seedID, reason);
+
+        return std::string{seed.Words().Bytes()};
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
         return {};
     }
-
-    auto words{text_secret_}, phrase{text_secret_}, raw{binary_secret_};
-
-    if (!decrypt_seed(*seed, words, phrase, raw, reason)) { return ""; }
-
-    return std::string{words->Bytes()};
 }
 }  // namespace opentxs::api::implementation

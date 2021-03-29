@@ -13,6 +13,7 @@ extern "C" {
 
 #include <limits>
 
+#include "opentxs/Types.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/crypto/library/HashingProvider.hpp"
@@ -22,6 +23,11 @@ extern "C" {
 
 namespace opentxs::crypto::implementation
 {
+Pbkdf2::Pbkdf2() noexcept
+    : pbkdf_lock_()
+{
+}
+
 auto Pbkdf2::PKCS5_PBKDF2_HMAC(
     const void* input,
     const std::size_t inputSize,
@@ -60,6 +66,8 @@ auto Pbkdf2::PKCS5_PBKDF2_HMAC(
 
         return false;
     }
+
+    auto lock = Lock{pbkdf_lock_};
 
     switch (hashType) {
         case proto::HASHTYPE_SHA256: {

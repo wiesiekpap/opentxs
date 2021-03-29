@@ -563,13 +563,17 @@ auto Header::Print() const noexcept -> std::string
 
 auto Header::Serialize() const noexcept -> Header::SerializedType
 {
+    const auto time = Clock::to_time_t(timestamp_);
+
+    OT_ASSERT(std::numeric_limits<std::uint32_t>::max() >= time);
+
     auto output = ot_super::Serialize();
     auto& bitcoin = *output.mutable_bitcoin();
     bitcoin.set_version(subversion_);
     bitcoin.set_block_version(block_version_);
     bitcoin.set_previous_header(parent_hash_->str());
     bitcoin.set_merkle_hash(merkle_root_->str());
-    bitcoin.set_timestamp(Clock::to_time_t(timestamp_));
+    bitcoin.set_timestamp(static_cast<std::uint32_t>(time));
     bitcoin.set_nbits(nbits_);
     bitcoin.set_nonce(nonce_);
 

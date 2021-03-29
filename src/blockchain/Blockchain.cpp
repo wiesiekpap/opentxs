@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "internal/blockchain/Blockchain.hpp"  // IWYU pragma: associated
 
-#include <boost/multiprecision/cpp_dec_float.hpp>  // IWYU pragma: keep
 #include <boost/multiprecision/cpp_int.hpp>
 #include <algorithm>
 #include <array>
@@ -247,7 +246,7 @@ void BitWriter::write(std::size_t nbits, std::uint64_t value)
         // to 9. Therefore, nb is the number of bits we'll ACTUALLY write
         // before flushing to do the rest.
 
-        std::uint32_t nb = std::min(ACCUM_BITS - n_, nbits);
+        auto nb = std::min(ACCUM_BITS - n_, nbits);
 
         // Next we bitshift accum_ to make room for the new bits being
         // written into it. Since nb is the number of bits actually being

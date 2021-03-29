@@ -195,7 +195,7 @@ auto Message::Header_at(const std::size_t index) const -> const Frame&
 
 auto Message::Header() const -> const FrameSection
 {
-    auto size = 0;
+    auto size = std::size_t{0};
 
     if (true == hasDivider()) { size = findDivider(); }
 
@@ -204,7 +204,7 @@ auto Message::Header() const -> const FrameSection
 
 auto Message::Header() -> FrameSection
 {
-    auto size = 0;
+    auto size = std::size_t{0};
 
     if (true == hasDivider()) { size = findDivider(); }
 

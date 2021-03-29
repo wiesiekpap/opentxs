@@ -165,10 +165,7 @@ protected:
             return parent_;
         }
         auto PrivateKey(const PasswordPrompt& reason) const noexcept
-            -> ECKey final
-        {
-            return parent_.PrivateKey(subchain_, index_, reason);
-        }
+            -> ECKey final;
         auto PubkeyHash() const noexcept -> OTData final;
         auto Serialize() const noexcept -> SerializedType final;
         auto Subchain() const noexcept -> blockchain::Subchain final
@@ -220,8 +217,8 @@ protected:
         const Bip32Index index_;
         std::string label_;
         OTIdentifier contact_;
-        std::shared_ptr<opentxs::crypto::key::EllipticCurve> pkey_;
-        opentxs::crypto::key::EllipticCurve& key_;
+        mutable std::shared_ptr<const opentxs::crypto::key::EllipticCurve>
+            pkey_;
         Time timestamp_;
         Transactions unconfirmed_;
         Transactions confirmed_;

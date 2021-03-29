@@ -89,10 +89,12 @@ auto BlockFilter::LoadFilterHash(
 {
     auto output{false};
     auto cb = [&output, &filterHash](const auto in) {
-        if ((nullptr == in.data()) || (0 == in.size())) { return; }
+        auto size = in.size();
 
-        auto proto = proto::BlockchainFilterHeader{};
-        proto.ParseFromArray(in.data(), in.size());
+        if ((nullptr == in.data()) || (0 == size)) { return; }
+
+        auto proto =
+            proto::Factory<proto::BlockchainFilterHeader>(in.data(), in.size());
         const auto& field = proto.hash();
         auto bytes = filterHash(field.size());
 
@@ -118,10 +120,12 @@ auto BlockFilter::LoadFilterHeader(
 {
     auto output{false};
     auto cb = [&output, &header](const auto in) {
-        if ((nullptr == in.data()) || (0 == in.size())) { return; }
+        auto size = in.size();
 
-        auto proto = proto::BlockchainFilterHeader{};
-        proto.ParseFromArray(in.data(), in.size());
+        if ((nullptr == in.data()) || (0 == size)) { return; }
+
+        auto proto =
+            proto::Factory<proto::BlockchainFilterHeader>(in.data(), in.size());
         const auto& field = proto.header();
         auto bytes = header(field.size());
 

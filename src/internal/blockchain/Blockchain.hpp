@@ -126,7 +126,7 @@ public:
     OPENTXS_EXPORT BitWriter(Space& output);
 
 private:
-    enum { ACCUM_BITS = sizeof(std::uint64_t) * 8 };
+    static constexpr auto ACCUM_BITS = std::size_t{sizeof(std::uint64_t) * 8u};
 
     Space& output_;
     std::uint64_t accum_{};

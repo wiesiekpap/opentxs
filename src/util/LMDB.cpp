@@ -5,10 +5,10 @@
 
 #include "0_stdafx.hpp"    // IWYU pragma: associated
 #include "1_Internal.hpp"  // IWYU pragma: associated
-#if OT_STORAGE_LMDB
-#include "util/LMDB.hpp"  // IWYU pragma: associated
+#include "util/LMDB.hpp"   // IWYU pragma: associated
 
 #include <cstddef>
+#include <limits>
 #include <stdexcept>
 
 #include "opentxs/Types.hpp"
@@ -383,8 +383,7 @@ auto LMDB::Exists(const Table table, const ReadView index) const noexcept
     return cleanup.success_;
 }
 
-auto LMDB::init_db(const Table table, const std::size_t flags) noexcept
-    -> MDB_dbi
+auto LMDB::init_db(const Table table, unsigned int flags) noexcept -> MDB_dbi
 {
     MDB_txn* transaction{nullptr};
     auto status = (0 == ::mdb_txn_begin(env_, nullptr, 0, &transaction));
@@ -410,6 +409,8 @@ auto LMDB::init_environment(
     const std::size_t tables,
     const Flags flags) noexcept -> void
 {
+    OT_ASSERT(std::numeric_limits<unsigned int>::max() >= tables);
+
     bool set = 0 == ::mdb_env_create(&env_);
 
     OT_ASSERT(set);
@@ -419,7 +420,7 @@ auto LMDB::init_environment(
 
     OT_ASSERT(set);
 
-    set = 0 == ::mdb_env_set_maxdbs(env_, tables);
+    set = 0 == ::mdb_env_set_maxdbs(env_, static_cast<unsigned int>(tables));
 
     OT_ASSERT(set);
 
@@ -934,4 +935,3 @@ LMDB::~LMDB()
     }
 }
 }  // namespace opentxs::storage::lmdb
-#endif  // OT_STORAGE_LMDB

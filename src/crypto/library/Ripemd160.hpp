@@ -9,6 +9,7 @@
 
 #include <cstdint>
 #include <iosfwd>
+#include <mutex>
 
 namespace opentxs::crypto::implementation
 {
@@ -23,9 +24,11 @@ public:
     ~Ripemd160() override = default;
 
 protected:
-    Ripemd160() noexcept = default;
+    Ripemd160() noexcept;
 
 private:
+    mutable std::mutex ripemd_lock_;
+
     Ripemd160(const Ripemd160&) = delete;
     Ripemd160(Ripemd160&&) = delete;
     auto operator=(const Ripemd160&) -> Ripemd160& = delete;

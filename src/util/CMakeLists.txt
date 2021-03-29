@@ -13,8 +13,6 @@ add_library(
   "HDIndex.hpp"
   "JobCounter.cpp"
   "JobCounter.hpp"
-  "LMDB.cpp"
-  "LMDB.hpp"
   "Latest.hpp"
   "Polarity.hpp"
   "ScopeGuard.cpp"
@@ -47,7 +45,12 @@ target_link_libraries(
 
 if(OT_STORAGE_LMDB)
   target_sources(
-    opentxs-util PRIVATE "MappedFileStorage.cpp" "MappedFileStorage.hpp"
+    opentxs-util
+    PRIVATE
+      "LMDB.cpp"
+      "LMDB.hpp"
+      "MappedFileStorage.cpp"
+      "MappedFileStorage.hpp"
   )
   target_link_libraries(opentxs-util PRIVATE lmdb)
   target_link_libraries(opentxs PUBLIC lmdb)

@@ -74,7 +74,7 @@ public:
 
         generated_seeds_.insert(fingerprint);
 
-        const auto words = api_.Seeds().Words(reason_, fingerprint);
+        const auto words = api_.Seeds().Words(fingerprint, reason_);
 
         return word_count(words);
     }

@@ -9,6 +9,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <map>
 #include <stdexcept>
 #include <type_traits>
@@ -19,6 +20,7 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 
 #define HEADER_SIZE 24
@@ -85,10 +87,12 @@ Header::BitcoinFormat::BitcoinFormat(
     const OTData checksum) noexcept(false)
     : magic_(params::Data::Chains().at(network).p2p_magic_bits_)
     , command_(SerializeCommand(command))
-    , length_(payload)
+    , length_(static_cast<std::uint32_t>(payload))
     , checksum_()
 {
     static_assert(HEADER_SIZE == sizeof(BitcoinFormat));
+
+    OT_ASSERT(std::numeric_limits<std::uint32_t>::max() >= payload);
 
     if (sizeof(checksum_) != checksum->size()) {
         throw std::invalid_argument("Incorrect checksum size");

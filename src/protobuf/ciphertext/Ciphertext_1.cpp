@@ -40,23 +40,9 @@ auto CheckProto_1(const Ciphertext& input, const bool silent, const bool nested)
     }
 
     if (nested) {
-        if (input.has_key()) { FAIL_1("key present in nested ciphertext") }
+        CHECK_EXCLUDED(key);
     } else {
-        if (input.has_key()) {
-            try {
-                const bool validKey = Check(
-                    input.key(),
-                    CiphertextAllowedSymmetricKey().at(input.version()).first,
-                    CiphertextAllowedSymmetricKey().at(input.version()).second,
-                    silent);
-
-                if (!validKey) { FAIL_1("invalid key") }
-            } catch (const std::out_of_range&) {
-                FAIL_2(
-                    "allowed symmetric key version not defined for version",
-                    input.version())
-            }
-        }
+        OPTIONAL_SUBOBJECT(key, CiphertextAllowedSymmetricKey());
     }
 
     if (!input.has_iv()) { FAIL_1("missing iv") }

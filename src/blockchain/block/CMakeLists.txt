@@ -13,10 +13,12 @@ add_library(
   "Block.hpp"
   "Header.cpp"
   "Header.hpp"
+  "Outpoint.cpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/Block.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/Header.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/Outpoint.hpp"
 )
 target_link_libraries(
   opentxs-blockchain-block PRIVATE Boost::headers opentxs::messages

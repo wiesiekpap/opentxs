@@ -92,6 +92,8 @@ HD::HD(
           {{internalType, false, {}}, {externalType, true, {}}},
           id)
     , version_(DefaultVersion)
+    , cached_internal_()
+    , cached_external_()
 {
     init(reason);
 }
@@ -142,6 +144,8 @@ HD::HD(
           }(),
           id)
     , version_(serialized.version())
+    , cached_internal_()
+    , cached_external_()
 {
     init();
 }
@@ -159,12 +163,40 @@ auto HD::PrivateKey(
     const Bip32Index index,
     const PasswordPrompt& reason) const noexcept -> ECKey
 {
+    switch (type) {
+        case internalType:
+        case externalType: {
+            break;
+        }
+        default: {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid subchain").Flush();
+
+            return {};
+        }
+    }
+
 #if OT_CRYPTO_WITH_BIP32
-    return api_.Seeds().AccountChildKey(
-        path_,
-        (data_.internal_.type_ == type) ? INTERNAL_CHAIN : EXTERNAL_CHAIN,
-        index,
-        reason);
+    const auto change =
+        (internalType == type) ? INTERNAL_CHAIN : EXTERNAL_CHAIN;
+    auto& pKey = (internalType == type) ? cached_internal_ : cached_external_;
+    auto lock = rLock{lock_};
+
+    if (!pKey) {
+        pKey = api_.Seeds().AccountKey(path_, change, reason);
+
+        if (!pKey) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to derive account key")
+                .Flush();
+
+            return {};
+        }
+    }
+
+    OT_ASSERT(pKey);
+
+    const auto& key = *pKey;
+
+    return key.ChildKey(index, reason);
 #else
 
     return {};

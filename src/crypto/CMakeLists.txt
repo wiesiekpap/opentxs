@@ -16,6 +16,8 @@ add_library(
   "Envelope.hpp"
   "HDNode.cpp"
   "HDNode.hpp"
+  "Seed.cpp"
+  "Seed.hpp"
   "bip39_word_list.cpp"
 )
 set(cxx-install-headers
