@@ -93,11 +93,11 @@ public:
     using Deterministic::Reserve;
     auto Reserve(
         const Subchain type,
-        const std::size_t preallocate,
+        const std::size_t batch,
         const PasswordPrompt& reason,
         const Identifier& contact,
         const std::string& label,
-        const Time time) const noexcept -> std::optional<Bip32Index> final;
+        const Time time) const noexcept -> Batch final;
 #if OT_CRYPTO_WITH_BIP32
     auto RootNode(const PasswordPrompt& reason) const noexcept -> HDKey final
     {
@@ -144,8 +144,8 @@ private:
     auto get_contact() const noexcept -> OTIdentifier;
     auto has_private(const PasswordPrompt& reason) const noexcept -> bool;
     auto save(const rLock& lock) const noexcept -> bool final;
-    auto set_deterministic_contact(Element& element) const noexcept
-        -> void final
+    auto set_deterministic_contact(
+        internal::BalanceElement& element) const noexcept -> void final
     {
         element.SetContact(get_contact());
     }

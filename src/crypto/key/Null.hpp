@@ -180,6 +180,10 @@ public:
     {
         return {};
     }
+    auto CloneEC() const noexcept -> std::unique_ptr<EllipticCurve> final
+    {
+        return {};
+    }
     auto ECDSA() const noexcept -> const opentxs::crypto::EcdsaProvider& final
     {
         abort();

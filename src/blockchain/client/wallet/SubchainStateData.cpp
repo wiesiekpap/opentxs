@@ -412,33 +412,23 @@ auto SubchainStateData::index_element(
         .Flush();
     auto& list = output[index];
     auto scripts = std::vector<std::unique_ptr<const block::bitcoin::Script>>{};
-    scripts.reserve(4);  // WARNING keep this number up to date if new scripts
+    scripts.reserve(2);  // WARNING keep this number up to date if new scripts
                          // are added
     const auto& p2pk = scripts.emplace_back(
         api_.Factory().BitcoinScriptP2PK(network_.Chain(), *input.Key()));
     const auto& p2pkh = scripts.emplace_back(
         api_.Factory().BitcoinScriptP2PKH(network_.Chain(), *input.Key()));
-    const auto& p2sh_p2pk = scripts.emplace_back(
-        api_.Factory().BitcoinScriptP2SH(network_.Chain(), *p2pk));
-    const auto& p2sh_p2pkh = scripts.emplace_back(
-        api_.Factory().BitcoinScriptP2SH(network_.Chain(), *p2pkh));
 
     OT_ASSERT(p2pk);
     OT_ASSERT(p2pkh);
-    OT_ASSERT(p2sh_p2pk);
-    OT_ASSERT(p2sh_p2pkh);
 
     switch (type) {
         case filter::Type::ES: {
             OT_ASSERT(p2pk->Pubkey().has_value());
             OT_ASSERT(p2pkh->PubkeyHash().has_value());
-            OT_ASSERT(p2sh_p2pk->ScriptHash().has_value());
-            OT_ASSERT(p2sh_p2pkh->ScriptHash().has_value());
 
             list.emplace_back(space(p2pk->Pubkey().value()));
             list.emplace_back(space(p2pkh->PubkeyHash().value()));
-            list.emplace_back(space(p2sh_p2pk->ScriptHash().value()));
-            list.emplace_back(space(p2sh_p2pkh->ScriptHash().value()));
         } break;
         case filter::Type::Basic_BIP158:
         case filter::Type::Basic_BCHVariant:
@@ -519,8 +509,8 @@ auto SubchainStateData::process() noexcept -> void
         id_, subchain_, filter_type_, tested, blockHash.Bytes());
 
     if (0 < general.size()) {
-        // Re-scan the last 1000 blocks
-        const auto height = std::max(header.Height() - 1000, block::Height{0});
+        // Re-scan this block because new keys may have been generated
+        const auto height = std::max(header.Height() - 1, block::Height{0});
         last_scanned_ = block::Position{height, oracle.BestHash(height)};
     }
 }

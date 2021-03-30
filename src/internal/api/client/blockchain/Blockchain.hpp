@@ -195,11 +195,23 @@ struct BalanceList : virtual public blockchain::BalanceList {
 struct BalanceElement : virtual public blockchain::BalanceNode::Element {
     using SerializedType = proto::BlockchainAddress;
     using Txid = blockchain::BalanceNode::Txid;
+    using Txids = blockchain::BalanceNode::Txids;
+
+    enum class Availability {
+        NeverUsed,
+        Reissue,
+        StaleUnconfirmed,
+        MetadataConflict,
+        Reserved,
+        Used,
+    };
 
     virtual auto Elements() const noexcept -> std::set<OTData> = 0;
     virtual auto ID() const noexcept -> const Identifier& = 0;
     virtual auto IncomingTransactions() const noexcept
         -> std::set<std::string> = 0;
+    virtual auto IsAvailable(const Identifier& contact, const std::string& memo)
+        const noexcept -> Availability = 0;
     virtual auto NymID() const noexcept -> const identifier::Nym& = 0;
     virtual auto Serialize() const noexcept -> SerializedType = 0;
 

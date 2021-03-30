@@ -3,9 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                           // IWYU pragma: associated
-#include "1_Internal.hpp"                         // IWYU pragma: associated
-#include "api/client/blockchain/BalanceNode.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                       // IWYU pragma: associated
+#include "1_Internal.hpp"                     // IWYU pragma: associated
+#include "api/client/blockchain/Element.hpp"  // IWYU pragma: associated
 
 #include <boost/container/vector.hpp>
 #include <algorithm>
@@ -28,12 +28,11 @@
 #include "opentxs/protobuf/AsymmetricKey.pb.h"
 #include "opentxs/protobuf/BlockchainActivity.pb.h"
 
-#define OT_METHOD                                                              \
-    "opentxs::api::client::blockchain::implementation::BalanceNode::Element::"
+#define OT_METHOD "opentxs::api::client::blockchain::implementation::Element::"
 
 namespace opentxs::api::client::blockchain::implementation
 {
-BalanceNode::Element::Element(
+Element::Element(
     const api::internal::Core& api,
     const client::internal::Blockchain& blockchain,
     const internal::BalanceNode& parent,
@@ -57,15 +56,16 @@ BalanceNode::Element::Element(
     , index_(index)
     , label_(label)
     , contact_(contact)
-    , pkey_(key.asPublicEC())
+    , pkey_(key.CloneEC())
     , timestamp_(time)
     , unconfirmed_(std::move(unconfirmed))
     , confirmed_(std::move(confirmed))
+    , cached_(std::nullopt)
 {
     if (false == bool(pkey_)) { throw std::runtime_error("No key provided"); }
 }
 
-BalanceNode::Element::Element(
+Element::Element(
     const api::internal::Core& api,
     const client::internal::Blockchain& blockchain,
     const internal::BalanceNode& parent,
@@ -90,7 +90,7 @@ BalanceNode::Element::Element(
 {
 }
 
-BalanceNode::Element::Element(
+Element::Element(
     const api::internal::Core& api,
     const client::internal::Blockchain& blockchain,
     const internal::BalanceNode& parent,
@@ -128,10 +128,10 @@ BalanceNode::Element::Element(
               return out;
           }())
 {
+    cached_ = address;
 }
 
-auto BalanceNode::Element::Address(const AddressStyle format) const noexcept
-    -> std::string
+auto Element::Address(const AddressStyle format) const noexcept -> std::string
 {
     auto lock = rLock{lock_};
 
@@ -139,7 +139,7 @@ auto BalanceNode::Element::Address(const AddressStyle format) const noexcept
         chain_, format, api_.Factory().Data(pkey_->PublicKey()));
 }
 
-auto BalanceNode::Element::Confirmed() const noexcept -> Txids
+auto Element::Confirmed() const noexcept -> Txids
 {
     auto lock = rLock{lock_};
     auto output = Txids{};
@@ -148,7 +148,7 @@ auto BalanceNode::Element::Confirmed() const noexcept -> Txids
     return output;
 }
 
-auto BalanceNode::Element::Confirm(const Txid& tx) noexcept -> bool
+auto Element::Confirm(const Txid& tx) noexcept -> bool
 {
     if (tx.empty()) { return false; }
 
@@ -156,26 +156,26 @@ auto BalanceNode::Element::Confirm(const Txid& tx) noexcept -> bool
     unconfirmed_.erase(tx);
     confirmed_.emplace(tx);
     timestamp_ = Clock::now();
+    cached_ = std::nullopt;
 
     return true;
 }
 
-auto BalanceNode::Element::Contact() const noexcept -> OTIdentifier
+auto Element::Contact() const noexcept -> OTIdentifier
 {
     auto lock = rLock{lock_};
 
     return contact_;
 }
 
-auto BalanceNode::Element::Elements() const noexcept -> std::set<OTData>
+auto Element::Elements() const noexcept -> std::set<OTData>
 {
     auto lock = rLock{lock_};
 
     return elements(lock);
 }
 
-auto BalanceNode::Element::elements(const rLock&) const noexcept
-    -> std::set<OTData>
+auto Element::elements(const rLock&) const noexcept -> std::set<OTData>
 {
     auto output = std::set<OTData>{};
     auto pubkey = api_.Factory().Data(pkey_->PublicKey());
@@ -189,14 +189,13 @@ auto BalanceNode::Element::elements(const rLock&) const noexcept
     return output;
 }
 
-auto BalanceNode::Element::IncomingTransactions() const noexcept
-    -> std::set<std::string>
+auto Element::IncomingTransactions() const noexcept -> std::set<std::string>
 {
     return parent_.IncomingTransactions(
         blockchain::Key{parent_.ID().str(), subchain_, index_});
 }
 
-auto BalanceNode::Element::instantiate(
+auto Element::instantiate(
     const api::internal::Core& api,
     const proto::AsymmetricKey& serialized) noexcept(false)
     -> std::unique_ptr<opentxs::crypto::key::EllipticCurve>
@@ -209,12 +208,11 @@ auto BalanceNode::Element::instantiate(
 
     if (false == bool(*output)) { throw std::runtime_error("Wrong key type"); }
 
-    return output->asPublicEC();
+    return output;
 }
 
-auto BalanceNode::Element::IsAvailable(
-    const Identifier& contact,
-    const std::string& memo) const noexcept -> Availability
+auto Element::IsAvailable(const Identifier& contact, const std::string& memo)
+    const noexcept -> Availability
 {
     if (0 < confirmed_.size()) { return Availability::Used; }
 
@@ -261,29 +259,28 @@ auto BalanceNode::Element::IsAvailable(
     }
 }
 
-auto BalanceNode::Element::Key() const noexcept -> ECKey
+auto Element::Key() const noexcept -> ECKey
 {
     auto lock = rLock{lock_};
 
     return pkey_;
 }
 
-auto BalanceNode::Element::Label() const noexcept -> std::string
+auto Element::Label() const noexcept -> std::string
 {
     auto lock = rLock{lock_};
 
     return label_;
 }
 
-auto BalanceNode::Element::LastActivity() const noexcept -> Time
+auto Element::LastActivity() const noexcept -> Time
 {
     auto lock = rLock{lock_};
 
     return timestamp_;
 }
 
-auto BalanceNode::Element::PrivateKey(
-    const PasswordPrompt& reason) const noexcept -> ECKey
+auto Element::PrivateKey(const PasswordPrompt& reason) const noexcept -> ECKey
 {
     auto lock = rLock{lock_};
 
@@ -302,7 +299,7 @@ auto BalanceNode::Element::PrivateKey(
     return pkey_;
 }
 
-auto BalanceNode::Element::PubkeyHash() const noexcept -> OTData
+auto Element::PubkeyHash() const noexcept -> OTData
 {
     auto lock = rLock{lock_};
     const auto key = api_.Factory().Data(pkey_->PublicKey());
@@ -310,73 +307,81 @@ auto BalanceNode::Element::PubkeyHash() const noexcept -> OTData
     return blockchain_.PubkeyHash(chain_, key);
 }
 
-auto BalanceNode::Element::Reserve(const Time time) noexcept -> bool
+auto Element::Reserve(const Time time) noexcept -> bool
 {
     auto lock = rLock{lock_};
     timestamp_ = time;
+    cached_ = std::nullopt;
 
     return true;
 }
 
-auto BalanceNode::Element::Serialize() const noexcept
-    -> BalanceNode::Element::SerializedType
+auto Element::Serialize() const noexcept -> Element::SerializedType
 {
     auto lock = rLock{lock_};
-    const auto key = [&] {
-        if (pkey_->HasPrivate()) {
 
-            return pkey_->asPublicEC()->Serialize();
-        } else {
+    if (false == cached_.has_value()) {
+        const auto key = [&] {
+            if (pkey_->HasPrivate()) {
 
-            return pkey_->Serialize();
+                return pkey_->asPublicEC()->Serialize();
+            } else {
+
+                return pkey_->Serialize();
+            }
+        }();
+
+        OT_ASSERT(key);
+
+        auto& output = cached_.emplace();
+        output.set_version(
+            (DefaultVersion > version_) ? DefaultVersion : version_);
+        output.set_index(index_);
+        output.set_label(label_);
+        output.set_contact(contact_->str());
+        *output.mutable_key() = *key;
+        output.set_modified(Clock::to_time_t(timestamp_));
+
+        for (const auto& txid : unconfirmed_) {
+            output.add_unconfirmed(txid->str());
         }
-    }();
 
-    OT_ASSERT(key);
-
-    SerializedType output{};
-    output.set_version((DefaultVersion > version_) ? DefaultVersion : version_);
-    output.set_index(index_);
-    output.set_label(label_);
-    output.set_contact(contact_->str());
-    *output.mutable_key() = *key;
-    output.set_modified(Clock::to_time_t(timestamp_));
-
-    for (const auto& txid : unconfirmed_) {
-        output.add_unconfirmed(txid->str());
+        for (const auto& txid : confirmed_) {
+            output.add_confirmed(txid->str());
+        }
     }
 
-    for (const auto& txid : confirmed_) { output.add_confirmed(txid->str()); }
-
-    return output;
+    return cached_.value();
 }
 
-void BalanceNode::Element::SetContact(const Identifier& contact) noexcept
+void Element::SetContact(const Identifier& contact) noexcept
 {
     auto lock = rLock{lock_};
     contact_ = contact;
+    cached_ = std::nullopt;
     update_element(lock);
 }
 
-void BalanceNode::Element::SetLabel(const std::string& label) noexcept
+void Element::SetLabel(const std::string& label) noexcept
 {
     auto lock = rLock{lock_};
     label_ = label;
+    cached_ = std::nullopt;
     update_element(lock);
 }
 
-void BalanceNode::Element::SetMetadata(
+void Element::SetMetadata(
     const Identifier& contact,
     const std::string& label) noexcept
 {
     auto lock = rLock{lock_};
     contact_ = contact;
     label_ = label;
+    cached_ = std::nullopt;
     update_element(lock);
 }
 
-auto BalanceNode::Element::Unconfirm(const Txid& tx, const Time time) noexcept
-    -> bool
+auto Element::Unconfirm(const Txid& tx, const Time time) noexcept -> bool
 {
     if (tx.empty()) { return false; }
 
@@ -384,11 +389,12 @@ auto BalanceNode::Element::Unconfirm(const Txid& tx, const Time time) noexcept
     confirmed_.erase(tx);
     unconfirmed_.emplace(tx);
     timestamp_ = time;
+    cached_ = std::nullopt;
 
     return true;
 }
 
-auto BalanceNode::Element::Unconfirmed() const noexcept -> Txids
+auto Element::Unconfirmed() const noexcept -> Txids
 {
     auto lock = rLock{lock_};
     auto output = Txids{};
@@ -398,7 +404,7 @@ auto BalanceNode::Element::Unconfirmed() const noexcept -> Txids
     return output;
 }
 
-auto BalanceNode::Element::Unreserve() noexcept -> bool
+auto Element::Unreserve() noexcept -> bool
 {
     auto lock = rLock{lock_};
 
@@ -413,11 +419,12 @@ auto BalanceNode::Element::Unreserve() noexcept -> bool
     timestamp_ = {};
     label_ = {};
     contact_ = api_.Factory().Identifier();
+    cached_ = std::nullopt;
 
     return true;
 }
 
-auto BalanceNode::Element::update_element(rLock& lock) const noexcept -> void
+auto Element::update_element(rLock& lock) const noexcept -> void
 {
     const auto elements = this->elements(lock);
     auto hashes = std::vector<ReadView>{};

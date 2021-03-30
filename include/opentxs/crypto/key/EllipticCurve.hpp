@@ -35,6 +35,8 @@ public:
 
     OPENTXS_EXPORT virtual std::unique_ptr<EllipticCurve> asPublicEC()
         const noexcept = 0;
+    OPENTXS_EXPORT virtual std::unique_ptr<EllipticCurve> CloneEC()
+        const noexcept = 0;
     OPENTXS_EXPORT virtual const crypto::EcdsaProvider& ECDSA()
         const noexcept = 0;
     OPENTXS_EXPORT virtual std::unique_ptr<EllipticCurve> IncrementPrivate(

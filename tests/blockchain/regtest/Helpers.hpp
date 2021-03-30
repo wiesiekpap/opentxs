@@ -605,7 +605,7 @@ struct ScanListener {
 
     [[maybe_unused]] auto wait(const Future& future) const noexcept -> bool
     {
-        constexpr auto limit = std::chrono::minutes{5};
+        constexpr auto limit = std::chrono::minutes{10};
         using Status = std::future_status;
 
         if (Status::ready == future.wait_for(limit)) {

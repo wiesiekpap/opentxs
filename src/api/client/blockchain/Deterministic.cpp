@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "api/client/blockchain/BalanceNode.hpp"
+#include "api/client/blockchain/Element.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -50,7 +51,10 @@ Deterministic::Deterministic(
     , data_(std::move(data))
     , generated_({{data_.internal_.type_, 0}, {data_.external_.type_, 0}})
     , used_({{data_.internal_.type_, 0}, {data_.external_.type_, 0}})
+    , last_allocation_()
 {
+    data_.internal_.map_.reserve(1024u);
+    data_.internal_.map_.reserve(1024u);
 }
 
 Deterministic::Deterministic(
@@ -74,6 +78,7 @@ Deterministic::Deterministic(
     , used_(
           {{data_.internal_.type_, serialized.internalindex()},
            {data_.external_.type_, serialized.externalindex()}})
+    , last_allocation_()
 {
 }
 
@@ -81,32 +86,26 @@ Deterministic::Deterministic(
 auto Deterministic::accept(
     const rLock& lock,
     const Subchain type,
-    const std::size_t preallocate,
     const Identifier& contact,
     const std::string& label,
     const Time time,
     const Bip32Index index,
+    Batch& generated,
     const PasswordPrompt& reason) const noexcept -> std::optional<Bip32Index>
 {
-    check_lookahead(lock, type, preallocate, reason);
+    check_lookahead(lock, type, generated, reason);
     set_metadata(lock, type, index, contact, label);
     auto& element =
         const_cast<Deterministic&>(*this).element(lock, type, index);
     element.Reserve(time);
+    LogTrace(OT_METHOD)(__FUNCTION__)(": Accepted index ")(index).Flush();
 
-    if (save(lock)) {
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Accepted index ")(index).Flush();
-
-        return index;
-    } else {
-
-        return std::nullopt;
-    }
+    return index;
 }
 #endif  // OT_CRYPTO_WITH_BIP32
 
 auto Deterministic::BalanceElement(const Subchain type, const Bip32Index index)
-    const noexcept(false) -> const Element&
+    const noexcept(false) -> const internal::BalanceElement&
 {
     auto lock = rLock{lock_};
 
@@ -117,19 +116,18 @@ auto Deterministic::BalanceElement(const Subchain type, const Bip32Index index)
 auto Deterministic::check(
     const rLock& lock,
     const Subchain type,
-    const std::size_t preallocate,
     const Identifier& contact,
     const std::string& label,
     const Time time,
     const Bip32Index candidate,
     const PasswordPrompt& reason,
     Fallback& fallback,
-    std::size_t& gap) const noexcept(false) -> std::optional<Bip32Index>
+    std::size_t& gap,
+    Batch& generated) const noexcept(false) -> std::optional<Bip32Index>
 {
-    using Status = Element::Availability;
     const auto accept = [&](Bip32Index index) {
         return this->accept(
-            lock, type, preallocate, contact, label, time, index, reason);
+            lock, type, contact, label, time, index, generated, reason);
     };
 
     if (is_generated(lock, type, candidate)) {
@@ -192,7 +190,11 @@ auto Deterministic::check(
     } else {
         LogTrace(OT_METHOD)(__FUNCTION__)(": Generating index ")(candidate)
             .Flush();
-        generate(lock, type, candidate, reason);
+        const auto newIndex = generate(lock, type, candidate, reason);
+
+        OT_ASSERT(newIndex == candidate);
+
+        generated.emplace_back(newIndex);
 
         return accept(candidate);
     }
@@ -237,26 +239,30 @@ auto Deterministic::check_activity(
 
 void Deterministic::check_lookahead(
     const rLock& lock,
+    Batch& generated,
     const PasswordPrompt& reason) const noexcept(false)
 {
 #if OT_CRYPTO_WITH_BIP32
-    check_lookahead(lock, data_.internal_.type_, 0, reason);
-    check_lookahead(lock, data_.external_.type_, 0, reason);
+    check_lookahead(lock, data_.internal_.type_, generated, reason);
+    check_lookahead(lock, data_.external_.type_, generated, reason);
 #endif  // OT_CRYPTO_WITH_BIP32
 }
 
-#if OT_CRYPTO_WITH_BIP32
-void Deterministic::check_lookahead(
+auto Deterministic::check_lookahead(
     const rLock& lock,
     const Subchain type,
-    const std::size_t preallocate,
-    const PasswordPrompt& reason) const noexcept(false)
+    Batch& generated,
+    const PasswordPrompt& reason) const noexcept(false) -> void
 {
-    while (need_lookahead(lock, type, preallocate)) {
-        generate_next(lock, type, reason);
+#if OT_CRYPTO_WITH_BIP32
+    auto needed = need_lookahead(lock, type);
+
+    while (0u < needed) {
+        generated.emplace_back(generate_next(lock, type, reason));
+        --needed;
     }
-}
 #endif  // OT_CRYPTO_WITH_BIP32
+}
 
 auto Deterministic::confirm(
     const rLock& lock,
@@ -268,7 +274,6 @@ auto Deterministic::confirm(
 
         if (index < used) { return; }
 
-        using Status = Element::Availability;
         static const auto blank = api_.Factory().Identifier();
 
         for (auto i{index}; i > used; --i) {
@@ -294,12 +299,12 @@ auto Deterministic::confirm(
 auto Deterministic::element(
     const rLock&,
     const Subchain type,
-    const Bip32Index index) noexcept(false) -> Element&
+    const Bip32Index index) noexcept(false) -> internal::BalanceElement&
 {
     if (auto& data = data_.internal_; data.type_ == type) {
-        return data.map_.at(index);
+        return *data.map_.at(index);
     } else if (auto& data = data_.external_; data.type_ == type) {
-        return data.map_.at(index);
+        return *data.map_.at(index);
     } else {
         throw std::out_of_range("Invalid subchain");
     }
@@ -311,11 +316,23 @@ auto Deterministic::extract_contacts(
     std::set<OTIdentifier>& contacts) noexcept -> void
 {
     try {
-        auto contact = map.at(index).Contact();
+        auto contact = map.at(index)->Contact();
 
         if (false == contact->empty()) { contacts.emplace(std::move(contact)); }
     } catch (...) {
     }
+}
+
+auto Deterministic::finish_allocation(const rLock& lock, Batch& generated)
+    const noexcept -> bool
+{
+#if OT_BLOCKCHAIN
+    if (0u < generated.size()) {
+        parent_.Parent().Parent().KeyGenerated(chain_);
+    }
+#endif  // OT_BLOCKCHAIN
+
+    return save(lock);
 }
 
 auto Deterministic::Floor(const Subchain type) const noexcept
@@ -342,11 +359,14 @@ auto Deterministic::GenerateNext(
     if (0 == generated_.count(type)) { return {}; }
 
     try {
-        auto output = generate_next(lock, type, reason);
+        auto generated = Batch{};
+        generated.emplace_back(generate_next(lock, type, reason));
 
-        if (save(lock)) {
+        OT_ASSERT(0u < generated.size());
 
-            return output;
+        if (finish_allocation(lock, generated)) {
+
+            return generated.front();
         } else {
 
             return std::nullopt;
@@ -361,13 +381,13 @@ auto Deterministic::GenerateNext(
 #endif  // OT_CRYPTO_WITH_BIP32
 }
 
-#if OT_CRYPTO_WITH_BIP32
 auto Deterministic::generate(
     const rLock& lock,
     const Subchain type,
     const Bip32Index desired,
     const PasswordPrompt& reason) const noexcept(false) -> Bip32Index
 {
+#if OT_CRYPTO_WITH_BIP32
     auto& index = generated_.at(type);
 
     OT_ASSERT(desired == index);
@@ -387,17 +407,17 @@ auto Deterministic::generate(
     const auto [it, added] = addressMap.emplace(
         std::piecewise_construct,
         std::forward_as_tuple(index),
-        std::forward_as_tuple(
-            api_, blockchain, *this, chain_, type, index, key));
+        std::forward_as_tuple(std::make_unique<implementation::Element>(
+            api_, blockchain, *this, chain_, type, index, key)));
 
     if (false == added) { throw std::runtime_error("Failed to add key"); }
 
-    set_deterministic_contact(it->second);
-#if OT_BLOCKCHAIN
-    blockchain.KeyGenerated(chain_);
-#endif  // OT_BLOCKCHAIN
+    set_deterministic_contact(*(it->second));
 
     return index++;
+#else
+    return {};
+#endif  // OT_CRYPTO_WITH_BIP32
 }
 
 auto Deterministic::generate_next(
@@ -407,7 +427,6 @@ auto Deterministic::generate_next(
 {
     return generate(lock, type, generated_.at(type), reason);
 }
-#endif  // OT_CRYPTO_WITH_BIP32
 
 auto Deterministic::init(const PasswordPrompt& reason) noexcept(false) -> void
 {
@@ -417,9 +436,10 @@ auto Deterministic::init(const PasswordPrompt& reason) noexcept(false) -> void
         throw std::runtime_error("Account already exists");
     }
 
-    check_lookahead(lock, reason);
+    auto generated = Batch{};
+    check_lookahead(lock, generated, reason);
 
-    if (false == save(lock)) {
+    if (false == finish_allocation(lock, generated)) {
         throw std::runtime_error("Failed to save new account");
     }
 
@@ -459,10 +479,10 @@ auto Deterministic::Key(const Subchain type, const Bip32Index index)
     try {
         if (const auto& data = data_.internal_; data.type_ == type) {
 
-            return data.map_.at(index).Key();
+            return data.map_.at(index)->Key();
         } else if (const auto& data = data_.external_; data.type_ == type) {
 
-            return data_.external_.map_.at(index).Key();
+            return data_.external_.map_.at(index)->Key();
         } else {
             return nullptr;
         }
@@ -494,44 +514,84 @@ auto Deterministic::mutable_element(
 {
     if (auto& data = data_.internal_; data.type_ == type) {
 
-        return data.map_.at(index);
+        return *data.map_.at(index);
     } else if (auto& data = data_.external_; data.type_ == type) {
 
-        return data.map_.at(index);
+        return *data.map_.at(index);
     } else {
         throw std::out_of_range("Invalid subchain");
     }
 }
 
 #if OT_CRYPTO_WITH_BIP32
-auto Deterministic::need_lookahead(
-    const rLock& lock,
-    const Subchain type,
-    const std::size_t preallocate) const noexcept -> bool
+auto Deterministic::need_lookahead(const rLock& lock, const Subchain type)
+    const noexcept -> Bip32Index
 {
-    if (std::numeric_limits<Bip32Index>::max() < preallocate) { return false; }
+    const auto capacity = (generated_.at(type) - used_.at(type));
 
-    return std::max(window_, static_cast<Bip32Index>(preallocate)) >
-           (generated_.at(type) - used_.at(type));
+    if (capacity >= window_) { return 0u; }
+
+    const auto effective = [&] {
+        auto& last = last_allocation_[type];
+
+        if (false == last.has_value()) {
+            last = window_;
+
+            return window_;
+        } else {
+            last = std::min(max_allocation_, last.value() * 2u);
+
+            return last.value();
+        }
+    }();
+
+    return effective - capacity;
 }
 #endif  // OT_CRYPTO_WITH_BIP32
 
 auto Deterministic::Reserve(
     const Subchain type,
-    const std::size_t preallocate,
     const PasswordPrompt& reason,
     const Identifier& contact,
     const std::string& label,
     const Time time) const noexcept -> std::optional<Bip32Index>
 {
+    auto batch = Reserve(type, 1u, reason, contact, label, time);
+
+    if (0u == batch.size()) { return std::nullopt; }
+
+    return batch.front();
+}
+
+auto Deterministic::Reserve(
+    const Subchain type,
+    const std::size_t batch,
+    const PasswordPrompt& reason,
+    const Identifier& contact,
+    const std::string& label,
+    const Time time) const noexcept -> Batch
+{
+    auto output = Batch{};
+    output.reserve(batch);
 #if OT_CRYPTO_WITH_BIP32
     auto lock = rLock{lock_};
+    auto gen = Batch{};
 
-    return use_next(lock, type, preallocate, reason, contact, label, time);
-#else
+    while (output.size() < batch) {
+        auto out = use_next(lock, type, reason, contact, label, time, gen);
 
-    return std::nullopt;
+        if (false == out.has_value()) { break; }
+
+        output.emplace_back(out.value());
+    }
+
+    if ((0u < output.size()) && (false == finish_allocation(lock, gen))) {
+
+        return {};
+    }
 #endif  // OT_CRYPTO_WITH_BIP32
+
+    return output;
 }
 
 auto Deterministic::RootNode(const PasswordPrompt& reason) const noexcept
@@ -578,10 +638,10 @@ auto Deterministic::set_metadata(
 
     try {
         if (auto& in = data_.internal_; in.type_ == subchain) {
-            in.map_.at(index).SetMetadata(
+            in.map_.at(index)->SetMetadata(
                 in.set_contact_ ? contact : blank.get(), label);
         } else if (auto& ex = data_.external_; ex.type_ == subchain) {
-            ex.map_.at(index).SetMetadata(
+            ex.map_.at(index)->SetMetadata(
                 ex.set_contact_ ? contact : blank.get(), label);
         } else {
         }
@@ -607,11 +667,11 @@ auto Deterministic::unconfirm(
 auto Deterministic::use_next(
     const rLock& lock,
     const Subchain type,
-    const std::size_t preallocate,
     const PasswordPrompt& reason,
     const Identifier& contact,
     const std::string& label,
-    const Time time) const noexcept -> std::optional<Bip32Index>
+    const Time time,
+    Batch& generated) const noexcept -> std::optional<Bip32Index>
 {
     try {
         auto gap = std::size_t{0};
@@ -624,14 +684,14 @@ auto Deterministic::use_next(
                 return check(
                     lock,
                     type,
-                    preallocate,
                     contact,
                     label,
                     time,
                     candidate,
                     reason,
                     fallback,
-                    gap);
+                    gap,
+                    generated);
             } catch (...) {
                 ++candidate;
 
@@ -644,7 +704,7 @@ auto Deterministic::use_next(
             .Flush();
         const auto accept = [&](Bip32Index index) {
             return this->accept(
-                lock, type, preallocate, contact, label, time, index, reason);
+                lock, type, contact, label, time, index, generated, reason);
         };
 
         if (auto& set = fallback[Status::StaleUnconfirmed]; 0 < set.size()) {
@@ -666,14 +726,14 @@ auto Deterministic::use_next(
                 return check(
                     lock,
                     type,
-                    preallocate,
                     contact,
                     label,
                     time,
                     candidate,
                     reason,
                     fallback,
-                    gap);
+                    gap,
+                    generated);
             } catch (...) {
                 ++candidate;
 

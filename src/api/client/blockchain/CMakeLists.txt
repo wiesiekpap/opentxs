@@ -24,6 +24,7 @@ add_library(
   "Deterministic.cpp"
   "Deterministic.hpp"
   "Element.cpp"
+  "Element.hpp"
   "HD.cpp"
   "HD.hpp"
   "PaymentCode.cpp"
@@ -47,7 +48,9 @@ target_link_libraries(
   opentxs-api-client-blockchain PRIVATE opentxs::messages Boost::headers
 )
 target_include_directories(
-  opentxs-api-client-blockchain SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+  opentxs-api-client-blockchain SYSTEM
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+          "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
 )
 
 if(OT_BLOCKCHAIN_EXPORT)
