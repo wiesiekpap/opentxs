@@ -70,7 +70,7 @@ public:
         BitcoinFormat_106(
             const std::set<bitcoin::Service>& localServices,
             const tcp::endpoint localAddress,
-            const api::client::blockchain::Nonce nonce) noexcept;
+            const bitcoin::Nonce nonce) noexcept;
         BitcoinFormat_106() noexcept;
     };
 
@@ -91,10 +91,7 @@ public:
     {
         return local_services_;
     }
-    auto Nonce() const noexcept -> api::client::blockchain::Nonce final
-    {
-        return nonce_;
-    }
+    auto Nonce() const noexcept -> bitcoin::Nonce final { return nonce_; }
     auto ProtocolVersion() const noexcept -> bitcoin::ProtocolVersion final
     {
         return version_;
@@ -123,7 +120,7 @@ public:
         const std::set<blockchain::p2p::Service>& services,
         const std::set<blockchain::p2p::Service>& localServices,
         const std::set<blockchain::p2p::Service>& remoteServices,
-        const api::client::blockchain::Nonce nonce,
+        const bitcoin::Nonce nonce,
         const std::string& userAgent,
         const block::Height height,
         const bool relay,
@@ -137,7 +134,7 @@ public:
         const std::set<blockchain::p2p::Service>& services,
         const std::set<blockchain::p2p::Service>& localServices,
         const std::set<blockchain::p2p::Service>& remoteServices,
-        const api::client::blockchain::Nonce nonce,
+        const bitcoin::Nonce nonce,
         const std::string& userAgent,
         const block::Height height,
         const bool relay,
@@ -152,7 +149,7 @@ private:
     const std::set<blockchain::p2p::Service> services_;
     const std::set<blockchain::p2p::Service> local_services_;
     const std::set<blockchain::p2p::Service> remote_services_;
-    const api::client::blockchain::Nonce nonce_;
+    const bitcoin::Nonce nonce_;
     const std::string user_agent_;
     const block::Height height_;
     const bool relay_;

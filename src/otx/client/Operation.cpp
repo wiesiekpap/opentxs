@@ -20,6 +20,7 @@
 #include <utility>
 
 #include "2_Factory.hpp"
+#include "core/OTStorage.hpp"
 #include "core/StateMachine.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/otx/client/Client.hpp"
@@ -48,7 +49,6 @@
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/NymFile.hpp"
-#include "opentxs/core/OTStorage.hpp"
 #include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"

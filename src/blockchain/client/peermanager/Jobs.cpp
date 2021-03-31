@@ -79,7 +79,17 @@ auto PeerManager::Jobs::Dispatch(zmq::Message& work) noexcept -> void
 
     OT_ASSERT(0 < body.size());
 
-    socket_map_.at(body.at(0).as<Task>())->Send(work);
+    const auto task = [&] {
+        try {
+
+            return body.at(0).as<Task>();
+        } catch (...) {
+
+            OT_FAIL;
+        }
+    }();
+
+    socket_map_.at(task)->Send(work);
 }
 
 auto PeerManager::Jobs::Endpoint(const Task type) const noexcept -> std::string

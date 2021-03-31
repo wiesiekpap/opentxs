@@ -158,7 +158,15 @@ private:
                 return;
             }
 
-            const auto type = body.at(0).as<WorkType>();
+            const auto type = [&] {
+                try {
+
+                    return body.at(0).as<WorkType>();
+                } catch (...) {
+
+                    OT_FAIL;
+                }
+            }();
 
             switch (type) {
                 case WorkType::SyncAcknowledgement:

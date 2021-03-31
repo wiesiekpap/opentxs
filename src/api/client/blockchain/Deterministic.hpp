@@ -7,6 +7,7 @@
 
 #include <boost/container/flat_map.hpp>
 #include <atomic>
+#include <functional>
 #include <iosfwd>
 #include <map>
 #include <optional>
@@ -19,6 +20,7 @@
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/client/blockchain/Deterministic.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/crypto/Types.hpp"

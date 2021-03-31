@@ -7,11 +7,10 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/database/wallet/Transaction.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <map>
 #include <mutex>
 #include <optional>
-#include <vector>
+#include <set>
 
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
@@ -20,7 +19,6 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "util/Container.hpp"
 
 #define OT_METHOD "opentxs::blockchain::database::wallet::Transaction::"
 
@@ -49,20 +47,17 @@ struct Transaction::Imp {
 
         {
             auto& index = tx_to_block_[transaction.ID()];
-            index.emplace_back(blockHash);
-            dedup(index);
+            index.emplace(blockHash);
         }
 
         {
             auto& index = block_to_tx_[blockHash];
-            index.emplace_back(transaction.ID());
-            dedup(index);
+            index.emplace(transaction.ID());
         }
 
         {
             auto& index = tx_history_[height];
-            index.emplace_back(transaction.ID());
-            dedup(index);
+            index.emplace(transaction.ID());
         }
 
         return blockchain_.ProcessTransaction(chain, transaction, reason);
@@ -71,15 +66,10 @@ struct Transaction::Imp {
         -> bool
     {
         try {
-            auto& history = tx_history_[block];
+            auto& history = tx_history_.at(block);
+            history.erase(txid);
 
-            if (0u < remove(history, txid)) { return true; }
-
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to delete txid")(
-                txid.asHex())(" from block ")(block)
-                .Flush();
-
-            return false;
+            return true;
         } catch (...) {
             LogOutput(OT_METHOD)(__FUNCTION__)(
                 ": No transaction history at block ")(block)
@@ -103,12 +93,9 @@ struct Transaction::Imp {
     }
 
 private:
-    using TransactionBlockMap =
-        std::map<block::pTxid, std::vector<block::pHash>>;
-    using BlockTransactionMap =
-        std::map<block::pHash, std::vector<block::pTxid>>;
-    using TransactionHistory =
-        std::map<block::Height, std::vector<block::pTxid>>;
+    using TransactionBlockMap = std::map<block::pTxid, std::set<block::pHash>>;
+    using BlockTransactionMap = std::map<block::pHash, std::set<block::pTxid>>;
+    using TransactionHistory = std::map<block::Height, std::set<block::pTxid>>;
 
     const api::Core& api_;
     const api::client::internal::Blockchain& blockchain_;

@@ -78,8 +78,6 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/core/Message.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/NumList.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/NymFile.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/OTStorage.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/OTStoragePB.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/OTTrackable.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/OTTransaction.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/OTTransactionType.hpp"

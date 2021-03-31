@@ -207,7 +207,17 @@ private:
 
         OT_ASSERT(0 < body.size());
 
-        switch (body.at(0).as<OTZMQWorkType>()) {
+        const auto work = [&] {
+            try {
+
+                return body.at(0).as<OTZMQWorkType>();
+            } catch (...) {
+
+                OT_FAIL;
+            }
+        }();
+
+        switch (work) {
             case OT_ZMQ_REGISTER_SIGNAL: {
                 OT_ASSERT(1 < body.size());
 

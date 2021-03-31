@@ -7,11 +7,11 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "api/client/blockchain/HD.hpp"  // IWYU pragma: associated
 
+#include <robin_hood.h>
 #include <memory>
 #include <set>
 #include <stdexcept>
 #include <tuple>
-#include <type_traits>
 #include <utility>
 
 #include "api/client/blockchain/Deterministic.hpp"

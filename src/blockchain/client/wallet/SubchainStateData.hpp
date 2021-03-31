@@ -90,6 +90,7 @@ public:
     using OutstandingMap =
         std::map<block::pHash, BlockOracle::BitcoinBlockFuture>;
     using ProcessQueue = std::queue<OutstandingMap::iterator>;
+    using SubchainIndex = WalletDatabase::pSubchainIndex;
 
     struct ReorgQueue {
         auto Empty() const noexcept -> bool;
@@ -105,6 +106,8 @@ public:
     const OTNymID owner_;
     const OTIdentifier id_;
     const Subchain subchain_;
+    const filter::Type filter_type_;
+    const SubchainIndex index_;
     Outstanding& job_counter_;
     const SimpleCallback& task_finished_;
     std::atomic<bool> running_;
@@ -135,7 +138,6 @@ protected:
     const api::client::internal::Blockchain& blockchain_;
     const internal::Network& network_;
     const WalletDatabase& db_;
-    const filter::Type filter_type_;
     const std::string name_;
     const block::Position null_position_;
 

@@ -118,36 +118,30 @@ class Database final : public internal::Database
 {
 public:
     auto AddConfirmedTransaction(
-        const blockchain::Type chain,
         const NodeID& balanceNode,
         const Subchain subchain,
-        const FilterType type,
         const block::Position& block,
         const std::size_t blockIndex,
         const std::vector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& transaction,
-        const VersionNumber version) const noexcept -> bool final
+        const block::bitcoin::Transaction& transaction) const noexcept
+        -> bool final
     {
         return wallet_.AddConfirmedTransaction(
-            chain,
             balanceNode,
             subchain,
-            type,
-            version,
             block,
             blockIndex,
             outputIndices,
             transaction);
     }
     auto AddOutgoingTransaction(
-        const blockchain::Type chain,
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
         const block::bitcoin::Transaction& transaction) const noexcept
         -> bool final
     {
         return wallet_.AddOutgoingTransaction(
-            chain, proposalID, proposal, transaction);
+            proposalID, proposal, transaction);
     }
     auto AddOrUpdate(Address address) const noexcept -> bool final
     {
@@ -249,6 +243,13 @@ public:
     {
         return wallet_.GetBalance(owner, node);
     }
+    auto GetIndex(
+        const NodeID& balanceNode,
+        const Subchain subchain,
+        const FilterType type) const noexcept -> pSubchainIndex final
+    {
+        return wallet_.GetIndex(balanceNode, subchain, type);
+    }
     auto GetOutputs(State type) const noexcept -> std::vector<UTXO> final
     {
         return wallet_.GetOutputs(type);
@@ -265,35 +266,24 @@ public:
     {
         return wallet_.GetOutputs(owner, node, type);
     }
-    auto GetPatterns(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version) const noexcept -> Patterns final
+    auto GetPatterns(const SubchainIndex& index) const noexcept
+        -> Patterns final
     {
-        return wallet_.GetPatterns(balanceNode, subchain, type, version);
+        return wallet_.GetPatterns(index);
     }
     auto GetUnspentOutputs() const noexcept -> std::vector<UTXO> final
     {
         return wallet_.GetUnspentOutputs();
     }
-    auto GetUnspentOutputs(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version) const noexcept -> std::vector<UTXO> final
+    auto GetUnspentOutputs(const NodeID& balanceNode, const Subchain subchain)
+        const noexcept -> std::vector<UTXO> final
     {
-        return wallet_.GetUnspentOutputs(balanceNode, subchain, type, version);
+        return wallet_.GetUnspentOutputs(balanceNode, subchain);
     }
-    auto GetUntestedPatterns(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const ReadView blockID,
-        const VersionNumber version) const noexcept -> Patterns final
+    auto GetUntestedPatterns(const SubchainIndex& index, const ReadView blockID)
+        const noexcept -> Patterns final
     {
-        return wallet_.GetUntestedPatterns(
-            balanceNode, subchain, type, blockID, version);
+        return wallet_.GetUntestedPatterns(index, blockID);
     }
     auto HasDisconnectedChildren(const block::Hash& hash) const noexcept
         -> bool final
@@ -378,10 +368,10 @@ public:
     auto ReorgTo(
         const NodeID& balanceNode,
         const Subchain subchain,
-        const FilterType type,
+        const SubchainIndex& index,
         const std::vector<block::Position>& reorg) const noexcept -> bool final
     {
-        return wallet_.ReorgTo(balanceNode, subchain, type, reorg);
+        return wallet_.ReorgTo(balanceNode, subchain, index, reorg);
     }
     auto ReserveUTXO(
         const identifier::Nym& spender,
@@ -446,82 +436,33 @@ public:
         return sync_.Store(tip, items);
     }
     auto SubchainAddElements(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const ElementMap& elements,
-        const VersionNumber version) const noexcept -> bool final
+        const SubchainIndex& index,
+        const ElementMap& elements) const noexcept -> bool final
     {
-        return wallet_.SubchainAddElements(
-            balanceNode, subchain, type, elements, version);
+        return wallet_.SubchainAddElements(index, elements);
     }
-    auto SubchainDropIndex(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version) const noexcept -> bool final
-    {
-        return wallet_.SubchainDropIndex(balanceNode, subchain, type, version);
-    }
-    auto SubchainIndexVersion(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> VersionNumber final
-    {
-        return wallet_.SubchainIndexVersion(balanceNode, subchain, type);
-    }
-    auto SubchainLastIndexed(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version) const noexcept
+    auto SubchainLastIndexed(const SubchainIndex& index) const noexcept
         -> std::optional<Bip32Index> final
     {
-        return wallet_.SubchainLastIndexed(
-            balanceNode, subchain, type, version);
+        return wallet_.SubchainLastIndexed(index);
     }
-    auto SubchainLastProcessed(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> block::Position final
+    auto SubchainLastScanned(const SubchainIndex& index) const noexcept
+        -> block::Position final
     {
-        return wallet_.SubchainLastProcessed(balanceNode, subchain, type);
-    }
-    auto SubchainLastScanned(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> block::Position final
-    {
-        return wallet_.SubchainLastScanned(balanceNode, subchain, type);
+        return wallet_.SubchainLastScanned(index);
     }
     auto SubchainMatchBlock(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
+        const SubchainIndex& index,
         const MatchingIndices& indices,
-        const ReadView blockID,
-        const VersionNumber version) const noexcept -> bool final
+        const ReadView blockID) const noexcept -> bool final
     {
-        return wallet_.SubchainMatchBlock(
-            balanceNode, subchain, type, indices, blockID, version);
-    }
-    auto SubchainSetLastProcessed(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const block::Position& position) const noexcept -> bool final
-    {
-        return wallet_.SubchainSetLastProcessed(
-            balanceNode, subchain, type, position);
+        return wallet_.SubchainMatchBlock(index, indices, blockID);
     }
     auto SubchainSetLastScanned(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
+        const SubchainIndex& index,
         const block::Position& position) const noexcept -> bool final
     {
-        return wallet_.SubchainSetLastScanned(
-            balanceNode, subchain, type, position);
+        return wallet_.SubchainSetLastScanned(index, position);
     }
     auto SyncTip() const noexcept -> block::Position final
     {

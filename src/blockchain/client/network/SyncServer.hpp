@@ -191,7 +191,15 @@ private:
         OT_ASSERT(1 <= body.size());
 
         using Work = Network::Work;
-        const auto work = body.at(0).as<Work>();
+        const auto work = [&] {
+            try {
+
+                return body.at(0).as<Work>();
+            } catch (...) {
+
+                OT_FAIL;
+            }
+        }();
         auto lock = Lock{zmq_lock_};
 
         switch (work) {
@@ -295,7 +303,15 @@ private:
         if (2 > body.size()) { return; }
 
         try {
-            const auto type = body.at(0).as<WorkType>();
+            const auto type = [&] {
+                try {
+
+                    return body.at(0).as<WorkType>();
+                } catch (...) {
+
+                    OT_FAIL;
+                }
+            }();
 
             switch (type) {
                 case WorkType::SyncRequest: {

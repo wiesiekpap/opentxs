@@ -942,52 +942,52 @@ protected:
 
         return output;
     }
-    [[maybe_unused]] auto TestUTXOs(
-        const std::vector<Outpoint>& outpoints,
-        const std::vector<ot::OTData>& keys,
-        const std::vector<UTXO>& utxos,
-        const GetBytes getData,
-        const GetPattern getPattern,
-        const GetAmount amount) const noexcept -> bool
-    {
-        auto out = true;
-        auto index{-1};
-
-        for (const auto& [outpoint, pOutput] : utxos) {
-            const auto& expected = outpoints.at(++index);
-            out &= (outpoint == expected);
-            EXPECT_EQ(outpoint.str(), expected.str());
-            EXPECT_TRUE(pOutput);
-
-            if (!pOutput) { return false; }
-
-            const auto& output = *pOutput;
-            out &= (output.Value() == amount(index));
-
-            EXPECT_EQ(output.Value(), amount(index));
-
-            const auto& script = output.Script();
-            using Position = ot::blockchain::block::bitcoin::Script::Position;
-            out &= (script.Role() == Position::Output);
-
-            EXPECT_EQ(script.Role(), Position::Output);
-
-            const auto data = getData(script, index);
-            const auto pattern = getPattern(index);
-
-            EXPECT_TRUE(data.has_value());
-
-            if (false == data.has_value()) { return false; }
-
-            out &= (data.value() == keys.at(index)->Bytes());
-            out &= (script.Type() == pattern);
-
-            EXPECT_EQ(data.value(), keys.at(index)->Bytes());
-            EXPECT_EQ(script.Type(), pattern);
-        }
-
-        return out;
-    }
+    //[[maybe_unused]] auto TestUTXOs(
+    //    const std::vector<Outpoint>& outpoints,
+    //    const std::vector<ot::OTData>& keys,
+    //    const std::vector<UTXO>& utxos,
+    //    const GetBytes getData,
+    //    const GetPattern getPattern,
+    //    const GetAmount amount) const noexcept -> bool
+    //{
+    //    auto out = true;
+    //    auto index{-1};
+    //
+    //    for (const auto& [outpoint, pOutput] : utxos) {
+    //        const auto& expected = outpoints.at(++index);
+    //        out &= (outpoint == expected);
+    //        EXPECT_EQ(outpoint.str(), expected.str());
+    //        EXPECT_TRUE(pOutput);
+    //
+    //        if (!pOutput) { return false; }
+    //
+    //        const auto& output = *pOutput;
+    //        out &= (output.Value() == amount(index));
+    //
+    //        EXPECT_EQ(output.Value(), amount(index));
+    //
+    //        const auto& script = output.Script();
+    //        using Position = ot::blockchain::block::bitcoin::Script::Position;
+    //        out &= (script.Role() == Position::Output);
+    //
+    //        EXPECT_EQ(script.Role(), Position::Output);
+    //
+    //        const auto data = getData(script, index);
+    //        const auto pattern = getPattern(index);
+    //
+    //        EXPECT_TRUE(data.has_value());
+    //
+    //        if (false == data.has_value()) { return false; }
+    //
+    //        out &= (data.value() == keys.at(index)->Bytes());
+    //        out &= (script.Type() == pattern);
+    //
+    //        EXPECT_EQ(data.value(), keys.at(index)->Bytes());
+    //        EXPECT_EQ(script.Type(), pattern);
+    //    }
+    //
+    //    return out;
+    //}
 
     [[maybe_unused]] virtual auto Shutdown() noexcept -> void
     {

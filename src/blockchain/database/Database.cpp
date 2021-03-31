@@ -33,11 +33,6 @@ auto BlockchainDatabase(
 }
 }  // namespace opentxs::factory
 
-namespace opentxs::blockchain::client::internal
-{
-const VersionNumber WalletDatabase::DefaultIndexVersion{1};
-}  // namespace opentxs::blockchain::client::internal
-
 namespace opentxs::blockchain::implementation
 {
 template <typename Input>

@@ -209,23 +209,34 @@ auto GetServiceBytes(const std::set<bitcoin::Service>& services) noexcept
     return output;
 }
 
-auto GetServices(const BitVector8 data) noexcept -> std::set<bitcoin::Service>
+#ifndef _WIN32
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wattributes"
+__attribute__((no_sanitize("unsigned-integer-overflow")))
+#endif
+auto GetServices(
+    const BitVector8 data) noexcept -> std::set<bitcoin::Service>
 {
     if (0 == data) { return {}; }
 
-    std::set<bitcoin::Service> output{};
-    BitVector8 mask{1};
+    auto output = std::set<bitcoin::Service>{};
+    auto mask = BitVector8{1};
 
     for (std::size_t i = 0; i < (8 * sizeof(data)); ++i) {
         const auto value = data & mask;
 
         if (0 != value) { output.emplace(convert_service_bit(value)); }
 
+        // NOTE mask will overflow on the last iteration of the loop but it
+        // doesn't matter since it will never be accessed again
         mask *= 2;
     }
 
     return output;
 }
+#ifndef _WIN32
+#pragma GCC diagnostic pop
+#endif
 
 auto SerializeCommand(const Command command) noexcept -> CommandField
 {

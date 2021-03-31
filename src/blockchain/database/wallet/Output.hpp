@@ -10,6 +10,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <shared_mutex>
 #include <vector>
 
 #include "internal/blockchain/client/Client.hpp"
@@ -96,7 +97,7 @@ public:
         const identifier::Nym& owner,
         const Identifier& node,
         State type) const noexcept -> std::vector<UTXO>;
-    auto GetMutex() const noexcept -> std::mutex&;
+    auto GetMutex() const noexcept -> std::shared_mutex&;
     auto GetUnspentOutputs() const noexcept -> std::vector<UTXO>;
     auto GetUnspentOutputs(const NodeID& balanceNode) const noexcept
         -> std::vector<UTXO>;
@@ -109,7 +110,6 @@ public:
         const std::vector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction) noexcept -> bool;
     auto AddOutgoingTransaction(
-        const blockchain::Type chain,
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
         const block::bitcoin::Transaction& transaction) noexcept -> bool;
@@ -118,7 +118,7 @@ public:
         const Identifier& proposal,
         const Spend policy) noexcept -> std::optional<UTXO>;
     auto Rollback(
-        const Lock& lock,
+        const eLock& lock,
         const SubchainID& subchain,
         const block::Position& position) noexcept -> bool;
 

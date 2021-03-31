@@ -276,7 +276,21 @@ auto Peer::pipeline(zmq::Message& message) noexcept -> void
 
     OT_ASSERT(0 < body.size());
 
-    switch (body.at(0).as<Task>()) {
+    const auto task = [&] {
+        try {
+
+            return body.at(0).as<Task>();
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            // TODO It's impossible for this exception to happen but it does
+            // anyway from time to time. Somebody really ought to figure out why
+            // someday.
+
+            return Task::Heartbeat;
+        }
+    }();
+
+    switch (task) {
         case Task::Getheaders: {
             if (State::Run == state_.value_.load()) { request_headers(); }
         } break;

@@ -16,3 +16,7 @@ target_sources(
     "Transaction.hpp"
 )
 target_link_libraries(opentxs-blockchain-database PRIVATE Boost::headers)
+target_include_directories(
+  opentxs-blockchain-database SYSTEM
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+)

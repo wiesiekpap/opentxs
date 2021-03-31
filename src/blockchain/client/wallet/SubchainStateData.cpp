@@ -68,7 +68,17 @@ auto Wallet::ProcessThreadPool(const zmq::Message& in) noexcept -> void
         --data.job_counter_;
     }};
 
-    switch (body.at(0).as<Task>()) {
+    const auto task = [&] {
+        try {
+
+            return body.at(0).as<Task>();
+        } catch (...) {
+
+            OT_FAIL;
+        }
+    }();
+
+    switch (task) {
         case Task::index: {
             data.index();
         } break;
@@ -105,12 +115,14 @@ SubchainStateData::SubchainStateData(
     : owner_(std::move(owner))
     , id_(std::move(id))
     , subchain_(subchain)
+    , filter_type_(filter)
+    , index_(db.GetIndex(id_, subchain_, filter_type_))
     , job_counter_(jobCounter)
     , task_finished_(taskFinished)
     , running_(false)
     , reorg_()
-    , last_indexed_()
-    , last_scanned_()
+    , last_indexed_(db.SubchainLastIndexed(index_))
+    , last_scanned_(db.SubchainLastScanned(index_))
     , blocks_to_request_()
     , outstanding_blocks_()
     , process_block_queue_()
@@ -118,7 +130,6 @@ SubchainStateData::SubchainStateData(
     , blockchain_(blockchain)
     , network_(network)
     , db_(db)
-    , filter_type_(filter)
     , name_()
     , null_position_(make_blank<block::Position>::value(api_))
     , thread_pool_(threadPool)
@@ -299,8 +310,8 @@ auto SubchainStateData::get_account_targets() const noexcept
 {
     auto out = std::tuple<Patterns, UTXOs, Targets>{};
     auto& [elements, utxos, targets] = out;
-    elements = db_.GetPatterns(id_, subchain_, filter_type_);
-    utxos = db_.GetUnspentOutputs(id_, subchain_, filter_type_);
+    elements = db_.GetPatterns(index_);
+    utxos = db_.GetUnspentOutputs(id_, subchain_);
     get_targets(elements, utxos, targets);
 
     return out;
@@ -312,8 +323,7 @@ auto SubchainStateData::get_block_targets(
 {
     auto out = std::pair<Patterns, Targets>{};
     auto& [elements, targets] = out;
-    elements =
-        db_.GetUntestedPatterns(id_, subchain_, filter_type_, id.Bytes());
+    elements = db_.GetUntestedPatterns(index_, id.Bytes());
     get_targets(elements, utxos, targets);
 
     return out;
@@ -324,9 +334,8 @@ auto SubchainStateData::get_block_targets(const block::Hash& id, Tested& tested)
 {
     auto out = std::tuple<Patterns, UTXOs, Targets, Patterns>{};
     auto& [elements, utxos, targets, outpoints] = out;
-    elements =
-        db_.GetUntestedPatterns(id_, subchain_, filter_type_, id.Bytes());
-    utxos = db_.GetUnspentOutputs(id_, subchain_, filter_type_);
+    elements = db_.GetUntestedPatterns(index_, id.Bytes());
+    utxos = db_.GetUnspentOutputs(id_, subchain_);
     get_targets(elements, utxos, targets, outpoints, tested);
 
     return out;
@@ -505,8 +514,7 @@ auto SubchainStateData::process() noexcept -> void
         potential.size())(" potential matches confirmed. Wallet balance is: ")(
         unconfirmed)(" (")(balance)(" confirmed)")
         .Flush();
-    db_.SubchainMatchBlock(
-        id_, subchain_, filter_type_, tested, blockHash.Bytes());
+    db_.SubchainMatchBlock(index_, tested, blockHash.Bytes());
 
     if (0 < general.size()) {
         // Re-scan this block because new keys may have been generated
@@ -553,15 +561,14 @@ auto SubchainStateData::reorg() noexcept -> void
 {
     while (false == reorg_.Empty()) {
         reorg_.Next();
-        const auto tip =
-            db_.SubchainLastProcessed(id_, subchain_, filter_type_);
+        const auto tip = db_.SubchainLastScanned(index_);
         const auto reorg = network_.HeaderOracleInternal().CalculateReorg(tip);
-        db_.ReorgTo(id_, subchain_, filter_type_, reorg);
+        db_.ReorgTo(id_, subchain_, index_, reorg);
     }
 
     const auto scannedTarget =
         network_.HeaderOracleInternal()
-            .CommonParent(db_.SubchainLastScanned(id_, subchain_, filter_type_))
+            .CommonParent(db_.SubchainLastScanned(index_))
             .first;
 
     if (last_scanned_.has_value()) { last_scanned_ = scannedTarget; }
@@ -583,6 +590,7 @@ auto SubchainStateData::report_scan() noexcept -> void
     if (blocks_to_request_.empty() && process_block_queue_.empty()) {
         blockchain_.ReportScan(network_.Chain(), owner_, id_, subchain_, pos);
         last_reported_ = pos;
+        db_.SubchainSetLastScanned(index_, pos);
     }
 }
 
@@ -617,7 +625,7 @@ auto SubchainStateData::scan() noexcept -> void
             filter_type_, block::Position{i, blockHash});
 
         if (false == bool(pFilter)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(name_)(
+            LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
                 " filter at height ")(i)(" not found ")
                 .Flush();
 

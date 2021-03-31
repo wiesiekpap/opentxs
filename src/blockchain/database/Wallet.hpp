@@ -15,7 +15,7 @@
 #include <set>
 #include <string>
 #include <tuple>
-#include <utility>
+// #include <utility>
 #include <vector>
 
 #include "api/client/blockchain/database/Database.hpp"
@@ -97,6 +97,8 @@ public:
     using FilterType = Parent::FilterType;
     using NodeID = Parent::NodeID;
     using pNodeID = Parent::pNodeID;
+    using SubchainIndex = Parent::SubchainIndex;
+    using pSubchainIndex = Parent::pSubchainIndex;
     using Subchain = Parent::Subchain;
     using ElementID = Parent::ElementID;
     using ElementMap = Parent::ElementMap;
@@ -108,17 +110,13 @@ public:
     using State = client::Wallet::TxoState;
 
     auto AddConfirmedTransaction(
-        const blockchain::Type chain,
         const NodeID& balanceNode,
         const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version,
         const block::Position& block,
         const std::size_t blockIndex,
         const std::vector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction) const noexcept -> bool;
     auto AddOutgoingTransaction(
-        const blockchain::Type chain,
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
         const block::bitcoin::Transaction& transaction) const noexcept -> bool;
@@ -133,6 +131,10 @@ public:
     auto GetBalance(const identifier::Nym& owner) const noexcept -> Balance;
     auto GetBalance(const identifier::Nym& owner, const NodeID& node)
         const noexcept -> Balance;
+    auto GetIndex(
+        const NodeID& balanceNode,
+        const Subchain subchain,
+        const FilterType type) const noexcept -> pSubchainIndex;
     auto GetOutputs(State type) const noexcept -> std::vector<UTXO>;
     auto GetOutputs(const identifier::Nym& owner, State type) const noexcept
         -> std::vector<UTXO>;
@@ -140,23 +142,12 @@ public:
         const identifier::Nym& owner,
         const Identifier& node,
         State type) const noexcept -> std::vector<UTXO>;
-    auto GetPatterns(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version) const noexcept -> Patterns;
+    auto GetPatterns(const SubchainIndex& index) const noexcept -> Patterns;
     auto GetUnspentOutputs() const noexcept -> std::vector<UTXO>;
-    auto GetUnspentOutputs(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version) const noexcept -> std::vector<UTXO>;
-    auto GetUntestedPatterns(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const ReadView blockID,
-        const VersionNumber version) const noexcept -> Patterns;
+    auto GetUnspentOutputs(const NodeID& balanceNode, const Subchain subchain)
+        const noexcept -> std::vector<UTXO>;
+    auto GetUntestedPatterns(const SubchainIndex& index, const ReadView blockID)
+        const noexcept -> Patterns;
     auto LoadProposal(const Identifier& id) const noexcept
         -> std::optional<proto::BlockchainTransactionProposal>;
     auto LoadProposals() const noexcept
@@ -169,7 +160,7 @@ public:
     auto ReorgTo(
         const NodeID& balanceNode,
         const Subchain subchain,
-        const FilterType type,
+        const SubchainIndex& index,
         const std::vector<block::Position>& reorg) const noexcept -> bool;
     auto ReserveUTXO(
         const identifier::Nym& spender,
@@ -177,50 +168,18 @@ public:
         const Spend policy) const noexcept -> std::optional<UTXO>;
     auto SetDefaultFilterType(const FilterType type) const noexcept -> bool;
     auto SubchainAddElements(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const ElementMap& elements,
-        const VersionNumber version) const noexcept -> bool;
-    auto SubchainDropIndex(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version) const noexcept -> bool;
-    auto SubchainIndexVersion(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> VersionNumber;
-    auto SubchainLastIndexed(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version) const noexcept
+        const SubchainIndex& index,
+        const ElementMap& elements) const noexcept -> bool;
+    auto SubchainLastIndexed(const SubchainIndex& index) const noexcept
         -> std::optional<Bip32Index>;
-    auto SubchainLastProcessed(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> block::Position;
-    auto SubchainLastScanned(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> block::Position;
+    auto SubchainLastScanned(const SubchainIndex& index) const noexcept
+        -> block::Position;
     auto SubchainMatchBlock(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
+        const SubchainIndex& index,
         const MatchingIndices& indices,
-        const ReadView blockID,
-        const VersionNumber version) const noexcept -> bool;
-    auto SubchainSetLastProcessed(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const block::Position& position) const noexcept -> bool;
+        const ReadView blockID) const noexcept -> bool;
     auto SubchainSetLastScanned(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
+        const SubchainIndex& index,
         const block::Position& position) const noexcept -> bool;
     auto TransactionLoadBitcoin(const ReadView txid) const noexcept
         -> std::unique_ptr<block::bitcoin::Transaction>;

@@ -25,6 +25,7 @@
 #include "api/Core.hpp"
 #include "api/Scheduler.hpp"
 #include "api/StorageParent.hpp"
+#include "core/OTStorage.hpp"
 #include "core/Shutdown.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/storage/Storage.hpp"
@@ -42,7 +43,6 @@
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "opentxs/core/OTStorage.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/Secret.hpp"  // IWYU pragma: keep
 #include "opentxs/core/String.hpp"
