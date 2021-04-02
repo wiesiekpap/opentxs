@@ -6,13 +6,23 @@
 #ifndef OPENTXS_OT_HPP
 #define OPENTXS_OT_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
 #include <map>
 #include <string>
 
 #include "opentxs/Types.hpp"
+
+namespace opentxs
+{
+namespace api
+{
+class Context;
+}  // namespace api
+
+class OTCaller;
+}  // namespace opentxs
 
 namespace opentxs
 {

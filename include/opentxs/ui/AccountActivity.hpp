@@ -6,7 +6,7 @@
 #ifndef OPENTXS_UI_ACCOUNTACTIVITY_HPP
 #define OPENTXS_UI_ACCOUNTACTIVITY_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <tuple>
 

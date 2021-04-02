@@ -20,7 +20,6 @@
 #include <vector>
 
 #include "internal/api/client/Client.hpp"
-#include "opentxs/Forward.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"

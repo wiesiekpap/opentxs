@@ -13,8 +13,8 @@
 #include <tuple>
 
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
-#include "opentxs/Forward.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"

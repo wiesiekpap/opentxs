@@ -20,8 +20,8 @@
 
 #include "internal/blockchain/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Forward.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"

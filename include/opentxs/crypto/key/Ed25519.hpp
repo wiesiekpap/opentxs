@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CRYPTO_KEY_ED25519_HPP
 #define OPENTXS_CRYPTO_KEY_ED25519_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #if OT_CRYPTO_SUPPORTED_KEY_ED25519
 #include "opentxs/crypto/key/HD.hpp"

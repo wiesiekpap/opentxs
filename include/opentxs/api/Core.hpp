@@ -6,7 +6,7 @@
 #ifndef OPENTXS_API_CORE_HPP
 #define OPENTXS_API_CORE_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
 
@@ -17,7 +17,29 @@ namespace opentxs
 {
 namespace api
 {
+namespace crypto
+{
+class Asymmetric;
+class Symmetric;
+}  // namespace crypto
+
+namespace network
+{
+class Dht;
+}  // namespace network
+
+namespace storage
+{
+class Storage;
+}  // namespace storage
+
+class Crypto;
+class Endpoints;
+class Factory;
+class HDSeed;
+class Settings;
 class ThreadPool;
+class Wallet;
 }  // namespace api
 }  // namespace opentxs
 

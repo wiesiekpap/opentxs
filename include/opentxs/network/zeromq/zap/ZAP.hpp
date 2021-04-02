@@ -6,7 +6,7 @@
 #ifndef OPENTXS_NETWORK_ZEROMQ_ZAP_ZAP_HPP
 #define OPENTXS_NETWORK_ZEROMQ_ZAP_ZAP_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 namespace opentxs
 {

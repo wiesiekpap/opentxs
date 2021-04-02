@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <memory>
@@ -22,12 +22,17 @@
 
 namespace opentxs
 {
-class PeerObject;
+namespace blind
+{
+class Purse;
+}  // namespace blind
 
 namespace proto
 {
 class PeerObject;
 }  // namespace proto
+
+class PeerObject;
 
 using OTPeerObject = Pimpl<PeerObject>;
 }  // namespace opentxs

@@ -6,7 +6,7 @@
 #ifndef OPENTXS_NETWORK_ZEROMQ_ZAP_REPLY_HPP
 #define OPENTXS_NETWORK_ZEROMQ_ZAP_REPLY_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/core/Data.hpp"
@@ -22,6 +22,7 @@ namespace zeromq
 namespace zap
 {
 class Reply;
+class Request;
 }  // namespace zap
 }  // namespace zeromq
 }  // namespace network

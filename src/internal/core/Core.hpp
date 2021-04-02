@@ -12,8 +12,9 @@
 
 namespace opentxs
 {
+class PasswordPrompt;
 class Secret;
-}
+}  // namespace opentxs
 
 namespace opentxs
 {

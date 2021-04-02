@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CORE_LOGSOURCE_HPP
 #define OPENTXS_CORE_LOGSOURCE_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <atomic>
 #include <map>

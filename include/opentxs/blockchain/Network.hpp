@@ -6,7 +6,7 @@
 #ifndef OPENTXS_BLOCKCHAIN_NETWORK_HPP
 #define OPENTXS_BLOCKCHAIN_NETWORK_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <future>
 
@@ -29,6 +29,11 @@ class FilterOracle;
 class HeaderOracle;
 class Wallet;
 }  // namespace client
+
+namespace p2p
+{
+class Address;
+}  // namespace p2p
 }  // namespace blockchain
 
 namespace identifier

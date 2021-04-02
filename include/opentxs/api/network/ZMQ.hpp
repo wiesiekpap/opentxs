@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
 #include <memory>
@@ -16,6 +16,21 @@
 
 #include "opentxs/Types.hpp"
 #include "opentxs/protobuf/ContractEnums.pb.h"
+
+namespace opentxs
+{
+namespace network
+{
+namespace zeromq
+{
+class Context;
+}  // namespace zeromq
+
+class ServerConnection;
+}  // namespace network
+
+class Flag;
+}  // namespace opentxs
 
 namespace opentxs
 {

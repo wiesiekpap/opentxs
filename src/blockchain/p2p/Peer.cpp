@@ -8,6 +8,7 @@
 #include "blockchain/p2p/Peer.hpp"  // IWYU pragma: associated
 
 #include <chrono>
+#include <stdexcept>
 #include <string_view>
 #include <type_traits>
 

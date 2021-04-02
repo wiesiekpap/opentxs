@@ -6,7 +6,7 @@
 #ifndef OPENTXS_BLOCKCHAIN_BLOCKCHAIN_HPP
 #define OPENTXS_BLOCKCHAIN_BLOCKCHAIN_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <optional>  // IWYU pragma: keep
@@ -19,6 +19,14 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
+
+namespace opentxs
+{
+namespace api
+{
+class Core;
+}  // namespace api
+}  // namespace opentxs
 
 namespace opentxs
 {

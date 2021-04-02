@@ -6,7 +6,7 @@
 #ifndef OPENTXS_BLOCKCHAIN_BLOCK_BITCOIN_BLOCK_HPP
 #define OPENTXS_BLOCKCHAIN_BLOCK_BITCOIN_BLOCK_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <memory>
@@ -14,6 +14,20 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
+
+namespace opentxs
+{
+namespace blockchain
+{
+namespace block
+{
+namespace bitcoin
+{
+class Transaction;
+}  // namespace bitcoin
+}  // namespace block
+}  // namespace blockchain
+}  // namespace opentxs
 
 namespace opentxs
 {

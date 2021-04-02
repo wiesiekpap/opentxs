@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CORE_TRANSACTION_HELPERS_HPP
 #define OPENTXS_CORE_TRANSACTION_HELPERS_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <irrxml/irrXML.hpp>
 #include <cstdint>

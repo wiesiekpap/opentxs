@@ -6,7 +6,7 @@
 #ifndef OPENTXS_BLOCKCHAIN_CLIENT_BLOCKORACLE_HPP
 #define OPENTXS_BLOCKCHAIN_CLIENT_BLOCKORACLE_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <future>
 #include <memory>

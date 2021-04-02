@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CORE_OTSTORAGEPB_HPP
 #define OPENTXS_CORE_OTSTORAGEPB_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <deque>
 #include <iostream>

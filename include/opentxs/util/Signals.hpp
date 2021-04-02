@@ -6,7 +6,7 @@
 #ifndef OPENTXS_UTIL_SIGNALS_HPP
 #define OPENTXS_UTIL_SIGNALS_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <functional>
 #include <map>

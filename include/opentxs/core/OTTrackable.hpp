@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CORE_OTTRACKABLE_HPP
 #define OPENTXS_CORE_OTTRACKABLE_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Identifier.hpp"

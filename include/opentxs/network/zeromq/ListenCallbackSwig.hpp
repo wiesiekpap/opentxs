@@ -6,13 +6,24 @@
 #ifndef OPENTXS_NETWORK_ZEROMQ_LISTENCALLBACKSWIG_HPP
 #define OPENTXS_NETWORK_ZEROMQ_LISTENCALLBACKSWIG_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #ifdef SWIG
 // clang-format off
 %feature("director") ListenCallbackSwig;
 // clang-format on
 #endif  // SWIG
+
+namespace opentxs
+{
+namespace network
+{
+namespace zeromq
+{
+class Message;
+}  // namespace zeromq
+}  // namespace network
+}  // namespace opentxs
 
 namespace opentxs
 {

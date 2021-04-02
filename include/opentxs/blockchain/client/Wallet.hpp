@@ -6,7 +6,7 @@
 #ifndef OPENTXS_BLOCKCHAIN_CLIENT_WALLET_HPP
 #define OPENTXS_BLOCKCHAIN_CLIENT_WALLET_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <memory>
 #include <set>

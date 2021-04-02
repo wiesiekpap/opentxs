@@ -6,7 +6,7 @@
 #ifndef OPENTXS_UI_LIST_HPP
 #define OPENTXS_UI_LIST_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cassert>
 #include <limits>

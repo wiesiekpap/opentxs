@@ -6,7 +6,7 @@
 #ifndef OPENTXS_NETWORK_ZEROMQ_PROXY_HPP
 #define OPENTXS_NETWORK_ZEROMQ_PROXY_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Pimpl.hpp"
 
@@ -28,6 +28,12 @@ namespace network
 {
 namespace zeromq
 {
+namespace socket
+{
+class Socket;
+}  // namespace socket
+
+class Context;
 class Proxy;
 }  // namespace zeromq
 }  // namespace network

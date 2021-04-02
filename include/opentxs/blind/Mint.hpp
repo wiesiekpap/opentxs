@@ -6,13 +6,33 @@
 #ifndef OPENTXS_BLIND_MINT_HPP
 #define OPENTXS_BLIND_MINT_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <ctime>
 
 #if OT_CASH
 #include "opentxs/core/Contract.hpp"
+
+namespace opentxs
+{
+namespace api
+{
+class Wallet;
+}  // namespace api
+
+namespace blind
+{
+class Token;
+}  // namespace blind
+
+namespace identifier
+{
+class Nym;
+class Server;
+class UnitDefinition;
+}  // namespace identifier
+}  // namespace opentxs
 
 namespace opentxs
 {

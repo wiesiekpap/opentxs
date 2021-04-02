@@ -18,6 +18,7 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/core/Armored.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/StringXML.hpp"

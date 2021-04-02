@@ -14,7 +14,6 @@
 #include "opentxs/Version.hpp"
 #include "util/LMDB.hpp"
 
-#if OT_STORAGE_LMDB
 namespace opentxs::util
 {
 // Stores items in a memory mapped, sparse backing file.
@@ -73,4 +72,3 @@ private:
     Imp& imp_;
 };
 }  // namespace opentxs::util
-#endif  // OT_STORAGE_LMDB

@@ -21,11 +21,12 @@
 
 #include "core/StateMachine.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
-#include "opentxs/Forward.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Editor.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Item.hpp"

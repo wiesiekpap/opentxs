@@ -5,10 +5,6 @@
 
 #pragma once
 
-extern "C" {
-#include <lmdb.h>  // IWYU pragma: export
-}
-
 #include <functional>
 #include <iosfwd>
 #include <map>
@@ -21,15 +17,12 @@ extern "C" {
 
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Version.hpp"
-#include "util/ByteLiterals.hpp"
 
-#if OS_SUPPORTS_LARGE_SPARSE_FILES
-#define OT_LMDB_SIZE 1_TiB
-#elif OS_HAS_MEDIOCRE_SPARSE_FILE_SUPPORT
-#define OT_LMDB_SIZE 16_GiB
-#else
-#define OT_LMDB_SIZE 512_MiB
-#endif
+extern "C" {
+typedef struct MDB_env MDB_env;
+typedef struct MDB_txn MDB_txn;
+typedef unsigned int MDB_dbi;
+}
 
 namespace opentxs::storage::lmdb
 {
@@ -151,22 +144,9 @@ public:
     ~LMDB();
 
 private:
-    using NewKey = std::tuple<Table, Mode, std::string, std::string>;
-    using Pending = std::vector<NewKey>;
+    struct Imp;
 
-    const TableNames& names_;
-    mutable MDB_env* env_;
-    mutable Databases db_;
-    mutable Pending pending_;
-    mutable std::mutex lock_;
-
-    auto get_database(const Table table) const noexcept -> MDB_dbi;
-    auto init_db(const Table table, unsigned int flags) noexcept -> MDB_dbi;
-    void init_environment(
-        const std::string& folder,
-        const std::size_t tables,
-        const Flags flags) noexcept;
-    void init_tables(const TablesToInit init) noexcept;
+    std::unique_ptr<Imp> imp_;
 
     LMDB() = delete;
     LMDB(const LMDB&) = delete;

@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CORE_CONTRACT_BASKET_BASKETITEM_HPP
 #define OPENTXS_CORE_CONTRACT_BASKET_BASKETITEM_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <deque>
 

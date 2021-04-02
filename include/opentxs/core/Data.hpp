@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CORE_DATA_HPP
 #define OPENTXS_CORE_DATA_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <string>
@@ -43,10 +43,22 @@
 
 namespace opentxs
 {
+namespace network
+{
+namespace zeromq
+{
+class Frame;
+}  // namespace zeromq
+}  // namespace network
+
+class Armored;
 class Data;
 
 using OTData = Pimpl<Data>;
+}  // namespace opentxs
 
+namespace opentxs
+{
 OPENTXS_EXPORT bool operator==(const OTData& lhs, const Data& rhs) noexcept;
 OPENTXS_EXPORT bool operator!=(const OTData& lhs, const Data& rhs) noexcept;
 OPENTXS_EXPORT bool operator<(const OTData& lhs, const Data& rhs) noexcept;

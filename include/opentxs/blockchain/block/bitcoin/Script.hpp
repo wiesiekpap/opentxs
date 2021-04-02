@@ -6,7 +6,7 @@
 #ifndef OPENTXS_BLOCKCHAIN_BLOCK_BITCOIN_SCRIPT_HPP
 #define OPENTXS_BLOCKCHAIN_BLOCK_BITCOIN_SCRIPT_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <optional>

@@ -7,7 +7,7 @@
 #define OPENTXS_OPENTXS_HPP
 
 // IWYU pragma: begin_exports
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"

@@ -7,6 +7,17 @@
 
 #include "opentxs/api/storage/Storage.hpp"
 
+namespace opentxs
+{
+namespace crypto
+{
+namespace key
+{
+class Symmetric;
+}  // namespace key
+}  // namespace crypto
+}  // namespace opentxs
+
 namespace opentxs::api::storage
 {
 class StorageInternal : virtual public Storage

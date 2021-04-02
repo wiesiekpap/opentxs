@@ -10,6 +10,14 @@
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 
+namespace opentxs
+{
+namespace blockchain
+{
+class Network;
+}  // namespace blockchain
+}  // namespace opentxs
+
 namespace b = ot::blockchain;
 
 namespace

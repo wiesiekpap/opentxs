@@ -6,7 +6,7 @@
 #ifndef OPENTXS_NETWORK_ZEROMQ_LISTENCALLBACK_HPP
 #define OPENTXS_NETWORK_ZEROMQ_LISTENCALLBACK_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <functional>
 
@@ -30,8 +30,11 @@ namespace network
 namespace zeromq
 {
 class ListenCallback;
+class Message;
 }  // namespace zeromq
 }  // namespace network
+
+class ListenCallbackSwig;
 
 using OTZMQListenCallback = Pimpl<network::zeromq::ListenCallback>;
 }  // namespace opentxs

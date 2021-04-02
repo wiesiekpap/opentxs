@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
@@ -21,6 +21,8 @@ namespace proto
 {
 class VerificationIdentity;
 }  // namespace proto
+
+class PasswordPrompt;
 }  // namespace opentxs
 
 namespace opentxs

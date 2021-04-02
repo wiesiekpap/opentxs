@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CRYPTO_BIP39_HPP
 #define OPENTXS_CRYPTO_BIP39_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>
 #include <string_view>

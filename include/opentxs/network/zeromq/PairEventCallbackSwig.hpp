@@ -6,7 +6,7 @@
 #ifndef OPENTXS_NETWORK_ZEROMQ_PAIREVENTCALLBACKSWIG_HPP
 #define OPENTXS_NETWORK_ZEROMQ_PAIREVENTCALLBACKSWIG_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #ifdef SWIG
 // clang-format off

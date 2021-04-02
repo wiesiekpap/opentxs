@@ -6,9 +6,25 @@
 #ifndef OPENTXS_API_STORAGE_MULTIPLEX_HPP
 #define OPENTXS_API_STORAGE_MULTIPLEX_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/api/storage/Driver.hpp"
+
+namespace opentxs
+{
+namespace crypto
+{
+namespace key
+{
+class Symmetric;
+}  // namespace key
+}  // namespace crypto
+
+namespace storage
+{
+class Root;
+}  // namespace storage
+}  // namespace opentxs
 
 namespace opentxs
 {

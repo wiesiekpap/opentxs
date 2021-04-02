@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CRYPTO_LIBRARY_ECDSAPROVIDER_HPP
 #define OPENTXS_CRYPTO_LIBRARY_ECDSAPROVIDER_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 

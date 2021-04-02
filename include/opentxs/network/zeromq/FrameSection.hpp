@@ -6,7 +6,7 @@
 #ifndef OPENTXS_NETWORK_ZEROMQ_FRAMESECTION_HPP
 #define OPENTXS_NETWORK_ZEROMQ_FRAMESECTION_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <iosfwd>
 #include <iterator>

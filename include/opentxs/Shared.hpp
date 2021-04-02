@@ -6,7 +6,7 @@
 #ifndef OPENTXS_SHARED_HPP
 #define OPENTXS_SHARED_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cassert>  // IWYU pragma: keep
 #include <memory>

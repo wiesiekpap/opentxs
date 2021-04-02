@@ -12,7 +12,6 @@
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "blockchain/bitcoin/CompactSize.hpp"
-#include "opentxs/Forward.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/core/Data.hpp"
 

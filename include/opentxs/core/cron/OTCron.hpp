@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CORE_CRON_OTCRON_HPP
 #define OPENTXS_CORE_CRON_OTCRON_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <irrxml/irrXML.hpp>
 #include <chrono>

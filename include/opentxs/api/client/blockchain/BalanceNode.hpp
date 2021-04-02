@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
@@ -17,6 +17,22 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+
+namespace opentxs
+{
+namespace api
+{
+namespace client
+{
+namespace blockchain
+{
+class BalanceTree;
+}  // namespace blockchain
+}  // namespace client
+}  // namespace api
+
+class PasswordPrompt;
+}  // namespace opentxs
 
 namespace opentxs
 {

@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CONSENSUS_MANAGEDNUMBER_HPP
 #define OPENTXS_CONSENSUS_MANAGEDNUMBER_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"

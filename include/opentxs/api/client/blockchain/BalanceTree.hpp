@@ -6,7 +6,7 @@
 #ifndef OPENTXS_API_CLIENT_BLOCKCHAIN_BALANCETREE_HPP
 #define OPENTXS_API_CLIENT_BLOCKCHAIN_BALANCETREE_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Types.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
@@ -14,6 +14,20 @@
 
 namespace opentxs
 {
+namespace api
+{
+namespace client
+{
+namespace blockchain
+{
+class BalanceList;
+class HD;
+class Imported;
+class PaymentCode;
+}  // namespace blockchain
+}  // namespace client
+}  // namespace api
+
 class PasswordPrompt;
 class PaymentCode;
 }  // namespace opentxs

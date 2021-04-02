@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
 #include <cstdint>
@@ -30,6 +30,19 @@
 
 namespace opentxs
 {
+namespace api
+{
+namespace client
+{
+class Issuer;
+}  // namespace client
+}  // namespace api
+
+namespace blind
+{
+class Purse;
+}  // namespace blind
+
 namespace otx
 {
 namespace context
@@ -45,6 +58,9 @@ namespace proto
 class PeerReply;
 class PeerRequest;
 }  // namespace proto
+
+class NymData;
+class PeerObject;
 }  // namespace opentxs
 
 namespace opentxs

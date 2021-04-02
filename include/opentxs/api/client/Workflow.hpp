@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <memory>
 #include <vector>
@@ -27,11 +27,25 @@ struct Core;
 }  // namespace internal
 }  // namespace api
 
+namespace blind
+{
+class Purse;
+}  // namespace blind
+
+namespace identifier
+{
+class Nym;
+class Server;
+class UnitDefinition;
+}  // namespace identifier
+
 namespace proto
 {
 class PaymentWorkflow;
 class Purse;
 }  // namespace proto
+
+class OTTransaction;
 }  // namespace opentxs
 
 namespace opentxs

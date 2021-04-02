@@ -7,6 +7,10 @@
 #include "1_Internal.hpp"                    // IWYU pragma: associated
 #include "blockchain/database/Database.hpp"  // IWYU pragma: associated
 
+extern "C" {
+#include <lmdb.h>
+}
+
 #include <memory>
 #include <string>
 

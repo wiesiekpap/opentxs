@@ -6,7 +6,7 @@
 #ifndef OPENTXS_UI_ACTIVITYSUMMARY_HPP
 #define OPENTXS_UI_ACTIVITYSUMMARY_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/ui/List.hpp"

@@ -6,7 +6,7 @@
 #ifndef OPENTXS_BLOCKCHAIN_NUMERIC_HASH_HPP
 #define OPENTXS_BLOCKCHAIN_NUMERIC_HASH_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>
 

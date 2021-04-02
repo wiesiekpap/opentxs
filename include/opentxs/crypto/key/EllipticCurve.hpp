@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CRYPTO_KEY_ELLIPTICCURVE_HPP
 #define OPENTXS_CRYPTO_KEY_ELLIPTICCURVE_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <memory>
 

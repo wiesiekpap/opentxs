@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CORE_IDENTIFIER_SERVER_HPP
 #define OPENTXS_CORE_IDENTIFIER_SERVER_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/core/Identifier.hpp"

@@ -6,7 +6,7 @@
 #ifndef OPENTXS_TYPES_HPP
 #define OPENTXS_TYPES_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
 #include <cstdint>

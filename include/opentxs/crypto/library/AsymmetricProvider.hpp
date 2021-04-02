@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <optional>
 
@@ -27,6 +27,14 @@ namespace internal
 struct Core;
 }  // namespace internal
 }  // namespace api
+
+namespace crypto
+{
+namespace key
+{
+class Asymmetric;
+}  // namespace key
+}  // namespace crypto
 }  // namespace opentxs
 
 namespace opentxs

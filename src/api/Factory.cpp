@@ -25,10 +25,10 @@
 #endif  // OT_BLOCKCHAIN
 #include "internal/crypto/key/Factory.hpp"
 #include "internal/network/zeromq/socket/Socket.hpp"
-#include "opentxs/Forward.hpp"
 #include "opentxs/OT.hpp"  // TODO remove
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Proto.tpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #if OT_CRYPTO_WITH_BIP32
 #include "opentxs/api/HDSeed.hpp"
@@ -41,6 +41,7 @@
 #include "opentxs/blind/Mint.hpp"
 #include "opentxs/blind/Purse.hpp"
 #endif  // OT_CASH
+#include "opentxs/blockchain/Types.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"

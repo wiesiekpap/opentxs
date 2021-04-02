@@ -6,11 +6,37 @@
 #ifndef OPENTXS_API_CLIENT_MANAGER_HPP
 #define OPENTXS_API_CLIENT_MANAGER_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>
 
 #include "opentxs/api/Core.hpp"
+
+namespace opentxs
+{
+namespace api
+{
+namespace client
+{
+class Activity;
+class Blockchain;
+class Contacts;
+class OTX;
+class Pair;
+class ServerAction;
+class UI;
+class Workflow;
+}  // namespace client
+
+namespace network
+{
+class ZMQ;
+}  // namespace network
+}  // namespace api
+
+class OT_API;
+class OTAPI_Exec;
+}  // namespace opentxs
 
 namespace opentxs
 {

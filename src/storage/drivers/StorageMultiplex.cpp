@@ -165,37 +165,6 @@ void StorageMultiplex::init(
     OT_ASSERT(plugin);
 }
 
-void StorageMultiplex::init_fs(
-    std::unique_ptr<opentxs::api::storage::Plugin>& plugin)
-{
-#if OT_STORAGE_FS
-    LogVerbose(OT_METHOD)(__FUNCTION__)(
-        ": Initializing primary filesystem plugin.")
-        .Flush();
-    plugin.reset(Factory::StorageFSGC(
-        storage_, config_, digest_, random_, primary_bucket_));
-#else
-    LogOutput(OT_METHOD)(__FUNCTION__)(": Filesystem driver not compiled in.")
-        .Flush();
-    OT_FAIL;
-#endif
-}
-
-void StorageMultiplex::init_lmdb(
-    std::unique_ptr<opentxs::api::storage::Plugin>& plugin)
-{
-#if OT_STORAGE_LMDB
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": Initializing primary LMDB plugin.")
-        .Flush();
-    plugin.reset(Factory::StorageLMDB(
-        storage_, config_, digest_, random_, primary_bucket_));
-#else
-    LogOutput(OT_METHOD)(__FUNCTION__)(": LMDB driver not compiled in.")
-        .Flush();
-    OT_FAIL;
-#endif
-}
-
 void StorageMultiplex::init_memdb(
     std::unique_ptr<opentxs::api::storage::Plugin>& plugin)
 {
@@ -203,22 +172,6 @@ void StorageMultiplex::init_memdb(
         .Flush();
     plugin.reset(Factory::StorageMemDB(
         storage_, config_, digest_, random_, primary_bucket_));
-}
-
-void StorageMultiplex::init_sqlite(
-    std::unique_ptr<opentxs::api::storage::Plugin>& plugin)
-{
-#if OT_STORAGE_SQLITE
-    LogVerbose(OT_METHOD)(__FUNCTION__)(
-        ": Initializing primary sqlite3 plugin.")
-        .Flush();
-    plugin.reset(Factory::StorageSqlite3(
-        storage_, config_, digest_, random_, primary_bucket_));
-#else
-    LogOutput(OT_METHOD)(__FUNCTION__)(": Sqlite3 driver not compiled in.")
-        .Flush();
-    OT_FAIL;
-#endif
 }
 
 void StorageMultiplex::Init_StorageMultiplex(
@@ -239,18 +192,7 @@ void StorageMultiplex::InitBackup()
 {
     if (config_.fs_backup_directory_.empty()) { return; }
 
-#if OT_STORAGE_FS
-    backup_plugins_.emplace_back(Factory::StorageFSArchive(
-        storage_,
-        config_,
-        digest_,
-        random_,
-        primary_bucket_,
-        config_.fs_backup_directory_,
-        null_));
-#else
-    return;
-#endif
+    init_fs_backup(config_.fs_backup_directory_);
 }
 
 void StorageMultiplex::InitEncryptedBackup(
@@ -258,18 +200,7 @@ void StorageMultiplex::InitEncryptedBackup(
 {
     if (config_.fs_encrypted_backup_directory_.empty()) { return; }
 
-#if OT_STORAGE_FS
-    backup_plugins_.emplace_back(Factory::StorageFSArchive(
-        storage_,
-        config_,
-        digest_,
-        random_,
-        primary_bucket_,
-        config_.fs_encrypted_backup_directory_,
-        key));
-#else
-    return;
-#endif
+    init_fs_backup(config_.fs_encrypted_backup_directory_);
 }
 
 auto StorageMultiplex::Load(

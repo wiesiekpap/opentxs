@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
 #include <cstdint>
@@ -34,13 +34,31 @@ struct Manager;
 
 namespace blind
 {
+class Mint;
 class Purse;
+class Token;
 }  // namespace blind
+
+namespace crypto
+{
+namespace key
+{
+class Symmetric;
+}  // namespace key
+}  // namespace crypto
+
+namespace identifier
+{
+class Server;
+class UnitDefinition;
+}  // namespace identifier
 
 namespace proto
 {
 class Purse;
 }  // namespace proto
+
+class PasswordPrompt;
 
 using OTPurse = Pimpl<blind::Purse>;
 }  // namespace opentxs

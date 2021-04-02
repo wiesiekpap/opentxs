@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <memory>
@@ -27,6 +27,7 @@ namespace crypto
 {
 namespace key
 {
+class Asymmetric;
 class EllipticCurve;
 class HD;
 }  // namespace key
@@ -39,6 +40,11 @@ namespace credential
 class Base;
 }  // namespace credential
 }  // namespace identity
+
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
 
 namespace proto
 {

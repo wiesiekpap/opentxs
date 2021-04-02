@@ -6,7 +6,7 @@
 #ifndef OPENTXS_BLOCKCHAIN_CLIENT_HEADERORACLE_HPP
 #define OPENTXS_BLOCKCHAIN_CLIENT_HEADERORACLE_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <set>
@@ -15,6 +15,17 @@
 #include <vector>
 
 #include "opentxs/blockchain/Blockchain.hpp"
+
+namespace opentxs
+{
+namespace blockchain
+{
+namespace block
+{
+class Header;
+}  // namespace block
+}  // namespace blockchain
+}  // namespace opentxs
 
 namespace opentxs
 {

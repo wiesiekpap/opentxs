@@ -6,7 +6,7 @@
 #ifndef OPENTXS_EXT_HELPERS_HPP
 #define OPENTXS_EXT_HELPERS_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <iostream>
 #include <string>

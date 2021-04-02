@@ -18,6 +18,7 @@ struct Asymmetric;
 
 class Config;
 class Encode;
+class Hash;
 class Symmetric;
 }  // namespace crypto
 
@@ -32,6 +33,7 @@ class Settings;
 
 namespace crypto
 {
+class HashingProvider;
 class Pbkdf2;
 class Ripemd160;
 class Scrypt;

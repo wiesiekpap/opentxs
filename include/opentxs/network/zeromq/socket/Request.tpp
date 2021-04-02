@@ -6,7 +6,7 @@
 #ifndef OPENTXS_NETWORK_ZEROMQ_SOCKET_REQUEST_TPP
 #define OPENTXS_NETWORK_ZEROMQ_SOCKET_REQUEST_TPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/socket/Request.hpp"

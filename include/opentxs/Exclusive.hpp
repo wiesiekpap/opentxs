@@ -6,7 +6,7 @@
 #ifndef OPENTXS_EXCLUSIVE_HPP
 #define OPENTXS_EXCLUSIVE_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <atomic>
 #include <functional>

@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
-#include "opentxs/Forward.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Context.hpp"

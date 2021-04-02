@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <list>
@@ -32,6 +32,12 @@ class Asymmetric;
 }  // namespace key
 }  // namespace crypto
 
+namespace identity
+{
+class Authority;
+}  // namespace identity
+
+class OTSignatureMetadata;
 class Secret;
 
 using OTAsymmetricKey = Pimpl<crypto::key::Asymmetric>;

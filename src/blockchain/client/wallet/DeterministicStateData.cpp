@@ -18,7 +18,6 @@
 #include <vector>
 
 #include "internal/api/client/Client.hpp"
-#include "internal/blockchain/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/client/blockchain/BalanceNode.hpp"

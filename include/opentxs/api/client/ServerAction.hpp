@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
 #include <string>
@@ -19,10 +19,26 @@
 
 namespace opentxs
 {
+namespace client
+{
+class ServerAction;
+}  // namespace client
+
+namespace identifier
+{
+class Nym;
+class Server;
+class UnitDefinition;
+}  // namespace identifier
+
 namespace proto
 {
 class UnitDefinition;
 }  // namespace proto
+
+class OTPaymentPlan;
+class OTSmartContract;
+class PasswordPrompt;
 }  // namespace opentxs
 
 namespace opentxs

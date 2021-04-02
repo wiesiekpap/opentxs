@@ -11,10 +11,10 @@
 #include <thread>
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
-#include "opentxs/Forward.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"

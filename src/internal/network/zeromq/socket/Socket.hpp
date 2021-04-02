@@ -9,6 +9,14 @@
 
 namespace opentxs
 {
+namespace api
+{
+namespace internal
+{
+struct Core;
+}  // namespace internal
+}  // namespace api
+
 namespace network
 {
 namespace zeromq
@@ -30,6 +38,7 @@ class Context;
 class ListenCallback;
 class Message;
 class Pipeline;
+class ReplyCallback;
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs

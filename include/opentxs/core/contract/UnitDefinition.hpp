@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <string>
@@ -29,6 +29,9 @@ namespace proto
 {
 class UnitDefinition;
 }  // namespace proto
+
+class Account;
+class AccountVisitor;
 
 using OTUnitDefinition = SharedPimpl<contract::Unit>;
 }  // namespace opentxs

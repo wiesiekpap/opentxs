@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <string>
@@ -19,6 +19,15 @@
 
 namespace opentxs
 {
+namespace network
+{
+namespace zeromq
+{
+class Frame;
+}  // namespace zeromq
+}  // namespace network
+
+class Data;
 class Secret;
 }  // namespace opentxs
 

@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <memory>
@@ -32,6 +32,8 @@ namespace proto
 {
 class ServerContract;
 }  // namespace proto
+
+class PasswordPrompt;
 
 using OTServerContract = SharedPimpl<contract::Server>;
 }  // namespace opentxs

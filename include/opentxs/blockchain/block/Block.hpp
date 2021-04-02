@@ -6,7 +6,7 @@
 #ifndef OPENTXS_BLOCKCHAIN_BLOCK_HPP
 #define OPENTXS_BLOCKCHAIN_BLOCK_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <map>
 #include <string>
@@ -20,6 +20,17 @@
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
+
+namespace opentxs
+{
+namespace blockchain
+{
+namespace block
+{
+class Header;
+}  // namespace block
+}  // namespace blockchain
+}  // namespace opentxs
 
 namespace opentxs
 {

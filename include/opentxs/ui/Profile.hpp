@@ -6,7 +6,7 @@
 #ifndef OPENTXS_UI_PROFILE_HPP
 #define OPENTXS_UI_PROFILE_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
 #include <string>
