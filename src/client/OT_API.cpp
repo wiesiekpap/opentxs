@@ -17,6 +17,7 @@
 #include <string>
 #include <tuple>
 
+#include "core/OTStorage.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Shared.hpp"
@@ -39,7 +40,6 @@
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/NymFile.hpp"
-#include "opentxs/core/OTStorage.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/basket/Basket.hpp"
 #include "opentxs/core/contract/basket/BasketContract.hpp"

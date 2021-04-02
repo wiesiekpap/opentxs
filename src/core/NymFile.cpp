@@ -18,6 +18,7 @@
 #include <utility>
 
 #include "2_Factory.hpp"
+#include "core/OTStorage.hpp"
 #include "internal/api/Api.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -27,7 +28,6 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Message.hpp"
-#include "opentxs/core/OTStorage.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/StringXML.hpp"
 #include "opentxs/core/crypto/OTSignedFile.hpp"

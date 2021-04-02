@@ -151,7 +151,17 @@ struct TCPConnectionManager final : public Peer::ConnectionManager {
 
         OT_ASSERT(0 < body.size());
 
-        switch (body.at(0).as<Peer::Task>()) {
+        const auto task = [&] {
+            try {
+
+                return body.at(0).as<Peer::Task>();
+            } catch (...) {
+
+                OT_FAIL;
+            }
+        }();
+
+        switch (task) {
             case Peer::Task::Register: {
                 OT_ASSERT(1 < body.size());
 

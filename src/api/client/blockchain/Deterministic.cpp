@@ -7,8 +7,9 @@
 #include "1_Internal.hpp"                           // IWYU pragma: associated
 #include "api/client/blockchain/Deterministic.hpp"  // IWYU pragma: associated
 
+#include <boost/container/vector.hpp>
+#include <robin_hood.h>
 #include <algorithm>
-#include <limits>
 #include <memory>
 #include <stdexcept>
 #include <tuple>

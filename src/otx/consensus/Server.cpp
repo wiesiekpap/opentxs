@@ -17,6 +17,7 @@
 #include <stdexcept>
 #include <type_traits>
 
+#include "core/OTStorage.hpp"
 #include "core/StateMachine.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
@@ -52,7 +53,6 @@
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/NumList.hpp"
 #include "opentxs/core/NymFile.hpp"
-#include "opentxs/core/OTStorage.hpp"
 #include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/OTTransactionType.hpp"
 #include "opentxs/core/String.hpp"

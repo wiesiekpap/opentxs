@@ -150,7 +150,15 @@ private:
         OT_ASSERT(0 < body.size());
 
         using Work = FilterOracle::Work;
-        const auto work = body.at(0).as<Work>();
+        const auto work = [&] {
+            try {
+
+                return body.at(0).as<Work>();
+            } catch (...) {
+
+                OT_FAIL;
+            }
+        }();
 
         switch (work) {
             case Work::shutdown: {

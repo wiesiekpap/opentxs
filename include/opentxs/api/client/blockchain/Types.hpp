@@ -46,7 +46,6 @@ using HDKey = std::shared_ptr<const opentxs::crypto::key::HD>;
 /// account id, chain, index
 using Key = std::tuple<std::string, Subchain, Bip32Index>;
 using Activity = std::tuple<Coin, Key, Amount>;
-using Nonce = Amount;
 }  // namespace blockchain
 }  // namespace client
 }  // namespace api

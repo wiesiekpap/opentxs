@@ -7,15 +7,21 @@
 #include "1_Internal.hpp"                         // IWYU pragma: associated
 #include "blockchain/database/wallet/Output.hpp"  // IWYU pragma: associated
 
+#include <robin_hood.h>
 #include <algorithm>
+#include <array>
+#include <cstring>
+#include <iterator>
 #include <map>
 #include <numeric>
 #include <ostream>
+#include <set>
 #include <string>
 #include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <utility>
+#include <variant>
 
 #include "blockchain/database/wallet/Proposal.hpp"
 #include "blockchain/database/wallet/Subchain.hpp"
@@ -24,11 +30,14 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
+#include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Context.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/blockchain/BalanceNode.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
+#include "opentxs/api/crypto/Crypto.hpp"
+#include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
@@ -40,25 +49,85 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
 #include "opentxs/protobuf/BlockchainWalletKey.pb.h"
+#include "opentxs/protobuf/Enums.pb.h"
 #include "util/Container.hpp"
 
 #define OT_METHOD "opentxs::blockchain::database::Output::"
+
+namespace std
+{
+using Outpoint = opentxs::blockchain::block::Outpoint;
+using Position = opentxs::blockchain::block::Position;
+using Identifier = opentxs::OTIdentifier;
+using NymID = opentxs::OTNymID;
+
+template <>
+struct hash<Outpoint> {
+    auto operator()(const Outpoint& data) const noexcept -> std::size_t
+    {
+        static const auto& api = opentxs::Context().Crypto().Hash();
+        static const auto key = std::array<char, 16>{};
+        auto out = std::size_t{};
+        const auto bytes = data.Bytes();
+        api.HMAC(
+            opentxs::proto::HASHTYPE_SIPHASH24,
+            {key.data(), key.size()},
+            {std::next(bytes.data(), 24), 12u},
+            opentxs::preallocated(sizeof(out), &out));
+
+        return out;
+    }
+};
+
+template <>
+struct hash<Position> {
+    auto operator()(const Position& data) const noexcept -> std::size_t
+    {
+        auto out = std::size_t{};
+        const auto& hash = data.second.get();
+        std::memcpy(&out, hash.data(), std::min(sizeof(out), hash.size()));
+
+        return out;
+    }
+};
+
+template <>
+struct hash<Identifier> {
+    auto operator()(const opentxs::Identifier& data) const noexcept
+        -> std::size_t
+    {
+        auto out = std::size_t{};
+        std::memcpy(&out, data.data(), std::min(sizeof(out), data.size()));
+
+        return out;
+    }
+};
+
+template <>
+struct hash<NymID> {
+    auto operator()(const NymID& data) const noexcept -> std::size_t
+    {
+        static const auto hasher = hash<Identifier>{};
+
+        return hasher(data.get());
+    }
+};
+}  // namespace std
 
 namespace opentxs::blockchain::database::wallet
 {
 struct Output::Imp {
     auto GetBalance() const noexcept -> Balance
     {
-        auto lock = Lock{lock_};
+        auto lock = sLock{lock_};
 
         return get_balance(lock);
     }
     auto GetBalance(const identifier::Nym& owner) const noexcept -> Balance
     {
-        auto lock = Lock{lock_};
+        auto lock = sLock{lock_};
 
         if (owner.empty()) { return {}; }
 
@@ -67,23 +136,23 @@ struct Output::Imp {
     auto GetBalance(const identifier::Nym& owner, const NodeID& node)
         const noexcept -> Balance
     {
-        auto lock = Lock{lock_};
+        auto lock = sLock{lock_};
 
         if (owner.empty() || node.empty()) { return {}; }
 
         return get_balance(lock, owner, node);
     }
-    auto GetMutex() const noexcept -> std::mutex& { return lock_; }
+    auto GetMutex() const noexcept -> std::shared_mutex& { return lock_; }
     auto GetOutputs(State type) const noexcept -> std::vector<UTXO>
     {
-        auto lock = Lock{lock_};
+        auto lock = sLock{lock_};
 
         return get_outputs(lock, states(type), nullptr, nullptr, nullptr);
     }
     auto GetOutputs(const identifier::Nym& owner, State type) const noexcept
         -> std::vector<UTXO>
     {
-        auto lock = Lock{lock_};
+        auto lock = sLock{lock_};
 
         if (owner.empty()) { return {}; }
 
@@ -94,7 +163,7 @@ struct Output::Imp {
         const Identifier& node,
         State type) const noexcept -> std::vector<UTXO>
     {
-        auto lock = Lock{lock_};
+        auto lock = sLock{lock_};
 
         if (owner.empty() || node.empty()) { return {}; }
 
@@ -108,7 +177,7 @@ struct Output::Imp {
     }
     auto GetUnspentOutputs(const NodeID& id) const noexcept -> std::vector<UTXO>
     {
-        auto lock = Lock{lock_};
+        auto lock = sLock{lock_};
 
         return get_unspent_outputs(lock, id);
     }
@@ -121,7 +190,7 @@ struct Output::Imp {
         const std::vector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& original) noexcept -> bool
     {
-        auto lock = Lock{lock_};
+        auto lock = eLock{lock_};
         auto pCopy = original.clone();
 
         OT_ASSERT(pCopy);
@@ -140,8 +209,8 @@ struct Output::Imp {
                 return false;
             }
 
-            if (auto out = find_output(lock, outpoint); out.has_value()) {
-                auto& serialized = out.value()->second;
+            try {
+                auto& serialized = find_output(lock, outpoint);
                 const auto& [state, position, proto] = serialized;
 
                 if (!copy.AssociatePreviousOutput(
@@ -165,20 +234,7 @@ struct Output::Imp {
 
                     return false;
                 }
-
-                auto& fifo = fifo_index_;
-
-                if (auto i{fifo.find(position.first)}; i != fifo.end()) {
-                    auto& v = i->second;
-                    v.erase(
-                        std::remove_if(
-                            v.begin(),
-                            v.end(),
-                            [&](const auto& in) {
-                                return in.outpoint_ == outpoint;
-                            }),
-                        v.end());
-                }
+            } catch (...) {
             }
 
             // NOTE consider the case of parallel chain scanning where one
@@ -200,8 +256,8 @@ struct Output::Imp {
             OT_ASSERT((0 < output.Keys().size()));
             OT_ASSERT(outpoint.Index() == index);
 
-            if (auto out = find_output(lock, outpoint); out.has_value()) {
-                auto& serialized = out.value()->second;
+            try {
+                auto& serialized = find_output(lock, outpoint);
 
                 if (false == change_state(
                                  lock,
@@ -215,7 +271,7 @@ struct Output::Imp {
 
                     return false;
                 }
-            } else {
+            } catch (...) {
                 if (false == create_state(
                                  lock,
                                  outpoint,
@@ -249,8 +305,6 @@ struct Output::Imp {
                     return false;
                 }
             }
-
-            insert_sorted(fifo_index_[block.first], FIFO{blockIndex, outpoint});
         }
 
         const auto reason = api_.Factory().PasswordPrompt(
@@ -264,7 +318,7 @@ struct Output::Imp {
             return false;
         }
 
-        print(lock);
+        // NOTE do not call this function except for debugging: print(lock);
         blockchain_.UpdateBalance(chain_, get_balance(lock));
 
         for (const auto& [nym, balance] : get_balances(lock)) {
@@ -274,12 +328,11 @@ struct Output::Imp {
         return true;
     }
     auto AddOutgoingTransaction(
-        const blockchain::Type chain,
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
         const block::bitcoin::Transaction& transaction) noexcept -> bool
     {
-        auto lock = Lock{lock_};
+        auto lock = eLock{lock_};
 
         for (const auto& input : transaction.Inputs()) {
             const auto& outpoint = input.PreviousOutput();
@@ -322,12 +375,12 @@ struct Output::Imp {
                     .Flush();
             }
 
-            const auto outpoint = Outpoint{
-                transaction.ID().Bytes(), static_cast<std::uint32_t>(index)};
-            insert_sorted(pending, outpoint);
+            const auto [it, added] = pending.emplace(
+                transaction.ID().Bytes(), static_cast<std::uint32_t>(index));
+            const auto& outpoint = *it;
 
-            if (auto out = find_output(lock, outpoint); out.has_value()) {
-                auto& serialized = out.value()->second;
+            try {
+                auto& serialized = find_output(lock, outpoint);
 
                 if (false == change_state(
                                  lock,
@@ -341,7 +394,7 @@ struct Output::Imp {
 
                     return false;
                 }
-            } else {
+            } catch (...) {
                 if (false == create_state(
                                  lock,
                                  outpoint,
@@ -380,7 +433,7 @@ struct Output::Imp {
         const auto reason = api_.Factory().PasswordPrompt(
             "Save an outgoing blockchain transaction");
 
-        if (false == transactions_.Add(chain, blank_, transaction, reason)) {
+        if (false == transactions_.Add(chain_, blank_, transaction, reason)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(
                 ": Error adding transaction to database")
                 .Flush();
@@ -399,7 +452,7 @@ struct Output::Imp {
     }
     auto CancelProposal(const Identifier& id) noexcept -> bool
     {
-        auto lock = Lock{lock_};
+        auto lock = eLock{lock_};
         auto& reserved = proposal_spent_index_[id];
         auto& created = proposal_created_index_[id];
 
@@ -444,14 +497,10 @@ struct Output::Imp {
         const Spend policy) noexcept -> std::optional<UTXO>
     {
         // TODO implement smarter selection algorithms
-        auto lock = Lock{lock_};
+        auto lock = eLock{lock_};
         auto output = std::optional<UTXO>{std::nullopt};
         const auto choose = [&](const auto outpoint) -> std::optional<UTXO> {
-            auto out = find_output(lock, outpoint);
-
-            OT_ASSERT(out.has_value());
-
-            auto& serialized = out.value()->second;
+            auto& serialized = find_output(lock, outpoint);
             const auto& [state, position, data] = serialized;
 
             if (false == owns(spender, data)) { return std::nullopt; }
@@ -459,12 +508,10 @@ struct Output::Imp {
             auto output = std::make_optional<UTXO>(outpoint, data);
             const auto changed = change_state(
                 lock, outpoint, serialized, TxoState::UnconfirmedSpend, blank_);
-            // NOTE iterators in to outpoints may be invalidated by the
-            // change_state function.
 
             OT_ASSERT(changed);
 
-            insert_sorted(proposal_spent_index_[id], outpoint);
+            proposal_spent_index_[id].emplace(outpoint);
             proposal_reverse_index_.emplace(outpoint, id);
             LogVerbose(OT_METHOD)(__FUNCTION__)(": Reserving output ")(
                 outpoint.str())
@@ -472,27 +519,7 @@ struct Output::Imp {
 
             return output;
         };
-        const auto confirmed = [&]() -> std::optional<UTXO> {
-            for (const auto& [height, data] : fifo_index_) {
-                for (const auto& [index, outpoint] : data) {
-                    const auto isConfirmed = contains(
-                        find_state(lock, TxoState::ConfirmedNew), outpoint);
-
-                    if (false == isConfirmed) { continue; }
-
-                    auto utxo = choose(outpoint);
-
-                    if (utxo.has_value()) { return utxo; }
-                }
-            }
-
-            LogTrace(OT_METHOD)(__FUNCTION__)(
-                ": No spendable confirmed outputs")
-                .Flush();
-
-            return std::nullopt;
-        };
-        const auto unconfirmed = [&](const auto& group) -> std::optional<UTXO> {
+        const auto select = [&](const auto& group) -> std::optional<UTXO> {
             for (const auto& outpoint : group) {
                 auto utxo = choose(outpoint);
 
@@ -506,12 +533,12 @@ struct Output::Imp {
             return std::nullopt;
         };
 
-        output = confirmed();
+        output = select(find_state(lock, TxoState::ConfirmedNew));
 
         if (output.has_value()) { return output; }
 
         if (Spend::UnconfirmedToo == policy) {
-            output = unconfirmed(find_state(lock, TxoState::UnconfirmedNew));
+            output = select(find_state(lock, TxoState::UnconfirmedNew));
 
             if (output.has_value()) { return output; }
         }
@@ -523,7 +550,7 @@ struct Output::Imp {
         return output;
     }
     auto Rollback(
-        const Lock& lock,
+        const eLock& lock,
         const SubchainID& subchain,
         const block::Position& position) noexcept -> bool
     {
@@ -544,11 +571,7 @@ struct Output::Imp {
         }();
 
         for (const auto& id : outpoints) {
-            auto out = find_output(lock, id);
-
-            OT_ASSERT(out.has_value());
-
-            auto& serialized = out.value()->second;
+            auto& serialized = find_output(lock, id);
             const auto state = [&]() -> std::optional<TxoState> {
                 switch (std::get<0>(serialized)) {
                     case TxoState::ConfirmedNew:
@@ -599,8 +622,6 @@ struct Output::Imp {
             }
         }
 
-        fifo_index_.erase(position.first);
-
         return true;
     }
 
@@ -626,7 +647,6 @@ struct Output::Imp {
         , lock_()
         , outputs_()
         , account_index_()
-        , fifo_index_()
         , nym_index_()
         , position_index_()
         , proposal_created_index_()
@@ -638,43 +658,23 @@ struct Output::Imp {
     }
 
 private:
-    struct FIFO {
-        std::uint64_t index_{};
-        block::Outpoint outpoint_{};
-
-        auto operator<(const FIFO& rhs) const noexcept -> bool
-        {
-            static_assert(sizeof(std::size_t) <= sizeof(index_));
-
-            if (index_ < rhs.index_) {
-
-                return true;
-            } else if (rhs.index_ < index_) {
-
-                return false;
-            } else {
-
-                return outpoint_ < rhs.outpoint_;
-            }
-        }
-    };
-
     using SubchainID = Identifier;
     using pSubchainID = OTIdentifier;
     using Outpoint = block::Outpoint;
-    using Outpoints = std::vector<Outpoint>;
+    using Outpoints = std::set<Outpoint>;
     using TxoState = client::Wallet::TxoState;
     using Output = std::
         tuple<TxoState, block::Position, proto::BlockchainTransactionOutput>;
-    using OutputMap = std::map<Outpoint, Output>;
+    using OutputMap =
+        robin_hood::unordered_flat_map<Outpoint, std::unique_ptr<Output>>;
     using AccountIndex = std::map<OTIdentifier, Outpoints>;
-    using FifoIndex = std::map<block::Height, std::vector<FIFO>>;
     using NymIndex = std::map<OTNymID, Outpoints>;
     using PositionIndex = std::map<block::Position, Outpoints>;
     using ProposalIndex = std::map<OTIdentifier, Outpoints>;
     using ProposalReverseIndex = std::map<Outpoint, OTIdentifier>;
     using StateIndex = std::map<TxoState, Outpoints>;
-    using SubchainIndex = std::map<pSubchainID, Outpoints>;
+    using SubchainIndex =
+        robin_hood::unordered_flat_map<pSubchainID, Outpoints>;
     using NymBalances = std::map<OTNymID, Balance>;
     using KeyID = api::client::blockchain::Key;
     using States = std::vector<TxoState>;
@@ -687,10 +687,9 @@ private:
     wallet::Proposal& proposals_;
     wallet::Transaction& transactions_;
     const block::Position blank_;
-    mutable std::mutex lock_;
+    mutable std::shared_mutex lock_;
     OutputMap outputs_;
     AccountIndex account_index_;
-    FifoIndex fifo_index_;
     NymIndex nym_index_;
     PositionIndex position_index_;
     ProposalIndex proposal_created_index_;
@@ -732,7 +731,7 @@ private:
     }
 
     auto belongs_to(
-        const Lock& lock,
+        const eLock& lock,
         const Outpoint& id,
         const SubchainID& subchain) const noexcept -> bool
     {
@@ -765,7 +764,8 @@ private:
             }
         }
     }
-    auto find_account(const Lock& lock, const AccountID& id) const noexcept
+    template <typename LockType>
+    auto find_account(const LockType& lock, const AccountID& id) const noexcept
         -> const Outpoints&
     {
         static const auto empty = Outpoints{};
@@ -778,8 +778,9 @@ private:
             return empty;
         }
     }
-    auto find_nym(const Lock& lock, const identifier::Nym& id) const noexcept
-        -> const Outpoints&
+    template <typename LockType>
+    auto find_nym(const LockType& lock, const identifier::Nym& id)
+        const noexcept -> const Outpoints&
     {
         static const auto empty = Outpoints{};
 
@@ -791,20 +792,14 @@ private:
             return empty;
         }
     }
-    auto find_output(const Lock& lock, const Outpoint& id) const noexcept
-        -> std::optional<OutputMap::const_iterator>
+    template <typename LockType>
+    auto find_output(const LockType& lock, const Outpoint& id) const
+        noexcept(false) -> const Output&
     {
-        auto result = outputs_.find(id);
-
-        if (outputs_.end() == result) {
-
-            return {};
-        } else {
-
-            return result;
-        }
+        return *outputs_.at(id);
     }
-    auto find_state(const Lock& lock, TxoState state) const noexcept
+    template <typename LockType>
+    auto find_state(const LockType& lock, TxoState state) const noexcept
         -> const Outpoints&
     {
         static const auto empty = Outpoints{};
@@ -817,7 +812,8 @@ private:
             return empty;
         }
     }
-    auto find_subchain(const Lock& lock, const NodeID& id) const noexcept
+    template <typename LockType>
+    auto find_subchain(const LockType& lock, const NodeID& id) const noexcept
         -> const Outpoints&
     {
         static const auto empty = Outpoints{};
@@ -830,21 +826,24 @@ private:
             return empty;
         }
     }
-    auto get_balance(const Lock& lock) const noexcept -> Balance
+    template <typename LockType>
+    auto get_balance(const LockType& lock) const noexcept -> Balance
     {
         static const auto blank = api_.Factory().NymID();
 
-        return get_balance(lock, blank);
+        return get_balance<LockType>(lock, blank);
     }
-    auto get_balance(const Lock& lock, const identifier::Nym& owner)
+    template <typename LockType>
+    auto get_balance(const LockType& lock, const identifier::Nym& owner)
         const noexcept -> Balance
     {
         static const auto blank = api_.Factory().Identifier();
 
-        return get_balance(lock, owner, blank);
+        return get_balance<LockType>(lock, owner, blank);
     }
+    template <typename LockType>
     auto get_balance(
-        const Lock& lock,
+        const LockType& lock,
         const identifier::Nym& owner,
         const AccountID& account) const noexcept -> Balance
     {
@@ -854,11 +853,7 @@ private:
         const auto* pAcct = account.empty() ? nullptr : &account;
         auto cb = [&](const auto previous, const auto& outpoint) -> auto
         {
-            const auto out = find_output(lock, outpoint);
-
-            OT_ASSERT(out.has_value());
-
-            const auto& [state, position, data] = out.value()->second;
+            const auto& [state, position, data] = find_output(lock, outpoint);
 
             return previous + data.value();
         };
@@ -889,7 +884,8 @@ private:
 
         return output;
     }
-    auto get_balances(const Lock& lock) const noexcept -> NymBalances
+    template <typename LockType>
+    auto get_balances(const LockType& lock) const noexcept -> NymBalances
     {
         auto output = NymBalances{};
 
@@ -900,7 +896,7 @@ private:
         return output;
     }
     auto get_outputs(
-        const Lock& lock,
+        const sLock& lock,
         const States states,
         const identifier::Nym* owner,
         const AccountID* account,
@@ -910,17 +906,13 @@ private:
         auto output = std::vector<UTXO>{};
 
         for (const auto& outpoint : matches) {
-            const auto out = find_output(lock, outpoint);
-
-            OT_ASSERT(out.has_value());
-
-            const auto& [state, position, data] = out.value()->second;
+            const auto& [state, position, data] = find_output(lock, outpoint);
             output.emplace_back(outpoint, data);
         }
 
         return output;
     }
-    auto get_unspent_outputs(const Lock& lock, const NodeID& id) const noexcept
+    auto get_unspent_outputs(const sLock& lock, const NodeID& id) const noexcept
         -> std::vector<UTXO>
     {
         const auto* pSub = id.empty() ? nullptr : &id;
@@ -934,29 +926,33 @@ private:
             nullptr,
             pSub);
     }
+    template <typename LockType>
     auto has_account(
-        const Lock& lock,
+        const LockType& lock,
         const AccountID& id,
         const Outpoint& outpoint) const noexcept -> bool
     {
-        return contains(find_account(lock, id), outpoint);
+        return 0 < find_account<LockType>(lock, id).count(outpoint);
     }
+    template <typename LockType>
     auto has_nym(
-        const Lock& lock,
+        const LockType& lock,
         const identifier::Nym& id,
         const Outpoint& outpoint) const noexcept -> bool
     {
-        return contains(find_nym(lock, id), outpoint);
+        return 0 < find_nym<LockType>(lock, id).count(outpoint);
     }
+    template <typename LockType>
     auto has_subchain(
-        const Lock& lock,
+        const LockType& lock,
         const NodeID& id,
         const Outpoint& outpoint) const noexcept -> bool
     {
-        return contains(find_subchain(lock, id), outpoint);
+        return 0 < find_subchain<LockType>(lock, id).count(outpoint);
     }
+    template <typename LockType>
     auto match(
-        const Lock& lock,
+        const LockType& lock,
         const States states,
         const identifier::Nym* owner,
         const AccountID* account,
@@ -987,7 +983,8 @@ private:
 
         return output;
     }
-    auto print(const Lock&) const noexcept -> void
+    template <typename LockType>
+    auto print(const LockType&) const noexcept -> void
     {
         struct Output {
             std::stringstream text_{};
@@ -997,7 +994,7 @@ private:
 
         for (const auto& data : outputs_) {
             const auto& outpoint = data.first;
-            const auto& [state, position, proto] = data.second;
+            const auto& [state, position, proto] = *data.second;
             auto& out = output[state];
             out.text_ << "\n * " << outpoint.str() << ' ';
             out.text_ << " value: " << std::to_string(proto.value());
@@ -1053,18 +1050,18 @@ private:
     }
 
     auto associate(
-        const Lock& lock,
+        const eLock& lock,
         const Outpoint& outpoint,
         const KeyID& key) noexcept -> bool
     {
         const auto& [nodeID, subchain, index] = key;
         const auto accountID = api_.Factory().Identifier(nodeID);
-        const auto subchainID = subchains_.GetID(accountID, subchain);
+        const auto subchainID = subchains_.GetSubchainID(accountID, subchain);
 
         return associate(lock, outpoint, accountID, subchainID);
     }
     auto associate(
-        const Lock& lock,
+        const eLock& lock,
         const Outpoint& outpoint,
         const AccountID& accountID,
         const SubchainID& subchainID) noexcept -> bool
@@ -1072,31 +1069,31 @@ private:
         OT_ASSERT(false == accountID.empty());
         OT_ASSERT(false == subchainID.empty());
 
-        insert_sorted(account_index_[accountID], outpoint);
-        insert_sorted(subchain_index_[subchainID], outpoint);
+        account_index_[accountID].emplace(outpoint);
+        subchain_index_[subchainID].emplace(outpoint);
 
         return true;
     }
     auto associate(
-        const Lock& lock,
+        const eLock& lock,
         const Outpoint& outpoint,
         const identifier::Nym& nymID) noexcept -> bool
     {
         OT_ASSERT(false == nymID.empty());
 
-        insert_sorted(nym_index_[nymID], outpoint);
+        nym_index_[nymID].emplace(outpoint);
 
         return true;
     }
     // Only used by CancelProposal
     auto change_state(
-        const Lock& lock,
+        const eLock& lock,
         const Outpoint& id,
         const TxoState oldState,
         const TxoState newState) noexcept -> bool
     {
-        if (auto out = find_output(lock, id); out.has_value()) {
-            auto& serialized = out.value()->second;
+        try {
+            auto& serialized = find_output(lock, id);
             const auto& [state, position, data] = serialized;
 
             if (state != oldState) {
@@ -1108,7 +1105,7 @@ private:
             }
 
             return change_state(lock, id, serialized, newState, blank_);
-        } else {
+        } catch (...) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": outpoint ")(id.str())(
                 " does not exist")
                 .Flush();
@@ -1117,16 +1114,16 @@ private:
         }
     }
     auto change_state(
-        const Lock& lock,
+        const eLock& lock,
         const Outpoint& id,
         const TxoState newState,
         const block::Position newPosition) noexcept -> bool
     {
-        if (auto out = find_output(lock, id); out.has_value()) {
-            auto& serialized = out.value()->second;
+        try {
+            auto& serialized = find_output(lock, id);
 
             return change_state(lock, id, serialized, newState, newPosition);
-        } else {
+        } catch (...) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": outpoint ")(id.str())(
                 " does not exist")
                 .Flush();
@@ -1135,7 +1132,7 @@ private:
         }
     }
     auto change_state(
-        const Lock& lock,
+        const eLock& lock,
         const Outpoint& id,
         Output& serialized,
         const TxoState newState,
@@ -1146,23 +1143,23 @@ private:
             effective_position(newState, oldPosition, newPosition);
 
         if (newState != oldState) {
-            if (false == remove(state_index_[oldState], id)) { OT_FAIL; }
-
-            state_index_[newState].emplace_back(id);
+            auto& from = state_index_[oldState];
+            auto& to = state_index_[newState];
+            to.insert(from.extract(id));
             oldState = newState;
         }
 
         if (effective != oldPosition) {
-            if (false == remove(position_index_[oldPosition], id)) { OT_FAIL; }
-
-            position_index_[effective].emplace_back(id);
+            auto& from = position_index_[oldPosition];
+            auto& to = position_index_[effective];
+            to.insert(from.extract(id));
             oldPosition = effective;
         }
 
         return true;
     }
     auto check_proposals(
-        const Lock& lock,
+        const eLock& lock,
         const Outpoint& outpoint,
         const block::Position& block,
         const block::Txid& txid) noexcept -> bool
@@ -1208,7 +1205,7 @@ private:
         return proposals_.FinishProposal(proposalID);
     }
     auto create_state(
-        const Lock& lock,
+        const eLock& lock,
         const Outpoint& id,
         const TxoState state,
         const block::Position position,
@@ -1238,76 +1235,19 @@ private:
             outputs_.emplace(
                 std::piecewise_construct,
                 std::forward_as_tuple(id),
-                std::forward_as_tuple(state, effective, std::move(data)));
+                std::forward_as_tuple(std::make_unique<Output>(
+                    state, effective, std::move(data))));
         }
 
-        insert_sorted(state_index_[state], id);
-        insert_sorted(position_index_[effective], id);
+        state_index_[state].emplace(id);
+        position_index_[effective].emplace(id);
 
         return true;
     }
-    auto find_output(const Lock& lock, const Outpoint& id) noexcept
-        -> std::optional<OutputMap::iterator>
+    auto find_output(const eLock& lock, const Outpoint& id) noexcept(false)
+        -> Output&
     {
-        auto result = outputs_.find(id);
-
-        if (outputs_.end() == result) {
-
-            return {};
-        } else {
-
-            return result;
-        }
-    }
-
-    auto verify_outpoint(const Lock& lock, const Outpoint outpoint)
-        const noexcept -> bool
-    {
-        if (auto out = find_output(lock, outpoint); out.has_value()) {
-            const auto& [state, position, proto] = out.value()->second;
-
-            OT_ASSERT(1 == proto.key().size());
-
-            const auto& sKey = proto.key(0);
-            const auto id = api::client::blockchain::Key{
-                sKey.subaccount(),
-                static_cast<api::client::blockchain::Subchain>(sKey.subchain()),
-                sKey.index()};
-            try {
-                const auto& element = blockchain_.GetKey(id);
-                const auto pubkey =
-                    api_.Factory().Data(element.Key()->PublicKey());
-                const auto hash = element.PubkeyHash();
-                LogOutput(OT_METHOD)(__FUNCTION__)(": output ")(outpoint.str())(
-                    " can be spent using public key ")(std::get<2>(id))(
-                    " from subchain ")(static_cast<std::uint32_t>(std::get<1>(
-                    id)))(" of account ")(std::get<0>(id))(", which is: ")(
-                    pubkey->asHex())(" with hash ")(hash->asHex())
-                    .Flush();
-                using Position = block::bitcoin::Script::Position;
-                using Type = block::bitcoin::Script::Pattern;
-                const auto pScript = factory::BitcoinScript(
-                    chain_, proto.script(), Position::Output);
-
-                OT_ASSERT(pScript);
-
-                const auto& script = *pScript;
-
-                if (Type::PayToPubkey == script.Type()) {
-                    OT_ASSERT(pubkey->Bytes() == script.Pubkey().value());
-                } else if (Type::PayToPubkeyHash == script.Type()) {
-                    OT_ASSERT(hash->Bytes() == script.PubkeyHash().value());
-                } else {
-                    OT_FAIL;
-                }
-            } catch (...) {
-                OT_FAIL;
-            }
-        } else {
-            OT_FAIL;
-        }
-
-        return true;
+        return *outputs_.at(id);
     }
 };
 
@@ -1337,13 +1277,11 @@ auto Output::AddConfirmedTransaction(
 }
 
 auto Output::AddOutgoingTransaction(
-    const blockchain::Type chain,
     const Identifier& proposalID,
     const proto::BlockchainTransactionProposal& proposal,
     const block::bitcoin::Transaction& transaction) noexcept -> bool
 {
-    return imp_->AddOutgoingTransaction(
-        chain, proposalID, proposal, transaction);
+    return imp_->AddOutgoingTransaction(proposalID, proposal, transaction);
 }
 
 auto Output::CancelProposal(const Identifier& id) noexcept -> bool
@@ -1386,7 +1324,7 @@ auto Output::GetOutputs(
     return imp_->GetOutputs(owner, node, type);
 }
 
-auto Output::GetMutex() const noexcept -> std::mutex&
+auto Output::GetMutex() const noexcept -> std::shared_mutex&
 {
     return imp_->GetMutex();
 }
@@ -1411,7 +1349,7 @@ auto Output::ReserveUTXO(
 }
 
 auto Output::Rollback(
-    const Lock& lock,
+    const eLock& lock,
     const SubchainID& subchain,
     const block::Position& position) noexcept -> bool
 {

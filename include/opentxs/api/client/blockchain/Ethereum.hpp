@@ -22,6 +22,7 @@ class Ethereum : virtual public Imported
 {
 public:
     using Amount = opentxs::blockchain::Amount;
+    using Nonce = Amount;
 
     OPENTXS_EXPORT virtual Amount GetBalance() const noexcept = 0;
     OPENTXS_EXPORT virtual Nonce GetNonce() const noexcept = 0;

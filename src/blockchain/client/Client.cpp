@@ -70,7 +70,17 @@ auto IO::callback(zmq::Message& in) noexcept -> void
 
     OT_ASSERT(0 < body.size());
 
-    switch (body.at(0).as<OTZMQWorkType>()) {
+    const auto work = [&] {
+        try {
+
+            return body.at(0).as<OTZMQWorkType>();
+        } catch (...) {
+
+            OT_FAIL;
+        }
+    }();
+
+    switch (work) {
         case OT_ZMQ_REGISTER_SIGNAL: {
             auto reply = api_.ZeroMQ().TaggedReply(in, OT_ZMQ_REGISTER_SIGNAL);
             reply->AddFrame(connectionID);

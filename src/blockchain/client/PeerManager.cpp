@@ -272,7 +272,17 @@ auto PeerManager::pipeline(zmq::Message& message) noexcept -> void
 
     OT_ASSERT(0 < body.size());
 
-    switch (body.at(0).as<Work>()) {
+    const auto work = [&] {
+        try {
+
+            return body.at(0).as<Work>();
+        } catch (...) {
+
+            OT_FAIL;
+        }
+    }();
+
+    switch (work) {
         case Work::Disconnect: {
             OT_ASSERT(1 < body.size());
 

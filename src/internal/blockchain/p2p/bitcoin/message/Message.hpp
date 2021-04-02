@@ -316,7 +316,7 @@ struct Version : virtual public bitcoin::Message {
     virtual auto LocalAddress() const noexcept -> tcp::endpoint = 0;
     virtual auto LocalServices() const noexcept
         -> std::set<blockchain::p2p::Service> = 0;
-    virtual auto Nonce() const noexcept -> api::client::blockchain::Nonce = 0;
+    virtual auto Nonce() const noexcept -> p2p::bitcoin::Nonce = 0;
     virtual auto ProtocolVersion() const noexcept
         -> bitcoin::ProtocolVersion = 0;
     virtual auto Relay() const noexcept -> bool = 0;

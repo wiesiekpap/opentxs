@@ -76,7 +76,7 @@ DeterministicStateData::DeterministicStateData(
 
 auto DeterministicStateData::check_index() noexcept -> bool
 {
-    last_indexed_ = db_.SubchainLastIndexed(id_, subchain_, filter_type_);
+    last_indexed_ = db_.SubchainLastIndexed(index_);
     const auto generated = node_.LastGenerated(subchain_);
 
     if (generated.has_value()) {
@@ -218,14 +218,7 @@ auto DeterministicStateData::handle_confirmed_matches(
         OT_ASSERT(index.has_value());
 
         auto updated = db_.AddConfirmedTransaction(
-            network_.Chain(),
-            id_,
-            subchain_,
-            filter_type_,
-            position,
-            index.value(),
-            outputs,
-            *pTX);
+            id_, subchain_, position, index.value(), outputs, *pTX);
 
         OT_ASSERT(updated);  // TODO handle database errors
     }
@@ -253,7 +246,7 @@ auto DeterministicStateData::index() noexcept -> void
         index_element(filter_type_, element, i, elements);
     }
 
-    db_.SubchainAddElements(id_, subchain_, filter_type_, elements);
+    db_.SubchainAddElements(index_, elements);
 }
 
 auto DeterministicStateData::type() const noexcept -> std::stringstream

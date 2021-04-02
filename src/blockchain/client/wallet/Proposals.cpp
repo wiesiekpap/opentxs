@@ -292,7 +292,7 @@ private:
             return output;
         }
 
-        if (!db_.AddOutgoingTransaction(chain_, id, proposal, transaction)) {
+        if (!db_.AddOutgoingTransaction(id, proposal, transaction)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Database error (transaction)")
                 .Flush();
             output = BuildResult::PermanentFailure;

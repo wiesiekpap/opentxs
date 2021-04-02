@@ -103,7 +103,15 @@ auto ThreadPool::callback(zmq::Message& in) noexcept -> void
         if (1u > size) { throw std::runtime_error{"Missing type frame"}; }
 
         const auto& workFrame = header.at(size - 1u);
-        const auto type = workFrame.as<WorkType>();
+        const auto type = [&] {
+            try {
+
+                return workFrame.as<WorkType>();
+            } catch (...) {
+
+                OT_FAIL;
+            }
+        }();
         const auto& cb = [&] {
             auto lock = Lock{lock_};
 

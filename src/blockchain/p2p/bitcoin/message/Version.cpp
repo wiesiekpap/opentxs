@@ -67,7 +67,7 @@ auto BitcoinP2PVersion(
     tcp::endpoint remoteAddress{
         ip::make_address_v6(raw1.remote_.address_), raw1.remote_.port_.value()};
     tcp::endpoint localAddress{};
-    api::client::blockchain::Nonce nonce{};
+    bitcoin::Nonce nonce{};
     std::string userAgent{};
     blockchain::block::Height height{};
     bool relay{true};
@@ -245,7 +245,7 @@ Version::Version(
     const std::set<blockchain::p2p::Service>& services,
     const std::set<blockchain::p2p::Service>& localServices,
     const std::set<blockchain::p2p::Service>& remoteServices,
-    const api::client::blockchain::Nonce nonce,
+    const bitcoin::Nonce nonce,
     const std::string& userAgent,
     const block::Height height,
     const bool relay,
@@ -275,7 +275,7 @@ Version::Version(
     const std::set<blockchain::p2p::Service>& services,
     const std::set<blockchain::p2p::Service>& localServices,
     const std::set<blockchain::p2p::Service>& remoteServices,
-    const api::client::blockchain::Nonce nonce,
+    const bitcoin::Nonce nonce,
     const std::string& userAgent,
     const block::Height height,
     const bool relay,
@@ -328,7 +328,7 @@ Version::BitcoinFormat_106::BitcoinFormat_106() noexcept
 Version::BitcoinFormat_106::BitcoinFormat_106(
     const std::set<bitcoin::Service>& services,
     const tcp::endpoint address,
-    const api::client::blockchain::Nonce nonce) noexcept
+    const bitcoin::Nonce nonce) noexcept
     : local_(services, address)
     , nonce_(nonce)
 {

@@ -123,7 +123,15 @@ auto PayableList::pipeline(const Message& in) noexcept -> void
         OT_FAIL;
     }
 
-    const auto work = body.at(0).as<Work>();
+    const auto work = [&] {
+        try {
+
+            return body.at(0).as<Work>();
+        } catch (...) {
+
+            OT_FAIL;
+        }
+    }();
 
     switch (work) {
         case Work::contact: {

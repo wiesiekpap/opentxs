@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 
+#include "core/OTStorage.hpp"
 #include "internal/api/Api.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Shared.hpp"
@@ -34,7 +35,6 @@
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/NumList.hpp"
-#include "opentxs/core/OTStorage.hpp"
 #include "opentxs/core/OTTransactionType.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/StringXML.hpp"

@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "2_Factory.hpp"
+#include "core/OTStorage.hpp"
 #include "internal/api/client/blockchain/Blockchain.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Editor.hpp"
@@ -32,7 +33,6 @@
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "opentxs/core/OTStorage.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"

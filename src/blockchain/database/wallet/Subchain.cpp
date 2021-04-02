@@ -26,66 +26,44 @@
 namespace opentxs::blockchain::database::wallet
 {
 struct SubchainData::Imp {
-    auto GetID(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version) const noexcept -> pSubchainID
+    auto GetSubchainID(const NodeID& balanceNode, const Subchain subchain)
+        const noexcept -> pSubchainID
     {
-        return subchain_id(balanceNode, subchain, type, version);
+        return subchain_id(balanceNode, subchain);
     }
-    auto GetID(
+    auto GetSubchainIndex(
         const NodeID& balanceNode,
         const Subchain subchain,
         const FilterType type) const noexcept -> pSubchainID
     {
         auto lock = Lock{lock_};
+        auto output = subchain_index(lock, balanceNode, subchain, type);
+        reverse_index_.try_emplace(output, balanceNode, subchain, type);
 
-        return subchain_id(
-            balanceNode,
-            subchain,
-            default_filter_type_,
-            subchain_index_version(
-                lock, balanceNode, subchain, default_filter_type_));
-    }
-    auto GetID(const NodeID& balanceNode, const Subchain subchain)
-        const noexcept -> pSubchainID
-    {
-        auto lock = Lock{lock_};
-
-        return subchain_id(lock, balanceNode, subchain);
+        return output;
     }
     auto GetMutex() const noexcept -> std::mutex& { return lock_; }
-    auto GetPatterns(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version) const noexcept -> Patterns
+    auto GetPatterns(const SubchainIndex& subchain) const noexcept -> Patterns
     {
         auto lock = Lock{lock_};
 
         try {
-            const auto& patterns =
-                get_patterns(lock, balanceNode, subchain, type, version);
+            const auto& patterns = get_patterns(lock, subchain);
 
-            return load_patterns(lock, balanceNode, subchain, patterns);
+            return load_patterns(lock, subchain, patterns);
         } catch (...) {
 
             return {};
         }
     }
     auto GetUntestedPatterns(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const ReadView blockID,
-        const VersionNumber version) const noexcept -> Patterns
+        const SubchainIndex& subchain,
+        const ReadView blockID) const noexcept -> Patterns
     {
         auto lock = Lock{lock_};
 
         try {
-            const auto& allPatterns =
-                get_patterns(lock, balanceNode, subchain, type, version);
+            const auto& allPatterns = get_patterns(lock, subchain);
             auto effectiveIDs = std::vector<pPatternID>{};
 
             try {
@@ -99,10 +77,10 @@ struct SubchainData::Imp {
                     std::back_inserter(effectiveIDs));
             } catch (...) {
 
-                return load_patterns(lock, balanceNode, subchain, allPatterns);
+                return load_patterns(lock, subchain, allPatterns);
             }
 
-            return load_patterns(lock, balanceNode, subchain, effectiveIDs);
+            return load_patterns(lock, subchain, effectiveIDs);
         } catch (...) {
 
             return {};
@@ -110,11 +88,10 @@ struct SubchainData::Imp {
     }
     auto Reorg(
         const Lock& lock,
-        const SubchainID& subchain,
+        const SubchainIndex& subchain,
         const block::Height lastGoodHeight) const noexcept(false) -> bool
     {
-        auto& scanned = subchain_last_scanned_.at(subchain);
-        auto& processed = subchain_last_processed_.at(subchain);
+        auto& scanned = last_scanned_.at(subchain);
 
         if (const auto& height = scanned.first; height < lastGoodHeight) {
             // noop
@@ -124,9 +101,7 @@ struct SubchainData::Imp {
             scanned.first = std::min<block::Height>(lastGoodHeight - 1, 0);
         }
 
-        if (const auto& height = processed.first; height < lastGoodHeight) {
-            return true;
-        }
+        // FIXME use header oracle to set correct block hash
 
         return false;
     }
@@ -138,21 +113,15 @@ struct SubchainData::Imp {
         return true;
     }
     auto SubchainAddElements(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const ElementMap& elements,
-        const VersionNumber version) const noexcept -> bool
+        const SubchainIndex& subchain,
+        const ElementMap& elements) const noexcept -> bool
     {
         auto lock = Lock{lock_};
-        subchain_version_[subchain_version_index(balanceNode, subchain, type)] =
-            version;
-        auto subchainID = subchain_id(balanceNode, subchain, type, version);
         auto newIndices = std::vector<OTIdentifier>{};
         auto highest = Bip32Index{};
 
         for (const auto& [index, patterns] : elements) {
-            auto patternID = pattern_id(subchainID, index);
+            auto patternID = pattern_id(subchain, index);
             auto& vector = patterns_[patternID];
             newIndices.emplace_back(std::move(patternID));
             highest = std::max(highest, index);
@@ -162,147 +131,59 @@ struct SubchainData::Imp {
             }
         }
 
-        subchain_last_indexed_[subchainID] = highest;
-        auto& index = subchain_pattern_index_[subchainID];
+        last_indexed_[subchain] = highest;
+        auto& index = subchain_pattern_index_[subchain];
 
         for (auto& id : newIndices) { index.emplace(std::move(id)); }
 
         return true;
     }
-    auto SubchainDropIndex(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version) const noexcept -> bool
+    auto SubchainLastIndexed(const SubchainIndex& subchain) const noexcept
+        -> std::optional<Bip32Index>
     {
         auto lock = Lock{lock_};
-        const auto subchainID =
-            subchain_id(balanceNode, subchain, type, version);
 
         try {
-            for (const auto& patternID :
-                 subchain_pattern_index_.at(subchainID)) {
-                patterns_.erase(patternID);
-
-                for (auto& [block, set] : match_index_) {
-                    set.erase(patternID);
-                }
-            }
-        } catch (...) {
-        }
-
-        subchain_pattern_index_.erase(subchainID);
-        subchain_last_indexed_.erase(subchainID);
-        subchain_version_.erase(
-            subchain_version_index(balanceNode, subchain, type));
-
-        return true;
-    }
-    auto SubchainIndexVersion(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> VersionNumber
-    {
-        auto lock = Lock{lock_};
-
-        return subchain_index_version(lock, balanceNode, subchain, type);
-    }
-    auto SubchainLastIndexed(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version) const noexcept -> std::optional<Bip32Index>
-    {
-        auto lock = Lock{lock_};
-        const auto subchainID =
-            subchain_id(balanceNode, subchain, type, version);
-
-        try {
-            return subchain_last_indexed_.at(subchainID);
+            return last_indexed_.at(subchain);
         } catch (...) {
             return {};
         }
     }
-    auto SubchainLastProcessed(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> block::Position
+    auto SubchainLastScanned(const SubchainIndex& subchain) const noexcept
+        -> block::Position
     {
         auto lock = Lock{lock_};
 
         try {
-            return subchain_last_processed_.at(
-                subchain_version_index(balanceNode, subchain, type));
-        } catch (...) {
-            return make_blank<block::Position>::value(api_);
-        }
-    }
-    auto SubchainLastScanned(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> block::Position
-    {
-        auto lock = Lock{lock_};
-
-        try {
-            return subchain_last_scanned_.at(
-                subchain_version_index(balanceNode, subchain, type));
+            return last_scanned_.at(subchain);
         } catch (...) {
             return make_blank<block::Position>::value(api_);
         }
     }
     auto SubchainMatchBlock(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
+        const SubchainIndex& subchain,
         const MatchingIndices& indices,
-        const ReadView blockID,
-        const VersionNumber version) const noexcept -> bool
+        const ReadView blockID) const noexcept -> bool
     {
         auto lock = Lock{lock_};
         auto& matchSet = match_index_[api_.Factory().Data(blockID)];
 
         for (const auto& index : indices) {
-            matchSet.emplace(pattern_id(
-                subchain_id(balanceNode, subchain, type, version), index));
+            matchSet.emplace(pattern_id(subchain, index));
         }
 
         return true;
     }
-    auto SubchainSetLastProcessed(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const block::Position& position) const noexcept -> bool
-    {
-        auto lock = Lock{lock_};
-        auto& map = subchain_last_processed_;
-        auto id = subchain_version_index(balanceNode, subchain, type);
-        auto it = map.find(id);
-
-        if (map.end() == it) {
-            map.emplace(std::move(id), position);
-
-            return true;
-        } else {
-            it->second = position;
-
-            return true;
-        }
-    }
     auto SubchainSetLastScanned(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
+        const SubchainIndex& subchain,
         const block::Position& position) const noexcept -> bool
     {
         auto lock = Lock{lock_};
-        auto& map = subchain_last_scanned_;
-        auto id = subchain_version_index(balanceNode, subchain, type);
-        auto it = map.find(id);
+        auto& map = last_scanned_;
+        auto it = map.find(subchain);
 
         if (map.end() == it) {
-            map.emplace(std::move(id), position);
+            map.emplace(subchain, position);
 
             return true;
         } else {
@@ -321,68 +202,76 @@ struct SubchainData::Imp {
     Imp(const api::Core& api) noexcept
         : api_(api)
         , default_filter_type_()
+        , current_version_(1)
         , lock_()
-        , subchain_last_indexed_()
-        , subchain_last_scanned_()
-        , subchain_last_processed_()
+        , last_indexed_()
+        , last_scanned_()
         , subchain_version_()
         , patterns_()
         , subchain_pattern_index_()
         , match_index_()
+        , reverse_index_()
     {
         // TODO persist default_filter_type_ and reindex various tables
         // if the type provided by the filter oracle has changed
     }
 
 private:
-    using pSubchainID = OTIdentifier;
+    using pSubchainVersionIndex = OTIdentifier;
     using PatternID = Identifier;
     using pPatternID = OTIdentifier;
     using Pattern = Parent::Pattern;
-    using SubchainIndexMap = std::map<pSubchainID, VersionNumber>;
-    using PositionMap = std::map<OTIdentifier, block::Position>;
-    using VersionIndex = std::map<OTIdentifier, VersionNumber>;
+    using SubchainIndexMap = std::map<pSubchainIndex, Bip32Index>;
+    using PositionMap = std::map<pSubchainIndex, block::Position>;
+    using VersionIndex = std::map<pSubchainVersionIndex, VersionNumber>;
     using PatternMap =
         std::map<pPatternID, std::vector<std::pair<Bip32Index, Space>>>;
     using IDSet = boost::container::flat_set<pPatternID>;
-    using SubchainPatternIndex = std::map<pSubchainID, IDSet>;
+    using SubchainPatternIndex = std::map<pSubchainIndex, IDSet>;
     using MatchIndex = std::map<block::pHash, IDSet>;
+    using ReverseIndex =
+        std::map<pSubchainIndex, std::tuple<pNodeID, Subchain, FilterType>>;
 
     const api::Core& api_;
     const FilterType default_filter_type_;
+    const VersionNumber current_version_;
     mutable std::mutex lock_;
-    mutable SubchainIndexMap subchain_last_indexed_;
-    mutable PositionMap subchain_last_scanned_;
-    mutable PositionMap subchain_last_processed_;
+    mutable SubchainIndexMap last_indexed_;
+    mutable PositionMap last_scanned_;
     mutable VersionIndex subchain_version_;
     mutable PatternMap patterns_;
     mutable SubchainPatternIndex subchain_pattern_index_;
     mutable MatchIndex match_index_;
+    mutable ReverseIndex reverse_index_;
 
-    auto get_patterns(
+    auto check_subchain_version(
         const Lock& lock,
         const NodeID& balanceNode,
         const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version) const noexcept(false) -> const IDSet&
+        const FilterType type) const noexcept -> void
     {
-        return subchain_pattern_index_.at(
-            subchain_id(balanceNode, subchain, type, version));
+        // TODO compared stored value of the subchain's version to the default
+        // version and reindex if necessary.
+    }
+
+    auto get_patterns(const Lock& lock, const SubchainIndex& subchain) const
+        noexcept(false) -> const IDSet&
+    {
+        return subchain_pattern_index_.at(subchain);
     }
     template <typename PatternList>
     auto load_patterns(
         const Lock& lock,
-        const NodeID& balanceNode,
-        const Subchain subchain,
+        const SubchainIndex& subchain,
         const PatternList& patterns) const noexcept -> Patterns
     {
         auto output = Patterns{};
+        const auto [node, sub, type] = reverse_index_.at(subchain);
 
         for (const auto& patternID : patterns) {
             try {
                 for (const auto& [index, pattern] : patterns_.at(patternID)) {
-                    output.emplace_back(
-                        Pattern{{index, {subchain, balanceNode}}, pattern});
+                    output.emplace_back(Pattern{{index, {sub, node}}, pattern});
                 }
             } catch (...) {
             }
@@ -390,7 +279,7 @@ private:
 
         return output;
     }
-    auto pattern_id(const SubchainID& subchain, const Bip32Index index)
+    auto pattern_id(const SubchainIndex& subchain, const Bip32Index index)
         const noexcept -> pPatternID
     {
         auto preimage = OTData{subchain};
@@ -400,11 +289,21 @@ private:
 
         return output;
     }
-    auto subchain_id(
+    auto subchain_id(const NodeID& nodeID, const Subchain subchain)
+        const noexcept -> pSubchainID
+    {
+        auto preimage = OTData{nodeID};
+        preimage->Concatenate(&subchain, sizeof(subchain));
+        auto output = api_.Factory().Identifier();
+        output->CalculateDigest(preimage->Bytes());
+
+        return output;
+    }
+    auto subchain_index(
         const NodeID& balanceNode,
         const Subchain subchain,
         const FilterType type,
-        const VersionNumber version) const noexcept -> pSubchainID
+        const VersionNumber version) const noexcept -> pSubchainIndex
     {
         auto preimage = OTData{balanceNode};
         preimage->Concatenate(&subchain, sizeof(subchain));
@@ -415,19 +314,17 @@ private:
 
         return output;
     }
-    auto subchain_id(
+    auto subchain_index(
         const Lock& lock,
-        const NodeID& nodeID,
-        const Subchain subchain) const noexcept -> pSubchainID
+        const NodeID& balanceNode,
+        const Subchain subchain,
+        const FilterType type) const noexcept -> pSubchainIndex
     {
-        return subchain_id(
-            nodeID,
-            subchain,
-            default_filter_type_,
-            subchain_index_version(
-                lock, nodeID, subchain, default_filter_type_));
+        check_subchain_version(lock, balanceNode, subchain, type);
+
+        return subchain_index(balanceNode, subchain, type, current_version_);
     }
-    auto subchain_index_version(
+    auto subchain_version(
         const Lock& lock,
         const NodeID& balanceNode,
         const Subchain subchain,
@@ -446,7 +343,7 @@ private:
     auto subchain_version_index(
         const NodeID& balanceNode,
         const Subchain subchain,
-        const FilterType type) const noexcept -> pSubchainID
+        const FilterType type) const noexcept -> pSubchainVersionIndex
     {
         auto preimage = OTData{balanceNode};
         preimage->Concatenate(&subchain, sizeof(subchain));
@@ -464,27 +361,19 @@ SubchainData::SubchainData(const api::Core& api) noexcept
     OT_ASSERT(imp_);
 }
 
-auto SubchainData::GetID(
+auto SubchainData::GetIndex(
     const NodeID& balanceNode,
     const Subchain subchain,
-    const FilterType type,
-    const VersionNumber version) const noexcept -> pSubchainID
+    const FilterType type) const noexcept -> pSubchainIndex
 {
-    return imp_->GetID(balanceNode, subchain, type, version);
+    return imp_->GetSubchainIndex(balanceNode, subchain, type);
 }
 
-auto SubchainData::GetID(
+auto SubchainData::GetSubchainID(
     const NodeID& balanceNode,
-    const Subchain subchain,
-    const FilterType type) const noexcept -> pSubchainID
+    const Subchain subchain) const noexcept -> pSubchainID
 {
-    return imp_->GetID(balanceNode, subchain, type);
-}
-
-auto SubchainData::GetID(const NodeID& balanceNode, const Subchain subchain)
-    const noexcept -> pSubchainID
-{
-    return imp_->GetID(balanceNode, subchain);
+    return imp_->GetSubchainID(balanceNode, subchain);
 }
 
 auto SubchainData::GetMutex() const noexcept -> std::mutex&
@@ -492,29 +381,22 @@ auto SubchainData::GetMutex() const noexcept -> std::mutex&
     return imp_->GetMutex();
 }
 
-auto SubchainData::GetPatterns(
-    const NodeID& balanceNode,
-    const Subchain subchain,
-    const FilterType type,
-    const VersionNumber version) const noexcept -> Patterns
+auto SubchainData::GetPatterns(const SubchainIndex& subchain) const noexcept
+    -> Patterns
 {
-    return imp_->GetPatterns(balanceNode, subchain, type, version);
+    return imp_->GetPatterns(subchain);
 }
 
 auto SubchainData::GetUntestedPatterns(
-    const NodeID& balanceNode,
-    const Subchain subchain,
-    const FilterType type,
-    const ReadView blockID,
-    const VersionNumber version) const noexcept -> Patterns
+    const SubchainIndex& subchain,
+    const ReadView blockID) const noexcept -> Patterns
 {
-    return imp_->GetUntestedPatterns(
-        balanceNode, subchain, type, blockID, version);
+    return imp_->GetUntestedPatterns(subchain, blockID);
 }
 
 auto SubchainData::Reorg(
     const Lock& lock,
-    const SubchainID& subchain,
+    const SubchainIndex& subchain,
     const block::Height lastGoodHeight) const noexcept(false) -> bool
 {
     return imp_->Reorg(lock, subchain, lastGoodHeight);
@@ -527,87 +409,37 @@ auto SubchainData::SetDefaultFilterType(const FilterType type) const noexcept
 }
 
 auto SubchainData::SubchainAddElements(
-    const NodeID& balanceNode,
-    const Subchain subchain,
-    const FilterType type,
-    const ElementMap& elements,
-    const VersionNumber version) const noexcept -> bool
+    const SubchainIndex& subchain,
+    const ElementMap& elements) const noexcept -> bool
 {
-    return imp_->SubchainAddElements(
-        balanceNode, subchain, type, elements, version);
-}
-
-auto SubchainData::SubchainDropIndex(
-    const NodeID& balanceNode,
-    const Subchain subchain,
-    const FilterType type,
-    const VersionNumber version) const noexcept -> bool
-{
-    return imp_->SubchainDropIndex(balanceNode, subchain, type, version);
-}
-
-auto SubchainData::SubchainIndexVersion(
-    const NodeID& balanceNode,
-    const Subchain subchain,
-    const FilterType type) const noexcept -> VersionNumber
-{
-    return imp_->SubchainIndexVersion(balanceNode, subchain, type);
+    return imp_->SubchainAddElements(subchain, elements);
 }
 
 auto SubchainData::SubchainLastIndexed(
-    const NodeID& balanceNode,
-    const Subchain subchain,
-    const FilterType type,
-    const VersionNumber version) const noexcept -> std::optional<Bip32Index>
+    const SubchainIndex& subchain) const noexcept -> std::optional<Bip32Index>
 {
-    return imp_->SubchainLastIndexed(balanceNode, subchain, type, version);
-}
-
-auto SubchainData::SubchainLastProcessed(
-    const NodeID& balanceNode,
-    const Subchain subchain,
-    const FilterType type) const noexcept -> block::Position
-{
-    return imp_->SubchainLastProcessed(balanceNode, subchain, type);
+    return imp_->SubchainLastIndexed(subchain);
 }
 
 auto SubchainData::SubchainLastScanned(
-    const NodeID& balanceNode,
-    const Subchain subchain,
-    const FilterType type) const noexcept -> block::Position
+    const SubchainIndex& subchain) const noexcept -> block::Position
 {
-    return imp_->SubchainLastScanned(balanceNode, subchain, type);
+    return imp_->SubchainLastScanned(subchain);
 }
 
 auto SubchainData::SubchainMatchBlock(
-    const NodeID& balanceNode,
-    const Subchain subchain,
-    const FilterType type,
+    const SubchainIndex& subchain,
     const MatchingIndices& indices,
-    const ReadView blockID,
-    const VersionNumber version) const noexcept -> bool
+    const ReadView blockID) const noexcept -> bool
 {
-    return imp_->SubchainMatchBlock(
-        balanceNode, subchain, type, indices, blockID, version);
-}
-
-auto SubchainData::SubchainSetLastProcessed(
-    const NodeID& balanceNode,
-    const Subchain subchain,
-    const FilterType type,
-    const block::Position& position) const noexcept -> bool
-{
-    return imp_->SubchainSetLastProcessed(
-        balanceNode, subchain, type, position);
+    return imp_->SubchainMatchBlock(subchain, indices, blockID);
 }
 
 auto SubchainData::SubchainSetLastScanned(
-    const NodeID& balanceNode,
-    const Subchain subchain,
-    const FilterType type,
+    const SubchainIndex& subchain,
     const block::Position& position) const noexcept -> bool
 {
-    return imp_->SubchainSetLastScanned(balanceNode, subchain, type, position);
+    return imp_->SubchainSetLastScanned(subchain, position);
 }
 
 auto SubchainData::Type() const noexcept -> FilterType { return imp_->Type(); }

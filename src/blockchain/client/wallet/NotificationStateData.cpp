@@ -93,7 +93,7 @@ auto NotificationStateData::calculate_id(
 
 auto NotificationStateData::check_index() noexcept -> bool
 {
-    const auto index = db_.SubchainLastIndexed(id_, subchain_, filter_type_);
+    const auto index = db_.SubchainLastIndexed(index_);
 
     if (index.value_or(0) < code_->Version()) {
         LogVerbose(OT_METHOD)(__FUNCTION__)(": Payment code ")(
@@ -139,7 +139,7 @@ auto NotificationStateData::index() noexcept -> void
         }
     }
 
-    db_.SubchainAddElements(id_, subchain_, filter_type_, elements);
+    db_.SubchainAddElements(index_, elements);
     LogTrace(OT_METHOD)(__FUNCTION__)(": Payment code ")(code_->asBase58())(
         " indexed")
         .Flush();

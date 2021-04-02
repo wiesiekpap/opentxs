@@ -418,7 +418,17 @@ auto Network::pipeline(zmq::Message& in) noexcept -> void
 
     OT_ASSERT(0 < body.size());
 
-    switch (body.at(0).as<Task>()) {
+    const auto task = [&] {
+        try {
+
+            return body.at(0).as<Task>();
+        } catch (...) {
+
+            OT_FAIL;
+        }
+    }();
+
+    switch (task) {
         case Task::SubmitBlock: {
             process_block(in);
         } break;

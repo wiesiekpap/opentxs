@@ -14,9 +14,11 @@
 #include <map>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"
@@ -27,6 +29,7 @@
 #include "opentxs/crypto/key/HD.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/AsymmetricKey.pb.h"
 #include "opentxs/protobuf/BlockchainActivity.pb.h"
+#include "opentxs/protobuf/BlockchainAddress.pb.h"
 
 #define OT_METHOD "opentxs::api::client::blockchain::implementation::Element::"
 

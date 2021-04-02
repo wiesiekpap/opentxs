@@ -9,6 +9,7 @@
 #include "opentxs/Forward.hpp"  // IWYU pragma: associated
 
 #include <memory>
+#include <set>
 #include <tuple>
 
 #include "opentxs/blockchain/Types.hpp"

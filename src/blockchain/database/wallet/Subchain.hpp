@@ -33,86 +33,45 @@ public:
     using Parent = client::internal::WalletDatabase;
     using SubchainID = Identifier;
     using pSubchainID = OTIdentifier;
+    using SubchainIndex = Parent::SubchainIndex;
+    using pSubchainIndex = Parent::pSubchainIndex;
     using NodeID = Parent::NodeID;
+    using pNodeID = Parent::pNodeID;
     using Subchain = Parent::Subchain;
     using FilterType = Parent::FilterType;
     using Patterns = Parent::Patterns;
     using ElementMap = Parent::ElementMap;
     using MatchingIndices = Parent::MatchingIndices;
 
-    auto GetID(
+    auto GetIndex(
         const NodeID& balanceNode,
         const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version) const noexcept -> pSubchainID;
-    auto GetID(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> pSubchainID;
-    auto GetID(const NodeID& balanceNode, const Subchain subchain)
+        const FilterType type) const noexcept -> pSubchainIndex;
+    auto GetSubchainID(const NodeID& balanceNode, const Subchain subchain)
         const noexcept -> pSubchainID;
     auto GetMutex() const noexcept -> std::mutex&;
-    auto GetPatterns(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version) const noexcept -> Patterns;
+    auto GetPatterns(const SubchainIndex& subchain) const noexcept -> Patterns;
     auto GetUntestedPatterns(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const ReadView blockID,
-        const VersionNumber version) const noexcept -> Patterns;
+        const SubchainIndex& subchain,
+        const ReadView blockID) const noexcept -> Patterns;
     auto Reorg(
         const Lock& lock,
-        const SubchainID& subchain,
+        const SubchainIndex& subchain,
         const block::Height lastGoodHeight) const noexcept(false) -> bool;
     auto SetDefaultFilterType(const FilterType type) const noexcept -> bool;
     auto SubchainAddElements(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const ElementMap& elements,
-        const VersionNumber version) const noexcept -> bool;
-    auto SubchainDropIndex(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version) const noexcept -> bool;
-    auto SubchainIndexVersion(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> VersionNumber;
-    auto SubchainLastIndexed(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version) const noexcept
+        const SubchainIndex& subchain,
+        const ElementMap& elements) const noexcept -> bool;
+    auto SubchainLastIndexed(const SubchainIndex& subchain) const noexcept
         -> std::optional<Bip32Index>;
-    auto SubchainLastProcessed(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> block::Position;
-    auto SubchainLastScanned(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> block::Position;
+    auto SubchainLastScanned(const SubchainIndex& subchain) const noexcept
+        -> block::Position;
     auto SubchainMatchBlock(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
+        const SubchainIndex& subchain,
         const MatchingIndices& indices,
-        const ReadView blockID,
-        const VersionNumber version) const noexcept -> bool;
-    auto SubchainSetLastProcessed(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const block::Position& position) const noexcept -> bool;
+        const ReadView blockID) const noexcept -> bool;
     auto SubchainSetLastScanned(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
+        const SubchainIndex& subchain,
         const block::Position& position) const noexcept -> bool;
     auto Type() const noexcept -> FilterType;
 

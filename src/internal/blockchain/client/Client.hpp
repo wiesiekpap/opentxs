@@ -594,6 +594,8 @@ struct WalletDatabase {
     using FilterType = filter::Type;
     using NodeID = Identifier;
     using pNodeID = OTIdentifier;
+    using SubchainIndex = Identifier;
+    using pSubchainIndex = OTIdentifier;
     using Subchain = api::client::blockchain::Subchain;
     using SubchainID = std::pair<Subchain, pNodeID>;
     using ElementID = std::pair<Bip32Index, SubchainID>;
@@ -611,21 +613,15 @@ struct WalletDatabase {
         UnconfirmedToo = true,
     };
 
-    static const VersionNumber DefaultIndexVersion;
-
     virtual auto AddConfirmedTransaction(
-        const blockchain::Type chain,
         const NodeID& balanceNode,
         const Subchain subchain,
-        const FilterType type,
         const block::Position& block,
         const std::size_t blockIndex,
         const std::vector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& transaction,
-        const VersionNumber version = DefaultIndexVersion) const noexcept
+        const block::bitcoin::Transaction& transaction) const noexcept
         -> bool = 0;
     virtual auto AddOutgoingTransaction(
-        const blockchain::Type chain,
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
         const block::bitcoin::Transaction& transaction) const noexcept
@@ -645,6 +641,10 @@ struct WalletDatabase {
         -> Balance = 0;
     virtual auto GetBalance(const identifier::Nym& owner, const NodeID& node)
         const noexcept -> Balance = 0;
+    virtual auto GetIndex(
+        const NodeID& balanceNode,
+        const Subchain subchain,
+        const FilterType type) const noexcept -> pSubchainIndex = 0;
     virtual auto GetOutputs(State type) const noexcept -> std::vector<UTXO> = 0;
     virtual auto GetOutputs(const identifier::Nym& owner, State type)
         const noexcept -> std::vector<UTXO> = 0;
@@ -652,26 +652,15 @@ struct WalletDatabase {
         const identifier::Nym& owner,
         const Identifier& node,
         State type) const noexcept -> std::vector<UTXO> = 0;
-    virtual auto GetPatterns(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version = DefaultIndexVersion) const noexcept
+    virtual auto GetPatterns(const SubchainIndex& index) const noexcept
         -> Patterns = 0;
     virtual auto GetUnspentOutputs() const noexcept -> std::vector<UTXO> = 0;
     virtual auto GetUnspentOutputs(
         const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version = DefaultIndexVersion) const noexcept
-        -> std::vector<UTXO> = 0;
+        const Subchain subchain) const noexcept -> std::vector<UTXO> = 0;
     virtual auto GetUntestedPatterns(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const ReadView blockID,
-        const VersionNumber version = DefaultIndexVersion) const noexcept
-        -> Patterns = 0;
+        const SubchainIndex& index,
+        const ReadView blockID) const noexcept -> Patterns = 0;
     virtual auto LoadProposal(const Identifier& id) const noexcept
         -> std::optional<proto::BlockchainTransactionProposal> = 0;
     virtual auto LoadProposals() const noexcept
@@ -681,7 +670,7 @@ struct WalletDatabase {
     virtual auto ReorgTo(
         const NodeID& balanceNode,
         const Subchain subchain,
-        const FilterType type,
+        const SubchainIndex& index,
         const std::vector<block::Position>& reorg) const noexcept -> bool = 0;
     virtual auto ReserveUTXO(
         const identifier::Nym& spender,
@@ -690,52 +679,18 @@ struct WalletDatabase {
     virtual auto SetDefaultFilterType(const FilterType type) const noexcept
         -> bool = 0;
     virtual auto SubchainAddElements(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const ElementMap& elements,
-        const VersionNumber version = DefaultIndexVersion) const noexcept
-        -> bool = 0;
-    virtual auto SubchainDropIndex(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version) const noexcept -> bool = 0;
-    virtual auto SubchainIndexVersion(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> VersionNumber = 0;
-    virtual auto SubchainLastIndexed(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const VersionNumber version = DefaultIndexVersion) const noexcept
+        const SubchainIndex& index,
+        const ElementMap& elements) const noexcept -> bool = 0;
+    virtual auto SubchainLastIndexed(const SubchainIndex& index) const noexcept
         -> std::optional<Bip32Index> = 0;
+    virtual auto SubchainLastScanned(const SubchainIndex& index) const noexcept
+        -> block::Position = 0;
     virtual auto SubchainMatchBlock(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
+        const SubchainIndex& index,
         const MatchingIndices& indices,
-        const ReadView blockID,
-        const VersionNumber version = DefaultIndexVersion) const noexcept
-        -> bool = 0;
-    virtual auto SubchainLastProcessed(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> block::Position = 0;
-    virtual auto SubchainLastScanned(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> block::Position = 0;
-    virtual auto SubchainSetLastProcessed(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
-        const block::Position& position) const noexcept -> bool = 0;
+        const ReadView blockID) const noexcept -> bool = 0;
     virtual auto SubchainSetLastScanned(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type,
+        const SubchainIndex& index,
         const block::Position& position) const noexcept -> bool = 0;
     virtual auto TransactionLoadBitcoin(const ReadView txid) const noexcept
         -> std::unique_ptr<block::bitcoin::Transaction> = 0;

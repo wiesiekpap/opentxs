@@ -876,8 +876,17 @@ auto FilterOracle::ProcessThreadPool(const zmq::Message& in) noexcept -> void
 
     const auto& filterOracle = *pFilterOracle;
     using Work = api::internal::ThreadPool::Work;
+    const auto work = [&] {
+        try {
 
-    switch (header.at(header.size() - 1u).as<Work>()) {
+            return header.at(header.size() - 1u).as<Work>();
+        } catch (...) {
+
+            OT_FAIL;
+        }
+    }();
+
+    switch (work) {
         case Work::SyncDataFiltersIncoming: {
             auto* pData = reinterpret_cast<Imp::SyncClientFilterData*>(
                 body.at(1).as<std::uintptr_t>());

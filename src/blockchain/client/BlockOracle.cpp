@@ -131,7 +131,17 @@ auto BlockOracle::pipeline(const zmq::Message& in) noexcept -> void
         OT_FAIL;
     }
 
-    switch (body.at(0).as<Task>()) {
+    const auto task = [&] {
+        try {
+
+            return body.at(0).as<Task>();
+        } catch (...) {
+
+            OT_FAIL;
+        }
+    }();
+
+    switch (task) {
         case Task::ProcessBlock: {
             if (2 > body.size()) {
                 LogOutput(OT_METHOD)(__FUNCTION__)(": No block").Flush();
