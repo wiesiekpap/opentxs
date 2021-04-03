@@ -73,6 +73,7 @@ struct Proposal::Imp {
     }
     auto FinishProposal(const Identifier& id) noexcept -> bool
     {
+        auto lock = Lock{lock_};
         proposals_.erase(id);
         finished_proposals_.emplace(id);
 

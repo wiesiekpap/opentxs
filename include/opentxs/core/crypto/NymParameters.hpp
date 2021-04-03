@@ -11,7 +11,7 @@
 // IWYU pragma: no_include "opentxs/crypto/SeedStrength.hpp"
 // IWYU pragma: no_include "opentxs/crypto/SeedStyle.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <memory>

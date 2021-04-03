@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CRYPTO_KEY_RSA_HPP
 #define OPENTXS_CRYPTO_KEY_RSA_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #if OT_CRYPTO_SUPPORTED_KEY_RSA
 #include "opentxs/crypto/key/Asymmetric.hpp"

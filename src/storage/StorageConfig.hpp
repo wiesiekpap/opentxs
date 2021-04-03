@@ -18,55 +18,41 @@
 #define STORAGE_CONFIG_FS_BACKUP_DIRECTORY_KEY "fs_backup_directory"
 #define STORAGE_CONFIG_FS_ENCRYPTED_BACKUP_DIRECTORY_KEY "fs_encrypted_backup"
 
-namespace C = std::chrono;
-
 namespace opentxs
 {
-
 using InsertCB = std::function<void(const std::string&, const std::string&)>;
 
 class StorageConfig
 {
 public:
-    bool auto_publish_nyms_ = true;
-    bool auto_publish_servers_ = true;
-    bool auto_publish_units_ = true;
-    std::int64_t gc_interval_ =
-        C::duration_cast<C::seconds>(C::hours(1)).count();
-    std::string path_{};
-    InsertCB dht_callback_{};
+    static const std::string default_plugin_;
 
-#if OT_STORAGE_LMDB
-    std::string primary_plugin_ = OT_STORAGE_PRIMARY_PLUGIN_LMDB;
-#elif OT_STORAGE_SQLITE
-    std::string primary_plugin_ = OT_STORAGE_PRIMARY_PLUGIN_SQLITE;
-#elif OT_STORAGE_FS
-    std::string primary_plugin_ = OT_STORAGE_PRIMARY_PLUGIN_FS;
-#else
-    std::string primary_plugin_{};
-#endif
+    bool auto_publish_nyms_;
+    bool auto_publish_servers_;
+    bool auto_publish_units_;
+    std::int64_t gc_interval_;
+    std::string path_;
+    InsertCB dht_callback_;
 
-#ifdef OT_STORAGE_FS
-    std::string fs_primary_bucket_ = "a";
-    std::string fs_secondary_bucket_ = "b";
-    std::string fs_root_file_ = "root";
-    std::string fs_backup_directory_{""};
-    std::string fs_encrypted_backup_directory_{""};
-#endif
+    std::string primary_plugin_;
 
-#ifdef OT_STORAGE_SQLITE
-    std::string sqlite3_primary_bucket_ = "a";
-    std::string sqlite3_secondary_bucket_ = "b";
-    std::string sqlite3_control_table_ = "control";
-    std::string sqlite3_root_key_ = "a";
-    std::string sqlite3_db_file_ = "opentxs.sqlite3";
-#endif
+    std::string fs_primary_bucket_;
+    std::string fs_secondary_bucket_;
+    std::string fs_root_file_;
+    std::string fs_backup_directory_;
+    std::string fs_encrypted_backup_directory_;
 
-#ifdef OT_STORAGE_LMDB
-    std::string lmdb_primary_bucket_ = "a";
-    std::string lmdb_secondary_bucket_ = "b";
-    std::string lmdb_control_table_ = "control";
-    std::string lmdb_root_key_ = "root";
-#endif
+    std::string sqlite3_primary_bucket_;
+    std::string sqlite3_secondary_bucket_;
+    std::string sqlite3_control_table_;
+    std::string sqlite3_root_key_;
+    std::string sqlite3_db_file_;
+
+    std::string lmdb_primary_bucket_;
+    std::string lmdb_secondary_bucket_;
+    std::string lmdb_control_table_;
+    std::string lmdb_root_key_;
+
+    StorageConfig() noexcept;
 };
 }  // namespace opentxs

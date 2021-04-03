@@ -6,7 +6,7 @@
 #ifndef OPENTXS_API_STORAGE_DRIVER_HPP
 #define OPENTXS_API_STORAGE_DRIVER_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <future>
 #include <memory>

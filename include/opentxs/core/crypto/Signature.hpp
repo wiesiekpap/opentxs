@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CORE_CRYPTO_SIGNATURE_HPP
 #define OPENTXS_CORE_CRYPTO_SIGNATURE_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/core/Armored.hpp"
@@ -21,6 +21,7 @@ struct Core;
 }  // namespace internal
 }  // namespace api
 
+class OTSignatureMetadata;
 class Signature;
 
 using OTSignature = Pimpl<Signature>;

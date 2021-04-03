@@ -17,10 +17,11 @@
 #include <vector>
 
 #include "internal/api/client/Client.hpp"
-#include "opentxs/Forward.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/Version.hpp"
+#include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/UI.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"

@@ -6,7 +6,7 @@
 #ifndef OPENTXS_UI_ACTIVITYTHREADITEM_HPP
 #define OPENTXS_UI_ACTIVITYTHREADITEM_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
 #include <cstdint>

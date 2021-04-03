@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"

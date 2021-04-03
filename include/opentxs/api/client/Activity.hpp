@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
 #include <memory>
@@ -21,6 +21,14 @@
 
 namespace opentxs
 {
+namespace api
+{
+namespace client
+{
+class Blockchain;
+}  // namespace client
+}  // namespace api
+
 namespace blockchain
 {
 namespace block

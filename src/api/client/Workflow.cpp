@@ -15,9 +15,9 @@
 
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Factory.hpp"
-#include "opentxs/Forward.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Proto.tpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Activity.hpp"

@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CRYPTO_LIBRARY_ENCODINGPROVIDER_HPP
 #define OPENTXS_CRYPTO_LIBRARY_ENCODINGPROVIDER_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>
 

@@ -6,7 +6,7 @@
 #ifndef OPENTXS_UI_ACTIVITYSUMMARYITEM_HPP
 #define OPENTXS_UI_ACTIVITYSUMMARYITEM_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
 #include <string>

@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <memory>
@@ -28,12 +28,39 @@
 
 namespace opentxs
 {
+namespace crypto
+{
+namespace key
+{
+class Symmetric;
+}  // namespace key
+}  // namespace crypto
+
+namespace identifier
+{
+class Nym;
+class UnitDefinition;
+}  // namespace identifier
+
+namespace identity
+{
+class Authority;
+class Source;
+}  // namespace identity
+
 namespace proto
 {
 class ContactData;
 class Nym;
 class Signature;
 }  // namespace proto
+
+class ContactData;
+class NymParameters;
+class PasswordPrompt;
+class PaymentCode;
+class Signature;
+class Tag;
 }  // namespace opentxs
 
 namespace opentxs

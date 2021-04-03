@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <string>
@@ -21,6 +21,11 @@
 
 namespace opentxs
 {
+namespace api
+{
+class Core;
+}  // namespace api
+
 namespace crypto
 {
 namespace key
@@ -35,6 +40,7 @@ class Ciphertext;
 class SymmetricKey;
 }  // namespace proto
 
+class PasswordPrompt;
 class Secret;
 
 using OTSymmetricKey = Pimpl<crypto::key::Symmetric>;

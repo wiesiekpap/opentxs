@@ -45,6 +45,8 @@ struct Contacts;
 struct Manager;
 struct Pair;
 }  // namespace internal
+
+class Contacts;
 }  // namespace client
 
 namespace crypto
@@ -78,6 +80,10 @@ class Context;
 class Dht;
 class ZMQ;
 }  // namespace implementation
+
+class Dht;
+class ZAP;
+class ZMQ;
 }  // namespace network
 
 namespace server
@@ -87,10 +93,13 @@ namespace implementation
 class Factory;
 class Manager;
 }  // namespace implementation
+
 namespace internal
 {
 struct Manager;
 }  // namespace internal
+
+class Manager;
 }  // namespace server
 
 namespace storage
@@ -103,10 +112,16 @@ class Storage;
 class Driver;
 class Multiplex;
 class Plugin;
+class Storage;
 class StorageInternal;
 }  // namespace storage
 
+class Context;
 class Core;
+class Crypto;
+class Legacy;
+class Settings;
+class Wallet;
 }  // namespace api
 
 namespace blind
@@ -123,18 +138,74 @@ namespace implementation
 class Token;
 }  // namespace implementation
 }  // namespace token
+
+class Mint;
+class Purse;
+class Token;
 }  // namespace blind
+
+namespace contract
+{
+namespace peer
+{
+namespace reply
+{
+class Acknowledgement;
+class Bailment;
+class Connection;
+class Outbailment;
+}  // namespace reply
+
+namespace request
+{
+class Bailment;
+class BailmentNotice;
+class Connection;
+class Outbailment;
+class StoreSecret;
+}  // namespace request
+
+class Reply;
+class Request;
+}  // namespace peer
+
+namespace unit
+{
+class Basket;
+class Currency;
+class Security;
+}  // namespace unit
+
+class Server;
+class Signable;
+class Unit;
+}  // namespace contract
 
 namespace crypto
 {
-class Pbkdf2;
-class Ripemd160;
-class Scrypt;
+namespace key
+{
+class Asymmetric;
+class Ed25519;
+class EllipticCurve;
+class HD;
+class Keypair;
+class RSA;
+class Secp256k1;
+class Symmetric;
+}  // namespace key
 
 namespace implementation
 {
 class OpenSSL;
 }  // namespace implementation
+
+class Bip39;
+class Bitcoin;
+class Envelope;
+class Pbkdf2;
+class Ripemd160;
+class Scrypt;
 }  // namespace crypto
 
 namespace identity
@@ -187,6 +258,9 @@ namespace implementation
 class Context;
 class Proxy;
 }  // namespace implementation
+
+class Context;
+class Message;
 }  // namespace zeromq
 }  // namespace network
 
@@ -206,6 +280,18 @@ namespace context
 class Server;
 }  // namespace context
 }  // namespace otx
+
+namespace identifier
+{
+class Nym;
+class Server;
+class UnitDefinition;
+}  // namespace identifier
+
+namespace identity
+{
+class Source;
+}  // namespace identity
 
 namespace proto
 {
@@ -273,10 +359,15 @@ class Units;
 }  // namespace storage
 
 class DhtConfig;
+class Flag;
 class Libsecp256k1;
 class Libsodium;
-class LowLevelKeyGenerator;
+class NymParameters;
+class OTCallback;
 class OpenSSL;
+class PasswordPrompt;
+class PaymentCode;
+class PeerObject;
 class Secret;
 class StorageConfig;
 }  // namespace opentxs
@@ -734,7 +825,6 @@ public:
         const std::chrono::seconds gcIntervalCLI,
         String& encryptedDirectoryCLI,
         StorageConfig& storageConfig) -> api::storage::StorageInternal*;
-#if OT_STORAGE_FS
     static auto StorageFSArchive(
         const api::storage::Storage& storage,
         const StorageConfig& config,
@@ -749,21 +839,18 @@ public:
         const Digest& hash,
         const Random& random,
         const Flag& bucket) -> opentxs::api::storage::Plugin*;
-#endif
     static auto StorageMemDB(
         const api::storage::Storage& storage,
         const StorageConfig& config,
         const Digest& hash,
         const Random& random,
         const Flag& bucket) -> opentxs::api::storage::Plugin*;
-#if OT_STORAGE_LMDB
     static auto StorageLMDB(
         const api::storage::Storage& storage,
         const StorageConfig& config,
         const Digest& hash,
         const Random& random,
         const Flag& bucket) -> opentxs::api::storage::Plugin*;
-#endif
     static auto StorageMultiplex(
         const api::storage::Storage& storage,
         const Flag& primaryBucket,
@@ -773,14 +860,12 @@ public:
         const String& previous,
         const Digest& hash,
         const Random& random) -> opentxs::api::storage::Multiplex*;
-#if OT_STORAGE_SQLITE
     static auto StorageSqlite3(
         const api::storage::Storage& storage,
         const StorageConfig& config,
         const Digest& hash,
         const Random& random,
         const Flag& bucket) -> opentxs::api::storage::Plugin*;
-#endif
     static auto StoreSecret(
         const api::internal::Core& api,
         const Nym_p& nym,

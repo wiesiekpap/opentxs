@@ -6,7 +6,7 @@
 #ifndef OPENTXS_BLOCKCHAIN_BLOCK_BITCOIN_TRANSACTION_HPP
 #define OPENTXS_BLOCKCHAIN_BLOCK_BITCOIN_TRANSACTION_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <map>
@@ -23,6 +23,15 @@
 
 namespace opentxs
 {
+namespace api
+{
+namespace client
+{
+class Blockchain;
+class Contacts;
+}  // namespace client
+}  // namespace api
+
 namespace blockchain
 {
 namespace block
@@ -33,6 +42,9 @@ namespace internal
 {
 struct Transaction;
 }  // namespace internal
+
+class Inputs;
+class Outputs;
 }  // namespace bitcoin
 }  // namespace block
 }  // namespace blockchain

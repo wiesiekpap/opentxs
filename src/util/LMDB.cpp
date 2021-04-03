@@ -7,6 +7,10 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "util/LMDB.hpp"   // IWYU pragma: associated
 
+extern "C" {
+#include <lmdb.h>
+}
+
 #include <cstddef>
 #include <limits>
 #include <stdexcept>
@@ -14,34 +18,856 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "util/ByteLiterals.hpp"
+
+#if OS_SUPPORTS_LARGE_SPARSE_FILES
+#define OT_LMDB_SIZE 1_TiB
+#elif OS_HAS_MEDIOCRE_SPARSE_FILE_SUPPORT
+#define OT_LMDB_SIZE 16_GiB
+#else
+#define OT_LMDB_SIZE 512_MiB
+#endif
 
 #define OT_METHOD "opentxs::storage::lmdb::LMDB::"
 
 namespace opentxs::storage::lmdb
 {
+struct LMDB::Imp {
+    auto Commit() const noexcept -> bool
+    {
+        struct Cleanup {
+            bool success_;
+
+            Cleanup(const Imp& parent, MDB_txn*& transaction)
+                : success_(false)
+                , parent_(parent)
+                , transaction_(transaction)
+            {
+            }
+
+            ~Cleanup()
+            {
+                if (nullptr != transaction_) {
+                    if (success_) {
+                        ::mdb_txn_commit(transaction_);
+                    } else {
+                        ::mdb_txn_abort(transaction_);
+                    }
+
+                    transaction_ = nullptr;
+                }
+
+                parent_.pending_.clear();
+            }
+
+        private:
+            const Imp& parent_;
+            MDB_txn*& transaction_;
+        };
+
+        Lock lock(lock_);
+        MDB_txn* transaction{nullptr};
+
+        if (0 != ::mdb_txn_begin(env_, nullptr, 0, &transaction)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to start transaction")
+                .Flush();
+
+            return false;
+        }
+
+        OT_ASSERT(nullptr != transaction);
+
+        Cleanup cleanup(*this, transaction);
+
+        for (auto& [table, mode, index, data] : pending_) {
+            auto database = db_.at(table);
+            auto key = MDB_val{index.size(), const_cast<char*>(index.data())};
+            auto value = MDB_val{data.size(), const_cast<char*>(data.data())};
+            cleanup.success_ =
+                0 == ::mdb_put(transaction, database, &key, &value, 0);
+
+            if (false == cleanup.success_) { break; }
+        }
+
+        return cleanup.success_;
+    }
+    auto Delete(const Table table, MDB_txn* parent) const noexcept -> bool
+    {
+        struct Cleanup {
+            bool success_;
+
+            Cleanup(MDB_txn*& transaction)
+                : success_(false)
+                , transaction_(transaction)
+            {
+            }
+
+            ~Cleanup()
+            {
+                if (nullptr != transaction_) {
+                    if (success_) {
+                        ::mdb_txn_commit(transaction_);
+                    } else {
+                        ::mdb_txn_abort(transaction_);
+                    }
+
+                    transaction_ = nullptr;
+                }
+            }
+
+        private:
+            MDB_txn*& transaction_;
+        };
+
+        MDB_txn* transaction{nullptr};
+
+        if (0 != ::mdb_txn_begin(env_, parent, 0, &transaction)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to start transaction")
+                .Flush();
+
+            return false;
+        }
+
+        OT_ASSERT(nullptr != transaction);
+
+        auto cleanup = Cleanup{transaction};
+        const auto database = db_.at(table);
+        cleanup.success_ = 0 == ::mdb_drop(transaction, database, 0);
+
+        return cleanup.success_;
+    }
+    auto Delete(const Table table, const ReadView index, MDB_txn* parent)
+        const noexcept -> bool
+    {
+        struct Cleanup {
+            bool success_;
+
+            Cleanup(MDB_txn*& transaction)
+                : success_(false)
+                , transaction_(transaction)
+            {
+            }
+
+            ~Cleanup()
+            {
+                if (nullptr != transaction_) {
+                    if (success_) {
+                        ::mdb_txn_commit(transaction_);
+                    } else {
+                        ::mdb_txn_abort(transaction_);
+                    }
+
+                    transaction_ = nullptr;
+                }
+            }
+
+        private:
+            MDB_txn*& transaction_;
+        };
+
+        MDB_txn* transaction{nullptr};
+
+        if (0 != ::mdb_txn_begin(env_, parent, 0, &transaction)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to start transaction")
+                .Flush();
+
+            return false;
+        }
+
+        OT_ASSERT(nullptr != transaction);
+
+        auto cleanup = Cleanup{transaction};
+        const auto database = db_.at(table);
+        auto key = MDB_val{index.size(), const_cast<char*>(index.data())};
+        cleanup.success_ = 0 == ::mdb_del(transaction, database, &key, nullptr);
+
+        return cleanup.success_;
+    }
+    auto Delete(const Table table, const std::size_t index, MDB_txn* parent)
+        const noexcept -> bool
+    {
+        return Delete(
+            table,
+            ReadView{reinterpret_cast<const char*>(&index), sizeof(index)},
+            parent);
+    }
+    auto Delete(
+        const Table table,
+        const std::size_t index,
+        const ReadView data,
+        MDB_txn* parent) const noexcept -> bool
+    {
+        return Delete(
+            table,
+            ReadView{reinterpret_cast<const char*>(&index), sizeof(index)},
+            data,
+            parent);
+    }
+    auto Delete(
+        const Table table,
+        const ReadView index,
+        const ReadView data,
+        MDB_txn* parent) const noexcept -> bool
+    {
+        struct Cleanup {
+            bool success_;
+
+            Cleanup(MDB_txn*& transaction)
+                : success_(false)
+                , transaction_(transaction)
+            {
+            }
+
+            ~Cleanup()
+            {
+                if (nullptr != transaction_) {
+                    if (success_) {
+                        ::mdb_txn_commit(transaction_);
+                    } else {
+                        ::mdb_txn_abort(transaction_);
+                    }
+
+                    transaction_ = nullptr;
+                }
+            }
+
+        private:
+            MDB_txn*& transaction_;
+        };
+
+        MDB_txn* transaction{nullptr};
+
+        if (0 != ::mdb_txn_begin(env_, parent, 0, &transaction)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to start transaction")
+                .Flush();
+
+            return false;
+        }
+
+        OT_ASSERT(nullptr != transaction);
+
+        auto cleanup = Cleanup{transaction};
+        const auto database = db_.at(table);
+        auto key = MDB_val{index.size(), const_cast<char*>(index.data())};
+        auto value = MDB_val{data.size(), const_cast<char*>(data.data())};
+        cleanup.success_ = 0 == ::mdb_del(transaction, database, &key, &value);
+
+        return cleanup.success_;
+    }
+    auto Exists(const Table table, const ReadView index) const noexcept -> bool
+    {
+        struct Cleanup {
+            bool success_;
+
+            Cleanup(MDB_txn*& transaction, MDB_cursor*& cursor)
+                : success_(false)
+                , transaction_(transaction)
+                , cursor_(cursor)
+            {
+            }
+
+            ~Cleanup()
+            {
+                if (nullptr != cursor_) {
+                    ::mdb_cursor_close(cursor_);
+                    cursor_ = nullptr;
+                }
+
+                if (nullptr != transaction_) {
+                    ::mdb_txn_abort(transaction_);
+                    transaction_ = nullptr;
+                }
+            }
+
+        private:
+            MDB_txn*& transaction_;
+            MDB_cursor*& cursor_;
+        };
+
+        MDB_txn* transaction{nullptr};
+
+        if (0 != ::mdb_txn_begin(env_, nullptr, MDB_RDONLY, &transaction)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to start transaction")
+                .Flush();
+
+            return false;
+        }
+
+        OT_ASSERT(nullptr != transaction);
+
+        MDB_cursor* cursor{nullptr};
+        Cleanup cleanup(transaction, cursor);
+        const auto database = db_.at(table);
+
+        if (0 != ::mdb_cursor_open(transaction, database, &cursor)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to get cursor")
+                .Flush();
+
+            return false;
+        }
+
+        auto key = MDB_val{index.size(), const_cast<char*>(index.data())};
+        auto value = MDB_val{};
+        cleanup.success_ = 0 == ::mdb_cursor_get(cursor, &key, &value, MDB_SET);
+
+        return cleanup.success_;
+    }
+    auto Load(
+        const Table table,
+        const ReadView index,
+        const Callback cb,
+        const Mode multiple) const noexcept -> bool
+    {
+        struct Cleanup {
+            bool success_;
+
+            Cleanup(MDB_txn*& transaction, MDB_cursor*& cursor)
+                : success_(false)
+                , transaction_(transaction)
+                , cursor_(cursor)
+            {
+            }
+
+            ~Cleanup()
+            {
+                if (nullptr != cursor_) {
+                    ::mdb_cursor_close(cursor_);
+                    cursor_ = nullptr;
+                }
+
+                if (nullptr != transaction_) {
+                    ::mdb_txn_abort(transaction_);
+                    transaction_ = nullptr;
+                }
+            }
+
+        private:
+            MDB_txn*& transaction_;
+            MDB_cursor*& cursor_;
+        };
+
+        MDB_txn* transaction{nullptr};
+
+        if (0 != ::mdb_txn_begin(env_, nullptr, MDB_RDONLY, &transaction)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to start transaction")
+                .Flush();
+
+            return false;
+        }
+
+        OT_ASSERT(nullptr != transaction);
+
+        MDB_cursor* cursor{nullptr};
+        Cleanup cleanup(transaction, cursor);
+        const auto database = db_.at(table);
+
+        if (0 != ::mdb_cursor_open(transaction, database, &cursor)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to get cursor")
+                .Flush();
+
+            return false;
+        }
+
+        auto key = MDB_val{index.size(), const_cast<char*>(index.data())};
+        auto value = MDB_val{};
+        cleanup.success_ = 0 == ::mdb_cursor_get(cursor, &key, &value, MDB_SET);
+
+        if (cleanup.success_) {
+            ::mdb_cursor_get(cursor, &key, &value, MDB_FIRST_DUP);
+
+            if (0 == ::mdb_cursor_get(cursor, &key, &value, MDB_GET_CURRENT)) {
+                cb({static_cast<char*>(value.mv_data), value.mv_size});
+            } else {
+
+                return false;
+            }
+
+            if (static_cast<bool>(multiple)) {
+                while (0 ==
+                       ::mdb_cursor_get(cursor, &key, &value, MDB_NEXT_DUP)) {
+                    if (0 == ::mdb_cursor_get(
+                                 cursor, &key, &value, MDB_GET_CURRENT)) {
+                        cb({static_cast<char*>(value.mv_data), value.mv_size});
+                    } else {
+
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return cleanup.success_;
+    }
+    auto Queue(
+        const Table table,
+        const ReadView key,
+        const ReadView value,
+        const Mode mode) const noexcept -> bool
+    {
+        Lock lock(lock_);
+        pending_.emplace_back(NewKey{table, mode, key, value});
+
+        return true;
+    }
+    auto Read(const Table table, const ReadCallback cb, const Dir dir)
+        const noexcept -> bool
+    {
+        struct Cleanup {
+            bool success_;
+
+            Cleanup(MDB_txn*& transaction, MDB_cursor*& cursor)
+                : success_(false)
+                , transaction_(transaction)
+                , cursor_(cursor)
+            {
+            }
+
+            ~Cleanup()
+            {
+                if (nullptr != cursor_) {
+                    ::mdb_cursor_close(cursor_);
+                    cursor_ = nullptr;
+                }
+
+                if (nullptr != transaction_) {
+                    ::mdb_txn_abort(transaction_);
+                    transaction_ = nullptr;
+                }
+            }
+
+        private:
+            MDB_txn*& transaction_;
+            MDB_cursor*& cursor_;
+        };
+
+        MDB_txn* transaction{nullptr};
+
+        if (0 != ::mdb_txn_begin(env_, nullptr, MDB_RDONLY, &transaction)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to start transaction")
+                .Flush();
+
+            return false;
+        }
+
+        OT_ASSERT(nullptr != transaction);
+
+        MDB_cursor* cursor{nullptr};
+        auto cleanup = Cleanup{transaction, cursor};
+        const auto database = db_.at(table);
+
+        if (0 != ::mdb_cursor_open(transaction, database, &cursor)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to get cursor")
+                .Flush();
+
+            return false;
+        }
+
+        const auto start =
+            MDB_cursor_op{(Dir::Forward == dir) ? MDB_FIRST : MDB_LAST};
+        const auto next =
+            MDB_cursor_op{(Dir::Forward == dir) ? MDB_NEXT : MDB_PREV};
+        auto again{true};
+        auto key = MDB_val{};
+        auto value = MDB_val{};
+        cleanup.success_ = 0 == ::mdb_cursor_get(cursor, &key, &value, start);
+
+        try {
+            if (cleanup.success_) {
+                if (0 ==
+                    ::mdb_cursor_get(cursor, &key, &value, MDB_GET_CURRENT)) {
+                    again =
+                        cb({static_cast<char*>(key.mv_data), key.mv_size},
+                           {static_cast<char*>(value.mv_data), value.mv_size});
+                } else {
+
+                    return false;
+                }
+
+                while (again &&
+                       0 == ::mdb_cursor_get(cursor, &key, &value, next)) {
+                    if (0 == ::mdb_cursor_get(
+                                 cursor, &key, &value, MDB_GET_CURRENT)) {
+                        again = cb(
+                            {static_cast<char*>(key.mv_data), key.mv_size},
+                            {static_cast<char*>(value.mv_data), value.mv_size});
+                    } else {
+
+                        return false;
+                    }
+                }
+            }
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+            return false;
+        }
+
+        return cleanup.success_;
+    }
+    auto ReadFrom(
+        const Table table,
+        const ReadView index,
+        const ReadCallback cb,
+        const Dir dir) const noexcept -> bool
+    {
+        struct Cleanup {
+            bool success_;
+
+            Cleanup(MDB_txn*& transaction, MDB_cursor*& cursor)
+                : success_(false)
+                , transaction_(transaction)
+                , cursor_(cursor)
+            {
+            }
+
+            ~Cleanup()
+            {
+                if (nullptr != cursor_) {
+                    ::mdb_cursor_close(cursor_);
+                    cursor_ = nullptr;
+                }
+
+                if (nullptr != transaction_) {
+                    ::mdb_txn_abort(transaction_);
+                    transaction_ = nullptr;
+                }
+            }
+
+        private:
+            MDB_txn*& transaction_;
+            MDB_cursor*& cursor_;
+        };
+
+        MDB_txn* transaction{nullptr};
+
+        if (0 != ::mdb_txn_begin(env_, nullptr, MDB_RDONLY, &transaction)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to start transaction")
+                .Flush();
+
+            return false;
+        }
+
+        OT_ASSERT(nullptr != transaction);
+
+        MDB_cursor* cursor{nullptr};
+        auto cleanup = Cleanup{transaction, cursor};
+        const auto database = db_.at(table);
+
+        if (0 != ::mdb_cursor_open(transaction, database, &cursor)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to get cursor")
+                .Flush();
+
+            return false;
+        }
+
+        const auto next =
+            MDB_cursor_op{(Dir::Forward == dir) ? MDB_NEXT : MDB_PREV};
+        auto again{true};
+        auto key = MDB_val{index.size(), const_cast<char*>(index.data())};
+        auto value = MDB_val{};
+        cleanup.success_ = 0 == ::mdb_cursor_get(cursor, &key, &value, MDB_SET);
+
+        try {
+            if (cleanup.success_) {
+                if (0 ==
+                    ::mdb_cursor_get(cursor, &key, &value, MDB_GET_CURRENT)) {
+                    again =
+                        cb({static_cast<char*>(key.mv_data), key.mv_size},
+                           {static_cast<char*>(value.mv_data), value.mv_size});
+                } else {
+
+                    return false;
+                }
+
+                while (again &&
+                       0 == ::mdb_cursor_get(cursor, &key, &value, next)) {
+                    if (0 == ::mdb_cursor_get(
+                                 cursor, &key, &value, MDB_GET_CURRENT)) {
+                        again = cb(
+                            {static_cast<char*>(key.mv_data), key.mv_size},
+                            {static_cast<char*>(value.mv_data), value.mv_size});
+                    } else {
+
+                        return false;
+                    }
+                }
+            }
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+            return false;
+        }
+
+        return cleanup.success_;
+    }
+    auto Store(
+        const Table table,
+        const ReadView index,
+        const ReadView data,
+        MDB_txn* parent,
+        const Flags flags) const noexcept -> Result
+    {
+        struct Cleanup {
+            bool success_;
+
+            Cleanup(MDB_txn*& transaction)
+                : success_(false)
+                , transaction_(transaction)
+            {
+            }
+
+            ~Cleanup()
+            {
+                if (nullptr != transaction_) {
+                    if (success_) {
+                        ::mdb_txn_commit(transaction_);
+                    } else {
+                        ::mdb_txn_abort(transaction_);
+                    }
+
+                    transaction_ = nullptr;
+                }
+            }
+
+        private:
+            MDB_txn*& transaction_;
+        };
+
+        auto output = Result{false, MDB_LAST_ERRCODE};
+        auto& [success, code] = output;
+        MDB_txn* transaction{nullptr};
+        auto cleanup = Cleanup{transaction};
+        code = ::mdb_txn_begin(env_, parent, 0, &transaction);
+
+        if (0 != code) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to start transaction")
+                .Flush();
+
+            return output;
+        }
+
+        OT_ASSERT(nullptr != transaction);
+
+        const auto database = db_.at(table);
+        auto key = MDB_val{index.size(), const_cast<char*>(index.data())};
+        auto value = MDB_val{data.size(), const_cast<char*>(data.data())};
+        code = ::mdb_put(transaction, database, &key, &value, flags);
+        success = 0 == code;
+        cleanup.success_ = success;
+
+        return output;
+    }
+    auto StoreOrUpdate(
+        const Table table,
+        const ReadView index,
+        const UpdateCallback cb,
+        MDB_txn* parent,
+        const Flags flags) const noexcept -> Result
+    {
+        struct Cleanup {
+            bool success_;
+
+            Cleanup(MDB_txn*& transaction, MDB_cursor*& cursor)
+                : success_(false)
+                , transaction_(transaction)
+                , cursor_(cursor)
+            {
+            }
+
+            ~Cleanup()
+            {
+                if (nullptr != cursor_) {
+                    ::mdb_cursor_close(cursor_);
+                    cursor_ = nullptr;
+                }
+
+                if (nullptr != transaction_) {
+                    if (success_) {
+                        ::mdb_txn_commit(transaction_);
+                    } else {
+                        ::mdb_txn_abort(transaction_);
+                    }
+
+                    transaction_ = nullptr;
+                }
+            }
+
+        private:
+            MDB_txn*& transaction_;
+            MDB_cursor*& cursor_;
+        };
+
+        auto output = Result{false, MDB_LAST_ERRCODE};
+
+        if (false == bool(cb)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid callback").Flush();
+
+            return output;
+        }
+
+        auto& [success, code] = output;
+        MDB_cursor* cursor{nullptr};
+        MDB_txn* transaction{nullptr};
+        auto cleanup = Cleanup{transaction, cursor};
+        code = ::mdb_txn_begin(env_, parent, 0, &transaction);
+
+        if (0 != code) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to start transaction")
+                .Flush();
+
+            return output;
+        }
+
+        OT_ASSERT(nullptr != transaction);
+
+        const auto database = db_.at(table);
+
+        if (0 != ::mdb_cursor_open(transaction, database, &cursor)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to get cursor")
+                .Flush();
+
+            return output;
+        }
+
+        auto key = MDB_val{index.size(), const_cast<char*>(index.data())};
+        auto value = MDB_val{};
+        const auto exists =
+            0 == ::mdb_cursor_get(cursor, &key, &value, MDB_SET_KEY);
+        const auto previous =
+            exists
+                ? ReadView{static_cast<const char*>(value.mv_data), value.mv_size}
+                : ReadView{};
+
+        try {
+            const auto bytes = cb(previous);
+            auto value =
+                MDB_val{bytes.size(), const_cast<std::byte*>(bytes.data())};
+            code = ::mdb_put(transaction, database, &key, &value, flags);
+            success = 0 == code;
+            cleanup.success_ = success;
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        }
+
+        return output;
+    }
+    auto TransactionRO() const noexcept(false) -> Transaction
+    {
+        return {env_, false};
+    }
+    auto TransactionRW() const noexcept(false) -> Transaction
+    {
+        return {env_, true};
+    }
+
+    Imp(const TableNames& names,
+        const std::string& folder,
+        const TablesToInit init,
+        const Flags flags) noexcept
+        : names_(names)
+        , env_(nullptr)
+        , db_()
+        , pending_()
+        , lock_()
+    {
+        init_environment(folder, init.size(), flags);
+        init_tables(init);
+    }
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
+
+    ~Imp()
+    {
+        if (nullptr != env_) {
+            ::mdb_env_close(env_);
+            env_ = nullptr;
+        }
+    }
+
+private:
+    using NewKey = std::tuple<Table, Mode, std::string, std::string>;
+    using Pending = std::vector<NewKey>;
+
+    const TableNames& names_;
+    mutable MDB_env* env_;
+    mutable Databases db_;
+    mutable Pending pending_;
+    mutable std::mutex lock_;
+
+    auto init_db(const Table table, unsigned int flags) noexcept -> MDB_dbi
+    {
+        MDB_txn* transaction{nullptr};
+        auto status = (0 == ::mdb_txn_begin(env_, nullptr, 0, &transaction));
+
+        OT_ASSERT(status);
+        OT_ASSERT(nullptr != transaction);
+
+        auto output = MDB_dbi{};
+        status = 0 == ::mdb_dbi_open(
+                          transaction,
+                          names_.at(table).c_str(),
+                          MDB_CREATE | flags,
+                          &output);
+
+        OT_ASSERT(status);
+
+        ::mdb_txn_commit(transaction);
+
+        return output;
+    }
+
+    auto init_environment(
+        const std::string& folder,
+        const std::size_t tables,
+        const Flags flags) noexcept -> void
+    {
+        OT_ASSERT(std::numeric_limits<unsigned int>::max() >= tables);
+
+        bool set = 0 == ::mdb_env_create(&env_);
+
+        OT_ASSERT(set);
+        OT_ASSERT(nullptr != env_);
+
+        set = 0 == ::mdb_env_set_mapsize(env_, OT_LMDB_SIZE);
+
+        OT_ASSERT(set);
+
+        set =
+            0 == ::mdb_env_set_maxdbs(env_, static_cast<unsigned int>(tables));
+
+        OT_ASSERT(set);
+
+        set = 0 == ::mdb_env_set_maxreaders(env_, 1024u);
+
+        OT_ASSERT(set);
+
+        set = 0 == ::mdb_env_open(env_, folder.c_str(), flags, 0664);
+
+        OT_ASSERT(set);
+    }
+
+    auto init_tables(const TablesToInit init) noexcept -> void
+    {
+        for (const auto& [table, flags] : init) {
+            db_.emplace(table, init_db(table, flags));
+        }
+    }
+};
+
 LMDB::LMDB(
     const TableNames& names,
     const std::string& folder,
     const TablesToInit init,
     const Flags flags) noexcept
-    : names_(names)
-    , env_(nullptr)
-    , db_()
-    , pending_()
-    , lock_()
+    : imp_(std::make_unique<Imp>(names, folder, init, flags))
 {
-    init_environment(folder, init.size(), flags);
-    init_tables(init);
 }
 
 LMDB::LMDB(LMDB&& rhs) noexcept
-    : names_(rhs.names_)
-    , env_(rhs.env_)
-    , db_(std::move(rhs.db_))
-    , pending_(std::move(rhs.pending_))
-    , lock_()
+    : imp_(std::move(rhs.imp_))
 {
-    rhs.env_ = nullptr;
 }
 
 LMDB::Transaction::Transaction(MDB_env* env, const bool rw) noexcept(false)
@@ -97,166 +923,23 @@ auto LMDB::Transaction::Finalize(const std::optional<bool> success) noexcept
 
 LMDB::Transaction::~Transaction() { Finalize(); }
 
-auto LMDB::Commit() const noexcept -> bool
-{
-    struct Cleanup {
-        bool success_;
-
-        Cleanup(const LMDB& parent, MDB_txn*& transaction)
-            : success_(false)
-            , parent_(parent)
-            , transaction_(transaction)
-        {
-        }
-
-        ~Cleanup()
-        {
-            if (nullptr != transaction_) {
-                if (success_) {
-                    ::mdb_txn_commit(transaction_);
-                } else {
-                    ::mdb_txn_abort(transaction_);
-                }
-
-                transaction_ = nullptr;
-            }
-
-            parent_.pending_.clear();
-        }
-
-    private:
-        const LMDB& parent_;
-        MDB_txn*& transaction_;
-    };
-
-    Lock lock(lock_);
-    MDB_txn* transaction{nullptr};
-
-    if (0 != ::mdb_txn_begin(env_, nullptr, 0, &transaction)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to start transaction")
-            .Flush();
-
-        return false;
-    }
-
-    OT_ASSERT(nullptr != transaction);
-
-    Cleanup cleanup(*this, transaction);
-
-    for (auto& [table, mode, index, data] : pending_) {
-        auto database = db_.at(table);
-        auto key = MDB_val{index.size(), const_cast<char*>(index.data())};
-        auto value = MDB_val{data.size(), const_cast<char*>(data.data())};
-        cleanup.success_ =
-            0 == ::mdb_put(transaction, database, &key, &value, 0);
-
-        if (false == cleanup.success_) { break; }
-    }
-
-    return cleanup.success_;
-}
+auto LMDB::Commit() const noexcept -> bool { return imp_->Commit(); }
 
 auto LMDB::Delete(const Table table, MDB_txn* parent) const noexcept -> bool
 {
-    struct Cleanup {
-        bool success_;
-
-        Cleanup(MDB_txn*& transaction)
-            : success_(false)
-            , transaction_(transaction)
-        {
-        }
-
-        ~Cleanup()
-        {
-            if (nullptr != transaction_) {
-                if (success_) {
-                    ::mdb_txn_commit(transaction_);
-                } else {
-                    ::mdb_txn_abort(transaction_);
-                }
-
-                transaction_ = nullptr;
-            }
-        }
-
-    private:
-        MDB_txn*& transaction_;
-    };
-
-    MDB_txn* transaction{nullptr};
-
-    if (0 != ::mdb_txn_begin(env_, parent, 0, &transaction)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to start transaction")
-            .Flush();
-
-        return false;
-    }
-
-    OT_ASSERT(nullptr != transaction);
-
-    auto cleanup = Cleanup{transaction};
-    const auto database = db_.at(table);
-    cleanup.success_ = 0 == ::mdb_drop(transaction, database, 0);
-
-    return cleanup.success_;
+    return imp_->Delete(table, parent);
 }
 
 auto LMDB::Delete(const Table table, const ReadView index, MDB_txn* parent)
     const noexcept -> bool
 {
-    struct Cleanup {
-        bool success_;
-
-        Cleanup(MDB_txn*& transaction)
-            : success_(false)
-            , transaction_(transaction)
-        {
-        }
-
-        ~Cleanup()
-        {
-            if (nullptr != transaction_) {
-                if (success_) {
-                    ::mdb_txn_commit(transaction_);
-                } else {
-                    ::mdb_txn_abort(transaction_);
-                }
-
-                transaction_ = nullptr;
-            }
-        }
-
-    private:
-        MDB_txn*& transaction_;
-    };
-
-    MDB_txn* transaction{nullptr};
-
-    if (0 != ::mdb_txn_begin(env_, parent, 0, &transaction)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to start transaction")
-            .Flush();
-
-        return false;
-    }
-
-    OT_ASSERT(nullptr != transaction);
-
-    auto cleanup = Cleanup{transaction};
-    const auto database = db_.at(table);
-    auto key = MDB_val{index.size(), const_cast<char*>(index.data())};
-    cleanup.success_ = 0 == ::mdb_del(transaction, database, &key, nullptr);
-
-    return cleanup.success_;
+    return imp_->Delete(table, index, parent);
 }
 
 auto LMDB::Delete(const Table table, const std::size_t index, MDB_txn* parent)
     const noexcept -> bool
 {
-    return Delete(
-        table,
-        ReadView{reinterpret_cast<const char*>(&index), sizeof(index)},
-        parent);
+    return imp_->Delete(table, index, parent);
 }
 
 auto LMDB::Delete(
@@ -265,11 +948,7 @@ auto LMDB::Delete(
     const ReadView data,
     MDB_txn* parent) const noexcept -> bool
 {
-    return Delete(
-        table,
-        ReadView{reinterpret_cast<const char*>(&index), sizeof(index)},
-        data,
-        parent);
+    return imp_->Delete(table, index, data, parent);
 }
 
 auto LMDB::Delete(
@@ -278,166 +957,13 @@ auto LMDB::Delete(
     const ReadView data,
     MDB_txn* parent) const noexcept -> bool
 {
-    struct Cleanup {
-        bool success_;
-
-        Cleanup(MDB_txn*& transaction)
-            : success_(false)
-            , transaction_(transaction)
-        {
-        }
-
-        ~Cleanup()
-        {
-            if (nullptr != transaction_) {
-                if (success_) {
-                    ::mdb_txn_commit(transaction_);
-                } else {
-                    ::mdb_txn_abort(transaction_);
-                }
-
-                transaction_ = nullptr;
-            }
-        }
-
-    private:
-        MDB_txn*& transaction_;
-    };
-
-    MDB_txn* transaction{nullptr};
-
-    if (0 != ::mdb_txn_begin(env_, parent, 0, &transaction)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to start transaction")
-            .Flush();
-
-        return false;
-    }
-
-    OT_ASSERT(nullptr != transaction);
-
-    auto cleanup = Cleanup{transaction};
-    const auto database = db_.at(table);
-    auto key = MDB_val{index.size(), const_cast<char*>(index.data())};
-    auto value = MDB_val{data.size(), const_cast<char*>(data.data())};
-    cleanup.success_ = 0 == ::mdb_del(transaction, database, &key, &value);
-
-    return cleanup.success_;
+    return imp_->Delete(table, index, data, parent);
 }
 
 auto LMDB::Exists(const Table table, const ReadView index) const noexcept
     -> bool
 {
-    struct Cleanup {
-        bool success_;
-
-        Cleanup(MDB_txn*& transaction, MDB_cursor*& cursor)
-            : success_(false)
-            , transaction_(transaction)
-            , cursor_(cursor)
-        {
-        }
-
-        ~Cleanup()
-        {
-            if (nullptr != cursor_) {
-                ::mdb_cursor_close(cursor_);
-                cursor_ = nullptr;
-            }
-
-            if (nullptr != transaction_) {
-                ::mdb_txn_abort(transaction_);
-                transaction_ = nullptr;
-            }
-        }
-
-    private:
-        MDB_txn*& transaction_;
-        MDB_cursor*& cursor_;
-    };
-
-    MDB_txn* transaction{nullptr};
-
-    if (0 != ::mdb_txn_begin(env_, nullptr, MDB_RDONLY, &transaction)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to start transaction")
-            .Flush();
-
-        return false;
-    }
-
-    OT_ASSERT(nullptr != transaction);
-
-    MDB_cursor* cursor{nullptr};
-    Cleanup cleanup(transaction, cursor);
-    const auto database = db_.at(table);
-
-    if (0 != ::mdb_cursor_open(transaction, database, &cursor)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to get cursor").Flush();
-
-        return false;
-    }
-
-    auto key = MDB_val{index.size(), const_cast<char*>(index.data())};
-    auto value = MDB_val{};
-    cleanup.success_ = 0 == ::mdb_cursor_get(cursor, &key, &value, MDB_SET);
-
-    return cleanup.success_;
-}
-
-auto LMDB::init_db(const Table table, unsigned int flags) noexcept -> MDB_dbi
-{
-    MDB_txn* transaction{nullptr};
-    auto status = (0 == ::mdb_txn_begin(env_, nullptr, 0, &transaction));
-
-    OT_ASSERT(status);
-    OT_ASSERT(nullptr != transaction);
-
-    auto output = MDB_dbi{};
-    status =
-        0 ==
-        ::mdb_dbi_open(
-            transaction, names_.at(table).c_str(), MDB_CREATE | flags, &output);
-
-    OT_ASSERT(status);
-
-    ::mdb_txn_commit(transaction);
-
-    return output;
-}
-
-auto LMDB::init_environment(
-    const std::string& folder,
-    const std::size_t tables,
-    const Flags flags) noexcept -> void
-{
-    OT_ASSERT(std::numeric_limits<unsigned int>::max() >= tables);
-
-    bool set = 0 == ::mdb_env_create(&env_);
-
-    OT_ASSERT(set);
-    OT_ASSERT(nullptr != env_);
-
-    set = 0 == ::mdb_env_set_mapsize(env_, OT_LMDB_SIZE);
-
-    OT_ASSERT(set);
-
-    set = 0 == ::mdb_env_set_maxdbs(env_, static_cast<unsigned int>(tables));
-
-    OT_ASSERT(set);
-
-    set = 0 == ::mdb_env_set_maxreaders(env_, 1024u);
-
-    OT_ASSERT(set);
-
-    set = 0 == ::mdb_env_open(env_, folder.c_str(), flags, 0664);
-
-    OT_ASSERT(set);
-}
-
-auto LMDB::init_tables(const TablesToInit init) noexcept -> void
-{
-    for (const auto& [table, flags] : init) {
-        db_.emplace(table, init_db(table, flags));
-    }
+    return imp_->Exists(table, index);
 }
 
 auto LMDB::Load(
@@ -446,83 +972,7 @@ auto LMDB::Load(
     const Callback cb,
     const Mode multiple) const noexcept -> bool
 {
-    struct Cleanup {
-        bool success_;
-
-        Cleanup(MDB_txn*& transaction, MDB_cursor*& cursor)
-            : success_(false)
-            , transaction_(transaction)
-            , cursor_(cursor)
-        {
-        }
-
-        ~Cleanup()
-        {
-            if (nullptr != cursor_) {
-                ::mdb_cursor_close(cursor_);
-                cursor_ = nullptr;
-            }
-
-            if (nullptr != transaction_) {
-                ::mdb_txn_abort(transaction_);
-                transaction_ = nullptr;
-            }
-        }
-
-    private:
-        MDB_txn*& transaction_;
-        MDB_cursor*& cursor_;
-    };
-
-    MDB_txn* transaction{nullptr};
-
-    if (0 != ::mdb_txn_begin(env_, nullptr, MDB_RDONLY, &transaction)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to start transaction")
-            .Flush();
-
-        return false;
-    }
-
-    OT_ASSERT(nullptr != transaction);
-
-    MDB_cursor* cursor{nullptr};
-    Cleanup cleanup(transaction, cursor);
-    const auto database = db_.at(table);
-
-    if (0 != ::mdb_cursor_open(transaction, database, &cursor)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to get cursor").Flush();
-
-        return false;
-    }
-
-    auto key = MDB_val{index.size(), const_cast<char*>(index.data())};
-    auto value = MDB_val{};
-    cleanup.success_ = 0 == ::mdb_cursor_get(cursor, &key, &value, MDB_SET);
-
-    if (cleanup.success_) {
-        ::mdb_cursor_get(cursor, &key, &value, MDB_FIRST_DUP);
-
-        if (0 == ::mdb_cursor_get(cursor, &key, &value, MDB_GET_CURRENT)) {
-            cb({static_cast<char*>(value.mv_data), value.mv_size});
-        } else {
-
-            return false;
-        }
-
-        if (static_cast<bool>(multiple)) {
-            while (0 == ::mdb_cursor_get(cursor, &key, &value, MDB_NEXT_DUP)) {
-                if (0 ==
-                    ::mdb_cursor_get(cursor, &key, &value, MDB_GET_CURRENT)) {
-                    cb({static_cast<char*>(value.mv_data), value.mv_size});
-                } else {
-
-                    return false;
-                }
-            }
-        }
-    }
-
-    return cleanup.success_;
+    return imp_->Load(table, index, cb, multiple);
 }
 
 auto LMDB::Load(
@@ -544,103 +994,13 @@ auto LMDB::Queue(
     const ReadView value,
     const Mode mode) const noexcept -> bool
 {
-    Lock lock(lock_);
-    pending_.emplace_back(NewKey{table, mode, key, value});
-
-    return true;
+    return imp_->Queue(table, key, value, mode);
 }
 
 auto LMDB::Read(const Table table, const ReadCallback cb, const Dir dir)
     const noexcept -> bool
 {
-    struct Cleanup {
-        bool success_;
-
-        Cleanup(MDB_txn*& transaction, MDB_cursor*& cursor)
-            : success_(false)
-            , transaction_(transaction)
-            , cursor_(cursor)
-        {
-        }
-
-        ~Cleanup()
-        {
-            if (nullptr != cursor_) {
-                ::mdb_cursor_close(cursor_);
-                cursor_ = nullptr;
-            }
-
-            if (nullptr != transaction_) {
-                ::mdb_txn_abort(transaction_);
-                transaction_ = nullptr;
-            }
-        }
-
-    private:
-        MDB_txn*& transaction_;
-        MDB_cursor*& cursor_;
-    };
-
-    MDB_txn* transaction{nullptr};
-
-    if (0 != ::mdb_txn_begin(env_, nullptr, MDB_RDONLY, &transaction)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to start transaction")
-            .Flush();
-
-        return false;
-    }
-
-    OT_ASSERT(nullptr != transaction);
-
-    MDB_cursor* cursor{nullptr};
-    auto cleanup = Cleanup{transaction, cursor};
-    const auto database = db_.at(table);
-
-    if (0 != ::mdb_cursor_open(transaction, database, &cursor)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to get cursor").Flush();
-
-        return false;
-    }
-
-    const auto start =
-        MDB_cursor_op{(Dir::Forward == dir) ? MDB_FIRST : MDB_LAST};
-    const auto next =
-        MDB_cursor_op{(Dir::Forward == dir) ? MDB_NEXT : MDB_PREV};
-    auto again{true};
-    auto key = MDB_val{};
-    auto value = MDB_val{};
-    cleanup.success_ = 0 == ::mdb_cursor_get(cursor, &key, &value, start);
-
-    try {
-        if (cleanup.success_) {
-            if (0 == ::mdb_cursor_get(cursor, &key, &value, MDB_GET_CURRENT)) {
-                again =
-                    cb({static_cast<char*>(key.mv_data), key.mv_size},
-                       {static_cast<char*>(value.mv_data), value.mv_size});
-            } else {
-
-                return false;
-            }
-
-            while (again && 0 == ::mdb_cursor_get(cursor, &key, &value, next)) {
-                if (0 ==
-                    ::mdb_cursor_get(cursor, &key, &value, MDB_GET_CURRENT)) {
-                    again =
-                        cb({static_cast<char*>(key.mv_data), key.mv_size},
-                           {static_cast<char*>(value.mv_data), value.mv_size});
-                } else {
-
-                    return false;
-                }
-            }
-        }
-    } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
-
-        return false;
-    }
-
-    return cleanup.success_;
+    return imp_->Read(table, cb, dir);
 }
 
 auto LMDB::ReadFrom(
@@ -649,92 +1009,7 @@ auto LMDB::ReadFrom(
     const ReadCallback cb,
     const Dir dir) const noexcept -> bool
 {
-    struct Cleanup {
-        bool success_;
-
-        Cleanup(MDB_txn*& transaction, MDB_cursor*& cursor)
-            : success_(false)
-            , transaction_(transaction)
-            , cursor_(cursor)
-        {
-        }
-
-        ~Cleanup()
-        {
-            if (nullptr != cursor_) {
-                ::mdb_cursor_close(cursor_);
-                cursor_ = nullptr;
-            }
-
-            if (nullptr != transaction_) {
-                ::mdb_txn_abort(transaction_);
-                transaction_ = nullptr;
-            }
-        }
-
-    private:
-        MDB_txn*& transaction_;
-        MDB_cursor*& cursor_;
-    };
-
-    MDB_txn* transaction{nullptr};
-
-    if (0 != ::mdb_txn_begin(env_, nullptr, MDB_RDONLY, &transaction)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to start transaction")
-            .Flush();
-
-        return false;
-    }
-
-    OT_ASSERT(nullptr != transaction);
-
-    MDB_cursor* cursor{nullptr};
-    auto cleanup = Cleanup{transaction, cursor};
-    const auto database = db_.at(table);
-
-    if (0 != ::mdb_cursor_open(transaction, database, &cursor)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to get cursor").Flush();
-
-        return false;
-    }
-
-    const auto next =
-        MDB_cursor_op{(Dir::Forward == dir) ? MDB_NEXT : MDB_PREV};
-    auto again{true};
-    auto key = MDB_val{index.size(), const_cast<char*>(index.data())};
-    auto value = MDB_val{};
-    cleanup.success_ = 0 == ::mdb_cursor_get(cursor, &key, &value, MDB_SET);
-
-    try {
-        if (cleanup.success_) {
-            if (0 == ::mdb_cursor_get(cursor, &key, &value, MDB_GET_CURRENT)) {
-                again =
-                    cb({static_cast<char*>(key.mv_data), key.mv_size},
-                       {static_cast<char*>(value.mv_data), value.mv_size});
-            } else {
-
-                return false;
-            }
-
-            while (again && 0 == ::mdb_cursor_get(cursor, &key, &value, next)) {
-                if (0 ==
-                    ::mdb_cursor_get(cursor, &key, &value, MDB_GET_CURRENT)) {
-                    again =
-                        cb({static_cast<char*>(key.mv_data), key.mv_size},
-                           {static_cast<char*>(value.mv_data), value.mv_size});
-                } else {
-
-                    return false;
-                }
-            }
-        }
-    } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
-
-        return false;
-    }
-
-    return cleanup.success_;
+    return imp_->ReadFrom(table, index, cb, dir);
 }
 
 auto LMDB::ReadFrom(
@@ -757,55 +1032,7 @@ auto LMDB::Store(
     MDB_txn* parent,
     const Flags flags) const noexcept -> Result
 {
-    struct Cleanup {
-        bool success_;
-
-        Cleanup(MDB_txn*& transaction)
-            : success_(false)
-            , transaction_(transaction)
-        {
-        }
-
-        ~Cleanup()
-        {
-            if (nullptr != transaction_) {
-                if (success_) {
-                    ::mdb_txn_commit(transaction_);
-                } else {
-                    ::mdb_txn_abort(transaction_);
-                }
-
-                transaction_ = nullptr;
-            }
-        }
-
-    private:
-        MDB_txn*& transaction_;
-    };
-
-    auto output = Result{false, MDB_LAST_ERRCODE};
-    auto& [success, code] = output;
-    MDB_txn* transaction{nullptr};
-    auto cleanup = Cleanup{transaction};
-    code = ::mdb_txn_begin(env_, parent, 0, &transaction);
-
-    if (0 != code) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to start transaction")
-            .Flush();
-
-        return output;
-    }
-
-    OT_ASSERT(nullptr != transaction);
-
-    const auto database = db_.at(table);
-    auto key = MDB_val{index.size(), const_cast<char*>(index.data())};
-    auto value = MDB_val{data.size(), const_cast<char*>(data.data())};
-    code = ::mdb_put(transaction, database, &key, &value, flags);
-    success = 0 == code;
-    cleanup.success_ = success;
-
-    return output;
+    return imp_->Store(table, index, data, parent, flags);
 }
 
 auto LMDB::Store(
@@ -830,108 +1057,18 @@ auto LMDB::StoreOrUpdate(
     MDB_txn* parent,
     const Flags flags) const noexcept -> Result
 {
-    struct Cleanup {
-        bool success_;
-
-        Cleanup(MDB_txn*& transaction, MDB_cursor*& cursor)
-            : success_(false)
-            , transaction_(transaction)
-            , cursor_(cursor)
-        {
-        }
-
-        ~Cleanup()
-        {
-            if (nullptr != cursor_) {
-                ::mdb_cursor_close(cursor_);
-                cursor_ = nullptr;
-            }
-
-            if (nullptr != transaction_) {
-                if (success_) {
-                    ::mdb_txn_commit(transaction_);
-                } else {
-                    ::mdb_txn_abort(transaction_);
-                }
-
-                transaction_ = nullptr;
-            }
-        }
-
-    private:
-        MDB_txn*& transaction_;
-        MDB_cursor*& cursor_;
-    };
-
-    auto output = Result{false, MDB_LAST_ERRCODE};
-
-    if (false == bool(cb)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid callback").Flush();
-
-        return output;
-    }
-
-    auto& [success, code] = output;
-    MDB_cursor* cursor{nullptr};
-    MDB_txn* transaction{nullptr};
-    auto cleanup = Cleanup{transaction, cursor};
-    code = ::mdb_txn_begin(env_, parent, 0, &transaction);
-
-    if (0 != code) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to start transaction")
-            .Flush();
-
-        return output;
-    }
-
-    OT_ASSERT(nullptr != transaction);
-
-    const auto database = db_.at(table);
-
-    if (0 != ::mdb_cursor_open(transaction, database, &cursor)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to get cursor").Flush();
-
-        return output;
-    }
-
-    auto key = MDB_val{index.size(), const_cast<char*>(index.data())};
-    auto value = MDB_val{};
-    const auto exists =
-        0 == ::mdb_cursor_get(cursor, &key, &value, MDB_SET_KEY);
-    const auto previous =
-        exists
-            ? ReadView{static_cast<const char*>(value.mv_data), value.mv_size}
-            : ReadView{};
-
-    try {
-        const auto bytes = cb(previous);
-        auto value =
-            MDB_val{bytes.size(), const_cast<std::byte*>(bytes.data())};
-        code = ::mdb_put(transaction, database, &key, &value, flags);
-        success = 0 == code;
-        cleanup.success_ = success;
-    } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
-    }
-
-    return output;
+    return imp_->StoreOrUpdate(table, index, cb, parent, flags);
 }
 
 auto LMDB::TransactionRO() const noexcept(false) -> Transaction
 {
-    return {env_, false};
+    return imp_->TransactionRO();
 }
 
 auto LMDB::TransactionRW() const noexcept(false) -> Transaction
 {
-    return {env_, true};
+    return imp_->TransactionRW();
 }
 
-LMDB::~LMDB()
-{
-    if (nullptr != env_) {
-        ::mdb_env_close(env_);
-        env_ = nullptr;
-    }
-}
+LMDB::~LMDB() = default;
 }  // namespace opentxs::storage::lmdb

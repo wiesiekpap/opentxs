@@ -6,7 +6,7 @@
 #ifndef OPENTXS_NETWORK_ZEROMQ_FRAMEITERATOR_HPP
 #define OPENTXS_NETWORK_ZEROMQ_FRAMEITERATOR_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <atomic>
 #include <iosfwd>

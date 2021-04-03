@@ -9,7 +9,7 @@
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <atomic>
 #include <cstdint>

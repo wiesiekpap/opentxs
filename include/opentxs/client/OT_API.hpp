@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CLIENT_OT_API_HPP
 #define OPENTXS_CLIENT_OT_API_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
 #include <cstdint>

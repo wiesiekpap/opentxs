@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CORE_LOCKABLE_HPP
 #define OPENTXS_CORE_LOCKABLE_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <mutex>
 #include <shared_mutex>

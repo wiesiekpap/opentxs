@@ -6,7 +6,7 @@
 #ifndef OPENTXS_OTX_CONSENSUS_CLIENT_HPP
 #define OPENTXS_OTX_CONSENSUS_CLIENT_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/otx/consensus/Base.hpp"
 

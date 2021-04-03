@@ -6,7 +6,7 @@
 #ifndef OPENTXS_API_SERVER_MANAGER_HPP
 #define OPENTXS_API_SERVER_MANAGER_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <memory>
@@ -16,6 +16,19 @@
 
 #define OT_MINT_KEY_SIZE_DEFAULT 1536
 #define OT_MINT_KEY_SIZE_TEST 288
+
+namespace opentxs
+{
+namespace blind
+{
+class Mint;
+}  // namespace blind
+
+namespace server
+{
+class Server;
+}  // namespace server
+}  // namespace opentxs
 
 namespace opentxs
 {

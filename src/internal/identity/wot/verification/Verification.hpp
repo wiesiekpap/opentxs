@@ -10,6 +10,17 @@
 #include "opentxs/identity/wot/verification/Nym.hpp"
 #include "opentxs/identity/wot/verification/Set.hpp"
 
+namespace opentxs
+{
+namespace api
+{
+namespace internal
+{
+struct Core;
+}  // namespace internal
+}  // namespace api
+}  // namespace opentxs
+
 namespace opentxs::identity::wot::verification::internal
 {
 struct Group : virtual public verification::Group {

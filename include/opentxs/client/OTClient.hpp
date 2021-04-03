@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CLIENT_OTCLIENT_HPP
 #define OPENTXS_CLIENT_OTCLIENT_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <memory>

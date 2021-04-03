@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
 #include <cstdint>
@@ -22,13 +22,23 @@ namespace opentxs
 {
 namespace blind
 {
+class Mint;
+class Purse;
 class Token;
 }  // namespace blind
+
+namespace identifier
+{
+class Server;
+class UnitDefinition;
+}  // namespace identifier
 
 namespace proto
 {
 class Token;
 }  // namespace proto
+
+class PasswordPrompt;
 
 using OTToken = Pimpl<blind::Token>;
 }  // namespace opentxs

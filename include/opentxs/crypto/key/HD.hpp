@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CRYPTO_KEY_HD_HPP
 #define OPENTXS_CRYPTO_KEY_HD_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>
 
@@ -16,6 +16,14 @@
 
 namespace opentxs
 {
+namespace api
+{
+namespace crypto
+{
+class Hash;
+}  // namespace crypto
+}  // namespace api
+
 namespace crypto
 {
 namespace key

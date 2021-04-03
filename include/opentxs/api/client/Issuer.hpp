@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <set>
 #include <string>
@@ -28,6 +28,12 @@ class BailmentReply;
 class ConnectionInfoReply;
 class Issuer;
 }  // namespace proto
+
+namespace identifier
+{
+class Nym;
+class UnitDefinition;
+}  // namespace identifier
 }  // namespace opentxs
 
 namespace opentxs

@@ -8,6 +8,7 @@
 #include "api/client/blockchain/database/Database.hpp"  // IWYU pragma: associated
 
 extern "C" {
+#include <lmdb.h>
 #include <sodium.h>
 }
 

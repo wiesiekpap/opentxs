@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CORE_SCRIPT_OTSCRIPTCHAI_HPP
 #define OPENTXS_CORE_SCRIPT_OTSCRIPTCHAI_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #if OT_SCRIPT_CHAI
 #include <cstddef>

@@ -9,8 +9,8 @@
 #include <memory>
 
 #include "internal/identity/wot/verification/Verification.hpp"
-#include "opentxs/Forward.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/wot/verification/Group.hpp"

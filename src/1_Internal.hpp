@@ -6,7 +6,7 @@
 #pragma once
 
 // IWYU pragma: begin_exports
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 // IWYU pragma: end_exports
 
 #define PAYMENT_CODE_VERSION 1

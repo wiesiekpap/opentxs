@@ -6,7 +6,7 @@
 #ifndef OPENTXS_NETWORK_ZEROMQ_ZAP_CALLBACK_HPP
 #define OPENTXS_NETWORK_ZEROMQ_ZAP_CALLBACK_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <functional>
 
@@ -22,6 +22,7 @@ namespace zeromq
 namespace zap
 {
 class Callback;
+class Request;
 }  // namespace zap
 }  // namespace zeromq
 }  // namespace network

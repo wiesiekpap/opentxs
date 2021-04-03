@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <functional>
 
@@ -41,6 +41,8 @@ namespace proto
 {
 class PairEvent;
 }  // namespace proto
+
+class PairEventCallbackSwig;
 
 using OTZMQPairEventCallback = Pimpl<network::zeromq::PairEventCallback>;
 }  // namespace opentxs

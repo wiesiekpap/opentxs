@@ -8,6 +8,17 @@
 #include "opentxs/identity/Authority.hpp"
 #include "opentxs/identity/Nym.hpp"
 
+namespace opentxs
+{
+namespace identity
+{
+namespace credential
+{
+class Primary;
+}  // namespace credential
+}  // namespace identity
+}  // namespace opentxs
+
 namespace opentxs::identity::internal
 {
 struct Authority : virtual public identity::Authority {

@@ -31,6 +31,8 @@ class Legacy;
 class Primitives;
 class Settings;
 }  // namespace api
+
+class OTCaller;
 }  // namespace opentxs
 
 namespace

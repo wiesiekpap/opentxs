@@ -6,16 +6,17 @@
 add_library(
   opentxs-storage-drivers OBJECT
   "StorageMemDB.cpp"
-  "StorageMultiplex.cpp"
   "StorageMemDB.hpp"
+  "StorageMultiplex.cpp"
   "StorageMultiplex.hpp"
 )
 target_link_libraries(opentxs-storage-drivers PRIVATE opentxs::messages)
 
 if(FS_EXPORT)
   target_sources(
-    opentxs
+    opentxs-storage-drivers
     PRIVATE
+      "multiplex/fs.cpp"
       "StorageFS.cpp"
       "StorageFS.hpp"
       "StorageFSArchive.cpp"
@@ -25,18 +26,44 @@ if(FS_EXPORT)
   )
   target_link_libraries(opentxs-storage-drivers PRIVATE Boost::headers)
   target_link_libraries(opentxs PUBLIC Boost::filesystem)
+else()
+  target_sources(
+    opentxs-storage-drivers PRIVATE "multiplex/nofs.cpp" "StorageFS_null.cpp"
+  )
 endif()
 
 if(SQLITE_EXPORT)
-  target_sources(opentxs PRIVATE "StorageSqlite3.cpp" "StorageSqlite3.hpp")
+  target_sources(
+    opentxs-storage-drivers
+    PRIVATE
+      "multiplex/sqlite.cpp"
+      "StorageSqlite3.cpp"
+      "StorageSqlite3.hpp"
+  )
   target_link_libraries(opentxs-storage-drivers PRIVATE SQLite::SQLite3)
   target_link_libraries(opentxs PUBLIC SQLite::SQLite3)
+else()
+  target_sources(
+    opentxs-storage-drivers PRIVATE "multiplex/nosqlite.cpp"
+                                    "StorageSqlite3_null.cpp"
+  )
 endif()
 
 if(LMDB_EXPORT)
-  target_sources(opentxs PRIVATE "StorageLMDB.cpp" "StorageLMDB.hpp")
+  target_sources(
+    opentxs-storage-drivers
+    PRIVATE
+      "multiplex/lmdb.cpp"
+      "StorageLMDB.cpp"
+      "StorageLMDB.hpp"
+  )
   target_link_libraries(opentxs-storage-drivers PRIVATE lmdb)
   target_link_libraries(opentxs PUBLIC lmdb)
+else()
+  target_sources(
+    opentxs-storage-drivers PRIVATE "multiplex/nolmdb.cpp"
+                                    "StorageLMDB_null.cpp"
+  )
 endif()
 
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-storage-drivers>)

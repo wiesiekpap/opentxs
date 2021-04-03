@@ -3,9 +3,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: private
-// IWYU pragma: friend ".*src/storage/drivers/StorageMultiplex.cpp"
-
 #pragma once
 
 #include <future>
@@ -99,6 +96,27 @@ private:
     const Random random_;
     OTSymmetricKey null_;
 
+    auto Cleanup() -> void;
+    auto Cleanup_StorageMultiplex() -> void;
+    auto init(
+        const std::string& primary,
+        std::unique_ptr<opentxs::api::storage::Plugin>& plugin) -> void;
+    auto init_fs(std::unique_ptr<opentxs::api::storage::Plugin>& plugin)
+        -> void;
+    auto init_fs_backup(const std::string& dir) -> void;
+    auto init_lmdb(std::unique_ptr<opentxs::api::storage::Plugin>& plugin)
+        -> void;
+    auto init_memdb(std::unique_ptr<opentxs::api::storage::Plugin>& plugin)
+        -> void;
+    auto init_sqlite(std::unique_ptr<opentxs::api::storage::Plugin>& plugin)
+        -> void;
+    auto Init_StorageMultiplex(
+        const String& primary,
+        const bool migrate,
+        const String& previous) -> void;
+    auto migrate_primary(const std::string& from, const std::string& to)
+        -> void;
+
     StorageMultiplex(
         const api::storage::Storage& storage,
         const Flag& primaryBucket,
@@ -113,34 +131,5 @@ private:
     StorageMultiplex(StorageMultiplex&&) = delete;
     auto operator=(const StorageMultiplex&) -> StorageMultiplex& = delete;
     auto operator=(StorageMultiplex&&) -> StorageMultiplex& = delete;
-
-    void Cleanup();
-    void Cleanup_StorageMultiplex();
-    void init(
-        const std::string& primary,
-        std::unique_ptr<opentxs::api::storage::Plugin>& plugin);
-#if OT_STORAGE_FS == 0
-    [[noreturn]]
-#endif
-    void
-    init_fs(std::unique_ptr<opentxs::api::storage::Plugin>& plugin);
-
-#if OT_STORAGE_LMDB == 0
-    [[noreturn]]
-#endif
-    void
-    init_lmdb(std::unique_ptr<opentxs::api::storage::Plugin>& plugin);
-    void init_memdb(std::unique_ptr<opentxs::api::storage::Plugin>& plugin);
-
-#if OT_STORAGE_SQLITE == 0
-    [[noreturn]]
-#endif
-    void
-    init_sqlite(std::unique_ptr<opentxs::api::storage::Plugin>& plugin);
-    void Init_StorageMultiplex(
-        const String& primary,
-        const bool migrate,
-        const String& previous);
-    void migrate_primary(const std::string& from, const std::string& to);
 };
 }  // namespace opentxs::storage::implementation

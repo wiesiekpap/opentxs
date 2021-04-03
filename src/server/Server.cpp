@@ -18,6 +18,7 @@
 #include "core/OTStorage.hpp"
 #include "opentxs/Proto.tpp"
 #include "opentxs/SharedPimpl.hpp"
+#include "opentxs/api/Context.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #if OT_CRYPTO_WITH_BIP32

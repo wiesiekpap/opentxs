@@ -9,6 +9,28 @@
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 
+namespace opentxs
+{
+namespace api
+{
+namespace internal
+{
+struct Core;
+}  // namespace internal
+}  // namespace api
+
+namespace network
+{
+namespace zeromq
+{
+namespace socket
+{
+class Publish;
+}  // namespace socket
+}  // namespace zeromq
+}  // namespace network
+}  // namespace opentxs
+
 namespace opentxs::otx::context::internal
 {
 struct Base : virtual public opentxs::otx::context::Base {

@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <memory>
@@ -33,6 +33,7 @@ namespace client
 {
 namespace blockchain
 {
+class BalanceTree;
 class HD;
 class PaymentCode;
 }  // namespace blockchain
@@ -48,6 +49,8 @@ namespace bitcoin
 class Transaction;
 }  // namespace bitcoin
 }  // namespace block
+
+class Network;
 }  // namespace blockchain
 
 namespace proto
@@ -57,6 +60,8 @@ class HDPath;
 
 class Contact;
 class Identifier;
+class PasswordPrompt;
+class PaymentCode;
 }  // namespace opentxs
 
 namespace opentxs

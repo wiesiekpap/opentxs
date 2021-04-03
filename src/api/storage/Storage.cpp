@@ -190,7 +190,6 @@ auto Factory::Storage(
         String::Factory(storageConfig.path_),
         storageConfig.path_,
         notUsed);
-#if OT_STORAGE_FS
     config.CheckSet_str(
         String::Factory(STORAGE_CONFIG_KEY),
         String::Factory("fs_primary"),
@@ -225,8 +224,6 @@ auto Factory::Storage(
         notUsed);
     encryptedDirectory =
         String::Factory(storageConfig.fs_encrypted_backup_directory_.c_str());
-#endif
-#if OT_STORAGE_SQLITE
     config.CheckSet_str(
         String::Factory(STORAGE_CONFIG_KEY),
         String::Factory("sqlite3_primary"),
@@ -257,8 +254,6 @@ auto Factory::Storage(
         String::Factory(storageConfig.sqlite3_db_file_),
         storageConfig.sqlite3_db_file_,
         notUsed);
-#endif
-#if OT_STORAGE_LMDB
     config.CheckSet_str(
         String::Factory(STORAGE_CONFIG_KEY),
         String::Factory("lmdb_primary"),
@@ -283,7 +278,6 @@ auto Factory::Storage(
         String::Factory(storageConfig.lmdb_root_key_),
         storageConfig.lmdb_root_key_,
         notUsed);
-#endif
 
     if (haveGCInterval) {
         storageConfig.gc_interval_ = defaultGcInterval;

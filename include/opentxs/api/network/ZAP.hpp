@@ -6,7 +6,7 @@
 #ifndef OPENTXS_API_NETWORK_ZAP_HPP
 #define OPENTXS_API_NETWORK_ZAP_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>
 

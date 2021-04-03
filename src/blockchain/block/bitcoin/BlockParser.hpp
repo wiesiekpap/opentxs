@@ -70,6 +70,7 @@ struct Header;
 
 class Block;
 class Header;
+class Transaction;
 }  // namespace bitcoin
 }  // namespace block
 }  // namespace blockchain

@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CORE_SCRIPT_OTVARIABLE_HPP
 #define OPENTXS_CORE_SCRIPT_OTVARIABLE_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <string>

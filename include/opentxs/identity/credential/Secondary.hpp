@@ -6,7 +6,7 @@
 #ifndef OPENTXS_IDENTITY_CREDENTIAL_SECONDARY_HPP
 #define OPENTXS_IDENTITY_CREDENTIAL_SECONDARY_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/identity/credential/Key.hpp"
 

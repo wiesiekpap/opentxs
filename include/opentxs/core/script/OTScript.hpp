@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CORE_SCRIPT_OTSCRIPT_HPP
 #define OPENTXS_CORE_SCRIPT_OTSCRIPT_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
 #include <map>

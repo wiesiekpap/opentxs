@@ -6,15 +6,29 @@
 #ifndef OPENTXS_CORE_CONTRACT_PEER_NOTICEACKNOWLEDGEMENT_HPP
 #define OPENTXS_CORE_CONTRACT_PEER_NOTICEACKNOWLEDGEMENT_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 
 namespace opentxs
 {
+namespace contract
+{
+namespace peer
+{
+namespace reply
+{
+class Acknowledgement;
+}  // namespace reply
+}  // namespace peer
+}  // namespace contract
+
 using OTReplyAcknowledgement =
     SharedPimpl<contract::peer::reply::Acknowledgement>;
+}  // namespace opentxs
 
+namespace opentxs
+{
 namespace contract
 {
 namespace peer

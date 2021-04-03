@@ -6,7 +6,7 @@
 #ifndef OPENTXS_OTX_CONSENSUS_SERVER_HPP
 #define OPENTXS_OTX_CONSENSUS_SERVER_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <future>
 #include <tuple>
@@ -28,13 +28,34 @@ struct Manager;
 }  // namespace client
 }  // namespace api
 
+namespace blind
+{
+class Purse;
+}  // namespace blind
+
+namespace network
+{
+class ServerConnection;
+}  // namespace network
+
 namespace otx
 {
 namespace context
 {
 class TransactionStatement;
 }  // namespace context
+
+class Reply;
 }  // namespace otx
+
+namespace server
+{
+class Server;
+}  // namespace server
+
+class Ledger;
+class OTTransaction;
+class PasswordPrompt;
 }  // namespace opentxs
 
 namespace opentxs

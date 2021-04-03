@@ -110,7 +110,6 @@ set(cxx-install-headers
     "${opentxs_BINARY_DIR}/src/opentxs/opentxs_export.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/Bytes.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/Exclusive.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/Forward.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/OT.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/Pimpl.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/Proto.hpp"

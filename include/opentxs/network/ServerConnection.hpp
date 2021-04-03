@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>
 
@@ -25,10 +25,23 @@ namespace internal
 {
 struct Core;
 }  // namespace internal
+
+namespace network
+{
+class ZMQ;
+}  // namespace network
 }  // namespace api
 
 namespace network
 {
+namespace zeromq
+{
+namespace socket
+{
+class Publish;
+}  // namespace socket
+}  // namespace zeromq
+
 class ServerConnection;
 }  // namespace network
 
@@ -39,6 +52,8 @@ namespace context
 class Server;
 }  // namespace context
 }  // namespace otx
+
+class PasswordPrompt;
 
 using OTServerConnection = Pimpl<network::ServerConnection>;
 }  // namespace opentxs

@@ -6,7 +6,30 @@
 #ifndef OPENTXS_API_CRYPTO_CRYPTO_HPP
 #define OPENTXS_API_CRYPTO_CRYPTO_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
+
+namespace opentxs
+{
+namespace api
+{
+namespace crypto
+{
+class Config;
+class Encode;
+class Hash;
+class Util;
+}  // namespace crypto
+}  // namespace api
+
+namespace crypto
+{
+class AsymmetricProvider;
+class Bip32;
+class Bip39;
+class EcdsaProvider;
+class SymmetricProvider;
+}  // namespace crypto
+}  // namespace opentxs
 
 namespace opentxs
 {

@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <memory>
 #include <string>
@@ -57,6 +57,11 @@ namespace network
 namespace zeromq
 {
 class Context;
+class ListenCallback;
+class PairEventCallback;
+class Pipeline;
+class Proxy;
+class ReplyCallback;
 }  // namespace zeromq
 }  // namespace network
 

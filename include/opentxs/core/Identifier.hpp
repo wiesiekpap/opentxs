@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>
 
@@ -42,7 +42,10 @@ namespace proto
 class HDPath;
 }  // namespace proto
 
+class Cheque;
+class Contract;
 class Identifier;
+class Item;
 
 using OTIdentifier = Pimpl<Identifier>;
 

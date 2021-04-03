@@ -43,7 +43,7 @@ target_link_libraries(
     unofficial-sodium::sodium
 )
 
-if(OT_STORAGE_LMDB)
+if(LMDB_EXPORT)
   target_sources(
     opentxs-util
     PRIVATE

@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Proto.hpp"
@@ -34,6 +34,8 @@ namespace network
 {
 namespace zeromq
 {
+class FrameIterator;
+class FrameSection;
 class Message;
 }  // namespace zeromq
 }  // namespace network

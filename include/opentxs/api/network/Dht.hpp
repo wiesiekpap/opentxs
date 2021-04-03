@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <functional>
 #include <map>
@@ -19,6 +19,11 @@
 
 namespace opentxs
 {
+namespace network
+{
+class OpenDHT;
+}  // namespace network
+
 namespace proto
 {
 class ServerContract;

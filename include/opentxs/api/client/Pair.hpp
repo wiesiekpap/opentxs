@@ -6,7 +6,7 @@
 #ifndef OPENTXS_API_CLIENT_PAIR_HPP
 #define OPENTXS_API_CLIENT_PAIR_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <future>
 #include <set>

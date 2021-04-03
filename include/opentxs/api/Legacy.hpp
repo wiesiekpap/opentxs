@@ -6,9 +6,14 @@
 #ifndef OPENTXS_API_LEGACY_HPP
 #define OPENTXS_API_LEGACY_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>
+
+namespace opentxs
+{
+class String;
+}  // namespace opentxs
 
 namespace opentxs
 {

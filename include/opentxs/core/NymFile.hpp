@@ -8,6 +8,17 @@
 
 namespace opentxs
 {
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
+
+class OTPayment;
+class PasswordPrompt;
+}  // namespace opentxs
+
+namespace opentxs
+{
 class NymFile
 {
 public:

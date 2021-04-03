@@ -6,7 +6,7 @@
 #ifndef OPENTXS_NETWORK_ZEROMQ_CURVE_CLIENT_HPP
 #define OPENTXS_NETWORK_ZEROMQ_CURVE_CLIENT_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <tuple>
 
@@ -19,6 +19,16 @@
 %interface(opentxs::network::zeromq::curve::Client);
 // clang-format on
 #endif  // SWIG
+
+namespace opentxs
+{
+namespace contract
+{
+class Server;
+}  // namespace contract
+
+class Data;
+}  // namespace opentxs
 
 namespace opentxs
 {

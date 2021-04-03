@@ -6,7 +6,7 @@
 #ifndef OPENTXS_BLOCKCHAIN_BLOCK_OUTPOINT_HPP
 #define OPENTXS_BLOCKCHAIN_BLOCK_OUTPOINT_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <array>
 #include <cstddef>

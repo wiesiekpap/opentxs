@@ -6,7 +6,7 @@
 #ifndef OPENTXS_API_CLIENT_BLOCKCHAIN_TYPES_HPP
 #define OPENTXS_API_CLIENT_BLOCKCHAIN_TYPES_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <iosfwd>

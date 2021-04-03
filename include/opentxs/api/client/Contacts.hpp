@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <memory>
 
@@ -19,6 +19,8 @@
 
 namespace opentxs
 {
+class Contact;
+class Identifier;
 class PaymentCode;
 }  // namespace opentxs
 

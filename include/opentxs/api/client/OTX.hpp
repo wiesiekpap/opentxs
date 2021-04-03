@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
 #include <cstdint>
@@ -26,6 +26,23 @@
 #define OT_CHEQUE_DAYS 30
 #define OT_CHEQUE_HOURS 24 * OT_CHEQUE_DAYS
 #define DEFAULT_PROCESS_INBOX_ITEMS 5
+
+namespace opentxs
+{
+namespace contract
+{
+class Server;
+}  // namespace contract
+
+namespace identifier
+{
+class Nym;
+class Server;
+class UnitDefinition;
+}  // namespace identifier
+
+class OTPayment;
+}  // namespace opentxs
 
 namespace opentxs
 {

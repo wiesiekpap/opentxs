@@ -48,6 +48,8 @@ namespace internal
 {
 struct Header;
 }  // namespace internal
+
+class Transaction;
 }  // namespace bitcoin
 }  // namespace block
 }  // namespace blockchain

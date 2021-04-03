@@ -16,13 +16,13 @@
 #include <thread>
 
 #include "internal/api/Api.hpp"
-#include "opentxs/Forward.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Proto.tpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
 #include "opentxs/core/Armored.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"

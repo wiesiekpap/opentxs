@@ -27,7 +27,7 @@ jobs:
     - name: Compile
       run: |
         mkdir -p ${{ runner.temp }}/opentxs-for-android/${{ matrix.arch }}
-        docker run --read-only --tmpfs /tmp/build:rw,nosuid,size=2g --mount type=bind,src=${{ github.workspace }},dst=/home/src --mount type=bind,src=${{ runner.temp }}/opentxs-for-android/${{ matrix.arch }},dst=/home/output -i opentransactions/android:${{ matrix.docker }} ${{ matrix.arch }} ${{ matrix.binding }}
+        docker run --read-only --tmpfs /tmp/build:rw,nosuid,size=3g --mount type=bind,src=${{ github.workspace }},dst=/home/src --mount type=bind,src=${{ runner.temp }}/opentxs-for-android/${{ matrix.arch }},dst=/home/output -i opentransactions/android:${{ matrix.docker }} ${{ matrix.arch }} ${{ matrix.binding }}
     - uses: actions/upload-artifact@v2
       with:
         name: ${{ matrix.arch }}-${{ matrix.binding }}

@@ -6,7 +6,7 @@
 #ifndef OPENTXS_BLOCKCHAIN_BLOCK_BITCOIN_INPUT_HPP
 #define OPENTXS_BLOCKCHAIN_BLOCK_BITCOIN_INPUT_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <array>
 #include <cstddef>
@@ -23,6 +23,11 @@ namespace blockchain
 {
 namespace block
 {
+namespace bitcoin
+{
+class Script;
+}  // namespace bitcoin
+
 struct Outpoint;
 }  // namespace block
 }  // namespace blockchain

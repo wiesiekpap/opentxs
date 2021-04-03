@@ -17,9 +17,9 @@
 #include <tuple>
 
 #include "internal/rpc/RPC.hpp"
-#include "opentxs/Forward.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/Message.hpp"

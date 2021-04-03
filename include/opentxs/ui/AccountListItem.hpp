@@ -6,7 +6,7 @@
 #ifndef OPENTXS_UI_ACCOUNTLISTITEM_HPP
 #define OPENTXS_UI_ACCOUNTLISTITEM_HPP
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>
 

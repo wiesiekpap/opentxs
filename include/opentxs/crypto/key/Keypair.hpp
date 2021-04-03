@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <list>
@@ -24,6 +24,7 @@ namespace crypto
 {
 namespace key
 {
+class Asymmetric;
 class Keypair;
 }  // namespace key
 }  // namespace crypto
@@ -33,7 +34,10 @@ namespace proto
 class AsymmetricKey;
 }  // namespace proto
 
+class Data;
+class PasswordPrompt;
 class Secret;
+class Signature;
 
 using OTKeypair = Pimpl<crypto::key::Keypair>;
 }  // namespace opentxs

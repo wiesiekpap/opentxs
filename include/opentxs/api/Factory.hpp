@@ -8,7 +8,7 @@
 
 // IWYU pragma: no_include "opentxs/Proto.hpp"
 
-#include "opentxs/Forward.hpp"  // IWYU pragma: associated
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <string>
@@ -62,6 +62,11 @@
 
 namespace opentxs
 {
+namespace blind
+{
+class Mint;
+}  // namespace blind
+
 namespace blockchain
 {
 namespace block
@@ -69,10 +74,19 @@ namespace block
 namespace bitcoin
 {
 class Block;
+class Script;
 class Transaction;
 }  // namespace bitcoin
+
+class Block;
+class Header;
 }  // namespace block
 }  // namespace blockchain
+
+namespace crypto
+{
+class SymmetricProvider;
+}  // namespace crypto
 
 namespace otx
 {
@@ -95,6 +109,23 @@ class SymmetricKey;
 class UnitDefinition;
 }  // namespace proto
 
+class Basket;
+class Cheque;
+class Item;
+class Ledger;
+class NumList;
+class OTCron;
+class OTCronItem;
+class OTMarket;
+class OTOffer;
+class OTPayment;
+class OTPaymentPlan;
+class OTScriptable;
+class OTSignedFile;
+class OTSmartContract;
+class OTTrade;
+class OTTransaction;
+class OTTransactionType;
 class Secret;
 }  // namespace opentxs
 
