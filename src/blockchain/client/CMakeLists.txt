@@ -53,6 +53,18 @@ target_link_libraries(opentxs PUBLIC "${OT_ZMQ_TARGET}")
 target_include_directories(
   opentxs-blockchain-client SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
+
+if(PACKETCRYPT_EXPORT)
+  target_sources(
+    opentxs-blockchain-client
+    PRIVATE "blockoracle/GetValidator_packetcrypt.cpp"
+  )
+else()
+  target_sources(
+    opentxs-blockchain-client PRIVATE "blockoracle/GetValidator.cpp"
+  )
+endif()
+
 target_sources(opentxs-blockchain-client PRIVATE ${cxx-install-headers})
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-blockchain-client>)
 add_dependencies(opentxs-blockchain-client generated_code)

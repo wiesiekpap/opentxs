@@ -116,7 +116,7 @@ Element::Element(
               auto out = Transactions{};
 
               for (const auto& txid : address.unconfirmed()) {
-                  out.emplace(api_.Factory().Data(txid, StringStyle::Raw));
+                  out.emplace(api.Factory().Data(txid, StringStyle::Raw));
               }
 
               return out;
@@ -125,7 +125,7 @@ Element::Element(
               auto out = Transactions{};
 
               for (const auto& txid : address.confirmed()) {
-                  out.emplace(api_.Factory().Data(txid, StringStyle::Raw));
+                  out.emplace(api.Factory().Data(txid, StringStyle::Raw));
               }
 
               return out;

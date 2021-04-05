@@ -212,8 +212,8 @@ struct Contacts : virtual public api::client::Contacts {
 struct Manager : virtual public api::client::Manager,
                  virtual public api::internal::Core {
     virtual auto InternalUI() const noexcept -> const internal::UI& = 0;
-    virtual auto StartActivity() -> void = 0;
-    virtual auto StartContacts() -> void = 0;
+
+    virtual auto Init() -> void = 0;
 
     ~Manager() override = default;
 };

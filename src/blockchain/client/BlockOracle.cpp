@@ -67,7 +67,10 @@ BlockOracle::BlockOracle(
         return std::make_unique<BlockDownloader>(
             api_, db, header, network, chain, shutdown);
     }())
+    , validator_(get_validator(chain, header))
 {
+    OT_ASSERT(validator_);
+
     init_executor({shutdown});
 }
 

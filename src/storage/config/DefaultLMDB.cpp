@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"             // IWYU pragma: associated
 #include "storage/StorageConfig.hpp"  // IWYU pragma: associated
 
+#include <memory>
+
 namespace opentxs
 {
 const std::string StorageConfig::default_plugin_{

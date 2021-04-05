@@ -92,17 +92,21 @@ struct SubchainData::Imp {
         const SubchainIndex& subchain,
         const block::Height lastGoodHeight) const noexcept(false) -> bool
     {
-        auto& scanned = last_scanned_.at(subchain);
+        try {
+            auto& scanned = last_scanned_.at(subchain);
 
-        if (const auto& height = scanned.first; height < lastGoodHeight) {
-            // noop
-        } else if (height > lastGoodHeight) {
-            scanned.first = lastGoodHeight;
-        } else {
-            scanned.first = std::min<block::Height>(lastGoodHeight - 1, 0);
+            if (const auto& height = scanned.first; height < lastGoodHeight) {
+                // noop
+            } else if (height > lastGoodHeight) {
+                scanned.first = lastGoodHeight;
+            } else {
+                scanned.first = std::min<block::Height>(lastGoodHeight - 1, 0);
+            }
+
+            // FIXME use header oracle to set correct block hash if
+            // scanned.first is modified
+        } catch (...) {
         }
-
-        // FIXME use header oracle to set correct block hash
 
         return false;
     }

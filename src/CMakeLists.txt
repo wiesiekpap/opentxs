@@ -140,6 +140,16 @@ set_target_properties(
     POSITION_INDEPENDENT_CODE 1
 )
 
+set(LICENSE_DEFINITIONS
+    "OT_SCRIPT_CHAI=${SCRIPT_CHAI_EXPORT}"
+    "OT_CASH_USING_LUCRE=${CASH_LUCRE_EXPORT}"
+    "OT_CRYPTO_USING_PACKETCRYPT=${PACKETCRYPT_EXPORT}"
+)
+set_source_files_properties(
+  "${CMAKE_CURRENT_BINARY_DIR}/License.cpp" PROPERTIES COMPILE_DEFINITIONS
+                                                       ${LICENSE_DEFINITIONS}
+)
+
 if(CMAKE_DL_LIBS)
   target_link_libraries(opentxs PUBLIC ${CMAKE_DL_LIBS})
 endif()

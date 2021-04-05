@@ -25,3 +25,6 @@
 [submodule "deps/robin-hood"]
 	path = deps/robin-hood
 	url = https://github.com/martinus/robin-hood-hashing
+[submodule "deps/packetcrypt/packetcrypt_rs"]
+	path = deps/packetcrypt/packetcrypt_rs
+	url = https://github.com/cjdelisle/packetcrypt_rs

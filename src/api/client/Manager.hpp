@@ -86,11 +86,12 @@ public:
     auto Workflow() const -> const client::Workflow& final;
     auto ZMQ() const -> const api::network::ZMQ& final;
 
-    void StartActivity() final;
+    void Init() final;
+    void StartActivity();
 #if OT_BLOCKCHAIN
     auto StartBlockchain() noexcept -> void;
 #endif  // OT_BLOCKCHAIN
-    void StartContacts() final;
+    void StartContacts();
 
     Manager(
         const api::internal::Context& parent,
@@ -131,7 +132,6 @@ private:
     auto get_lock(const ContextID context) const -> std::recursive_mutex&;
 
     void Cleanup();
-    void Init();
 
     Manager() = delete;
     Manager(const Manager&) = delete;

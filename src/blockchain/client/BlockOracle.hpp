@@ -79,6 +79,10 @@ public:
     {
         return db_.BlockTip();
     }
+    auto Validate(const BitcoinBlock& block) const noexcept -> bool final
+    {
+        return validator_->Validate(block);
+    }
 
     auto Init() noexcept -> void final;
     auto Shutdown() noexcept -> std::shared_future<void> final
@@ -162,6 +166,12 @@ private:
     mutable std::mutex lock_;
     Cache cache_;
     std::unique_ptr<BlockDownloader> block_downloader_;
+    const std::unique_ptr<const internal::BlockValidator> validator_;
+
+    static auto get_validator(
+        const blockchain::Type chain,
+        const client::HeaderOracle& headers) noexcept
+        -> std::unique_ptr<const internal::BlockValidator>;
 
     auto pipeline(const zmq::Message& in) noexcept -> void;
     auto shutdown(std::promise<void>& promise) noexcept -> void;
