@@ -988,7 +988,6 @@ auto Factory::instantiate_secp256k1(
 #if OT_CRYPTO_WITH_BIP32
     static const auto blank = Secret(0);
     static const auto path = proto::HDPath{};
-    const auto reason = PasswordPrompt("Instantiating a payment code");
 
     return factory::Secp256k1Key(
         api_,
@@ -999,8 +998,7 @@ auto Factory::instantiate_secp256k1(
         path,
         {},
         proto::KEYROLE_SIGN,
-        opentxs::crypto::key::EllipticCurve::DefaultVersion,
-        reason);
+        opentxs::crypto::key::EllipticCurve::DefaultVersion);
 #else
     using ReturnType = opentxs::crypto::key::Secp256k1;
 

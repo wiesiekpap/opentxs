@@ -179,6 +179,26 @@ HD::HD(
     OT_ASSERT(path_);
     OT_ASSERT(chain_code_);
 }
+
+HD::HD(
+    const api::internal::Core& api,
+    const crypto::EcdsaProvider& ecdsa,
+    const proto::AsymmetricKeyType keyType,
+    const Secret& privateKey,
+    const Secret& chainCode,
+    const Data& publicKey,
+    const proto::HDPath& path,
+    const Bip32Fingerprint parent,
+    const proto::KeyRole role,
+    const VersionNumber version) noexcept(false)
+    : EllipticCurve(api, ecdsa, keyType, privateKey, publicKey, role, version)
+    , path_(std::make_shared<proto::HDPath>(path))
+    , chain_code_()
+    , plaintext_chain_code_(chainCode)
+    , parent_(parent)
+{
+    OT_ASSERT(path_);
+}
 #endif  // OT_CRYPTO_WITH_BIP32
 
 HD::HD(const HD& rhs) noexcept

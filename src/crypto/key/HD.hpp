@@ -107,6 +107,17 @@ protected:
        key::Symmetric& sessionKey,
        const PasswordPrompt& reason)
     noexcept(false);
+    HD(const api::internal::Core& api,
+       const crypto::EcdsaProvider& ecdsa,
+       const proto::AsymmetricKeyType keyType,
+       const Secret& privateKey,
+       const Secret& chainCode,
+       const Data& publicKey,
+       const proto::HDPath& path,
+       const Bip32Fingerprint parent,
+       const proto::KeyRole role,
+       const VersionNumber version)
+    noexcept(false);
 #endif  // OT_CRYPTO_WITH_BIP32
     HD(const HD&) noexcept;
     HD(const HD& rhs, const ReadView newPublic) noexcept;

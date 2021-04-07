@@ -220,8 +220,8 @@ if(NOT OT_WITH_QT)
 endif()
 
 if(${CMAKE_CXX_COMPILER_ID}
-       MATCHES
-       GNU
+   MATCHES
+   GNU
 )
   set(OT_CRYPTO_USING_PACKETCRYPT OFF)
 endif()
