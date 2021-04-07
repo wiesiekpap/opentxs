@@ -54,6 +54,8 @@ public:
     using Proof = std::pair<std::byte, Space>;
     using Proofs = std::vector<Proof>;
 
+    auto GetProofs() const noexcept -> const Proofs& { return proofs_; }
+
     Block(
         const api::Core& api,
         const blockchain::Type chain,

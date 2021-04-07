@@ -257,6 +257,17 @@ struct BlockOracle : virtual public opentxs::blockchain::client::BlockOracle {
     ~BlockOracle() override = default;
 };
 
+struct BlockValidator {
+    using BitcoinBlock = block::bitcoin::Block;
+
+    virtual auto Validate(const BitcoinBlock& block) const noexcept -> bool
+    {
+        return true;
+    }
+
+    virtual ~BlockValidator() = default;
+};
+
 struct OPENTXS_EXPORT Config {
     bool download_cfilters_{false};
     bool generate_cfilters_{false};

@@ -20,7 +20,7 @@ extern "C" {
 #include "blind/Lucre.hpp"
 #include "blind/Mint.hpp"
 #include "blind/token/Lucre.hpp"
-#include "crypto/library/OpenSSL_BIO.hpp"
+#include "crypto/library/openssl/OpenSSL_BIO.hpp"
 #include "internal/api/Api.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"

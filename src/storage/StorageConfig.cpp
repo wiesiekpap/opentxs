@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"             // IWYU pragma: associated
 #include "storage/StorageConfig.hpp"  // IWYU pragma: associated
 
+#include <chrono>
+#include <memory>
+
 namespace C = std::chrono;
 
 namespace opentxs

@@ -142,8 +142,6 @@ Manager::Manager(
     OT_ASSERT(otx_);
     OT_ASSERT(ui_);
     OT_ASSERT(pair_);
-
-    Init();
 }
 
 auto Manager::Activity() const -> const api::client::Activity&

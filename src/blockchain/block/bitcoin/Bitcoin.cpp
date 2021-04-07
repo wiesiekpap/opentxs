@@ -20,6 +20,25 @@ namespace be = boost::endian;
 
 namespace opentxs::blockchain::block::bitcoin::internal
 {
+auto DecodeBip34(const ReadView coinbase) noexcept -> block::Height
+{
+    static constexpr auto null = block::Height{-1};
+
+    if (false == valid(coinbase)) { return null; }
+
+    auto* i = reinterpret_cast<const std::byte*>(coinbase.data());
+    const auto size = std::to_integer<std::uint8_t>(*i);
+    std::advance(i, 1);
+    auto buf = be::little_int64_buf_t{0};
+
+    if ((size + 1u) > coinbase.size()) { return null; }
+    if (size > sizeof(buf)) { return null; }
+
+    std::memcpy(reinterpret_cast<std::byte*>(&buf), i, size);
+
+    return buf.value();
+}
+
 auto EncodeBip34(block::Height height) noexcept -> Space
 {
     if (std::numeric_limits<std::int8_t>::max() >= height) {

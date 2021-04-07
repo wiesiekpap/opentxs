@@ -457,7 +457,7 @@ void Context::start_client(const Lock& lock, const ArgList& args) const
     auto merged_args = merge_arglist(args);
     const auto next = static_cast<int>(client_.size());
     const auto instance = client_instance(next);
-    client_.emplace_back(factory::ClientManager(
+    auto& client = client_.emplace_back(factory::ClientManager(
         *this,
         running_,
         merged_args,
@@ -466,6 +466,10 @@ void Context::start_client(const Lock& lock, const ArgList& args) const
         zmq_context_,
         legacy_->ClientDataFolder(next),
         instance));
+
+    OT_ASSERT(client);
+
+    client->Init();
 }
 
 auto Context::StartClient(const ArgList& args, const int instance) const

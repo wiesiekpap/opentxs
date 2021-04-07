@@ -7,12 +7,22 @@
 #include "1_Internal.hpp"      // IWYU pragma: associated
 #include "api/ThreadPool.hpp"  // IWYU pragma: associated
 
+#include <functional>
+#include <iosfwd>
+#include <memory>
+#include <stdexcept>
 #include <thread>
+#include <utility>
 
 #include "internal/api/Factory.hpp"
+#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/core/LogSource.hpp"
+#include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
+#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/socket/Socket.hpp"
 
 #define OT_METHOD "opentxs::api::implementation::ThreadPool::"
 

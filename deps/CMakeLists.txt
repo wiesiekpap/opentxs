@@ -3,8 +3,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_subdirectory(irrxml)
 add_subdirectory(base64)
+add_subdirectory(irrxml)
+
+if(PACKETCRYPT_EXPORT)
+  add_subdirectory(packetcrypt)
+endif()
 
 if(CASH_LUCRE_EXPORT)
   add_library(lucre OBJECT "lucre/src/bankimp.cpp")

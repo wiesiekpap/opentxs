@@ -405,12 +405,15 @@ auto Peer::process_block(
         }
 
         auto submit{true};
+        auto block = api_.Factory().BitcoinBlock(chain_, payload.Bytes());
+
+        if (!block) { throw std::runtime_error("Failed to instantiate block"); }
+
+        if (false == block_.Validate(*block)) {
+            throw std::runtime_error("Invalid block");
+        }
 
         if (block_job_) {
-            auto block = api_.Factory().BitcoinBlock(chain_, payload.Bytes());
-
-            if (!block) { throw std::runtime_error("Invalid block"); }
-
             auto header = headers_.LoadHeader(block->Header().Hash());
 
             if (!header) { throw std::runtime_error("Failed to load header"); }

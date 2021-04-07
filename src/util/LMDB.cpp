@@ -13,7 +13,9 @@ extern "C" {
 
 #include <cstddef>
 #include <limits>
+#include <mutex>
 #include <stdexcept>
+#include <tuple>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Log.hpp"

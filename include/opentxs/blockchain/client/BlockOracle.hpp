@@ -34,6 +34,8 @@ public:
         const block::Hash& block) const noexcept -> BitcoinBlockFuture = 0;
     OPENTXS_EXPORT virtual auto LoadBitcoin(
         const BlockHashes& hashes) const noexcept -> BitcoinBlockFutures = 0;
+    OPENTXS_EXPORT virtual auto Validate(
+        const BitcoinBlock& block) const noexcept -> bool = 0;
 
     virtual ~BlockOracle() = default;
 

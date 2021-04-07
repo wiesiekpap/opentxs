@@ -7,25 +7,12 @@
 #include "1_Internal.hpp"                        // IWYU pragma: associated
 #include "storage/drivers/StorageMultiplex.hpp"  // IWYU pragma: associated
 
-#include <cstdint>
-#include <iosfwd>
-#include <limits>
 #include <memory>
-#include <stdexcept>
-#include <vector>
 
 #include "2_Factory.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/storage/Plugin.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "opentxs/core/String.hpp"
-#include "opentxs/crypto/key/Symmetric.hpp"
-#include "storage/StorageConfig.hpp"
-#include "storage/tree/Root.hpp"
-#include "storage/tree/Tree.hpp"
 
 #define OT_METHOD "opentxs::storage::implementation::StorageMultiplex::"
 

@@ -99,6 +99,7 @@ class Identifier;
 
 namespace opentxs::blockchain::block::bitcoin::internal
 {
+auto DecodeBip34(const ReadView coinbase) noexcept -> block::Height;
 auto EncodeBip34(block::Height height) noexcept -> Space;
 
 struct Input : virtual public bitcoin::Input {

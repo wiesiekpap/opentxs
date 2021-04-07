@@ -141,6 +141,11 @@ option(
   ON
 )
 option(
+  OT_CRYPTO_USING_PACKETCRYPT
+  "Enable packetcrypt validation library"
+  OFF
+)
+option(
   OT_WITH_BLOCKCHAIN
   "Enable blockchain client support"
   ON
@@ -212,6 +217,17 @@ if(NOT OT_WITH_QT)
   endif()
 
   set(OT_WITH_QML OFF)
+endif()
+
+if(${CMAKE_CXX_COMPILER_ID}
+       MATCHES
+       GNU
+)
+  set(OT_CRYPTO_USING_PACKETCRYPT OFF)
+endif()
+
+if(MSVC)
+  set(OT_CRYPTO_USING_PACKETCRYPT OFF)
 endif()
 
 if(ANDROID)
@@ -330,6 +346,7 @@ message(STATUS "secp256k1                 ${OT_CRYPTO_SUPPORTED_KEY_SECP256K1}")
 message(STATUS "Crypto library providers---------------------")
 message(STATUS "OpenSSL:                  ${OT_CRYPTO_USING_OPENSSL}")
 message(STATUS "libsecp256k1:             ${OT_CRYPTO_USING_LIBSECP256K1}")
+message(STATUS "packetcrypt:              ${OT_CRYPTO_USING_PACKETCRYPT}")
 
 message(STATUS "Blockchain-----------------------------------")
 message(STATUS "Blockchain client:        ${OT_WITH_BLOCKCHAIN}")
@@ -646,6 +663,17 @@ if(OT_CRYPTO_USING_LIBSECP256K1)
   endif()
 else()
   set(LIBSECP256K1_EXPORT 0)
+endif()
+
+if(OT_CRYPTO_USING_PACKETCRYPT)
+  if(OT_WITH_BLOCKCHAIN)
+    set(PACKETCRYPT_EXPORT 1)
+  else()
+    set(PACKETCRYPT_EXPORT 0)
+    message(WARNING "packetcrypt is pointless without blockchain support.")
+  endif()
+else()
+  set(PACKETCRYPT_EXPORT 0)
 endif()
 
 if(OT_CRYPTO_SUPPORTED_KEY_SECP256K1)
