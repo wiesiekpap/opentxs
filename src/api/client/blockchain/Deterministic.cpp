@@ -46,13 +46,11 @@ Deterministic::Deterministic(
     Identifier& out) noexcept
     : BalanceNode(api, parent, type, std::move(id), out)
     , path_(path)
-#if OT_CRYPTO_WITH_BIP32
-    , key_(instantiate_key(api_, const_cast<proto::HDPath&>(path_)))
-#endif  // OT_CRYPTO_WITH_BIP32
     , data_(std::move(data))
     , generated_({{data_.internal_.type_, 0}, {data_.external_.type_, 0}})
     , used_({{data_.internal_.type_, 0}, {data_.external_.type_, 0}})
     , last_allocation_()
+    , cached_key_()
 {
     data_.internal_.map_.reserve(1024u);
     data_.internal_.map_.reserve(1024u);
@@ -69,9 +67,6 @@ Deterministic::Deterministic(
     Identifier& out) noexcept(false)
     : BalanceNode(api, parent, type, serialized.common(), out)
     , path_(serialized.path())
-#if OT_CRYPTO_WITH_BIP32
-    , key_(instantiate_key(api_, const_cast<proto::HDPath&>(path_)))
-#endif  // OT_CRYPTO_WITH_BIP32
     , data_(std::move(data))
     , generated_(
           {{data_.internal_.type_, internal},
@@ -80,6 +75,7 @@ Deterministic::Deterministic(
           {{data_.internal_.type_, serialized.internalindex()},
            {data_.external_.type_, serialized.externalindex()}})
     , last_allocation_()
+    , cached_key_()
 {
 }
 
@@ -447,33 +443,6 @@ auto Deterministic::init(const PasswordPrompt& reason) noexcept(false) -> void
     init();
 }
 
-#if OT_CRYPTO_WITH_BIP32
-auto Deterministic::instantiate_key(
-    const api::internal::Core& api,
-    proto::HDPath& path) -> HDKey
-{
-    std::string fingerprint{path.root()};
-    auto reason = api.Factory().PasswordPrompt("Loading account xpriv");
-    api::HDSeed::Path children{};
-
-    for (const auto& index : path.child()) { children.emplace_back(index); }
-
-    auto pKey = api.Seeds().GetHDKey(
-        fingerprint,
-        EcdsaCurve::secp256k1,
-        children,
-        reason,
-        proto::KEYROLE_SIGN,
-        opentxs::crypto::key::EllipticCurve::MaxVersion);
-
-    OT_ASSERT(pKey);
-
-    path.set_root(fingerprint);
-
-    return std::move(pKey);
-}
-#endif  // OT_CRYPTO_WITH_BIP32
-
 auto Deterministic::Key(const Subchain type, const Bip32Index index)
     const noexcept -> ECKey
 {
@@ -598,23 +567,25 @@ auto Deterministic::Reserve(
 auto Deterministic::RootNode(const PasswordPrompt& reason) const noexcept
     -> HDKey
 {
-#if OT_CRYPTO_WITH_BIP32
+    auto& [mutex, key] = cached_key_;
+    auto lock = Lock{mutex};
+
+    if (key) { return key; }
+
     auto fingerprint(path_.root());
-    api::HDSeed::Path path{};
+    auto path = api::HDSeed::Path{};
 
     for (const auto& child : path_.child()) { path.emplace_back(child); }
 
-    return api_.Seeds().GetHDKey(
+    key = api_.Seeds().GetHDKey(
         fingerprint,
         EcdsaCurve::secp256k1,
         path,
         reason,
         proto::KEYROLE_SIGN,
         opentxs::crypto::key::EllipticCurve::MaxVersion);
-#else
 
-    return {};
-#endif  // OT_CRYPTO_WITH_BIP32
+    return key;
 }
 
 auto Deterministic::serialize_deterministic(

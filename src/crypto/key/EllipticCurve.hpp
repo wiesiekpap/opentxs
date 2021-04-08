@@ -119,6 +119,14 @@ protected:
         const VersionNumber version,
         key::Symmetric& sessionKey,
         const PasswordPrompt& reason) noexcept(false);
+    EllipticCurve(
+        const api::internal::Core& api,
+        const crypto::EcdsaProvider& ecdsa,
+        const proto::AsymmetricKeyType keyType,
+        const Secret& privateKey,
+        const Data& publicKey,
+        const proto::KeyRole role,
+        const VersionNumber version) noexcept(false);
     EllipticCurve(const EllipticCurve&) noexcept;
     EllipticCurve(const EllipticCurve& rhs, const ReadView newPublic) noexcept;
     EllipticCurve(const EllipticCurve& rhs, OTSecret&& newSecretKey) noexcept;

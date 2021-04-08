@@ -95,20 +95,11 @@ protected:
     static constexpr Bip32Index max_index_{2147483648u};
 
     const proto::HDPath path_;
-#if OT_CRYPTO_WITH_BIP32
-    HDKey key_;
-#endif  // OT_CRYPTO_WITH_BIP32
     mutable ChainData data_;
     mutable IndexMap generated_;
     mutable IndexMap used_;
     mutable boost::container::flat_map<Subchain, std::optional<Bip32Index>>
         last_allocation_;
-
-#if OT_CRYPTO_WITH_BIP32
-    static auto instantiate_key(
-        const api::internal::Core& api,
-        proto::HDPath& path) -> HDKey;
-#endif  // OT_CRYPTO_WITH_BIP32
 
     auto check_lookahead(
         const rLock& lock,
@@ -168,9 +159,12 @@ protected:
 private:
     using Status = internal::BalanceElement::Availability;
     using Fallback = std::map<Status, std::set<Bip32Index>>;
+    using CachedKey = std::pair<std::mutex, HDKey>;
 
     static constexpr auto BlockchainDeterministicAccountDataVersion =
         VersionNumber{1};
+
+    mutable CachedKey cached_key_;
 
     static auto extract_contacts(
         const Bip32Index index,

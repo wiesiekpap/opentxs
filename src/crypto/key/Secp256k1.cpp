@@ -90,7 +90,6 @@ auto Secp256k1Key(
     }
 }
 
-#if OT_CRYPTO_WITH_BIP32
 auto Secp256k1Key(
     const api::internal::Core& api,
     const crypto::EcdsaProvider& ecdsa,
@@ -104,6 +103,7 @@ auto Secp256k1Key(
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::unique_ptr<crypto::key::Secp256k1>
 {
+#if OT_CRYPTO_WITH_BIP32
     try {
         auto sessionKey = api.Symmetric().Key(reason);
 
@@ -126,8 +126,48 @@ auto Secp256k1Key(
 
         return nullptr;
     }
-}
+#else
+
+    return {};
 #endif  // OT_CRYPTO_WITH_BIP32
+}
+
+auto Secp256k1Key(
+    const api::internal::Core& api,
+    const crypto::EcdsaProvider& ecdsa,
+    const Secret& privateKey,
+    const Secret& chainCode,
+    const Data& publicKey,
+    const proto::HDPath& path,
+    const Bip32Fingerprint parent,
+    const proto::KeyRole role,
+    const VersionNumber version) noexcept
+    -> std::unique_ptr<crypto::key::Secp256k1>
+{
+#if OT_CRYPTO_WITH_BIP32
+    try {
+        return std::make_unique<ReturnType>(
+            api,
+            ecdsa,
+            privateKey,
+            chainCode,
+            publicKey,
+            path,
+            parent,
+            role,
+            version);
+    } catch (const std::exception& e) {
+        LogOutput("opentxs::Factory::")(__FUNCTION__)(
+            ": Failed to generate key: ")(e.what())
+            .Flush();
+
+        return nullptr;
+    }
+#else
+
+    return {};
+#endif  // OT_CRYPTO_WITH_BIP32
+}
 }  // namespace opentxs::factory
 
 namespace opentxs::crypto::key::implementation
@@ -198,6 +238,30 @@ Secp256k1::Secp256k1(
           version,
           sessionKey,
           reason)
+{
+}
+
+Secp256k1::Secp256k1(
+    const api::internal::Core& api,
+    const crypto::EcdsaProvider& ecdsa,
+    const Secret& privateKey,
+    const Secret& chainCode,
+    const Data& publicKey,
+    const proto::HDPath& path,
+    const Bip32Fingerprint parent,
+    const proto::KeyRole role,
+    const VersionNumber version) noexcept(false)
+    : ot_super(
+          api,
+          ecdsa,
+          proto::AKEYTYPE_SECP256K1,
+          privateKey,
+          chainCode,
+          publicKey,
+          path,
+          parent,
+          role,
+          version)
 {
 }
 #endif  // OT_CRYPTO_WITH_BIP32

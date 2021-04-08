@@ -111,6 +111,28 @@ EllipticCurve::EllipticCurve(
     }
 }
 
+EllipticCurve::EllipticCurve(
+    const api::internal::Core& api,
+    const crypto::EcdsaProvider& ecdsa,
+    const proto::AsymmetricKeyType keyType,
+    const Secret& privateKey,
+    const Data& publicKey,
+    const proto::KeyRole role,
+    const VersionNumber version) noexcept(false)
+    : Asymmetric(
+          api,
+          ecdsa,
+          keyType,
+          role,
+          true,
+          (false == privateKey.empty()),
+          version,
+          OTData{publicKey},
+          {})
+    , ecdsa_(ecdsa)
+{
+}
+
 EllipticCurve::EllipticCurve(const EllipticCurve& rhs) noexcept
     : Asymmetric(rhs)
     , ecdsa_(rhs.ecdsa_)

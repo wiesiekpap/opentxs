@@ -91,7 +91,8 @@ struct PacketCrypt::Imp {
                 }
 
                 throw std::runtime_error{"Proof not found"};
-            }();
+            }
+            ();
             const auto sBytes = serializedProof.size();
             const auto hap = [&] {
                 static constexpr auto headerSize = sizeof(

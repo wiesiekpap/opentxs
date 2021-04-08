@@ -125,7 +125,6 @@ auto Secp256k1Key(
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::unique_ptr<crypto::key::Secp256k1>;
-#if OT_CRYPTO_WITH_BIP32
 auto Secp256k1Key(
     const api::internal::Core& api,
     const crypto::EcdsaProvider& ecdsa,
@@ -138,7 +137,17 @@ auto Secp256k1Key(
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::unique_ptr<crypto::key::Secp256k1>;
-#endif  // OT_CRYPTO_WITH_BIP32
+auto Secp256k1Key(
+    const api::internal::Core& api,
+    const crypto::EcdsaProvider& ecdsa,
+    const Secret& privateKey,
+    const Secret& chainCode,
+    const Data& publicKey,
+    const proto::HDPath& path,
+    const Bip32Fingerprint parent,
+    const proto::KeyRole role,
+    const VersionNumber version) noexcept
+    -> std::unique_ptr<crypto::key::Secp256k1>;
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 auto SymmetricKey() noexcept -> std::unique_ptr<crypto::key::Symmetric>;
 auto SymmetricKey(
