@@ -18,6 +18,7 @@
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blind/Token.hpp"
+#include "opentxs/blind/TokenState.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/protobuf/Token.pb.h"

@@ -15,6 +15,7 @@
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
+#include "opentxs/crypto/HashType.hpp"
 
 namespace opentxs
 {

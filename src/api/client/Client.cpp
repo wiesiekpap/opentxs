@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "internal/api/client/Client.hpp"  // IWYU pragma: associated
 
+#include <boost/container/flat_map.hpp>
+#include <boost/container/vector.hpp>
 #include <map>
 #include <type_traits>
 

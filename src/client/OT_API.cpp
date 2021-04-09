@@ -12,6 +12,7 @@
 #include <fstream>
 #include <iterator>
 #include <limits>
+#include <list>
 #include <memory>
 #include <ratio>
 #include <string>

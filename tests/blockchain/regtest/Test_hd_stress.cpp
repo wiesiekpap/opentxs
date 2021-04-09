@@ -74,8 +74,6 @@ protected:
     const ot::AccountType expected_account_type_;
     const ot::contact::ContactItemType expected_unit_type_;
     const Generator mine_to_alice_;
-    const GetBytes get_p2pk_bytes_;
-    const GetPattern get_p2pk_patterns_;
     ScanListener& listener_alice_;
     ScanListener& listener_bob_;
 
@@ -253,9 +251,6 @@ protected:
 
             return output;
         })
-        , get_p2pk_bytes_(
-              [&](const auto& script, auto index) { return script.Pubkey(); })
-        , get_p2pk_patterns_([&](auto index) { return Pattern::PayToPubkey; })
         , listener_alice_([&]() -> ScanListener& {
             if (!listener_alice_p_) {
                 listener_alice_p_ = std::make_unique<ScanListener>(client_1_);
@@ -319,47 +314,6 @@ TEST_F(Regtest_stress, alice_after_receive_wallet)
     const auto amount = outputs * amount_;
     const auto balance = Balance{amount, amount};
     const auto noBalance = Balance{0, 0};
-    // const auto outpointsConfirmedNew = [&] {
-    //    auto out = std::vector<Outpoint>{};
-    //    const auto& txid = transactions_.at(0);
-    //
-    //    for (auto i{0u}; i < outputs; ++i) {
-    //        out.emplace_back(txid->Bytes(), i);
-    //    }
-    //
-    //    return out;
-    //}();
-    // const auto keysConfirmedNew = [&] {
-    //    auto out = std::vector<ot::OTData>{};
-    //
-    //    for (auto i{0u}; i < outputs; ++i) {
-    //        const auto& element =
-    //            alice_account_.BalanceElement(Subchain::External, i);
-    //        const auto k = element.Key();
-    //
-    //        OT_ASSERT(k);
-    //
-    //        out.emplace_back(client_1_.Factory().Data(k->PublicKey()));
-    //    }
-    //
-    //    return out;
-    //}();
-    // const auto testConfirmedNew = [&](const auto& utxos) -> bool {
-    //    return TestUTXOs(
-    //        outpointsConfirmedNew,
-    //        keysConfirmedNew,
-    //        utxos,
-    //        get_p2pk_bytes_,
-    //        get_p2pk_patterns_,
-    //        [](const auto index) -> std::int64_t {
-    //            const auto amount = ot::blockchain::Amount{amount_};
-    //
-    //            return amount;
-    //        });
-    //};
-
-    // ASSERT_EQ(outpointsConfirmedNew.size(), outputs);
-    // ASSERT_EQ(keysConfirmedNew.size(), outputs);
 
     EXPECT_EQ(wallet.GetBalance(), balance);
     EXPECT_EQ(network.GetBalance(), balance);
@@ -382,10 +336,6 @@ TEST_F(Regtest_stress, alice_after_receive_wallet)
     EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
     EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
     EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
-
-    // EXPECT_TRUE(testConfirmedNew(wallet.GetOutputs(type)));
-    // EXPECT_TRUE(testConfirmedNew(wallet.GetOutputs(nym, type)));
-    // EXPECT_TRUE(testConfirmedNew(wallet.GetOutputs(nym, account, type)));
 
     type = TxoState::UnconfirmedNew;
 
@@ -416,10 +366,6 @@ TEST_F(Regtest_stress, alice_after_receive_wallet)
     EXPECT_EQ(wallet.GetOutputs(blankNym, blankAccount, type).size(), 0u);
     EXPECT_EQ(wallet.GetOutputs(nym, blankAccount, type).size(), 0u);
     EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
-
-    // EXPECT_TRUE(testConfirmedNew(wallet.GetOutputs(type)));
-    // EXPECT_TRUE(testConfirmedNew(wallet.GetOutputs(nym, type)));
-    // EXPECT_TRUE(testConfirmedNew(wallet.GetOutputs(nym, account, type)));
 
     type = TxoState::ConfirmedSpend;
 

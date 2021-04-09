@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_forward_declare opentxs::Account
+
 #ifndef OPENTXS_EXCLUSIVE_HPP
 #define OPENTXS_EXCLUSIVE_HPP
 

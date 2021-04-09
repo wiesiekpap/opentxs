@@ -12,6 +12,7 @@
 #include <map>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "2_Factory.hpp"
 #include "internal/api/Api.hpp"
@@ -106,7 +107,7 @@ auto Factory::Dht(
     api.Config().CheckSet_long(
         String::Factory("OpenDHT"),
         String::Factory("listen_port"),
-        config.default_port_,
+        config.default_port_ + api.Instance(),
         config.listen_port_,
         notUsed);
     api.Config().CheckSet_str(

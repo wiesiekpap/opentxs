@@ -22,6 +22,7 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/Types.hpp"
 #include "opentxs/protobuf/Context.pb.h"
 

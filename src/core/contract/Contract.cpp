@@ -6,7 +6,6 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "internal/core/contract/Contract.hpp"  // IWYU pragma: associated
 
-#include "opentxs/core/AddressType.hpp"
 #include "opentxs/core/contract/ProtocolVersion.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
 #include "opentxs/protobuf/ContractEnums.pb.h"

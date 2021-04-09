@@ -24,7 +24,6 @@
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/Request.hpp"
-#include "opentxs/otx/Types.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Nym.pb.h"
 #include "opentxs/protobuf/ServerRequest.pb.h"

@@ -3,10 +3,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/crypto/HashType.hpp"
+
 #ifndef OPENTXS_CORE_CONTRACT_HPP
 #define OPENTXS_CORE_CONTRACT_HPP
-
-// IWYU pragma: no_include "opentxs/Proto.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -23,6 +23,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/StringXML.hpp"
 #include "opentxs/core/crypto/Signature.hpp"
+#include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/Nym.hpp"
 
 namespace irr
@@ -354,7 +355,7 @@ protected:
     OTString m_strRawFile;
 
     /** The Hash algorithm used for the signature */
-    crypto::HashType m_strSigHashType{crypto::HashType::Error};
+    crypto::HashType m_strSigHashType;
 
     /** CONTRACT, MESSAGE, TRANSACTION, LEDGER, TRANSACTION ITEM */
     OTString m_strContractType{String::Factory("CONTRACT")};

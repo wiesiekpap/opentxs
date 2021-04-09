@@ -13,6 +13,8 @@
 #include "core/contract/UnitDefinition.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/contract/SecurityContract.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
 #include "opentxs/protobuf/UnitDefinition.pb.h"

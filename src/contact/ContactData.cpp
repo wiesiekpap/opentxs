@@ -8,8 +8,10 @@
 #include "opentxs/contact/ContactData.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
+#include <iterator>
 #include <sstream>
 #include <tuple>
+#include <utility>
 
 #include "internal/contact/Contact.hpp"
 #include "opentxs/Pimpl.hpp"

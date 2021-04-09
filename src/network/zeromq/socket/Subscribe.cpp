@@ -8,6 +8,7 @@
 #include "network/zeromq/socket/Subscribe.hpp"  // IWYU pragma: associated
 
 #include <zmq.h>
+#include <map>
 #include <memory>
 #include <set>
 #include <stdexcept>

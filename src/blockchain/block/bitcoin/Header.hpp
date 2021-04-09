@@ -32,6 +32,17 @@ namespace api
 class Core;
 }  // namespace api
 
+namespace blockchain
+{
+namespace block
+{
+namespace bitcoin
+{
+class Header;
+}  // namespace bitcoin
+}  // namespace block
+}  // namespace blockchain
+
 class Factory;
 }  // namespace opentxs
 

@@ -3,6 +3,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/api/client/PaymentWorkflowState.hpp"
+// IWYU pragma: no_include "opentxs/api/client/PaymentWorkflowType.hpp"
+// IWYU pragma: no_include "opentxs/contact/ContactItemType.hpp"
+
 #pragma once
 
 #include <functional>
@@ -33,6 +37,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/UniqueQueue.hpp"

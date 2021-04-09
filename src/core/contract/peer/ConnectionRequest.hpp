@@ -14,6 +14,7 @@
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/peer/ConnectionRequest.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
+#include "opentxs/core/contract/peer/Types.hpp"
 
 namespace opentxs
 {

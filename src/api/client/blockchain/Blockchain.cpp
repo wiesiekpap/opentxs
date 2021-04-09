@@ -10,6 +10,7 @@
 #if OT_BLOCKCHAIN
 #include <boost/container/flat_map.hpp>
 #endif  // OT_BLOCKCHAIN
+#include <boost/container/vector.hpp>
 
 #if OT_BLOCKCHAIN
 #include "internal/blockchain/Params.hpp"

@@ -9,7 +9,6 @@
 
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "internal/blockchain/client/Client.hpp"
 #include "internal/blockchain/client/Factory.hpp"
 #include "opentxs/Proto.tpp"
 #include "opentxs/blockchain/block/Header.hpp"

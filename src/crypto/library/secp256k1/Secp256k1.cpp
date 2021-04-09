@@ -36,7 +36,6 @@ extern "C" {
 #include "opentxs/crypto/SecretStyle.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
-#include "opentxs/identity/Types.hpp"
 
 #define OT_METHOD "opentxs::crypto::implementation::Secp256k1::"
 

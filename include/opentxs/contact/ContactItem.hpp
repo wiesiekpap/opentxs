@@ -9,13 +9,14 @@
 #define NULL_START 0
 #define NULL_END 0
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
+// IWYU pragma: no_include "opentxs/contact/ContactItemAttribute.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
 #include <cstdint>
 #include <ctime>
+#include <memory>
 #include <set>
 #include <string>
 
@@ -34,6 +35,8 @@ namespace internal
 struct Core;
 }  // namespace internal
 }  // namespace api
+
+class Identifier;
 }  // namespace opentxs
 
 namespace opentxs

@@ -14,6 +14,7 @@
 #include <functional>
 #include <string>
 
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Periodic.hpp"
@@ -56,6 +57,19 @@ namespace proto
 class RPCCommand;
 class RPCResponse;
 }  // namespace proto
+
+namespace rpc
+{
+namespace request
+{
+class Base;
+}  // namespace request
+
+namespace response
+{
+class Base;
+}  // namespace response
+}  // namespace rpc
 }  // namespace opentxs
 
 namespace opentxs
@@ -81,7 +95,12 @@ public:
         ShutdownCallback* callback = nullptr) const = 0;
     OPENTXS_EXPORT virtual std::string ProfileId() const = 0;
     OPENTXS_EXPORT virtual proto::RPCResponse RPC(
-        const proto::RPCCommand& command) const = 0;
+        const proto::RPCCommand& command) const noexcept = 0;
+    OPENTXS_EXPORT virtual rpc::response::Base RPC(
+        const rpc::request::Base& command) const noexcept = 0;
+    OPENTXS_EXPORT virtual bool RPC(
+        const ReadView command,
+        const AllocateOutput response) const noexcept = 0;
     /** Throws std::out_of_range if the specified server does not exist. */
     OPENTXS_EXPORT virtual const api::server::Manager& Server(
         const int instance) const = 0;

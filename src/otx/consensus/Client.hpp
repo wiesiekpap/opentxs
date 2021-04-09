@@ -17,6 +17,7 @@
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/Types.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/otx/consensus/TransactionStatement.hpp"

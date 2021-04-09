@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "internal/contact/Contact.hpp"
+#include "opentxs/Proto.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/ContactSectionName.hpp"

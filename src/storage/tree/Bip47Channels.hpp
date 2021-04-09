@@ -14,6 +14,7 @@
 
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/protobuf/StorageBip47Contexts.pb.h"
 #include "storage/tree/Node.hpp"

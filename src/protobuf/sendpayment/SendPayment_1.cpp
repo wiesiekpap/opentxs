@@ -17,20 +17,38 @@ namespace proto
 {
 auto CheckProto_1(const SendPayment& input, const bool silent) -> bool
 {
-    CHECK_IDENTIFIER(contact);
+    switch (input.type()) {
+        case RPCPAYMENTTYPE_BLOCKCHAIN: {
+            OPTIONAL_IDENTIFIER(contact);
+        } break;
+        case RPCPAYMENTTYPE_CHEQUE:
+        case RPCPAYMENTTYPE_TRANSFER:
+        case RPCPAYMENTTYPE_VOUCHER:
+        case RPCPAYMENTTYPE_INVOICE:
+        case RPCPAYMENTTYPE_BLINDED: {
+            CHECK_IDENTIFIER(contact);
+        } break;
+        case RPCPAYMENTTYPE_ERROR:
+        default: {
+            FAIL_2("Invalid type", input.type());
+        }
+    }
+
     CHECK_IDENTIFIER(sourceaccount);
     OPTIONAL_NAME(memo);
 
     switch (input.type()) {
-        case RPCPAYMENTTYPE_TRANSFER: {
+        case RPCPAYMENTTYPE_TRANSFER:
+        case RPCPAYMENTTYPE_BLOCKCHAIN: {
             CHECK_IDENTIFIER(destinationaccount);
         } break;
         case RPCPAYMENTTYPE_CHEQUE:
         case RPCPAYMENTTYPE_VOUCHER:
         case RPCPAYMENTTYPE_INVOICE:
-        case RPCPAYMENTTYPE_BLINDED:
+        case RPCPAYMENTTYPE_BLINDED: {
+            CHECK_EXCLUDED(destinationaccount);
+        } break;
         case RPCPAYMENTTYPE_ERROR:
-            break;
         default: {
             FAIL_2("Invalid type", input.type());
         }

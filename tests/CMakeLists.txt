@@ -15,6 +15,13 @@ function(
   )
 
   add_executable(${target_name} ${cxx-sources})
+
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Helpers.cpp")
+    target_sources(
+      ${target_name} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Helpers.cpp"
+    )
+  endif()
+
   target_link_libraries(
     ${target_name} PRIVATE opentxs::libopentxs Boost::program_options
   )

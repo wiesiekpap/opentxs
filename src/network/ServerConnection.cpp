@@ -51,7 +51,6 @@
 #include "opentxs/otx/ServerRequestType.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/OTXEnums.pb.h"
 #include "opentxs/protobuf/ServerReply.pb.h"
 #include "opentxs/protobuf/ServerRequest.pb.h"
 #include "opentxs/protobuf/verify/ServerReply.hpp"

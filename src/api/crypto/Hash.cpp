@@ -19,7 +19,6 @@
 #include "internal/crypto/library/Scrypt.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
-#include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"

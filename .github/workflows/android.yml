@@ -26,6 +26,7 @@ jobs:
         docker pull opentransactions/android:${{ matrix.docker }}
     - name: Get more disk space
       run: |
+        sudo rm -rf /usr/local/lib/android
         sudo rm -rf /usr/share/dotnet
     - name: Compile
       run: |

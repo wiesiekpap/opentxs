@@ -10,9 +10,11 @@
 #include <functional>
 #include <iosfwd>
 #include <map>
+#include <mutex>
 #include <optional>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "api/client/blockchain/BalanceNode.hpp"

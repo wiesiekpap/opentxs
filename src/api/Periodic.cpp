@@ -12,7 +12,6 @@
 #include <map>
 #include <thread>
 #include <tuple>
-#include <type_traits>
 #include <utility>
 
 #include "opentxs/core/Flag.hpp"

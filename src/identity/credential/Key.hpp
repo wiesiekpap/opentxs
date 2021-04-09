@@ -16,9 +16,14 @@
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/crypto/HashType.hpp"
+#include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
+#include "opentxs/crypto/key/asymmetric/Role.hpp"
+#include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/Types.hpp"
+#include "opentxs/protobuf/Enums.pb.h"
 
 namespace opentxs
 {

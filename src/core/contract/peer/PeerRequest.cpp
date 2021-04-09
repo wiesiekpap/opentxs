@@ -12,7 +12,6 @@
 
 #include "2_Factory.hpp"
 #include "internal/api/Api.hpp"
-#include "internal/core/Core.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -23,7 +22,6 @@
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
-#include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"

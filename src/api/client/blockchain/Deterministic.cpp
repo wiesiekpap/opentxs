@@ -26,7 +26,7 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
+#include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/protobuf/HDPath.pb.h"
 
 #if OT_CRYPTO_WITH_BIP32

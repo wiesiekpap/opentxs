@@ -14,6 +14,7 @@
 #include <iterator>
 #include <numeric>
 #include <stdexcept>
+#include <string>
 #include <utility>
 
 #include "blockchain/bitcoin/CompactSize.hpp"
@@ -21,6 +22,7 @@
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/protobuf/BlockchainTransaction.pb.h"
 #include "util/Container.hpp"
 

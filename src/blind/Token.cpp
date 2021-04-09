@@ -23,9 +23,7 @@
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/Token.pb.h"
-#include "util/Container.hpp"
 
 #define OT_METHOD "opentxs::blind::token::implementation::Token::"
 

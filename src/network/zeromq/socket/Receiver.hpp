@@ -13,6 +13,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/zap/Request.hpp"
 
 namespace opentxs
 {

@@ -15,6 +15,7 @@
 #include "internal/core/contract/Contract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/protobuf/Check.hpp"
+#include "opentxs/protobuf/ContractEnums.pb.h"
 #include "opentxs/protobuf/EquityParams.pb.h"
 #include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/protobuf/UnitDefinition.pb.h"

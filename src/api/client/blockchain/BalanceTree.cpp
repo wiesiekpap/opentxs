@@ -18,17 +18,18 @@
 
 #include "api/client/blockchain/BalanceTree.hpp"
 #include "internal/api/Api.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/api/client/blockchain/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/blockchain/AddressStyle.hpp"
+#include "opentxs/api/client/blockchain/BalanceNode.hpp"
 #include "opentxs/api/client/blockchain/HD.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/iterator/Bidirectional.hpp"
 
 #define OT_METHOD                                                              \
     "opentxs::api::client::blockchain::implementation::BalanceTree::"

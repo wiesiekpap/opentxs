@@ -9,6 +9,7 @@
 #include <mutex>
 
 #include "internal/crypto/library/Pbkdf2.hpp"
+#include "opentxs/crypto/HashType.hpp"
 
 namespace opentxs::crypto::implementation
 {

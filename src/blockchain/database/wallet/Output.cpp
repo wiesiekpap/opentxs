@@ -13,6 +13,7 @@
 #include <cstring>
 #include <iterator>
 #include <map>
+#include <mutex>
 #include <numeric>
 #include <ostream>
 #include <set>
@@ -49,9 +50,10 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/crypto/HashType.hpp"
+#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
 #include "opentxs/protobuf/BlockchainWalletKey.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "util/Container.hpp"
 
 #define OT_METHOD "opentxs::blockchain::database::Output::"

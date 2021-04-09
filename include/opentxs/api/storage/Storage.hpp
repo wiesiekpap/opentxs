@@ -6,8 +6,6 @@
 #ifndef OPENTXS_API_STORAGE_STORAGE_HPP
 #define OPENTXS_API_STORAGE_STORAGE_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>

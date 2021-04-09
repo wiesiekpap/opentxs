@@ -29,6 +29,7 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/iterator/Bidirectional.hpp"
 
 namespace be = boost::endian;
 

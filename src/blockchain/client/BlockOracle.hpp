@@ -42,6 +42,14 @@ class Blockchain;
 class Core;
 }  // namespace api
 
+namespace blockchain
+{
+namespace client
+{
+class HeaderOracle;
+}  // namespace client
+}  // namespace blockchain
+
 namespace network
 {
 namespace zeromq

@@ -64,7 +64,6 @@
 #include "opentxs/protobuf/BasketItem.pb.h"
 #include "opentxs/protobuf/BasketParams.pb.h"
 #include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/Context.pb.h"
 #include "opentxs/protobuf/Nym.pb.h"
 #include "opentxs/protobuf/ServerContract.pb.h"

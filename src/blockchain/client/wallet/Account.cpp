@@ -22,6 +22,7 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/iterator/Bidirectional.hpp"
 #include "util/Gatekeeper.hpp"
 #include "util/JobCounter.hpp"
 
