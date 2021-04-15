@@ -18,8 +18,10 @@
 #include "Exclusive.tpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Factory.hpp"
+#include "internal/contact/Contact.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/identity/Identity.hpp"
+#include "internal/otx/OTX.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
 #include "opentxs/Exclusive.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -43,6 +45,7 @@
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/basket/BasketContract.hpp"
 #include "opentxs/core/contract/peer/PeerObject.hpp"
+#include "opentxs/core/contract/peer/PeerObjectType.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -53,15 +56,14 @@
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
-#include "opentxs/protobuf/CashEnums.pb.h"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/ConsensusEnums.pb.h"
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/Context.pb.h"
 #include "opentxs/protobuf/Issuer.pb.h"  // IWYU pragma: keep
 #include "opentxs/protobuf/Nym.pb.h"
-#include "opentxs/protobuf/PeerEnums.pb.h"
 #include "opentxs/protobuf/PeerReply.pb.h"
 #include "opentxs/protobuf/PeerRequest.pb.h"
 #include "opentxs/protobuf/Purse.pb.h"
@@ -697,13 +699,13 @@ auto Wallet::UpdateAccount(
 
 auto Wallet::CurrencyTypeBasedOnUnitType(
     const identifier::UnitDefinition& contractID) const
-    -> proto::ContactItemType
+    -> contact::ContactItemType
 {
     return extract_unit(contractID);
 }
 
 auto Wallet::extract_unit(const identifier::UnitDefinition& contractID) const
-    -> proto::ContactItemType
+    -> contact::ContactItemType
 {
     try {
         const auto contract = UnitDefinition(contractID);
@@ -714,22 +716,23 @@ auto Wallet::extract_unit(const identifier::UnitDefinition& contractID) const
             ": Unable to load unit definition contract ")(contractID)(".")
             .Flush();
 
-        return proto::CITEMTYPE_UNKNOWN;
+        return contact::ContactItemType::Unknown;
     }
 }
 
 auto Wallet::extract_unit(const contract::Unit& contract) const
-    -> proto::ContactItemType
+    -> contact::ContactItemType
 {
     try {
         if (contract.Version() < 2) {
-            return unit_of_account_.at(contract.TLA());
+            return contact::internal::translate(
+                unit_of_account_.at(contract.TLA()));
         }
 
         return contract.UnitOfAccount();
     } catch (...) {
 
-        return proto::CITEMTYPE_UNKNOWN;
+        return contact::ContactItemType::Unknown;
     }
 }
 
@@ -800,11 +803,11 @@ auto Wallet::context(
         return nullptr;
     }
 
-    switch (serialized->type()) {
-        case proto::CONSENSUSTYPE_SERVER: {
+    switch (otx::internal::translate(serialized->type())) {
+        case otx::ConsensusType::Server: {
             instantiate_server_context(*serialized, localNym, remoteNym, entry);
         } break;
-        case proto::CONSENSUSTYPE_CLIENT: {
+        case otx::ConsensusType::Client: {
             instantiate_client_context(*serialized, localNym, remoteNym, entry);
         } break;
         default: {
@@ -1162,7 +1165,7 @@ auto Wallet::Nym(
     const PasswordPrompt& reason,
     const std::string name,
     const NymParameters& parameters,
-    const proto::ContactItemType type) const -> Nym_p
+    const contact::ContactItemType type) const -> Nym_p
 {
     std::shared_ptr<identity::internal::Nym> pNym(
         opentxs::Factory::Nym(api_, parameters, type, name, reason));
@@ -1579,7 +1582,7 @@ auto Wallet::PeerReplyReceive(
     const identifier::Nym& nym,
     const PeerObject& reply) const -> bool
 {
-    if (proto::PEEROBJECT_RESPONSE != reply.Type()) {
+    if (contract::peer::PeerObjectType::Response != reply.Type()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": This is not a peer reply.")
             .Flush();
 
@@ -1802,7 +1805,7 @@ auto Wallet::PeerRequestReceive(
     const identifier::Nym& nym,
     const PeerObject& request) const -> bool
 {
-    if (proto::PEEROBJECT_REQUEST != request.Type()) {
+    if (contract::peer::PeerObjectType::Request != request.Type()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": This is not a peer request.")
             .Flush();
 
@@ -1906,7 +1909,7 @@ auto Wallet::mutable_Purse(
     const identifier::Server& server,
     const identifier::UnitDefinition& unit,
     const PasswordPrompt& reason,
-    const proto::CashType type) const -> Editor<blind::Purse>
+    const blind::CashType type) const -> Editor<blind::Purse>
 {
     auto pPurse = purse(nymID, server, unit, true);
 
@@ -2621,7 +2624,7 @@ auto Wallet::UnitDefinition(
     const std::string& tla,
     const std::uint32_t power,
     const std::string& fraction,
-    const proto::ContactItemType unitOfAccount,
+    const contact::ContactItemType unitOfAccount,
     const PasswordPrompt& reason,
     const VersionNumber version) const -> OTUnitDefinition
 {
@@ -2665,7 +2668,7 @@ auto Wallet::UnitDefinition(
     const std::string& name,
     const std::string& symbol,
     const std::string& terms,
-    const proto::ContactItemType unitOfAccount,
+    const contact::ContactItemType unitOfAccount,
     const PasswordPrompt& reason,
     const VersionNumber version) const -> OTUnitDefinition
 {

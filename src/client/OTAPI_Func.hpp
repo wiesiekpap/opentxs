@@ -23,10 +23,11 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Ledger.hpp"
 #include "opentxs/core/Lockable.hpp"
+#include "opentxs/core/contract/peer/ConnectionInfoType.hpp"
+#include "opentxs/core/contract/peer/SecretType.hpp"
 #include "opentxs/core/recurring/OTPaymentPlan.hpp"
 #include "opentxs/core/script/OTSmartContract.hpp"
 #include "opentxs/ext/OTPayment.hpp"
-#include "opentxs/protobuf/PeerEnums.pb.h"
 #include "opentxs/protobuf/UnitDefinition.pb.h"
 
 namespace opentxs
@@ -194,7 +195,7 @@ public:
         const Identifier& targetID,
         const std::string& primary,
         const std::string& secondary,
-        const proto::SecretType& secretType);
+        const contract::peer::SecretType& secretType);
     explicit OTAPI_Func(
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
@@ -300,8 +301,9 @@ private:
     Amount scale_{0};
     TransactionNumber transactionNumber_{0};  // This is not what gets returned
                                               // by GetTransactionNumber.
-    proto::ConnectionInfoType infoType_{proto::CONNECTIONINFO_ERROR};
-    proto::SecretType secretType_{proto::SECRETTYPE_ERROR};
+    contract::peer::ConnectionInfoType infoType_{
+        contract::peer::ConnectionInfoType::Error};
+    contract::peer::SecretType secretType_{contract::peer::SecretType::Error};
     proto::UnitDefinition unitDefinition_{};
 
     void run();

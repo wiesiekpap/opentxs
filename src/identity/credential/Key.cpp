@@ -14,6 +14,7 @@
 #include "core/contract/Signable.hpp"
 #include "identity/credential/Base.hpp"
 #include "internal/api/Api.hpp"
+#include "internal/crypto/key/Key.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Proto.tpp"
 #include "opentxs/Types.hpp"
@@ -24,12 +25,13 @@
 #include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/core/crypto/OTSignatureMetadata.hpp"
 #include "opentxs/core/crypto/Signature.hpp"
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
+#include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 #include "opentxs/protobuf/AsymmetricKey.pb.h"
 #include "opentxs/protobuf/Credential.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/KeyCredential.pb.h"
 #include "opentxs/protobuf/Signature.pb.h"
 
@@ -56,7 +58,7 @@ Key::Key(
     const identity::Source& source,
     const NymParameters& params,
     const VersionNumber version,
-    const proto::CredentialRole role,
+    const identity::CredentialRole role,
     const PasswordPrompt& reason,
     const std::string& masterID,
     const bool useProvided) noexcept(false)
@@ -67,7 +69,7 @@ Key::Key(
           params,
           version,
           role,
-          proto::KEYMODE_PRIVATE,
+          crypto::key::asymmetric::Mode::Private,
           masterID)
     , subversion_(credential_subversion_.at(version_))
     , signing_key_(signing_key(api_, params, subversion_, useProvided, reason))
@@ -133,13 +135,15 @@ auto Key::addKeyCredentialtoSerializedCredential(
 
     if (auth && encrypt && sign) {
         if (addPrivate) {
-            keyCredential->set_mode(proto::KEYMODE_PRIVATE);
+            keyCredential->set_mode(opentxs::crypto::key::internal::translate(
+                crypto::key::asymmetric::Mode::Private));
             credential->set_allocated_privatecredential(
                 keyCredential.release());
 
             return true;
         } else {
-            keyCredential->set_mode(proto::KEYMODE_PUBLIC);
+            keyCredential->set_mode(opentxs::crypto::key::internal::translate(
+                crypto::key::asymmetric::Mode::Public));
             credential->set_allocated_publiccredential(keyCredential.release());
 
             return true;
@@ -206,19 +210,20 @@ auto Key::deserialize_key(
 }
 
 auto Key::GetKeypair(
-    const proto::AsymmetricKeyType type,
-    const proto::KeyRole role) const -> const crypto::key::Keypair&
+    const crypto::key::asymmetric::Algorithm type,
+    const opentxs::crypto::key::asymmetric::Role role) const
+    -> const crypto::key::Keypair&
 {
     const crypto::key::Keypair* output{nullptr};
 
     switch (role) {
-        case proto::KEYROLE_AUTH: {
+        case opentxs::crypto::key::asymmetric::Role::Auth: {
             output = &authentication_key_.get();
         } break;
-        case proto::KEYROLE_ENCRYPT: {
+        case opentxs::crypto::key::asymmetric::Role::Encrypt: {
             output = &encryption_key_.get();
         } break;
-        case proto::KEYROLE_SIGN: {
+        case opentxs::crypto::key::asymmetric::Role::Sign: {
             output = &signing_key_.get();
         } break;
         default: {
@@ -228,7 +233,7 @@ auto Key::GetKeypair(
 
     OT_ASSERT(nullptr != output);
 
-    if (proto::AKEYTYPE_NULL != type) {
+    if (crypto::key::asymmetric::Algorithm::Null != type) {
         if (type != output->GetPublicKey().keyType()) {
             throw std::out_of_range("wrong key type");
         }
@@ -354,19 +359,23 @@ auto Key::new_key(
     const ReadView dh) noexcept(false) -> OTKeypair
 {
     switch (params.credentialType()) {
-        case proto::CREDTYPE_LEGACY: {
+        case identity::CredentialType::Legacy: {
             auto revised{params};
 #if OT_CRYPTO_SUPPORTED_KEY_RSA
             revised.SetDHParams(dh);
 #endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 
-            return api.Factory().Keypair(revised, version, role, reason);
+            return api.Factory().Keypair(
+                revised,
+                version,
+                opentxs::crypto::key::internal::translate(role),
+                reason);
         }
-        case proto::CREDTYPE_HD:
+        case identity::CredentialType::HD:
 #if OT_CRYPTO_WITH_BIP32
         {
-            const auto curve = crypto::AsymmetricProvider::KeyTypeToCurve(
-                params.AsymmetricKeyType());
+            const auto curve =
+                crypto::AsymmetricProvider::KeyTypeToCurve(params.Algorithm());
 
             if (EcdsaCurve::invalid == curve) {
                 throw std::runtime_error("Invalid curve type");
@@ -378,11 +387,11 @@ auto Key::new_key(
                 params.Credset(),
                 params.CredIndex(),
                 curve,
-                role,
+                opentxs::crypto::key::internal::translate(role),
                 reason);
         }
 #endif  // OT_CRYPTO_WITH_BIP32
-        case proto::CREDTYPE_ERROR:
+        case identity::CredentialType::Error:
         default: {
             throw std::runtime_error("Unsupported credential type");
         }
@@ -405,11 +414,11 @@ auto Key::SelfSign(
         auto& signature = *publicVersion->add_signature();
         havePublicSig = Sign(
             [&]() -> std::string { return proto::ToString(*publicVersion); },
-            proto::SIGROLE_PUBCREDENTIAL,
+            crypto::SignatureRole::PublicCredential,
             signature,
             reason,
-            proto::KEYROLE_SIGN,
-            proto::HASHTYPE_ERROR);
+            opentxs::crypto::key::asymmetric::Role::Sign,
+            crypto::HashType::Error);
 
         OT_ASSERT(havePublicSig);
 
@@ -423,11 +432,11 @@ auto Key::SelfSign(
     auto& signature = *privateVersion->add_signature();
     const bool havePrivateSig = Sign(
         [&]() -> std::string { return proto::ToString(*privateVersion); },
-        proto::SIGROLE_PRIVCREDENTIAL,
+        crypto::SignatureRole::PrivateCredential,
         signature,
         reason,
-        proto::KEYROLE_SIGN,
-        proto::HASHTYPE_ERROR);
+        opentxs::crypto::key::asymmetric::Role::Sign,
+        crypto::HashType::Error);
 
     OT_ASSERT(havePrivateSig);
 
@@ -458,23 +467,23 @@ auto Key::serialize(
 
 auto Key::Sign(
     const GetPreimage input,
-    const proto::SignatureRole role,
+    const crypto::SignatureRole role,
     proto::Signature& signature,
     const PasswordPrompt& reason,
-    proto::KeyRole key,
-    const proto::HashType hash) const -> bool
+    opentxs::crypto::key::asymmetric::Role key,
+    const crypto::HashType hash) const -> bool
 {
     const crypto::key::Keypair* keyToUse{nullptr};
 
     switch (key) {
-        case (proto::KEYROLE_AUTH): {
+        case (crypto::key::asymmetric::Role::Auth): {
             keyToUse = &authentication_key_.get();
         } break;
-        case (proto::KEYROLE_SIGN): {
+        case (crypto::key::asymmetric::Role::Sign): {
             keyToUse = &signing_key_.get();
         } break;
-        case (proto::KEYROLE_ERROR):
-        case (proto::KEYROLE_ENCRYPT):
+        case (crypto::key::asymmetric::Role::Error):
+        case (crypto::key::asymmetric::Role::Encrypt):
         default: {
             LogOutput(": Can not sign with the specified key.").Flush();
             return false;
@@ -528,15 +537,15 @@ auto Key::TransportKey(
 auto Key::Verify(
     const Data& plaintext,
     const proto::Signature& sig,
-    const proto::KeyRole key) const -> bool
+    const opentxs::crypto::key::asymmetric::Role key) const -> bool
 {
     const crypto::key::Keypair* keyToUse = nullptr;
 
     switch (key) {
-        case (proto::KEYROLE_AUTH):
+        case (crypto::key::asymmetric::Role::Auth):
             keyToUse = &authentication_key_.get();
             break;
-        case (proto::KEYROLE_SIGN):
+        case (crypto::key::asymmetric::Role::Sign):
             keyToUse = &signing_key_.get();
             break;
         default:
@@ -591,7 +600,7 @@ auto Key::VerifySig(
 {
     std::shared_ptr<Base::SerializedType> serialized;
 
-    if ((proto::KEYMODE_PRIVATE != mode_) && asPrivate) {
+    if ((crypto::key::asymmetric::Mode::Private != mode_) && asPrivate) {
         LogOutput(OT_METHOD)(__FUNCTION__)(
             ": Can not serialize a public credential as a private credential.")
             .Flush();
@@ -609,7 +618,7 @@ auto Key::VerifySig(
     signature.clear_signature();
     auto plaintext = api_.Factory().Data(*serialized);
 
-    return Verify(plaintext, sig, proto::KEYROLE_SIGN);
+    return Verify(plaintext, sig, opentxs::crypto::key::asymmetric::Role::Sign);
 }
 
 auto Key::VerifySignedBySelf(const Lock& lock) const -> bool

@@ -5,11 +5,13 @@
 
 #pragma once
 
+#include "opentxs/blind/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+//#include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
+#include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
-#include "opentxs/protobuf/CashEnums.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
 
 namespace opentxs
@@ -447,7 +449,7 @@ public:
         const std::string& symbol,
         const std::string& terms,
         const std::uint64_t weight,
-        const proto::ContactItemType unitOfAccount,
+        const contact::ContactItemType unitOfAccount,
         const VersionNumber version) noexcept
         -> std::shared_ptr<contract::unit::Basket>;
     static auto BasketContract(
@@ -480,7 +482,7 @@ public:
         const api::internal::Core& api,
         const Nym_p& nym,
         const identifier::Nym& recipient,
-        const proto::ConnectionInfoType type,
+        const contract::peer::ConnectionInfoType type,
         const identifier::Server& server,
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::request::Connection>;
@@ -534,7 +536,7 @@ public:
         const std::string& tla,
         const std::uint32_t power,
         const std::string& fraction,
-        const proto::ContactItemType unitOfAccount,
+        const contact::ContactItemType unitOfAccount,
         const VersionNumber version,
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::unit::Currency>;
@@ -578,7 +580,7 @@ public:
         const identifier::Nym& initiator,
         const opentxs::Identifier& request,
         const identifier::Server& server,
-        const proto::PeerRequestType type,
+        const contract::peer::PeerRequestType type,
         const bool& ack,
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::reply::Acknowledgement>;
@@ -591,7 +593,7 @@ public:
     OPENTXS_EXPORT static auto Nym(
         const api::internal::Core& api,
         const NymParameters& nymParameters,
-        const proto::ContactItemType type,
+        const contact::ContactItemType type,
         const std::string name,
         const opentxs::PasswordPrompt& reason) -> identity::internal::Nym*;
     OPENTXS_EXPORT static auto Nym(
@@ -730,7 +732,7 @@ public:
     OPENTXS_EXPORT static auto Purse(
         const api::internal::Core& api,
         const otx::context::Server&,
-        const proto::CashType type,
+        const blind::CashType type,
         const blind::Mint& mint,
         const Amount totalValue,
         const opentxs::PasswordPrompt& reason) -> blind::Purse*;
@@ -739,7 +741,7 @@ public:
         const identity::Nym& owner,
         const identifier::Server& server,
         const identity::Nym& serverNym,
-        const proto::CashType type,
+        const blind::CashType type,
         const blind::Mint& mint,
         const Amount totalValue,
         const opentxs::PasswordPrompt& reason) -> blind::Purse*;
@@ -753,7 +755,7 @@ public:
         const identity::Nym& owner,
         const identifier::Server& server,
         const identifier::UnitDefinition& unit,
-        const proto::CashType type,
+        const blind::CashType type,
         const opentxs::PasswordPrompt& reason) -> blind::Purse*;
 #endif
     static auto RPC(const api::Context& native) -> rpc::internal::RPC*;
@@ -780,7 +782,7 @@ public:
         const std::string& name,
         const std::string& symbol,
         const std::string& terms,
-        const proto::ContactItemType unitOfAccount,
+        const contact::ContactItemType unitOfAccount,
         const VersionNumber version,
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::unit::Security>;
@@ -870,7 +872,7 @@ public:
         const api::internal::Core& api,
         const Nym_p& nym,
         const identifier::Nym& recipientID,
-        const proto::SecretType type,
+        const contract::peer::SecretType type,
         const std::string& primary,
         const std::string& secondary,
         const identifier::Server& server,

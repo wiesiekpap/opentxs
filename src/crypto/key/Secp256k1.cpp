@@ -15,7 +15,7 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/crypto/key/Secp256k1.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 
 namespace opentxs::factory
 {
@@ -42,7 +42,7 @@ auto Secp256k1Key(
 auto Secp256k1Key(
     const api::internal::Core& api,
     const crypto::EcdsaProvider& ecdsa,
-    const proto::KeyRole input,
+    const crypto::key::asymmetric::Role input,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::unique_ptr<crypto::key::Secp256k1>
@@ -64,7 +64,7 @@ auto Secp256k1Key(
     const crypto::EcdsaProvider& ecdsa,
     const Secret& privateKey,
     const Data& publicKey,
-    const proto::KeyRole role,
+    const crypto::key::asymmetric::Role role,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::unique_ptr<crypto::key::Secp256k1>
@@ -98,7 +98,7 @@ auto Secp256k1Key(
     const Data& publicKey,
     const proto::HDPath& path,
     const Bip32Fingerprint parent,
-    const proto::KeyRole role,
+    const crypto::key::asymmetric::Role role,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::unique_ptr<crypto::key::Secp256k1>
@@ -140,7 +140,7 @@ auto Secp256k1Key(
     const Data& publicKey,
     const proto::HDPath& path,
     const Bip32Fingerprint parent,
-    const proto::KeyRole role,
+    const crypto::key::asymmetric::Role role,
     const VersionNumber version) noexcept
     -> std::unique_ptr<crypto::key::Secp256k1>
 {
@@ -183,10 +183,16 @@ Secp256k1::Secp256k1(
 Secp256k1::Secp256k1(
     const api::internal::Core& api,
     const crypto::EcdsaProvider& ecdsa,
-    const proto::KeyRole role,
+    const crypto::key::asymmetric::Role role,
     const VersionNumber version,
     const PasswordPrompt& reason) noexcept(false)
-    : ot_super(api, ecdsa, proto::AKEYTYPE_SECP256K1, role, version, reason)
+    : ot_super(
+          api,
+          ecdsa,
+          crypto::key::asymmetric::Algorithm::Secp256k1,
+          role,
+          version,
+          reason)
 {
 }
 
@@ -195,14 +201,14 @@ Secp256k1::Secp256k1(
     const crypto::EcdsaProvider& ecdsa,
     const Secret& privateKey,
     const Data& publicKey,
-    const proto::KeyRole role,
+    const crypto::key::asymmetric::Role role,
     const VersionNumber version,
     key::Symmetric& sessionKey,
     const opentxs::PasswordPrompt& reason) noexcept(false)
     : ot_super(
           api,
           ecdsa,
-          proto::AKEYTYPE_SECP256K1,
+          crypto::key::asymmetric::Algorithm::Secp256k1,
           privateKey,
           publicKey,
           role,
@@ -221,14 +227,14 @@ Secp256k1::Secp256k1(
     const Data& publicKey,
     const proto::HDPath& path,
     const Bip32Fingerprint parent,
-    const proto::KeyRole role,
+    const crypto::key::asymmetric::Role role,
     const VersionNumber version,
     key::Symmetric& sessionKey,
     const opentxs::PasswordPrompt& reason) noexcept(false)
     : ot_super(
           api,
           ecdsa,
-          proto::AKEYTYPE_SECP256K1,
+          crypto::key::asymmetric::Algorithm::Secp256k1,
           privateKey,
           chainCode,
           publicKey,
@@ -249,12 +255,12 @@ Secp256k1::Secp256k1(
     const Data& publicKey,
     const proto::HDPath& path,
     const Bip32Fingerprint parent,
-    const proto::KeyRole role,
+    const crypto::key::asymmetric::Role role,
     const VersionNumber version) noexcept(false)
     : ot_super(
           api,
           ecdsa,
-          proto::AKEYTYPE_SECP256K1,
+          crypto::key::asymmetric::Algorithm::Secp256k1,
           privateKey,
           chainCode,
           publicKey,

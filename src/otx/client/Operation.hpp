@@ -32,7 +32,6 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
 
 namespace opentxs
 {
@@ -87,8 +86,8 @@ public:
     }
 
     auto AddClaim(
-        const proto::ContactSectionName section,
-        const proto::ContactItemType type,
+        const contact::ContactSectionName section,
+        const contact::ContactItemType type,
         const String& value,
         const bool primary) -> bool override;
     auto ConveyPayment(
@@ -209,8 +208,8 @@ private:
     Amount amount_;
     OTString memo_;
     bool bool_;
-    proto::ContactSectionName claim_section_;
-    proto::ContactItemType claim_type_;
+    contact::ContactSectionName claim_section_;
+    contact::ContactItemType claim_type_;
     std::shared_ptr<Cheque> cheque_;
     std::shared_ptr<const OTPayment> payment_;
     std::shared_ptr<Ledger> inbox_;

@@ -33,8 +33,6 @@
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/HDPath.pb.h"
 
 template class opentxs::Pimpl<opentxs::Identifier>;
@@ -296,7 +294,7 @@ auto Identifier::Factory(const Item& item) -> OTIdentifier
 }
 
 auto Identifier::Factory(
-    const proto::ContactItemType type,
+    const contact::ContactItemType type,
     const proto::HDPath& path) -> OTIdentifier
 {
     return OTIdentifier(new implementation::Identifier(type, path));
@@ -370,7 +368,7 @@ Identifier::Identifier(const Vector& data, const ID type)
 }
 
 Identifier::Identifier(
-    const proto::ContactItemType type,
+    const contact::ContactItemType type,
     const proto::HDPath& path)
     : ot_super()
     , type_(DefaultType)
@@ -418,23 +416,23 @@ void Identifier::GetString(String& id) const
     }
 }
 
-auto Identifier::IDToHashType(const ID type) -> proto::HashType
+auto Identifier::IDToHashType(const ID type) -> crypto::HashType
 {
     switch (type) {
         case (ID::sha256): {
-            return proto::HASHTYPE_SHA256;
+            return crypto::HashType::Sha256;
         }
         case (ID::blake2b): {
-            return proto::HASHTYPE_BLAKE2B160;
+            return crypto::HashType::Blake2b160;
         }
         default: {
-            return proto::HASHTYPE_NONE;
+            return crypto::HashType::None;
         }
     }
 }
 
 auto Identifier::path_to_data(
-    const proto::ContactItemType type,
+    const contact::ContactItemType type,
     const proto::HDPath& path) -> OTData
 {
     auto output = Data::Factory(static_cast<const void*>(&type), sizeof(type));

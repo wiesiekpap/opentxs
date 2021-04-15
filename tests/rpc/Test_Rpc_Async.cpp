@@ -30,6 +30,8 @@
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/client/PaymentWorkflowState.hpp"
+#include "opentxs/api/client/PaymentWorkflowType.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/client/Workflow.hpp"
 #include "opentxs/api/server/Manager.hpp"
@@ -54,7 +56,6 @@
 #include "opentxs/protobuf/AcceptPendingPayment.pb.h"
 #include "opentxs/protobuf/AccountEvent.pb.h"
 #include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/protobuf/RPCCommand.pb.h"
 #include "opentxs/protobuf/RPCEnums.pb.h"
@@ -326,7 +327,7 @@ void Test_Rpc_Async::setup()
         "GTD",
         2,
         "gcent",
-        ot::proto::CITEMTYPE_USD,
+        ot::contact::ContactItemType::USD,
         reasonS);
     unit_definition_id_ =
         identifier::UnitDefinition::Factory(unit_definition->ID()->str());
@@ -603,8 +604,8 @@ TEST_F(Test_Rpc_Async, Get_Pending_Payments)
     do {
         workflows = workflow.List(
             receiver_nym_id_,
-            proto::PAYMENTWORKFLOWTYPE_INCOMINGCHEQUE,
-            proto::PAYMENTWORKFLOWSTATE_CONVEYED);
+            api::client::PaymentWorkflowType::IncomingCheque,
+            api::client::PaymentWorkflowState::Conveyed);
     } while (workflows.empty() && std::time(nullptr) < end);
 
     ASSERT_TRUE(!workflows.empty());
@@ -772,8 +773,8 @@ TEST_F(Test_Rpc_Async, Get_Account_Activity)
     do {
         workflows = workflow.List(
             sender_nym_id_,
-            proto::PAYMENTWORKFLOWTYPE_OUTGOINGCHEQUE,
-            proto::PAYMENTWORKFLOWSTATE_CONVEYED);
+            api::client::PaymentWorkflowType::OutgoingCheque,
+            api::client::PaymentWorkflowState::Conveyed);
 
         if (workflows.empty()) { Sleep(std::chrono::milliseconds(100)); }
     } while (workflows.empty() && std::time(nullptr) < end);
@@ -838,8 +839,8 @@ TEST_F(Test_Rpc_Async, Get_Account_Activity)
     do {
         receiverworkflows = receiverworkflow.List(
             receiver_nym_id_,
-            proto::PAYMENTWORKFLOWTYPE_INCOMINGCHEQUE,
-            proto::PAYMENTWORKFLOWSTATE_COMPLETED);
+            api::client::PaymentWorkflowType::IncomingCheque,
+            api::client::PaymentWorkflowState::Completed);
 
         if (receiverworkflows.empty()) {
             Sleep(std::chrono::milliseconds(100));
@@ -1009,8 +1010,8 @@ TEST_F(Test_Rpc_Async, Accept_2_Pending_Payments)
     do {
         workflows = workflow.List(
             receiver_nym_id_,
-            proto::PAYMENTWORKFLOWTYPE_INCOMINGCHEQUE,
-            proto::PAYMENTWORKFLOWSTATE_CONVEYED);
+            api::client::PaymentWorkflowType::IncomingCheque,
+            api::client::PaymentWorkflowState::Conveyed);
     } while (workflows.empty() && std::time(nullptr) < end);
 
     ASSERT_TRUE(!workflows.empty());

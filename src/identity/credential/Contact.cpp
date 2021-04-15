@@ -16,6 +16,8 @@
 #include "2_Factory.hpp"
 #include "identity/credential/Base.hpp"
 #include "internal/api/Api.hpp"
+#include "internal/contact/Contact.hpp"
+#include "internal/crypto/key/Key.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -24,12 +26,11 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/identity/credential/Contact.hpp"
+#include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/protobuf/Claim.pb.h"
 #include "opentxs/protobuf/ContactData.pb.h"
-#include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/ContactItem.pb.h"
 #include "opentxs/protobuf/Credential.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/Signature.pb.h"
 
 #define OT_METHOD "opentxs::identity::credential::implementation::Contact::"
@@ -108,8 +109,8 @@ auto Contact::ClaimID(
 auto Contact::ClaimID(
     const api::internal::Core& api,
     const std::string& nymid,
-    const proto::ContactSectionName section,
-    const proto::ContactItemType type,
+    const contact::ContactSectionName section,
+    const contact::ContactItemType type,
     const std::int64_t start,
     const std::int64_t end,
     const std::string& value,
@@ -118,8 +119,8 @@ auto Contact::ClaimID(
     proto::Claim preimage;
     preimage.set_version(1);
     preimage.set_nymid(nymid);
-    preimage.set_section(section);
-    preimage.set_type(type);
+    preimage.set_section(contact::internal::translate(section));
+    preimage.set_type(contact::internal::translate(type));
     preimage.set_start(start);
     preimage.set_end(end);
     preimage.set_value(value);
@@ -174,8 +175,8 @@ Contact::Contact(
           source,
           params,
           version,
-          proto::CREDROLE_CONTACT,
-          proto::KEYMODE_NULL,
+          identity::CredentialRole::Contact,
+          crypto::key::asymmetric::Mode::Null,
           get_master_id(master))
     , data_(params.ContactData() ? *params.ContactData() : proto::ContactData{})
 {
@@ -220,7 +221,8 @@ auto Contact::serialize(
     -> std::shared_ptr<Base::SerializedType>
 {
     auto serializedCredential = Base::serialize(lock, asPrivate, asSigned);
-    serializedCredential->set_mode(proto::KEYMODE_NULL);
+    serializedCredential->set_mode(
+        crypto::key::internal::translate(crypto::key::asymmetric::Mode::Null));
     serializedCredential->clear_signature();  // this fixes a bug, but shouldn't
 
     if (asSigned) {

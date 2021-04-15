@@ -15,9 +15,8 @@
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/contract/UnitType.hpp"
 #include "opentxs/core/contract/basket/BasketContract.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
-#include "opentxs/protobuf/ContractEnums.pb.h"
 #include "opentxs/protobuf/UnitDefinition.pb.h"
 
 namespace opentxs
@@ -43,9 +42,9 @@ public:
     {
         return subcontracts_;
     }
-    auto Type() const -> proto::UnitType final
+    auto Type() const -> contract::UnitType final
     {
-        return proto::UNITTYPE_BASKET;
+        return contract::UnitType::Basket;
     }
     auto Weight() const -> std::uint64_t final { return weight_; }
 
@@ -57,7 +56,7 @@ public:
         const std::string& symbol,
         const std::string& terms,
         const std::uint64_t weight,
-        const proto::ContactItemType unitOfAccount,
+        const contact::ContactItemType unitOfAccount,
         const VersionNumber version);
     Basket(
         const api::internal::Core& api,

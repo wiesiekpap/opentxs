@@ -17,13 +17,13 @@
 #include <utility>
 
 #include "1_Internal.hpp"
+#include "internal/contact/Contact.hpp"
 #include "internal/ui/UI.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "ui/base/Combined.hpp"
 #include "ui/base/List.hpp"
@@ -91,9 +91,10 @@ public:
 #endif
     auto Name(const std::string& lang) const noexcept -> std::string final
     {
-        return proto::TranslateSectionName(row_id_, lang);
+        return proto::TranslateSectionName(
+            contact::internal::translate(row_id_), lang);
     }
-    auto Type() const noexcept -> proto::ContactSectionName final
+    auto Type() const noexcept -> contact::ContactSectionName final
     {
         return row_id_;
     }
@@ -112,10 +113,10 @@ public:
 
 private:
     static const std::
-        map<proto::ContactSectionName, std::set<proto::ContactItemType>>
+        map<contact::ContactSectionName, std::set<proto::ContactItemType>>
             allowed_types_;
     static const std::
-        map<proto::ContactSectionName, std::map<proto::ContactItemType, int>>
+        map<contact::ContactSectionName, std::map<proto::ContactItemType, int>>
             sort_keys_;
 
     static auto sort_key(const ContactSectionRowID type) noexcept -> int;

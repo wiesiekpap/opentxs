@@ -18,6 +18,7 @@
 #include "crypto/key/SymmetricNull.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/crypto/key/Factory.hpp"
+#include "internal/crypto/key/Key.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Data.hpp"
@@ -29,10 +30,11 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/library/SymmetricProvider.hpp"
+#include "opentxs/crypto/Types.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/verify/SymmetricKey.hpp"
+#include "util/Container.hpp"
 
 template class opentxs::Pimpl<opentxs::crypto::key::Symmetric>;
 
@@ -54,7 +56,7 @@ auto SymmetricKey(
     const api::internal::Core& api,
     const crypto::SymmetricProvider& engine,
     const opentxs::PasswordPrompt& reason,
-    const proto::SymmetricMode mode) noexcept
+    const opentxs::crypto::key::symmetric::Algorithm mode) noexcept
     -> std::unique_ptr<crypto::key::Symmetric>
 {
     auto output = std::make_unique<ReturnType>(api, engine);
@@ -62,7 +64,9 @@ auto SymmetricKey(
     if (false == bool(output)) { return nullptr; }
 
     const auto realMode{
-        mode == proto::SMODE_ERROR ? engine.DefaultMode() : mode};
+        mode == opentxs::crypto::key::symmetric::Algorithm::Error
+            ? engine.DefaultMode()
+            : mode};
     Lock lock(output->lock_);
     const auto size = output->engine_.KeySize(realMode);
     output->key_size_ = size;
@@ -100,7 +104,7 @@ auto SymmetricKey(
     const std::uint64_t operations,
     const std::uint64_t difficulty,
     const std::size_t size,
-    const proto::SymmetricKeyType type) noexcept
+    const crypto::key::symmetric::Source type) noexcept
     -> std::unique_ptr<crypto::key::Symmetric>
 {
     auto salt = std::string{};
@@ -147,7 +151,7 @@ Symmetric::Symmetric(
     const api::internal::Core& api,
     const crypto::SymmetricProvider& engine,
     const VersionNumber version,
-    const proto::SymmetricKeyType type,
+    const crypto::key::symmetric::Source type,
     const std::size_t keySize,
     std::string* salt,
     const std::uint64_t operations,
@@ -176,7 +180,7 @@ Symmetric::Symmetric(
           api,
           engine,
           1,
-          proto::SKEYTYPE_RAW,
+          crypto::key::symmetric::Source::Raw,
           0,
           nullptr,
           0,
@@ -194,7 +198,7 @@ Symmetric::Symmetric(
           api,
           engine,
           serialized.version(),
-          serialized.type(),
+          opentxs::crypto::key::internal::translate(serialized.type()),
           serialized.size(),
           new std::string(serialized.salt()),
           serialized.operations(),
@@ -212,7 +216,7 @@ Symmetric::Symmetric(
     const std::size_t size,
     const std::uint64_t operations,
     const std::uint64_t difficulty,
-    const proto::SymmetricKeyType type)
+    const crypto::key::symmetric::Source type)
     : Symmetric(
           api,
           engine,
@@ -415,7 +419,7 @@ auto Symmetric::encrypt(
     const std::size_t inputSize,
     const std::uint8_t* iv,
     const std::size_t ivSize,
-    const proto::SymmetricMode mode,
+    const opentxs::crypto::key::symmetric::Algorithm mode,
     const opentxs::PasswordPrompt& reason,
     proto::Ciphertext& ciphertext,
     const bool text) const -> bool
@@ -441,16 +445,18 @@ auto Symmetric::encrypt(
 
     ciphertext.set_version(1);
 
-    if (proto::SMODE_ERROR == mode) {
-        ciphertext.set_mode(engine_.DefaultMode());
+    if (opentxs::crypto::key::symmetric::Algorithm::Error == mode) {
+        ciphertext.set_mode(
+            opentxs::crypto::key::internal::translate(engine_.DefaultMode()));
     } else {
-        ciphertext.set_mode(mode);
+        ciphertext.set_mode(opentxs::crypto::key::internal::translate(mode));
     }
 
     if ((0u == ivSize) || (nullptr == iv)) {
         const auto random = [&] {
             auto out = api_.Factory().Secret(0);
-            const auto size = engine_.IvSize(ciphertext.mode());
+            const auto size = engine_.IvSize(
+                opentxs::crypto::key::internal::translate(ciphertext.mode()));
             out->Randomize(size);
 
             OT_ASSERT(out->size() == size);
@@ -480,7 +486,7 @@ auto Symmetric::Encrypt(
     const opentxs::PasswordPrompt& reason,
     proto::Ciphertext& ciphertext,
     const bool attachKey,
-    const proto::SymmetricMode mode,
+    const opentxs::crypto::key::symmetric::Algorithm mode,
     const ReadView iv) const -> bool
 {
     Lock lock(lock_);
@@ -506,16 +512,18 @@ auto Symmetric::encrypt_key(
     const Lock& lock,
     const Secret& plaintextKey,
     const opentxs::PasswordPrompt& reason,
-    const proto::SymmetricKeyType type) const -> bool
+    const crypto::key::symmetric::Source type) const -> bool
 {
     auto& encrypted = get_encrypted(lock);
     encrypted.reset(new proto::Ciphertext);
 
     OT_ASSERT(encrypted);
 
-    encrypted->set_mode(engine_.DefaultMode());
+    encrypted->set_mode(
+        opentxs::crypto::key::internal::translate(engine_.DefaultMode()));
     auto blankIV = api_.Factory().Secret(0);
-    blankIV->Randomize(engine_.IvSize(encrypted->mode()));
+    blankIV->Randomize(engine_.IvSize(
+        opentxs::crypto::key::internal::translate(encrypted->mode())));
     encrypted->set_iv(blankIV->data(), blankIV->size());
     encrypted->set_text(false);
     auto key = api_.Factory().Secret(0);
@@ -536,7 +544,8 @@ auto Symmetric::encrypt_key(
         engine_,
         key,
         *salt,
-        engine_.KeySize(encrypted->mode()),
+        engine_.KeySize(
+            opentxs::crypto::key::internal::translate(encrypted->mode())),
         OT_SYMMETRIC_KEY_DEFAULT_OPERATIONS,
         OT_SYMMETRIC_KEY_DEFAULT_DIFFICULTY};
 
@@ -661,7 +670,7 @@ auto Symmetric::serialize(const Lock& lock, proto::SymmetricKey& output) const
     OT_ASSERT(std::numeric_limits<std::uint32_t>::max() >= key_size_);
 
     output.set_version(version_);
-    output.set_type(type_);
+    output.set_type(opentxs::crypto::key::internal::translate(type_));
     output.set_size(static_cast<std::uint32_t>(key_size_));
     *output.mutable_key() = *encrypted;
 
@@ -731,7 +740,8 @@ auto Symmetric::unlock(const Lock& lock, const opentxs::PasswordPrompt& reason)
         engine_,
         key,
         *salt,
-        engine_.KeySize(encrypted->mode()),
+        engine_.KeySize(
+            opentxs::crypto::key::internal::translate(encrypted->mode())),
         OT_SYMMETRIC_KEY_DEFAULT_OPERATIONS,
         OT_SYMMETRIC_KEY_DEFAULT_DIFFICULTY};
 

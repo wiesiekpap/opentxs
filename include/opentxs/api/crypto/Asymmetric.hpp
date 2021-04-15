@@ -18,6 +18,7 @@
 #if OT_CRYPTO_WITH_BIP32
 #include "opentxs/crypto/Bip32.hpp"
 #endif  // OT_CRYPTO_WITH_BIP32
+#include "opentxs/crypto/Types.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 
@@ -48,11 +49,12 @@ public:
         const proto::AsymmetricKey& serialized) const = 0;
 #if OT_CRYPTO_WITH_BIP32
     OPENTXS_EXPORT virtual HDKey InstantiateKey(
-        const proto::AsymmetricKeyType type,
+        const opentxs::crypto::key::asymmetric::Algorithm type,
         const std::string& seedID,
         const opentxs::crypto::Bip32::Key& serialized,
         const PasswordPrompt& reason,
-        const proto::KeyRole role = proto::KEYROLE_SIGN,
+        const opentxs::crypto::key::asymmetric::Role role =
+            opentxs::crypto::key::asymmetric::Role::Sign,
         const VersionNumber version =
             opentxs::crypto::key::EllipticCurve::DefaultVersion) const = 0;
 #endif  // OT_CRYPTO_WITH_BIP32
@@ -65,20 +67,23 @@ public:
         const EcdsaCurve& curve,
         const opentxs::crypto::Bip32::Path& path,
         const PasswordPrompt& reason,
-        const proto::KeyRole role = proto::KEYROLE_SIGN,
+        const opentxs::crypto::key::asymmetric::Role role =
+            opentxs::crypto::key::asymmetric::Role::Sign,
         const VersionNumber version =
             opentxs::crypto::key::EllipticCurve::DefaultVersion) const = 0;
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     OPENTXS_EXPORT virtual Secp256k1Key InstantiateSecp256k1Key(
         const ReadView publicKey,
         const PasswordPrompt& reason,
-        const proto::KeyRole role = proto::KEYROLE_SIGN,
+        const opentxs::crypto::key::asymmetric::Role role =
+            opentxs::crypto::key::asymmetric::Role::Sign,
         const VersionNumber version =
             opentxs::crypto::key::Secp256k1::DefaultVersion) const noexcept = 0;
     OPENTXS_EXPORT virtual Secp256k1Key InstantiateSecp256k1Key(
         const Secret& privateKey,
         const PasswordPrompt& reason,
-        const proto::KeyRole role = proto::KEYROLE_SIGN,
+        const opentxs::crypto::key::asymmetric::Role role =
+            opentxs::crypto::key::asymmetric::Role::Sign,
         const VersionNumber version =
             opentxs::crypto::key::Secp256k1::DefaultVersion) const noexcept = 0;
     OPENTXS_EXPORT virtual Secp256k1Key NewSecp256k1Key(
@@ -86,7 +91,8 @@ public:
         const Secret& seed,
         const opentxs::crypto::Bip32::Path& path,
         const PasswordPrompt& reason,
-        const proto::KeyRole role = proto::KEYROLE_SIGN,
+        const opentxs::crypto::key::asymmetric::Role role =
+            opentxs::crypto::key::asymmetric::Role::Sign,
         const VersionNumber version =
             opentxs::crypto::key::Secp256k1::DefaultVersion) const = 0;
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
@@ -94,7 +100,8 @@ public:
     OPENTXS_EXPORT virtual Key NewKey(
         const NymParameters& params,
         const PasswordPrompt& reason,
-        const proto::KeyRole role = proto::KEYROLE_SIGN,
+        const opentxs::crypto::key::asymmetric::Role role =
+            opentxs::crypto::key::asymmetric::Role::Sign,
         const VersionNumber version =
             opentxs::crypto::key::Asymmetric::DefaultVersion) const = 0;
 

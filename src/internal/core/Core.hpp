@@ -5,9 +5,14 @@
 
 #pragma once
 
+#include <map>
+
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/NymFile.hpp"
+#include "opentxs/core/Types.hpp"
+#include "opentxs/protobuf/ContractEnums.pb.h"
+#include "opentxs/protobuf/PeerEnums.pb.h"
 #include "util/Blank.hpp"
 
 namespace opentxs
@@ -38,6 +43,16 @@ struct NymFile : virtual public opentxs::NymFile {
     virtual auto SaveSignedNymFile(const PasswordPrompt& reason) -> bool = 0;
 };
 }  // namespace opentxs::internal
+
+namespace opentxs::core::internal
+{
+using AddressTypeMap = std::map<AddressType, proto::AddressType>;
+using AddressTypeReverseMap = std::map<proto::AddressType, AddressType>;
+
+auto addresstype_map() noexcept -> const AddressTypeMap&;
+auto translate(const AddressType in) noexcept -> proto::AddressType;
+auto translate(const proto::AddressType in) noexcept -> AddressType;
+}  // namespace opentxs::core::internal
 
 namespace opentxs::factory
 {

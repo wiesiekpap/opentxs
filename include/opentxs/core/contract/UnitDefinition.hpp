@@ -16,7 +16,7 @@
 #include "opentxs/Proto.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/core/contract/Signable.hpp"
-#include "opentxs/protobuf/ContractEnums.pb.h"
+#include "opentxs/core/contract/Types.hpp"
 
 namespace opentxs
 {
@@ -62,7 +62,7 @@ public:
         const std::int32_t nPower = 2,
         const char* szThousandSeparator = ",",
         const char* szDecimalPoint = ".");
-    OPENTXS_EXPORT static std::set<proto::ContactItemType> ValidUnits(
+    OPENTXS_EXPORT static std::set<contact::ContactItemType> ValidUnits(
         const VersionNumber version = DefaultVersion) noexcept;
 
     OPENTXS_EXPORT virtual bool AddAccountRecord(
@@ -95,8 +95,8 @@ public:
         const std::string& str_thousand,
         const std::string& str_decimal) const = 0;
     OPENTXS_EXPORT virtual std::string TLA() const = 0;
-    OPENTXS_EXPORT virtual proto::UnitType Type() const = 0;
-    OPENTXS_EXPORT virtual proto::ContactItemType UnitOfAccount() const = 0;
+    OPENTXS_EXPORT virtual contract::UnitType Type() const = 0;
+    OPENTXS_EXPORT virtual contact::ContactItemType UnitOfAccount() const = 0;
     OPENTXS_EXPORT virtual bool VisitAccountRecords(
         const std::string& dataFolder,
         AccountVisitor& visitor,

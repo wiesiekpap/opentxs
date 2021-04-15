@@ -13,6 +13,7 @@
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 #include "opentxs/crypto/key/Secp256k1.hpp"
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 
 namespace opentxs::crypto::key::implementation
 {
@@ -61,7 +62,7 @@ public:
     {
         return {};
     }
-    auto CalculateHash(const proto::HashType, const PasswordPrompt&)
+    auto CalculateHash(const crypto::HashType, const PasswordPrompt&)
         const noexcept -> OTData final
     {
         return Data::Factory();
@@ -69,7 +70,7 @@ public:
     auto CalculateID(Identifier&) const noexcept -> bool final { return false; }
     auto CalculateTag(
         const identity::Authority&,
-        const proto::AsymmetricKeyType,
+        const crypto::key::asymmetric::Algorithm,
         const PasswordPrompt&,
         std::uint32_t&,
         Secret&) const noexcept -> bool final
@@ -106,9 +107,9 @@ public:
     }
     auto HasPrivate() const noexcept -> bool final { return false; }
     auto HasPublic() const noexcept -> bool final { return false; }
-    auto keyType() const noexcept -> proto::AsymmetricKeyType final
+    auto keyType() const noexcept -> crypto::key::asymmetric::Algorithm final
     {
-        return proto::AKEYTYPE_NULL;
+        return crypto::key::asymmetric::Algorithm::Null;
     }
     auto Params() const noexcept -> ReadView final { return {}; }
     auto Path() const noexcept -> const std::string final { return {}; }
@@ -118,29 +119,32 @@ public:
         return {};
     }
     auto PublicKey() const noexcept -> ReadView final { return {}; }
-    auto Role() const noexcept -> proto::KeyRole final { return {}; }
+    auto Role() const noexcept -> opentxs::crypto::key::asymmetric::Role final
+    {
+        return {};
+    }
     auto Serialize() const noexcept
         -> std::shared_ptr<proto::AsymmetricKey> final
     {
         return nullptr;
     }
-    auto SigHashType() const noexcept -> proto::HashType final
+    auto SigHashType() const noexcept -> crypto::HashType final
     {
-        return proto::HASHTYPE_NONE;
+        return crypto::HashType::None;
     }
     auto Sign(
         const GetPreimage,
-        const proto::SignatureRole,
+        const crypto::SignatureRole,
         proto::Signature&,
         const Identifier&,
         const PasswordPrompt&,
-        const proto::HashType) const noexcept -> bool final
+        const crypto::HashType) const noexcept -> bool final
     {
         return false;
     }
     auto Sign(
         const ReadView,
-        const proto::HashType,
+        const crypto::HashType,
         const AllocateOutput,
         const PasswordPrompt&) const noexcept -> bool final
     {
@@ -200,7 +204,7 @@ public:
     }
     auto SignDER(
         const ReadView,
-        const proto::HashType,
+        const crypto::HashType,
         Space&,
         const PasswordPrompt&) const noexcept -> bool final
     {

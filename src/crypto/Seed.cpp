@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <utility>
 
+#include "internal/crypto/key/Key.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -29,6 +30,7 @@
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStrength.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
+#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
@@ -261,7 +263,9 @@ struct Seed::Imp {
     {
         const auto& session =
             (3 > version_) ? encrypted_words_ : encrypted_entropy_;
-        const auto key = symmetric.Key(session.key(), session.mode());
+        const auto key = symmetric.Key(
+            session.key(),
+            opentxs::crypto::key::internal::translate(session.mode()));
 
         if (false == key.get()) {
             throw std::runtime_error{"Failed to get decryption key"};
@@ -349,7 +353,8 @@ private:
         proto::Ciphertext& cphrase,
         const PasswordPrompt& reason) noexcept(false) -> proto::Ciphertext
     {
-        auto key = symmetric.Key(reason, proto::SMODE_CHACHA20POLY1305);
+        auto key = symmetric.Key(
+            reason, crypto::key::symmetric::Algorithm::ChaCha20Poly1305);
 
         if (false == key.get()) {
             throw std::runtime_error{"Failed to get encryption key"};

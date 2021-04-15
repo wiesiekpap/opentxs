@@ -26,6 +26,7 @@
 #include "opentxs/api/HDSeed.hpp"
 #endif  // OT_CRYPTO_WITH_BIP32
 #include "opentxs/contact/ContactData.hpp"
+#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -39,6 +40,8 @@
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
+#include "opentxs/crypto/SignatureRole.hpp"
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/Authority.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -46,8 +49,6 @@
 #include "opentxs/protobuf/Authority.pb.h"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/ContactData.pb.h"
-#include "opentxs/protobuf/ContactEnums.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/HDPath.pb.h"
 #include "opentxs/protobuf/Nym.pb.h"
 #include "opentxs/protobuf/NymIDSource.pb.h"
@@ -64,14 +65,14 @@ namespace opentxs
 auto Factory::Nym(
     const api::internal::Core& api,
     const NymParameters& params,
-    const proto::ContactItemType type,
+    const contact::ContactItemType type,
     const std::string name,
     const opentxs::PasswordPrompt& reason) -> identity::internal::Nym*
 {
     using ReturnType = identity::implementation::Nym;
 
-    if ((proto::CREDTYPE_LEGACY == params.credentialType()) &&
-        (proto::SOURCETYPE_BIP47 == params.SourceType())) {
+    if ((identity::CredentialType::Legacy == params.credentialType()) &&
+        (identity::SourceType::Bip47 == params.SourceType())) {
         LogOutput("opentxs::Factory::")(__FUNCTION__)(": Invalid parameters")
             .Flush();
 
@@ -91,7 +92,7 @@ auto Factory::Nym(
             return nullptr;
         }
 
-        if (proto::CITEMTYPE_ERROR != type && !name.empty()) {
+        if (contact::ContactItemType::Error != type && !name.empty()) {
             const auto version =
                 ReturnType::contact_credential_to_contact_data_version_.at(
                     identity::internal::Authority::NymToContactCredential(
@@ -145,7 +146,7 @@ auto session_key_from_iv(
     const api::internal::Core& api,
     const crypto::key::Asymmetric& signingKey,
     const Data& iv,
-    const proto::HashType hashType,
+    const crypto::HashType hashType,
     opentxs::PasswordPrompt& reason) -> bool;
 
 const VersionConversionMap Nym::akey_to_session_key_version_{
@@ -293,7 +294,7 @@ auto Nym::AddClaim(const Claim& claim, const opentxs::PasswordPrompt& reason)
 
 auto Nym::AddContract(
     const identifier::UnitDefinition& instrumentDefinitionID,
-    const proto::ContactItemType currency,
+    const contact::ContactItemType currency,
     const opentxs::PasswordPrompt& reason,
     const bool primary,
     const bool active) -> bool
@@ -336,7 +337,7 @@ auto Nym::AddEmail(
 
 auto Nym::AddPaymentCode(
     const opentxs::PaymentCode& code,
-    const proto::ContactItemType currency,
+    const contact::ContactItemType currency,
     const opentxs::PasswordPrompt& reason,
     const bool primary,
     const bool active) -> bool
@@ -398,7 +399,7 @@ auto Nym::AddPreferredOTServer(
 
 auto Nym::AddSocialMediaProfile(
     const std::string& value,
-    const proto::ContactItemType type,
+    const contact::ContactItemType type,
     const opentxs::PasswordPrompt& reason,
     const bool primary,
     const bool active) -> bool
@@ -459,7 +460,7 @@ auto Nym::BestPhoneNumber() const -> std::string
     return contact_data_->BestPhoneNumber();
 }
 
-auto Nym::BestSocialMediaProfile(const proto::ContactItemType type) const
+auto Nym::BestSocialMediaProfile(const contact::ContactItemType type) const
     -> std::string
 {
     eLock lock(shared_lock_);
@@ -505,7 +506,7 @@ auto Nym::ContactCredentialVersion() const -> VersionNumber
 }
 
 auto Nym::Contracts(
-    const proto::ContactItemType currency,
+    const contact::ContactItemType currency,
     const bool onlyActive) const -> std::set<OTIdentifier>
 {
     eLock lock(shared_lock_);
@@ -599,8 +600,10 @@ void Nym::GetIdentifier(String& theIdentifier) const
 }
 
 template <typename T>
-auto Nym::get_private_auth_key(const T& lock, proto::AsymmetricKeyType keytype)
-    const -> const crypto::key::Asymmetric&
+auto Nym::get_private_auth_key(
+    const T& lock,
+    crypto::key::asymmetric::Algorithm keytype) const
+    -> const crypto::key::Asymmetric&
 {
     OT_ASSERT(!active_.empty());
 
@@ -625,7 +628,7 @@ auto Nym::get_private_auth_key(const T& lock, proto::AsymmetricKeyType keytype)
         keytype, &m_listRevokedIDs);  // success
 }
 
-auto Nym::GetPrivateAuthKey(proto::AsymmetricKeyType keytype) const
+auto Nym::GetPrivateAuthKey(crypto::key::asymmetric::Algorithm keytype) const
     -> const crypto::key::Asymmetric&
 {
     sLock lock(shared_lock_);
@@ -633,7 +636,7 @@ auto Nym::GetPrivateAuthKey(proto::AsymmetricKeyType keytype) const
     return get_private_auth_key(lock, keytype);
 }
 
-auto Nym::GetPrivateEncrKey(proto::AsymmetricKeyType keytype) const
+auto Nym::GetPrivateEncrKey(crypto::key::asymmetric::Algorithm keytype) const
     -> const crypto::key::Asymmetric&
 {
     sLock lock(shared_lock_);
@@ -661,7 +664,7 @@ auto Nym::GetPrivateEncrKey(proto::AsymmetricKeyType keytype) const
         &m_listRevokedIDs);  // success
 }
 
-auto Nym::GetPrivateSignKey(proto::AsymmetricKeyType keytype) const
+auto Nym::GetPrivateSignKey(crypto::key::asymmetric::Algorithm keytype) const
     -> const crypto::key::Asymmetric&
 {
     sLock lock(shared_lock_);
@@ -670,8 +673,10 @@ auto Nym::GetPrivateSignKey(proto::AsymmetricKeyType keytype) const
 }
 
 template <typename T>
-auto Nym::get_private_sign_key(const T& lock, proto::AsymmetricKeyType keytype)
-    const -> const crypto::key::Asymmetric&
+auto Nym::get_private_sign_key(
+    const T& lock,
+    crypto::key::asymmetric::Algorithm keytype) const
+    -> const crypto::key::Asymmetric&
 {
     OT_ASSERT(!active_.empty());
 
@@ -699,8 +704,10 @@ auto Nym::get_private_sign_key(const T& lock, proto::AsymmetricKeyType keytype)
 }
 
 template <typename T>
-auto Nym::get_public_sign_key(const T& lock, proto::AsymmetricKeyType keytype)
-    const -> const crypto::key::Asymmetric&
+auto Nym::get_public_sign_key(
+    const T& lock,
+    crypto::key::asymmetric::Algorithm keytype) const
+    -> const crypto::key::Asymmetric&
 {
     OT_ASSERT(!active_.empty());
 
@@ -727,7 +734,7 @@ auto Nym::get_public_sign_key(const T& lock, proto::AsymmetricKeyType keytype)
         &m_listRevokedIDs);  // success
 }
 
-auto Nym::GetPublicAuthKey(proto::AsymmetricKeyType keytype) const
+auto Nym::GetPublicAuthKey(crypto::key::asymmetric::Algorithm keytype) const
     -> const crypto::key::Asymmetric&
 {
     sLock lock(shared_lock_);
@@ -755,7 +762,7 @@ auto Nym::GetPublicAuthKey(proto::AsymmetricKeyType keytype) const
         &m_listRevokedIDs);  // success
 }
 
-auto Nym::GetPublicEncrKey(proto::AsymmetricKeyType keytype) const
+auto Nym::GetPublicEncrKey(crypto::key::asymmetric::Algorithm keytype) const
     -> const crypto::key::Asymmetric&
 {
     sLock lock(shared_lock_);
@@ -816,7 +823,7 @@ auto Nym::GetPublicKeysBySignature(
     return nCount;
 }
 
-auto Nym::GetPublicSignKey(proto::AsymmetricKeyType keytype) const
+auto Nym::GetPublicSignKey(crypto::key::asymmetric::Algorithm keytype) const
     -> const crypto::key::Asymmetric&
 {
     sLock lock(shared_lock_);
@@ -969,7 +976,7 @@ auto Nym::normalize(
 {
     auto output{in};
 
-    if (proto::CREDTYPE_HD == in.credentialType()) {
+    if (identity::CredentialType::HD == in.credentialType()) {
 #if OT_CRYPTO_WITH_BIP32
         const auto& seeds = api.Seeds();
         output.SetCredset(0);
@@ -1038,7 +1045,7 @@ auto Nym::Path(proto::HDPath& output) const -> bool
 
 auto Nym::PaymentCode() const -> std::string
 {
-    if (proto::SOURCETYPE_BIP47 != source_.Type()) { return ""; }
+    if (identity::SourceType::Bip47 != source_.Type()) { return ""; }
 
     auto serialized = source_.Serialize();
 
@@ -1247,7 +1254,7 @@ auto Nym::SetContactData(
 }
 
 auto Nym::SetScope(
-    const proto::ContactItemType type,
+    const contact::ContactItemType type,
     const std::string& name,
     const opentxs::PasswordPrompt& reason,
     const bool primary) -> bool
@@ -1256,7 +1263,7 @@ auto Nym::SetScope(
 
     if (false == bool(contact_data_)) { init_claims(lock); }
 
-    if (proto::CITEMTYPE_UNKNOWN != contact_data_->Type()) {
+    if (contact::ContactItemType::Unknown != contact_data_->Type()) {
         contact_data_.reset(
             new ContactData(contact_data_->SetName(name, primary)));
     } else {
@@ -1271,10 +1278,10 @@ auto Nym::SetScope(
 
 auto Nym::Sign(
     const ProtobufType& input,
-    const proto::SignatureRole role,
+    const crypto::SignatureRole role,
     proto::Signature& signature,
     const opentxs::PasswordPrompt& reason,
-    const proto::HashType hash) const -> bool
+    const crypto::HashType hash) const -> bool
 {
     sLock lock(shared_lock_);
 
@@ -1287,7 +1294,12 @@ auto Nym::Sign(
     for (auto& it : active_) {
         if (nullptr != it.second) {
             bool success = it.second->Sign(
-                preimage, role, signature, reason, proto::KEYROLE_SIGN, hash);
+                preimage,
+                role,
+                signature,
+                reason,
+                opentxs::crypto::key::asymmetric::Role::Sign,
+                hash);
 
             if (success) {
                 haveSig = true;
@@ -1307,7 +1319,7 @@ auto Nym::Sign(
     return haveSig;
 }
 
-auto Nym::SocialMediaProfiles(const proto::ContactItemType type, bool active)
+auto Nym::SocialMediaProfiles(const contact::ContactItemType type, bool active)
     const -> std::string
 {
     eLock lock(shared_lock_);
@@ -1320,7 +1332,7 @@ auto Nym::SocialMediaProfiles(const proto::ContactItemType type, bool active)
 }
 
 auto Nym::SocialMediaProfileTypes() const
-    -> const std::set<proto::ContactItemType>
+    -> const std::set<contact::ContactItemType>
 {
     eLock lock(shared_lock_);
 
@@ -1357,7 +1369,7 @@ auto Nym::TransportKey(Data& pubkey, const opentxs::PasswordPrompt& reason)
 auto Nym::Unlock(
     const crypto::key::Asymmetric& dhKey,
     const std::uint32_t tag,
-    const proto::AsymmetricKeyType type,
+    const crypto::key::asymmetric::Algorithm type,
     const crypto::key::Symmetric& key,
     PasswordPrompt& reason) const noexcept -> bool
 {

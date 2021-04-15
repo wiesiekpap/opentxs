@@ -16,8 +16,8 @@
 #include <string>
 
 #include "opentxs/Proto.hpp"
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
 
 namespace opentxs
 {
@@ -38,15 +38,15 @@ public:
 
     OPENTXS_EXPORT ContactGroup(
         const std::string& nym,
-        const proto::ContactSectionName section,
-        const proto::ContactItemType type,
+        const contact::ContactSectionName section,
+        const contact::ContactItemType type,
         const ItemMap& items);
     OPENTXS_EXPORT ContactGroup(
         const std::string& nym,
-        const proto::ContactSectionName section,
+        const contact::ContactSectionName section,
         const std::shared_ptr<ContactItem>& item);
-    OPENTXS_EXPORT ContactGroup(const ContactGroup&) = default;
-    OPENTXS_EXPORT ContactGroup(ContactGroup&&) = default;
+    OPENTXS_EXPORT ContactGroup(const ContactGroup&) noexcept;
+    OPENTXS_EXPORT ContactGroup(ContactGroup&&) noexcept;
 
     OPENTXS_EXPORT ContactGroup operator+(const ContactGroup& rhs) const;
 
@@ -67,20 +67,14 @@ public:
         proto::ContactSection& section,
         const bool withIDs = false) const;
     OPENTXS_EXPORT std::size_t Size() const;
-    OPENTXS_EXPORT const proto::ContactItemType& Type() const;
+    OPENTXS_EXPORT const contact::ContactItemType& Type() const;
 
-    OPENTXS_EXPORT ~ContactGroup() = default;
+    OPENTXS_EXPORT ~ContactGroup();
 
 private:
-    const std::string nym_{};
-    const proto::ContactSectionName section_{proto::CONTACTSECTION_ERROR};
-    const proto::ContactItemType type_{proto::CITEMTYPE_ERROR};
-    const OTIdentifier primary_;
-    const ItemMap items_{};
+    struct Imp;
 
-    static ItemMap create_item(const std::shared_ptr<ContactItem>& item);
-    static OTIdentifier get_primary_item(const ItemMap& items);
-    static ItemMap normalize_items(const ItemMap& items);
+    std::unique_ptr<Imp> imp_;
 
     ContactGroup() = delete;
     ContactGroup& operator=(const ContactGroup&) = delete;

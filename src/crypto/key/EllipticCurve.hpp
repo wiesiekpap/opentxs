@@ -16,8 +16,8 @@
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
+#include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
 
 namespace opentxs
 {
@@ -82,7 +82,7 @@ public:
     auto Path(proto::HDPath&) const noexcept -> bool override { return {}; }
     auto SignDER(
         const ReadView preimage,
-        const proto::HashType hash,
+        const crypto::HashType hash,
         Space& output,
         const PasswordPrompt& reason) const noexcept -> bool final;
 
@@ -105,27 +105,27 @@ protected:
     EllipticCurve(
         const api::internal::Core& api,
         const crypto::EcdsaProvider& ecdsa,
-        const proto::AsymmetricKeyType keyType,
-        const proto::KeyRole role,
+        const crypto::key::asymmetric::Algorithm keyType,
+        const crypto::key::asymmetric::Role role,
         const VersionNumber version,
         const PasswordPrompt& reason) noexcept(false);
     EllipticCurve(
         const api::internal::Core& api,
         const crypto::EcdsaProvider& ecdsa,
-        const proto::AsymmetricKeyType keyType,
+        const crypto::key::asymmetric::Algorithm keyType,
         const Secret& privateKey,
         const Data& publicKey,
-        const proto::KeyRole role,
+        const crypto::key::asymmetric::Role role,
         const VersionNumber version,
         key::Symmetric& sessionKey,
         const PasswordPrompt& reason) noexcept(false);
     EllipticCurve(
         const api::internal::Core& api,
         const crypto::EcdsaProvider& ecdsa,
-        const proto::AsymmetricKeyType keyType,
+        const crypto::key::asymmetric::Algorithm keyType,
         const Secret& privateKey,
         const Data& publicKey,
-        const proto::KeyRole role,
+        const crypto::key::asymmetric::Role role,
         const VersionNumber version) noexcept(false);
     EllipticCurve(const EllipticCurve&) noexcept;
     EllipticCurve(const EllipticCurve& rhs, const ReadView newPublic) noexcept;

@@ -14,6 +14,7 @@
 
 #include "opentxs/Proto.hpp"
 #include "opentxs/SharedPimpl.hpp"
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/ui/List.hpp"
 #include "opentxs/ui/ListRow.hpp"
 
@@ -33,7 +34,7 @@
         const bool active) const
     {
         return $self->AddClaim(
-            static_cast<opentxs::proto::ContactItemType>(type),
+            static_cast<opentxs::contact::ContactItemType>(type),
             value,
             primary,
             active);
@@ -43,14 +44,14 @@
         const std::string& lang)
     {
         const auto types = opentxs::ui::ProfileSection::AllowedItems(
-            static_cast<opentxs::proto::ContactSectionName>(section),
+            static_cast<opentxs::contact::ContactSectionName>(section),
             lang);
         std::vector<std::pair<int, std::string>> output;
         std::transform(
             types.begin(),
             types.end(),
             std::inserter(output, output.end()),
-            [](std::pair<opentxs::proto::ContactItemType, std::string> type) ->
+            [](std::pair<opentxs::contact::ContactItemType, std::string> type) ->
                 std::pair<int, std::string> {
                     return {static_cast<int>(type.first), type.second};} );
 
@@ -66,7 +67,7 @@
             types.begin(),
             types.end(),
             std::inserter(output, output.end()),
-            [](std::pair<opentxs::proto::ContactItemType, std::string> type) ->
+            [](std::pair<opentxs::contact::ContactItemType, std::string> type) ->
                 std::pair<int, std::string> {
                     return {static_cast<int>(type.first), type.second};} );
 
@@ -105,15 +106,15 @@ namespace ui
 class ProfileSection : virtual public List, virtual public ListRow
 {
 public:
-    using ItemType = std::pair<proto::ContactItemType, std::string>;
+    using ItemType = std::pair<contact::ContactItemType, std::string>;
     using ItemTypeList = std::vector<ItemType>;
 
     OPENTXS_EXPORT static ItemTypeList AllowedItems(
-        const proto::ContactSectionName section,
+        const contact::ContactSectionName section,
         const std::string& lang) noexcept;
 
     OPENTXS_EXPORT virtual bool AddClaim(
-        const proto::ContactItemType type,
+        const contact::ContactItemType type,
         const std::string& value,
         const bool primary,
         const bool active) const noexcept = 0;
@@ -140,7 +141,8 @@ public:
         const int type,
         const std::string& claimID,
         const std::string& value) const noexcept = 0;
-    OPENTXS_EXPORT virtual proto::ContactSectionName Type() const noexcept = 0;
+    OPENTXS_EXPORT virtual contact::ContactSectionName Type()
+        const noexcept = 0;
 
     OPENTXS_EXPORT ~ProfileSection() override = default;
 

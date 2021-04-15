@@ -24,6 +24,7 @@
 
 #include "2_Factory.hpp"
 #include "internal/api/client/Client.hpp"
+#include "internal/contact/Contact.hpp"
 #include "opentxs/Exclusive.hpp"
 #include "opentxs/Shared.hpp"
 #include "opentxs/SharedPimpl.hpp"
@@ -38,6 +39,8 @@
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
+#include "opentxs/api/client/PaymentWorkflowState.hpp"
+#include "opentxs/api/client/PaymentWorkflowType.hpp"
 #include "opentxs/api/client/UI.hpp"
 #include "opentxs/api/client/Workflow.hpp"
 #include "opentxs/api/server/Manager.hpp"
@@ -178,7 +181,7 @@
     [[maybe_unused]] const auto& server = *pServer;
 
 #define INIT_OTX(a, ...)                                                       \
-    api::client::OTX::Result result{proto::LASTREPLYSTATUS_NOTSENT, nullptr};  \
+    api::client::OTX::Result result{otx::LastReplyStatus::NotSent, nullptr};   \
     [[maybe_unused]] const auto& [status, pReply] = result;                    \
     [[maybe_unused]] auto [taskID, future] = client.OTX().a(__VA_ARGS__);      \
     [[maybe_unused]] const auto ready = (0 != taskID);
@@ -252,9 +255,9 @@ auto RPC::accept_pending_payments(const proto::RPCCommand& command) const
 
         std::shared_ptr<const OTPayment> payment{};
 
-        switch (paymentWorkflow->type()) {
-            case proto::PAYMENTWORKFLOWTYPE_INCOMINGCHEQUE:
-            case proto::PAYMENTWORKFLOWTYPE_INCOMINGINVOICE: {
+        switch (api::client::internal::translate(paymentWorkflow->type())) {
+            case api::client::PaymentWorkflowType::IncomingCheque:
+            case api::client::PaymentWorkflowType::IncomingInvoice: {
                 auto chequeState =
                     opentxs::api::client::Workflow::InstantiateCheque(
                         client, *paymentWorkflow);
@@ -274,9 +277,9 @@ auto RPC::accept_pending_payments(const proto::RPCCommand& command) const
                 payment.reset(
                     client.Factory().Payment(*cheque, reason).release());
             } break;
-            case proto::PAYMENTWORKFLOWTYPE_OUTGOINGCHEQUE:
-            case proto::PAYMENTWORKFLOWTYPE_OUTGOINGINVOICE:
-            case proto::PAYMENTWORKFLOWTYPE_ERROR:
+            case api::client::PaymentWorkflowType::OutgoingCheque:
+            case api::client::PaymentWorkflowType::OutgoingInvoice:
+            case api::client::PaymentWorkflowType::Error:
             default: {
                 LogOutput(OT_METHOD)(__FUNCTION__)(
                     ": Unsupported workflow type")
@@ -474,8 +477,8 @@ auto RPC::create_compatible_account(const proto::RPCCommand& command) const
     auto notaryID = identifier::Server::Factory();
     auto unitID = identifier::UnitDefinition::Factory();
 
-    switch (workflow.type()) {
-        case proto::PAYMENTWORKFLOWTYPE_INCOMINGCHEQUE: {
+    switch (api::client::internal::translate(workflow.type())) {
+        case api::client::PaymentWorkflowType::IncomingCheque: {
             auto chequeState =
                 opentxs::api::client::Workflow::InstantiateCheque(
                     client, workflow);
@@ -561,7 +564,7 @@ auto RPC::create_issuer_account(const proto::RPCCommand& command) const
         ownerID,
         notaryID,
         unitID,
-        proto::CITEMTYPE_ERROR,
+        contact::ContactItemType::Error,
         label);
 
     if (false == ready) {
@@ -596,7 +599,7 @@ auto RPC::create_nym(const proto::RPCCommand& command) const
         reason,
         createnym.name(),
         {createnym.seedid(), createnym.index()},
-        createnym.type());
+        contact::internal::translate(createnym.type()));
 
     if (false == bool(pNym)) {
         add_output_status(output, proto::RPCRESPONSE_CREATE_NYM_FAILED);
@@ -649,7 +652,7 @@ auto RPC::create_unit_definition(const proto::RPCCommand& command) const
             createunit.tla(),
             createunit.power(),
             createunit.fractionalunitname(),
-            createunit.unitofaccount(),
+            contact::internal::translate(createunit.unitofaccount()),
             reason);
 
         output.add_identifier(unitdefinition->ID()->str());
@@ -696,13 +699,13 @@ void RPC::evaluate_deposit_payment(
     const auto& status = std::get<0>(result);
     const auto& pReply = std::get<1>(result);
 
-    if (proto::LASTREPLYSTATUS_NOTSENT == status) {
+    if (otx::LastReplyStatus::NotSent == status) {
         add_output_status(output, proto::RPCRESPONSE_ERROR);
-    } else if (proto::LASTREPLYSTATUS_UNKNOWN == status) {
+    } else if (otx::LastReplyStatus::Unknown == status) {
         add_output_status(output, proto::RPCRESPONSE_BAD_SERVER_RESPONSE);
-    } else if (proto::LASTREPLYSTATUS_MESSAGEFAILED == status) {
+    } else if (otx::LastReplyStatus::MessageFailed == status) {
         add_output_status(output, proto::RPCRESPONSE_TRANSACTION_FAILED);
-    } else if (proto::LASTREPLYSTATUS_MESSAGESUCCESS == status) {
+    } else if (otx::LastReplyStatus::MessageSuccess == status) {
         OT_ASSERT(pReply);
 
         const auto& reply = *pReply;
@@ -720,13 +723,13 @@ void RPC::evaluate_move_funds(
     const auto& status = std::get<0>(result);
     const auto& pReply = std::get<1>(result);
 
-    if (proto::LASTREPLYSTATUS_NOTSENT == status) {
+    if (otx::LastReplyStatus::NotSent == status) {
         add_output_status(output, proto::RPCRESPONSE_ERROR);
-    } else if (proto::LASTREPLYSTATUS_UNKNOWN == status) {
+    } else if (otx::LastReplyStatus::Unknown == status) {
         add_output_status(output, proto::RPCRESPONSE_BAD_SERVER_RESPONSE);
-    } else if (proto::LASTREPLYSTATUS_MESSAGEFAILED == status) {
+    } else if (otx::LastReplyStatus::MessageFailed == status) {
         add_output_status(output, proto::RPCRESPONSE_MOVE_FUNDS_FAILED);
-    } else if (proto::LASTREPLYSTATUS_MESSAGESUCCESS == status) {
+    } else if (otx::LastReplyStatus::MessageSuccess == status) {
         OT_ASSERT(pReply);
 
         const auto& reply = *pReply;
@@ -742,13 +745,13 @@ void RPC::evaluate_send_payment_cheque(
     // const auto& [status, pReply] = result;
     const auto& status = std::get<0>(result);
 
-    if (proto::LASTREPLYSTATUS_NOTSENT == status) {
+    if (otx::LastReplyStatus::NotSent == status) {
         add_output_status(output, proto::RPCRESPONSE_ERROR);
-    } else if (proto::LASTREPLYSTATUS_UNKNOWN == status) {
+    } else if (otx::LastReplyStatus::Unknown == status) {
         add_output_status(output, proto::RPCRESPONSE_BAD_SERVER_RESPONSE);
-    } else if (proto::LASTREPLYSTATUS_MESSAGEFAILED == status) {
+    } else if (otx::LastReplyStatus::MessageFailed == status) {
         add_output_status(output, proto::RPCRESPONSE_SEND_PAYMENT_FAILED);
-    } else if (proto::LASTREPLYSTATUS_MESSAGESUCCESS == status) {
+    } else if (otx::LastReplyStatus::MessageSuccess == status) {
         add_output_status(output, proto::RPCRESPONSE_SUCCESS);
     }
 }
@@ -763,13 +766,13 @@ void RPC::evaluate_send_payment_transfer(
     const auto& status = std::get<0>(result);
     const auto& pReply = std::get<1>(result);
 
-    if (proto::LASTREPLYSTATUS_NOTSENT == status) {
+    if (otx::LastReplyStatus::NotSent == status) {
         add_output_status(output, proto::RPCRESPONSE_ERROR);
-    } else if (proto::LASTREPLYSTATUS_UNKNOWN == status) {
+    } else if (otx::LastReplyStatus::Unknown == status) {
         add_output_status(output, proto::RPCRESPONSE_BAD_SERVER_RESPONSE);
-    } else if (proto::LASTREPLYSTATUS_MESSAGEFAILED == status) {
+    } else if (otx::LastReplyStatus::MessageFailed == status) {
         add_output_status(output, proto::RPCRESPONSE_SEND_PAYMENT_FAILED);
-    } else if (proto::LASTREPLYSTATUS_MESSAGESUCCESS == status) {
+    } else if (otx::LastReplyStatus::MessageSuccess == status) {
         OT_ASSERT(pReply);
 
         const auto& reply = *pReply;
@@ -946,9 +949,9 @@ auto RPC::get_compatible_accounts(const proto::RPCCommand& command) const
     const auto& workflow = *pWorkflow;
     auto unitID = identifier::UnitDefinition::Factory();
 
-    switch (workflow.type()) {
-        case proto::PAYMENTWORKFLOWTYPE_INCOMINGCHEQUE:
-        case proto::PAYMENTWORKFLOWTYPE_INCOMINGINVOICE: {
+    switch (api::client::internal::translate(workflow.type())) {
+        case api::client::PaymentWorkflowType::IncomingCheque:
+        case api::client::PaymentWorkflowType::IncomingInvoice: {
             auto chequeState =
                 opentxs::api::client::Workflow::InstantiateCheque(
                     client, workflow);
@@ -1026,12 +1029,12 @@ auto RPC::get_pending_payments(const proto::RPCCommand& command) const
     const auto& workflow = client.Workflow();
     auto checkWorkflows = workflow.List(
         ownerID,
-        proto::PAYMENTWORKFLOWTYPE_INCOMINGCHEQUE,
-        proto::PAYMENTWORKFLOWSTATE_CONVEYED);
+        api::client::PaymentWorkflowType::IncomingCheque,
+        api::client::PaymentWorkflowState::Conveyed);
     auto invoiceWorkflows = workflow.List(
         ownerID,
-        proto::PAYMENTWORKFLOWTYPE_INCOMINGINVOICE,
-        proto::PAYMENTWORKFLOWSTATE_CONVEYED);
+        api::client::PaymentWorkflowType::IncomingInvoice,
+        api::client::PaymentWorkflowState::Conveyed);
     std::set<OTIdentifier> workflows;
     std::set_union(
         checkWorkflows.begin(),
@@ -1056,8 +1059,8 @@ auto RPC::get_pending_payments(const proto::RPCCommand& command) const
         accountEvent.set_version(ACCOUNTEVENT_VERSION);
         auto accountEventType = proto::ACCOUNTEVENT_INCOMINGCHEQUE;
 
-        if (proto::PAYMENTWORKFLOWTYPE_INCOMINGINVOICE ==
-            paymentWorkflow->type()) {
+        if (api::client::PaymentWorkflowType::IncomingInvoice ==
+            api::client::internal::translate(paymentWorkflow->type())) {
             accountEventType = proto::ACCOUNTEVENT_INCOMINGINVOICE;
         }
 

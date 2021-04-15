@@ -23,7 +23,9 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #endif  // OT_BLOCKCHAIN
+#include "internal/core/contract/peer/Peer.hpp"
 #include "internal/crypto/key/Factory.hpp"
+#include "internal/crypto/key/Key.hpp"
 #include "internal/network/zeromq/socket/Socket.hpp"
 #include "opentxs/OT.hpp"  // TODO remove
 #include "opentxs/Pimpl.hpp"
@@ -57,6 +59,7 @@
 #include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/OTTransactionType.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/CurrencyContract.hpp"
 #include "opentxs/core/contract/SecurityContract.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
@@ -74,7 +77,9 @@
 #include "opentxs/core/contract/peer/PeerObject.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
+#include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
+#include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/cron/OTCron.hpp"
 #include "opentxs/core/cron/OTCronItem.hpp"
 #include "opentxs/core/crypto/OTSignedFile.hpp"
@@ -90,22 +95,20 @@
 #include "opentxs/core/trade/OTTrade.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
+#include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/crypto/key/Secp256k1.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
+#include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/ext/OTPayment.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/protobuf/AsymmetricKey.pb.h"
-#include "opentxs/protobuf/CashEnums.pb.h"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
-#include "opentxs/protobuf/ContactEnums.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/Envelope.pb.h"  // IWYU pragma: keep
 #include "opentxs/protobuf/HDPath.pb.h"
 #include "opentxs/protobuf/PaymentCode.pb.h"
-#include "opentxs/protobuf/PeerEnums.pb.h"
 #include "opentxs/protobuf/PeerReply.pb.h"
 #include "opentxs/protobuf/PeerRequest.pb.h"
 #include "opentxs/protobuf/UnitDefinition.pb.h"
@@ -172,7 +175,7 @@ auto Factory::Armored(const ProtobufType& input, const std::string& header)
 auto Factory::AsymmetricKey(
     const NymParameters& params,
     const opentxs::PasswordPrompt& reason,
-    const proto::KeyRole role,
+    const opentxs::crypto::key::asymmetric::Role role,
     const VersionNumber version) const -> OTAsymmetricKey
 {
     auto output = asymmetric_.NewKey(params, reason, role, version).release();
@@ -327,7 +330,7 @@ auto Factory::BasketContract(
     const std::string& symbol,
     const std::string& terms,
     const std::uint64_t weight,
-    const proto::ContactItemType unitOfAccount,
+    const contact::ContactItemType unitOfAccount,
     const VersionNumber version) const noexcept(false) -> OTBasketContract
 {
     auto output = opentxs::Factory::BasketContract(
@@ -633,7 +636,7 @@ auto Factory::ConnectionReply(
 auto Factory::ConnectionRequest(
     const Nym_p& nym,
     const identifier::Nym& recipient,
-    const proto::ConnectionInfoType type,
+    const contract::peer::ConnectionInfoType type,
     const identifier::Server& server,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
     -> OTConnectionRequest
@@ -815,7 +818,7 @@ auto Factory::CurrencyContract(
     const std::string& tla,
     const std::uint32_t power,
     const std::string& fraction,
-    const proto::ContactItemType unitOfAccount,
+    const contact::ContactItemType unitOfAccount,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
     -> OTCurrencyContract
@@ -997,7 +1000,7 @@ auto Factory::instantiate_secp256k1(
         Data(key),
         path,
         {},
-        proto::KEYROLE_SIGN,
+        opentxs::crypto::key::asymmetric::Role::Sign,
         opentxs::crypto::key::EllipticCurve::DefaultVersion);
 #else
     using ReturnType = opentxs::crypto::key::Secp256k1;
@@ -1158,7 +1161,7 @@ auto Factory::Item(
 auto Factory::Keypair(
     const NymParameters& params,
     const VersionNumber version,
-    const proto::KeyRole role,
+    const opentxs::crypto::key::asymmetric::Role role,
     const opentxs::PasswordPrompt& reason) const -> OTKeypair
 {
     auto pPrivateKey = asymmetric_.NewKey(params, reason, role, version);
@@ -1214,7 +1217,7 @@ auto Factory::Keypair(
     try {
         return OTKeypair{factory::Keypair(
             api_,
-            serializedPrivkey.role(),
+            opentxs::crypto::key::internal::translate(serializedPrivkey.role()),
             std::move(pPublicKey),
             std::move(pPrivateKey))};
     } catch (...) {
@@ -1237,7 +1240,7 @@ auto Factory::Keypair(const proto::AsymmetricKey& serializedPubkey) const
     try {
         return OTKeypair{factory::Keypair(
             api_,
-            serializedPubkey.role(),
+            opentxs::crypto::key::internal::translate(serializedPubkey.role()),
             std::move(pPublicKey),
             std::make_unique<opentxs::crypto::key::implementation::Null>())};
     } catch (...) {
@@ -1252,20 +1255,20 @@ auto Factory::Keypair(
     const Bip32Index credset,
     const Bip32Index credindex,
     const EcdsaCurve& curve,
-    const proto::KeyRole role,
+    const opentxs::crypto::key::asymmetric::Role role,
     const opentxs::PasswordPrompt& reason) const -> OTKeypair
 {
     auto input(fingerprint);
     auto roleIndex = Bip32Index{0};
 
     switch (role) {
-        case proto::KEYROLE_AUTH: {
+        case opentxs::crypto::key::asymmetric::Role::Auth: {
             roleIndex = HDIndex{Bip32Child::AUTH_KEY, Bip32Child::HARDENED};
         } break;
-        case proto::KEYROLE_ENCRYPT: {
+        case opentxs::crypto::key::asymmetric::Role::Encrypt: {
             roleIndex = HDIndex{Bip32Child::ENCRYPT_KEY, Bip32Child::HARDENED};
         } break;
-        case proto::KEYROLE_SIGN: {
+        case opentxs::crypto::key::asymmetric::Role::Sign: {
             roleIndex = HDIndex{Bip32Child::SIGN_KEY, Bip32Child::HARDENED};
         } break;
         default: {
@@ -1635,7 +1638,9 @@ auto Factory::PaymentCode(const std::string& base58) const noexcept
                             payload.key_.size()};
                         auto code = api_.Factory().Data();
                         api_.Crypto().Hash().Digest(
-                            proto::HASHTYPE_SHA256D, key, code->WriteInto());
+                            opentxs::crypto::HashType::Sha256D,
+                            key,
+                            code->WriteInto());
                         out = ReturnType::Base58Preimage{
                             payload.version_, false, key, code->Bytes(), 0, 0};
                     }
@@ -1868,25 +1873,25 @@ auto Factory::PeerReply() const noexcept -> OTPeerReply
 auto Factory::PeerReply(const Nym_p& nym, const proto::PeerReply& serialized)
     const noexcept(false) -> OTPeerReply
 {
-    switch (serialized.type()) {
-        case proto::PEERREQUEST_BAILMENT: {
+    switch (contract::peer::internal::translate(serialized.type())) {
+        case contract::peer::PeerRequestType::Bailment: {
             return BailmentReply(nym, serialized).as<contract::peer::Reply>();
         }
-        case proto::PEERREQUEST_CONNECTIONINFO: {
+        case contract::peer::PeerRequestType::ConnectionInfo: {
             return ConnectionReply(nym, serialized).as<contract::peer::Reply>();
         }
-        case proto::PEERREQUEST_OUTBAILMENT: {
+        case contract::peer::PeerRequestType::OutBailment: {
             return OutbailmentReply(nym, serialized)
                 .as<contract::peer::Reply>();
         }
-        case proto::PEERREQUEST_PENDINGBAILMENT:
-        case proto::PEERREQUEST_STORESECRET: {
+        case contract::peer::PeerRequestType::PendingBailment:
+        case contract::peer::PeerRequestType::StoreSecret: {
             return ReplyAcknowledgement(nym, serialized)
                 .as<contract::peer::Reply>();
         }
-        case proto::PEERREQUEST_VERIFICATIONOFFER:
-        case proto::PEERREQUEST_FAUCET:
-        case proto::PEERREQUEST_ERROR:
+        case contract::peer::PeerRequestType::VerificationOffer:
+        case contract::peer::PeerRequestType::Faucet:
+        case contract::peer::PeerRequestType::Error:
         default: {
             throw std::runtime_error("Unsupported reply type");
         }
@@ -1902,29 +1907,29 @@ auto Factory::PeerRequest(
     const Nym_p& nym,
     const proto::PeerRequest& serialized) const noexcept(false) -> OTPeerRequest
 {
-    switch (serialized.type()) {
-        case proto::PEERREQUEST_BAILMENT: {
+    switch (contract::peer::internal::translate(serialized.type())) {
+        case contract::peer::PeerRequestType::Bailment: {
             return BailmentRequest(nym, serialized)
                 .as<contract::peer::Request>();
         }
-        case proto::PEERREQUEST_OUTBAILMENT: {
+        case contract::peer::PeerRequestType::OutBailment: {
             return OutbailmentRequest(nym, serialized)
                 .as<contract::peer::Request>();
         }
-        case proto::PEERREQUEST_PENDINGBAILMENT: {
+        case contract::peer::PeerRequestType::PendingBailment: {
             return BailmentNotice(nym, serialized)
                 .as<contract::peer::Request>();
         }
-        case proto::PEERREQUEST_CONNECTIONINFO: {
+        case contract::peer::PeerRequestType::ConnectionInfo: {
             return ConnectionRequest(nym, serialized)
                 .as<contract::peer::Request>();
         }
-        case proto::PEERREQUEST_STORESECRET: {
+        case contract::peer::PeerRequestType::StoreSecret: {
             return StoreSecret(nym, serialized).as<contract::peer::Request>();
         }
-        case proto::PEERREQUEST_VERIFICATIONOFFER:
-        case proto::PEERREQUEST_FAUCET:
-        case proto::PEERREQUEST_ERROR:
+        case contract::peer::PeerRequestType::VerificationOffer:
+        case contract::peer::PeerRequestType::Faucet:
+        case contract::peer::PeerRequestType::Error:
         default: {
             throw std::runtime_error("Unsupported reply type");
         }
@@ -1945,7 +1950,7 @@ auto Factory::Purse(
     const blind::Mint& mint,
     const Amount totalValue,
     const opentxs::PasswordPrompt& reason,
-    const proto::CashType type) const -> std::unique_ptr<blind::Purse>
+    const blind::CashType type) const -> std::unique_ptr<blind::Purse>
 {
     return std::unique_ptr<blind::Purse>(
         opentxs::Factory::Purse(api_, context, type, mint, totalValue, reason));
@@ -1963,7 +1968,7 @@ auto Factory::Purse(
     const identifier::Server& server,
     const identifier::UnitDefinition& unit,
     const opentxs::PasswordPrompt& reason,
-    const proto::CashType type) const -> std::unique_ptr<blind::Purse>
+    const blind::CashType type) const -> std::unique_ptr<blind::Purse>
 {
     return std::unique_ptr<blind::Purse>(
         opentxs::Factory::Purse(api_, owner, server, unit, type, reason));
@@ -1975,7 +1980,7 @@ auto Factory::ReplyAcknowledgement(
     const identifier::Nym& initiator,
     const opentxs::Identifier& request,
     const identifier::Server& server,
-    const proto::PeerRequestType type,
+    const contract::peer::PeerRequestType type,
     const bool& ack,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
     -> OTReplyAcknowledgement
@@ -2076,7 +2081,7 @@ auto Factory::SecurityContract(
     const std::string& name,
     const std::string& symbol,
     const std::string& terms,
-    const proto::ContactItemType unitOfAccount,
+    const contact::ContactItemType unitOfAccount,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
     -> OTSecurityContract
@@ -2187,7 +2192,7 @@ auto Factory::SmartContract(const identifier::Server& NOTARY_ID) const
 auto Factory::StoreSecret(
     const Nym_p& nym,
     const identifier::Nym& recipient,
-    const proto::SecretType type,
+    const contract::peer::SecretType type,
     const std::string& primary,
     const std::string& secondary,
     const identifier::Server& server,
@@ -2225,7 +2230,8 @@ auto Factory::SymmetricKey() const -> OTSymmetricKey
 auto Factory::SymmetricKey(
     const opentxs::crypto::SymmetricProvider& engine,
     const opentxs::PasswordPrompt& password,
-    const proto::SymmetricMode mode) const -> OTSymmetricKey
+    const opentxs::crypto::key::symmetric::Algorithm mode) const
+    -> OTSymmetricKey
 {
     return OTSymmetricKey{factory::SymmetricKey(api_, engine, password, mode)};
 }
@@ -2243,7 +2249,7 @@ auto Factory::SymmetricKey(
     const std::uint64_t operations,
     const std::uint64_t difficulty,
     const std::size_t size,
-    const proto::SymmetricKeyType type) const -> OTSymmetricKey
+    const opentxs::crypto::key::symmetric::Source type) const -> OTSymmetricKey
 {
     return OTSymmetricKey{factory::SymmetricKey(
         api_, engine, seed, operations, difficulty, size, type)};

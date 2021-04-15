@@ -17,7 +17,7 @@
 
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
+#include "opentxs/contact/Types.hpp"
 
 namespace opentxs
 {
@@ -46,21 +46,21 @@ class ContactSection
 {
 public:
     using GroupMap =
-        std::map<proto::ContactItemType, std::shared_ptr<ContactGroup>>;
+        std::map<contact::ContactItemType, std::shared_ptr<ContactGroup>>;
 
     OPENTXS_EXPORT ContactSection(
         const api::internal::Core& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
-        const proto::ContactSectionName section,
+        const contact::ContactSectionName section,
         const GroupMap& groups);
     OPENTXS_EXPORT ContactSection(
         const api::internal::Core& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
-        const proto::ContactSectionName section,
+        const contact::ContactSectionName section,
         const std::shared_ptr<ContactItem>& item);
     OPENTXS_EXPORT ContactSection(
         const api::internal::Core& api,
@@ -80,38 +80,21 @@ public:
     OPENTXS_EXPORT ContactSection Delete(const Identifier& id) const;
     OPENTXS_EXPORT GroupMap::const_iterator end() const;
     OPENTXS_EXPORT std::shared_ptr<ContactGroup> Group(
-        const proto::ContactItemType& type) const;
+        const contact::ContactItemType& type) const;
     OPENTXS_EXPORT bool HaveClaim(const Identifier& item) const;
     OPENTXS_EXPORT bool SerializeTo(
         proto::ContactData& data,
         const bool withIDs = false) const;
     OPENTXS_EXPORT std::size_t Size() const;
-    OPENTXS_EXPORT const proto::ContactSectionName& Type() const;
+    OPENTXS_EXPORT const contact::ContactSectionName& Type() const;
     OPENTXS_EXPORT VersionNumber Version() const;
 
-    OPENTXS_EXPORT ~ContactSection() = default;
+    OPENTXS_EXPORT ~ContactSection();
 
 private:
-    const api::internal::Core& api_;
-    const VersionNumber version_;
-    const std::string nym_;
-    const proto::ContactSectionName section_;
-    const GroupMap groups_;
+    struct Imp;
 
-    static VersionNumber check_version(
-        const VersionNumber in,
-        const VersionNumber targetVersion);
-    static GroupMap create_group(
-        const std::string& nym,
-        const proto::ContactSectionName section,
-        const std::shared_ptr<ContactItem>& item);
-    static GroupMap extract_groups(
-        const api::internal::Core& api,
-        const std::string& nym,
-        const VersionNumber parentVersion,
-        const proto::ContactSection& serialized);
-
-    ContactSection add_scope(const std::shared_ptr<ContactItem>& item) const;
+    std::unique_ptr<Imp> imp_;
 
     ContactSection() = delete;
     ContactSection& operator=(const ContactSection&) = delete;

@@ -22,25 +22,27 @@
 #include "2_Factory.hpp"
 #include "core/OTStorage.hpp"
 #include "internal/api/Api.hpp"
+#include "internal/contact/Contact.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Shared.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Legacy.hpp"
 #include "opentxs/api/Wallet.hpp"
+#include "opentxs/contact/ContactSectionName.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/AccountVisitor.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/contract/UnitType.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Contact.hpp"
-#include "opentxs/protobuf/ContractEnums.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/Nym.pb.h"
 #include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/protobuf/UnitDefinition.pb.h"
@@ -76,20 +78,20 @@ auto Factory::UnitDefinition(
     const proto::UnitDefinition serialized) noexcept
     -> std::shared_ptr<contract::Unit>
 {
-    switch (serialized.type()) {
-        case proto::UNITTYPE_CURRENCY: {
+    switch (contract::internal::translate(serialized.type())) {
+        case contract::UnitType::Currency: {
 
             return CurrencyContract(api, nym, serialized);
         }
-        case proto::UNITTYPE_SECURITY: {
+        case contract::UnitType::Security: {
 
             return SecurityContract(api, nym, serialized);
         }
-        case proto::UNITTYPE_BASKET: {
+        case contract::UnitType::Basket: {
 
             return BasketContract(api, nym, serialized);
         }
-        case proto::UNITTYPE_ERROR:
+        case contract::UnitType::Error:
         default: {
             return {};
         }
@@ -277,14 +279,24 @@ auto Unit::ParseFormatted(
 }
 
 auto Unit::ValidUnits(const VersionNumber version) noexcept
-    -> std::set<proto::ContactItemType>
+    -> std::set<contact::ContactItemType>
 {
     try {
-
-        return proto::AllowedItemTypes().at(
+        auto validunits = proto::AllowedItemTypes().at(
             {implementation::Unit::unit_of_account_version_map_.at(version),
-             proto::CONTACTSECTION_CONTRACT});
+             contact::internal::translate(
+                 contact::ContactSectionName::Contract)});
 
+        std::set<contact::ContactItemType> output;
+        std::transform(
+            validunits.begin(),
+            validunits.end(),
+            std::inserter(output, output.end()),
+            [](proto::ContactItemType itemtype) -> contact::ContactItemType {
+                return contact::internal::translate(itemtype);
+            });
+
+        return output;
     } catch (...) {
 
         return {};
@@ -304,7 +316,7 @@ Unit::Unit(
     const std::string& name,
     const std::string& symbol,
     const std::string& terms,
-    const proto::ContactItemType unitOfAccount,
+    const contact::ContactItemType unitOfAccount,
     const VersionNumber version)
     : Signable(
           api,
@@ -337,7 +349,7 @@ Unit::Unit(
                     serialized.signature())}
               : Signatures{})
     , primary_unit_symbol_(serialized.symbol())
-    , unit_of_account_(serialized.unitofaccount())
+    , unit_of_account_(contact::internal::translate(serialized.unitofaccount()))
     , primary_unit_name_(serialized.name())
     , short_name_(serialized.shortname())
 {
@@ -504,15 +516,15 @@ auto Unit::DisplayStatistics(String& strContents) const -> bool
     std::string type = "error";
 
     switch (Type()) {
-        case proto::UNITTYPE_CURRENCY:
+        case contract::UnitType::Currency:
             type = "error";
 
             break;
-        case proto::UNITTYPE_SECURITY:
+        case contract::UnitType::Security:
             type = "security";
 
             break;
-        case proto::UNITTYPE_BASKET:
+        case contract::UnitType::Basket:
             type = "basket currency";
 
             break;
@@ -656,8 +668,8 @@ auto Unit::FormatAmountLocale(
         amount,
         static_cast<std::int32_t>(std::pow(10, DecimalPower())),
         DecimalPower(),
-        (proto::UNITTYPE_CURRENCY == Type()) ? primary_unit_symbol_.c_str()
-                                             : nullptr,
+        (contract::UnitType::Currency == Type()) ? primary_unit_symbol_.c_str()
+                                                 : nullptr,
         strSeparator->Get(),
         strDecimalPoint->Get());
     return true;  // Note: might want to return false if str_output is empty.
@@ -728,9 +740,12 @@ auto Unit::IDVersion(const Lock& lock) const -> SerializedType
     contract.set_terms(conditions_);
     contract.set_name(primary_unit_name_);
     contract.set_symbol(primary_unit_symbol_);
-    contract.set_type(Type());
+    contract.set_type(contract::internal::translate(Type()));
 
-    if (version_ > 1) { contract.set_unitofaccount(unit_of_account_); }
+    if (version_ > 1) {
+        contract.set_unitofaccount(
+            contact::internal::translate(unit_of_account_));
+    }
 
     return contract;
 }
@@ -822,7 +837,7 @@ auto Unit::update_signature(const Lock& lock, const PasswordPrompt& reason)
     auto serialized = SigVersion(lock);
     auto& signature = *serialized.mutable_signature();
     success = nym_->Sign(
-        serialized, proto::SIGROLE_UNITDEFINITION, signature, reason);
+        serialized, crypto::SignatureRole::UnitDefinition, signature, reason);
 
     if (success) {
         signatures_.emplace_front(new proto::Signature(signature));

@@ -22,7 +22,6 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/ui/ProfileSection.hpp"
 #include "ui/base/Combined.hpp"
 #include "ui/base/List.hpp"
@@ -79,7 +78,7 @@ class ProfileSection final
 {
 public:
     auto AddClaim(
-        const proto::ContactItemType type,
+        const contact::ContactItemType type,
         const std::string& value,
         const bool primary,
         const bool active) const noexcept -> bool final;
@@ -109,7 +108,7 @@ public:
         const int type,
         const std::string& claimID,
         const std::string& value) const noexcept -> bool final;
-    auto Type() const noexcept -> proto::ContactSectionName final
+    auto Type() const noexcept -> contact::ContactSectionName final
     {
         return row_id_;
     }

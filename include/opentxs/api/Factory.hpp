@@ -17,6 +17,7 @@
 #include "opentxs/Proto.hpp"
 #include "opentxs/api/Primitives.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
+#include "opentxs/blind/CashType.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/Blockchain.hpp"
 #endif                                   // OT_BLOCKCHAIN
@@ -24,11 +25,13 @@
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/p2p/Address.hpp"
 #endif  // OT_BLOCKCHAIN
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/CurrencyContract.hpp"
 #include "opentxs/core/contract/SecurityContract.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
@@ -46,19 +49,18 @@
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
+#include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Envelope.hpp"
+#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
+#include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
-#include "opentxs/protobuf/CashEnums.pb.h"
-#include "opentxs/protobuf/ContactEnums.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
-#include "opentxs/protobuf/PeerEnums.pb.h"
 
 namespace opentxs
 {
@@ -153,7 +155,8 @@ public:
     OPENTXS_EXPORT virtual OTAsymmetricKey AsymmetricKey(
         const NymParameters& params,
         const opentxs::PasswordPrompt& reason,
-        const proto::KeyRole role = proto::KEYROLE_SIGN,
+        const opentxs::crypto::key::asymmetric::Role role =
+            opentxs::crypto::key::asymmetric::Role::Sign,
         const VersionNumber version =
             opentxs::crypto::key::Asymmetric::DefaultVersion) const = 0;
     OPENTXS_EXPORT virtual OTAsymmetricKey AsymmetricKey(
@@ -200,7 +203,7 @@ public:
         const std::string& symbol,
         const std::string& terms,
         const std::uint64_t weight,
-        const proto::ContactItemType unitOfAccount,
+        const contact::ContactItemType unitOfAccount,
         const VersionNumber version) const noexcept(false) = 0;
     OPENTXS_EXPORT virtual OTBasketContract BasketContract(
         const Nym_p& nym,
@@ -315,7 +318,7 @@ public:
     OPENTXS_EXPORT virtual OTConnectionRequest ConnectionRequest(
         const Nym_p& nym,
         const identifier::Nym& recipient,
-        const proto::ConnectionInfoType type,
+        const contract::peer::ConnectionInfoType type,
         const identifier::Server& server,
         const opentxs::PasswordPrompt& reason) const noexcept(false) = 0;
     OPENTXS_EXPORT virtual OTConnectionRequest ConnectionRequest(
@@ -335,7 +338,7 @@ public:
         const std::string& tla,
         const std::uint32_t power,
         const std::string& fraction,
-        const proto::ContactItemType unitOfAccount,
+        const contact::ContactItemType unitOfAccount,
         const VersionNumber version,
         const opentxs::PasswordPrompt& reason) const noexcept(false) = 0;
     OPENTXS_EXPORT virtual OTCurrencyContract CurrencyContract(
@@ -401,7 +404,7 @@ public:
     OPENTXS_EXPORT virtual OTKeypair Keypair(
         const NymParameters& nymParameters,
         const VersionNumber version,
-        const proto::KeyRole role,
+        const opentxs::crypto::key::asymmetric::Role role,
         const opentxs::PasswordPrompt& reason) const = 0;
     OPENTXS_EXPORT virtual OTKeypair Keypair(
         const proto::AsymmetricKey& serializedPubkey,
@@ -415,7 +418,7 @@ public:
         const Bip32Index credset,
         const Bip32Index credindex,
         const EcdsaCurve& curve,
-        const proto::KeyRole role,
+        const opentxs::crypto::key::asymmetric::Role role,
         const opentxs::PasswordPrompt& reason) const = 0;
 #endif  // OT_CRYPTO_WITH_BIP32
     OPENTXS_EXPORT virtual std::unique_ptr<opentxs::Ledger> Ledger(
@@ -568,7 +571,7 @@ public:
         const blind::Mint& mint,
         const Amount totalValue,
         const opentxs::PasswordPrompt& reason,
-        const proto::CashType type = proto::CASHTYPE_LUCRE) const = 0;
+        const blind::CashType type = blind::CashType::Lucre) const = 0;
     OPENTXS_EXPORT virtual std::unique_ptr<blind::Purse> Purse(
         const proto::Purse& serialized) const = 0;
     OPENTXS_EXPORT virtual std::unique_ptr<blind::Purse> Purse(
@@ -576,14 +579,14 @@ public:
         const identifier::Server& server,
         const identifier::UnitDefinition& unit,
         const opentxs::PasswordPrompt& reason,
-        const proto::CashType type = proto::CASHTYPE_LUCRE) const = 0;
+        const blind::CashType type = blind::CashType::Lucre) const = 0;
 #endif  // OT_CASH
     OPENTXS_EXPORT virtual OTReplyAcknowledgement ReplyAcknowledgement(
         const Nym_p& nym,
         const identifier::Nym& initiator,
         const opentxs::Identifier& request,
         const identifier::Server& server,
-        const proto::PeerRequestType type,
+        const contract::peer::PeerRequestType type,
         const bool& ack,
         const opentxs::PasswordPrompt& reason) const noexcept(false) = 0;
     OPENTXS_EXPORT virtual OTReplyAcknowledgement ReplyAcknowledgement(
@@ -597,7 +600,7 @@ public:
         const std::string& name,
         const std::string& symbol,
         const std::string& terms,
-        const proto::ContactItemType unitOfAccount,
+        const contact::ContactItemType unitOfAccount,
         const VersionNumber version,
         const opentxs::PasswordPrompt& reason) const noexcept(false) = 0;
     OPENTXS_EXPORT virtual OTSecurityContract SecurityContract(
@@ -627,7 +630,7 @@ public:
     OPENTXS_EXPORT virtual OTStoreSecret StoreSecret(
         const Nym_p& nym,
         const identifier::Nym& recipientID,
-        const proto::SecretType type,
+        const contract::peer::SecretType type,
         const std::string& primary,
         const std::string& secondary,
         const identifier::Server& server,
@@ -648,7 +651,8 @@ public:
     OPENTXS_EXPORT virtual OTSymmetricKey SymmetricKey(
         const opentxs::crypto::SymmetricProvider& engine,
         const opentxs::PasswordPrompt& password,
-        const proto::SymmetricMode mode = proto::SMODE_ERROR) const = 0;
+        const opentxs::crypto::key::symmetric::Algorithm mode =
+            opentxs::crypto::key::symmetric::Algorithm::Error) const = 0;
     /** Instantiate a symmetric key from serialized form
      *
      *  \param[in] engine A reference to the crypto library to be bound to the
@@ -675,7 +679,7 @@ public:
         const std::uint64_t operations,
         const std::uint64_t difficulty,
         const std::size_t size,
-        const proto::SymmetricKeyType type) const = 0;
+        const opentxs::crypto::key::symmetric::Source type) const = 0;
     /** Construct a symmetric key from an existing Secret
      *
      *  \param[in] engine A reference to the crypto library to be bound to the

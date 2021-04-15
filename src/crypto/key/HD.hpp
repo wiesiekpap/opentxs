@@ -78,17 +78,17 @@ protected:
     noexcept(false);
     HD(const api::internal::Core& api,
        const crypto::EcdsaProvider& ecdsa,
-       const proto::AsymmetricKeyType keyType,
-       const proto::KeyRole role,
+       const crypto::key::asymmetric::Algorithm keyType,
+       const crypto::key::asymmetric::Role role,
        const VersionNumber version,
        const PasswordPrompt& reason)
     noexcept(false);
     HD(const api::internal::Core& api,
        const crypto::EcdsaProvider& ecdsa,
-       const proto::AsymmetricKeyType keyType,
+       const crypto::key::asymmetric::Algorithm keyType,
        const Secret& privateKey,
        const Data& publicKey,
-       const proto::KeyRole role,
+       const crypto::key::asymmetric::Role role,
        const VersionNumber version,
        key::Symmetric& sessionKey,
        const PasswordPrompt& reason)
@@ -96,26 +96,26 @@ protected:
 #if OT_CRYPTO_WITH_BIP32
     HD(const api::internal::Core& api,
        const crypto::EcdsaProvider& ecdsa,
-       const proto::AsymmetricKeyType keyType,
+       const crypto::key::asymmetric::Algorithm keyType,
        const Secret& privateKey,
        const Secret& chainCode,
        const Data& publicKey,
        const proto::HDPath& path,
        const Bip32Fingerprint parent,
-       const proto::KeyRole role,
+       const crypto::key::asymmetric::Role role,
        const VersionNumber version,
        key::Symmetric& sessionKey,
        const PasswordPrompt& reason)
     noexcept(false);
     HD(const api::internal::Core& api,
        const crypto::EcdsaProvider& ecdsa,
-       const proto::AsymmetricKeyType keyType,
+       const crypto::key::asymmetric::Algorithm keyType,
        const Secret& privateKey,
        const Secret& chainCode,
        const Data& publicKey,
        const proto::HDPath& path,
        const Bip32Fingerprint parent,
-       const proto::KeyRole role,
+       const crypto::key::asymmetric::Role role,
        const VersionNumber version)
     noexcept(false);
 #endif  // OT_CRYPTO_WITH_BIP32

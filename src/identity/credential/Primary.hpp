@@ -14,7 +14,6 @@
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/identity/credential/Base.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/SourceProof.pb.h"
 
 namespace opentxs
@@ -62,7 +61,7 @@ public:
     using Base::Verify;
     auto Verify(
         const proto::Credential& credential,
-        const proto::CredentialRole& role,
+        const identity::CredentialRole& role,
         const Identifier& masterID,
         const proto::Signature& masterSig) const -> bool final;
 
@@ -71,11 +70,21 @@ public:
 private:
     friend opentxs::Factory;
 
+    using SourceProofTypeMap =
+        std::map<identity::SourceProofType, proto::SourceProofType>;
+    using SourceProofTypeReverseMap =
+        std::map<proto::SourceProofType, identity::SourceProofType>;
+
     static const VersionConversionMap credential_to_master_params_;
 
     const proto::SourceProof source_proof_;
 
     static auto source_proof(const NymParameters& params) -> proto::SourceProof;
+    static auto sourceprooftype_map() noexcept -> const SourceProofTypeMap&;
+    static auto translate(const identity::SourceProofType in) noexcept
+        -> proto::SourceProofType;
+    static auto translate(const proto::SourceProofType in) noexcept
+        -> identity::SourceProofType;
 
     auto serialize(
         const Lock& lock,

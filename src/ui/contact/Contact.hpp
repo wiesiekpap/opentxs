@@ -22,7 +22,6 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
 #include "ui/base/List.hpp"
 #include "ui/base/Widget.hpp"
 
@@ -88,15 +87,16 @@ public:
     ~Contact() final;
 
 private:
-    static const std::set<proto::ContactSectionName> allowed_types_;
-    static const std::map<proto::ContactSectionName, int> sort_keys_;
+    static const std::set<contact::ContactSectionName> allowed_types_;
+    static const std::map<contact::ContactSectionName, int> sort_keys_;
 
     const ListenerDefinitions listeners_;
     std::string name_;
     std::string payment_code_;
 
-    static auto sort_key(const proto::ContactSectionName type) noexcept -> int;
-    static auto check_type(const proto::ContactSectionName type) noexcept
+    static auto sort_key(const contact::ContactSectionName type) noexcept
+        -> int;
+    static auto check_type(const contact::ContactSectionName type) noexcept
         -> bool;
 
     auto construct_row(
