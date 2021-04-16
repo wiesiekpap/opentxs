@@ -8,7 +8,6 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
 #include "opentxs/crypto/key/HD.hpp"
 
 namespace opentxs
@@ -34,5 +33,4 @@ private:
 }  // namespace key
 }  // namespace crypto
 }  // namespace opentxs
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 #endif

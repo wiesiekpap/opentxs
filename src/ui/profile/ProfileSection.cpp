@@ -16,8 +16,8 @@
 #include <type_traits>
 #include <utility>
 
-#include "internal/ui/UI.hpp"
 #include "internal/contact/Contact.hpp"
+#include "internal/ui/UI.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactSection.hpp"

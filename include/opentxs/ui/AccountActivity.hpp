@@ -11,9 +11,7 @@
 #include <tuple>
 
 #include "opentxs/SharedPimpl.hpp"
-#if OT_BLOCKCHAIN
 #include "opentxs/blockchain/Types.hpp"
-#endif  // OT_BLOCKCHAIN
 #include "opentxs/ui/List.hpp"
 
 #ifdef SWIG
@@ -42,13 +40,11 @@ public:
     OPENTXS_EXPORT virtual Amount Balance() const noexcept = 0;
     OPENTXS_EXPORT virtual int BalancePolarity() const noexcept = 0;
     OPENTXS_EXPORT virtual std::string ContractID() const noexcept = 0;
-#if OT_BLOCKCHAIN
     OPENTXS_EXPORT virtual std::string DepositAddress() const noexcept = 0;
     OPENTXS_EXPORT virtual std::string DepositAddress(
         const blockchain::Type chain) const noexcept = 0;
     OPENTXS_EXPORT virtual std::vector<blockchain::Type> DepositChains()
         const noexcept = 0;
-#endif  // OT_BLOCKCHAIN
     OPENTXS_EXPORT virtual std::string DisplayBalance() const noexcept = 0;
     OPENTXS_EXPORT virtual std::string DisplayUnit() const noexcept = 0;
     OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::BalanceItem>
@@ -66,7 +62,6 @@ public:
         const Identifier& contact,
         const std::string& amount,
         const std::string& memo = {}) const noexcept = 0;
-#if OT_BLOCKCHAIN
     OPENTXS_EXPORT virtual bool Send(
         const std::string& address,
         const Amount amount,
@@ -78,13 +73,10 @@ public:
     OPENTXS_EXPORT virtual double SyncPercentage() const noexcept = 0;
     OPENTXS_EXPORT virtual std::pair<int, int> SyncProgress()
         const noexcept = 0;
-#endif  // OT_BLOCKCHAIN
     OPENTXS_EXPORT virtual AccountType Type() const noexcept = 0;
     OPENTXS_EXPORT virtual contact::ContactItemType Unit() const noexcept = 0;
-#if OT_BLOCKCHAIN
     OPENTXS_EXPORT virtual bool ValidateAddress(
         const std::string& text) const noexcept = 0;
-#endif  // OT_BLOCKCHAIN
     OPENTXS_EXPORT virtual std::string ValidateAmount(
         const std::string& text) const noexcept = 0;
 

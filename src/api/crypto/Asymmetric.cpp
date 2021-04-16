@@ -24,20 +24,14 @@
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/crypto/NymParameters.hpp"
-#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
 #include "opentxs/crypto/key/Ed25519.hpp"
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 #include "opentxs/crypto/key/HD.hpp"
-#if OT_CRYPTO_SUPPORTED_KEY_RSA
 #include "opentxs/crypto/key/RSA.hpp"
-#endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 #include "opentxs/crypto/key/Secp256k1.hpp"
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/protobuf/AsymmetricKey.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"

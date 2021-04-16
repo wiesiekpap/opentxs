@@ -20,10 +20,8 @@ extern "C" {
 #include <string>
 #include <string_view>
 
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
 #include "crypto/library/AsymmetricProvider.hpp"
 #include "crypto/library/EcdsaProvider.hpp"
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 #include "internal/crypto/key/Key.hpp"
 #include "internal/crypto/library/Factory.hpp"
 #include "opentxs/OT.hpp"
@@ -34,20 +32,16 @@ extern "C" {
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
-#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
-#include "opentxs/crypto/key/symmetric/Source.hpp"
-#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
 #include "opentxs/crypto/key/Asymmetric.hpp"
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
+#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
+#include "opentxs/crypto/key/symmetric/Source.hpp"
 #include "opentxs/crypto/library/HashingProvider.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
-#include "util/Sodium.hpp"
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 #include "util/Container.hpp"
+#include "util/Sodium.hpp"
 
 #define OT_METHOD "opentxs::crypto::implementation::Sodium::"
 

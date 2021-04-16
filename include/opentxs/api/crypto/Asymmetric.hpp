@@ -12,15 +12,15 @@
 
 #include <memory>
 
-#include "opentxs/crypto/key/Asymmetric.hpp"
-#include "opentxs/crypto/key/EllipticCurve.hpp"
-#include "opentxs/crypto/key/Secp256k1.hpp"
+#include "opentxs/Proto.hpp"
+#include "opentxs/Types.hpp"
 #if OT_CRYPTO_WITH_BIP32
 #include "opentxs/crypto/Bip32.hpp"
 #endif  // OT_CRYPTO_WITH_BIP32
 #include "opentxs/crypto/Types.hpp"
-#include "opentxs/Proto.hpp"
-#include "opentxs/Types.hpp"
+#include "opentxs/crypto/key/Asymmetric.hpp"
+#include "opentxs/crypto/key/EllipticCurve.hpp"
+#include "opentxs/crypto/key/Secp256k1.hpp"
 
 namespace opentxs
 {

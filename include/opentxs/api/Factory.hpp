@@ -55,11 +55,11 @@
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Envelope.hpp"
-#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
+#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 
 namespace opentxs

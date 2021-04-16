@@ -123,7 +123,6 @@ public:
     {
         return contract_.get();
     }
-#if OT_BLOCKCHAIN
     auto DepositAddress() const noexcept -> std::string override
     {
         return DepositAddress(blockchain::Type::Unknown);
@@ -138,7 +137,6 @@ public:
     {
         return {};
     }
-#endif  // OT_BLOCKCHAIN
     auto Notary() const noexcept -> const contract::Server& final
     {
         return notary_.get();
@@ -159,7 +157,6 @@ public:
     {
         return false;
     }
-#if OT_BLOCKCHAIN
     auto Send(
         [[maybe_unused]] const std::string& address,
         [[maybe_unused]] const Amount amount,
@@ -181,26 +178,21 @@ public:
     {
         return {1, 1};
     }
-#endif  // OT_BLOCKCHAIN
     auto Type() const noexcept -> AccountType final { return type_; }
-#if OT_BLOCKCHAIN
     auto ValidateAddress([[maybe_unused]] const std::string& text)
         const noexcept -> bool override
     {
         return false;
     }
-#endif  // OT_BLOCKCHAIN
     auto ValidateAmount([[maybe_unused]] const std::string& text) const noexcept
         -> std::string override
     {
         return {};
     }
 
-#if OT_BLOCKCHAIN
     using SyncCallback = std::function<void(int, int, double)>;
 
     virtual auto SetSyncCallback(const SyncCallback) noexcept -> void {}
-#endif  // OT_BLOCKCHAIN
 
     ~AccountActivity() override;
 

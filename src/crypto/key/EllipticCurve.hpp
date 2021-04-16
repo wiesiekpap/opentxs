@@ -14,9 +14,9 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
-#include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
 
 namespace opentxs

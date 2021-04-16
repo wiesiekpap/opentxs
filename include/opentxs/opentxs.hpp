@@ -177,15 +177,11 @@
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
 #include "opentxs/crypto/key/Ed25519.hpp"
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
-#if OT_CRYPTO_SUPPORTED_KEY_RSA
 #include "opentxs/crypto/key/RSA.hpp"
-#endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 #include "opentxs/crypto/key/Secp256k1.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/Types.hpp"

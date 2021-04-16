@@ -7,6 +7,7 @@
 #define OPENTXS_CORE_CONTRACT_PEER_PEERREQUESTTYPE_HPP
 
 #include "opentxs/core/contract/peer/Types.hpp"  // IWYU pragma: associated
+
 #include <cstdint>
 
 namespace opentxs

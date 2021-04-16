@@ -8,7 +8,10 @@
 
 #include <QIdentityProxyModel>
 
-#include "opentxs/opentxs_export.hpp"  // IWYU pragma: keep
+#include "opentxs/opentxs_export.hpp"              // IWYU pragma: keep
+#include "opentxs/ui/qt/AmountValidator.hpp"       // IWYU pragma: keep
+#include "opentxs/ui/qt/DestinationValidator.hpp"  // IWYU pragma: keep
+#include "opentxs/ui/qt/DisplayScale.hpp"          // IWYU pragma: keep
 
 namespace opentxs
 {
@@ -20,8 +23,6 @@ class AccountActivity;
 }  // namespace implementation
 
 class AccountActivityQt;
-class AmountValidator;
-class DestinationValidator;
 class DisplayScaleQt;
 }  // namespace ui
 }  // namespace opentxs
@@ -30,24 +31,18 @@ class OPENTXS_EXPORT opentxs::ui::AccountActivityQt final
     : public QIdentityProxyModel
 {
     Q_OBJECT
-    Q_PROPERTY(
-        AmountValidator* amountValidator READ getAmountValidator CONSTANT)
-    Q_PROPERTY(
-        DestinationValidator* destValidator READ getDestValidator CONSTANT)
-    Q_PROPERTY(DisplayScaleQt* scaleModel READ getScaleModel CONSTANT)
+    Q_PROPERTY(QObject* amountValidator READ getAmountValidator CONSTANT)
+    Q_PROPERTY(QObject* destValidator READ getDestValidator CONSTANT)
+    Q_PROPERTY(QObject* scaleModel READ getScaleModel CONSTANT)
     Q_PROPERTY(QString accountID READ accountID NOTIFY updated)
     Q_PROPERTY(int balancePolarity READ balancePolarity NOTIFY updated)
-#if OT_BLOCKCHAIN
     Q_PROPERTY(QList<int> depositChains READ depositChains NOTIFY updated)
-#endif  // OT_BLOCKCHAIN
     Q_PROPERTY(QString displayBalance READ displayBalance NOTIFY updated)
-#if OT_BLOCKCHAIN
     Q_PROPERTY(
         double syncPercentage READ syncPercentage NOTIFY syncPercentageUpdated)
     using Progress = QPair<int, int>;
     Q_PROPERTY(
         Progress syncProgress READ syncProgress NOTIFY syncProgressUpdated)
-#endif  // OT_BLOCKCHAIN
 
 signals:
     void updated() const;
@@ -84,29 +79,23 @@ public:
 
     QString accountID() const noexcept;
     int balancePolarity() const noexcept;
-#if OT_BLOCKCHAIN
     QList<int> depositChains() const noexcept;
-#endif  // OT_BLOCKCHAIN
     QString displayBalance() const noexcept;
     AmountValidator* getAmountValidator() const noexcept;
     DestinationValidator* getDestValidator() const noexcept;
     DisplayScaleQt* getScaleModel() const noexcept;
-#if OT_BLOCKCHAIN
     Q_INVOKABLE bool sendToAddress(
         const QString& address,
         const QString& amount,
         const QString& memo) const noexcept;
-#endif  // OT_BLOCKCHAIN
     Q_INVOKABLE bool sendToContact(
         const QString& contactID,
         const QString& amount,
         const QString& memo) const noexcept;
-#if OT_BLOCKCHAIN
     Q_INVOKABLE QString getDepositAddress(const int chain = 0) const noexcept;
     double syncPercentage() const noexcept;
     QPair<int, int> syncProgress() const noexcept;
     Q_INVOKABLE bool validateAddress(const QString& address) const noexcept;
-#endif  // OT_BLOCKCHAIN
     Q_INVOKABLE QString validateAmount(const QString& amount) const noexcept;
 
     AccountActivityQt(implementation::AccountActivity& parent) noexcept;

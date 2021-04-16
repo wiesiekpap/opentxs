@@ -17,9 +17,9 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
-#include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/protobuf/Signature.pb.h"
 

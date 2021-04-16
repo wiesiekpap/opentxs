@@ -28,9 +28,9 @@
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/key/Types.hpp"
 #include "opentxs/identity/CredentialType.hpp"
-#include "opentxs/identity/credential/Base.hpp"
 #include "opentxs/identity/SourceType.hpp"
 #include "opentxs/identity/Types.hpp"
+#include "opentxs/identity/credential/Base.hpp"
 
 namespace opentxs
 {

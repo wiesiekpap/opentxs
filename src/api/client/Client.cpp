@@ -10,7 +10,6 @@
 #include <map>
 #include <type_traits>
 
-#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "opentxs/api/client/PaymentWorkflowState.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"

@@ -16,8 +16,8 @@ extern "C" {
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "opentxs/crypto/library/HashingProvider.hpp"
 #include "opentxs/crypto/HashType.hpp"
+#include "opentxs/crypto/library/HashingProvider.hpp"
 
 #define OT_METHOD "opentxs::crypto::implementation::Pbkdf2::"
 

@@ -40,10 +40,10 @@
 #include "opentxs/crypto/Language.hpp"      // IWYU pragma: keep
 #include "opentxs/crypto/SeedStrength.hpp"  // IWYU pragma: keep
 #include "opentxs/crypto/SeedStyle.hpp"     // IWYU pragma: keep
-#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/crypto/key/Secp256k1.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
+#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/HDPath.pb.h"
 #include "util/HDIndex.hpp"  // IWYU pragma: keep
