@@ -16,8 +16,8 @@
 #endif  // OT_CASH_USING_LUCRE
 #include "internal/blind/Blind.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/blind/Purse.hpp"
 #include "opentxs/blind/CashType.hpp"
+#include "opentxs/blind/Purse.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"

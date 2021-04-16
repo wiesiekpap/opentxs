@@ -20,9 +20,9 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/crypto/library/AsymmetricProvider.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/crypto/library/AsymmetricProvider.hpp"
 
 namespace opentxs
 {

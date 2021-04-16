@@ -14,8 +14,8 @@
 #include "opentxs/Proto.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
-#include "opentxs/crypto/key/symmetric/Source.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
+#include "opentxs/crypto/key/symmetric/Source.hpp"
 
 namespace opentxs
 {

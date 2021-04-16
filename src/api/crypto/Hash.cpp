@@ -24,8 +24,8 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
-#include "opentxs/crypto/library/HashingProvider.hpp"
 #include "opentxs/crypto/HashType.hpp"
+#include "opentxs/crypto/library/HashingProvider.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "smhasher/src/MurmurHash3.h"
 

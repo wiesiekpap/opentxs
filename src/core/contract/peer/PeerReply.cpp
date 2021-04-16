@@ -12,8 +12,8 @@
 
 #include "2_Factory.hpp"
 #include "internal/api/Api.hpp"
-#include "internal/core/contract/peer/Peer.hpp"
 #include "internal/core/contract/Contract.hpp"
+#include "internal/core/contract/peer/Peer.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"

@@ -12,8 +12,8 @@
 #include "opentxs/blind/Token.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/Token.pb.h"
 

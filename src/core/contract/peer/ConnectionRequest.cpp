@@ -12,8 +12,8 @@
 #include <utility>
 
 #include "2_Factory.hpp"
-#include "internal/core/contract/peer/Peer.hpp"
 #include "core/contract/peer/PeerRequest.hpp"
+#include "internal/core/contract/peer/Peer.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"

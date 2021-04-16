@@ -22,7 +22,6 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/crypto/HashType.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
 
 namespace opentxs::blockchain
 {

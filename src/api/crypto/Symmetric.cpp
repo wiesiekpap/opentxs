@@ -15,9 +15,9 @@
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/library/SymmetricProvider.hpp"
-#include "opentxs/crypto/Types.hpp"
 
 #define OT_METHOD "opentxs::api::crypto::implementation::Symmetric::"
 

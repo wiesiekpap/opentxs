@@ -17,8 +17,8 @@
 
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/core/AddressType.hpp"
+#include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
