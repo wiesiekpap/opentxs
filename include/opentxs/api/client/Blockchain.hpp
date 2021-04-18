@@ -90,6 +90,10 @@ public:
 
     // Throws std::out_of_range for invalid chains
     static Bip44Type Bip44(Chain chain) noexcept(false);
+    static bool Bip44Path(
+        Chain chain,
+        const std::string& seed,
+        AllocateOutput destination) noexcept(false);
 
     /// Throws std::runtime_error if chain is invalid
     virtual const blockchain::BalanceTree& Account(
@@ -173,6 +177,13 @@ public:
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
         const proto::HDPath path,
+        const Chain chain,
+        const PasswordPrompt& reason) const noexcept = 0;
+    virtual OTIdentifier NewPaymentCodeSubaccount(
+        const identifier::Nym& nymID,
+        const opentxs::PaymentCode& local,
+        const opentxs::PaymentCode& remote,
+        const ReadView& view,
         const Chain chain,
         const PasswordPrompt& reason) const noexcept = 0;
     virtual const identifier::Nym& Owner(

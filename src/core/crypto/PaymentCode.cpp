@@ -935,6 +935,13 @@ auto PaymentCode::postprocess(const Secret& in) const noexcept(false)
     return output;
 }
 
+auto PaymentCode::Serialize(AllocateOutput destination) const noexcept -> bool
+{
+    write(Serialize(), destination);
+
+    return true;
+}
+
 auto PaymentCode::Serialize() const noexcept -> Serialized
 {
     const auto key = pubkey_->Bytes();

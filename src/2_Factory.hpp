@@ -7,7 +7,6 @@
 
 #include "opentxs/blind/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-//#include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
@@ -560,6 +559,10 @@ public:
         const api::internal::Core& api,
         const proto::Envelope& serialized) noexcept(false)
         -> std::unique_ptr<crypto::Envelope>;
+    static auto Envelope(
+        const api::internal::Core& api,
+        const ReadView& serialized) noexcept(false)
+        -> std::unique_ptr<crypto::Envelope>;
     static auto FactoryAPIServer(const api::server::internal::Manager& api)
         -> api::internal::Factory*;
 #if OT_CASH
@@ -599,6 +602,10 @@ public:
     OPENTXS_EXPORT static auto Nym(
         const api::internal::Core& api,
         const proto::Nym& serialized,
+        const std::string& alias) -> identity::internal::Nym*;
+    OPENTXS_EXPORT static auto Nym(
+        const api::internal::Core& api,
+        const ReadView& serialized,
         const std::string& alias) -> identity::internal::Nym*;
     static auto NymFile(
         const api::internal::Core& core,
@@ -662,55 +669,6 @@ public:
         std::unique_ptr<crypto::key::Secp256k1> key
 #endif
         ) noexcept -> std::unique_ptr<opentxs::PaymentCode>;
-    static auto PeerObject(
-        const api::internal::Core& api,
-        const Nym_p& senderNym,
-        const std::string& message) -> opentxs::PeerObject*;
-    static auto PeerObject(
-        const api::internal::Core& api,
-        const Nym_p& senderNym,
-        const std::string& payment,
-        const bool isPayment) -> opentxs::PeerObject*;
-#if OT_CASH
-    static auto PeerObject(
-        const api::internal::Core& api,
-        const Nym_p& senderNym,
-        const std::shared_ptr<blind::Purse> purse) -> opentxs::PeerObject*;
-#endif
-    static auto PeerObject(
-        const api::internal::Core& api,
-        const OTPeerRequest request,
-        const OTPeerReply reply,
-        const VersionNumber version) -> opentxs::PeerObject*;
-    static auto PeerObject(
-        const api::internal::Core& api,
-        const OTPeerRequest request,
-        const VersionNumber version) -> opentxs::PeerObject*;
-    static auto PeerObject(
-        const api::client::Contacts& contacts,
-        const api::internal::Core& api,
-        const Nym_p& signerNym,
-        const proto::PeerObject& serialized) -> opentxs::PeerObject*;
-    static auto PeerObject(
-        const api::client::Contacts& contacts,
-        const api::internal::Core& api,
-        const Nym_p& recipientNym,
-        const opentxs::Armored& encrypted,
-        const opentxs::PasswordPrompt& reason) -> opentxs::PeerObject*;
-    static auto PeerReply(const api::Core& api) noexcept
-        -> std::shared_ptr<contract::peer::Reply>;
-    static auto PeerReply(
-        const api::internal::Core& api,
-        const Nym_p& nym,
-        const proto::PeerReply& serialized) noexcept
-        -> std::shared_ptr<contract::peer::Reply>;
-    static auto PeerRequest(const api::Core& api) noexcept
-        -> std::shared_ptr<contract::peer::Request>;
-    static auto PeerRequest(
-        const api::internal::Core& api,
-        const Nym_p& nym,
-        const proto::PeerRequest& serialized) noexcept
-        -> std::shared_ptr<contract::peer::Request>;
     static auto PrimaryCredential(
         const api::internal::Core& api,
         identity::internal::Authority& parent,
@@ -729,6 +687,9 @@ public:
     OPENTXS_EXPORT static auto Purse(
         const api::internal::Core& api,
         const proto::Purse& serialized) -> blind::Purse*;
+    OPENTXS_EXPORT static auto Purse(
+        const api::internal::Core& api,
+        const ReadView& serialized) -> blind::Purse*;
     OPENTXS_EXPORT static auto Purse(
         const api::internal::Core& api,
         const otx::context::Server&,

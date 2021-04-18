@@ -24,7 +24,6 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/protobuf/ContactItem.pb.h"
 
 namespace opentxs
 {
@@ -37,6 +36,11 @@ struct Core;
 }  // namespace api
 
 class Identifier;
+
+namespace proto
+{
+class ContactItem;
+}  // namespace proto
 }  // namespace opentxs
 
 namespace opentxs
@@ -68,6 +72,12 @@ public:
         const VersionNumber parentVersion,
         const contact::ContactSectionName section,
         const proto::ContactItem& serialized);
+    OPENTXS_EXPORT ContactItem(
+        const api::internal::Core& api,
+        const std::string& nym,
+        const VersionNumber parentVersion,
+        const contact::ContactSectionName section,
+        const ReadView& serialized);
     OPENTXS_EXPORT ContactItem(const ContactItem&) noexcept;
     OPENTXS_EXPORT ContactItem(ContactItem&&) noexcept;
 
@@ -82,6 +92,9 @@ public:
     OPENTXS_EXPORT bool isLocal() const;
     OPENTXS_EXPORT bool isPrimary() const;
     OPENTXS_EXPORT const contact::ContactSectionName& Section() const;
+    OPENTXS_EXPORT bool Serialize(
+        AllocateOutput destination,
+        const bool withID = false) const;
     OPENTXS_EXPORT proto::ContactItem Serialize(
         const bool withID = false) const;
     OPENTXS_EXPORT ContactItem SetActive(const bool active) const;

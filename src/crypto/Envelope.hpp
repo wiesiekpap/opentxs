@@ -59,6 +59,7 @@ public:
         const identity::Nym& recipient,
         const AllocateOutput plaintext,
         const PasswordPrompt& reason) const noexcept -> bool final;
+    auto Serialize(AllocateOutput destination) const noexcept -> bool final;
     auto Serialize() const noexcept -> SerializedType final;
 
     auto Seal(
@@ -74,6 +75,9 @@ public:
     Envelope(
         const api::internal::Core& api,
         const SerializedType& serialized) noexcept(false);
+    Envelope(
+        const api::internal::Core& api,
+        const ReadView& serialized) noexcept(false);
 
     ~Envelope() final = default;
 

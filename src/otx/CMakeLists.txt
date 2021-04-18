@@ -17,6 +17,7 @@ add_library(
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/otx/ConsensusType.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/otx/LastReplyStatus.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/otx/OTXPushType.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/otx/Reply.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/otx/Request.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/otx/ServerReplyType.hpp"

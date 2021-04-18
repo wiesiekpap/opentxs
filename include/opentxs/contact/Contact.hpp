@@ -34,7 +34,6 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/protobuf/Contact.pb.h"
 
 namespace opentxs
 {
@@ -59,6 +58,11 @@ class ContactGroup;
 class ContactItem;
 class Identifier;
 class PaymentCode;
+
+namespace proto
+{
+class Contact;
+}  // namespace proto
 }  // namespace opentxs
 
 namespace opentxs

@@ -23,6 +23,7 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #endif  // OT_BLOCKCHAIN
+#include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
 #include "internal/crypto/key/Factory.hpp"
 #include "internal/crypto/key/Key.hpp"
@@ -102,6 +103,7 @@
 #include "opentxs/ext/OTPayment.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/protobuf/AsymmetricKey.pb.h"
+#include "opentxs/protobuf/BlockchainPeerAddress.pb.h"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
 #include "opentxs/protobuf/Envelope.pb.h"  // IWYU pragma: keep
@@ -302,6 +304,12 @@ auto Factory::BailmentRequest(
     } else {
         throw std::runtime_error("Failed to instantiate bailment request");
     }
+}
+
+auto Factory::BailmentRequest(const Nym_p& nym, const ReadView& view) const
+    noexcept(false) -> OTBailmentRequest
+{
+    return BailmentRequest(nym, proto::Factory<proto::PeerRequest>(view));
 }
 
 auto Factory::Basket() const -> std::unique_ptr<opentxs::Basket>
@@ -935,6 +943,12 @@ auto Factory::Envelope(
         throw std::runtime_error("Invalid serialized envelope");
     }
 
+    return OTEnvelope{opentxs::Factory::Envelope(api_, serialized).release()};
+}
+
+auto Factory::Envelope(const opentxs::ReadView& serialized) const
+    noexcept(false) -> OTEnvelope
+{
     return OTEnvelope{opentxs::Factory::Envelope(api_, serialized).release()};
 }
 
@@ -1697,6 +1711,12 @@ auto Factory::PaymentCode(const proto::PaymentCode& serialized) const noexcept
     };
 }
 
+auto Factory::PaymentCode(const ReadView& serialized) const noexcept
+    -> OTPaymentCode
+{
+    return PaymentCode(proto::Factory<proto::PaymentCode>(serialized));
+}
+
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 auto Factory::PaymentCode(
     const std::string& seed,
@@ -1865,7 +1885,7 @@ auto Factory::PeerObject(
 
 auto Factory::PeerReply() const noexcept -> OTPeerReply
 {
-    return OTPeerReply{opentxs::Factory::PeerReply(api_)};
+    return OTPeerReply{opentxs::factory::PeerReply(api_)};
 }
 
 auto Factory::PeerReply(const Nym_p& nym, const proto::PeerReply& serialized)
@@ -1898,7 +1918,7 @@ auto Factory::PeerReply(const Nym_p& nym, const proto::PeerReply& serialized)
 
 auto Factory::PeerRequest() const noexcept -> OTPeerRequest
 {
-    return OTPeerRequest{opentxs::Factory::PeerRequest(api_)};
+    return OTPeerRequest{opentxs::factory::PeerRequest(api_)};
 }
 
 auto Factory::PeerRequest(
@@ -1932,6 +1952,12 @@ auto Factory::PeerRequest(
             throw std::runtime_error("Unsupported reply type");
         }
     }
+}
+
+auto Factory::PeerRequest(const Nym_p& nym, const ReadView& view) const
+    noexcept(false) -> OTPeerRequest
+{
+    return PeerRequest(nym, proto::Factory<proto::PeerRequest>(view));
 }
 
 auto Factory::Pipeline(

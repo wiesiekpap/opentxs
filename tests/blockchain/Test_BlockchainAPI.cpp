@@ -50,7 +50,6 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/protobuf/HDPath.pb.h"
 
 #if OT_CRYPTO_WITH_BIP32
 namespace ot = opentxs;
@@ -627,7 +626,7 @@ TEST_F(Test_BlockchainAPI, TestSeedRoot)
         const auto& account1 =
             api_.Blockchain().HDSubaccount(alex_, account_1_id_);
 
-        EXPECT_EQ(account1.Path().root(), fingerprint_a_);
+        EXPECT_EQ(account1.PathRoot(), fingerprint_a_);
     } catch (const std::exception& e) {
         std::cout << __LINE__ << ": " << e.what() << '\n';
         EXPECT_TRUE(false);
@@ -637,7 +636,7 @@ TEST_F(Test_BlockchainAPI, TestSeedRoot)
         const auto& account2 =
             api_.Blockchain().HDSubaccount(daniel_, account_2_id_);
 
-        EXPECT_EQ(account2.Path().root(), fingerprint_a_);
+        EXPECT_EQ(account2.PathRoot(), fingerprint_a_);
     } catch (const std::exception& e) {
         std::cout << __LINE__ << ": " << e.what() << '\n';
         EXPECT_TRUE(false);
@@ -1274,16 +1273,15 @@ TEST_F(Test_BlockchainAPI, paymentcode)
     const auto& nym = alex_;
     const auto& chain = btc_chain_;
     const auto pNym = api_.Wallet().Nym(nym);
+    auto bytes = ot::Space{};
     const auto accountID = api_.Blockchain().NewPaymentCodeSubaccount(
         nym,
         api_.Factory().PaymentCode(pNym->PaymentCode()),
-        api_.Factory().PaymentCode(
-            "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu"),
+        api_.Factory().PaymentCode(std::string{
+            "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu"}),
         [&] {
-            auto out = ot::proto::HDPath{};
-            pNym->PaymentCodePath(out);
-
-            return out;
+            pNym->PaymentCodePath(ot::writer(bytes));
+            return ot::reader(bytes);
         }(),
         chain,
         reason_);
