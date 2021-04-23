@@ -4,4 +4,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_opentx_test(unittests-opentxs-rpc-async Test_Rpc_Async.cpp)
+add_opentx_test(
+  unittests-opentxs-rpc-get-account-activity GetAccountActivity.cpp
+)
+add_opentx_test(unittests-opentxs-rpc-get-account-balance GetAccountBalance.cpp)
+add_opentx_test(unittests-opentxs-rpc-list-accounts ListAccounts.cpp)
+add_opentx_test(unittests-opentxs-rpc-list-nyms ListNyms.cpp)
+add_opentx_test(unittests-opentxs-rpc-send-payment SendPayment.cpp)
 add_opentx_test(unittests-opentxs-rpc-sync Test_Rpc.cpp)
+
+set_tests_properties(unittests-opentxs-rpc-async PROPERTIES DISABLED TRUE)
+set_tests_properties(unittests-opentxs-rpc-sync PROPERTIES DISABLED TRUE)

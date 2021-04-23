@@ -36,6 +36,7 @@ extern "C" {
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
+#include "opentxs/protobuf/BlockchainTransaction.pb.h"
 #include "util/LMDB.hpp"
 
 // #define OT_METHOD

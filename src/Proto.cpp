@@ -6,6 +6,7 @@
 #include "opentxs/Proto.tpp"  // IWYU pragma: associated
 
 #include <google/protobuf/repeated_field.h>
+#include <limits>
 
 template class google::protobuf::RepeatedField<unsigned int>;
 template class google::protobuf::RepeatedField<int>;
@@ -32,10 +33,25 @@ namespace opentxs::proto
 {
 auto ToString(const ProtobufType& input) -> std::string
 {
-    std::string output{};
-    output.resize(static_cast<std::size_t>(input.ByteSize()));
-    input.SerializeToArray(output.data(), static_cast<int>(output.size()));
+    auto output = std::string{};
 
-    return output;
+    if (write(input, writer(output))) { return output; }
+
+    return {};
+}
+
+auto write(const ProtobufType& in, const AllocateOutput out) noexcept -> bool
+{
+    if (false == bool(out)) { return false; }
+
+    const auto size = static_cast<std::size_t>(in.ByteSize());
+
+    if (std::numeric_limits<int>::max() < size) { return false; }
+
+    auto dest = out(size);
+
+    if (false == dest.valid(size)) { return false; }
+
+    return in.SerializeToArray(dest.data(), static_cast<int>(dest.size()));
 }
 }  // namespace opentxs::proto

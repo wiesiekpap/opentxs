@@ -21,6 +21,7 @@
 #include "api/Periodic.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
@@ -36,6 +37,8 @@
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/protobuf/RPCResponse.pb.h"
+#include "opentxs/rpc/request/Base.hpp"
+#include "opentxs/rpc/response/Base.hpp"
 
 namespace opentxs
 {
@@ -46,6 +49,11 @@ class RPCCommand;
 
 namespace rpc
 {
+namespace request
+{
+class Base;
+}  // namespace request
+
 namespace internal
 {
 struct RPC;
@@ -75,8 +83,12 @@ public:
         return *legacy_;
     }
     auto ProfileId() const -> std::string final;
-    auto RPC(const proto::RPCCommand& command) const
+    auto RPC(const proto::RPCCommand& command) const noexcept
         -> proto::RPCResponse final;
+    auto RPC(const rpc::request::Base& command) const noexcept
+        -> rpc::response::Base final;
+    auto RPC(const ReadView command, const AllocateOutput response)
+        const noexcept -> bool final;
     auto Server(const int instance) const -> const api::server::Manager& final;
     auto Servers() const -> std::size_t final { return server_.size(); }
     auto StartClient(const ArgList& args, const int instance) const
@@ -136,9 +148,7 @@ private:
     mutable std::vector<std::unique_ptr<api::server::Manager>> server_;
     mutable std::vector<std::unique_ptr<api::client::internal::Manager>>
         client_;
-#if OT_RPC
     std::unique_ptr<rpc::internal::RPC> rpc_;
-#endif
 
     static auto client_instance(const int count) -> int;
     static auto server_instance(const int count) -> int;

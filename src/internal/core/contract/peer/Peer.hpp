@@ -3,6 +3,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/core/contract/peer/ConnectionInfoType.hpp"
+// IWYU pragma: no_include "opentxs/core/contract/peer/PeerObjectType.hpp"
+// IWYU pragma: no_include "opentxs/core/contract/peer/PeerRequestType.hpp"
+// IWYU pragma: no_include "opentxs/core/contract/peer/SecretType.hpp"
+
 #pragma once
 
 #include <map>

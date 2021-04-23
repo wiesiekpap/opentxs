@@ -11,6 +11,7 @@ extern "C" {
 #include <lmdb.h>
 }
 
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>

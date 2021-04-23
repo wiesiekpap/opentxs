@@ -8,6 +8,7 @@
 #include "crypto/Seed.hpp"  // IWYU pragma: associated
 
 #include <boost/container/flat_map.hpp>
+#include <boost/container/vector.hpp>
 #include <algorithm>
 #include <functional>
 #include <iosfwd>

@@ -8,6 +8,7 @@
 #include "core/contract/basket/BasketContract.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
+#include <map>
 #include <memory>
 #include <stdexcept>
 #include <string>

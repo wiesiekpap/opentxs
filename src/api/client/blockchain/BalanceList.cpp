@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <string>
 #include <utility>
 
 #include "internal/api/Api.hpp"

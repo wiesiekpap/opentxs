@@ -8,7 +8,6 @@
 #include "rpc/RPC.tpp"     // IWYU pragma: associated
 
 #include <algorithm>
-#include <chrono>
 #include <cstdint>
 #include <functional>
 #include <future>
@@ -20,12 +19,14 @@
 #include <stdexcept>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <vector>
 
 #include "2_Factory.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/contact/Contact.hpp"
 #include "opentxs/Exclusive.hpp"
+#include "opentxs/Pimpl.hpp"
 #include "opentxs/Shared.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -41,19 +42,22 @@
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/client/PaymentWorkflowState.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
-#include "opentxs/api/client/UI.hpp"
 #include "opentxs/api/client/Workflow.hpp"
 #include "opentxs/api/server/Manager.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/client/OT_API.hpp"
 #include "opentxs/contact/Contact.hpp"
+#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Account.hpp"
+#include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/Ledger.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
@@ -76,13 +80,10 @@
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/protobuf/APIArgument.pb.h"
 #include "opentxs/protobuf/AcceptPendingPayment.pb.h"
-#include "opentxs/protobuf/AccountData.pb.h"
 #include "opentxs/protobuf/AccountEvent.pb.h"
 #include "opentxs/protobuf/AddClaim.pb.h"
 #include "opentxs/protobuf/AddContact.pb.h"
 #include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/ConsensusEnums.pb.h"
-#include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/ContactItem.pb.h"
 #include "opentxs/protobuf/CreateInstrumentDefinition.pb.h"
 #include "opentxs/protobuf/CreateNym.pb.h"
@@ -93,25 +94,25 @@
 #include "opentxs/protobuf/Nym.pb.h"
 #include "opentxs/protobuf/PaymentEvent.pb.h"
 #include "opentxs/protobuf/PaymentWorkflow.pb.h"
-#include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/protobuf/RPCCommand.pb.h"
 #include "opentxs/protobuf/RPCEnums.pb.h"
 #include "opentxs/protobuf/RPCPush.pb.h"
 #include "opentxs/protobuf/RPCResponse.pb.h"
 #include "opentxs/protobuf/RPCStatus.pb.h"
 #include "opentxs/protobuf/RPCTask.pb.h"
-#include "opentxs/protobuf/SendPayment.pb.h"
 #include "opentxs/protobuf/ServerContract.pb.h"
 #include "opentxs/protobuf/SessionData.pb.h"
 #include "opentxs/protobuf/TaskComplete.pb.h"
 #include "opentxs/protobuf/UnitDefinition.pb.h"
 #include "opentxs/protobuf/verify/RPCCommand.hpp"
-#include "opentxs/ui/AccountActivity.hpp"
-#include "opentxs/ui/BalanceItem.hpp"
+#include "opentxs/rpc/CommandType.hpp"
+#include "opentxs/rpc/ResponseCode.hpp"
+#include "opentxs/rpc/request/Base.hpp"
+#include "opentxs/rpc/response/Base.hpp"
 #include "rpc/RPC.hpp"
+#include "rpc/response/Invalid.hpp"
 
 #define ACCOUNTEVENT_VERSION 2
-#define ACCOUNTDATA_VERSION 2
 #define RPCTASK_VERSION 1
 #if OT_CRYPTO_WITH_BIP32
 #define SEED_VERSION 1
@@ -418,6 +419,26 @@ void RPC::add_output_task(proto::RPCResponse& output, const std::string& taskid)
     task.set_version(RPCTASK_VERSION);
     task.set_index(output.task_size() - 1);
     task.set_id(taskid);
+}
+
+auto RPC::client_session(const request::Base& command) const noexcept(false)
+    -> const api::client::internal::Manager&
+{
+    const auto session = command.Session();
+
+    if (false == is_session_valid(session)) {
+
+        throw std::runtime_error{"invalid session"};
+    }
+
+    if (is_client_session(session)) {
+
+        return dynamic_cast<const api::client::internal::Manager&>(
+            ot_.Client(static_cast<int>(get_index(session))));
+    } else {
+
+        throw std::runtime_error{"expected client session"};
+    }
 }
 
 auto RPC::create_account(const proto::RPCCommand& command) const
@@ -737,13 +758,11 @@ void RPC::evaluate_move_funds(
     }
 }
 
-void RPC::evaluate_send_payment_cheque(
+auto RPC::evaluate_send_payment_cheque(
     const api::client::OTX::Result& result,
-    proto::TaskComplete& output) const
+    proto::TaskComplete& output) const noexcept -> void
 {
-    // TODO use structured binding
-    // const auto& [status, pReply] = result;
-    const auto& status = std::get<0>(result);
+    const auto& [status, pReply] = result;
 
     if (otx::LastReplyStatus::NotSent == status) {
         add_output_status(output, proto::RPCRESPONSE_ERROR);
@@ -756,15 +775,12 @@ void RPC::evaluate_send_payment_cheque(
     }
 }
 
-void RPC::evaluate_send_payment_transfer(
-    const api::client::internal::Manager& client,
+auto RPC::evaluate_send_payment_transfer(
+    const api::client::Manager& api,
     const api::client::OTX::Result& result,
-    proto::RPCResponse& output) const
+    proto::TaskComplete& output) const noexcept -> void
 {
-    // TODO use structured binding
-    // const auto& [status, pReply] = result;
-    const auto& status = std::get<0>(result);
-    const auto& pReply = std::get<1>(result);
+    const auto& [status, pReply] = result;
 
     if (otx::LastReplyStatus::NotSent == status) {
         add_output_status(output, proto::RPCRESPONSE_ERROR);
@@ -776,122 +792,53 @@ void RPC::evaluate_send_payment_transfer(
         OT_ASSERT(pReply);
 
         const auto& reply = *pReply;
-        evaluate_transaction_reply(client, reply, output);
+
+        evaluate_transaction_reply(api, reply, output);
     }
 }
 
-auto RPC::get_account_activity(const proto::RPCCommand& command) const
-    -> proto::RPCResponse
+auto RPC::evaluate_transaction_reply(
+    const api::client::Manager& api,
+    const Message& reply) const noexcept -> bool
 {
-    INIT_CLIENT_ONLY();
-    CHECK_INPUT(identifier, proto::RPCRESPONSE_INVALID);
+    auto success{true};
+    const auto notaryID = api.Factory().ServerID(reply.m_strNotaryID);
+    const auto nymID = api.Factory().NymID(reply.m_strNymID);
+    const auto accountID = api.Factory().Identifier(reply.m_strAcctID);
+    const bool transaction =
+        reply.m_strCommand->Compare("notarizeTransactionResponse") ||
+        reply.m_strCommand->Compare("processInboxResponse") ||
+        reply.m_strCommand->Compare("processNymboxResponse");
 
-    for (const auto& id : command.identifier()) {
-        const auto accountid = Identifier::Factory(id);
-        const auto accountownerID = client.Storage().AccountOwner(accountid);
-        auto& accountactivity =
-            client.UI().AccountActivity(accountownerID, accountid);
-        auto balanceitem = accountactivity.First();
-
-        if (false == balanceitem->Valid()) {
-            add_output_status(output, proto::RPCRESPONSE_NONE);
-
-            continue;
-        }
-
-        auto last = false;
-
-        while (false == last) {
-            auto& accountevent = *output.add_accountevent();
-            accountevent.set_version(ACCOUNTEVENT_VERSION);
-            accountevent.set_id(id);
-
-            auto accounteventtype =
-                storagebox_to_accounteventtype(balanceitem->Type());
-
-            if (proto::ACCOUNTEVENT_ERROR == accounteventtype &&
-                StorageBox::INTERNALTRANSFER == balanceitem->Type()) {
-
-                if (0 > balanceitem->Amount()) {
-                    accounteventtype = proto::ACCOUNTEVENT_OUTGOINGTRANSFER;
+    if (transaction) {
+        if (const auto sLedger = String::Factory(reply.m_ascPayload);
+            sLedger->Exists()) {
+            if (auto ledger{api.Factory().Ledger(nymID, accountID, notaryID)};
+                ledger->LoadContractFromString(sLedger)) {
+                if (ledger->GetTransactionCount() > 0) {
+                    for (const auto& [key, value] :
+                         ledger->GetTransactionMap()) {
+                        if (false == bool(value)) {
+                            success = false;
+                            break;
+                        } else {
+                            success &= value->GetSuccess();
+                        }
+                    }
                 } else {
-                    accounteventtype = proto::ACCOUNTEVENT_INCOMINGTRANSFER;
+                    success = false;
                 }
-            }
-
-            accountevent.set_type(accounteventtype);
-
-            if (0 < balanceitem->Contacts().size()) {
-                accountevent.set_contact(balanceitem->Contacts().at(0));
-            } else if (
-                proto::ACCOUNTEVENT_INCOMINGTRANSFER == accounteventtype) {
-                const auto contactid =
-                    client.Contacts().ContactID(accountownerID);
-                accountevent.set_contact(contactid->str());
-            }
-
-            accountevent.set_workflow(balanceitem->Workflow());
-            accountevent.set_amount(balanceitem->Amount());
-            accountevent.set_pendingamount(balanceitem->Amount());
-            accountevent.set_timestamp(
-                Clock::to_time_t(balanceitem->Timestamp()));
-            accountevent.set_memo(balanceitem->Memo());
-            accountevent.set_uuid(balanceitem->UUID());
-            auto workflow = client.Workflow().LoadWorkflow(
-                accountownerID, Identifier::Factory(balanceitem->Workflow()));
-
-            if (workflow) { accountevent.set_state(workflow->state()); }
-
-            if (balanceitem->Last()) {
-                last = true;
             } else {
-                balanceitem = accountactivity.Next();
+                success = false;
             }
-        }
-
-        add_output_status(output, proto::RPCRESPONSE_SUCCESS);
-    }
-
-    return output;
-}
-
-auto RPC::get_account_balance(const proto::RPCCommand& command) const
-    -> proto::RPCResponse
-{
-    INIT_SESSION();
-    CHECK_INPUT(identifier, proto::RPCRESPONSE_INVALID);
-
-    for (const auto& id : command.identifier()) {
-        const auto accountid = Identifier::Factory(id);
-        const auto account = session.Wallet().Account(accountid);
-
-        if (account) {
-            auto& accountdata = *output.add_balance();
-            accountdata.set_version(ACCOUNTDATA_VERSION);
-            accountdata.set_id(id);
-            accountdata.set_label(account.get().Alias());
-            accountdata.set_unit(
-                account.get().GetInstrumentDefinitionID().str());
-            accountdata.set_owner(
-                session.Storage().AccountOwner(accountid)->str());
-            accountdata.set_issuer(
-                session.Storage().AccountIssuer(accountid)->str());
-            accountdata.set_balance(account.get().GetBalance());
-            accountdata.set_pendingbalance(account.get().GetBalance());
-
-            if (account.get().IsIssuer()) {
-                accountdata.set_type(proto::ACCOUNTTYPE_ISSUER);
-            } else {
-                accountdata.set_type(proto::ACCOUNTTYPE_NORMAL);
-            }
-
-            add_output_status(output, proto::RPCRESPONSE_SUCCESS);
         } else {
-            add_output_status(output, proto::RPCRESPONSE_ACCOUNT_NOT_FOUND);
+            success = false;
         }
+    } else {
+        success = false;
     }
 
-    return output;
+    return success;
 }
 
 auto RPC::get_args(const Args& serialized) -> ArgList
@@ -1382,7 +1329,7 @@ auto RPC::is_server_session(std::int32_t instance) const -> bool
 
 auto RPC::is_session_valid(std::int32_t instance) const -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
     auto index = get_index(instance);
 
     if (is_server_session(instance)) {
@@ -1392,29 +1339,11 @@ auto RPC::is_session_valid(std::int32_t instance) const -> bool
     }
 }
 
-auto RPC::list_accounts(const proto::RPCCommand& command) const
-    -> proto::RPCResponse
-{
-    INIT_CLIENT_ONLY();
-
-    const auto& list = session.Storage().AccountList();
-
-    for (const auto& account : list) { output.add_identifier(account.first); }
-
-    if (0 == output.identifier_size()) {
-        add_output_status(output, proto::RPCRESPONSE_NONE);
-    } else {
-        add_output_status(output, proto::RPCRESPONSE_SUCCESS);
-    }
-
-    return output;
-}
-
 auto RPC::list_client_sessions(const proto::RPCCommand& command) const
     -> proto::RPCResponse
 {
     INIT();
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     for (std::size_t i = 0; i < ot_.Clients(); ++i) {
         proto::SessionData& data = *output.add_sessions();
@@ -1441,24 +1370,6 @@ auto RPC::list_contacts(const proto::RPCCommand& command) const
     for (const auto& contact : contacts) {
         output.add_identifier(std::get<0>(contact));
     }
-
-    if (0 == output.identifier_size()) {
-        add_output_status(output, proto::RPCRESPONSE_NONE);
-    } else {
-        add_output_status(output, proto::RPCRESPONSE_SUCCESS);
-    }
-
-    return output;
-}
-
-auto RPC::list_nyms(const proto::RPCCommand& command) const
-    -> proto::RPCResponse
-{
-    INIT_SESSION();
-
-    const auto& localnyms = session.Wallet().LocalNyms();
-
-    for (const auto& id : localnyms) { output.add_identifier(id->str()); }
 
     if (0 == output.identifier_size()) {
         add_output_status(output, proto::RPCRESPONSE_NONE);
@@ -1511,7 +1422,7 @@ auto RPC::list_server_sessions(const proto::RPCCommand& command) const
     -> proto::RPCResponse
 {
     INIT();
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     for (std::size_t i = 0; i < ot_.Servers(); ++i) {
         auto& data = *output.add_sessions();
@@ -1620,9 +1531,25 @@ auto RPC::Process(const proto::RPCCommand& command) const -> proto::RPCResponse
 {
     const auto valid = proto::Validate(command, VERBOSE);
 
-    if (false == valid) { return invalid_command(command); }
+    if (false == valid) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid serialized command")
+            .Flush();
+
+        return invalid_command(command);
+    }
 
     switch (command.type()) {
+        case proto::RPCCOMMAND_LISTNYMS:
+        case proto::RPCCOMMAND_LISTACCOUNTS:
+        case proto::RPCCOMMAND_GETACCOUNTBALANCE:
+        case proto::RPCCOMMAND_GETACCOUNTACTIVITY:
+        case proto::RPCCOMMAND_SENDPAYMENT: {
+            const auto response = Process(request::Factory(command));
+            auto output = proto::RPCResponse{};
+            response.Serialize(output);
+
+            return output;
+        }
         case proto::RPCCOMMAND_ADDCLIENTSESSION: {
             return start_client(command);
         }
@@ -1646,9 +1573,6 @@ auto RPC::Process(const proto::RPCCommand& command) const -> proto::RPCResponse
         }
         case proto::RPCCOMMAND_CREATENYM: {
             return create_nym(command);
-        }
-        case proto::RPCCOMMAND_LISTNYMS: {
-            return list_nyms(command);
         }
         case proto::RPCCOMMAND_GETNYM: {
             return get_nyms(command);
@@ -1679,18 +1603,6 @@ auto RPC::Process(const proto::RPCCommand& command) const -> proto::RPCResponse
         }
         case proto::RPCCOMMAND_CREATEACCOUNT: {
             return create_account(command);
-        }
-        case proto::RPCCOMMAND_LISTACCOUNTS: {
-            return list_accounts(command);
-        }
-        case proto::RPCCOMMAND_GETACCOUNTBALANCE: {
-            return get_account_balance(command);
-        }
-        case proto::RPCCOMMAND_GETACCOUNTACTIVITY: {
-            return get_account_activity(command);
-        }
-        case proto::RPCCOMMAND_SENDPAYMENT: {
-            return send_payment(command);
         }
         case proto::RPCCOMMAND_MOVEFUNDS: {
             return move_funds(command);
@@ -1757,24 +1669,115 @@ auto RPC::Process(const proto::RPCCommand& command) const -> proto::RPCResponse
     return invalid_command(command);
 }
 
-void RPC::queue_task(
+auto RPC::Process(const request::Base& command) const -> response::Base
+{
+    switch (command.Type()) {
+        case CommandType::list_nyms: {
+            return list_nyms(command);
+        }
+        case CommandType::list_accounts: {
+            return list_accounts(command);
+        }
+        case CommandType::get_account_balance: {
+            return get_account_balance(command);
+        }
+        case CommandType::get_account_activity: {
+            return get_account_activity(command);
+        }
+        case CommandType::send_payment: {
+            return send_payment(command);
+        }
+        case CommandType::add_client_session:
+        case CommandType::add_server_session:
+        case CommandType::list_client_sessions:
+        case CommandType::list_server_sessions:
+        case CommandType::import_hd_seed:
+        case CommandType::list_hd_seeds:
+        case CommandType::get_hd_seed:
+        case CommandType::create_nym:
+        case CommandType::get_nym:
+        case CommandType::add_claim:
+        case CommandType::delete_claim:
+        case CommandType::import_server_contract:
+        case CommandType::list_server_contracts:
+        case CommandType::register_nym:
+        case CommandType::create_unit_definition:
+        case CommandType::list_unit_definitions:
+        case CommandType::issue_unit_definition:
+        case CommandType::create_account:
+        case CommandType::move_funds:
+        case CommandType::add_contact:
+        case CommandType::list_contacts:
+        case CommandType::get_contact:
+        case CommandType::add_contact_claim:
+        case CommandType::delete_contact_claim:
+        case CommandType::verify_claim:
+        case CommandType::accept_verification:
+        case CommandType::send_contact_message:
+        case CommandType::get_contact_activity:
+        case CommandType::get_server_contract:
+        case CommandType::get_pending_payments:
+        case CommandType::accept_pending_payments:
+        case CommandType::get_compatible_accounts:
+        case CommandType::create_compatible_account:
+        case CommandType::get_workflow:
+        case CommandType::get_server_password:
+        case CommandType::get_admin_nym:
+        case CommandType::get_unit_definition:
+        case CommandType::get_transaction_data:
+        case CommandType::lookup_accountid:
+        case CommandType::rename_account:
+        case CommandType::error:
+        default: {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported command.")
+                .Flush();
+
+            return response::Invalid(command);
+        }
+    }
+}
+
+auto RPC::queue_task(
     const identifier::Nym& nymID,
     const std::string taskID,
     Finish&& finish,
     Future&& future,
-    proto::RPCResponse& output) const
+    proto::RPCResponse& output) const -> void
 {
-    Lock lock(task_lock_);
+    auto lock = Lock{task_lock_};
     queued_tasks_.emplace(
         std::piecewise_construct,
         std::forward_as_tuple(taskID),
         std::forward_as_tuple(std::move(future), std::move(finish), nymID));
-
-    const auto taskIDStr = String::Factory(taskID);
     auto taskIDCompat = Identifier::Factory();
-    taskIDCompat->CalculateDigest(taskIDStr->Bytes());
+    taskIDCompat->CalculateDigest(taskID);
     add_output_task(output, taskIDCompat->str());
     add_output_status(output, proto::RPCRESPONSE_QUEUED);
+}
+
+auto RPC::queue_task(
+    const api::Core& api,
+    const identifier::Nym& nymID,
+    const std::string taskID,
+    Finish&& finish,
+    Future&& future) const noexcept -> std::string
+{
+    {
+        auto lock = Lock{task_lock_};
+        queued_tasks_.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple(taskID),
+            std::forward_as_tuple(std::move(future), std::move(finish), nymID));
+    }
+
+    const auto hashedID = [&] {
+        auto out = api.Factory().Identifier();
+        out->CalculateDigest(taskID);
+
+        return out;
+    }();
+
+    return hashedID->str();
 }
 
 auto RPC::register_nym(const proto::RPCCommand& command) const
@@ -1838,125 +1841,30 @@ auto RPC::rename_account(const proto::RPCCommand& command) const
     return output;
 }
 
-auto RPC::send_payment(const proto::RPCCommand& command) const
-    -> proto::RPCResponse
+auto RPC::session(const request::Base& command) const noexcept(false)
+    -> const api::Core&
 {
-    INIT_CLIENT_ONLY();
+    const auto session = command.Session();
 
-    const auto& sendpayment = command.sendpayment();
-    const auto contactid = Identifier::Factory(sendpayment.contact()),
-               sourceaccountid =
-                   Identifier::Factory(sendpayment.sourceaccount());
-    auto& contacts = client.Contacts();
-    const auto contact = contacts.Contact(contactid);
+    if (false == is_session_valid(session)) {
 
-    if (false == bool(contact)) {
-        add_output_status(output, proto::RPCRESPONSE_CONTACT_NOT_FOUND);
-
-        return output;
+        throw std::runtime_error{"invalid session"};
     }
 
-    const auto sender = client.Storage().AccountOwner(sourceaccountid);
+    if (is_client_session(session)) {
 
-    if (sender->empty()) {
-        add_output_status(output, proto::RPCRESPONSE_ACCOUNT_OWNER_NOT_FOUND);
+        return ot_.Client(static_cast<int>(get_index(session)));
+    } else {
 
-        return output;
+        return ot_.Server(static_cast<int>(get_index(session)));
     }
-
-    const auto precondition = client.OTX().CanMessage(sender, contactid);
-
-    switch (precondition) {
-        case Messagability::MISSING_CONTACT:
-        case Messagability::CONTACT_LACKS_NYM:
-        case Messagability::NO_SERVER_CLAIM:
-        case Messagability::INVALID_SENDER:
-        case Messagability::MISSING_SENDER: {
-            add_output_status(output, proto::RPCRESPONSE_NO_PATH_TO_RECIPIENT);
-
-            return output;
-        }
-        case Messagability::MISSING_RECIPIENT:
-        case Messagability::UNREGISTERED: {
-            add_output_status(output, proto::RPCRESPONSE_RETRY);
-
-            return output;
-        }
-        case Messagability::READY:
-        default: {
-        }
-    }
-
-    switch (sendpayment.type()) {
-        case proto::RPCPAYMENTTYPE_CHEQUE: {
-            INIT_OTX(
-                SendCheque,
-                sender,
-                sourceaccountid,
-                contactid,
-                sendpayment.amount(),
-                sendpayment.memo(),
-                Clock::now(),
-                Clock::now() + std::chrono::hours(OT_CHEQUE_HOURS));
-
-            if (false == ready) {
-                add_output_status(output, proto::RPCRESPONSE_ERROR);
-
-                return output;
-            }
-
-            queue_task(
-                sender,
-                std::to_string(taskID),
-                [&](const auto& in, auto& out) -> void {
-                    evaluate_send_payment_cheque(in, out);
-                },
-                std::move(future),
-                output);
-        } break;
-        case proto::RPCPAYMENTTYPE_TRANSFER: {
-            const auto targetaccount =
-                Identifier::Factory(sendpayment.destinationaccount());
-            const auto notary = client.Storage().AccountServer(sourceaccountid);
-
-            INIT_OTX(
-                SendTransfer,
-                sender,
-                notary,
-                sourceaccountid,
-                targetaccount,
-                sendpayment.amount(),
-                sendpayment.memo());
-
-            if (false == ready) {
-                add_output_status(output, proto::RPCRESPONSE_ERROR);
-
-                return output;
-            }
-
-            evaluate_send_payment_transfer(client, future.get(), output);
-        } break;
-        case proto::RPCPAYMENTTYPE_VOUCHER:
-            // TODO
-        case proto::RPCPAYMENTTYPE_INVOICE:
-            // TODO
-        case proto::RPCPAYMENTTYPE_BLINDED:
-            // TODO
-        default: {
-            add_output_status(output, proto::RPCRESPONSE_INVALID);
-
-            return output;
-        }
-    }
-
-    return output;
 }
 
 auto RPC::start_client(const proto::RPCCommand& command) const
     -> proto::RPCResponse
 {
     INIT();
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
     const auto session{static_cast<std::uint32_t>(ot_.Clients())};
 
     std::uint32_t instance{0};
@@ -1986,7 +1894,7 @@ auto RPC::start_server(const proto::RPCCommand& command) const
     -> proto::RPCResponse
 {
     INIT();
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
     const auto session{static_cast<std::uint32_t>(ot_.Servers())};
 
     std::uint32_t instance{0};
@@ -2008,29 +1916,10 @@ auto RPC::start_server(const proto::RPCCommand& command) const
     return output;
 }
 
-auto RPC::storagebox_to_accounteventtype(StorageBox storagebox)
-    -> proto::AccountEventType
+auto RPC::status(const response::Base::Identifiers& ids) const noexcept
+    -> ResponseCode
 {
-    proto::AccountEventType accounteventtype = proto::ACCOUNTEVENT_ERROR;
-
-    switch (storagebox) {
-        case StorageBox::INCOMINGCHEQUE: {
-            accounteventtype = proto::ACCOUNTEVENT_INCOMINGCHEQUE;
-        } break;
-        case StorageBox::OUTGOINGCHEQUE: {
-            accounteventtype = proto::ACCOUNTEVENT_OUTGOINGCHEQUE;
-        } break;
-        case StorageBox::INCOMINGTRANSFER: {
-            accounteventtype = proto::ACCOUNTEVENT_INCOMINGTRANSFER;
-        } break;
-        case StorageBox::OUTGOINGTRANSFER: {
-            accounteventtype = proto::ACCOUNTEVENT_OUTGOINGTRANSFER;
-        } break;
-        default: {
-        }
-    }
-
-    return accounteventtype;
+    return (0u == ids.size()) ? ResponseCode::none : ResponseCode::success;
 }
 
 void RPC::task_handler(const zmq::Message& in)
@@ -2045,7 +1934,7 @@ void RPC::task_handler(const zmq::Message& in)
     const auto success = body.at(2).as<bool>();
     LogTrace(OT_METHOD)(__FUNCTION__)(": Received notice for task ")(taskID)
         .Flush();
-    Lock lock(task_lock_);
+    auto lock = Lock{task_lock_};
     auto it = queued_tasks_.find(taskID);
     lock.unlock();
     proto::RPCPush message{};

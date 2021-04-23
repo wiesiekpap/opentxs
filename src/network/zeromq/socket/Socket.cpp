@@ -8,19 +8,19 @@
 #include "network/zeromq/socket/Socket.hpp"  // IWYU pragma: associated
 
 #include <zmq.h>
-#include <algorithm>
 #include <cerrno>
 #include <cstdint>
 #include <iostream>
 #include <memory>
-#include <random>
 #include <utility>
 
+#include "opentxs/Bytes.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameIterator.hpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/Message.hpp"
+#include "util/Random.hpp"
 
 #define INPROC_PREFIX "inproc://opentxs/"
 
@@ -246,12 +246,13 @@ auto Socket::send_message(const Lock& lock, Message& message) const noexcept
 
 auto Socket::random_inproc_endpoint() noexcept -> std::string
 {
-    std::random_device seed;
-    std::mt19937 generator(seed());
-    std::uniform_int_distribution<std::uint64_t> rand;
+    auto one = std::uint64_t{};
+    auto two = std::uint64_t{};
+    random_bytes_non_crypto(preallocated(sizeof(one), &one), sizeof(one));
+    random_bytes_non_crypto(preallocated(sizeof(two), &two), sizeof(two));
 
-    return std::string(INPROC_PREFIX) + std::to_string(rand(generator)) +
-           std::to_string(rand(generator));
+    return std::string(INPROC_PREFIX) + std::to_string(one) +
+           std::to_string(two);
 }
 
 auto Socket::receive_message(const Lock& lock, Message& message) const noexcept

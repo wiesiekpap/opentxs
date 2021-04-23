@@ -6,7 +6,8 @@
 #ifndef OPENTXS_CONTACT_CONTACTDATA_HPP
 #define OPENTXS_CONTACT_CONTACTDATA_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
+// IWYU pragma: no_include "opentxs/contact/ContactItemType.hpp"
+// IWYU pragma: no_include "opentxs/contact/ContactSectionName.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -37,7 +38,10 @@ struct Core;
 class ContactGroup;
 class ContactItem;
 class ContactSection;
+}  // namespace opentxs
 
+namespace opentxs
+{
 class ContactData
 {
 public:
@@ -147,5 +151,4 @@ private:
     ContactData& operator=(ContactData&&) = delete;
 };
 }  // namespace opentxs
-
 #endif

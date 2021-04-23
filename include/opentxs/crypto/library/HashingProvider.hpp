@@ -6,14 +6,13 @@
 #ifndef OPENTXS_CRYPTO_LIBRARY_HASHINGPROVIDER_HPP
 #define OPENTXS_CRYPTO_LIBRARY_HASHINGPROVIDER_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
+// IWYU pragma: no_include "opentxs/crypto/HashType.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <iosfwd>
 
-#include "opentxs/Proto.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/Types.hpp"
 

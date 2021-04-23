@@ -22,6 +22,7 @@
 
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/identity/Nym.hpp"
 

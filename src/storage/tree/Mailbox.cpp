@@ -9,6 +9,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <tuple>
 #include <utility>

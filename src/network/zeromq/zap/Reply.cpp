@@ -15,6 +15,7 @@
 #include "network/zeromq/Message.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
+#include "opentxs/network/zeromq/FrameIterator.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/zap/Reply.hpp"

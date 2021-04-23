@@ -9,6 +9,7 @@
 
 #include <robin_hood.h>
 #include <iterator>
+#include <map>
 #include <memory>
 #include <set>
 #include <stdexcept>

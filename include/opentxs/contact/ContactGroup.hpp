@@ -6,7 +6,8 @@
 #ifndef OPENTXS_CONTACT_CONTACTGROUP_HPP
 #define OPENTXS_CONTACT_CONTACTGROUP_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
+// IWYU pragma: no_include "opentxs/contact/ContactItemType.hpp"
+// IWYU pragma: no_include "opentxs/contact/ContactSectionName.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 

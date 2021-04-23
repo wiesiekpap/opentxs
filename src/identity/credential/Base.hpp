@@ -17,6 +17,8 @@
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/crypto/key/asymmetric/Mode.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
+#include "opentxs/identity/CredentialRole.hpp"
+#include "opentxs/identity/CredentialType.hpp"
 #include "opentxs/protobuf/Credential.pb.h"
 
 namespace opentxs

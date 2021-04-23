@@ -41,6 +41,7 @@
 #include "network/zeromq/socket/Socket.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Proto.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/Proto.tpp"
 #include "opentxs/api/Endpoints.hpp"
@@ -58,9 +59,11 @@
 #include "opentxs/api/storage/Storage.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/blockchain/FilterType.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/blockchain/BlockchainType.hpp"
+#if OT_BLOCKCHAIN
+#include "opentxs/blockchain/FilterType.hpp"
+#endif                                                       // OT_BLOCKCHAIN
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/client/FilterOracle.hpp"
@@ -74,6 +77,7 @@
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
+#include "opentxs/crypto/HashType.hpp"
 #include "opentxs/identity/Nym.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/network/zeromq/Context.hpp"

@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -770,10 +771,10 @@ protected:
     using Outpoint = ot::blockchain::block::Outpoint;
     using Script = ot::blockchain::block::bitcoin::Script;
     using UTXO = ot::blockchain::client::Wallet::UTXO;
-    using GetAmount = std::function<std::int64_t(int)>;
-    using GetPattern = std::function<Pattern(int)>;
-    using GetBytes =
-        std::function<std::optional<ot::ReadView>(const Script&, int)>;
+    using Key = ot::OTData;
+    using Amount = std::int64_t;
+    using OutpointMetadata = std::tuple<Key, Amount, Pattern>;
+    using Expected = std::map<Outpoint, OutpointMetadata>;
 
     const ot::ArgList client_args_;
     const int client_count_;
@@ -942,52 +943,63 @@ protected:
 
         return output;
     }
-    //[[maybe_unused]] auto TestUTXOs(
-    //    const std::vector<Outpoint>& outpoints,
-    //    const std::vector<ot::OTData>& keys,
-    //    const std::vector<UTXO>& utxos,
-    //    const GetBytes getData,
-    //    const GetPattern getPattern,
-    //    const GetAmount amount) const noexcept -> bool
-    //{
-    //    auto out = true;
-    //    auto index{-1};
-    //
-    //    for (const auto& [outpoint, pOutput] : utxos) {
-    //        const auto& expected = outpoints.at(++index);
-    //        out &= (outpoint == expected);
-    //        EXPECT_EQ(outpoint.str(), expected.str());
-    //        EXPECT_TRUE(pOutput);
-    //
-    //        if (!pOutput) { return false; }
-    //
-    //        const auto& output = *pOutput;
-    //        out &= (output.Value() == amount(index));
-    //
-    //        EXPECT_EQ(output.Value(), amount(index));
-    //
-    //        const auto& script = output.Script();
-    //        using Position = ot::blockchain::block::bitcoin::Script::Position;
-    //        out &= (script.Role() == Position::Output);
-    //
-    //        EXPECT_EQ(script.Role(), Position::Output);
-    //
-    //        const auto data = getData(script, index);
-    //        const auto pattern = getPattern(index);
-    //
-    //        EXPECT_TRUE(data.has_value());
-    //
-    //        if (false == data.has_value()) { return false; }
-    //
-    //        out &= (data.value() == keys.at(index)->Bytes());
-    //        out &= (script.Type() == pattern);
-    //
-    //        EXPECT_EQ(data.value(), keys.at(index)->Bytes());
-    //        EXPECT_EQ(script.Type(), pattern);
-    //    }
-    //
-    //    return out;
-    //}
+    [[maybe_unused]] auto TestUTXOs(
+        const Expected& expected,
+        const std::vector<UTXO>& utxos) const noexcept -> bool
+    {
+        auto out = true;
+
+        for (const auto& utxo : utxos) {
+            const auto& [outpoint, pOutput] = utxo;
+
+            EXPECT_TRUE(pOutput);
+
+            if (!pOutput) {
+                out = false;
+
+                continue;
+            }
+
+            const auto& output = *pOutput;
+
+            try {
+                const auto& [exKey, exAmount, exPattern] =
+                    expected.at(outpoint);
+                out &= (output.Value() == exAmount);
+
+                EXPECT_EQ(output.Value(), exAmount);
+
+                const auto& script = output.Script();
+                using Position =
+                    ot::blockchain::block::bitcoin::Script::Position;
+                out &= (script.Role() == Position::Output);
+
+                EXPECT_EQ(script.Role(), Position::Output);
+
+                const auto data = get_bytes(script);
+
+                EXPECT_TRUE(data.has_value());
+
+                if (false == data.has_value()) {
+                    out = false;
+
+                    continue;
+                }
+
+                out &= (data.value() == exKey->Bytes());
+                out &= (script.Type() == exPattern);
+
+                EXPECT_EQ(data.value(), exKey->Bytes());
+                EXPECT_EQ(script.Type(), exPattern);
+            } catch (...) {
+                EXPECT_EQ(outpoint.str(), "this will never be true");
+
+                out = false;
+            }
+        }
+
+        return out;
+    }
 
     [[maybe_unused]] virtual auto Shutdown() noexcept -> void
     {
@@ -1100,6 +1112,28 @@ private:
     static BlockListen block_listener_;
     static WalletListen wallet_listener_;
 
+    static auto get_bytes(const Script& script) noexcept
+        -> std::optional<ot::ReadView>
+    {
+        switch (script.Type()) {
+            case Pattern::PayToPubkey: {
+
+                return script.Pubkey();
+            }
+            case Pattern::PayToPubkeyHash: {
+
+                return script.PubkeyHash();
+            }
+            case Pattern::PayToMultisig: {
+
+                return script.MultisigPubkey(0);
+            }
+            default: {
+
+                return std::nullopt;
+            }
+        }
+    }
     static auto init_address(const ot::api::Core& api) noexcept
         -> const b::p2p::Address&
     {

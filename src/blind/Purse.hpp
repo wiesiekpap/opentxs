@@ -15,7 +15,9 @@
 
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/blind/CashType.hpp"
 #include "opentxs/blind/Purse.hpp"
+#include "opentxs/blind/PurseType.hpp"
 #include "opentxs/blind/Token.hpp"
 #include "opentxs/blind/Types.hpp"
 #include "opentxs/core/Secret.hpp"
@@ -24,6 +26,7 @@
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
+#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/Envelope.pb.h"
 #include "opentxs/protobuf/Purse.pb.h"

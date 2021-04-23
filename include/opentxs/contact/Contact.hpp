@@ -54,8 +54,10 @@ struct Core;
 }  // namespace internal
 }  // namespace api
 
+class ContactData;
 class ContactGroup;
 class ContactItem;
+class Identifier;
 class PaymentCode;
 }  // namespace opentxs
 

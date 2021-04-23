@@ -59,7 +59,6 @@
 #include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/ConsensusEnums.pb.h"
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/Context.pb.h"
 #include "opentxs/protobuf/Issuer.pb.h"  // IWYU pragma: keep

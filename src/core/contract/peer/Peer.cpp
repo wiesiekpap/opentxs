@@ -11,7 +11,6 @@
 #include "opentxs/core/contract/peer/PeerObjectType.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/SecretType.hpp"
-#include "opentxs/protobuf/ContractEnums.pb.h"
 #include "opentxs/protobuf/PeerEnums.pb.h"
 #include "util/Container.hpp"
 

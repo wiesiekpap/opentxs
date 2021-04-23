@@ -40,6 +40,7 @@
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/key/HD.hpp"
+#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"  // IWYU pragma: keep
 #include "opentxs/protobuf/HDPath.pb.h"
 

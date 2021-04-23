@@ -7,10 +7,12 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "internal/blockchain/Params.hpp"  // IWYU pragma: associated
 
+#include <boost/container/vector.hpp>
 #include <memory>
 #include <set>
 #include <type_traits>
 
+#include "display/Scale.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"

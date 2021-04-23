@@ -8,6 +8,9 @@
 #include "opentxs/contact/Contact.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
+#include <atomic>
+#include <map>
+#include <mutex>
 #include <sstream>
 #include <stdexcept>
 #include <utility>
@@ -31,6 +34,7 @@
 #include "opentxs/contact/ContactSection.hpp"  // IWYU pragma: keep
 #include "opentxs/contact/ContactSectionName.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
@@ -39,6 +43,7 @@
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Contact.pb.h"
 #include "opentxs/protobuf/ContactData.pb.h"
+#include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/ContactItem.pb.h"
 #include "opentxs/protobuf/verify/ContactItem.hpp"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"

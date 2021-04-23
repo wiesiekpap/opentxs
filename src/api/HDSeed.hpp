@@ -22,6 +22,7 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
+#include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
 
 namespace opentxs

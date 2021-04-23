@@ -12,6 +12,7 @@
 #include <iterator>
 #include <map>
 #include <numeric>
+#include <set>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
@@ -35,9 +36,11 @@
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
+#include "opentxs/crypto/key/asymmetric/Role.hpp"
+#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/identity/Authority.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/identity/Types.hpp"
+#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/protobuf/AsymmetricKey.pb.h"
 #include "opentxs/protobuf/Ciphertext.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"

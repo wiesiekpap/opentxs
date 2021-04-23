@@ -17,6 +17,7 @@
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Ed25519.hpp"
+#include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
 
 namespace opentxs
@@ -33,6 +34,11 @@ namespace crypto
 {
 namespace key
 {
+namespace implementation
+{
+class EllipticCurve;
+}  // namespace implementation
+
 class Symmetric;
 }  // namespace key
 

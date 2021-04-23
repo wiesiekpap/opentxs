@@ -14,9 +14,13 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
+#include "opentxs/crypto/key/Types.hpp"
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
+#include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
 
 namespace opentxs
@@ -33,6 +37,7 @@ namespace crypto
 {
 namespace key
 {
+class Asymmetric;
 class Symmetric;
 }  // namespace key
 

@@ -75,48 +75,12 @@ void RPC::evaluate_register_nym(
 
 template <typename T>
 void RPC::evaluate_transaction_reply(
-    const api::client::internal::Manager& client,
+    const api::client::Manager& client,
     const Message& reply,
     T& output,
     const proto::RPCResponseCode code) const
 {
-    bool success{true};
-    const auto notaryID = client.Factory().ServerID(reply.m_strNotaryID);
-    const auto nymID = client.Factory().NymID(reply.m_strNymID);
-    const auto accountID = client.Factory().Identifier(reply.m_strAcctID);
-    const bool transaction =
-        reply.m_strCommand->Compare("notarizeTransactionResponse") ||
-        reply.m_strCommand->Compare("processInboxResponse") ||
-        reply.m_strCommand->Compare("processNymboxResponse");
-
-    if (transaction) {
-        if (const auto sLedger = String::Factory(reply.m_ascPayload);
-            sLedger->Exists()) {
-            if (auto ledger{
-                    client.Factory().Ledger(nymID, accountID, notaryID)};
-                ledger->LoadContractFromString(sLedger)) {
-                if (ledger->GetTransactionCount() > 0) {
-                    for (const auto& [key, value] :
-                         ledger->GetTransactionMap()) {
-                        if (false == bool(value)) {
-                            success = false;
-                            break;
-                        } else {
-                            success &= value->GetSuccess();
-                        }
-                    }
-                } else {
-                    success = false;
-                }
-            } else {
-                success = false;
-            }
-        } else {
-            success = false;
-        }
-    } else {
-        success = false;
-    }
+    const auto success = evaluate_transaction_reply(client, reply);
 
     if (success) {
         add_output_status(output, proto::RPCRESPONSE_SUCCESS);

@@ -4,6 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_subdirectory(client)
+add_subdirectory(context)
 add_subdirectory(crypto)
 add_subdirectory(network)
 add_subdirectory(server)
@@ -63,13 +64,6 @@ target_link_libraries(opentxs PUBLIC Boost::filesystem)
 target_include_directories(
   opentxs-api SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
-
-if(OT_ENABLE_RPC)
-  target_compile_definitions(opentxs-api PRIVATE OT_RPC=1)
-else()
-  target_compile_definitions(opentxs-api PRIVATE OT_RPC=0)
-endif()
-
 target_sources(opentxs-api PRIVATE ${cxx-install-headers})
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-api>)
 add_dependencies(opentxs-api generated_code)

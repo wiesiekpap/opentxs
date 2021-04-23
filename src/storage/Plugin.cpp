@@ -10,6 +10,7 @@
 #include <thread>
 
 #include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 
 #define OT_METHOD "opentxs::Plugin"

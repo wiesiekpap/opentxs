@@ -17,6 +17,7 @@
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
+#include "opentxs/core/AddressType.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/network/ServerConnection.hpp"

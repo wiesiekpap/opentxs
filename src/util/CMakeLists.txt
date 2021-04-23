@@ -15,6 +15,8 @@ add_library(
   "JobCounter.hpp"
   "Latest.hpp"
   "Polarity.hpp"
+  "Random.cpp"
+  "Random.hpp"
   "ScopeGuard.cpp"
   "ScopeGuard.hpp"
   "Signals.cpp"

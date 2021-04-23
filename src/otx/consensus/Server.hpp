@@ -35,6 +35,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/ServerConnection.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
+#include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/otx/Types.hpp"
 #include "opentxs/otx/consensus/Base.hpp"

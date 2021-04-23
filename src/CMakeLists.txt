@@ -21,11 +21,7 @@ add_subdirectory(iterator)
 add_subdirectory(network)
 add_subdirectory(otx)
 add_subdirectory(protobuf)
-
-if(OT_ENABLE_RPC)
-  add_subdirectory(rpc)
-endif()
-
+add_subdirectory(rpc)
 add_subdirectory(server)
 add_subdirectory(storage)
 add_subdirectory(ui)

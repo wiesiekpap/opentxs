@@ -10,6 +10,8 @@
 // IWYU pragma: no_include "opentxs/crypto/Language.hpp"
 // IWYU pragma: no_include "opentxs/crypto/SeedStrength.hpp"
 // IWYU pragma: no_include "opentxs/crypto/SeedStyle.hpp"
+// IWYU pragma: no_include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
+// IWYU pragma: no_include "opentxs/identity/SourceProofType.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -21,9 +23,7 @@
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#if OT_CRYPTO_WITH_BIP32
 #include "opentxs/core/Secret.hpp"
-#endif  // OT_CRYPTO_WITH_BIP32
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/key/Types.hpp"

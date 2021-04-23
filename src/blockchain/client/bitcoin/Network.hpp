@@ -41,6 +41,7 @@ namespace client
 namespace internal
 {
 struct Config;
+struct Network;
 }  // namespace internal
 }  // namespace client
 }  // namespace blockchain

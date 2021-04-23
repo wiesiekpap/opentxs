@@ -3,14 +3,24 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/core/AddressType.hpp"
+// IWYU pragma: no_include "opentxs/core/contract/ProtocolVersion.hpp"
+// IWYU pragma: no_include "opentxs/core/contract/UnitType.hpp"
+
 #pragma once
 
+#include <cstdint>
+#include <map>
 #include <string>
 
+#include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/contact/Types.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/core/contract/Types.hpp"
@@ -24,6 +34,14 @@
 #include "opentxs/protobuf/PeerRequest.pb.h"
 #include "opentxs/protobuf/ServerContract.pb.h"
 #include "opentxs/protobuf/UnitDefinition.pb.h"
+
+namespace opentxs
+{
+class Account;
+class AccountVisitor;
+class PasswordPrompt;
+class String;
+}  // namespace opentxs
 
 namespace opentxs::contract::internal
 {

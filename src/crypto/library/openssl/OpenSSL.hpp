@@ -29,7 +29,9 @@ extern "C" {
 #include "opentxs/Proto.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
+#include "opentxs/crypto/key/asymmetric/Role.hpp"
 
 namespace opentxs
 {

@@ -32,7 +32,6 @@
 #include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
-#include "opentxs/protobuf/ConsensusEnums.pb.h"
 
 #define OT_METHOD "opentxs::api::server::implementation::Wallet::"
 

@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <map>
 #include <memory>
 #include <string>
 
@@ -13,7 +14,10 @@
 #include "internal/identity/credential/Credential.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/identity/CredentialRole.hpp"
+#include "opentxs/identity/SourceProofType.hpp"
 #include "opentxs/identity/credential/Base.hpp"
+#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/SourceProof.pb.h"
 
 namespace opentxs

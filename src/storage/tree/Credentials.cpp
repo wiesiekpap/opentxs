@@ -16,6 +16,7 @@
 #include "internal/crypto/key/Key.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/storage/Driver.hpp"
+#include "opentxs/crypto/key/asymmetric/Mode.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Credential.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"

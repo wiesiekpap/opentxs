@@ -1,0 +1,92 @@
+// Copyright (c) 2010-2021 The Open-Transactions developers
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+#include "0_stdafx.hpp"                           // IWYU pragma: associated
+#include "1_Internal.hpp"                         // IWYU pragma: associated
+#include "opentxs/rpc/response/ListAccounts.hpp"  // IWYU pragma: associated
+#include "rpc/response/Base.hpp"                  // IWYU pragma: associated
+
+#include <memory>
+
+#include "opentxs/rpc/CommandType.hpp"
+#include "opentxs/rpc/request/ListAccounts.hpp"
+
+namespace opentxs::rpc::response::implementation
+{
+struct ListAccounts final : public Base::Imp {
+    auto asListAccounts() const noexcept -> const response::ListAccounts& final
+    {
+        return static_cast<const response::ListAccounts&>(*parent_);
+    }
+    auto serialize(proto::RPCResponse& dest) const noexcept -> bool final
+    {
+        if (Imp::serialize(dest)) {
+            serialize_identifiers(dest);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    ListAccounts(
+        const response::ListAccounts* parent,
+        const request::ListAccounts& request,
+        Base::Responses&& response,
+        Base::Identifiers&& accounts) noexcept(false)
+        : Imp(parent, request, std::move(response), std::move(accounts))
+    {
+    }
+    ListAccounts(
+        const response::ListAccounts* parent,
+        const proto::RPCResponse& in) noexcept(false)
+        : Imp(parent, in)
+    {
+    }
+
+    ~ListAccounts() final = default;
+
+private:
+    ListAccounts() = delete;
+    ListAccounts(const ListAccounts&) = delete;
+    ListAccounts(ListAccounts&&) = delete;
+    auto operator=(const ListAccounts&) -> ListAccounts& = delete;
+    auto operator=(ListAccounts&&) -> ListAccounts& = delete;
+};
+}  // namespace opentxs::rpc::response::implementation
+
+namespace opentxs::rpc::response
+{
+ListAccounts::ListAccounts(
+    const request::ListAccounts& request,
+    Responses&& response,
+    Identifiers&& accounts)
+    : Base(std::make_unique<implementation::ListAccounts>(
+               this,
+               request,
+               std::move(response),
+               std::move(accounts))
+               .release())
+{
+}
+
+ListAccounts::ListAccounts(const proto::RPCResponse& serialized) noexcept(false)
+    : Base(std::make_unique<implementation::ListAccounts>(this, serialized)
+               .release())
+{
+}
+
+ListAccounts::ListAccounts() noexcept
+    : Base()
+{
+}
+
+auto ListAccounts::AccountIDs() const noexcept -> const Identifiers&
+{
+    return imp_->identifiers_;
+}
+
+ListAccounts::~ListAccounts() = default;
+}  // namespace opentxs::rpc::response

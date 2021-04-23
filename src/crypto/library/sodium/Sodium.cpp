@@ -40,7 +40,7 @@ extern "C" {
 #include "opentxs/crypto/key/symmetric/Source.hpp"
 #include "opentxs/crypto/library/HashingProvider.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
-#include "util/Container.hpp"
+#include "opentxs/protobuf/Enums.pb.h"
 #include "util/Sodium.hpp"
 
 #define OT_METHOD "opentxs::crypto::implementation::Sodium::"

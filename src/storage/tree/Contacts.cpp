@@ -21,7 +21,6 @@
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Contact.pb.h"
 #include "opentxs/protobuf/ContactData.pb.h"
-#include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/ContactItem.pb.h"
 #include "opentxs/protobuf/ContactSection.pb.h"
 #include "opentxs/protobuf/StorageContactNymIndex.pb.h"

@@ -9,7 +9,9 @@
 
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/blind/CashType.hpp"
 #include "opentxs/blind/Token.hpp"
+#include "opentxs/blind/TokenState.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Types.hpp"

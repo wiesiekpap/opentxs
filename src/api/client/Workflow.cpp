@@ -51,6 +51,7 @@
 #include "opentxs/protobuf/InstrumentRevision.pb.h"
 #include "opentxs/protobuf/PaymentEvent.pb.h"
 #include "opentxs/protobuf/PaymentWorkflow.pb.h"
+#include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/protobuf/Purse.pb.h"
 #include "opentxs/protobuf/RPCEnums.pb.h"
 #include "opentxs/protobuf/RPCPush.pb.h"

@@ -26,9 +26,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/otx/Types.hpp"
 #include "opentxs/protobuf/Context.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/Signature.pb.h"
 
 #ifndef OT_MAX_ACK_NUMS

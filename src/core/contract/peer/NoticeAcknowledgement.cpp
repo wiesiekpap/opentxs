@@ -17,7 +17,6 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/NoticeAcknowledgement.pb.h"
 #include "opentxs/protobuf/PeerReply.pb.h"

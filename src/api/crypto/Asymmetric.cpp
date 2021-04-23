@@ -9,6 +9,7 @@
 
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include "crypto/key/Null.hpp"
 #include "internal/api/Api.hpp"
@@ -32,11 +33,9 @@
 #include "opentxs/crypto/key/Secp256k1.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
-#include "opentxs/identity/Types.hpp"
 #include "opentxs/protobuf/AsymmetricKey.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/HDPath.pb.h"
-#include "util/Container.hpp"
 
 #define OT_METHOD "opentxs::api::crypto::implementation::Asymmetric::"
 

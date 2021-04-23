@@ -5,7 +5,10 @@
 
 #include "BalanceTree.hpp"  // IWYU pragma: associated
 
+#include "internal/api/Api.hpp"
 #include "internal/api/client/blockchain/Factory.hpp"
+#include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Factory.hpp"
 
 namespace opentxs
 {
@@ -15,6 +18,8 @@ class Bip47Channel;
 class HDAccount;
 class HDPath;
 }  // namespace proto
+
+class PaymentCode;
 }  // namespace opentxs
 
 namespace opentxs::api::client::blockchain::implementation

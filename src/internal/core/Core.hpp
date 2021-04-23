@@ -3,10 +3,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/core/AddressType.hpp"
+
 #pragma once
 
+#include <iosfwd>
 #include <map>
+#include <memory>
 
+#include "opentxs/Bytes.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/NymFile.hpp"
@@ -17,12 +22,20 @@
 
 namespace opentxs
 {
+namespace api
+{
+class Core;
+}  // namespace api
+
 class PasswordPrompt;
 class Secret;
 }  // namespace opentxs
 
 namespace opentxs
 {
+template <typename T>
+struct make_blank;
+
 template <>
 struct make_blank<OTData> {
     static auto value(const api::Core&) -> OTData { return Data::Factory(); }

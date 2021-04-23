@@ -8,11 +8,18 @@
 
 #include <google/protobuf/message_lite.h>
 
+#include "opentxs/Bytes.hpp"
+
 namespace opentxs
 {
 using ProtobufType = ::google::protobuf::MessageLite;
 
 auto operator==(const ProtobufType& lhs, const ProtobufType& rhs) noexcept
     -> bool;
+
+namespace proto
+{
+auto write(const ProtobufType& in, const AllocateOutput out) noexcept -> bool;
+}  // namespace proto
 }  // namespace opentxs
 #endif

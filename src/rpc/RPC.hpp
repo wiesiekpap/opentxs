@@ -3,8 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: private
-// IWYU pragma: friend ".*src/rpc/rpc.tpp"
+// IWYU pragma: no_include "opentxs/rpc/AccountEventType.hpp"
+// IWYU pragma: no_include "opentxs/rpc/ResponseCode.hpp"
 
 #pragma once
 
@@ -21,6 +21,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/client/OTX.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -30,6 +31,9 @@
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/protobuf/RPCEnums.pb.h"
 #include "opentxs/protobuf/RPCResponse.pb.h"
+#include "opentxs/rpc/Types.hpp"
+#include "opentxs/rpc/request/Base.hpp"
+#include "opentxs/rpc/response/Base.hpp"
 
 namespace opentxs
 {
@@ -41,6 +45,8 @@ namespace internal
 {
 struct Manager;
 }  // namespace internal
+
+class Manager;
 }  // namespace client
 
 namespace server
@@ -74,6 +80,14 @@ class RPCResponse;
 class TaskComplete;
 }  // namespace proto
 
+namespace rpc
+{
+namespace request
+{
+class SendPayment;
+}  // namespace request
+}  // namespace rpc
+
 class Factory;
 }  // namespace opentxs
 
@@ -86,6 +100,7 @@ class RPC final : virtual public rpc::internal::RPC, Lockable
 public:
     auto Process(const proto::RPCCommand& command) const
         -> proto::RPCResponse final;
+    auto Process(const request::Base& command) const -> response::Base final;
 
     ~RPC() final;
 
@@ -125,13 +140,14 @@ private:
     static void add_output_task(
         proto::RPCResponse& output,
         const std::string& taskid);
+    static auto get_account_event_type(
+        StorageBox storagebox,
+        Amount amount) noexcept -> rpc::AccountEventType;
     static auto get_args(const Args& serialized) -> ArgList;
     static auto get_index(std::int32_t instance) -> std::size_t;
     static auto init(const proto::RPCCommand& command) -> proto::RPCResponse;
     static auto invalid_command(const proto::RPCCommand& command)
         -> proto::RPCResponse;
-    static auto storagebox_to_accounteventtype(StorageBox storagebox)
-        -> proto::AccountEventType;
 
     auto accept_pending_payments(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
@@ -139,6 +155,8 @@ private:
         -> proto::RPCResponse;
     auto add_contact(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
+    auto client_session(const request::Base& command) const noexcept(false)
+        -> const api::client::internal::Manager&;
     auto create_account(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto create_compatible_account(const proto::RPCCommand& command) const
@@ -167,26 +185,29 @@ private:
     void evaluate_register_nym(
         const api::client::OTX::Result& result,
         T& output) const;
-    void evaluate_send_payment_cheque(
+    auto evaluate_send_payment_cheque(
         const api::client::OTX::Result& result,
-        proto::TaskComplete& output) const;
-    void evaluate_send_payment_transfer(
-        const api::client::internal::Manager& client,
+        proto::TaskComplete& output) const noexcept -> void;
+    auto evaluate_send_payment_transfer(
+        const api::client::Manager& api,
         const api::client::OTX::Result& result,
-        proto::RPCResponse& output) const;
+        proto::TaskComplete& output) const noexcept -> void;
+    auto evaluate_transaction_reply(
+        const api::client::Manager& api,
+        const Message& reply) const noexcept -> bool;
     template <typename T>
     void evaluate_transaction_reply(
-        const api::client::internal::Manager& client,
+        const api::client::Manager& client,
         const Message& reply,
         T& output,
         const proto::RPCResponseCode code =
             proto::RPCRESPONSE_TRANSACTION_FAILED) const;
     auto get_client(std::int32_t instance) const
         -> const api::client::internal::Manager*;
-    auto get_account_activity(const proto::RPCCommand& command) const
-        -> proto::RPCResponse;
-    auto get_account_balance(const proto::RPCCommand& command) const
-        -> proto::RPCResponse;
+    auto get_account_activity(const request::Base& command) const
+        -> response::Base;
+    auto get_account_balance(const request::Base& command) const
+        -> response::Base;
     auto get_compatible_accounts(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto get_nyms(const proto::RPCCommand& command) const -> proto::RPCResponse;
@@ -227,16 +248,16 @@ private:
     auto is_client_session(std::int32_t instance) const -> bool;
     auto is_server_session(std::int32_t instance) const -> bool;
     auto is_session_valid(std::int32_t instance) const -> bool;
-    auto list_accounts(const proto::RPCCommand& command) const
-        -> proto::RPCResponse;
+    auto list_accounts(const request::Base& command) const noexcept
+        -> response::Base;
     auto list_contacts(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto list_client_sessions(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto list_seeds(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
-    auto list_nyms(const proto::RPCCommand& command) const
-        -> proto::RPCResponse;
+    auto list_nyms(const request::Base& command) const noexcept
+        -> response::Base;
     auto list_server_contracts(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto list_server_sessions(const proto::RPCCommand& command) const
@@ -247,22 +268,38 @@ private:
         -> proto::RPCResponse;
     auto move_funds(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
-    void queue_task(
+    [[deprecated]] auto queue_task(
         const identifier::Nym& nymID,
         const std::string taskID,
         Finish&& finish,
         Future&& future,
-        proto::RPCResponse& output) const;
+        proto::RPCResponse& output) const -> void;
+    auto queue_task(
+        const api::Core& api,
+        const identifier::Nym& nymID,
+        const std::string taskID,
+        Finish&& finish,
+        Future&& future) const noexcept -> std::string;
     auto register_nym(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto rename_account(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
-    auto send_payment(const proto::RPCCommand& command) const
-        -> proto::RPCResponse;
+    auto send_payment(const request::Base& command) const noexcept
+        -> response::Base;
+    auto send_payment_blockchain(
+        const api::client::Manager& api,
+        const request::SendPayment& command) const noexcept -> response::Base;
+    auto send_payment_custodial(
+        const api::client::Manager& api,
+        const request::SendPayment& command) const noexcept -> response::Base;
+    auto session(const request::Base& command) const noexcept(false)
+        -> const api::Core&;
     auto start_client(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto start_server(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
+    auto status(const response::Base::Identifiers& ids) const noexcept
+        -> ResponseCode;
 
     void task_handler(const zmq::Message& message);
 

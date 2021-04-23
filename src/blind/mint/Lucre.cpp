@@ -24,6 +24,7 @@ extern "C" {
 #include "internal/api/Api.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/blind/CashType.hpp"
 #include "opentxs/blind/Token.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Contract.hpp"

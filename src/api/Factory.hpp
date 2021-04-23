@@ -23,6 +23,7 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Primitives.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
+#include "opentxs/blind/CashType.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/Blockchain.hpp"
 #endif  // OT_BLOCKCHAIN
@@ -35,6 +36,7 @@
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #endif  // OT_BLOCKCHAIN
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -59,6 +61,7 @@
 #include "opentxs/core/contract/peer/OutBailmentRequest.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
+#include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
@@ -70,6 +73,9 @@
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
+#include "opentxs/crypto/key/asymmetric/Role.hpp"
+#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
+#include "opentxs/crypto/key/symmetric/Source.hpp"
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 
@@ -89,6 +95,7 @@ namespace bitcoin
 {
 class Block;
 class Script;
+class Transaction;
 }  // namespace bitcoin
 
 class Block;

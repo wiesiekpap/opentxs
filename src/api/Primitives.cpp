@@ -11,7 +11,6 @@
 
 #include "internal/api/Factory.hpp"
 #include "internal/core/Core.hpp"
-#include "opentxs/api/Primitives.hpp"
 
 //#define OT_METHOD "opentxs::Primitives::"
 

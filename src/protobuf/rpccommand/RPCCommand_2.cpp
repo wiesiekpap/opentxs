@@ -1187,7 +1187,41 @@ auto CheckProto_2(const RPCCommand& input, const bool silent) -> bool
 
 auto CheckProto_3(const RPCCommand& input, const bool silent) -> bool
 {
-    return CheckProto_2(input, silent);
+    CHECK_IDENTIFIER(cookie)
+    CHECK_EXISTS(type)
+
+    switch (input.type()) {
+        case RPCCOMMAND_LISTACCOUNTS: {
+            if (0 > input.session()) { FAIL_1("invalid session"); }
+
+            OPTIONAL_IDENTIFIERS(associatenym);
+            OPTIONAL_IDENTIFIER(owner);
+            OPTIONAL_IDENTIFIER(notary);
+            OPTIONAL_IDENTIFIER(unit);
+            CHECK_NONE(identifier);
+            CHECK_NONE(arg);
+            CHECK_EXCLUDED(hdseed);
+            CHECK_EXCLUDED(createnym);
+            CHECK_NONE(claim);
+            CHECK_NONE(server);
+            CHECK_EXCLUDED(createunit);
+            CHECK_EXCLUDED(sendpayment);
+            CHECK_EXCLUDED(movefunds);
+            CHECK_NONE(addcontact);
+            CHECK_NONE(verifyclaim);
+            CHECK_NONE(sendmessage);
+            CHECK_NONE(acceptverification);
+            CHECK_NONE(acceptpendingpayment);
+            CHECK_NONE(getworkflow);
+            CHECK_EXCLUDED(param);
+            CHECK_NONE(modifyaccount);
+        } break;
+        default: {
+            return CheckProto_2(input, silent);
+        }
+    }
+
+    return true;
 }
 
 auto CheckProto_4(const RPCCommand& input, const bool silent) -> bool

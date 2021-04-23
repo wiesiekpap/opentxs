@@ -14,6 +14,7 @@
 #include <numeric>
 #include <optional>
 #include <stdexcept>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -22,6 +23,7 @@
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/protobuf/BlockchainTransaction.pb.h"
 #include "util/Container.hpp"
 
