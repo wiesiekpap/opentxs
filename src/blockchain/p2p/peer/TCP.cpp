@@ -7,16 +7,17 @@
 #include "1_Internal.hpp"           // IWYU pragma: associated
 #include "blockchain/p2p/Peer.hpp"  // IWYU pragma: associated
 
-#include <array>
+#include <boost/asio.hpp>
 #include <cstddef>
-#include <cstring>
-#include <stdexcept>
 
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
-#include "opentxs/api/Endpoints.hpp"
+#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/network/Asio.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/network/asio/Endpoint.hpp"
+#include "opentxs/network/asio/Socket.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
@@ -25,10 +26,12 @@
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "util/Work.hpp"
 
 #define OT_METHOD                                                              \
     "opentxs::blockchain::p2p::implementation::TCPConnectionManager::"
+
+namespace asio = boost::asio;
+using tcp = asio::ip::tcp;
 
 namespace opentxs::blockchain::p2p::implementation
 {
@@ -36,80 +39,30 @@ struct TCPConnectionManager final : public Peer::ConnectionManager {
     const api::Core& api_;
     Peer& parent_;
     const Flag& running_;
-    const tcp::endpoint endpoint_;
-    const blockchain::client::internal::IO& context_;
+    const network::asio::Endpoint endpoint_;
     const Space connection_id_;
     const std::size_t header_bytes_;
     std::promise<void> connection_id_promise_;
-    tcp::socket socket_;
+    network::asio::Socket socket_;
     OTData header_;
     OTZMQListenCallback cb_;
     OTZMQDealerSocket dealer_;
 
-    static auto make_endpoint(
-        const Network type,
-        const Data& raw,
-        const std::uint16_t port) noexcept -> tcp::endpoint
-    {
-        auto output = ip::address_v6{};
-
-        switch (type) {
-            case p2p::Network::ipv6: {
-                auto bytes = ip::address_v6::bytes_type{};
-
-                OT_ASSERT(bytes.size() == raw.size());
-
-                std::memcpy(&bytes, raw.data(), bytes.size());
-                output = ip::make_address_v6(bytes);
-            } break;
-            case p2p::Network::ipv4: {
-                auto output4 = ip::address_v4{};
-                auto bytes = ip::address_v4::bytes_type{};
-
-                OT_ASSERT(bytes.size() == raw.size());
-
-                std::memcpy(&bytes, raw.data(), bytes.size());
-                output4 = ip::make_address_v4(bytes);
-                output = ip::make_address_v6(
-                    std::string("::ffff:") + output4.to_string());
-            } break;
-            default: {
-                OT_FAIL;
-            }
-        }
-
-        return ip::tcp::endpoint{output, port};
-    }
-    static auto make_buffer(const std::size_t size) noexcept -> OTData
-    {
-        auto output = Data::Factory();
-        output->SetSize(size);
-
-        return output;
-    }
-
     auto address() const noexcept -> std::string final
     {
-        return endpoint_.address().to_string();
+        return endpoint_.GetMapped();
     }
     auto endpoint_data() const noexcept -> EndpointData final
     {
-        try {
-            const auto local = socket_.local_endpoint();
-
-            return {local.address().to_v6().to_string(), local.port()};
-        } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
-            OT_FAIL;
-        }
+        return {address(), port()};
     }
     auto host() const noexcept -> std::string final
     {
-        return endpoint_.address().to_string();
+        return endpoint_.GetAddress();
     }
     auto port() const noexcept -> std::uint16_t final
     {
-        return endpoint_.port();
+        return endpoint_.GetPort();
     }
     auto style() const noexcept -> p2p::Network final
     {
@@ -120,20 +73,19 @@ struct TCPConnectionManager final : public Peer::ConnectionManager {
     {
         if (0 < connection_id_.size()) {
             LogVerbose(OT_METHOD)(__FUNCTION__)(": Connecting to ")(
-                endpoint_.address().to_string())(":")(endpoint_.port())
+                endpoint_.str())
                 .Flush();
-            context_.Connect(connection_id_, endpoint_, socket_);
+            socket_.Connect(reader(connection_id_));
         }
     }
     auto init(const int id) noexcept -> bool final
     {
         auto future = connection_id_promise_.get_future();
-        auto zmq =
-            dealer_->Start(api_.Endpoints().InternalBlockchainAsioContext());
+        auto zmq = dealer_->Start(api_.Asio().NotificationEndpoint());
 
         OT_ASSERT(zmq);
 
-        auto message = MakeWork(api_, OT_ZMQ_REGISTER_SIGNAL);
+        auto message = MakeWork(api_, WorkType::AsioRegister);
         message->AddFrame(id);
         zmq = dealer_->Send(message);
 
@@ -182,8 +134,7 @@ struct TCPConnectionManager final : public Peer::ConnectionManager {
             } break;
             case Peer::Task::Connect: {
                 LogVerbose(OT_METHOD)(__FUNCTION__)(": Connect to ")(
-                    endpoint_.address().to_string())(":")(endpoint_.port())(
-                    " successful")
+                    endpoint_.str())(" successful")
                     .Flush();
                 parent_.on_connect();
                 run();
@@ -224,7 +175,7 @@ struct TCPConnectionManager final : public Peer::ConnectionManager {
     auto receive(const OTZMQWorkType type, const std::size_t bytes) noexcept
         -> void
     {
-        context_.Receive(connection_id_, type, bytes, socket_);
+        socket_.Receive(reader(connection_id_), type, bytes);
     }
     auto run() noexcept -> void
     {
@@ -233,41 +184,14 @@ struct TCPConnectionManager final : public Peer::ConnectionManager {
                 static_cast<OTZMQWorkType>(Peer::Task::Header), header_bytes_);
         }
     }
-    auto shutdown_external() noexcept -> void final
-    {
-        try {
-            socket_.close();
-        } catch (...) {
-        }
-    }
-    auto stop_external() noexcept -> void final
-    {
-        try {
-            socket_.shutdown(tcp::socket::shutdown_both);
-        } catch (...) {
-        }
-    }
+    auto shutdown_external() noexcept -> void final { socket_.Close(); }
+    auto stop_external() noexcept -> void final { socket_.Close(); }
     auto stop_internal() noexcept -> void final { dealer_->Close(); }
     auto transmit(
         const zmq::Frame& data,
-        std::shared_ptr<Peer::SendPromise> promise) noexcept -> void final
+        std::unique_ptr<Peer::SendPromise> promise) noexcept -> void final
     {
-        auto it = static_cast<const std::byte*>(data.data());
-        auto bytes = std::make_unique<Space>(it, it + data.size());
-        auto work = [=, b{bytes.release()}]() -> void {
-            auto cb = [=](auto& error, auto bytes) -> void {
-                auto cleanup = std::unique_ptr<Space>{b};
-
-                try {
-                    if (promise) { promise->set_value({error, bytes}); }
-                } catch (...) {
-                }
-            };
-            asio::async_write(socket_, asio::buffer(b->data(), b->size()), cb);
-        };
-
-        auto& asio = context_.operator boost::asio::io_context&();
-        asio.post(work);
+        socket_.Transmit(data.Bytes(), std::move(promise));
     }
 
     TCPConnectionManager(
@@ -275,19 +199,40 @@ struct TCPConnectionManager final : public Peer::ConnectionManager {
         Peer& parent,
         const Flag& running,
         const Peer::Address& address,
-        const std::size_t headerSize,
-        const blockchain::client::internal::IO& context) noexcept
+        const std::size_t headerSize) noexcept
         : api_(api)
         , parent_(parent)
         , running_(running)
-        , endpoint_(
-              make_endpoint(address.Type(), address.Bytes(), address.Port()))
-        , context_(context)
+        , endpoint_([&]() -> network::asio::Endpoint {
+            using Type = network::asio::Endpoint::Type;
+
+            switch (address.Type()) {
+                case p2p::Network::ipv6: {
+
+                    return {
+                        Type::ipv6, address.Bytes()->Bytes(), address.Port()};
+                }
+                case p2p::Network::ipv4: {
+
+                    return {
+                        Type::ipv4, address.Bytes()->Bytes(), address.Port()};
+                }
+                default: {
+
+                    return {};
+                }
+            }
+        }())
         , connection_id_()
         , header_bytes_(headerSize)
         , connection_id_promise_()
-        , socket_(context_.operator boost::asio::io_context&())
-        , header_(make_buffer(headerSize))
+        , socket_(api_.Asio().MakeSocket(endpoint_))
+        , header_([&] {
+            auto out = api_.Factory().Data();
+            out->SetSize(headerSize);
+
+            return out;
+        }())
         , cb_(zmq::ListenCallback::Factory(
               [&](auto& in) { this->pipeline(in); }))
         , dealer_(api.ZeroMQ().DealerSocket(
@@ -299,8 +244,7 @@ struct TCPConnectionManager final : public Peer::ConnectionManager {
     ~TCPConnectionManager() final
     {
         stop_internal();
-        stop_external();
-        shutdown_external();
+        socket_.Close();
     }
 };
 
@@ -309,11 +253,9 @@ auto Peer::ConnectionManager::TCP(
     Peer& parent,
     const Flag& running,
     const Peer::Address& address,
-    const std::size_t headerSize,
-    const blockchain::client::internal::IO& context) noexcept
-    -> std::unique_ptr<ConnectionManager>
+    const std::size_t headerSize) noexcept -> std::unique_ptr<ConnectionManager>
 {
     return std::make_unique<TCPConnectionManager>(
-        api, parent, running, address, headerSize, context);
+        api, parent, running, address, headerSize);
 }
 }  // namespace opentxs::blockchain::p2p::implementation

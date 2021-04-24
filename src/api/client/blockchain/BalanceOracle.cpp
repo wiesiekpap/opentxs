@@ -3,14 +3,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"               // IWYU pragma: associated
-#include "1_Internal.hpp"             // IWYU pragma: associated
-#include "api/client/Blockchain.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                              // IWYU pragma: associated
+#include "1_Internal.hpp"                            // IWYU pragma: associated
+#include "api/client/blockchain/Imp_blockchain.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
 #include <iterator>
 #include <map>
 #include <set>
+#include <utility>
 
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -28,12 +29,11 @@
 #include "opentxs/util/WorkType.hpp"
 #include "util/ScopeGuard.hpp"
 
-// #define OT_METHOD
-// "opentxs::api::client::implementation::Blockchain::BalanceOracle::"
+// #define OT_METHOD "opentxs::api::client::implementation::BalanceOracle::"
 
 namespace opentxs::api::client::implementation
 {
-Blockchain::BalanceOracle::BalanceOracle(
+BalanceOracle::BalanceOracle(
     const api::client::internal::Blockchain& parent,
     const api::Core& api) noexcept
     : parent_(parent)
@@ -50,8 +50,7 @@ Blockchain::BalanceOracle::BalanceOracle(
     OT_ASSERT(started);
 }
 
-auto Blockchain::BalanceOracle::cb(
-    opentxs::network::zeromq::Message& in) noexcept -> void
+auto BalanceOracle::cb(opentxs::network::zeromq::Message& in) noexcept -> void
 {
     const auto& header = in.Header();
 
@@ -114,7 +113,7 @@ auto Blockchain::BalanceOracle::cb(
     }
 }
 
-auto Blockchain::BalanceOracle::RefreshBalance(
+auto BalanceOracle::RefreshBalance(
     const identifier::Nym& owner,
     const Chain chain) const noexcept -> void
 {
@@ -126,9 +125,8 @@ auto Blockchain::BalanceOracle::RefreshBalance(
     }
 }
 
-auto Blockchain::BalanceOracle::UpdateBalance(
-    const Chain chain,
-    const Balance balance) const noexcept -> void
+auto BalanceOracle::UpdateBalance(const Chain chain, const Balance balance)
+    const noexcept -> void
 {
     auto cb = [&](const auto& in) {
         auto out = zmq_.Message(in);
@@ -144,7 +142,7 @@ auto Blockchain::BalanceOracle::UpdateBalance(
     std::for_each(std::begin(subscribers), std::end(subscribers), cb);
 }
 
-auto Blockchain::BalanceOracle::UpdateBalance(
+auto BalanceOracle::UpdateBalance(
     const identifier::Nym& owner,
     const Chain chain,
     const Balance balance) const noexcept -> void

@@ -93,6 +93,7 @@ Context::Context(
     , zmq_context_(opentxs::Factory::ZMQContext())
     , signal_handler_(nullptr)
     , log_(factory::Log(zmq_context_, get_arg(args, OPENTXS_ARG_LOGENDPOINT)))
+    , asio_()
     , thread_pool_()
     , crypto_(nullptr)
     , factory_(nullptr)
@@ -219,6 +220,7 @@ void Context::Init()
     }
 
     Init_Log(argLevel);
+    Init_Asio();
     thread_pool_ = factory::ThreadPool(zmq_context_);
     init_pid();
     Init_Crypto();
@@ -228,6 +230,15 @@ void Context::Init()
     Init_Rlimit();
 #endif  // _WIN32
     Init_Zap();
+}
+
+void Context::Init_Asio()
+{
+    asio_ = std::make_unique<network::Asio>(zmq_context_);
+
+    OT_ASSERT(asio_);
+
+    asio_->Init();
 }
 
 void Context::Init_Crypto()
@@ -578,6 +589,8 @@ Context::~Context()
     server_.clear();
     thread_pool_->Shutdown();
     thread_pool_.reset();
+    asio_->Shutdown();
+    asio_.reset();
     LogSource::Shutdown();
     log_.reset();
 }

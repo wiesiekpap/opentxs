@@ -10,7 +10,6 @@
 #include <chrono>
 #include <stdexcept>
 #include <string_view>
-#include <type_traits>
 
 #include "blockchain/DownloadTask.hpp"
 #include "internal/api/client/Client.hpp"
@@ -43,7 +42,6 @@ Peer::Peer(
     const client::internal::FilterOracle& filter,
     const client::internal::BlockOracle& block,
     const client::internal::PeerManager& manager,
-    const blockchain::client::internal::IO& context,
     const int id,
     const std::string& shutdown,
     const std::size_t headerSize,
@@ -66,13 +64,8 @@ Peer::Peer(
     , verify_filter_checkpoint_(config.download_cfilters_)
     , id_(id)
     , shutdown_endpoint_(shutdown)
-    , connection_(init_connection_manager(
-          api_,
-          *this,
-          running_,
-          address_,
-          headerSize,
-          context))
+    , connection_(
+          init_connection_manager(api_, *this, running_, address_, headerSize))
     , send_promises_()
     , activity_()
     , init_promise_()
@@ -209,14 +202,12 @@ auto Peer::init_connection_manager(
     Peer& parent,
     const Flag& running,
     const Address& address,
-    const std::size_t headerSize,
-    const blockchain::client::internal::IO& context) noexcept
-    -> std::unique_ptr<ConnectionManager>
+    const std::size_t headerSize) noexcept -> std::unique_ptr<ConnectionManager>
 {
     if (Network::zmq != address.Type()) {
 
         return ConnectionManager::TCP(
-            api, parent, running, address, headerSize, context);
+            api, parent, running, address, headerSize);
     } else if (address.Incoming()) {
 
         return ConnectionManager::ZMQIncoming(
@@ -593,13 +584,13 @@ auto Peer::transmit(zmq::Message& message) noexcept -> void
         " byte message:")
         .Flush();
     LogTrace(Data::Factory(payload)->asHex()).Flush();
-    auto promise = std::make_shared<SendPromise>();
+    auto promise = std::make_unique<SendPromise>();
 
     OT_ASSERT(promise);
 
     auto future = promise->get_future();
     connection_->transmit(payload, std::move(promise));
-    auto result = SendResult{};
+    auto result{false};
 
     try {
         while (running_.get()) {
@@ -621,15 +612,14 @@ auto Peer::transmit(zmq::Message& message) noexcept -> void
         return;
     }
 
-    const auto& [error, bytes] = result;
-
-    if (error) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(error.message()).Flush();
+    if (result) {
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": Sent ")(payload.size())(" bytes")
+            .Flush();
+        success = true;
+    } else {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Send error").Flush();
         success = false;
         disconnect();
-    } else {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Sent ")(bytes)(" bytes").Flush();
-        success = true;
     }
 }
 

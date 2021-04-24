@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
 #include <atomic>
 #include <chrono>
@@ -70,19 +69,15 @@ class Message;
 class Flag;
 }  // namespace opentxs
 
-namespace asio = boost::asio;
 namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::blockchain::p2p::implementation
 {
-using tcp = asio::ip::tcp;
-
 class Peer : virtual public internal::Peer, public Worker<Peer, api::Core>
 {
 public:
     using SendStatus = std::future<bool>;
-    using SendResult = std::pair<boost::system::error_code, std::size_t>;
-    using SendPromise = std::promise<SendResult>;
+    using SendPromise = std::promise<bool>;
     using Task = client::internal::PeerManager::Task;
 
     struct Address {
@@ -116,8 +111,7 @@ public:
             Peer& parent,
             const Flag& running,
             const Address& address,
-            const std::size_t headerSize,
-            const blockchain::client::internal::IO& context) noexcept
+            const std::size_t headerSize) noexcept
             -> std::unique_ptr<ConnectionManager>;
         static auto ZMQ(
             const api::Core& api,
@@ -147,7 +141,7 @@ public:
         virtual auto stop_internal() noexcept -> void = 0;
         virtual auto transmit(
             const zmq::Frame& payload,
-            std::shared_ptr<SendPromise> promise) noexcept -> void = 0;
+            std::unique_ptr<SendPromise> promise) noexcept -> void = 0;
 
         virtual ~ConnectionManager() = default;
 
@@ -340,7 +334,6 @@ protected:
         const client::internal::FilterOracle& filter,
         const client::internal::BlockOracle& block,
         const client::internal::PeerManager& manager,
-        const blockchain::client::internal::IO& io,
         const int id,
         const std::string& shutdown,
         const std::size_t headerSize,
@@ -389,8 +382,7 @@ private:
         Peer& parent,
         const Flag& running,
         const Address& address,
-        const std::size_t headerSize,
-        const blockchain::client::internal::IO& context) noexcept
+        const std::size_t headerSize) noexcept
         -> std::unique_ptr<ConnectionManager>;
 
     auto get_activity() const noexcept -> Time;

@@ -179,11 +179,6 @@ if(OPENTXS_STANDALONE)
   if(OT_INSTALL_LIBRARY_DEPENDENCIES)
     string(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE_SUFFIX)
     get_target_property(
-      Boost_system_LIBRARY
-      Boost::system
-      IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
-    )
-    get_target_property(
       Boost_filesystem_LIBRARY
       Boost::filesystem
       IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
@@ -191,6 +186,16 @@ if(OPENTXS_STANDALONE)
     get_target_property(
       Boost_iostreams_LIBRARY
       Boost::iostreams
+      IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
+    )
+    get_target_property(
+      Boost_system_LIBRARY
+      Boost::system
+      IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
+    )
+    get_target_property(
+      Boost_thread_LIBRARY
+      Boost::thread
       IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
     )
     get_target_property(
@@ -224,13 +229,14 @@ if(OPENTXS_STANDALONE)
 
     install(
       FILES
-        "${SODIUM_LIBRARY}"
-        "${ZMQ_LIBRARY_PATH}"
-        "${Protobuf_LITE_LIBRARY}"
-        "${ZLIB_LIBRARY}"
-        "${Boost_system_LIBRARY}"
         "${Boost_filesystem_LIBRARY}"
         "${Boost_iostreams_LIBRARY}"
+        "${Boost_system_LIBRARY}"
+        "${Boost_thread_LIBRARY}"
+        "${Protobuf_LITE_LIBRARY}"
+        "${SODIUM_LIBRARY}"
+        "${ZLIB_LIBRARY}"
+        "${ZMQ_LIBRARY_PATH}"
       DESTINATION ${CMAKE_INSTALL_LIBDIR}
       COMPONENT main
     )
@@ -247,20 +253,6 @@ if(OPENTXS_STANDALONE)
         COMPONENT main
       )
     endif()
-
-    if(OT_BLOCKCHAIN_EXPORT)
-      get_target_property(
-        Boost_thread_LIBRARY
-        Boost::thread
-        IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
-      )
-
-      install(
-        FILES "${Boost_thread_LIBRARY}"
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        COMPONENT main
-      )
-    endif(OT_BLOCKCHAIN_EXPORT)
 
     if(DHT_EXPORT)
       message(WARNING "Installing OpenDHT dependencies not supported yet")

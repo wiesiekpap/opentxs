@@ -31,6 +31,7 @@
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/ThreadPool.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
+#include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/ZAP.hpp"
 #include "opentxs/api/server/Manager.hpp"
 #include "opentxs/core/Lockable.hpp"
@@ -71,6 +72,7 @@ namespace opentxs::api::implementation
 class Context final : public api::internal::Context, Lockable, Periodic
 {
 public:
+    auto Asio() const noexcept -> const network::Asio& final { return *asio_; }
     auto Client(const int instance) const
         -> const api::client::internal::Manager& final;
     auto Clients() const -> std::size_t final { return client_.size(); }
@@ -133,6 +135,7 @@ private:
     OTZMQContext zmq_context_;
     mutable std::unique_ptr<Signals> signal_handler_;
     std::unique_ptr<api::internal::Log> log_;
+    std::unique_ptr<network::Asio> asio_;
     std::unique_ptr<api::internal::ThreadPool> thread_pool_;
     std::unique_ptr<api::Crypto> crypto_;
     std::unique_ptr<api::Primitives> factory_;
@@ -160,6 +163,7 @@ private:
     void start_client(const Lock& lock, const ArgList& args) const;
     void start_server(const Lock& lock, const ArgList& args) const;
 
+    void Init_Asio();
     void Init_Crypto();
     void Init_Factory();
     void Init_Log(const std::int32_t argLevel);

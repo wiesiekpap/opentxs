@@ -3,14 +3,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"               // IWYU pragma: associated
-#include "1_Internal.hpp"             // IWYU pragma: associated
-#include "api/client/Blockchain.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                   // IWYU pragma: associated
+#include "1_Internal.hpp"                 // IWYU pragma: associated
+#include "api/client/blockchain/Imp.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
 #include <iterator>
 #include <map>
 #include <set>
+#include <utility>
 
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -25,7 +26,7 @@
 
 namespace opentxs::api::client::implementation
 {
-Blockchain::AccountCache::AccountCache(const api::Core& api) noexcept
+AccountCache::AccountCache(const api::Core& api) noexcept
     : api_(api)
     , lock_()
     , account_map_()
@@ -34,7 +35,7 @@ Blockchain::AccountCache::AccountCache(const api::Core& api) noexcept
 {
 }
 
-auto Blockchain::AccountCache::build_account_map(
+auto AccountCache::build_account_map(
     const Lock&,
     const Chain chain,
     std::optional<NymAccountMap>& map) const noexcept -> void
@@ -66,9 +67,8 @@ auto Blockchain::AccountCache::build_account_map(
     });
 }
 
-auto Blockchain::AccountCache::get_account_map(
-    const Lock& lock,
-    const Chain chain) const noexcept -> NymAccountMap&
+auto AccountCache::get_account_map(const Lock& lock, const Chain chain)
+    const noexcept -> NymAccountMap&
 {
     auto& map = account_map_[chain];
 
@@ -79,9 +79,8 @@ auto Blockchain::AccountCache::get_account_map(
     return map.value();
 }
 
-auto Blockchain::AccountCache::List(
-    const identifier::Nym& nymID,
-    const Chain chain) const noexcept -> std::set<OTIdentifier>
+auto AccountCache::List(const identifier::Nym& nymID, const Chain chain)
+    const noexcept -> std::set<OTIdentifier>
 {
     Lock lock(lock_);
     const auto& map = get_account_map(lock, chain);
@@ -92,7 +91,7 @@ auto Blockchain::AccountCache::List(
     return it->second;
 }
 
-auto Blockchain::AccountCache::New(
+auto AccountCache::New(
     const AccountType type,
     const Chain chain,
     const Identifier& account,
@@ -104,7 +103,7 @@ auto Blockchain::AccountCache::New(
     account_type_.emplace(account, type);
 }
 
-auto Blockchain::AccountCache::Owner(const Identifier& accountID) const noexcept
+auto AccountCache::Owner(const Identifier& accountID) const noexcept
     -> const identifier::Nym&
 {
     static const auto blank = api_.Factory().NymID();
@@ -118,7 +117,7 @@ auto Blockchain::AccountCache::Owner(const Identifier& accountID) const noexcept
     }
 }
 
-auto Blockchain::AccountCache::Populate() noexcept -> void
+auto AccountCache::Populate() noexcept -> void
 {
     Lock lock(lock_);
 
@@ -128,7 +127,7 @@ auto Blockchain::AccountCache::Populate() noexcept -> void
     }
 }
 
-auto Blockchain::AccountCache::Type(const Identifier& accountID) const noexcept
+auto AccountCache::Type(const Identifier& accountID) const noexcept
     -> AccountType
 {
     static const auto blank = api_.Factory().NymID();

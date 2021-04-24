@@ -44,7 +44,7 @@
 #include "opentxs/protobuf/ServerContract.pb.h"
 #include "opentxs/protobuf/UnitDefinition.pb.h"
 
-#define OT_METHOD "opentxs::Dht"
+#define OT_METHOD "opentxs::api::network::implementation::Dht::"
 
 namespace zmq = opentxs::network::zeromq;
 

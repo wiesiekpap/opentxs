@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-#include "api/client/Blockchain.hpp"
+#include "internal/api/client/Client.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 
@@ -19,10 +19,10 @@ namespace api
 {
 namespace client
 {
-namespace implementation
+namespace internal
 {
-class Blockchain;
-}  // namespace implementation
+struct Blockchain;
+}  // namespace internal
 }  // namespace client
 
 class Core;
@@ -37,7 +37,7 @@ class BlockchainP2PHello;
 namespace opentxs::api::client::blockchain
 {
 struct SyncClient {
-    using Blockchain = implementation::Blockchain;
+    using Blockchain = client::internal::Blockchain;
     using Chain = opentxs::blockchain::Type;
     using Position = opentxs::blockchain::block::Position;
     using States = std::map<Chain, Position>;

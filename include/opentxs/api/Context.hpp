@@ -30,6 +30,7 @@ class Manager;
 
 namespace network
 {
+class Asio;
 class ZAP;
 }  // namespace network
 
@@ -84,6 +85,7 @@ public:
     OPENTXS_EXPORT static std::string SuggestFolder(
         const std::string& app) noexcept;
 
+    OPENTXS_EXPORT virtual const network::Asio& Asio() const noexcept = 0;
     OPENTXS_EXPORT virtual const api::client::Manager& Client(
         const int instance) const = 0;
     OPENTXS_EXPORT virtual std::size_t Clients() const = 0;

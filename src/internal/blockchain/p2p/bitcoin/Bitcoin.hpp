@@ -34,7 +34,6 @@ namespace client
 {
 namespace internal
 {
-struct IO;
 struct Network;
 struct PeerManager;
 }  // namespace internal

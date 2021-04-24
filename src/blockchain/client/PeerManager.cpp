@@ -43,7 +43,6 @@ auto BlockchainPeerManager(
     const blockchain::client::internal::FilterOracle& filter,
     const blockchain::client::internal::BlockOracle& block,
     const blockchain::client::internal::PeerDatabase& database,
-    const blockchain::client::internal::IO& io,
     const blockchain::Type type,
     const api::client::blockchain::BlockStorage policy,
     const std::string& seednode,
@@ -60,7 +59,6 @@ auto BlockchainPeerManager(
         filter,
         block,
         database,
-        io,
         type,
         policy,
         seednode,
@@ -78,7 +76,6 @@ PeerManager::PeerManager(
     const internal::FilterOracle& filter,
     const internal::BlockOracle& block,
     const internal::PeerDatabase& database,
-    const blockchain::client::internal::IO& io,
     const Type chain,
     const api::client::blockchain::BlockStorage policy,
     const std::string& seednode,
@@ -86,7 +83,6 @@ PeerManager::PeerManager(
     : internal::PeerManager()
     , Worker(api, std::chrono::milliseconds(100))
     , database_(database)
-    , io_context_(io)
     , jobs_(api)
     , peers_(
           api,
@@ -102,7 +98,6 @@ PeerManager::PeerManager(
           shutdown,
           chain,
           seednode,
-          io_context_,
           peer_target(chain, policy))
     , init_promise_()
     , init_(init_promise_.get_future())

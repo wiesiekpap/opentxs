@@ -32,7 +32,6 @@ struct BlockOracle;
 struct Config;
 struct FilterOracle;
 struct HeaderOracle;
-struct IO;
 struct Network;
 struct PeerManager;
 }  // namespace internal
@@ -82,7 +81,6 @@ auto BitcoinP2PPeerLegacy(
     const blockchain::client::internal::BlockOracle& block,
     const blockchain::client::internal::PeerManager& manager,
     const api::client::blockchain::BlockStorage policy,
-    const blockchain::client::internal::IO& io,
     const int id,
     std::unique_ptr<blockchain::p2p::internal::Address> address,
     const std::string& shutdown)

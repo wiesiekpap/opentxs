@@ -59,7 +59,6 @@ target_link_libraries(
 )
 target_include_directories(
   opentxs-api-client SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
-                                    "${opentxs_SOURCE_DIR}/deps/bech32/ref/c++"
 )
 
 if(OT_QT_EXPORT)

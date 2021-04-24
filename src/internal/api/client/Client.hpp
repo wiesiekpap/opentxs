@@ -44,6 +44,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 
@@ -114,7 +115,6 @@ namespace client
 {
 namespace internal
 {
-struct IO;
 struct ThreadPool;
 }  // namespace internal
 }  // namespace client
@@ -141,6 +141,7 @@ class Context;
 
 namespace proto
 {
+class BlockchainP2PHello;
 class Issuer;
 }  // namespace proto
 
@@ -172,14 +173,10 @@ struct Blockchain : virtual public api::client::Blockchain {
         const identifier::Nym& nymID,
         const Chain chain) const noexcept(false)
         -> const blockchain::internal::BalanceTree& = 0;
-#if OT_BLOCKCHAIN
     virtual auto BlockchainDB() const noexcept
         -> const blockchain::database::implementation::Database& = 0;
-#endif  // OT_BLOCKCHAIN
     virtual auto Contacts() const noexcept -> const api::client::Contacts& = 0;
-#if OT_BLOCKCHAIN
-    virtual auto IO() const noexcept
-        -> const opentxs::blockchain::client::internal::IO& = 0;
+    virtual auto Hello() const noexcept -> proto::BlockchainP2PHello = 0;
     virtual auto IsEnabled(const opentxs::blockchain::Type chain) const noexcept
         -> bool = 0;
     virtual auto KeyEndpoint() const noexcept -> const std::string& = 0;
@@ -188,11 +185,10 @@ struct Blockchain : virtual public api::client::Blockchain {
     virtual bool ProcessMergedContact(
         const Contact& parent,
         const Contact& child) const noexcept = 0;
-#endif  // OT_BLOCKCHAIN
+    virtual auto ProcessSyncData(OTZMQMessage&& in) const noexcept -> void = 0;
     virtual auto PubkeyHash(
         const opentxs::blockchain::Type chain,
         const Data& pubkey) const noexcept(false) -> OTData = 0;
-#if OT_BLOCKCHAIN
     virtual auto Reorg() const noexcept
         -> const opentxs::network::zeromq::socket::Publish& = 0;
     virtual auto ReportProgress(
@@ -215,14 +211,11 @@ struct Blockchain : virtual public api::client::Blockchain {
         const identifier::Nym& owner,
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::Balance balance) const noexcept -> void = 0;
-#endif  // OT_BLOCKCHAIN
     virtual auto UpdateElement(
         std::vector<ReadView>& pubkeyHashes) const noexcept -> void = 0;
-#if OT_BLOCKCHAIN
     virtual auto UpdatePeer(
         const opentxs::blockchain::Type chain,
         const std::string& address) const noexcept -> void = 0;
-#endif  // OT_BLOCKCHAIN
 
     virtual auto Init() noexcept -> void = 0;
     virtual auto Shutdown() noexcept -> void = 0;

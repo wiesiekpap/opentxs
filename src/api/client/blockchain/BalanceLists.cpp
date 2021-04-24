@@ -3,11 +3,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"               // IWYU pragma: associated
-#include "1_Internal.hpp"             // IWYU pragma: associated
-#include "api/client/Blockchain.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                   // IWYU pragma: associated
+#include "1_Internal.hpp"                 // IWYU pragma: associated
+#include "api/client/blockchain/Imp.hpp"  // IWYU pragma: associated
 
 #include <map>
+#include <utility>
 
 #include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/api/client/blockchain/Factory.hpp"
@@ -25,11 +26,11 @@ struct Core;
 }  // namespace opentxs
 
 // #define OT_METHOD
-// "opentxs::api::client::implementation::Blockchain::BalanceLists::"
+// "opentxs::api::client::implementation::BalanceLists::"
 
 namespace opentxs::api::client::implementation
 {
-Blockchain::BalanceLists::BalanceLists(
+BalanceLists::BalanceLists(
     const api::internal::Core& api,
     api::client::internal::Blockchain& parent) noexcept
     : api_(api)
@@ -39,7 +40,7 @@ Blockchain::BalanceLists::BalanceLists(
 {
 }
 
-auto Blockchain::BalanceLists::Get(const Chain chain) noexcept
+auto BalanceLists::Get(const Chain chain) noexcept
     -> client::blockchain::internal::BalanceList&
 {
     Lock lock(lock_);

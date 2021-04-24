@@ -25,15 +25,17 @@
 #include "internal/blockchain/client/Client.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/blockchain/p2p/bitcoin/Factory.hpp"
-#include "opentxs/Bytes.hpp"
+#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/network/Asio.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/network/asio/Endpoint.hpp"
 
 #define OT_METHOD                                                              \
     "opentxs::blockchain::client::implementation::PeerManager::Peers::"
@@ -54,7 +56,6 @@ PeerManager::Peers::Peers(
     const std::string& shutdown,
     const Type chain,
     const std::string& seednode,
-    const blockchain::client::internal::IO& context,
     const std::size_t peerTarget) noexcept
     : chain_(chain)
     , api_(api)
@@ -66,19 +67,24 @@ PeerManager::Peers::Peers(
     , database_(database)
     , parent_(parent)
     , policy_(policy)
-    , context_(context)
     , running_(running)
     , shutdown_endpoint_(shutdown)
     , invalid_peer_(false)
-    , localhost_peer_(api.Factory().Data("0x7f000001", StringStyle::Hex))
+    , localhost_peer_(api_.Factory().Data("0x7f000001", StringStyle::Hex))
     , default_peer_(set_default_peer(
           seednode,
           localhost_peer_,
           const_cast<bool&>(invalid_peer_)))
     , preferred_services_(get_preferred_services(config_))
-    , resolver_(context_.operator boost::asio::io_context&())
     , next_id_(0)
-    , minimum_peers_(peerTarget)
+    , minimum_peers_([&]() -> std::size_t {
+        static const auto test =
+            api.Factory().Data("0x7f000002", StringStyle::Hex);
+
+        if (default_peer_ == test) { return 1u; }
+
+        return peerTarget;
+    }())
     , peers_()
     , active_()
     , count_()
@@ -273,45 +279,40 @@ auto PeerManager::Peers::get_dns_peer() const noexcept -> Endpoint
 
         const auto port = data.default_port_;
         LogVerbose(OT_METHOD)(__FUNCTION__)(": Using DNS seed: ")(seed).Flush();
-        const auto results = resolver_.resolve(
-            seed, std::to_string(port), Resolver::query::numeric_service);
 
-        for (const auto& result : results) {
-            const auto address = result.endpoint().address();
+        for (const auto& endpoint : api_.Asio().Resolve(seed, port)) {
             LogVerbose(OT_METHOD)(__FUNCTION__)(": Found address: ")(
-                address.to_string())
+                endpoint.GetAddress())
                 .Flush();
             auto output = Endpoint{};
+            auto network = p2p::Network{};
 
-            if (address.is_v4()) {
-                const auto bytes = address.to_v4().to_bytes();
-                output = factory::BlockchainAddress(
-                    api_,
-                    data.p2p_protocol_,
-                    p2p::Network::ipv4,
-                    api_.Factory().Data(ReadView{
-                        reinterpret_cast<const char*>(bytes.data()),
-                        bytes.size()}),
-                    port,
-                    chain_,
-                    Time{},
-                    {},
-                    false);
-            } else if (address.is_v6()) {
-                const auto bytes = address.to_v6().to_bytes();
-                output = factory::BlockchainAddress(
-                    api_,
-                    data.p2p_protocol_,
-                    p2p::Network::ipv6,
-                    api_.Factory().Data(ReadView{
-                        reinterpret_cast<const char*>(bytes.data()),
-                        bytes.size()}),
-                    port,
-                    chain_,
-                    Time{},
-                    {},
-                    false);
+            switch (endpoint.GetType()) {
+                case network::asio::Endpoint::Type::ipv4: {
+                    network = p2p::Network::ipv4;
+                } break;
+                case network::asio::Endpoint::Type::ipv6: {
+                    network = p2p::Network::ipv6;
+                } break;
+                default: {
+                    LogVerbose(OT_METHOD)(__FUNCTION__)(
+                        ": unknown endpoint type")
+                        .Flush();
+
+                    continue;
+                }
             }
+
+            output = factory::BlockchainAddress(
+                api_,
+                data.p2p_protocol_,
+                network,
+                api_.Factory().Data(endpoint.GetBytes()),
+                port,
+                chain_,
+                Time{},
+                {},
+                false);
 
             if (output) {
                 database_.AddOrUpdate(output->clone_internal());
@@ -449,7 +450,6 @@ auto PeerManager::Peers::peer_factory(Endpoint endpoint, const int id) noexcept
                 block_,
                 parent_,
                 policy_,
-                context_,
                 id,
                 std::move(endpoint),
                 shutdown_endpoint_);

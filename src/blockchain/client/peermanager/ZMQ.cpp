@@ -219,7 +219,7 @@ private:
         }();
 
         switch (work) {
-            case OT_ZMQ_REGISTER_SIGNAL: {
+            case value(WorkType::AsioRegister): {
                 OT_ASSERT(1 < body.size());
 
                 const auto peerID = body.at(1).as<int>();

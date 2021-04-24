@@ -9,8 +9,8 @@
 #include "rpc/response/Base.hpp"                 // IWYU pragma: associated
 
 #include <memory>
+#include <utility>
 
-#include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/request/SendPayment.hpp"
 
 namespace opentxs::rpc::response::implementation
