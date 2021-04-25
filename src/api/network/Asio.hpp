@@ -133,18 +133,17 @@ struct Asio::Imp final : public api::network::internal::Asio {
 
         if (0 == id.size()) { return false; }
 
-        auto buf = buffers_.get(bytes);
-        auto asioBuffer =
-            boost::asio::buffer(buf.second.data(), buf.second.size());
+        auto bufData = buffers_.get(bytes);
         const auto& endpoint = socket.endpoint_;
         boost::asio::async_read(
             socket.socket_,
-            asioBuffer,
+            bufData.second,
             [this,
              connection{space(id)},
              type,
-             buffer{std::move(buf)},
+             bufData,
              address{endpoint.str()}](const auto& e, auto size) {
+                const auto& [index, buffer] = bufData;
                 auto work = zmq_.TaggedReply(
                     reader(connection),
                     e ? value(WorkType::AsioDisconnect) : type);
@@ -155,13 +154,13 @@ struct Asio::Imp final : public api::network::internal::Asio {
                         .Flush();
                     work->AddFrame(address);
                 } else {
-                    work->AddFrame(buffer.second);
+                    work->AddFrame(buffer.data(), buffer.size());
                 }
 
                 OT_ASSERT(1 < work->Body().size());
 
                 socket_->Send(std::move(work));
-                buffers_.clear(buffer.first);
+                buffers_.clear(index);
             });
 
         return true;
@@ -241,24 +240,31 @@ struct Asio::Imp final : public api::network::internal::Asio {
 
 private:
     struct Buffers {
-        auto clear(const int id) noexcept -> void
+        using AsioBuffer = decltype(boost::asio::buffer(
+            std::declval<void*>(),
+            std::declval<std::size_t>()));
+        using Index = std::int64_t;
+
+        auto clear(Index id) noexcept -> void
         {
             auto lock = Lock{lock_};
             buffers_.erase(id);
         }
         auto get(const std::size_t bytes) noexcept
-            -> std::pair<int, WritableView>
+            -> std::pair<Index, AsioBuffer>
         {
+            auto lock = Lock{lock_};
             auto id = ++counter_;
             auto& buffer = buffers_[id];
+            buffer.resize(bytes, std::byte{0x0});
 
-            return {id, writer(buffer)(bytes)};
+            return {id, boost::asio::buffer(buffer.data(), buffer.size())};
         }
 
     private:
         mutable std::mutex lock_{};
-        int counter_{-1};
-        std::map<int, Space> buffers_{};
+        Index counter_{-1};
+        std::map<Index, Space> buffers_{};
     };
 
     const zmq::Context& zmq_;
