@@ -27,22 +27,21 @@ namespace rpc
 {
 namespace request
 {
-class SendPayment final : public Base
+class OPENTXS_EXPORT SendPayment final : public Base
 {
 public:
-    OPENTXS_EXPORT static auto DefaultVersion() noexcept -> VersionNumber;
+    static auto DefaultVersion() noexcept -> VersionNumber;
 
-    OPENTXS_EXPORT auto Amount() const noexcept -> opentxs::Amount;
-    OPENTXS_EXPORT auto DestinationAccount() const noexcept
-        -> const std::string&;
-    OPENTXS_EXPORT auto Memo() const noexcept -> const std::string&;
-    OPENTXS_EXPORT auto PaymentType() const noexcept -> rpc::PaymentType;
-    OPENTXS_EXPORT auto RecipientContact() const noexcept -> const std::string&;
-    OPENTXS_EXPORT auto SourceAccount() const noexcept -> const std::string&;
+    auto Amount() const noexcept -> opentxs::Amount;
+    auto DestinationAccount() const noexcept -> const std::string&;
+    auto Memo() const noexcept -> const std::string&;
+    auto PaymentType() const noexcept -> rpc::PaymentType;
+    auto RecipientContact() const noexcept -> const std::string&;
+    auto SourceAccount() const noexcept -> const std::string&;
 
     /// throws std::runtime_error for invalid constructor arguments
     /// cheque, voucher, invoice, blinded
-    OPENTXS_EXPORT SendPayment(
+    SendPayment(
         SessionIndex session,
         rpc::PaymentType type,
         const std::string& sourceAccount,
@@ -52,7 +51,7 @@ public:
         const AssociateNyms& nyms = {}) noexcept(false);
     /// throws std::runtime_error for invalid constructor arguments
     /// transfer
-    OPENTXS_EXPORT SendPayment(
+    SendPayment(
         SessionIndex session,
         const std::string& sourceAccount,
         const std::string& recipientContact,
@@ -62,7 +61,7 @@ public:
         const AssociateNyms& nyms = {}) noexcept(false);
     /// throws std::runtime_error for invalid constructor arguments
     /// blockchain
-    OPENTXS_EXPORT SendPayment(
+    SendPayment(
         SessionIndex session,
         const std::string& sourceAccount,
         const std::string& destinationAddress,
@@ -70,10 +69,11 @@ public:
         const std::string& recipientContact = {},
         const std::string& memo = {},
         const AssociateNyms& nyms = {}) noexcept(false);
-    SendPayment(const proto::RPCCommand& serialized) noexcept(false);
-    OPENTXS_EXPORT SendPayment() noexcept;
+    OPENTXS_NO_EXPORT SendPayment(const proto::RPCCommand& serialized) noexcept(
+        false);
+    SendPayment() noexcept;
 
-    OPENTXS_EXPORT ~SendPayment() final;
+    ~SendPayment() final;
 
 private:
     SendPayment(const SendPayment&) = delete;

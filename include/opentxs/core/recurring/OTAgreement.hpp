@@ -83,7 +83,7 @@ namespace opentxs
 // with the server's signature, can be made available to the parties and to 3rd
 // parties.
 //
-class OTAgreement : public OTCronItem
+class OPENTXS_EXPORT OTAgreement : public OTCronItem
 {
 private:  // Private prevents erroneous use by other classes.
     using ot_super = OTCronItem;
@@ -141,7 +141,7 @@ public:
     //                       const Time& VALID_FROM=0,    const Time&
     // VALID_TO=0);
 
-    OPENTXS_EXPORT bool SetProposal(
+    bool SetProposal(
         otx::context::Server& context,
         const Account& MERCHANT_ACCT,
         const String& strConsideration,
@@ -150,7 +150,7 @@ public:
 
     // Merchant Nym is passed here so we can verify the signature before
     // confirming.
-    OPENTXS_EXPORT bool Confirm(
+    bool Confirm(
         otx::context::Server& context,
         const Account& PAYER_ACCT,
         const identifier::Nym& p_id_MERCHANT_NYM,
@@ -295,9 +295,8 @@ public:
     // The recipient must also provide an opening and closing transaction
     // number(s).
     //
-    OPENTXS_EXPORT std::int64_t GetRecipientClosingTransactionNoAt(
-        std::uint32_t nIndex) const;
-    OPENTXS_EXPORT std::int32_t GetRecipientCountClosingNumbers() const;
+    std::int64_t GetRecipientClosingTransactionNoAt(std::uint32_t nIndex) const;
+    std::int32_t GetRecipientCountClosingNumbers() const;
 
     void AddRecipientClosingTransactionNo(
         const std::int64_t& lClosingTransactionNo);
@@ -305,8 +304,8 @@ public:
     // This is a higher-level than the above functions. It calls them.
     // Below is the abstraction, above is the implementation.
 
-    OPENTXS_EXPORT TransactionNumber GetRecipientOpeningNum() const;
-    OPENTXS_EXPORT TransactionNumber GetRecipientClosingNum() const;
+    TransactionNumber GetRecipientOpeningNum() const;
+    TransactionNumber GetRecipientClosingNum() const;
 
     // From OTCronItem (parent class of this)
     /*
@@ -329,10 +328,8 @@ public:
      */
     bool CanRemoveItemFromCron(const otx::context::Client& context) override;
 
-    OPENTXS_EXPORT void HarvestOpeningNumber(
-        otx::context::Server& context) override;
-    OPENTXS_EXPORT void HarvestClosingNumbers(
-        otx::context::Server& context) override;
+    void HarvestOpeningNumber(otx::context::Server& context) override;
+    void HarvestClosingNumbers(otx::context::Server& context) override;
 
     // Return True if should stay on OTCron's list for more processing.
     // Return False if expired or otherwise should be removed.
@@ -414,7 +411,7 @@ public:
      virtual bool SignContract (const identity::Nym& theNym);
 
      */
-    OPENTXS_EXPORT bool SendNoticeToAllParties(
+    bool SendNoticeToAllParties(
         const api::internal::Core& core,
         bool bSuccessMsg,
         const identity::Nym& theServerNym,
@@ -429,7 +426,7 @@ public:
         identity::Nym* pActualNym = nullptr) const;
 
     // Nym receives an Item::acknowledgment or Item::rejection.
-    OPENTXS_EXPORT static bool DropServerNoticeToNymbox(
+    static bool DropServerNoticeToNymbox(
         const api::internal::Core& core,
         bool bSuccessMsg,
         const identity::Nym& theServerNym,
@@ -451,7 +448,7 @@ public:
     void Release() override;
     void Release_Agreement();
     bool IsValidOpeningNumber(const std::int64_t& lOpeningNum) const override;
-    OPENTXS_EXPORT std::int64_t GetOpeningNumber(
+    std::int64_t GetOpeningNumber(
         const identifier::Nym& theNymID) const override;
     std::int64_t GetClosingNumber(const Identifier& theAcctID) const override;
     // return -1 if error, 0 if nothing, and 1 if the node was processed.

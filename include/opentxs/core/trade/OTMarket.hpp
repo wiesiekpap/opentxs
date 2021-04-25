@@ -74,7 +74,7 @@ using mapOfOffersTrnsNum = std::map<std::int64_t, OTOffer*>;
 // Presumably the server will have different markets for different instrument
 // definitions.
 
-class OTMarket : public Contract
+class OPENTXS_EXPORT OTMarket : public Contract
 {
 public:
     bool ValidateOfferForMarket(OTOffer& theOffer);
@@ -90,13 +90,11 @@ public:
         const std::int64_t& lTransactionNum,
         const PasswordPrompt& reason);
     // returns general information about offers on the market
-    OPENTXS_EXPORT bool GetOfferList(
+    bool GetOfferList(
         Armored& ascOutput,
         std::int64_t lDepth,
         std::int32_t& nOfferCount);
-    OPENTXS_EXPORT bool GetRecentTradeList(
-        Armored& ascOutput,
-        std::int32_t& nTradeCount);
+    bool GetRecentTradeList(Armored& ascOutput, std::int32_t& nTradeCount);
 
     // Returns more detailed information about offers for a specific Nym.
     bool GetNym_OfferList(

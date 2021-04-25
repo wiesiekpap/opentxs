@@ -17,7 +17,7 @@ namespace opentxs
 class OTBylaw;
 class Tag;
 
-class OTClause
+class OPENTXS_EXPORT OTClause
 {
     OTString m_strName;  // Name of this Clause.
     OTString m_strCode;  // script code.
@@ -31,13 +31,13 @@ class OTClause
 public:
     void SetBylaw(OTBylaw& theBylaw) { m_pBylaw = &theBylaw; }
 
-    OPENTXS_EXPORT const String& GetName() const { return m_strName; }
+    const String& GetName() const { return m_strName; }
 
     OTBylaw* GetBylaw() const { return m_pBylaw; }
 
-    OPENTXS_EXPORT const char* GetCode() const;
+    const char* GetCode() const;
 
-    OPENTXS_EXPORT void SetCode(const std::string& str_code);
+    void SetCode(const std::string& str_code);
 
     bool Compare(const OTClause& rhs) const;
 

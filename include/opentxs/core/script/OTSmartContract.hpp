@@ -68,7 +68,7 @@ class PasswordPrompt;
 
 namespace opentxs
 {
-class OTSmartContract : public OTCronItem
+class OPENTXS_EXPORT OTSmartContract : public OTCronItem
 {
 private:  // Private prevents erroneous use by other classes.
     using ot_super = OTCronItem;
@@ -171,9 +171,9 @@ public:
         otx::context::Server& context,
         const PasswordPrompt& reason) override;  // Takes ownership.
     // Returns true if it was empty (and thus successfully set).
-    OPENTXS_EXPORT bool SetNotaryIDIfEmpty(const identifier::Server& theID);
+    bool SetNotaryIDIfEmpty(const identifier::Server& theID);
 
-    OPENTXS_EXPORT bool VerifySmartContract(
+    bool VerifySmartContract(
         const identity::Nym& theNym,
         const Account& theAcct,
         const identity::Nym& theServerNym,
@@ -218,7 +218,7 @@ public:
     // contract
     // will interoperate with the old Cron Item system of doing things.
     //
-    OPENTXS_EXPORT void PrepareToActivate(
+    void PrepareToActivate(
         const std::int64_t& lOpeningTransNo,
         const std::int64_t& lClosingTransNo,
         const identifier::Nym& theNymID,
@@ -303,7 +303,7 @@ public:
     OTStash* GetStash(std::string str_stash_name);
 
     // Low-level.
-    OPENTXS_EXPORT void ExecuteClauses(
+    void ExecuteClauses(
         mapOfClauses& theClauses,
         const PasswordPrompt& reason,
         OTString pParam = String::Factory());
@@ -317,7 +317,7 @@ public:
     // especially from
     // a script, is to call StashAcctFunds() or UnstashAcctFunds() (BELOW)
     //
-    OPENTXS_EXPORT bool StashFunds(
+    bool StashFunds(
         const std::int64_t& lAmount,  // negative amount here means UNstash.
                                       // Positive
                                       // means STASH.
@@ -345,7 +345,7 @@ public:
                    // serialization, this is where the
                    // ledger saves its contents
 
-    OPENTXS_EXPORT ~OTSmartContract() override;
+    ~OTSmartContract() override;
 
 protected:
     void onActivate(const PasswordPrompt& reason)
@@ -437,8 +437,8 @@ private:
         const identifier::Nym& RECIPIENT_NYM_ID,
         const PasswordPrompt& reason);
 
-    OPENTXS_EXPORT OTSmartContract(const api::internal::Core& api);
-    OPENTXS_EXPORT OTSmartContract(
+    OTSmartContract(const api::internal::Core& api);
+    OTSmartContract(
         const api::internal::Core& api,
         const identifier::Server& NOTARY_ID);
 

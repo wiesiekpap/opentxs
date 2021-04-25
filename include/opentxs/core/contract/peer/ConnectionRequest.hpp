@@ -35,10 +35,10 @@ namespace peer
 {
 namespace request
 {
-class Connection : virtual public peer::Request
+class OPENTXS_EXPORT Connection : virtual public peer::Request
 {
 public:
-    OPENTXS_EXPORT ~Connection() override = default;
+    ~Connection() override = default;
 
 protected:
     Connection() noexcept = default;
@@ -47,7 +47,7 @@ private:
     friend OTConnectionRequest;
 
 #ifndef _WIN32
-    OPENTXS_EXPORT Connection* clone() const noexcept override = 0;
+    Connection* clone() const noexcept override = 0;
 #endif
 
     Connection(const Connection&) = delete;

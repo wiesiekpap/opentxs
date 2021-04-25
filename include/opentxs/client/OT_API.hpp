@@ -102,13 +102,13 @@ class PasswordPrompt;
 namespace opentxs
 {
 // The C++ high-level interface to the Open Transactions client-side.
-class OT_API : Lockable
+class OPENTXS_EXPORT OT_API : Lockable
 {
 public:
     using ProcessInboxOnly =
         std::pair<std::unique_ptr<Ledger>, TransactionNumber>;
 
-    OPENTXS_EXPORT OTClient* GetClient() const { return m_pClient.get(); }
+    OTClient* GetClient() const { return m_pClient.get(); }
 
     // This works by checking to see if the Nym has a request number for the
     // given server.
@@ -117,7 +117,7 @@ public:
     // "get request number" since that's what locks in the clients ability to be
     // able to tell
     // that it's registered there.
-    OPENTXS_EXPORT bool IsNym_RegisteredAtServer(
+    bool IsNym_RegisteredAtServer(
         const identifier::Nym& NYM_ID,
         const identifier::Server& NOTARY_ID) const;
 
@@ -126,14 +126,14 @@ public:
     /// its own last signed receipt.
     /// Obviously this will fail for any new account that hasn't done any
     /// transactions yet, and thus has no receipts.
-    OPENTXS_EXPORT bool VerifyAccountReceipt(
+    bool VerifyAccountReceipt(
         const identifier::Server& NOTARY_ID,
         const identifier::Nym& NYM_ID,
         const Identifier& ACCOUNT_ID) const;
 
     // Returns an OTCheque pointer, or nullptr.
     // (Caller responsible to delete.)
-    OPENTXS_EXPORT Cheque* WriteCheque(
+    Cheque* WriteCheque(
         const identifier::Server& NOTARY_ID,
         const std::int64_t& CHEQUE_AMOUNT,
         const Time& VALID_FROM,
@@ -153,7 +153,7 @@ public:
     //
     // Payment Plan Length, and Payment Plan Max Payments, both default to 0,
     // which means no maximum length and no maximum number of payments.
-    OPENTXS_EXPORT OTPaymentPlan* ProposePaymentPlan(
+    OTPaymentPlan* ProposePaymentPlan(
         const identifier::Server& NOTARY_ID,
         const Time& VALID_FROM,  // 0 defaults to the current time in
                                  // seconds
@@ -175,49 +175,48 @@ public:
         const std::int32_t PAYMENT_PLAN_MAX_PAYMENTS = 0) const;
 
     // CONFIRM PAYMENT PLAN (called by Customer)
-    OPENTXS_EXPORT bool ConfirmPaymentPlan(
+    bool ConfirmPaymentPlan(
         const identifier::Server& NOTARY_ID,
         const identifier::Nym& SENDER_NYM_ID,
         const Identifier& SENDER_ACCT_ID,
         const identifier::Nym& RECIPIENT_NYM_ID,
         OTPaymentPlan& thePlan) const;
-    OPENTXS_EXPORT bool IsBasketCurrency(
+    bool IsBasketCurrency(const identifier::UnitDefinition&
+                              BASKET_INSTRUMENT_DEFINITION_ID) const;
+
+    std::int64_t GetBasketMinimumTransferAmount(
         const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID)
         const;
 
-    OPENTXS_EXPORT std::int64_t GetBasketMinimumTransferAmount(
+    std::int32_t GetBasketMemberCount(
         const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID)
         const;
 
-    OPENTXS_EXPORT std::int32_t GetBasketMemberCount(
-        const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID)
-        const;
-
-    OPENTXS_EXPORT bool GetBasketMemberType(
+    bool GetBasketMemberType(
         const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID,
         std::int32_t nIndex,
         identifier::UnitDefinition& theOutputMemberType) const;
 
-    OPENTXS_EXPORT std::int64_t GetBasketMemberMinimumTransferAmount(
+    std::int64_t GetBasketMemberMinimumTransferAmount(
         const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID,
         std::int32_t nIndex) const;
-    OPENTXS_EXPORT std::unique_ptr<Ledger> LoadNymbox(
+    std::unique_ptr<Ledger> LoadNymbox(
         const identifier::Server& NOTARY_ID,
         const identifier::Nym& NYM_ID) const;
 
-    OPENTXS_EXPORT ProcessInboxOnly CreateProcessInbox(
+    ProcessInboxOnly CreateProcessInbox(
         const Identifier& accountID,
         otx::context::Server& context,
         Ledger& inbox) const;
 
-    OPENTXS_EXPORT bool IncludeResponse(
+    bool IncludeResponse(
         const Identifier& accountID,
         const bool accept,
         otx::context::Server& context,
         OTTransaction& source,
         Ledger& processInbox) const;
 
-    OPENTXS_EXPORT bool FinalizeProcessInbox(
+    bool FinalizeProcessInbox(
         const Identifier& accountID,
         otx::context::Server& context,
         Ledger& processInbox,
@@ -227,33 +226,32 @@ public:
 
     // These commands below send messages to the server:
 
-    OPENTXS_EXPORT CommandResult
-    unregisterNym(otx::context::Server& context) const;
+    CommandResult unregisterNym(otx::context::Server& context) const;
 
-    OPENTXS_EXPORT CommandResult usageCredits(
+    CommandResult usageCredits(
         otx::context::Server& context,
         const identifier::Nym& NYM_ID_CHECK,
         std::int64_t lAdjustment = 0) const;
 
-    OPENTXS_EXPORT CommandResult queryInstrumentDefinitions(
+    CommandResult queryInstrumentDefinitions(
         otx::context::Server& context,
         const Armored& ENCODED_MAP) const;
 
-    OPENTXS_EXPORT CommandResult deleteAssetAccount(
+    CommandResult deleteAssetAccount(
         otx::context::Server& context,
         const Identifier& ACCOUNT_ID) const;
 
-    OPENTXS_EXPORT bool AddBasketCreationItem(
+    bool AddBasketCreationItem(
         proto::UnitDefinition& basketTemplate,
         const String& currencyID,
         const std::uint64_t weight) const;
 
-    OPENTXS_EXPORT CommandResult issueBasket(
+    CommandResult issueBasket(
         otx::context::Server& context,
         const proto::UnitDefinition& basket,
         const std::string& label) const;
 
-    OPENTXS_EXPORT Basket* GenerateBasketExchange(
+    Basket* GenerateBasketExchange(
         const identifier::Server& NOTARY_ID,
         const identifier::Nym& NYM_ID,
         const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID,
@@ -261,30 +259,30 @@ public:
         std::int32_t TRANSFER_MULTIPLE) const;  // 1            2             3
     // 5=2,3,4  OR  10=4,6,8  OR 15=6,9,12
 
-    OPENTXS_EXPORT bool AddBasketExchangeItem(
+    bool AddBasketExchangeItem(
         const identifier::Server& NOTARY_ID,
         const identifier::Nym& NYM_ID,
         Basket& theBasket,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const Identifier& ASSET_ACCT_ID) const;
 
-    OPENTXS_EXPORT CommandResult exchangeBasket(
+    CommandResult exchangeBasket(
         otx::context::Server& context,
         const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID,
         const String& BASKET_INFO,
         bool bExchangeInOrOut) const;
 
-    OPENTXS_EXPORT std::unique_ptr<Message> getTransactionNumbers(
+    std::unique_ptr<Message> getTransactionNumbers(
         otx::context::Server& context) const;
 
-    OPENTXS_EXPORT CommandResult withdrawVoucher(
+    CommandResult withdrawVoucher(
         otx::context::Server& context,
         const Identifier& ACCT_ID,
         const identifier::Nym& RECIPIENT_NYM_ID,
         const String& CHEQUE_MEMO,
         const Amount amount) const;
 
-    OPENTXS_EXPORT CommandResult payDividend(
+    CommandResult payDividend(
         otx::context::Server& context,
         const Identifier& DIVIDEND_FROM_ACCT_ID,  // if dollars paid for pepsi
                                                   // shares, then this is the
@@ -303,13 +301,13 @@ public:
     // PER SHARE (multiplied by total
     // number of shares issued.)
 
-    OPENTXS_EXPORT CommandResult triggerClause(
+    CommandResult triggerClause(
         otx::context::Server& context,
         const TransactionNumber& lTransactionNum,
         const String& strClauseName,
         const String& pStrParam = String::Factory()) const;
 
-    OPENTXS_EXPORT bool Create_SmartContract(
+    bool Create_SmartContract(
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
                                                // (The signing at this point is
                                                // only to cause a save.)
@@ -322,7 +320,7 @@ public:
                                // party.
         String& strOutput) const;
 
-    OPENTXS_EXPORT bool SmartContract_SetDates(
+    bool SmartContract_SetDates(
         const String& THE_CONTRACT,  // The contract, about to have the dates
                                      // changed on it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -333,13 +331,11 @@ public:
                         // anytime.
         String& strOutput) const;
 
-    OPENTXS_EXPORT bool Smart_ArePartiesSpecified(
-        const String& THE_CONTRACT) const;
+    bool Smart_ArePartiesSpecified(const String& THE_CONTRACT) const;
 
-    OPENTXS_EXPORT bool Smart_AreAssetTypesSpecified(
-        const String& THE_CONTRACT) const;
+    bool Smart_AreAssetTypesSpecified(const String& THE_CONTRACT) const;
 
-    OPENTXS_EXPORT bool SmartContract_AddBylaw(
+    bool SmartContract_AddBylaw(
         const String& THE_CONTRACT,  // The contract, about to have the bylaw
                                      // added to it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -349,7 +345,7 @@ public:
                                    // smart contract. (And the scripts...)
         String& strOutput) const;
 
-    OPENTXS_EXPORT bool SmartContract_RemoveBylaw(
+    bool SmartContract_RemoveBylaw(
         const String& THE_CONTRACT,  // The contract, about to have the bylaw
                                      // removed from it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -359,7 +355,7 @@ public:
                                    // smart contract. (And the scripts...)
         String& strOutput) const;
 
-    OPENTXS_EXPORT bool SmartContract_AddClause(
+    bool SmartContract_AddClause(
         const String& THE_CONTRACT,  // The contract, about to have the clause
                                      // added to it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -372,7 +368,7 @@ public:
         const String& SOURCE_CODE,  // The actual source code for the clause.
         String& strOutput) const;
 
-    OPENTXS_EXPORT bool SmartContract_UpdateClause(
+    bool SmartContract_UpdateClause(
         const String& THE_CONTRACT,  // The contract, about to have the clause
                                      // updated on it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -385,7 +381,7 @@ public:
         const String& SOURCE_CODE,  // The actual source code for the clause.
         String& strOutput) const;
 
-    OPENTXS_EXPORT bool SmartContract_RemoveClause(
+    bool SmartContract_RemoveClause(
         const String& THE_CONTRACT,  // The contract, about to have the clause
                                      // removed from it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -397,7 +393,7 @@ public:
                                     // smart contract. (And the scripts...)
         String& strOutput) const;
 
-    OPENTXS_EXPORT bool SmartContract_AddVariable(
+    bool SmartContract_AddVariable(
         const String& THE_CONTRACT,  // The contract, about to have the variable
                                      // added to it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -416,7 +412,7 @@ public:
                                   // order to convert to a bool.
         String& strOutput) const;
 
-    OPENTXS_EXPORT bool SmartContract_RemoveVariable(
+    bool SmartContract_RemoveVariable(
         const String& THE_CONTRACT,  // The contract, about to have the variable
                                      // removed from it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -428,7 +424,7 @@ public:
                                    // smart contract. (And the scripts...)
         String& strOutput) const;
 
-    OPENTXS_EXPORT bool SmartContract_AddCallback(
+    bool SmartContract_AddCallback(
         const String& THE_CONTRACT,  // The contract, about to have the callback
                                      // added to it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -443,7 +439,7 @@ public:
                                     // by the callback. (Must exist.)
         String& strOutput) const;
 
-    OPENTXS_EXPORT bool SmartContract_RemoveCallback(
+    bool SmartContract_RemoveCallback(
         const String& THE_CONTRACT,  // The contract, about to have the callback
                                      // removed from it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -456,7 +452,7 @@ public:
                                       // scripts...)
         String& strOutput) const;
 
-    OPENTXS_EXPORT bool SmartContract_AddHook(
+    bool SmartContract_AddHook(
         const String& THE_CONTRACT,  // The contract, about to have the hook
                                      // added to it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -472,7 +468,7 @@ public:
                                     // on the same hook.)
         String& strOutput) const;
 
-    OPENTXS_EXPORT bool SmartContract_RemoveHook(
+    bool SmartContract_RemoveHook(
         const String& THE_CONTRACT,  // The contract, about to have the hook
                                      // removed from it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -488,7 +484,7 @@ public:
                                     // on the same hook.)
         String& strOutput) const;
 
-    OPENTXS_EXPORT bool SmartContract_AddParty(
+    bool SmartContract_AddParty(
         const String& THE_CONTRACT,  // The contract, about to have the party
                                      // added to it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -503,7 +499,7 @@ public:
                                      // this party. Need Agent NAME.
         String& strOutput) const;
 
-    OPENTXS_EXPORT bool SmartContract_RemoveParty(
+    bool SmartContract_RemoveParty(
         const String& THE_CONTRACT,  // The contract, about to have the party
                                      // removed from it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -513,7 +509,7 @@ public:
                                    // smart contract. (And the scripts...)
         String& strOutput) const;
 
-    OPENTXS_EXPORT bool SmartContract_AddAccount(
+    bool SmartContract_AddAccount(
         const String& THE_CONTRACT,  // The contract, about to have the account
                                      // added to it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -528,7 +524,7 @@ public:
                                                  // Account.
         String& strOutput) const;
 
-    OPENTXS_EXPORT bool SmartContract_RemoveAccount(
+    bool SmartContract_RemoveAccount(
         const String& THE_CONTRACT,  // The contract, about to have the account
                                      // removed from it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -540,14 +536,14 @@ public:
                                    // smart contract
         String& strOutput) const;
 
-    OPENTXS_EXPORT std::int32_t SmartContract_CountNumsNeeded(
+    std::int32_t SmartContract_CountNumsNeeded(
         const String& THE_CONTRACT,  // The contract, about to have the bylaw
                                      // added to it.
         const String& AGENT_NAME) const;  // An AGENT will be added by default
                                           // for
                                           // this party. Need Agent NAME.
 
-    OPENTXS_EXPORT bool SmartContract_ConfirmAccount(
+    bool SmartContract_ConfirmAccount(
         const String& THE_CONTRACT,
         const identifier::Nym& SIGNER_NYM_ID,
         const String& PARTY_NAME,
@@ -556,7 +552,7 @@ public:
         const String& ACCT_ID,
         String& strOutput) const;
 
-    OPENTXS_EXPORT bool SmartContract_ConfirmParty(
+    bool SmartContract_ConfirmParty(
         const String& THE_CONTRACT,  // The smart contract, about to be changed
                                      // by this function.
         const String& PARTY_NAME,    // Should already be on the contract. This
@@ -567,14 +563,14 @@ public:
         String& strOutput) const;  // ===> AS WELL AS for the default AGENT of
                                    // that
                                    // party. (For now, until I code entities)
-    OPENTXS_EXPORT CommandResult activateSmartContract(
+    CommandResult activateSmartContract(
         otx::context::Server& context,
         const String& THE_SMART_CONTRACT) const;
 
-    OPENTXS_EXPORT CommandResult depositPaymentPlan(
+    CommandResult depositPaymentPlan(
         otx::context::Server& context,
         const String& THE_PAYMENT_PLAN) const;
-    OPENTXS_EXPORT CommandResult issueMarketOffer(
+    CommandResult issueMarketOffer(
         otx::context::Server& context,
         const Identifier& ASSET_ACCT_ID,
         const Identifier& CURRENCY_ACCT_ID,
@@ -594,26 +590,24 @@ public:
         const char STOP_SIGN = 0,  // For stop orders, set to '<' or '>'
         const Amount ACTIVATION_PRICE = 0) const;  // For stop orders, set the
                                                    // threshold price here.
-    OPENTXS_EXPORT CommandResult
-    getMarketList(otx::context::Server& context) const;
-    OPENTXS_EXPORT CommandResult getMarketOffers(
+    CommandResult getMarketList(otx::context::Server& context) const;
+    CommandResult getMarketOffers(
         otx::context::Server& context,
         const Identifier& MARKET_ID,
         const std::int64_t& lDepth) const;
-    OPENTXS_EXPORT CommandResult getMarketRecentTrades(
+    CommandResult getMarketRecentTrades(
         otx::context::Server& context,
         const Identifier& MARKET_ID) const;
 
-    OPENTXS_EXPORT CommandResult
-    getNymMarketOffers(otx::context::Server& context) const;
+    CommandResult getNymMarketOffers(otx::context::Server& context) const;
 
     // For cancelling market offers and payment plans.
-    OPENTXS_EXPORT CommandResult cancelCronItem(
+    CommandResult cancelCronItem(
         otx::context::Server& context,
         const Identifier& ASSET_ACCT_ID,
         const TransactionNumber& lTransactionNum) const;
 
-    ~OT_API() override;  // calls Cleanup();
+    OPENTXS_NO_EXPORT ~OT_API() override;  // calls Cleanup();
 
 private:
     friend api::client::implementation::Manager;

@@ -93,7 +93,7 @@ namespace opentxs
  ———————————————————————————————
  */
 
-class OTTrade : public OTCronItem
+class OPENTXS_EXPORT OTTrade : public OTCronItem
 {
 public:
     originType GetOriginType() const override
@@ -101,8 +101,8 @@ public:
         return originType::origin_market_offer;
     }
 
-    OPENTXS_EXPORT bool VerifyOffer(OTOffer& offer) const;
-    OPENTXS_EXPORT bool IssueTrade(
+    bool VerifyOffer(OTOffer& offer) const;
+    bool IssueTrade(
         OTOffer& offer,
         char stopSign = 0,
         std::int64_t stopPrice = 0);
@@ -170,8 +170,8 @@ public:
 
     inline std::int32_t GetCompletedCount() { return tradesAlreadyDone_; }
 
-    OPENTXS_EXPORT std::int64_t GetAssetAcctClosingNum() const;
-    OPENTXS_EXPORT std::int64_t GetCurrencyAcctClosingNum() const;
+    std::int64_t GetAssetAcctClosingNum() const;
+    std::int64_t GetCurrencyAcctClosingNum() const;
 
     // Return True if should stay on OTCron's list for more processing.
     // Return False if expired or otherwise should be removed.
@@ -210,7 +210,7 @@ public:
                    // serialization, this is where the
                    // ledger saves its contents
 
-    OPENTXS_EXPORT ~OTTrade() override;
+    ~OTTrade() override;
 
 protected:
     void onFinalReceipt(

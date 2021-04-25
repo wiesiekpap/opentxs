@@ -35,10 +35,10 @@ namespace peer
 {
 namespace reply
 {
-class Acknowledgement : virtual public peer::Reply
+class OPENTXS_EXPORT Acknowledgement : virtual public peer::Reply
 {
 public:
-    OPENTXS_EXPORT ~Acknowledgement() override = default;
+    ~Acknowledgement() override = default;
 
 protected:
     Acknowledgement() noexcept = default;
@@ -47,7 +47,7 @@ private:
     friend OTReplyAcknowledgement;
 
 #ifndef _WIN32
-    OPENTXS_EXPORT Acknowledgement* clone() const noexcept override = 0;
+    Acknowledgement* clone() const noexcept override = 0;
 #endif
 
     Acknowledgement(const Acknowledgement&) = delete;

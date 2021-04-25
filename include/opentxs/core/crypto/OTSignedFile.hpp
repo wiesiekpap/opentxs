@@ -31,21 +31,21 @@ struct Core;
 
 class PasswordPrompt;
 
-class OTSignedFile : public Contract
+class OPENTXS_EXPORT OTSignedFile : public Contract
 {
 public:
-    OPENTXS_EXPORT bool LoadFile();
-    OPENTXS_EXPORT bool SaveFile();
+    bool LoadFile();
+    bool SaveFile();
     bool VerifyFile();  // Returns true or false, whether actual subdir/file
                         // matches purported subdir/file.
     // (You should still verify the signature on it as well, if you are doing
     // this.)
     void SetFilename(const String& LOCAL_SUBDIR, const String& FILE_NAME);
-    OPENTXS_EXPORT String& GetFilePayload();
-    OPENTXS_EXPORT void SetFilePayload(const String& strArg);
-    OPENTXS_EXPORT String& GetSignerNymID();
-    OPENTXS_EXPORT void SetSignerNymID(const String& strArg);
-    OPENTXS_EXPORT ~OTSignedFile() override;
+    String& GetFilePayload();
+    void SetFilePayload(const String& strArg);
+    String& GetSignerNymID();
+    void SetSignerNymID(const String& strArg);
+    ~OTSignedFile() override;
     void Release() override;
     void Release_SignedFile();
     void UpdateContents(const PasswordPrompt& reason) override;

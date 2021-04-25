@@ -65,17 +65,17 @@ namespace opentxs
 {
 namespace identifier
 {
-class Nym : virtual public opentxs::Identifier
+class OPENTXS_EXPORT Nym : virtual public opentxs::Identifier
 {
 public:
 #ifndef SWIG
-    OPENTXS_EXPORT static OTNymID Factory();
-    OPENTXS_EXPORT static OTNymID Factory(const std::string& rhs);
-    OPENTXS_EXPORT static OTNymID Factory(const String& rhs);
-    OPENTXS_EXPORT static OTNymID Factory(const identity::Nym& nym);
+    static OTNymID Factory();
+    static OTNymID Factory(const std::string& rhs);
+    static OTNymID Factory(const String& rhs);
+    static OTNymID Factory(const identity::Nym& nym);
 #endif
 
-    OPENTXS_EXPORT ~Nym() override = default;
+    ~Nym() override = default;
 
 protected:
     Nym() = default;

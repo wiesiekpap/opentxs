@@ -20,7 +20,7 @@ using OTFlag = Pimpl<Flag>;
 namespace opentxs
 {
 /** Wrapper for a std::atomic<bool> */
-class Flag
+class OPENTXS_EXPORT Flag
 {
 public:
     static OTFlag Factory(const bool state);

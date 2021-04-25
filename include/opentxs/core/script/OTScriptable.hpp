@@ -69,22 +69,20 @@ using mapOfVariables = std::map<std::string, OTVariable*>;
 std::string vectorToString(const std::vector<std::int64_t>& v);
 std::vector<std::int64_t> stringToVector(const std::string& s);
 
-class OTScriptable : public Contract
+class OPENTXS_EXPORT OTScriptable : public Contract
 {
 public:
-    OPENTXS_EXPORT const std::vector<std::int64_t>&
-    openingNumsInOrderOfSigning() const
+    const std::vector<std::int64_t>& openingNumsInOrderOfSigning() const
     {
         return openingNumsInOrderOfSigning_;
     }
 
-    OPENTXS_EXPORT void specifyParties(bool bNewState);
-    OPENTXS_EXPORT void specifyAssetTypes(bool bNewState);
-    OPENTXS_EXPORT bool arePartiesSpecified() const;
-    OPENTXS_EXPORT bool areAssetTypesSpecified() const;
+    void specifyParties(bool bNewState);
+    void specifyAssetTypes(bool bNewState);
+    bool arePartiesSpecified() const;
+    bool areAssetTypesSpecified() const;
 
-    OPENTXS_EXPORT virtual void SetDisplayLabel(
-        const std::string* pstrLabel = nullptr);
+    virtual void SetDisplayLabel(const std::string* pstrLabel = nullptr);
     std::int32_t GetPartyCount() const
     {
         return static_cast<std::int32_t>(m_mapParties.size());
@@ -93,25 +91,25 @@ public:
     {
         return static_cast<std::int32_t>(m_mapBylaws.size());
     }
-    OPENTXS_EXPORT virtual bool AddParty(OTParty& theParty);  // Takes
-                                                              // ownership.
-    OPENTXS_EXPORT virtual bool AddBylaw(OTBylaw& theBylaw);  // takes
-                                                              // ownership.
-    OPENTXS_EXPORT virtual bool ConfirmParty(
+    virtual bool AddParty(OTParty& theParty);  // Takes
+                                               // ownership.
+    virtual bool AddBylaw(OTBylaw& theBylaw);  // takes
+                                               // ownership.
+    virtual bool ConfirmParty(
         OTParty& theParty,  // Takes ownership.
         otx::context::Server& context,
         const PasswordPrompt& reason);
-    OPENTXS_EXPORT bool RemoveParty(std::string str_Name);
-    OPENTXS_EXPORT bool RemoveBylaw(std::string str_Name);
-    OPENTXS_EXPORT OTParty* GetParty(std::string str_party_name) const;
-    OPENTXS_EXPORT OTBylaw* GetBylaw(std::string str_bylaw_name) const;
-    OPENTXS_EXPORT OTClause* GetClause(std::string str_clause_name) const;
-    OPENTXS_EXPORT OTParty* GetPartyByIndex(std::int32_t nIndex) const;
-    OPENTXS_EXPORT OTBylaw* GetBylawByIndex(std::int32_t nIndex) const;
-    OPENTXS_EXPORT OTParty* FindPartyBasedOnNymAsAgent(
+    bool RemoveParty(std::string str_Name);
+    bool RemoveBylaw(std::string str_Name);
+    OTParty* GetParty(std::string str_party_name) const;
+    OTBylaw* GetBylaw(std::string str_bylaw_name) const;
+    OTClause* GetClause(std::string str_clause_name) const;
+    OTParty* GetPartyByIndex(std::int32_t nIndex) const;
+    OTBylaw* GetBylawByIndex(std::int32_t nIndex) const;
+    OTParty* FindPartyBasedOnNymAsAgent(
         const identity::Nym& theNym,
         OTAgent** ppAgent = nullptr) const;
-    OPENTXS_EXPORT OTParty* FindPartyBasedOnNymAsAuthAgent(
+    OTParty* FindPartyBasedOnNymAsAuthAgent(
         const identity::Nym& theNym,
         OTAgent** ppAgent = nullptr) const;
     OTParty* FindPartyBasedOnAccount(
@@ -137,7 +135,7 @@ public:
     // which agent is the
     // authorized agent.)
     //
-    OPENTXS_EXPORT std::int32_t GetCountTransNumsNeededForAgent(
+    std::int32_t GetCountTransNumsNeededForAgent(
         std::string str_agent_name) const;
     // Verifies that Nym is actually an agent for this agreement.
     // (Verifies that Nym has signed this agreement, if it's a trade or a
@@ -146,7 +144,7 @@ public:
     // and in that case, that theNym is listed as an agent for that party.)
     // Basically this means that the agreement's owner approves of theNym.
     //
-    OPENTXS_EXPORT virtual bool VerifyNymAsAgent(
+    virtual bool VerifyNymAsAgent(
         const identity::Nym& theNym,
         const identity::Nym& theSignerNym) const;
 
@@ -157,7 +155,7 @@ public:
     // Also verifies that theNym is an agent for theAccount, according to the
     // ACCOUNT.
     //
-    OPENTXS_EXPORT virtual bool VerifyNymAsAgentForAccount(
+    virtual bool VerifyNymAsAgentForAccount(
         const identity::Nym& theNym,
         const Account& theAccount) const;
     bool VerifyPartyAuthorization(
@@ -189,8 +187,8 @@ public:
     // AND it wants to burn it, so it can't be used again!  This
     // bool allows you to tell the function whether or not to do
     // that.
-    OPENTXS_EXPORT bool VerifyThisAgainstAllPartiesSignedCopies();
-    OPENTXS_EXPORT bool AllPartiesHaveSupposedlyConfirmed();
+    bool VerifyThisAgainstAllPartiesSignedCopies();
+    bool AllPartiesHaveSupposedlyConfirmed();
 
     void ClearTemporaryPointers();
     // Look up all clauses matching a specific hook.
@@ -219,7 +217,7 @@ public:
     void SetAsClean();  // Sets the variables as clean, so you can check later
                         // and see if any have been changed (if it's DIRTY
                         // again.)
-    OPENTXS_EXPORT bool SendNoticeToAllParties(
+    bool SendNoticeToAllParties(
         bool bSuccessMsg,
         const identity::Nym& theServerNym,
         const identifier::Server& theNotaryID,
@@ -239,7 +237,7 @@ public:
     // CanExecuteClause will call ExecuteCallback() if that script exists, so
     // the script can reply true/false.
     //
-    OPENTXS_EXPORT bool CanExecuteClause(
+    bool CanExecuteClause(
         std::string str_party_name,
         std::string str_clause_name);  // This calls (if
                                        // available) the
@@ -257,9 +255,8 @@ public:
         mapOfVariables& theParameters,
         OTVariable& varReturnVal);
 
-    OPENTXS_EXPORT virtual void RegisterOTNativeCallsWithScript(
-        OTScript& theScript);
-    OPENTXS_EXPORT virtual bool Compare(OTScriptable& rhs) const;
+    virtual void RegisterOTNativeCallsWithScript(OTScript& theScript);
+    virtual bool Compare(OTScriptable& rhs) const;
 
     // Make sure a string contains only alpha, numeric, or '_'
     // And make sure it's not blank. This is for script variable names, clause
@@ -281,7 +278,7 @@ public:
                                    // std::int32_t. (Time in seconds.)
 
     void UpdateContentsToTag(Tag& parent, bool bCalculatingID) const;
-    OPENTXS_EXPORT void CalculateContractID(Identifier& newID) const override;
+    void CalculateContractID(Identifier& newID) const override;
 
     void Release() override;
     void Release_Scriptable();

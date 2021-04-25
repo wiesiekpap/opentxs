@@ -35,10 +35,10 @@ namespace peer
 {
 namespace reply
 {
-class Connection : virtual public peer::Reply
+class OPENTXS_EXPORT Connection : virtual public peer::Reply
 {
 public:
-    OPENTXS_EXPORT ~Connection() override = default;
+    ~Connection() override = default;
 
 protected:
     Connection() noexcept = default;
@@ -47,7 +47,7 @@ private:
     friend OTConnectionReply;
 
 #ifndef _WIN32
-    OPENTXS_EXPORT Connection* clone() const noexcept override = 0;
+    Connection* clone() const noexcept override = 0;
 #endif
 
     Connection(const Connection&) = delete;

@@ -22,12 +22,12 @@
 namespace opentxs
 {
 template <class C>
-class Pimpl
+class OPENTXS_EXPORT Pimpl
 {
 public:
     using interface_type = C;
 
-    OPENTXS_EXPORT explicit Pimpl(C* in) noexcept
+    explicit Pimpl(C* in) noexcept
         : pimpl_(in)
     {
         assert(pimpl_);
@@ -35,7 +35,7 @@ public:
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnull-dereference"
-    OPENTXS_EXPORT Pimpl(const Pimpl& rhs) noexcept
+    Pimpl(const Pimpl& rhs) noexcept
         : pimpl_(
 #ifndef _WIN32
               rhs.pimpl_->clone()
@@ -48,7 +48,7 @@ public:
     }
 #pragma GCC diagnostic pop
 
-    OPENTXS_EXPORT Pimpl(const C& rhs) noexcept
+    Pimpl(const C& rhs) noexcept
         : pimpl_(
 #ifndef _WIN32
               rhs.clone()
@@ -60,13 +60,13 @@ public:
         assert(pimpl_);
     }
 
-    OPENTXS_EXPORT Pimpl(Pimpl&& rhs) noexcept
+    Pimpl(Pimpl&& rhs) noexcept
         : pimpl_(std::move(rhs.pimpl_))
     {
         assert(pimpl_);
     }
 
-    OPENTXS_EXPORT Pimpl(std::unique_ptr<C>&& rhs) noexcept
+    Pimpl(std::unique_ptr<C>&& rhs) noexcept
         : pimpl_(std::move(rhs))
     {
         assert(pimpl_);
@@ -74,7 +74,7 @@ public:
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnull-dereference"
-    OPENTXS_EXPORT Pimpl& operator=(const Pimpl& rhs) noexcept
+    Pimpl& operator=(const Pimpl& rhs) noexcept
     {
         pimpl_.reset(
 #ifndef _WIN32
@@ -89,7 +89,7 @@ public:
     }
 #pragma GCC diagnostic pop
 
-    OPENTXS_EXPORT Pimpl& operator=(Pimpl&& rhs) noexcept
+    Pimpl& operator=(Pimpl&& rhs) noexcept
     {
         pimpl_ = std::move(rhs.pimpl_);
         assert(pimpl_);
@@ -97,7 +97,7 @@ public:
         return *this;
     }
 
-    OPENTXS_EXPORT Pimpl& operator=(const C& rhs) noexcept
+    Pimpl& operator=(const C& rhs) noexcept
     {
         pimpl_.reset(
 #ifndef _WIN32
@@ -111,19 +111,19 @@ public:
         return *this;
     }
 
-    OPENTXS_EXPORT operator C&() noexcept { return *pimpl_; }
-    OPENTXS_EXPORT operator const C&() const noexcept { return *pimpl_; }
+    operator C&() noexcept { return *pimpl_; }
+    operator const C&() const noexcept { return *pimpl_; }
 
-    OPENTXS_EXPORT C* operator->() { return pimpl_.get(); }
-    OPENTXS_EXPORT const C* operator->() const { return pimpl_.get(); }
+    C* operator->() { return pimpl_.get(); }
+    const C* operator->() const { return pimpl_.get(); }
 
-    OPENTXS_EXPORT C& get() noexcept { return *pimpl_; }
-    OPENTXS_EXPORT const C& get() const noexcept { return *pimpl_; }
+    C& get() noexcept { return *pimpl_; }
+    const C& get() const noexcept { return *pimpl_; }
 
-    OPENTXS_EXPORT ~Pimpl() = default;
+    ~Pimpl() = default;
 
 #if defined SWIG_VERSION || defined _WIN32
-    OPENTXS_EXPORT Pimpl() = default;
+    Pimpl() = default;
 #endif
 
 private:

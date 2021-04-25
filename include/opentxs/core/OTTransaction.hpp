@@ -361,7 +361,7 @@ same time that it is first being
  added to the relevant box itself. (Look into centralizing that mechanism...)
 
  */
-class OTTransaction : public OTTransactionType
+class OPENTXS_EXPORT OTTransaction : public OTTransactionType
 {
 public:
     // a transaction can be blank (issued from server)
@@ -371,8 +371,8 @@ public:
     // See transactionType in Types.hpp.
 
     void Release() override;
-    OPENTXS_EXPORT std::int64_t GetNumberOfOrigin() override;
-    OPENTXS_EXPORT void CalculateNumberOfOrigin() override;
+    std::int64_t GetNumberOfOrigin() override;
+    void CalculateNumberOfOrigin() override;
 
     // This calls VerifyContractID() as well as VerifySignature()
     // Use this instead of Contract::VerifyContract, which expects/uses a
@@ -381,13 +381,13 @@ public:
 
     void InitTransaction();
 
-    OPENTXS_EXPORT bool IsCancelled() { return m_bCancelled; }
+    bool IsCancelled() { return m_bCancelled; }
 
-    OPENTXS_EXPORT void SetAsCancelled() { m_bCancelled = true; }
+    void SetAsCancelled() { m_bCancelled = true; }
 
     void SetParent(const Ledger& theParent) { m_pParent = &theParent; }
 
-    OPENTXS_EXPORT bool AddNumbersToTransaction(const NumList& theAddition);
+    bool AddNumbersToTransaction(const NumList& theAddition);
 
     bool IsAbbreviated() const { return m_bIsAbbreviated; }
 
@@ -420,19 +420,19 @@ public:
     void SetReplyTransSuccess(bool bVal) { m_bReplyTransSuccess = bVal; }
 
     // These are used for finalReceipt and basketReceipt
-    OPENTXS_EXPORT std::int64_t GetClosingNum() const;
-    OPENTXS_EXPORT void SetClosingNum(std::int64_t lClosingNum);
+    std::int64_t GetClosingNum() const;
+    void SetClosingNum(std::int64_t lClosingNum);
     /// For display purposes.The "ref #" you actually display (versus the one
     /// you use internally) might change based on transaction type. (Like with a
     /// cheque receipt you actually have to load up the original cheque.)
-    OPENTXS_EXPORT std::int64_t GetReferenceNumForDisplay();
+    std::int64_t GetReferenceNumForDisplay();
 
-    OPENTXS_EXPORT bool GetSenderNymIDForDisplay(Identifier& theReturnID);
-    OPENTXS_EXPORT bool GetRecipientNymIDForDisplay(Identifier& theReturnID);
+    bool GetSenderNymIDForDisplay(Identifier& theReturnID);
+    bool GetRecipientNymIDForDisplay(Identifier& theReturnID);
 
-    OPENTXS_EXPORT bool GetSenderAcctIDForDisplay(Identifier& theReturnID);
-    OPENTXS_EXPORT bool GetRecipientAcctIDForDisplay(Identifier& theReturnID);
-    OPENTXS_EXPORT bool GetMemo(String& strMemo);
+    bool GetSenderAcctIDForDisplay(Identifier& theReturnID);
+    bool GetRecipientAcctIDForDisplay(Identifier& theReturnID);
+    bool GetMemo(String& strMemo);
 
     inline Time GetDateSigned() const { return m_DATE_SIGNED; }
 
@@ -458,15 +458,12 @@ public:
     // transaction is an actual transaction. (And a receipt or notice is not an
     // actual
     // transaction.)
-    OPENTXS_EXPORT bool GetSuccess(
-        bool* pbHasSuccess = nullptr,
-        bool* pbIsSuccess = nullptr);
+    bool GetSuccess(bool* pbHasSuccess = nullptr, bool* pbIsSuccess = nullptr);
 
-    OPENTXS_EXPORT std::int64_t GetReceiptAmount(
-        const PasswordPrompt& reason);  // Tries to
-                                        // determine
-                                        // IF there
-                                        // is an
+    std::int64_t GetReceiptAmount(const PasswordPrompt& reason);  // Tries to
+                                                                  // determine
+                                                                  // IF there
+                                                                  // is an
     // amount (depending on type) and return
     // it.
 
@@ -476,16 +473,16 @@ public:
     // This function assumes that theLedger is the owner of this transaction.
     // We pass the ledger in so we can determine the proper directory we're
     // reading from.
-    OPENTXS_EXPORT bool SaveBoxReceipt(std::int64_t lLedgerType);
+    bool SaveBoxReceipt(std::int64_t lLedgerType);
 
-    OPENTXS_EXPORT bool SaveBoxReceipt(Ledger& theLedger);
+    bool SaveBoxReceipt(Ledger& theLedger);
 
-    OPENTXS_EXPORT bool DeleteBoxReceipt(Ledger& theLedger);
+    bool DeleteBoxReceipt(Ledger& theLedger);
 
     // Call on abbreviated version, and pass in the purported full version.
     bool VerifyBoxReceipt(OTTransaction& theFullVersion);
 
-    OPENTXS_EXPORT bool VerifyBalanceReceipt(
+    bool VerifyBalanceReceipt(
         const otx::context::Server& context,
         const PasswordPrompt& reason);
 
@@ -493,9 +490,7 @@ public:
     // they are first loaded up. NotaryID and AccountID have been verified.
     // Now we check ownership, and signatures, and transaction #s, etc.
     // (We go deeper.)
-    OPENTXS_EXPORT bool VerifyItems(
-        const identity::Nym& theNym,
-        const PasswordPrompt& reason);
+    bool VerifyItems(const identity::Nym& theNym, const PasswordPrompt& reason);
 
     inline std::int32_t GetItemCount() const
     {
@@ -510,16 +505,14 @@ public:
 
     // While processing a transaction, you may wish to query it for items of a
     // certain type.
-    OPENTXS_EXPORT std::shared_ptr<Item> GetItem(itemType theType);
+    std::shared_ptr<Item> GetItem(itemType theType);
 
-    OPENTXS_EXPORT std::shared_ptr<Item> GetItemInRefTo(
-        std::int64_t lReference);
+    std::shared_ptr<Item> GetItemInRefTo(std::int64_t lReference);
 
-    OPENTXS_EXPORT void AddItem(
-        std::shared_ptr<Item> theItem);  // You have to allocate
-                                         // the item on the heap
-                                         // and then pass it in
-                                         // as a reference.
+    void AddItem(std::shared_ptr<Item> theItem);  // You have to allocate
+                                                  // the item on the heap
+                                                  // and then pass it in
+                                                  // as a reference.
     // OTTransaction will take care of it from there and will delete it in
     // destructor.
     // used for looping through the items in a few places.
@@ -599,7 +592,7 @@ public:
         m_outboxhash = outboxhash;
     }
 
-    OPENTXS_EXPORT ~OTTransaction() override;
+    ~OTTransaction() override;
 
 protected:
     // Usually a transaction object is inside a ledger object.

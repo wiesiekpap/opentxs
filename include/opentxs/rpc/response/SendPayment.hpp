@@ -33,20 +33,21 @@ namespace rpc
 {
 namespace response
 {
-class SendPayment final : public Base
+class OPENTXS_EXPORT SendPayment final : public Base
 {
 public:
-    OPENTXS_EXPORT auto Pending() const noexcept -> const Tasks&;
+    auto Pending() const noexcept -> const Tasks&;
 
     /// throws std::runtime_error for invalid constructor arguments
-    SendPayment(
+    OPENTXS_NO_EXPORT SendPayment(
         const request::SendPayment& request,
         Responses&& response,
         Tasks&& tasks) noexcept(false);
-    SendPayment(const proto::RPCResponse& serialized) noexcept(false);
-    OPENTXS_EXPORT SendPayment() noexcept;
+    OPENTXS_NO_EXPORT SendPayment(
+        const proto::RPCResponse& serialized) noexcept(false);
+    SendPayment() noexcept;
 
-    OPENTXS_EXPORT ~SendPayment() final;
+    ~SendPayment() final;
 
 private:
     SendPayment(const SendPayment&) = delete;

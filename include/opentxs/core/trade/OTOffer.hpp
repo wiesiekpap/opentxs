@@ -63,10 +63,10 @@ class PasswordPrompt;
  for sale”, effectively becomes a FILL OR KILL order. MUST be 1 or greater.
  CANNOT be zero.)
 */
-class OTOffer : public Instrument
+class OPENTXS_EXPORT OTOffer : public Instrument
 {
 public:
-    OPENTXS_EXPORT bool MakeOffer(
+    bool MakeOffer(
         bool bBuyingOrSelling,            // True == SELLING, False == BUYING
         const std::int64_t& lPriceLimit,  // Per Scale...
         const std::int64_t& lTotalAssetsOffer,  // Total assets available for
@@ -137,13 +137,12 @@ public:
     // Note: m_tDateAddedToMarket is not saved in the Offer Contract, but
     // OTMarket sets/saves/loads it.
     //
-    OPENTXS_EXPORT Time GetDateAddedToMarket() const;  // Used in
-                                                       // OTMarket::GetOfferList
-                                                       // and GetNymOfferList.
-    OPENTXS_EXPORT void SetDateAddedToMarket(
-        const Time tDate);  // Used in OTCron when
-                            // adding/loading
-                            // offers.
+    Time GetDateAddedToMarket() const;            // Used in
+                                                  // OTMarket::GetOfferList
+                                                  // and GetNymOfferList.
+    void SetDateAddedToMarket(const Time tDate);  // Used in OTCron when
+                                                  // adding/loading
+                                                  // offers.
     // Overridden from Contract.
     void GetIdentifier(Identifier& theIdentifier) const override;
 
@@ -160,7 +159,7 @@ public:
                    // serialization, this is where the
                    // ledger saves its contents
 
-    OPENTXS_EXPORT ~OTOffer() override;
+    ~OTOffer() override;
 
 protected:
     // If this offer is actually connected to a trade, it will have a pointer.

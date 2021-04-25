@@ -36,22 +36,23 @@ namespace rpc
 {
 namespace response
 {
-class GetAccountBalance final : public Base
+class OPENTXS_EXPORT GetAccountBalance final : public Base
 {
 public:
     using Data = std::vector<AccountData>;
 
-    OPENTXS_EXPORT auto Balances() const noexcept -> const Data&;
+    auto Balances() const noexcept -> const Data&;
 
     /// throws std::runtime_error for invalid constructor arguments
-    GetAccountBalance(
+    OPENTXS_NO_EXPORT GetAccountBalance(
         const request::GetAccountBalance& request,
         Responses&& response,
         Data&& balances) noexcept(false);
-    GetAccountBalance(const proto::RPCResponse& serialized) noexcept(false);
-    OPENTXS_EXPORT GetAccountBalance() noexcept;
+    OPENTXS_NO_EXPORT GetAccountBalance(
+        const proto::RPCResponse& serialized) noexcept(false);
+    GetAccountBalance() noexcept;
 
-    OPENTXS_EXPORT ~GetAccountBalance() final;
+    ~GetAccountBalance() final;
 
 private:
     GetAccountBalance(const GetAccountBalance&) = delete;

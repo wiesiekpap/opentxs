@@ -35,10 +35,10 @@ namespace peer
 {
 namespace request
 {
-class StoreSecret : virtual public peer::Request
+class OPENTXS_EXPORT StoreSecret : virtual public peer::Request
 {
 public:
-    OPENTXS_EXPORT ~StoreSecret() override = default;
+    ~StoreSecret() override = default;
 
 protected:
     StoreSecret() noexcept = default;
@@ -47,7 +47,7 @@ private:
     friend OTStoreSecret;
 
 #ifndef _WIN32
-    OPENTXS_EXPORT StoreSecret* clone() const noexcept override = 0;
+    StoreSecret* clone() const noexcept override = 0;
 #endif
 
     StoreSecret(const StoreSecret&) = delete;

@@ -17,16 +17,15 @@ namespace opentxs
 {
 namespace client
 {
-class [[deprecated]] ServerAction
+class OPENTXS_EXPORT ServerAction
 {
 public:
-    OPENTXS_EXPORT virtual SendResult LastSendResult() const = 0;
-    OPENTXS_EXPORT virtual const std::shared_ptr<Message> Reply() const = 0;
+    virtual SendResult LastSendResult() const = 0;
+    virtual const std::shared_ptr<Message> Reply() const = 0;
 
-    OPENTXS_EXPORT virtual std::string Run(
-        const std::size_t totalRetries = 2) = 0;
+    virtual std::string Run(const std::size_t totalRetries = 2) = 0;
 
-    OPENTXS_EXPORT virtual ~ServerAction() = default;
+    virtual ~ServerAction() = default;
 
 protected:
     ServerAction() = default;

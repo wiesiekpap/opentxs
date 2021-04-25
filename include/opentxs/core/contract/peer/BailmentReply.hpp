@@ -35,10 +35,10 @@ namespace peer
 {
 namespace reply
 {
-class Bailment : virtual public peer::Reply
+class OPENTXS_EXPORT Bailment : virtual public peer::Reply
 {
 public:
-    OPENTXS_EXPORT ~Bailment() override = default;
+    ~Bailment() override = default;
 
 protected:
     Bailment() noexcept = default;
@@ -47,7 +47,7 @@ private:
     friend OTBailmentReply;
 
 #ifndef _WIN32
-    OPENTXS_EXPORT Bailment* clone() const noexcept override = 0;
+    Bailment* clone() const noexcept override = 0;
 #endif
 
     Bailment(const Bailment&) = delete;

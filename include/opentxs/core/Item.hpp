@@ -75,7 +75,7 @@ using listOfItems = std::list<std::shared_ptr<Item>>;
 // come in packs. You normally would deal with the transaction as a single
 // entity,
 // not the item. A transaction contains a list of items.
-class Item : public OTTransactionType
+class OPENTXS_EXPORT Item : public OTTransactionType
 {
 public:
     // FOR EXAMPLE:  A client may send a TRANSFER request, setting type to
@@ -100,11 +100,11 @@ public:
     // signed off!!
     //
     //
-    OPENTXS_EXPORT bool AddBlankNumbersToItem(const NumList& theAddition);
+    bool AddBlankNumbersToItem(const NumList& theAddition);
     std::int64_t GetClosingNum() const;
     void SetClosingNum(std::int64_t lClosingNum);
-    OPENTXS_EXPORT std::int64_t GetNumberOfOrigin() override;
-    OPENTXS_EXPORT void CalculateNumberOfOrigin() override;
+    std::int64_t GetNumberOfOrigin() override;
+    void CalculateNumberOfOrigin() override;
     // used for looping through the items in a few places.
     inline listOfItems& GetItemList() { return m_listItems; }
     std::shared_ptr<const Item> GetItem(std::int32_t nIndex) const;
@@ -157,7 +157,7 @@ public:
     // Call this on the server side, on a balanceStatement item, to verify
     // whether the wallet side set it up correctly (and thus it's okay to sign
     // and return with acknowledgement.)
-    OPENTXS_EXPORT bool VerifyBalanceStatement(
+    bool VerifyBalanceStatement(
         std::int64_t lActualAdjustment,
         const otx::context::Client& context,
         const Ledger& THE_INBOX,
@@ -172,12 +172,12 @@ public:
                                                  // constructing the original
                                                  // request.) Unused when 0.
                                                  // server-side
-    OPENTXS_EXPORT bool VerifyTransactionStatement(
+    bool VerifyTransactionStatement(
         const otx::context::Client& THE_NYM,
         const OTTransaction& TARGET_TRANSACTION,
         const std::set<TransactionNumber> newNumbers,
         const bool bIsRealTransaction = true) const;
-    OPENTXS_EXPORT bool VerifyTransactionStatement(
+    bool VerifyTransactionStatement(
         const otx::context::Client& THE_NYM,
         const OTTransaction& TARGET_TRANSACTION,
         const bool bIsRealTransaction = true) const;
@@ -187,20 +187,18 @@ public:
     inline void SetType(itemType theType) { m_Type = theType; }
     inline std::int64_t GetAmount() const { return m_lAmount; }
     inline void SetAmount(std::int64_t lAmount) { m_lAmount = lAmount; }
-    OPENTXS_EXPORT void GetNote(String& theStr) const;
-    OPENTXS_EXPORT void SetNote(const String& theStr);
-    OPENTXS_EXPORT void GetAttachment(String& theStr) const;
-    OPENTXS_EXPORT void GetAttachment(Data& output) const;
-    OPENTXS_EXPORT void SetAttachment(const String& theStr);
-    OPENTXS_EXPORT void SetAttachment(const Data& input);
+    void GetNote(String& theStr) const;
+    void SetNote(const String& theStr);
+    void GetAttachment(String& theStr) const;
+    void GetAttachment(Data& output) const;
+    void SetAttachment(const String& theStr);
+    void SetAttachment(const Data& input);
     inline const Identifier& GetDestinationAcctID() const { return m_AcctToID; }
     inline void SetDestinationAcctID(const Identifier& theID)
     {
         m_AcctToID = theID;
     }
-    OPENTXS_EXPORT static void GetStringFromType(
-        itemType theType,
-        String& strType);
+    static void GetStringFromType(itemType theType, String& strType);
     inline void GetTypeString(String& strType) const
     {
         GetStringFromType(GetType(), strType);

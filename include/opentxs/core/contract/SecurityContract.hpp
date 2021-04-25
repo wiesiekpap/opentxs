@@ -30,10 +30,10 @@ namespace contract
 {
 namespace unit
 {
-class Security : virtual public contract::Unit
+class OPENTXS_EXPORT Security : virtual public contract::Unit
 {
 public:
-    OPENTXS_EXPORT ~Security() override = default;
+    ~Security() override = default;
 
 protected:
     Security() noexcept = default;
@@ -42,7 +42,7 @@ private:
     friend OTSecurityContract;
 
 #ifndef _WIN32
-    OPENTXS_EXPORT Security* clone() const noexcept override = 0;
+    Security* clone() const noexcept override = 0;
 #endif
 
     Security(const Security&) = delete;

@@ -27,17 +27,17 @@ struct Core;
 }  // namespace internal
 }  // namespace api
 
-class Instrument : public OTScriptable
+class OPENTXS_EXPORT Instrument : public OTScriptable
 {
 public:
-    OPENTXS_EXPORT void Release() override;
+    void Release() override;
 
     void Release_Instrument();
-    OPENTXS_EXPORT bool VerifyCurrentDate();  // Verify whether the CURRENT date
-                                              // is WITHIN the VALID FROM / TO
-                                              // dates.
-    OPENTXS_EXPORT bool IsExpired();  // Verify whether the CURRENT date is
-                                      // AFTER the the "VALID TO" date.
+    bool VerifyCurrentDate();  // Verify whether the CURRENT date
+                               // is WITHIN the VALID FROM / TO
+                               // dates.
+    bool IsExpired();          // Verify whether the CURRENT date is
+                               // AFTER the the "VALID TO" date.
     inline Time GetValidFrom() const { return m_VALID_FROM; }
     inline Time GetValidTo() const { return m_VALID_TO; }
 
@@ -48,7 +48,7 @@ public:
     inline const identifier::Server& GetNotaryID() const { return m_NotaryID; }
     void InitInstrument();
 
-    OPENTXS_EXPORT ~Instrument() override;
+    ~Instrument() override;
 
 protected:
     OTUnitID m_InstrumentDefinitionID;

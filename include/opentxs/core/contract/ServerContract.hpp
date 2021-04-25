@@ -43,7 +43,7 @@ namespace opentxs
 {
 namespace contract
 {
-class Server : virtual public opentxs::contract::Signable
+class OPENTXS_EXPORT Server : virtual public opentxs::contract::Signable
 {
 public:
     using Endpoint = std::tuple<
@@ -53,25 +53,24 @@ public:
         std::uint32_t,   // port
         VersionNumber>;  // version
 
-    OPENTXS_EXPORT static const VersionNumber DefaultVersion;
+    static const VersionNumber DefaultVersion;
 
-    OPENTXS_EXPORT virtual bool ConnectInfo(
+    virtual bool ConnectInfo(
         std::string& strHostname,
         std::uint32_t& nPort,
         core::AddressType& actual,
         const core::AddressType& preferred) const = 0;
-    OPENTXS_EXPORT virtual proto::ServerContract Contract() const = 0;
-    OPENTXS_EXPORT virtual std::string EffectiveName() const = 0;
-    OPENTXS_EXPORT virtual proto::ServerContract PublicContract() const = 0;
-    OPENTXS_EXPORT virtual bool Statistics(String& strContents) const = 0;
-    OPENTXS_EXPORT virtual const Data& TransportKey() const = 0;
-    OPENTXS_EXPORT virtual OTSecret TransportKey(
-        Data& pubkey,
-        const PasswordPrompt& reason) const = 0;
+    virtual proto::ServerContract Contract() const = 0;
+    virtual std::string EffectiveName() const = 0;
+    virtual proto::ServerContract PublicContract() const = 0;
+    virtual bool Statistics(String& strContents) const = 0;
+    virtual const Data& TransportKey() const = 0;
+    virtual OTSecret TransportKey(Data& pubkey, const PasswordPrompt& reason)
+        const = 0;
 
-    OPENTXS_EXPORT virtual void InitAlias(const std::string& alias) = 0;
+    virtual void InitAlias(const std::string& alias) = 0;
 
-    OPENTXS_EXPORT ~Server() override = default;
+    ~Server() override = default;
 
 protected:
     Server() noexcept = default;
@@ -80,7 +79,7 @@ private:
     friend OTServerContract;
 
 #ifndef _WIN32
-    OPENTXS_EXPORT Server* clone() const noexcept override = 0;
+    Server* clone() const noexcept override = 0;
 #endif
 
     Server(const Server&) = delete;

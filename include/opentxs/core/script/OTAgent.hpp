@@ -70,7 +70,7 @@ namespace opentxs
 // nym should just create an entity he controls, and make the first nym an agent
 // for that entity.
 //
-class OTAgent
+class OPENTXS_EXPORT OTAgent
 {
 private:
     const api::Wallet& wallet_;
@@ -174,9 +174,7 @@ public:
     bool ReserveClosingTransNum(
         otx::context::Server& context,
         OTPartyAccount& thePartyAcct);
-    OPENTXS_EXPORT bool SignContract(
-        Contract& theInput,
-        const PasswordPrompt& reason) const;
+    bool SignContract(Contract& theInput, const PasswordPrompt& reason) const;
 
     // Verify that this agent somehow has legitimate agency over this account.
     // (According to the account.)
@@ -189,8 +187,8 @@ public:
     void SetParty(OTParty& theOwnerParty);  // This happens when the agent is
                                             // added to the party.
 
-    OPENTXS_EXPORT bool IsValidSigner(const identity::Nym& theNym);
-    OPENTXS_EXPORT bool IsValidSignerID(const Identifier& theNymID);
+    bool IsValidSigner(const identity::Nym& theNym);
+    bool IsValidSignerID(const Identifier& theNymID);
 
     bool IsAuthorizingAgentForParty();  // true/false whether THIS agent is the
                                         // authorizing agent for his party.
@@ -222,9 +220,9 @@ public:
     // - Agent is either a Nym acting for himself or some entity,
     // - or agent is a group acting for some entity.
 
-    OPENTXS_EXPORT bool IsAnIndividual() const;  // Agent is an individual Nym.
-                                                 // (Meaning either he IS ALSO
-                                                 // the party and thus
+    bool IsAnIndividual() const;  // Agent is an individual Nym.
+                                  // (Meaning either he IS ALSO
+                                  // the party and thus
     // represents himself, OR he is an agent
     // for an entity who is the party, and
     // he's acting in a role for that
@@ -247,10 +245,9 @@ public:
 
     // For when the agent is an individual:
     //
-    OPENTXS_EXPORT bool GetNymID(
-        Identifier& theOutput) const;  // If IsIndividual(),
-                                       // then this is his
-                                       // own personal NymID,
+    bool GetNymID(Identifier& theOutput) const;  // If IsIndividual(),
+                                                 // then this is his
+                                                 // own personal NymID,
     // (whether he DoesRepresentHimself() or DoesRepresentAnEntity()
     // -- either way). Otherwise if IsGroup(), this returns false.
 
@@ -299,7 +296,7 @@ public:
                                                     // entity, this is its ID.
                                                     // Else fail.
 
-    OPENTXS_EXPORT const String& GetName()
+    const String& GetName()
     {
         return m_strName;
     }  // agent's name as used in a script.

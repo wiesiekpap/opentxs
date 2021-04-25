@@ -65,16 +65,16 @@ namespace opentxs
 {
 namespace identifier
 {
-class Server : virtual public opentxs::Identifier
+class OPENTXS_EXPORT Server : virtual public opentxs::Identifier
 {
 public:
 #ifndef SWIG
-    OPENTXS_EXPORT static OTServerID Factory();
-    OPENTXS_EXPORT static OTServerID Factory(const std::string& rhs);
-    OPENTXS_EXPORT static OTServerID Factory(const String& rhs);
+    static OTServerID Factory();
+    static OTServerID Factory(const std::string& rhs);
+    static OTServerID Factory(const String& rhs);
 #endif
 
-    OPENTXS_EXPORT ~Server() override = default;
+    ~Server() override = default;
 
 protected:
     Server() = default;

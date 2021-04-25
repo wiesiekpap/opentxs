@@ -40,71 +40,70 @@ namespace opentxs
 {
 namespace contract
 {
-class Unit : virtual public opentxs::contract::Signable
+class OPENTXS_EXPORT Unit : virtual public opentxs::contract::Signable
 {
 public:
     using SerializedType = proto::UnitDefinition;
 
-    OPENTXS_EXPORT static const VersionNumber DefaultVersion;
-    OPENTXS_EXPORT static const VersionNumber MaxVersion;
+    static const VersionNumber DefaultVersion;
+    static const VersionNumber MaxVersion;
 
-    OPENTXS_EXPORT static std::string formatLongAmount(
+    static std::string formatLongAmount(
         const Amount lValue,
         const std::int32_t nFactor = 100,
         const std::int32_t nPower = 2,
         const char* szCurrencySymbol = "",
         const char* szThousandSeparator = ",",
         const char* szDecimalPoint = ".");
-    OPENTXS_EXPORT static bool ParseFormatted(
+    static bool ParseFormatted(
         Amount& lResult,
         const std::string& str_input,
         const std::int32_t nFactor = 100,
         const std::int32_t nPower = 2,
         const char* szThousandSeparator = ",",
         const char* szDecimalPoint = ".");
-    OPENTXS_EXPORT static std::set<contact::ContactItemType> ValidUnits(
+    static std::set<contact::ContactItemType> ValidUnits(
         const VersionNumber version = DefaultVersion) noexcept;
 
-    OPENTXS_EXPORT virtual bool AddAccountRecord(
+    virtual bool AddAccountRecord(
         const std::string& dataFolder,
         const Account& theAccount) const = 0;
-    OPENTXS_EXPORT virtual SerializedType Contract() const = 0;
-    OPENTXS_EXPORT virtual std::int32_t DecimalPower() const = 0;
-    OPENTXS_EXPORT virtual bool DisplayStatistics(
-        String& strContents) const = 0;
-    OPENTXS_EXPORT virtual bool EraseAccountRecord(
+    virtual SerializedType Contract() const = 0;
+    virtual std::int32_t DecimalPower() const = 0;
+    virtual bool DisplayStatistics(String& strContents) const = 0;
+    virtual bool EraseAccountRecord(
         const std::string& dataFolder,
         const Identifier& theAcctID) const = 0;
-    OPENTXS_EXPORT virtual bool FormatAmountLocale(
+    virtual bool FormatAmountLocale(
         Amount amount,
         std::string& str_output,
         const std::string& str_thousand,
         const std::string& str_decimal) const = 0;
-    OPENTXS_EXPORT virtual bool FormatAmountWithoutSymbolLocale(
+    virtual bool FormatAmountWithoutSymbolLocale(
         Amount amount,
         std::string& str_output,
         const std::string& str_thousand,
         const std::string& str_decimal) const = 0;
-    OPENTXS_EXPORT virtual std::string FractionalUnitName() const = 0;
-    OPENTXS_EXPORT virtual const std::string& GetCurrencyName() const = 0;
-    OPENTXS_EXPORT virtual const std::string& GetCurrencySymbol() const = 0;
-    OPENTXS_EXPORT virtual SerializedType PublicContract() const = 0;
-    OPENTXS_EXPORT virtual bool StringToAmountLocale(
+    virtual std::string FractionalUnitName() const = 0;
+    virtual const std::string& GetCurrencyName() const = 0;
+    virtual const std::string& GetCurrencySymbol() const = 0;
+    virtual SerializedType PublicContract() const = 0;
+    virtual bool StringToAmountLocale(
         Amount& amount,
         const std::string& str_input,
         const std::string& str_thousand,
         const std::string& str_decimal) const = 0;
-    OPENTXS_EXPORT virtual std::string TLA() const = 0;
-    OPENTXS_EXPORT virtual contract::UnitType Type() const = 0;
-    OPENTXS_EXPORT virtual contact::ContactItemType UnitOfAccount() const = 0;
-    OPENTXS_EXPORT virtual bool VisitAccountRecords(
+    virtual std::string TLA() const = 0;
+    virtual contract::UnitType Type() const = 0;
+    virtual contact::ContactItemType UnitOfAccount() const = 0;
+    virtual bool VisitAccountRecords(
         const std::string& dataFolder,
         AccountVisitor& visitor,
         const PasswordPrompt& reason) const = 0;
 
-    OPENTXS_EXPORT virtual void InitAlias(const std::string& alias) = 0;
+    virtual void InitAlias(const std::string& alias) = 0;
 
-    OPENTXS_EXPORT ~Unit() override = default;
+    ~Unit() override = default;
 
 protected:
     Unit() noexcept = default;
@@ -113,7 +112,7 @@ private:
     friend OTUnitDefinition;
 
 #ifndef _WIN32
-    OPENTXS_EXPORT Unit* clone() const noexcept override = 0;
+    Unit* clone() const noexcept override = 0;
 #endif
 
     Unit(const Unit&) = delete;

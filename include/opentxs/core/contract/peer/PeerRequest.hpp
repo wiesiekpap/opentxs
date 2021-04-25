@@ -46,17 +46,17 @@ namespace contract
 {
 namespace peer
 {
-class Request : virtual public opentxs::contract::Signable
+class OPENTXS_EXPORT Request : virtual public opentxs::contract::Signable
 {
 public:
     using SerializedType = proto::PeerRequest;
 
-    OPENTXS_EXPORT virtual SerializedType Contract() const = 0;
-    OPENTXS_EXPORT virtual const identifier::Nym& Initiator() const = 0;
-    OPENTXS_EXPORT virtual const identifier::Nym& Recipient() const = 0;
-    OPENTXS_EXPORT virtual PeerRequestType Type() const = 0;
+    virtual SerializedType Contract() const = 0;
+    virtual const identifier::Nym& Initiator() const = 0;
+    virtual const identifier::Nym& Recipient() const = 0;
+    virtual PeerRequestType Type() const = 0;
 
-    OPENTXS_EXPORT ~Request() override = default;
+    ~Request() override = default;
 
 protected:
     Request() noexcept = default;
@@ -65,7 +65,7 @@ private:
     friend OTPeerRequest;
 
 #ifndef _WIN32
-    OPENTXS_EXPORT Request* clone() const noexcept override = 0;
+    Request* clone() const noexcept override = 0;
 #endif
 
     Request(const Request&) = delete;
