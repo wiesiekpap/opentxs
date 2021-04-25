@@ -76,6 +76,14 @@ struct GCS;
 
 namespace network
 {
+namespace blockchain
+{
+namespace sync
+{
+class Data;
+}  // namespace sync
+}  // namespace blockchain
+
 namespace zeromq
 {
 class Message;
@@ -139,7 +147,10 @@ public:
     auto ProcessBlock(const block::bitcoin::Block& block) const noexcept
         -> bool final;
     auto ProcessBlock(BlockIndexerData& data) const noexcept -> void;
-    auto ProcessSyncData(const ParsedSyncData& data) const noexcept
+    auto ProcessSyncData(
+        const block::Hash& prior,
+        const std::vector<block::pHash>& hashes,
+        const network::blockchain::sync::Data& data) const noexcept
         -> void final;
     auto ProcessSyncData(SyncClientFilterData& data) const noexcept -> void;
     auto Tip(const filter::Type type) const noexcept -> block::Position final

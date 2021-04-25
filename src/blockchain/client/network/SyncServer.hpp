@@ -24,6 +24,11 @@
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/network/blockchain/sync/Block.hpp"
+#include "opentxs/network/blockchain/sync/Data.hpp"
+#include "opentxs/network/blockchain/sync/MessageType.hpp"
+#include "opentxs/network/blockchain/sync/Request.hpp"
+#include "opentxs/network/blockchain/sync/State.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
@@ -31,11 +36,6 @@
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
-#include "opentxs/protobuf/BlockchainP2PChainState.pb.h"
-#include "opentxs/protobuf/BlockchainP2PHello.pb.h"
-#include "opentxs/protobuf/BlockchainP2PSync.pb.h"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/verify/BlockchainP2PHello.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 #define SYNC_SERVER                                                            \
@@ -151,16 +151,10 @@ private:
     {
         // TODO use known() and Ancestors() instead
         const auto [parent, best] = header_.CommonParent(incoming);
-        auto proto = proto::BlockchainP2PHello{};
-        proto.set_version(client::sync_hello_version_);
-        auto& state = *proto.add_state();
-        state.set_version(client::sync_state_version_);
-        state.set_chain(static_cast<std::uint32_t>(chain_));
-        state.set_height(static_cast<std::uint64_t>(best.first));
-        const auto bytes = best.second->Bytes();
-        state.set_hash(bytes.data(), bytes.size());
+        const auto needSync = incoming != best;
+        auto state = network::blockchain::sync::State{chain_, std::move(best)};
 
-        return std::make_tuple(incoming != best, parent, proto);
+        return std::make_tuple(needSync, parent, std::move(state));
     }
     auto trigger_state_machine() const noexcept -> void { trigger(); }
     auto update_tip(const Position& position, const int&) const noexcept -> void
@@ -298,61 +292,39 @@ private:
 
             return output;
         }();
-        const auto body = incoming->Body();
+        namespace sync = network::blockchain::sync;
+        const auto base = sync::Factory(api_, incoming);
 
-        if (2 > body.size()) { return; }
+        if (auto type = base->Type(); type != sync::MessageType::sync_request) {
+            LogOutput(SYNC_SERVER)(__FUNCTION__)(
+                ": Invalid or unsupported message type ")(opentxs::print(type))
+                .Flush();
+
+            return;
+        }
 
         try {
-            const auto type = [&] {
-                try {
-
-                    return body.at(0).as<WorkType>();
-                } catch (...) {
-
-                    OT_FAIL;
+            const auto& request = base->asRequest();
+            const auto& state = [&]() -> const sync::State& {
+                for (const auto& state : request.State()) {
+                    if (state.Chain() == chain_) { return state; }
                 }
+
+                throw std::runtime_error{"No matching chains"};
             }();
+            const auto& position = state.Position();
+            auto [needSync, parent, data] = hello(lock, position);
+            const auto& [height, hash] = parent;
+            auto reply =
+                sync::Data{WorkType::SyncReply, std::move(data), {}, {}};
+            auto send{true};
 
-            switch (type) {
-                case WorkType::SyncRequest: {
-                    break;
-                }
-                default: {
-                    LogOutput(SYNC_SERVER)(__FUNCTION__)(
-                        ": Unsupported message type ")(value(type))
-                        .Flush();
+            if (needSync) { send = db_.LoadSync(height, reply); }
 
-                    return;
-                }
-            }
+            auto out = api_.ZeroMQ().ReplyMessage(incoming);
 
-            const auto hello =
-                proto::Factory<proto::BlockchainP2PHello>(body.at(1));
-
-            if (false == proto::Validate(hello, VERBOSE)) { return; }
-
-            for (const auto& state : hello.state()) {
-                const auto chain = static_cast<blockchain::Type>(state.chain());
-
-                if (chain_ != chain) { continue; }
-
-                const auto position = block::Position{
-                    static_cast<block::Height>(state.height()),
-                    api_.Factory().Data(state.hash(), StringStyle::Raw)};
-                const auto [needSync, parent, hello] =
-                    this->hello(lock, position);
-                const auto& [height, hash] = parent;
-                auto reply =
-                    api_.ZeroMQ().TaggedReply(incoming, WorkType::SyncReply);
-                reply->AddFrame(hello);
-                reply->AddFrame();
-                auto send{true};
-
-                if (needSync) { send = db_.LoadSync(height, reply); }
-
-                if (send) {
-                    OTSocket::send_message(lock, socket_.get(), reply);
-                }
+            if (send && reply.Serialize(out)) {
+                OTSocket::send_message(lock, socket_.get(), out);
             }
         } catch (const std::exception& e) {
             LogOutput(SYNC_SERVER)(__FUNCTION__)(": ")(e.what()).Flush();
@@ -363,7 +335,7 @@ private:
         if (0 == data.size()) { return; }
 
         const auto& tip = data.back();
-        auto items = std::vector<proto::BlockchainP2PSync>{};
+        auto items = std::vector<network::blockchain::sync::Block>{};
         auto previousFilterHeader = api_.Factory().Data();
 
         for (const auto& task : data) {
@@ -400,14 +372,15 @@ private:
                 }
 
                 const auto& gcs = *pGCS;
-                auto& item = items.emplace_back();
-                item.set_version(sync_data_version_);
-                item.set_chain(static_cast<std::uint32_t>(chain_));
-                item.set_height(task->position_.first);
-                item.set_header(header.Encode()->str());
-                item.set_filter_type(static_cast<std::uint32_t>(type_));
-                item.set_filter_element_count(gcs.ElementCount());
-                item.set_filter(std::string{reader(gcs.Compressed())});
+                const auto headerBytes = header.Encode();
+                const auto filterBytes = gcs.Compressed();
+                items.emplace_back(
+                    chain_,
+                    task->position_.first,
+                    type_,
+                    gcs.ElementCount(),
+                    headerBytes->Bytes(),
+                    reader(filterBytes));
                 task->process(1);
             } catch (const std::exception& e) {
                 LogOutput(SYNC_SERVER)(__FUNCTION__)(": ")(e.what()).Flush();
@@ -427,33 +400,20 @@ private:
 
         if (false == stored) { OT_FAIL; }
 
-        auto work = api_.ZeroMQ().TaggedMessage(WorkType::NewBlock);
-        auto hello = [&] {
-            auto output = proto::BlockchainP2PHello{};
-            output.set_version(sync_hello_version_);
-            auto& state = *output.add_state();
-            state.set_version(sync_state_version_);
-            state.set_chain(static_cast<std::uint32_t>(chain_));
-            state.set_height(static_cast<std::uint64_t>(pos.first));
-            const auto bytes = pos.second->Bytes();
-            state.set_hash(bytes.data(), bytes.size());
+        using Data = network::blockchain::sync::Data;
+        const auto msg = Data{
+            WorkType::NewBlock,
+            {chain_, pos},
+            std::move(items),
+            previousFilterHeader->Bytes()};
+        auto work = api_.ZeroMQ().Message();
 
-            return output;
-        }();
-        work->AddFrame(hello);
-        work->AddFrame(previousFilterHeader);
-
-        for (const auto& item : items) { work->AddFrame(item); }
-
-        {
+        if (msg.Serialize(work) && zmq_running_) {
             // NOTE the appropriate lock is already being held in the pipeline
             // function
-            static std::mutex dummy{};
-
-            if (zmq_running_) {
-                auto lock = Lock{dummy};
-                OTSocket::send_message(lock, socket_.get(), work);
-            }
+            auto dummy = std::mutex{};
+            auto lock = Lock{dummy};
+            OTSocket::send_message(lock, socket_.get(), work);
         }
     }
     auto shutdown(std::promise<void>& promise) noexcept -> void

@@ -48,7 +48,6 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
-#include "opentxs/protobuf/BlockchainP2PHello.pb.h"
 
 namespace opentxs
 {
@@ -100,6 +99,14 @@ class Nym;
 
 namespace network
 {
+namespace blockchain
+{
+namespace sync
+{
+class Data;
+}  // namespace sync
+}  // namespace blockchain
+
 namespace zeromq
 {
 namespace socket
@@ -191,7 +198,7 @@ public:
         -> const blockchain::BalanceNode::Element& final;
     auto HDSubaccount(const identifier::Nym& nymID, const Identifier& accountID)
         const noexcept(false) -> const blockchain::HD& final;
-    auto Hello() const noexcept -> proto::BlockchainP2PHello final;
+    auto Hello() const noexcept -> SyncData final;
     auto IndexItem(const ReadView bytes) const noexcept -> PatternID final;
     auto IsEnabled(const opentxs::blockchain::Type chain) const noexcept
         -> bool final;
@@ -247,7 +254,9 @@ public:
     auto ProcessContact(const Contact& contact) const noexcept -> bool final;
     auto ProcessMergedContact(const Contact& parent, const Contact& child)
         const noexcept -> bool final;
-    auto ProcessSyncData(OTZMQMessage&& in) const noexcept -> void final;
+    auto ProcessSyncData(
+        const opentxs::network::blockchain::sync::Data& data,
+        OTZMQMessage&& in) const noexcept -> void final;
     auto ProcessTransaction(
         const Chain chain,
         const Tx& transaction,

@@ -38,7 +38,6 @@
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
-#include "opentxs/protobuf/BlockchainP2PHello.pb.h"
 
 namespace opentxs
 {
@@ -86,16 +85,19 @@ struct Transaction;
 
 namespace network
 {
+namespace blockchain
+{
+namespace sync
+{
+class Data;
+}  // namespace sync
+}  // namespace blockchain
+
 namespace zeromq
 {
 class Context;
 }  // namespace zeromq
 }  // namespace network
-
-namespace proto
-{
-class BlockchainP2PHello;
-}  // namespace proto
 
 class Contact;
 class Identifier;
@@ -192,7 +194,7 @@ struct BlockchainImp final : public Blockchain::Imp {
     auto EnabledChains() const noexcept -> std::set<Chain> final;
     auto GetChain(const Chain type) const noexcept(false)
         -> const opentxs::blockchain::Network& final;
-    auto Hello() const noexcept -> proto::BlockchainP2PHello final;
+    auto Hello() const noexcept -> SyncState final;
     auto IndexItem(const ReadView bytes) const noexcept -> PatternID final;
     auto IsEnabled(const opentxs::blockchain::Type chain) const noexcept
         -> bool final;
@@ -207,7 +209,9 @@ struct BlockchainImp final : public Blockchain::Imp {
     auto ProcessContact(const Contact& contact) const noexcept -> bool final;
     auto ProcessMergedContact(const Contact& parent, const Contact& child)
         const noexcept -> bool final;
-    auto ProcessSyncData(OTZMQMessage&& in) const noexcept -> void final;
+    auto ProcessSyncData(
+        const opentxs::network::blockchain::sync::Data& data,
+        OTZMQMessage&& in) const noexcept -> void final;
     auto ProcessTransaction(
         const Chain chain,
         const Tx& in,
@@ -302,8 +306,7 @@ private:
     auto enable(const Lock& lock, const Chain type, const std::string& seednode)
         const noexcept -> bool;
     auto heartbeat() const noexcept -> void;
-    auto hello(const Lock&, const Chains& chains) const noexcept
-        -> proto::BlockchainP2PHello;
+    auto hello(const Lock&, const Chains& chains) const noexcept -> SyncState;
     auto load_transaction(const Lock& lock, const Txid& id) const noexcept
         -> std::unique_ptr<
             opentxs::blockchain::block::bitcoin::internal::Transaction>;

@@ -11,7 +11,6 @@
 #include <algorithm>
 #include <cstring>
 #include <iosfwd>
-#include <limits>
 #include <memory>
 #include <set>
 #include <string_view>
@@ -25,7 +24,6 @@ extern "C" {
 #include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
-#include "internal/blockchain/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -37,10 +35,7 @@ extern "C" {
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
-#include "opentxs/protobuf/BlockchainP2PSync.pb.h"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/verify/BlockchainP2PSync.hpp"
+#include "opentxs/network/blockchain/sync/Block.hpp"
 #include "util/ByteLiterals.hpp"
 #include "util/LMDB.hpp"
 
@@ -137,23 +132,23 @@ auto Sync::import_genesis(const Chain chain) noexcept -> void
             return output;
         }();
         auto output = Items{};
-        auto& item = output.emplace_back();
-        item.set_version(opentxs::blockchain::client::sync_data_version_);
-        item.set_chain(static_cast<std::uint32_t>(chain));
-        item.set_height(0);
-        item.set_header(api_.Factory()
-                            .Data(data.genesis_header_hex_, StringStyle::Hex)
-                            ->str());
-        item.set_filter_type(static_cast<std::uint32_t>(filterType));
-        item.set_filter_element_count(gcs->ElementCount());
-        item.set_filter(std::string{reader(gcs->Compressed())});
+        const auto header =
+            api_.Factory().Data(data.genesis_header_hex_, StringStyle::Hex);
+        const auto filter = gcs->Compressed();
+        output.emplace_back(
+            chain,
+            0,
+            filterType,
+            gcs->ElementCount(),
+            header->Bytes(),
+            reader(filter));
 
         return output;
     }();
     Store(chain, items);
 }
 
-auto Sync::Load(const Chain chain, const Height height, zmq::Message& output)
+auto Sync::Load(const Chain chain, const Height height, Message& output)
     const noexcept -> bool
 {
     const auto start = static_cast<std::size_t>(height + 1);
@@ -166,10 +161,10 @@ auto Sync::Load(const Chain chain, const Height height, zmq::Message& output)
         }
 
         const auto height = [&] {
-            auto output = std::size_t{};
-            std::memcpy(&output, key.data(), key.size());
+            auto out = std::size_t{};
+            std::memcpy(&out, key.data(), key.size());
 
-            return output;
+            return out;
         }();
 
         try {
@@ -198,7 +193,8 @@ auto Sync::Load(const Chain chain, const Height height, zmq::Message& output)
                 throw std::runtime_error("checksum failure");
             }
 
-            output.AddFrame(view.data(), view.size());
+            if (false == output.Add(view)) { return false; }
+
             haveOne = true;
             total += view.size();
 
@@ -270,31 +266,10 @@ auto Sync::Store(const Chain chain, const Items& items) const noexcept -> bool
 {
     if (0 == items.size()) { return true; }
 
-    for (const auto& item : items) {
-        if (false == proto::Validate(item, VERBOSE)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid protobuf").Flush();
-
-            return false;
-        }
-
-        if (item.chain() != static_cast<std::uint32_t>(chain)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid chain").Flush();
-
-            return false;
-        }
-
-        if (item.height() > std::numeric_limits<Height>::max()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid height").Flush();
-
-            return false;
-        }
-    }
-
     auto lock = ExclusiveLock{lock_};
 
-    if (const auto& first = items.front();
-        static_cast<Height>(first.height()) <= tips_.at(chain)) {
-        const auto parent = std::max<Height>(first.height() - 1, 0);
+    if (const auto& first = items.front(); first.Height() <= tips_.at(chain)) {
+        const auto parent = std::max<Height>(first.Height() - 1, 0);
 
         if (false == reorg(chain, parent)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Reorg error").Flush();
@@ -312,25 +287,28 @@ auto Sync::Store(const Chain chain, const Items& items) const noexcept -> bool
         .Flush();
 
     for (const auto& item : items) {
-        if (static_cast<std::uint64_t>(++previous) != item.height()) {
+        const auto height = item.Height();
+
+        if (++previous != height) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": sequence error. Got ")(
-                item.height())(" expected ")(previous)
+                height)(" expected ")(previous)
                 .Flush();
 
             return false;
         }
 
-        const auto dbKey = static_cast<std::size_t>(item.height());
+        const auto dbKey = static_cast<std::size_t>(height);
         auto data = Data{};
-        const auto size = item.ByteSizeLong();
+        auto raw = Space{};
 
-        if (0 >= size) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid serialized size")
+        if (false == item.Serialize(writer(raw))) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize item")
                 .Flush();
 
             return false;
         }
 
+        const auto size = raw.size();
         auto write = get_write_view(txn, data.index_, size);
 
         if (false == write.valid(size)) {
@@ -341,7 +319,7 @@ auto Sync::Store(const Chain chain, const Items& items) const noexcept -> bool
             return false;
         }
 
-        item.SerializeWithCachedSizesToArray(write.as<std::uint8_t>());
+        std::memcpy(write.data(), raw.data(), size);
 
         static_assert(sizeof(data.checksum_) == crypto_shorthash_BYTES);
 
@@ -368,7 +346,7 @@ auto Sync::Store(const Chain chain, const Items& items) const noexcept -> bool
     }
 
     const auto dbKey = static_cast<std::size_t>(chain);
-    const auto tip = static_cast<Height>(items.back().height());
+    const auto tip = static_cast<Height>(items.back().Height());
 
     if (false == lmdb_.Store(tip_table_, dbKey, tsv(tip), txn).first) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to update tip").Flush();

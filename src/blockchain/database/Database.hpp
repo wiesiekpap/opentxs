@@ -101,6 +101,17 @@ namespace identifier
 class Nym;
 }  // namespace identifier
 
+namespace network
+{
+namespace blockchain
+{
+namespace sync
+{
+class Block;
+}  // namespace sync
+}  // namespace blockchain
+}  // namespace network
+
 namespace proto
 {
 class BlockchainTransactionOutput;

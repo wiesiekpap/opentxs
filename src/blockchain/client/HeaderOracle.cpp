@@ -14,7 +14,6 @@
 #include <iterator>
 #include <map>
 #include <stdexcept>
-#include <string>
 #include <type_traits>
 
 #include "blockchain/client/UpdateTransaction.hpp"
@@ -23,10 +22,8 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/client/Factory.hpp"
 #include "internal/core/Core.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Work.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"  // IWYU pragma: keep
@@ -34,11 +31,8 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameIterator.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
-#include "opentxs/protobuf/BlockchainP2PSync.pb.h"
+#include "opentxs/network/blockchain/sync/Block.hpp"
+#include "opentxs/network/blockchain/sync/Data.hpp"
 
 #define OT_METHOD "opentxs::blockchain::client::implementation::HeaderOracle::"
 
@@ -899,38 +893,33 @@ auto HeaderOracle::LoadHeader(const block::Hash& hash) const noexcept
 }
 
 auto HeaderOracle::ProcessSyncData(
-    const network::zeromq::Message& work,
-    ParsedSyncData& out) noexcept -> bool
+    block::Hash& prior,
+    std::vector<block::pHash>& hashes,
+    const network::blockchain::sync::Data& data) noexcept -> std::size_t
 {
-    auto& [prior, vector] = out;
-    const auto b = work.Body();
+    const auto& blocks = data.Blocks();
 
-    if (3 > b.size()) { return false; }
+    if (0u == blocks.size()) { return 0; }
 
-    vector.clear();
-    vector.reserve(b.size() - 1u);
     Lock lock(lock_);
     auto update = UpdateTransaction{api_, database_};
-    auto previous = [&] {
-        const auto& first = b.at(2);
-        const auto data = proto::Factory<proto::BlockchainP2PSync>(first);
-        const auto height = static_cast<block::Height>(data.height());
+    auto previous = [&]() -> block::pHash {
+        const auto& first = blocks.front();
+        const auto height = first.Height();
 
         if (0 >= height) {
 
             return block::BlankHash();
         } else {
-            const auto prior = height - 1;
-            out.first = database_.BestBlock(prior);
+            prior.Assign(database_.BestBlock(height - 1));
 
-            return out.first;
+            return prior;
         }
     }();
 
-    for (auto i{std::next(b.begin(), 2)}; i != b.end(); std::advance(i, 1)) {
-        const auto sync = proto::Factory<proto::BlockchainP2PSync>(*i);
-        auto pHeader = factory::BitcoinBlockHeader(
-            api_, static_cast<Type>(sync.chain()), sync.header());
+    for (const auto& block : blocks) {
+        auto pHeader =
+            factory::BitcoinBlockHeader(api_, block.Chain(), block.Header());
 
         if (false == bool(pHeader)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid header").Flush();
@@ -948,13 +937,7 @@ auto HeaderOracle::ProcessSyncData(
                 return false;
             }
 
-            const auto& [hash, height, type, count, filter] =
-                vector.emplace_back(
-                    header.Hash(),
-                    static_cast<block::Height>(sync.height()),
-                    static_cast<filter::Type>(sync.filter_type()),
-                    sync.filter_element_count(),
-                    api_.Factory().Data(sync.filter(), StringStyle::Raw));
+            const auto& hash = hashes.emplace_back(header.Hash());
             previous = hash;
 
             if (is_in_best_chain(lock, hash).first) { continue; }
@@ -963,15 +946,18 @@ auto HeaderOracle::ProcessSyncData(
         if (false == add_header(lock, update, std::move(pHeader))) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to process header")
                 .Flush();
-            vector.pop_back();
 
-            return false;
+            return 0;
         }
     }
 
-    database_.ApplyUpdate(update);
+    if (database_.ApplyUpdate(update)) {
 
-    return 0 < vector.size();
+        return hashes.size();
+    } else {
+
+        return 0;
+    }
 }
 
 auto HeaderOracle::stage_candidate(

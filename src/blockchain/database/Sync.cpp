@@ -69,7 +69,7 @@ Sync::Sync(
     }
 }
 
-auto Sync::Load(const block::Height height, zmq::Message& output) const noexcept
+auto Sync::Load(const block::Height height, Message& output) const noexcept
     -> bool
 {
     return common_.LoadSync(chain_, height, output);

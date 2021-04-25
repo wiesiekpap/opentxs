@@ -66,6 +66,10 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/network/blockchain/sync/Base.hpp"
+#include "opentxs/network/blockchain/sync/Data.hpp"
+#include "opentxs/network/blockchain/sync/MessageType.hpp"
+#include "opentxs/network/blockchain/sync/Request.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
@@ -74,25 +78,17 @@
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
-#include "opentxs/protobuf/BlockchainP2PChainState.pb.h"
-#include "opentxs/protobuf/BlockchainP2PHello.pb.h"
-#include "opentxs/protobuf/BlockchainP2PSync.pb.h"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/verify/BlockchainP2PChainState.hpp"
-#include "opentxs/protobuf/verify/BlockchainP2PHello.hpp"
-#include "opentxs/protobuf/verify/BlockchainP2PSync.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 namespace b = ot::blockchain;
 namespace zmq = ot::network::zeromq;
+namespace otsync = ot::network::blockchain::sync;
 
 namespace
 {
 using Dir = zmq::socket::Socket::Direction;
 using Position = ot::blockchain::block::Position;
-using Hello = ot::proto::BlockchainP2PHello;
-using State = ot::proto::BlockchainP2PChainState;
-using Sync = ot::proto::BlockchainP2PSync;
+using State = otsync::State;
 using Pattern = ot::blockchain::block::bitcoin::Script::Pattern;
 using FilterType = ot::blockchain::filter::Type;
 
@@ -284,14 +280,12 @@ struct SyncRequestor {
 
     auto check(const State& state, const Position& pos) const noexcept -> bool
     {
-        auto output = ot::proto::Validate(state, ot::VERBOSE);
-        output &= (state.chain() == static_cast<std::uint32_t>(test_chain_));
-        output &= (state.height() == static_cast<std::uint64_t>(pos.first));
-        output &= (state.hash() == pos.second->Bytes());
+        auto output{true};
+        output &= (state.Chain() == test_chain_);
+        output &= (state.Position() == pos);
 
-        EXPECT_EQ(state.chain(), static_cast<std::uint32_t>(test_chain_));
-        EXPECT_EQ(state.height(), static_cast<std::uint64_t>(pos.first));
-        EXPECT_EQ(state.hash(), pos.second->Bytes());
+        EXPECT_EQ(state.Chain(), test_chain_);
+        EXPECT_EQ(state.Position(), pos);
 
         return output;
     }
@@ -311,7 +305,7 @@ struct SyncRequestor {
         return check(state, pos);
     }
     [[maybe_unused]] auto check(
-        const zmq::Frame& frame,
+        const otsync::Block& block,
         const std::size_t index) const noexcept -> bool
     {
         constexpr auto filterType{ot::blockchain::filter::Type::ES};
@@ -321,20 +315,22 @@ struct SyncRequestor {
 
         OT_ASSERT(header);
 
-        auto serialize = std::string{};
-        header->Serialize(ot::writer(serialize));
+        auto headerBytes = ot::Space{};
+
+        EXPECT_TRUE(header->Serialize(ot::writer(headerBytes)));
+
         const auto& pos = header->Position();
-        const auto data = ot::proto::Factory<Sync>(frame);
-        auto output = ot::proto::Validate(data, ot::VERBOSE);
-        output &= (data.chain() == static_cast<std::uint32_t>(test_chain_));
-        output &= (data.height() == static_cast<std::uint64_t>(pos.first));
-        output &=
-            (data.filter_type() == static_cast<std::uint32_t>(filterType));
+        auto output{true};
+        output &= (block.Chain() == test_chain_);
+        output &= (block.Height() == pos.first);
+        output &= (block.Header() == ot::reader(headerBytes));
+        output &= (block.FilterType() == filterType);
         // TODO verify filter
 
-        EXPECT_EQ(data.chain(), static_cast<std::uint32_t>(test_chain_));
-        EXPECT_EQ(data.height(), static_cast<std::uint64_t>(pos.first));
-        EXPECT_EQ(data.filter_type(), static_cast<std::uint32_t>(filterType));
+        EXPECT_EQ(block.Chain(), test_chain_);
+        EXPECT_EQ(block.Height(), pos.first);
+        EXPECT_EQ(block.Header(), ot::reader(headerBytes));
+        EXPECT_EQ(block.FilterType(), filterType);
 
         return output;
     }
@@ -348,19 +344,19 @@ struct SyncRequestor {
     }
     [[maybe_unused]] auto request(const Position& pos) const noexcept -> bool
     {
-        auto msg = api_.ZeroMQ().TaggedMessage(ot::WorkType::SyncRequest);
-        msg->AddFrame([&] {
-            auto hello = Hello{};
-            hello.set_version(1);
-            auto& state = *hello.add_state();
-            state.set_version(1);
-            state.set_chain(static_cast<std::uint32_t>(test_chain_));
-            state.set_height(static_cast<std::uint64_t>(pos.first));
-            const auto bytes = pos.second->Bytes();
-            state.set_hash(bytes.data(), bytes.size());
+        auto msg = api_.ZeroMQ().Message();
+        const auto req = otsync::Request{[&] {
+            auto out = otsync::Request::StateData{};
+            out.emplace_back(test_chain_, pos);
 
-            return hello;
-        }());
+            return out;
+        }()};
+
+        if (false == req.Serialize(msg)) {
+            EXPECT_TRUE(false);
+
+            return false;
+        }
 
         return socket_->Send(msg);
     }
@@ -475,67 +471,39 @@ private:
 
     auto check_update(const ot::network::zeromq::Message& in) noexcept -> void
     {
-        auto body = in.Body();
-
-        if (3 > body.size()) {
-            ++errors_;
-
-            return;
-        }
+        namespace sync = ot::network::blockchain::sync;
+        const auto base = sync::Factory(api_, in);
 
         try {
-            auto counter{-1};
+            const auto& data = base->asData();
+            const auto& state = data.State();
+            const auto& blocks = data.Blocks();
+            const auto index = updated_++;
+            const auto future = cache_.get(index);
+            const auto hash = future.get();
 
-            for (const auto& frame : body) {
-                switch (++counter) {
-                    case 0: {
-                        const auto type = frame.as<ot::WorkType>();
+            if (sync::MessageType::new_block_header != base->Type()) {
+                throw std::runtime_error{"invalid message"};
+            }
 
-                        if (type != ot::WorkType::NewBlock) {
-                            throw std::runtime_error("invalid type");
-                        }
-                    } break;
-                    case 1: {
-                        const auto hello = ot::proto::Factory<Hello>(frame);
+            if (state.Chain() != test_chain_) {
+                throw std::runtime_error{"wrong chain"};
+            }
 
-                        if (false == ot::proto::Validate(hello, ot::VERBOSE)) {
-                            throw std::runtime_error("invalid hello");
-                        }
+            if (0 == data.PreviousCfheader().size()) {
+                throw std::runtime_error{"invalid previous cfheader"};
+            }
 
-                        if (1 != hello.state().size()) {
-                            throw std::runtime_error("wrong state count");
-                        }
+            if (0 == blocks.size()) {
+                throw std::runtime_error{"no block data"};
+            }
 
-                        const auto& state = hello.state().at(0);
-                        constexpr auto chain =
-                            static_cast<std::uint32_t>(test_chain_);
+            if (1 != blocks.size()) {
+                throw std::runtime_error{"wrong number of blocks"};
+            }
 
-                        if (state.chain() != chain) {
-                            throw std::runtime_error("wrong chain");
-                        }
-                    } break;
-                    case 2: {
-                        if (0 == frame.size()) {
-                            throw std::runtime_error(
-                                "invalid previous cfheader");
-                        }
-                    } break;
-                    default: {
-                        const auto state = ot::proto::Factory<State>(frame);
-
-                        if (false == ot::proto::Validate(state, ot::VERBOSE)) {
-                            throw std::runtime_error("invalid state");
-                        }
-
-                        const auto index = updated_++;
-                        const auto future = cache_.get(index);
-                        const auto hash = future.get();
-
-                        if (state.hash() != hash->str()) {
-                            std::runtime_error("wrong hash");
-                        }
-                    }
-                }
+            if (state.Position().second != hash) {
+                std::runtime_error("wrong hash");
             }
         } catch (const std::exception& e) {
             std::cout << e.what() << '\n';

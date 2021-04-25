@@ -26,7 +26,8 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/protobuf/BlockchainP2PSync.pb.h"
+#include "opentxs/network/blockchain/sync/Block.hpp"
+#include "opentxs/network/blockchain/sync/Data.hpp"
 #include "util/LMDB.hpp"
 #include "util/MappedFileStorage.hpp"
 
@@ -39,16 +40,15 @@ class Core;
 
 namespace network
 {
-namespace zeromq
+namespace blockchain
 {
-class Message;
-}  // namespace zeromq
+namespace sync
+{
+class Block;
+class Data;
+}  // namespace sync
+}  // namespace blockchain
 }  // namespace network
-
-namespace proto
-{
-class BlockchainP2PSync;
-}  // namespace proto
 
 namespace storage
 {
@@ -59,8 +59,6 @@ class LMDB;
 }  // namespace storage
 }  // namespace opentxs
 
-namespace zmq = opentxs::network::zeromq;
-
 namespace opentxs::api::client::blockchain::database::implementation
 {
 class Sync final : private util::MappedFileStorage
@@ -68,9 +66,11 @@ class Sync final : private util::MappedFileStorage
 public:
     using Chain = opentxs::blockchain::Type;
     using Height = opentxs::blockchain::block::Height;
-    using Items = std::vector<proto::BlockchainP2PSync>;
+    using Block = opentxs::network::blockchain::sync::Block;
+    using Message = opentxs::network::blockchain::sync::Data;
+    using Items = std::vector<Block>;
 
-    auto Load(const Chain chain, const Height height, zmq::Message& output)
+    auto Load(const Chain chain, const Height height, Message& output)
         const noexcept -> bool;
     // Delete all entries with a height greater than specified
     auto Reorg(const Chain chain, const Height height) const noexcept -> bool;

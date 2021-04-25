@@ -22,7 +22,6 @@
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/client/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -43,13 +42,14 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/network/blockchain/sync/Base.hpp"
+#include "opentxs/network/blockchain/sync/Data.hpp"
+#include "opentxs/network/blockchain/sync/State.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameIterator.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
-#include "opentxs/protobuf/BlockchainP2PChainState.pb.h"
-#include "opentxs/protobuf/BlockchainP2PHello.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposedNotification.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposedOutput.pb.h"
@@ -443,7 +443,8 @@ auto Network::pipeline(zmq::Message& in) noexcept -> void
         case Task::FilterUpdate: {
             process_filter_update(in);
         } break;
-        case Task::SyncData: {
+        case Task::SyncReply:
+        case Task::SyncNewBlock: {
             process_sync_data(in);
         } break;
         case Task::Heartbeat: {
@@ -550,37 +551,34 @@ auto Network::process_header(network::zeromq::Message& in) noexcept -> void
 
 auto Network::process_sync_data(network::zeromq::Message& in) noexcept -> void
 {
-    auto parsed = ParsedSyncData{api_.Factory().Data(), {}};
+    const auto sync = opentxs::network::blockchain::sync::Factory(api_, in);
+    const auto& data = sync->asData();
 
     {
-        const auto hello =
-            proto::Factory<proto::BlockchainP2PHello>(in.Body_at(1));
-        auto found{false};
+        const auto& state = data.State();
 
-        for (const auto& state : hello.state()) {
-            const auto chain = static_cast<Type>(state.chain());
-
-            if (chain != chain_) { continue; }
-
-            found = true;
-            const auto height = static_cast<block::Height>(state.height());
-            remote_chain_height_.store(
-                std::max(height, remote_chain_height_.load()));
-        }
-
-        if (false == found) {
+        if (state.Chain() != chain_) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Wrong chain").Flush();
 
             return;
         }
+
+        remote_chain_height_.store(
+            std::max(state.Position().first, remote_chain_height_.load()));
     }
 
-    if (false == header_.ProcessSyncData(in, parsed)) { return; }
+    auto prior = block::BlankHash();
+    auto hashes = std::vector<block::pHash>{};
+    const auto accepted = header_.ProcessSyncData(prior, hashes, data);
 
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": Accepted ")(parsed.second.size())(
-        " of ")(in.Body().size() - 2)(" headers")
+    if (0u == accepted) { return; }
+
+    const auto& blocks = data.Blocks();
+
+    LogVerbose(OT_METHOD)(__FUNCTION__)(": Accepted ")(accepted)(" of ")(
+        blocks.size())(" headers")
         .Flush();
-    filters_.ProcessSyncData(parsed);
+    filters_.ProcessSyncData(prior, hashes, data);
 }
 
 auto Network::RequestBlock(const block::Hash& block) const noexcept -> bool

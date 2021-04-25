@@ -16,27 +16,24 @@
 #include <memory>
 #include <mutex>
 #include <set>
-#include <stdexcept>
 #include <thread>
 #include <utility>
 
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/network/blockchain/sync/Acknowledgement.hpp"
+#include "opentxs/network/blockchain/sync/Base.hpp"
+#include "opentxs/network/blockchain/sync/Data.hpp"
+#include "opentxs/network/blockchain/sync/MessageType.hpp"
+#include "opentxs/network/blockchain/sync/Request.hpp"
+#include "opentxs/network/blockchain/sync/State.hpp"
+#include "opentxs/network/blockchain/sync/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
-#include "opentxs/protobuf/BlockchainP2PChainState.pb.h"
-#include "opentxs/protobuf/BlockchainP2PHello.pb.h"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/verify/BlockchainP2PHello.hpp"
-#include "opentxs/util/WorkType.hpp"
 #include "util/AsyncValue.hpp"
 #include "util/ScopeGuard.hpp"
 
@@ -48,12 +45,20 @@ namespace opentxs::api::client::blockchain
 {
 struct SyncClient::Imp {
 
-    auto Heartbeat(const proto::BlockchainP2PHello& data) const noexcept -> void
+    auto Heartbeat(SyncState data) const noexcept -> void
     {
         if (false == init_.value_.get()) { return; }
 
-        auto msg = api_.ZeroMQ().TaggedMessage(WorkType::SyncRequest);
-        msg->AddFrame(data);
+        auto msg = api_.ZeroMQ().Message();
+
+        try {
+            using Request = opentxs::network::blockchain::sync::Request;
+            const auto request = Request{std::move(data)};
+
+            if (false == request.Serialize(msg)) { return; }
+        } catch (...) {
+        }
+
         auto lock = Lock{lock_};
         OTSocket::send_message(lock, sync_.get(), msg);
     }
@@ -143,69 +148,33 @@ private:
 
     auto process(void* socket) noexcept -> void
     {
-        auto incoming = [&] {
+        auto msg = [&] {
             auto lock = Lock{lock_};
             auto output = api_.ZeroMQ().Message();
             OTSocket::receive_message(lock, socket, output);
 
             return output;
         }();
-        const auto body = incoming->Body();
+        const auto sync =
+            opentxs::network::blockchain::sync::Factory(api_, msg);
+        const auto type = sync->Type();
+        using Type = opentxs::network::blockchain::sync::MessageType;
 
-        try {
-            if (3 > body.size()) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message").Flush();
+        switch (type) {
+            case Type::sync_ack: {
+                const auto& ack = sync->asAcknowledgement();
+                const auto& endpoint = ack.Endpoint();
 
-                return;
-            }
+                {
+                    auto lock = Lock{lock_};
 
-            const auto type = [&] {
-                try {
-
-                    return body.at(0).as<WorkType>();
-                } catch (...) {
-
-                    OT_FAIL;
-                }
-            }();
-
-            switch (type) {
-                case WorkType::SyncAcknowledgement:
-                case WorkType::SyncReply:
-                case WorkType::NewBlock: {
-                    break;
-                }
-                default: {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
-                        ": Unsupported message type ")(value(type))
-                        .Flush();
-
-                    return;
-                }
-            }
-
-            const auto hello =
-                proto::Factory<proto::BlockchainP2PHello>(body.at(1));
-
-            if (false == proto::Validate(hello, VERBOSE)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid hello").Flush();
-
-                return;
-            }
-
-            const auto hasEndpoint = (WorkType::SyncAcknowledgement == type) &&
-                                     (0 < body.at(2).size());
-            const auto hasSyncData =
-                (WorkType::SyncReply == type) && (3 < body.size());
-
-            {
-                auto lock = Lock{lock_};
-                for (const auto& state : hello.state()) {
-                    have_sync_[static_cast<Chain>(state.chain())] = true;
+                    for (const auto& state : ack.State()) {
+                        have_sync_[state.Chain()] = true;
+                    }
                 }
 
-                if (update_endpoint_.empty() && hasEndpoint) {
-                    update_endpoint_ = body.at(2).Bytes();
+                if (update_endpoint_.empty() && (false == endpoint.empty())) {
+                    update_endpoint_ = endpoint;
                     LogOutput(OT_METHOD)(__FUNCTION__)(
                         ": Received update endpoint ")(update_endpoint_)
                         .Flush();
@@ -224,11 +193,22 @@ private:
                             .Flush();
                     }
                 }
-            }
+            } break;
+            case Type::sync_reply:
+            case Type::new_block_header: {
+                const auto& data = sync->asData();
 
-            if (hasSyncData) { parent_.ProcessSyncData(std::move(incoming)); }
-        } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+                if (0 < data.Blocks().size()) {
+                    parent_.ProcessSyncData(data, std::move(msg));
+                }
+            } break;
+            default: {
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ": Unsupported message type ")(opentxs::print(type))
+                    .Flush();
+
+                return;
+            }
         }
     }
     auto thread() noexcept -> void
@@ -300,10 +280,9 @@ SyncClient::SyncClient(
 {
 }
 
-auto SyncClient::Heartbeat(const proto::BlockchainP2PHello& data) const noexcept
-    -> void
+auto SyncClient::Heartbeat(SyncState data) const noexcept -> void
 {
-    return imp_.Heartbeat(data);
+    return imp_.Heartbeat(std::move(data));
 }
 
 auto SyncClient::IsActive(const Chain chain) const noexcept -> bool

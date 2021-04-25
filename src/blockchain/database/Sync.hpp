@@ -34,7 +34,7 @@
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/protobuf/BlockchainP2PSync.pb.h"
+#include "opentxs/network/blockchain/sync/Block.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs
@@ -46,10 +46,14 @@ class Core;
 
 namespace network
 {
-namespace zeromq
+namespace blockchain
 {
-class Message;
-}  // namespace zeromq
+namespace sync
+{
+class Block;
+class Data;
+}  // namespace sync
+}  // namespace blockchain
 }  // namespace network
 
 namespace storage
@@ -61,16 +65,15 @@ class LMDB;
 }  // namespace storage
 }  // namespace opentxs
 
-namespace zmq = opentxs::network::zeromq;
-
 namespace opentxs::blockchain::database
 {
 class Sync
 {
 public:
-    using Items = std::vector<proto::BlockchainP2PSync>;
+    using Items = std::vector<network::blockchain::sync::Block>;
+    using Message = network::blockchain::sync::Data;
 
-    auto Load(const block::Height height, zmq::Message& output) const noexcept
+    auto Load(const block::Height height, Message& output) const noexcept
         -> bool;
     auto Reorg(const block::Height height) const noexcept -> bool;
     auto SetTip(const block::Position& position) const noexcept -> bool;
