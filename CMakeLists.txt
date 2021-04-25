@@ -440,9 +440,10 @@ find_package(
   1.73.0
   REQUIRED
   COMPONENTS
-    system
     filesystem
     iostreams
+    system
+    thread
   OPTIONAL_COMPONENTS stacktrace_basic
 )
 
@@ -483,12 +484,6 @@ if(OT_WITH_BLOCKCHAIN)
     set(OPENTXS_BLOCK_STORAGE_ENABLED 0)
     set(OPENTXS_DEFAULT_BLOCK_STORAGE_POLICY 0)
   endif()
-
-  find_package(
-    Boost
-    REQUIRED
-    thread
-  )
 endif()
 
 if(OT_DHT)

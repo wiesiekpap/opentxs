@@ -46,6 +46,9 @@ enum class WorkType : OTZMQWorkType {
     SyncAcknowledgement = 1025,
     SyncReply = 1026,
     NewBlock = 1027,
+    AsioRegister = 2048,
+    AsioConnect = 2049,
+    AsioDisconnect = 2050,
 };
 
 constexpr auto value(const WorkType in) noexcept
@@ -221,6 +224,23 @@ constexpr auto value(const WorkType in) noexcept
  *
  *       * Response message additional frames:
  *          1: return value as bool (valid id = true)
+ *
+ *   AsioRegister: request and response messages for asio wrapper backend router
+ *                 socket
+ *       * Request message additional frames:
+ *          none
+ *
+ *       * Response message additional frames:
+ *          1: requestor's connection id from the perspective of the backend
+ *             (encoded as byte sequence)
+ *
+ *   AsioConnect: reports a successful connection to a remote endpoint
+ *       * Additional frames:
+ *          1: the remote endpoint (encoded as ascii)
+ *
+ *   AsioDisconnect: reports a connection or receiving error
+ *       * Additional frames:
+ *          1: the remote endpoint (encoded as ascii)
  */
 }  // namespace opentxs
 #endif

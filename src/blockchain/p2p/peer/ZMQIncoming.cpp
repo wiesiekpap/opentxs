@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"           // IWYU pragma: associated
 #include "blockchain/p2p/Peer.hpp"  // IWYU pragma: associated
 
-#include <boost/system/error_code.hpp>
 #include <iterator>
 #include <string_view>
 
@@ -22,6 +21,7 @@
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
 
 // #define OT_METHOD
@@ -63,7 +63,7 @@ struct ZMQIncomingConnectionManager final : public Peer::ConnectionManager {
 
         OT_ASSERT(zmq);
 
-        auto message = MakeWork(api_, OT_ZMQ_REGISTER_SIGNAL);
+        auto message = MakeWork(api_, WorkType::AsioRegister);
         message->AddFrame(id);
         zmq = dealer_->Send(message);
 
@@ -118,7 +118,7 @@ struct ZMQIncomingConnectionManager final : public Peer::ConnectionManager {
     auto stop_internal() noexcept -> void final {}
     auto transmit(
         const zmq::Frame& payload,
-        std::shared_ptr<Peer::SendPromise> promise) noexcept -> void final
+        std::unique_ptr<Peer::SendPromise> promise) noexcept -> void final
     {
         OT_ASSERT(header_bytes_ <= payload.size());
 
@@ -134,12 +134,9 @@ struct ZMQIncomingConnectionManager final : public Peer::ConnectionManager {
         }
 
         const auto sent = dealer_->Send(message);
-        const auto ec = sent ? boost::system::error_code{}
-                             : boost::system::error_code{
-                                   boost::asio::error::host_unreachable};
 
         try {
-            if (promise) { promise->set_value({ec, bytes.size()}); }
+            if (promise) { promise->set_value(sent); }
         } catch (...) {
         }
     }

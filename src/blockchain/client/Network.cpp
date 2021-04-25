@@ -9,8 +9,8 @@
 
 #include <algorithm>
 #include <chrono>
-#include <cstdint>
 #include <iomanip>
+#include <iterator>
 #include <optional>
 #include <sstream>
 #include <stdexcept>
@@ -162,7 +162,6 @@ Network::Network(
           *filter_p_,
           *block_p_,
           *database_p_,
-          blockchain.IO(),
           type,
           database_p_->BlockPolicy(),
           seednode,
@@ -213,6 +212,7 @@ Network::Network(
     , waiting_for_headers_(Flag::Factory(false))
     , headers_requested_(Clock::now())
     , headers_received_()
+    , work_promises_()
     , state_(State::UpdatingHeaders)
     , init_promise_()
     , init_(init_promise_.get_future())
@@ -514,12 +514,10 @@ auto Network::process_header(network::zeromq::Message& in) noexcept -> void
 
     waiting_for_headers_->Off();
     headers_received_ = Clock::now();
-    using Promise = std::promise<void>;
-    auto pPromise = std::unique_ptr<Promise>{};
+    auto promise = int{};
     auto input = std::vector<ReadView>{};
 
     {
-        auto counter{-1};
         const auto body = in.Body();
 
         if (2 > body.size()) {
@@ -528,25 +526,17 @@ auto Network::process_header(network::zeromq::Message& in) noexcept -> void
             return;
         }
 
-        for (const auto& frame : body) {
-            switch (++counter) {
-                case 0: {
-                    break;
-                }
-                case 1: {
-                    pPromise.reset(
-                        reinterpret_cast<Promise*>(frame.as<std::uintptr_t>()));
-                } break;
-                default: {
-                    input.emplace_back(frame.Bytes());
-                }
-            }
-        }
+        // NOTE can not use std::prev on frame iterators
+        auto end = std::next(body.begin(), body.size() - 1u);
+        std::transform(
+            std::next(body.begin()),
+            end,
+            std::back_inserter(input),
+            [](const auto& frame) { return frame.Bytes(); });
+        const auto& promiseFrame = *end;
+        promise = promiseFrame.as<int>();
     }
 
-    OT_ASSERT(pPromise);
-
-    auto& promise = *pPromise;
     auto headers = std::vector<std::unique_ptr<block::Header>>{};
 
     for (const auto& header : input) {
@@ -555,7 +545,7 @@ auto Network::process_header(network::zeromq::Message& in) noexcept -> void
 
     if (false == headers.empty()) { header_.AddHeaders(headers); }
 
-    promise.set_value();
+    work_promises_.clear(promise);
 }
 
 auto Network::process_sync_data(network::zeromq::Message& in) noexcept -> void
@@ -963,6 +953,23 @@ auto Network::Submit(network::zeromq::Message& work) const noexcept -> void
     if (false == running_.get()) { return; }
 
     pipeline_->Push(work);
+}
+
+auto Network::Track(network::zeromq::Message& work) const noexcept
+    -> std::future<void>
+{
+    if (false == running_.get()) {
+        auto promise = std::promise<void>{};
+        promise.set_value();
+
+        return promise.get_future();
+    }
+
+    auto [index, future] = work_promises_.get();
+    work.AddFrame(index);
+    pipeline_->Push(work);
+
+    return std::move(future);
 }
 
 auto Network::target() const noexcept -> block::Height

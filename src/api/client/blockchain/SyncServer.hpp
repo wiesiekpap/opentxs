@@ -3,10 +3,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+#pragma once
+
 #include <memory>
 #include <string>
 
-#include "api/client/Blockchain.hpp"
+#include "internal/api/client/Client.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 
@@ -16,10 +18,10 @@ namespace api
 {
 namespace client
 {
-namespace implementation
+namespace internal
 {
-class Blockchain;
-}  // namespace implementation
+struct Blockchain;
+}  // namespace internal
 }  // namespace client
 
 class Core;
@@ -29,7 +31,7 @@ class Core;
 namespace opentxs::api::client::blockchain
 {
 struct SyncServer {
-    using Blockchain = implementation::Blockchain;
+    using Blockchain = client::internal::Blockchain;
     using Chain = opentxs::blockchain::Type;
 
     auto Endpoint(const Chain chain) const noexcept -> std::string;

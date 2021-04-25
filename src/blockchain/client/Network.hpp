@@ -8,8 +8,11 @@
 #include <atomic>
 #include <future>
 #include <iosfwd>
+#include <map>
 #include <memory>
+#include <mutex>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "core/Shutdown.hpp"
@@ -187,6 +190,8 @@ public:
         const Amount amount,
         const std::string& memo) const noexcept -> PendingOutgoing final;
     auto Submit(network::zeromq::Message& work) const noexcept -> void final;
+    auto Track(network::zeromq::Message& work) const noexcept
+        -> std::future<void> final;
     auto UpdateHeight(const block::Height height) const noexcept -> void final;
     auto UpdateLocalHeight(const block::Position position) const noexcept
         -> void final;
@@ -254,6 +259,32 @@ private:
         Normal
     };
 
+    struct WorkPromises {
+        auto clear(int index) noexcept -> void
+        {
+            auto lock = Lock{lock_};
+            auto it = map_.find(index);
+
+            if (map_.end() == it) { return; }
+
+            it->second.set_value();
+            map_.erase(it);
+        }
+        auto get() noexcept -> std::pair<int, std::future<void>>
+        {
+            auto lock = Lock{lock_};
+            const auto counter = ++counter_;
+            auto& promise = map_[counter];
+
+            return std::make_pair(counter, promise.get_future());
+        }
+
+    private:
+        std::mutex lock_{};
+        int counter_{-1};
+        std::map<int, std::promise<void>> map_{};
+    };
+
     const api::client::internal::Blockchain& parent_;
     const std::string sync_endpoint_;
     std::unique_ptr<SyncServer> sync_server_;
@@ -262,6 +293,7 @@ private:
     OTFlag waiting_for_headers_;
     Time headers_requested_;
     Time headers_received_;
+    mutable WorkPromises work_promises_;
     std::atomic<State> state_;
     std::promise<void> init_promise_;
     std::shared_future<void> init_;

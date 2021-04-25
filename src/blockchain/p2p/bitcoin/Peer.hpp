@@ -75,7 +75,6 @@ public:
         const client::internal::BlockOracle& block,
         const client::internal::PeerManager& manager,
         const api::client::blockchain::BlockStorage policy,
-        const blockchain::client::internal::IO& io,
         const std::string& shutdown,
         const int id,
         std::unique_ptr<internal::Address> address,

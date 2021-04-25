@@ -49,7 +49,6 @@ struct FilterDatabase;
 struct FilterOracle;
 struct HeaderDatabase;
 struct HeaderOracle;
-struct IO;
 struct Network;
 struct PeerDatabase;
 struct PeerManager;
@@ -101,7 +100,6 @@ auto BlockchainPeerManager(
     const blockchain::client::internal::FilterOracle& filter,
     const blockchain::client::internal::BlockOracle& block,
     const blockchain::client::internal::PeerDatabase& database,
-    const blockchain::client::internal::IO& io,
     const blockchain::Type type,
     const api::client::blockchain::BlockStorage policy,
     const std::string& seednode,

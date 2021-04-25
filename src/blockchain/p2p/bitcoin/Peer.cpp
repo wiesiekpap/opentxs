@@ -9,7 +9,6 @@
 
 #include <algorithm>
 #include <array>
-#include <cstdint>
 #include <iterator>
 #include <stdexcept>
 #include <tuple>
@@ -72,7 +71,6 @@ auto BitcoinP2PPeerLegacy(
     const blockchain::client::internal::BlockOracle& block,
     const blockchain::client::internal::PeerManager& manager,
     const api::client::blockchain::BlockStorage policy,
-    const blockchain::client::internal::IO& io,
     const int id,
     std::unique_ptr<blockchain::p2p::internal::Address> address,
     const std::string& shutdown)
@@ -112,7 +110,6 @@ auto BitcoinP2PPeerLegacy(
         block,
         manager,
         policy,
-        io,
         shutdown,
         id,
         std::move(address));
@@ -167,7 +164,6 @@ Peer::Peer(
     const client::internal::BlockOracle& block,
     const client::internal::PeerManager& manager,
     const api::client::blockchain::BlockStorage policy,
-    const blockchain::client::internal::IO& io,
     const std::string& shutdown,
     const int id,
     std::unique_ptr<internal::Address> address,
@@ -181,7 +177,6 @@ Peer::Peer(
           filter,
           block,
           manager,
-          io,
           id,
           shutdown,
           HeaderType::Size(),
@@ -1206,26 +1201,18 @@ auto Peer::process_headers(
         check_verify();
     } else {
         get_headers_.Finish();
-
-        using Promise = std::promise<void>;
-        auto* promise = new Promise{};
-
-        OT_ASSERT(nullptr != promise);
-
-        auto future = promise->get_future();
-        auto pointer = reinterpret_cast<std::uintptr_t>(promise);
         using Task = client::internal::Network::Task;
         auto work = MakeWork(Task::SubmitBlockHeader);
-        work->AddFrame(pointer);
 
         for (const auto& header : message) {
             work->AddFrame(header.Serialize());
         }
 
-        network_.Submit(work);
+        auto future = network_.Track(work);
+        using Status = std::future_status;
+        constexpr auto limit = std::chrono::seconds{10};
 
-        if (std::future_status::ready ==
-            future.wait_for(std::chrono::seconds(10))) {
+        if (Status::ready == future.wait_for(limit)) {
             if (false == network_.IsSynchronized()) { request_headers(); }
         }
     }
@@ -1326,7 +1313,7 @@ auto Peer::process_message(const zmq::Message& message) noexcept -> void
 
     const auto& headerBytes = body.at(1);
     const auto& payloadBytes = body.at(2);
-    std::unique_ptr<HeaderType> pHeader{
+    auto pHeader = std::unique_ptr<HeaderType>{
         factory::BitcoinP2PHeader(api_, headerBytes)};
 
     if (false == bool(pHeader)) {
@@ -1363,7 +1350,8 @@ auto Peer::process_message(const zmq::Message& message) noexcept -> void
         .Flush();
 
     try {
-        (this->*command_map_.at(command))(std::move(pHeader), payloadBytes);
+        const auto& p = command_map_.at(command);
+        (this->*p)(std::move(pHeader), payloadBytes);
     } catch (...) {
         auto raw = Data::Factory(headerBytes);
         auto unknown = Data::Factory();

@@ -29,6 +29,7 @@
 #include "opentxs/api/crypto/Asymmetric.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
+#include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Dht.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/core/Secret.hpp"
@@ -70,6 +71,7 @@ public:
     static auto get_api(const PasswordPrompt& reason) noexcept
         -> const api::internal::Core&;
 
+    auto Asio() const noexcept -> const network::Asio& final { return asio_; }
     auto Asymmetric() const -> const crypto::Asymmetric& final
     {
         return asymmetric_;
@@ -115,6 +117,7 @@ public:
     ~Core() override;
 
 protected:
+    const network::Asio& asio_;
     std::unique_ptr<api::internal::Factory> factory_p_;
     const api::internal::Factory& factory_;
     const api::crypto::internal::Asymmetric& asymmetric_;

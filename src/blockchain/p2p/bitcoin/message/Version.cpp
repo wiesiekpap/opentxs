@@ -207,6 +207,10 @@ auto BitcoinP2PVersion(
         try {
             local = tcp::endpoint(ip::make_address_v6(localAddress), localPort);
         } catch (...) {
+            LogOutput("opentxs::factory::")(__FUNCTION__)(
+                ": Invalid local address: ")(localAddress)
+                .Flush();
+
             OT_FAIL;
         }
 
@@ -214,6 +218,10 @@ auto BitcoinP2PVersion(
             remote =
                 tcp::endpoint(ip::make_address_v6(remoteAddress), remotePort);
         } catch (...) {
+            LogOutput("opentxs::factory::")(__FUNCTION__)(
+                ": Invalid remote address: ")(remoteAddress)
+                .Flush();
+
             OT_FAIL;
         }
     }

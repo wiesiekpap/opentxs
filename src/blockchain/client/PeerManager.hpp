@@ -132,7 +132,6 @@ public:
             const std::string& shutdown,
             const Type chain,
             const std::string& seednode,
-            const blockchain::client::internal::IO& context,
             const std::size_t peerTarget) noexcept;
 
         ~Peers();
@@ -151,14 +150,12 @@ public:
         const internal::PeerDatabase& database_;
         const internal::PeerManager& parent_;
         const api::client::blockchain::BlockStorage policy_;
-        const blockchain::client::internal::IO& context_;
         const Flag& running_;
         const std::string& shutdown_endpoint_;
         const bool invalid_peer_;
         const OTData localhost_peer_;
         const OTData default_peer_;
         const std::set<p2p::Service> preferred_services_;
-        mutable Resolver resolver_;
         std::atomic<int> next_id_;
         std::atomic<std::size_t> minimum_peers_;
         std::map<int, Peer> peers_;
@@ -244,7 +241,6 @@ public:
         const internal::FilterOracle& filter,
         const internal::BlockOracle& block,
         const internal::PeerDatabase& database,
-        const blockchain::client::internal::IO& io,
         const Type chain,
         const api::client::blockchain::BlockStorage policy,
         const std::string& seednode,
@@ -291,7 +287,6 @@ private:
     };
 
     const internal::PeerDatabase& database_;
-    const internal::IO& io_context_;
     mutable Jobs jobs_;
     mutable Peers peers_;
     std::promise<void> init_promise_;

@@ -668,7 +668,7 @@ auto FilterOracle::ProcessSyncData(SyncClientFilterData& data) const noexcept
         data.filter_hash_ = gcs.Hash();
         filterHashView = data.filter_hash_->Bytes();
         auto& previous = data.previous_header_;
-        constexpr auto limit = std::chrono::minutes{1};
+        constexpr auto limit = std::chrono::minutes{2};
         using State = std::future_status;
 
         if (auto status = previous.wait_for(limit); State::ready != status) {

@@ -5,6 +5,9 @@
 
 add_library(
   opentxs-api-network OBJECT
+  "${opentxs_SOURCE_DIR}/src/internal/api/network/Network.hpp"
+  "Asio.cpp"
+  "Asio.hpp"
   "Dht.cpp"
   "Dht.hpp"
   "ZAP.cpp"
@@ -13,11 +16,15 @@ add_library(
   "ZMQ.hpp"
 )
 set(cxx-install-headers
+    "${opentxs_SOURCE_DIR}/include/opentxs/api/network/Asio.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/network/Dht.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/network/ZAP.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/network/ZMQ.hpp"
 )
-target_link_libraries(opentxs-api-network PRIVATE opentxs::messages)
+target_link_libraries(
+  opentxs-api-network PRIVATE opentxs::messages Boost::headers
+)
+target_link_libraries(opentxs PUBLIC Boost::system Boost::thread)
 target_include_directories(
   opentxs-api-network SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )

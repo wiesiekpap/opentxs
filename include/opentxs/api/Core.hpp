@@ -25,6 +25,7 @@ class Symmetric;
 
 namespace network
 {
+class Asio;
 class Dht;
 }  // namespace network
 
@@ -50,6 +51,7 @@ namespace api
 class Core : virtual public Periodic
 {
 public:
+    OPENTXS_EXPORT virtual const network::Asio& Asio() const noexcept = 0;
     OPENTXS_EXPORT virtual const crypto::Asymmetric& Asymmetric() const = 0;
     OPENTXS_EXPORT virtual const api::Settings& Config() const = 0;
     OPENTXS_EXPORT virtual const api::Crypto& Crypto() const = 0;

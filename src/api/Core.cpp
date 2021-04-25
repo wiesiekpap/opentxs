@@ -101,6 +101,7 @@ Core::Core(
     : ZMQ(zmq, instance)
     , Scheduler(parent, running)
     , StorageParent(running, args, crypto, config, parent.Legacy(), dataFolder)
+    , asio_(parent.Asio())
     , factory_p_(std::move(factory))
     , factory_(*factory_p_)
     , asymmetric_(factory_.Asymmetric())

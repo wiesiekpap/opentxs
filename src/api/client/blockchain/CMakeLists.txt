@@ -27,6 +27,8 @@ add_library(
   "Element.hpp"
   "HD.cpp"
   "HD.hpp"
+  "Imp.cpp"
+  "Imp.hpp"
   "PaymentCode.cpp"
   "PaymentCode.hpp"
 )
@@ -49,8 +51,10 @@ target_link_libraries(
 )
 target_include_directories(
   opentxs-api-client-blockchain SYSTEM
-  PRIVATE "${opentxs_SOURCE_DIR}/deps/"
-          "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+  PRIVATE
+    "${opentxs_SOURCE_DIR}/deps/"
+    "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+    "${opentxs_SOURCE_DIR}/deps/bech32/ref/c++"
 )
 
 if(OT_BLOCKCHAIN_EXPORT)
@@ -58,6 +62,9 @@ if(OT_BLOCKCHAIN_EXPORT)
     opentxs-api-client-blockchain
     PRIVATE
       "BalanceOracle.cpp"
+      "Imp_blockchain.cpp"
+      "Imp_blockchain.hpp"
+      "NonNull.cpp"
       "SyncClient.cpp"
       "SyncClient.hpp"
       "SyncServer.cpp"
@@ -67,6 +74,8 @@ if(OT_BLOCKCHAIN_EXPORT)
     opentxs-api-client-blockchain PRIVATE "${OT_ZMQ_TARGET}"
   )
   target_link_libraries(opentxs PUBLIC "${OT_ZMQ_TARGET}")
+else()
+  target_sources(opentxs-api-client-blockchain PRIVATE "Null.cpp")
 endif()
 
 target_sources(opentxs-api-client-blockchain PRIVATE ${cxx-install-headers})

@@ -400,51 +400,6 @@ struct HeaderDatabase {
     virtual ~HeaderDatabase() = default;
 };
 
-struct IO {
-    using tcp = boost::asio::ip::tcp;
-
-    operator boost::asio::io_context&() const noexcept { return context_; }
-
-    auto Connect(
-        const Space& id,
-        const tcp::endpoint& endpoint,
-        tcp::socket& socket) const noexcept -> void;
-    auto Receive(
-        const Space& id,
-        const OTZMQWorkType type,
-        const std::size_t bytes,
-        tcp::socket& socket) const noexcept -> void;
-
-    auto AddNetwork() noexcept -> void;
-    auto Shutdown() noexcept -> void;
-
-    IO(const api::Core& api) noexcept;
-    ~IO();
-
-private:
-    const api::Core& api_;
-    mutable std::mutex lock_;
-    OTZMQListenCallback cb_;
-    OTZMQRouterSocket socket_;
-    mutable int next_buffer_;
-    mutable std::map<int, Space> buffers_;
-    mutable boost::asio::io_context context_;
-    std::unique_ptr<boost::asio::io_context::work> work_;
-    boost::thread_group thread_pool_;
-
-    auto clear_buffer(const int id) const noexcept -> void;
-    auto get_buffer(const std::size_t bytes) const noexcept
-        -> std::pair<int, WritableView>;
-
-    auto callback(zmq::Message& in) noexcept -> void;
-
-    IO() = delete;
-    IO(const IO&) = delete;
-    IO(IO&&) = delete;
-    auto operator=(const IO&) -> IO& = delete;
-    auto operator=(IO&&) -> IO& = delete;
-};
-
 struct PeerDatabase {
     using Address = std::unique_ptr<p2p::internal::Address>;
     using Protocol = p2p::Protocol;
@@ -464,6 +419,9 @@ struct PeerDatabase {
 struct PeerManager {
     enum class Task : OTZMQWorkType {
         Shutdown = value(WorkType::Shutdown),
+        Register = value(WorkType::AsioRegister),
+        Connect = value(WorkType::AsioConnect),
+        Disconnect = value(WorkType::AsioDisconnect),
         Getheaders = OT_ZMQ_INTERNAL_SIGNAL + 0,
         Getblock = OT_ZMQ_INTERNAL_SIGNAL + 1,
         BroadcastTransaction = OT_ZMQ_INTERNAL_SIGNAL + 2,
@@ -474,11 +432,8 @@ struct PeerManager {
         Body = OT_ZMQ_INTERNAL_SIGNAL + 126,
         Header = OT_ZMQ_INTERNAL_SIGNAL + 127,
         Heartbeat = OT_ZMQ_HEARTBEAT_SIGNAL,
-        Connect = OT_ZMQ_CONNECT_SIGNAL,
-        Disconnect = OT_ZMQ_DISCONNECT_SIGNAL,
         ReceiveMessage = OT_ZMQ_RECEIVE_SIGNAL,
         SendMessage = OT_ZMQ_SEND_SIGNAL,
-        Register = OT_ZMQ_REGISTER_SIGNAL,
         StateMachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
@@ -552,6 +507,8 @@ struct Network : virtual public opentxs::blockchain::Network {
         const std::vector<ReadView>& hashes) const noexcept -> bool = 0;
     virtual auto Submit(network::zeromq::Message& work) const noexcept
         -> void = 0;
+    virtual auto Track(network::zeromq::Message& work) const noexcept
+        -> std::future<void> = 0;
     virtual auto UpdateHeight(const block::Height height) const noexcept
         -> void = 0;
     virtual auto UpdateLocalHeight(
