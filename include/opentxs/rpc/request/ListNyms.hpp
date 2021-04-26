@@ -25,19 +25,19 @@ namespace rpc
 {
 namespace request
 {
-class ListNyms final : public Base
+class OPENTXS_EXPORT ListNyms final : public Base
 {
 public:
-    OPENTXS_EXPORT static auto DefaultVersion() noexcept -> VersionNumber;
+    static auto DefaultVersion() noexcept -> VersionNumber;
 
     /// throws std::runtime_error for invalid constructor arguments
-    OPENTXS_EXPORT ListNyms(
-        SessionIndex session,
-        const AssociateNyms& nyms = {}) noexcept(false);
-    ListNyms(const proto::RPCCommand& serialized) noexcept(false);
-    OPENTXS_EXPORT ListNyms() noexcept;
+    ListNyms(SessionIndex session, const AssociateNyms& nyms = {}) noexcept(
+        false);
+    OPENTXS_NO_EXPORT ListNyms(const proto::RPCCommand& serialized) noexcept(
+        false);
+    ListNyms() noexcept;
 
-    OPENTXS_EXPORT ~ListNyms() final;
+    ~ListNyms() final;
 
 private:
     ListNyms(const ListNyms&) = delete;

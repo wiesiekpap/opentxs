@@ -36,15 +36,15 @@ class Nym;
 class String;
 
 // OTTransactionType is a base class for OTLedger, OTTransaction, and Item.
-class OTTransactionType : public Contract
+class OPENTXS_EXPORT OTTransactionType : public Contract
 {
 public:
-    OPENTXS_EXPORT void GetNumList(NumList& theOutput);
+    void GetNumList(NumList& theOutput);
     bool Contains(const String& strContains);  // Allows you to string-search
                                                // the raw contract.
-    OPENTXS_EXPORT bool Contains(const char* szContains);  // Allows you to
-                                                           // string-search
-                                                           // the raw contract.
+    bool Contains(const char* szContains);     // Allows you to
+                                               // string-search
+                                               // the raw contract.
     // OTAccount, OTTransaction, Item, and OTLedger are all derived from
     // this class (OTTransactionType). Therefore they can all quickly identify
     // whether one of the other components belongs to the same account.
@@ -107,7 +107,7 @@ public:
     // with m_ID (supposedly the same number.)
     // Also Verifies the NotaryID, since this object type is all about the both
     // of those IDs.
-    OPENTXS_EXPORT bool VerifyContractID() const override;
+    bool VerifyContractID() const override;
 
     // This calls VerifyContractID() as well as VerifySignature()
     // Use this instead of Contract::VerifyContract, which expects/uses a
@@ -119,19 +119,19 @@ public:
     void Release_TransactionType();
 
     // need to know the transaction number of this transaction? Call this.
-    OPENTXS_EXPORT std::int64_t GetTransactionNum() const;
+    std::int64_t GetTransactionNum() const;
     void SetTransactionNum(std::int64_t lTransactionNum);
 
-    OPENTXS_EXPORT virtual void CalculateNumberOfOrigin();
-    OPENTXS_EXPORT virtual std::int64_t GetNumberOfOrigin();
+    virtual void CalculateNumberOfOrigin();
+    virtual std::int64_t GetNumberOfOrigin();
 
-    OPENTXS_EXPORT std::int64_t GetRawNumberOfOrigin() const;  // Gets WITHOUT
-                                                               // calculating.
+    std::int64_t GetRawNumberOfOrigin() const;  // Gets WITHOUT
+                                                // calculating.
 
-    OPENTXS_EXPORT void SetNumberOfOrigin(std::int64_t lTransactionNum);
-    OPENTXS_EXPORT void SetNumberOfOrigin(OTTransactionType& setFrom);
+    void SetNumberOfOrigin(std::int64_t lTransactionNum);
+    void SetNumberOfOrigin(OTTransactionType& setFrom);
 
-    OPENTXS_EXPORT bool VerifyNumberOfOrigin(OTTransactionType& compareTo);
+    bool VerifyNumberOfOrigin(OTTransactionType& compareTo);
     // --------------------------------------------------------
     originType GetOriginType() const;  // NOTE: used for GUI display purposes
                                        // only.
@@ -142,11 +142,11 @@ public:
 
     const char* GetOriginTypeString() const;
     // --------------------------------------------------------
-    OPENTXS_EXPORT std::int64_t GetReferenceToNum() const;
-    OPENTXS_EXPORT void SetReferenceToNum(std::int64_t lTransactionNum);
+    std::int64_t GetReferenceToNum() const;
+    void SetReferenceToNum(std::int64_t lTransactionNum);
 
-    OPENTXS_EXPORT void GetReferenceString(String& theStr) const;
-    OPENTXS_EXPORT void SetReferenceString(const String& theStr);
+    void GetReferenceString(String& theStr) const;
+    void SetReferenceString(const String& theStr);
 
     ~OTTransactionType() override;
 

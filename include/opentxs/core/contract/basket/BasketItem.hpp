@@ -19,7 +19,7 @@ class BasketItem;
 
 using dequeOfBasketItems = std::deque<BasketItem*>;
 
-class BasketItem
+class OPENTXS_EXPORT BasketItem
 {
 public:
     OTIdentifier SUB_CONTRACT_ID;

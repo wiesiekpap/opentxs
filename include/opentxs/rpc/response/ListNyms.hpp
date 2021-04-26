@@ -33,20 +33,21 @@ namespace rpc
 {
 namespace response
 {
-class ListNyms final : public Base
+class OPENTXS_EXPORT ListNyms final : public Base
 {
 public:
-    OPENTXS_EXPORT auto NymIDs() const noexcept -> const Identifiers&;
+    auto NymIDs() const noexcept -> const Identifiers&;
 
     /// throws std::runtime_error for invalid constructor arguments
-    ListNyms(
+    OPENTXS_NO_EXPORT ListNyms(
         const request::ListNyms& request,
         Responses&& response,
         Identifiers&& accounts) noexcept(false);
-    ListNyms(const proto::RPCResponse& serialized) noexcept(false);
-    OPENTXS_EXPORT ListNyms() noexcept;
+    OPENTXS_NO_EXPORT ListNyms(const proto::RPCResponse& serialized) noexcept(
+        false);
+    ListNyms() noexcept;
 
-    OPENTXS_EXPORT ~ListNyms() final;
+    ~ListNyms() final;
 
 private:
     ListNyms(const ListNyms&) = delete;

@@ -37,7 +37,7 @@ using mapOfHooks = std::multimap<std::string, std::string>;
 // like an OT script "program", so it makes sense to be able to collect them,
 // and to have them as discrete "packages".
 //
-class OTBylaw
+class OPENTXS_EXPORT OTBylaw
 {
     OTString m_strName;      // Name of this Bylaw.
     OTString m_strLanguage;  // Language that the scripts are written in, for
@@ -60,24 +60,24 @@ class OTBylaw
     OTBylaw& operator=(OTBylaw&&) = delete;
 
 public:
-    OPENTXS_EXPORT const String& GetName() const { return m_strName; }
-    OPENTXS_EXPORT const char* GetLanguage() const;
-    OPENTXS_EXPORT bool AddVariable(OTVariable& theVariable);
-    OPENTXS_EXPORT bool AddVariable(
+    const String& GetName() const { return m_strName; }
+    const char* GetLanguage() const;
+    bool AddVariable(OTVariable& theVariable);
+    bool AddVariable(
         std::string str_Name,
         std::string str_Value,
         OTVariable::OTVariable_Access theAccess = OTVariable::Var_Persistent);
-    OPENTXS_EXPORT bool AddVariable(
+    bool AddVariable(
         std::string str_Name,
         std::int32_t nValue,
         OTVariable::OTVariable_Access theAccess = OTVariable::Var_Persistent);
-    OPENTXS_EXPORT bool AddVariable(
+    bool AddVariable(
         std::string str_Name,
         bool bValue,
         OTVariable::OTVariable_Access theAccess = OTVariable::Var_Persistent);
-    OPENTXS_EXPORT bool AddClause(OTClause& theClause);
-    OPENTXS_EXPORT bool AddClause(const char* szName, const char* szCode);
-    OPENTXS_EXPORT bool AddHook(
+    bool AddClause(OTClause& theClause);
+    bool AddClause(const char* szName, const char* szCode);
+    bool AddHook(
         std::string str_HookName,
         std::string str_ClauseName);  // name of hook such
                                       // as cron_process or
@@ -88,7 +88,7 @@ public:
                                       // an actual script
                                       // in the clauses
                                       // map.)
-    OPENTXS_EXPORT bool AddCallback(
+    bool AddCallback(
         std::string str_CallbackName,
         std::string str_ClauseName);  // name of
                                       // callback such
@@ -99,87 +99,78 @@ public:
     // (corresponding to an actual script
     // in the clauses map.)
 
-    OPENTXS_EXPORT bool RemoveVariable(std::string str_Name);
-    OPENTXS_EXPORT bool RemoveClause(std::string str_Name);
-    OPENTXS_EXPORT bool RemoveHook(
-        std::string str_Name,
-        std::string str_ClauseName);
-    OPENTXS_EXPORT bool RemoveCallback(std::string str_Name);
+    bool RemoveVariable(std::string str_Name);
+    bool RemoveClause(std::string str_Name);
+    bool RemoveHook(std::string str_Name, std::string str_ClauseName);
+    bool RemoveCallback(std::string str_Name);
 
-    OPENTXS_EXPORT bool UpdateClause(
-        std::string str_Name,
-        std::string str_Code);
+    bool UpdateClause(std::string str_Name, std::string str_Code);
 
-    OPENTXS_EXPORT OTVariable* GetVariable(std::string str_Name);  // not a
-                                                                   // reference,
-                                                                   // so you can
-                                                                   // pass in
-                                                                   // char *.
-                                                                   // Maybe
-                                                                   // that's
-                                                                   // bad? todo:
-                                                                   // research
-                                                                   // that.
-    OPENTXS_EXPORT OTClause* GetClause(std::string str_Name) const;
-    OPENTXS_EXPORT OTClause* GetCallback(std::string str_CallbackName);
-    OPENTXS_EXPORT bool GetHooks(
+    OTVariable* GetVariable(std::string str_Name);  // not a
+                                                    // reference,
+                                                    // so you can
+                                                    // pass in
+                                                    // char *.
+                                                    // Maybe
+                                                    // that's
+                                                    // bad? todo:
+                                                    // research
+                                                    // that.
+    OTClause* GetClause(std::string str_Name) const;
+    OTClause* GetCallback(std::string str_CallbackName);
+    bool GetHooks(
         std::string str_HookName,
         mapOfClauses& theResults);  // Look up all clauses
                                     // matching a specific hook.
-    OPENTXS_EXPORT std::int32_t GetVariableCount() const
+    std::int32_t GetVariableCount() const
     {
         return static_cast<std::int32_t>(m_mapVariables.size());
     }
-    OPENTXS_EXPORT std::int32_t GetClauseCount() const
+    std::int32_t GetClauseCount() const
     {
         return static_cast<std::int32_t>(m_mapClauses.size());
     }
-    OPENTXS_EXPORT std::int32_t GetCallbackCount() const
+    std::int32_t GetCallbackCount() const
     {
         return static_cast<std::int32_t>(m_mapCallbacks.size());
     }
-    OPENTXS_EXPORT std::int32_t GetHookCount() const
+    std::int32_t GetHookCount() const
     {
         return static_cast<std::int32_t>(m_mapHooks.size());
     }
-    OPENTXS_EXPORT OTVariable* GetVariableByIndex(std::int32_t nIndex);
-    OPENTXS_EXPORT OTClause* GetClauseByIndex(std::int32_t nIndex);
-    OPENTXS_EXPORT OTClause* GetCallbackByIndex(std::int32_t nIndex);
-    OPENTXS_EXPORT OTClause* GetHookByIndex(std::int32_t nIndex);
-    OPENTXS_EXPORT const std::string GetCallbackNameByIndex(
-        std::int32_t nIndex);
-    OPENTXS_EXPORT const std::string GetHookNameByIndex(std::int32_t nIndex);
-    OPENTXS_EXPORT void RegisterVariablesForExecution(OTScript& theScript);
-    OPENTXS_EXPORT bool IsDirty() const;  // So you can tell if any of the
-                                          // persistent or important variables
-                                          // have CHANGED since it was last set
-                                          // clean.
-    OPENTXS_EXPORT bool IsDirtyImportant() const;  // So you can tell if ONLY
-                                                   // the IMPORTANT variables
-                                                   // have CHANGED since it was
-                                                   // last set clean.
-    OPENTXS_EXPORT void SetAsClean();  // Sets the variables as clean, so you
-                                       // can check
+    OTVariable* GetVariableByIndex(std::int32_t nIndex);
+    OTClause* GetClauseByIndex(std::int32_t nIndex);
+    OTClause* GetCallbackByIndex(std::int32_t nIndex);
+    OTClause* GetHookByIndex(std::int32_t nIndex);
+    const std::string GetCallbackNameByIndex(std::int32_t nIndex);
+    const std::string GetHookNameByIndex(std::int32_t nIndex);
+    void RegisterVariablesForExecution(OTScript& theScript);
+    bool IsDirty() const;           // So you can tell if any of the
+                                    // persistent or important variables
+                                    // have CHANGED since it was last set
+                                    // clean.
+    bool IsDirtyImportant() const;  // So you can tell if ONLY
+                                    // the IMPORTANT variables
+                                    // have CHANGED since it was
+                                    // last set clean.
+    void SetAsClean();              // Sets the variables as clean, so you
+                                    // can check
     // later and see if any have been changed (if it's
     // DIRTY again.)
     // This pointer isn't owned -- just stored for convenience.
     //
-    OPENTXS_EXPORT OTScriptable* GetOwnerAgreement()
-    {
-        return m_pOwnerAgreement;
-    }
-    OPENTXS_EXPORT void SetOwnerAgreement(OTScriptable& theOwner)
+    OTScriptable* GetOwnerAgreement() { return m_pOwnerAgreement; }
+    void SetOwnerAgreement(OTScriptable& theOwner)
     {
         m_pOwnerAgreement = &theOwner;
     }
-    OPENTXS_EXPORT OTBylaw();
-    OPENTXS_EXPORT OTBylaw(const char* szName, const char* szLanguage);
+    OTBylaw();
+    OTBylaw(const char* szName, const char* szLanguage);
     virtual ~OTBylaw();
 
-    OPENTXS_EXPORT bool Compare(OTBylaw& rhs);
+    bool Compare(OTBylaw& rhs);
 
-    OPENTXS_EXPORT void Serialize(Tag& parent, bool bCalculatingID = false)
-        const;
+    void Serialize(Tag& parent, bool bCalculatingID = false) const;
 };
 
 }  // namespace opentxs

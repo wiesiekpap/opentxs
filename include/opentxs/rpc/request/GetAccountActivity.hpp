@@ -27,22 +27,23 @@ namespace rpc
 {
 namespace request
 {
-class GetAccountActivity final : public Base
+class OPENTXS_EXPORT GetAccountActivity final : public Base
 {
 public:
-    OPENTXS_EXPORT static auto DefaultVersion() noexcept -> VersionNumber;
+    static auto DefaultVersion() noexcept -> VersionNumber;
 
-    OPENTXS_EXPORT auto Accounts() const noexcept -> const Identifiers&;
+    auto Accounts() const noexcept -> const Identifiers&;
 
     /// throws std::runtime_error for invalid constructor arguments
-    OPENTXS_EXPORT GetAccountActivity(
+    GetAccountActivity(
         SessionIndex session,
         const Identifiers& accounts,
         const AssociateNyms& nyms = {}) noexcept(false);
-    GetAccountActivity(const proto::RPCCommand& serialized) noexcept(false);
-    OPENTXS_EXPORT GetAccountActivity() noexcept;
+    OPENTXS_NO_EXPORT GetAccountActivity(
+        const proto::RPCCommand& serialized) noexcept(false);
+    GetAccountActivity() noexcept;
 
-    OPENTXS_EXPORT ~GetAccountActivity() final;
+    ~GetAccountActivity() final;
 
 private:
     GetAccountActivity(const GetAccountActivity&) = delete;

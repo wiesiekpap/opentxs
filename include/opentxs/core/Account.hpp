@@ -77,7 +77,7 @@ namespace opentxs
 using ExclusiveAccount = Exclusive<Account>;
 using SharedAccount = Shared<Account>;
 
-class Account : public OTTransactionType
+class OPENTXS_EXPORT Account : public OTTransactionType
 {
 public:
     // If you add any types to this list, update the list of strings at the
@@ -97,67 +97,56 @@ public:
         err_acct
     };
 
-    OPENTXS_EXPORT static char const* _GetTypeString(AccountType accountType);
+    static char const* _GetTypeString(AccountType accountType);
 
-    OPENTXS_EXPORT std::string Alias() const;
-    OPENTXS_EXPORT bool ConsensusHash(
+    std::string Alias() const;
+    bool ConsensusHash(
         const otx::context::Base& context,
         Identifier& theOutput,
         const PasswordPrompt& reason) const;
-    OPENTXS_EXPORT bool DisplayStatistics(String& contents) const override;
-    OPENTXS_EXPORT Amount GetBalance() const;
-    OPENTXS_EXPORT const identifier::UnitDefinition& GetInstrumentDefinitionID()
-        const;
-    OPENTXS_EXPORT TransactionNumber GetStashTransNum() const
-    {
-        return stashTransNum_;
-    }
-    OPENTXS_EXPORT char const* GetTypeString() const
-    {
-        return _GetTypeString(acctType_);
-    }
-    OPENTXS_EXPORT bool IsAllowedToGoNegative() const;
-    OPENTXS_EXPORT bool IsInternalServerAcct() const;
-    OPENTXS_EXPORT bool IsOwnedByUser() const;
-    OPENTXS_EXPORT bool IsOwnedByEntity() const;
-    OPENTXS_EXPORT bool IsIssuer() const;
+    bool DisplayStatistics(String& contents) const override;
+    Amount GetBalance() const;
+    const identifier::UnitDefinition& GetInstrumentDefinitionID() const;
+    TransactionNumber GetStashTransNum() const { return stashTransNum_; }
+    char const* GetTypeString() const { return _GetTypeString(acctType_); }
+    bool IsAllowedToGoNegative() const;
+    bool IsInternalServerAcct() const;
+    bool IsOwnedByUser() const;
+    bool IsOwnedByEntity() const;
+    bool IsIssuer() const;
     // For accounts used by smart contracts, to stash funds while running.
-    OPENTXS_EXPORT bool IsStashAcct() const { return (acctType_ == stash); }
-    OPENTXS_EXPORT std::unique_ptr<Ledger> LoadInbox(
-        const identity::Nym& nym) const;
-    OPENTXS_EXPORT std::unique_ptr<Ledger> LoadOutbox(
-        const identity::Nym& nym) const;
+    bool IsStashAcct() const { return (acctType_ == stash); }
+    std::unique_ptr<Ledger> LoadInbox(const identity::Nym& nym) const;
+    std::unique_ptr<Ledger> LoadOutbox(const identity::Nym& nym) const;
     // Compares the NymID loaded from the account file with whatever Nym the
     // programmer wants to verify.
-    OPENTXS_EXPORT bool VerifyOwner(const identity::Nym& candidate) const;
-    OPENTXS_EXPORT bool VerifyOwnerByID(const identifier::Nym& nymId) const;
+    bool VerifyOwner(const identity::Nym& candidate) const;
+    bool VerifyOwnerByID(const identifier::Nym& nymId) const;
 
     // Debit a certain amount from the account (presumably the same amount is
     // being added somewhere)
-    OPENTXS_EXPORT bool Debit(const Amount amount);
+    bool Debit(const Amount amount);
     // Credit a certain amount from the account (presumably the same amount is
     // being subtracted somewhere)
-    OPENTXS_EXPORT bool Credit(const Amount amount);
-    OPENTXS_EXPORT bool GetInboxHash(Identifier& output);
-    OPENTXS_EXPORT bool GetOutboxHash(Identifier& output);
-    OPENTXS_EXPORT bool InitBoxes(
-        const identity::Nym& signer,
-        const PasswordPrompt& reason);
+    bool Credit(const Amount amount);
+    bool GetInboxHash(Identifier& output);
+    bool GetOutboxHash(Identifier& output);
+    bool InitBoxes(const identity::Nym& signer, const PasswordPrompt& reason);
     // If you pass the identifier in, the inbox hash is recorded there
-    OPENTXS_EXPORT bool SaveInbox(Ledger& box);
-    OPENTXS_EXPORT bool SaveInbox(Ledger& box, Identifier& hash);
+    bool SaveInbox(Ledger& box);
+    bool SaveInbox(Ledger& box, Identifier& hash);
     // If you pass the identifier in, the outbox hash is recorded there
-    OPENTXS_EXPORT bool SaveOutbox(Ledger& box);
-    OPENTXS_EXPORT bool SaveOutbox(Ledger& box, Identifier& hash);
-    OPENTXS_EXPORT void SetAlias(const std::string& alias);
-    OPENTXS_EXPORT void SetInboxHash(const Identifier& input);
-    OPENTXS_EXPORT void SetOutboxHash(const Identifier& input);
-    OPENTXS_EXPORT void SetStashTransNum(const TransactionNumber transNum)
+    bool SaveOutbox(Ledger& box);
+    bool SaveOutbox(Ledger& box, Identifier& hash);
+    void SetAlias(const std::string& alias);
+    void SetInboxHash(const Identifier& input);
+    void SetOutboxHash(const Identifier& input);
+    void SetStashTransNum(const TransactionNumber transNum)
     {
         stashTransNum_ = transNum;
     }
 
-    OPENTXS_EXPORT ~Account() override;
+    ~Account() override;
 
 private:
     friend OTWallet;

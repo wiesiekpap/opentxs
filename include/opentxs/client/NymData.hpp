@@ -184,95 +184,87 @@ class PasswordPrompt;
 
 namespace opentxs
 {
-class NymData
+class OPENTXS_EXPORT NymData
 {
 public:
-    OPENTXS_EXPORT NymData(const NymData&);
-    OPENTXS_EXPORT NymData(NymData&&);
+    NymData(const NymData&);
+    NymData(NymData&&);
 
-    OPENTXS_EXPORT identity::Nym::Serialized asPublicNym() const;
-    OPENTXS_EXPORT std::string BestEmail() const;
-    OPENTXS_EXPORT std::string BestPhoneNumber() const;
-    OPENTXS_EXPORT std::string BestSocialMediaProfile(
+    identity::Nym::Serialized asPublicNym() const;
+    std::string BestEmail() const;
+    std::string BestPhoneNumber() const;
+    std::string BestSocialMediaProfile(
         const contact::ContactItemType type) const;
-    OPENTXS_EXPORT const opentxs::ContactData& Claims() const;
-    OPENTXS_EXPORT bool DeleteClaim(
-        const Identifier& id,
-        const PasswordPrompt& reason);
-    OPENTXS_EXPORT std::string EmailAddresses(bool active = true) const;
-    OPENTXS_EXPORT bool HaveContract(
+    const opentxs::ContactData& Claims() const;
+    bool DeleteClaim(const Identifier& id, const PasswordPrompt& reason);
+    std::string EmailAddresses(bool active = true) const;
+    bool HaveContract(
         const identifier::UnitDefinition& id,
         const contact::ContactItemType currency,
         const bool primary,
         const bool active) const;
-    OPENTXS_EXPORT std::string Name() const;
-    OPENTXS_EXPORT const identity::Nym& Nym() const;
-    OPENTXS_EXPORT std::string PaymentCode(
-        const contact::ContactItemType currency) const;
-    OPENTXS_EXPORT std::string PhoneNumbers(bool active = true) const;
-    OPENTXS_EXPORT std::string PreferredOTServer() const;
-    OPENTXS_EXPORT std::string PrintContactData() const;
-    OPENTXS_EXPORT std::string SocialMediaProfiles(
+    std::string Name() const;
+    const identity::Nym& Nym() const;
+    std::string PaymentCode(const contact::ContactItemType currency) const;
+    std::string PhoneNumbers(bool active = true) const;
+    std::string PreferredOTServer() const;
+    std::string PrintContactData() const;
+    std::string SocialMediaProfiles(
         const contact::ContactItemType type,
         bool active = true) const;
-    OPENTXS_EXPORT std::set<contact::ContactItemType> SocialMediaProfileTypes()
-        const;
-    OPENTXS_EXPORT contact::ContactItemType Type() const;
-    OPENTXS_EXPORT bool Valid() const;
+    std::set<contact::ContactItemType> SocialMediaProfileTypes() const;
+    contact::ContactItemType Type() const;
+    bool Valid() const;
 
-    OPENTXS_EXPORT std::string AddChildKeyCredential(
+    std::string AddChildKeyCredential(
         const Identifier& strMasterID,
         const NymParameters& nymParameters,
         const PasswordPrompt& reason);
-    OPENTXS_EXPORT bool AddClaim(
-        const Claim& claim,
-        const PasswordPrompt& reason);
-    OPENTXS_EXPORT bool AddContract(
+    bool AddClaim(const Claim& claim, const PasswordPrompt& reason);
+    bool AddContract(
         const std::string& instrumentDefinitionID,
         const contact::ContactItemType currency,
         const bool primary,
         const bool active,
         const PasswordPrompt& reason);
-    OPENTXS_EXPORT bool AddEmail(
+    bool AddEmail(
         const std::string& value,
         const bool primary,
         const bool active,
         const PasswordPrompt& reason);
-    OPENTXS_EXPORT bool AddPaymentCode(
+    bool AddPaymentCode(
         const std::string& code,
         const contact::ContactItemType currency,
         const bool primary,
         const bool active,
         const PasswordPrompt& reason);
-    OPENTXS_EXPORT bool AddPhoneNumber(
+    bool AddPhoneNumber(
         const std::string& value,
         const bool primary,
         const bool active,
         const PasswordPrompt& reason);
-    OPENTXS_EXPORT bool AddPreferredOTServer(
+    bool AddPreferredOTServer(
         const std::string& id,
         const bool primary,
         const PasswordPrompt& reason);
-    OPENTXS_EXPORT bool AddSocialMediaProfile(
+    bool AddSocialMediaProfile(
         const std::string& value,
         const contact::ContactItemType type,
         const bool primary,
         const bool active,
         const PasswordPrompt& reason);
-    OPENTXS_EXPORT void Release();
-    OPENTXS_EXPORT bool SetCommonName(
-        const std::string& name,
-        const PasswordPrompt& reason);
-    OPENTXS_EXPORT bool SetContactData(
+    void Release();
+    bool SetCommonName(const std::string& name, const PasswordPrompt& reason);
+    bool SetContactData(
         const proto::ContactData& data,
         const PasswordPrompt& reason);
-    OPENTXS_EXPORT bool SetScope(
+    bool SetScope(
         const contact::ContactItemType type,
         const std::string& name,
         const bool primary,
         const PasswordPrompt& reason);
 
-    OPENTXS_EXPORT ~NymData();
+    ~NymData();
 
 private:
     friend api::implementation::Wallet;

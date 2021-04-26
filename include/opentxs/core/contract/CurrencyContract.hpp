@@ -30,10 +30,10 @@ namespace contract
 {
 namespace unit
 {
-class Currency : virtual public contract::Unit
+class OPENTXS_EXPORT Currency : virtual public contract::Unit
 {
 public:
-    OPENTXS_EXPORT ~Currency() override = default;
+    ~Currency() override = default;
 
 protected:
     Currency() noexcept = default;
@@ -42,7 +42,7 @@ private:
     friend OTCurrencyContract;
 
 #ifndef _WIN32
-    OPENTXS_EXPORT Currency* clone() const noexcept override = 0;
+    Currency* clone() const noexcept override = 0;
 #endif
 
     Currency(const Currency&) = delete;

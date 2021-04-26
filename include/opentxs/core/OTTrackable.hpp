@@ -36,7 +36,7 @@ class PasswordPrompt;
 // The difference is, it may have identifying info on it:
 // TRANSACTION NUMBER, SENDER USER ID (NYM ID), AND SENDER ACCOUNT ID.
 //
-class OTTrackable : public Instrument
+class OPENTXS_EXPORT OTTrackable : public Instrument
 {
 public:
     void InitTrackable();

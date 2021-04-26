@@ -35,10 +35,10 @@ namespace peer
 {
 namespace reply
 {
-class Outbailment : virtual public peer::Reply
+class OPENTXS_EXPORT Outbailment : virtual public peer::Reply
 {
 public:
-    OPENTXS_EXPORT ~Outbailment() override = default;
+    ~Outbailment() override = default;
 
 protected:
     Outbailment() noexcept = default;
@@ -47,7 +47,7 @@ private:
     friend OTOutbailmentReply;
 
 #ifndef _WIN32
-    OPENTXS_EXPORT Outbailment* clone() const noexcept override = 0;
+    Outbailment* clone() const noexcept override = 0;
 #endif
 
     Outbailment(const Outbailment&) = delete;

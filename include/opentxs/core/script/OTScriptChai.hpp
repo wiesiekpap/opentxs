@@ -25,7 +25,7 @@ namespace opentxs
 class OTVariable;
 class String;
 
-class OTScriptChai final : public OTScript
+class OPENTXS_EXPORT OTScriptChai final : public OTScript
 {
 public:
     OTScriptChai();

@@ -41,7 +41,7 @@ class UnitDefinition;
 
 class PasswordPrompt;
 
-class Cheque : public OTTrackable
+class OPENTXS_EXPORT Cheque : public OTTrackable
 {
 public:
     inline void SetAsVoucher(
@@ -81,7 +81,7 @@ public:
     // that the cheque is written...
 
     // Calling this function is like writing a check...
-    OPENTXS_EXPORT bool IssueCheque(
+    bool IssueCheque(
         const std::int64_t& lAmount,
         const std::int64_t& lTransactionNum,
         const Time& VALID_FROM,
@@ -97,8 +97,8 @@ public:
                                                     // be a blank
                                                     // cheque.)
 
-    OPENTXS_EXPORT void CancelCheque();  // You still need to re-sign the cheque
-                                         // after doing this.
+    void CancelCheque();  // You still need to re-sign the cheque
+                          // after doing this.
 
     void InitCheque();
     void Release() override;
@@ -108,7 +108,7 @@ public:
                                                  // serialization, this is where
                                                  // the token saves its contents
 
-    OPENTXS_EXPORT ~Cheque() override;
+    ~Cheque() override;
 
 protected:
     Amount m_lAmount{0};
@@ -128,8 +128,8 @@ private:  // Private prevents erroneous use by other classes.
 
     using ot_super = OTTrackable;
 
-    OPENTXS_EXPORT Cheque(const api::internal::Core& core);
-    OPENTXS_EXPORT Cheque(
+    Cheque(const api::internal::Core& core);
+    Cheque(
         const api::internal::Core& core,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID);

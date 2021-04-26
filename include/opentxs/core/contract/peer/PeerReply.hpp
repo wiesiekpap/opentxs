@@ -41,15 +41,15 @@ namespace contract
 {
 namespace peer
 {
-class Reply : virtual public opentxs::contract::Signable
+class OPENTXS_EXPORT Reply : virtual public opentxs::contract::Signable
 {
 public:
     using SerializedType = proto::PeerReply;
 
-    OPENTXS_EXPORT virtual SerializedType Contract() const = 0;
-    OPENTXS_EXPORT virtual PeerRequestType Type() const = 0;
+    virtual SerializedType Contract() const = 0;
+    virtual PeerRequestType Type() const = 0;
 
-    OPENTXS_EXPORT virtual ~Reply() override = default;
+    virtual ~Reply() override = default;
 
 protected:
     Reply() noexcept = default;
@@ -58,7 +58,7 @@ private:
     friend OTPeerReply;
 
 #ifndef _WIN32
-    OPENTXS_EXPORT Reply* clone() const noexcept override = 0;
+    Reply* clone() const noexcept override = 0;
 #endif
 
     Reply(const Reply&) = delete;

@@ -36,22 +36,23 @@ namespace rpc
 {
 namespace response
 {
-class GetAccountActivity final : public Base
+class OPENTXS_EXPORT GetAccountActivity final : public Base
 {
 public:
     using Events = std::vector<AccountEvent>;
 
-    OPENTXS_EXPORT auto Activity() const noexcept -> const Events&;
+    auto Activity() const noexcept -> const Events&;
 
     /// throws std::runtime_error for invalid constructor arguments
-    GetAccountActivity(
+    OPENTXS_NO_EXPORT GetAccountActivity(
         const request::GetAccountActivity& request,
         Responses&& response,
         Events&& events) noexcept(false);
-    GetAccountActivity(const proto::RPCResponse& serialized) noexcept(false);
-    OPENTXS_EXPORT GetAccountActivity() noexcept;
+    OPENTXS_NO_EXPORT GetAccountActivity(
+        const proto::RPCResponse& serialized) noexcept(false);
+    GetAccountActivity() noexcept;
 
-    OPENTXS_EXPORT ~GetAccountActivity() final;
+    ~GetAccountActivity() final;
 
 private:
     GetAccountActivity(const GetAccountActivity&) = delete;

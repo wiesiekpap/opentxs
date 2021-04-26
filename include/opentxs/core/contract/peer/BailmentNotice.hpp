@@ -35,10 +35,10 @@ namespace peer
 {
 namespace request
 {
-class BailmentNotice : virtual public peer::Request
+class OPENTXS_EXPORT BailmentNotice : virtual public peer::Request
 {
 public:
-    OPENTXS_EXPORT ~BailmentNotice() override = default;
+    ~BailmentNotice() override = default;
 
 protected:
     BailmentNotice() noexcept = default;
@@ -47,7 +47,7 @@ private:
     friend OTBailmentNotice;
 
 #ifndef _WIN32
-    OPENTXS_EXPORT BailmentNotice* clone() const noexcept override = 0;
+    BailmentNotice* clone() const noexcept override = 0;
 #endif
 
     BailmentNotice(const BailmentNotice&) = delete;

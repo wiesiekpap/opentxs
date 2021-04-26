@@ -27,23 +27,25 @@ namespace opentxs
 {
 namespace rpc
 {
-class AccountEvent
+class OPENTXS_EXPORT AccountEvent
 {
 public:
-    OPENTXS_EXPORT auto AccountID() const noexcept -> const std::string&;
-    OPENTXS_EXPORT auto ConfirmedAmount() const noexcept -> Amount;
-    OPENTXS_EXPORT auto ContactID() const noexcept -> const std::string&;
-    OPENTXS_EXPORT auto Memo() const noexcept -> const std::string&;
-    OPENTXS_EXPORT auto PendingAmount() const noexcept -> Amount;
-    auto Serialize(proto::AccountEvent& dest) const noexcept -> bool;
-    OPENTXS_EXPORT auto State() const noexcept -> int;
-    OPENTXS_EXPORT auto Timestamp() const noexcept -> Time;
-    OPENTXS_EXPORT auto Type() const noexcept -> AccountEventType;
-    OPENTXS_EXPORT auto UUID() const noexcept -> const std::string&;
-    OPENTXS_EXPORT auto WorkflowID() const noexcept -> const std::string&;
+    auto AccountID() const noexcept -> const std::string&;
+    auto ConfirmedAmount() const noexcept -> Amount;
+    auto ContactID() const noexcept -> const std::string&;
+    auto Memo() const noexcept -> const std::string&;
+    auto PendingAmount() const noexcept -> Amount;
+    OPENTXS_NO_EXPORT auto Serialize(proto::AccountEvent& dest) const noexcept
+        -> bool;
+    auto State() const noexcept -> int;
+    auto Timestamp() const noexcept -> Time;
+    auto Type() const noexcept -> AccountEventType;
+    auto UUID() const noexcept -> const std::string&;
+    auto WorkflowID() const noexcept -> const std::string&;
 
-    AccountEvent(const proto::AccountEvent& serialized) noexcept(false);
-    AccountEvent(
+    OPENTXS_NO_EXPORT AccountEvent(
+        const proto::AccountEvent& serialized) noexcept(false);
+    OPENTXS_NO_EXPORT AccountEvent(
         const std::string& account,
         AccountEventType type,
         const std::string& contact,
@@ -54,10 +56,10 @@ public:
         const std::string& memo,
         const std::string& uuid,
         int state) noexcept(false);
-    AccountEvent(const AccountEvent&) noexcept;
-    AccountEvent(AccountEvent&&) noexcept;
+    OPENTXS_NO_EXPORT AccountEvent(const AccountEvent&) noexcept;
+    OPENTXS_NO_EXPORT AccountEvent(AccountEvent&&) noexcept;
 
-    ~AccountEvent();
+    OPENTXS_NO_EXPORT ~AccountEvent();
 
 private:
     struct Imp;

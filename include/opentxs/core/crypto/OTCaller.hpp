@@ -19,24 +19,24 @@ class Secret;
 
 namespace opentxs
 {
-class OTCaller
+class OPENTXS_EXPORT OTCaller
 {
 public:
-    OPENTXS_EXPORT bool HaveCallback() const;
+    bool HaveCallback() const;
 
-    OPENTXS_EXPORT void AskOnce(
+    void AskOnce(
         const PasswordPrompt& prompt,
         Secret& output,
         const std::string& key);
-    OPENTXS_EXPORT void AskTwice(
+    void AskTwice(
         const PasswordPrompt& prompt,
         Secret& output,
         const std::string& key);
-    OPENTXS_EXPORT void SetCallback(OTCallback* callback);
+    void SetCallback(OTCallback* callback);
 
-    OPENTXS_EXPORT OTCaller();
+    OTCaller();
 
-    OPENTXS_EXPORT ~OTCaller();
+    ~OTCaller();
 
 private:
     OTCallback* callback_{nullptr};

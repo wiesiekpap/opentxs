@@ -97,14 +97,14 @@ namespace opentxs
  all the users of that basket currency.
 
  */
-class Basket final : public Contract
+class OPENTXS_EXPORT Basket final : public Contract
 {
 public:
-    OPENTXS_EXPORT ~Basket() final;
+    ~Basket() final;
 
     void UpdateContents(const PasswordPrompt& reason) final;
 
-    OPENTXS_EXPORT void CalculateContractID(Identifier& newID) const final;
+    void CalculateContractID(Identifier& newID) const final;
 
     inline std::int64_t GetMinimumTransfer() const
     {
@@ -128,8 +128,8 @@ public:
         m_bExchangingIn = bDirection;
     }
 
-    OPENTXS_EXPORT std::int32_t Count() const;
-    OPENTXS_EXPORT BasketItem* At(std::uint32_t nIndex);
+    std::int32_t Count() const;
+    BasketItem* At(std::uint32_t nIndex);
 
     std::int64_t GetClosingTransactionNoAt(std::uint32_t nIndex);
 
@@ -145,14 +145,14 @@ public:
     // For generating a real basket.  The user does this part, and the server
     // creates Account ID later
     // (That's why you don't see the account ID being passed in to the method.)
-    OPENTXS_EXPORT void AddSubContract(
+    void AddSubContract(
         const Identifier& SUB_CONTRACT_ID,
         std::int64_t lMinimumTransferAmount);
     inline void IncrementSubCount() { m_nSubCount++; }
 
     // For generating a user request to exchange in/out of a basket.
     // Assumes that SetTransferMultiple has already been called.
-    OPENTXS_EXPORT void AddRequestSubContract(
+    void AddRequestSubContract(
         const Identifier& SUB_CONTRACT_ID,
         const Identifier& SUB_ACCOUNT_ID,
         const std::int64_t& lClosingTransactionNo);
@@ -175,7 +175,7 @@ public:
 
     // Normally do this if your transaction failed so you can get most of your
     // numbers back
-    OPENTXS_EXPORT void HarvestClosingNumbers(
+    void HarvestClosingNumbers(
         otx::context::Server& context,
         const identifier::Server& theNotaryID,
         bool bSave = true);
@@ -205,8 +205,8 @@ protected:
 private:
     friend api::implementation::Factory;
 
-    OPENTXS_EXPORT Basket(const api::internal::Core& api);
-    OPENTXS_EXPORT Basket(
+    Basket(const api::internal::Core& api);
+    Basket(
         const api::internal::Core& api,
         std::int32_t nCount,
         std::int64_t lMinimumTransferAmount);

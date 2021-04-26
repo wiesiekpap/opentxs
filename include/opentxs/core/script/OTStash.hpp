@@ -34,7 +34,7 @@ class Tag;
 
 using mapOfStashItems = std::map<std::string, OTStashItem*>;
 
-class OTStash
+class OPENTXS_EXPORT OTStash
 {
     std::string m_str_stash_name;
 

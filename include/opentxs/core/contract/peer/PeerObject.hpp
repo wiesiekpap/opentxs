@@ -39,30 +39,28 @@ using OTPeerObject = Pimpl<PeerObject>;
 
 namespace opentxs
 {
-class PeerObject
+class OPENTXS_EXPORT PeerObject
 {
 public:
-    OPENTXS_EXPORT virtual const std::unique_ptr<std::string>& Message()
-        const = 0;
-    OPENTXS_EXPORT virtual const Nym_p& Nym() const = 0;
-    OPENTXS_EXPORT virtual const std::unique_ptr<std::string>& Payment()
-        const = 0;
+    virtual const std::unique_ptr<std::string>& Message() const = 0;
+    virtual const Nym_p& Nym() const = 0;
+    virtual const std::unique_ptr<std::string>& Payment() const = 0;
 #if OT_CASH
-    OPENTXS_EXPORT virtual std::shared_ptr<blind::Purse> Purse() const = 0;
+    virtual std::shared_ptr<blind::Purse> Purse() const = 0;
 #endif
-    OPENTXS_EXPORT virtual const OTPeerRequest Request() const = 0;
-    OPENTXS_EXPORT virtual const OTPeerReply Reply() const = 0;
-    OPENTXS_EXPORT virtual proto::PeerObject Serialize() const = 0;
-    OPENTXS_EXPORT virtual contract::peer::PeerObjectType Type() const = 0;
-    OPENTXS_EXPORT virtual bool Validate() const = 0;
+    virtual const OTPeerRequest Request() const = 0;
+    virtual const OTPeerReply Reply() const = 0;
+    virtual proto::PeerObject Serialize() const = 0;
+    virtual contract::peer::PeerObjectType Type() const = 0;
+    virtual bool Validate() const = 0;
 
-    OPENTXS_EXPORT virtual std::unique_ptr<std::string>& Message() = 0;
-    OPENTXS_EXPORT virtual std::unique_ptr<std::string>& Payment() = 0;
+    virtual std::unique_ptr<std::string>& Message() = 0;
+    virtual std::unique_ptr<std::string>& Payment() = 0;
 #if OT_CASH
-    OPENTXS_EXPORT virtual std::shared_ptr<blind::Purse>& Purse() = 0;
+    virtual std::shared_ptr<blind::Purse>& Purse() = 0;
 #endif
 
-    OPENTXS_EXPORT virtual ~PeerObject() = default;
+    virtual ~PeerObject() = default;
 
 protected:
     PeerObject() = default;

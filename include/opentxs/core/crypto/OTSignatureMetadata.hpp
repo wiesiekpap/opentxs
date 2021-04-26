@@ -18,7 +18,7 @@ struct Core;
 }  // namespace internal
 }  // namespace api
 
-class OTSignatureMetadata
+class OPENTXS_EXPORT OTSignatureMetadata
 {
 public:
     bool operator==(const OTSignatureMetadata& rhs) const;

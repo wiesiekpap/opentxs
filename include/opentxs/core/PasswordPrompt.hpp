@@ -64,16 +64,16 @@ namespace opentxs
  this. Then we just pass the code there, instead of the string itself, and
  the class will do the work of looking up the actual string based on that code.
  */
-class PasswordPrompt
+class OPENTXS_EXPORT PasswordPrompt
 {
 public:
-    OPENTXS_EXPORT const char* GetDisplayString() const;
-    OPENTXS_EXPORT const Secret& Password() const;
+    const char* GetDisplayString() const;
+    const Secret& Password() const;
 
-    OPENTXS_EXPORT bool ClearPassword();
-    OPENTXS_EXPORT bool SetPassword(const Secret& password);
+    bool ClearPassword();
+    bool SetPassword(const Secret& password);
 
-    OPENTXS_EXPORT ~PasswordPrompt();
+    ~PasswordPrompt();
 
 private:
     friend OTPasswordPrompt;

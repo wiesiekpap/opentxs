@@ -16,7 +16,7 @@ namespace opentxs
 {
 class Identifier;
 
-class OTStashItem
+class OPENTXS_EXPORT OTStashItem
 {
     OTString m_strInstrumentDefinitionID;
     std::int64_t m_lAmount;

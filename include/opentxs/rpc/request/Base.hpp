@@ -47,7 +47,7 @@ namespace request
 auto Factory(ReadView serialized) noexcept -> Base;
 auto Factory(const proto::RPCCommand& serialized) noexcept -> Base;
 
-class Base
+class OPENTXS_EXPORT Base
 {
 public:
     using SessionIndex = int;
@@ -56,29 +56,28 @@ public:
 
     struct Imp;
 
-    OPENTXS_EXPORT auto asGetAccountActivity() const noexcept
-        -> const GetAccountActivity&;
-    OPENTXS_EXPORT auto asGetAccountBalance() const noexcept
-        -> const GetAccountBalance&;
-    OPENTXS_EXPORT auto asListAccounts() const noexcept -> const ListAccounts&;
-    OPENTXS_EXPORT auto asListNyms() const noexcept -> const ListNyms&;
-    OPENTXS_EXPORT auto asSendPayment() const noexcept -> const SendPayment&;
+    auto asGetAccountActivity() const noexcept -> const GetAccountActivity&;
+    auto asGetAccountBalance() const noexcept -> const GetAccountBalance&;
+    auto asListAccounts() const noexcept -> const ListAccounts&;
+    auto asListNyms() const noexcept -> const ListNyms&;
+    auto asSendPayment() const noexcept -> const SendPayment&;
 
-    OPENTXS_EXPORT auto AssociatedNyms() const noexcept -> const AssociateNyms&;
-    OPENTXS_EXPORT auto Cookie() const noexcept -> const std::string&;
-    OPENTXS_EXPORT auto Serialize(AllocateOutput dest) const noexcept -> bool;
-    auto Serialize(proto::RPCCommand& dest) const noexcept -> bool;
-    OPENTXS_EXPORT auto Session() const noexcept -> SessionIndex;
-    OPENTXS_EXPORT auto Type() const noexcept -> CommandType;
-    OPENTXS_EXPORT auto Version() const noexcept -> VersionNumber;
+    auto AssociatedNyms() const noexcept -> const AssociateNyms&;
+    auto Cookie() const noexcept -> const std::string&;
+    auto Serialize(AllocateOutput dest) const noexcept -> bool;
+    OPENTXS_NO_EXPORT auto Serialize(proto::RPCCommand& dest) const noexcept
+        -> bool;
+    auto Session() const noexcept -> SessionIndex;
+    auto Type() const noexcept -> CommandType;
+    auto Version() const noexcept -> VersionNumber;
 
-    OPENTXS_EXPORT Base() noexcept;
-    OPENTXS_EXPORT Base(const Base&) noexcept;
-    OPENTXS_EXPORT Base(Base&&) noexcept;
-    OPENTXS_EXPORT auto operator=(const Base&) noexcept -> Base&;
-    OPENTXS_EXPORT auto operator=(Base&&) noexcept -> Base&;
+    Base() noexcept;
+    Base(const Base&) noexcept;
+    Base(Base&&) noexcept;
+    auto operator=(const Base&) noexcept -> Base&;
+    auto operator=(Base&&) noexcept -> Base&;
 
-    OPENTXS_EXPORT virtual ~Base();
+    virtual ~Base();
 
 protected:
     Imp* imp_;

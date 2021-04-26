@@ -30,23 +30,21 @@ using OTStringXML = Pimpl<StringXML>;
 
 namespace opentxs
 {
-class StringXML : virtual public String
+class OPENTXS_EXPORT StringXML : virtual public String
 {
 public:
-    OPENTXS_EXPORT static OTStringXML Factory();
-    OPENTXS_EXPORT static OTStringXML Factory(const String& value);
+    static OTStringXML Factory();
+    static OTStringXML Factory(const String& value);
 
-    OPENTXS_EXPORT virtual operator irr::io::IFileReadCallBack*() = 0;
+    virtual operator irr::io::IFileReadCallBack*() = 0;
 
-    OPENTXS_EXPORT virtual std::int32_t read(
-        void* buffer,
-        std::uint32_t sizeToRead) = 0;
-    OPENTXS_EXPORT virtual std::int32_t getSize() = 0;
+    virtual std::int32_t read(void* buffer, std::uint32_t sizeToRead) = 0;
+    virtual std::int32_t getSize() = 0;
 
-    OPENTXS_EXPORT virtual StringXML& operator=(const String& rhs) = 0;
-    OPENTXS_EXPORT virtual StringXML& operator=(const StringXML& rhs) = 0;
+    virtual StringXML& operator=(const String& rhs) = 0;
+    virtual StringXML& operator=(const StringXML& rhs) = 0;
 
-    OPENTXS_EXPORT ~StringXML() override = default;
+    ~StringXML() override = default;
 
 protected:
     StringXML() = default;

@@ -73,14 +73,14 @@ using listOfSignatures = std::list<OTSignature>;
 
 OTString trim(const String& str);
 
-class Contract
+class OPENTXS_EXPORT Contract
 {
 public:
     /** Used by OTTransactionType::Factory and OTToken::Factory. In both cases,
      * it takes the input string, trims it, and if it's armored, it unarmors it,
      * with the result going into strOutput. On success, bool is returned, and
      * strFirstLine contains the first line from strOutput. */
-    OPENTXS_EXPORT static bool DearmorAndTrim(
+    static bool DearmorAndTrim(
         const String& strInput,
         String& strOutput,
         String& strFirstLine);
@@ -93,10 +93,10 @@ public:
         const String& strContractType,
         const crypto::HashType hashType,
         const listOfSignatures& listSignatures);
-    OPENTXS_EXPORT static bool LoadEncodedTextField(
+    static bool LoadEncodedTextField(
         irr::io::IrrXMLReader*& xml,
         Armored& ascOutput);
-    OPENTXS_EXPORT static bool LoadEncodedTextField(
+    static bool LoadEncodedTextField(
         irr::io::IrrXMLReader*& xml,
         String& strOutput);
     static bool LoadEncodedTextFieldByName(
@@ -151,15 +151,15 @@ public:
     // be possible when the issuer and transaction provider are two separate
     // entities. So this sort of protocol becomes necessary.)
 
-    OPENTXS_EXPORT virtual ~Contract();
-    OPENTXS_EXPORT virtual void Release();
-    OPENTXS_EXPORT void Release_Contract();
-    OPENTXS_EXPORT void ReleaseSignatures();
+    virtual ~Contract();
+    virtual void Release();
+    void Release_Contract();
+    void ReleaseSignatures();
 
     /** This function is for those times when you already have the unsigned
      * version of the contract, and you have the signer, and you just want to
      * sign it and calculate its new ID from the finished result. */
-    OPENTXS_EXPORT virtual bool CreateContract(
+    virtual bool CreateContract(
         const String& strContract,
         const identity::Nym& theSigner,
         const PasswordPrompt& reason);
@@ -169,125 +169,114 @@ public:
      * ANY flat text and use a generic Contract instance to sign it and then
      * write it to strOutput. This is due to the fact that OT was never really
      * designed for signing flat text, only contracts. */
-    OPENTXS_EXPORT static bool SignFlatText(
+    static bool SignFlatText(
         const api::internal::Core& api,
         String& strFlatText,
         const String& strContractType,  // "LEDGER" or "PURSE" etc.
         const identity::Nym& theSigner,
         String& strOutput,
         const PasswordPrompt& reason);
-    OPENTXS_EXPORT inline void GetName(String& strName) const
+    inline void GetName(String& strName) const
     {
         strName.Set(m_strName->Get());
     }
-    OPENTXS_EXPORT inline void SetName(const String& strName)
-    {
-        m_strName = strName;
-    }
-    OPENTXS_EXPORT inline const String& GetContractType() const
-    {
-        return m_strContractType;
-    }
+    inline void SetName(const String& strName) { m_strName = strName; }
+    inline const String& GetContractType() const { return m_strContractType; }
     /** This function calls VerifyContractID, and if that checks out, then it
      * looks up the official "contract" key inside the contract by calling
      * GetContractPublicNym, and uses it to verify the signature on the
      * contract. So the contract is self-verifying. Right now only public keys
      * are supported, but soon contracts will also support x509 certs. */
-    OPENTXS_EXPORT virtual bool VerifyContract() const;
+    virtual bool VerifyContract() const;
 
     /** Overriden for example in OTOffer, OTMarket. You can get it in string or
      * binary form. */
-    OPENTXS_EXPORT virtual void GetIdentifier(Identifier& theIdentifier) const;
+    virtual void GetIdentifier(Identifier& theIdentifier) const;
 
     /** The Contract ID is a hash of the contract raw file. */
-    OPENTXS_EXPORT void GetIdentifier(String& theIdentifier) const;
-    OPENTXS_EXPORT void GetFilename(String& strFilename) const;
+    void GetIdentifier(String& theIdentifier) const;
+    void GetFilename(String& strFilename) const;
 
     /** assumes m_strFilename is already set. Then it reads that file into a
      * string. Then it parses that string into the object. */
-    OPENTXS_EXPORT virtual bool LoadContract();
-    OPENTXS_EXPORT bool LoadContract(
-        const char* szFoldername,
-        const char* szFilename);
+    virtual bool LoadContract();
+    bool LoadContract(const char* szFoldername, const char* szFilename);
 
     /** Just like it says. If you have a contract in string form, pass it in
      * here to import it. */
-    OPENTXS_EXPORT virtual bool LoadContractFromString(const String& theStr);
+    virtual bool LoadContractFromString(const String& theStr);
 
     /** fopens m_strFilename and reads it off the disk into m_strRawFile */
     bool LoadContractRawFile();
 
     /** data_folder/contracts/Contract-ID */
-    OPENTXS_EXPORT bool SaveToContractFolder();
+    bool SaveToContractFolder();
 
     /** Saves the raw (pre-existing) contract text to any string you want to
      * pass in. */
-    OPENTXS_EXPORT bool SaveContractRaw(String& strOutput) const;
+    bool SaveContractRaw(String& strOutput) const;
 
     /** Takes the pre-existing XML contents (WITHOUT signatures) and re-writes
      * the Raw data, adding the pre-existing signatures along with new signature
      * bookends. */
-    OPENTXS_EXPORT bool RewriteContract(String& strOutput) const;
+    bool RewriteContract(String& strOutput) const;
 
     /** This saves the Contract to its own internal member string, m_strRawFile
      * (and does NOT actually save it to a file.) */
-    OPENTXS_EXPORT virtual bool SaveContract();
+    virtual bool SaveContract();
 
     /** Saves the contract to a specific filename */
-    OPENTXS_EXPORT virtual bool SaveContract(
-        const char* szFoldername,
-        const char* szFilename);
+    virtual bool SaveContract(const char* szFoldername, const char* szFilename);
 
     /** Writes the contract to a specific filename without changing member
      *  variables */
-    OPENTXS_EXPORT bool WriteContract(
-        const std::string& folder,
-        const std::string& filename) const;
+    bool WriteContract(const std::string& folder, const std::string& filename)
+        const;
 
     /** Update the internal unsigned contents based on the member variables
      * default behavior does nothing. */
-    OPENTXS_EXPORT virtual void UpdateContents(const PasswordPrompt& reason);
+    virtual void UpdateContents(const PasswordPrompt& reason);
 
     /** Only used when first generating an asset or server contract. Meant for
      * contracts which never change after that point. Otherwise does the same
      * thing as UpdateContents. (But meant for a different purpose.) */
-    OPENTXS_EXPORT virtual void CreateContents();
+    virtual void CreateContents();
 
     /** Overrides of CreateContents call this in order to add some common
      * internals. */
-    OPENTXS_EXPORT void CreateInnerContents(Tag& parent);
+    void CreateInnerContents(Tag& parent);
 
     /** Save the internal contents (m_xmlUnsigned) to an already-open file */
-    OPENTXS_EXPORT virtual bool SaveContents(std::ofstream& ofs) const;
+    virtual bool SaveContents(std::ofstream& ofs) const;
 
     /** Saves the entire contract to a file that's already open (like a wallet).
      */
-    OPENTXS_EXPORT virtual bool SaveContractWallet(Tag& parent) const;
+    virtual bool SaveContractWallet(Tag& parent) const;
 
-    OPENTXS_EXPORT virtual bool DisplayStatistics(String& strContents) const;
+    virtual bool DisplayStatistics(String& strContents) const;
 
     /** Save m_xmlUnsigned to a string that's passed in */
-    OPENTXS_EXPORT virtual bool SaveContents(String& strContents) const;
-    OPENTXS_EXPORT virtual bool SignContract(
+    virtual bool SaveContents(String& strContents) const;
+    virtual bool SignContract(
         const identity::Nym& theNym,
         const PasswordPrompt& reason);
-    OPENTXS_EXPORT bool SignContractAuthent(
+    bool SignContractAuthent(
         const identity::Nym& theNym,
         const PasswordPrompt& reason);
-    OPENTXS_EXPORT bool SignWithKey(
+    bool SignWithKey(
         const crypto::key::Asymmetric& theKey,
         const PasswordPrompt& reason);
-    OPENTXS_EXPORT bool SignContract(
+    bool SignContract(
         const identity::Nym& theNym,
         Signature& theSignature,
         const PasswordPrompt& reason);
 
     /** Uses authentication key instead of signing key. */
-    OPENTXS_EXPORT bool SignContractAuthent(
+    bool SignContractAuthent(
         const identity::Nym& theNym,
         Signature& theSignature,
         const PasswordPrompt& reason);
-    OPENTXS_EXPORT bool SignContract(
+    bool SignContract(
         const crypto::key::Asymmetric& theKey,
         Signature& theSignature,
         const crypto::HashType hashType,
@@ -308,30 +297,27 @@ public:
     account ID in the file, I have no way of re-calculating it from the account
     file, which changes! So my copies of the account file and wallet file are
     the only records of that account ID which is a giant std::int64_t number. */
-    OPENTXS_EXPORT virtual bool VerifyContractID() const;
-    OPENTXS_EXPORT virtual void CalculateContractID(Identifier& newID) const;
-    OPENTXS_EXPORT virtual void CalculateAndSetContractID(Identifier& newID);
+    virtual bool VerifyContractID() const;
+    virtual void CalculateContractID(Identifier& newID) const;
+    virtual void CalculateAndSetContractID(Identifier& newID);
 
     /** So far not overridden anywhere (used to be OTTrade.) */
-    OPENTXS_EXPORT virtual bool VerifySignature(
-        const identity::Nym& theNym) const;
-    OPENTXS_EXPORT virtual bool VerifySigAuthent(
-        const identity::Nym& theNym) const;
-    OPENTXS_EXPORT virtual bool VerifyWithKey(
-        const crypto::key::Asymmetric& theKey) const;
-    OPENTXS_EXPORT bool VerifySignature(
+    virtual bool VerifySignature(const identity::Nym& theNym) const;
+    virtual bool VerifySigAuthent(const identity::Nym& theNym) const;
+    virtual bool VerifyWithKey(const crypto::key::Asymmetric& theKey) const;
+    bool VerifySignature(
         const identity::Nym& theNym,
         const Signature& theSignature) const;
 
     /** Uses authentication key instead of signing key. */
-    OPENTXS_EXPORT bool VerifySigAuthent(
+    bool VerifySigAuthent(
         const identity::Nym& theNym,
         const Signature& theSignature) const;
-    OPENTXS_EXPORT bool VerifySignature(
+    bool VerifySignature(
         const crypto::key::Asymmetric& theKey,
         const Signature& theSignature,
         const crypto::HashType hashType) const;
-    OPENTXS_EXPORT Nym_p GetContractPublicNym() const;
+    Nym_p GetContractPublicNym() const;
 
 protected:
     const api::internal::Core& api_;

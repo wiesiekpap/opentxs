@@ -35,10 +35,10 @@ namespace peer
 {
 namespace request
 {
-class Bailment : virtual public peer::Request
+class OPENTXS_EXPORT Bailment : virtual public peer::Request
 {
 public:
-    OPENTXS_EXPORT ~Bailment() override = default;
+    ~Bailment() override = default;
 
 protected:
     Bailment() noexcept = default;
@@ -47,7 +47,7 @@ private:
     friend OTBailmentRequest;
 
 #ifndef _WIN32
-    OPENTXS_EXPORT Bailment* clone() const noexcept override = 0;
+    Bailment* clone() const noexcept override = 0;
 #endif
 
     Bailment(const Bailment&) = delete;

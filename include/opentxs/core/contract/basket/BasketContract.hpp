@@ -30,7 +30,7 @@ namespace contract
 {
 namespace unit
 {
-class Basket : virtual public contract::Unit
+class OPENTXS_EXPORT Basket : virtual public contract::Unit
 {
 public:
     // account number, weight
@@ -38,20 +38,20 @@ public:
     // unit definition id, subcontract
     using Subcontracts = std::map<std::string, Subcontract>;
 
-    OPENTXS_EXPORT static OTIdentifier CalculateBasketID(
+    static OTIdentifier CalculateBasketID(
         const api::internal::Core& api,
         const proto::UnitDefinition& serialized);
-    OPENTXS_EXPORT static bool FinalizeTemplate(
+    static bool FinalizeTemplate(
         const api::internal::Core& api,
         const Nym_p& nym,
         proto::UnitDefinition& serialized,
         const PasswordPrompt& reason);
 
-    OPENTXS_EXPORT virtual OTIdentifier BasketID() const = 0;
-    OPENTXS_EXPORT virtual const Subcontracts& Currencies() const = 0;
-    OPENTXS_EXPORT virtual std::uint64_t Weight() const = 0;
+    virtual OTIdentifier BasketID() const = 0;
+    virtual const Subcontracts& Currencies() const = 0;
+    virtual std::uint64_t Weight() const = 0;
 
-    OPENTXS_EXPORT ~Basket() override = default;
+    ~Basket() override = default;
 
 protected:
     Basket() noexcept = default;
@@ -60,7 +60,7 @@ private:
     friend OTBasketContract;
 
 #ifndef _WIN32
-    OPENTXS_EXPORT Basket* clone() const noexcept override = 0;
+    Basket* clone() const noexcept override = 0;
 #endif
 
     Basket(const Basket&) = delete;

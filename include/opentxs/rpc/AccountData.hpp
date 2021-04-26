@@ -27,21 +27,23 @@ namespace opentxs
 {
 namespace rpc
 {
-class AccountData
+class OPENTXS_EXPORT AccountData
 {
 public:
-    OPENTXS_EXPORT auto ConfirmedBalance() const noexcept -> Amount;
-    OPENTXS_EXPORT auto ID() const noexcept -> const std::string&;
-    OPENTXS_EXPORT auto Issuer() const noexcept -> const std::string&;
-    OPENTXS_EXPORT auto Name() const noexcept -> const std::string&;
-    OPENTXS_EXPORT auto Owner() const noexcept -> const std::string&;
-    OPENTXS_EXPORT auto PendingBalance() const noexcept -> Amount;
-    auto Serialize(proto::AccountData& dest) const noexcept -> bool;
-    OPENTXS_EXPORT auto Type() const noexcept -> AccountType;
-    OPENTXS_EXPORT auto Unit() const noexcept -> const std::string&;
+    auto ConfirmedBalance() const noexcept -> Amount;
+    auto ID() const noexcept -> const std::string&;
+    auto Issuer() const noexcept -> const std::string&;
+    auto Name() const noexcept -> const std::string&;
+    auto Owner() const noexcept -> const std::string&;
+    auto PendingBalance() const noexcept -> Amount;
+    OPENTXS_NO_EXPORT auto Serialize(proto::AccountData& dest) const noexcept
+        -> bool;
+    auto Type() const noexcept -> AccountType;
+    auto Unit() const noexcept -> const std::string&;
 
-    AccountData(const proto::AccountData& serialized) noexcept(false);
-    AccountData(
+    OPENTXS_NO_EXPORT AccountData(
+        const proto::AccountData& serialized) noexcept(false);
+    OPENTXS_NO_EXPORT AccountData(
         const std::string& id,
         const std::string& name,
         const std::string& unit,
@@ -50,10 +52,10 @@ public:
         Amount balance,
         Amount pending,
         AccountType type) noexcept(false);
-    AccountData(const AccountData&) noexcept;
-    AccountData(AccountData&&) noexcept;
+    OPENTXS_NO_EXPORT AccountData(const AccountData&) noexcept;
+    OPENTXS_NO_EXPORT AccountData(AccountData&&) noexcept;
 
-    ~AccountData();
+    OPENTXS_NO_EXPORT ~AccountData();
 
 private:
     struct Imp;

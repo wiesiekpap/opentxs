@@ -75,69 +75,58 @@ namespace opentxs
 {
 /** An Identifier is basically a 256 bit hash value. This class makes it easy to
  * convert IDs back and forth to strings. */
-class Identifier : virtual public Data
+class OPENTXS_EXPORT Identifier : virtual public Data
 {
 public:
     using ot_super = opentxs::Data;
 
-    OPENTXS_EXPORT static opentxs::Pimpl<opentxs::Identifier> Random();
-    OPENTXS_EXPORT static opentxs::Pimpl<opentxs::Identifier> Factory();
-    OPENTXS_EXPORT static opentxs::Pimpl<opentxs::Identifier> Factory(
-        const Identifier& rhs);
-    OPENTXS_EXPORT static opentxs::Pimpl<opentxs::Identifier> Factory(
-        const std::string& rhs);
+    static opentxs::Pimpl<opentxs::Identifier> Random();
+    static opentxs::Pimpl<opentxs::Identifier> Factory();
+    static opentxs::Pimpl<opentxs::Identifier> Factory(const Identifier& rhs);
+    static opentxs::Pimpl<opentxs::Identifier> Factory(const std::string& rhs);
 #ifndef SWIG
-    OPENTXS_EXPORT static opentxs::Pimpl<opentxs::Identifier> Factory(
-        const String& rhs);
-    OPENTXS_EXPORT static opentxs::Pimpl<opentxs::Identifier> Factory(
+    static opentxs::Pimpl<opentxs::Identifier> Factory(const String& rhs);
+    static opentxs::Pimpl<opentxs::Identifier> Factory(
         const identity::Nym& nym);
-    OPENTXS_EXPORT static opentxs::Pimpl<opentxs::Identifier> Factory(
-        const Cheque& cheque);
-    OPENTXS_EXPORT static opentxs::Pimpl<opentxs::Identifier> Factory(
-        const Item& item);
-    OPENTXS_EXPORT static opentxs::Pimpl<opentxs::Identifier> Factory(
+    static opentxs::Pimpl<opentxs::Identifier> Factory(const Cheque& cheque);
+    static opentxs::Pimpl<opentxs::Identifier> Factory(const Item& item);
+    static opentxs::Pimpl<opentxs::Identifier> Factory(
         const Contract& contract);
-    OPENTXS_EXPORT static opentxs::Pimpl<opentxs::Identifier> Factory(
+    static opentxs::Pimpl<opentxs::Identifier> Factory(
         const contact::ContactItemType type,
         const proto::HDPath& path);
 #endif
-    OPENTXS_EXPORT static bool Validate(const std::string& id);
+    static bool Validate(const std::string& id);
 
     using ot_super::operator==;
-    OPENTXS_EXPORT virtual bool operator==(
-        const Identifier& rhs) const noexcept = 0;
+    virtual bool operator==(const Identifier& rhs) const noexcept = 0;
     using ot_super::operator!=;
-    OPENTXS_EXPORT virtual bool operator!=(
-        const Identifier& rhs) const noexcept = 0;
+    virtual bool operator!=(const Identifier& rhs) const noexcept = 0;
     using ot_super::operator>;
-    OPENTXS_EXPORT virtual bool operator>(
-        const Identifier& rhs) const noexcept = 0;
+    virtual bool operator>(const Identifier& rhs) const noexcept = 0;
     using ot_super::operator<;
-    OPENTXS_EXPORT virtual bool operator<(
-        const Identifier& rhs) const noexcept = 0;
+    virtual bool operator<(const Identifier& rhs) const noexcept = 0;
     using ot_super::operator<=;
-    OPENTXS_EXPORT virtual bool operator<=(
-        const Identifier& rhs) const noexcept = 0;
+    virtual bool operator<=(const Identifier& rhs) const noexcept = 0;
     using ot_super::operator>=;
-    OPENTXS_EXPORT virtual bool operator>=(
-        const Identifier& rhs) const noexcept = 0;
+    virtual bool operator>=(const Identifier& rhs) const noexcept = 0;
 
 #ifndef SWIG
-    OPENTXS_EXPORT virtual void GetString(String& theStr) const = 0;
+    virtual void GetString(String& theStr) const = 0;
 #endif
-    OPENTXS_EXPORT virtual const ID& Type() const = 0;
+    virtual const ID& Type() const = 0;
 
-    OPENTXS_EXPORT virtual bool CalculateDigest(
+    virtual bool CalculateDigest(
         const ReadView bytes,
         const ID type = ID::blake2b) = 0;
-    OPENTXS_EXPORT virtual void SetString(const std::string& encoded) = 0;
+    virtual void SetString(const std::string& encoded) = 0;
 #ifndef SWIG
-    OPENTXS_EXPORT virtual void SetString(const String& encoded) = 0;
+    virtual void SetString(const String& encoded) = 0;
 #endif
     using ot_super::swap;
-    OPENTXS_EXPORT virtual void swap(Identifier& rhs) = 0;
+    virtual void swap(Identifier& rhs) = 0;
 
-    OPENTXS_EXPORT ~Identifier() override = default;
+    ~Identifier() override = default;
 
 protected:
     Identifier() = default;
@@ -159,8 +148,8 @@ private:
 namespace std
 {
 template <>
-struct less<opentxs::OTIdentifier> {
-    OPENTXS_EXPORT bool operator()(
+struct OPENTXS_EXPORT less<opentxs::OTIdentifier> {
+    bool operator()(
         const opentxs::OTIdentifier& lhs,
         const opentxs::OTIdentifier& rhs) const;
 };

@@ -25,26 +25,26 @@ namespace rpc
 {
 namespace request
 {
-class ListAccounts final : public Base
+class OPENTXS_EXPORT ListAccounts final : public Base
 {
 public:
-    OPENTXS_EXPORT static auto DefaultVersion() noexcept -> VersionNumber;
+    static auto DefaultVersion() noexcept -> VersionNumber;
 
-    OPENTXS_EXPORT auto FilterNotary() const noexcept -> const std::string&;
-    OPENTXS_EXPORT auto FilterNym() const noexcept -> const std::string&;
-    OPENTXS_EXPORT auto FilterUnit() const noexcept -> const std::string&;
+    auto FilterNotary() const noexcept -> const std::string&;
+    auto FilterNym() const noexcept -> const std::string&;
+    auto FilterUnit() const noexcept -> const std::string&;
 
     /// throws std::runtime_error for invalid constructor arguments
-    OPENTXS_EXPORT ListAccounts(
+    ListAccounts(
         SessionIndex session,
         const std::string& filterNym = {},
         const std::string& filterNotary = {},
         const std::string& filterUnit = {},
         const AssociateNyms& nyms = {}) noexcept(false);
     ListAccounts(const proto::RPCCommand& serialized) noexcept(false);
-    OPENTXS_EXPORT ListAccounts() noexcept;
+    ListAccounts() noexcept;
 
-    OPENTXS_EXPORT ~ListAccounts() final;
+    ~ListAccounts() final;
 
 private:
     ListAccounts(const ListAccounts&) = delete;

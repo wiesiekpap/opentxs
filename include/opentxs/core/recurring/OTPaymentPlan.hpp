@@ -117,7 +117,7 @@ namespace opentxs
  reserve accounts managed by the server, and you can then trade the basket
  currency on markets.)
  */
-class OTPaymentPlan : public OTAgreement
+class OPENTXS_EXPORT OTPaymentPlan : public OTAgreement
 {
 public:
     // *********** Methods for generating a payment plan: ****************
@@ -132,7 +132,7 @@ public:
 
     // Then call one (or both) of these:
 
-    OPENTXS_EXPORT bool SetInitialPayment(
+    bool SetInitialPayment(
         const Amount lAmount,
         const std::chrono::seconds tTimeUntilInitialPayment = {});  // default:
                                                                     // now.
@@ -142,7 +142,7 @@ public:
     //
     // Meaning: You can have an initial payment AND/OR a payment plan.
 
-    OPENTXS_EXPORT bool SetPaymentPlan(
+    bool SetPaymentPlan(
         const Amount lPaymentAmount,
         const std::chrono::seconds tTimeUntilPlanStart =
             std::chrono::hours{24 * 30},
@@ -255,7 +255,7 @@ public:
                    // this
                    // is where the ledger saves its contents
 
-    OPENTXS_EXPORT ~OTPaymentPlan() override;
+    ~OTPaymentPlan() override;
 
 private:
     friend api::implementation::Factory;

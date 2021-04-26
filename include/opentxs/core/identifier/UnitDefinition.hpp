@@ -65,16 +65,16 @@ namespace opentxs
 {
 namespace identifier
 {
-class UnitDefinition : virtual public opentxs::Identifier
+class OPENTXS_EXPORT UnitDefinition : virtual public opentxs::Identifier
 {
 public:
 #ifndef SWIG
-    OPENTXS_EXPORT static OTUnitID Factory();
-    OPENTXS_EXPORT static OTUnitID Factory(const std::string& rhs);
-    OPENTXS_EXPORT static OTUnitID Factory(const String& rhs);
+    static OTUnitID Factory();
+    static OTUnitID Factory(const std::string& rhs);
+    static OTUnitID Factory(const String& rhs);
 #endif
 
-    OPENTXS_EXPORT ~UnitDefinition() override = default;
+    ~UnitDefinition() override = default;
 
 protected:
     UnitDefinition() = default;

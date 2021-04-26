@@ -29,23 +29,23 @@ namespace opentxs
 {
 namespace contract
 {
-class Signable
+class OPENTXS_EXPORT Signable
 {
 public:
     using Signature = std::shared_ptr<proto::Signature>;
 
-    OPENTXS_EXPORT virtual std::string Alias() const = 0;
-    OPENTXS_EXPORT virtual OTIdentifier ID() const = 0;
-    OPENTXS_EXPORT virtual std::string Name() const = 0;
-    OPENTXS_EXPORT virtual Nym_p Nym() const = 0;
-    OPENTXS_EXPORT virtual const std::string& Terms() const = 0;
-    OPENTXS_EXPORT virtual OTData Serialize() const = 0;
-    OPENTXS_EXPORT virtual bool Validate() const = 0;
-    OPENTXS_EXPORT virtual VersionNumber Version() const = 0;
+    virtual std::string Alias() const = 0;
+    virtual OTIdentifier ID() const = 0;
+    virtual std::string Name() const = 0;
+    virtual Nym_p Nym() const = 0;
+    virtual const std::string& Terms() const = 0;
+    virtual OTData Serialize() const = 0;
+    virtual bool Validate() const = 0;
+    virtual VersionNumber Version() const = 0;
 
-    OPENTXS_EXPORT virtual void SetAlias(const std::string& alias) = 0;
+    virtual void SetAlias(const std::string& alias) = 0;
 
-    OPENTXS_EXPORT virtual ~Signable() = default;
+    virtual ~Signable() = default;
 
 protected:
     Signable() noexcept = default;
@@ -54,7 +54,7 @@ private:
 #ifdef _WIN32
 public:
 #endif
-    OPENTXS_EXPORT virtual Signable* clone() const noexcept = 0;
+    virtual Signable* clone() const noexcept = 0;
 #ifdef _WIN32
 private:
 #endif

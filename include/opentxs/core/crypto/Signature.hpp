@@ -29,17 +29,16 @@ using OTSignature = Pimpl<Signature>;
 
 namespace opentxs
 {
-class Signature : virtual public Armored
+class OPENTXS_EXPORT Signature : virtual public Armored
 {
 public:
-    OPENTXS_EXPORT static Pimpl<opentxs::Signature> Factory(
-        const api::internal::Core& api);
+    static Pimpl<opentxs::Signature> Factory(const api::internal::Core& api);
 
-    OPENTXS_EXPORT virtual const OTSignatureMetadata& getMetaData() const = 0;
+    virtual const OTSignatureMetadata& getMetaData() const = 0;
 
-    OPENTXS_EXPORT virtual OTSignatureMetadata& getMetaData() = 0;
+    virtual OTSignatureMetadata& getMetaData() = 0;
 
-    OPENTXS_EXPORT ~Signature() override = default;
+    ~Signature() override = default;
 
 protected:
     Signature() = default;
