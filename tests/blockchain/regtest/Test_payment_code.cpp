@@ -39,6 +39,10 @@
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/rpc/CommandType.hpp"
+#include "opentxs/rpc/ResponseCode.hpp"
+#include "opentxs/rpc/request/ListAccounts.hpp"
+#include "opentxs/rpc/response/ListAccounts.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
 #include "opentxs/ui/BalanceItem.hpp"
 #include "paymentcode/VectorsV3.hpp"
@@ -1265,6 +1269,61 @@ TEST_F(Regtest_payment_code, bob_after_receive_wallet)
     EXPECT_EQ(wallet.GetOutputs(blankNym, accountHD, type).size(), 0u);
     EXPECT_EQ(wallet.GetOutputs(blankNym, accountPC, type).size(), 0u);
 }
+
+#if OT_WITH_RPC
+TEST_F(Regtest_payment_code, rpc_account_list_alice)
+{
+    const auto index{client_1_.Instance()};
+    const auto command = ot::rpc::request::ListAccounts{index};
+    const auto base = ot_.RPC(command);
+    const auto& response = base.asListAccounts();
+    const auto& codes = response.ResponseCodes();
+    const auto expected = [&] {
+        auto out = std::set<std::string>{};
+        const auto& id = client_1_.Blockchain()
+                             .Account(alice_.ID(), test_chain_)
+                             .AccountID();
+        out.emplace(id.str());
+
+        return out;
+    }();
+    const auto& ids = response.AccountIDs();
+
+    ASSERT_EQ(codes.size(), 1);
+    EXPECT_EQ(codes.at(0).first, 0);
+    EXPECT_EQ(codes.at(0).second, ot::rpc::ResponseCode::success);
+    EXPECT_EQ(ids.size(), 1);
+
+    for (const auto& id : ids) { EXPECT_EQ(expected.count(id), 1); }
+}
+
+TEST_F(Regtest_payment_code, rpc_account_list_bob)
+{
+    const auto index{client_2_.Instance()};
+    const auto command = ot::rpc::request::ListAccounts{index};
+    const auto base = ot_.RPC(command);
+    const auto& response = base.asListAccounts();
+    const auto& codes = response.ResponseCodes();
+    const auto expected = [&] {
+        auto out = std::set<std::string>{};
+        const auto& id =
+            client_2_.Blockchain().Account(bob_.ID(), test_chain_).AccountID();
+        out.emplace(id.str());
+
+        return out;
+    }();
+    const auto& ids = response.AccountIDs();
+
+    ASSERT_EQ(codes.size(), 1);
+    EXPECT_EQ(codes.at(0).first, 0);
+    EXPECT_EQ(codes.at(0).second, ot::rpc::ResponseCode::success);
+    EXPECT_EQ(ids.size(), 1);
+
+    for (const auto& id : ids) { EXPECT_EQ(expected.count(id), 1); }
+}
+
+// TODO more rpc tests go here
+#endif  // OT_WITH_RPC
 
 TEST_F(Regtest_payment_code, second_send_to_bob)
 {

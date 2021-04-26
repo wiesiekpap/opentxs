@@ -161,6 +161,23 @@ Blockchain::Imp::Imp(
 {
 }
 
+auto Blockchain::Imp::AccountList(const identifier::Nym& nym) const noexcept
+    -> std::set<OTIdentifier>
+{
+    return balance_lists_.AccountList(nym);
+}
+
+auto Blockchain::Imp::AccountList(const Chain chain) const noexcept
+    -> std::set<OTIdentifier>
+{
+    return balance_lists_.AccountList(chain);
+}
+
+auto Blockchain::Imp::AccountList() const noexcept -> std::set<OTIdentifier>
+{
+    return balance_lists_.AccountList();
+}
+
 auto Blockchain::Imp::ActivityDescription(
     const identifier::Nym&,
     const Identifier&,
@@ -264,6 +281,16 @@ auto Blockchain::Imp::AssignLabel(
     }
 }
 
+auto Blockchain::Imp::BalanceList(const Chain chain) const noexcept(false)
+    -> const blockchain::internal::BalanceList&
+{
+    if (0 == opentxs::blockchain::DefinedChains().count(chain)) {
+        throw std::runtime_error("Invalid chain");
+    }
+
+    return balance_lists_.Get(chain);
+}
+
 auto Blockchain::Imp::BalanceTree(
     const identifier::Nym& nymID,
     const Chain chain) const noexcept(false)
@@ -273,11 +300,7 @@ auto Blockchain::Imp::BalanceTree(
         throw std::runtime_error("Invalid nym");
     }
 
-    if (Chain::Unknown == chain) { throw std::runtime_error("Invalid chain"); }
-
-    auto& balanceList = balance_lists_.Get(chain);
-
-    return balanceList.Nym(nymID);
+    return BalanceList(chain).Nym(nymID);
 }
 
 auto Blockchain::Imp::bip44_type(
@@ -745,6 +768,12 @@ auto Blockchain::Imp::LoadTransactionBitcoin(const Txid&) const noexcept
     return {};
 }
 
+auto Blockchain::Imp::LookupAccount(const Identifier& id) const noexcept
+    -> AccountData
+{
+    return balance_lists_.LookupAccount(id);
+}
+
 auto Blockchain::Imp::LookupContacts(const Data&) const noexcept -> ContactList
 {
     return {};
@@ -805,22 +834,7 @@ auto Blockchain::Imp::NewHDSubaccount(
         auto& tree = balance_lists_.Get(chain).Nym(nymID);
         tree.AddHDNode(accountPath, reason, accountID);
         accounts_.New(AccountType::HD, chain, accountID, nymID);
-
-        /* FIXME
-    #if OT_BLOCKCHAIN
-            {
-                auto work =
-                    api_.ZeroMQ().TaggedMessage(WorkType::BlockchainAccountCreated);
-                work->AddFrame(chain);
-                work->AddFrame(nymID);
-                work->AddFrame(AccountType::HD);
-                work->AddFrame(accountID);
-                new_blockchain_accounts_->Send(work);
-            }
-
-            balances_.RefreshBalance(nymID, chain);
-    #endif  // OT_BLOCKCHAIN
-        FIXME */
+        notify_new_account(accountID, nymID, chain, AccountType::HD);
 
         return accountID;
     } catch (...) {
@@ -890,22 +904,7 @@ auto Blockchain::Imp::new_payment_code(
         auto& tree = balance_lists_.Get(chain).Nym(nymID);
         tree.AddUpdatePaymentCode(local, remote, path, reason, accountID);
         accounts_.New(AccountType::PaymentCode, chain, accountID, nymID);
-
-        /* FIXME
-#if OT_BLOCKCHAIN
-        {
-            auto work =
-                api_.ZeroMQ().TaggedMessage(WorkType::BlockchainAccountCreated);
-            work->AddFrame(chain);
-            work->AddFrame(nymID);
-            work->AddFrame(AccountType::PaymentCode);
-            work->AddFrame(accountID);
-            new_blockchain_accounts_->Send(work);
-        }
-
-        balances_.RefreshBalance(nymID, chain);
-#endif  // OT_BLOCKCHAIN
-        FIXME */
+        notify_new_account(accountID, nymID, chain, AccountType::PaymentCode);
 
         return accountID;
     } catch (...) {

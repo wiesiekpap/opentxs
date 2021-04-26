@@ -31,6 +31,10 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/rpc/CommandType.hpp"
+#include "opentxs/rpc/ResponseCode.hpp"
+#include "opentxs/rpc/request/ListAccounts.hpp"
+#include "opentxs/rpc/response/ListAccounts.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
 #include "opentxs/ui/AccountList.hpp"
 #include "opentxs/ui/AccountListItem.hpp"
@@ -490,6 +494,35 @@ TEST_F(Regtest_fixture_hd, account_activity_after_receive)
     EXPECT_EQ(row->UUID(), transactions_.at(0)->asHex());
     EXPECT_TRUE(row->Last());
 }
+
+#if OT_WITH_RPC
+TEST_F(Regtest_fixture_hd, rpc_account_list)
+{
+    const auto index{client_1_.Instance()};
+    const auto command = ot::rpc::request::ListAccounts{index};
+    const auto base = ot_.RPC(command);
+    const auto& response = base.asListAccounts();
+    const auto& codes = response.ResponseCodes();
+    const auto expected = [&] {
+        auto out = std::set<std::string>{};
+        const auto& id =
+            client_1_.Blockchain().Account(alex_.ID(), test_chain_).AccountID();
+        out.emplace(id.str());
+
+        return out;
+    }();
+    const auto& ids = response.AccountIDs();
+
+    ASSERT_EQ(codes.size(), 1);
+    EXPECT_EQ(codes.at(0).first, 0);
+    EXPECT_EQ(codes.at(0).second, ot::rpc::ResponseCode::success);
+    EXPECT_EQ(ids.size(), 1);
+
+    for (const auto& id : ids) { EXPECT_EQ(expected.count(id), 1); }
+}
+
+// TODO more rpc tests go here
+#endif  // OT_WITH_RPC
 
 TEST_F(Regtest_fixture_hd, spend)
 {

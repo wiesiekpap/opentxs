@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "api/client/Blockchain.hpp"
+#include "api/client/blockchain/BalanceLists.hpp"
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
@@ -147,32 +148,14 @@ private:
         -> NymAccountMap&;
 };
 
-struct BalanceLists {
-    using Chain = Blockchain::Chain;
-
-    auto Get(const Chain chain) noexcept
-        -> client::blockchain::internal::BalanceList&;
-
-    BalanceLists(
-        const api::internal::Core& api,
-        api::client::internal::Blockchain& parent) noexcept;
-
-private:
-    const api::internal::Core& api_;
-    api::client::internal::Blockchain& parent_;
-    std::mutex lock_;
-    std::map<Chain, std::unique_ptr<client::blockchain::internal::BalanceList>>
-        lists_;
-};
-
 struct Blockchain::Imp {
     using IDLock = std::map<OTIdentifier, std::mutex>;
 
-    auto AccountList(const identifier::Nym& nymID, const Chain chain)
-        const noexcept -> std::set<OTIdentifier>
-    {
-        return accounts_.List(nymID, chain);
-    }
+    auto AccountList(const identifier::Nym& nymID) const noexcept
+        -> std::set<OTIdentifier>;
+    auto AccountList(const Chain chain) const noexcept
+        -> std::set<OTIdentifier>;
+    auto AccountList() const noexcept -> std::set<OTIdentifier>;
     virtual auto ActivityDescription(
         const identifier::Nym& nym,
         const Identifier& thread,
@@ -201,6 +184,8 @@ struct Blockchain::Imp {
     {
         return false;
     }
+    auto BalanceList(const Chain chain) const noexcept(false)
+        -> const blockchain::internal::BalanceList&;
     auto BalanceTree(const identifier::Nym& nymID, const Chain chain) const
         noexcept(false) -> const blockchain::internal::BalanceTree&;
     virtual auto BlockchainDB() const noexcept
@@ -240,6 +225,7 @@ struct Blockchain::Imp {
         -> std::unique_ptr<const Tx>;
     virtual auto LoadTransactionBitcoin(const Txid& txid) const noexcept
         -> std::unique_ptr<const Tx>;
+    auto LookupAccount(const Identifier& id) const noexcept -> AccountData;
     virtual auto LookupContacts(const Data& pubkeyHash) const noexcept
         -> ContactList;
     auto NewHDSubaccount(
@@ -310,6 +296,11 @@ struct Blockchain::Imp {
         const std::string& update,
         const std::string& publicUpdate) const noexcept -> bool;
     virtual auto Stop(const Chain type) const noexcept -> bool;
+    auto SubaccountList(const identifier::Nym& nymID, const Chain chain)
+        const noexcept -> std::set<OTIdentifier>
+    {
+        return accounts_.List(nymID, chain);
+    }
     auto Unconfirm(
         const blockchain::Key key,
         const opentxs::blockchain::block::Txid& tx,
@@ -373,5 +364,14 @@ protected:
         -> std::string;
     auto nym_mutex(const identifier::Nym& nym) const noexcept -> std::mutex&;
     auto validate_nym(const identifier::Nym& nymID) const noexcept -> bool;
+
+private:
+    virtual auto notify_new_account(
+        const Identifier& id,
+        const identifier::Nym& owner,
+        Chain chain,
+        AccountType type) const noexcept -> void
+    {
+    }
 };
 }  // namespace opentxs::api::client::implementation

@@ -311,15 +311,17 @@ auto AccountList::startup() noexcept -> void
 
 #if OT_BLOCKCHAIN
     for (const auto& chain : blockchain::SupportedChains()) {
-        if (0 <
-            Widget::api_.Blockchain().AccountList(primary_id_, chain).size()) {
+        if (0 < Widget::api_.Blockchain()
+                    .SubaccountList(primary_id_, chain)
+                    .size()) {
             subscribe(chain);
         }
     }
 
     constexpr auto chain{blockchain::Type::UnitTest};
 
-    if (0 < Widget::api_.Blockchain().AccountList(primary_id_, chain).size()) {
+    if (0 <
+        Widget::api_.Blockchain().SubaccountList(primary_id_, chain).size()) {
         subscribe(chain);
     }
 #endif  // OT_BLOCKCHAIN

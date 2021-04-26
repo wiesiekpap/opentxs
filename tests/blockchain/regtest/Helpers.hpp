@@ -776,6 +776,7 @@ protected:
     using OutpointMetadata = std::tuple<Key, Amount, Pattern>;
     using Expected = std::map<Outpoint, OutpointMetadata>;
 
+    const ot::api::Context& ot_;
     const ot::ArgList client_args_;
     const int client_count_;
     const ot::api::client::Manager& miner_;
@@ -1055,9 +1056,10 @@ protected:
     [[maybe_unused]] Regtest_fixture_base(
         const int clientCount,
         const ot::ArgList& clientArgs)
-        : client_args_(clientArgs)
+        : ot_(ot::Context())
+        , client_args_(clientArgs)
         , client_count_(clientCount)
-        , miner_(ot::Context().StartClient(
+        , miner_(ot_.StartClient(
               [] {
                   auto args = OTTestEnvironment::test_args_;
                   auto& level = args[OPENTXS_ARG_BLOCK_STORAGE_LEVEL];
@@ -1069,8 +1071,8 @@ protected:
                   return args;
               }(),
               0))
-        , client_1_(ot::Context().StartClient(client_args_, 1))
-        , client_2_(ot::Context().StartClient(client_args_, 2))
+        , client_1_(ot_.StartClient(client_args_, 1))
+        , client_2_(ot_.StartClient(client_args_, 2))
         , address_(init_address(miner_))
         , connection_(init_peer(client_count_, miner_, client_1_, client_2_))
         , default_([&](Height height) -> Transaction {

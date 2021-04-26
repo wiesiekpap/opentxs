@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "api/client/blockchain/BalanceTree.hpp"
+#include "api/client/blockchain/BalanceTreeIndex.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/api/client/blockchain/Factory.hpp"
@@ -27,6 +28,7 @@
 #include "opentxs/api/client/blockchain/HD.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
@@ -39,6 +41,7 @@ namespace opentxs::factory
 auto BlockchainBalanceTree(
     const api::internal::Core& api,
     const api::client::blockchain::internal::BalanceList& parent,
+    const api::client::internal::BalanceTreeIndex& index,
     const identifier::Nym& id,
     const std::set<OTIdentifier>& hd,
     const std::set<OTIdentifier>& imported,
@@ -47,7 +50,8 @@ auto BlockchainBalanceTree(
 {
     using ReturnType = api::client::blockchain::implementation::BalanceTree;
 
-    return std::make_unique<ReturnType>(api, parent, id, hd, imported, pc);
+    return std::make_unique<ReturnType>(
+        api, parent, index, id, hd, imported, pc);
 }
 }  // namespace opentxs::factory
 
@@ -56,14 +60,25 @@ namespace opentxs::api::client::blockchain::implementation
 BalanceTree::BalanceTree(
     const api::internal::Core& api,
     const internal::BalanceList& parent,
+    const client::internal::BalanceTreeIndex& index,
     const identifier::Nym& nym,
     const Accounts& hd,
     const Accounts& imported,
     const Accounts& paymentCode) noexcept
     : api_(api)
     , parent_(parent)
+    , account_index_(index)
     , chain_(parent.Chain())
     , nym_id_(nym)
+    , account_id_([&] {
+        auto out = api_.Factory().Identifier();
+        auto preimage = api_.Factory().Data(nym_id_->Bytes());
+        const auto chain = parent.Chain();
+        preimage->Concatenate(&chain, sizeof(chain));
+        out->CalculateDigest(preimage->Bytes());
+
+        return out;
+    }())
     , hd_(api_, *this)
     , imported_(api_, *this)
     , payment_code_(api_, *this)
@@ -180,6 +195,7 @@ auto BalanceTree::ClaimAccountID(
     internal::BalanceNode* node) const noexcept -> void
 {
     node_index_.Add(id, node);
+    account_index_.Register(AccountID(), nym_id_, chain_);
 }
 
 auto BalanceTree::find_next_element(

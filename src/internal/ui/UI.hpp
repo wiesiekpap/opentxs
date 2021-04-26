@@ -194,19 +194,6 @@ struct UnitList;
 struct UnitListItem;
 }  // namespace opentxs::ui::internal
 
-namespace opentxs::ui
-{
-auto AccountID(const api::Core& api, const blockchain::Type chain) noexcept
-    -> const Identifier&;
-auto AccountName(const blockchain::Type chain) noexcept -> std::string;
-auto Chain(const api::Core& api, const Identifier& account) noexcept
-    -> blockchain::Type;
-auto NotaryID(const api::Core& api, const blockchain::Type chain) noexcept
-    -> const identifier::Server&;
-auto UnitID(const api::Core& api, const blockchain::Type chain) noexcept
-    -> const identifier::UnitDefinition&;
-}  // namespace opentxs::ui
-
 namespace opentxs::ui::implementation
 {
 using CustomData = std::vector<void*>;

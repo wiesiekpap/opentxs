@@ -569,7 +569,7 @@ TEST_F(Test_BlockchainAPI, invalid_nym)
 
     EXPECT_TRUE(accountID->empty());
 
-    auto list = api_.Blockchain().AccountList(invalid_nym_, btc_chain_);
+    auto list = api_.Blockchain().SubaccountList(invalid_nym_, btc_chain_);
 
     EXPECT_EQ(list.size(), 0);
     EXPECT_EQ(list.count(accountID), 0);
@@ -592,7 +592,7 @@ TEST_F(Test_BlockchainAPI, invalid_nym)
 
     EXPECT_TRUE(accountID->empty());
 
-    list = api_.Blockchain().AccountList(nym_not_in_wallet_, btc_chain_);
+    list = api_.Blockchain().SubaccountList(nym_not_in_wallet_, btc_chain_);
 
     EXPECT_EQ(list.size(), 0);
     EXPECT_EQ(list.count(accountID), 0);
@@ -610,12 +610,12 @@ TEST_F(Test_BlockchainAPI, TestSeedRoot)
     EXPECT_FALSE(account_1_id_.empty());
     EXPECT_FALSE(account_2_id_.empty());
 
-    auto list = api_.Blockchain().AccountList(alex_, btc_chain_);
+    auto list = api_.Blockchain().SubaccountList(alex_, btc_chain_);
 
     EXPECT_EQ(list.size(), 1);
     EXPECT_EQ(list.count(account_1_id_), 1);
 
-    list = api_.Blockchain().AccountList(daniel_, btc_chain_);
+    list = api_.Blockchain().SubaccountList(daniel_, btc_chain_);
 
     EXPECT_EQ(list.size(), 1);
     EXPECT_EQ(list.count(account_2_id_), 1);
@@ -675,7 +675,7 @@ TEST_F(Test_BlockchainAPI, TestNym_AccountIdempotence)
 
     EXPECT_EQ(after.ID(), account_4_id_);
 
-    auto list = api_.Blockchain().AccountList(chris_, btc_chain_);
+    auto list = api_.Blockchain().SubaccountList(chris_, btc_chain_);
 
     EXPECT_EQ(list.size(), 2);
     EXPECT_EQ(list.count(account_3_id_), 1);
@@ -690,7 +690,7 @@ TEST_F(Test_BlockchainAPI, TestChainDiff)
 
     EXPECT_NE(account_5_id_, account_4_id_);
 
-    auto list = api_.Blockchain().AccountList(chris_, bch_chain_);
+    auto list = api_.Blockchain().SubaccountList(chris_, bch_chain_);
 
     EXPECT_EQ(list.size(), 1);
     EXPECT_EQ(list.count(account_5_id_), 1);
@@ -791,7 +791,7 @@ TEST_F(Test_BlockchainAPI, testBip32_SeedB)
 
     ASSERT_FALSE(account_6_id_.empty());
 
-    auto list = api_.Blockchain().AccountList(bob_, btc_chain_);
+    auto list = api_.Blockchain().SubaccountList(bob_, btc_chain_);
 
     EXPECT_EQ(list.size(), 1);
     EXPECT_EQ(list.count(account_6_id_), 1);
@@ -833,7 +833,7 @@ TEST_F(Test_BlockchainAPI, testBip44_ltc)
 
     ASSERT_FALSE(account_7_id_.empty());
 
-    auto list = api_.Blockchain().AccountList(chris_, ltc_chain_);
+    auto list = api_.Blockchain().SubaccountList(chris_, ltc_chain_);
 
     EXPECT_EQ(list.size(), 1);
     EXPECT_EQ(list.count(account_7_id_), 1);
@@ -848,27 +848,27 @@ TEST_F(Test_BlockchainAPI, testBip44_ltc)
 
 TEST_F(Test_BlockchainAPI, AccountList)
 {
-    auto list = api_.Blockchain().AccountList(alex_, bch_chain_);
+    auto list = api_.Blockchain().SubaccountList(alex_, bch_chain_);
 
     EXPECT_EQ(list.size(), 0);
 
-    list = api_.Blockchain().AccountList(alex_, ltc_chain_);
+    list = api_.Blockchain().SubaccountList(alex_, ltc_chain_);
 
     EXPECT_EQ(list.size(), 0);
 
-    list = api_.Blockchain().AccountList(bob_, bch_chain_);
+    list = api_.Blockchain().SubaccountList(bob_, bch_chain_);
 
     EXPECT_EQ(list.size(), 0);
 
-    list = api_.Blockchain().AccountList(bob_, ltc_chain_);
+    list = api_.Blockchain().SubaccountList(bob_, ltc_chain_);
 
     EXPECT_EQ(list.size(), 0);
 
-    list = api_.Blockchain().AccountList(daniel_, bch_chain_);
+    list = api_.Blockchain().SubaccountList(daniel_, bch_chain_);
 
     EXPECT_EQ(list.size(), 0);
 
-    list = api_.Blockchain().AccountList(daniel_, ltc_chain_);
+    list = api_.Blockchain().SubaccountList(daniel_, ltc_chain_);
 
     EXPECT_EQ(list.size(), 0);
 }
@@ -884,7 +884,7 @@ TEST_F(Test_BlockchainAPI, reserve_addresses)
 
     ASSERT_FALSE(accountID.empty());
 
-    auto list = api_.Blockchain().AccountList(nym, chain);
+    auto list = api_.Blockchain().SubaccountList(nym, chain);
 
     EXPECT_EQ(list.count(accountID), 1);
 
@@ -1313,7 +1313,7 @@ TEST_F(Test_BlockchainAPI, batch)
 
     ASSERT_FALSE(accountID.empty());
 
-    auto list = api_.Blockchain().AccountList(nym, chain);
+    auto list = api_.Blockchain().SubaccountList(nym, chain);
 
     EXPECT_EQ(list.count(accountID), 1);
 

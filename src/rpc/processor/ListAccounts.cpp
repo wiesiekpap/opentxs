@@ -15,8 +15,10 @@
 #include <vector>
 
 #include "internal/api/client/Client.hpp"
+#include "internal/core/Core.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
 #include "opentxs/rpc/request/Base.hpp"
@@ -38,6 +40,9 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
 
     try {
         const auto& session = client_session(base);
+        const auto nym = session.Factory().NymID(in.FilterNym());
+        const auto notary = session.Factory().ServerID(in.FilterNotary());
+        const auto unitID = session.Factory().UnitID(in.FilterUnit());
         const auto haveNym = (false == in.FilterNym().empty());
         const auto haveServer = (false == in.FilterNotary().empty());
         const auto haveUnit = (false == in.FilterUnit().empty());
@@ -48,10 +53,50 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
         const auto nymAndUnit = haveNym && (!haveServer) && haveUnit;
         const auto serverAndUnit = (!haveNym) && haveServer && haveUnit;
         const auto all = haveNym && haveServer && haveUnit;
-        const auto byNym = [&] {
+        const auto byNymOTX = [&] {
             auto out = std::set<std::string>{};
-            const auto id = session.Factory().NymID(in.FilterNym());
-            const auto ids = session.Storage().AccountsByOwner(id);
+            const auto ids = session.Storage().AccountsByOwner(nym);
+            std::transform(
+                ids.begin(),
+                ids.end(),
+                std::inserter(out, out.end()),
+                [](const auto& item) { return item->str(); });
+
+            return out;
+        };
+        const auto byNymBlockchain = [&] {
+            auto out = std::set<std::string>{};
+            const auto ids = session.Blockchain().AccountList(nym);
+            std::transform(
+                ids.begin(),
+                ids.end(),
+                std::inserter(out, out.end()),
+                [](const auto& item) { return item->str(); });
+
+            return out;
+        };
+        const auto byNym = [&] {
+            auto out = byNymOTX();
+            auto bc = byNymBlockchain();
+            std::move(bc.begin(), bc.end(), std::inserter(out, out.end()));
+
+            return out;
+        };
+        const auto byServerOTX = [&] {
+            auto out = std::set<std::string>{};
+            const auto ids = session.Storage().AccountsByServer(notary);
+            std::transform(
+                ids.begin(),
+                ids.end(),
+                std::inserter(out, out.end()),
+                [](const auto& item) { return item->str(); });
+
+            return out;
+        };
+        const auto byServerBlockchain = [&] {
+            auto out = std::set<std::string>{};
+            const auto chain = blockchain::Chain(session, notary);
+            const auto ids = session.Blockchain().AccountList(chain);
             std::transform(
                 ids.begin(),
                 ids.end(),
@@ -61,9 +106,27 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
             return out;
         };
         const auto byServer = [&] {
+            auto out = byServerOTX();
+            auto bc = byServerBlockchain();
+            std::move(bc.begin(), bc.end(), std::inserter(out, out.end()));
+
+            return out;
+        };
+        const auto byUnitOTX = [&] {
             auto out = std::set<std::string>{};
-            const auto id = session.Factory().ServerID(in.FilterNotary());
-            const auto ids = session.Storage().AccountsByServer(id);
+            const auto ids = session.Storage().AccountsByContract(unitID);
+            std::transform(
+                ids.begin(),
+                ids.end(),
+                std::inserter(out, out.end()),
+                [](const auto& item) { return item->str(); });
+
+            return out;
+        };
+        const auto byUnitBlockchain = [&] {
+            auto out = std::set<std::string>{};
+            const auto chain = blockchain::Chain(session, unitID);
+            const auto ids = session.Blockchain().AccountList(chain);
             std::transform(
                 ids.begin(),
                 ids.end(),
@@ -73,14 +136,9 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
             return out;
         };
         const auto byUnit = [&] {
-            auto out = std::set<std::string>{};
-            const auto id = session.Factory().UnitID(in.FilterNotary());
-            const auto ids = session.Storage().AccountsByContract(id);
-            std::transform(
-                ids.begin(),
-                ids.end(),
-                std::inserter(out, out.end()),
-                [](const auto& item) { return item->str(); });
+            auto out = byUnitOTX();
+            auto bc = byUnitBlockchain();
+            std::move(bc.begin(), bc.end(), std::inserter(out, out.end()));
 
             return out;
         };
@@ -139,12 +197,18 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
             auto data = byUnit();
             std::move(data.begin(), data.end(), std::back_inserter(ids));
         } else {
-            const auto data = session.Storage().AccountList();
+            const auto otx = session.Storage().AccountList();
+            const auto bc = session.Blockchain().AccountList();
             std::transform(
-                data.begin(),
-                data.end(),
+                otx.begin(),
+                otx.end(),
                 std::back_inserter(ids),
                 [](const auto& item) { return item.first; });
+            std::transform(
+                bc.begin(),
+                bc.end(),
+                std::back_inserter(ids),
+                [](const auto& item) { return item->str(); });
         }
 
         return reply(status(ids));

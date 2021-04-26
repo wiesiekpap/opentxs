@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 
+#include "api/client/blockchain/BalanceTreeIndex.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/client/blockchain/Blockchain.hpp"
@@ -28,12 +29,13 @@ namespace opentxs::factory
 auto BlockchainBalanceList(
     const api::internal::Core& api,
     const api::client::internal::Blockchain& parent,
+    const api::client::internal::BalanceTreeIndex& index,
     const blockchain::Type chain) noexcept
     -> std::unique_ptr<api::client::blockchain::internal::BalanceList>
 {
     using ReturnType = api::client::blockchain::implementation::BalanceList;
 
-    return std::make_unique<ReturnType>(api, parent, chain);
+    return std::make_unique<ReturnType>(api, parent, index, chain);
 }
 }  // namespace opentxs::factory
 
@@ -41,9 +43,11 @@ namespace opentxs::api::client::blockchain::implementation
 {
 BalanceList::BalanceList(
     const api::internal::Core& api,
-    const api::client::internal::Blockchain& parent,
+    const client::internal::Blockchain& parent,
+    const client::internal::BalanceTreeIndex& index,
     const opentxs::blockchain::Type chain) noexcept
     : parent_(parent)
+    , account_index_(index)
     , api_(api)
     , chain_(chain)
     , lock_()
@@ -107,7 +111,7 @@ auto BalanceList::factory(
     -> std::unique_ptr<internal::BalanceTree>
 {
     return factory::BlockchainBalanceTree(
-        api_, *this, nym, hd, {}, paymentCode);
+        api_, *this, account_index_, nym, hd, {}, paymentCode);
 }
 
 auto BalanceList::get_or_create(

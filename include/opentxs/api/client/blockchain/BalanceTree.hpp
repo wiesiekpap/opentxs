@@ -28,6 +28,12 @@ class PaymentCode;
 }  // namespace client
 }  // namespace api
 
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
+
+class Identifier;
 class PasswordPrompt;
 class PaymentCode;
 }  // namespace opentxs
@@ -103,6 +109,7 @@ public:
 
     using Element = blockchain::BalanceNode::Element;
 
+    OPENTXS_EXPORT virtual const Identifier& AccountID() const noexcept = 0;
     OPENTXS_EXPORT virtual const HDAccounts& GetHD() const noexcept = 0;
     /// Throws std::out_of_range if no keys are available
     OPENTXS_EXPORT virtual const Element& GetNextChangeKey(
