@@ -6,9 +6,181 @@
 #include "1_Internal.hpp"          // IWYU pragma: associated
 #include "internal/core/Core.hpp"  // IWYU pragma: associated
 
+#include <map>
+#include <mutex>
+#include <set>
+#include <utility>
+
+#include "internal/blockchain/Params.hpp"
+#include "opentxs/Pimpl.hpp"
+#include "opentxs/Types.hpp"
+#include "opentxs/api/Core.hpp"
+#include "opentxs/api/Factory.hpp"
+#include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/AddressType.hpp"
+#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/protobuf/ContractEnums.pb.h"
 #include "util/Container.hpp"
+
+namespace opentxs::blockchain
+{
+auto AccountID(const api::Core& api, const blockchain::Type chain) noexcept
+    -> const Identifier&
+{
+    static std::mutex mutex_;
+    static auto map = std::map<blockchain::Type, OTIdentifier>{};
+
+    Lock lock(mutex_);
+
+    {
+        auto it = map.find(chain);
+
+        if (map.end() != it) { return it->second; }
+    }
+
+    auto [it, notUsed] = map.emplace(chain, api.Factory().Identifier());
+    auto& output = it->second;
+    const auto preimage = std::string{"blockchain-account-"} +
+                          std::to_string(static_cast<std::uint32_t>(chain));
+    output->CalculateDigest(preimage);
+
+    return output;
+}
+
+auto AccountName([[maybe_unused]] const blockchain::Type chain) noexcept
+    -> std::string
+{
+    return "This device";
+}
+
+auto Chain(const api::Core& api, const Identifier& account) noexcept
+    -> blockchain::Type
+{
+    static const auto data = [&] {
+        auto out = std::map<OTIdentifier, blockchain::Type>{};
+
+        for (const auto& chain : blockchain::SupportedChains()) {
+            out.emplace(AccountID(api, chain), chain);
+        }
+
+        constexpr auto chain{blockchain::Type::UnitTest};
+        out.emplace(AccountID(api, chain), chain);
+
+        return out;
+    }();
+
+    try {
+
+        return data.at(account);
+    } catch (...) {
+
+        return blockchain::Type::Unknown;
+    }
+}
+
+auto Chain(const api::Core& api, const identifier::Server& id) noexcept
+    -> blockchain::Type
+{
+    static const auto data = [&] {
+        auto out = std::map<OTServerID, blockchain::Type>{};
+
+        for (const auto& chain : blockchain::SupportedChains()) {
+            out.emplace(NotaryID(api, chain), chain);
+        }
+
+        constexpr auto chain{blockchain::Type::UnitTest};
+        out.emplace(NotaryID(api, chain), chain);
+
+        return out;
+    }();
+
+    try {
+
+        return data.at(id);
+    } catch (...) {
+
+        return blockchain::Type::Unknown;
+    }
+}
+
+auto Chain(const api::Core& api, const identifier::UnitDefinition& id) noexcept
+    -> blockchain::Type
+{
+    static const auto data = [&] {
+        auto out = std::map<OTUnitID, blockchain::Type>{};
+
+        for (const auto& chain : blockchain::SupportedChains()) {
+            out.emplace(UnitID(api, chain), chain);
+        }
+
+        constexpr auto chain{blockchain::Type::UnitTest};
+        out.emplace(UnitID(api, chain), chain);
+
+        return out;
+    }();
+
+    try {
+
+        return data.at(id);
+    } catch (...) {
+
+        return blockchain::Type::Unknown;
+    }
+}
+
+auto NotaryID(const api::Core& api, const blockchain::Type chain) noexcept
+    -> const identifier::Server&
+{
+    static std::mutex mutex_;
+    static auto map = std::map<blockchain::Type, OTServerID>{};
+
+    Lock lock(mutex_);
+
+    {
+        auto it = map.find(chain);
+
+        if (map.end() != it) { return it->second; }
+    }
+
+    auto [it, notUsed] = map.emplace(chain, api.Factory().ServerID());
+    auto& output = it->second;
+    const auto preimage = std::string{"blockchain-"} +
+                          std::to_string(static_cast<std::uint32_t>(chain));
+    output->CalculateDigest(preimage);
+
+    return output;
+}
+
+auto UnitID(const api::Core& api, const blockchain::Type chain) noexcept
+    -> const identifier::UnitDefinition&
+{
+    static std::mutex mutex_;
+    static auto map = std::map<blockchain::Type, OTUnitID>{};
+
+    Lock lock(mutex_);
+
+    {
+        auto it = map.find(chain);
+
+        if (map.end() != it) { return it->second; }
+    }
+
+    auto [it, notUsed] = map.emplace(chain, api.Factory().UnitID());
+    auto& output = it->second;
+
+    try {
+        const auto preimage =
+            blockchain::params::Data::Chains().at(chain).display_ticker_;
+        output->CalculateDigest(preimage);
+    } catch (...) {
+    }
+
+    return output;
+}
+}  // namespace opentxs::blockchain
 
 namespace opentxs::core::internal
 {

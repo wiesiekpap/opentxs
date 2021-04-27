@@ -3,6 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
 // IWYU pragma: no_include "opentxs/core/AddressType.hpp"
 
 #pragma once
@@ -10,8 +11,10 @@
 #include <iosfwd>
 #include <map>
 #include <memory>
+#include <string>
 
 #include "opentxs/Bytes.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/NymFile.hpp"
@@ -27,6 +30,13 @@ namespace api
 class Core;
 }  // namespace api
 
+namespace identifier
+{
+class Server;
+class UnitDefinition;
+}  // namespace identifier
+
+class Identifier;
 class PasswordPrompt;
 class Secret;
 }  // namespace opentxs
@@ -56,6 +66,21 @@ struct NymFile : virtual public opentxs::NymFile {
     virtual auto SaveSignedNymFile(const PasswordPrompt& reason) -> bool = 0;
 };
 }  // namespace opentxs::internal
+
+namespace opentxs::blockchain
+{
+auto AccountID(const api::Core& api, const Type chain) noexcept
+    -> const Identifier&;
+auto AccountName(const Type chain) noexcept -> std::string;
+auto Chain(const api::Core& api, const Identifier& account) noexcept -> Type;
+auto Chain(const api::Core& api, const identifier::Server& id) noexcept -> Type;
+auto Chain(const api::Core& api, const identifier::UnitDefinition& id) noexcept
+    -> Type;
+auto NotaryID(const api::Core& api, const Type chain) noexcept
+    -> const identifier::Server&;
+auto UnitID(const api::Core& api, const Type chain) noexcept
+    -> const identifier::UnitDefinition&;
+}  // namespace opentxs::blockchain
 
 namespace opentxs::core::internal
 {

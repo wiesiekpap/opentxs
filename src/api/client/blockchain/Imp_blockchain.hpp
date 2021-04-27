@@ -310,6 +310,11 @@ private:
     auto load_transaction(const Lock& lock, const TxidHex& id) const noexcept
         -> std::unique_ptr<
             opentxs::blockchain::block::bitcoin::internal::Transaction>;
+    auto notify_new_account(
+        const Identifier& id,
+        const identifier::Nym& owner,
+        Chain chain,
+        Blockchain::AccountType type) const noexcept -> void final;
     auto publish_chain_state(Chain type, bool state) const -> void;
     auto reconcile_activity_threads(const Lock& lock, const Txid& txid)
         const noexcept -> bool;

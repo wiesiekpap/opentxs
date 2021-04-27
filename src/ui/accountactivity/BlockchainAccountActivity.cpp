@@ -79,10 +79,11 @@ BlockchainAccountActivity::BlockchainAccountActivity(
           accountID,
           AccountType::Blockchain,
           cb,
-          display::Definition{blockchain::params::Data::Chains()
-                                  .at(ui::Chain(api, accountID))
-                                  .scales_})
-    , chain_(ui::Chain(Widget::api_, accountID))
+          display::Definition{
+              blockchain::params::Data::Chains()
+                  .at(opentxs::blockchain::Chain(api, accountID))
+                  .scales_})
+    , chain_(opentxs::blockchain::Chain(Widget::api_, accountID))
     , confirmed_(0)
     , balance_cb_(zmq::ListenCallback::Factory(
           [this](const auto& in) { pipeline_->Push(in); }))

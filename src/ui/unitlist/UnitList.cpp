@@ -188,7 +188,7 @@ auto UnitList::startup() noexcept -> void
 
 #if OT_BLOCKCHAIN
     for (const auto& chain : blockchain::SupportedChains()) {
-        if (0 < api_.Blockchain().AccountList(primary_id_, chain).size()) {
+        if (0 < api_.Blockchain().SubaccountList(primary_id_, chain).size()) {
             auto out = api_.ZeroMQ().TaggedMessage(WorkType::BlockchainBalance);
             out->AddFrame(chain);
             blockchain_balance_->Send(out);

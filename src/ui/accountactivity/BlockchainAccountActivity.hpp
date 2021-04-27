@@ -91,7 +91,7 @@ class BlockchainAccountActivity final : public AccountActivity
 public:
     auto ContractID() const noexcept -> std::string final
     {
-        return ui::UnitID(Widget::api_, chain_).str();
+        return opentxs::blockchain::UnitID(Widget::api_, chain_).str();
     }
     using AccountActivity::DepositAddress;
     auto DepositAddress() const noexcept -> std::string final
@@ -111,11 +111,11 @@ public:
     }
     auto Name() const noexcept -> std::string final
     {
-        return ui::AccountName(chain_);
+        return opentxs::blockchain::AccountName(chain_);
     }
     auto NotaryID() const noexcept -> std::string final
     {
-        return ui::NotaryID(Widget::api_, chain_).str();
+        return opentxs::blockchain::NotaryID(Widget::api_, chain_).str();
     }
     auto NotaryName() const noexcept -> std::string final
     {

@@ -64,10 +64,33 @@ auto Blockchain::Account(const identifier::Nym& nymID, const Chain chain) const
     return BalanceTree(nymID, chain);
 }
 
-auto Blockchain::AccountList(const identifier::Nym& nymID, const Chain chain)
+auto Blockchain::Accounts(const Chain chain) const noexcept(false)
+    -> const blockchain::BalanceList&
+{
+    return imp_->BalanceList(chain);
+}
+
+auto Blockchain::SubaccountList(const identifier::Nym& nymID, const Chain chain)
     const noexcept -> std::set<OTIdentifier>
 {
-    return imp_->AccountList(nymID, chain);
+    return imp_->SubaccountList(nymID, chain);
+}
+
+auto Blockchain::AccountList(const identifier::Nym& nymID) const noexcept
+    -> std::set<OTIdentifier>
+{
+    return imp_->AccountList(nymID);
+}
+
+auto Blockchain::AccountList(const Chain chain) const noexcept
+    -> std::set<OTIdentifier>
+{
+    return imp_->AccountList(chain);
+}
+
+auto Blockchain::AccountList() const noexcept -> std::set<OTIdentifier>
+{
+    return imp_->AccountList();
 }
 
 auto Blockchain::ActivityDescription(
@@ -232,6 +255,12 @@ auto Blockchain::LoadTransactionBitcoin(const Txid& txid) const noexcept
     -> std::unique_ptr<const Tx>
 {
     return imp_->LoadTransactionBitcoin(txid);
+}
+
+auto Blockchain::LookupAccount(const Identifier& id) const noexcept
+    -> AccountData
+{
+    return imp_->LookupAccount(id);
 }
 
 auto Blockchain::LookupContacts(const std::string& address) const noexcept

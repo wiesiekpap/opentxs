@@ -17,6 +17,7 @@
 
 #include "internal/api/client/Client.hpp"
 #include "internal/api/client/Factory.hpp"
+#include "internal/core/Core.hpp"
 #include "internal/ui/UI.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -516,19 +517,19 @@ auto UI::ActivityThreadQt(
 auto UI::BlockchainAccountID(
     const opentxs::blockchain::Type chain) const noexcept -> const Identifier&
 {
-    return ui::AccountID(api_, chain);
+    return opentxs::blockchain::AccountID(api_, chain);
 }
 
 auto UI::BlockchainAccountToChain(const Identifier& account) const noexcept
     -> opentxs::blockchain::Type
 {
-    return ui::Chain(api_, account);
+    return opentxs::blockchain::Chain(api_, account);
 }
 
 auto UI::BlockchainNotaryID(const opentxs::blockchain::Type chain)
     const noexcept -> const identifier::Server&
 {
-    return ui::NotaryID(api_, chain);
+    return opentxs::blockchain::NotaryID(api_, chain);
 }
 
 auto UI::blockchain_selection(
@@ -591,7 +592,7 @@ auto UI::BlockchainSelectionQt(
 auto UI::BlockchainUnitID(const opentxs::blockchain::Type chain) const noexcept
     -> const identifier::UnitDefinition&
 {
-    return ui::UnitID(api_, chain);
+    return opentxs::blockchain::UnitID(api_, chain);
 }
 
 #endif  // OT_BLOCKCHAIN
@@ -710,7 +711,7 @@ auto UI::Init() noexcept -> void {}
 auto UI::is_blockchain_account(const Identifier& id) const noexcept
     -> std::optional<opentxs::blockchain::Type>
 {
-    const auto type = ui::Chain(api_, id);
+    const auto type = opentxs::blockchain::Chain(api_, id);
 
     if (opentxs::blockchain::Type::Unknown == type) { return {}; }
 

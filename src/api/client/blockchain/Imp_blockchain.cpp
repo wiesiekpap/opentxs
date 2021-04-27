@@ -609,6 +609,25 @@ auto BlockchainImp::LookupContacts(const Data& pubkeyHash) const noexcept
     return db_.LookupContact(pubkeyHash);
 }
 
+auto BlockchainImp::notify_new_account(
+    const Identifier& id,
+    const identifier::Nym& owner,
+    Chain chain,
+    Blockchain::AccountType type) const noexcept -> void
+{
+    {
+        auto work =
+            api_.ZeroMQ().TaggedMessage(WorkType::BlockchainAccountCreated);
+        work->AddFrame(chain);
+        work->AddFrame(owner);
+        work->AddFrame(type);
+        work->AddFrame(id);
+        new_blockchain_accounts_->Send(work);
+    }
+
+    balances_.RefreshBalance(owner, chain);
+}
+
 auto BlockchainImp::ProcessContact(const Contact& contact) const noexcept
     -> bool
 {

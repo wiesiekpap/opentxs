@@ -48,7 +48,7 @@ namespace rpc
 {
 namespace response
 {
-auto Factory(ReadView serialized) noexcept -> Base;
+auto OPENTXS_EXPORT Factory(ReadView serialized) noexcept -> Base;
 
 class OPENTXS_EXPORT Base
 {

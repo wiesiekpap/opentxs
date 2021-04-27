@@ -28,6 +28,7 @@ struct PaymentCode;
 
 namespace internal
 {
+class BalanceTreeIndex;
 struct Blockchain;
 }  // namespace internal
 }  // namespace client
@@ -61,11 +62,13 @@ namespace opentxs::factory
 auto BlockchainBalanceList(
     const api::internal::Core& api,
     const api::client::internal::Blockchain& parent,
+    const api::client::internal::BalanceTreeIndex& index,
     const blockchain::Type chain) noexcept
     -> std::unique_ptr<api::client::blockchain::internal::BalanceList>;
 auto BlockchainBalanceTree(
     const api::internal::Core& api,
     const api::client::blockchain::internal::BalanceList& parent,
+    const api::client::internal::BalanceTreeIndex& index,
     const identifier::Nym& id,
     const std::set<OTIdentifier>& hdAccounts,
     const std::set<OTIdentifier>& importedAccounts,

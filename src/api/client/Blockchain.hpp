@@ -39,6 +39,7 @@
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/client/blockchain/BalanceList.hpp"
 #include "opentxs/api/client/blockchain/BalanceNode.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -134,8 +135,13 @@ public:
 
     auto Account(const identifier::Nym& nymID, const Chain chain) const
         noexcept(false) -> const blockchain::BalanceTree& final;
-    auto AccountList(const identifier::Nym& nymID, const Chain chain)
-        const noexcept -> std::set<OTIdentifier> final;
+    auto Accounts(const Chain chain) const noexcept(false)
+        -> const blockchain::BalanceList& final;
+    auto AccountList(const identifier::Nym& nymID) const noexcept
+        -> std::set<OTIdentifier> final;
+    auto AccountList(const Chain chain) const noexcept
+        -> std::set<OTIdentifier> final;
+    auto AccountList() const noexcept -> std::set<OTIdentifier> final;
     auto ActivityDescription(
         const identifier::Nym& nym,
         const Identifier& thread,
@@ -195,6 +201,8 @@ public:
         -> std::unique_ptr<const Tx> final;
     auto LoadTransactionBitcoin(const Txid& id) const noexcept
         -> std::unique_ptr<const Tx> final;
+    auto LookupAccount(const Identifier& id) const noexcept
+        -> AccountData final;
     auto LookupContacts(const std::string& address) const noexcept
         -> ContactList final;
     auto LookupContacts(const Data& pubkeyHash) const noexcept
@@ -265,6 +273,8 @@ public:
         const std::string& updateEndpoint,
         const std::string& publicUpdateEndpoint) const noexcept -> bool final;
     auto Stop(const Chain type) const noexcept -> bool final;
+    auto SubaccountList(const identifier::Nym& nymID, const Chain chain)
+        const noexcept -> std::set<OTIdentifier> final;
     auto UpdateBalance(
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::Balance balance) const noexcept

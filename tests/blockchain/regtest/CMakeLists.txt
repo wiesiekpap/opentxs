@@ -30,3 +30,21 @@ endif()
 set_tests_properties(
   unittests-opentxs-blockchain-regtest-stress PROPERTIES DISABLED TRUE
 )
+
+if(OT_ENABLE_RPC)
+  target_compile_definitions(
+    unittests-opentxs-blockchain-regtest-send-receive-hd
+    PRIVATE -DOT_WITH_RPC=1
+  )
+  target_compile_definitions(
+    unittests-opentxs-blockchain-regtest-payment-code PRIVATE -DOT_WITH_RPC=1
+  )
+else()
+  target_compile_definitions(
+    unittests-opentxs-blockchain-regtest-send-receive-hd
+    PRIVATE -DOT_WITH_RPC=0
+  )
+  target_compile_definitions(
+    unittests-opentxs-blockchain-regtest-payment-code PRIVATE -DOT_WITH_RPC=0
+  )
+endif()

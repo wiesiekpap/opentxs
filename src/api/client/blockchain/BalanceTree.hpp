@@ -40,6 +40,14 @@ namespace opentxs
 {
 namespace api
 {
+namespace client
+{
+namespace internal
+{
+class BalanceTreeIndex;
+}  // namespace internal
+}  // namespace client
+
 namespace internal
 {
 struct Core;
@@ -62,6 +70,10 @@ class BalanceTree final : public internal::BalanceTree
 public:
     using Accounts = std::set<OTIdentifier>;
 
+    auto AccountID() const noexcept -> const Identifier& final
+    {
+        return account_id_;
+    }
     auto AssociateTransaction(
         const std::vector<Activity>& unspent,
         const std::vector<Activity>& spent,
@@ -158,6 +170,7 @@ public:
     BalanceTree(
         const api::internal::Core& api,
         const internal::BalanceList& parent,
+        const client::internal::BalanceTreeIndex& index,
         const identifier::Nym& nym,
         const Accounts& hd,
         const Accounts& imported,
@@ -300,8 +313,10 @@ private:
 
     const api::internal::Core& api_;
     const internal::BalanceList& parent_;
+    const client::internal::BalanceTreeIndex& account_index_;
     const opentxs::blockchain::Type chain_;
     const OTNymID nym_id_;
+    const OTIdentifier account_id_;
     HDNodes hd_;
     ImportedNodes imported_;
     PaymentCodeNodes payment_code_;

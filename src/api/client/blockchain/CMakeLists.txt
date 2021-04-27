@@ -20,6 +20,8 @@ add_library(
   "BalanceTree.cpp"
   "BalanceTree.hpp"
   "BalanceTree.tpp"
+  "BalanceTreeIndex.cpp"
+  "BalanceTreeIndex.hpp"
   "Blockchain.cpp"
   "Deterministic.cpp"
   "Deterministic.hpp"

@@ -29,6 +29,14 @@ namespace opentxs
 {
 namespace api
 {
+namespace client
+{
+namespace internal
+{
+class BalanceTreeIndex;
+}  // namespace internal
+}  // namespace client
+
 namespace internal
 {
 struct Core;
@@ -70,6 +78,11 @@ public:
     {
         return const_iterator(this, trees_.size());
     }
+    auto Nym(const identifier::Nym& id) const noexcept
+        -> const internal::BalanceTree& final
+    {
+        return const_cast<BalanceList&>(*this).Nym(id);
+    }
     auto Parent() const noexcept -> const client::internal::Blockchain& final
     {
         return parent_;
@@ -86,7 +99,8 @@ public:
 
     BalanceList(
         const api::internal::Core& api,
-        const api::client::internal::Blockchain& parent,
+        const client::internal::Blockchain& parent,
+        const client::internal::BalanceTreeIndex& index,
         const opentxs::blockchain::Type chain) noexcept;
 
     ~BalanceList() final = default;
@@ -95,6 +109,7 @@ private:
     using Accounts = std::set<OTIdentifier>;
 
     const client::internal::Blockchain& parent_;
+    const client::internal::BalanceTreeIndex& account_index_;
     const api::internal::Core& api_;
     const opentxs::blockchain::Type chain_;
     mutable std::mutex lock_;
