@@ -44,7 +44,7 @@ struct DestinationValidator::Imp {
     static auto Blockchain(
         const api::client::Manager& api,
         DestinationValidator& main,
-        blockchain::Type chain,
+        const Identifier& account,
         Parent& parent) noexcept -> std::unique_ptr<Imp>;
     static auto Custodial(
         const api::client::Manager& api,

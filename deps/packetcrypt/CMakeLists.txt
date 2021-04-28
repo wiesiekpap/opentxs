@@ -85,4 +85,7 @@ set_target_properties(
     CXX_INCLUDE_WHAT_YOU_USE ""
     C_STANDARD 11
 )
+if(NOT MSVC)
+  target_compile_options(packetcrypt PRIVATE "-fwrapv")
+endif()
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:packetcrypt>)

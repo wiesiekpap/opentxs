@@ -47,7 +47,27 @@ auto CheckProto_1(const AccountEvent& input, const bool silent) -> bool
 auto CheckProto_2(const AccountEvent& input, const bool silent) -> bool
 {
     OPTIONAL_IDENTIFIER(id);
-    CHECK_IDENTIFIER(workflow);
+
+    switch (input.type()) {
+        case ACCOUNTEVENT_INCOMINGTRANSFER:
+        case ACCOUNTEVENT_INCOMINGINVOICE:
+        case ACCOUNTEVENT_INCOMINGVOUCHER:
+        case ACCOUNTEVENT_INCOMINGCHEQUE:
+        case ACCOUNTEVENT_OUTGOINGCHEQUE:
+        case ACCOUNTEVENT_OUTGOINGTRANSFER:
+        case ACCOUNTEVENT_OUTGOINGINVOICE:
+        case ACCOUNTEVENT_OUTGOINGVOUCHER: {
+            CHECK_IDENTIFIER(workflow);
+        } break;
+        case ACCOUNTEVENT_INCOMINGBLOCKCHAIN:
+        case ACCOUNTEVENT_OUTGOINGBLOCKCHAIN: {
+            OPTIONAL_IDENTIFIER(workflow);
+        } break;
+        case ACCOUNTEVENT_ERROR:
+        default: {
+            FAIL_2("Invalid type", input.type());
+        }
+    }
 
     switch (input.type()) {
         case ACCOUNTEVENT_INCOMINGTRANSFER:
@@ -59,7 +79,9 @@ auto CheckProto_2(const AccountEvent& input, const bool silent) -> bool
         case ACCOUNTEVENT_OUTGOINGCHEQUE:
         case ACCOUNTEVENT_OUTGOINGTRANSFER:
         case ACCOUNTEVENT_OUTGOINGINVOICE:
-        case ACCOUNTEVENT_OUTGOINGVOUCHER: {
+        case ACCOUNTEVENT_OUTGOINGVOUCHER:
+        case ACCOUNTEVENT_INCOMINGBLOCKCHAIN:
+        case ACCOUNTEVENT_OUTGOINGBLOCKCHAIN: {
             OPTIONAL_IDENTIFIER(contact);
         } break;
         case ACCOUNTEVENT_ERROR:

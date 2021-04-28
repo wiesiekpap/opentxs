@@ -19,7 +19,6 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/AddressType.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/protobuf/ContractEnums.pb.h"
@@ -27,58 +26,10 @@
 
 namespace opentxs::blockchain
 {
-auto AccountID(const api::Core& api, const blockchain::Type chain) noexcept
-    -> const Identifier&
-{
-    static std::mutex mutex_;
-    static auto map = std::map<blockchain::Type, OTIdentifier>{};
-
-    Lock lock(mutex_);
-
-    {
-        auto it = map.find(chain);
-
-        if (map.end() != it) { return it->second; }
-    }
-
-    auto [it, notUsed] = map.emplace(chain, api.Factory().Identifier());
-    auto& output = it->second;
-    const auto preimage = std::string{"blockchain-account-"} +
-                          std::to_string(static_cast<std::uint32_t>(chain));
-    output->CalculateDigest(preimage);
-
-    return output;
-}
-
 auto AccountName([[maybe_unused]] const blockchain::Type chain) noexcept
     -> std::string
 {
     return "This device";
-}
-
-auto Chain(const api::Core& api, const Identifier& account) noexcept
-    -> blockchain::Type
-{
-    static const auto data = [&] {
-        auto out = std::map<OTIdentifier, blockchain::Type>{};
-
-        for (const auto& chain : blockchain::SupportedChains()) {
-            out.emplace(AccountID(api, chain), chain);
-        }
-
-        constexpr auto chain{blockchain::Type::UnitTest};
-        out.emplace(AccountID(api, chain), chain);
-
-        return out;
-    }();
-
-    try {
-
-        return data.at(account);
-    } catch (...) {
-
-        return blockchain::Type::Unknown;
-    }
 }
 
 auto Chain(const api::Core& api, const identifier::Server& id) noexcept

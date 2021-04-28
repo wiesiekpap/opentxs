@@ -64,7 +64,8 @@ protected:
     const ot::identity::Nym& bob_;
     const ot::api::client::blockchain::HD& alice_account_;
     const ot::api::client::blockchain::HD& bob_account_;
-    const ot::Identifier& expected_account_;
+    const ot::Identifier& expected_account_alice_;
+    const ot::Identifier& expected_account_bob_;
     const ot::identifier::Server& expected_notary_;
     const ot::identifier::UnitDefinition& expected_unit_;
     const std::string expected_display_unit_;
@@ -190,7 +191,8 @@ protected:
                            .Account(bob_.ID(), test_chain_)
                            .GetHD()
                            .at(0))
-        , expected_account_(client_1_.UI().BlockchainAccountID(test_chain_))
+        , expected_account_alice_(alice_account_.Parent().AccountID())
+        , expected_account_bob_(bob_account_.Parent().AccountID())
         , expected_notary_(client_1_.UI().BlockchainNotaryID(test_chain_))
         , expected_unit_(client_1_.UI().BlockchainUnitID(test_chain_))
         , expected_display_unit_(u8"UNITTEST")
@@ -502,7 +504,7 @@ TEST_F(Regtest_stress, bob_after_receive)
     account_activity_.expected_ += transaction_count_ + 1u;
     const auto& widget = client_2_.UI().AccountActivity(
         bob_.ID(),
-        expected_account_,
+        expected_account_bob_,
         make_cb(account_activity_, u8"account_activity_"));
     constexpr auto expectedTotal = amount_ * transaction_count_;
 

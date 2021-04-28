@@ -267,18 +267,24 @@ struct Pair : virtual public opentxs::api::client::Pair {
 
     ~Pair() override = default;
 };
-struct UI : virtual public opentxs::api::client::UI {
-    virtual auto ActivateUICallback(const Identifier& widget) const noexcept
-        -> void = 0;
-    virtual auto ClearUICallbacks(const Identifier& widget) const noexcept
-        -> void = 0;
-    virtual auto RegisterUICallback(
-        const Identifier& widget,
-        const SimpleCallback& cb) const noexcept -> void = 0;
+struct UI final : public opentxs::api::client::UI {
+    auto ActivateUICallback(const Identifier& widget) const noexcept -> void;
+    auto ClearUICallbacks(const Identifier& widget) const noexcept -> void;
+    auto RegisterUICallback(const Identifier& widget, const SimpleCallback& cb)
+        const noexcept -> void;
 
-    virtual auto Init() noexcept -> void = 0;
-    virtual auto Shutdown() noexcept -> void = 0;
+    auto Init() noexcept -> void;
+    auto Shutdown() noexcept -> void;
 
-    ~UI() override = default;
+    UI(client::UI::Imp*) noexcept;
+
+    ~UI() final = default;
+
+private:
+    UI() = delete;
+    UI(const UI&) = delete;
+    UI(UI&&) = delete;
+    UI& operator=(const UI&) = delete;
+    UI& operator=(UI&&) = delete;
 };
 }  // namespace opentxs::api::client::internal

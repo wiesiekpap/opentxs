@@ -573,10 +573,8 @@
 #include "opentxs/ui/ActivityThread.hpp"
 #include "opentxs/ui/ActivityThreadItem.hpp"
 #include "opentxs/ui/BalanceItem.hpp"
-#if OT_BLOCKCHAIN
 #include "opentxs/ui/BlockchainSelection.hpp"
 #include "opentxs/ui/BlockchainSelectionItem.hpp"
-#endif  // OT_BLOCKCHAIN
 #include "opentxs/ui/Blockchains.hpp"
 #include "opentxs/ui/Contact.hpp"
 #include "opentxs/ui/ContactItem.hpp"
@@ -605,9 +603,7 @@
 #include "opentxs/ui/qt/ActivityThread.hpp"
 #include "opentxs/ui/qt/AmountValidator.hpp"
 #include "opentxs/ui/qt/BlankModel.hpp"
-#if OT_BLOCKCHAIN
 #include "opentxs/ui/qt/BlockchainSelection.hpp"
-#endif  // OT_BLOCKCHAIN
 #include "opentxs/ui/qt/Contact.hpp"
 #include "opentxs/ui/qt/ContactList.hpp"
 #include "opentxs/ui/qt/DestinationValidator.hpp"

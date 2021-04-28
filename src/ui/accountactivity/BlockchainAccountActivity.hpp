@@ -150,6 +150,7 @@ public:
 
     BlockchainAccountActivity(
         const api::client::internal::Manager& api,
+        const blockchain::Type chain,
         const identifier::Nym& nymID,
         const Identifier& accountID,
         const SimpleCallback& cb) noexcept;

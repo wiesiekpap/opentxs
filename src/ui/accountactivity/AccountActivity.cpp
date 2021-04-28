@@ -66,7 +66,7 @@ AccountActivity::AccountActivity(
     , destination_validator_(
           api,
           static_cast<std::int8_t>(type),
-          static_cast<std::uint32_t>(blockchain::Chain(api, accountID)),
+          accountID,
           *this)
 #endif  // OT_QT
     , balance_(0)

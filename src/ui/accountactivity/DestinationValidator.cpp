@@ -34,15 +34,11 @@ auto DestinationValidator::Imp::strip_invalid(
 DestinationValidator::DestinationValidator(
     const api::client::Manager& api,
     std::int8_t type,
-    std::uint32_t chain,
+    const Identifier& account,
     implementation::AccountActivity& parent) noexcept
     : imp_(
           (AccountType::Blockchain == static_cast<AccountType>(type))
-              ? Imp::Blockchain(
-                    api,
-                    *this,
-                    static_cast<blockchain::Type>(chain),
-                    parent)
+              ? Imp::Blockchain(api, *this, account, parent)
               : Imp::Custodial(api, parent))
 {
     OT_ASSERT(imp_);

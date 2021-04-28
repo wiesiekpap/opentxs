@@ -15,6 +15,7 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/UI.hpp"
 #include "opentxs/api/client/Workflow.hpp"
@@ -57,7 +58,19 @@ auto RPC::get_account_activity(const request::Base& base) const
             }
 
             const auto accountID = api.Factory().Identifier(id);
-            const auto owner = api.Storage().AccountOwner(accountID);
+            const auto owner = [&]() -> OTNymID {
+                const auto [chain, owner] =
+                    api.Blockchain().LookupAccount(accountID);
+
+                if (owner->empty()) {
+
+                    return api.Storage().AccountOwner(accountID);
+                } else {
+
+                    return owner;
+                }
+            }();
+            // TODO check for empty owner and return appropriate error
             const auto& widget = api.UI().AccountActivity(owner, accountID);
             const auto copy = [&](const auto& row) {
                 const auto contact = [&]() -> std::string {
@@ -145,6 +158,15 @@ auto RPC::get_account_event_type(StorageBox storagebox, Amount amount) noexcept
             } else {
 
                 return AccountEventType::incoming_transfer;
+            }
+        }
+        case StorageBox::BLOCKCHAIN: {
+            if (0 > amount) {
+
+                return AccountEventType::outgoing_blockchain;
+            } else {
+
+                return AccountEventType::incoming_blockchain;
             }
         }
         default: {

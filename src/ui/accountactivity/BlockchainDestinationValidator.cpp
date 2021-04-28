@@ -162,10 +162,14 @@ private:
 auto DestinationValidator::Imp::Blockchain(
     const api::client::Manager& api,
     DestinationValidator& main,
-    blockchain::Type chain,
+    const Identifier& account,
     Parent& parent) noexcept -> std::unique_ptr<Imp>
 {
 #if OT_BLOCKCHAIN
+    const auto [chain, owner] = api.Blockchain().LookupAccount(account);
+
+    if (blockchain::Type::Unknown == chain) { return nullptr; }
+
     return std::make_unique<BlockchainDestinationValidator>(
         api, main, chain, parent);
 #else

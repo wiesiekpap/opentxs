@@ -24,6 +24,8 @@ enum class AccountEventType : TypeEnum {
     outgoing_invoice = 6,
     incoming_voucher = 7,
     outgoing_voucher = 8,
+    incoming_blockchain = 9,
+    outgoing_blockchain = 10,
 };
 }  // namespace rpc
 }  // namespace opentxs

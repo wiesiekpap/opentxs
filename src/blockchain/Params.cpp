@@ -3,9 +3,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                    // IWYU pragma: associated
-#include "1_Internal.hpp"                  // IWYU pragma: associated
-#include "internal/blockchain/Params.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                        // IWYU pragma: associated
+#include "1_Internal.hpp"                      // IWYU pragma: associated
+#include "internal/blockchain/Blockchain.hpp"  // IWYU pragma: associated
+#include "internal/blockchain/Params.hpp"      // IWYU pragma: associated
 
 #include <boost/container/vector.hpp>
 #include <memory>
@@ -66,6 +67,28 @@ auto DefinedChains() noexcept -> const std::set<Type>&
     }();
 
     return output;
+}
+
+auto DisplayString(const Type type) noexcept -> std::string
+{
+    try {
+
+        return params::Data::Chains().at(type).display_string_;
+    } catch (...) {
+
+        return "Unknown";
+    }
+}
+
+auto IsTestnet(const Type type) noexcept -> bool
+{
+    try {
+
+        return params::Data::Chains().at(type).testnet_;
+    } catch (...) {
+
+        return false;
+    }
 }
 
 auto FilterHash(
@@ -237,6 +260,16 @@ auto SupportedChains() noexcept -> const std::set<Type>&
     return output;
 }
 
+auto TickerSymbol(const Type type) noexcept -> std::string
+{
+    try {
+
+        return params::Data::Chains().at(type).display_ticker_;
+    } catch (...) {
+
+        return "Unknown";
+    }
+}
 auto TransactionHash(
     const api::Core& api,
     const Type chain,

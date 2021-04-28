@@ -4,6 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_subdirectory(blockchain)
+add_subdirectory(ui)
 
 add_library(
   opentxs-api-client OBJECT
@@ -28,8 +29,6 @@ add_library(
   "Pair.hpp"
   "ServerAction.cpp"
   "ServerAction.hpp"
-  "UI.cpp"
-  "UI.hpp"
   "Wallet.cpp"
   "Wallet.hpp"
   "Workflow.cpp"
@@ -60,19 +59,6 @@ target_link_libraries(
 target_include_directories(
   opentxs-api-client SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
-
-if(OT_QT_EXPORT)
-  target_link_libraries(opentxs-api-client PRIVATE Qt5::Core Qt5::Gui)
-  target_link_libraries(opentxs PRIVATE Qt5::Core Qt5::Gui)
-
-  if(OT_QML_EXPORT)
-    target_link_libraries(opentxs-api-client PUBLIC Qt5::Qml)
-    target_link_libraries(opentxs PUBLIC Qt5::Qml)
-    target_compile_definitions(opentxs-api-client PRIVATE -DOT_WITH_QML=1)
-  else()
-    target_compile_definitions(opentxs-api-client PRIVATE -DOT_WITH_QML=0)
-  endif()
-endif()
 
 if(OT_BLOCKCHAIN_EXPORT)
   target_link_libraries(opentxs-api-client PRIVATE lmdb)

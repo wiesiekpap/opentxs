@@ -120,12 +120,7 @@ Manager::Manager(
           *ot_api_->m_pClient,
           std::bind(&Manager::get_lock, this, std::placeholders::_1)))
     , pair_(factory::PairAPI(running_, *this))
-    , ui_(factory::UI(
-          *this,
-#if OT_BLOCKCHAIN
-          *blockchain_,
-#endif  // OT_BLOCKCHAIN
-          running_))
+    , ui_(factory::UI(*this, *blockchain_, running_))
     , map_lock_()
     , context_locks_()
 {
