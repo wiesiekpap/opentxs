@@ -21,6 +21,7 @@
 #include "opentxs/api/client/Workflow.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/rpc/AccountEventType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"

@@ -104,6 +104,12 @@ auto UI::BlankModel(const std::size_t columns) const noexcept
     return imp_->BlankModel(columns);
 }
 
+auto UI::BlockchainIssuerID(const opentxs::blockchain::Type chain)
+    const noexcept -> const identifier::Nym&
+{
+    return imp_->BlockchainIssuerID(chain);
+}
+
 auto UI::BlockchainNotaryID(const opentxs::blockchain::Type chain)
     const noexcept -> const identifier::Server&
 {
