@@ -93,6 +93,7 @@ auto CheckProto_2(const RPCStatus& input, const bool silent) -> bool
         case RPCRESPONSE_ACCOUNT_OWNER_NOT_FOUND:
         case RPCRESPONSE_SEND_PAYMENT_FAILED:
         case RPCRESPONSE_TRANSACTION_FAILED:
+        case RPCRESPONSE_TXID:
         case RPCRESPONSE_UNIMPLEMENTED: {
         } break;
         default: {

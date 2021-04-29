@@ -8,18 +8,25 @@
 #include "rpc/RPC.tpp"     // IWYU pragma: associated
 
 #include <chrono>
+#include <future>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/Network.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/rpc/PaymentType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
@@ -71,12 +78,49 @@ auto RPC::send_payment_blockchain(
     const api::client::Manager& api,
     const request::SendPayment& in) const noexcept -> response::Base
 {
+    auto tasks = response::Base::Tasks{};
     const auto reply = [&](const auto code) {
-        return response::SendPayment{in, {{0, code}}, {}};
+        return response::SendPayment{in, {{0, code}}, std::move(tasks)};
     };
-    // TODO
 
-    return reply(ResponseCode::unimplemented);
+    const auto id = api.Factory().Identifier(in.SourceAccount());
+    const auto& blockchain = api.Blockchain();
+    const auto data = blockchain.LookupAccount(id);
+    const auto& [chain, owner] = data;
+
+    if (blockchain::Type::Unknown == chain) {
+        return reply(ResponseCode::account_not_found);
+    }
+
+    blockchain.Start(chain);
+
+    try {
+        auto future = [&] {
+            const auto& [chain, owner] = data;
+            const auto amount = in.Amount();
+            const auto& address = in.DestinationAccount();
+            const auto& memo = in.Memo();
+            const auto& network = blockchain.GetChain(chain);
+            const auto recipient = api.Factory().PaymentCode(address);
+
+            if (0 < recipient->Version()) {
+                return network.SendToPaymentCode(
+                    owner, recipient, amount, memo);
+            } else {
+                return network.SendToAddress(owner, address, amount, memo);
+            }
+        }();
+        const auto txid = future.get();
+
+        if (txid->empty()) { return reply(ResponseCode::transaction_failed); }
+
+        tasks.emplace_back(0, txid->asHex());
+
+        return reply(ResponseCode::txid);
+    } catch (...) {
+
+        return reply(ResponseCode::transaction_failed);
+    }
 }
 
 auto RPC::send_payment_custodial(

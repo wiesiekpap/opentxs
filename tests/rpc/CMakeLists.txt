@@ -11,6 +11,13 @@ add_opentx_test(unittests-opentxs-rpc-get-account-balance GetAccountBalance.cpp)
 add_opentx_test(unittests-opentxs-rpc-list-accounts ListAccounts.cpp)
 add_opentx_test(unittests-opentxs-rpc-list-nyms ListNyms.cpp)
 add_opentx_test(unittests-opentxs-rpc-send-payment SendPayment.cpp)
+
+if(OT_BLOCKCHAIN_EXPORT)
+  add_opentx_test(
+    unittests-opentxs-rpc-send-payment-blockchain SendPayment_blockchain.cpp
+  )
+endif()
+
 add_opentx_test(unittests-opentxs-rpc-sync Test_Rpc.cpp)
 
 set_tests_properties(unittests-opentxs-rpc-async PROPERTIES DISABLED TRUE)

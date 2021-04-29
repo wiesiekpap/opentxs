@@ -45,6 +45,7 @@ enum class ResponseCode : TypeEnum {
     account_owner_not_found = 27,
     send_payment_failed = 28,
     transaction_failed = 29,
+    txid = 30,
     unimplemented = std::numeric_limits<TypeEnum>::max() - 1u,
     error = std::numeric_limits<TypeEnum>::max(),
 };
