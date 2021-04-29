@@ -80,7 +80,7 @@ private:
     auto operator=(RPCPushCounter&&) -> RPCPushCounter& = delete;
 };
 
-class RPC_fixture : public ::testing::Test
+class RPC_fixture : virtual public ::testing::Test
 {
 protected:
     using AccountMap = std::map<std::string, std::vector<std::string>>;
@@ -174,7 +174,7 @@ protected:
     auto StartServer(int index) const noexcept
         -> const ot::api::server::Manager&;
 
-    auto Cleanup() noexcept -> void;
+    virtual auto Cleanup() noexcept -> void;
 
     RPC_fixture() noexcept;
 

@@ -249,6 +249,7 @@ auto response_code_map() noexcept -> ResponseCodeMap
          proto::RPCRESPONSE_SEND_PAYMENT_FAILED},
         {ResponseCode::transaction_failed,
          proto::RPCRESPONSE_TRANSACTION_FAILED},
+        {ResponseCode::txid, proto::RPCRESPONSE_TXID},
         {ResponseCode::unimplemented, proto::RPCRESPONSE_UNIMPLEMENTED},
         {ResponseCode::error, proto::RPCRESPONSE_ERROR},
     };

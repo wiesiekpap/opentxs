@@ -762,7 +762,7 @@ private:
     }
 };
 
-class Regtest_fixture_base : public ::testing::Test
+class Regtest_fixture_base : virtual public ::testing::Test
 {
 protected:
     using Height = b::block::Height;
