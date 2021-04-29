@@ -249,6 +249,12 @@ auto UI::Imp::ActivityThread(
     return *activity_thread(lock, nymID, threadID, cb);
 }
 
+auto UI::Imp::BlockchainIssuerID(const opentxs::blockchain::Type chain)
+    const noexcept -> const identifier::Nym&
+{
+    return opentxs::blockchain::IssuerID(api_, chain);
+}
+
 auto UI::Imp::BlockchainNotaryID(const opentxs::blockchain::Type chain)
     const noexcept -> const identifier::Server&
 {

@@ -15,6 +15,7 @@
 #include <mutex>
 #include <string>
 #include <tuple>
+#include <vector>
 
 #include "internal/rpc/RPC.hpp"
 #include "opentxs/Proto.hpp"
@@ -86,9 +87,12 @@ namespace request
 {
 class SendPayment;
 }  // namespace request
+
+class AccountData;
 }  // namespace rpc
 
 class Factory;
+class Identifier;
 }  // namespace opentxs
 
 namespace zmq = opentxs::network::zeromq;
@@ -206,8 +210,20 @@ private:
         -> const api::client::internal::Manager*;
     auto get_account_activity(const request::Base& command) const
         -> response::Base;
-    auto get_account_balance(const request::Base& command) const
+    auto get_account_balance(const request::Base& command) const noexcept
         -> response::Base;
+    auto get_account_balance_blockchain(
+        const request::Base& base,
+        const std::size_t index,
+        const Identifier& accountID,
+        std::vector<AccountData>& balances,
+        response::Base::Responses& codes) const noexcept -> void;
+    auto get_account_balance_custodial(
+        const api::Core& api,
+        const std::size_t index,
+        const Identifier& accountID,
+        std::vector<AccountData>& balances,
+        response::Base::Responses& codes) const noexcept -> void;
     auto get_compatible_accounts(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto get_nyms(const proto::RPCCommand& command) const -> proto::RPCResponse;
@@ -245,6 +261,8 @@ private:
         -> proto::RPCResponse;
     auto import_server_contract(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
+    auto is_blockchain_account(const request::Base& base, const Identifier& id)
+        const noexcept -> bool;
     auto is_client_session(std::int32_t instance) const -> bool;
     auto is_server_session(std::int32_t instance) const -> bool;
     auto is_session_valid(std::int32_t instance) const -> bool;

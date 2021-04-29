@@ -39,7 +39,8 @@ auto CheckProto_2(const AccountData& input, const bool silent) -> bool
     switch (input.type()) {
         case ACCOUNTTYPE_NORMAL:
         case ACCOUNTTYPE_ISSUER:
-            break;
+        case ACCOUNTTYPE_BLOCKCHAIN: {
+        } break;
         case ACCOUNTTYPE_ERROR:
         default: {
             FAIL_1("Invalid type");

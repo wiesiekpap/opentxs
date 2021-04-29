@@ -19,6 +19,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/AddressType.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/protobuf/ContractEnums.pb.h"
@@ -82,13 +83,41 @@ auto Chain(const api::Core& api, const identifier::UnitDefinition& id) noexcept
     }
 }
 
+auto IssuerID(const api::Core& api, const blockchain::Type chain) noexcept
+    -> const identifier::Nym&
+{
+    static auto mutex = std::mutex{};
+    static auto map = std::map<blockchain::Type, OTNymID>{};
+
+    auto lock = Lock{mutex};
+
+    {
+        auto it = map.find(chain);
+
+        if (map.end() != it) { return it->second; }
+    }
+
+    auto [it, notUsed] = map.emplace(chain, api.Factory().NymID());
+    auto& output = it->second;
+
+    try {
+        const auto& hex =
+            blockchain::params::Data::Chains().at(chain).genesis_hash_hex_;
+        const auto genesis = api.Factory().Data(hex, StringStyle::Hex);
+        output->CalculateDigest(genesis->Bytes());
+    } catch (...) {
+    }
+
+    return output;
+}
+
 auto NotaryID(const api::Core& api, const blockchain::Type chain) noexcept
     -> const identifier::Server&
 {
-    static std::mutex mutex_;
+    static auto mutex = std::mutex{};
     static auto map = std::map<blockchain::Type, OTServerID>{};
 
-    Lock lock(mutex_);
+    auto lock = Lock{mutex};
 
     {
         auto it = map.find(chain);
@@ -108,10 +137,10 @@ auto NotaryID(const api::Core& api, const blockchain::Type chain) noexcept
 auto UnitID(const api::Core& api, const blockchain::Type chain) noexcept
     -> const identifier::UnitDefinition&
 {
-    static std::mutex mutex_;
+    static auto mutex = std::mutex{};
     static auto map = std::map<blockchain::Type, OTUnitID>{};
 
-    Lock lock(mutex_);
+    auto lock = Lock{mutex};
 
     {
         auto it = map.find(chain);

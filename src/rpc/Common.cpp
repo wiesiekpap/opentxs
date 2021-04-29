@@ -82,6 +82,7 @@ auto account_map() noexcept -> AccountMap
         {AccountType::error, proto::ACCOUNTTYPE_ERROR},
         {AccountType::normal, proto::ACCOUNTTYPE_NORMAL},
         {AccountType::issuer, proto::ACCOUNTTYPE_ISSUER},
+        {AccountType::blockchain, proto::ACCOUNTTYPE_BLOCKCHAIN},
     };
 
     return map;

@@ -37,6 +37,7 @@
 #include "opentxs/api/HDSeed.hpp"
 #include "opentxs/api/Primitives.hpp"
 #include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
@@ -45,6 +46,7 @@
 #include "opentxs/api/client/Workflow.hpp"
 #include "opentxs/api/server/Manager.hpp"
 #include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/client/OT_API.hpp"
 #include "opentxs/contact/Contact.hpp"
@@ -1315,6 +1317,22 @@ auto RPC::invalid_command(const proto::RPCCommand& command)
     add_output_status(output, proto::RPCRESPONSE_INVALID);
 
     return output;
+}
+
+auto RPC::is_blockchain_account(const request::Base& base, const Identifier& id)
+    const noexcept -> bool
+{
+    try {
+        const auto& api = client_session(base);
+        const auto [chain, owner] = api.Blockchain().LookupAccount(id);
+
+        if (blockchain::Type::Unknown == chain) { return false; }
+
+        return true;
+    } catch (...) {
+
+        return false;
+    }
 }
 
 auto RPC::is_client_session(std::int32_t instance) const -> bool

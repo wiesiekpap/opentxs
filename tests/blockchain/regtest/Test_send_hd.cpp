@@ -32,11 +32,14 @@
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/rpc/AccountEventType.hpp"
+#include "opentxs/rpc/AccountType.hpp"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
 #include "opentxs/rpc/request/GetAccountActivity.hpp"
+#include "opentxs/rpc/request/GetAccountBalance.hpp"
 #include "opentxs/rpc/request/ListAccounts.hpp"
 #include "opentxs/rpc/response/GetAccountActivity.hpp"
+#include "opentxs/rpc/response/GetAccountBalance.hpp"
 #include "opentxs/rpc/response/ListAccounts.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
 #include "opentxs/ui/AccountList.hpp"
@@ -1001,6 +1004,38 @@ TEST_F(Regtest_fixture_hd, account_activity_after_confirmed_spend)
 }
 
 #if OT_WITH_RPC
+TEST_F(Regtest_fixture_hd, rpc_account_balance)
+{
+    const auto index{client_1_.Instance()};
+    const auto command =
+        ot::rpc::request::GetAccountBalance{index, {expected_account_.str()}};
+    const auto base = ot_.RPC(command);
+    const auto& response = base.asGetAccountBalance();
+    const auto& codes = response.ResponseCodes();
+    const auto& data = response.Balances();
+
+    ASSERT_EQ(codes.size(), 1);
+    EXPECT_EQ(codes.at(0).first, 0);
+    EXPECT_EQ(codes.at(0).second, ot::rpc::ResponseCode::success);
+    ASSERT_EQ(data.size(), 1);
+
+    {
+        const auto& balance = data.at(0);
+
+        EXPECT_EQ(balance.ConfirmedBalance(), 8600002652);
+        EXPECT_EQ(balance.ID(), expected_account_.str());
+        EXPECT_EQ(
+            balance.Issuer(),
+            client_1_.UI().BlockchainIssuerID(test_chain_).str());
+        EXPECT_EQ(balance.Name(), "This device");
+        EXPECT_EQ(balance.Owner(), alex_.ID().str());
+        EXPECT_EQ(balance.PendingBalance(), 8600002652);
+        EXPECT_EQ(balance.Type(), ot::rpc::AccountType::blockchain);
+        EXPECT_EQ(
+            balance.Unit(), client_1_.UI().BlockchainUnitID(test_chain_).str());
+    }
+}
+
 TEST_F(Regtest_fixture_hd, rpc_account_activity_spend)
 {
     const auto index{client_1_.Instance()};

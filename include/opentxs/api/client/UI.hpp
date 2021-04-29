@@ -158,6 +158,8 @@ public:
         const SimpleCallback updateCB = {}) const noexcept;
     /// Caller does not own this pointer
     QAbstractItemModel* BlankModel(const std::size_t columns) const noexcept;
+    const identifier::Nym& BlockchainIssuerID(
+        const opentxs::blockchain::Type chain) const noexcept;
     const identifier::Server& BlockchainNotaryID(
         const opentxs::blockchain::Type chain) const noexcept;
     const opentxs::ui::BlockchainSelection& BlockchainSelection(

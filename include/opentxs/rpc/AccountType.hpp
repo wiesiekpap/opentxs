@@ -18,6 +18,7 @@ enum class AccountType : TypeEnum {
     error = 0,
     normal = 1,
     issuer = 2,
+    blockchain = 3,
 };
 }  // namespace rpc
 }  // namespace opentxs

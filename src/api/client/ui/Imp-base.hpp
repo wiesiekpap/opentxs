@@ -188,6 +188,8 @@ public:
     {
         return nullptr;
     }
+    auto BlockchainIssuerID(const opentxs::blockchain::Type chain)
+        const noexcept -> const identifier::Nym&;
     auto BlockchainNotaryID(const opentxs::blockchain::Type chain)
         const noexcept -> const identifier::Server&;
     auto BlockchainSelection(

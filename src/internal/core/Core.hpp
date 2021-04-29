@@ -32,6 +32,7 @@ class Core;
 
 namespace identifier
 {
+class Nym;
 class Server;
 class UnitDefinition;
 }  // namespace identifier
@@ -73,6 +74,8 @@ auto AccountName(const Type chain) noexcept -> std::string;
 auto Chain(const api::Core& api, const identifier::Server& id) noexcept -> Type;
 auto Chain(const api::Core& api, const identifier::UnitDefinition& id) noexcept
     -> Type;
+auto IssuerID(const api::Core& api, const Type chain) noexcept
+    -> const identifier::Nym&;
 auto NotaryID(const api::Core& api, const Type chain) noexcept
     -> const identifier::Server&;
 auto UnitID(const api::Core& api, const Type chain) noexcept
