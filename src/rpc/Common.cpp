@@ -67,6 +67,10 @@ auto account_event_map() noexcept -> AccountEventMap
          proto::ACCOUNTEVENT_INCOMINGVOUCHER},
         {AccountEventType::outgoing_voucher,
          proto::ACCOUNTEVENT_OUTGOINGVOUCHER},
+        {AccountEventType::incoming_blockchain,
+         proto::ACCOUNTEVENT_INCOMINGBLOCKCHAIN},
+        {AccountEventType::outgoing_blockchain,
+         proto::ACCOUNTEVENT_OUTGOINGBLOCKCHAIN},
     };
 
     return map;

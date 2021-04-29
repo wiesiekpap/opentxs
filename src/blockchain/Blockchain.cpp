@@ -15,7 +15,6 @@
 #include <iterator>
 #include <limits>
 #include <map>
-#include <memory>
 #include <stdexcept>
 #include <string_view>
 #include <thread>
@@ -43,40 +42,6 @@ constexpr auto BITMASK(std::uint64_t n) noexcept -> std::uint64_t
 }
 
 namespace mp = boost::multiprecision;
-
-namespace opentxs::blockchain
-{
-auto DisplayString(const Type type) noexcept -> std::string
-{
-    try {
-
-        return params::Data::Chains().at(type).display_string_;
-    } catch (...) {
-
-        return "Unknown";
-    }
-}
-auto IsTestnet(const Type type) noexcept -> bool
-{
-    try {
-
-        return params::Data::Chains().at(type).testnet_;
-    } catch (...) {
-
-        return false;
-    }
-}
-auto TickerSymbol(const Type type) noexcept -> std::string
-{
-    try {
-
-        return params::Data::Chains().at(type).display_ticker_;
-    } catch (...) {
-
-        return "Unknown";
-    }
-}
-}  // namespace opentxs::blockchain
 
 namespace opentxs::blockchain::block
 {

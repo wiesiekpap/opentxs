@@ -23,6 +23,7 @@
 #include "opentxs/api/Wallet.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/client/blockchain/BalanceTree.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/api/storage/Storage.hpp"
 #if OT_BLOCKCHAIN
@@ -286,7 +287,8 @@ auto AccountList::process_blockchain_balance(const Message& message) noexcept
     const auto chain = body.at(1).as<blockchain::Type>();
     [[maybe_unused]] const auto confirmed = body.at(2).as<Amount>();
     const auto unconfirmed = body.at(3).as<Amount>();
-    const auto& accountID = AccountID(Widget::api_, chain);
+    const auto& accountID =
+        Widget::api_.Blockchain().Account(primary_id_, chain).AccountID();
     auto index = make_blank<AccountListSortKey>::value(Widget::api_);
     auto& [type, notary] = index;
     type = Translate(chain);
@@ -310,18 +312,15 @@ auto AccountList::startup() noexcept -> void
     for (const auto& id : accounts) { process_account(id); }
 
 #if OT_BLOCKCHAIN
-    for (const auto& chain : blockchain::SupportedChains()) {
-        if (0 < Widget::api_.Blockchain()
-                    .SubaccountList(primary_id_, chain)
-                    .size()) {
-            subscribe(chain);
-        }
-    }
+    const auto bcAccounts = Widget::api_.Blockchain().AccountList(primary_id_);
 
-    constexpr auto chain{blockchain::Type::UnitTest};
+    for (const auto& account : bcAccounts) {
+        const auto [chain, owner] =
+            Widget::api_.Blockchain().LookupAccount(account);
 
-    if (0 <
-        Widget::api_.Blockchain().SubaccountList(primary_id_, chain).size()) {
+        OT_ASSERT(blockchain::Type::Unknown != chain);
+        OT_ASSERT(owner == primary_id_);
+
         subscribe(chain);
     }
 #endif  // OT_BLOCKCHAIN
@@ -334,6 +333,7 @@ auto AccountList::subscribe(const blockchain::Type chain) const noexcept -> void
 {
     auto out = Widget::api_.ZeroMQ().TaggedMessage(WorkType::BlockchainBalance);
     out->AddFrame(chain);
+    out->AddFrame(primary_id_);
     blockchain_balance_->Send(out);
 }
 #endif  // OT_BLOCKCHAIN

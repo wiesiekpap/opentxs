@@ -9,9 +9,6 @@
 #include <QAbstractItemModel>
 #include <QModelIndex>
 #include <QObject>
-#if OT_WITH_QML
-#include <QQmlEngine>
-#endif  // OT_WITH_QML
 #include <QVariant>
 #endif  // OT_QT
 #include <chrono>
@@ -42,10 +39,8 @@
 #include "opentxs/ui/ActivityThread.hpp"
 #include "opentxs/ui/ActivityThreadItem.hpp"
 #include "opentxs/ui/BalanceItem.hpp"
-#if OT_BLOCKCHAIN
 #include "opentxs/ui/BlockchainSelection.hpp"
 #include "opentxs/ui/BlockchainSelectionItem.hpp"
-#endif  // OT_BLOCKCHAIN
 #include "opentxs/ui/Contact.hpp"
 #include "opentxs/ui/ContactItem.hpp"
 #include "opentxs/ui/ContactList.hpp"
@@ -62,13 +57,13 @@
 #include "opentxs/ui/ProfileItem.hpp"
 #include "opentxs/ui/ProfileSection.hpp"
 #include "opentxs/ui/ProfileSubsection.hpp"
-#if OT_BLOCKCHAIN
 #include "opentxs/ui/Types.hpp"
-#endif  // OT_BLOCKCHAIN
 #include "opentxs/ui/UnitList.hpp"
 #include "opentxs/ui/UnitListItem.hpp"
 #include "opentxs/ui/Widget.hpp"
 #include "util/Blank.hpp"
+
+class QObject;
 
 namespace opentxs
 {
@@ -125,24 +120,7 @@ class Profile;
 class UnitList;
 }  // namespace implementation
 
-class AccountActivityQt;
-class AccountListQt;
-class AccountSummaryQt;
-class ActivitySummaryQt;
-class ActivityThreadQt;
-class BlockchainSelectionQt;
-class ContactListQt;
-class ContactQt;
-class MessagableListQt;
-class PayableListQt;
-class ProfileQt;
-class UnitListQt;
-}  // namespace ui
-
-class Flag;
-}  // namespace opentxs
-
-namespace opentxs::ui::internal
+namespace internal
 {
 namespace blank
 {
@@ -192,7 +170,29 @@ struct ProfileSection;
 struct ProfileSubsection;
 struct UnitList;
 struct UnitListItem;
-}  // namespace opentxs::ui::internal
+}  // namespace internal
+
+class AccountActivityQt;
+class AccountListQt;
+class AccountSummaryQt;
+class ActivitySummaryQt;
+class ActivityThreadQt;
+class BlockchainSelectionQt;
+class ContactListQt;
+class ContactQt;
+class MessagableListQt;
+class PayableListQt;
+class ProfileQt;
+class UnitListQt;
+}  // namespace ui
+
+class Flag;
+}  // namespace opentxs
+
+namespace opentxs::ui
+{
+auto claim_ownership(QObject* object) noexcept -> void;
+}  // namespace opentxs::ui
 
 namespace opentxs::ui::implementation
 {
@@ -261,7 +261,6 @@ using ActivityThreadRowBlank = ui::internal::blank::ActivityThreadItem;
 /** timestamp, index */
 using ActivityThreadSortKey = std::pair<Time, std::uint64_t>;
 
-#if OT_BLOCKCHAIN
 using BlockchainSelectionPrimaryID = OTIdentifier;
 using BlockchainSelectionExternalInterface = ui::BlockchainSelection;
 using BlockchainSelectionInternalInterface = ui::internal::BlockchainSelection;
@@ -271,7 +270,6 @@ using BlockchainSelectionRowInternal = ui::internal::BlockchainSelectionItem;
 using BlockchainSelectionRowBlank =
     ui::internal::blank::BlockchainSelectionItem;
 using BlockchainSelectionSortKey = std::pair<bool, std::string>;
-#endif  // OT_BLOCKCHAIN
 
 // Contact
 using ContactPrimaryID = OTIdentifier;
@@ -543,7 +541,6 @@ struct BalanceItem : virtual public Row, virtual public ui::BalanceItem {
 
     ~BalanceItem() override = default;
 };
-#if OT_BLOCKCHAIN
 struct BlockchainSelection : virtual public List,
                              virtual public ui::BlockchainSelection {
     virtual auto last(const implementation::BlockchainSelectionRowID& id)
@@ -559,7 +556,6 @@ struct BlockchainSelectionItem : virtual public Row,
 
     ~BlockchainSelectionItem() override = default;
 };
-#endif  // OT_BLOCKCHAIN
 struct Contact : virtual public List, virtual public ui::Contact {
 #if OT_QT
     virtual int FindRow(
@@ -715,12 +711,11 @@ struct UnitListItem : virtual public Row, virtual public ui::UnitListItem {
 };
 
 #if OT_QT
-#if OT_WITH_QML
 #define QT_PROXY_MODEL_WRAPPER_EXTRA(WrapperType, InterfaceType)               \
     WrapperType::WrapperType(InterfaceType& parent) noexcept                   \
         : parent_(parent)                                                      \
     {                                                                          \
-        QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);        \
+        claim_ownership(this);                                                 \
         parent_.SetCallback([this]() -> void { notify(); });                   \
         setSourceModel(&parent_);                                              \
         init();                                                                \
@@ -731,33 +726,12 @@ struct UnitListItem : virtual public Row, virtual public ui::UnitListItem {
     WrapperType::WrapperType(InterfaceType& parent) noexcept                   \
         : parent_(parent)                                                      \
     {                                                                          \
-        QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);        \
+        claim_ownership(this);                                                 \
         parent_.SetCallback([this]() -> void { notify(); });                   \
         setSourceModel(&parent_);                                              \
     }                                                                          \
                                                                                \
     void WrapperType::notify() const noexcept { emit updated(); }
-#else  // OT_WITH_QML
-#define QT_PROXY_MODEL_WRAPPER_EXTRA(WrapperType, InterfaceType)               \
-    WrapperType::WrapperType(InterfaceType& parent) noexcept                   \
-        : parent_(parent)                                                      \
-    {                                                                          \
-        parent_.SetCallback([this]() -> void { notify(); });                   \
-        setSourceModel(&parent_);                                              \
-        init();                                                                \
-    }                                                                          \
-                                                                               \
-    void WrapperType::notify() const noexcept { emit updated(); }
-#define QT_PROXY_MODEL_WRAPPER(WrapperType, InterfaceType)                     \
-    WrapperType::WrapperType(InterfaceType& parent) noexcept                   \
-        : parent_(parent)                                                      \
-    {                                                                          \
-        parent_.SetCallback([this]() -> void { notify(); });                   \
-        setSourceModel(&parent_);                                              \
-    }                                                                          \
-                                                                               \
-    void WrapperType::notify() const noexcept { emit updated(); }
-#endif  // OT_WITH_QML
 #endif  // OT_QT
 
 namespace blank
@@ -916,7 +890,6 @@ struct BalanceItem final : public Row, public internal::BalanceItem {
         return false;
     }
 };
-#if OT_BLOCKCHAIN
 struct BlockchainSelectionItem final
     : virtual public Row,
       virtual public internal::BlockchainSelectionItem {
@@ -933,7 +906,6 @@ struct BlockchainSelectionItem final
         return false;
     }
 };
-#endif  // OT_BLOCKCHAIN
 struct ContactItem final : public Row, public internal::ContactItem {
     auto ClaimID() const noexcept -> std::string final { return {}; }
     auto IsActive() const noexcept -> bool final { return false; }
@@ -1265,7 +1237,6 @@ auto ActivityThreadModel(
 auto ActivityThreadQtModel(ui::implementation::ActivityThread& parent) noexcept
     -> std::unique_ptr<ui::ActivityThreadQt>;
 #endif
-#if OT_BLOCKCHAIN
 auto BlockchainAccountActivityModel(
     const api::client::internal::Manager& api,
     const identifier::Nym& nymID,
@@ -1305,7 +1276,6 @@ auto BlockchainSelectionQtModel(
     ui::implementation::BlockchainSelection& parent) noexcept
     -> std::unique_ptr<ui::BlockchainSelectionQt>;
 #endif  // OT_QT
-#endif  // OT_BLOCKCHAIN
 auto BalanceItem(
     const ui::implementation::AccountActivityInternalInterface& parent,
     const api::client::internal::Manager& api,

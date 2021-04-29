@@ -35,6 +35,8 @@ class AccountActivity;
 
 class DestinationValidator;
 }  // namespace ui
+
+class Identifier;
 }  // namespace opentxs
 
 class OPENTXS_EXPORT opentxs::ui::DestinationValidator final : public QValidator
@@ -52,13 +54,13 @@ public:
     void fixup(QString& input) const final;
     State validate(QString& input, int& pos) const final;
 
-    DestinationValidator(
+    OPENTXS_NO_EXPORT DestinationValidator(
         const api::client::Manager&,
         std::int8_t,
-        std::uint32_t,
+        const Identifier&,
         implementation::AccountActivity&) noexcept;
 
-    ~DestinationValidator() final;
+    OPENTXS_NO_EXPORT ~DestinationValidator() final;
 
 private:
     std::unique_ptr<Imp> imp_;

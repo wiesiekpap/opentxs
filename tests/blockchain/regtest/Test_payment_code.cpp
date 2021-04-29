@@ -67,7 +67,6 @@ protected:
 
     const ot::identity::Nym& alice_;
     const ot::identity::Nym& bob_;
-    const ot::Identifier& expected_account_;
     const ot::identifier::Server& expected_notary_;
     const ot::identifier::UnitDefinition& expected_unit_;
     const std::string expected_display_unit_;
@@ -188,7 +187,6 @@ protected:
 
             return *bob_p_;
         }())
-        , expected_account_(client_1_.UI().BlockchainAccountID(test_chain_))
         , expected_notary_(client_1_.UI().BlockchainNotaryID(test_chain_))
         , expected_unit_(client_1_.UI().BlockchainUnitID(test_chain_))
         , expected_display_unit_(u8"UNITTEST")
@@ -291,11 +289,11 @@ TEST_F(Regtest_payment_code, init_account_activity)
     account_activity_bob_.expected_ += 0;
     client_1_.UI().AccountActivity(
         alice_.ID(),
-        client_1_.UI().BlockchainAccountID(test_chain_),
+        SendHD().Parent().AccountID(),
         make_cb(account_activity_alice_, u8"account_activity_alice"));
     client_2_.UI().AccountActivity(
         bob_.ID(),
-        client_2_.UI().BlockchainAccountID(test_chain_),
+        ReceiveHD().Parent().AccountID(),
         make_cb(account_activity_bob_, u8"account_activity_bob"));
     wait_for_counter(account_activity_alice_);
     wait_for_counter(account_activity_bob_);
@@ -443,10 +441,11 @@ TEST_F(Regtest_payment_code, alice_after_receive_wallet)
 TEST_F(Regtest_payment_code, alice_after_receive_ui)
 {
     wait_for_counter(account_activity_alice_);
+    const auto& expectedAccount = SendHD().Parent().AccountID();
     const auto& widget =
-        client_1_.UI().AccountActivity(alice_.ID(), expected_account_);
+        client_1_.UI().AccountActivity(alice_.ID(), expectedAccount);
 
-    EXPECT_EQ(widget.AccountID(), expected_account_.str());
+    EXPECT_EQ(widget.AccountID(), expectedAccount.str());
     EXPECT_EQ(widget.Balance(), 10000000000);
     EXPECT_EQ(widget.BalancePolarity(), 1);
     EXPECT_EQ(widget.ContractID(), expected_unit_.str());
@@ -649,10 +648,11 @@ TEST_F(Regtest_payment_code, alice_after_unconfirmed_spend_wallet)
 TEST_F(Regtest_payment_code, alice_after_unconfirmed_spend_ui)
 {
     wait_for_counter(account_activity_alice_);
+    const auto& expectedAccount = SendHD().Parent().AccountID();
     const auto& widget =
-        client_1_.UI().AccountActivity(alice_.ID(), expected_account_);
+        client_1_.UI().AccountActivity(alice_.ID(), expectedAccount);
 
-    EXPECT_EQ(widget.AccountID(), expected_account_.str());
+    EXPECT_EQ(widget.AccountID(), expectedAccount.str());
     EXPECT_EQ(widget.Balance(), 8999999684);
     EXPECT_EQ(widget.BalancePolarity(), 1);
     EXPECT_EQ(widget.ContractID(), expected_unit_.str());
@@ -971,10 +971,11 @@ TEST_F(Regtest_payment_code, alice_after_confirmed_spend_wallet)
 TEST_F(Regtest_payment_code, alice_after_confirmed_spend_ui)
 {
     wait_for_counter(account_activity_alice_, false);
+    const auto& expectedAccount = SendHD().Parent().AccountID();
     const auto& widget =
-        client_1_.UI().AccountActivity(alice_.ID(), expected_account_);
+        client_1_.UI().AccountActivity(alice_.ID(), expectedAccount);
 
-    EXPECT_EQ(widget.AccountID(), expected_account_.str());
+    EXPECT_EQ(widget.AccountID(), expectedAccount.str());
     EXPECT_EQ(widget.Balance(), 8999999684);
     EXPECT_EQ(widget.BalancePolarity(), 1);
     EXPECT_EQ(widget.ContractID(), expected_unit_.str());
@@ -1070,10 +1071,11 @@ TEST_F(Regtest_payment_code, alice_after_confirmed_spend_ui)
 TEST_F(Regtest_payment_code, bob_after_receive_ui)
 {
     wait_for_counter(account_activity_bob_);
+    const auto& expectedAccount = ReceiveHD().Parent().AccountID();
     const auto& widget =
-        client_2_.UI().AccountActivity(bob_.ID(), expected_account_);
+        client_2_.UI().AccountActivity(bob_.ID(), expectedAccount);
 
-    EXPECT_EQ(widget.AccountID(), expected_account_.str());
+    EXPECT_EQ(widget.AccountID(), expectedAccount.str());
     EXPECT_EQ(widget.Balance(), 1000000000);
     EXPECT_EQ(widget.BalancePolarity(), 1);
     EXPECT_EQ(widget.ContractID(), expected_unit_.str());
@@ -1491,10 +1493,11 @@ TEST_F(Regtest_payment_code, alice_after_unconfirmed_second_spend_wallet)
 TEST_F(Regtest_payment_code, alice_after_unconfirmed_second_spend_ui)
 {
     wait_for_counter(account_activity_alice_);
+    const auto& expectedAccount = SendHD().Parent().AccountID();
     const auto& widget =
-        client_1_.UI().AccountActivity(alice_.ID(), expected_account_);
+        client_1_.UI().AccountActivity(alice_.ID(), expectedAccount);
 
-    EXPECT_EQ(widget.AccountID(), expected_account_.str());
+    EXPECT_EQ(widget.AccountID(), expectedAccount.str());
     EXPECT_EQ(widget.Balance(), 7499999448);
     EXPECT_EQ(widget.BalancePolarity(), 1);
     EXPECT_EQ(widget.ContractID(), expected_unit_.str());

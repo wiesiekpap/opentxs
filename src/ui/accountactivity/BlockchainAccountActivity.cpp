@@ -61,8 +61,11 @@ auto BlockchainAccountActivityModel(
     -> std::unique_ptr<ui::implementation::AccountActivity>
 {
     using ReturnType = ui::implementation::BlockchainAccountActivity;
+    const auto [chain, owner] = api.Blockchain().LookupAccount(accountID);
 
-    return std::make_unique<ReturnType>(api, nymID, accountID, cb);
+    OT_ASSERT(owner == nymID);
+
+    return std::make_unique<ReturnType>(api, chain, nymID, accountID, cb);
 }
 }  // namespace opentxs::factory
 
@@ -70,6 +73,7 @@ namespace opentxs::ui::implementation
 {
 BlockchainAccountActivity::BlockchainAccountActivity(
     const api::client::internal::Manager& api,
+    const blockchain::Type chain,
     const identifier::Nym& nymID,
     const Identifier& accountID,
     const SimpleCallback& cb) noexcept
@@ -80,10 +84,8 @@ BlockchainAccountActivity::BlockchainAccountActivity(
           AccountType::Blockchain,
           cb,
           display::Definition{
-              blockchain::params::Data::Chains()
-                  .at(opentxs::blockchain::Chain(api, accountID))
-                  .scales_})
-    , chain_(opentxs::blockchain::Chain(Widget::api_, accountID))
+              blockchain::params::Data::Chains().at(chain).scales_})
+    , chain_(chain)
     , confirmed_(0)
     , balance_cb_(zmq::ListenCallback::Factory(
           [this](const auto& in) { pipeline_->Push(in); }))

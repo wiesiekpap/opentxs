@@ -116,9 +116,7 @@ auto ServerAction(
     const ContextLockCallback& lockCallback) -> api::client::ServerAction*;
 auto UI(
     const api::client::internal::Manager& api,
-#if OT_BLOCKCHAIN
     const api::client::internal::Blockchain& blockchain,
-#endif  // OT_BLOCKCHAIN
     const Flag& running) noexcept -> std::unique_ptr<api::client::internal::UI>;
 auto Wallet(const api::client::internal::Manager& client) -> api::Wallet*;
 auto Workflow(

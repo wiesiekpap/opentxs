@@ -31,9 +31,12 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/rpc/AccountEventType.hpp"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
+#include "opentxs/rpc/request/GetAccountActivity.hpp"
 #include "opentxs/rpc/request/ListAccounts.hpp"
+#include "opentxs/rpc/response/GetAccountActivity.hpp"
 #include "opentxs/rpc/response/ListAccounts.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
 #include "opentxs/ui/AccountList.hpp"
@@ -102,7 +105,7 @@ protected:
                        .Account(alex_.ID(), test_chain_)
                        .GetHD()
                        .at(0))
-        , expected_account_(client_1_.UI().BlockchainAccountID(test_chain_))
+        , expected_account_(account_.Parent().AccountID())
         , expected_notary_(client_1_.UI().BlockchainNotaryID(test_chain_))
         , expected_unit_(client_1_.UI().BlockchainUnitID(test_chain_))
         , expected_display_unit_(u8"UNITTEST")
@@ -243,7 +246,7 @@ TEST_F(Regtest_fixture_hd, init_account_activity)
     account_activity_.expected_ += 0;
     client_1_.UI().AccountActivity(
         alex_.ID(),
-        client_1_.UI().BlockchainAccountID(test_chain_),
+        expected_account_,
         make_cb(account_activity_, u8"account_activity_"));
     wait_for_counter(account_activity_);
     const auto& widget =
@@ -519,6 +522,75 @@ TEST_F(Regtest_fixture_hd, rpc_account_list)
     EXPECT_EQ(ids.size(), 1);
 
     for (const auto& id : ids) { EXPECT_EQ(expected.count(id), 1); }
+
+    {
+        auto bytes = ot::Space{};
+
+        EXPECT_TRUE(command.Serialize(ot::writer(bytes)));
+        EXPECT_TRUE(base.Serialize(ot::writer(bytes)));
+
+        auto recovered = ot::rpc::response::Factory(ot::reader(bytes));
+
+        EXPECT_EQ(recovered.Type(), ot::rpc::CommandType::list_accounts);
+    }
+}
+
+TEST_F(Regtest_fixture_hd, rpc_account_activity_receive)
+{
+    const auto index{client_1_.Instance()};
+    const auto command =
+        ot::rpc::request::GetAccountActivity{index, {expected_account_.str()}};
+    const auto base = ot_.RPC(command);
+    const auto& response = base.asGetAccountActivity();
+    const auto& codes = response.ResponseCodes();
+    const auto& events = response.Activity();
+
+    ASSERT_EQ(codes.size(), 1);
+    EXPECT_EQ(codes.at(0).first, 0);
+    EXPECT_EQ(codes.at(0).second, ot::rpc::ResponseCode::success);
+    ASSERT_EQ(events.size(), 1);
+
+    {
+        const auto& event = events.at(0);
+
+        EXPECT_EQ(event.AccountID(), expected_account_.str());
+        EXPECT_EQ(event.ConfirmedAmount(), 10000004950);
+        EXPECT_EQ(event.ContactID(), "");
+        EXPECT_EQ(event.Memo(), "");
+        EXPECT_EQ(event.PendingAmount(), 10000004950);
+        EXPECT_EQ(event.State(), 0);
+        EXPECT_EQ(event.Type(), ot::rpc::AccountEventType::incoming_blockchain);
+        EXPECT_EQ(event.UUID(), transactions_.at(0)->asHex());
+        EXPECT_EQ(event.WorkflowID(), "");
+    }
+    {
+        auto bytes = ot::Space{};
+
+        EXPECT_TRUE(base.Serialize(ot::writer(bytes)));
+
+        auto recovered = ot::rpc::response::Factory(ot::reader(bytes));
+
+        EXPECT_EQ(recovered.Type(), ot::rpc::CommandType::get_account_activity);
+
+        const auto& rEvents = recovered.asGetAccountActivity().Activity();
+
+        ASSERT_EQ(rEvents.size(), 1);
+
+        {
+            const auto& event = rEvents.at(0);
+
+            EXPECT_EQ(event.AccountID(), expected_account_.str());
+            EXPECT_EQ(event.ConfirmedAmount(), 10000004950);
+            EXPECT_EQ(event.ContactID(), "");
+            EXPECT_EQ(event.Memo(), "");
+            EXPECT_EQ(event.PendingAmount(), 10000004950);
+            EXPECT_EQ(event.State(), 0);
+            EXPECT_EQ(
+                event.Type(), ot::rpc::AccountEventType::incoming_blockchain);
+            EXPECT_EQ(event.UUID(), transactions_.at(0)->asHex());
+            EXPECT_EQ(event.WorkflowID(), "");
+        }
+    }
 }
 
 // TODO more rpc tests go here
@@ -927,6 +999,93 @@ TEST_F(Regtest_fixture_hd, account_activity_after_confirmed_spend)
     EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
     EXPECT_EQ(row->UUID(), transactions_.at(0)->asHex());
 }
+
+#if OT_WITH_RPC
+TEST_F(Regtest_fixture_hd, rpc_account_activity_spend)
+{
+    const auto index{client_1_.Instance()};
+    const auto command =
+        ot::rpc::request::GetAccountActivity{index, {expected_account_.str()}};
+    const auto base = ot_.RPC(command);
+    const auto& response = base.asGetAccountActivity();
+    const auto& codes = response.ResponseCodes();
+    const auto& events = response.Activity();
+
+    ASSERT_EQ(codes.size(), 1);
+    EXPECT_EQ(codes.at(0).first, 0);
+    EXPECT_EQ(codes.at(0).second, ot::rpc::ResponseCode::success);
+    ASSERT_EQ(events.size(), 2);
+
+    {
+        const auto& event = events.at(0);
+
+        EXPECT_EQ(event.AccountID(), expected_account_.str());
+        EXPECT_EQ(event.ConfirmedAmount(), -1400002298);
+        EXPECT_EQ(event.ContactID(), "");
+        EXPECT_EQ(event.Memo(), "");
+        EXPECT_EQ(event.PendingAmount(), -1400002298);
+        EXPECT_EQ(event.State(), 0);
+        EXPECT_EQ(event.Type(), ot::rpc::AccountEventType::outgoing_blockchain);
+        EXPECT_EQ(event.UUID(), transactions_.at(1)->asHex());
+        EXPECT_EQ(event.WorkflowID(), "");
+    }
+    {
+        const auto& event = events.at(1);
+
+        EXPECT_EQ(event.AccountID(), expected_account_.str());
+        EXPECT_EQ(event.ConfirmedAmount(), 10000004950);
+        EXPECT_EQ(event.ContactID(), "");
+        EXPECT_EQ(event.Memo(), "");
+        EXPECT_EQ(event.PendingAmount(), 10000004950);
+        EXPECT_EQ(event.State(), 0);
+        EXPECT_EQ(event.Type(), ot::rpc::AccountEventType::incoming_blockchain);
+        EXPECT_EQ(event.UUID(), transactions_.at(0)->asHex());
+        EXPECT_EQ(event.WorkflowID(), "");
+    }
+    {
+        auto bytes = ot::Space{};
+
+        EXPECT_TRUE(base.Serialize(ot::writer(bytes)));
+
+        auto recovered = ot::rpc::response::Factory(ot::reader(bytes));
+
+        EXPECT_EQ(recovered.Type(), ot::rpc::CommandType::get_account_activity);
+
+        const auto& rEvents = recovered.asGetAccountActivity().Activity();
+
+        ASSERT_EQ(rEvents.size(), 2);
+
+        {
+            const auto& event = rEvents.at(0);
+
+            EXPECT_EQ(event.AccountID(), expected_account_.str());
+            EXPECT_EQ(event.ConfirmedAmount(), -1400002298);
+            EXPECT_EQ(event.ContactID(), "");
+            EXPECT_EQ(event.Memo(), "");
+            EXPECT_EQ(event.PendingAmount(), -1400002298);
+            EXPECT_EQ(event.State(), 0);
+            EXPECT_EQ(
+                event.Type(), ot::rpc::AccountEventType::outgoing_blockchain);
+            EXPECT_EQ(event.UUID(), transactions_.at(1)->asHex());
+            EXPECT_EQ(event.WorkflowID(), "");
+        }
+        {
+            const auto& event = rEvents.at(1);
+
+            EXPECT_EQ(event.AccountID(), expected_account_.str());
+            EXPECT_EQ(event.ConfirmedAmount(), 10000004950);
+            EXPECT_EQ(event.ContactID(), "");
+            EXPECT_EQ(event.Memo(), "");
+            EXPECT_EQ(event.PendingAmount(), 10000004950);
+            EXPECT_EQ(event.State(), 0);
+            EXPECT_EQ(
+                event.Type(), ot::rpc::AccountEventType::incoming_blockchain);
+            EXPECT_EQ(event.UUID(), transactions_.at(0)->asHex());
+            EXPECT_EQ(event.WorkflowID(), "");
+        }
+    }
+}
+#endif  // OT_WITH_RPC
 
 TEST_F(Regtest_fixture_hd, account_list_after_confirmed_spend)
 {
