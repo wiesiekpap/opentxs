@@ -11,6 +11,7 @@
 #include <iosfwd>
 #include <vector>
 
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameIterator.hpp"
@@ -43,6 +44,7 @@ public:
     auto AddFrame() -> Frame& final;
     auto AddFrame(const ProtobufType& input) -> Frame& final;
     auto AddFrame(const void* input, const std::size_t size) -> Frame& final;
+    auto AppendBytes() noexcept -> AllocateOutput final;
     auto at(const std::size_t index) -> Frame& final;
 
     auto Body() -> FrameSection final;

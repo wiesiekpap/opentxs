@@ -10,6 +10,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
@@ -49,28 +50,26 @@ namespace network
 {
 namespace zeromq
 {
-class Message
+class OPENTXS_EXPORT Message
 {
 public:
-    OPENTXS_EXPORT static Pimpl<Message> Factory();
+    static Pimpl<Message> Factory();
 
-    OPENTXS_EXPORT virtual const Frame& at(const std::size_t index) const = 0;
-    OPENTXS_EXPORT virtual FrameIterator begin() const = 0;
-    OPENTXS_EXPORT virtual const FrameSection Body() const = 0;
-    OPENTXS_EXPORT virtual const Frame& Body_at(
-        const std::size_t index) const = 0;
-    OPENTXS_EXPORT virtual FrameIterator Body_begin() const = 0;
-    OPENTXS_EXPORT virtual FrameIterator Body_end() const = 0;
-    OPENTXS_EXPORT virtual FrameIterator end() const = 0;
-    OPENTXS_EXPORT virtual const FrameSection Header() const = 0;
-    OPENTXS_EXPORT virtual const Frame& Header_at(
-        const std::size_t index) const = 0;
-    OPENTXS_EXPORT virtual FrameIterator Header_begin() const = 0;
-    OPENTXS_EXPORT virtual FrameIterator Header_end() const = 0;
-    OPENTXS_EXPORT virtual std::size_t size() const = 0;
+    virtual const Frame& at(const std::size_t index) const = 0;
+    virtual FrameIterator begin() const = 0;
+    virtual const FrameSection Body() const = 0;
+    virtual const Frame& Body_at(const std::size_t index) const = 0;
+    virtual FrameIterator Body_begin() const = 0;
+    virtual FrameIterator Body_end() const = 0;
+    virtual FrameIterator end() const = 0;
+    virtual const FrameSection Header() const = 0;
+    virtual const Frame& Header_at(const std::size_t index) const = 0;
+    virtual FrameIterator Header_begin() const = 0;
+    virtual FrameIterator Header_end() const = 0;
+    virtual std::size_t size() const = 0;
 
-    OPENTXS_EXPORT virtual Frame& AddFrame() = 0;
-    OPENTXS_EXPORT virtual Frame& AddFrame(const ProtobufType& input) = 0;
+    virtual Frame& AddFrame() = 0;
+    virtual Frame& AddFrame(const ProtobufType& input) = 0;
 #ifndef SWIG
     template <
         typename Input,
@@ -80,37 +79,35 @@ public:
         std::enable_if_t<
             std::is_integral<decltype(std::declval<Input&>().size())>::value,
             int> = 0>
-    OPENTXS_EXPORT auto AddFrame(const Input& input) -> Frame&
+    auto AddFrame(const Input& input) -> Frame&
     {
         return AddFrame(input.data(), input.size());
     }
     template <
         typename Input,
         std::enable_if_t<std::is_trivially_copyable<Input>::value, int> = 0>
-    OPENTXS_EXPORT auto AddFrame(const Input& input) -> Frame&
+    auto AddFrame(const Input& input) -> Frame&
     {
         return AddFrame(&input, sizeof(input));
     }
     template <typename Input>
-    OPENTXS_EXPORT auto AddFrame(const Pimpl<Input>& input) -> Frame&
+    auto AddFrame(const Pimpl<Input>& input) -> Frame&
     {
         return AddFrame(input.get());
     }
-    OPENTXS_EXPORT virtual auto AddFrame(
-        const void* input,
-        const std::size_t size) -> Frame& = 0;
+    virtual auto AddFrame(const void* input, const std::size_t size)
+        -> Frame& = 0;
 #endif
-    OPENTXS_EXPORT virtual Frame& at(const std::size_t index) = 0;
-    OPENTXS_EXPORT virtual FrameSection Body() = 0;
-    OPENTXS_EXPORT virtual void EnsureDelimiter() = 0;
-    OPENTXS_EXPORT virtual FrameSection Header() = 0;
-    OPENTXS_EXPORT virtual void PrependEmptyFrame() = 0;
-    OPENTXS_EXPORT virtual Frame& Replace(
-        const std::size_t index,
-        OTZMQFrame&& frame) = 0;
-    OPENTXS_EXPORT virtual void StartBody() noexcept = 0;
+    virtual AllocateOutput AppendBytes() noexcept = 0;
+    virtual Frame& at(const std::size_t index) = 0;
+    virtual FrameSection Body() = 0;
+    virtual void EnsureDelimiter() = 0;
+    virtual FrameSection Header() = 0;
+    virtual void PrependEmptyFrame() = 0;
+    virtual Frame& Replace(const std::size_t index, OTZMQFrame&& frame) = 0;
+    virtual void StartBody() noexcept = 0;
 
-    OPENTXS_EXPORT virtual ~Message() = default;
+    virtual ~Message() = default;
 
 protected:
     Message() = default;
@@ -121,7 +118,7 @@ private:
 #ifdef _WIN32
 public:
 #endif
-    OPENTXS_EXPORT virtual Message* clone() const = 0;
+    virtual Message* clone() const = 0;
 #ifdef _WIN32
 private:
 #endif

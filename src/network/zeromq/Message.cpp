@@ -95,6 +95,15 @@ auto Message::AddFrame(const ProtobufType& input) -> Frame&
     return messages_.back().get();
 }
 
+auto Message::AppendBytes() noexcept -> AllocateOutput
+{
+    return [this](const std::size_t size) -> WritableView {
+        auto& frame = messages_.emplace_back(Factory::ZMQFrame(size));
+
+        return {const_cast<void*>(frame->data()), frame->size()};
+    };
+}
+
 auto Message::at(const std::size_t index) const -> const Frame&
 {
     OT_ASSERT(messages_.size() > index);
