@@ -17,25 +17,23 @@ template class opentxs::Pimpl<opentxs::network::zeromq::Frame>;
 
 namespace opentxs
 {
-auto Factory::ZMQFrame() -> network::zeromq::Frame*
-{
-    using ReturnType = network::zeromq::implementation::Frame;
+using ReturnType = network::zeromq::implementation::Frame;
 
-    return new ReturnType();
+auto Factory::ZMQFrame() -> network::zeromq::Frame* { return new ReturnType(); }
+
+auto Factory::ZMQFrame(const std::size_t size) -> network::zeromq::Frame*
+{
+    return new ReturnType(size);
 }
 
 auto Factory::ZMQFrame(const void* data, const std::size_t size)
     -> network::zeromq::Frame*
 {
-    using ReturnType = network::zeromq::implementation::Frame;
-
     return new ReturnType(data, size);
 }
 
 auto Factory::ZMQFrame(const ProtobufType& data) -> network::zeromq::Frame*
 {
-    using ReturnType = network::zeromq::implementation::Frame;
-
     return new ReturnType(data);
 }
 }  // namespace opentxs
