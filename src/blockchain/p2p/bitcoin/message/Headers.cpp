@@ -12,7 +12,6 @@
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
-#include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
@@ -24,6 +23,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 
 //#define OT_METHOD " opentxs::blockchain::p2p::bitcoin::message::Headers::"
 
@@ -60,8 +60,8 @@ auto BitcoinP2PHeaders(
 
     auto* it{static_cast<const std::byte*>(payload)};
     auto count = std::size_t{0};
-    const bool decodedSize = blockchain::bitcoin::DecodeCompactSizeFromPayload(
-        it, expectedSize, size, count);
+    const bool decodedSize =
+        network::blockchain::bitcoin::DecodeSize(it, expectedSize, size, count);
 
     if (false == decodedSize) {
         LogOutput(__FUNCTION__)(": CompactSize incomplete").Flush();

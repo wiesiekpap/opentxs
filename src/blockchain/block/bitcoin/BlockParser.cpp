@@ -15,13 +15,13 @@
 #include <string_view>
 #include <vector>
 
-#include "blockchain/bitcoin/CompactSize.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
+#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 
 namespace opentxs::factory
 {
@@ -76,7 +76,7 @@ auto parse_transactions(
 
     auto& [size, txCount] = sizeData;
 
-    if (false == bb::DecodeCompactSizeFromPayload(
+    if (false == network::blockchain::bitcoin::DecodeSize(
                      it, expectedSize, in.size(), txCount)) {
         throw std::runtime_error("Failed to decode transaction count");
     }
@@ -94,7 +94,7 @@ auto parse_transactions(
     auto& [index, transactions] = output;
 
     while (transactions.size() < transactionCount) {
-        auto data = bb::EncodedTransaction::Deserialize(
+        auto data = blockchain::bitcoin::EncodedTransaction::Deserialize(
             api,
             chain,
             ReadView{

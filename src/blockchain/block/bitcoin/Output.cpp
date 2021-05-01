@@ -20,8 +20,8 @@
 #include <type_traits>
 #include <utility>
 
-#include "blockchain/bitcoin/CompactSize.hpp"
 #include "internal/api/client/Client.hpp"
+#include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/contact/Contact.hpp"
 #include "opentxs/Bytes.hpp"
@@ -35,6 +35,7 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
 #include "opentxs/protobuf/BlockchainWalletKey.pb.h"
 

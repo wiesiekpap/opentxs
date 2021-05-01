@@ -27,7 +27,6 @@
 
 #include "Proto.hpp"
 #include "Proto.tpp"
-#include "blockchain/bitcoin/CompactSize.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
@@ -41,6 +40,7 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/crypto/HashType.hpp"
+#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/GCS.pb.h"
 #include "opentxs/protobuf/verify/GCS.hpp"
@@ -425,7 +425,8 @@ auto GCS::decompress() const noexcept -> const Elements&
 
 auto GCS::Encode() const noexcept -> OTData
 {
-    const auto bytes = bitcoin::CompactSize(count_).Encode();
+    using CompactSize = network::blockchain::bitcoin::CompactSize;
+    const auto bytes = CompactSize{count_}.Encode();
     auto output = Data::Factory(bytes.data(), bytes.size());
     output->Concatenate(compressed_->data(), compressed_->size());
 

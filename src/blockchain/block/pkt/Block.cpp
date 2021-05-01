@@ -13,12 +13,11 @@
 #include <stdexcept>
 #include <type_traits>
 
-#include "blockchain/bitcoin/CompactSize.hpp"
 #include "blockchain/block/bitcoin/BlockParser.hpp"
-#include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 
 #define OT_METHOD "opentxs::blockchain::block::pkt::Block::"
 
@@ -63,9 +62,9 @@ auto parse_pkt_block(
                 "Block size too short (proof compact size)");
         }
 
-        auto proofCS = bb::CompactSize{};
+        auto proofCS = network::blockchain::bitcoin::CompactSize{};
 
-        if (false == bb::DecodeCompactSizeFromPayload(
+        if (false == network::blockchain::bitcoin::DecodeSize(
                          it, expectedSize, in.size(), proofCS)) {
             throw std::runtime_error("Failed to decode proof size");
         }
@@ -87,7 +86,8 @@ auto parse_pkt_block(
     }
 
     const auto proofEnd{it};
-    auto sizeData = ReturnType::CalculatedSize{in.size(), bb::CompactSize{}};
+    auto sizeData = ReturnType::CalculatedSize{
+        in.size(), network::blockchain::bitcoin::CompactSize{}};
     auto [index, transactions] = parse_transactions(
         api, blockchain, chain, in, header, sizeData, it, expectedSize);
 
@@ -131,7 +131,8 @@ auto Block::extra_bytes() const noexcept -> std::size_t
     if (false == proof_bytes_.has_value()) {
         auto cb = [](const auto& previous, const auto& in) -> std::size_t {
             const auto& [type, proof] = in;
-            const auto cs = bb::CompactSize{proof.size()};
+            const auto cs =
+                network::blockchain::bitcoin::CompactSize{proof.size()};
 
             return previous + sizeof(type) + cs.Total();
         };
@@ -163,7 +164,7 @@ auto Block::serialize_post_header(ByteIterator& it, std::size_t& remaining)
             std::advance(it, size);
         }
 
-        const auto cs = bb::CompactSize{proof.size()};
+        const auto cs = network::blockchain::bitcoin::CompactSize{proof.size()};
 
         if (false == cs.Encode(preallocated(remaining, it))) {
             LogOutput(OT_METHOD)(__FUNCTION__)(

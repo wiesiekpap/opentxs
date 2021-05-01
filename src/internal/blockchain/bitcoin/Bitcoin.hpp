@@ -15,11 +15,11 @@
 #include <tuple>
 #include <vector>
 
-#include "blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 
 namespace opentxs
 {
@@ -47,45 +47,9 @@ namespace be = boost::endian;
 
 namespace opentxs::blockchain::bitcoin
 {
-/// output: the decoded value
-///
-/// input: gets incremented to the byte past the CompactSize
-///
-/// expectedSize: gets incremented by csBytes
-///
-/// csExtraBytes: additional bytes consumed by the CompactSize beyond the
-/// minimum of 1 byte. For small encoded sizes, this will be 0.
-///
-/// A CompactSize is at least one byte, so before you attempt to execute this
-/// this function position input to the first byte and set expectedSize
-/// appropriately to make sure the input contains at least one byte.
-/// If the CompactSize is larger than 1 byte, then expectedSize will be updated.
-///
-/// In all cases input will be advanced as needed.
-///
-/// Normally you don't need to worry about how many bytes the CompactSize
-/// actually occupied because you're just going to move on to reading the next
-/// element, but just in case you do there's an overload which outputs
-/// csExtraBytes
 using Byte = const std::byte;
 using ByteIterator = Byte*;
-
-OPENTXS_EXPORT auto DecodeCompactSizeFromPayload(
-    ByteIterator& input,
-    std::size_t& expectedSize,
-    const std::size_t size,
-    std::size_t& output) noexcept -> bool;
-auto DecodeCompactSizeFromPayload(
-    ByteIterator& input,
-    std::size_t& expectedSize,
-    const std::size_t size,
-    CompactSize& output) noexcept -> bool;
-auto DecodeCompactSizeFromPayload(
-    ByteIterator& input,
-    std::size_t& expectedSize,
-    const std::size_t size,
-    std::size_t& output,
-    std::size_t& csExtraBytes) noexcept -> bool;
+using CompactSize = network::blockchain::bitcoin::CompactSize;
 
 /// input: gets incremented to the byte past the segwit flag byte if transaction
 /// is segwit

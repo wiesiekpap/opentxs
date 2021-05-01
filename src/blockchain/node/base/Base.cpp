@@ -24,7 +24,7 @@
 #include "internal/api/client/Client.hpp"
 #include "internal/api/network/Network.hpp"
 #include "internal/blockchain/Params.hpp"
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -37,6 +37,7 @@
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"

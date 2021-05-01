@@ -17,9 +17,6 @@
 #include <utility>
 
 #include "Proto.tpp"
-#if OT_BLOCKCHAIN
-#include "blockchain/bitcoin/CompactSize.hpp"
-#endif  // OT_BLOCKCHAIN
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/client/Factory.hpp"

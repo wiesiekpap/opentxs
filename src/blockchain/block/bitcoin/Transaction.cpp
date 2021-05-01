@@ -19,7 +19,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "blockchain/bitcoin/CompactSize.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"  // IWYU pragma: keep
@@ -41,6 +40,7 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/protobuf/BlockchainTransaction.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionInput.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"

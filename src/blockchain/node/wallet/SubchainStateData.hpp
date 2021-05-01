@@ -7,6 +7,7 @@
 
 #include <atomic>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <optional>
 #include <queue>

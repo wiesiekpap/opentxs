@@ -302,7 +302,7 @@ auto EncodedTransaction::Deserialize(
         throw std::runtime_error("Partial transaction (txin count)");
     }
 
-    if (false == bb::DecodeCompactSizeFromPayload(
+    if (false == network::blockchain::bitcoin::DecodeSize(
                      it, expectedSize, in.size(), inCount)) {
         throw std::runtime_error("Failed to decode txin count");
     }
@@ -328,7 +328,7 @@ auto EncodedTransaction::Deserialize(
             throw std::runtime_error("Partial input (script size)");
         }
 
-        if (false == bb::DecodeCompactSizeFromPayload(
+        if (false == network::blockchain::bitcoin::DecodeSize(
                          it, expectedSize, in.size(), scriptBytes)) {
             throw std::runtime_error("Failed to decode input script bytes");
         }
@@ -363,7 +363,7 @@ auto EncodedTransaction::Deserialize(
         throw std::runtime_error("Partial transaction (txout count)");
     }
 
-    if (false == bb::DecodeCompactSizeFromPayload(
+    if (false == network::blockchain::bitcoin::DecodeSize(
                      it, expectedSize, in.size(), outCount)) {
         throw std::runtime_error("Failed to decode txout count");
     }
@@ -392,7 +392,7 @@ auto EncodedTransaction::Deserialize(
             throw std::runtime_error("Partial output (script size)");
         }
 
-        if (false == bb::DecodeCompactSizeFromPayload(
+        if (false == network::blockchain::bitcoin::DecodeSize(
                          it, expectedSize, in.size(), scriptBytes)) {
             throw std::runtime_error("Failed to decode output script bytes");
         }
@@ -414,7 +414,7 @@ auto EncodedTransaction::Deserialize(
         for (auto i{0u}; i < inputs.size(); ++i) {
             auto& [witnessCount, witnessItems] = witnesses.emplace_back();
 
-            if (false == bb::DecodeCompactSizeFromPayload(
+            if (false == network::blockchain::bitcoin::DecodeSize(
                              it, expectedSize, in.size(), witnessCount)) {
                 throw std::runtime_error("Failed to witness item count");
             }
@@ -427,7 +427,7 @@ auto EncodedTransaction::Deserialize(
             for (auto w{0u}; w < witnessCount.Value(); ++w) {
                 auto& [witnessBytes, push] = witnessItems.emplace_back();
 
-                if (false == bb::DecodeCompactSizeFromPayload(
+                if (false == network::blockchain::bitcoin::DecodeSize(
                                  it, expectedSize, in.size(), witnessBytes)) {
                     throw std::runtime_error("Failed to witness item bytes");
                 }

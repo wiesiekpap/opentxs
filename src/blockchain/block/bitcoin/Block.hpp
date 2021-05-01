@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "1_Internal.hpp"
-#include "blockchain/bitcoin/CompactSize.hpp"
 #include "blockchain/block/Block.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "opentxs/Bytes.hpp"
@@ -25,6 +24,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
+#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 
 namespace opentxs
 {
@@ -55,15 +55,13 @@ class Transaction;
 }  // namespace blockchain
 }  // namespace opentxs
 
-namespace bb = opentxs::blockchain::bitcoin;
-
 namespace opentxs::blockchain::block::bitcoin::implementation
 {
 class Block : public bitcoin::Block, public block::implementation::Block
 {
 public:
     using CalculatedSize =
-        std::pair<std::size_t, blockchain::bitcoin::CompactSize>;
+        std::pair<std::size_t, network::blockchain::bitcoin::CompactSize>;
     using TxidIndex = std::vector<Space>;
     using TransactionMap = std::map<ReadView, value_type>;
 

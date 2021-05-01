@@ -21,7 +21,6 @@
 #include "bip158/Bip158.hpp"
 #include "bip158/bch_filter_1307544.hpp"
 #include "bip158/bch_filter_1307723.hpp"
-#include "blockchain/bitcoin/CompactSize.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
@@ -42,6 +41,7 @@
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 
 namespace ottest
 {
@@ -308,7 +308,7 @@ TEST_F(Test_BitcoinBlock, bip158)
             auto expectedSize = std::size_t{1};
             auto it = static_cast<bb::ByteIterator>(encodedFilter->data());
 
-            ASSERT_TRUE(bb::DecodeCompactSizeFromPayload(
+            ASSERT_TRUE(opentxs::network::blockchain::bitcoin::DecodeSize(
                 it, expectedSize, encodedFilter->size(), encodedElements));
         }
 

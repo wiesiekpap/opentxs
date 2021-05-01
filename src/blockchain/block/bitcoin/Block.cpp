@@ -212,7 +212,8 @@ auto parse_normal_block(
     OT_ASSERT(pHeader);
 
     const auto& header = *pHeader;
-    auto sizeData = ReturnType::CalculatedSize{in.size(), bb::CompactSize{}};
+    auto sizeData = ReturnType::CalculatedSize{
+        in.size(), network::blockchain::bitcoin::CompactSize{}};
     auto [index, transactions] = parse_transactions(
         api, blockchain, chain, in, header, sizeData, it, expectedSize);
 
@@ -479,7 +480,8 @@ auto Block::calculate_merkle_value(
 
 auto Block::calculate_size() const noexcept -> CalculatedSize
 {
-    auto output = CalculatedSize{0, bb::CompactSize(transactions_.size())};
+    auto output = CalculatedSize{
+        0, network::blockchain::bitcoin::CompactSize(transactions_.size())};
     auto& [bytes, cs] = output;
     auto cb = [](const auto& previous, const auto& in) -> std::size_t {
         return previous + in.second->CalculateSize();

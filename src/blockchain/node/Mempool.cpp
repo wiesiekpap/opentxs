@@ -8,19 +8,23 @@
 #include "blockchain/node/Mempool.hpp"  // IWYU pragma: associated
 
 #include <robin_hood.h>
-#include <array>
-#include <mutex>
+#include <algorithm>
+#include <chrono>
 #include <queue>
 #include <set>
-#include <tuple>
+#include <shared_mutex>
+#include <string_view>
+#include <utility>
 
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
-#include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/util/WorkType.hpp"
 

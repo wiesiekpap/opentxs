@@ -17,7 +17,6 @@
 
 #include "blockchain/DownloadTask.hpp"
 #include "blockchain/bitcoin/Inventory.hpp"
-#include "blockchain/node/Mempool.hpp"
 #include "blockchain/p2p/Peer.hpp"
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/message/Cmpctblock.hpp"

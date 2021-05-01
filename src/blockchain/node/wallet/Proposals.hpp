@@ -27,7 +27,6 @@
 #include <vector>
 
 #include "1_Internal.hpp"
-#include "blockchain/bitcoin/CompactSize.hpp"
 #include "blockchain/node/wallet/Account.hpp"
 #include "blockchain/node/wallet/Accounts.hpp"
 #include "blockchain/node/wallet/DeterministicStateData.hpp"
@@ -47,6 +46,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
