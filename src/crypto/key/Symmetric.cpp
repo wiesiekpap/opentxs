@@ -8,6 +8,7 @@
 #include "crypto/key/Symmetric.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
+#include <functional>
 #include <limits>
 #include <memory>
 #include <string>

@@ -226,21 +226,3 @@ set_target_properties(
 
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:messages>)
 add_dependencies(generated_code messages)
-
-if(OPENTXS_STANDALONE)
-  install(
-    DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    DESTINATION include/opentxs
-    COMPONENT dev
-    FILES_MATCHING
-    PATTERN "*.h"
-  )
-
-  install(
-    DIRECTORY "${opentxs_SOURCE_DIR}/include/opentxs/protobuf"
-    DESTINATION include/opentxs
-    COMPONENT dev
-    FILES_MATCHING
-    PATTERN "*.hpp"
-  )
-endif()

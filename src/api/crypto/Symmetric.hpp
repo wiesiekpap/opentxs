@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <iosfwd>
 
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"

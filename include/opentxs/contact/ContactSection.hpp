@@ -15,6 +15,7 @@
 #include <memory>
 #include <string>
 
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/Proto.tpp"
 #include "opentxs/Types.hpp"

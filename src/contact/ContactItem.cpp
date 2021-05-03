@@ -13,6 +13,7 @@
 
 #include "internal/contact/Contact.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Proto.hpp"
 #include "opentxs/Proto.tpp"
 #include "opentxs/contact/ContactItemAttribute.hpp"
 #include "opentxs/core/Identifier.hpp"

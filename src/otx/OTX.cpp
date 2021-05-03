@@ -8,7 +8,9 @@
 #include "internal/otx/OTX.hpp"  // IWYU pragma: associated
 
 #include "opentxs/otx/ConsensusType.hpp"
+#include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/otx/OTXPushType.hpp"
+#include "opentxs/otx/ServerReplyType.hpp"
 #include "opentxs/otx/ServerRequestType.hpp"
 #include "opentxs/protobuf/ConsensusEnums.pb.h"
 #include "opentxs/protobuf/OTXEnums.pb.h"

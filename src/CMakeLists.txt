@@ -180,122 +180,122 @@ if(OPENTXS_STANDALONE OR OT_INSTALL_LIBRARY_DEPENDENCIES)
 endif()
 
 if(OT_INSTALL_LIBRARY_DEPENDENCIES)
-    string(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE_SUFFIX)
-    get_target_property(
-      Boost_filesystem_LIBRARY
-      Boost::filesystem
-      IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
-    )
-    get_target_property(
-      Boost_iostreams_LIBRARY
-      Boost::iostreams
-      IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
-    )
-    get_target_property(
-      Boost_system_LIBRARY
-      Boost::system
-      IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
-    )
-    get_target_property(
-      Boost_thread_LIBRARY
-      Boost::thread
-      IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
-    )
-    get_target_property(
-      Protobuf_LITE_LIBRARY
-      protobuf::libprotobuf-lite
-      IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
-    )
-    get_target_property(
-      ZLIB_LIBRARY
-      ZLIB::ZLIB
-      IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
-    )
+  string(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE_SUFFIX)
+  get_target_property(
+    Boost_filesystem_LIBRARY
+    Boost::filesystem
+    IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
+  )
+  get_target_property(
+    Boost_iostreams_LIBRARY
+    Boost::iostreams
+    IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
+  )
+  get_target_property(
+    Boost_system_LIBRARY
+    Boost::system
+    IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
+  )
+  get_target_property(
+    Boost_thread_LIBRARY
+    Boost::thread
+    IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
+  )
+  get_target_property(
+    Protobuf_LITE_LIBRARY
+    protobuf::libprotobuf-lite
+    IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
+  )
+  get_target_property(
+    ZLIB_LIBRARY
+    ZLIB::ZLIB
+    IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
+  )
 
-    if(OT_USE_VCPKG_TARGETS)
-      get_target_property(
-        ZMQ_LIBRARY_PATH
-        "${OT_ZMQ_TARGET}"
-        IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
-      )
-    else()
-      set(ZMQ_LIBRARY_PATH "${ZMQ_LIBRARY}")
-    endif()
+  if(OT_USE_VCPKG_TARGETS)
+    get_target_property(
+      ZMQ_LIBRARY_PATH
+      "${OT_ZMQ_TARGET}"
+      IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
+    )
+  else()
+    set(ZMQ_LIBRARY_PATH "${ZMQ_LIBRARY}")
+  endif()
 
-    if(OPENTXS_BUILD_TESTS)
-      install(
-        FILES "${GTEST_LIBRARY}"
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        COMPONENT main
-      )
-    endif(OPENTXS_BUILD_TESTS)
-
+  if(OPENTXS_BUILD_TESTS)
     install(
-      FILES
-        "${Boost_filesystem_LIBRARY}"
-        "${Boost_iostreams_LIBRARY}"
-        "${Boost_system_LIBRARY}"
-        "${Boost_thread_LIBRARY}"
-        "${Protobuf_LITE_LIBRARY}"
-        "${SODIUM_LIBRARY}"
-        "${ZLIB_LIBRARY}"
-        "${ZMQ_LIBRARY_PATH}"
+      FILES "${GTEST_LIBRARY}"
       DESTINATION ${CMAKE_INSTALL_LIBDIR}
       COMPONENT main
     )
+  endif(OPENTXS_BUILD_TESTS)
 
-    if(Boost_stacktrace_basic_FOUND)
-      get_target_property(
-        Boost_stacktrace_basic_LIBRARY
-        Boost::stacktrace_basic
-        IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
-      )
-      install(
-        FILES "${Boost_stacktrace_basic_LIBRARY}"
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        COMPONENT main
-      )
-    endif()
+  install(
+    FILES
+      "${Boost_filesystem_LIBRARY}"
+      "${Boost_iostreams_LIBRARY}"
+      "${Boost_system_LIBRARY}"
+      "${Boost_thread_LIBRARY}"
+      "${Protobuf_LITE_LIBRARY}"
+      "${SODIUM_LIBRARY}"
+      "${ZLIB_LIBRARY}"
+      "${ZMQ_LIBRARY_PATH}"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    COMPONENT main
+  )
 
-    if(DHT_EXPORT)
-      message(WARNING "Installing OpenDHT dependencies not supported yet")
-    endif(DHT_EXPORT)
+  if(Boost_stacktrace_basic_FOUND)
+    get_target_property(
+      Boost_stacktrace_basic_LIBRARY
+      Boost::stacktrace_basic
+      IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
+    )
+    install(
+      FILES "${Boost_stacktrace_basic_LIBRARY}"
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      COMPONENT main
+    )
+  endif()
 
-    if(SQLITE_EXPORT)
-      get_target_property(
-        SQLITE3_LIBRARY
-        SQLite::SQLite3
-        IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
-      )
+  if(DHT_EXPORT)
+    message(WARNING "Installing OpenDHT dependencies not supported yet")
+  endif(DHT_EXPORT)
 
-      install(
-        FILES "${SQLITE3_LIBRARY}"
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        COMPONENT main
-      )
-    endif(SQLITE_EXPORT)
+  if(SQLITE_EXPORT)
+    get_target_property(
+      SQLITE3_LIBRARY
+      SQLite::SQLite3
+      IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
+    )
 
-    if(LMDB_EXPORT)
-      install(
-        FILES "${LMDB_LIBRARY}"
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        COMPONENT main
-      )
-    endif()
+    install(
+      FILES "${SQLITE3_LIBRARY}"
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      COMPONENT main
+    )
+  endif(SQLITE_EXPORT)
 
-    if(OPENSSL_EXPORT)
-      install(
-        FILES "${OPENSSL_CRYPTO_LIBRARY}" "${OPENSSL_SSL_LIBRARY}"
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        COMPONENT main
-      )
-    endif()
+  if(LMDB_EXPORT)
+    install(
+      FILES "${LMDB_LIBRARY}"
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      COMPONENT main
+    )
+  endif()
 
-    if(LIBSECP256K1_EXPORT)
-      install(
-        FILES "${SECP256K1_LIBRARY}"
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        COMPONENT main
-      )
-    endif()
+  if(OPENSSL_EXPORT)
+    install(
+      FILES "${OPENSSL_CRYPTO_LIBRARY}" "${OPENSSL_SSL_LIBRARY}"
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      COMPONENT main
+    )
+  endif()
+
+  if(LIBSECP256K1_EXPORT)
+    install(
+      FILES "${SECP256K1_LIBRARY}"
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      COMPONENT main
+    )
+  endif()
 endif()

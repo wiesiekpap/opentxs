@@ -10,7 +10,9 @@
 
 #pragma once
 
+#include <cstdint>
 #include <map>
+#include <string>
 
 #include "opentxs/Bytes.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
@@ -19,6 +21,14 @@
 #include "opentxs/protobuf/PeerEnums.pb.h"
 #include "opentxs/protobuf/ZMQEnums.pb.h"
 #include "util/Blank.hpp"
+
+namespace opentxs
+{
+namespace proto
+{
+class PairEvent;
+}  // namespace proto
+}  // namespace opentxs
 
 namespace opentxs::contract::peer::internal
 {

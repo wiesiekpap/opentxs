@@ -16,6 +16,7 @@
 #include "internal/api/client/Factory.hpp"
 #include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
+#include "opentxs/Proto.hpp"
 #include "opentxs/Proto.tpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"

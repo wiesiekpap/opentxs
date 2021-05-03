@@ -14,7 +14,6 @@
 #include "2_Factory.hpp"
 #include "core/contract/peer/PeerRequest.hpp"
 #include "internal/api/Api.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/core/Log.hpp"

@@ -24,6 +24,7 @@
 #include "internal/blockchain/Params.hpp"
 #include "internal/crypto/key/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Proto.hpp"
 #include "opentxs/Proto.tpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Factory.hpp"

@@ -3,14 +3,17 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/otx/ConsensusType.hpp"
+// IWYU pragma: no_include "opentxs/otx/LastReplyStatus.hpp"
+// IWYU pragma: no_include "opentxs/otx/OTXPushType.hpp"
+// IWYU pragma: no_include "opentxs/otx/ServerReplyType.hpp"
+// IWYU pragma: no_include "opentxs/otx/ServerRequestType.hpp"
+
 #pragma once
 
 #include <map>
 
-#include "opentxs/otx/ConsensusType.hpp"
-#include "opentxs/otx/LastReplyStatus.hpp"
-#include "opentxs/otx/ServerReplyType.hpp"
-#include "opentxs/otx/ServerRequestType.hpp"
+#include "opentxs/otx/Types.hpp"
 #include "opentxs/protobuf/ConsensusEnums.pb.h"
 #include "opentxs/protobuf/OTXEnums.pb.h"
 

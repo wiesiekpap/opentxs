@@ -21,6 +21,7 @@
 
 #include "internal/identity/Identity.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
