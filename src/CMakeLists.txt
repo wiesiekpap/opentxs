@@ -168,15 +168,18 @@ if(OPENTXS_STANDALONE)
     DESTINATION include/opentxs
     COMPONENT dev
   )
+endif()
 
+if(OPENTXS_STANDALONE OR OT_INSTALL_LIBRARY_DEPENDENCIES)
   install(
     TARGETS opentxs
     DESTINATION ${CMAKE_INSTALL_LIBDIR}
     EXPORT opentxs-targets
     COMPONENT main
   )
+endif()
 
-  if(OT_INSTALL_LIBRARY_DEPENDENCIES)
+if(OT_INSTALL_LIBRARY_DEPENDENCIES)
     string(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE_SUFFIX)
     get_target_property(
       Boost_filesystem_LIBRARY
@@ -295,5 +298,4 @@ if(OPENTXS_STANDALONE)
         COMPONENT main
       )
     endif()
-  endif()
 endif()
