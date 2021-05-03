@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CLIENT_NYMDATA_HPP
 #define OPENTXS_CLIENT_NYMDATA_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
+// IWYU pragma: no_include "opentxs/contact/ContactItemType.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/Types.hpp"

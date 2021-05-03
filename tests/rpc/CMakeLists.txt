@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Prevent building tests that still include protobuf generated header files.
-#add_opentx_test(unittests-opentxs-rpc-async Test_Rpc_Async.cpp)
+# add_opentx_test(unittests-opentxs-rpc-async Test_Rpc_Async.cpp)
 add_opentx_test(
   unittests-opentxs-rpc-get-account-activity GetAccountActivity.cpp
 )
@@ -20,7 +20,7 @@ if(OT_BLOCKCHAIN_EXPORT)
 endif()
 
 # Prevent building tests that still include protobuf generated header files.
-#add_opentx_test(unittests-opentxs-rpc-sync Test_Rpc.cpp)
+# add_opentx_test(unittests-opentxs-rpc-sync Test_Rpc.cpp)
 
-#set_tests_properties(unittests-opentxs-rpc-async PROPERTIES DISABLED TRUE)
-#set_tests_properties(unittests-opentxs-rpc-sync PROPERTIES DISABLED TRUE)
+# set_tests_properties(unittests-opentxs-rpc-async PROPERTIES DISABLED TRUE)
+# set_tests_properties(unittests-opentxs-rpc-sync PROPERTIES DISABLED TRUE)

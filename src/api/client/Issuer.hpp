@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <iosfwd>
 #include <map>
 #include <set>
 #include <string>

@@ -22,6 +22,7 @@
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/protobuf/ContactData.pb.h"
 #include "opentxs/protobuf/Nym.pb.h"  // IWYU pragma: keep
 
 #define OT_METHOD "opentxs::NymData::"
