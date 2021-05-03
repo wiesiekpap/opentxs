@@ -10,9 +10,9 @@
 #include <list>
 #include <memory>
 
-#include "2_Factory.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/core/contract/Contract.hpp"
+#include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -32,14 +32,14 @@
 
 #define OT_METHOD "opentxs::contract::peer::implementation::Request::"
 
-namespace opentxs
+namespace opentxs::factory
 {
-auto Factory::PeerRequest(const api::Core& api) noexcept
-    -> std::shared_ptr<contract::peer::Request>
+auto PeerRequest(const api::Core& api) noexcept
+    -> std::unique_ptr<contract::peer::Request>
 {
-    return std::make_shared<contract::peer::blank::Request>(api);
+    return std::make_unique<contract::peer::blank::Request>(api);
 }
-}  // namespace opentxs
+}  // namespace opentxs::factory
 
 namespace opentxs::contract::peer::implementation
 {
@@ -54,7 +54,7 @@ Request::Request(
     : Signable(api, nym, version, conditions, "")
     , initiator_(nym->ID())
     , recipient_(recipient)
-    , server_(Identifier::Factory(server))
+    , server_(server)
     , cookie_(Identifier::Random())
     , type_(type)
 {
@@ -78,7 +78,7 @@ Request::Request(
               : Signatures{})
     , initiator_(api.Factory().NymID(serialized.initiator()))
     , recipient_(api.Factory().NymID(serialized.recipient()))
-    , server_(Identifier::Factory(serialized.server()))
+    , server_(api.Factory().ServerID(serialized.server()))
     , cookie_(Identifier::Factory(serialized.cookie()))
     , type_(internal::translate(serialized.type()))
 {

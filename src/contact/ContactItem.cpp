@@ -13,6 +13,7 @@
 
 #include "internal/contact/Contact.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Proto.tpp"
 #include "opentxs/contact/ContactItemAttribute.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -250,6 +251,21 @@ ContactItem::ContactItem(
 {
 }
 
+ContactItem::ContactItem(
+    const api::internal::Core& api,
+    const std::string& nym,
+    const VersionNumber parentVersion,
+    const contact::ContactSectionName section,
+    const ReadView& bytes)
+    : ContactItem(
+          api,
+          nym,
+          parentVersion,
+          section,
+          proto::Factory<proto::ContactItem>(bytes))
+{
+}
+
 auto ContactItem::operator==(const ContactItem& rhs) const -> bool
 {
     if (false == (imp_->version_ == rhs.imp_->version_)) { return false; }
@@ -297,6 +313,14 @@ auto ContactItem::isPrimary() const -> bool
 auto ContactItem::Section() const -> const contact::ContactSectionName&
 {
     return imp_->section_;
+}
+
+auto ContactItem::Serialize(AllocateOutput destination, const bool withID) const
+    -> bool
+{
+    write(Serialize(withID), destination);
+
+    return true;
 }
 
 auto ContactItem::Serialize(const bool withID) const -> proto::ContactItem

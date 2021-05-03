@@ -22,6 +22,7 @@
 #include "internal/api/server/Server.hpp"
 #include "internal/blind/Blind.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Proto.tpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
 #include "opentxs/blind/Mint.hpp"
@@ -130,6 +131,12 @@ auto Factory::Purse(
 auto Factory::Purse(
     const api::internal::Core& api,
     const proto::Purse& serialized) -> blind::Purse*
+{
+    return new blind::implementation::Purse(api, serialized);
+}
+
+auto Factory::Purse(const api::internal::Core& api, const ReadView& serialized)
+    -> blind::Purse*
 {
     return new blind::implementation::Purse(api, serialized);
 }
@@ -334,6 +341,11 @@ Purse::Purse(const api::internal::Core& api, const proto::Purse& in)
     for (const auto& serialized : in.token()) {
         tokens_.emplace_back(Factory::Token(api_, *this, serialized).release());
     }
+}
+
+Purse::Purse(const api::internal::Core& api, const ReadView& in)
+    : Purse(api, opentxs::proto::Factory<proto::Purse>(in))
+{
 }
 
 Purse::Purse(const api::internal::Core& api, const Purse& owner)
@@ -742,6 +754,11 @@ auto Purse::Serialize() const -> proto::Purse
     }
 
     return output;
+}
+
+auto Purse::Serialize(AllocateOutput destination) const noexcept -> void
+{
+    write(Serialize(), destination);
 }
 
 auto Purse::Unlock(

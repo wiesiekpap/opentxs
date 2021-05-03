@@ -226,6 +226,8 @@ public:
         -> OTBailmentRequest final;
     auto BailmentRequest(const Nym_p& nym, const proto::PeerRequest& serialized)
         const noexcept(false) -> OTBailmentRequest final;
+    auto BailmentRequest(const Nym_p& nym, const ReadView& view) const
+        noexcept(false) -> OTBailmentRequest final;
     auto Basket() const -> std::unique_ptr<opentxs::Basket> final;
     auto Basket(std::int32_t nCount, std::int64_t lMinimumTransferAmount) const
         -> std::unique_ptr<opentxs::Basket> final;
@@ -328,6 +330,10 @@ public:
     {
         return {};
     }
+    auto BlockHeader(const ReadView& serialized) const -> BlockHeaderP override
+    {
+        return {};
+    }
     auto BlockHeader(
         const opentxs::blockchain::Type type,
         const opentxs::Data& raw) const -> BlockHeaderP override
@@ -419,6 +425,8 @@ public:
         -> OTEnvelope final;
     auto Envelope(const opentxs::crypto::Envelope::SerializedType& serialized)
         const noexcept(false) -> OTEnvelope final;
+    auto Envelope(const opentxs::ReadView& serialized) const noexcept(false)
+        -> OTEnvelope final;
     auto Identifier() const -> OTIdentifier final;
     auto Identifier(const std::string& serialized) const -> OTIdentifier final;
     auto Identifier(const opentxs::String& serialized) const
@@ -562,6 +570,8 @@ public:
         -> OTPaymentCode final;
     auto PaymentCode(const proto::PaymentCode& serialized) const noexcept
         -> OTPaymentCode final;
+    auto PaymentCode(const ReadView& serialized) const noexcept
+        -> OTPaymentCode final;
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
     auto PaymentCode(
         const std::string& seed,
@@ -619,6 +629,8 @@ public:
     auto PeerRequest() const noexcept -> OTPeerRequest final;
     auto PeerRequest(const Nym_p& nym, const proto::PeerRequest& serialized)
         const noexcept(false) -> OTPeerRequest final;
+    auto PeerRequest(const Nym_p& nym, const ReadView& view) const
+        noexcept(false) -> OTPeerRequest final;
     auto Pipeline(
         std::function<void(opentxs::network::zeromq::Message&)> callback) const
         -> OTZMQPipeline final;

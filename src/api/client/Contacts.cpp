@@ -32,6 +32,7 @@
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/protobuf/Contact.pb.h"
 #include "opentxs/util/WorkType.hpp"
 
 #define OT_METHOD "opentxs::api::implementation::Contacts::"
@@ -563,7 +564,7 @@ auto Contacts::NymToContact(const identifier::Nym& nymID) const -> OTIdentifier
     // Contact does not yet exist. Create it.
     std::string label{""};
     auto nym = api_.Wallet().Nym(nymID);
-    auto code = api_.Factory().PaymentCode("");
+    auto code = api_.Factory().PaymentCode(std::string{});
 
     if (nym) {
         label = nym->Claims().Name();

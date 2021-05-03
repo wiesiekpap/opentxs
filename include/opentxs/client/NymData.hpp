@@ -22,7 +22,6 @@
 
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/identity/Nym.hpp"
 
@@ -258,6 +257,7 @@ public:
     bool SetContactData(
         const proto::ContactData& data,
         const PasswordPrompt& reason);
+    bool SetContactData(const ReadView& data, const PasswordPrompt& reason);
     bool SetScope(
         const contact::ContactItemType type,
         const std::string& name,

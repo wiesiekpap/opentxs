@@ -134,6 +134,15 @@ auto Factory::Nym(
         return nullptr;
     }
 }
+
+auto Factory::Nym(
+    const api::internal::Core& api,
+    const ReadView& view,
+    const std::string& alias) -> identity::internal::Nym*
+{
+    return Nym(api, proto::Factory<proto::Nym>(view), alias);
+}
+
 }  // namespace opentxs
 
 namespace opentxs::identity
@@ -421,6 +430,13 @@ auto Nym::AddSocialMediaProfile(
 }
 
 auto Nym::Alias() const -> std::string { return alias_; }
+
+auto Nym::asPublicNym(AllocateOutput destination) const -> bool
+{
+    write(asPublicNym(), destination);
+
+    return true;
+}
 
 auto Nym::asPublicNym() const -> const Nym::Serialized
 {
@@ -858,6 +874,15 @@ auto Nym::HasCapability(const NymCapability& capability) const -> bool
     return has_capability(lock, capability);
 }
 
+auto Nym::HasPath() const -> bool
+{
+    auto path = proto::HDPath{};
+
+    if (false == Path(path)) return false;
+
+    return true;
+}
+
 void Nym::init_claims(const eLock& lock) const
 {
     OT_ASSERT(verify_lock(lock));
@@ -1045,6 +1070,27 @@ auto Nym::Path(proto::HDPath& output) const -> bool
     return false;
 }
 
+auto Nym::PathRoot() const -> const std::string
+{
+    auto path = proto::HDPath{};
+    if (false == Path(path)) return "";
+    return path.root();
+}
+
+auto Nym::PathChildSize() const -> int
+{
+    auto path = proto::HDPath{};
+    if (false == Path(path)) return 0;
+    return path.child_size();
+}
+
+auto Nym::PathChild(int index) const -> std::uint32_t
+{
+    auto path = proto::HDPath{};
+    if (false == Path(path)) return 0;
+    return path.child(index);
+}
+
 auto Nym::PaymentCode() const -> std::string
 {
     if (identity::SourceType::Bip47 != source_.Type()) { return ""; }
@@ -1056,6 +1102,22 @@ auto Nym::PaymentCode() const -> std::string
     auto paymentCode = api_.Factory().PaymentCode(serialized->paymentcode());
 
     return paymentCode->asBase58();
+}
+
+auto Nym::PaymentCodePath(AllocateOutput destination) const -> bool
+{
+    auto path = proto::HDPath{};
+    if (false == PaymentCodePath(path)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Failed to serialize payment code path to HDPath.")
+            .Flush();
+
+        return false;
+    }
+
+    write(path, destination);
+
+    return true;
 }
 
 auto Nym::PaymentCodePath(proto::HDPath& output) const -> bool
@@ -1121,6 +1183,12 @@ void Nym::revoke_verification_credentials(const eLock& lock)
     }
 
     for (auto& it : revokedIDs) { m_listRevokedIDs.push_back(it); }
+}
+
+auto Nym::SerializeCredentialIndex(AllocateOutput destination, const Mode mode)
+    const -> bool
+{
+    return write(SerializeCredentialIndex(mode), destination);
 }
 
 auto Nym::SerializeCredentialIndex(const Mode mode) const -> Nym::Serialized

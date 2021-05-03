@@ -356,6 +356,12 @@ auto Server::PublicContract() const -> proto::ServerContract
     return serialized;
 }
 
+auto Server::PublicContract(AllocateOutput destination) const -> bool
+{
+    write(PublicContract(), destination);
+    return true;
+}
+
 auto Server::Statistics(String& strContents) const -> bool
 {
     const auto strID = String::Factory(id_);

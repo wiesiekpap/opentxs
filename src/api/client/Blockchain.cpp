@@ -16,12 +16,15 @@
 #include "internal/api/client/Factory.hpp"
 #include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
+#include "opentxs/Proto.tpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/crypto/Bip32Child.hpp"
+#include "opentxs/crypto/Bip43Purpose.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/protobuf/BlockchainP2PHello.pb.h"
 #include "opentxs/protobuf/HDPath.pb.h"
@@ -53,6 +56,22 @@ namespace opentxs::api::client
 auto Blockchain::Bip44(Chain chain) noexcept(false) -> Bip44Type
 {
     return opentxs::blockchain::params::Data::Chains().at(chain).bip44_;
+}
+
+auto Blockchain::Bip44Path(
+    Chain chain,
+    const std::string& seed,
+    AllocateOutput destination) noexcept(false) -> bool
+{
+    constexpr auto hard = static_cast<Bip32Index>(Bip32Child::HARDENED);
+    const auto coin = Bip44(chain);
+    auto output = proto::HDPath{};
+    output.set_version(1);
+    output.set_root(seed);
+    output.add_child(static_cast<Bip32Index>(Bip43Purpose::HDWALLET) | hard);
+    output.add_child(static_cast<Bip32Index>(coin) | hard);
+    output.add_child(Bip32Index{0} | hard);
+    return write(output, destination);
 }
 }  // namespace opentxs::api::client
 
@@ -295,6 +314,19 @@ auto Blockchain::NewPaymentCodeSubaccount(
     const Chain chain,
     const PasswordPrompt& reason) const noexcept -> OTIdentifier
 {
+    return imp_->NewPaymentCodeSubaccount(
+        nymID, local, remote, path, chain, reason);
+}
+
+auto Blockchain::NewPaymentCodeSubaccount(
+    const identifier::Nym& nymID,
+    const opentxs::PaymentCode& local,
+    const opentxs::PaymentCode& remote,
+    const ReadView& view,
+    const Chain chain,
+    const PasswordPrompt& reason) const noexcept -> OTIdentifier
+{
+    auto path = proto::Factory<proto::HDPath>(view);
     return imp_->NewPaymentCodeSubaccount(
         nymID, local, remote, path, chain, reason);
 }

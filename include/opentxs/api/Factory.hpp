@@ -192,6 +192,9 @@ public:
     OPENTXS_EXPORT virtual OTBailmentRequest BailmentRequest(
         const Nym_p& nym,
         const proto::PeerRequest& serialized) const noexcept(false) = 0;
+    OPENTXS_EXPORT virtual OTBailmentRequest BailmentRequest(
+        const Nym_p& nym,
+        const ReadView& view) const noexcept(false) = 0;
     OPENTXS_EXPORT virtual std::unique_ptr<opentxs::Basket> Basket() const = 0;
     OPENTXS_EXPORT virtual std::unique_ptr<opentxs::Basket> Basket(
         std::int32_t nCount,
@@ -286,6 +289,8 @@ public:
     OPENTXS_EXPORT virtual BlockHeaderP BlockHeader(
         const proto::BlockchainBlockHeader& serialized) const = 0;
     OPENTXS_EXPORT virtual BlockHeaderP BlockHeader(
+        const ReadView& serialized) const = 0;
+    OPENTXS_EXPORT virtual BlockHeaderP BlockHeader(
         const opentxs::blockchain::Type type,
         const Data& raw) const = 0;
     OPENTXS_EXPORT virtual BlockHeaderP BlockHeader(
@@ -365,6 +370,8 @@ public:
     OPENTXS_EXPORT virtual OTEnvelope Envelope(
         const opentxs::crypto::Envelope::SerializedType& serialized) const
         noexcept(false) = 0;
+    OPENTXS_EXPORT virtual OTEnvelope Envelope(
+        const opentxs::ReadView& serialized) const noexcept(false) = 0;
     OPENTXS_EXPORT virtual OTIdentifier Identifier() const = 0;
     OPENTXS_EXPORT virtual OTIdentifier Identifier(
         const std::string& serialized) const = 0;
@@ -505,6 +512,8 @@ public:
         const std::string& base58) const noexcept = 0;
     OPENTXS_EXPORT virtual OTPaymentCode PaymentCode(
         const proto::PaymentCode& serialized) const noexcept = 0;
+    OPENTXS_EXPORT virtual OTPaymentCode PaymentCode(
+        const ReadView& serialized) const noexcept = 0;
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
     OPENTXS_EXPORT virtual OTPaymentCode PaymentCode(
         const std::string& seed,
@@ -561,6 +570,9 @@ public:
     OPENTXS_EXPORT virtual OTPeerRequest PeerRequest(
         const Nym_p& nym,
         const proto::PeerRequest& serialized) const noexcept(false) = 0;
+    OPENTXS_EXPORT virtual OTPeerRequest PeerRequest(
+        const Nym_p& nym,
+        const ReadView& view) const noexcept(false) = 0;
     OPENTXS_EXPORT virtual OTZMQPipeline Pipeline(
         std::function<void(opentxs::network::zeromq::Message&)> callback)
         const = 0;
