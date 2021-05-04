@@ -36,11 +36,11 @@ auto Work(const std::string& hex) -> blockchain::Work*
     if (bytes->empty()) { return new ReturnType(); }
 
     ValueType value{};
-    mp::cpp_int i;
+    bmp::cpp_int i;
 
     try {
         // Interpret bytes as big endian
-        mp::import_bits(i, bytes->begin(), bytes->end(), 8, true);
+        bmp::import_bits(i, bytes->begin(), bytes->end(), 8, true);
         value = ValueType{i};
     } catch (...) {
         LogOutput("opentxs::factory::")(__FUNCTION__)(": Failed to decode work")
@@ -56,7 +56,7 @@ auto Work(const blockchain::Type chain, const blockchain::NumericHash& input)
     -> blockchain::Work*
 {
     using ReturnType = blockchain::implementation::Work;
-    using TargetType = mp::checked_cpp_int;
+    using TargetType = bmp::checked_cpp_int;
     using ValueType = ReturnType::Type;
 
     auto value = ValueType{};
@@ -199,7 +199,8 @@ auto Work::asHex() const noexcept -> std::string
 
     try {
         // Export as big endian
-        mp::export_bits(mp::cpp_int(data_), std::back_inserter(bytes), 8, true);
+        bmp::export_bits(
+            bmp::cpp_int(data_), std::back_inserter(bytes), 8, true);
     } catch (...) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to encode number").Flush();
 

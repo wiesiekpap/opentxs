@@ -18,7 +18,7 @@
 
 #include "opentxs/core/Log.hpp"
 
-namespace mp = boost::multiprecision;
+namespace bmp = boost::multiprecision;
 
 #define OT_METHOD "opentxs::display::Scale::"
 
@@ -142,7 +142,7 @@ struct Scale::Imp {
     }
 
 private:
-    using Backend = mp::cpp_dec_float_100;
+    using Backend = bmp::cpp_dec_float_100;
 
     struct Locale : std::numpunct<char> {
     };
@@ -160,7 +160,7 @@ private:
         auto output = Backend{1};
 
         for (const auto& [base, exponent] : ratios) {
-            output *= mp::pow(Backend{base}, exponent);
+            output *= bmp::pow(Backend{base}, exponent);
         }
 
         return output;
@@ -172,7 +172,7 @@ private:
         auto output = Backend{1};
 
         for (const auto& [base, exponent] : ratios) {
-            output *= mp::pow(Backend{base}, -1 * exponent);
+            output *= bmp::pow(Backend{base}, -1 * exponent);
         }
 
         return output;

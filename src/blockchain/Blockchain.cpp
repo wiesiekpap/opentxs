@@ -41,7 +41,7 @@ constexpr auto BITMASK(std::uint64_t n) noexcept -> std::uint64_t
     return (one << n) - one;
 }
 
-namespace mp = boost::multiprecision;
+namespace bmp = boost::multiprecision;
 
 namespace opentxs::blockchain::block
 {

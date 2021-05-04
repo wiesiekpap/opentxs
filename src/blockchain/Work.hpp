@@ -19,14 +19,14 @@ namespace opentxs
 class Factory;
 }  // namespace opentxs
 
-namespace mp = boost::multiprecision;
+namespace bmp = boost::multiprecision;
 
 namespace opentxs::blockchain::implementation
 {
 class Work final : public blockchain::Work
 {
 public:
-    using Type = mp::cpp_bin_float_double;
+    using Type = bmp::cpp_bin_float_double;
 
     auto operator==(const blockchain::Work& rhs) const noexcept -> bool final;
     auto operator!=(const blockchain::Work& rhs) const noexcept -> bool final;
