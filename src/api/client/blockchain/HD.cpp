@@ -173,10 +173,17 @@ auto HD::PrivateKey(
     switch (type) {
         case internalType:
         case externalType: {
-            break;
+        } break;
+        case Subchain::Error: {
+
+            OT_FAIL;
         }
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid subchain").Flush();
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid subchain (")(
+                opentxs::print(type))("). Only ")(opentxs::print(internalType))(
+                " and ")(opentxs::print(externalType))(
+                " are valid for this account.")
+                .Flush();
 
             return {};
         }

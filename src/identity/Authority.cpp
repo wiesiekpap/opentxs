@@ -985,8 +985,9 @@ auto Authority::Params(
 auto Authority::Path(proto::HDPath& output) const -> bool
 {
     if (master_) {
-        const bool found = master_->Path(output);
-        output.mutable_child()->RemoveLast();
+        const auto found = master_->Path(output);
+
+        if (found) { output.mutable_child()->RemoveLast(); }
 
         return found;
     }

@@ -3,22 +3,25 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+add_library(opentxs-crypto OBJECT "")
+
+add_subdirectory(bip32)
 add_subdirectory(key)
 add_subdirectory(library)
 
-add_library(
-  opentxs-crypto OBJECT
-  "Bip32.cpp"
-  "Bip32.hpp"
-  "Bip39.cpp"
-  "Bip39.hpp"
-  "Envelope.cpp"
-  "Envelope.hpp"
-  "HDNode.cpp"
-  "HDNode.hpp"
-  "Seed.cpp"
-  "Seed.hpp"
-  "bip39_word_list.cpp"
+target_sources(
+  opentxs-crypto
+  PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/crypto/Crypto.hpp"
+    "Bip39.cpp"
+    "Bip39.hpp"
+    "Envelope.cpp"
+    "Envelope.hpp"
+    "HDNode.cpp"
+    "HDNode.hpp"
+    "Seed.cpp"
+    "Seed.hpp"
+    "bip39_word_list.cpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/Bip32.hpp"

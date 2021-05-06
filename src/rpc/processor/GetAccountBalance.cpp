@@ -12,10 +12,13 @@
 #include <type_traits>
 #include <vector>
 
+#include "display/Definition.hpp"
 #include "internal/api/client/Client.hpp"
+#include "internal/blockchain/Params.hpp"
 #include "internal/core/Core.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Shared.hpp"
+#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
@@ -24,6 +27,7 @@
 #include "opentxs/blockchain/Network.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/rpc/AccountData.hpp"
@@ -38,14 +42,14 @@
 namespace opentxs::rpc::implementation
 {
 auto RPC::get_account_balance(const request::Base& base) const noexcept
-    -> response::Base
+    -> std::unique_ptr<response::Base>
 {
     const auto& in = base.asGetAccountBalance();
     auto codes = response::Base::Responses{};
     auto balances = response::GetAccountBalance::Data{};
     const auto reply = [&] {
-        return response::GetAccountBalance{
-            in, std::move(codes), std::move(balances)};
+        return std::make_unique<response::GetAccountBalance>(
+            in, std::move(codes), std::move(balances));
     };
 
     try {
@@ -91,12 +95,16 @@ auto RPC::get_account_balance_blockchain(
         blockchain.Start(chain);
         const auto& client = blockchain.GetChain(chain);
         const auto [confirmed, unconfirmed] = client.GetBalance(owner);
+        const auto& display =
+            blockchain::params::Data::Chains().at(chain).scales_;
         balances.emplace_back(
             accountID.str(),
             blockchain::AccountName(chain),
             blockchain::UnitID(api, chain).str(),
             owner->str(),
             blockchain::IssuerID(api, chain).str(),
+            display.Format(confirmed),
+            display.Format(unconfirmed),
             confirmed,
             unconfirmed,
             AccountType::blockchain);
@@ -116,14 +124,25 @@ auto RPC::get_account_balance_custodial(
     const auto account = api.Wallet().Account(accountID);
 
     if (account) {
+        const auto& unit = account.get().GetInstrumentDefinitionID();
+        const auto balance = account.get().GetBalance();
+        const auto formatted = [&] {
+            auto out = std::string{};
+            const auto contract = api.Wallet().UnitDefinition(unit);
+            contract->FormatAmountLocale(balance, out);
+
+            return out;
+        }();
         balances.emplace_back(
             accountID.str(),
             account.get().Alias(),
-            account.get().GetInstrumentDefinitionID().str(),
+            unit.str(),
             api.Storage().AccountOwner(accountID)->str(),
             api.Storage().AccountIssuer(accountID)->str(),
-            account.get().GetBalance(),
-            account.get().GetBalance(),
+            formatted,
+            formatted,
+            balance,
+            balance,
             (account.get().IsIssuer()) ? AccountType::issuer
                                        : AccountType::normal);
         codes.emplace_back(index, ResponseCode::success);

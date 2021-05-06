@@ -49,5 +49,14 @@ using Activity = std::tuple<Coin, Key, Amount>;
 }  // namespace blockchain
 }  // namespace client
 }  // namespace api
+
+auto operator==(
+    const api::client::blockchain::Key& lhs,
+    const api::client::blockchain::Key& rhs) noexcept -> bool;
+auto operator!=(
+    const api::client::blockchain::Key& lhs,
+    const api::client::blockchain::Key& rhs) noexcept -> bool;
+auto print(api::client::blockchain::Subchain value) noexcept -> std::string;
+auto print(const api::client::blockchain::Key& key) noexcept -> std::string;
 }  // namespace opentxs
 #endif

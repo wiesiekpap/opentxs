@@ -9,8 +9,8 @@
 #include "rpc/response/Base.hpp"              // IWYU pragma: associated
 
 #include <memory>
+#include <utility>
 
-#include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/request/ListNyms.hpp"
 
 namespace opentxs::rpc::response::implementation
@@ -64,17 +64,15 @@ ListNyms::ListNyms(
     Responses&& response,
     Identifiers&& accounts)
     : Base(std::make_unique<implementation::ListNyms>(
-               this,
-               request,
-               std::move(response),
-               std::move(accounts))
-               .release())
+          this,
+          request,
+          std::move(response),
+          std::move(accounts)))
 {
 }
 
 ListNyms::ListNyms(const proto::RPCResponse& serialized) noexcept(false)
-    : Base(std::make_unique<implementation::ListNyms>(this, serialized)
-               .release())
+    : Base(std::make_unique<implementation::ListNyms>(this, serialized))
 {
 }
 

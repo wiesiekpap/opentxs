@@ -27,6 +27,8 @@ struct AccountEvent::Imp {
     const AccountEventType type_;
     const std::string contact_;
     const std::string workflow_;
+    const std::string amount_formatted_;
+    const std::string pending_formatted_;
     const Amount amount_;
     const Amount pending_;
     const opentxs::Time time_;
@@ -39,6 +41,8 @@ struct AccountEvent::Imp {
         AccountEventType type,
         const std::string& contact,
         const std::string& workflow,
+        const std::string& amountF,
+        const std::string& pendingF,
         Amount amount,
         Amount pending,
         opentxs::Time time,
@@ -50,6 +54,8 @@ struct AccountEvent::Imp {
         , type_(type)
         , contact_(contact)
         , workflow_(workflow)
+        , amount_formatted_(amountF)
+        , pending_formatted_(pendingF)
         , amount_(amount)
         , pending_(pending)
         , time_(time)
@@ -60,7 +66,19 @@ struct AccountEvent::Imp {
         // FIXME validate member variables
     }
     Imp() noexcept
-        : Imp(0, "", AccountEventType::error, "", "", 0, 0, {}, "", "", 0)
+        : Imp(0,
+              "",
+              AccountEventType::error,
+              "",
+              "",
+              "",
+              "",
+              0,
+              0,
+              {},
+              "",
+              "",
+              0)
     {
     }
     Imp(const Imp& rhs) noexcept
@@ -69,6 +87,8 @@ struct AccountEvent::Imp {
               rhs.type_,
               rhs.contact_,
               rhs.workflow_,
+              rhs.amount_formatted_,
+              rhs.pending_formatted_,
               rhs.amount_,
               rhs.pending_,
               rhs.time_,
@@ -89,6 +109,8 @@ AccountEvent::AccountEvent(
     AccountEventType type,
     const std::string& contact,
     const std::string& workflow,
+    const std::string& amountS,
+    const std::string& pendingS,
     Amount amount,
     Amount pending,
     opentxs::Time time,
@@ -101,6 +123,8 @@ AccountEvent::AccountEvent(
                type,
                contact,
                workflow,
+               amountS,
+               pendingS,
                amount,
                pending,
                time,
@@ -118,6 +142,8 @@ AccountEvent::AccountEvent(const proto::AccountEvent& in) noexcept(false)
                translate(in.type()),
                in.contact(),
                in.workflow(),
+               in.amountformatted(),
+               in.pendingamountformatted(),
                in.amount(),
                in.pendingamount(),
                Clock::from_time_t(in.timestamp()),
@@ -152,6 +178,11 @@ auto AccountEvent::ConfirmedAmount() const noexcept -> Amount
     return imp_->amount_;
 }
 
+auto AccountEvent::ConfirmedAmount_str() const noexcept -> const std::string&
+{
+    return imp_->amount_formatted_;
+}
+
 auto AccountEvent::ContactID() const noexcept -> const std::string&
 {
     return imp_->contact_;
@@ -165,6 +196,11 @@ auto AccountEvent::Memo() const noexcept -> const std::string&
 auto AccountEvent::PendingAmount() const noexcept -> Amount
 {
     return imp_->pending_;
+}
+
+auto AccountEvent::PendingAmount_str() const noexcept -> const std::string&
+{
+    return imp_->pending_formatted_;
 }
 
 auto AccountEvent::Serialize(proto::AccountEvent& dest) const noexcept -> bool
@@ -181,11 +217,15 @@ auto AccountEvent::Serialize(proto::AccountEvent& dest) const noexcept -> bool
     dest.set_memo(imp.memo_);
     dest.set_uuid(imp.uuid_);
     dest.set_state(static_cast<proto::PaymentWorkflowState>(imp.state_));
+    dest.set_amountformatted(imp.amount_formatted_);
+    dest.set_pendingamountformatted(imp.pending_formatted_);
 
     return true;
 }
 
 auto AccountEvent::State() const noexcept -> int { return imp_->state_; }
+
+auto AccountEvent::Timestamp() const noexcept -> Time { return imp_->time_; }
 
 auto AccountEvent::Type() const noexcept -> AccountEventType
 {

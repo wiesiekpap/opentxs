@@ -6,6 +6,7 @@
 #pragma once
 
 #include <cstdint>
+#include <locale>
 #include <map>
 #include <string>
 
@@ -70,11 +71,16 @@ public:
         std::string& str_output,
         const std::string& str_thousand,
         const std::string& str_decimal) const -> bool override;
+    auto FormatAmountLocale(std::int64_t amount, std::string& str_output) const
+        -> bool final;
     auto FormatAmountWithoutSymbolLocale(
         std::int64_t amount,
         std::string& str_output,
         const std::string& str_thousand,
         const std::string& str_decimal) const -> bool override;
+    auto FormatAmountWithoutSymbolLocale(
+        std::int64_t amount,
+        std::string& str_output) const -> bool final;
     auto FractionalUnitName() const -> std::string override { return ""; }
     auto GetCurrencyName() const -> const std::string& override
     {
@@ -139,6 +145,11 @@ protected:
 
 private:
     friend opentxs::Factory;
+
+    struct Locale : std::numpunct<char> {
+    };
+
+    static const Locale locale_;
 
     const std::string primary_unit_name_;
     const std::string short_name_;

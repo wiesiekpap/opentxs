@@ -6,8 +6,6 @@
 #ifndef OPENTXS_CRYPTO_BIP32_HPP
 #define OPENTXS_CRYPTO_BIP32_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
@@ -19,6 +17,7 @@
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -31,7 +30,17 @@ namespace key
 {
 class HD;
 }  // namespace key
+
+namespace internal
+{
+struct Bip32;
+}  // namespace internal
 }  // namespace crypto
+
+namespace proto
+{
+class HDPath;
+}  // namespace proto
 
 class PasswordPrompt;
 }  // namespace opentxs
@@ -42,62 +51,73 @@ namespace crypto
 {
 std::string Print(const proto::HDPath& node);
 
-class Bip32
+class OPENTXS_EXPORT Bip32
 {
 public:
+    struct Imp;
+
     using Path = std::vector<Bip32Index>;
     using Key = std::tuple<OTSecret, OTSecret, OTData, Path, Bip32Fingerprint>;
 
-#if OT_CRYPTO_WITH_BIP32
-    OPENTXS_EXPORT virtual Key DeriveKey(
+    auto DeriveKey(
         const EcdsaCurve& curve,
         const Secret& seed,
-        const Path& path) const = 0;
+        const Path& path) const -> Key;
     /// throws std::runtime_error on invalid inputs
-    OPENTXS_EXPORT virtual Key DerivePrivateKey(
+    auto DerivePrivateKey(
         const key::HD& parent,
         const Path& pathAppend,
-        const PasswordPrompt& reason) const noexcept(false) = 0;
+        const PasswordPrompt& reason) const noexcept(false) -> Key;
     /// throws std::runtime_error on invalid inputs
-    OPENTXS_EXPORT virtual Key DerivePublicKey(
+    auto DerivePublicKey(
         const key::HD& parent,
         const Path& pathAppend,
-        const PasswordPrompt& reason) const noexcept(false) = 0;
-#endif  // OT_CRYPTO_WITH_BIP32
-    OPENTXS_EXPORT virtual bool DeserializePrivate(
+        const PasswordPrompt& reason) const noexcept(false) -> Key;
+    auto DeserializePrivate(
         const std::string& serialized,
         Bip32Network& network,
         Bip32Depth& depth,
         Bip32Fingerprint& parent,
         Bip32Index& index,
         Data& chainCode,
-        Secret& key) const = 0;
-    OPENTXS_EXPORT virtual bool DeserializePublic(
+        Secret& key) const -> bool;
+    auto DeserializePublic(
         const std::string& serialized,
         Bip32Network& network,
         Bip32Depth& depth,
         Bip32Fingerprint& parent,
         Bip32Index& index,
         Data& chainCode,
-        Data& key) const = 0;
-    OPENTXS_EXPORT virtual OTIdentifier SeedID(
-        const ReadView entropy) const = 0;
-    OPENTXS_EXPORT virtual std::string SerializePrivate(
+        Data& key) const -> bool;
+    auto SeedID(const ReadView entropy) const -> OTIdentifier;
+    auto SerializePrivate(
         const Bip32Network network,
         const Bip32Depth depth,
         const Bip32Fingerprint parent,
         const Bip32Index index,
         const Data& chainCode,
-        const Secret& key) const = 0;
-    OPENTXS_EXPORT virtual std::string SerializePublic(
+        const Secret& key) const -> std::string;
+    auto SerializePublic(
         const Bip32Network network,
         const Bip32Depth depth,
         const Bip32Fingerprint parent,
         const Bip32Index index,
         const Data& chainCode,
-        const Data& key) const = 0;
+        const Data& key) const -> std::string;
 
-    OPENTXS_EXPORT virtual ~Bip32() = default;
+    OPENTXS_NO_EXPORT auto Internal() noexcept -> internal::Bip32&;
+
+    OPENTXS_NO_EXPORT Bip32(std::unique_ptr<Imp> imp) noexcept;
+    OPENTXS_NO_EXPORT Bip32(Bip32&& rhs) noexcept;
+    OPENTXS_NO_EXPORT ~Bip32();
+
+private:
+    std::unique_ptr<Imp> imp_;
+
+    Bip32() = delete;
+    Bip32(const Bip32&) = delete;
+    auto operator=(const Bip32&) -> Bip32& = delete;
+    auto operator=(Bip32&&) -> Bip32& = delete;
 };
 }  // namespace crypto
 }  // namespace opentxs

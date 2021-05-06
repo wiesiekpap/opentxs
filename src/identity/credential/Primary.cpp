@@ -153,7 +153,7 @@ auto Primary::hasCapability(const NymCapability& capability) const -> bool
 auto Primary::Path(proto::HDPath& output) const -> bool
 {
     try {
-        const bool found = signing_key_->GetPrivateKey().Path(output);
+        const auto found = signing_key_->GetPrivateKey().Path(output);
 
         if (found) { output.mutable_child()->RemoveLast(); }
 

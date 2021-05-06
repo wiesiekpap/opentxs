@@ -119,11 +119,20 @@ struct Unit final : virtual public opentxs::contract::Unit, public Signable {
     {
         return {};
     }
+    auto FormatAmountLocale(Amount, std::string&) const -> bool final
+    {
+        return {};
+    }
     auto FormatAmountWithoutSymbolLocale(
         Amount amount,
         std::string&,
         const std::string&,
         const std::string&) const -> bool final
+    {
+        return {};
+    }
+    auto FormatAmountWithoutSymbolLocale(Amount amount, std::string&) const
+        -> bool final
     {
         return {};
     }

@@ -16,10 +16,9 @@ namespace opentxs::rpc::response
 {
 Invalid::Invalid(const request::Base& request) noexcept
     : Base(std::make_unique<Imp>(
-               this,
-               request,
-               Responses{{0, ResponseCode::invalid}})
-               .release())
+          this,
+          request,
+          Responses{{0, ResponseCode::invalid}}))
 {
 }
 

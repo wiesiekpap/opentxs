@@ -64,17 +64,15 @@ ListAccounts::ListAccounts(
     Responses&& response,
     Identifiers&& accounts)
     : Base(std::make_unique<implementation::ListAccounts>(
-               this,
-               request,
-               std::move(response),
-               std::move(accounts))
-               .release())
+          this,
+          request,
+          std::move(response),
+          std::move(accounts)))
 {
 }
 
 ListAccounts::ListAccounts(const proto::RPCResponse& serialized) noexcept(false)
-    : Base(std::make_unique<implementation::ListAccounts>(this, serialized)
-               .release())
+    : Base(std::make_unique<implementation::ListAccounts>(this, serialized))
 {
 }
 

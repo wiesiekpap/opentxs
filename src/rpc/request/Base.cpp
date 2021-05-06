@@ -147,74 +147,16 @@ Base::Imp::Imp(
 {
 }
 
-Base::Imp::Imp(const Imp& rhs) noexcept
-    : Imp(rhs.parent_,
-          rhs.version_,
-          rhs.cookie_,
-          rhs.type_,
-          rhs.session_,
-          rhs.associate_nym_,
-          rhs.owner_,
-          rhs.notary_,
-          rhs.unit_,
-          rhs.identifiers_)
-{
-}
-
-Base::Base(Imp* imp) noexcept
-    : imp_(imp)
+Base::Base(std::unique_ptr<Imp> imp) noexcept
+    : imp_(std::move(imp))
 {
     assert(nullptr != imp_);
     assert(imp_->parent_ == this);
 }
 
 Base::Base() noexcept
-    : Base(std::make_unique<Imp>(this).release())
+    : Base(std::make_unique<Imp>(this))
 {
-}
-
-Base::Base(const Base& rhs) noexcept
-    : Base(rhs.imp_->clone().release())
-{
-    imp_->parent_ = this;
-}
-
-Base::Base(Base&& rhs) noexcept
-    : imp_(std::make_unique<Imp>(&rhs).release())
-{
-    std::swap(imp_, rhs.imp_);
-
-    assert(nullptr != imp_);
-
-    imp_->parent_ = this;
-}
-
-auto Base::operator=(const Base& rhs) noexcept -> Base&
-{
-    if (this != &rhs) {
-        auto imp = std::unique_ptr<Imp>{imp_};
-        imp_ = rhs.imp_->clone().release();
-
-        assert(nullptr != imp_);
-
-        imp_->parent_ = this;
-    }
-
-    return *this;
-}
-
-auto Base::operator=(Base&& rhs) noexcept -> Base&
-{
-    if (this != &rhs) {
-        imp_->parent_ = &rhs;
-        std::swap(imp_, rhs.imp_);
-
-        assert(nullptr != imp_);
-
-        imp_->parent_ = this;
-    }
-
-    return *this;
 }
 
 auto Base::Imp::asGetAccountActivity() const noexcept
@@ -392,9 +334,5 @@ auto Base::Type() const noexcept -> CommandType { return imp_->type_; }
 
 auto Base::Version() const noexcept -> VersionNumber { return imp_->version_; }
 
-Base::~Base()
-{
-    std::unique_ptr<Imp>{imp_}.reset();
-    imp_ = nullptr;
-}
+Base::~Base() = default;
 }  // namespace opentxs::rpc::request

@@ -74,19 +74,17 @@ GetAccountActivity::GetAccountActivity(
     const Identifiers& accounts,
     const AssociateNyms& nyms)
     : Base(std::make_unique<implementation::GetAccountActivity>(
-               this,
-               DefaultVersion(),
-               session,
-               accounts,
-               nyms)
-               .release())
+          this,
+          DefaultVersion(),
+          session,
+          accounts,
+          nyms))
 {
 }
 
 GetAccountActivity::GetAccountActivity(const proto::RPCCommand& in) noexcept(
     false)
-    : Base(std::make_unique<implementation::GetAccountActivity>(this, in)
-               .release())
+    : Base(std::make_unique<implementation::GetAccountActivity>(this, in))
 {
 }
 

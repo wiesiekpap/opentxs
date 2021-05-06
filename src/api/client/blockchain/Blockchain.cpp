@@ -7,15 +7,18 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "internal/api/client/blockchain/Blockchain.hpp"  // IWYU pragma: associated
 
-#if OT_BLOCKCHAIN
 #include <boost/container/flat_map.hpp>
-#endif  // OT_BLOCKCHAIN
 #include <boost/container/vector.hpp>
+#include <boost/intrusive/detail/iterator.hpp>
+#include <boost/move/algo/detail/set_difference.hpp>
+#include <boost/move/algo/move.hpp>
 
 #if OT_BLOCKCHAIN
 #include "internal/blockchain/Params.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/client/blockchain/Subchain.hpp"
+#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #if OT_BLOCKCHAIN
@@ -44,6 +47,62 @@ auto blockchain_thread_item_id(
     id->CalculateDigest(preimage);
 
     return id;
+}
+
+auto operator==(
+    const api::client::blockchain::Key& lhs,
+    const api::client::blockchain::Key& rhs) noexcept -> bool
+{
+    const auto& [lAccount, lSubchain, lIndex] = lhs;
+    const auto& [rAccount, rSubchain, rIndex] = rhs;
+
+    if (lAccount != rAccount) { return false; }
+
+    if (lSubchain != rSubchain) { return false; }
+
+    return lIndex == rIndex;
+}
+
+auto operator!=(
+    const api::client::blockchain::Key& lhs,
+    const api::client::blockchain::Key& rhs) noexcept -> bool
+{
+    const auto& [lAccount, lSubchain, lIndex] = lhs;
+    const auto& [rAccount, rSubchain, rIndex] = rhs;
+
+    if (lAccount == rAccount) { return false; }
+
+    if (lSubchain == rSubchain) { return false; }
+
+    return lIndex != rIndex;
+}
+
+auto print(api::client::blockchain::Subchain value) noexcept -> std::string
+{
+    using Subchain = api::client::blockchain::Subchain;
+    static const auto map = boost::container::flat_map<Subchain, std::string>{
+        {Subchain::Internal, "internal"},
+        {Subchain::External, "external"},
+        {Subchain::Incoming, "incoming"},
+        {Subchain::Outgoing, "outgoing"},
+        {Subchain::Notification, "notification"},
+        {Subchain::None, "none"},
+    };
+
+    try {
+
+        return map.at(value);
+    } catch (...) {
+
+        return "error";
+    }
+}
+
+auto print(const api::client::blockchain::Key& key) noexcept -> std::string
+{
+    const auto& [account, subchain, index] = key;
+
+    return account + " / " + print(subchain) + " / " + std::to_string(index);
 }
 }  // namespace opentxs
 

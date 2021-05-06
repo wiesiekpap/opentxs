@@ -25,6 +25,7 @@ class Symmetric;
 namespace internal
 {
 struct Core;
+struct Crypto;
 }  // namespace internal
 
 class Crypto;
@@ -44,8 +45,8 @@ namespace opentxs::factory
 {
 auto AsymmetricAPI(const api::internal::Core& api) noexcept
     -> std::unique_ptr<api::crypto::internal::Asymmetric>;
-auto Crypto(const api::Settings& settings) noexcept
-    -> std::unique_ptr<api::Crypto>;
+auto CryptoAPI(const api::Settings& settings) noexcept
+    -> std::unique_ptr<api::internal::Crypto>;
 auto CryptoConfig(const api::Settings& settings) noexcept
     -> std::unique_ptr<api::crypto::Config>;
 auto Encode(const api::Crypto& crypto) noexcept

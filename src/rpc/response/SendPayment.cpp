@@ -64,17 +64,15 @@ SendPayment::SendPayment(
     Responses&& response,
     Tasks&& tasks)
     : Base(std::make_unique<implementation::SendPayment>(
-               this,
-               request,
-               std::move(response),
-               std::move(tasks))
-               .release())
+          this,
+          request,
+          std::move(response),
+          std::move(tasks)))
 {
 }
 
 SendPayment::SendPayment(const proto::RPCResponse& serialized) noexcept(false)
-    : Base(std::make_unique<implementation::SendPayment>(this, serialized)
-               .release())
+    : Base(std::make_unique<implementation::SendPayment>(this, serialized))
 {
 }
 

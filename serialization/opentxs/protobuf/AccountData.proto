@@ -22,4 +22,6 @@ message AccountData {
     optional int64 balance = 7;			// current balance
     optional int64 pendingbalance = 8;	// balance after pending transactions are processed
     optional AccountType type = 9;
+    optional string balanceformatted = 10;
+    optional string pendingbalanceformatted = 11;
 }

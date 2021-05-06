@@ -12,6 +12,7 @@
 #include <functional>
 #include <iosfwd>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <tuple>
@@ -104,7 +105,8 @@ class RPC final : virtual public rpc::internal::RPC, Lockable
 public:
     auto Process(const proto::RPCCommand& command) const
         -> proto::RPCResponse final;
-    auto Process(const request::Base& command) const -> response::Base final;
+    auto Process(const request::Base& command) const
+        -> std::unique_ptr<response::Base> final;
 
     ~RPC() final;
 
@@ -209,9 +211,9 @@ private:
     auto get_client(std::int32_t instance) const
         -> const api::client::internal::Manager*;
     auto get_account_activity(const request::Base& command) const
-        -> response::Base;
+        -> std::unique_ptr<response::Base>;
     auto get_account_balance(const request::Base& command) const noexcept
-        -> response::Base;
+        -> std::unique_ptr<response::Base>;
     auto get_account_balance_blockchain(
         const request::Base& base,
         const std::size_t index,
@@ -267,7 +269,7 @@ private:
     auto is_server_session(std::int32_t instance) const -> bool;
     auto is_session_valid(std::int32_t instance) const -> bool;
     auto list_accounts(const request::Base& command) const noexcept
-        -> response::Base;
+        -> std::unique_ptr<response::Base>;
     auto list_contacts(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto list_client_sessions(const proto::RPCCommand& command) const
@@ -275,7 +277,7 @@ private:
     auto list_seeds(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto list_nyms(const request::Base& command) const noexcept
-        -> response::Base;
+        -> std::unique_ptr<response::Base>;
     auto list_server_contracts(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto list_server_sessions(const proto::RPCCommand& command) const
@@ -303,13 +305,15 @@ private:
     auto rename_account(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto send_payment(const request::Base& command) const noexcept
-        -> response::Base;
+        -> std::unique_ptr<response::Base>;
     auto send_payment_blockchain(
         const api::client::Manager& api,
-        const request::SendPayment& command) const noexcept -> response::Base;
+        const request::SendPayment& command) const noexcept
+        -> std::unique_ptr<response::Base>;
     auto send_payment_custodial(
         const api::client::Manager& api,
-        const request::SendPayment& command) const noexcept -> response::Base;
+        const request::SendPayment& command) const noexcept
+        -> std::unique_ptr<response::Base>;
     auto session(const request::Base& command) const noexcept(false)
         -> const api::Core&;
     auto start_client(const proto::RPCCommand& command) const

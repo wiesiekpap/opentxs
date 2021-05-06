@@ -10,6 +10,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -44,8 +45,9 @@ namespace rpc
 {
 namespace request
 {
-auto Factory(ReadView serialized) noexcept -> Base;
-auto Factory(const proto::RPCCommand& serialized) noexcept -> Base;
+auto Factory(ReadView serialized) noexcept -> std::unique_ptr<Base>;
+auto Factory(const proto::RPCCommand& serialized) noexcept
+    -> std::unique_ptr<Base>;
 
 class OPENTXS_EXPORT Base
 {
@@ -72,17 +74,19 @@ public:
     auto Version() const noexcept -> VersionNumber;
 
     Base() noexcept;
-    Base(const Base&) noexcept;
-    Base(Base&&) noexcept;
-    auto operator=(const Base&) noexcept -> Base&;
-    auto operator=(Base&&) noexcept -> Base&;
 
     virtual ~Base();
 
 protected:
-    Imp* imp_;
+    std::unique_ptr<Imp> imp_;
 
-    Base(Imp* imp) noexcept;
+    Base(std::unique_ptr<Imp> imp) noexcept;
+
+private:
+    Base(const Base&) = delete;
+    Base(Base&&) = delete;
+    auto operator=(const Base&) -> Base& = delete;
+    auto operator=(Base&&) -> Base& = delete;
 };
 }  // namespace request
 }  // namespace rpc

@@ -22,12 +22,14 @@
 
 namespace opentxs::rpc::implementation
 {
-auto RPC::list_nyms(const request::Base& base) const noexcept -> response::Base
+auto RPC::list_nyms(const request::Base& base) const noexcept
+    -> std::unique_ptr<response::Base>
 {
     const auto& in = base.asListNyms();
     auto ids = response::Base::Identifiers{};
     const auto reply = [&](const auto code) {
-        return response::ListNyms{in, {{0, code}}, std::move(ids)};
+        return std::make_unique<response::ListNyms>(
+            in, response::Base::Responses{{0, code}}, std::move(ids));
     };
 
     try {

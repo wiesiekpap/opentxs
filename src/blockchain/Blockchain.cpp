@@ -30,6 +30,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/NumericHash.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
@@ -57,6 +58,33 @@ auto operator>(const Position& lhs, const Position& rhs) noexcept -> bool
     return lHash != rHash;
 }
 }  // namespace opentxs::blockchain::block
+
+namespace opentxs::blockchain
+{
+auto HashToNumber(const api::Core& api, ReadView hex) noexcept -> std::string
+{
+    return HashToNumber(api.Factory().Data(std::string{hex}, StringStyle::Hex));
+}
+
+auto HashToNumber(const Hash& hash) noexcept -> std::string
+{
+    const auto number = factory::NumericHash(hash);
+
+    return number->asHex();
+}
+
+auto NumberToHash(const api::Core& api, ReadView hex) noexcept -> pHash
+{
+    const auto hash = api.Factory().Data(std::string{hex}, StringStyle::Hex);
+    auto out = api.Factory().Data();
+
+    for (auto i{hash->size()}; i > 0u; --i) {
+        out += std::to_integer<std::uint8_t>(hash->at(i - 1u));
+    }
+
+    return out;
+}
+}  // namespace opentxs::blockchain
 
 namespace opentxs::blockchain::internal
 {

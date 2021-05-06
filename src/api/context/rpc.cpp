@@ -8,6 +8,7 @@
 #include "api/Context.hpp"  // IWYU pragma: associated
 
 #include "opentxs/rpc/request/Base.hpp"
+#include "opentxs/rpc/response/Base.hpp"
 
 // #define OT_METHOD "opentxs::api::implementation::Context::"
 
@@ -16,6 +17,6 @@ namespace opentxs::api::implementation
 auto Context::RPC(const ReadView command, const AllocateOutput response)
     const noexcept -> bool
 {
-    return RPC(rpc::request::Factory(command)).Serialize(response);
+    return RPC(*rpc::request::Factory(command))->Serialize(response);
 }
 }  // namespace opentxs::api::implementation

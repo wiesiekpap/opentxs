@@ -24,7 +24,7 @@ auto random_bytes_non_crypto(AllocateOutput dest, std::size_t bytes) noexcept
 
     static auto seed = std::random_device{};
     auto generator = std::mt19937{seed()};
-    using RandType = short;
+    using RandType = int;
     using OutType = std::byte;
     auto rand = std::uniform_int_distribution<RandType>{};
     auto i = static_cast<OutType*>(out.data());

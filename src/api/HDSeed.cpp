@@ -32,6 +32,7 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip39.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"

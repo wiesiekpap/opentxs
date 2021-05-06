@@ -50,15 +50,20 @@ class RPCCommand;
 
 namespace rpc
 {
+namespace internal
+{
+struct RPC;
+}  // namespace internal
+
 namespace request
 {
 class Base;
 }  // namespace request
 
-namespace internal
+namespace response
 {
-struct RPC;
-}  // namespace internal
+class Base;
+}  // namespace response
 }  // namespace rpc
 
 class Flag;
@@ -88,7 +93,7 @@ public:
     auto RPC(const proto::RPCCommand& command) const noexcept
         -> proto::RPCResponse final;
     auto RPC(const rpc::request::Base& command) const noexcept
-        -> rpc::response::Base final;
+        -> std::unique_ptr<rpc::response::Base> final;
     auto RPC(const ReadView command, const AllocateOutput response)
         const noexcept -> bool final;
     auto Server(const int instance) const -> const api::server::Manager& final;
@@ -137,7 +142,7 @@ private:
     std::unique_ptr<api::internal::Log> log_;
     std::unique_ptr<network::Asio> asio_;
     std::unique_ptr<api::internal::ThreadPool> thread_pool_;
-    std::unique_ptr<api::Crypto> crypto_;
+    std::unique_ptr<api::internal::Crypto> crypto_;
     std::unique_ptr<api::Primitives> factory_;
     std::unique_ptr<api::Legacy> legacy_;
     std::unique_ptr<api::network::ZAP> zap_;

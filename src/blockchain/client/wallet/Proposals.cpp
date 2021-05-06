@@ -49,6 +49,7 @@ struct Proposals::Imp {
 public:
     auto Add(const Proposal& tx) const noexcept -> std::future<block::pTxid>
     {
+        auto lock = Lock{lock_};
         auto id = api_.Factory().Identifier(tx.id());
 
         if (false == db_.AddProposal(id, tx)) {
@@ -61,7 +62,7 @@ public:
     }
     auto Run() noexcept -> bool
     {
-        Lock lock{lock_};
+        auto lock = Lock{lock_};
         send(lock);
         rebroadcast(lock);
         cleanup(lock);

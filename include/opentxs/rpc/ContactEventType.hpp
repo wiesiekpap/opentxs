@@ -18,7 +18,7 @@ enum class ContactEventType : TypeEnum {
     error = 0,
     incoming_message = 1,
     outgoing_message = 2,
-    incomong_payment = 3,
+    incoming_payment = 3,
     outgoing_payment = 4,
 };
 }  // namespace rpc

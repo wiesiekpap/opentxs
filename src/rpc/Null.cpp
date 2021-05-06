@@ -22,7 +22,7 @@ auto Factory::RPC(const api::Context& api) -> rpc::internal::RPC*
             return {};
         }
         auto Process(const rpc::request::Base& command) const
-            -> rpc::response::Base final
+            -> std::unique_ptr<rpc::response::Base> final
         {
             return {};
         }
