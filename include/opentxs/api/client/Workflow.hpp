@@ -294,6 +294,20 @@ public:
         const opentxs::Cheque& cheque,
         const Message& request,
         const Message* reply) const = 0;
+    virtual const std::string WorkflowParty(
+        const identifier::Nym& nymID,
+        const Identifier& workflowID,
+        const int index) const = 0;
+    virtual bool WorkflowPartySize(
+        const identifier::Nym& nymID,
+        const Identifier& workflowID,
+        int& partysize) const = 0;
+    virtual PaymentWorkflowState WorkflowState(
+        const identifier::Nym& nymID,
+        const Identifier& workflowID) const = 0;
+    virtual PaymentWorkflowType WorkflowType(
+        const identifier::Nym& nymID,
+        const Identifier& workflowID) const = 0;
     /** Get a list of workflow IDs relevant to a specified account */
     virtual std::vector<OTIdentifier> WorkflowsByAccount(
         const identifier::Nym& nymID,

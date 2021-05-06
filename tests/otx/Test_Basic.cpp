@@ -81,12 +81,6 @@
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
-#include "opentxs/protobuf/PaymentWorkflow.pb.h"
-#include "opentxs/protobuf/PeerEnums.pb.h"
-#include "opentxs/protobuf/PeerReply.pb.h"
-#include "opentxs/protobuf/PeerRequest.pb.h"
-#include "opentxs/protobuf/ServerContract.pb.h"  // IWYU pragma: keep
-#include "opentxs/protobuf/UnitDefinition.pb.h"
 #include "server/Server.hpp"
 #include "server/Transactor.hpp"
 
@@ -132,9 +126,6 @@ bool init_{false};
 class Test_Basic : public ::testing::Test
 {
 public:
-    using ProtoHasReply = std::function<bool(const proto::PeerReply&)>;
-    using ProtoHasRequest = std::function<bool(const proto::PeerRequest&)>;
-
     struct matchID {
         matchID(const std::string& id)
             : id_{id}
@@ -271,8 +262,10 @@ public:
         const contract::Server& contract,
         const ot::api::client::Manager& client)
     {
-        auto clientVersion =
-            client.Wallet().Server(server_contract_->PublicContract());
+        auto bytes = ot::Space{};
+        EXPECT_TRUE(server_contract_->PublicContract(ot::writer(bytes)));
+
+        auto clientVersion = client.Wallet().Server(ot::reader(bytes));
         client.OTX().SetIntroductionServer(clientVersion);
     }
 
@@ -407,11 +400,11 @@ public:
     }
 
     void receive_reply(
+        const std::shared_ptr<const identity::Nym>& recipient,
+        const std::shared_ptr<const identity::Nym>& sender,
         const OTPeerReply& peerreply,
         const OTPeerRequest& peerrequest,
-        ProtoHasReply protohasreply,
-        ProtoHasRequest protohasrequest,
-        contract::peer::PeerRequestType prototype)
+        contract::peer::PeerRequestType requesttype)
     {
         const RequestNumber sequence = alice_counter_;
         const RequestNumber messages{4};
@@ -463,20 +456,18 @@ public:
 
         ASSERT_TRUE(foundincomingreply);
 
-        const auto incomingreply = client_1_.Wallet().PeerReply(
-            alice_nym_id_, peerreply->ID(), StorageBox::INCOMINGPEERREPLY);
+        auto bytes = ot::Space{};
+        EXPECT_TRUE(client_1_.Wallet().PeerReply(
+            alice_nym_id_,
+            peerreply->ID(),
+            StorageBox::INCOMINGPEERREPLY,
+            ot::writer(bytes)));
+        auto incomingreply =
+            client_1_.Factory().PeerReply(recipient, ot::reader(bytes));
 
-        ASSERT_TRUE(incomingreply);
-        EXPECT_STREQ(
-            incomingreply->initiator().c_str(), alice_nym_id_->str().c_str());
-        EXPECT_STREQ(
-            incomingreply->recipient().c_str(), bob_nym_id_->str().c_str());
-        EXPECT_EQ(
-            ot::contract::peer::internal::translate(incomingreply->type()),
-            prototype);
-        EXPECT_STREQ(
-            incomingreply->server().c_str(), server_1_id_.str().c_str());
-        EXPECT_TRUE(protohasreply(*incomingreply));
+        EXPECT_EQ(incomingreply->Type(), requesttype);
+        EXPECT_EQ(incomingreply->Server(), server_1_id_);
+        verify_reply(requesttype, peerreply, incomingreply);
 
         // Verify request is finished. 7
         const auto finishedrequests =
@@ -491,21 +482,19 @@ public:
         ASSERT_TRUE(foundfinishedrequest);
 
         std::time_t notused;
-        const auto finishedrequest = client_1_.Wallet().PeerRequest(
+        EXPECT_TRUE(client_1_.Wallet().PeerRequest(
             alice_nym_id_,
             peerrequest->ID(),
             StorageBox::FINISHEDPEERREQUEST,
-            notused);
+            notused,
+            ot::writer(bytes)));
+        auto finishedrequest =
+            client_1_.Factory().PeerRequest(sender, ot::reader(bytes));
 
-        ASSERT_TRUE(finishedrequest);
-        EXPECT_STREQ(
-            finishedrequest->initiator().c_str(), alice_nym_id_->str().c_str());
-        EXPECT_STREQ(
-            finishedrequest->recipient().c_str(), bob_nym_id_->str().c_str());
-        EXPECT_EQ(
-            contract::peer::internal::translate(finishedrequest->type()),
-            prototype);
-        EXPECT_TRUE(protohasrequest(*finishedrequest));
+        EXPECT_EQ(finishedrequest->Initiator(), alice_nym_id_);
+        EXPECT_EQ(finishedrequest->Recipient(), bob_nym_id_);
+        EXPECT_EQ(finishedrequest->Type(), requesttype);
+        verify_request(requesttype, peerrequest, finishedrequest);
 
         auto complete = client_1_.Wallet().PeerRequestComplete(
             alice_nym_id_, peerreply->ID());
@@ -524,16 +513,20 @@ public:
 
         ASSERT_TRUE(foundprocessedreply);
 
-        const auto processedreply = client_1_.Wallet().PeerReply(
-            alice_nym_id_, peerreply->ID(), StorageBox::PROCESSEDPEERREPLY);
-
-        ASSERT_TRUE(processedreply);
+        EXPECT_TRUE(client_1_.Wallet().PeerReply(
+            alice_nym_id_,
+            peerreply->ID(),
+            StorageBox::PROCESSEDPEERREPLY,
+            ot::writer(bytes)));
+        auto processedreply =
+            client_1_.Factory().PeerReply(recipient, ot::reader(bytes));
+        verify_reply(requesttype, peerreply, processedreply);
     }
 
     void receive_request(
+        const std::shared_ptr<const identity::Nym>& nym,
         const OTPeerRequest& peerrequest,
-        ProtoHasRequest protohasrequest,
-        contract::peer::PeerRequestType prototype)
+        contract::peer::PeerRequestType requesttype)
     {
         const RequestNumber sequence = bob_counter_;
         const RequestNumber messages{4};
@@ -586,28 +579,28 @@ public:
         ASSERT_TRUE(found);
 
         std::time_t notused;
-        const auto incomingrequest = client_2_.Wallet().PeerRequest(
+        auto bytes = ot::Space{};
+        EXPECT_TRUE(client_2_.Wallet().PeerRequest(
             bob_nym_id_,
             peerrequest->ID(),
             StorageBox::INCOMINGPEERREQUEST,
-            notused);
+            notused,
+            ot::writer(bytes)));
+        auto incomingrequest =
+            client_2_.Factory().PeerRequest(nym, ot::reader(bytes));
 
-        ASSERT_TRUE(incomingrequest);
-        EXPECT_STREQ(
-            incomingrequest->initiator().c_str(), alice_nym_id_->str().c_str());
-        EXPECT_STREQ(
-            incomingrequest->recipient().c_str(), bob_nym_id_->str().c_str());
-        EXPECT_EQ(
-            contract::peer::internal::translate(incomingrequest->type()),
-            prototype);
-        EXPECT_TRUE(protohasrequest(*incomingrequest));
+        EXPECT_EQ(incomingrequest->Initiator(), alice_nym_id_);
+        EXPECT_EQ(incomingrequest->Recipient(), bob_nym_id_);
+        EXPECT_EQ(incomingrequest->Type(), requesttype);
+        EXPECT_EQ(incomingrequest->Server(), server_1_id_);
+        verify_request(requesttype, peerrequest, incomingrequest);
     }
 
     void send_peer_reply(
+        const std::shared_ptr<const identity::Nym>& nym,
         const OTPeerReply& peerreply,
         const OTPeerRequest& peerrequest,
-        ProtoHasReply protohasreply,
-        contract::peer::PeerRequestType prototype)
+        contract::peer::PeerRequestType requesttype)
     {
         const RequestNumber sequence = bob_counter_;
         const RequestNumber messages{1};
@@ -661,18 +654,17 @@ public:
 
         ASSERT_TRUE(foundsentreply);
 
-        const auto sentreply = client_2_.Wallet().PeerReply(
-            bob_nym_id_, peerreply->ID(), StorageBox::SENTPEERREPLY);
+        auto bytes = ot::Space{};
+        EXPECT_TRUE(client_2_.Wallet().PeerReply(
+            bob_nym_id_,
+            peerreply->ID(),
+            StorageBox::SENTPEERREPLY,
+            ot::writer(bytes)));
+        auto sentreply = client_2_.Factory().PeerReply(nym, ot::reader(bytes));
 
-        ASSERT_TRUE(sentreply);
-        EXPECT_STREQ(
-            sentreply->initiator().c_str(), alice_nym_id_->str().c_str());
-        EXPECT_STREQ(
-            sentreply->recipient().c_str(), bob_nym_id_->str().c_str());
-        EXPECT_EQ(
-            contract::peer::internal::translate(sentreply->type()), prototype);
-        EXPECT_STREQ(sentreply->server().c_str(), server_1_id_.str().c_str());
-        EXPECT_TRUE(protohasreply(*sentreply));
+        EXPECT_EQ(sentreply->Type(), requesttype);
+        EXPECT_EQ(sentreply->Server(), server_1_id_);
+        verify_reply(requesttype, peerreply, sentreply);
 
         // Verify request was processed. 4
         const auto processedrequests =
@@ -717,9 +709,9 @@ public:
     }
 
     void send_peer_request(
+        const std::shared_ptr<const identity::Nym>& nym,
         const OTPeerRequest& peerrequest,
-        ProtoHasRequest protohasrequest,
-        contract::peer::PeerRequestType prototype)
+        contract::peer::PeerRequestType requesttype)
     {
         const RequestNumber sequence = alice_counter_;
         const RequestNumber messages{1};
@@ -774,21 +766,21 @@ public:
         ASSERT_TRUE(found);
 
         std::time_t notused;
-        const auto sentrequest = client_1_.Wallet().PeerRequest(
+        auto bytes = ot::Space{};
+        EXPECT_TRUE(client_1_.Wallet().PeerRequest(
             alice_nym_id_,
             peerrequest->ID(),
             StorageBox::SENTPEERREQUEST,
-            notused);
+            notused,
+            ot::writer(bytes)));
+        auto sentrequest =
+            client_1_.Factory().PeerRequest(nym, ot::reader(bytes));
 
-        ASSERT_TRUE(sentrequest);
-        EXPECT_STREQ(
-            sentrequest->initiator().c_str(), alice_nym_id_->str().c_str());
-        EXPECT_STREQ(
-            sentrequest->recipient().c_str(), bob_nym_id_->str().c_str());
-        EXPECT_EQ(
-            contract::peer::internal::translate(sentrequest->type()),
-            prototype);
-        EXPECT_TRUE(protohasrequest(*sentrequest));
+        EXPECT_EQ(sentrequest->Initiator(), alice_nym_id_);
+        EXPECT_EQ(sentrequest->Recipient(), bob_nym_id_);
+        EXPECT_EQ(sentrequest->Type(), requesttype);
+        EXPECT_EQ(sentrequest->Server(), server_1_id_);
+        verify_request(requesttype, peerrequest, sentrequest);
     }
 
     void verify_account(
@@ -823,6 +815,241 @@ public:
         EXPECT_TRUE(serverInbox->CalculateInboxHash(serverInboxHash));
         EXPECT_TRUE(clientOutbox->CalculateOutboxHash(clientOutboxHash));
         EXPECT_TRUE(serverOutbox->CalculateOutboxHash(serverOutboxHash));
+    }
+
+    void verify_acknowledgement(
+        const contract::peer::Reply& originalreply,
+        const contract::peer::Reply& restoredreply)
+    {
+        const auto& acknowledgement = restoredreply.asAcknowledgement();
+        verify_reply_properties(originalreply, acknowledgement);
+
+        const auto& bailment = restoredreply.asBailment();
+        EXPECT_EQ(bailment.Version(), 0);
+        const auto& connection = restoredreply.asConnection();
+        EXPECT_EQ(connection.Version(), 0);
+        const auto& outbailment = restoredreply.asOutbailment();
+        EXPECT_EQ(outbailment.Version(), 0);
+    }
+
+    void verify_bailment(
+        const contract::peer::Reply& originalreply,
+        const contract::peer::Reply& restoredreply)
+    {
+        const auto& bailment = restoredreply.asBailment();
+        verify_reply_properties(originalreply, bailment);
+
+        const auto& acknowledgement = restoredreply.asAcknowledgement();
+        EXPECT_EQ(acknowledgement.Version(), 0);
+        const auto& connection = restoredreply.asConnection();
+        EXPECT_EQ(connection.Version(), 0);
+        const auto& outbailment = restoredreply.asOutbailment();
+        EXPECT_EQ(outbailment.Version(), 0);
+    }
+
+    void verify_bailment(
+        const contract::peer::Request& originalrequest,
+        const contract::peer::Request& restoredrequest)
+    {
+        const auto& original = originalrequest.asBailment();
+        const auto& bailment = restoredrequest.asBailment();
+        EXPECT_EQ(bailment.ServerID(), original.ServerID());
+        EXPECT_EQ(bailment.UnitID(), original.UnitID());
+        verify_request_properties(originalrequest, bailment);
+
+        const auto& bailmentnotice = restoredrequest.asBailmentNotice();
+        EXPECT_EQ(bailmentnotice.Version(), 0);
+        const auto& connection = restoredrequest.asConnection();
+        EXPECT_EQ(connection.Version(), 0);
+        const auto& outbailment = restoredrequest.asOutbailment();
+        EXPECT_EQ(outbailment.Version(), 0);
+        const auto& storesecret = restoredrequest.asStoreSecret();
+        EXPECT_EQ(storesecret.Version(), 0);
+    }
+
+    void verify_bailment_notice(
+        const contract::peer::Request& originalrequest,
+        const contract::peer::Request& restoredrequest)
+    {
+        const auto& bailmentnotice = restoredrequest.asBailmentNotice();
+        verify_request_properties(originalrequest, bailmentnotice);
+
+        const auto& bailment = restoredrequest.asBailment();
+        EXPECT_EQ(bailment.Version(), 0);
+        const auto& connection = restoredrequest.asConnection();
+        EXPECT_EQ(connection.Version(), 0);
+        const auto& outbailment = restoredrequest.asOutbailment();
+        EXPECT_EQ(outbailment.Version(), 0);
+        const auto& storesecret = restoredrequest.asStoreSecret();
+        EXPECT_EQ(storesecret.Version(), 0);
+    }
+
+    void verify_connection(
+        const contract::peer::Reply& originalreply,
+        const contract::peer::Reply& restoredreply)
+    {
+        const auto& connection = restoredreply.asConnection();
+        verify_reply_properties(originalreply, connection);
+
+        const auto& acknowledgement = restoredreply.asAcknowledgement();
+        EXPECT_EQ(acknowledgement.Version(), 0);
+        const auto& bailment = restoredreply.asBailment();
+        EXPECT_EQ(bailment.Version(), 0);
+        const auto& outbailment = restoredreply.asOutbailment();
+        EXPECT_EQ(outbailment.Version(), 0);
+    }
+
+    void verify_connection(
+        const contract::peer::Request& originalrequest,
+        const contract::peer::Request& restoredrequest)
+    {
+        const auto& connection = restoredrequest.asConnection();
+        verify_request_properties(originalrequest, connection);
+
+        const auto& bailment = restoredrequest.asBailment();
+        EXPECT_EQ(bailment.Version(), 0);
+        const auto& bailmentnotice = restoredrequest.asBailmentNotice();
+        EXPECT_EQ(bailmentnotice.Version(), 0);
+        const auto& outbailment = restoredrequest.asOutbailment();
+        EXPECT_EQ(outbailment.Version(), 0);
+        const auto& storesecret = restoredrequest.asStoreSecret();
+        EXPECT_EQ(storesecret.Version(), 0);
+    }
+
+    void verify_outbailment(
+        const contract::peer::Reply& originalreply,
+        const contract::peer::Reply& restoredreply)
+    {
+        const auto& outbailment = restoredreply.asOutbailment();
+        verify_reply_properties(originalreply, outbailment);
+
+        const auto& acknowledgement = restoredreply.asAcknowledgement();
+        EXPECT_EQ(acknowledgement.Version(), 0);
+        const auto& bailment = restoredreply.asBailment();
+        EXPECT_EQ(bailment.Version(), 0);
+        const auto& connection = restoredreply.asConnection();
+        EXPECT_EQ(connection.Version(), 0);
+    }
+
+    void verify_outbailment(
+        const contract::peer::Request& originalrequest,
+        const contract::peer::Request& restoredrequest)
+    {
+        const auto& outbailment = restoredrequest.asOutbailment();
+        verify_request_properties(originalrequest, outbailment);
+
+        const auto& bailment = restoredrequest.asBailment();
+        EXPECT_EQ(bailment.Version(), 0);
+        const auto& bailmentnotice = restoredrequest.asBailmentNotice();
+        EXPECT_EQ(bailmentnotice.Version(), 0);
+        const auto& connection = restoredrequest.asConnection();
+        EXPECT_EQ(connection.Version(), 0);
+        const auto& storesecret = restoredrequest.asStoreSecret();
+        EXPECT_EQ(storesecret.Version(), 0);
+    }
+
+    void verify_reply(
+        contract::peer::PeerRequestType requesttype,
+        const contract::peer::Reply& original,
+        const contract::peer::Reply& restored)
+    {
+        switch (requesttype) {
+            case contract::peer::PeerRequestType::Bailment: {
+                verify_bailment(original, restored);
+                break;
+            }
+            case contract::peer::PeerRequestType::PendingBailment: {
+                verify_acknowledgement(original, restored);
+                break;
+            }
+            case contract::peer::PeerRequestType::ConnectionInfo: {
+                verify_connection(original, restored);
+                break;
+            }
+            case contract::peer::PeerRequestType::OutBailment: {
+                verify_outbailment(original, restored);
+                break;
+            }
+            case contract::peer::PeerRequestType::StoreSecret:
+            case contract::peer::PeerRequestType::VerificationOffer:
+            case contract::peer::PeerRequestType::Faucet:
+            case contract::peer::PeerRequestType::Error:
+            default:
+                break;
+        }
+    }
+
+    void verify_request(
+        contract::peer::PeerRequestType requesttype,
+        const contract::peer::Request& original,
+        const contract::peer::Request& restored)
+    {
+        switch (requesttype) {
+            case contract::peer::PeerRequestType::Bailment: {
+                verify_bailment(original, restored);
+                break;
+            }
+            case contract::peer::PeerRequestType::PendingBailment: {
+                verify_bailment_notice(original, restored);
+                break;
+            }
+            case contract::peer::PeerRequestType::ConnectionInfo: {
+                verify_connection(original, restored);
+                break;
+            }
+            case contract::peer::PeerRequestType::OutBailment: {
+                verify_outbailment(original, restored);
+                break;
+            }
+            case contract::peer::PeerRequestType::StoreSecret: {
+                verify_storesecret(original, restored);
+                break;
+            }
+            case contract::peer::PeerRequestType::VerificationOffer:
+            case contract::peer::PeerRequestType::Faucet:
+            case contract::peer::PeerRequestType::Error:
+            default:
+                break;
+        }
+    }
+
+    template <typename T>
+    void verify_reply_properties(
+        const contract::peer::Reply& original,
+        const T& restored)
+    {
+        EXPECT_NE(restored.Version(), 0);
+
+        EXPECT_EQ(restored.Alias(), original.Alias());
+        EXPECT_EQ(restored.Name(), original.Name());
+        EXPECT_EQ(restored.Serialize(), original.Serialize());
+        EXPECT_EQ(restored.Type(), original.Type());
+        EXPECT_EQ(restored.Version(), original.Version());
+    }
+
+    template <typename T>
+    void verify_request_properties(
+        const contract::peer::Request& original,
+        const T& restored)
+    {
+        EXPECT_NE(restored.Version(), 0);
+
+        EXPECT_EQ(restored.Alias(), original.Alias());
+        EXPECT_EQ(restored.Initiator(), original.Initiator());
+        EXPECT_EQ(restored.Name(), original.Name());
+        EXPECT_EQ(restored.Recipient(), original.Recipient());
+        EXPECT_EQ(restored.Serialize(), original.Serialize());
+        EXPECT_EQ(restored.Server(), original.Server());
+        EXPECT_EQ(restored.Type(), original.Type());
+        EXPECT_EQ(restored.Version(), original.Version());
+    }
+
+    void verify_storesecret(
+        const contract::peer::Request& originalrequest,
+        const contract::peer::Request& restoredrequest)
+    {
+        const auto& storesecret = restoredrequest.asStoreSecret();
+        verify_request_properties(originalrequest, storesecret);
     }
 
     void verify_state_pre(
@@ -1094,12 +1321,11 @@ TEST_F(Test_Basic, issueAsset)
     verify_state_pre(*clientContext, context, sequence);
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *alice_state_machine_;
-    auto serialized = std::make_shared<proto::UnitDefinition>();
 
-    ASSERT_TRUE(serialized);
-
-    *serialized = asset_contract_1_->PublicContract();
-    auto started = stateMachine.IssueUnitDefinition(serialized, extra_args_);
+    auto bytes = ot::Space{};
+    EXPECT_TRUE(asset_contract_1_->PublicContract(ot::writer(bytes)));
+    auto started =
+        stateMachine.IssueUnitDefinition(ot::reader(bytes), extra_args_);
 
     ASSERT_TRUE(started);
 
@@ -1216,7 +1442,9 @@ TEST_F(Test_Basic, publishNym)
 
     ASSERT_TRUE(nym);
 
-    client_1_.Wallet().Nym(nym->asPublicNym());
+    auto bytes = ot::Space{};
+    EXPECT_TRUE(nym->asPublicNym(ot::writer(bytes)));
+    client_1_.Wallet().Nym(ot::reader(bytes));
     auto started = stateMachine.PublishContract(bob_nym_id_);
 
     ASSERT_TRUE(started);
@@ -1363,7 +1591,9 @@ TEST_F(Test_Basic, publishServer)
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *alice_state_machine_;
     auto server = server_2_.Wallet().Server(server_2_id_);
-    client_1_.Wallet().Server(server->PublicContract());
+    auto bytes = ot::Space{};
+    EXPECT_TRUE(server->PublicContract(ot::writer(bytes)));
+    client_1_.Wallet().Server(ot::reader(bytes));
     auto started = stateMachine.PublishContract(server_2_id_);
 
     ASSERT_TRUE(started);
@@ -2193,12 +2423,12 @@ TEST_F(Test_Basic, sendTransfer)
 
     EXPECT_NE(outgoing_transfer_workflow_id_.size(), 0);
 
-    auto workflow = client_1_.Workflow().LoadWorkflow(
-        alice_nym_id_, Identifier::Factory(outgoing_transfer_workflow_id_));
-
-    ASSERT_TRUE(workflow);
-
-    EXPECT_EQ(workflow->party_size(), 0);
+    auto partysize = int{-1};
+    EXPECT_TRUE(client_1_.Workflow().WorkflowPartySize(
+        alice_nym_id_,
+        Identifier::Factory(outgoing_transfer_workflow_id_),
+        partysize));
+    EXPECT_EQ(partysize, 0);
 }
 
 TEST_F(Test_Basic, getAccountData_after_incomingTransfer)
@@ -2285,13 +2515,29 @@ TEST_F(Test_Basic, getAccountData_after_incomingTransfer)
 
     ASSERT_TRUE(workflow);
 
-    EXPECT_EQ(1, workflow->party_size());
-    EXPECT_STREQ(alice_nym_id_->str().c_str(), workflow->party(0).c_str());
+    auto partysize = int{-1};
+    EXPECT_TRUE(client_2_.Workflow().WorkflowPartySize(
+        bob_nym_id_,
+        Identifier::Factory(incoming_transfer_workflow_id_),
+        partysize));
+    EXPECT_EQ(1, partysize);
+
+    EXPECT_STREQ(
+        alice_nym_id_->str().c_str(),
+        client_2_.Workflow()
+            .WorkflowParty(
+                bob_nym_id_,
+                Identifier::Factory(incoming_transfer_workflow_id_),
+                0)
+            .c_str());
+
     EXPECT_EQ(
-        api::client::internal::translate(workflow->type()),
+        client_2_.Workflow().WorkflowType(
+            bob_nym_id_, Identifier::Factory(incoming_transfer_workflow_id_)),
         api::client::PaymentWorkflowType::IncomingTransfer);
     EXPECT_EQ(
-        api::client::internal::translate(workflow->state()),
+        client_2_.Workflow().WorkflowState(
+            bob_nym_id_, Identifier::Factory(incoming_transfer_workflow_id_)),
         api::client::PaymentWorkflowState::Completed);
 }
 
@@ -2501,9 +2747,9 @@ TEST_F(Test_Basic, send_internal_transfer)
     std::size_t count{0}, tries{100};
     std::set<std::string> workflows{};
     while (0 == count) {
-        // The state change from ACKNOWLEDGED to CONVEYED occurs asynchronously
-        // due to server push notifications so the order in which these states
-        // are observed by the sender is undefined.
+        // The state change from ACKNOWLEDGED to CONVEYED occurs
+        // asynchronously due to server push notifications so the order in
+        // which these states are observed by the sender is undefined.
         Sleep(std::chrono::milliseconds(100));
         workflows = client_2_.Storage().PaymentWorkflowsByState(
             bob_nym_id_->str(),
@@ -3138,14 +3384,13 @@ TEST_F(Test_Basic, initiate_and_acknowledge_bailment)
         find_unit_definition_id_2(),
         server_1_id_,
         reason_c1_);
-    ProtoHasRequest protohasrequest = &proto::PeerRequest::has_bailment;
     send_peer_request(
+        aliceNym,
         peerrequest.as<ot::contract::peer::Request>(),
-        protohasrequest,
         contract::peer::PeerRequestType::Bailment);
     receive_request(
+        aliceNym,
         peerrequest.as<ot::contract::peer::Request>(),
-        protohasrequest,
         contract::peer::PeerRequestType::Bailment);
     const auto bobNym = client_2_.Wallet().Nym(bob_nym_id_);
 
@@ -3158,17 +3403,16 @@ TEST_F(Test_Basic, initiate_and_acknowledge_bailment)
         server_1_id_,
         "instructions",
         reason_c2_);
-    ProtoHasReply protohasreply = &proto::PeerReply::has_bailment;
     send_peer_reply(
+        bobNym,
         peerreply.as<ot::contract::peer::Reply>(),
         peerrequest.as<ot::contract::peer::Request>(),
-        protohasreply,
         contract::peer::PeerRequestType::Bailment);
     receive_reply(
+        bobNym,
+        aliceNym,
         peerreply.as<ot::contract::peer::Reply>(),
         peerrequest.as<ot::contract::peer::Request>(),
-        protohasreply,
-        protohasrequest,
         contract::peer::PeerRequestType::Bailment);
 }
 
@@ -3187,14 +3431,13 @@ TEST_F(Test_Basic, initiate_and_acknowledge_outbailment)
         1000,
         "message",
         reason_c1_);
-    ProtoHasRequest protohasrequest = &proto::PeerRequest::has_outbailment;
     send_peer_request(
+        aliceNym,
         peerrequest.as<ot::contract::peer::Request>(),
-        protohasrequest,
         contract::peer::PeerRequestType::OutBailment);
     receive_request(
+        aliceNym,
         peerrequest.as<ot::contract::peer::Request>(),
-        protohasrequest,
         contract::peer::PeerRequestType::OutBailment);
     const auto bobNym = client_2_.Wallet().Nym(bob_nym_id_);
 
@@ -3207,17 +3450,16 @@ TEST_F(Test_Basic, initiate_and_acknowledge_outbailment)
         server_1_id_,
         "details",
         reason_c2_);
-    ProtoHasReply protohasreply = &proto::PeerReply::has_outbailment;
     send_peer_reply(
+        bobNym,
         peerreply.as<ot::contract::peer::Reply>(),
         peerrequest.as<ot::contract::peer::Request>(),
-        protohasreply,
         contract::peer::PeerRequestType::OutBailment);
     receive_reply(
+        bobNym,
+        aliceNym,
         peerreply.as<ot::contract::peer::Reply>(),
         peerrequest.as<ot::contract::peer::Request>(),
-        protohasreply,
-        protohasrequest,
         contract::peer::PeerRequestType::OutBailment);
 }
 
@@ -3236,14 +3478,13 @@ TEST_F(Test_Basic, notify_bailment_and_acknowledge_notice)
         Identifier::Random()->str(),
         1000,
         reason_c1_);
-    ProtoHasRequest protohasrequest = &proto::PeerRequest::has_pendingbailment;
     send_peer_request(
+        aliceNym,
         peerrequest.as<ot::contract::peer::Request>(),
-        protohasrequest,
         contract::peer::PeerRequestType::PendingBailment);
     receive_request(
+        aliceNym,
         peerrequest.as<ot::contract::peer::Request>(),
-        protohasrequest,
         contract::peer::PeerRequestType::PendingBailment);
     const auto bobNym = client_2_.Wallet().Nym(bob_nym_id_);
 
@@ -3257,17 +3498,16 @@ TEST_F(Test_Basic, notify_bailment_and_acknowledge_notice)
         contract::peer::PeerRequestType::PendingBailment,
         true,
         reason_c2_);
-    ProtoHasReply protohasreply = &proto::PeerReply::has_notice;
     send_peer_reply(
+        bobNym,
         peerreply.as<ot::contract::peer::Reply>(),
         peerrequest.as<ot::contract::peer::Request>(),
-        protohasreply,
         contract::peer::PeerRequestType::PendingBailment);
     receive_reply(
+        bobNym,
+        aliceNym,
         peerreply.as<ot::contract::peer::Reply>(),
         peerrequest.as<ot::contract::peer::Request>(),
-        protohasreply,
-        protohasrequest,
         contract::peer::PeerRequestType::PendingBailment);
 }
 
@@ -3283,14 +3523,13 @@ TEST_F(Test_Basic, initiate_request_connection_and_acknowledge_connection)
         contract::peer::ConnectionInfoType::Bitcoin,
         server_1_id_,
         reason_c1_);
-    ProtoHasRequest protohasrequest = &proto::PeerRequest::has_connectioninfo;
     send_peer_request(
+        aliceNym,
         peerrequest.as<ot::contract::peer::Request>(),
-        protohasrequest,
         contract::peer::PeerRequestType::ConnectionInfo);
     receive_request(
+        aliceNym,
         peerrequest.as<ot::contract::peer::Request>(),
-        protohasrequest,
         contract::peer::PeerRequestType::ConnectionInfo);
     const auto bobNym = client_2_.Wallet().Nym(bob_nym_id_);
 
@@ -3307,17 +3546,16 @@ TEST_F(Test_Basic, initiate_request_connection_and_acknowledge_connection)
         "password",
         "key",
         reason_c2_);
-    ProtoHasReply protohasreply = &proto::PeerReply::has_connectioninfo;
     send_peer_reply(
+        bobNym,
         peerreply.as<ot::contract::peer::Reply>(),
         peerrequest.as<ot::contract::peer::Request>(),
-        protohasreply,
         contract::peer::PeerRequestType::ConnectionInfo);
     receive_reply(
+        bobNym,
+        aliceNym,
         peerreply.as<ot::contract::peer::Reply>(),
         peerrequest.as<ot::contract::peer::Request>(),
-        protohasreply,
-        protohasrequest,
         contract::peer::PeerRequestType::ConnectionInfo);
 }
 
@@ -3335,14 +3573,13 @@ TEST_F(Test_Basic, initiate_store_secret_and_acknowledge_notice)
         TEST_SEED_PASSPHRASE,
         server_1_id_,
         reason_c1_);
-    ProtoHasRequest protohasrequest = &proto::PeerRequest::has_storesecret;
     send_peer_request(
+        aliceNym,
         peerrequest.as<ot::contract::peer::Request>(),
-        protohasrequest,
         contract::peer::PeerRequestType::StoreSecret);
     receive_request(
+        aliceNym,
         peerrequest.as<ot::contract::peer::Request>(),
-        protohasrequest,
         contract::peer::PeerRequestType::StoreSecret);
     const auto bobNym = client_2_.Wallet().Nym(bob_nym_id_);
 
@@ -3356,17 +3593,16 @@ TEST_F(Test_Basic, initiate_store_secret_and_acknowledge_notice)
         contract::peer::PeerRequestType::StoreSecret,
         true,
         reason_c2_);
-    ProtoHasReply protohasreply = &proto::PeerReply::has_notice;
     send_peer_reply(
+        bobNym,
         peerreply.as<ot::contract::peer::Reply>(),
         peerrequest.as<ot::contract::peer::Request>(),
-        protohasreply,
         contract::peer::PeerRequestType::StoreSecret);
     receive_reply(
+        bobNym,
+        aliceNym,
         peerreply.as<ot::contract::peer::Reply>(),
         peerrequest.as<ot::contract::peer::Request>(),
-        protohasreply,
-        protohasrequest,
         contract::peer::PeerRequestType::StoreSecret);
 }
 
@@ -3589,12 +3825,9 @@ TEST_F(Test_Basic, send_cash)
 
     EXPECT_EQ(localPurse.Value(), 0);
 
-    auto workflow = client_2_.Workflow().LoadWorkflow(bob_nym_id_, workflowID);
-
-    ASSERT_TRUE(workflow);
     EXPECT_EQ(
         api::client::PaymentWorkflowState::Conveyed,
-        api::client::internal::translate(workflow->state()));
+        client_2_.Workflow().WorkflowState(bob_nym_id_, workflowID));
 }
 
 TEST_F(Test_Basic, receive_cash)

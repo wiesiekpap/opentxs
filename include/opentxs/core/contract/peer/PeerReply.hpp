@@ -21,9 +21,22 @@ namespace contract
 {
 namespace peer
 {
+namespace reply
+{
+class Acknowledgement;
+class Bailment;
+class Connection;
+class Outbailment;
+}  // namespace reply
+
 class Reply;
 }  // namespace peer
 }  // namespace contract
+
+namespace identifier
+{
+class Server;
+}  // namespace identifier
 
 namespace proto
 {
@@ -44,8 +57,16 @@ class OPENTXS_EXPORT Reply : virtual public opentxs::contract::Signable
 public:
     using SerializedType = proto::PeerReply;
 
+    virtual auto asAcknowledgement() const noexcept
+        -> const reply::Acknowledgement& = 0;
+    virtual auto asBailment() const noexcept -> const reply::Bailment& = 0;
+    virtual auto asConnection() const noexcept -> const reply::Connection& = 0;
+    virtual auto asOutbailment() const noexcept
+        -> const reply::Outbailment& = 0;
+
     OPENTXS_NO_EXPORT virtual SerializedType Contract() const = 0;
     virtual PeerRequestType Type() const = 0;
+    virtual const identifier::Server& Server() const = 0;
 
     virtual ~Reply() override = default;
 

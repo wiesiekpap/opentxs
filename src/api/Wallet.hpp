@@ -204,6 +204,11 @@ public:
         const identifier::Nym& nym,
         const Identifier& reply,
         const StorageBox& box) const -> std::shared_ptr<proto::PeerReply> final;
+    auto PeerReply(
+        const identifier::Nym& nym,
+        const Identifier& reply,
+        const StorageBox& box,
+        AllocateOutput destination) const -> bool final;
     auto PeerReplyComplete(
         const identifier::Nym& nym,
         const Identifier& replyOrRequest) const -> bool final;
@@ -229,6 +234,12 @@ public:
         const Identifier& request,
         const StorageBox& box,
         std::time_t& time) const -> std::shared_ptr<proto::PeerRequest> final;
+    auto PeerRequest(
+        const identifier::Nym& nym,
+        const Identifier& request,
+        const StorageBox& box,
+        std::time_t& time,
+        AllocateOutput destination) const -> bool final;
     auto PeerRequestComplete(
         const identifier::Nym& nym,
         const Identifier& reply) const -> bool final;

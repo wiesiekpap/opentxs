@@ -91,6 +91,7 @@ public:
     virtual const std::string& GetCurrencyName() const = 0;
     virtual const std::string& GetCurrencySymbol() const = 0;
     virtual SerializedType PublicContract() const = 0;
+    virtual bool PublicContract(AllocateOutput destination) const = 0;
     virtual bool StringToAmountLocale(
         Amount& amount,
         const std::string& str_input,

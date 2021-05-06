@@ -26,6 +26,7 @@
 #include "internal/otx/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Proto.tpp"
 #include "opentxs/Shared.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Version.hpp"
@@ -1953,6 +1954,15 @@ auto Operation::IssueUnitDefinition(
     unit_definition_ = unitDefinition;
 
     return start(lock, Type::IssueUnitDefinition, args);
+}
+
+auto Operation::IssueUnitDefinition(
+    const ReadView& view,
+    const otx::context::Server::ExtraArgs& args) -> bool
+{
+    auto unitdefinition = std::make_shared<const proto::UnitDefinition>(
+        proto::Factory<proto::UnitDefinition>(view));
+    return IssueUnitDefinition(unitdefinition, args);
 }
 
 void Operation::join()

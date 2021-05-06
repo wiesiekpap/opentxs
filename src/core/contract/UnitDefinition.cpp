@@ -787,6 +787,11 @@ auto Unit::PublicContract() const -> SerializedType
     return serialized;
 }
 
+auto Unit::PublicContract(AllocateOutput destination) const -> bool
+{
+    return write(PublicContract(), destination);
+}
+
 auto Unit::Serialize() const -> OTData
 {
     Lock lock(lock_);

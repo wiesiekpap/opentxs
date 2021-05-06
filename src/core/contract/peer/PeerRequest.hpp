@@ -30,6 +30,21 @@ struct Core;
 class Core;
 }  // namespace api
 
+namespace contract
+{
+namespace peer
+{
+namespace request
+{
+class Bailment;
+class BailmentNotice;
+class Connection;
+class Outbailment;
+class StoreSecret;
+}  // namespace request
+}  // namespace peer
+}  // namespace contract
+
 namespace identifier
 {
 class Server;
@@ -50,6 +65,13 @@ class Request : virtual public peer::Request,
 {
 public:
     static auto Finish(Request& contract, const PasswordPrompt& reason) -> bool;
+
+    auto asBailment() const noexcept -> const request::Bailment& override;
+    auto asBailmentNotice() const noexcept
+        -> const request::BailmentNotice& override;
+    auto asConnection() const noexcept -> const request::Connection& override;
+    auto asOutbailment() const noexcept -> const request::Outbailment& override;
+    auto asStoreSecret() const noexcept -> const request::StoreSecret& override;
 
     auto Alias() const -> std::string final { return Name(); }
     auto Contract() const -> SerializedType final;

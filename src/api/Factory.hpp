@@ -626,6 +626,8 @@ public:
     auto PeerReply() const noexcept -> OTPeerReply final;
     auto PeerReply(const Nym_p& nym, const proto::PeerReply& serialized) const
         noexcept(false) -> OTPeerReply final;
+    auto PeerReply(const Nym_p& nym, const ReadView& view) const noexcept(false)
+        -> OTPeerReply final;
     auto PeerRequest() const noexcept -> OTPeerRequest final;
     auto PeerRequest(const Nym_p& nym, const proto::PeerRequest& serialized)
         const noexcept(false) -> OTPeerRequest final;

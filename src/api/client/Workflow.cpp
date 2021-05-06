@@ -2722,6 +2722,54 @@ auto Workflow::SendCheque(
         accountID);
 }
 
+auto Workflow::WorkflowParty(
+    const identifier::Nym& nymID,
+    const Identifier& workflowID,
+    const int index) const -> const std::string
+{
+    auto workflow = LoadWorkflow(nymID, workflowID);
+
+    if (false == bool{workflow}) return {};
+
+    return workflow->party(index);
+}
+
+auto Workflow::WorkflowPartySize(
+    const identifier::Nym& nymID,
+    const Identifier& workflowID,
+    int& partysize) const -> bool
+{
+    auto workflow = LoadWorkflow(nymID, workflowID);
+
+    if (false == bool{workflow}) { return false; }
+
+    partysize = workflow->party_size();
+
+    return true;
+}
+
+auto Workflow::WorkflowState(
+    const identifier::Nym& nymID,
+    const Identifier& workflowID) const -> PaymentWorkflowState
+{
+    auto workflow = LoadWorkflow(nymID, workflowID);
+
+    if (false == bool{workflow}) { return PaymentWorkflowState::Error; }
+
+    return internal::translate(workflow->state());
+}
+
+auto Workflow::WorkflowType(
+    const identifier::Nym& nymID,
+    const Identifier& workflowID) const -> PaymentWorkflowType
+{
+    auto workflow = LoadWorkflow(nymID, workflowID);
+
+    if (false == bool{workflow}) { return PaymentWorkflowType::Error; }
+
+    return internal::translate(workflow->type());
+}
+
 auto Workflow::update_activity(
     const identifier::Nym& localNymID,
     const identifier::Nym& remoteNymID,

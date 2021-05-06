@@ -92,6 +92,7 @@ public:
     }
     auto Name() const -> std::string override { return short_name_; }
     auto PublicContract() const -> SerializedType override;
+    auto PublicContract(AllocateOutput destination) const -> bool override;
     auto Serialize() const -> OTData override;
     auto StringToAmountLocale(
         std::int64_t& amount,

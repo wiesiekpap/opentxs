@@ -167,6 +167,20 @@ public:
         const opentxs::Cheque& cheque,
         const Message& request,
         const Message* reply) const -> bool final;
+    auto WorkflowParty(
+        const identifier::Nym& nymID,
+        const Identifier& workflowID,
+        const int index) const -> const std::string final;
+    auto WorkflowPartySize(
+        const identifier::Nym& nymID,
+        const Identifier& workflowID,
+        int& partysize) const -> bool final;
+    auto WorkflowState(
+        const identifier::Nym& nymID,
+        const Identifier& workflowID) const -> PaymentWorkflowState final;
+    auto WorkflowType(
+        const identifier::Nym& nymID,
+        const Identifier& workflowID) const -> PaymentWorkflowType final;
     auto WorkflowsByAccount(
         const identifier::Nym& nymID,
         const Identifier& accountID) const -> std::vector<OTIdentifier> final;

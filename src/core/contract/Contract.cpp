@@ -11,6 +11,67 @@
 #include "opentxs/protobuf/ContractEnums.pb.h"
 #include "util/Container.hpp"
 
+namespace opentxs::contract::peer::blank
+{
+auto Reply::asAcknowledgement() const noexcept
+    -> const peer::reply::Acknowledgement&
+{
+    static auto const blank = peer::reply::blank::Acknowledgement{api_};
+    return blank;
+}
+
+auto Reply::asBailment() const noexcept -> const peer::reply::Bailment&
+{
+    static auto const blank = peer::reply::blank::Bailment{api_};
+    return blank;
+}
+
+auto Reply::asConnection() const noexcept -> const peer::reply::Connection&
+{
+    static auto const blank = peer::reply::blank::Connection{api_};
+    return blank;
+}
+
+auto Reply::asOutbailment() const noexcept -> const peer::reply::Outbailment&
+{
+    static auto const blank = peer::reply::blank::Outbailment{api_};
+    return blank;
+}
+
+auto Request::asBailment() const noexcept -> const peer::request::Bailment&
+{
+    static auto const blank = peer::request::blank::Bailment{api_};
+    return blank;
+}
+
+auto Request::asBailmentNotice() const noexcept
+    -> const peer::request::BailmentNotice&
+{
+    static auto const blank = peer::request::blank::BailmentNotice{api_};
+    return blank;
+}
+
+auto Request::asConnection() const noexcept -> const peer::request::Connection&
+{
+    static auto const blank = peer::request::blank::Connection{api_};
+    return blank;
+}
+
+auto Request::asOutbailment() const noexcept
+    -> const peer::request::Outbailment&
+{
+    static auto const blank = peer::request::blank::Outbailment{api_};
+    return blank;
+}
+
+auto Request::asStoreSecret() const noexcept
+    -> const peer::request::StoreSecret&
+{
+    static auto const blank = peer::request::blank::StoreSecret{api_};
+    return blank;
+}
+}  // namespace opentxs::contract::peer::blank
+
 namespace opentxs::contract::internal
 {
 auto protocolversion_map() noexcept -> const ProtocolVersionMap&

@@ -59,6 +59,12 @@ public:
 
     ~BailmentNotice() final = default;
 
+    auto asBailmentNotice() const noexcept
+        -> const request::BailmentNotice& final
+    {
+        return *this;
+    }
+
 private:
     friend opentxs::Factory;
 
