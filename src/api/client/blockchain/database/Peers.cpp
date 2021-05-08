@@ -240,7 +240,13 @@ auto Peers::insert(const Lock& lock, std::vector<Address_p> peers) noexcept
             auto result = lmdb_.Store(
                 Table::PeerDetails,
                 id,
-                proto::ToString(address.Serialize()),
+                [&] {
+                    auto proto =
+                        opentxs::blockchain::p2p::Address::SerializedType{};
+                    address.Serialize(proto);
+
+                    return proto::ToString(proto);
+                }(),
                 parentTxn);
 
             if (false == result.first) {

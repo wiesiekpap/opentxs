@@ -28,6 +28,10 @@ using Clock = opentxs::Clock;
 #define OPENTXS_EXPORT
 #endif
 
+#ifndef OPENTXS_NO_EXPORT
+#define OPENTXS_NO_EXPORT
+#endif
+
 namespace std {
   typedef uint64_t size_t;
 };

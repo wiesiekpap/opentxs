@@ -3,9 +3,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: private
-// IWYU pragma: friend ".*src/api/crypto/Symmetric.cpp"
-
 #pragma once
 
 #include <map>
@@ -61,7 +58,6 @@ public:
         -> ECKey final;
     auto InstantiateHDKey(const proto::AsymmetricKey& serialized) const
         -> HDKey final;
-#if OT_CRYPTO_WITH_BIP32
     auto InstantiateKey(
         const opentxs::crypto::key::asymmetric::Algorithm type,
         const std::string& seedID,
@@ -69,10 +65,8 @@ public:
         const PasswordPrompt& reason,
         const opentxs::crypto::key::asymmetric::Role role,
         const VersionNumber version) const -> HDKey final;
-#endif  // OT_CRYPTO_WITH_BIP32
     auto InstantiateKey(const proto::AsymmetricKey& serialized) const
         -> Key final;
-#if OT_CRYPTO_WITH_BIP32
     auto NewHDKey(
         const std::string& seedID,
         const Secret& seed,
@@ -81,7 +75,6 @@ public:
         const PasswordPrompt& reason,
         const opentxs::crypto::key::asymmetric::Role role,
         const VersionNumber version) const -> HDKey final;
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     auto InstantiateSecp256k1Key(
         const ReadView publicKey,
         const PasswordPrompt& reason,
@@ -102,8 +95,6 @@ public:
         const VersionNumber version =
             opentxs::crypto::key::Secp256k1::DefaultVersion) const
         -> Secp256k1Key final;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-#endif  // OT_CRYPTO_WITH_BIP32
     auto NewKey(
         const NymParameters& params,
         const PasswordPrompt& reason,

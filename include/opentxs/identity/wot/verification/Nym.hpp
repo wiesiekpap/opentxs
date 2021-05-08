@@ -6,8 +6,6 @@
 #ifndef OPENTXS_IDENTITY_WOT_VERIFICATION_NYM_HPP
 #define OPENTXS_IDENTITY_WOT_VERIFICATION_NYM_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Proto.hpp"
@@ -33,7 +31,7 @@ namespace wot
 {
 namespace verification
 {
-class Nym
+class OPENTXS_EXPORT Nym
 {
 public:
     using value_type = Item;
@@ -41,22 +39,22 @@ public:
         opentxs::iterator::Bidirectional<const Nym, const value_type>;
     using SerializedType = proto::VerificationIdentity;
 
-    OPENTXS_EXPORT static const VersionNumber DefaultVersion;
+    static const VersionNumber DefaultVersion;
 
-    OPENTXS_EXPORT virtual operator SerializedType() const noexcept = 0;
+    OPENTXS_NO_EXPORT virtual operator SerializedType() const noexcept = 0;
 
     /// Throws std::out_of_range for invalid position
-    OPENTXS_EXPORT virtual const value_type& at(
-        const std::size_t position) const noexcept(false) = 0;
-    OPENTXS_EXPORT virtual const_iterator begin() const noexcept = 0;
-    OPENTXS_EXPORT virtual const_iterator cbegin() const noexcept = 0;
-    OPENTXS_EXPORT virtual const_iterator cend() const noexcept = 0;
-    OPENTXS_EXPORT virtual const_iterator end() const noexcept = 0;
-    OPENTXS_EXPORT virtual const identifier::Nym& ID() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::size_t size() const noexcept = 0;
-    OPENTXS_EXPORT virtual VersionNumber Version() const noexcept = 0;
+    virtual const value_type& at(const std::size_t position) const
+        noexcept(false) = 0;
+    virtual const_iterator begin() const noexcept = 0;
+    virtual const_iterator cbegin() const noexcept = 0;
+    virtual const_iterator cend() const noexcept = 0;
+    virtual const_iterator end() const noexcept = 0;
+    virtual const identifier::Nym& ID() const noexcept = 0;
+    virtual std::size_t size() const noexcept = 0;
+    virtual VersionNumber Version() const noexcept = 0;
 
-    OPENTXS_EXPORT virtual bool AddItem(
+    virtual bool AddItem(
         const Identifier& claim,
         const identity::Nym& signer,
         const PasswordPrompt& reason,
@@ -64,9 +62,9 @@ public:
         const Time start = {},
         const Time end = {},
         const VersionNumber version = Item::DefaultVersion) noexcept = 0;
-    OPENTXS_EXPORT virtual bool DeleteItem(const Identifier& item) noexcept = 0;
+    virtual bool DeleteItem(const Identifier& item) noexcept = 0;
 
-    OPENTXS_EXPORT virtual ~Nym() = default;
+    virtual ~Nym() = default;
 
 protected:
     Nym() = default;

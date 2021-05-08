@@ -6,7 +6,6 @@
 #ifndef OPENTXS_CORE_CRYPTO_NYMPARAMETERS_HPP
 #define OPENTXS_CORE_CRYPTO_NYMPARAMETERS_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
 // IWYU pragma: no_include "opentxs/crypto/Language.hpp"
 // IWYU pragma: no_include "opentxs/crypto/SeedStrength.hpp"
 // IWYU pragma: no_include "opentxs/crypto/SeedStyle.hpp"
@@ -50,7 +49,8 @@ class OPENTXS_EXPORT NymParameters
 public:
     crypto::key::asymmetric::Algorithm Algorithm() const noexcept;
     NymParameters ChangeType(const NymParameterType type) const noexcept;
-    std::shared_ptr<proto::ContactData> ContactData() const noexcept;
+    OPENTXS_NO_EXPORT std::shared_ptr<proto::ContactData> ContactData()
+        const noexcept;
     identity::CredentialType credentialType() const noexcept;
 #if OT_CRYPTO_WITH_BIP32
     Bip32Index CredIndex() const noexcept;
@@ -83,10 +83,12 @@ public:
 #if OT_CRYPTO_WITH_BIP32
     bool UseAutoIndex() const noexcept;
 #endif  // OT_CRYPTO_WITH_BIP32
-    std::shared_ptr<proto::VerificationSet> VerificationSet() const noexcept;
+    OPENTXS_NO_EXPORT std::shared_ptr<proto::VerificationSet> VerificationSet()
+        const noexcept;
 
     OTKeypair& Keypair() noexcept;
-    void SetContactData(const proto::ContactData& contactData) noexcept;
+    OPENTXS_NO_EXPORT void SetContactData(
+        const proto::ContactData& contactData) noexcept;
 #if OT_CRYPTO_WITH_BIP32
     void SetCredIndex(const Bip32Index path) noexcept;
     void SetCredset(const Bip32Index path) noexcept;
@@ -112,7 +114,7 @@ public:
 #if OT_CRYPTO_WITH_BIP32
     void SetUseAutoIndex(const bool use) noexcept;
 #endif
-    void SetVerificationSet(
+    OPENTXS_NO_EXPORT void SetVerificationSet(
         const proto::VerificationSet& verificationSet) noexcept;
 
     NymParameters(

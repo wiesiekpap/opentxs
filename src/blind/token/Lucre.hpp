@@ -48,6 +48,7 @@ namespace proto
 {
 class Ciphertext;
 class LucreTokenData;
+class Token;
 }  // namespace proto
 
 class Factory;
@@ -63,7 +64,7 @@ public:
         -> bool;
     auto ID(const PasswordPrompt& reason) const -> std::string final;
     auto IsSpent(const PasswordPrompt& reason) const -> bool final;
-    auto Serialize() const -> proto::Token final;
+    auto Serialize(proto::Token& out) const noexcept -> bool final;
 
     auto AddSignature(const String& signature) -> bool;
     auto ChangeOwner(

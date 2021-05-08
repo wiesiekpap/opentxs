@@ -6,14 +6,11 @@
 #ifndef OPENTXS_CRYPTO_LIBRARY_ASYMMETRICPROVIDER_HPP
 #define OPENTXS_CRYPTO_LIBRARY_ASYMMETRICPROVIDER_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <optional>
 
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -42,57 +39,57 @@ namespace opentxs
 {
 namespace crypto
 {
-class AsymmetricProvider
+class OPENTXS_EXPORT AsymmetricProvider
 {
 public:
-    OPENTXS_EXPORT static crypto::key::asymmetric::Algorithm CurveToKeyType(
+    static crypto::key::asymmetric::Algorithm CurveToKeyType(
         const EcdsaCurve& curve);
-    OPENTXS_EXPORT static EcdsaCurve KeyTypeToCurve(
+    static EcdsaCurve KeyTypeToCurve(
         const crypto::key::asymmetric::Algorithm& type);
 
-    OPENTXS_EXPORT virtual bool SeedToCurveKey(
+    virtual bool SeedToCurveKey(
         const ReadView seed,
         const AllocateOutput privateKey,
         const AllocateOutput publicKey) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SharedSecret(
+    virtual bool SharedSecret(
         const key::Asymmetric& publicKey,
         const key::Asymmetric& privateKey,
         const SecretStyle style,
         const PasswordPrompt& reason,
         Secret& secret) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool RandomKeypair(
+    virtual bool RandomKeypair(
         const AllocateOutput privateKey,
         const AllocateOutput publicKey,
         const opentxs::crypto::key::asymmetric::Role role =
             opentxs::crypto::key::asymmetric::Role::Sign,
         const NymParameters& options = {},
         const AllocateOutput params = {}) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Sign(
+    virtual bool Sign(
         const api::internal::Core& api,
         const ReadView plaintext,
         const key::Asymmetric& key,
         const crypto::HashType hash,
         const AllocateOutput signature,
         const PasswordPrompt& reason) const = 0;
-    OPENTXS_EXPORT virtual bool SignContract(
+    virtual bool SignContract(
         const api::internal::Core& api,
         const String& strContractUnsigned,
         const key::Asymmetric& theKey,
         Signature& theSignature,  // output
         const crypto::HashType hashType,
         const PasswordPrompt& reason) const = 0;
-    OPENTXS_EXPORT virtual bool Verify(
+    virtual bool Verify(
         const Data& plaintext,
         const key::Asymmetric& theKey,
         const Data& signature,
         const crypto::HashType hashType) const = 0;
-    OPENTXS_EXPORT virtual bool VerifyContractSignature(
+    virtual bool VerifyContractSignature(
         const String& strContractToVerify,
         const key::Asymmetric& theKey,
         const Signature& theSignature,
         const crypto::HashType hashType) const = 0;
 
-    virtual ~AsymmetricProvider() = default;
+    OPENTXS_NO_EXPORT virtual ~AsymmetricProvider() = default;
 
 protected:
     AsymmetricProvider() = default;

@@ -58,7 +58,7 @@ public:
     {
         return previous_services_;
     }
-    auto Serialize() const noexcept -> SerializedType final;
+    auto Serialize(SerializedType& out) const noexcept -> bool final;
     auto Services() const noexcept -> std::set<Service> final
     {
         return services_;

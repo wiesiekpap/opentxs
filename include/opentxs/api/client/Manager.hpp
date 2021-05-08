@@ -44,28 +44,25 @@ namespace api
 {
 namespace client
 {
-class Manager : virtual public api::Core
+class OPENTXS_EXPORT Manager : virtual public api::Core
 {
 public:
-    OPENTXS_EXPORT virtual const api::client::Activity& Activity() const = 0;
-    OPENTXS_EXPORT virtual const api::client::Blockchain& Blockchain()
-        const = 0;
-    OPENTXS_EXPORT virtual const api::client::Contacts& Contacts() const = 0;
-    OPENTXS_EXPORT virtual const OTAPI_Exec& Exec(
-        const std::string& wallet = "") const = 0;
-    OPENTXS_EXPORT virtual std::recursive_mutex& Lock(
+    virtual const api::client::Activity& Activity() const = 0;
+    virtual const api::client::Blockchain& Blockchain() const = 0;
+    virtual const api::client::Contacts& Contacts() const = 0;
+    virtual const OTAPI_Exec& Exec(const std::string& wallet = "") const = 0;
+    virtual std::recursive_mutex& Lock(
         const identifier::Nym& nymID,
         const identifier::Server& serverID) const = 0;
-    OPENTXS_EXPORT virtual const OT_API& OTAPI(
-        const std::string& wallet = "") const = 0;
-    OPENTXS_EXPORT virtual const client::OTX& OTX() const = 0;
-    OPENTXS_EXPORT virtual const client::Pair& Pair() const = 0;
-    OPENTXS_EXPORT virtual const client::ServerAction& ServerAction() const = 0;
-    OPENTXS_EXPORT virtual const api::client::UI& UI() const = 0;
-    OPENTXS_EXPORT virtual const client::Workflow& Workflow() const = 0;
-    OPENTXS_EXPORT virtual const network::ZMQ& ZMQ() const = 0;
+    virtual const OT_API& OTAPI(const std::string& wallet = "") const = 0;
+    virtual const client::OTX& OTX() const = 0;
+    virtual const client::Pair& Pair() const = 0;
+    virtual const client::ServerAction& ServerAction() const = 0;
+    virtual const api::client::UI& UI() const = 0;
+    virtual const client::Workflow& Workflow() const = 0;
+    virtual const network::ZMQ& ZMQ() const = 0;
 
-    OPENTXS_EXPORT ~Manager() override = default;
+    OPENTXS_NO_EXPORT ~Manager() override = default;
 
 protected:
     Manager() = default;

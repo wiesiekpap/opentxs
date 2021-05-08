@@ -6,14 +6,11 @@
 #ifndef OPENTXS_NETWORK_SERVERCONNECTION_HPP
 #define OPENTXS_NETWORK_SERVERCONNECTION_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>
 
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
@@ -63,7 +60,7 @@ namespace opentxs
 {
 namespace network
 {
-class ServerConnection
+class OPENTXS_EXPORT ServerConnection
 {
 public:
     enum class Push : bool {
@@ -71,22 +68,21 @@ public:
         Disable = false,
     };
 
-    OPENTXS_EXPORT static OTServerConnection Factory(
+    static OTServerConnection Factory(
         const api::internal::Core& api,
         const api::network::ZMQ& zmq,
         const zeromq::socket::Publish& updates,
         const OTServerContract& contract);
 
-    OPENTXS_EXPORT virtual bool ChangeAddressType(
-        const core::AddressType type) = 0;
-    OPENTXS_EXPORT virtual bool ClearProxy() = 0;
-    OPENTXS_EXPORT virtual bool EnableProxy() = 0;
-    OPENTXS_EXPORT virtual NetworkReplyMessage Send(
+    virtual bool ChangeAddressType(const core::AddressType type) = 0;
+    virtual bool ClearProxy() = 0;
+    virtual bool EnableProxy() = 0;
+    virtual NetworkReplyMessage Send(
         const otx::context::Server& context,
         const Message& message,
         const PasswordPrompt& reason,
         const Push push = Push::Enable) = 0;
-    OPENTXS_EXPORT virtual bool Status() const = 0;
+    virtual bool Status() const = 0;
 
     virtual ~ServerConnection() = default;
 

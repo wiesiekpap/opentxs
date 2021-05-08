@@ -6,8 +6,6 @@
 #ifndef OPENTXS_CORE_CONTRACT_PEER_PEERREQUEST_HPP
 #define OPENTXS_CORE_CONTRACT_PEER_PEERREQUEST_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>
@@ -52,7 +50,7 @@ class OPENTXS_EXPORT Request : virtual public opentxs::contract::Signable
 public:
     using SerializedType = proto::PeerRequest;
 
-    virtual SerializedType Contract() const = 0;
+    OPENTXS_NO_EXPORT virtual SerializedType Contract() const = 0;
     virtual const identifier::Nym& Initiator() const = 0;
     virtual const identifier::Nym& Recipient() const = 0;
     virtual const identifier::Server& Server() const = 0;

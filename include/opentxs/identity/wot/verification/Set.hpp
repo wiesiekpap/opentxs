@@ -6,8 +6,6 @@
 #ifndef OPENTXS_IDENTITY_WOT_VERIFICATION_SET_HPP
 #define OPENTXS_IDENTITY_WOT_VERIFICATION_SET_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Proto.hpp"
@@ -31,20 +29,20 @@ namespace wot
 {
 namespace verification
 {
-class Set
+class OPENTXS_EXPORT Set
 {
 public:
     using SerializedType = proto::VerificationSet;
 
-    OPENTXS_EXPORT static const VersionNumber DefaultVersion;
+    static const VersionNumber DefaultVersion;
 
-    OPENTXS_EXPORT virtual operator SerializedType() const noexcept = 0;
+    OPENTXS_NO_EXPORT virtual operator SerializedType() const noexcept = 0;
 
-    OPENTXS_EXPORT virtual const Group& External() const noexcept = 0;
-    OPENTXS_EXPORT virtual const Group& Internal() const noexcept = 0;
-    OPENTXS_EXPORT virtual VersionNumber Version() const noexcept = 0;
+    virtual const Group& External() const noexcept = 0;
+    virtual const Group& Internal() const noexcept = 0;
+    virtual VersionNumber Version() const noexcept = 0;
 
-    OPENTXS_EXPORT virtual bool AddItem(
+    virtual bool AddItem(
         const identifier::Nym& claimOwner,
         const Identifier& claim,
         const identity::Nym& signer,
@@ -53,14 +51,14 @@ public:
         const Time start = {},
         const Time end = {},
         const VersionNumber version = Item::DefaultVersion) noexcept = 0;
-    OPENTXS_EXPORT virtual bool AddItem(
+    OPENTXS_NO_EXPORT virtual bool AddItem(
         const identifier::Nym& verifier,
         const Item::SerializedType verification) noexcept = 0;
-    OPENTXS_EXPORT virtual bool DeleteItem(const Identifier& item) noexcept = 0;
-    OPENTXS_EXPORT virtual Group& External() noexcept = 0;
-    OPENTXS_EXPORT virtual Group& Internal() noexcept = 0;
+    virtual bool DeleteItem(const Identifier& item) noexcept = 0;
+    virtual Group& External() noexcept = 0;
+    virtual Group& Internal() noexcept = 0;
 
-    OPENTXS_EXPORT virtual ~Set() = default;
+    virtual ~Set() = default;
 
 protected:
     Set() = default;

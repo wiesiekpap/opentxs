@@ -6,14 +6,11 @@
 #ifndef OPENTXS_BLOCKCHAIN_P2P_ADDRESS_HPP
 #define OPENTXS_BLOCKCHAIN_P2P_ADDRESS_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <set>
 
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 
@@ -41,30 +38,29 @@ namespace blockchain
 {
 namespace p2p
 {
-class Address
+class OPENTXS_EXPORT Address
 {
 public:
     using SerializedType = proto::BlockchainPeerAddress;
 
-    OPENTXS_EXPORT virtual OTData Bytes() const noexcept = 0;
-    OPENTXS_EXPORT virtual blockchain::Type Chain() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string Display() const noexcept = 0;
-    OPENTXS_EXPORT virtual const Identifier& ID() const noexcept = 0;
-    OPENTXS_EXPORT virtual Time LastConnected() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::uint16_t Port() const noexcept = 0;
-    OPENTXS_EXPORT virtual SerializedType Serialize() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::set<Service> Services() const noexcept = 0;
-    OPENTXS_EXPORT virtual Protocol Style() const noexcept = 0;
-    OPENTXS_EXPORT virtual Network Type() const noexcept = 0;
+    virtual OTData Bytes() const noexcept = 0;
+    virtual blockchain::Type Chain() const noexcept = 0;
+    virtual std::string Display() const noexcept = 0;
+    virtual const Identifier& ID() const noexcept = 0;
+    virtual Time LastConnected() const noexcept = 0;
+    virtual std::uint16_t Port() const noexcept = 0;
+    OPENTXS_NO_EXPORT virtual bool Serialize(
+        SerializedType& out) const noexcept = 0;
+    virtual std::set<Service> Services() const noexcept = 0;
+    virtual Protocol Style() const noexcept = 0;
+    virtual Network Type() const noexcept = 0;
 
-    OPENTXS_EXPORT virtual void AddService(const Service service) noexcept = 0;
-    OPENTXS_EXPORT virtual void RemoveService(
-        const Service service) noexcept = 0;
-    OPENTXS_EXPORT virtual void SetLastConnected(const Time& time) noexcept = 0;
-    OPENTXS_EXPORT virtual void SetServices(
-        const std::set<Service>& services) noexcept = 0;
+    virtual void AddService(const Service service) noexcept = 0;
+    virtual void RemoveService(const Service service) noexcept = 0;
+    virtual void SetLastConnected(const Time& time) noexcept = 0;
+    virtual void SetServices(const std::set<Service>& services) noexcept = 0;
 
-    OPENTXS_EXPORT virtual ~Address() = default;
+    virtual ~Address() = default;
 
 protected:
     Address() noexcept = default;

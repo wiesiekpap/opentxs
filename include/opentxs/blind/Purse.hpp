@@ -6,8 +6,6 @@
 #ifndef OPENTXS_BLIND_PURSE_HPP
 #define OPENTXS_BLIND_PURSE_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
@@ -16,7 +14,6 @@
 #if OT_CASH
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/blind/Types.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
 
@@ -68,7 +65,7 @@ namespace opentxs
 {
 namespace blind
 {
-class Purse
+class OPENTXS_EXPORT Purse
 {
 public:
     using Clock = std::chrono::system_clock;
@@ -77,51 +74,49 @@ public:
     using const_iterator =
         opentxs::iterator::Bidirectional<const Purse, const Token>;
 
-    OPENTXS_EXPORT virtual const Token& at(
-        const std::size_t position) const = 0;
-    OPENTXS_EXPORT virtual const_iterator begin() const noexcept = 0;
-    OPENTXS_EXPORT virtual const_iterator cbegin() const noexcept = 0;
-    OPENTXS_EXPORT virtual const_iterator cend() const noexcept = 0;
-    OPENTXS_EXPORT virtual Time EarliestValidTo() const = 0;
-    OPENTXS_EXPORT virtual const_iterator end() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool IsUnlocked() const = 0;
-    OPENTXS_EXPORT virtual Time LatestValidFrom() const = 0;
-    OPENTXS_EXPORT virtual const identifier::Server& Notary() const = 0;
-    OPENTXS_EXPORT virtual proto::Purse Serialize() const = 0;
-    OPENTXS_EXPORT virtual auto Serialize(
-        AllocateOutput destination) const noexcept -> void = 0;
-    OPENTXS_EXPORT virtual std::size_t size() const noexcept = 0;
-    OPENTXS_EXPORT virtual blind::PurseType State() const = 0;
-    OPENTXS_EXPORT virtual blind::CashType Type() const = 0;
-    OPENTXS_EXPORT virtual const identifier::UnitDefinition& Unit() const = 0;
-    OPENTXS_EXPORT virtual bool Unlock(
-        const identity::Nym& nym,
-        const PasswordPrompt& reason) const = 0;
-    OPENTXS_EXPORT virtual bool Verify(
-        const api::server::internal::Manager& server) const = 0;
-    OPENTXS_EXPORT virtual Amount Value() const = 0;
+    virtual const Token& at(const std::size_t position) const = 0;
+    virtual const_iterator begin() const noexcept = 0;
+    virtual const_iterator cbegin() const noexcept = 0;
+    virtual const_iterator cend() const noexcept = 0;
+    virtual Time EarliestValidTo() const = 0;
+    virtual const_iterator end() const noexcept = 0;
+    virtual bool IsUnlocked() const = 0;
+    virtual Time LatestValidFrom() const = 0;
+    virtual const identifier::Server& Notary() const = 0;
+    OPENTXS_NO_EXPORT virtual bool Serialize(
+        proto::Purse& out) const noexcept = 0;
+    virtual auto Serialize(AllocateOutput destination) const noexcept
+        -> bool = 0;
+    virtual std::size_t size() const noexcept = 0;
+    virtual blind::PurseType State() const = 0;
+    virtual blind::CashType Type() const = 0;
+    virtual const identifier::UnitDefinition& Unit() const = 0;
+    virtual bool Unlock(const identity::Nym& nym, const PasswordPrompt& reason)
+        const = 0;
+    virtual bool Verify(const api::server::internal::Manager& server) const = 0;
+    virtual Amount Value() const = 0;
 
-    OPENTXS_EXPORT virtual bool AddNym(
+    virtual bool AddNym(
         const identity::Nym& nym,
         const PasswordPrompt& reason) = 0;
-    OPENTXS_EXPORT virtual Token& at(const std::size_t position) = 0;
-    OPENTXS_EXPORT virtual iterator begin() noexcept = 0;
-    OPENTXS_EXPORT virtual iterator end() noexcept = 0;
-    OPENTXS_EXPORT virtual crypto::key::Symmetric& PrimaryKey(
+    virtual Token& at(const std::size_t position) = 0;
+    virtual iterator begin() noexcept = 0;
+    virtual iterator end() noexcept = 0;
+    virtual crypto::key::Symmetric& PrimaryKey(
         PasswordPrompt& password) noexcept(false) = 0;
-    OPENTXS_EXPORT virtual std::shared_ptr<Token> Pop() = 0;
-    OPENTXS_EXPORT virtual bool Process(
+    virtual std::shared_ptr<Token> Pop() = 0;
+    virtual bool Process(
         const identity::Nym& owner,
         const Mint& mint,
         const PasswordPrompt& reason) = 0;
-    OPENTXS_EXPORT virtual bool Push(
+    virtual bool Push(
         std::shared_ptr<Token> token,
         const PasswordPrompt& reason) = 0;
-    OPENTXS_EXPORT virtual const crypto::key::Symmetric& SecondaryKey(
+    virtual const crypto::key::Symmetric& SecondaryKey(
         const identity::Nym& owner,
         PasswordPrompt& password) = 0;
 
-    OPENTXS_EXPORT virtual ~Purse() = default;
+    virtual ~Purse() = default;
 
 protected:
     Purse() noexcept = default;
@@ -129,7 +124,7 @@ protected:
 private:
     friend OTPurse;
 
-    OPENTXS_EXPORT virtual Purse* clone() const noexcept = 0;
+    virtual Purse* clone() const noexcept = 0;
 
     Purse(const Purse&) = delete;
     Purse(Purse&&) = delete;

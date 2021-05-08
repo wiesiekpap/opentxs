@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"               // IWYU pragma: associated
 #include "opentxs/contact/Contact.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <atomic>
 #include <map>
 #include <mutex>
@@ -19,7 +18,6 @@
 #include "internal/api/client/Client.hpp"
 #include "internal/contact/Contact.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
@@ -43,7 +41,6 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Contact.pb.h"
-#include "opentxs/protobuf/ContactData.pb.h"
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/ContactItem.pb.h"
 #include "opentxs/protobuf/verify/ContactItem.hpp"
@@ -235,11 +232,14 @@ struct Contact::Imp {
 
         const auto version = std::make_pair(
             item->Version(), contact::internal::translate(item->Section()));
-        const proto::ContactItem serialized(*item);
+        const auto proto = [&] {
+            auto out = proto::ContactItem{};
+            item->Serialize(out, true);
+            return out;
+        }();
 
-        if (false ==
-            proto::Validate<proto::ContactItem>(
-                serialized, VERBOSE, proto::ClaimType::Indexed, version)) {
+        if (false == proto::Validate<proto::ContactItem>(
+                         proto, VERBOSE, proto::ClaimType::Indexed, version)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid claim.").Flush();
 
             return false;
@@ -459,29 +459,6 @@ Contact::Contact(
     OT_ASSERT(imp_);
 }
 
-Contact::operator proto::Contact() const
-{
-    Lock lock(imp_->lock_);
-    proto::Contact output{};
-    output.set_version(imp_->version_);
-    output.set_id(String::Factory(imp_->id_)->Get());
-    output.set_revision(imp_->revision_);
-    output.set_label(imp_->label_);
-
-    if (imp_->contact_data_) {
-        auto& data = *output.mutable_contactdata();
-        data = imp_->contact_data_->Serialize();
-    }
-
-    output.set_mergedto(String::Factory(imp_->parent_)->Get());
-
-    for (const auto& child : imp_->merged_children_) {
-        output.add_merged(String::Factory(child)->Get());
-    }
-
-    return output;
-}
-
 auto Contact::operator+=(Contact& rhs) -> Contact&
 {
     Lock rLock(rhs.imp_->lock_, std::defer_lock);
@@ -533,7 +510,7 @@ auto Contact::operator+=(Contact& rhs) -> Contact&
 
 auto Contact::AddBlockchainAddress(
     const std::string& address,
-    const contact::ContactItemType currency) -> bool
+    const BlockchainType type) -> bool
 {
     const auto& api = imp_->api_;
     auto [bytes, style, chains, supported] =
@@ -547,8 +524,6 @@ auto Contact::AddBlockchainAddress(
 
         return false;
     }
-
-    const auto type = Translate(currency);
 
     if (0 == chains.count(type)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(
@@ -874,7 +849,7 @@ auto Contact::LastUpdated() const -> std::time_t
     }
 }
 
-auto opentxs::Contact::Nyms(const bool includeInactive) const
+auto Contact::Nyms(const bool includeInactive) const
     -> std::vector<opentxs::OTNymID>
 {
     Lock lock(imp_->lock_);
@@ -1025,6 +1000,27 @@ auto Contact::RemoveNym(const identifier::Nym& nymID) -> bool
     }
 
     return (0 < result);
+}
+
+auto Contact::Serialize(proto::Contact& output) const -> bool
+{
+    Lock lock(imp_->lock_);
+    output.set_version(imp_->version_);
+    output.set_id(String::Factory(imp_->id_)->Get());
+    output.set_revision(imp_->revision_);
+    output.set_label(imp_->label_);
+
+    if (imp_->contact_data_) {
+        imp_->contact_data_->Serialize(*output.mutable_contactdata());
+    }
+
+    output.set_mergedto(String::Factory(imp_->parent_)->Get());
+
+    for (const auto& child : imp_->merged_children_) {
+        output.add_merged(String::Factory(child)->Get());
+    }
+
+    return true;
 }
 
 void Contact::SetLabel(const std::string& label)

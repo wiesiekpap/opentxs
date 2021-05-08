@@ -6,8 +6,6 @@
 #ifndef OPENTXS_IDENTITY_NYM_HPP
 #define OPENTXS_IDENTITY_NYM_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
@@ -68,7 +66,7 @@ namespace opentxs
 {
 namespace identity
 {
-class Nym
+class OPENTXS_EXPORT Nym
 {
 public:
     using KeyTypes = std::vector<crypto::key::asymmetric::Algorithm>;
@@ -80,53 +78,49 @@ public:
     using const_iterator =
         opentxs::iterator::Bidirectional<const Nym, const value_type>;
 
-    OPENTXS_EXPORT static const VersionNumber DefaultVersion;
-    OPENTXS_EXPORT static const VersionNumber MaxVersion;
+    static const VersionNumber DefaultVersion;
+    static const VersionNumber MaxVersion;
 
-    OPENTXS_EXPORT virtual std::string Alias() const = 0;
-    OPENTXS_EXPORT virtual bool asPublicNym(
-        AllocateOutput destination) const = 0;
-    OPENTXS_EXPORT virtual const Serialized asPublicNym() const = 0;
-    OPENTXS_EXPORT virtual const value_type& at(const key_type& id) const
+    virtual std::string Alias() const = 0;
+    virtual bool asPublicNym(AllocateOutput destination) const = 0;
+    OPENTXS_NO_EXPORT virtual const Serialized asPublicNym() const = 0;
+    virtual const value_type& at(const key_type& id) const noexcept(false) = 0;
+    virtual const value_type& at(const std::size_t& index) const
         noexcept(false) = 0;
-    OPENTXS_EXPORT virtual const value_type& at(const std::size_t& index) const
-        noexcept(false) = 0;
-    OPENTXS_EXPORT virtual const_iterator begin() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string BestEmail() const = 0;
-    OPENTXS_EXPORT virtual std::string BestPhoneNumber() const = 0;
-    OPENTXS_EXPORT virtual std::string BestSocialMediaProfile(
+    virtual const_iterator begin() const noexcept = 0;
+    virtual std::string BestEmail() const = 0;
+    virtual std::string BestPhoneNumber() const = 0;
+    virtual std::string BestSocialMediaProfile(
         const contact::ContactItemType type) const = 0;
-    OPENTXS_EXPORT virtual const_iterator cbegin() const noexcept = 0;
-    OPENTXS_EXPORT virtual const_iterator cend() const noexcept = 0;
-    OPENTXS_EXPORT virtual const opentxs::ContactData& Claims() const = 0;
-    OPENTXS_EXPORT virtual bool CompareID(const Nym& RHS) const = 0;
-    OPENTXS_EXPORT virtual bool CompareID(const identifier::Nym& rhs) const = 0;
-    OPENTXS_EXPORT virtual VersionNumber ContactCredentialVersion() const = 0;
-    OPENTXS_EXPORT virtual VersionNumber ContactDataVersion() const = 0;
-    OPENTXS_EXPORT virtual std::set<OTIdentifier> Contracts(
+    virtual const_iterator cbegin() const noexcept = 0;
+    virtual const_iterator cend() const noexcept = 0;
+    virtual const opentxs::ContactData& Claims() const = 0;
+    virtual bool CompareID(const Nym& RHS) const = 0;
+    virtual bool CompareID(const identifier::Nym& rhs) const = 0;
+    virtual VersionNumber ContactCredentialVersion() const = 0;
+    virtual VersionNumber ContactDataVersion() const = 0;
+    virtual std::set<OTIdentifier> Contracts(
         const contact::ContactItemType currency,
         const bool onlyActive) const = 0;
-    OPENTXS_EXPORT virtual std::string EmailAddresses(
-        bool active = true) const = 0;
-    OPENTXS_EXPORT virtual NymKeys EncryptionTargets() const noexcept = 0;
-    OPENTXS_EXPORT virtual const_iterator end() const noexcept = 0;
-    OPENTXS_EXPORT virtual void GetIdentifier(
-        identifier::Nym& theIdentifier) const = 0;
-    OPENTXS_EXPORT virtual void GetIdentifier(String& theIdentifier) const = 0;
-    OPENTXS_EXPORT virtual const crypto::key::Asymmetric& GetPrivateAuthKey(
+    virtual std::string EmailAddresses(bool active = true) const = 0;
+    virtual NymKeys EncryptionTargets() const noexcept = 0;
+    virtual const_iterator end() const noexcept = 0;
+    virtual void GetIdentifier(identifier::Nym& theIdentifier) const = 0;
+    virtual void GetIdentifier(String& theIdentifier) const = 0;
+    virtual const crypto::key::Asymmetric& GetPrivateAuthKey(
         crypto::key::asymmetric::Algorithm keytype =
             crypto::key::asymmetric::Algorithm::Null) const = 0;
-    OPENTXS_EXPORT virtual const crypto::key::Asymmetric& GetPrivateEncrKey(
+    virtual const crypto::key::Asymmetric& GetPrivateEncrKey(
         crypto::key::asymmetric::Algorithm keytype =
             crypto::key::asymmetric::Algorithm::Null) const = 0;
-    OPENTXS_EXPORT virtual const crypto::key::Asymmetric& GetPrivateSignKey(
+    virtual const crypto::key::Asymmetric& GetPrivateSignKey(
         crypto::key::asymmetric::Algorithm keytype =
             crypto::key::asymmetric::Algorithm::Null) const = 0;
 
-    OPENTXS_EXPORT virtual const crypto::key::Asymmetric& GetPublicAuthKey(
+    virtual const crypto::key::Asymmetric& GetPublicAuthKey(
         crypto::key::asymmetric::Algorithm keytype =
             crypto::key::asymmetric::Algorithm::Null) const = 0;
-    OPENTXS_EXPORT virtual const crypto::key::Asymmetric& GetPublicEncrKey(
+    virtual const crypto::key::Asymmetric& GetPublicEncrKey(
         crypto::key::asymmetric::Algorithm keytype =
             crypto::key::asymmetric::Algorithm::Null) const = 0;
     // OT uses the signature's metadata to narrow down its search for the
@@ -134,117 +128,109 @@ public:
     // 'S' (signing key) or
     // 'E' (encryption key) OR
     // 'A' (authentication key)
-    OPENTXS_EXPORT virtual std::int32_t GetPublicKeysBySignature(
+    virtual std::int32_t GetPublicKeysBySignature(
         crypto::key::Keypair::Keys& listOutput,
         const Signature& theSignature,
         char cKeyType = '0') const = 0;
-    OPENTXS_EXPORT virtual const crypto::key::Asymmetric& GetPublicSignKey(
+    virtual const crypto::key::Asymmetric& GetPublicSignKey(
         crypto::key::asymmetric::Algorithm keytype =
             crypto::key::asymmetric::Algorithm::Null) const = 0;
-    OPENTXS_EXPORT virtual bool HasCapability(
-        const NymCapability& capability) const = 0;
-    OPENTXS_EXPORT virtual bool HasPath() const = 0;
-    OPENTXS_EXPORT virtual const identifier::Nym& ID() const = 0;
+    virtual bool HasCapability(const NymCapability& capability) const = 0;
+    virtual bool HasPath() const = 0;
+    virtual const identifier::Nym& ID() const = 0;
 
-    OPENTXS_EXPORT virtual std::string Name() const = 0;
+    virtual std::string Name() const = 0;
 
-    OPENTXS_EXPORT virtual bool Path(proto::HDPath& output) const = 0;
-    OPENTXS_EXPORT virtual const std::string PathRoot() const = 0;
-    OPENTXS_EXPORT virtual int PathChildSize() const = 0;
-    OPENTXS_EXPORT virtual std::uint32_t PathChild(int index) const = 0;
-    OPENTXS_EXPORT virtual std::string PaymentCode() const = 0;
-    OPENTXS_EXPORT virtual bool PaymentCodePath(
-        AllocateOutput destination) const = 0;
-    OPENTXS_EXPORT virtual bool PaymentCodePath(
-        proto::HDPath& output) const = 0;
-    OPENTXS_EXPORT virtual std::string PhoneNumbers(
-        bool active = true) const = 0;
-    OPENTXS_EXPORT virtual std::uint64_t Revision() const = 0;
+    virtual bool Path(proto::HDPath& output) const = 0;
+    virtual const std::string PathRoot() const = 0;
+    virtual int PathChildSize() const = 0;
+    virtual std::uint32_t PathChild(int index) const = 0;
+    virtual std::string PaymentCode() const = 0;
+    virtual bool PaymentCodePath(AllocateOutput destination) const = 0;
+    virtual bool PaymentCodePath(proto::HDPath& output) const = 0;
+    virtual std::string PhoneNumbers(bool active = true) const = 0;
+    virtual std::uint64_t Revision() const = 0;
 
-    OPENTXS_EXPORT virtual void SerializeNymIDSource(Tag& parent) const = 0;
-    OPENTXS_EXPORT virtual bool Sign(
+    virtual void SerializeNymIDSource(Tag& parent) const = 0;
+    virtual bool Sign(
         const ProtobufType& input,
         const crypto::SignatureRole role,
         proto::Signature& signature,
         const PasswordPrompt& reason,
         const crypto::HashType hash = crypto::HashType::Error) const = 0;
-    OPENTXS_EXPORT virtual std::size_t size() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string SocialMediaProfiles(
+    virtual std::size_t size() const noexcept = 0;
+    virtual std::string SocialMediaProfiles(
         const contact::ContactItemType type,
         bool active = true) const = 0;
-    OPENTXS_EXPORT virtual const std::set<contact::ContactItemType>
-    SocialMediaProfileTypes() const = 0;
-    OPENTXS_EXPORT virtual const identity::Source& Source() const = 0;
-    OPENTXS_EXPORT virtual OTSecret TransportKey(
-        Data& pubkey,
-        const PasswordPrompt& reason) const = 0;
+    virtual const std::set<contact::ContactItemType> SocialMediaProfileTypes()
+        const = 0;
+    virtual const identity::Source& Source() const = 0;
+    virtual OTSecret TransportKey(Data& pubkey, const PasswordPrompt& reason)
+        const = 0;
 
-    OPENTXS_EXPORT virtual bool Unlock(
+    virtual bool Unlock(
         const crypto::key::Asymmetric& dhKey,
         const std::uint32_t tag,
         const crypto::key::asymmetric::Algorithm type,
         const crypto::key::Symmetric& key,
         PasswordPrompt& reason) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Verify(
-        const ProtobufType& input,
-        proto::Signature& signature) const = 0;
-    OPENTXS_EXPORT virtual bool VerifyPseudonym() const = 0;
+    virtual bool Verify(const ProtobufType& input, proto::Signature& signature)
+        const = 0;
+    virtual bool VerifyPseudonym() const = 0;
 
-    OPENTXS_EXPORT virtual std::string AddChildKeyCredential(
+    virtual std::string AddChildKeyCredential(
         const Identifier& strMasterID,
         const NymParameters& nymParameters,
         const PasswordPrompt& reason) = 0;
-    OPENTXS_EXPORT virtual bool AddClaim(
-        const Claim& claim,
-        const PasswordPrompt& reason) = 0;
-    OPENTXS_EXPORT virtual bool AddContract(
+    virtual bool AddClaim(const Claim& claim, const PasswordPrompt& reason) = 0;
+    virtual bool AddContract(
         const identifier::UnitDefinition& instrumentDefinitionID,
         const contact::ContactItemType currency,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active = true) = 0;
-    OPENTXS_EXPORT virtual bool AddEmail(
+    virtual bool AddEmail(
         const std::string& value,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active) = 0;
-    OPENTXS_EXPORT virtual bool AddPaymentCode(
+    virtual bool AddPaymentCode(
         const opentxs::PaymentCode& code,
         const contact::ContactItemType currency,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active = true) = 0;
-    OPENTXS_EXPORT virtual bool AddPhoneNumber(
+    virtual bool AddPhoneNumber(
         const std::string& value,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active) = 0;
-    OPENTXS_EXPORT virtual bool AddPreferredOTServer(
+    virtual bool AddPreferredOTServer(
         const Identifier& id,
         const PasswordPrompt& reason,
         const bool primary) = 0;
-    OPENTXS_EXPORT virtual bool AddSocialMediaProfile(
+    virtual bool AddSocialMediaProfile(
         const std::string& value,
         const contact::ContactItemType type,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active) = 0;
-    OPENTXS_EXPORT virtual bool DeleteClaim(
+    virtual bool DeleteClaim(
         const Identifier& id,
         const PasswordPrompt& reason) = 0;
-    OPENTXS_EXPORT virtual bool SetCommonName(
+    virtual bool SetCommonName(
         const std::string& name,
         const PasswordPrompt& reason) = 0;
-    OPENTXS_EXPORT virtual bool SetContactData(
+    virtual bool SetContactData(
         const proto::ContactData& data,
         const PasswordPrompt& reason) = 0;
-    OPENTXS_EXPORT virtual bool SetScope(
+    virtual bool SetScope(
         const contact::ContactItemType type,
         const std::string& name,
         const PasswordPrompt& reason,
         const bool primary) = 0;
 
-    OPENTXS_EXPORT virtual ~Nym() = default;
+    virtual ~Nym() = default;
 
 protected:
     Nym() noexcept = default;

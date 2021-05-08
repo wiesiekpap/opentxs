@@ -78,7 +78,7 @@ public:
     auto RemoteNymboxHash() const -> OTIdentifier final;
     auto Request() const -> RequestNumber final;
     auto Serialize() const -> OTData final;
-    auto Serialized() const -> proto::Context final;
+    auto Serialize(proto::Context& out) const -> bool final;
     auto VerifyAcknowledgedNumber(const RequestNumber& req) const -> bool final;
     auto VerifyAvailableNumber(const TransactionNumber& number) const
         -> bool final;
@@ -101,7 +101,8 @@ public:
         return false;
     }
     auto RecoverAvailableNumber(const TransactionNumber& number) -> bool final;
-    auto Refresh(const PasswordPrompt& reason) -> proto::Context final;
+    auto Refresh(proto::Context& out, const PasswordPrompt& reason)
+        -> bool final;
     auto RemoveAcknowledgedNumber(const std::set<RequestNumber>& req)
         -> bool final;
     void Reset() final;

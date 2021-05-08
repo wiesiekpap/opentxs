@@ -61,7 +61,7 @@ public:
     auto ParentWork() const noexcept -> OTWork final { return inherit_work_; }
     auto Position() const noexcept -> block::Position final;
     using block::Header::Serialize;
-    auto Serialize() const noexcept -> SerializedType override;
+    auto Serialize(SerializedType& out) const noexcept -> bool override;
     auto Type() const noexcept -> blockchain::Type final { return type_; }
     auto Valid() const noexcept -> bool final;
     auto Work() const noexcept -> OTWork final;

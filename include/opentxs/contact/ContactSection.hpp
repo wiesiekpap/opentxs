@@ -16,8 +16,6 @@
 #include <string>
 
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/Types.hpp"
 
@@ -44,62 +42,59 @@ class Identifier;
 
 namespace opentxs
 {
-class ContactSection
+class OPENTXS_EXPORT ContactSection
 {
 public:
     using GroupMap =
         std::map<contact::ContactItemType, std::shared_ptr<ContactGroup>>;
 
-    OPENTXS_EXPORT ContactSection(
+    ContactSection(
         const api::internal::Core& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
         const contact::ContactSectionName section,
         const GroupMap& groups);
-    OPENTXS_EXPORT ContactSection(
+    ContactSection(
         const api::internal::Core& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
         const contact::ContactSectionName section,
         const std::shared_ptr<ContactItem>& item);
-    OPENTXS_EXPORT ContactSection(
+    OPENTXS_NO_EXPORT ContactSection(
         const api::internal::Core& api,
         const std::string& nym,
         const VersionNumber parentVersion,
         const proto::ContactSection& serialized);
-    OPENTXS_EXPORT ContactSection(
+    ContactSection(
         const api::internal::Core& api,
         const std::string& nym,
         const VersionNumber parentVersion,
         const ReadView& serialized);
-    OPENTXS_EXPORT ContactSection(const ContactSection&) noexcept;
-    OPENTXS_EXPORT ContactSection(ContactSection&&) noexcept;
+    ContactSection(const ContactSection&) noexcept;
+    ContactSection(ContactSection&&) noexcept;
 
-    OPENTXS_EXPORT ContactSection operator+(const ContactSection& rhs) const;
+    ContactSection operator+(const ContactSection& rhs) const;
 
-    OPENTXS_EXPORT ContactSection
-    AddItem(const std::shared_ptr<ContactItem>& item) const;
-    OPENTXS_EXPORT GroupMap::const_iterator begin() const;
-    OPENTXS_EXPORT std::shared_ptr<ContactItem> Claim(
-        const Identifier& item) const;
-    OPENTXS_EXPORT ContactSection Delete(const Identifier& id) const;
-    OPENTXS_EXPORT GroupMap::const_iterator end() const;
-    OPENTXS_EXPORT std::shared_ptr<ContactGroup> Group(
+    ContactSection AddItem(const std::shared_ptr<ContactItem>& item) const;
+    GroupMap::const_iterator begin() const;
+    std::shared_ptr<ContactItem> Claim(const Identifier& item) const;
+    ContactSection Delete(const Identifier& id) const;
+    GroupMap::const_iterator end() const;
+    std::shared_ptr<ContactGroup> Group(
         const contact::ContactItemType& type) const;
-    OPENTXS_EXPORT bool HaveClaim(const Identifier& item) const;
-    OPENTXS_EXPORT bool Serialize(
-        AllocateOutput destination,
-        const bool withIDs = false) const;
-    OPENTXS_EXPORT bool SerializeTo(
+    bool HaveClaim(const Identifier& item) const;
+    bool Serialize(AllocateOutput destination, const bool withIDs = false)
+        const;
+    OPENTXS_NO_EXPORT bool SerializeTo(
         proto::ContactData& data,
         const bool withIDs = false) const;
-    OPENTXS_EXPORT std::size_t Size() const;
-    OPENTXS_EXPORT const contact::ContactSectionName& Type() const;
-    OPENTXS_EXPORT VersionNumber Version() const;
+    std::size_t Size() const;
+    const contact::ContactSectionName& Type() const;
+    VersionNumber Version() const;
 
-    OPENTXS_EXPORT ~ContactSection();
+    ~ContactSection();
 
 private:
     struct Imp;

@@ -106,7 +106,12 @@ auto Factory::Nym(
                 version,
                 ContactData::SectionMap{}};
             const auto scope = blank.SetScope(type, name);
-            revised.SetContactData(scope.Serialize());
+            revised.SetContactData([&] {
+                auto out = proto::ContactData{};
+                scope.Serialize(out);
+
+                return out;
+            }());
         }
 
         return new ReturnType(api, revised, std::move(pSource), reason);
@@ -300,7 +305,14 @@ auto Nym::AddClaim(const Claim& claim, const opentxs::PasswordPrompt& reason)
 
     OT_ASSERT(contact_data_);
 
-    return set_contact_data(lock, contact_data_->Serialize(), reason);
+    return set_contact_data(
+        lock,
+        [&] {
+            auto out = proto::ContactData{};
+            contact_data_->Serialize(out);
+            return out;
+        }(),
+        reason);
 }
 
 auto Nym::AddContract(
@@ -323,7 +335,14 @@ auto Nym::AddContract(
 
     OT_ASSERT(contact_data_);
 
-    return set_contact_data(lock, contact_data_->Serialize(), reason);
+    return set_contact_data(
+        lock,
+        [&] {
+            auto out = proto::ContactData{};
+            contact_data_->Serialize(out);
+            return out;
+        }(),
+        reason);
 }
 
 auto Nym::AddEmail(
@@ -343,7 +362,14 @@ auto Nym::AddEmail(
 
     OT_ASSERT(contact_data_);
 
-    return set_contact_data(lock, contact_data_->Serialize(), reason);
+    return set_contact_data(
+        lock,
+        [&] {
+            auto out = proto::ContactData{};
+            contact_data_->Serialize(out);
+            return out;
+        }(),
+        reason);
 }
 
 auto Nym::AddPaymentCode(
@@ -366,7 +392,14 @@ auto Nym::AddPaymentCode(
 
     OT_ASSERT(contact_data_);
 
-    return set_contact_data(lock, contact_data_->Serialize(), reason);
+    return set_contact_data(
+        lock,
+        [&] {
+            auto out = proto::ContactData{};
+            contact_data_->Serialize(out);
+            return out;
+        }(),
+        reason);
 }
 
 auto Nym::AddPhoneNumber(
@@ -386,7 +419,14 @@ auto Nym::AddPhoneNumber(
 
     OT_ASSERT(contact_data_);
 
-    return set_contact_data(lock, contact_data_->Serialize(), reason);
+    return set_contact_data(
+        lock,
+        [&] {
+            auto out = proto::ContactData{};
+            contact_data_->Serialize(out);
+            return out;
+        }(),
+        reason);
 }
 
 auto Nym::AddPreferredOTServer(
@@ -405,7 +445,14 @@ auto Nym::AddPreferredOTServer(
 
     OT_ASSERT(contact_data_);
 
-    return set_contact_data(lock, contact_data_->Serialize(), reason);
+    return set_contact_data(
+        lock,
+        [&] {
+            auto out = proto::ContactData{};
+            contact_data_->Serialize(out);
+            return out;
+        }(),
+        reason);
 }
 
 auto Nym::AddSocialMediaProfile(
@@ -426,7 +473,14 @@ auto Nym::AddSocialMediaProfile(
 
     OT_ASSERT(contact_data_);
 
-    return set_contact_data(lock, contact_data_->Serialize(), reason);
+    return set_contact_data(
+        lock,
+        [&] {
+            auto out = proto::ContactData{};
+            contact_data_->Serialize(out);
+            return out;
+        }(),
+        reason);
 }
 
 auto Nym::Alias() const -> std::string { return alias_; }
@@ -572,7 +626,14 @@ auto Nym::DeleteClaim(
 
     OT_ASSERT(contact_data_);
 
-    return set_contact_data(lock, contact_data_->Serialize(), reason);
+    return set_contact_data(
+        lock,
+        [&] {
+            auto out = proto::ContactData{};
+            contact_data_->Serialize(out);
+            return out;
+        }(),
+        reason);
 }
 
 auto Nym::EmailAddresses(bool active) const -> std::string
@@ -1310,7 +1371,14 @@ auto Nym::SetCommonName(
 
     OT_ASSERT(contact_data_);
 
-    return set_contact_data(lock, contact_data_->Serialize(), reason);
+    return set_contact_data(
+        lock,
+        [&] {
+            auto out = proto::ContactData{};
+            contact_data_->Serialize(out);
+            return out;
+        }(),
+        reason);
 }
 
 auto Nym::SetContactData(
@@ -1344,7 +1412,14 @@ auto Nym::SetScope(
 
     OT_ASSERT(contact_data_);
 
-    return set_contact_data(lock, contact_data_->Serialize(), reason);
+    return set_contact_data(
+        lock,
+        [&] {
+            auto out = proto::ContactData{};
+            contact_data_->Serialize(out);
+            return out;
+        }(),
+        reason);
 }
 
 auto Nym::Sign(

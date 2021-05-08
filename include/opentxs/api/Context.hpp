@@ -6,8 +6,6 @@
 #ifndef OPENTXS_API_CONTEXT_HPP
 #define OPENTXS_API_CONTEXT_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
@@ -15,7 +13,6 @@
 #include <string>
 
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Periodic.hpp"
 
@@ -53,12 +50,6 @@ class Context;
 }  // namespace zeromq
 }  // namespace network
 
-namespace proto
-{
-class RPCCommand;
-class RPCResponse;
-}  // namespace proto
-
 namespace rpc
 {
 namespace request
@@ -77,47 +68,39 @@ namespace opentxs
 {
 namespace api
 {
-class Context : virtual public Periodic
+class OPENTXS_EXPORT Context : virtual public Periodic
 {
 public:
     using ShutdownCallback = std::function<void()>;
 
-    OPENTXS_EXPORT static std::string SuggestFolder(
-        const std::string& app) noexcept;
+    static std::string SuggestFolder(const std::string& app) noexcept;
 
-    OPENTXS_EXPORT virtual const network::Asio& Asio() const noexcept = 0;
-    OPENTXS_EXPORT virtual const api::client::Manager& Client(
-        const int instance) const = 0;
-    OPENTXS_EXPORT virtual std::size_t Clients() const = 0;
-    OPENTXS_EXPORT virtual const api::Settings& Config(
-        const std::string& path) const = 0;
-    OPENTXS_EXPORT virtual const api::Crypto& Crypto() const = 0;
-    OPENTXS_EXPORT virtual const api::Primitives& Factory() const = 0;
-    OPENTXS_EXPORT virtual void HandleSignals(
-        ShutdownCallback* callback = nullptr) const = 0;
-    OPENTXS_EXPORT virtual std::string ProfileId() const = 0;
-    OPENTXS_EXPORT virtual proto::RPCResponse RPC(
-        const proto::RPCCommand& command) const noexcept = 0;
-    OPENTXS_EXPORT virtual std::unique_ptr<rpc::response::Base> RPC(
+    virtual const network::Asio& Asio() const noexcept = 0;
+    virtual const api::client::Manager& Client(const int instance) const = 0;
+    virtual std::size_t Clients() const = 0;
+    virtual const api::Settings& Config(const std::string& path) const = 0;
+    virtual const api::Crypto& Crypto() const = 0;
+    virtual const api::Primitives& Factory() const = 0;
+    virtual void HandleSignals(ShutdownCallback* callback = nullptr) const = 0;
+    virtual std::string ProfileId() const = 0;
+    virtual std::unique_ptr<rpc::response::Base> RPC(
         const rpc::request::Base& command) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool RPC(
-        const ReadView command,
-        const AllocateOutput response) const noexcept = 0;
+    virtual bool RPC(const ReadView command, const AllocateOutput response)
+        const noexcept = 0;
     /** Throws std::out_of_range if the specified server does not exist. */
-    OPENTXS_EXPORT virtual const api::server::Manager& Server(
-        const int instance) const = 0;
-    OPENTXS_EXPORT virtual std::size_t Servers() const = 0;
+    virtual const api::server::Manager& Server(const int instance) const = 0;
+    virtual std::size_t Servers() const = 0;
     /** Start up a new client
      *
      *  If the specified instance exists, it will be returned.
      *
      *  Otherwise the next instance will be created
      */
-    OPENTXS_EXPORT virtual const api::client::Manager& StartClient(
+    virtual const api::client::Manager& StartClient(
         const ArgList& args,
         const int instance) const = 0;
 #if OT_CRYPTO_WITH_BIP32
-    OPENTXS_EXPORT virtual const api::client::Manager& StartClient(
+    virtual const api::client::Manager& StartClient(
         const ArgList& args,
         const int instance,
         const std::string& recoverWords,
@@ -129,18 +112,16 @@ public:
      *
      *  Otherwise the next instance will be created
      */
-    OPENTXS_EXPORT virtual const api::server::Manager& StartServer(
+    virtual const api::server::Manager& StartServer(
         const ArgList& args,
         const int instance,
         const bool inproc = false) const = 0;
-    OPENTXS_EXPORT virtual const api::ThreadPool& ThreadPool()
-        const noexcept = 0;
+    virtual const api::ThreadPool& ThreadPool() const noexcept = 0;
     /** Access ZAP configuration API */
-    OPENTXS_EXPORT virtual const api::network::ZAP& ZAP() const = 0;
-    OPENTXS_EXPORT virtual const opentxs::network::zeromq::Context& ZMQ()
-        const = 0;
+    virtual const api::network::ZAP& ZAP() const = 0;
+    virtual const opentxs::network::zeromq::Context& ZMQ() const = 0;
 
-    OPENTXS_EXPORT ~Context() override = default;
+    OPENTXS_NO_EXPORT ~Context() override = default;
 
 protected:
     Context() = default;

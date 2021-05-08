@@ -252,7 +252,12 @@ auto NymData::PreferredOTServer() const -> std::string
 
 auto NymData::PrintContactData() const -> std::string
 {
-    return ContactData::PrintContactData(data().Serialize(true));
+    return ContactData::PrintContactData([&] {
+        auto proto = proto::ContactData{};
+        data().Serialize(proto, true);
+
+        return proto;
+    }());
 }
 
 void NymData::Release() { release(); }

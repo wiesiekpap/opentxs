@@ -6,15 +6,12 @@
 #ifndef OPENTXS_CORE_IDENTIFIER_HPP
 #define OPENTXS_CORE_IDENTIFIER_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>
 
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Data.hpp"
@@ -92,7 +89,7 @@ public:
     static opentxs::Pimpl<opentxs::Identifier> Factory(const Item& item);
     static opentxs::Pimpl<opentxs::Identifier> Factory(
         const Contract& contract);
-    static opentxs::Pimpl<opentxs::Identifier> Factory(
+    OPENTXS_NO_EXPORT static opentxs::Pimpl<opentxs::Identifier> Factory(
         const contact::ContactItemType type,
         const proto::HDPath& path);
 #endif

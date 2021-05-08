@@ -6,15 +6,12 @@
 #ifndef OPENTXS_API_NETWORK_DHT_HPP
 #define OPENTXS_API_NETWORK_DHT_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <functional>
 #include <map>
 #include <string>
 
-#include "opentxs/Proto.hpp"
 #include "opentxs/identity/Nym.hpp"
 
 namespace opentxs
@@ -37,7 +34,7 @@ namespace api
 {
 namespace network
 {
-class Dht
+class OPENTXS_EXPORT Dht
 {
 public:
     enum class Callback : std::uint8_t {
@@ -49,25 +46,18 @@ public:
     using NotifyCB = std::function<void(const std::string)>;
     using CallbackMap = std::map<Callback, NotifyCB>;
 
-    OPENTXS_EXPORT virtual void GetPublicNym(const std::string& key) const = 0;
-    OPENTXS_EXPORT virtual void GetServerContract(
-        const std::string& key) const = 0;
-    OPENTXS_EXPORT virtual void GetUnitDefinition(
-        const std::string& key) const = 0;
-    OPENTXS_EXPORT virtual void Insert(
-        const std::string& key,
-        const std::string& value) const = 0;
-    OPENTXS_EXPORT virtual void Insert(
-        const identity::Nym::Serialized& nym) const = 0;
-    OPENTXS_EXPORT virtual void Insert(
-        const proto::ServerContract& contract) const = 0;
-    OPENTXS_EXPORT virtual void Insert(
-        const proto::UnitDefinition& contract) const = 0;
-    OPENTXS_EXPORT virtual const opentxs::network::OpenDHT& OpenDHT() const = 0;
-    OPENTXS_EXPORT virtual void RegisterCallbacks(
-        const CallbackMap& callbacks) const = 0;
+    virtual void GetPublicNym(const std::string& key) const = 0;
+    virtual void GetServerContract(const std::string& key) const = 0;
+    virtual void GetUnitDefinition(const std::string& key) const = 0;
+    virtual void Insert(const std::string& key, const std::string& value)
+        const = 0;
+    virtual void Insert(const identity::Nym::Serialized& nym) const = 0;
+    virtual void Insert(const proto::ServerContract& contract) const = 0;
+    virtual void Insert(const proto::UnitDefinition& contract) const = 0;
+    virtual const opentxs::network::OpenDHT& OpenDHT() const = 0;
+    virtual void RegisterCallbacks(const CallbackMap& callbacks) const = 0;
 
-    virtual ~Dht() = default;
+    OPENTXS_NO_EXPORT virtual ~Dht() = default;
 
 protected:
     Dht() = default;

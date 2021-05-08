@@ -6,8 +6,6 @@
 #ifndef OPENTXS_OTX_REPLY_HPP
 #define OPENTXS_OTX_REPLY_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <memory>
@@ -46,13 +44,13 @@ namespace opentxs
 {
 namespace otx
 {
-class Reply : virtual public opentxs::contract::Signable
+class OPENTXS_EXPORT Reply : virtual public opentxs::contract::Signable
 {
 public:
-    OPENTXS_EXPORT static const VersionNumber DefaultVersion;
-    OPENTXS_EXPORT static const VersionNumber MaxVersion;
+    static const VersionNumber DefaultVersion;
+    static const VersionNumber MaxVersion;
 
-    OPENTXS_EXPORT static Pimpl<opentxs::otx::Reply> Factory(
+    OPENTXS_NO_EXPORT static Pimpl<opentxs::otx::Reply> Factory(
         const api::internal::Core& api,
         const Nym_p signer,
         const identifier::Nym& recipient,
@@ -62,7 +60,7 @@ public:
         const bool success,
         const PasswordPrompt& reason,
         std::shared_ptr<const proto::OTXPush>&& push = {});
-    OPENTXS_EXPORT static Pimpl<opentxs::otx::Reply> Factory(
+    static Pimpl<opentxs::otx::Reply> Factory(
         const api::internal::Core& api,
         const Nym_p signer,
         const identifier::Nym& recipient,
@@ -73,24 +71,24 @@ public:
         const PasswordPrompt& reason,
         opentxs::otx::OTXPushType pushtype,
         const std::string& payload);
-    OPENTXS_EXPORT static Pimpl<opentxs::otx::Reply> Factory(
+    OPENTXS_NO_EXPORT static Pimpl<opentxs::otx::Reply> Factory(
         const api::internal::Core& api,
         const proto::ServerReply serialized);
-    OPENTXS_EXPORT static Pimpl<opentxs::otx::Reply> Factory(
+    static Pimpl<opentxs::otx::Reply> Factory(
         const api::internal::Core& api,
         const ReadView& view);
 
-    OPENTXS_EXPORT virtual proto::ServerReply Contract() const = 0;
-    OPENTXS_EXPORT virtual bool Contract(AllocateOutput destination) const = 0;
-    OPENTXS_EXPORT virtual RequestNumber Number() const = 0;
-    OPENTXS_EXPORT virtual std::shared_ptr<const proto::OTXPush> Push()
+    OPENTXS_NO_EXPORT virtual proto::ServerReply Contract() const = 0;
+    virtual bool Contract(AllocateOutput destination) const = 0;
+    virtual RequestNumber Number() const = 0;
+    OPENTXS_NO_EXPORT virtual std::shared_ptr<const proto::OTXPush> Push()
         const = 0;
-    OPENTXS_EXPORT virtual const identifier::Nym& Recipient() const = 0;
-    OPENTXS_EXPORT virtual const identifier::Server& Server() const = 0;
-    OPENTXS_EXPORT virtual bool Success() const = 0;
-    OPENTXS_EXPORT virtual otx::ServerReplyType Type() const = 0;
+    virtual const identifier::Nym& Recipient() const = 0;
+    virtual const identifier::Server& Server() const = 0;
+    virtual bool Success() const = 0;
+    virtual otx::ServerReplyType Type() const = 0;
 
-    OPENTXS_EXPORT ~Reply() override = default;
+    ~Reply() override = default;
 
 protected:
     Reply() = default;

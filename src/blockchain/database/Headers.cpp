@@ -174,12 +174,17 @@ auto Headers::ApplyUpdate(const client::UpdateTransaction& update) noexcept
         lmdb_.Delete(BlockHeaderSiblings, hash->Bytes(), parentTxn);
     }
 
-    for (const auto& [hash, pair] : update.UpdatedHeaders()) {
-        const auto& [header, newBlock] = pair;
+    for (const auto& data : update.UpdatedHeaders()) {
+        const auto& [hash, pair] = data;
         const auto result = lmdb_.Store(
             BlockHeaderMetadata,
             hash->Bytes(),
-            proto::ToString(header->Serialize().local()),
+            [&] {
+                auto out = block::Header::SerializedType{};
+                data.second.first->Serialize(out);
+
+                return proto::ToString(out.local());
+            }(),
             parentTxn);
 
         if (false == result.first) {
@@ -409,10 +414,13 @@ auto Headers::import_genesis(const blockchain::Type type) const noexcept -> void
 
             OT_ASSERT(genesis);
 
-            const auto result = lmdb_.Store(
-                BlockHeaderMetadata,
-                hash.Bytes(),
-                proto::ToString(genesis->Serialize().local()));
+            const auto result =
+                lmdb_.Store(BlockHeaderMetadata, hash.Bytes(), [&] {
+                    auto proto = block::Header::SerializedType{};
+                    genesis->Serialize(proto);
+
+                    return proto::ToString(proto.local());
+                }());
 
             OT_ASSERT(result.first);
         }
@@ -431,7 +439,12 @@ auto Headers::import_genesis(const blockchain::Type type) const noexcept -> void
                       .Store(
                           BlockHeaderMetadata,
                           hash.Bytes(),
-                          proto::ToString(genesis->Serialize().local()))
+                          [&] {
+                              auto proto = block::Header::SerializedType{};
+                              genesis->Serialize(proto);
+
+                              return proto::ToString(proto.local());
+                          }())
                       .first;
 
         OT_ASSERT(success);

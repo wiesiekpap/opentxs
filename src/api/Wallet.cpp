@@ -2098,7 +2098,12 @@ void Wallet::save(const Lock& lock, const OTNymID nym, blind::Purse* in) const
     std::unique_ptr<blind::Purse> pPurse{in};
 
     auto& purse = *pPurse;
-    const auto serialized = purse.Serialize();
+    const auto serialized = [&] {
+        auto proto = proto::Purse{};
+        purse.Serialize(proto);
+
+        return proto;
+    }();
 
     OT_ASSERT(proto::Validate(serialized, VERBOSE));
 

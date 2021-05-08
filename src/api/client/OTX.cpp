@@ -1858,7 +1858,7 @@ auto OTX::refresh_contacts() const -> bool
                 .Flush();
 
             if (nym) {
-                client_.Contacts().Update(nym->asPublicNym());
+                client_.Contacts().Update(*nym);
             } else {
                 LogVerbose(OT_METHOD)(__FUNCTION__)(
                     ": We don't have credentials for this nym. "

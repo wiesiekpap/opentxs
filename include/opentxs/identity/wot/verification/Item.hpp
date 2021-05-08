@@ -6,8 +6,6 @@
 #ifndef OPENTXS_IDENTITY_WOT_VERIFICATION_ITEM_HPP
 #define OPENTXS_IDENTITY_WOT_VERIFICATION_ITEM_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Proto.hpp"
@@ -30,7 +28,7 @@ namespace wot
 {
 namespace verification
 {
-class Item
+class OPENTXS_EXPORT Item
 {
 public:
     using SerializedType = proto::Verification;
@@ -38,21 +36,20 @@ public:
     enum class Type : bool { Confirm = true, Refute = false };
     enum class Validity : bool { Active = false, Retracted = true };
 
-    OPENTXS_EXPORT static const VersionNumber DefaultVersion;
+    static const VersionNumber DefaultVersion;
 
-    OPENTXS_EXPORT virtual operator SerializedType() const noexcept = 0;
+    OPENTXS_NO_EXPORT virtual operator SerializedType() const noexcept = 0;
 
-    OPENTXS_EXPORT virtual Time Begin() const noexcept = 0;
-    OPENTXS_EXPORT virtual const Identifier& ClaimID() const noexcept = 0;
-    OPENTXS_EXPORT virtual Time End() const noexcept = 0;
-    OPENTXS_EXPORT virtual const Identifier& ID() const noexcept = 0;
-    OPENTXS_EXPORT virtual const proto::Signature& Signature()
-        const noexcept = 0;
-    OPENTXS_EXPORT virtual Validity Valid() const noexcept = 0;
-    OPENTXS_EXPORT virtual Type Value() const noexcept = 0;
-    OPENTXS_EXPORT virtual VersionNumber Version() const noexcept = 0;
+    virtual Time Begin() const noexcept = 0;
+    virtual const Identifier& ClaimID() const noexcept = 0;
+    virtual Time End() const noexcept = 0;
+    virtual const Identifier& ID() const noexcept = 0;
+    virtual const proto::Signature& Signature() const noexcept = 0;
+    virtual Validity Valid() const noexcept = 0;
+    virtual Type Value() const noexcept = 0;
+    virtual VersionNumber Version() const noexcept = 0;
 
-    OPENTXS_EXPORT virtual ~Item() = default;
+    virtual ~Item() = default;
 
 protected:
     Item() = default;

@@ -10,7 +10,6 @@
 
 #include <string>
 
-#include "opentxs/Proto.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/ui/List.hpp"
 
@@ -33,18 +32,18 @@ namespace opentxs
 {
 namespace ui
 {
-class Contact : virtual public List
+class OPENTXS_EXPORT Contact : virtual public List
 {
 public:
-    OPENTXS_EXPORT virtual std::string ContactID() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string DisplayName() const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::ContactSection>
-    First() const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::ContactSection>
-    Next() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string PaymentCode() const noexcept = 0;
+    virtual std::string ContactID() const noexcept = 0;
+    virtual std::string DisplayName() const noexcept = 0;
+    virtual opentxs::SharedPimpl<opentxs::ui::ContactSection> First()
+        const noexcept = 0;
+    virtual opentxs::SharedPimpl<opentxs::ui::ContactSection> Next()
+        const noexcept = 0;
+    virtual std::string PaymentCode() const noexcept = 0;
 
-    OPENTXS_EXPORT ~Contact() override = default;
+    ~Contact() override = default;
 
 protected:
     Contact() noexcept = default;

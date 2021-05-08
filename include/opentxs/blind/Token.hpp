@@ -6,8 +6,6 @@
 #ifndef OPENTXS_BLIND_TOKEN_HPP
 #define OPENTXS_BLIND_TOKEN_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
@@ -15,7 +13,6 @@
 
 #if OT_CASH
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/blind/Types.hpp"
 
 namespace opentxs
@@ -47,7 +44,7 @@ namespace opentxs
 {
 namespace blind
 {
-class Token
+class OPENTXS_EXPORT Token
 {
 public:
     using Clock = std::chrono::system_clock;
@@ -55,31 +52,31 @@ public:
     using Denomination = std::uint64_t;
     using MintSeries = std::uint64_t;
 
-    OPENTXS_EXPORT virtual std::string ID(
-        const PasswordPrompt& reason) const = 0;
-    OPENTXS_EXPORT virtual bool IsSpent(const PasswordPrompt& reason) const = 0;
-    OPENTXS_EXPORT virtual const identifier::Server& Notary() const = 0;
-    OPENTXS_EXPORT virtual Purse& Owner() const noexcept = 0;
-    OPENTXS_EXPORT virtual proto::Token Serialize() const = 0;
-    OPENTXS_EXPORT virtual MintSeries Series() const = 0;
-    OPENTXS_EXPORT virtual blind::TokenState State() const = 0;
-    OPENTXS_EXPORT virtual blind::CashType Type() const = 0;
-    OPENTXS_EXPORT virtual const identifier::UnitDefinition& Unit() const = 0;
-    OPENTXS_EXPORT virtual Time ValidFrom() const = 0;
-    OPENTXS_EXPORT virtual Time ValidTo() const = 0;
-    OPENTXS_EXPORT virtual Denomination Value() const = 0;
+    virtual std::string ID(const PasswordPrompt& reason) const = 0;
+    virtual bool IsSpent(const PasswordPrompt& reason) const = 0;
+    virtual const identifier::Server& Notary() const = 0;
+    virtual Purse& Owner() const noexcept = 0;
+    OPENTXS_NO_EXPORT virtual bool Serialize(
+        proto::Token& out) const noexcept = 0;
+    virtual MintSeries Series() const = 0;
+    virtual blind::TokenState State() const = 0;
+    virtual blind::CashType Type() const = 0;
+    virtual const identifier::UnitDefinition& Unit() const = 0;
+    virtual Time ValidFrom() const = 0;
+    virtual Time ValidTo() const = 0;
+    virtual Denomination Value() const = 0;
 
-    OPENTXS_EXPORT virtual bool ChangeOwner(
+    virtual bool ChangeOwner(
         Purse& oldOwner,
         Purse& newOwner,
         const PasswordPrompt& reason) = 0;
-    OPENTXS_EXPORT virtual bool MarkSpent(const PasswordPrompt& reason) = 0;
-    OPENTXS_EXPORT virtual bool Process(
+    virtual bool MarkSpent(const PasswordPrompt& reason) = 0;
+    virtual bool Process(
         const identity::Nym& owner,
         const Mint& mint,
         const PasswordPrompt& reason) = 0;
 
-    OPENTXS_EXPORT virtual ~Token() = default;
+    virtual ~Token() = default;
 
 protected:
     Token() = default;
@@ -87,7 +84,7 @@ protected:
 private:
     friend OTToken;
 
-    OPENTXS_EXPORT virtual Token* clone() const noexcept = 0;
+    virtual Token* clone() const noexcept = 0;
 
     Token(const Token&) = delete;
     Token(Token&&) = delete;

@@ -6,8 +6,6 @@
 #ifndef OPENTXS_API_CLIENT_BLOCKCHAIN_HPP
 #define OPENTXS_API_CLIENT_BLOCKCHAIN_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
@@ -16,7 +14,6 @@
 #include <vector>
 
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/client/blockchain/BalanceNode.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -172,11 +169,11 @@ public:
         const BlockchainAccountType standard,
         const Chain chain,
         const PasswordPrompt& reason) const noexcept = 0;
-    virtual OTIdentifier NewPaymentCodeSubaccount(
+    OPENTXS_NO_EXPORT virtual OTIdentifier NewPaymentCodeSubaccount(
         const identifier::Nym& nymID,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
-        const proto::HDPath path,
+        const proto::HDPath& path,
         const Chain chain,
         const PasswordPrompt& reason) const noexcept = 0;
     virtual OTIdentifier NewPaymentCodeSubaccount(
@@ -194,11 +191,12 @@ public:
     virtual const blockchain::PaymentCode& PaymentCodeSubaccount(
         const identifier::Nym& nymID,
         const Identifier& accountID) const noexcept(false) = 0;
-    virtual const blockchain::PaymentCode& PaymentCodeSubaccount(
+    OPENTXS_NO_EXPORT virtual const blockchain::PaymentCode&
+    PaymentCodeSubaccount(
         const identifier::Nym& nymID,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
-        const proto::HDPath path,
+        const proto::HDPath& path,
         const Chain chain,
         const PasswordPrompt& reason) const noexcept(false) = 0;
     virtual bool ProcessTransaction(

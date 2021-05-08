@@ -205,7 +205,12 @@ auto ContactData::operator+(const ContactData& rhs) const -> ContactData
 
 ContactData::operator std::string() const
 {
-    return PrintContactData(Serialize(false));
+    return PrintContactData([&] {
+        auto proto = proto::ContactData{};
+        Serialize(proto, false);
+
+        return proto;
+    }());
 }
 
 auto ContactData::AddContract(
@@ -1070,13 +1075,19 @@ auto ContactData::SetScope(
 auto ContactData::Serialize(AllocateOutput destination, const bool withID) const
     -> bool
 {
-    write(Serialize(withID), destination);
-    return true;
+    return write(
+        [&] {
+            auto proto = proto::ContactData{};
+            Serialize(proto);
+
+            return proto;
+        }(),
+        destination);
 }
 
-auto ContactData::Serialize(const bool withID) const -> proto::ContactData
+auto ContactData::Serialize(proto::ContactData& output, const bool withID) const
+    -> bool
 {
-    proto::ContactData output;
     output.set_version(imp_->version_);
 
     for (const auto& it : imp_->sections_) {
@@ -1087,7 +1098,7 @@ auto ContactData::Serialize(const bool withID) const -> proto::ContactData
         section->SerializeTo(output, withID);
     }
 
-    return output;
+    return true;
 }
 
 auto ContactData::SocialMediaProfiles(

@@ -6,8 +6,6 @@
 #ifndef OPENTXS_CRYPTO_KEY_KEYPAIR_HPP
 #define OPENTXS_CRYPTO_KEY_KEYPAIR_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
@@ -48,34 +46,32 @@ namespace crypto
 {
 namespace key
 {
-class Keypair
+class OPENTXS_EXPORT Keypair
 {
 public:
     using Keys = std::list<const Asymmetric*>;
 
-    OPENTXS_EXPORT virtual operator bool() const noexcept = 0;
+    virtual operator bool() const noexcept = 0;
 
-    OPENTXS_EXPORT virtual bool CheckCapability(
+    virtual bool CheckCapability(
         const NymCapability& capability) const noexcept = 0;
     /// throws std::runtime_error if private key is missing
-    OPENTXS_EXPORT virtual const Asymmetric& GetPrivateKey() const
-        noexcept(false) = 0;
+    virtual const Asymmetric& GetPrivateKey() const noexcept(false) = 0;
     /// throws std::runtime_error if public key is missing
-    OPENTXS_EXPORT virtual const Asymmetric& GetPublicKey() const
-        noexcept(false) = 0;
+    virtual const Asymmetric& GetPublicKey() const noexcept(false) = 0;
     // inclusive means, return keys when theSignature has no metadata.
-    OPENTXS_EXPORT virtual std::int32_t GetPublicKeyBySignature(
+    virtual std::int32_t GetPublicKeyBySignature(
         Keys& listOutput,
         const Signature& theSignature,
         bool bInclusive = false) const noexcept = 0;
-    OPENTXS_EXPORT virtual std::shared_ptr<proto::AsymmetricKey> GetSerialized(
-        bool privateKey) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool GetTransportKey(
+    OPENTXS_NO_EXPORT virtual std::shared_ptr<proto::AsymmetricKey>
+    GetSerialized(bool privateKey) const noexcept = 0;
+    virtual bool GetTransportKey(
         Data& publicKey,
         Secret& privateKey,
         const PasswordPrompt& reason) const noexcept = 0;
 
-    OPENTXS_EXPORT virtual ~Keypair() = default;
+    virtual ~Keypair() = default;
 
 protected:
     Keypair() = default;

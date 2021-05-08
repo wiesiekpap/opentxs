@@ -21,7 +21,6 @@
 #include <vector>
 
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -255,7 +254,7 @@ public:
         const PasswordPrompt& reason);
     void Release();
     bool SetCommonName(const std::string& name, const PasswordPrompt& reason);
-    bool SetContactData(
+    OPENTXS_NO_EXPORT bool SetContactData(
         const proto::ContactData& data,
         const PasswordPrompt& reason);
     bool SetContactData(const ReadView& data, const PasswordPrompt& reason);

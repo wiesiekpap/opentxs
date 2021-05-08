@@ -44,7 +44,6 @@
 #include "opentxs/contact/ContactSectionName.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Cheque.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Item.hpp"
 #include "opentxs/core/Ledger.hpp"
@@ -668,7 +667,12 @@ auto Operation::construct_deposit_cash() -> std::shared_ptr<Message>
         return {};
     }
 
-    item.SetAttachment(api_.Factory().Data(purse.Serialize()));
+    item.SetAttachment([&] {
+        auto proto = proto::Purse{};
+        purse.Serialize(proto);
+
+        return api_.Factory().Data(proto);
+    }());
 
     FINISH_TRANSACTION();
 }
@@ -1357,7 +1361,12 @@ auto Operation::construct_withdraw_cash() -> std::shared_ptr<Message>
 
     auto& purse = *pPurse;
     item.SetNote(String::Factory("Gimme cash!"));
-    item.SetAttachment(api_.Factory().Data(purse.Serialize()));
+    item.SetAttachment([&] {
+        auto proto = proto::Purse{};
+        purse.Serialize(proto);
+
+        return api_.Factory().Data(proto);
+    }());
 
     FINISH_TRANSACTION();
 }

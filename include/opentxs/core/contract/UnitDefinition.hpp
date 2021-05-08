@@ -6,8 +6,6 @@
 #ifndef OPENTXS_CORE_CONTRACT_UNITDEFINITION_HPP
 #define OPENTXS_CORE_CONTRACT_UNITDEFINITION_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
@@ -68,7 +66,7 @@ public:
     virtual bool AddAccountRecord(
         const std::string& dataFolder,
         const Account& theAccount) const = 0;
-    virtual SerializedType Contract() const = 0;
+    OPENTXS_NO_EXPORT virtual SerializedType Contract() const = 0;
     virtual std::int32_t DecimalPower() const = 0;
     virtual bool DisplayStatistics(String& strContents) const = 0;
     virtual bool EraseAccountRecord(

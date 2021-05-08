@@ -6,8 +6,6 @@
 #ifndef OPENTXS_CLIENT_OTAPI_EXEC_HPP
 #define OPENTXS_CLIENT_OTAPI_EXEC_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
@@ -16,7 +14,6 @@
 #include <set>
 #include <string>
 
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/client/OT_API.hpp"
 #include "opentxs/core/Lockable.hpp"

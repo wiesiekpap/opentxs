@@ -16,7 +16,6 @@
 #include <memory>
 #include <string>
 
-#include "opentxs/Proto.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 
@@ -32,45 +31,41 @@ class ContactItem;
 
 namespace opentxs
 {
-class ContactGroup
+class OPENTXS_EXPORT ContactGroup
 {
 public:
     using ItemMap = std::map<OTIdentifier, std::shared_ptr<ContactItem>>;
 
-    OPENTXS_EXPORT ContactGroup(
+    ContactGroup(
         const std::string& nym,
         const contact::ContactSectionName section,
         const contact::ContactItemType type,
         const ItemMap& items);
-    OPENTXS_EXPORT ContactGroup(
+    ContactGroup(
         const std::string& nym,
         const contact::ContactSectionName section,
         const std::shared_ptr<ContactItem>& item);
-    OPENTXS_EXPORT ContactGroup(const ContactGroup&) noexcept;
-    OPENTXS_EXPORT ContactGroup(ContactGroup&&) noexcept;
+    ContactGroup(const ContactGroup&) noexcept;
+    ContactGroup(ContactGroup&&) noexcept;
 
-    OPENTXS_EXPORT ContactGroup operator+(const ContactGroup& rhs) const;
+    ContactGroup operator+(const ContactGroup& rhs) const;
 
-    OPENTXS_EXPORT ItemMap::const_iterator begin() const;
-    OPENTXS_EXPORT std::shared_ptr<ContactItem> Best() const;
-    OPENTXS_EXPORT std::shared_ptr<ContactItem> Claim(
-        const Identifier& item) const;
-    OPENTXS_EXPORT bool HaveClaim(const Identifier& item) const;
-    OPENTXS_EXPORT ContactGroup
-    AddItem(const std::shared_ptr<ContactItem>& item) const;
-    OPENTXS_EXPORT ContactGroup
-    AddPrimary(const std::shared_ptr<ContactItem>& item) const;
-    OPENTXS_EXPORT ContactGroup Delete(const Identifier& id) const;
-    OPENTXS_EXPORT ItemMap::const_iterator end() const;
-    OPENTXS_EXPORT const Identifier& Primary() const;
-    OPENTXS_EXPORT std::shared_ptr<ContactItem> PrimaryClaim() const;
-    OPENTXS_EXPORT bool SerializeTo(
-        proto::ContactSection& section,
-        const bool withIDs = false) const;
-    OPENTXS_EXPORT std::size_t Size() const;
-    OPENTXS_EXPORT const contact::ContactItemType& Type() const;
+    ItemMap::const_iterator begin() const;
+    std::shared_ptr<ContactItem> Best() const;
+    std::shared_ptr<ContactItem> Claim(const Identifier& item) const;
+    bool HaveClaim(const Identifier& item) const;
+    ContactGroup AddItem(const std::shared_ptr<ContactItem>& item) const;
+    ContactGroup AddPrimary(const std::shared_ptr<ContactItem>& item) const;
+    ContactGroup Delete(const Identifier& id) const;
+    ItemMap::const_iterator end() const;
+    const Identifier& Primary() const;
+    std::shared_ptr<ContactItem> PrimaryClaim() const;
+    bool SerializeTo(proto::ContactSection& section, const bool withIDs = false)
+        const;
+    std::size_t Size() const;
+    const contact::ContactItemType& Type() const;
 
-    OPENTXS_EXPORT ~ContactGroup();
+    ~ContactGroup();
 
 private:
     struct Imp;

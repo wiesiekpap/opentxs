@@ -48,7 +48,6 @@ extern "C" {
 #include "opentxs/core/crypto/OTCaller.hpp"
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
-#include "opentxs/protobuf/RPCResponse.pb.h"
 #include "opentxs/util/Signals.hpp"
 
 // #define OT_METHOD "opentxs::api::implementation::Context::"
@@ -385,12 +384,6 @@ auto Context::merge_arglist(const ArgList& args) const -> const ArgList
     for (const auto& [arg, val] : args) { arguments[arg] = val; }
 
     return arguments;
-}
-
-auto Context::RPC(const proto::RPCCommand& command) const noexcept
-    -> proto::RPCResponse
-{
-    return rpc_->Process(command);
 }
 
 auto Context::RPC(const rpc::request::Base& command) const noexcept

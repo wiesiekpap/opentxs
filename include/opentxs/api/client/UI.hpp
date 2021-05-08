@@ -14,7 +14,6 @@
 
 #include <iosfwd>
 
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/contact/Types.hpp"

@@ -6,8 +6,6 @@
 #ifndef OPENTXS_CORE_NYMIDSOURCE_HPP
 #define OPENTXS_CORE_NYMIDSOURCE_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <memory>
@@ -35,24 +33,24 @@ namespace opentxs
 {
 namespace identity
 {
-class Source
+class OPENTXS_EXPORT Source
 {
 public:
-    OPENTXS_EXPORT virtual OTString asString() const noexcept = 0;
-    OPENTXS_EXPORT virtual OTString Description() const noexcept = 0;
-    OPENTXS_EXPORT virtual identity::SourceType Type() const noexcept = 0;
-    OPENTXS_EXPORT virtual OTNymID NymID() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::shared_ptr<proto::NymIDSource> Serialize()
+    virtual OTString asString() const noexcept = 0;
+    virtual OTString Description() const noexcept = 0;
+    virtual identity::SourceType Type() const noexcept = 0;
+    virtual OTNymID NymID() const noexcept = 0;
+    OPENTXS_NO_EXPORT virtual std::shared_ptr<proto::NymIDSource> Serialize()
         const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Verify(
+    OPENTXS_NO_EXPORT virtual bool Verify(
         const proto::Credential& master,
         const proto::Signature& sourceSignature) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Sign(
+    OPENTXS_NO_EXPORT virtual bool Sign(
         const identity::credential::Primary& credential,
         proto::Signature& sig,
         const PasswordPrompt& reason) const noexcept = 0;
 
-    OPENTXS_EXPORT virtual ~Source() = default;
+    virtual ~Source() = default;
 
 protected:
     Source() = default;

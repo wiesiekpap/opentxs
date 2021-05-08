@@ -6,12 +6,17 @@
 #ifndef OPENTXS_IDENTITY_CREDENTIAL_PRIMARY_HPP
 #define OPENTXS_IDENTITY_CREDENTIAL_PRIMARY_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/Proto.hpp"
 #include "opentxs/identity/credential/Key.hpp"
+
+namespace opentxs
+{
+namespace proto
+{
+class HDPath;
+}  // namespace proto
+}  // namespace opentxs
 
 namespace opentxs
 {
@@ -19,13 +24,13 @@ namespace identity
 {
 namespace credential
 {
-class Primary : virtual public identity::credential::Key
+class OPENTXS_EXPORT Primary : virtual public identity::credential::Key
 {
 public:
-    OPENTXS_EXPORT virtual bool Path(proto::HDPath& output) const = 0;
-    OPENTXS_EXPORT virtual std::string Path() const = 0;
+    OPENTXS_NO_EXPORT virtual bool Path(proto::HDPath& output) const = 0;
+    virtual std::string Path() const = 0;
 
-    OPENTXS_EXPORT ~Primary() override = default;
+    ~Primary() override = default;
 
 protected:
     Primary() noexcept {}  // TODO Signable

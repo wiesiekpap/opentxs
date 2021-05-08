@@ -17,7 +17,6 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "opentxs/protobuf/ContactItem.pb.h"
 #include "opentxs/protobuf/ContactSection.pb.h"
 
 #define OT_METHOD "opentxs::ContactGroup::"
@@ -310,7 +309,7 @@ auto ContactGroup::SerializeTo(
 
         OT_ASSERT(item);
 
-        *section.add_item() = item->Serialize(withIDs);
+        item->Serialize(*section.add_item(), withIDs);
     }
 
     return true;

@@ -67,12 +67,15 @@ auto BlockHeader::LoadBlockHeader(const opentxs::blockchain::block::Hash& hash)
 auto BlockHeader::StoreBlockHeader(
     const opentxs::blockchain::block::Header& header) const noexcept -> bool
 {
-    auto serialized = header.Serialize();
-    serialized.clear_local();
+    auto proto = opentxs::blockchain::block::Header::SerializedType{};
+
+    if (false == header.Serialize(proto)) { return false; }
+
+    // TODO proto.clear_local();
     const auto result = lmdb_.Store(
         Table::BlockHeaders,
         api_.Crypto().Encode().IdentifierEncode(header.Hash()),
-        proto::ToString(header.Serialize()),
+        proto::ToString(proto),
         nullptr,
         MDB_NOOVERWRITE);
 
@@ -92,12 +95,15 @@ auto BlockHeader::StoreBlockHeaders(const UpdatedHeader& headers) const noexcept
         const auto& [header, newBlock] = pair;
 
         if (newBlock) {
-            auto serialized = header->Serialize();
-            serialized.clear_local();
+            auto proto = opentxs::blockchain::block::Header::SerializedType{};
+
+            if (false == header->Serialize(proto)) { return false; }
+
+            proto.clear_local();
             const auto stored = lmdb_.Store(
                 Table::BlockHeaders,
                 api_.Crypto().Encode().IdentifierEncode(header->Hash()),
-                proto::ToString(serialized),
+                proto::ToString(proto),
                 parentTxn,
                 MDB_NOOVERWRITE);
 

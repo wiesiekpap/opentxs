@@ -26,7 +26,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
+#include "opentxs/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep
 #include "opentxs/protobuf/BlockchainBlockLocalData.pb.h"
 
 // #define OT_METHOD "opentxs::blockchain::block::Header::"
@@ -212,9 +212,8 @@ void Header::RemoveBlacklistState() noexcept
 
 void Header::RemoveCheckpointState() noexcept { status_ = Status::Normal; }
 
-auto Header::Serialize() const noexcept -> Header::SerializedType
+auto Header::Serialize(SerializedType& output) const noexcept -> bool
 {
-    proto::BlockchainBlockHeader output{};
     output.set_version(version_);
     output.set_type(static_cast<std::uint32_t>(type_));
     auto& local = *output.mutable_local();
@@ -225,7 +224,7 @@ auto Header::Serialize() const noexcept -> Header::SerializedType
     local.set_work(work_->asHex());
     local.set_inherit_work(inherit_work_->asHex());
 
-    return output;
+    return true;
 }
 
 void Header::SetDisconnectedState() noexcept

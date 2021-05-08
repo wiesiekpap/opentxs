@@ -6,12 +6,9 @@
 #ifndef OPENTXS_NETWORK_ZEROMQ_PIPELINE_HPP
 #define OPENTXS_NETWORK_ZEROMQ_PIPELINE_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
@@ -42,20 +39,19 @@ namespace network
 {
 namespace zeromq
 {
-class Pipeline
+class OPENTXS_EXPORT Pipeline
 {
 public:
-    OPENTXS_EXPORT virtual bool Close() const noexcept = 0;
-    OPENTXS_EXPORT virtual const zeromq::Context& Context() const noexcept = 0;
+    virtual bool Close() const noexcept = 0;
+    virtual const zeromq::Context& Context() const noexcept = 0;
     template <typename Input>
-    OPENTXS_EXPORT bool Push(const Input& data) const noexcept
+    bool Push(const Input& data) const noexcept
     {
         return push(Context().Message(data));
     }
-    OPENTXS_EXPORT virtual void Start(
-        const std::string& endpoint) const noexcept = 0;
+    virtual void Start(const std::string& endpoint) const noexcept = 0;
 
-    OPENTXS_EXPORT virtual ~Pipeline() = default;
+    virtual ~Pipeline() = default;
 
 protected:
     Pipeline() noexcept = default;
