@@ -165,7 +165,7 @@ TEST_F(RPC_BC, blockchain_payment)
         ot::rpc::request::SendPayment{index, account, address, amount};
     const auto& send = command.asSendPayment();
     const auto base = RPC_fixture::ot_.RPC(command);
-    const auto& response = base.asSendPayment();
+    const auto& response = base->asSendPayment();
     const auto& codes = response.ResponseCodes();
     const auto& pending = response.Pending();
 
@@ -182,15 +182,15 @@ TEST_F(RPC_BC, blockchain_payment)
     EXPECT_EQ(send.SourceAccount(), account);
     EXPECT_EQ(send.Type(), command.Type());
     EXPECT_EQ(send.Version(), command.Version());
-    EXPECT_EQ(base.Cookie(), command.Cookie());
-    EXPECT_EQ(base.Session(), command.Session());
-    EXPECT_EQ(base.Type(), command.Type());
-    EXPECT_EQ(base.Version(), command.Version());
-    EXPECT_EQ(response.Cookie(), base.Cookie());
-    EXPECT_EQ(response.ResponseCodes(), base.ResponseCodes());
-    EXPECT_EQ(response.Session(), base.Session());
-    EXPECT_EQ(response.Type(), base.Type());
-    EXPECT_EQ(response.Version(), base.Version());
+    EXPECT_EQ(base->Cookie(), command.Cookie());
+    EXPECT_EQ(base->Session(), command.Session());
+    EXPECT_EQ(base->Type(), command.Type());
+    EXPECT_EQ(base->Version(), command.Version());
+    EXPECT_EQ(response.Cookie(), base->Cookie());
+    EXPECT_EQ(response.ResponseCodes(), base->ResponseCodes());
+    EXPECT_EQ(response.Session(), base->Session());
+    EXPECT_EQ(response.Type(), base->Type());
+    EXPECT_EQ(response.Version(), base->Version());
     EXPECT_EQ(response.Version(), command.Version());
     EXPECT_EQ(response.Cookie(), command.Cookie());
     EXPECT_EQ(response.Session(), command.Session());

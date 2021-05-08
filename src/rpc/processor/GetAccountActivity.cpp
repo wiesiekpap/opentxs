@@ -36,14 +36,14 @@
 namespace opentxs::rpc::implementation
 {
 auto RPC::get_account_activity(const request::Base& base) const
-    -> response::Base
+    -> std::unique_ptr<response::Base>
 {
     const auto& in = base.asGetAccountActivity();
     auto codes = response::Base::Responses{};
     auto events = response::GetAccountActivity::Events{};
     const auto reply = [&] {
-        return response::GetAccountActivity{
-            in, std::move(codes), std::move(events)};
+        return std::make_unique<response::GetAccountActivity>(
+            in, std::move(codes), std::move(events));
     };
 
     try {
@@ -101,6 +101,8 @@ auto RPC::get_account_activity(const request::Base& base) const
                     get_account_event_type(row.Type(), row.Amount()),
                     contact,
                     row.Workflow(),
+                    row.DisplayAmount(),
+                    row.DisplayAmount(),
                     row.Amount(),
                     row.Amount(),
                     row.Timestamp(),

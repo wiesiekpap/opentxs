@@ -27,6 +27,8 @@ struct AccountData::Imp {
     const std::string unit_;
     const std::string owner_;
     const std::string issuer_;
+    const std::string balance_formatted_;
+    const std::string pending_formatted_;
     const Amount balance_;
     const Amount pending_;
     const AccountType type_;
@@ -37,6 +39,8 @@ struct AccountData::Imp {
         const std::string& unit,
         const std::string& owner,
         const std::string& issuer,
+        const std::string& balanceF,
+        const std::string& pendingF,
         Amount balance,
         Amount pending,
         AccountType type) noexcept(false)
@@ -46,6 +50,8 @@ struct AccountData::Imp {
         , unit_(unit)
         , owner_(owner)
         , issuer_(issuer)
+        , balance_formatted_(balanceF)
+        , pending_formatted_(balanceF)
         , balance_(balance)
         , pending_(pending)
         , type_(type)
@@ -53,7 +59,7 @@ struct AccountData::Imp {
         // FIXME validate member variables
     }
     Imp() noexcept
-        : Imp(0, "", "", "", "", "", 0, 0, AccountType::error)
+        : Imp(0, "", "", "", "", "", "", "", 0, 0, AccountType::error)
     {
     }
     Imp(const Imp& rhs) noexcept
@@ -63,6 +69,8 @@ struct AccountData::Imp {
               rhs.unit_,
               rhs.owner_,
               rhs.issuer_,
+              rhs.balance_formatted_,
+              rhs.pending_formatted_,
               rhs.balance_,
               rhs.pending_,
               rhs.type_)
@@ -81,6 +89,8 @@ AccountData::AccountData(
     const std::string& unit,
     const std::string& owner,
     const std::string& issuer,
+    const std::string& balanceS,
+    const std::string& pendingS,
     Amount balance,
     Amount pending,
     AccountType type) noexcept(false)
@@ -91,6 +101,8 @@ AccountData::AccountData(
                unit,
                owner,
                issuer,
+               balanceS,
+               pendingS,
                balance,
                pending,
                type)
@@ -106,6 +118,8 @@ AccountData::AccountData(const proto::AccountData& in) noexcept(false)
                in.unit(),
                in.owner(),
                in.issuer(),
+               in.balanceformatted(),
+               in.pendingbalanceformatted(),
                in.balance(),
                in.pendingbalance(),
                translate(in.type()))
@@ -130,6 +144,11 @@ AccountData::AccountData(AccountData&& rhs) noexcept
 auto AccountData::ConfirmedBalance() const noexcept -> Amount
 {
     return imp_->balance_;
+}
+
+auto AccountData::ConfirmedBalance_str() const noexcept -> std::string
+{
+    return imp_->balance_formatted_;
 }
 
 auto AccountData::ID() const noexcept -> const std::string&
@@ -157,6 +176,11 @@ auto AccountData::PendingBalance() const noexcept -> Amount
     return imp_->pending_;
 }
 
+auto AccountData::PendingBalance_str() const noexcept -> std::string
+{
+    return imp_->pending_formatted_;
+}
+
 auto AccountData::Serialize(proto::AccountData& dest) const noexcept -> bool
 {
     const auto& imp = *imp_;
@@ -169,6 +193,8 @@ auto AccountData::Serialize(proto::AccountData& dest) const noexcept -> bool
     dest.set_balance(imp.balance_);
     dest.set_pendingbalance(imp.pending_);
     dest.set_type(translate(imp.type_));
+    dest.set_balanceformatted(imp.balance_formatted_);
+    dest.set_pendingbalanceformatted(imp.pending_formatted_);
 
     return true;
 }

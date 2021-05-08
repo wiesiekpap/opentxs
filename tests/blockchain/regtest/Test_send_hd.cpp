@@ -497,7 +497,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_receive)
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
     EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-    EXPECT_EQ(row->UUID(), transactions_.at(0)->asHex());
+    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(0)));
     EXPECT_TRUE(row->Last());
 }
 
@@ -507,7 +507,7 @@ TEST_F(Regtest_fixture_hd, rpc_account_list)
     const auto index{client_1_.Instance()};
     const auto command = ot::rpc::request::ListAccounts{index};
     const auto base = ot_.RPC(command);
-    const auto& response = base.asListAccounts();
+    const auto& response = base->asListAccounts();
     const auto& codes = response.ResponseCodes();
     const auto expected = [&] {
         auto out = std::set<std::string>{};
@@ -530,11 +530,11 @@ TEST_F(Regtest_fixture_hd, rpc_account_list)
         auto bytes = ot::Space{};
 
         EXPECT_TRUE(command.Serialize(ot::writer(bytes)));
-        EXPECT_TRUE(base.Serialize(ot::writer(bytes)));
+        EXPECT_TRUE(base->Serialize(ot::writer(bytes)));
 
         auto recovered = ot::rpc::response::Factory(ot::reader(bytes));
 
-        EXPECT_EQ(recovered.Type(), ot::rpc::CommandType::list_accounts);
+        EXPECT_EQ(recovered->Type(), ot::rpc::CommandType::list_accounts);
     }
 }
 
@@ -544,7 +544,7 @@ TEST_F(Regtest_fixture_hd, rpc_account_activity_receive)
     const auto command =
         ot::rpc::request::GetAccountActivity{index, {expected_account_.str()}};
     const auto base = ot_.RPC(command);
-    const auto& response = base.asGetAccountActivity();
+    const auto& response = base->asGetAccountActivity();
     const auto& codes = response.ResponseCodes();
     const auto& events = response.Activity();
 
@@ -563,19 +563,21 @@ TEST_F(Regtest_fixture_hd, rpc_account_activity_receive)
         EXPECT_EQ(event.PendingAmount(), 10000004950);
         EXPECT_EQ(event.State(), 0);
         EXPECT_EQ(event.Type(), ot::rpc::AccountEventType::incoming_blockchain);
-        EXPECT_EQ(event.UUID(), transactions_.at(0)->asHex());
+        EXPECT_EQ(
+            event.UUID(), ot::blockchain::HashToNumber(transactions_.at(0)));
         EXPECT_EQ(event.WorkflowID(), "");
     }
     {
         auto bytes = ot::Space{};
 
-        EXPECT_TRUE(base.Serialize(ot::writer(bytes)));
+        EXPECT_TRUE(base->Serialize(ot::writer(bytes)));
 
         auto recovered = ot::rpc::response::Factory(ot::reader(bytes));
 
-        EXPECT_EQ(recovered.Type(), ot::rpc::CommandType::get_account_activity);
+        EXPECT_EQ(
+            recovered->Type(), ot::rpc::CommandType::get_account_activity);
 
-        const auto& rEvents = recovered.asGetAccountActivity().Activity();
+        const auto& rEvents = recovered->asGetAccountActivity().Activity();
 
         ASSERT_EQ(rEvents.size(), 1);
 
@@ -590,7 +592,9 @@ TEST_F(Regtest_fixture_hd, rpc_account_activity_receive)
             EXPECT_EQ(event.State(), 0);
             EXPECT_EQ(
                 event.Type(), ot::rpc::AccountEventType::incoming_blockchain);
-            EXPECT_EQ(event.UUID(), transactions_.at(0)->asHex());
+            EXPECT_EQ(
+                event.UUID(),
+                ot::blockchain::HashToNumber(transactions_.at(0)));
             EXPECT_EQ(event.WorkflowID(), "");
         }
     }
@@ -803,7 +807,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_unconfirmed_spend)
     ASSERT_FALSE(row->Last());
 
     transactions_.emplace_back(
-        client_1_.Factory().Data(row->UUID(), ot::StringStyle::Hex));
+        ot::blockchain::NumberToHash(client_1_, row->UUID()));
     row = widget.Next();
 
     EXPECT_EQ(row->Amount(), 10000004950);
@@ -813,7 +817,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_unconfirmed_spend)
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
     EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-    EXPECT_EQ(row->UUID(), transactions_.at(0)->asHex());
+    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(0)));
 }
 
 TEST_F(Regtest_fixture_hd, confirm)
@@ -990,7 +994,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_confirmed_spend)
     ASSERT_FALSE(row->Last());
 
     transactions_.emplace_back(
-        client_1_.Factory().Data(row->UUID(), ot::StringStyle::Hex));
+        ot::blockchain::NumberToHash(client_1_, row->UUID()));
     row = widget.Next();
 
     EXPECT_EQ(row->Amount(), 10000004950);
@@ -1000,7 +1004,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_confirmed_spend)
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
     EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-    EXPECT_EQ(row->UUID(), transactions_.at(0)->asHex());
+    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(0)));
 }
 
 #if OT_WITH_RPC
@@ -1010,7 +1014,7 @@ TEST_F(Regtest_fixture_hd, rpc_account_balance)
     const auto command =
         ot::rpc::request::GetAccountBalance{index, {expected_account_.str()}};
     const auto base = ot_.RPC(command);
-    const auto& response = base.asGetAccountBalance();
+    const auto& response = base->asGetAccountBalance();
     const auto& codes = response.ResponseCodes();
     const auto& data = response.Balances();
 
@@ -1042,7 +1046,7 @@ TEST_F(Regtest_fixture_hd, rpc_account_activity_spend)
     const auto command =
         ot::rpc::request::GetAccountActivity{index, {expected_account_.str()}};
     const auto base = ot_.RPC(command);
-    const auto& response = base.asGetAccountActivity();
+    const auto& response = base->asGetAccountActivity();
     const auto& codes = response.ResponseCodes();
     const auto& events = response.Activity();
 
@@ -1061,7 +1065,8 @@ TEST_F(Regtest_fixture_hd, rpc_account_activity_spend)
         EXPECT_EQ(event.PendingAmount(), -1400002298);
         EXPECT_EQ(event.State(), 0);
         EXPECT_EQ(event.Type(), ot::rpc::AccountEventType::outgoing_blockchain);
-        EXPECT_EQ(event.UUID(), transactions_.at(1)->asHex());
+        EXPECT_EQ(
+            event.UUID(), ot::blockchain::HashToNumber(transactions_.at(1)));
         EXPECT_EQ(event.WorkflowID(), "");
     }
     {
@@ -1074,19 +1079,21 @@ TEST_F(Regtest_fixture_hd, rpc_account_activity_spend)
         EXPECT_EQ(event.PendingAmount(), 10000004950);
         EXPECT_EQ(event.State(), 0);
         EXPECT_EQ(event.Type(), ot::rpc::AccountEventType::incoming_blockchain);
-        EXPECT_EQ(event.UUID(), transactions_.at(0)->asHex());
+        EXPECT_EQ(
+            event.UUID(), ot::blockchain::HashToNumber(transactions_.at(0)));
         EXPECT_EQ(event.WorkflowID(), "");
     }
     {
         auto bytes = ot::Space{};
 
-        EXPECT_TRUE(base.Serialize(ot::writer(bytes)));
+        EXPECT_TRUE(base->Serialize(ot::writer(bytes)));
 
         auto recovered = ot::rpc::response::Factory(ot::reader(bytes));
 
-        EXPECT_EQ(recovered.Type(), ot::rpc::CommandType::get_account_activity);
+        EXPECT_EQ(
+            recovered->Type(), ot::rpc::CommandType::get_account_activity);
 
-        const auto& rEvents = recovered.asGetAccountActivity().Activity();
+        const auto& rEvents = recovered->asGetAccountActivity().Activity();
 
         ASSERT_EQ(rEvents.size(), 2);
 
@@ -1101,7 +1108,9 @@ TEST_F(Regtest_fixture_hd, rpc_account_activity_spend)
             EXPECT_EQ(event.State(), 0);
             EXPECT_EQ(
                 event.Type(), ot::rpc::AccountEventType::outgoing_blockchain);
-            EXPECT_EQ(event.UUID(), transactions_.at(1)->asHex());
+            EXPECT_EQ(
+                event.UUID(),
+                ot::blockchain::HashToNumber(transactions_.at(1)));
             EXPECT_EQ(event.WorkflowID(), "");
         }
         {
@@ -1115,7 +1124,9 @@ TEST_F(Regtest_fixture_hd, rpc_account_activity_spend)
             EXPECT_EQ(event.State(), 0);
             EXPECT_EQ(
                 event.Type(), ot::rpc::AccountEventType::incoming_blockchain);
-            EXPECT_EQ(event.UUID(), transactions_.at(0)->asHex());
+            EXPECT_EQ(
+                event.UUID(),
+                ot::blockchain::HashToNumber(transactions_.at(0)));
             EXPECT_EQ(event.WorkflowID(), "");
         }
     }

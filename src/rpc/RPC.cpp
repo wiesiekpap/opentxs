@@ -1562,9 +1562,9 @@ auto RPC::Process(const proto::RPCCommand& command) const -> proto::RPCResponse
         case proto::RPCCOMMAND_GETACCOUNTBALANCE:
         case proto::RPCCOMMAND_GETACCOUNTACTIVITY:
         case proto::RPCCOMMAND_SENDPAYMENT: {
-            const auto response = Process(request::Factory(command));
+            const auto response = Process(*request::Factory(command));
             auto output = proto::RPCResponse{};
-            response.Serialize(output);
+            response->Serialize(output);
 
             return output;
         }
@@ -1687,7 +1687,8 @@ auto RPC::Process(const proto::RPCCommand& command) const -> proto::RPCResponse
     return invalid_command(command);
 }
 
-auto RPC::Process(const request::Base& command) const -> response::Base
+auto RPC::Process(const request::Base& command) const
+    -> std::unique_ptr<response::Base>
 {
     switch (command.Type()) {
         case CommandType::list_nyms: {
@@ -1750,7 +1751,7 @@ auto RPC::Process(const request::Base& command) const -> response::Base
             LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported command.")
                 .Flush();
 
-            return response::Invalid(command);
+            return std::make_unique<response::Invalid>(command);
         }
     }
 }

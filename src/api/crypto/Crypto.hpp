@@ -3,14 +3,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: private
-// IWYU pragma: friend ".*src/api/crypto/Crypto.cpp"
-
 #pragma once
 
 #include <map>
 #include <memory>
 
+#include "internal/api/Api.hpp"
 #include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
@@ -37,6 +35,7 @@ class Hash;
 class Util;
 }  // namespace crypto
 
+class Primitives;
 class Settings;
 }  // namespace api
 
@@ -56,20 +55,14 @@ class Sodium;
 
 namespace opentxs::api::implementation
 {
-class Crypto final : virtual public opentxs::api::Crypto
+class Crypto final : public internal::Crypto
 {
 public:
     auto Config() const -> const crypto::Config& final;
-
-    // Encoding function interface
     auto Encode() const -> const crypto::Encode& final;
-
-    // Hash function interface
     auto Hash() const -> const crypto::Hash& final;
-
-    // Utility class for misc OpenSSL-provided functions
+    auto Init(const api::Primitives& factory) noexcept -> void final;
     auto Util() const -> const crypto::Util& final;
-
 #if OT_CRYPTO_SUPPORTED_KEY_ED25519
     auto ED25519() const -> const opentxs::crypto::EcdsaProvider& final;
 #endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
@@ -99,8 +92,7 @@ private:
 #endif  // OT_CRYPTO_USING_LIBSECP256K1
     std::unique_ptr<opentxs::crypto::Bip39> bip39_p_;
     const opentxs::crypto::Ripemd160& ripemd160_;
-    std::unique_ptr<opentxs::crypto::Bip32> bip32_p_;
-    const opentxs::crypto::Bip32& bip32_;
+    opentxs::crypto::Bip32 bip32_;
     const opentxs::crypto::Bip39& bip39_;
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     const opentxs::crypto::EcdsaProvider& secp256k1_;

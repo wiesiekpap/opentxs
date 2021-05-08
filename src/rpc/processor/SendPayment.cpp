@@ -39,11 +39,12 @@
 namespace opentxs::rpc::implementation
 {
 auto RPC::send_payment(const request::Base& base) const noexcept
-    -> response::Base
+    -> std::unique_ptr<response::Base>
 {
     const auto& in = base.asSendPayment();
     const auto reply = [&](const auto code) {
-        return response::SendPayment{in, {{0, code}}, {}};
+        return std::make_unique<response::SendPayment>(
+            in, response::Base::Responses{{0, code}}, response::Base::Tasks{});
     };
 
     try {
@@ -76,11 +77,13 @@ auto RPC::send_payment(const request::Base& base) const noexcept
 
 auto RPC::send_payment_blockchain(
     const api::client::Manager& api,
-    const request::SendPayment& in) const noexcept -> response::Base
+    const request::SendPayment& in) const noexcept
+    -> std::unique_ptr<response::Base>
 {
     auto tasks = response::Base::Tasks{};
     const auto reply = [&](const auto code) {
-        return response::SendPayment{in, {{0, code}}, std::move(tasks)};
+        return std::make_unique<response::SendPayment>(
+            in, response::Base::Responses{{0, code}}, std::move(tasks));
     };
 
     const auto id = api.Factory().Identifier(in.SourceAccount());
@@ -125,13 +128,15 @@ auto RPC::send_payment_blockchain(
 
 auto RPC::send_payment_custodial(
     const api::client::Manager& api,
-    const request::SendPayment& in) const noexcept -> response::Base
+    const request::SendPayment& in) const noexcept
+    -> std::unique_ptr<response::Base>
 {
     const auto contact = api.Factory().Identifier(in.RecipientContact());
     const auto source = api.Factory().Identifier(in.SourceAccount());
     auto tasks = response::Base::Tasks{};
     const auto reply = [&](const auto code) {
-        return response::SendPayment{in, {{0, code}}, std::move(tasks)};
+        return std::make_unique<response::SendPayment>(
+            in, response::Base::Responses{{0, code}}, std::move(tasks));
     };
 
     if (contact->empty()) { return reply(ResponseCode::invalid); }
@@ -221,8 +226,10 @@ auto RPC::send_payment_custodial(
         case PaymentType::invoice:
         case PaymentType::blinded:
         default: {
-            return response::SendPayment{
-                in, {{0, ResponseCode::unimplemented}}, {}};
+            return std::make_unique<response::SendPayment>(
+                in,
+                response::Base::Responses{{0, ResponseCode::unimplemented}},
+                response::Base::Tasks{});
         }
     }
 }

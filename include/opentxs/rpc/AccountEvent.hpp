@@ -32,9 +32,11 @@ class OPENTXS_EXPORT AccountEvent
 public:
     auto AccountID() const noexcept -> const std::string&;
     auto ConfirmedAmount() const noexcept -> Amount;
+    auto ConfirmedAmount_str() const noexcept -> const std::string&;
     auto ContactID() const noexcept -> const std::string&;
     auto Memo() const noexcept -> const std::string&;
     auto PendingAmount() const noexcept -> Amount;
+    auto PendingAmount_str() const noexcept -> const std::string&;
     OPENTXS_NO_EXPORT auto Serialize(proto::AccountEvent& dest) const noexcept
         -> bool;
     auto State() const noexcept -> int;
@@ -50,6 +52,8 @@ public:
         AccountEventType type,
         const std::string& contact,
         const std::string& workflow,
+        const std::string& amountS,
+        const std::string& pendingS,
         Amount amount,
         Amount pending,
         opentxs::Time time,

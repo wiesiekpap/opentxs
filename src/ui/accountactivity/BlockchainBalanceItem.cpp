@@ -15,6 +15,7 @@
 #include "internal/blockchain/Blockchain.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -116,5 +117,10 @@ auto BlockchainBalanceItem::reindex(
     }
 
     return output;
+}
+
+auto BlockchainBalanceItem::UUID() const noexcept -> std::string
+{
+    return blockchain::HashToNumber(txid_);
 }
 }  // namespace opentxs::ui::implementation

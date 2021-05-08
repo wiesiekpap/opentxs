@@ -309,6 +309,7 @@ namespace opentxs::contract::implementation
 {
 const std::map<VersionNumber, VersionNumber> Unit::unit_of_account_version_map_{
     {2, 6}};
+const Unit::Locale Unit::locale_{};
 
 Unit::Unit(
     const api::internal::Core& api,
@@ -676,6 +677,16 @@ auto Unit::FormatAmountLocale(
     return true;  // Note: might want to return false if str_output is empty.
 }
 
+auto Unit::FormatAmountLocale(std::int64_t amount, std::string& str_output)
+    const -> bool
+{
+    return FormatAmountLocale(
+        amount,
+        str_output,
+        {locale_.thousands_sep()},
+        {locale_.decimal_point()});
+}
+
 // Convert 912545 to "9,125.45"
 //
 // (Example assumes a Factor of 100, Decimal Power of 2
@@ -708,6 +719,17 @@ auto Unit::FormatAmountWithoutSymbolLocale(
         strSeparator->Get(),
         strDecimalPoint->Get());
     return true;  // Note: might want to return false if str_output is empty.
+}
+
+auto Unit::FormatAmountWithoutSymbolLocale(
+    std::int64_t amount,
+    std::string& str_output) const -> bool
+{
+    return FormatAmountWithoutSymbolLocale(
+        amount,
+        str_output,
+        {locale_.thousands_sep()},
+        {locale_.decimal_point()});
 }
 
 auto Unit::GetID(const Lock& lock) const -> OTIdentifier

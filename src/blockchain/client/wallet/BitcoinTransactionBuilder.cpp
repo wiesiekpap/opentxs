@@ -580,7 +580,19 @@ private:
         for (const auto& id : input.Keys()) {
             const auto& node = blockchain_.GetKey(id);
 
-            OT_ASSERT(node.KeyID() == id);
+            if (const auto got = node.KeyID(); got != id) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ": api::Blockchain::GetKey returned the wrong key")
+                    .Flush();
+                LogOutput(OT_METHOD)(__FUNCTION__)(": requested: ")(
+                    opentxs::print(id))
+                    .Flush();
+                LogOutput(OT_METHOD)(__FUNCTION__)(": got: ")(
+                    opentxs::print(got))
+                    .Flush();
+
+                OT_FAIL;
+            }
 
             const auto pKey = node.PrivateKey(reason);
 
@@ -644,17 +656,29 @@ private:
         auto views = block::bitcoin::internal::Input::Signatures{};
 
         for (const auto& id : input.Keys()) {
-            const auto& element = blockchain_.GetKey(id);
+            const auto& node = blockchain_.GetKey(id);
 
-            OT_ASSERT(element.KeyID() == id);
+            if (const auto got = node.KeyID(); got != id) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ": api::Blockchain::GetKey returned the wrong key")
+                    .Flush();
+                LogOutput(OT_METHOD)(__FUNCTION__)(": requested: ")(
+                    opentxs::print(id))
+                    .Flush();
+                LogOutput(OT_METHOD)(__FUNCTION__)(": got: ")(
+                    opentxs::print(got))
+                    .Flush();
 
-            const auto pPublic = validate(
-                Match::ByValue, element, input.PreviousOutput(), spends);
+                OT_FAIL;
+            }
+
+            const auto pPublic =
+                validate(Match::ByValue, node, input.PreviousOutput(), spends);
 
             if (!pPublic) { continue; }
 
             const auto& pub = *pPublic;
-            const auto pKey = get_private_key(pub, element, reason);
+            const auto pKey = get_private_key(pub, node, reason);
 
             if (!pKey) { continue; }
 
@@ -709,17 +733,29 @@ private:
         auto views = block::bitcoin::internal::Input::Signatures{};
 
         for (const auto& id : input.Keys()) {
-            const auto& element = blockchain_.GetKey(id);
+            const auto& node = blockchain_.GetKey(id);
 
-            OT_ASSERT(element.KeyID() == id);
+            if (const auto got = node.KeyID(); got != id) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ": api::Blockchain::GetKey returned the wrong key")
+                    .Flush();
+                LogOutput(OT_METHOD)(__FUNCTION__)(": requested: ")(
+                    opentxs::print(id))
+                    .Flush();
+                LogOutput(OT_METHOD)(__FUNCTION__)(": got: ")(
+                    opentxs::print(got))
+                    .Flush();
 
-            const auto pPublic = validate(
-                Match::ByHash, element, input.PreviousOutput(), spends);
+                OT_FAIL;
+            }
+
+            const auto pPublic =
+                validate(Match::ByHash, node, input.PreviousOutput(), spends);
 
             if (!pPublic) { continue; }
 
             const auto& pub = *pPublic;
-            const auto pKey = get_private_key(pub, element, reason);
+            const auto pKey = get_private_key(pub, node, reason);
 
             if (!pKey) { continue; }
 

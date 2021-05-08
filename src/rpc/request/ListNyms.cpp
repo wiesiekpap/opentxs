@@ -51,16 +51,15 @@ namespace opentxs::rpc::request
 {
 ListNyms::ListNyms(SessionIndex session, const AssociateNyms& nyms)
     : Base(std::make_unique<implementation::ListNyms>(
-               this,
-               DefaultVersion(),
-               session,
-               nyms)
-               .release())
+          this,
+          DefaultVersion(),
+          session,
+          nyms))
 {
 }
 
 ListNyms::ListNyms(const proto::RPCCommand& in) noexcept(false)
-    : Base(std::make_unique<implementation::ListNyms>(this, in).release())
+    : Base(std::make_unique<implementation::ListNyms>(this, in))
 {
 }
 

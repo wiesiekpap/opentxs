@@ -31,11 +31,13 @@ class OPENTXS_EXPORT AccountData
 {
 public:
     auto ConfirmedBalance() const noexcept -> Amount;
+    auto ConfirmedBalance_str() const noexcept -> std::string;
     auto ID() const noexcept -> const std::string&;
     auto Issuer() const noexcept -> const std::string&;
     auto Name() const noexcept -> const std::string&;
     auto Owner() const noexcept -> const std::string&;
     auto PendingBalance() const noexcept -> Amount;
+    auto PendingBalance_str() const noexcept -> std::string;
     OPENTXS_NO_EXPORT auto Serialize(proto::AccountData& dest) const noexcept
         -> bool;
     auto Type() const noexcept -> AccountType;
@@ -49,6 +51,8 @@ public:
         const std::string& unit,
         const std::string& owner,
         const std::string& issuer,
+        const std::string& balanceS,
+        const std::string& pendingS,
         Amount balance,
         Amount pending,
         AccountType type) noexcept(false);

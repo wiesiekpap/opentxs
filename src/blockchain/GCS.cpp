@@ -45,7 +45,7 @@
 //#define OT_METHOD "opentxs::blockchain::implementation::GCS::"
 
 namespace be = boost::endian;
-namespace mp = boost::multiprecision;
+namespace bmp = boost::multiprecision;
 
 namespace opentxs
 {
@@ -289,7 +289,7 @@ auto HashToRange(
     const std::uint64_t range,
     const ReadView item) noexcept(false) -> std::uint64_t
 {
-    return ((mp::uint128_t{siphash(api, key, item)} * mp::uint128_t{range}) >>
+    return ((bmp::uint128_t{siphash(api, key, item)} * bmp::uint128_t{range}) >>
             64u)
         .convert_to<std::uint64_t>();
 }

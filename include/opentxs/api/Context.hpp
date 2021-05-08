@@ -98,7 +98,7 @@ public:
     OPENTXS_EXPORT virtual std::string ProfileId() const = 0;
     OPENTXS_EXPORT virtual proto::RPCResponse RPC(
         const proto::RPCCommand& command) const noexcept = 0;
-    OPENTXS_EXPORT virtual rpc::response::Base RPC(
+    OPENTXS_EXPORT virtual std::unique_ptr<rpc::response::Base> RPC(
         const rpc::request::Base& command) const noexcept = 0;
     OPENTXS_EXPORT virtual bool RPC(
         const ReadView command,

@@ -13,6 +13,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "opentxs/protobuf/RPCEnums.pb.h"
 #include "opentxs/rpc/Types.hpp"
 
@@ -63,7 +65,7 @@ struct RPC {
     virtual auto Process(const proto::RPCCommand& command) const
         -> proto::RPCResponse = 0;
     virtual auto Process(const request::Base& command) const
-        -> response::Base = 0;
+        -> std::unique_ptr<response::Base> = 0;
 
     virtual ~RPC() = default;
 };

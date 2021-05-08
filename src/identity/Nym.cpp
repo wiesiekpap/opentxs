@@ -1056,15 +1056,16 @@ auto Nym::Path(proto::HDPath& output) const -> bool
 
     for (const auto& it : active_) {
         OT_ASSERT(nullptr != it.second);
-        const auto& set = *it.second;
+        const auto& authority = *it.second;
 
-        if (set.Path(output)) {
+        if (authority.Path(output)) {
             output.mutable_child()->RemoveLast();
+
             return true;
         }
     }
 
-    LogOutput(OT_METHOD)(__FUNCTION__)(": No credential set contains a path.")
+    LogOutput(OT_METHOD)(__FUNCTION__)(": No authority contains a path.")
         .Flush();
 
     return false;

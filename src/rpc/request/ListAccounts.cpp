@@ -79,19 +79,18 @@ ListAccounts::ListAccounts(
     const std::string& filterUnit,
     const AssociateNyms& nyms)
     : Base(std::make_unique<implementation::ListAccounts>(
-               this,
-               DefaultVersion(),
-               session,
-               filterNym,
-               filterNotary,
-               filterUnit,
-               nyms)
-               .release())
+          this,
+          DefaultVersion(),
+          session,
+          filterNym,
+          filterNotary,
+          filterUnit,
+          nyms))
 {
 }
 
 ListAccounts::ListAccounts(const proto::RPCCommand& in) noexcept(false)
-    : Base(std::make_unique<implementation::ListAccounts>(this, in).release())
+    : Base(std::make_unique<implementation::ListAccounts>(this, in))
 {
 }
 

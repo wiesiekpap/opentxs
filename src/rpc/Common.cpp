@@ -20,6 +20,217 @@
 #include "opentxs/rpc/ResponseCode.hpp"
 #include "util/Container.hpp"
 
+namespace opentxs
+{
+auto print(rpc::AccountEventType value) noexcept -> std::string
+{
+    using Type = rpc::AccountEventType;
+    static const auto map = boost::container::flat_map<Type, std::string>{
+        {Type::incoming_cheque, "incoming cheque"},
+        {Type::outgoing_cheque, "outgoing cheque"},
+        {Type::incoming_transfer, "incoming transfer"},
+        {Type::outgoing_transfer, "outgoing transfer"},
+        {Type::incoming_invoice, "incoming invoice"},
+        {Type::outgoing_invoice, "outgoing invoice"},
+        {Type::incoming_voucher, "incoming voucher"},
+        {Type::outgoing_voucher, "outgoing voucher"},
+        {Type::incoming_blockchain, "incoming blockchain"},
+        {Type::outgoing_blockchain, "outgoing blockchain"},
+    };
+
+    try {
+
+        return map.at(value);
+    } catch (...) {
+
+        return "error";
+    }
+}
+
+auto print(rpc::AccountType value) noexcept -> std::string
+{
+    using Type = rpc::AccountType;
+    static const auto map = boost::container::flat_map<Type, std::string>{
+        {Type::normal, "custodial"},
+        {Type::issuer, "custodial issuer"},
+        {Type::blockchain, "blockchain"},
+    };
+
+    try {
+
+        return map.at(value);
+    } catch (...) {
+
+        return "error";
+    }
+}
+
+auto print(rpc::CommandType value) noexcept -> std::string
+{
+    using Type = rpc::CommandType;
+    static const auto map = boost::container::flat_map<Type, std::string>{
+        {Type::add_client_session, "add client session"},
+        {Type::add_server_session, "add server session"},
+        {Type::list_client_sessions, "list client sessions"},
+        {Type::list_server_sessions, "list server sessions"},
+        {Type::import_hd_seed, "import hd seed"},
+        {Type::list_hd_seeds, "list hd seeds"},
+        {Type::get_hd_seed, "get hd seed"},
+        {Type::create_nym, "create nym"},
+        {Type::list_nyms, "list nyms"},
+        {Type::get_nym, "get nym"},
+        {Type::add_claim, "add claim"},
+        {Type::delete_claim, "delete claim"},
+        {Type::import_server_contract, "import server contract"},
+        {Type::list_server_contracts, "list server contracts"},
+        {Type::register_nym, "register nym"},
+        {Type::create_unit_definition, "create unit definition"},
+        {Type::list_unit_definitions, "list unit definitions"},
+        {Type::issue_unit_definition, "issue unit definition"},
+        {Type::create_account, "create account"},
+        {Type::list_accounts, "list accounts"},
+        {Type::get_account_balance, "get account balance"},
+        {Type::get_account_activity, "get account activity"},
+        {Type::send_payment, "send payment"},
+        {Type::move_funds, "move funds"},
+        {Type::add_contact, "add contact"},
+        {Type::list_contacts, "list contacts"},
+        {Type::get_contact, "get contact"},
+        {Type::add_contact_claim, "add contact claim"},
+        {Type::delete_contact_claim, "delete contact claim"},
+        {Type::verify_claim, "verify claim"},
+        {Type::accept_verification, "accept verification"},
+        {Type::send_contact_message, "send contact message"},
+        {Type::get_contact_activity, "get contact activity"},
+        {Type::get_server_contract, "get server contract"},
+        {Type::get_pending_payments, "get pending payments"},
+        {Type::accept_pending_payments, "accept pending payments"},
+        {Type::get_compatible_accounts, "get compatible accounts"},
+        {Type::create_compatible_account, "create compatible account"},
+        {Type::get_workflow, "get workflow"},
+        {Type::get_server_password, "get server password"},
+        {Type::get_admin_nym, "get admin nym"},
+        {Type::get_unit_definition, "get unit definition"},
+        {Type::get_transaction_data, "get transaction data"},
+        {Type::lookup_accountid, "lookup accountid"},
+        {Type::rename_account, "rename account"},
+    };
+
+    try {
+
+        return map.at(value);
+    } catch (...) {
+
+        return "error";
+    }
+}
+
+auto print(rpc::ContactEventType value) noexcept -> std::string
+{
+    using Type = rpc::ContactEventType;
+    static const auto map = boost::container::flat_map<Type, std::string>{
+        {Type::incoming_message, "incoming message"},
+        {Type::outgoing_message, "outgoing message"},
+        {Type::incoming_payment, "incoming payment"},
+        {Type::outgoing_payment, "outgoing payment"},
+    };
+
+    try {
+
+        return map.at(value);
+    } catch (...) {
+
+        return "error";
+    }
+}
+
+auto print(rpc::PaymentType value) noexcept -> std::string
+{
+    using Type = rpc::PaymentType;
+    static const auto map = boost::container::flat_map<Type, std::string>{
+        {Type::cheque, "cheque"},
+        {Type::transfer, "transfer"},
+        {Type::voucher, "voucher"},
+        {Type::invoice, "invoice"},
+        {Type::blinded, "blinded"},
+        {Type::blockchain, "blockchain"},
+    };
+
+    try {
+
+        return map.at(value);
+    } catch (...) {
+
+        return "error";
+    }
+}
+
+auto print(rpc::PushType value) noexcept -> std::string
+{
+    using Type = rpc::PushType;
+    static const auto map = boost::container::flat_map<Type, std::string>{
+        {Type::account, "account"},
+        {Type::contact, "contact"},
+        {Type::task, "task"},
+    };
+
+    try {
+
+        return map.at(value);
+    } catch (...) {
+
+        return "error";
+    }
+}
+
+auto print(rpc::ResponseCode value) noexcept -> std::string
+{
+    using Type = rpc::ResponseCode;
+    static const auto map = boost::container::flat_map<Type, std::string>{
+        {Type::invalid, "invalid"},
+        {Type::success, "success"},
+        {Type::bad_session, "bad_session"},
+        {Type::none, "none"},
+        {Type::queued, "queued"},
+        {Type::unnecessary, "unnecessary"},
+        {Type::retry, "retry"},
+        {Type::no_path_to_recipient, "no path to recipient"},
+        {Type::bad_server_argument, "bad server argument"},
+        {Type::cheque_not_found, "cheque not found"},
+        {Type::payment_not_found, "payment not found"},
+        {Type::start_task_failed, "start task failed"},
+        {Type::nym_not_found, "nym not found"},
+        {Type::add_claim_failed, "add claim failed"},
+        {Type::add_contact_failed, "add contact failed"},
+        {Type::register_account_failed, "register account failed"},
+        {Type::bad_server_response, "bad server response"},
+        {Type::workflow_not_found, "workflow not found"},
+        {Type::unit_definition_not_found, "unit definition not found"},
+        {Type::session_not_found, "session not found"},
+        {Type::create_nym_failed, "create nym failed"},
+        {Type::create_unit_definition_failed, "create unit definition failed"},
+        {Type::delete_claim_failed, "delete claim failed"},
+        {Type::account_not_found, "account not found"},
+        {Type::move_funds_failed, "move funds failed"},
+        {Type::register_nym_failed, "register nym failed"},
+        {Type::contact_not_found, "contact not found"},
+        {Type::account_owner_not_found, "account owner not found"},
+        {Type::send_payment_failed, "send payment failed"},
+        {Type::transaction_failed, "transaction failed"},
+        {Type::txid, "txid"},
+        {Type::unimplemented, "unimplemented"},
+    };
+
+    try {
+
+        return map.at(value);
+    } catch (...) {
+
+        return "error";
+    }
+}
+}  // namespace opentxs
+
 namespace opentxs::rpc
 {
 using AccountEventMap =
@@ -167,7 +378,7 @@ auto contact_event_map() noexcept -> ContactEventMap
          proto::CONTACTEVENT_INCOMINGMESSAGE},
         {ContactEventType::outgoing_message,
          proto::CONTACTEVENT_OUTGOINGMESSAGE},
-        {ContactEventType::incomong_payment,
+        {ContactEventType::incoming_payment,
          proto::CONTACTEVENT_INCOMONGPAYMENT},
         {ContactEventType::outgoing_payment,
          proto::CONTACTEVENT_OUTGOINGPAYMENT},

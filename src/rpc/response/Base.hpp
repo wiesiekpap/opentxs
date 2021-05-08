@@ -55,10 +55,6 @@ struct Base::Imp {
     virtual auto asListNyms() const noexcept -> const response::ListNyms&;
     virtual auto asSendPayment() const noexcept -> const response::SendPayment&;
 
-    virtual auto clone() const noexcept -> std::unique_ptr<Imp>
-    {
-        return std::make_unique<Imp>(*this);
-    }
     virtual auto serialize(proto::RPCResponse& dest) const noexcept -> bool;
     auto serialize(AllocateOutput dest) const noexcept -> bool;
     auto serialize_identifiers(proto::RPCResponse& dest) const noexcept -> void;
@@ -77,7 +73,6 @@ struct Base::Imp {
         Responses&& response,
         Tasks&& tasks) noexcept;
     Imp(const Base* parent, const proto::RPCResponse& serialized) noexcept;
-    Imp(const Imp&) noexcept;
 
     virtual ~Imp() = default;
 
@@ -99,6 +94,7 @@ private:
         Tasks&& tasks) noexcept;
     Imp() noexcept = delete;
 
+    Imp(const Imp&) = delete;
     Imp(Imp&&) = delete;
     auto operator=(const Imp&) -> Imp& = delete;
     auto operator=(Imp&&) -> Imp& = delete;

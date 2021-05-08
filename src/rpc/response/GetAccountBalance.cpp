@@ -28,10 +28,6 @@ struct GetAccountBalance final : public Base::Imp {
     {
         return static_cast<const response::GetAccountBalance&>(*parent_);
     }
-    auto clone() const noexcept -> std::unique_ptr<Imp> final
-    {
-        return std::make_unique<GetAccountBalance>(*this);
-    }
     auto serialize(proto::RPCResponse& dest) const noexcept -> bool final
     {
         if (Imp::serialize(dest)) {
@@ -70,11 +66,6 @@ struct GetAccountBalance final : public Base::Imp {
         }())
     {
     }
-    GetAccountBalance(const GetAccountBalance& rhs) noexcept
-        : Imp(rhs)
-        , balances_(rhs.balances_)
-    {
-    }
 
     ~GetAccountBalance() final = default;
 
@@ -93,18 +84,17 @@ GetAccountBalance::GetAccountBalance(
     Responses&& response,
     Data&& balances)
     : Base(std::make_unique<implementation::GetAccountBalance>(
-               this,
-               request,
-               std::move(response),
-               std::move(balances))
-               .release())
+          this,
+          request,
+          std::move(response),
+          std::move(balances)))
 {
 }
 
 GetAccountBalance::GetAccountBalance(
     const proto::RPCResponse& serialized) noexcept(false)
-    : Base(std::make_unique<implementation::GetAccountBalance>(this, serialized)
-               .release())
+    : Base(
+          std::make_unique<implementation::GetAccountBalance>(this, serialized))
 {
 }
 
@@ -115,8 +105,8 @@ GetAccountBalance::GetAccountBalance() noexcept
 
 auto GetAccountBalance::Balances() const noexcept -> const Data&
 {
-    return static_cast<const implementation::GetAccountBalance*>(imp_)
-        ->balances_;
+    return static_cast<const implementation::GetAccountBalance&>(*imp_)
+        .balances_;
 }
 
 GetAccountBalance::~GetAccountBalance() = default;

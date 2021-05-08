@@ -79,11 +79,16 @@ public:
         std::string& str_output,
         const std::string& str_thousand,
         const std::string& str_decimal) const = 0;
+    virtual bool FormatAmountLocale(Amount amount, std::string& str_output)
+        const = 0;
     virtual bool FormatAmountWithoutSymbolLocale(
         Amount amount,
         std::string& str_output,
         const std::string& str_thousand,
         const std::string& str_decimal) const = 0;
+    virtual bool FormatAmountWithoutSymbolLocale(
+        Amount amount,
+        std::string& str_output) const = 0;
     virtual std::string FractionalUnitName() const = 0;
     virtual const std::string& GetCurrencyName() const = 0;
     virtual const std::string& GetCurrencySymbol() const = 0;

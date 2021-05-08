@@ -31,10 +31,6 @@ struct SendPayment final : public Base::Imp {
     {
         return static_cast<const request::SendPayment&>(*parent_);
     }
-    auto clone() const noexcept -> std::unique_ptr<Imp> final
-    {
-        return std::make_unique<SendPayment>(*this);
-    }
     auto serialize(proto::RPCCommand& dest) const noexcept -> bool final
     {
         if (Imp::serialize(dest)) {
@@ -89,22 +85,12 @@ struct SendPayment final : public Base::Imp {
     {
         check_session();
     }
-    SendPayment(const SendPayment& rhs) noexcept
-        : Imp(*this)
-        , send_payment_version_(rhs.send_payment_version_)
-        , payment_type_(rhs.payment_type_)
-        , contact_(rhs.contact_)
-        , source_(rhs.source_)
-        , destination_(rhs.destination_)
-        , memo_(rhs.memo_)
-        , amount_(rhs.amount_)
-    {
-    }
 
     ~SendPayment() final = default;
 
 private:
     SendPayment() = delete;
+    SendPayment(const SendPayment&) = delete;
     SendPayment(SendPayment&&) = delete;
     auto operator=(const SendPayment&) -> SendPayment& = delete;
     auto operator=(SendPayment&&) -> SendPayment& = delete;
@@ -122,17 +108,16 @@ SendPayment::SendPayment(
     const std::string& memo,
     const AssociateNyms& nyms)
     : Base(std::make_unique<implementation::SendPayment>(
-               this,
-               DefaultVersion(),
-               session,
-               type,
-               amount,
-               sourceAccount,
-               recipientContact,
-               "",
-               memo,
-               nyms)
-               .release())
+          this,
+          DefaultVersion(),
+          session,
+          type,
+          amount,
+          sourceAccount,
+          recipientContact,
+          "",
+          memo,
+          nyms))
 {
 }
 
@@ -145,17 +130,16 @@ SendPayment::SendPayment(
     const std::string& memo,
     const AssociateNyms& nyms)
     : Base(std::make_unique<implementation::SendPayment>(
-               this,
-               DefaultVersion(),
-               session,
-               PaymentType::transfer,
-               amount,
-               sourceAccount,
-               recipientContact,
-               destinationAccount,
-               memo,
-               nyms)
-               .release())
+          this,
+          DefaultVersion(),
+          session,
+          PaymentType::transfer,
+          amount,
+          sourceAccount,
+          recipientContact,
+          destinationAccount,
+          memo,
+          nyms))
 {
 }
 
@@ -168,71 +152,69 @@ SendPayment::SendPayment(
     const std::string& memo,
     const AssociateNyms& nyms)
     : Base(std::make_unique<implementation::SendPayment>(
-               this,
-               DefaultVersion(),
-               session,
-               PaymentType::blockchain,
-               amount,
-               sourceAccount,
-               recipientContact,
-               destinationAddress,
-               memo,
-               nyms)
-               .release())
+          this,
+          DefaultVersion(),
+          session,
+          PaymentType::blockchain,
+          amount,
+          sourceAccount,
+          recipientContact,
+          destinationAddress,
+          memo,
+          nyms))
 {
 }
 
 SendPayment::SendPayment(const proto::RPCCommand& in) noexcept(false)
-    : Base(std::make_unique<implementation::SendPayment>(this, in).release())
+    : Base(std::make_unique<implementation::SendPayment>(this, in))
 {
 }
 
 SendPayment::SendPayment() noexcept
     : Base(std::make_unique<implementation::SendPayment>(
-               this,
-               0,
-               -1,
-               PaymentType::error,
-               0,
-               "",
-               "",
-               "",
-               "",
-               AssociateNyms{})
-               .release())
+          this,
+          0,
+          -1,
+          PaymentType::error,
+          0,
+          "",
+          "",
+          "",
+          "",
+          AssociateNyms{}))
 {
 }
 
 auto SendPayment::Amount() const noexcept -> opentxs::Amount
 {
-    return static_cast<const implementation::SendPayment*>(imp_)->amount_;
+    return static_cast<const implementation::SendPayment&>(*imp_).amount_;
 }
 
 auto SendPayment::DefaultVersion() noexcept -> VersionNumber { return 3u; }
 
 auto SendPayment::DestinationAccount() const noexcept -> const std::string&
 {
-    return static_cast<const implementation::SendPayment*>(imp_)->destination_;
+    return static_cast<const implementation::SendPayment&>(*imp_).destination_;
 }
 
 auto SendPayment::Memo() const noexcept -> const std::string&
 {
-    return static_cast<const implementation::SendPayment*>(imp_)->memo_;
+    return static_cast<const implementation::SendPayment&>(*imp_).memo_;
 }
 
 auto SendPayment::PaymentType() const noexcept -> rpc::PaymentType
 {
-    return static_cast<const implementation::SendPayment*>(imp_)->payment_type_;
+    return static_cast<const implementation::SendPayment&>(*imp_).payment_type_;
 }
 
 auto SendPayment::RecipientContact() const noexcept -> const std::string&
 {
-    return static_cast<const implementation::SendPayment*>(imp_)->contact_;
+    return static_cast<const implementation::SendPayment&>(*imp_).contact_;
 }
 
 auto SendPayment::SourceAccount() const noexcept -> const std::string&
 {
-    return static_cast<const implementation::SendPayment*>(imp_)->source_;
+    return static_cast<const implementation::SendPayment&>(*imp_).source_;
 }
 
 SendPayment::~SendPayment() = default;

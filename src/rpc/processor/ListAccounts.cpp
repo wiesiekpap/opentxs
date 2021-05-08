@@ -30,12 +30,13 @@
 namespace opentxs::rpc::implementation
 {
 auto RPC::list_accounts(const request::Base& base) const noexcept
-    -> response::Base
+    -> std::unique_ptr<response::Base>
 {
     const auto& in = base.asListAccounts();
     auto ids = response::Base::Identifiers{};
     const auto reply = [&](const auto code) {
-        return response::ListAccounts{in, {{0, code}}, std::move(ids)};
+        return std::make_unique<response::ListAccounts>(
+            in, response::Base::Responses{{0, code}}, std::move(ids));
     };
 
     try {

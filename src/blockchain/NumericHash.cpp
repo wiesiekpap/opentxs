@@ -36,7 +36,7 @@ auto NumericHashNBits(const std::uint32_t input) noexcept
     -> std::unique_ptr<blockchain::NumericHash>
 {
     using ArgumentType = ReturnType::Type;
-    using MantissaType = mp::checked_cpp_int;
+    using MantissaType = bmp::checked_cpp_int;
 
     const auto mantissa = std::uint32_t{input & 0x007fffff};
     const auto exponent = static_cast<std::uint8_t>((input & 0xff000000) >> 24);
@@ -68,7 +68,7 @@ auto NumericHash(const blockchain::block::Hash& hash) noexcept
 
     try {
         // Interpret hash as little endian
-        mp::import_bits(value, hash.begin(), hash.end(), 8, false);
+        bmp::import_bits(value, hash.begin(), hash.end(), 8, false);
     } catch (...) {
         LogOutput("opentxs::factory::")(__FUNCTION__)(": Failed to decode hash")
             .Flush();
@@ -182,7 +182,7 @@ auto NumericHash::asHex(const std::size_t minimumBytes) const noexcept
 
     try {
         // Export as big endian
-        mp::export_bits(data_, std::back_inserter(bytes), 8, true);
+        bmp::export_bits(data_, std::back_inserter(bytes), 8, true);
     } catch (...) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to encode number").Flush();
 

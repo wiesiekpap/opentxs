@@ -480,7 +480,7 @@ TEST_F(Regtest_payment_code, alice_after_receive_ui)
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
     EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-    EXPECT_EQ(row->UUID(), transactions_.at(0)->asHex());
+    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(0)));
     EXPECT_TRUE(row->Last());
 }
 
@@ -686,7 +686,7 @@ TEST_F(Regtest_payment_code, alice_after_unconfirmed_spend_ui)
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(row->Text(), "Outgoing Unit Test Simulation transaction");
     EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-    EXPECT_EQ(row->UUID(), transactions_.at(1)->asHex());
+    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(1)));
     ASSERT_FALSE(row->Last());
 
     row = widget.Next();
@@ -698,7 +698,7 @@ TEST_F(Regtest_payment_code, alice_after_unconfirmed_spend_ui)
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
     EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-    EXPECT_EQ(row->UUID(), transactions_.at(0)->asHex());
+    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(0)));
     EXPECT_TRUE(row->Last());
 }
 
@@ -1010,7 +1010,7 @@ TEST_F(Regtest_payment_code, alice_after_confirmed_spend_ui)
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(row->Text(), "Outgoing Unit Test Simulation transaction");
     EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-    EXPECT_EQ(row->UUID(), transactions_.at(1)->asHex());
+    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(1)));
     ASSERT_FALSE(row->Last());
 
     row = widget.Next();
@@ -1022,7 +1022,7 @@ TEST_F(Regtest_payment_code, alice_after_confirmed_spend_ui)
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
     EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-    EXPECT_EQ(row->UUID(), transactions_.at(0)->asHex());
+    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(0)));
     EXPECT_TRUE(row->Last());
 
     const auto& tree = client_1_.Blockchain().Account(alice_.ID(), test_chain_);
@@ -1118,7 +1118,7 @@ TEST_F(Regtest_payment_code, bob_after_receive_ui)
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
     EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-    EXPECT_EQ(row->UUID(), transactions_.at(1)->asHex());
+    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(1)));
     EXPECT_TRUE(row->Last());
 
     const auto& tree = client_2_.Blockchain().Account(bob_.ID(), test_chain_);
@@ -1278,7 +1278,7 @@ TEST_F(Regtest_payment_code, rpc_account_list_alice)
     const auto index{client_1_.Instance()};
     const auto command = ot::rpc::request::ListAccounts{index};
     const auto base = ot_.RPC(command);
-    const auto& response = base.asListAccounts();
+    const auto& response = base->asListAccounts();
     const auto& codes = response.ResponseCodes();
     const auto expected = [&] {
         auto out = std::set<std::string>{};
@@ -1304,7 +1304,7 @@ TEST_F(Regtest_payment_code, rpc_account_list_bob)
     const auto index{client_2_.Instance()};
     const auto command = ot::rpc::request::ListAccounts{index};
     const auto base = ot_.RPC(command);
-    const auto& response = base.asListAccounts();
+    const auto& response = base->asListAccounts();
     const auto& codes = response.ResponseCodes();
     const auto expected = [&] {
         auto out = std::set<std::string>{};
@@ -1533,7 +1533,7 @@ TEST_F(Regtest_payment_code, alice_after_unconfirmed_second_spend_ui)
     EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
 
     transactions_.emplace_back(
-        client_1_.Factory().Data(row->UUID(), ot::StringStyle::Hex));
+        ot::blockchain::NumberToHash(client_1_, row->UUID()));
 
     ASSERT_FALSE(row->Last());
 
@@ -1546,7 +1546,7 @@ TEST_F(Regtest_payment_code, alice_after_unconfirmed_second_spend_ui)
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(row->Text(), "Outgoing Unit Test Simulation transaction");
     EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-    EXPECT_EQ(row->UUID(), transactions_.at(1)->asHex());
+    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(1)));
 
     ASSERT_FALSE(row->Last());
 
@@ -1559,7 +1559,7 @@ TEST_F(Regtest_payment_code, alice_after_unconfirmed_second_spend_ui)
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
     EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-    EXPECT_EQ(row->UUID(), transactions_.at(0)->asHex());
+    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(0)));
     EXPECT_TRUE(row->Last());
 
     const auto& tree = client_1_.Blockchain().Account(alice_.ID(), test_chain_);

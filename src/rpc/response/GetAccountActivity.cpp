@@ -28,10 +28,6 @@ struct GetAccountActivity final : public Base::Imp {
     {
         return static_cast<const response::GetAccountActivity&>(*parent_);
     }
-    auto clone() const noexcept -> std::unique_ptr<Imp> final
-    {
-        return std::make_unique<GetAccountActivity>(*this);
-    }
     auto serialize(proto::RPCResponse& dest) const noexcept -> bool final
     {
         if (Imp::serialize(dest)) {
@@ -70,11 +66,6 @@ struct GetAccountActivity final : public Base::Imp {
         }())
     {
     }
-    GetAccountActivity(const GetAccountActivity& rhs) noexcept
-        : Imp(rhs)
-        , events_(rhs.events_)
-    {
-    }
 
     ~GetAccountActivity() final = default;
 
@@ -93,19 +84,18 @@ GetAccountActivity::GetAccountActivity(
     Responses&& response,
     Events&& events)
     : Base(std::make_unique<implementation::GetAccountActivity>(
-               this,
-               request,
-               std::move(response),
-               std::move(events))
-               .release())
+          this,
+          request,
+          std::move(response),
+          std::move(events)))
 {
 }
 
 GetAccountActivity::GetAccountActivity(
     const proto::RPCResponse& serialized) noexcept(false)
-    : Base(
-          std::make_unique<implementation::GetAccountActivity>(this, serialized)
-              .release())
+    : Base(std::make_unique<implementation::GetAccountActivity>(
+          this,
+          serialized))
 {
 }
 
@@ -116,8 +106,8 @@ GetAccountActivity::GetAccountActivity() noexcept
 
 auto GetAccountActivity::Activity() const noexcept -> const Events&
 {
-    return static_cast<const implementation::GetAccountActivity*>(imp_)
-        ->events_;
+    return static_cast<const implementation::GetAccountActivity&>(*imp_)
+        .events_;
 }
 
 GetAccountActivity::~GetAccountActivity() = default;

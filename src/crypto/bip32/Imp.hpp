@@ -7,9 +7,11 @@
 
 #include <boost/endian/buffers.hpp>
 #include <boost/endian/conversion.hpp>
+#include <optional>
 #include <string>
 
-#include "HDNode.hpp"
+#include "crypto/HDNode.hpp"
+#include "internal/crypto/Crypto.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
@@ -23,6 +25,7 @@ namespace opentxs
 namespace api
 {
 class Crypto;
+class Primitives;
 }  // namespace api
 
 namespace crypto
@@ -41,25 +44,22 @@ class Secret;
 
 namespace be = boost::endian;
 
-namespace opentxs::crypto::implementation
+namespace opentxs::crypto
 {
-class Bip32 : virtual public opentxs::crypto::Bip32
-{
+struct Bip32::Imp final : public internal::Bip32 {
 public:
-#if OT_CRYPTO_WITH_BIP32
     auto DeriveKey(
         const EcdsaCurve& curve,
         const Secret& seed,
-        const Path& path) const -> Key final;
+        const Path& path) const -> Key;
     auto DerivePrivateKey(
         const key::HD& parent,
         const Path& pathAppend,
-        const PasswordPrompt& reason) const noexcept(false) -> Key final;
+        const PasswordPrompt& reason) const noexcept(false) -> Key;
     auto DerivePublicKey(
         const key::HD& parent,
         const Path& pathAppend,
-        const PasswordPrompt& reason) const noexcept(false) -> Key final;
-#endif  // OT_CRYPTO_WITH_BIP32
+        const PasswordPrompt& reason) const noexcept(false) -> Key;
     auto DeserializePrivate(
         const std::string& serialized,
         Bip32Network& network,
@@ -67,7 +67,7 @@ public:
         Bip32Fingerprint& parent,
         Bip32Index& index,
         Data& chainCode,
-        Secret& key) const -> bool final;
+        Secret& key) const -> bool;
     auto DeserializePublic(
         const std::string& serialized,
         Bip32Network& network,
@@ -75,27 +75,33 @@ public:
         Bip32Fingerprint& parent,
         Bip32Index& index,
         Data& chainCode,
-        Data& key) const -> bool final;
-    auto SeedID(const ReadView entropy) const -> OTIdentifier final;
+        Data& key) const -> bool;
+    auto Init(const api::Primitives& factory) noexcept -> void final;
+    auto SeedID(const ReadView entropy) const -> OTIdentifier;
     auto SerializePrivate(
         const Bip32Network network,
         const Bip32Depth depth,
         const Bip32Fingerprint parent,
         const Bip32Index index,
         const Data& chainCode,
-        const Secret& key) const -> std::string final;
+        const Secret& key) const -> std::string;
     auto SerializePublic(
         const Bip32Network network,
         const Bip32Depth depth,
         const Bip32Fingerprint parent,
         const Bip32Index index,
         const Data& chainCode,
-        const Data& key) const -> std::string final;
+        const Data& key) const -> std::string;
 
-    Bip32(const api::Crypto& crypto) noexcept;
+    Imp(const api::Crypto& crypto) noexcept;
+
+    ~Imp() final = default;
 
 private:
+    using HDNode = implementation::HDNode;
+
     const api::Crypto& crypto_;
+    const std::optional<Key> blank_;
 
     static auto IsHard(const Bip32Index) noexcept -> bool;
 
@@ -125,19 +131,17 @@ private:
         Data& chainCode) const noexcept -> bool;
     auto provider(const EcdsaCurve& curve) const noexcept(false)
         -> const crypto::EcdsaProvider&;
-#if OT_CRYPTO_WITH_BIP32
     auto root_node(
         const EcdsaCurve& curve,
         const ReadView entropy,
         const AllocateOutput privateKey,
         const AllocateOutput code,
         const AllocateOutput publicKey) const noexcept -> bool;
-#endif  // OT_CRYPTO_WITH_BIP32
 
-    Bip32() = delete;
-    Bip32(const Bip32&) = delete;
-    Bip32(Bip32&&) = delete;
-    auto operator=(const Bip32&) -> Bip32& = delete;
-    auto operator=(Bip32&&) -> Bip32& = delete;
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 };
-}  // namespace opentxs::crypto::implementation
+}  // namespace opentxs::crypto

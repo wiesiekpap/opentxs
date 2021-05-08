@@ -14,14 +14,14 @@
 
 #include "opentxs/blockchain/NumericHash.hpp"
 
-namespace mp = boost::multiprecision;
+namespace bmp = boost::multiprecision;
 
 namespace opentxs::blockchain::implementation
 {
 class NumericHash final : public blockchain::NumericHash
 {
 public:
-    using Type = mp::checked_cpp_int;
+    using Type = bmp::checked_cpp_int;
 
     auto operator==(const blockchain::NumericHash& rhs) const noexcept
         -> bool final;

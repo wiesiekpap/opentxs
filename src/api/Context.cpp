@@ -243,7 +243,7 @@ void Context::Init_Asio()
 
 void Context::Init_Crypto()
 {
-    crypto_ = factory::Crypto(Config(legacy_->OpentxsConfigFilePath()));
+    crypto_ = factory::CryptoAPI(Config(legacy_->OpentxsConfigFilePath()));
 
     OT_ASSERT(crypto_);
 }
@@ -277,6 +277,8 @@ void Context::Init_Factory()
     factory_ = factory::Primitives(*crypto_);
 
     OT_ASSERT(factory_);
+
+    crypto_->Init(*factory_);
 }
 
 void Context::Init_Log(const std::int32_t argLevel)
@@ -392,7 +394,7 @@ auto Context::RPC(const proto::RPCCommand& command) const noexcept
 }
 
 auto Context::RPC(const rpc::request::Base& command) const noexcept
-    -> rpc::response::Base
+    -> std::unique_ptr<rpc::response::Base>
 {
     return rpc_->Process(command);
 }

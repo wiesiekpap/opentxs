@@ -9,6 +9,7 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/ThreadPool.hpp"
+#include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
 #include "util/Work.hpp"
 
@@ -71,6 +72,12 @@ struct Core : virtual public api::Core {
         -> const opentxs::crypto::key::Symmetric& = 0;
 
     ~Core() override = default;
+};
+
+struct Crypto : virtual public api::Crypto {
+    virtual auto Init(const api::Primitives& factory) noexcept -> void = 0;
+
+    ~Crypto() override = default;
 };
 
 struct Factory : virtual public api::Factory {
