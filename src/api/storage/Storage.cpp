@@ -40,10 +40,20 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/protobuf/Bip47Channel.pb.h"
+#include "opentxs/protobuf/Ciphertext.pb.h"
 #include "opentxs/protobuf/Contact.pb.h"
 #include "opentxs/protobuf/Context.pb.h"
+#include "opentxs/protobuf/Credential.pb.h"
+#include "opentxs/protobuf/HDAccount.pb.h"
+#include "opentxs/protobuf/Issuer.pb.h"
 #include "opentxs/protobuf/Nym.pb.h"
+#include "opentxs/protobuf/PaymentWorkflow.pb.h"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
+#include "opentxs/protobuf/PeerReply.pb.h"
+#include "opentxs/protobuf/PeerRequest.pb.h"
+#include "opentxs/protobuf/Purse.pb.h"
+#include "opentxs/protobuf/Seed.pb.h"
 #include "opentxs/protobuf/ServerContract.pb.h"
 #include "opentxs/protobuf/StorageThread.pb.h"
 #include "opentxs/protobuf/StorageThreadItem.pb.h"
@@ -540,16 +550,18 @@ auto Storage::BlockchainTransactionList(
     return nyms.Nym(nym.str()).Threads().BlockchainTransactionList();
 }
 
-#if OT_CASH
 auto Storage::CheckTokenSpent(
     const identifier::Server& notary,
     const identifier::UnitDefinition& unit,
     const std::uint64_t series,
     const std::string& key) const -> bool
 {
+#if OT_CASH
     return Root().Tree().Notary(notary.str()).CheckSpent(unit, series, key);
-}
+#else
+    return false;
 #endif
+}
 
 void Storage::Cleanup_Storage()
 {
@@ -720,16 +732,22 @@ auto Storage::Load(
 auto Storage::Load(
     const std::string& nymID,
     const std::string& accountID,
-    std::shared_ptr<proto::HDAccount>& output,
+    proto::HDAccount& output,
     const bool checking) const -> bool
 {
-    return Root().Tree().Nyms().Nym(nymID).Load(accountID, output, checking);
+    auto temp = std::make_shared<proto::HDAccount>(output);
+    const auto rc =
+        Root().Tree().Nyms().Nym(nymID).Load(accountID, temp, checking);
+
+    if (rc && temp) { output = *temp; }
+
+    return rc;
 }
 
 auto Storage::Load(
     const identifier::Nym& nymID,
     const Identifier& channelID,
-    std::shared_ptr<proto::Bip47Channel>& output,
+    proto::Bip47Channel& output,
     const bool checking) const -> bool
 {
     const bool exists = Root().Tree().Nyms().Exists(nymID.str());
@@ -741,61 +759,80 @@ auto Storage::Load(
         return false;
     }
 
-    return Root()
-        .Tree()
-        .Nyms()
-        .Nym(nymID.str())
-        .Bip47Channels()
-        .Load(channelID, output, checking);
+    auto temp = std::make_shared<proto::Bip47Channel>(output);
+    const auto rc = Root()
+                        .Tree()
+                        .Nyms()
+                        .Nym(nymID.str())
+                        .Bip47Channels()
+                        .Load(channelID, temp, checking);
+
+    if (rc && temp) { output = *temp; }
+
+    return rc;
 }
 
 auto Storage::Load(
     const std::string& id,
-    std::shared_ptr<proto::Contact>& contact,
+    proto::Contact& output,
     const bool checking) const -> bool
 {
-    std::string notUsed{};
+    auto notUsed = std::string{};
 
-    return Load(id, contact, notUsed, checking);
+    return Load(id, output, notUsed, checking);
 }
 
 auto Storage::Load(
     const std::string& id,
-    std::shared_ptr<proto::Contact>& contact,
+    proto::Contact& output,
     std::string& alias,
     const bool checking) const -> bool
 {
-    return Root().Tree().Contacts().Load(id, contact, alias, checking);
+    auto temp = std::make_shared<proto::Contact>(output);
+    const auto rc = Root().Tree().Contacts().Load(id, temp, alias, checking);
+
+    if (rc && temp) { output = *temp; }
+
+    return rc;
 }
 
 auto Storage::Load(
     const std::string& nym,
     const std::string& id,
-    std::shared_ptr<proto::Context>& context,
+    proto::Context& output,
     const bool checking) const -> bool
 {
-    std::string notUsed;
+    auto notUsed = std::string{};
+    auto temp = std::make_shared<proto::Context>(output);
+    const auto rc = Root().Tree().Nyms().Nym(nym).Contexts().Load(
+        id, temp, notUsed, checking);
 
-    return Root().Tree().Nyms().Nym(nym).Contexts().Load(
-        id, context, notUsed, checking);
+    if (rc && temp) { output = *temp; }
+
+    return rc;
 }
 
 auto Storage::Load(
     const std::string& id,
-    std::shared_ptr<proto::Credential>& cred,
+    proto::Credential& output,
     const bool checking) const -> bool
 {
-    return Root().Tree().Credentials().Load(id, cred, checking);
+    auto temp = std::make_shared<proto::Credential>(output);
+    const auto rc = Root().Tree().Credentials().Load(id, temp, checking);
+
+    if (rc && temp) { output = *temp; }
+
+    return rc;
 }
 
 auto Storage::Load(
     const std::string& id,
-    std::shared_ptr<proto::Nym>& nym,
+    proto::Nym& output,
     const bool checking) const -> bool
 {
-    std::string notUsed;
+    auto notUsed = std::string{};
 
-    return Load(id, nym, notUsed, checking);
+    return Load(id, output, notUsed, checking);
 }
 
 auto Storage::Load(
@@ -803,32 +840,38 @@ auto Storage::Load(
     AllocateOutput destination,
     const bool checking) const -> bool
 {
-    auto pSerialized = std::shared_ptr<proto::Nym>{};
+    auto temp = std::make_shared<proto::Nym>();
+    auto alias = std::string{};
 
-    if (false == Load(id, pSerialized, checking)) {
+    if (false == Root().Tree().Nyms().Nym(id).Load(temp, alias, checking)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load nym ")(id).Flush();
 
         return false;
     }
 
-    OT_ASSERT(pSerialized);
+    OT_ASSERT(temp);
 
-    return write(*pSerialized, destination);
+    return write(*temp, destination);
 }
 
 auto Storage::Load(
     const std::string& id,
-    std::shared_ptr<proto::Nym>& nym,
+    proto::Nym& output,
     std::string& alias,
     const bool checking) const -> bool
 {
-    return Root().Tree().Nyms().Nym(id).Load(nym, alias, checking);
+    auto temp = std::make_shared<proto::Nym>(output);
+    const auto rc = Root().Tree().Nyms().Nym(id).Load(temp, alias, checking);
+
+    if (rc && temp) { output = *temp; }
+
+    return rc;
 }
 
 auto Storage::Load(
     const std::string& nymID,
     const std::string& id,
-    std::shared_ptr<proto::Issuer>& issuer,
+    proto::Issuer& output,
     const bool checking) const -> bool
 {
     if (false == Root().Tree().Nyms().Exists(nymID)) {
@@ -838,16 +881,20 @@ auto Storage::Load(
         return false;
     }
 
-    std::string notUsed{""};
+    auto notUsed = std::string{};
+    auto temp = std::make_shared<proto::Issuer>(output);
+    const auto rc = Root().Tree().Nyms().Nym(nymID).Issuers().Load(
+        id, temp, notUsed, checking);
 
-    return Root().Tree().Nyms().Nym(nymID).Issuers().Load(
-        id, issuer, notUsed, checking);
+    if (rc && temp) { output = *temp; }
+
+    return rc;
 }
 
 auto Storage::Load(
     const std::string& nymID,
     const std::string& workflowID,
-    std::shared_ptr<proto::PaymentWorkflow>& workflow,
+    proto::PaymentWorkflow& output,
     const bool checking) const -> bool
 {
     if (false == Root().Tree().Nyms().Exists(nymID)) {
@@ -857,8 +904,13 @@ auto Storage::Load(
         return false;
     }
 
-    return Root().Tree().Nyms().Nym(nymID).PaymentWorkflows().Load(
-        workflowID, workflow, checking);
+    auto temp = std::make_shared<proto::PaymentWorkflow>(output);
+    const auto rc = Root().Tree().Nyms().Nym(nymID).PaymentWorkflows().Load(
+        workflowID, temp, checking);
+
+    if (rc && temp) { output = *temp; }
+
+    return rc;
 }
 
 auto Storage::Load(
@@ -888,65 +940,89 @@ auto Storage::Load(
     const std::string& nymID,
     const std::string& id,
     const StorageBox box,
-    std::shared_ptr<proto::PeerReply>& reply,
+    proto::PeerReply& output,
     const bool checking) const -> bool
 {
-    switch (box) {
-        case StorageBox::SENTPEERREPLY: {
-            return Root().Tree().Nyms().Nym(nymID).SentReplyBox().Load(
-                id, reply, checking);
+    auto temp = std::make_shared<proto::PeerReply>(output);
+    const auto rc = [&] {
+        switch (box) {
+            case StorageBox::SENTPEERREPLY: {
+                return Root().Tree().Nyms().Nym(nymID).SentReplyBox().Load(
+                    id, temp, checking);
+            }
+            case StorageBox::INCOMINGPEERREPLY: {
+                return Root().Tree().Nyms().Nym(nymID).IncomingReplyBox().Load(
+                    id, temp, checking);
+            }
+            case StorageBox::FINISHEDPEERREPLY: {
+                return Root().Tree().Nyms().Nym(nymID).FinishedReplyBox().Load(
+                    id, temp, checking);
+            }
+            case StorageBox::PROCESSEDPEERREPLY: {
+                return Root().Tree().Nyms().Nym(nymID).ProcessedReplyBox().Load(
+                    id, temp, checking);
+            }
+            default: {
+                return false;
+            }
         }
-        case StorageBox::INCOMINGPEERREPLY: {
-            return Root().Tree().Nyms().Nym(nymID).IncomingReplyBox().Load(
-                id, reply, checking);
-        }
-        case StorageBox::FINISHEDPEERREPLY: {
-            return Root().Tree().Nyms().Nym(nymID).FinishedReplyBox().Load(
-                id, reply, checking);
-        }
-        case StorageBox::PROCESSEDPEERREPLY: {
-            return Root().Tree().Nyms().Nym(nymID).ProcessedReplyBox().Load(
-                id, reply, checking);
-        }
-        default: {
-            return false;
-        }
-    }
+    }();
+
+    if (rc && temp) { output = *temp; }
+
+    return rc;
 }
 
 auto Storage::Load(
     const std::string& nymID,
     const std::string& id,
     const StorageBox box,
-    std::shared_ptr<proto::PeerRequest>& request,
+    proto::PeerRequest& output,
     std::time_t& time,
     const bool checking) const -> bool
 {
-    bool output = false;
-    std::string alias;
+    auto temp = std::make_shared<proto::PeerRequest>(output);
+    auto alias = std::string{};
+    const auto rc = [&] {
+        switch (box) {
+            case StorageBox::SENTPEERREQUEST: {
+                return Root().Tree().Nyms().Nym(nymID).SentRequestBox().Load(
+                    id, temp, alias, checking);
+            }
+            case StorageBox::INCOMINGPEERREQUEST: {
+                return Root()
+                    .Tree()
+                    .Nyms()
+                    .Nym(nymID)
+                    .IncomingRequestBox()
+                    .Load(id, temp, alias, checking);
+            }
+            case StorageBox::FINISHEDPEERREQUEST: {
+                return Root()
+                    .Tree()
+                    .Nyms()
+                    .Nym(nymID)
+                    .FinishedRequestBox()
+                    .Load(id, temp, alias, checking);
+            }
+            case StorageBox::PROCESSEDPEERREQUEST: {
+                return Root()
+                    .Tree()
+                    .Nyms()
+                    .Nym(nymID)
+                    .ProcessedRequestBox()
+                    .Load(id, temp, alias, checking);
+            }
+            default: {
 
-    switch (box) {
-        case StorageBox::SENTPEERREQUEST: {
-            output = Root().Tree().Nyms().Nym(nymID).SentRequestBox().Load(
-                id, request, alias, checking);
-        } break;
-        case StorageBox::INCOMINGPEERREQUEST: {
-            output = Root().Tree().Nyms().Nym(nymID).IncomingRequestBox().Load(
-                id, request, alias, checking);
-        } break;
-        case StorageBox::FINISHEDPEERREQUEST: {
-            output = Root().Tree().Nyms().Nym(nymID).FinishedRequestBox().Load(
-                id, request, alias, checking);
-        } break;
-        case StorageBox::PROCESSEDPEERREQUEST: {
-            output = Root().Tree().Nyms().Nym(nymID).ProcessedRequestBox().Load(
-                id, request, alias, checking);
-        } break;
-        default: {
+                return false;
+            }
         }
-    }
+    }();
 
-    if (output) {
+    if (rc && temp) {
+        output = *temp;
+
         try {
             time = std::stoi(alias);
         } catch (const std::invalid_argument&) {
@@ -956,14 +1032,14 @@ auto Storage::Load(
         }
     }
 
-    return output;
+    return rc;
 }
 
 auto Storage::Load(
     const identifier::Nym& nym,
     const identifier::Server& notary,
     const identifier::UnitDefinition& unit,
-    std::shared_ptr<proto::Purse>& output,
+    proto::Purse& output,
     const bool checking) const -> bool
 {
     const auto& nymNode = Root().Tree().Nyms();
@@ -975,91 +1051,109 @@ auto Storage::Load(
         return false;
     }
 
-    return nymNode.Nym(nym.str()).Load(notary, unit, output, checking);
+    auto temp = std::make_shared<proto::Purse>(output);
+    const auto rc = nymNode.Nym(nym.str()).Load(notary, unit, temp, checking);
+
+    if (rc && temp) { output = *temp; }
+
+    return rc;
 }
 
 auto Storage::Load(
     const std::string& id,
-    std::shared_ptr<proto::Seed>& seed,
+    proto::Seed& output,
     const bool checking) const -> bool
 {
-    std::string notUsed;
+    auto notUsed = std::string{};
 
-    return Load(id, seed, notUsed, checking);
+    return Load(id, output, notUsed, checking);
 }
 
 auto Storage::Load(
     const std::string& id,
-    std::shared_ptr<proto::Seed>& seed,
+    proto::Seed& output,
     std::string& alias,
     const bool checking) const -> bool
 {
-    return Root().Tree().Seeds().Load(id, seed, alias, checking);
+    auto temp = std::make_shared<proto::Seed>(output);
+    const auto rc = Root().Tree().Seeds().Load(id, temp, alias, checking);
+
+    if (rc && temp) { output = *temp; }
+
+    return rc;
 }
 
 auto Storage::Load(
     const std::string& id,
-    std::shared_ptr<proto::ServerContract>& contract,
+    proto::ServerContract& output,
     const bool checking) const -> bool
 {
-    std::string notUsed;
+    auto notUsed = std::string{};
 
-    return Load(id, contract, notUsed, checking);
+    return Load(id, output, notUsed, checking);
 }
 
 auto Storage::Load(
     const std::string& id,
-    std::shared_ptr<proto::ServerContract>& contract,
+    proto::ServerContract& output,
     std::string& alias,
     const bool checking) const -> bool
 {
-    return Root().Tree().Servers().Load(id, contract, alias, checking);
+    auto temp = std::make_shared<proto::ServerContract>(output);
+    const auto rc = Root().Tree().Servers().Load(id, temp, alias, checking);
+
+    if (rc && temp) { output = *temp; }
+
+    return rc;
 }
 
 auto Storage::Load(
     const std::string& nymId,
     const std::string& threadId,
-    std::shared_ptr<proto::StorageThread>& thread) const -> bool
+    proto::StorageThread& output) const -> bool
 {
     const bool exists =
         Root().Tree().Nyms().Nym(nymId).Threads().Exists(threadId);
 
     if (!exists) { return false; }
 
-    thread.reset(new proto::StorageThread);
+    output = Root().Tree().Nyms().Nym(nymId).Threads().Thread(threadId).Items();
 
-    if (!thread) { return false; }
-
-    *thread =
-        Root().Tree().Nyms().Nym(nymId).Threads().Thread(threadId).Items();
-
-    return bool(thread);
+    return true;
 }
 
-auto Storage::Load(
-    std::shared_ptr<proto::Ciphertext>& output,
-    const bool checking) const -> bool
+auto Storage::Load(proto::Ciphertext& output, const bool checking) const -> bool
 {
-    return Root().Tree().Load(output, checking);
+    auto temp = std::make_shared<proto::Ciphertext>(output);
+    const auto rc = Root().Tree().Load(temp, checking);
+
+    if (rc && temp) { output = *temp; }
+
+    return rc;
 }
 
 auto Storage::Load(
     const std::string& id,
-    std::shared_ptr<proto::UnitDefinition>& contract,
+    proto::UnitDefinition& output,
     const bool checking) const -> bool
 {
-    std::string notUsed;
+    auto notUsed = std::string{};
 
-    return Load(id, contract, notUsed, checking);
+    return Load(id, output, notUsed, checking);
 }
 
 auto Storage::Load(
     const std::string& id,
-    std::shared_ptr<proto::UnitDefinition>& contract,
+    proto::UnitDefinition& output,
     std::string& alias,
     const bool checking) const -> bool
 {
-    return Root().Tree().Units().Load(id, contract, alias, checking);
+    auto temp = std::make_shared<proto::UnitDefinition>(output);
+    const auto rc = Root().Tree().Units().Load(id, temp, alias, checking);
+
+    if (rc && temp) { output = *temp; }
+
+    return rc;
 }
 
 auto Storage::LocalNyms() const -> const std::set<std::string>
@@ -1090,13 +1184,13 @@ void Storage::MapUnitDefinitions(UnitLambda& lambda) const
     bgMap.detach();
 }
 
-#if OT_CASH
 auto Storage::MarkTokenSpent(
     const identifier::Server& notary,
     const identifier::UnitDefinition& unit,
     const std::uint64_t series,
     const std::string& key) const -> bool
 {
+#if OT_CASH
     return mutable_Root()
         .get()
         .mutable_Tree()
@@ -1104,8 +1198,10 @@ auto Storage::MarkTokenSpent(
         .mutable_Notary(notary.str())
         .get()
         .MarkSpent(unit, series, key);
-}
+#else
+    return false;
 #endif
+}
 
 auto Storage::MoveThreadItem(
     const std::string& nymId,
@@ -2059,7 +2155,7 @@ auto Storage::Store(const proto::Contact& data) const -> bool
 
 auto Storage::Store(const proto::Context& data) const -> bool
 {
-    std::string notUsed;
+    auto notUsed = std::string{};
 
     return mutable_Root()
         .get()
@@ -2076,7 +2172,7 @@ auto Storage::Store(const proto::Context& data) const -> bool
 
 auto Storage::Store(const proto::Credential& data) const -> bool
 {
-    std::string notUsed;
+    auto notUsed = std::string{};
 
     return mutable_Root()
         .get()

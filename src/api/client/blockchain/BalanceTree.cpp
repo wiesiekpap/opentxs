@@ -32,6 +32,8 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/protobuf/Bip47Channel.pb.h"
+#include "opentxs/protobuf/HDAccount.pb.h"
 
 #define OT_METHOD                                                              \
     "opentxs::api::client::blockchain::implementation::BalanceTree::"
@@ -261,31 +263,27 @@ auto BalanceTree::GetDepositAddress(
 auto BalanceTree::init_hd(const Accounts& accounts) noexcept -> void
 {
     for (const auto& accountID : accounts) {
-        auto account = std::shared_ptr<proto::HDAccount>{};
+        auto account = proto::HDAccount{};
         const auto loaded =
             api_.Storage().Load(nym_id_->str(), accountID->str(), account);
 
         if (false == loaded) { continue; }
 
-        OT_ASSERT(account);
-
         auto notUsed = Identifier::Factory();
-        hd_.Construct(notUsed, *account);
+        hd_.Construct(notUsed, account);
     }
 }
 
 auto BalanceTree::init_payment_code(const Accounts& accounts) noexcept -> void
 {
     for (const auto& id : accounts) {
-        auto account = std::shared_ptr<proto::Bip47Channel>{};
+        auto account = proto::Bip47Channel{};
         const auto loaded = api_.Storage().Load(nym_id_, id, account);
 
         if (false == loaded) { continue; }
 
-        OT_ASSERT(account);
-
         auto notUsed = Identifier::Factory();
-        payment_code_.Construct(notUsed, *account);
+        payment_code_.Construct(notUsed, account);
     }
 }
 

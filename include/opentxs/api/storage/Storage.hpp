@@ -100,13 +100,11 @@ public:
         const Data& txid) const noexcept = 0;
     virtual std::vector<OTData> BlockchainTransactionList(
         const identifier::Nym& nym) const noexcept = 0;
-#if OT_CASH
     virtual bool CheckTokenSpent(
         const identifier::Server& notary,
         const identifier::UnitDefinition& unit,
         const std::uint64_t series,
         const std::string& key) const = 0;
-#endif
     virtual std::string ContactAlias(const std::string& id) const = 0;
     virtual ObjectList ContactList() const = 0;
     virtual ObjectList ContextList(const std::string& nymID) const = 0;
@@ -133,38 +131,38 @@ public:
     virtual bool Load(
         const std::string& nymID,
         const std::string& accountID,
-        std::shared_ptr<proto::HDAccount>& output,
+        proto::HDAccount& output,
         const bool checking = false) const = 0;
     virtual bool Load(
         const identifier::Nym& nymID,
         const Identifier& channelID,
-        std::shared_ptr<proto::Bip47Channel>& output,
+        proto::Bip47Channel& output,
         const bool checking = false) const = 0;
     virtual bool Load(
         const std::string& id,
-        std::shared_ptr<proto::Contact>& contact,
+        proto::Contact& contact,
         const bool checking = false) const = 0;
     virtual bool Load(
         const std::string& id,
-        std::shared_ptr<proto::Contact>& contact,
+        proto::Contact& contact,
         std::string& alias,
         const bool checking = false) const = 0;
     virtual bool Load(
         const std::string& nym,
         const std::string& id,
-        std::shared_ptr<proto::Context>& context,
+        proto::Context& context,
         const bool checking = false) const = 0;
     virtual bool Load(
         const std::string& id,
-        std::shared_ptr<proto::Credential>& cred,
+        proto::Credential& cred,
         const bool checking = false) const = 0;
     virtual bool Load(
         const std::string& id,
-        std::shared_ptr<proto::Nym>& nym,
+        proto::Nym& nym,
         const bool checking = false) const = 0;
     virtual bool Load(
         const std::string& id,
-        std::shared_ptr<proto::Nym>& nym,
+        proto::Nym& nym,
         std::string& alias,
         const bool checking = false) const = 0;
     virtual bool Load(
@@ -174,12 +172,12 @@ public:
     virtual bool Load(
         const std::string& nymID,
         const std::string& id,
-        std::shared_ptr<proto::Issuer>& issuer,
+        proto::Issuer& issuer,
         const bool checking = false) const = 0;
     virtual bool Load(
         const std::string& nymID,
         const std::string& workflowID,
-        std::shared_ptr<proto::PaymentWorkflow>& workflow,
+        proto::PaymentWorkflow& workflow,
         const bool checking = false) const = 0;
     virtual bool Load(
         const std::string& nymID,
@@ -192,66 +190,63 @@ public:
         const std::string& nymID,
         const std::string& id,
         const StorageBox box,
-        std::shared_ptr<proto::PeerReply>& request,
+        proto::PeerReply& request,
         const bool checking = false) const = 0;
     virtual bool Load(
         const std::string& nymID,
         const std::string& id,
         const StorageBox box,
-        std::shared_ptr<proto::PeerRequest>& request,
+        proto::PeerRequest& request,
         std::time_t& time,
         const bool checking = false) const = 0;
     virtual bool Load(
         const identifier::Nym& nym,
         const identifier::Server& notary,
         const identifier::UnitDefinition& unit,
-        std::shared_ptr<proto::Purse>& output,
+        proto::Purse& output,
         const bool checking) const = 0;
     virtual bool Load(
         const std::string& id,
-        std::shared_ptr<proto::Seed>& seed,
+        proto::Seed& seed,
         const bool checking = false) const = 0;
     virtual bool Load(
         const std::string& id,
-        std::shared_ptr<proto::Seed>& seed,
+        proto::Seed& seed,
         std::string& alias,
         const bool checking = false) const = 0;
     virtual bool Load(
         const std::string& id,
-        std::shared_ptr<proto::ServerContract>& contract,
+        proto::ServerContract& contract,
         const bool checking = false) const = 0;
     virtual bool Load(
         const std::string& id,
-        std::shared_ptr<proto::ServerContract>& contract,
+        proto::ServerContract& contract,
         std::string& alias,
         const bool checking = false) const = 0;
     virtual bool Load(
         const std::string& nymId,
         const std::string& threadId,
-        std::shared_ptr<proto::StorageThread>& thread) const = 0;
+        proto::StorageThread& thread) const = 0;
+    virtual bool Load(proto::Ciphertext& output, const bool checking = false)
+        const = 0;
     virtual bool Load(
-        std::shared_ptr<proto::Ciphertext>& output,
+        const std::string& id,
+        proto::UnitDefinition& contract,
         const bool checking = false) const = 0;
     virtual bool Load(
         const std::string& id,
-        std::shared_ptr<proto::UnitDefinition>& contract,
-        const bool checking = false) const = 0;
-    virtual bool Load(
-        const std::string& id,
-        std::shared_ptr<proto::UnitDefinition>& contract,
+        proto::UnitDefinition& contract,
         std::string& alias,
         const bool checking = false) const = 0;
     virtual const std::set<std::string> LocalNyms() const = 0;
     virtual void MapPublicNyms(NymLambda& lambda) const = 0;
     virtual void MapServers(ServerLambda& lambda) const = 0;
     virtual void MapUnitDefinitions(UnitLambda& lambda) const = 0;
-#if OT_CASH
     virtual bool MarkTokenSpent(
         const identifier::Server& notary,
         const identifier::UnitDefinition& unit,
         const std::uint64_t series,
         const std::string& key) const = 0;
-#endif
     virtual bool MoveThreadItem(
         const std::string& nymId,
         const std::string& fromThreadID,

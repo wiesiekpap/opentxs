@@ -3,9 +3,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: private
-// IWYU pragma: friend ".*src/api/storage/Storage.cpp"
-
 #pragma once
 
 #include <cstdint>
@@ -154,13 +151,11 @@ public:
         const noexcept -> std::vector<OTIdentifier> final;
     auto BlockchainTransactionList(const identifier::Nym& nym) const noexcept
         -> std::vector<OTData> final;
-#if OT_CASH
     auto CheckTokenSpent(
         const identifier::Server& notary,
         const identifier::UnitDefinition& unit,
         const std::uint64_t series,
         const std::string& key) const -> bool final;
-#endif
     auto ContactAlias(const std::string& id) const -> std::string final;
     auto ContactList() const -> ObjectList final;
     auto ContextList(const std::string& nymID) const -> ObjectList final;
@@ -187,38 +182,38 @@ public:
     auto Load(
         const std::string& nymID,
         const std::string& accountID,
-        std::shared_ptr<proto::HDAccount>& output,
+        proto::HDAccount& output,
         const bool checking = false) const -> bool final;
     auto Load(
         const identifier::Nym& nymID,
         const Identifier& channelID,
-        std::shared_ptr<proto::Bip47Channel>& output,
+        proto::Bip47Channel& output,
         const bool checking = false) const -> bool final;
     auto Load(
         const std::string& id,
-        std::shared_ptr<proto::Contact>& contact,
+        proto::Contact& contact,
         const bool checking = false) const -> bool final;
     auto Load(
         const std::string& id,
-        std::shared_ptr<proto::Contact>& contact,
+        proto::Contact& contact,
         std::string& alias,
         const bool checking = false) const -> bool final;
     auto Load(
         const std::string& nym,
         const std::string& id,
-        std::shared_ptr<proto::Context>& context,
+        proto::Context& context,
         const bool checking = false) const -> bool final;
     auto Load(
         const std::string& id,
-        std::shared_ptr<proto::Credential>& cred,
+        proto::Credential& cred,
         const bool checking = false) const -> bool final;
     auto Load(
         const std::string& id,
-        std::shared_ptr<proto::Nym>& nym,
+        proto::Nym& nym,
         const bool checking = false) const -> bool final;
     auto Load(
         const std::string& id,
-        std::shared_ptr<proto::Nym>& nym,
+        proto::Nym& nym,
         std::string& alias,
         const bool checking = false) const -> bool final;
     auto Load(
@@ -228,12 +223,12 @@ public:
     auto Load(
         const std::string& nymID,
         const std::string& id,
-        std::shared_ptr<proto::Issuer>& issuer,
+        proto::Issuer& issuer,
         const bool checking = false) const -> bool final;
     auto Load(
         const std::string& nymID,
         const std::string& workflowID,
-        std::shared_ptr<proto::PaymentWorkflow>& workflow,
+        proto::PaymentWorkflow& workflow,
         const bool checking = false) const -> bool final;
     auto Load(
         const std::string& nymID,
@@ -246,66 +241,63 @@ public:
         const std::string& nymID,
         const std::string& id,
         const StorageBox box,
-        std::shared_ptr<proto::PeerReply>& request,
+        proto::PeerReply& request,
         const bool checking = false) const -> bool final;
     auto Load(
         const std::string& nymID,
         const std::string& id,
         const StorageBox box,
-        std::shared_ptr<proto::PeerRequest>& request,
+        proto::PeerRequest& request,
         std::time_t& time,
         const bool checking = false) const -> bool final;
     auto Load(
         const identifier::Nym& nym,
         const identifier::Server& notary,
         const identifier::UnitDefinition& unit,
-        std::shared_ptr<proto::Purse>& output,
+        proto::Purse& output,
         const bool checking) const -> bool final;
     auto Load(
         const std::string& id,
-        std::shared_ptr<proto::Seed>& seed,
+        proto::Seed& seed,
         const bool checking = false) const -> bool final;
     auto Load(
         const std::string& id,
-        std::shared_ptr<proto::Seed>& seed,
+        proto::Seed& seed,
         std::string& alias,
         const bool checking = false) const -> bool final;
     auto Load(
         const std::string& id,
-        std::shared_ptr<proto::ServerContract>& contract,
+        proto::ServerContract& contract,
         const bool checking = false) const -> bool final;
     auto Load(
         const std::string& id,
-        std::shared_ptr<proto::ServerContract>& contract,
+        proto::ServerContract& contract,
         std::string& alias,
         const bool checking = false) const -> bool final;
     auto Load(
         const std::string& nymId,
         const std::string& threadId,
-        std::shared_ptr<proto::StorageThread>& thread) const -> bool final;
+        proto::StorageThread& thread) const -> bool final;
+    auto Load(proto::Ciphertext& output, const bool checking = false) const
+        -> bool final;
     auto Load(
-        std::shared_ptr<proto::Ciphertext>& output,
+        const std::string& id,
+        proto::UnitDefinition& contract,
         const bool checking = false) const -> bool final;
     auto Load(
         const std::string& id,
-        std::shared_ptr<proto::UnitDefinition>& contract,
-        const bool checking = false) const -> bool final;
-    auto Load(
-        const std::string& id,
-        std::shared_ptr<proto::UnitDefinition>& contract,
+        proto::UnitDefinition& contract,
         std::string& alias,
         const bool checking = false) const -> bool final;
     auto LocalNyms() const -> const std::set<std::string> final;
     void MapPublicNyms(NymLambda& lambda) const final;
     void MapServers(ServerLambda& lambda) const final;
     void MapUnitDefinitions(UnitLambda& lambda) const final;
-#if OT_CASH
     auto MarkTokenSpent(
         const identifier::Server& notary,
         const identifier::UnitDefinition& unit,
         const std::uint64_t series,
         const std::string& key) const -> bool final;
-#endif
     auto MoveThreadItem(
         const std::string& nymId,
         const std::string& fromThreadID,

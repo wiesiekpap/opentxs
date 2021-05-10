@@ -62,6 +62,7 @@
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/Context.pb.h"
+#include "opentxs/protobuf/Credential.pb.h"
 #include "opentxs/protobuf/Issuer.pb.h"  // IWYU pragma: keep
 #include "opentxs/protobuf/Nym.pb.h"
 #include "opentxs/protobuf/PeerReply.pb.h"
@@ -763,20 +764,20 @@ auto Wallet::context(
     if (inMap) { return it->second; }
 
     // Load from storage, if it exists.
-    std::shared_ptr<proto::Context> serialized;
+    auto serialized = proto::Context{};
     const bool loaded = api_.Storage().Load(
         localNymID.str(), remoteNymID.str(), serialized, true);
 
     if (!loaded) { return nullptr; }
 
-    if (local != serialized->localnym()) {
+    if (local != serialized.localnym()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect localnym in protobuf.")
             .Flush();
 
         return nullptr;
     }
 
-    if (remote != serialized->remotenym()) {
+    if (remote != serialized.remotenym()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect localnym in protobuf.")
             .Flush();
 
@@ -803,12 +804,12 @@ auto Wallet::context(
         return nullptr;
     }
 
-    switch (otx::internal::translate(serialized->type())) {
+    switch (otx::internal::translate(serialized.type())) {
         case otx::ConsensusType::Server: {
-            instantiate_server_context(*serialized, localNym, remoteNym, entry);
+            instantiate_server_context(serialized, localNym, remoteNym, entry);
         } break;
         case otx::ConsensusType::Client: {
-            instantiate_client_context(*serialized, localNym, remoteNym, entry);
+            instantiate_client_context(serialized, localNym, remoteNym, entry);
         } break;
         default: {
             return nullptr;
@@ -991,14 +992,12 @@ auto Wallet::issuer(
 
     if (pIssuer) { return output; }
 
-    std::shared_ptr<proto::Issuer> serialized{nullptr};
+    auto serialized = proto::Issuer{};
     const bool loaded =
         api_.Storage().Load(nymID.str(), issuerID.str(), serialized, true);
 
     if (loaded) {
-        OT_ASSERT(serialized)
-
-        pIssuer.reset(factory::Issuer(*this, nymID, *serialized));
+        pIssuer.reset(factory::Issuer(*this, nymID, serialized));
 
         OT_ASSERT(pIssuer)
 
@@ -1052,14 +1051,11 @@ auto Wallet::Nym(
     bool valid = false;
 
     if (!inMap) {
-        auto pSerialized = std::shared_ptr<proto::Nym>{};
+        auto serialized = proto::Nym{};
         auto alias = std::string{};
-        bool loaded = api_.Storage().Load(nym, pSerialized, alias, true);
+        bool loaded = api_.Storage().Load(nym, serialized, alias, true);
 
         if (loaded) {
-            OT_ASSERT(pSerialized)
-
-            const auto& serialized = *pSerialized;
             auto& pNym = nym_map_[nym].second;
             pNym.reset(opentxs::Factory::Nym(api_, serialized, alias));
 
@@ -1386,11 +1382,13 @@ auto Wallet::PeerReply(
     const Identifier& reply,
     const StorageBox& box) const -> std::shared_ptr<proto::PeerReply>
 {
-    const std::string nymID = nym.str();
-    Lock lock(peer_lock(nymID));
-    std::shared_ptr<proto::PeerReply> output;
+    const auto nymID = nym.str();
+    auto output = std::make_shared<proto::PeerReply>();
 
-    api_.Storage().Load(nymID, reply.str(), box, output, true);
+    OT_ASSERT(output);
+
+    Lock lock(peer_lock(nymID));
+    api_.Storage().Load(nymID, reply.str(), box, *output, true);
 
     return output;
 }
@@ -1399,9 +1397,9 @@ auto Wallet::PeerReplyComplete(
     const identifier::Nym& nym,
     const Identifier& replyID) const -> bool
 {
-    const std::string nymID = nym.str();
+    const auto nymID = nym.str();
+    auto reply = proto::PeerReply{};
     Lock lock(peer_lock(nymID));
-    std::shared_ptr<proto::PeerReply> reply;
     const bool haveReply = api_.Storage().Load(
         nymID, replyID.str(), StorageBox::SENTPEERREPLY, reply, false);
 
@@ -1412,10 +1410,10 @@ auto Wallet::PeerReplyComplete(
     }
 
     // This reply may have been loaded by request id.
-    const auto& realReplyID = reply->id();
+    const auto& realReplyID = reply.id();
 
     const bool savedReply =
-        api_.Storage().Store(*reply, nymID, StorageBox::FINISHEDPEERREPLY);
+        api_.Storage().Store(reply, nymID, StorageBox::FINISHEDPEERREPLY);
 
     if (!savedReply) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to save finished reply.")
@@ -1441,7 +1439,7 @@ auto Wallet::PeerReplyCreate(
     const proto::PeerRequest& request,
     const proto::PeerReply& reply) const -> bool
 {
-    const std::string nymID = nym.str();
+    const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
 
     if (reply.cookie() != request.id()) {
@@ -1498,11 +1496,11 @@ auto Wallet::PeerReplyCreateRollback(
     const Identifier& request,
     const Identifier& reply) const -> bool
 {
-    const std::string nymID = nym.str();
+    const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
     const std::string requestID = request.str();
     const std::string replyID = reply.str();
-    std::shared_ptr<proto::PeerRequest> requestItem;
+    auto requestItem = proto::PeerRequest{};
     bool output = true;
     time_t notUsed = 0;
     const bool loadedRequest = api_.Storage().Load(
@@ -1514,7 +1512,7 @@ auto Wallet::PeerReplyCreateRollback(
 
     if (loadedRequest) {
         const bool requestRolledBack = api_.Storage().Store(
-            *requestItem, nymID, StorageBox::INCOMINGPEERREQUEST);
+            requestItem, nymID, StorageBox::INCOMINGPEERREQUEST);
 
         if (requestRolledBack) {
             const bool purgedRequest = api_.Storage().RemoveNymBoxItem(
@@ -1553,7 +1551,7 @@ auto Wallet::PeerReplyCreateRollback(
 
 auto Wallet::PeerReplySent(const identifier::Nym& nym) const -> ObjectList
 {
-    const std::string nymID = nym.str();
+    const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
 
     return api_.Storage().NymBoxList(nymID, StorageBox::SENTPEERREPLY);
@@ -1561,7 +1559,7 @@ auto Wallet::PeerReplySent(const identifier::Nym& nym) const -> ObjectList
 
 auto Wallet::PeerReplyIncoming(const identifier::Nym& nym) const -> ObjectList
 {
-    const std::string nymID = nym.str();
+    const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
 
     return api_.Storage().NymBoxList(nymID, StorageBox::INCOMINGPEERREPLY);
@@ -1569,7 +1567,7 @@ auto Wallet::PeerReplyIncoming(const identifier::Nym& nym) const -> ObjectList
 
 auto Wallet::PeerReplyFinished(const identifier::Nym& nym) const -> ObjectList
 {
-    const std::string nymID = nym.str();
+    const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
 
     return api_.Storage().NymBoxList(nymID, StorageBox::FINISHEDPEERREPLY);
@@ -1577,7 +1575,7 @@ auto Wallet::PeerReplyFinished(const identifier::Nym& nym) const -> ObjectList
 
 auto Wallet::PeerReplyProcessed(const identifier::Nym& nym) const -> ObjectList
 {
-    const std::string nymID = nym.str();
+    const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
 
     return api_.Storage().NymBoxList(nymID, StorageBox::PROCESSEDPEERREPLY);
@@ -1606,11 +1604,11 @@ auto Wallet::PeerReplyReceive(
         return false;
     }
 
-    const std::string nymID = nym.str();
+    const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
     auto requestID = reply.Request()->ID();
 
-    std::shared_ptr<proto::PeerRequest> request;
+    auto request = proto::PeerRequest{};
     std::time_t notUsed;
     const bool haveRequest = api_.Storage().Load(
         nymID,
@@ -1620,9 +1618,7 @@ auto Wallet::PeerReplyReceive(
         notUsed,
         false);
 
-    if (haveRequest) {
-        OT_ASSERT(request);
-    } else {
+    if (false == haveRequest) {
         LogOutput(OT_METHOD)(__FUNCTION__)(
             ": The request for this reply does not exist in the sent box.")
             .Flush();
@@ -1648,7 +1644,7 @@ auto Wallet::PeerReplyReceive(
     }
 
     const bool finishedRequest =
-        api_.Storage().Store(*request, nymID, StorageBox::FINISHEDPEERREQUEST);
+        api_.Storage().Store(request, nymID, StorageBox::FINISHEDPEERREQUEST);
 
     if (!finishedRequest) {
         LogOutput(OT_METHOD)(__FUNCTION__)(
@@ -1676,11 +1672,13 @@ auto Wallet::PeerRequest(
     const StorageBox& box,
     std::time_t& time) const -> std::shared_ptr<proto::PeerRequest>
 {
-    const std::string nymID = nym.str();
-    Lock lock(peer_lock(nymID));
-    std::shared_ptr<proto::PeerRequest> output;
+    const auto nymID = nym.str();
+    auto output = std::make_shared<proto::PeerRequest>();
 
-    api_.Storage().Load(nymID, request.str(), box, output, time, true);
+    OT_ASSERT(output);
+
+    Lock lock(peer_lock(nymID));
+    api_.Storage().Load(nymID, request.str(), box, *output, time, true);
 
     return output;
 }
@@ -1689,9 +1687,9 @@ auto Wallet::PeerRequestComplete(
     const identifier::Nym& nym,
     const Identifier& replyID) const -> bool
 {
-    const std::string nymID = nym.str();
+    const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
-    std::shared_ptr<proto::PeerReply> reply;
+    auto reply = proto::PeerReply{};
     const bool haveReply = api_.Storage().Load(
         nymID, replyID.str(), StorageBox::INCOMINGPEERREPLY, reply, false);
 
@@ -1704,10 +1702,10 @@ auto Wallet::PeerRequestComplete(
     }
 
     // This reply may have been loaded by request id.
-    const auto& realReplyID = reply->id();
+    const auto& realReplyID = reply.id();
 
     const bool storedReply =
-        api_.Storage().Store(*reply, nymID, StorageBox::PROCESSEDPEERREPLY);
+        api_.Storage().Store(reply, nymID, StorageBox::PROCESSEDPEERREPLY);
 
     if (!storedReply) {
         LogOutput(OT_METHOD)(__FUNCTION__)(
@@ -1733,7 +1731,7 @@ auto Wallet::PeerRequestCreate(
     const identifier::Nym& nym,
     const proto::PeerRequest& request) const -> bool
 {
-    const std::string nymID = nym.str();
+    const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
 
     return api_.Storage().Store(
@@ -1744,7 +1742,7 @@ auto Wallet::PeerRequestCreateRollback(
     const identifier::Nym& nym,
     const Identifier& request) const -> bool
 {
-    const std::string nymID = nym.str();
+    const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
 
     return api_.Storage().RemoveNymBoxItem(
@@ -1772,7 +1770,7 @@ auto Wallet::PeerRequestDelete(
 
 auto Wallet::PeerRequestSent(const identifier::Nym& nym) const -> ObjectList
 {
-    const std::string nymID = nym.str();
+    const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
 
     return api_.Storage().NymBoxList(nym.str(), StorageBox::SENTPEERREQUEST);
@@ -1780,7 +1778,7 @@ auto Wallet::PeerRequestSent(const identifier::Nym& nym) const -> ObjectList
 
 auto Wallet::PeerRequestIncoming(const identifier::Nym& nym) const -> ObjectList
 {
-    const std::string nymID = nym.str();
+    const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
 
     return api_.Storage().NymBoxList(
@@ -1789,7 +1787,7 @@ auto Wallet::PeerRequestIncoming(const identifier::Nym& nym) const -> ObjectList
 
 auto Wallet::PeerRequestFinished(const identifier::Nym& nym) const -> ObjectList
 {
-    const std::string nymID = nym.str();
+    const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
 
     return api_.Storage().NymBoxList(
@@ -1799,7 +1797,7 @@ auto Wallet::PeerRequestFinished(const identifier::Nym& nym) const -> ObjectList
 auto Wallet::PeerRequestProcessed(const identifier::Nym& nym) const
     -> ObjectList
 {
-    const std::string nymID = nym.str();
+    const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
 
     return api_.Storage().NymBoxList(
@@ -1824,7 +1822,7 @@ auto Wallet::PeerRequestReceive(
     }
 
     const proto::PeerRequest serialized{request.Request()->Contract()};
-    const std::string nymID = nym.str();
+    const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
     const auto saved = api_.Storage().Store(
         serialized, nymID, StorageBox::INCOMINGPEERREQUEST);
@@ -1866,7 +1864,7 @@ auto Wallet::purse(
     const identifier::UnitDefinition& unit,
     const bool checking) const -> std::unique_ptr<blind::Purse>
 {
-    auto serialized = std::make_shared<proto::Purse>();
+    auto serialized = proto::Purse{};
     const auto loaded =
         api_.Storage().Load(nym, server, unit, serialized, checking);
 
@@ -1879,16 +1877,14 @@ auto Wallet::purse(
         return {};
     }
 
-    OT_ASSERT(serialized);
-
-    if (false == proto::Validate(*serialized, VERBOSE)) {
+    if (false == proto::Validate(serialized, VERBOSE)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid purse").Flush();
 
         return {};
     }
 
     std::unique_ptr<blind::Purse> output{
-        opentxs::Factory::Purse(api_, *serialized)};
+        opentxs::Factory::Purse(api_, serialized)};
 
     if (false == bool(output)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to instantiate purse")
@@ -2181,22 +2177,21 @@ auto Wallet::Server(
     bool valid = false;
 
     if (!inMap) {
-        std::shared_ptr<proto::ServerContract> serialized;
-
-        std::string alias;
+        auto serialized = proto::ServerContract{};
+        auto alias = std::string{};
         bool loaded = api_.Storage().Load(server, serialized, alias, true);
 
         if (loaded) {
-            auto nym = Nym(identifier::Nym::Factory(serialized->nymid()));
+            auto nym = Nym(identifier::Nym::Factory(serialized.nymid()));
 
-            if (!nym && serialized->has_publicnym()) {
-                nym = Nym(serialized->publicnym());
+            if (!nym && serialized.has_publicnym()) {
+                nym = Nym(serialized.publicnym());
             }
 
             if (nym) {
                 auto& pServer = server_map_[server];
                 pServer =
-                    opentxs::Factory::ServerContract(api_, nym, *serialized);
+                    opentxs::Factory::ServerContract(api_, nym, serialized);
 
                 if (pServer) {
                     valid = true;  // Factory() performs validation
@@ -2482,22 +2477,20 @@ auto Wallet::UnitDefinition(
     bool valid = false;
 
     if (!inMap) {
-        std::shared_ptr<proto::UnitDefinition> serialized;
-
+        auto serialized = proto::UnitDefinition{};
         std::string alias;
         bool loaded = api_.Storage().Load(unit, serialized, alias, true);
 
         if (loaded) {
-            auto nym = Nym(identifier::Nym::Factory(serialized->nymid()));
+            auto nym = Nym(identifier::Nym::Factory(serialized.nymid()));
 
-            if (!nym && serialized->has_publicnym()) {
-                nym = Nym(serialized->publicnym());
+            if (!nym && serialized.has_publicnym()) {
+                nym = Nym(serialized.publicnym());
             }
 
             if (nym) {
                 auto& pUnit = unit_map_[unit];
-                pUnit =
-                    opentxs::Factory::UnitDefinition(api_, nym, *serialized);
+                pUnit = opentxs::Factory::UnitDefinition(api_, nym, serialized);
 
                 if (pUnit) {
                     valid = true;  // Factory() performs validation
@@ -2722,7 +2715,13 @@ auto Wallet::LoadCredential(
     const std::string& id,
     std::shared_ptr<proto::Credential>& credential) const -> bool
 {
-    return api_.Storage().Load(id, credential);
+    if (false == bool(credential)) {
+        credential = std::make_shared<proto::Credential>();
+    }
+
+    OT_ASSERT(credential);
+
+    return api_.Storage().Load(id, *credential);
 }
 
 auto Wallet::SaveCredential(const proto::Credential& credential) const -> bool

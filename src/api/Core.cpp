@@ -252,7 +252,7 @@ auto Core::GetSecret(
 auto Core::make_master_key(
     const api::internal::Context& parent,
     const api::Factory& factory,
-    proto::Ciphertext& encrypted_secret,
+    proto::Ciphertext& encrypted,
     std::optional<OTSecret>& master_secret,
     const api::crypto::Symmetric& symmetric,
     const api::storage::Storage& storage) -> OTSymmetricKey
@@ -262,17 +262,12 @@ auto Core::make_master_key(
 
     OT_ASSERT(nullptr != external_password_callback_);
 
-    auto& encrypted = encrypted_secret;
-    auto existing = std::shared_ptr<proto::Ciphertext>{};
-    const auto have = storage.Load(existing, true);
+    const auto have = storage.Load(encrypted, true);
 
     if (have) {
-        OT_ASSERT(existing);
-
-        encrypted = *existing;
 
         return symmetric.Key(
-            existing->key(),
+            encrypted.key(),
             opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305);
     }
 

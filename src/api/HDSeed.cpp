@@ -46,6 +46,7 @@
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/HDPath.pb.h"
+#include "opentxs/protobuf/Seed.pb.h"
 #include "util/HDIndex.hpp"  // IWYU pragma: keep
 
 #define OT_METHOD "opentxs::api::implementation::HDSeed::"
@@ -374,16 +375,16 @@ auto HDSeed::get_seed(
     const PasswordPrompt& reason) const noexcept(false)
     -> opentxs::crypto::Seed&
 {
-    auto proto = std::shared_ptr<proto::Seed>{};
+    auto proto = proto::Seed{};
 
     if (auto it{seeds_.find(seedID)}; it != seeds_.end()) { return it->second; }
 
-    if (false == storage_.Load(seedID, proto) || (false == bool(proto))) {
+    if (false == storage_.Load(seedID, proto)) {
         throw std::runtime_error{std::string{"Failed to load seed "} + seedID};
     }
 
     auto seed = opentxs::crypto::Seed{
-        bip39_, symmetric_, factory_, storage_, *proto, reason};
+        bip39_, symmetric_, factory_, storage_, proto, reason};
     auto id = seed.ID().str();
 
     OT_ASSERT(id == seedID);
