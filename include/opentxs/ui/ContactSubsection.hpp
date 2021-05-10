@@ -6,13 +6,10 @@
 #ifndef OPENTXS_UI_CONTACTSUBSECTION_HPP
 #define OPENTXS_UI_CONTACTSUBSECTION_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>
 
-#include "opentxs/Proto.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/ui/List.hpp"
 #include "opentxs/ui/ListRow.hpp"
@@ -46,18 +43,18 @@ namespace opentxs
 {
 namespace ui
 {
-class ContactSubsection : virtual public List, virtual public ListRow
+class OPENTXS_EXPORT ContactSubsection : virtual public List,
+                                         virtual public ListRow
 {
 public:
-    OPENTXS_EXPORT virtual std::string Name(
-        const std::string& lang) const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::ContactItem>
-    First() const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::ContactItem> Next()
+    virtual std::string Name(const std::string& lang) const noexcept = 0;
+    virtual opentxs::SharedPimpl<opentxs::ui::ContactItem> First()
         const noexcept = 0;
-    OPENTXS_EXPORT virtual contact::ContactItemType Type() const noexcept = 0;
+    virtual opentxs::SharedPimpl<opentxs::ui::ContactItem> Next()
+        const noexcept = 0;
+    virtual contact::ContactItemType Type() const noexcept = 0;
 
-    OPENTXS_EXPORT ~ContactSubsection() override = default;
+    ~ContactSubsection() override = default;
 
 protected:
     ContactSubsection() noexcept = default;

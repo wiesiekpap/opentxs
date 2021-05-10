@@ -6,13 +6,10 @@
 #ifndef OPENTXS_UI_PROFILESUBSECTION_HPP
 #define OPENTXS_UI_PROFILESUBSECTION_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>
 
-#include "opentxs/Proto.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/ui/List.hpp"
 #include "opentxs/ui/ListRow.hpp"
@@ -46,33 +43,29 @@ namespace opentxs
 {
 namespace ui
 {
-class ProfileSubsection : virtual public List, virtual public ListRow
+class OPENTXS_EXPORT ProfileSubsection : virtual public List,
+                                         virtual public ListRow
 {
 public:
-    OPENTXS_EXPORT virtual bool AddItem(
+    virtual bool AddItem(
         const std::string& value,
         const bool primary,
         const bool active) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Delete(
-        const std::string& claimID) const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::ProfileItem>
-    First() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string Name(
-        const std::string& lang) const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::ProfileItem> Next()
+    virtual bool Delete(const std::string& claimID) const noexcept = 0;
+    virtual opentxs::SharedPimpl<opentxs::ui::ProfileItem> First()
         const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SetActive(
-        const std::string& claimID,
-        const bool active) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SetPrimary(
-        const std::string& claimID,
-        const bool primary) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SetValue(
-        const std::string& claimID,
-        const std::string& value) const noexcept = 0;
-    OPENTXS_EXPORT virtual contact::ContactItemType Type() const noexcept = 0;
+    virtual std::string Name(const std::string& lang) const noexcept = 0;
+    virtual opentxs::SharedPimpl<opentxs::ui::ProfileItem> Next()
+        const noexcept = 0;
+    virtual bool SetActive(const std::string& claimID, const bool active)
+        const noexcept = 0;
+    virtual bool SetPrimary(const std::string& claimID, const bool primary)
+        const noexcept = 0;
+    virtual bool SetValue(const std::string& claimID, const std::string& value)
+        const noexcept = 0;
+    virtual contact::ContactItemType Type() const noexcept = 0;
 
-    OPENTXS_EXPORT ~ProfileSubsection() override = default;
+    ~ProfileSubsection() override = default;
 
 protected:
     ProfileSubsection() noexcept = default;

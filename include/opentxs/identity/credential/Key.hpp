@@ -6,13 +6,10 @@
 #ifndef OPENTXS_IDENTITY_CREDENTIAL_KEY_HPP
 #define OPENTXS_IDENTITY_CREDENTIAL_KEY_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <memory>
 
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/crypto/HashType.hpp"
@@ -22,23 +19,31 @@
 
 namespace opentxs
 {
+namespace proto
+{
+class Signature;
+}  // namespace proto
+}  // namespace opentxs
+
+namespace opentxs
+{
 namespace identity
 {
 namespace credential
 {
-class Key : virtual public Base
+class OPENTXS_EXPORT Key : virtual public Base
 {
 public:
-    OPENTXS_EXPORT virtual const crypto::key::Keypair& GetKeypair(
+    virtual const crypto::key::Keypair& GetKeypair(
         const crypto::key::asymmetric::Algorithm type,
         const opentxs::crypto::key::asymmetric::Role role) const = 0;
-    OPENTXS_EXPORT virtual const crypto::key::Keypair& GetKeypair(
+    virtual const crypto::key::Keypair& GetKeypair(
         const opentxs::crypto::key::asymmetric::Role role) const = 0;
-    OPENTXS_EXPORT virtual std::int32_t GetPublicKeysBySignature(
+    virtual std::int32_t GetPublicKeysBySignature(
         crypto::key::Keypair::Keys& listOutput,
         const opentxs::Signature& theSignature,
         char cKeyType = '0') const = 0;
-    OPENTXS_EXPORT virtual bool Sign(
+    OPENTXS_NO_EXPORT virtual bool Sign(
         const GetPreimage input,
         const crypto::SignatureRole role,
         proto::Signature& signature,
@@ -47,7 +52,7 @@ public:
             opentxs::crypto::key::asymmetric::Role::Sign,
         const crypto::HashType hash = crypto::HashType::Error) const = 0;
 
-    OPENTXS_EXPORT ~Key() override = default;
+    ~Key() override = default;
 
 protected:
     Key() noexcept {}  // TODO Signable

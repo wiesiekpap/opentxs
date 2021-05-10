@@ -7,6 +7,7 @@
 #include "network/zeromq/socket/Receiver.hpp"  // IWYU pragma: associated
 
 #include <zmq.h>
+#include <iostream>
 #include <memory>
 #include <mutex>
 #include <thread>

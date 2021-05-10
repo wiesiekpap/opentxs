@@ -44,7 +44,6 @@
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/Envelope.pb.h"
 #include "opentxs/protobuf/Purse.pb.h"
-#include "opentxs/protobuf/Token.pb.h"
 
 #define OT_PURSE_VERSION 1
 
@@ -701,65 +700,76 @@ auto Purse::SecondaryKey(
     return secondaryKey;
 }
 
-auto Purse::Serialize() const -> proto::Purse
+auto Purse::Serialize(proto::Purse& output) const noexcept -> bool
 {
-    proto::Purse output{};
-    output.set_version(version_);
-    output.set_type(internal::translate(type_));
-    output.set_state(internal::translate(state_));
-    output.set_notary(notary_->str());
-    output.set_mint(unit_->str());
-    output.set_totalvalue(total_value_);
-    output.set_latestvalidfrom(Clock::to_time_t(latest_valid_from_));
-    output.set_earliestvalidto(Clock::to_time_t(earliest_valid_to_));
+    try {
+        output.set_version(version_);
+        output.set_type(internal::translate(type_));
+        output.set_state(internal::translate(state_));
+        output.set_notary(notary_->str());
+        output.set_mint(unit_->str());
+        output.set_totalvalue(total_value_);
+        output.set_latestvalidfrom(Clock::to_time_t(latest_valid_from_));
+        output.set_earliestvalidto(Clock::to_time_t(earliest_valid_to_));
 
-    for (const auto& token : tokens_) {
-        *output.add_token() = token->Serialize();
-    }
-
-    if (false == bool(primary_)) {
-        throw std::runtime_error("missing primary key");
-    }
-
-    if (false == primary_->get().Serialize(*output.mutable_primarykey())) {
-        throw std::runtime_error("failed to serialize primary key");
-    }
-
-    for (const auto& password : primary_passwords_) {
-        *output.add_primarypassword() = password;
-    }
-
-    switch (state_) {
-        case blind::PurseType::Request:
-        case blind::PurseType::Issue: {
-            if (false == bool(secondary_)) {
-                throw std::runtime_error("missing secondary key");
-            }
-
-            if (!secondary_->get().Serialize(*output.mutable_secondarykey())) {
-                throw std::runtime_error("failed to serialize secondary key");
-            }
-
-            if (false == bool(secondary_password_)) {
-                throw std::runtime_error("missing secondary password");
-            }
-
-            *output.mutable_secondarypassword() =
-                secondary_password_->get().Serialize();
-        } break;
-        case blind::PurseType::Normal: {
-        } break;
-        default: {
-            throw std::runtime_error("invalid purse state");
+        for (const auto& token : tokens_) {
+            token->Serialize(*output.add_token());
         }
+
+        if (false == bool(primary_)) {
+            throw std::runtime_error("missing primary key");
+        }
+
+        if (false == primary_->get().Serialize(*output.mutable_primarykey())) {
+            throw std::runtime_error("failed to serialize primary key");
+        }
+
+        for (const auto& password : primary_passwords_) {
+            *output.add_primarypassword() = password;
+        }
+
+        switch (state_) {
+            case blind::PurseType::Request:
+            case blind::PurseType::Issue: {
+                if (false == bool(secondary_)) {
+                    throw std::runtime_error("missing secondary key");
+                }
+
+                if (!secondary_->get().Serialize(
+                        *output.mutable_secondarykey())) {
+                    throw std::runtime_error(
+                        "failed to serialize secondary key");
+                }
+
+                if (false == bool(secondary_password_)) {
+                    throw std::runtime_error("missing secondary password");
+                }
+
+                *output.mutable_secondarypassword() =
+                    secondary_password_->get().Serialize();
+            } break;
+            case blind::PurseType::Normal: {
+            } break;
+            default: {
+                throw std::runtime_error("invalid purse state");
+            }
+        }
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+        return false;
     }
 
-    return output;
+    return true;
 }
 
-auto Purse::Serialize(AllocateOutput destination) const noexcept -> void
+auto Purse::Serialize(AllocateOutput destination) const noexcept -> bool
 {
-    write(Serialize(), destination);
+    auto proto = proto::Purse{};
+
+    if (Serialize(proto)) { return write(proto, destination); }
+
+    return false;
 }
 
 auto Purse::Unlock(

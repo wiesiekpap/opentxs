@@ -6,13 +6,10 @@
 #ifndef OPENTXS_UI_PROFILESECTION_HPP
 #define OPENTXS_UI_PROFILESECTION_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>
 
-#include "opentxs/Proto.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/ui/List.hpp"
@@ -103,48 +100,45 @@ namespace opentxs
 {
 namespace ui
 {
-class ProfileSection : virtual public List, virtual public ListRow
+class OPENTXS_EXPORT ProfileSection : virtual public List,
+                                      virtual public ListRow
 {
 public:
     using ItemType = std::pair<contact::ContactItemType, std::string>;
     using ItemTypeList = std::vector<ItemType>;
 
-    OPENTXS_EXPORT static ItemTypeList AllowedItems(
+    static ItemTypeList AllowedItems(
         const contact::ContactSectionName section,
         const std::string& lang) noexcept;
 
-    OPENTXS_EXPORT virtual bool AddClaim(
+    virtual bool AddClaim(
         const contact::ContactItemType type,
         const std::string& value,
         const bool primary,
         const bool active) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Delete(
-        const int type,
-        const std::string& claimID) const noexcept = 0;
-    OPENTXS_EXPORT virtual ItemTypeList Items(
-        const std::string& lang) const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string Name(
-        const std::string& lang) const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::ProfileSubsection>
-    First() const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::ProfileSubsection>
-    Next() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SetActive(
+    virtual bool Delete(const int type, const std::string& claimID)
+        const noexcept = 0;
+    virtual ItemTypeList Items(const std::string& lang) const noexcept = 0;
+    virtual std::string Name(const std::string& lang) const noexcept = 0;
+    virtual opentxs::SharedPimpl<opentxs::ui::ProfileSubsection> First()
+        const noexcept = 0;
+    virtual opentxs::SharedPimpl<opentxs::ui::ProfileSubsection> Next()
+        const noexcept = 0;
+    virtual bool SetActive(
         const int type,
         const std::string& claimID,
         const bool active) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SetPrimary(
+    virtual bool SetPrimary(
         const int type,
         const std::string& claimID,
         const bool primary) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SetValue(
+    virtual bool SetValue(
         const int type,
         const std::string& claimID,
         const std::string& value) const noexcept = 0;
-    OPENTXS_EXPORT virtual contact::ContactSectionName Type()
-        const noexcept = 0;
+    virtual contact::ContactSectionName Type() const noexcept = 0;
 
-    OPENTXS_EXPORT ~ProfileSection() override = default;
+    ~ProfileSection() override = default;
 
 protected:
     ProfileSection() noexcept = default;

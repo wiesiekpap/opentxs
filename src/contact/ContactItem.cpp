@@ -290,8 +290,6 @@ auto ContactItem::operator==(const ContactItem& rhs) const -> bool
     return true;
 }
 
-ContactItem::operator proto::ContactItem() const { return Serialize(true); }
-
 auto ContactItem::End() const -> const std::time_t& { return imp_->end_; }
 
 auto ContactItem::ID() const -> const Identifier& { return imp_->id_; }
@@ -319,14 +317,19 @@ auto ContactItem::Section() const -> const contact::ContactSectionName&
 auto ContactItem::Serialize(AllocateOutput destination, const bool withID) const
     -> bool
 {
-    write(Serialize(withID), destination);
+    return write(
+        [&] {
+            auto proto = proto::ContactItem{};
+            Serialize(proto, withID);
 
-    return true;
+            return proto;
+        }(),
+        destination);
 }
 
-auto ContactItem::Serialize(const bool withID) const -> proto::ContactItem
+auto ContactItem::Serialize(proto::ContactItem& output, const bool withID) const
+    -> bool
 {
-    proto::ContactItem output{};
     output.set_version(imp_->version_);
 
     if (withID) { output.set_id(String::Factory(imp_->id_)->Get()); }
@@ -340,7 +343,7 @@ auto ContactItem::Serialize(const bool withID) const -> proto::ContactItem
         output.add_attribute(contact::internal::translate(attribute));
     }
 
-    return output;
+    return true;
 }
 
 auto ContactItem::SetActive(const bool active) const -> ContactItem

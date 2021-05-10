@@ -470,12 +470,13 @@ auto Base::RecoverAvailableNumber(const TransactionNumber& number) -> bool
     return recover_available_number(lock, number);
 }
 
-auto Base::Refresh(const PasswordPrompt& reason) -> proto::Context
+auto Base::Refresh(proto::Context& out, const PasswordPrompt& reason) -> bool
 {
     Lock lock(lock_);
     update_signature(lock, reason);
+    out = contract(lock);
 
-    return contract(lock);
+    return true;
 }
 
 auto Base::RemoteNym() const -> const identity::Nym&
@@ -568,14 +569,20 @@ auto Base::serialize(const Lock& lock, const otx::ConsensusType type) const
 
 auto Base::Serialize() const -> OTData
 {
-    return api_.Factory().Data(Serialized());
+    return api_.Factory().Data([&] {
+        auto proto = proto::Context{};
+        Serialize(proto);
+
+        return proto;
+    }());
 }
 
-auto Base::Serialized() const -> proto::Context
+auto Base::Serialize(proto::Context& out) const -> bool
 {
     Lock lock(lock_);
+    out = contract(lock);
 
-    return contract(lock);
+    return true;
 }
 
 void Base::set_local_nymbox_hash(const Lock& lock, const Identifier& hash)

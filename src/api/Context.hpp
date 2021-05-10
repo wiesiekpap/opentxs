@@ -4,8 +4,6 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #pragma once
-// IWYU pragma: private
-// IWYU pragma: friend ".*src/api/Context.cpp"
 
 #include <boost/interprocess/sync/file_lock.hpp>
 #include <chrono>
@@ -90,8 +88,6 @@ public:
         return *legacy_;
     }
     auto ProfileId() const -> std::string final;
-    auto RPC(const proto::RPCCommand& command) const noexcept
-        -> proto::RPCResponse final;
     auto RPC(const rpc::request::Base& command) const noexcept
         -> std::unique_ptr<rpc::response::Base> final;
     auto RPC(const ReadView command, const AllocateOutput response)

@@ -13,7 +13,6 @@
 #include <tuple>
 #include <vector>
 
-#include "opentxs/Proto.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/ui/List.hpp"
@@ -89,7 +88,7 @@ namespace opentxs
 {
 namespace ui
 {
-class Profile : virtual public List
+class OPENTXS_EXPORT Profile : virtual public List
 {
 public:
     using ItemType = std::pair<contact::ContactItemType, std::string>;
@@ -97,45 +96,45 @@ public:
     using SectionType = std::pair<contact::ContactSectionName, std::string>;
     using SectionTypeList = std::vector<SectionType>;
 
-    OPENTXS_EXPORT virtual bool AddClaim(
+    virtual bool AddClaim(
         const contact::ContactSectionName section,
         const contact::ContactItemType type,
         const std::string& value,
         const bool primary,
         const bool active) const noexcept = 0;
-    OPENTXS_EXPORT virtual ItemTypeList AllowedItems(
+    virtual ItemTypeList AllowedItems(
         const contact::ContactSectionName section,
         const std::string& lang) const noexcept = 0;
-    OPENTXS_EXPORT virtual SectionTypeList AllowedSections(
+    virtual SectionTypeList AllowedSections(
         const std::string& lang) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Delete(
+    virtual bool Delete(
         const int section,
         const int type,
         const std::string& claimID) const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string DisplayName() const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::ProfileSection>
-    First() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string ID() const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::ProfileSection>
-    Next() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string PaymentCode() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SetActive(
+    virtual std::string DisplayName() const noexcept = 0;
+    virtual opentxs::SharedPimpl<opentxs::ui::ProfileSection> First()
+        const noexcept = 0;
+    virtual std::string ID() const noexcept = 0;
+    virtual opentxs::SharedPimpl<opentxs::ui::ProfileSection> Next()
+        const noexcept = 0;
+    virtual std::string PaymentCode() const noexcept = 0;
+    virtual bool SetActive(
         const int section,
         const int type,
         const std::string& claimID,
         const bool active) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SetPrimary(
+    virtual bool SetPrimary(
         const int section,
         const int type,
         const std::string& claimID,
         const bool primary) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SetValue(
+    virtual bool SetValue(
         const int section,
         const int type,
         const std::string& claimID,
         const std::string& value) const noexcept = 0;
 
-    OPENTXS_EXPORT ~Profile() override = default;
+    ~Profile() override = default;
 
 protected:
     Profile() noexcept = default;

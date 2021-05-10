@@ -651,41 +651,50 @@ auto Lucre::Process(
     return true;
 }
 
-auto Lucre::Serialize() const -> proto::Token
+auto Lucre::Serialize(proto::Token& output) const noexcept -> bool
 {
-    auto output = Token::Serialize();
-    auto& lucre = *output.mutable_lucre();
-    lucre.set_version(lucre_version_);
+    if (false == Token::Serialize(output)) { return false; }
 
-    switch (state_) {
-        case blind::TokenState::Blinded: {
-            serialize_private(lucre);
-            serialize_public(lucre);
-        } break;
-        case blind::TokenState::Signed: {
-            serialize_private(lucre);
-            serialize_public(lucre);
-            serialize_signature(lucre);
-        } break;
-        case blind::TokenState::Ready:
-        case blind::TokenState::Spent: {
-            serialize_spendable(lucre);
-        } break;
-        case blind::TokenState::Expired: {
-            if (false == signature_->empty()) { serialize_signature(lucre); }
+    try {
+        auto& lucre = *output.mutable_lucre();
+        lucre.set_version(lucre_version_);
 
-            if (private_) { serialize_private(lucre); }
+        switch (state_) {
+            case blind::TokenState::Blinded: {
+                serialize_private(lucre);
+                serialize_public(lucre);
+            } break;
+            case blind::TokenState::Signed: {
+                serialize_private(lucre);
+                serialize_public(lucre);
+                serialize_signature(lucre);
+            } break;
+            case blind::TokenState::Ready:
+            case blind::TokenState::Spent: {
+                serialize_spendable(lucre);
+            } break;
+            case blind::TokenState::Expired: {
+                if (false == signature_->empty()) {
+                    serialize_signature(lucre);
+                }
 
-            if (public_) { serialize_public(lucre); }
+                if (private_) { serialize_private(lucre); }
 
-            if (spend_) { serialize_spendable(lucre); }
-        } break;
-        default: {
-            throw std::runtime_error("invalid token state");
+                if (public_) { serialize_public(lucre); }
+
+                if (spend_) { serialize_spendable(lucre); }
+            } break;
+            default: {
+                throw std::runtime_error("invalid token state");
+            }
         }
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+        return false;
     }
 
-    return output;
+    return true;
 }
 
 void Lucre::serialize_private(proto::LucreTokenData& lucre) const

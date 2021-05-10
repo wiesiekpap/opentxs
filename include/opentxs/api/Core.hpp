@@ -48,30 +48,28 @@ namespace opentxs
 {
 namespace api
 {
-class Core : virtual public Periodic
+class OPENTXS_EXPORT Core : virtual public Periodic
 {
 public:
-    OPENTXS_EXPORT virtual const network::Asio& Asio() const noexcept = 0;
-    OPENTXS_EXPORT virtual const crypto::Asymmetric& Asymmetric() const = 0;
-    OPENTXS_EXPORT virtual const api::Settings& Config() const = 0;
-    OPENTXS_EXPORT virtual const api::Crypto& Crypto() const = 0;
-    OPENTXS_EXPORT virtual const std::string& DataFolder() const = 0;
-    OPENTXS_EXPORT virtual const api::Endpoints& Endpoints() const = 0;
-    OPENTXS_EXPORT virtual const network::Dht& DHT() const = 0;
-    OPENTXS_EXPORT virtual const api::Factory& Factory() const = 0;
-    OPENTXS_EXPORT virtual int Instance() const = 0;
-    OPENTXS_EXPORT virtual const api::HDSeed& Seeds() const = 0;
-    OPENTXS_EXPORT virtual void SetMasterKeyTimeout(
+    virtual const network::Asio& Asio() const noexcept = 0;
+    virtual const crypto::Asymmetric& Asymmetric() const = 0;
+    virtual const api::Settings& Config() const = 0;
+    virtual const api::Crypto& Crypto() const = 0;
+    virtual const std::string& DataFolder() const = 0;
+    virtual const api::Endpoints& Endpoints() const = 0;
+    virtual const network::Dht& DHT() const = 0;
+    virtual const api::Factory& Factory() const = 0;
+    virtual int Instance() const = 0;
+    virtual const api::HDSeed& Seeds() const = 0;
+    virtual void SetMasterKeyTimeout(
         const std::chrono::seconds& timeout) const = 0;
-    OPENTXS_EXPORT virtual const storage::Storage& Storage() const = 0;
-    OPENTXS_EXPORT virtual const crypto::Symmetric& Symmetric() const = 0;
-    OPENTXS_EXPORT virtual const api::ThreadPool& ThreadPool()
-        const noexcept = 0;
-    OPENTXS_EXPORT virtual const api::Wallet& Wallet() const = 0;
-    OPENTXS_EXPORT virtual const opentxs::network::zeromq::Context& ZeroMQ()
-        const = 0;
+    OPENTXS_NO_EXPORT virtual const storage::Storage& Storage() const = 0;
+    virtual const crypto::Symmetric& Symmetric() const = 0;
+    virtual const api::ThreadPool& ThreadPool() const noexcept = 0;
+    virtual const api::Wallet& Wallet() const = 0;
+    virtual const opentxs::network::zeromq::Context& ZeroMQ() const = 0;
 
-    OPENTXS_EXPORT ~Core() override = default;
+    ~Core() override = default;
 
 protected:
     Core() = default;

@@ -6,8 +6,6 @@
 #ifndef OPENTXS_CORE_CONTRACT_SIGNABLE_HPP
 #define OPENTXS_CORE_CONTRACT_SIGNABLE_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>

@@ -6,8 +6,6 @@
 #ifndef OPENTXS_CORE_CRYPTO_PAYMENTCODE_HPP
 #define OPENTXS_CORE_CRYPTO_PAYMENTCODE_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
@@ -74,7 +72,8 @@ public:
 
     virtual operator const crypto::key::Asymmetric&() const noexcept = 0;
 
-    virtual bool operator==(const proto::PaymentCode& rhs) const noexcept = 0;
+    OPENTXS_NO_EXPORT virtual bool operator==(
+        const Serialized& rhs) const noexcept = 0;
 
     virtual std::string asBase58() const noexcept = 0;
     virtual bool Blind(
@@ -114,8 +113,8 @@ public:
         const PasswordPrompt& reason,
         const std::uint8_t version = 0) const noexcept = 0;
     virtual bool Serialize(AllocateOutput destination) const noexcept = 0;
-    virtual Serialized Serialize() const noexcept = 0;
-    virtual bool Sign(
+    OPENTXS_NO_EXPORT virtual Serialized Serialize() const noexcept = 0;
+    OPENTXS_NO_EXPORT virtual bool Sign(
         const identity::credential::Base& credential,
         proto::Signature& sig,
         const PasswordPrompt& reason) const noexcept = 0;
@@ -134,7 +133,7 @@ public:
         const crypto::key::EllipticCurve& publicKey,
         const PasswordPrompt& reason) const noexcept = 0;
     virtual bool Valid() const noexcept = 0;
-    virtual bool Verify(
+    OPENTXS_NO_EXPORT virtual bool Verify(
         const proto::Credential& master,
         const proto::Signature& sourceSignature) const noexcept = 0;
     virtual VersionNumber Version() const noexcept = 0;

@@ -110,7 +110,7 @@ public:
     auto Nonce() const noexcept -> std::uint32_t final { return nonce_; }
     auto nBits() const noexcept -> std::uint32_t final { return nbits_; }
     auto Print() const noexcept -> std::string final;
-    auto Serialize() const noexcept -> SerializedType final;
+    auto Serialize(SerializedType& out) const noexcept -> bool final;
     auto Serialize(
         const AllocateOutput destination,
         const bool bitcoinformat = true) const noexcept -> bool final;

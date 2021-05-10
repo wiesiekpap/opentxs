@@ -205,22 +205,25 @@ auto Asymmetric::InstantiateHDKey(const proto::AsymmetricKey& serialized) const
     return std::make_unique<NullType>();
 }
 
-#if OT_CRYPTO_WITH_BIP32
 auto Asymmetric::InstantiateKey(
-    const opentxs::crypto::key::asymmetric::Algorithm type,
-    const std::string& seedID,
-    const opentxs::crypto::Bip32::Key& serialized,
-    const PasswordPrompt& reason,
-    const opentxs::crypto::key::asymmetric::Role role,
-    const VersionNumber version) const -> Asymmetric::HDKey
+    [[maybe_unused]] const opentxs::crypto::key::asymmetric::Algorithm type,
+    [[maybe_unused]] const std::string& seedID,
+    [[maybe_unused]] const opentxs::crypto::Bip32::Key& serialized,
+    [[maybe_unused]] const PasswordPrompt& reason,
+    [[maybe_unused]] const opentxs::crypto::key::asymmetric::Role role,
+    [[maybe_unused]] const VersionNumber version) const -> Asymmetric::HDKey
 {
+#if OT_CRYPTO_WITH_BIP32
     using ReturnType = opentxs::crypto::key::HD;
     using BlankType = opentxs::crypto::key::implementation::NullHD;
 
     return instantiate_hd_key<ReturnType, BlankType>(
         type, seedID, serialized, reason, role, version);
-}
+#else
+
+    return {};
 #endif  // OT_CRYPTO_WITH_BIP32
+}
 
 auto Asymmetric::InstantiateKey(const proto::AsymmetricKey& serialized) const
     -> Asymmetric::Key
@@ -250,7 +253,6 @@ auto Asymmetric::InstantiateKey(const proto::AsymmetricKey& serialized) const
     return std::make_unique<NullType>();
 }
 
-#if OT_CRYPTO_WITH_BIP32
 auto Asymmetric::NewHDKey(
     const std::string& seedID,
     const Secret& seed,
@@ -260,6 +262,7 @@ auto Asymmetric::NewHDKey(
     const opentxs::crypto::key::asymmetric::Role role,
     const VersionNumber version) const -> Asymmetric::HDKey
 {
+#if OT_CRYPTO_WITH_BIP32
     return InstantiateKey(
         curve_to_key_type_.at(curve),
         seedID,
@@ -267,15 +270,18 @@ auto Asymmetric::NewHDKey(
         reason,
         role,
         version);
+#else
+    return {};
+#endif  // OT_CRYPTO_WITH_BIP32
 }
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 auto Asymmetric::InstantiateSecp256k1Key(
     const ReadView publicKey,
     const PasswordPrompt& reason,
     const opentxs::crypto::key::asymmetric::Role role,
     const VersionNumber version) const noexcept -> Secp256k1Key
 {
+#if OT_CRYPTO_WITH_BIP32 && OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     static const auto blank = api_.Factory().Secret(0);
 
     return factory::Secp256k1Key(
@@ -286,6 +292,9 @@ auto Asymmetric::InstantiateSecp256k1Key(
         role,
         version,
         reason);
+#else
+    return {};
+#endif  // OT_CRYPTO_WITH_BIP32 && OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 }
 
 auto Asymmetric::InstantiateSecp256k1Key(
@@ -294,6 +303,7 @@ auto Asymmetric::InstantiateSecp256k1Key(
     const opentxs::crypto::key::asymmetric::Role role,
     const VersionNumber version) const noexcept -> Secp256k1Key
 {
+#if OT_CRYPTO_WITH_BIP32 && OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     auto pub = api_.Factory().Data();
     const auto& ecdsa = api_.Crypto().SECP256K1();
 
@@ -305,6 +315,9 @@ auto Asymmetric::InstantiateSecp256k1Key(
     }
 
     return factory::Secp256k1Key(api_, ecdsa, priv, pub, role, version, reason);
+#else
+    return {};
+#endif  // OT_CRYPTO_WITH_BIP32 && OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 }
 
 auto Asymmetric::NewSecp256k1Key(
@@ -315,6 +328,7 @@ auto Asymmetric::NewSecp256k1Key(
     const opentxs::crypto::key::asymmetric::Role role,
     const VersionNumber version) const -> Secp256k1Key
 {
+#if OT_CRYPTO_WITH_BIP32 && OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     const auto serialized =
         api_.Crypto().BIP32().DeriveKey(EcdsaCurve::secp256k1, seed, derive);
     const auto& [privkey, ccode, pubkey, path, parent] = serialized;
@@ -330,9 +344,10 @@ auto Asymmetric::NewSecp256k1Key(
         role,
         version,
         reason);
+#else
+    return {};
+#endif  // OT_CRYPTO_WITH_BIP32 && OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-#endif  // OT_CRYPTO_WITH_BIP32
 
 auto Asymmetric::NewKey(
     const NymParameters& params,

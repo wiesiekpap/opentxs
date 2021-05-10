@@ -519,7 +519,12 @@ auto Header::find_nonce() noexcept(false) -> void
     auto view = ReadView{};
 
     while (true) {
-        bytes = preimage(Serialize());
+        bytes = preimage([&] {
+            auto out = SerializedType{};
+            Serialize(out);
+
+            return out;
+        }());
         view = ReadView{reinterpret_cast<const char*>(&bytes), sizeof(bytes)};
         pow = calculate_pow(api_, type_, view);
 
@@ -561,14 +566,15 @@ auto Header::Print() const noexcept -> std::string
     return out.str();
 }
 
-auto Header::Serialize() const noexcept -> Header::SerializedType
+auto Header::Serialize(SerializedType& out) const noexcept -> bool
 {
     const auto time = Clock::to_time_t(timestamp_);
 
-    OT_ASSERT(std::numeric_limits<std::uint32_t>::max() >= time);
+    if (std::numeric_limits<std::uint32_t>::max() < time) { return false; }
 
-    auto output = ot_super::Serialize();
-    auto& bitcoin = *output.mutable_bitcoin();
+    if (false == ot_super::Serialize(out)) { return false; }
+
+    auto& bitcoin = *out.mutable_bitcoin();
     bitcoin.set_version(subversion_);
     bitcoin.set_block_version(block_version_);
     bitcoin.set_previous_header(parent_hash_->str());
@@ -577,7 +583,7 @@ auto Header::Serialize() const noexcept -> Header::SerializedType
     bitcoin.set_nbits(nbits_);
     bitcoin.set_nonce(nonce_);
 
-    return output;
+    return true;
 }
 
 auto Header::Serialize(
@@ -613,9 +619,11 @@ auto Header::Serialize(
 
         return true;
     } else {
-        write(Serialize(), destination);
+        auto proto = SerializedType{};
 
-        return true;
+        if (Serialize(proto)) { return write(proto, destination); }
+
+        return false;
     }
 }
 

@@ -209,9 +209,8 @@ auto Token::reencrypt(
     return output;
 }
 
-auto Token::Serialize() const -> proto::Token
+auto Token::Serialize(proto::Token& output) const noexcept -> bool
 {
-    proto::Token output{};
     output.set_version(version_);
     output.set_type(internal::translate(type_));
     output.set_state(internal::translate(state_));
@@ -222,6 +221,6 @@ auto Token::Serialize() const -> proto::Token
     output.set_validfrom(Clock::to_time_t(valid_from_));
     output.set_validto(Clock::to_time_t(valid_to_));
 
-    return output;
+    return true;
 }
 }  // namespace opentxs::blind::token::implementation

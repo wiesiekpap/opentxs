@@ -6,8 +6,6 @@
 #ifndef OPENTXS_NETWORK_ZEROMQ_CONTEXT_HPP
 #define OPENTXS_NETWORK_ZEROMQ_CONTEXT_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <memory>
@@ -15,7 +13,6 @@
 
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
@@ -41,6 +38,14 @@
 %template(OTZMQContext) opentxs::Pimpl<opentxs::network::zeromq::Context>;
 // clang-format on
 #endif  // SWIG
+
+namespace google
+{
+namespace protobuf
+{
+class MessageLite;
+}  // namespace protobuf
+}  // namespace google
 
 namespace opentxs
 {
@@ -74,28 +79,28 @@ namespace network
 {
 namespace zeromq
 {
-class Context
+class OPENTXS_EXPORT Context
 {
 public:
-    OPENTXS_EXPORT static bool RawToZ85(
+    static bool RawToZ85(
         const ReadView input,
         const AllocateOutput output) noexcept;
-    OPENTXS_EXPORT static bool Z85ToRaw(
+    static bool Z85ToRaw(
         const ReadView input,
         const AllocateOutput output) noexcept;
 
-    OPENTXS_EXPORT virtual operator void*() const noexcept = 0;
+    virtual operator void*() const noexcept = 0;
 
-    OPENTXS_EXPORT virtual std::string BuildEndpoint(
+    virtual std::string BuildEndpoint(
         const std::string& path,
         const int instance,
         const int version) const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string BuildEndpoint(
+    virtual std::string BuildEndpoint(
         const std::string& path,
         const int instance,
         const int version,
         const std::string& suffix) const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::socket::Dealer> DealerSocket(
+    virtual Pimpl<network::zeromq::socket::Dealer> DealerSocket(
         const ListenCallback& callback,
         const socket::Socket::Direction direction) const noexcept = 0;
 #ifndef SWIG
@@ -107,26 +112,25 @@ public:
         std::enable_if_t<
             std::is_integral<decltype(std::declval<Input&>().size())>::value,
             int> = 0>
-    OPENTXS_EXPORT OTZMQFrame Frame(const Input& input) const noexcept
+    OTZMQFrame Frame(const Input& input) const noexcept
     {
         return Frame(input.data(), input.size());
     }
     template <
         typename Input,
         std::enable_if_t<std::is_trivially_copyable<Input>::value, int> = 0>
-    OPENTXS_EXPORT OTZMQFrame Frame(const Input& input) const noexcept
+    OTZMQFrame Frame(const Input& input) const noexcept
     {
         return Frame(&input, sizeof(input));
     }
 #endif
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::Frame> Frame(
+    virtual Pimpl<network::zeromq::Frame> Frame(
         const void* input,
         const std::size_t size) const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::Message> Message()
-        const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::Message> Message(
-        const ProtobufType& input) const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::Message> Message(
+    virtual Pimpl<network::zeromq::Message> Message() const noexcept = 0;
+    OPENTXS_NO_EXPORT virtual Pimpl<network::zeromq::Message> Message(
+        const ::google::protobuf::MessageLite& input) const noexcept = 0;
+    virtual Pimpl<network::zeromq::Message> Message(
         const network::zeromq::Message& input) const noexcept = 0;
 #ifndef SWIG
     template <
@@ -137,74 +141,72 @@ public:
         std::enable_if_t<
             std::is_integral<decltype(std::declval<Input&>().size())>::value,
             int> = 0>
-    OPENTXS_EXPORT Pimpl<network::zeromq::Message> Message(
-        const Input& input) const noexcept
+    Pimpl<network::zeromq::Message> Message(const Input& input) const noexcept
     {
         return Message(input.data(), input.size());
     }
     template <
         typename Input,
         std::enable_if_t<std::is_trivially_copyable<Input>::value, int> = 0>
-    OPENTXS_EXPORT Pimpl<network::zeromq::Message> Message(
-        const Input& input) const noexcept
+    Pimpl<network::zeromq::Message> Message(const Input& input) const noexcept
     {
         return Message(&input, sizeof(input));
     }
     template <typename Input>
-    OPENTXS_EXPORT Pimpl<network::zeromq::Message> Message(
+    Pimpl<network::zeromq::Message> Message(
         const Pimpl<Input>& input) const noexcept
     {
         return Message(input.get());
     }
 #endif
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::Message> Message(
+    virtual Pimpl<network::zeromq::Message> Message(
         const void* input,
         const std::size_t size) const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::socket::Subscribe>
-    PairEventListener(const PairEventCallback& callback, const int instance)
-        const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::socket::Pair> PairSocket(
+    virtual Pimpl<network::zeromq::socket::Subscribe> PairEventListener(
+        const PairEventCallback& callback,
+        const int instance) const noexcept = 0;
+    virtual Pimpl<network::zeromq::socket::Pair> PairSocket(
         const ListenCallback& callback) const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::socket::Pair> PairSocket(
+    virtual Pimpl<network::zeromq::socket::Pair> PairSocket(
         const ListenCallback& callback,
         const zeromq::socket::Pair& peer) const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::socket::Pair> PairSocket(
+    virtual Pimpl<network::zeromq::socket::Pair> PairSocket(
         const ListenCallback& callback,
         const std::string& endpoint) const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::Pipeline> Pipeline(
+    virtual Pimpl<network::zeromq::Pipeline> Pipeline(
         const api::internal::Core& api,
         std::function<void(zeromq::Message&)> callback) const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::Proxy> Proxy(
+    virtual Pimpl<network::zeromq::Proxy> Proxy(
         socket::Socket& frontend,
         socket::Socket& backend) const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::socket::Publish>
-    PublishSocket() const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::socket::Pull> PullSocket(
+    virtual Pimpl<network::zeromq::socket::Publish> PublishSocket()
+        const noexcept = 0;
+    virtual Pimpl<network::zeromq::socket::Pull> PullSocket(
         const socket::Socket::Direction direction) const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::socket::Pull> PullSocket(
+    virtual Pimpl<network::zeromq::socket::Pull> PullSocket(
         const ListenCallback& callback,
         const socket::Socket::Direction direction) const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::socket::Push> PushSocket(
+    virtual Pimpl<network::zeromq::socket::Push> PushSocket(
         const socket::Socket::Direction direction) const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::Message> ReplyMessage(
+    virtual Pimpl<network::zeromq::Message> ReplyMessage(
         const zeromq::Message& request) const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::Message> ReplyMessage(
+    virtual Pimpl<network::zeromq::Message> ReplyMessage(
         const ReadView connectionID) const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::socket::Reply> ReplySocket(
+    virtual Pimpl<network::zeromq::socket::Reply> ReplySocket(
         const ReplyCallback& callback,
         const socket::Socket::Direction direction) const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::socket::Request>
-    RequestSocket() const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::socket::Router> RouterSocket(
+    virtual Pimpl<network::zeromq::socket::Request> RequestSocket()
+        const noexcept = 0;
+    virtual Pimpl<network::zeromq::socket::Router> RouterSocket(
         const ListenCallback& callback,
         const socket::Socket::Direction direction) const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::socket::Subscribe>
-    SubscribeSocket(const ListenCallback& callback) const noexcept = 0;
+    virtual Pimpl<network::zeromq::socket::Subscribe> SubscribeSocket(
+        const ListenCallback& callback) const noexcept = 0;
 #ifndef SWIG
     template <
         typename Input,
         std::enable_if_t<std::is_trivially_copyable<Input>::value, int> = 0>
-    OPENTXS_EXPORT Pimpl<network::zeromq::Message> TaggedMessage(
+    Pimpl<network::zeromq::Message> TaggedMessage(
         const Input& tag) const noexcept
     {
         return TaggedMessage(&tag, sizeof(tag));
@@ -212,7 +214,7 @@ public:
     template <
         typename Input,
         std::enable_if_t<std::is_trivially_copyable<Input>::value, int> = 0>
-    OPENTXS_EXPORT Pimpl<network::zeromq::Message> TaggedReply(
+    Pimpl<network::zeromq::Message> TaggedReply(
         const zeromq::Message& request,
         const Input& tag) const noexcept
     {
@@ -221,7 +223,7 @@ public:
     template <
         typename Input,
         std::enable_if_t<std::is_trivially_copyable<Input>::value, int> = 0>
-    OPENTXS_EXPORT Pimpl<network::zeromq::Message> TaggedReply(
+    Pimpl<network::zeromq::Message> TaggedReply(
         const ReadView connectionID,
         const Input& tag) const noexcept
     {
@@ -229,7 +231,7 @@ public:
     }
 #endif
 
-    OPENTXS_EXPORT virtual ~Context() = default;
+    virtual ~Context() = default;
 
 protected:
     Context() noexcept = default;
@@ -237,15 +239,15 @@ protected:
 private:
     friend OTZMQContext;
 
-    OPENTXS_EXPORT virtual Context* clone() const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::Message> TaggedMessage(
+    virtual Context* clone() const noexcept = 0;
+    virtual Pimpl<network::zeromq::Message> TaggedMessage(
         const void* tag,
         const std::size_t size) const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::Message> TaggedReply(
+    virtual Pimpl<network::zeromq::Message> TaggedReply(
         const zeromq::Message& request,
         const void* tag,
         const std::size_t size) const noexcept = 0;
-    OPENTXS_EXPORT virtual Pimpl<network::zeromq::Message> TaggedReply(
+    virtual Pimpl<network::zeromq::Message> TaggedReply(
         const ReadView connectionID,
         const void* tag,
         const std::size_t size) const noexcept = 0;

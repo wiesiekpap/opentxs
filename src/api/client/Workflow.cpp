@@ -626,7 +626,12 @@ auto Workflow::AllocateCash(
     source.set_version(versions_.at(PaymentWorkflowType::OutgoingCash).source_);
     source.set_id(workflowID->str());
     source.set_revision(1);
-    source.set_item(proto::ToString(purse.Serialize()));
+    source.set_item([&] {
+        auto proto = proto::Purse{};
+        purse.Serialize(proto);
+
+        return proto::ToString(proto);
+    }());
     workflow.set_notary(purse.Notary().str());
     auto& event = *workflow.add_event();
     event.set_version(versions_.at(PaymentWorkflowType::OutgoingCash).event_);
@@ -2472,7 +2477,12 @@ auto Workflow::ReceiveCash(
     source.set_version(versions_.at(PaymentWorkflowType::IncomingCash).source_);
     source.set_id(workflowID->str());
     source.set_revision(1);
-    source.set_item(proto::ToString(purse.Serialize()));
+    source.set_item([&] {
+        auto proto = proto::Purse{};
+        purse.Serialize(proto);
+
+        return proto::ToString(proto);
+    }());
     workflow.set_notary(purse.Notary().str());
     auto& event = *workflow.add_event();
     event.set_version(versions_.at(PaymentWorkflowType::IncomingCash).event_);

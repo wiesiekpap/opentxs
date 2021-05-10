@@ -6,8 +6,6 @@
 #ifndef OPENTXS_API_NETWORK_ZMQ_HPP
 #define OPENTXS_API_NETWORK_ZMQ_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
@@ -38,30 +36,26 @@ namespace api
 {
 namespace network
 {
-class ZMQ
+class OPENTXS_EXPORT ZMQ
 {
 public:
-    OPENTXS_EXPORT virtual const opentxs::network::zeromq::Context& Context()
-        const = 0;
-    OPENTXS_EXPORT virtual core::AddressType DefaultAddressType() const = 0;
-    OPENTXS_EXPORT virtual std::chrono::seconds KeepAlive() const = 0;
-    OPENTXS_EXPORT virtual void KeepAlive(
-        const std::chrono::seconds duration) const = 0;
-    OPENTXS_EXPORT virtual std::chrono::seconds Linger() const = 0;
-    OPENTXS_EXPORT virtual std::chrono::seconds ReceiveTimeout() const = 0;
-    OPENTXS_EXPORT virtual const Flag& Running() const = 0;
-    OPENTXS_EXPORT virtual void RefreshConfig() const = 0;
-    OPENTXS_EXPORT virtual std::chrono::seconds SendTimeout() const = 0;
-    OPENTXS_EXPORT virtual opentxs::network::ServerConnection& Server(
+    virtual const opentxs::network::zeromq::Context& Context() const = 0;
+    virtual core::AddressType DefaultAddressType() const = 0;
+    virtual std::chrono::seconds KeepAlive() const = 0;
+    virtual void KeepAlive(const std::chrono::seconds duration) const = 0;
+    virtual std::chrono::seconds Linger() const = 0;
+    virtual std::chrono::seconds ReceiveTimeout() const = 0;
+    virtual const Flag& Running() const = 0;
+    virtual void RefreshConfig() const = 0;
+    virtual std::chrono::seconds SendTimeout() const = 0;
+    virtual opentxs::network::ServerConnection& Server(
         const std::string& id) const = 0;
-    OPENTXS_EXPORT virtual bool SetSocksProxy(
-        const std::string& proxy) const = 0;
-    OPENTXS_EXPORT virtual std::string SocksProxy() const = 0;
-    OPENTXS_EXPORT virtual bool SocksProxy(std::string& proxy) const = 0;
-    OPENTXS_EXPORT virtual ConnectionState Status(
-        const std::string& server) const = 0;
+    virtual bool SetSocksProxy(const std::string& proxy) const = 0;
+    virtual std::string SocksProxy() const = 0;
+    virtual bool SocksProxy(std::string& proxy) const = 0;
+    virtual ConnectionState Status(const std::string& server) const = 0;
 
-    OPENTXS_EXPORT virtual ~ZMQ() = default;
+    OPENTXS_NO_EXPORT virtual ~ZMQ() = default;
 
 protected:
     ZMQ() = default;

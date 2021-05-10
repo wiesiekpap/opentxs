@@ -36,7 +36,6 @@
 #include "opentxs/protobuf/PeerObject.pb.h"
 #include "opentxs/protobuf/PeerReply.pb.h"
 #include "opentxs/protobuf/PeerRequest.pb.h"
-#include "opentxs/protobuf/Purse.pb.h"
 #include "opentxs/protobuf/verify/PeerObject.hpp"
 
 #define OT_METHOD "opentxs::peer::implementation::Object::"
@@ -260,7 +259,8 @@ Object::Object(
 
     if (serialized.has_nym()) {
         objectNym = api_.Wallet().Nym(serialized.nym());
-        contacts.Update(serialized.nym());
+
+        if (objectNym) { contacts.Update(*objectNym); }
     }
 
     if (signerNym) {
@@ -459,7 +459,8 @@ auto Object::Serialize() const -> proto::PeerObject
 
             if (purse_) {
                 if (nym_) { *output.mutable_nym() = nym_->asPublicNym(); }
-                *output.mutable_purse() = purse_->Serialize();
+
+                purse_->Serialize(*output.mutable_purse());
             }
         } break;
 #endif

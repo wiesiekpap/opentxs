@@ -6,8 +6,6 @@
 #ifndef OPENTXS_IDENTITY_CREDENTIAL_VERIFICATION_HPP
 #define OPENTXS_IDENTITY_CREDENTIAL_VERIFICATION_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Proto.hpp"
@@ -35,16 +33,16 @@ namespace identity
 {
 namespace credential
 {
-class Verification : virtual public Base
+class OPENTXS_EXPORT Verification : virtual public Base
 {
 public:
-    OPENTXS_EXPORT static proto::Verification SigningForm(
+    OPENTXS_NO_EXPORT static proto::Verification SigningForm(
         const proto::Verification& item);
-    OPENTXS_EXPORT static std::string VerificationID(
+    OPENTXS_NO_EXPORT static std::string VerificationID(
         const api::internal::Core& api,
         const proto::Verification& item);
 
-    OPENTXS_EXPORT ~Verification() override = default;
+    ~Verification() override = default;
 
 protected:
     Verification() noexcept {}  // TODO Signable

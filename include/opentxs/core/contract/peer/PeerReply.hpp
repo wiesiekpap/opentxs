@@ -6,8 +6,6 @@
 #ifndef OPENTXS_CORE_CONTRACT_PEER_PEERREPLY_HPP
 #define OPENTXS_CORE_CONTRACT_PEER_PEERREPLY_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>
@@ -46,7 +44,7 @@ class OPENTXS_EXPORT Reply : virtual public opentxs::contract::Signable
 public:
     using SerializedType = proto::PeerReply;
 
-    virtual SerializedType Contract() const = 0;
+    OPENTXS_NO_EXPORT virtual SerializedType Contract() const = 0;
     virtual PeerRequestType Type() const = 0;
 
     virtual ~Reply() override = default;

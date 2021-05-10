@@ -3566,7 +3566,7 @@ auto Server::process_check_nym_response(
     auto nym = client.Wallet().Nym(serialized);
 
     if (nym) {
-        client.Contacts().Update(serialized);
+        client.Contacts().Update(*nym);
 
         return true;
     } else {

@@ -56,6 +56,7 @@ class Nym;
 namespace proto
 {
 class Ciphertext;
+class Token;
 }  // namespace proto
 
 class PasswordPrompt;
@@ -111,7 +112,7 @@ protected:
         const PasswordPrompt& newPassword,
         proto::Ciphertext& ciphertext) -> bool;
 
-    auto Serialize() const -> proto::Token override;
+    auto Serialize(proto::Token& out) const noexcept -> bool override;
 
     Token(
         const api::internal::Core& api,

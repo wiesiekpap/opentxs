@@ -7,15 +7,13 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "opentxs/crypto/Bip32.hpp"  // IWYU pragma: associated
 
-#include <iostream>
 #include <memory>
-#include <string>
 #include <sstream>
+#include <string>
 #include <utility>
 
 #include "crypto/bip32/Imp.hpp"
 #include "internal/crypto/Factory.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/protobuf/HDPath.pb.h"
 #include "util/HDIndex.hpp"

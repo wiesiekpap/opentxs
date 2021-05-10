@@ -6,8 +6,6 @@
 #ifndef OPENTXS_NETWORK_ZEROMQ_PAIREVENTCALLBACK_HPP
 #define OPENTXS_NETWORK_ZEROMQ_PAIREVENTCALLBACK_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <functional>
@@ -53,20 +51,18 @@ namespace network
 {
 namespace zeromq
 {
-class PairEventCallback : virtual public ListenCallback
+class OPENTXS_EXPORT PairEventCallback : virtual public ListenCallback
 {
 public:
     using ReceiveCallback = std::function<void(const proto::PairEvent&)>;
 
 #ifndef SWIG
-    OPENTXS_EXPORT static OTZMQPairEventCallback Factory(
-        ReceiveCallback callback);
+    static OTZMQPairEventCallback Factory(ReceiveCallback callback);
 #endif
-    OPENTXS_EXPORT static opentxs::Pimpl<
-        opentxs::network::zeromq::PairEventCallback>
-    Factory(PairEventCallbackSwig* callback);
+    static opentxs::Pimpl<opentxs::network::zeromq::PairEventCallback> Factory(
+        PairEventCallbackSwig* callback);
 
-    OPENTXS_EXPORT ~PairEventCallback() override = default;
+    ~PairEventCallback() override = default;
 
 protected:
     PairEventCallback() = default;

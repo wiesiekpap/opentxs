@@ -6,15 +6,12 @@
 #ifndef OPENTXS_API_CLIENT_SERVERACTION_HPP
 #define OPENTXS_API_CLIENT_SERVERACTION_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
 #include <string>
 
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 
 namespace opentxs
@@ -47,30 +44,30 @@ namespace api
 {
 namespace client
 {
-class [[deprecated]] ServerAction
+class OPENTXS_EXPORT ServerAction
 {
 public:
     using Action = Pimpl<opentxs::client::ServerAction>;
 
-    OPENTXS_EXPORT virtual Action ActivateSmartContract(
+    virtual Action ActivateSmartContract(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const Identifier& accountID,
         const std::string& agentName,
         std::unique_ptr<OTSmartContract>& contract) const = 0;
-    OPENTXS_EXPORT virtual Action AdjustUsageCredits(
+    virtual Action AdjustUsageCredits(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::Nym& targetNymID,
         const Amount adjustment) const = 0;
-    OPENTXS_EXPORT virtual Action CancelPaymentPlan(
+    virtual Action CancelPaymentPlan(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         std::unique_ptr<OTPaymentPlan>& plan) const = 0;
-    OPENTXS_EXPORT virtual Action CreateMarketOffer(
+    virtual Action CreateMarketOffer(
         const PasswordPrompt& reason,
         const Identifier& assetAccountID,
         const Identifier& currencyAccountID,
@@ -82,31 +79,31 @@ public:
         const std::chrono::seconds lifetime,
         const std::string& stopSign,
         const Amount activationPrice) const = 0;
-    OPENTXS_EXPORT virtual Action DepositPaymentPlan(
+    virtual Action DepositPaymentPlan(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         std::unique_ptr<OTPaymentPlan>& plan) const = 0;
-    OPENTXS_EXPORT virtual Action DownloadMarketList(
+    virtual Action DownloadMarketList(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID) const = 0;
-    OPENTXS_EXPORT virtual Action DownloadMarketOffers(
+    virtual Action DownloadMarketOffers(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const Identifier& marketID,
         const Amount depth) const = 0;
-    OPENTXS_EXPORT virtual Action DownloadMarketRecentTrades(
+    virtual Action DownloadMarketRecentTrades(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const Identifier& marketID) const = 0;
-    OPENTXS_EXPORT virtual Action DownloadNymMarketOffers(
+    virtual Action DownloadNymMarketOffers(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID) const = 0;
-    OPENTXS_EXPORT virtual Action ExchangeBasketCurrency(
+    virtual Action ExchangeBasketCurrency(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
@@ -114,25 +111,25 @@ public:
         const Identifier& accountID,
         const Identifier& basketID,
         const bool direction) const = 0;
-    OPENTXS_EXPORT virtual Action IssueBasketCurrency(
+    virtual Action IssueBasketCurrency(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const proto::UnitDefinition& basket,
         const std::string& label = "") const = 0;
-    OPENTXS_EXPORT virtual Action KillMarketOffer(
+    virtual Action KillMarketOffer(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const Identifier& accountID,
         const TransactionNumber number) const = 0;
-    OPENTXS_EXPORT virtual Action KillPaymentPlan(
+    virtual Action KillPaymentPlan(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const Identifier& accountID,
         const TransactionNumber number) const = 0;
-    OPENTXS_EXPORT virtual Action PayDividend(
+    virtual Action PayDividend(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
@@ -140,23 +137,23 @@ public:
         const Identifier& accountID,
         const std::string& memo,
         const Amount amountPerShare) const = 0;
-    OPENTXS_EXPORT virtual Action TriggerClause(
+    virtual Action TriggerClause(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const TransactionNumber transactionNumber,
         const std::string& clause,
         const std::string& parameter) const = 0;
-    OPENTXS_EXPORT virtual Action UnregisterAccount(
+    virtual Action UnregisterAccount(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const Identifier& accountID) const = 0;
-    OPENTXS_EXPORT virtual Action UnregisterNym(
+    virtual Action UnregisterNym(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID) const = 0;
-    OPENTXS_EXPORT virtual Action WithdrawVoucher(
+    virtual Action WithdrawVoucher(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
@@ -165,7 +162,7 @@ public:
         const Amount amount,
         const std::string& memo) const = 0;
 
-    OPENTXS_EXPORT virtual ~ServerAction() = default;
+    OPENTXS_NO_EXPORT virtual ~ServerAction() = default;
 
 protected:
     ServerAction() = default;

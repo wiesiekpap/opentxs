@@ -14,7 +14,6 @@
 #include <optional>
 #include <sstream>
 #include <string_view>
-#include <type_traits>
 #include <utility>
 
 #include "api/client/blockchain/SyncClient.hpp"

@@ -6,19 +6,21 @@
 #ifndef OPENTXS_API_CRYPTO_SYMMETRIC_HPP
 #define OPENTXS_API_CRYPTO_SYMMETRIC_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 
-#include "opentxs/Proto.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/symmetric/Source.hpp"
 
 namespace opentxs
 {
+namespace proto
+{
+class SymmetricKey;
+}  // namespace proto
+
 class Secret;
 }  // namespace opentxs
 
@@ -28,23 +30,23 @@ namespace api
 {
 namespace crypto
 {
-class Symmetric
+class OPENTXS_EXPORT Symmetric
 {
 public:
-    OPENTXS_EXPORT virtual std::size_t IvSize(
+    virtual std::size_t IvSize(
         const opentxs::crypto::key::symmetric::Algorithm mode) const = 0;
-    OPENTXS_EXPORT virtual OTSymmetricKey Key(
+    virtual OTSymmetricKey Key(
         const PasswordPrompt& password,
         const opentxs::crypto::key::symmetric::Algorithm mode =
             opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305)
         const = 0;
-    OPENTXS_EXPORT virtual OTSymmetricKey Key(
+    OPENTXS_NO_EXPORT virtual OTSymmetricKey Key(
         const proto::SymmetricKey& serialized,
         const opentxs::crypto::key::symmetric::Algorithm mode) const = 0;
-    OPENTXS_EXPORT virtual OTSymmetricKey Key(
+    virtual OTSymmetricKey Key(
         const ReadView& serializedCiphertext,
         const opentxs::crypto::key::symmetric::Algorithm mode) const = 0;
-    OPENTXS_EXPORT virtual OTSymmetricKey Key(
+    virtual OTSymmetricKey Key(
         const Secret& seed,
         const std::uint64_t operations = 0,
         const std::uint64_t difficulty = 0,
@@ -53,7 +55,7 @@ public:
         const opentxs::crypto::key::symmetric::Source type =
             opentxs::crypto::key::symmetric::Source::Argon2) const = 0;
 
-    OPENTXS_EXPORT virtual ~Symmetric() = default;
+    OPENTXS_NO_EXPORT virtual ~Symmetric() = default;
 
 protected:
     Symmetric() = default;

@@ -6,8 +6,6 @@
 #ifndef OPENTXS_CRYPTO_ENVELOPE_HPP
 #define OPENTXS_CRYPTO_ENVELOPE_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <set>
@@ -37,27 +35,25 @@ namespace opentxs
 {
 namespace crypto
 {
-class Envelope
+class OPENTXS_EXPORT Envelope
 {
 public:
     using Recipients = std::set<Nym_p>;
     using SerializedType = proto::Envelope;
 
-    OPENTXS_EXPORT virtual bool Armored(
-        opentxs::Armored& ciphertext) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Open(
+    virtual bool Armored(opentxs::Armored& ciphertext) const noexcept = 0;
+    virtual bool Open(
         const identity::Nym& recipient,
         const AllocateOutput plaintext,
         const PasswordPrompt& reason) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Serialize(
-        AllocateOutput destination) const noexcept = 0;
-    OPENTXS_EXPORT virtual SerializedType Serialize() const noexcept = 0;
+    virtual bool Serialize(AllocateOutput destination) const noexcept = 0;
+    OPENTXS_NO_EXPORT virtual SerializedType Serialize() const noexcept = 0;
 
-    OPENTXS_EXPORT virtual bool Seal(
+    virtual bool Seal(
         const Recipients& recipients,
         const ReadView plaintext,
         const PasswordPrompt& reason) noexcept = 0;
-    OPENTXS_EXPORT virtual bool Seal(
+    virtual bool Seal(
         const identity::Nym& theRecipient,
         const ReadView plaintext,
         const PasswordPrompt& reason) noexcept = 0;

@@ -216,7 +216,7 @@ public:
         const identifier::Nym& nymID,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
-        const proto::HDPath path,
+        const proto::HDPath& path,
         const Chain chain,
         const PasswordPrompt& reason) const noexcept -> OTIdentifier final;
     auto NewPaymentCodeSubaccount(
@@ -238,7 +238,7 @@ public:
         const identifier::Nym& nymID,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
-        const proto::HDPath path,
+        const proto::HDPath& path,
         const Chain chain,
         const PasswordPrompt& reason) const noexcept(false)
         -> const blockchain::PaymentCode& final;

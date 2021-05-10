@@ -6,8 +6,6 @@
 #ifndef OPENTXS_CORE_CONTRACT_PEER_PEEROBJECT_HPP
 #define OPENTXS_CORE_CONTRACT_PEER_PEEROBJECT_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
@@ -50,7 +48,7 @@ public:
 #endif
     virtual const OTPeerRequest Request() const = 0;
     virtual const OTPeerReply Reply() const = 0;
-    virtual proto::PeerObject Serialize() const = 0;
+    OPENTXS_NO_EXPORT virtual proto::PeerObject Serialize() const = 0;
     virtual contract::peer::PeerObjectType Type() const = 0;
     virtual bool Validate() const = 0;
 

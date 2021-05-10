@@ -267,9 +267,9 @@ auto Address::serialize(
     return output;
 }
 
-auto Address::Serialize() const noexcept -> SerializedType
+auto Address::Serialize(SerializedType& output) const noexcept -> bool
 {
-    auto output = serialize(
+    output = serialize(
         version_,
         protocol_,
         network_,
@@ -280,6 +280,6 @@ auto Address::Serialize() const noexcept -> SerializedType
         services_);
     output.set_id(id_->str());
 
-    return output;
+    return true;
 }
 }  // namespace opentxs::blockchain::p2p::implementation

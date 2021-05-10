@@ -6,14 +6,11 @@
 #ifndef OPENTXS_IDENTITY_CREDENTIAL_CONTACT_HPP
 #define OPENTXS_IDENTITY_CREDENTIAL_CONTACT_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <string>
 
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/identity/credential/Base.hpp"
@@ -27,8 +24,8 @@ namespace internal
 struct Core;
 }  // namespace internal
 }  // namespace api
-namespace proto
 
+namespace proto
 {
 class Claim;
 class ContactItem;
@@ -41,15 +38,15 @@ namespace identity
 {
 namespace credential
 {
-class Contact : virtual public Base
+class OPENTXS_EXPORT Contact : virtual public Base
 {
 public:
-    OPENTXS_EXPORT static std::string ClaimID(
+    OPENTXS_NO_EXPORT static std::string ClaimID(
         const api::internal::Core& api,
         const std::string& nymid,
         const std::uint32_t section,
         const proto::ContactItem& item);
-    OPENTXS_EXPORT static std::string ClaimID(
+    static std::string ClaimID(
         const api::internal::Core& api,
         const std::string& nymid,
         const contact::ContactSectionName section,
@@ -58,16 +55,16 @@ public:
         const std::int64_t end,
         const std::string& value,
         const std::string& subtype);
-    OPENTXS_EXPORT static OTIdentifier ClaimID(
+    OPENTXS_NO_EXPORT static OTIdentifier ClaimID(
         const api::internal::Core& api,
         const proto::Claim& preimage);
-    OPENTXS_EXPORT static Claim asClaim(
+    OPENTXS_NO_EXPORT static Claim asClaim(
         const api::internal::Core& api,
         const String& nymid,
         const std::uint32_t section,
         const proto::ContactItem& item);
 
-    OPENTXS_EXPORT ~Contact() override = default;
+    ~Contact() override = default;
 
 protected:
     Contact() noexcept {}  // TODO Signable

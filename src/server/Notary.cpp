@@ -8404,8 +8404,12 @@ void Notary::process_cash_withdrawal(
 
     if (bSuccess) {
         // Add the digital cash token to the response message
-        responseItem.SetAttachment(
-            server_.API().Factory().Data(replyPurse.Serialize()));
+        responseItem.SetAttachment([&] {
+            auto proto = proto::Purse{};
+            replyPurse.Serialize(proto);
+
+            return server_.API().Factory().Data(proto);
+        }());
         responseItem.SetStatus(Item::acknowledgement);
         success = true;  // The cash withdrawal was successful.
         account.get().GetIdentifier(accountHash);

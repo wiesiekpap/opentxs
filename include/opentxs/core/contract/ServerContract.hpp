@@ -6,8 +6,6 @@
 #ifndef OPENTXS_CORE_CONTRACT_SERVERCONTRACT_HPP
 #define OPENTXS_CORE_CONTRACT_SERVERCONTRACT_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
@@ -60,9 +58,9 @@ public:
         std::uint32_t& nPort,
         core::AddressType& actual,
         const core::AddressType& preferred) const = 0;
-    virtual proto::ServerContract Contract() const = 0;
+    OPENTXS_NO_EXPORT virtual proto::ServerContract Contract() const = 0;
     virtual std::string EffectiveName() const = 0;
-    virtual proto::ServerContract PublicContract() const = 0;
+    OPENTXS_NO_EXPORT virtual proto::ServerContract PublicContract() const = 0;
     virtual bool PublicContract(AllocateOutput destination) const = 0;
     virtual bool Statistics(String& strContents) const = 0;
     virtual const Data& TransportKey() const = 0;

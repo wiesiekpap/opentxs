@@ -16,6 +16,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Editor.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
@@ -36,6 +37,11 @@ namespace identifier
 {
 class Nym;
 }  // namespace identifier
+
+namespace identity
+{
+class Nym;
+}  // namespace identity
 
 namespace proto
 {
@@ -68,19 +74,17 @@ public:
         const identifier::Nym& nymID,
         const PaymentCode& paymentCode) const
         -> std::shared_ptr<const opentxs::Contact> final;
-#if OT_BLOCKCHAIN
     auto NewContactFromAddress(
         const std::string& address,
         const std::string& label,
-        const contact::ContactItemType currency) const
+        const opentxs::blockchain::Type currency) const
         -> std::shared_ptr<const opentxs::Contact> final;
-#endif  // OT_BLOCKCHAIN
     auto NymToContact(const identifier::Nym& nymID) const -> OTIdentifier final;
     auto PaymentCodeToContact(const PaymentCode& code) const
         -> OTIdentifier final;
     auto PaymentCodeToContact(const std::string& code) const
         -> OTIdentifier final;
-    auto Update(const proto::Nym& nym) const
+    auto Update(const identity::Nym& nym) const
         -> std::shared_ptr<const opentxs::Contact> final;
 
     Contacts(const api::client::internal::Manager& api);

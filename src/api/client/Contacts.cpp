@@ -33,6 +33,7 @@
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/protobuf/Contact.pb.h"  // IWYU pragma: keep
+#include "opentxs/protobuf/Nym.pb.h"      // IWYU pragma: keep
 #include "opentxs/util/WorkType.hpp"
 
 #define OT_METHOD "opentxs::api::implementation::Contacts::"
@@ -146,8 +147,13 @@ auto Contacts::contact(const rLock& lock, const std::string& label) const
 
     auto it = add_contact(lock, contact.release());
     auto& output = it->second.second;
+    const auto proto = [&] {
+        auto out = proto::Contact{};
+        output->Serialize(out);
+        return out;
+    }();
 
-    if (false == api_.Storage().Store(*output)) {
+    if (false == api_.Storage().Store(proto)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to save contact.").Flush();
         contact_map_.erase(it);
 
@@ -353,8 +359,18 @@ auto Contacts::Merge(const Identifier& parent, const Identifier& child) const
     auto& lhs = const_cast<opentxs::Contact&>(*parentContact);
     auto& rhs = const_cast<opentxs::Contact&>(*childContact);
     lhs += rhs;
+    const auto lProto = [&] {
+        auto out = proto::Contact{};
+        lhs.Serialize(out);
+        return out;
+    }();
+    const auto rProto = [&] {
+        auto out = proto::Contact{};
+        rhs.Serialize(out);
+        return out;
+    }();
 
-    if (false == api_.Storage().Store(rhs)) {
+    if (false == api_.Storage().Store(rProto)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(
             ": Unable to create save child contact.")
             .Flush();
@@ -362,7 +378,7 @@ auto Contacts::Merge(const Identifier& parent, const Identifier& child) const
         OT_FAIL;
     }
 
-    if (false == api_.Storage().Store(lhs)) {
+    if (false == api_.Storage().Store(lProto)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(
             ": Unable to create save parent contact.")
             .Flush();
@@ -495,13 +511,13 @@ auto Contacts::NewContact(
     return new_contact(lock, label, nymID, paymentCode);
 }
 
-#if OT_BLOCKCHAIN
 auto Contacts::NewContactFromAddress(
     const std::string& address,
     const std::string& label,
-    const contact::ContactItemType currency) const
+    const opentxs::blockchain::Type currency) const
     -> std::shared_ptr<const opentxs::Contact>
 {
+#if OT_BLOCKCHAIN
     auto blockchain = blockchain_.lock();
 
     if (false == bool(blockchain)) {
@@ -543,7 +559,13 @@ auto Contacts::NewContactFromAddress(
         OT_FAIL;
     }
 
-    if (false == api_.Storage().Store(contact)) {
+    const auto proto = [&] {
+        auto out = proto::Contact{};
+        contact.Serialize(out);
+        return out;
+    }();
+
+    if (false == api_.Storage().Store(proto)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to save contact.").Flush();
 
         OT_FAIL;
@@ -552,8 +574,11 @@ auto Contacts::NewContactFromAddress(
     blockchain->ProcessContact(contact);
 
     return newContact;
-}
+#else
+
+    return {};
 #endif  // OT_BLOCKCHAIN
+}
 
 auto Contacts::NymToContact(const identifier::Nym& nymID) const -> OTIdentifier
 {
@@ -641,7 +666,13 @@ void Contacts::save(opentxs::Contact* contact) const
 {
     OT_ASSERT(nullptr != contact);
 
-    if (false == api_.Storage().Store(*contact)) {
+    const auto proto = [&] {
+        auto out = proto::Contact{};
+        contact->Serialize(out);
+        return out;
+    }();
+
+    if (false == api_.Storage().Store(proto)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(
             ": Unable to create or save contact.")
             .Flush();
@@ -692,18 +723,10 @@ void Contacts::start()
     }
 }
 
-auto Contacts::Update(const proto::Nym& serialized) const
+auto Contacts::Update(const identity::Nym& nym) const
     -> std::shared_ptr<const opentxs::Contact>
 {
-    auto nym = api_.Wallet().Nym(serialized);
-
-    if (false == bool(nym)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid nym.").Flush();
-
-        return {};
-    }
-
-    auto& data = nym->Claims();
+    auto& data = nym.Claims();
 
     switch (data.Type()) {
         case contact::ContactItemType::Individual:
@@ -717,24 +740,24 @@ auto Contacts::Update(const proto::Nym& serialized) const
         }
     }
 
-    const auto& nymID = nym->ID();
+    const auto& nymID = nym.ID();
     rLock lock(lock_);
     const auto contactIdentifier = api_.Storage().ContactOwnerNym(nymID.str());
     const auto contactID = api_.Factory().Identifier(contactIdentifier);
-    const auto label = Contact::ExtractLabel(*nym);
+    const auto label = Contact::ExtractLabel(nym);
 
     if (contactIdentifier.empty()) {
         LogDetail(OT_METHOD)(__FUNCTION__)(": Nym ")(nymID)(
             " is not associated with a contact. Creating a new contact named ")(
             label)
             .Flush();
-        auto code = api_.Factory().PaymentCode(nym->PaymentCode());
+        auto code = api_.Factory().PaymentCode(nym.PaymentCode());
         return new_contact(lock, label, nymID, code);
     }
 
     {
         auto contact = mutable_contact(lock, contactID);
-        contact->get().Update(serialized);
+        contact->get().Update(nym.asPublicNym());
         contact.reset();
     }
 
@@ -816,8 +839,13 @@ void Contacts::update_nym_map(
             }
 
             oldContact->RemoveNym(nymID);
+            const auto proto = [&] {
+                auto out = proto::Contact{};
+                oldContact->Serialize(out);
+                return out;
+            }();
 
-            if (false == api_.Storage().Store(*oldContact)) {
+            if (false == api_.Storage().Store(proto)) {
                 LogOutput(OT_METHOD)(__FUNCTION__)(
                     ": Unable to create or save contact.")
                     .Flush();
@@ -828,8 +856,13 @@ void Contacts::update_nym_map(
             LogOutput(OT_METHOD)(__FUNCTION__)(": Duplicate nym found.")
                 .Flush();
             contact.RemoveNym(nymID);
+            const auto proto = [&] {
+                auto out = proto::Contact{};
+                contact.Serialize(out);
+                return out;
+            }();
 
-            if (false == api_.Storage().Store(contact)) {
+            if (false == api_.Storage().Store(proto)) {
                 LogOutput(OT_METHOD)(__FUNCTION__)(
                     ": Unable to create or save contact.")
                     .Flush();

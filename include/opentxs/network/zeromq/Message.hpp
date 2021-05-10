@@ -6,13 +6,10 @@
 #ifndef OPENTXS_NETWORK_ZEROMQ_MESSAGE_HPP
 #define OPENTXS_NETWORK_ZEROMQ_MESSAGE_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 
 #ifdef SWIG
@@ -28,6 +25,14 @@
 %template(OTZMQMessage) opentxs::Pimpl<opentxs::network::zeromq::Message>;
 // clang-format on
 #endif  // SWIG
+
+namespace google
+{
+namespace protobuf
+{
+class MessageLite;
+}  // namespace protobuf
+}  // namespace google
 
 namespace opentxs
 {
@@ -69,7 +74,8 @@ public:
     virtual std::size_t size() const = 0;
 
     virtual Frame& AddFrame() = 0;
-    virtual Frame& AddFrame(const ProtobufType& input) = 0;
+    OPENTXS_NO_EXPORT virtual Frame& AddFrame(
+        const ::google::protobuf::MessageLite& input) = 0;
 #ifndef SWIG
     template <
         typename Input,

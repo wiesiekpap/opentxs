@@ -1205,7 +1205,7 @@ auto Peer::process_headers(
         auto work = MakeWork(Task::SubmitBlockHeader);
 
         for (const auto& header : message) {
-            work->AddFrame(header.Serialize());
+            header.Serialize(work->AppendBytes(), false);
         }
 
         auto future = network_.Track(work);

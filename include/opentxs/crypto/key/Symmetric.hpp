@@ -6,8 +6,6 @@
 #ifndef OPENTXS_CRYPTO_KEY_SYMMETRIC_HPP
 #define OPENTXS_CRYPTO_KEY_SYMMETRIC_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
@@ -52,26 +50,26 @@ namespace crypto
 {
 namespace key
 {
-class Symmetric
+class OPENTXS_EXPORT Symmetric
 {
 public:
     /** Generate a blank, invalid key */
-    OPENTXS_EXPORT static OTSymmetricKey Factory();
+    static OTSymmetricKey Factory();
 
-    OPENTXS_EXPORT virtual operator bool() const = 0;
+    virtual operator bool() const = 0;
 
-    OPENTXS_EXPORT virtual const api::Core& api() const = 0;
+    virtual const api::Core& api() const = 0;
 
     /** Decrypt ciphertext using the symmetric key
      *
      *  \param[in] ciphertext The data to be decrypted
      *  \param[out] plaintext The encrypted output
      */
-    OPENTXS_EXPORT virtual bool Decrypt(
+    OPENTXS_NO_EXPORT virtual bool Decrypt(
         const proto::Ciphertext& ciphertext,
         const PasswordPrompt& reason,
         const AllocateOutput plaintext) const = 0;
-    OPENTXS_EXPORT virtual bool DecryptFromBytes(
+    virtual bool DecryptFromBytes(
         const ReadView& ciphertext,
         const PasswordPrompt& reason,
         const AllocateOutput plaintext) const = 0;
@@ -84,7 +82,7 @@ public:
      *                       embedded in the ciphertext
      *  \param[in] mode The symmetric algorithm to use for encryption
      */
-    OPENTXS_EXPORT virtual bool Encrypt(
+    OPENTXS_NO_EXPORT virtual bool Encrypt(
         const ReadView plaintext,
         const PasswordPrompt& reason,
         proto::Ciphertext& ciphertext,
@@ -92,7 +90,7 @@ public:
         const opentxs::crypto::key::symmetric::Algorithm mode =
             opentxs::crypto::key::symmetric::Algorithm::Error,
         const ReadView iv = {}) const = 0;
-    OPENTXS_EXPORT virtual bool Encrypt(
+    virtual bool Encrypt(
         const ReadView plaintext,
         const PasswordPrompt& reason,
         AllocateOutput ciphertext,
@@ -100,20 +98,17 @@ public:
         const opentxs::crypto::key::symmetric::Algorithm mode =
             opentxs::crypto::key::symmetric::Algorithm::Error,
         const ReadView iv = {}) const = 0;
-    OPENTXS_EXPORT virtual OTIdentifier ID(
-        const PasswordPrompt& reason) const = 0;
-    OPENTXS_EXPORT virtual bool RawKey(
-        const PasswordPrompt& reason,
-        Secret& output) const = 0;
-    OPENTXS_EXPORT virtual bool Serialize(
+    virtual OTIdentifier ID(const PasswordPrompt& reason) const = 0;
+    virtual bool RawKey(const PasswordPrompt& reason, Secret& output) const = 0;
+    OPENTXS_NO_EXPORT virtual bool Serialize(
         proto::SymmetricKey& output) const = 0;
-    OPENTXS_EXPORT virtual bool Unlock(const PasswordPrompt& reason) const = 0;
+    virtual bool Unlock(const PasswordPrompt& reason) const = 0;
 
-    OPENTXS_EXPORT virtual bool ChangePassword(
+    virtual bool ChangePassword(
         const PasswordPrompt& reason,
         const Secret& newPassword) = 0;
 
-    OPENTXS_EXPORT virtual ~Symmetric() = default;
+    virtual ~Symmetric() = default;
 
 protected:
     Symmetric() = default;

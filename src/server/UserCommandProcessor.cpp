@@ -3032,7 +3032,12 @@ auto UserCommandProcessor::reregister_nym(ReplyMessage& reply) const -> bool
         return false;
     }
 
-    reply.SetPayload(manager_.Factory().Data(context.Refresh(reason_)));
+    reply.SetPayload(manager_.Factory().Data([&] {
+        auto proto = proto::Context{};
+        context.Refresh(proto, reason_);
+
+        return proto;
+    }()));
     reply.SetSuccess(true);
 
     return true;

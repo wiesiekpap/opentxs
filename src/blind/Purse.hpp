@@ -3,9 +3,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: private
-// IWYU pragma: friend ".*src/blind/Purse.cpp"
-
 #pragma once
 
 #include <iosfwd>
@@ -65,6 +62,11 @@ namespace identity
 class Nym;
 }  // namespace identity
 
+namespace proto
+{
+class Purse;
+}  // namespace proto
+
 class Factory;
 class PasswordPrompt;
 }  // namespace opentxs
@@ -96,8 +98,8 @@ public:
         const identity::Nym& owner,
         const Mint& mint,
         const PasswordPrompt& reason) -> bool final;
-    auto Serialize() const -> proto::Purse final;
-    auto Serialize(AllocateOutput destination) const noexcept -> void final;
+    auto Serialize(proto::Purse& out) const noexcept -> bool final;
+    auto Serialize(AllocateOutput destination) const noexcept -> bool final;
     auto size() const noexcept -> std::size_t final { return tokens_.size(); }
     auto State() const -> blind::PurseType final { return state_; }
     auto Type() const -> blind::CashType final { return type_; }

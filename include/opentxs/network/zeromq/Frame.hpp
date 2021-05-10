@@ -6,8 +6,6 @@
 #ifndef OPENTXS_NETWORK_ZEROMQ_FRAME_HPP
 #define OPENTXS_NETWORK_ZEROMQ_FRAME_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstring>  // IWYU pragma: keep
@@ -16,7 +14,6 @@
 
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 
 struct zmq_msg_t;
 
@@ -54,10 +51,10 @@ namespace network
 {
 namespace zeromq
 {
-class Frame
+class OPENTXS_EXPORT Frame
 {
 public:
-    OPENTXS_EXPORT virtual operator std::string() const noexcept = 0;
+    virtual operator std::string() const noexcept = 0;
 
 #ifndef SWIG
     template <
@@ -80,15 +77,15 @@ public:
     }
 #endif
 
-    OPENTXS_EXPORT virtual auto Bytes() const noexcept -> ReadView = 0;
+    virtual auto Bytes() const noexcept -> ReadView = 0;
 #ifndef SWIG
-    OPENTXS_EXPORT virtual auto data() const noexcept -> const void* = 0;
+    virtual auto data() const noexcept -> const void* = 0;
 #endif
-    OPENTXS_EXPORT virtual auto size() const noexcept -> std::size_t = 0;
+    virtual auto size() const noexcept -> std::size_t = 0;
 
-    OPENTXS_EXPORT virtual operator zmq_msg_t*() noexcept = 0;
+    virtual operator zmq_msg_t*() noexcept = 0;
 
-    OPENTXS_EXPORT virtual ~Frame() = default;
+    virtual ~Frame() = default;
 
 protected:
     Frame() = default;
@@ -96,7 +93,7 @@ protected:
 private:
     friend OTZMQFrame;
 
-    OPENTXS_EXPORT virtual Frame* clone() const noexcept = 0;
+    virtual Frame* clone() const noexcept = 0;
 
     Frame(const Frame&) = delete;
     Frame(Frame&&) = delete;

@@ -6,12 +6,9 @@
 #ifndef OPENTXS_NETWORK_ZEROMQ_SOCKET_PUSH_HPP
 #define OPENTXS_NETWORK_ZEROMQ_SOCKET_PUSH_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
-
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/network/zeromq/curve/Client.hpp"
 #include "opentxs/network/zeromq/socket/Sender.hpp"
 
@@ -50,10 +47,10 @@ namespace zeromq
 {
 namespace socket
 {
-class Push : virtual public curve::Client, virtual public Sender
+class OPENTXS_EXPORT Push : virtual public curve::Client, virtual public Sender
 {
 public:
-    OPENTXS_EXPORT ~Push() override = default;
+    ~Push() override = default;
 
 protected:
     Push() noexcept = default;

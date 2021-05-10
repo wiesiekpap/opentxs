@@ -6,7 +6,6 @@
 #ifndef OPENTXS_CONTACT_CONTACT_HPP
 #define OPENTXS_CONTACT_CONTACT_HPP
 
-// IWYU pragma: no_include "opentxs/Proto.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
@@ -22,7 +21,6 @@
 #include <tuple>
 #include <vector>
 
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/client/blockchain/AddressStyle.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
@@ -67,94 +65,87 @@ class Contact;
 
 namespace opentxs
 {
-class Contact
+class OPENTXS_EXPORT Contact
 {
 public:
     using AddressStyle = api::client::blockchain::AddressStyle;
     using BlockchainType = blockchain::Type;
     using BlockchainAddress = std::tuple<OTData, AddressStyle, BlockchainType>;
 
-    OPENTXS_EXPORT static std::shared_ptr<ContactItem> Best(
-        const ContactGroup& group);
-    OPENTXS_EXPORT static std::string ExtractLabel(const identity::Nym& nym);
-    OPENTXS_EXPORT static contact::ContactItemType ExtractType(
-        const identity::Nym& nym);
-    OPENTXS_EXPORT static std::string PaymentCode(
+    static std::shared_ptr<ContactItem> Best(const ContactGroup& group);
+    static std::string ExtractLabel(const identity::Nym& nym);
+    static contact::ContactItemType ExtractType(const identity::Nym& nym);
+    static std::string PaymentCode(
         const ContactData& data,
         const contact::ContactItemType currency);
 
-    OPENTXS_EXPORT Contact(
+    OPENTXS_NO_EXPORT Contact(
         const api::client::internal::Manager& api,
         const proto::Contact& serialized);
-    OPENTXS_EXPORT Contact(
+    Contact(
         const api::client::internal::Manager& api,
         const std::string& label);
 
-    OPENTXS_EXPORT operator proto::Contact() const;
-    OPENTXS_EXPORT Contact& operator+=(Contact& rhs);
+    Contact& operator+=(Contact& rhs);
 
-    OPENTXS_EXPORT std::string BestEmail() const;
-    OPENTXS_EXPORT std::string BestPhoneNumber() const;
-    OPENTXS_EXPORT std::string BestSocialMediaProfile(
+    std::string BestEmail() const;
+    std::string BestPhoneNumber() const;
+    std::string BestSocialMediaProfile(
         const contact::ContactItemType type) const;
-    OPENTXS_EXPORT std::vector<BlockchainAddress> BlockchainAddresses() const;
-    OPENTXS_EXPORT std::shared_ptr<ContactData> Data() const;
-    OPENTXS_EXPORT std::string EmailAddresses(bool active = true) const;
-    OPENTXS_EXPORT const Identifier& ID() const;
-    OPENTXS_EXPORT const std::string& Label() const;
-    OPENTXS_EXPORT std::time_t LastUpdated() const;
-    OPENTXS_EXPORT std::vector<OTNymID> Nyms(
-        const bool includeInactive = false) const;
-    OPENTXS_EXPORT std::string PaymentCode(
+    std::vector<BlockchainAddress> BlockchainAddresses() const;
+    std::shared_ptr<ContactData> Data() const;
+    std::string EmailAddresses(bool active = true) const;
+    const Identifier& ID() const;
+    const std::string& Label() const;
+    std::time_t LastUpdated() const;
+    std::vector<OTNymID> Nyms(const bool includeInactive = false) const;
+    std::string PaymentCode(
         const contact::ContactItemType currency =
             contact::ContactItemType::BTC) const;
-    OPENTXS_EXPORT std::vector<std::string> PaymentCodes(
+    std::vector<std::string> PaymentCodes(
         const contact::ContactItemType currency =
             contact::ContactItemType::BTC) const;
-    OPENTXS_EXPORT std::string PhoneNumbers(bool active = true) const;
-    OPENTXS_EXPORT std::string Print() const;
-    OPENTXS_EXPORT std::string SocialMediaProfiles(
+    std::string PhoneNumbers(bool active = true) const;
+    std::string Print() const;
+    OPENTXS_NO_EXPORT bool Serialize(proto::Contact& out) const;
+    std::string SocialMediaProfiles(
         const contact::ContactItemType type,
         bool active = true) const;
-    OPENTXS_EXPORT const std::set<contact::ContactItemType>
-    SocialMediaProfileTypes() const;
-    OPENTXS_EXPORT contact::ContactItemType Type() const;
+    const std::set<contact::ContactItemType> SocialMediaProfileTypes() const;
+    contact::ContactItemType Type() const;
 
-    OPENTXS_EXPORT bool AddBlockchainAddress(
+    bool AddBlockchainAddress(
         const std::string& address,
-        const contact::ContactItemType currency =
-            contact::ContactItemType::Unknown);
-    OPENTXS_EXPORT bool AddBlockchainAddress(
+        const BlockchainType currency);
+    bool AddBlockchainAddress(
         const api::client::blockchain::AddressStyle& style,
         const blockchain::Type chain,
         const opentxs::Data& bytes);
-    OPENTXS_EXPORT bool AddEmail(
+    bool AddEmail(
         const std::string& value,
         const bool primary,
         const bool active);
-    OPENTXS_EXPORT bool AddNym(const Nym_p& nym, const bool primary);
-    OPENTXS_EXPORT bool AddNym(
-        const identifier::Nym& nymID,
-        const bool primary);
-    OPENTXS_EXPORT bool AddPaymentCode(
+    bool AddNym(const Nym_p& nym, const bool primary);
+    bool AddNym(const identifier::Nym& nymID, const bool primary);
+    bool AddPaymentCode(
         const opentxs::PaymentCode& code,
         const bool primary,
         const contact::ContactItemType currency = contact::ContactItemType::BTC,
         const bool active = true);
-    OPENTXS_EXPORT bool AddPhoneNumber(
+    bool AddPhoneNumber(
         const std::string& value,
         const bool primary,
         const bool active);
-    OPENTXS_EXPORT bool AddSocialMediaProfile(
+    bool AddSocialMediaProfile(
         const std::string& value,
         const contact::ContactItemType type,
         const bool primary,
         const bool active);
-    OPENTXS_EXPORT bool RemoveNym(const identifier::Nym& nymID);
-    OPENTXS_EXPORT void SetLabel(const std::string& label);
-    OPENTXS_EXPORT void Update(const identity::Nym::Serialized& nym);
+    bool RemoveNym(const identifier::Nym& nymID);
+    void SetLabel(const std::string& label);
+    void Update(const identity::Nym::Serialized& nym);
 
-    OPENTXS_EXPORT ~Contact();
+    ~Contact();
 
 private:
     struct Imp;

@@ -10,7 +10,6 @@
 
 #include <string>
 
-#include "opentxs/Proto.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/ui/List.hpp"
 
@@ -41,34 +40,33 @@ namespace opentxs
 {
 namespace ui
 {
-class ActivityThread : virtual public List
+class OPENTXS_EXPORT ActivityThread : virtual public List
 {
 public:
-    OPENTXS_EXPORT virtual std::string DisplayName() const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::ActivityThreadItem>
-    First() const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::ActivityThreadItem>
-    Next() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string GetDraft() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string Participants() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Pay(
+    virtual std::string DisplayName() const noexcept = 0;
+    virtual opentxs::SharedPimpl<opentxs::ui::ActivityThreadItem> First()
+        const noexcept = 0;
+    virtual opentxs::SharedPimpl<opentxs::ui::ActivityThreadItem> Next()
+        const noexcept = 0;
+    virtual std::string GetDraft() const noexcept = 0;
+    virtual std::string Participants() const noexcept = 0;
+    virtual bool Pay(
         const std::string& amount,
         const Identifier& sourceAccount,
         const std::string& memo = "",
         const PaymentType type = PaymentType::Cheque) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Pay(
+    virtual bool Pay(
         const Amount amount,
         const Identifier& sourceAccount,
         const std::string& memo = "",
         const PaymentType type = PaymentType::Cheque) const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string PaymentCode(
+    virtual std::string PaymentCode(
         const contact::ContactItemType currency) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SendDraft() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SetDraft(
-        const std::string& draft) const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string ThreadID() const noexcept = 0;
+    virtual bool SendDraft() const noexcept = 0;
+    virtual bool SetDraft(const std::string& draft) const noexcept = 0;
+    virtual std::string ThreadID() const noexcept = 0;
 
-    OPENTXS_EXPORT ~ActivityThread() override = default;
+    ~ActivityThread() override = default;
 
 protected:
     ActivityThread() noexcept = default;

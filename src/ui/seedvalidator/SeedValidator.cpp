@@ -44,7 +44,7 @@ struct SeedValidator::Imp {
     {
         auto clean = QString{};
 
-        for (const auto c : input) {
+        for (const auto& c : input) {
             if (c.isLetter()) { clean += c; }
         }
 

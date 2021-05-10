@@ -21,7 +21,6 @@
 #include <string>
 
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -46,10 +45,10 @@ class ContactItem;
 
 namespace opentxs
 {
-class ContactItem
+class OPENTXS_EXPORT ContactItem
 {
 public:
-    OPENTXS_EXPORT ContactItem(
+    ContactItem(
         const api::internal::Core& api,
         const std::string& nym,
         const VersionNumber version,
@@ -61,56 +60,52 @@ public:
         const std::time_t start,
         const std::time_t end,
         const std::string subtype);
-    OPENTXS_EXPORT ContactItem(
+    ContactItem(
         const api::internal::Core& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
         const Claim& claim);
-    OPENTXS_EXPORT ContactItem(
+    OPENTXS_NO_EXPORT ContactItem(
         const api::internal::Core& api,
         const std::string& nym,
         const VersionNumber parentVersion,
         const contact::ContactSectionName section,
         const proto::ContactItem& serialized);
-    OPENTXS_EXPORT ContactItem(
+    ContactItem(
         const api::internal::Core& api,
         const std::string& nym,
         const VersionNumber parentVersion,
         const contact::ContactSectionName section,
         const ReadView& serialized);
-    OPENTXS_EXPORT ContactItem(const ContactItem&) noexcept;
-    OPENTXS_EXPORT ContactItem(ContactItem&&) noexcept;
+    ContactItem(const ContactItem&) noexcept;
+    ContactItem(ContactItem&&) noexcept;
 
-    OPENTXS_EXPORT bool operator==(const ContactItem& rhs) const;
+    bool operator==(const ContactItem& rhs) const;
 
-    // Includes IDs
-    OPENTXS_EXPORT operator proto::ContactItem() const;
-
-    OPENTXS_EXPORT const std::time_t& End() const;
-    OPENTXS_EXPORT const Identifier& ID() const;
-    OPENTXS_EXPORT bool isActive() const;
-    OPENTXS_EXPORT bool isLocal() const;
-    OPENTXS_EXPORT bool isPrimary() const;
-    OPENTXS_EXPORT const contact::ContactSectionName& Section() const;
-    OPENTXS_EXPORT bool Serialize(
-        AllocateOutput destination,
+    const std::time_t& End() const;
+    const Identifier& ID() const;
+    bool isActive() const;
+    bool isLocal() const;
+    bool isPrimary() const;
+    const contact::ContactSectionName& Section() const;
+    bool Serialize(AllocateOutput destination, const bool withID = false) const;
+    OPENTXS_NO_EXPORT bool Serialize(
+        proto::ContactItem& out,
         const bool withID = false) const;
-    OPENTXS_EXPORT proto::ContactItem Serialize(
-        const bool withID = false) const;
-    OPENTXS_EXPORT ContactItem SetActive(const bool active) const;
-    OPENTXS_EXPORT ContactItem SetEnd(const std::time_t end) const;
-    OPENTXS_EXPORT ContactItem SetLocal(const bool local) const;
-    OPENTXS_EXPORT ContactItem SetPrimary(const bool primary) const;
-    OPENTXS_EXPORT ContactItem SetStart(const std::time_t start) const;
-    OPENTXS_EXPORT ContactItem SetValue(const std::string& value) const;
-    OPENTXS_EXPORT const std::time_t& Start() const;
-    OPENTXS_EXPORT const std::string& Subtype() const;
-    OPENTXS_EXPORT const contact::ContactItemType& Type() const;
-    OPENTXS_EXPORT const std::string& Value() const;
-    OPENTXS_EXPORT VersionNumber Version() const;
+    ContactItem SetActive(const bool active) const;
+    ContactItem SetEnd(const std::time_t end) const;
+    ContactItem SetLocal(const bool local) const;
+    ContactItem SetPrimary(const bool primary) const;
+    ContactItem SetStart(const std::time_t start) const;
+    ContactItem SetValue(const std::string& value) const;
+    const std::time_t& Start() const;
+    const std::string& Subtype() const;
+    const contact::ContactItemType& Type() const;
+    const std::string& Value() const;
+    VersionNumber Version() const;
 
-    OPENTXS_EXPORT ~ContactItem();
+    ~ContactItem();
 
 private:
     struct Imp;
