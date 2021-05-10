@@ -283,7 +283,7 @@ auto Contacts::load_contact(const rLock& lock, const Identifier& id) const
         throw std::runtime_error("lock error");
     }
 
-    std::shared_ptr<proto::Contact> serialized{nullptr};
+    auto serialized = proto::Contact{};
     const auto loaded = api_.Storage().Load(id.str(), serialized, SILENT);
 
     if (false == loaded) {
@@ -293,10 +293,7 @@ auto Contacts::load_contact(const rLock& lock, const Identifier& id) const
         return contact_map_.end();
     }
 
-    OT_ASSERT(serialized);
-
-    std::unique_ptr<opentxs::Contact> contact(
-        new opentxs::Contact(api_, *serialized));
+    auto contact = std::make_unique<opentxs::Contact>(api_, serialized);
 
     if (false == bool(contact)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(

@@ -2173,15 +2173,16 @@ auto Workflow::get_workflow_by_id(
     const std::string& workflowID) const
     -> std::shared_ptr<proto::PaymentWorkflow>
 {
-    std::shared_ptr<proto::PaymentWorkflow> output{nullptr};
-    const auto loaded = api_.Storage().Load(nymID, workflowID, output);
+    auto output = std::make_shared<proto::PaymentWorkflow>();
 
-    if (false == loaded) {
+    OT_ASSERT(output);
+
+    if (false == api_.Storage().Load(nymID, workflowID, *output)) {
         LogDetail(OT_METHOD)(__FUNCTION__)(": Workflow ")(workflowID)(
             " for nym ")(nymID)(" can not be loaded")
             .Flush();
 
-        return output;
+        return {};
     }
 
     return output;

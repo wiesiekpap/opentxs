@@ -243,18 +243,15 @@ auto BlockchainImp::ActivityDescription(
     const Identifier& thread,
     const std::string& itemID) const noexcept -> std::string
 {
-    auto pThread = std::shared_ptr<proto::StorageThread>{};
-    api_.Storage().Load(nym.str(), thread.str(), pThread);
+    auto data = proto::StorageThread{};
 
-    if (false == bool(pThread)) {
+    if (false == api_.Storage().Load(nym.str(), thread.str(), data)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": thread ")(thread.str())(
             " does not exist for nym ")(nym.str())
             .Flush();
 
         return {};
     }
-
-    const auto& data = *pThread;
 
     for (const auto& item : data.item()) {
         if (item.id() != itemID) { continue; }

@@ -259,10 +259,9 @@ auto Activity::Cheque(
         }
     }
 
-    std::shared_ptr<proto::PaymentWorkflow> workflow{nullptr};
-    const auto loaded = api_.Storage().Load(nym.str(), workflowID, workflow);
+    auto workflow = proto::PaymentWorkflow{};
 
-    if (false == loaded) {
+    if (false == api_.Storage().Load(nym.str(), workflowID, workflow)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Workflow ")(workflowID)(
             " for nym ")(nym)(" can not be loaded.")
             .Flush();
@@ -270,9 +269,7 @@ auto Activity::Cheque(
         return output;
     }
 
-    OT_ASSERT(workflow)
-
-    auto instantiated = client::Workflow::InstantiateCheque(api_, *workflow);
+    auto instantiated = client::Workflow::InstantiateCheque(api_, workflow);
     cheque.reset(std::get<1>(instantiated).release());
 
     OT_ASSERT(cheque)
@@ -318,10 +315,9 @@ auto Activity::Transfer(
         }
     }
 
-    auto workflow = std::shared_ptr<proto::PaymentWorkflow>{nullptr};
-    const auto loaded = api_.Storage().Load(nym.str(), workflowID, workflow);
+    auto workflow = proto::PaymentWorkflow{};
 
-    if (false == loaded) {
+    if (false == api_.Storage().Load(nym.str(), workflowID, workflow)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Workflow ")(workflowID)(
             " for nym ")(nym)(" can not be loaded")
             .Flush();
@@ -329,14 +325,12 @@ auto Activity::Transfer(
         return output;
     }
 
-    OT_ASSERT(workflow)
-
-    auto instantiated = client::Workflow::InstantiateTransfer(api_, *workflow);
+    auto instantiated = client::Workflow::InstantiateTransfer(api_, workflow);
     transfer.reset(std::get<1>(instantiated).release());
 
     OT_ASSERT(transfer)
 
-    if (0 == workflow->account_size()) {
+    if (0 == workflow.account_size()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(
             ": Workflow does not list any accounts.")
             .Flush();
@@ -345,7 +339,7 @@ auto Activity::Transfer(
     }
 
     const auto unit = api_.Storage().AccountContract(
-        Identifier::Factory(workflow->account(0)));
+        Identifier::Factory(workflow.account(0)));
 
     if (unit->empty()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(
@@ -619,18 +613,15 @@ auto Activity::PaymentText(
         }
     }
 
-    std::shared_ptr<proto::PaymentWorkflow> workflow{nullptr};
-    const auto loaded = api_.Storage().Load(nym.str(), workflowID, workflow);
+    auto workflow = proto::PaymentWorkflow{};
 
-    if (false == loaded) {
+    if (false == api_.Storage().Load(nym.str(), workflowID, workflow)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Workflow ")(workflowID)(
             " for nym ")(nym)(" can not be loaded.")
             .Flush();
 
         return std::move(output);
     }
-
-    OT_ASSERT(workflow)
 
     switch (type) {
         case api::client::PaymentWorkflowType::OutgoingCheque:
@@ -799,8 +790,11 @@ auto Activity::Thread(const identifier::Nym& nymID, const Identifier& threadID)
     const noexcept -> std::shared_ptr<proto::StorageThread>
 {
     sLock lock(shared_lock_);
-    std::shared_ptr<proto::StorageThread> output;
-    api_.Storage().Load(nymID.str(), threadID.str(), output);
+    auto output = std::make_shared<proto::StorageThread>();
+
+    OT_ASSERT(output);
+
+    api_.Storage().Load(nymID.str(), threadID.str(), *output);
 
     return output;
 }
@@ -812,10 +806,9 @@ void Activity::thread_preload_thread(
     const std::size_t start,
     const std::size_t count) const noexcept
 {
-    std::shared_ptr<proto::StorageThread> thread{};
-    const bool loaded = api_.Storage().Load(nymID, threadID, thread);
+    auto thread = proto::StorageThread{};
 
-    if (false == loaded) {
+    if (false == api_.Storage().Load(nymID, threadID, thread)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to load thread ")(
             threadID)(" for nym ")(nymID)
             .Flush();
@@ -823,8 +816,8 @@ void Activity::thread_preload_thread(
         return;
     }
 
-    const std::size_t size = thread->item_size();
-    std::size_t cached{0};
+    const auto size = std::size_t(thread.item_size());
+    auto cached = std::size_t{0};
 
     if (start > size) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Error: start larger than size "
@@ -839,7 +832,7 @@ void Activity::thread_preload_thread(
     for (auto i = (size - start); i > 0u; --i) {
         if (cached >= count) { break; }
 
-        const auto& item = thread->item(static_cast<int>(i - 1u));
+        const auto& item = thread.item(static_cast<int>(i - 1u));
         const auto& box = static_cast<StorageBox>(item.box());
 
         switch (box) {

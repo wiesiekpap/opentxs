@@ -2356,20 +2356,18 @@ auto OT_API::LoadNymbox(
 // Tells you whether or not a given instrument definition is actually a
 // basket currency.
 //
-auto OT_API::IsBasketCurrency(
-    const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID) const
+auto OT_API::IsBasketCurrency(const identifier::UnitDefinition& id) const
     -> bool  // returns true or false.
 {
-    std::shared_ptr<proto::UnitDefinition> contract;
+    auto contract = proto::UnitDefinition{};
 
-    bool loaded = api_.Storage().Load(
-        BASKET_INSTRUMENT_DEFINITION_ID.str(), contract, true);
-
-    if (!loaded) { return false; }
+    if (false == api_.Storage().Load(id.str(), contract, true)) {
+        return false;
+    }
 
     return (
         contract::UnitType::Basket ==
-        contract::internal::translate(contract->type()));
+        contract::internal::translate(contract.type()));
 }
 
 // Get Basket Count (of member currency types.)
@@ -2377,22 +2375,19 @@ auto OT_API::IsBasketCurrency(
 // Returns the number of instrument definitions that make up this basket.
 // (Or zero.)
 //
-auto OT_API::GetBasketMemberCount(
-    const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID) const
+auto OT_API::GetBasketMemberCount(const identifier::UnitDefinition& id) const
     -> std::int32_t
 {
-    std::shared_ptr<proto::UnitDefinition> serialized;
-    api_.Storage().Load(
-        BASKET_INSTRUMENT_DEFINITION_ID.str(), serialized, true);
+    auto serialized = proto::UnitDefinition{};
 
-    if (!serialized) { return 0; }
+    if (false == api_.Storage().Load(id.str(), serialized, true)) { return 0; }
 
     if (contract::UnitType::Basket !=
-        contract::internal::translate(serialized->type())) {
+        contract::internal::translate(serialized.type())) {
         return 0;
     }
 
-    return serialized->basket().item_size();
+    return serialized.basket().item_size();
 }
 
 // Get Basket Member Asset Type
@@ -2402,22 +2397,22 @@ auto OT_API::GetBasketMemberCount(
 // (Or false.)
 //
 auto OT_API::GetBasketMemberType(
-    const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID,
+    const identifier::UnitDefinition& id,
     std::int32_t nIndex,
     identifier::UnitDefinition& theOutputMemberType) const -> bool
 {
-    std::shared_ptr<proto::UnitDefinition> serialized;
-    api_.Storage().Load(
-        BASKET_INSTRUMENT_DEFINITION_ID.str(), serialized, true);
+    auto serialized = proto::UnitDefinition{};
 
-    if (!serialized) { return false; }
-
-    if (contract::UnitType::Basket !=
-        contract::internal::translate(serialized->type())) {
+    if (false == api_.Storage().Load(id.str(), serialized, true)) {
         return false;
     }
 
-    if ((nIndex >= serialized->basket().item_size()) || (nIndex < 0)) {
+    if (contract::UnitType::Basket !=
+        contract::internal::translate(serialized.type())) {
+        return false;
+    }
+
+    if ((nIndex >= serialized.basket().item_size()) || (nIndex < 0)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Index out of bounds: ")(nIndex)(
             ".")
             .Flush();
@@ -2425,7 +2420,7 @@ auto OT_API::GetBasketMemberType(
         return false;
     }
 
-    theOutputMemberType.SetString(serialized->basket().item(nIndex).unit());
+    theOutputMemberType.SetString(serialized.basket().item(nIndex).unit());
 
     return true;
 }
@@ -2438,28 +2433,26 @@ auto OT_API::GetBasketMemberType(
 // (Or 0.)
 //
 auto OT_API::GetBasketMemberMinimumTransferAmount(
-    const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID,
+    const identifier::UnitDefinition& id,
     std::int32_t nIndex) const -> std::int64_t
 {
-    std::shared_ptr<proto::UnitDefinition> serialized;
-    api_.Storage().Load(
-        BASKET_INSTRUMENT_DEFINITION_ID.str(), serialized, true);
+    auto serialized = proto::UnitDefinition{};
 
-    if (!serialized) { return 0; }
+    if (false == api_.Storage().Load(id.str(), serialized, true)) { return 0; }
 
     if (contract::UnitType::Basket !=
-        contract::internal::translate(serialized->type())) {
+        contract::internal::translate(serialized.type())) {
         return 0;
     }
 
-    if ((nIndex >= serialized->basket().item_size()) || (nIndex < 0)) {
+    if ((nIndex >= serialized.basket().item_size()) || (nIndex < 0)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Index out of bounds: ")(nIndex)(
             ".")
             .Flush();
         return 0;
     }
 
-    return serialized->basket().item(nIndex).weight();
+    return serialized.basket().item(nIndex).weight();
 }
 
 // Get Basket Minimum Transfer Amount
@@ -2468,21 +2461,18 @@ auto OT_API::GetBasketMemberMinimumTransferAmount(
 // (Or 0.)
 //
 auto OT_API::GetBasketMinimumTransferAmount(
-    const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID) const
-    -> std::int64_t
+    const identifier::UnitDefinition& id) const -> std::int64_t
 {
-    std::shared_ptr<proto::UnitDefinition> serialized;
-    api_.Storage().Load(
-        BASKET_INSTRUMENT_DEFINITION_ID.str(), serialized, true);
+    auto serialized = proto::UnitDefinition{};
 
-    if (!serialized) { return 0; }
+    if (false == api_.Storage().Load(id.str(), serialized, true)) { return 0; }
 
     if (contract::UnitType::Basket !=
-        contract::internal::translate(serialized->type())) {
+        contract::internal::translate(serialized.type())) {
         return 0;
     }
 
-    return serialized->basket().weight();
+    return serialized.basket().weight();
 }
 
 // ADD BASKET CREATION ITEM
