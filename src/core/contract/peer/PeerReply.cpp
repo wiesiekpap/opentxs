@@ -96,6 +96,34 @@ Reply::Reply(const Reply& rhs) noexcept
 {
 }
 
+auto Reply::asAcknowledgement() const noexcept -> const reply::Acknowledgement&
+{
+    static const auto blank = peer::reply::blank::Acknowledgement{api_};
+
+    return blank;
+}
+
+auto Reply::asBailment() const noexcept -> const reply::Bailment&
+{
+    static const auto blank = peer::reply::blank::Bailment{api_};
+
+    return blank;
+}
+
+auto Reply::asConnection() const noexcept -> const reply::Connection&
+{
+    static const auto blank = peer::reply::blank::Connection{api_};
+
+    return blank;
+}
+
+auto Reply::asOutbailment() const noexcept -> const reply::Outbailment&
+{
+    static const auto blank = peer::reply::blank::Outbailment{api_};
+
+    return blank;
+}
+
 auto Reply::contract(const Lock& lock) const -> SerializedType
 {
     auto contract = SigVersion(lock);

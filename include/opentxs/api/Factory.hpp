@@ -539,6 +539,8 @@ public:
     OPENTXS_NO_EXPORT virtual OTPeerReply PeerReply(
         const Nym_p& nym,
         const proto::PeerReply& serialized) const noexcept(false) = 0;
+    virtual OTPeerReply PeerReply(const Nym_p& nym, const ReadView& view) const
+        noexcept(false) = 0;
     virtual OTPeerRequest PeerRequest() const noexcept = 0;
     OPENTXS_NO_EXPORT virtual OTPeerRequest PeerRequest(
         const Nym_p& nym,

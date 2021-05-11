@@ -278,6 +278,9 @@ struct Operation {
     virtual auto IssueUnitDefinition(
         const std::shared_ptr<const proto::UnitDefinition> unitDefinition,
         const otx::context::Server::ExtraArgs& args = {}) -> bool = 0;
+    virtual auto IssueUnitDefinition(
+        const ReadView& unitDefinition,
+        const otx::context::Server::ExtraArgs& args = {}) -> bool = 0;
     virtual void join() = 0;
     virtual auto PublishContract(const identifier::Nym& id) -> bool = 0;
     virtual auto PublishContract(const identifier::Server& id) -> bool = 0;

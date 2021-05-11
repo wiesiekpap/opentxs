@@ -1393,6 +1393,19 @@ auto Wallet::PeerReply(
     return output;
 }
 
+auto Wallet::PeerReply(
+    const identifier::Nym& nym,
+    const Identifier& reply,
+    const StorageBox& box,
+    AllocateOutput destination) const -> bool
+{
+    auto peerreply = PeerReply(nym, reply, box);
+
+    OT_ASSERT(peerreply);
+
+    return write(*peerreply, destination);
+}
+
 auto Wallet::PeerReplyComplete(
     const identifier::Nym& nym,
     const Identifier& replyID) const -> bool
@@ -1681,6 +1694,20 @@ auto Wallet::PeerRequest(
     api_.Storage().Load(nymID, request.str(), box, *output, time, true);
 
     return output;
+}
+
+auto Wallet::PeerRequest(
+    const identifier::Nym& nym,
+    const Identifier& request,
+    const StorageBox& box,
+    std::time_t& time,
+    AllocateOutput destination) const -> bool
+{
+    auto peerrequest = PeerRequest(nym, request, box, time);
+
+    OT_ASSERT(peerrequest);
+
+    return write(*peerrequest, destination);
 }
 
 auto Wallet::PeerRequestComplete(

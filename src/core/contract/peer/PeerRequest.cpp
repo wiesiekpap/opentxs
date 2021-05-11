@@ -94,6 +94,42 @@ Request::Request(const Request& rhs) noexcept
 {
 }
 
+auto Request::asBailment() const noexcept -> const request::Bailment&
+{
+    static const auto blank = peer::request::blank::Bailment{api_};
+
+    return blank;
+}
+
+auto Request::asBailmentNotice() const noexcept
+    -> const request::BailmentNotice&
+{
+    static const auto blank = peer::request::blank::BailmentNotice{api_};
+
+    return blank;
+}
+
+auto Request::asConnection() const noexcept -> const request::Connection&
+{
+    static const auto blank = peer::request::blank::Connection{api_};
+
+    return blank;
+}
+
+auto Request::asOutbailment() const noexcept -> const request::Outbailment&
+{
+    static const auto blank = peer::request::blank::Outbailment{api_};
+
+    return blank;
+}
+
+auto Request::asStoreSecret() const noexcept -> const request::StoreSecret&
+{
+    static const auto blank = peer::request::blank::StoreSecret{api_};
+
+    return blank;
+}
+
 auto Request::contract(const Lock& lock) const -> SerializedType
 {
     auto contract = SigVersion(lock);

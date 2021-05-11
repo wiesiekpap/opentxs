@@ -31,6 +31,20 @@ struct Core;
 class Core;
 }  // namespace api
 
+namespace contract
+{
+namespace peer
+{
+namespace reply
+{
+class Acknowledgement;
+class Bailment;
+class Connection;
+class Outbailment;
+}  // namespace reply
+}  // namespace peer
+}  // namespace contract
+
 namespace proto
 {
 class PeerRequest;
@@ -53,12 +67,19 @@ public:
         const Nym_p& nym,
         const Identifier& requestID) -> std::shared_ptr<proto::PeerRequest>;
 
+    auto asAcknowledgement() const noexcept
+        -> const reply::Acknowledgement& override;
+    auto asBailment() const noexcept -> const reply::Bailment& override;
+    auto asConnection() const noexcept -> const reply::Connection& override;
+    auto asOutbailment() const noexcept -> const reply::Outbailment& override;
+
     auto Alias() const -> std::string final { return Name(); }
     auto Contract() const -> SerializedType override;
     auto Name() const -> std::string final { return id_->str(); }
     auto Serialize() const -> OTData final;
-    auto Type() const -> PeerRequestType final { return type_; }
+    auto Server() const -> const identifier::Server& final { return server_; }
     void SetAlias(const std::string&) final {}
+    auto Type() const -> PeerRequestType final { return type_; }
 
     ~Reply() override = default;
 

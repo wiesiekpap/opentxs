@@ -64,6 +64,11 @@ public:
 
     ~StoreSecret() final = default;
 
+    auto asStoreSecret() const noexcept -> const request::StoreSecret& final
+    {
+        return *this;
+    }
+
 private:
     friend opentxs::Factory;
 

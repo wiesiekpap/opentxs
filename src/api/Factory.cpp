@@ -1916,6 +1916,12 @@ auto Factory::PeerReply(const Nym_p& nym, const proto::PeerReply& serialized)
     }
 }
 
+auto Factory::PeerReply(const Nym_p& nym, const ReadView& view) const
+    noexcept(false) -> OTPeerReply
+{
+    return PeerReply(nym, proto::Factory<proto::PeerReply>(view));
+}
+
 auto Factory::PeerRequest() const noexcept -> OTPeerRequest
 {
     return OTPeerRequest{opentxs::factory::PeerRequest(api_)};

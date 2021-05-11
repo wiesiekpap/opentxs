@@ -63,6 +63,11 @@ public:
 
     ~Outbailment() final = default;
 
+    auto asOutbailment() const noexcept -> const request::Outbailment& final
+    {
+        return *this;
+    }
+
 private:
     friend opentxs::Factory;
 

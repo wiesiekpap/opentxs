@@ -109,6 +109,9 @@ public:
     auto IssueUnitDefinition(
         const std::shared_ptr<const proto::UnitDefinition> unitDefinition,
         const otx::context::Server::ExtraArgs& args) -> bool override;
+    auto IssueUnitDefinition(
+        const ReadView& unitDefinition,
+        const otx::context::Server::ExtraArgs& args) -> bool override;
     void join() override;
     auto PublishContract(const identifier::Nym& id) -> bool override;
     auto PublishContract(const identifier::Server& id) -> bool override;

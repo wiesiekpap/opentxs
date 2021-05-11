@@ -59,6 +59,12 @@ public:
 
     ~Acknowledgement() final = default;
 
+    auto asAcknowledgement() const noexcept
+        -> const reply::Acknowledgement& final
+    {
+        return *this;
+    }
+
 private:
     friend opentxs::Factory;
 

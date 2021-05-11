@@ -298,6 +298,12 @@ public:
         const Identifier& reply,
         const StorageBox& box) const = 0;
 
+    virtual bool PeerReply(
+        const identifier::Nym& nym,
+        const Identifier& reply,
+        const StorageBox& box,
+        AllocateOutput destination) const = 0;
+
     /**   Clean up the recipient's copy of a peer reply
      *
      *    The peer reply is moved from the nym's SentPeerReply
@@ -398,6 +404,13 @@ public:
         const Identifier& request,
         const StorageBox& box,
         std::time_t& time) const = 0;
+
+    virtual bool PeerRequest(
+        const identifier::Nym& nym,
+        const Identifier& request,
+        const StorageBox& box,
+        std::time_t& time,
+        AllocateOutput destination) const = 0;
 
     /**   Clean up the sender's copy of a peer reply
      *

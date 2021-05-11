@@ -21,6 +21,15 @@ namespace contract
 {
 namespace peer
 {
+namespace request
+{
+class Bailment;
+class BailmentNotice;
+class Connection;
+class Outbailment;
+class StoreSecret;
+}  // namespace request
+
 class Request;
 }  // namespace peer
 }  // namespace contract
@@ -49,6 +58,16 @@ class OPENTXS_EXPORT Request : virtual public opentxs::contract::Signable
 {
 public:
     using SerializedType = proto::PeerRequest;
+
+    virtual auto asBailment() const noexcept -> const request::Bailment& = 0;
+    virtual auto asBailmentNotice() const noexcept
+        -> const request::BailmentNotice& = 0;
+    virtual auto asConnection() const noexcept
+        -> const request::Connection& = 0;
+    virtual auto asOutbailment() const noexcept
+        -> const request::Outbailment& = 0;
+    virtual auto asStoreSecret() const noexcept
+        -> const request::StoreSecret& = 0;
 
     OPENTXS_NO_EXPORT virtual SerializedType Contract() const = 0;
     virtual const identifier::Nym& Initiator() const = 0;

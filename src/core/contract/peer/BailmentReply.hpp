@@ -56,6 +56,11 @@ public:
 
     ~Bailment() final = default;
 
+    auto asBailment() const noexcept -> const reply::Bailment& final
+    {
+        return *this;
+    }
+
 private:
     friend opentxs::Factory;
 

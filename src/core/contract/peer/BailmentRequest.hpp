@@ -58,6 +58,11 @@ public:
 
     ~Bailment() final = default;
 
+    auto asBailment() const noexcept -> const request::Bailment& final
+    {
+        return *this;
+    }
+
     auto ServerID() const -> const identifier::Server& final { return server_; }
     auto UnitID() const -> const identifier::UnitDefinition& final
     {

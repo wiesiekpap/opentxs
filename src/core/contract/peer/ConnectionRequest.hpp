@@ -60,6 +60,11 @@ public:
 
     ~Connection() final = default;
 
+    auto asConnection() const noexcept -> const request::Connection& final
+    {
+        return *this;
+    }
+
 private:
     friend opentxs::Factory;
 
