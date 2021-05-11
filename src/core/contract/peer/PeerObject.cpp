@@ -398,11 +398,18 @@ Object::Object(
 {
 }
 
-auto Object::Serialize() const -> proto::PeerObject
+auto Object::Serialize(proto::PeerObject& output) const -> bool
 {
-    proto::PeerObject output;
-
     output.set_type(contract::peer::internal::translate(type_));
+
+    auto publicNym = [&](Nym_p nym) -> proto::Nym {
+        auto publicNym = proto::Nym{};
+        if (false == nym->Serialize(publicNym)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize nym.")
+                .Flush();
+        }
+        return publicNym;
+    };
 
     switch (type_) {
         case (contract::peer::PeerObjectType::Message): {
@@ -413,7 +420,7 @@ auto Object::Serialize() const -> proto::PeerObject
             }
 
             if (message_) {
-                if (nym_) { *output.mutable_nym() = nym_->asPublicNym(); }
+                if (nym_) { *output.mutable_nym() = publicNym(nym_); }
                 output.set_otmessage(String::Factory(*message_)->Get());
             }
         } break;
@@ -425,7 +432,7 @@ auto Object::Serialize() const -> proto::PeerObject
             }
 
             if (payment_) {
-                if (nym_) { *output.mutable_nym() = nym_->asPublicNym(); }
+                if (nym_) { *output.mutable_nym() = publicNym(nym_); }
                 output.set_otpayment(String::Factory(*payment_)->Get());
             }
         } break;
@@ -433,20 +440,28 @@ auto Object::Serialize() const -> proto::PeerObject
             output.set_version(version_);
 
             if (0 < request_->Version()) {
-                *(output.mutable_otrequest()) = request_->Contract();
+                if (false ==
+                    request_->Serialize(*(output.mutable_otrequest()))) {
+                    return false;
+                }
                 auto nym = api_.Wallet().Nym(request_->Initiator());
 
-                if (nym) { *output.mutable_nym() = nym->asPublicNym(); }
+                if (nym) { *output.mutable_nym() = publicNym(nym); }
             }
         } break;
         case (contract::peer::PeerObjectType::Response): {
             output.set_version(version_);
 
             if (0 < reply_->Version()) {
-                *(output.mutable_otreply()) = reply_->Contract();
+                if (false == reply_->Serialize(*(output.mutable_otreply()))) {
+                    return false;
+                }
             }
             if (0 < request_->Version()) {
-                *(output.mutable_otrequest()) = request_->Contract();
+                if (false ==
+                    request_->Serialize(*(output.mutable_otrequest()))) {
+                    return false;
+                }
             }
         } break;
 #if OT_CASH
@@ -458,7 +473,7 @@ auto Object::Serialize() const -> proto::PeerObject
             }
 
             if (purse_) {
-                if (nym_) { *output.mutable_nym() = nym_->asPublicNym(); }
+                if (nym_) { *output.mutable_nym() = publicNym(nym_); }
 
                 purse_->Serialize(*output.mutable_purse());
             }
@@ -466,10 +481,11 @@ auto Object::Serialize() const -> proto::PeerObject
 #endif
         default: {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Unknown type.").Flush();
+            return false;
         }
     }
 
-    return output;
+    return true;
 }
 
 auto Object::Validate() const -> bool
@@ -505,7 +521,10 @@ auto Object::Validate() const -> bool
         }
     }
 
-    const bool validProto = proto::Validate(Serialize(), VERBOSE);
+    auto output = proto::PeerObject{};
+    if (false == Serialize(output)) return false;
+
+    const bool validProto = proto::Validate(output, VERBOSE);
 
     return (validChildren && validProto);
 }

@@ -263,7 +263,7 @@ public:
         const ot::api::client::Manager& client)
     {
         auto bytes = ot::Space{};
-        EXPECT_TRUE(server_contract_->PublicContract(ot::writer(bytes)));
+        EXPECT_TRUE(server_contract_->Serialize(ot::writer(bytes), true));
 
         auto clientVersion = client.Wallet().Server(ot::reader(bytes));
         client.OTX().SetIntroductionServer(clientVersion);
@@ -1323,7 +1323,7 @@ TEST_F(Test_Basic, issueAsset)
     auto& stateMachine = *alice_state_machine_;
 
     auto bytes = ot::Space{};
-    EXPECT_TRUE(asset_contract_1_->PublicContract(ot::writer(bytes)));
+    EXPECT_TRUE(asset_contract_1_->Serialize(ot::writer(bytes), true));
     auto started =
         stateMachine.IssueUnitDefinition(ot::reader(bytes), extra_args_);
 
@@ -1443,7 +1443,7 @@ TEST_F(Test_Basic, publishNym)
     ASSERT_TRUE(nym);
 
     auto bytes = ot::Space{};
-    EXPECT_TRUE(nym->asPublicNym(ot::writer(bytes)));
+    EXPECT_TRUE(nym->Serialize(ot::writer(bytes)));
     client_1_.Wallet().Nym(ot::reader(bytes));
     auto started = stateMachine.PublishContract(bob_nym_id_);
 
@@ -1592,7 +1592,7 @@ TEST_F(Test_Basic, publishServer)
     auto& stateMachine = *alice_state_machine_;
     auto server = server_2_.Wallet().Server(server_2_id_);
     auto bytes = ot::Space{};
-    EXPECT_TRUE(server->PublicContract(ot::writer(bytes)));
+    EXPECT_TRUE(server->Serialize(ot::writer(bytes), true));
     client_1_.Wallet().Server(ot::reader(bytes));
     auto started = stateMachine.PublishContract(server_2_id_);
 

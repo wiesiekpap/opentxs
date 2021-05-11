@@ -189,19 +189,6 @@ Reply::Reply(const Reply& rhs)
 {
 }
 
-auto Reply::Contract() const -> proto::ServerReply
-{
-    Lock lock(lock_);
-    auto output = full_version(lock);
-
-    return output;
-}
-
-auto Reply::Contract(AllocateOutput destination) const -> bool
-{
-    return write(Contract(), destination);
-}
-
 auto Reply::extract_nym(
     const api::internal::Core& api,
     const proto::ServerReply serialized) -> Nym_p
@@ -256,6 +243,31 @@ auto Reply::Serialize() const -> OTData
     Lock lock(lock_);
 
     return api_.Factory().Data(full_version(lock));
+}
+
+auto Reply::Serialize(AllocateOutput destination) const -> bool
+{
+    Lock lock(lock_);
+
+    auto serialized = proto::ServerReply{};
+    if (false == serialize(lock, serialized)) { return false; }
+
+    return write(serialized, destination);
+}
+
+auto Reply::serialize(const Lock& lock, proto::ServerReply& output) const
+    -> bool
+{
+    output = full_version(lock);
+
+    return true;
+}
+
+auto Reply::Serialize(proto::ServerReply& output) const -> bool
+{
+    Lock lock(lock_);
+
+    return serialize(lock, output);
 }
 
 auto Reply::signature_version(const Lock& lock) const -> proto::ServerReply

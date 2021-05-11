@@ -11,7 +11,6 @@
 #include <memory>
 
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/otx/Types.hpp"
@@ -78,12 +77,14 @@ public:
         const api::internal::Core& api,
         const ReadView& view);
 
-    OPENTXS_NO_EXPORT virtual proto::ServerReply Contract() const = 0;
-    virtual bool Contract(AllocateOutput destination) const = 0;
     virtual RequestNumber Number() const = 0;
     OPENTXS_NO_EXPORT virtual std::shared_ptr<const proto::OTXPush> Push()
         const = 0;
     virtual const identifier::Nym& Recipient() const = 0;
+    using Signable::Serialize;
+    virtual bool Serialize(AllocateOutput destination) const = 0;
+    OPENTXS_NO_EXPORT virtual bool Serialize(
+        proto::ServerReply& serialized) const = 0;
     virtual const identifier::Server& Server() const = 0;
     virtual bool Success() const = 0;
     virtual otx::ServerReplyType Type() const = 0;

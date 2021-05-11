@@ -49,8 +49,6 @@ class Reply final : public otx::Reply,
                     public opentxs::contract::implementation::Signable
 {
 public:
-    auto Contract() const -> proto::ServerReply final;
-    auto Contract(AllocateOutput destination) const -> bool final;
     auto Number() const -> RequestNumber final { return number_; }
     auto Push() const -> std::shared_ptr<const proto::OTXPush> final
     {
@@ -60,6 +58,8 @@ public:
     {
         return recipient_;
     }
+    auto Serialize(proto::ServerReply& serialize) const -> bool final;
+    auto Serialize(AllocateOutput destination) const -> bool final;
     auto Server() const -> const identifier::Server& final { return server_; }
     auto Success() const -> bool final { return success_; }
     auto Type() const -> otx::ServerReplyType final { return type_; }
@@ -86,6 +86,7 @@ private:
     auto id_version(const Lock& lock) const -> proto::ServerReply;
     auto Name() const -> std::string final { return {}; }
     auto Serialize() const -> OTData final;
+    auto serialize(const Lock& lock, proto::ServerReply& output) const -> bool;
     auto signature_version(const Lock& lock) const -> proto::ServerReply;
     auto update_signature(const Lock& lock, const PasswordPrompt& reason)
         -> bool final;

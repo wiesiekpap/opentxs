@@ -133,19 +133,6 @@ Request::Request(const Request& rhs)
 {
 }
 
-auto Request::Contract() const -> proto::ServerRequest
-{
-    Lock lock(lock_);
-    auto output = full_version(lock);
-
-    return output;
-}
-
-auto Request::Contract(AllocateOutput destination) const -> bool
-{
-    return write(Contract(), destination);
-}
-
 auto Request::extract_nym(
     const api::internal::Core& api,
     const proto::ServerRequest serialized) -> Nym_p
@@ -170,7 +157,9 @@ auto Request::full_version(const Lock& lock) const -> proto::ServerRequest
     }
 
     if (include_nym_.get() && bool(nym_)) {
-        *contract.mutable_credentials() = nym_->asPublicNym();
+        auto publicNym = proto::Nym{};
+        if (false == nym_->Serialize(publicNym)) {}
+        *contract.mutable_credentials() = publicNym;
     }
 
     return contract;
@@ -207,6 +196,31 @@ auto Request::Serialize() const -> OTData
     Lock lock(lock_);
 
     return api_.Factory().Data(full_version(lock));
+}
+
+auto Request::Serialize(AllocateOutput destination) const -> bool
+{
+    Lock lock(lock_);
+
+    auto serialized = proto::ServerRequest{};
+    if (false == serialize(lock, serialized)) { return false; }
+
+    return write(serialized, destination);
+}
+
+auto Request::serialize(const Lock& lock, proto::ServerRequest& output) const
+    -> bool
+{
+    output = full_version(lock);
+
+    return true;
+}
+
+auto Request::Serialize(proto::ServerRequest& output) const -> bool
+{
+    Lock lock(lock_);
+
+    return serialize(lock, output);
 }
 
 auto Request::SetIncludeNym(const bool include, const PasswordPrompt& reason)

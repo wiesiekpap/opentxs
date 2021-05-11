@@ -13,7 +13,6 @@
 
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 
@@ -69,7 +68,7 @@ public:
         const proto::Ciphertext& ciphertext,
         const PasswordPrompt& reason,
         const AllocateOutput plaintext) const = 0;
-    virtual bool DecryptFromBytes(
+    virtual bool Decrypt(
         const ReadView& ciphertext,
         const PasswordPrompt& reason,
         const AllocateOutput plaintext) const = 0;

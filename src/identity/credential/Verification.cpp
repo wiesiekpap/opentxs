@@ -122,9 +122,11 @@ Verification::Verification(
           identity::CredentialRole::Verify,
           crypto::key::asymmetric::Mode::Null,
           get_master_id(master))
-    , data_(
-          params.VerificationSet() ? *params.VerificationSet()
-                                   : proto::VerificationSet{})
+    , data_([&](const NymParameters& params) -> const proto::VerificationSet {
+        auto proto = proto::VerificationSet{};
+        params.GetVerificationSet(proto);
+        return proto;
+    }(params))
 {
     {
         Lock lock(lock_);
@@ -153,11 +155,11 @@ Verification::Verification(
 }
 
 auto Verification::GetVerificationSet(
-    std::unique_ptr<proto::VerificationSet>& verificationSet) const -> bool
+    proto::VerificationSet& verificationSet) const -> bool
 {
-    verificationSet.reset(new proto::VerificationSet(data_));
+    verificationSet = proto::VerificationSet(data_);
 
-    return bool(verificationSet);
+    return true;
 }
 
 auto Verification::serialize(

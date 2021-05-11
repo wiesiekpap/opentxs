@@ -11,7 +11,6 @@
 #include <functional>
 
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 
 #ifdef SWIG

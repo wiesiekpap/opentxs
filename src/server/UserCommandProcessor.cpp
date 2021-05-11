@@ -546,8 +546,16 @@ auto UserCommandProcessor::cmd_check_nym(ReplyMessage& reply) const -> bool
     auto nym = server_.API().Wallet().Nym(identifier::Nym::Factory(targetNym));
 
     if (nym) {
-        reply.SetPayload(manager_.Factory().Data(nym->asPublicNym()));
-        reply.SetBool(true);
+        auto publicNym = proto::Nym{};
+        if (false == nym->Serialize(publicNym)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize nym ")(
+                targetNym)
+                .Flush();
+            reply.SetBool(false);
+        } else {
+            reply.SetPayload(manager_.Factory().Data(publicNym));
+            reply.SetBool(true);
+        }
     } else {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Nym ")(targetNym)(
             " does not exist.")
@@ -930,10 +938,15 @@ auto UserCommandProcessor::cmd_get_instrument_definition(
     if (0 == msgIn.enum_) {
         // try everything
         try {
-            const auto unitDefiniton =
+            const auto unitDefinition =
                 server_.API().Wallet().UnitDefinition(unitID);
-            serialized =
-                manager_.Factory().Data(unitDefiniton->PublicContract());
+            auto proto = proto::UnitDefinition{};
+            if (false == unitDefinition->Serialize(proto, true)) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ": Failed to serialize unit definition.")
+                    .Flush();
+            }
+            serialized = manager_.Factory().Data(proto);
             reply.SetPayload(serialized);
             reply.SetBool(true);
         } catch (...) {
@@ -941,7 +954,13 @@ auto UserCommandProcessor::cmd_get_instrument_definition(
 
         try {
             const auto server = server_.API().Wallet().Server(serverID);
-            serialized = manager_.Factory().Data(server->PublicContract());
+            auto proto = proto::ServerContract{};
+            if (false == server->Serialize(proto, true)) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ": Failed to serialize server contract.")
+                    .Flush();
+            }
+            serialized = manager_.Factory().Data(proto);
             reply.SetPayload(serialized);
             reply.SetBool(true);
 
@@ -952,14 +971,27 @@ auto UserCommandProcessor::cmd_get_instrument_definition(
         auto contract = server_.API().Wallet().Nym(nymID);
 
         if (contract) {
-            serialized = manager_.Factory().Data(contract->asPublicNym());
+            auto publicNym = proto::Nym{};
+            if (false == contract->Serialize(publicNym)) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize nym.")
+                    .Flush();
+                return false;
+            }
+            serialized = manager_.Factory().Data(publicNym);
             reply.SetPayload(serialized);
             reply.SetBool(true);
         }
     } else if (ContractType::server == static_cast<ContractType>(msgIn.enum_)) {
         try {
             const auto contract = server_.API().Wallet().Server(serverID);
-            serialized = manager_.Factory().Data(contract->PublicContract());
+            auto proto = proto::ServerContract{};
+            if (false == contract->Serialize(proto, true)) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ": Failed to serialize server contract.")
+                    .Flush();
+                return false;
+            }
+            serialized = manager_.Factory().Data(proto);
             reply.SetPayload(serialized);
             reply.SetBool(true);
 
@@ -969,7 +1001,13 @@ auto UserCommandProcessor::cmd_get_instrument_definition(
     } else if (ContractType::unit == static_cast<ContractType>(msgIn.enum_)) {
         try {
             const auto contract = server_.API().Wallet().UnitDefinition(unitID);
-            serialized = manager_.Factory().Data(contract->PublicContract());
+            auto proto = proto::UnitDefinition{};
+            if (false == contract->Serialize(proto, true)) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ": Failed to serialize unit definition.")
+                    .Flush();
+            }
+            serialized = manager_.Factory().Data(proto);
             reply.SetPayload(serialized);
             reply.SetBool(true);
         } catch (...) {

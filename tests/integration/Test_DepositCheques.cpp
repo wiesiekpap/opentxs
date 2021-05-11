@@ -118,7 +118,7 @@ public:
     {
         auto reason = client.Factory().PasswordPrompt(__FUNCTION__);
         auto bytes = ot::Space{};
-        EXPECT_TRUE(server_contract_->PublicContract(ot::writer(bytes)));
+        EXPECT_TRUE(server_contract_->Serialize(ot::writer(bytes), true));
         auto clientVersion = client.Wallet().Server(ot::reader(bytes));
 
         client.OTX().SetIntroductionServer(clientVersion);
@@ -331,18 +331,18 @@ TEST_F(Test_DepositCheques, add_contacts)
     contact_id_issuer_bob_ = issuerAlice->ID();
 
     auto bytes = ot::Space{};
-    bob_client_.Wallet().Nym(bob_nym_id_)->asPublicNym(ot::writer(bytes));
+    bob_client_.Wallet().Nym(bob_nym_id_)->Serialize(ot::writer(bytes));
     EXPECT_TRUE(alice_client_.Wallet().Nym(ot::reader(bytes)));
 
-    issuer_client_.Wallet().Nym(issuer_nym_id_)->asPublicNym(ot::writer(bytes));
+    issuer_client_.Wallet().Nym(issuer_nym_id_)->Serialize(ot::writer(bytes));
     EXPECT_TRUE(alice_client_.Wallet().Nym(ot::reader(bytes)));
-    alice_client_.Wallet().Nym(alice_nym_id_)->asPublicNym(ot::writer(bytes));
+    alice_client_.Wallet().Nym(alice_nym_id_)->Serialize(ot::writer(bytes));
     EXPECT_TRUE(bob_client_.Wallet().Nym(ot::reader(bytes)));
-    issuer_client_.Wallet().Nym(issuer_nym_id_)->asPublicNym(ot::writer(bytes));
+    issuer_client_.Wallet().Nym(issuer_nym_id_)->Serialize(ot::writer(bytes));
     EXPECT_TRUE(bob_client_.Wallet().Nym(ot::reader(bytes)));
-    alice_client_.Wallet().Nym(alice_nym_id_)->asPublicNym(ot::writer(bytes));
+    alice_client_.Wallet().Nym(alice_nym_id_)->Serialize(ot::writer(bytes));
     EXPECT_TRUE(issuer_client_.Wallet().Nym(ot::reader(bytes)));
-    bob_client_.Wallet().Nym(bob_nym_id_)->asPublicNym(ot::writer(bytes));
+    bob_client_.Wallet().Nym(bob_nym_id_)->Serialize(ot::writer(bytes));
     EXPECT_TRUE(issuer_client_.Wallet().Nym(ot::reader(bytes)));
 }
 
