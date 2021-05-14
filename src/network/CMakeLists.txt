@@ -4,6 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_subdirectory(asio)
+add_subdirectory(blockchain)
 add_subdirectory(zeromq)
 
 add_library(

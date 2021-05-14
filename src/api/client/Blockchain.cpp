@@ -27,7 +27,6 @@
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
-#include "opentxs/protobuf/BlockchainP2PHello.pb.h"
 #include "opentxs/protobuf/HDPath.pb.h"
 
 // #define OT_METHOD "opentxs::api::client::implementation::Blockchain::"
@@ -237,10 +236,7 @@ auto Blockchain::HDSubaccount(
     return imp_->HDSubaccount(nymID, accountID);
 }
 
-auto Blockchain::Hello() const noexcept -> proto::BlockchainP2PHello
-{
-    return imp_->Hello();
-}
+auto Blockchain::Hello() const noexcept -> SyncData { return imp_->Hello(); }
 
 auto Blockchain::IndexItem(const ReadView bytes) const noexcept -> PatternID
 {
@@ -377,9 +373,11 @@ auto Blockchain::ProcessMergedContact(
     return imp_->ProcessMergedContact(parent, child);
 }
 
-auto Blockchain::ProcessSyncData(OTZMQMessage&& in) const noexcept -> void
+auto Blockchain::ProcessSyncData(
+    const opentxs::network::blockchain::sync::Data& data,
+    OTZMQMessage&& in) const noexcept -> void
 {
-    imp_->ProcessSyncData(std::move(in));
+    imp_->ProcessSyncData(data, std::move(in));
 }
 
 auto Blockchain::ProcessTransaction(

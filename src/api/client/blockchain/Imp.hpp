@@ -32,8 +32,8 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/network/blockchain/sync/State.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
-#include "opentxs/protobuf/BlockchainP2PHello.pb.h"
 
 namespace opentxs
 {
@@ -85,6 +85,14 @@ class Network;
 
 namespace network
 {
+namespace blockchain
+{
+namespace sync
+{
+class Data;
+}  // namespace sync
+}  // namespace blockchain
+
 namespace zeromq
 {
 namespace socket
@@ -96,7 +104,6 @@ class Publish;
 
 namespace proto
 {
-class BlockchainP2PHello;
 class HDPath;
 }  // namespace proto
 
@@ -215,7 +222,8 @@ struct Blockchain::Imp {
         -> const blockchain::BalanceNode::Element&;
     auto HDSubaccount(const identifier::Nym& nymID, const Identifier& accountID)
         const noexcept(false) -> const blockchain::HD&;
-    virtual auto Hello() const noexcept -> proto::BlockchainP2PHello;
+    using SyncState = std::vector<opentxs::network::blockchain::sync::State>;
+    virtual auto Hello() const noexcept -> SyncState;
     virtual auto IndexItem(const ReadView bytes) const noexcept -> PatternID;
     virtual auto IsEnabled(const opentxs::blockchain::Type chain) const noexcept
         -> bool;
@@ -263,7 +271,9 @@ struct Blockchain::Imp {
     virtual auto ProcessMergedContact(
         const Contact& parent,
         const Contact& child) const noexcept -> bool;
-    virtual auto ProcessSyncData(OTZMQMessage&& in) const noexcept -> void;
+    virtual auto ProcessSyncData(
+        const opentxs::network::blockchain::sync::Data& data,
+        OTZMQMessage&& in) const noexcept -> void;
     virtual auto ProcessTransaction(
         const Chain chain,
         const Tx& in,

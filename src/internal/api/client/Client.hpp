@@ -44,6 +44,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/network/blockchain/sync/State.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
@@ -128,6 +129,14 @@ class UnitDefinition;
 
 namespace network
 {
+namespace blockchain
+{
+namespace sync
+{
+class Data;
+}  // namespace sync
+}  // namespace blockchain
+
 namespace zeromq
 {
 namespace socket
@@ -141,7 +150,6 @@ class Context;
 
 namespace proto
 {
-class BlockchainP2PHello;
 class Issuer;
 }  // namespace proto
 
@@ -176,7 +184,8 @@ struct Blockchain : virtual public api::client::Blockchain {
     virtual auto BlockchainDB() const noexcept
         -> const blockchain::database::implementation::Database& = 0;
     virtual auto Contacts() const noexcept -> const api::client::Contacts& = 0;
-    virtual auto Hello() const noexcept -> proto::BlockchainP2PHello = 0;
+    using SyncData = std::vector<opentxs::network::blockchain::sync::State>;
+    virtual auto Hello() const noexcept -> SyncData = 0;
     virtual auto IsEnabled(const opentxs::blockchain::Type chain) const noexcept
         -> bool = 0;
     virtual auto KeyEndpoint() const noexcept -> const std::string& = 0;
@@ -185,7 +194,9 @@ struct Blockchain : virtual public api::client::Blockchain {
     virtual bool ProcessMergedContact(
         const Contact& parent,
         const Contact& child) const noexcept = 0;
-    virtual auto ProcessSyncData(OTZMQMessage&& in) const noexcept -> void = 0;
+    virtual auto ProcessSyncData(
+        const opentxs::network::blockchain::sync::Data& data,
+        OTZMQMessage&& in) const noexcept -> void = 0;
     virtual auto PubkeyHash(
         const opentxs::blockchain::Type chain,
         const Data& pubkey) const noexcept(false) -> OTData = 0;

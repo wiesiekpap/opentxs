@@ -53,7 +53,6 @@
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
-#include "opentxs/protobuf/BlockchainP2PSync.pb.h"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Blank.hpp"
 #include "util/Work.hpp"
@@ -133,6 +132,15 @@ class Nym;
 
 namespace network
 {
+namespace blockchain
+{
+namespace sync
+{
+class Block;
+class Data;
+}  // namespace sync
+}  // namespace blockchain
+
 namespace zeromq
 {
 class Frame;
@@ -192,10 +200,6 @@ enum class BlockStorage : std::uint8_t {
 
 namespace opentxs::blockchain::client
 {
-constexpr auto sync_hello_version_ = VersionNumber{1};
-constexpr auto sync_state_version_ = VersionNumber{1};
-constexpr auto sync_data_version_ = VersionNumber{1};
-
 // parent hash, child hash
 using ChainSegment = std::pair<block::pHash, block::pHash>;
 using UpdatedHeader =
@@ -213,10 +217,6 @@ using CfilterJob =
     download::Batch<std::unique_ptr<const GCS>, filter::pHeader, filter::Type>;
 using BlockJob =
     download::Batch<std::shared_ptr<const block::bitcoin::Block>, int>;
-
-using ParsedSyncPacket = std::
-    tuple<block::pHash, block::Height, filter::Type, std::uint32_t, OTData>;
-using ParsedSyncData = std::pair<block::pHash, std::vector<ParsedSyncPacket>>;
 }  // namespace opentxs::blockchain::client
 #endif  // OT_BLOCKCHAIN
 
@@ -337,8 +337,10 @@ struct FilterOracle : virtual public opentxs::blockchain::client::FilterOracle {
         -> std::unique_ptr<const GCS> = 0;
     virtual auto ProcessBlock(const block::bitcoin::Block& block) const noexcept
         -> bool = 0;
-    virtual auto ProcessSyncData(const ParsedSyncData& data) const noexcept
-        -> void = 0;
+    virtual auto ProcessSyncData(
+        const block::Hash& prior,
+        const std::vector<block::pHash>& hashes,
+        const network::blockchain::sync::Data& data) const noexcept -> void = 0;
     virtual auto Tip(const filter::Type type) const noexcept
         -> block::Position = 0;
 
@@ -363,8 +365,10 @@ struct HeaderOracle : virtual public opentxs::blockchain::client::HeaderOracle {
     virtual auto LoadBitcoinHeader(const block::Hash& hash) const noexcept
         -> std::unique_ptr<block::bitcoin::Header> = 0;
     virtual auto ProcessSyncData(
-        const network::zeromq::Message& work,
-        ParsedSyncData& out) noexcept -> bool = 0;
+        block::Hash& prior,
+        std::vector<block::pHash>& hashes,
+        const network::blockchain::sync::Data& data) noexcept
+        -> std::size_t = 0;
 
     ~HeaderOracle() override = default;
 };
@@ -468,12 +472,13 @@ struct PeerManager {
 struct Network : virtual public opentxs::blockchain::Network {
     enum class Task : OTZMQWorkType {
         Shutdown = value(WorkType::Shutdown),
+        SyncReply = value(WorkType::SyncReply),
+        SyncNewBlock = value(WorkType::NewBlock),
         SubmitBlockHeader = OT_ZMQ_INTERNAL_SIGNAL + 0,
         SubmitBlock = OT_ZMQ_INTERNAL_SIGNAL + 2,
         Heartbeat = OT_ZMQ_INTERNAL_SIGNAL + 3,
         StateMachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
         FilterUpdate = OT_ZMQ_NEW_FILTER_SIGNAL,
-        SyncData = OT_ZMQ_SYNC_DATA_SIGNAL,
     };
 
     virtual auto Blockchain() const noexcept
@@ -523,8 +528,8 @@ struct Network : virtual public opentxs::blockchain::Network {
 
 struct SyncDatabase {
     using Height = block::Height;
-    using Items = std::vector<proto::BlockchainP2PSync>;
-    using Message = network::zeromq::Message;
+    using Items = std::vector<network::blockchain::sync::Block>;
+    using Message = network::blockchain::sync::Data;
 
     virtual auto LoadSync(const Height height, Message& output) const noexcept
         -> bool = 0;

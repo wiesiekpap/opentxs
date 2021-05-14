@@ -11,6 +11,7 @@
 #include <chrono>
 #include <exception>
 #include <future>
+#include <iosfwd>
 #include <iterator>
 #include <stdexcept>
 #include <tuple>
@@ -41,6 +42,8 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/network/blockchain/sync/Block.hpp"
+#include "opentxs/network/blockchain/sync/Data.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
@@ -85,7 +88,8 @@ struct FilterOracle::SyncClientFilterData {
     using Future = std::future<filter::pHeader>;
     using Promise = std::promise<filter::pHeader>;
 
-    const ParsedSyncPacket& incoming_data_;
+    const block::Hash& block_hash_;
+    const network::blockchain::sync::Block& incoming_data_;
     filter::pHash filter_hash_;
     internal::FilterDatabase::Filter& filter_data_;
     internal::FilterDatabase::Header& header_data_;
@@ -95,12 +99,14 @@ struct FilterOracle::SyncClientFilterData {
 
     SyncClientFilterData(
         OTData blank,
-        const ParsedSyncPacket& data,
+        const block::Hash& block,
+        const network::blockchain::sync::Block& data,
         internal::FilterDatabase::Filter& filter,
         internal::FilterDatabase::Header& header,
         Outstanding& jobCounter,
         Future&& previous) noexcept
-        : incoming_data_(data)
+        : block_hash_(block)
+        , incoming_data_(data)
         , filter_hash_(std::move(blank))
         , filter_data_(filter)
         , header_data_(header)
@@ -524,18 +530,20 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
     }
 }
 
-auto FilterOracle::ProcessSyncData(const ParsedSyncData& parsed) const noexcept
-    -> void
+auto FilterOracle::ProcessSyncData(
+    const block::Hash& prior,
+    const std::vector<block::pHash>& hashes,
+    const network::blockchain::sync::Data& data) const noexcept -> void
 {
     auto filters = std::vector<internal::FilterDatabase::Filter>{};
     auto headers = std::vector<internal::FilterDatabase::Header>{};
     auto cache = std::vector<SyncClientFilterData>{};
-    const auto& [prior, data] = parsed;
-    const auto filterType = std::get<2>(data.front());
+    const auto& blocks = data.Blocks();
+    const auto filterType = blocks.front().FilterType();
+    const auto count{std::min<std::size_t>(hashes.size(), blocks.size())};
 
     {
         auto jobCounter = outstanding_jobs_.Allocate();
-        const auto count{data.size()};
 
         OT_ASSERT(0 < count);
 
@@ -543,17 +551,17 @@ auto FilterOracle::ProcessSyncData(const ParsedSyncData& parsed) const noexcept
         headers.reserve(count);
         cache.reserve(count);
         auto previous = [&] {
-            if (parsed.first->empty()) {
+            if (prior.empty()) {
 
                 return block::BlankHash();
             } else {
 
-                auto output = LoadFilterHeader(filterType, parsed.first);
+                auto output = LoadFilterHeader(filterType, prior);
 
                 if (output->empty()) {
                     LogOutput(OT_METHOD)(__FUNCTION__)(": cfheader for ")(
-                        DisplayString(chain_))(" block ")(
-                        parsed.first->asHex())(" not found")
+                        DisplayString(chain_))(" block ")(prior.asHex())(
+                        " not found")
                         .Flush();
 
                     throw std::runtime_error("Non-contiguous filters");
@@ -567,11 +575,17 @@ auto FilterOracle::ProcessSyncData(const ParsedSyncData& parsed) const noexcept
         auto before{cache.begin()};
         auto first{true};
 
-        for (auto i{data.begin()}; i != data.end(); std::advance(i, 1)) {
+        for (auto i = std::size_t{0u}; i < count; ++i) {
             auto& filter = filters.emplace_back(blankView, nullptr);
             auto& header = headers.emplace_back(blank, blank, blankView);
-            auto& job =
-                cache.emplace_back(blank, *i, filter, header, jobCounter, [&] {
+            auto& job = cache.emplace_back(
+                blank,
+                hashes.at(i),
+                blocks.at(i),
+                filter,
+                header,
+                jobCounter,
+                [&] {
                     if (first) {
                         first = false;
                         auto promise = std::promise<filter::pHeader>{};
@@ -609,10 +623,9 @@ auto FilterOracle::ProcessSyncData(const ParsedSyncData& parsed) const noexcept
         auto future = cache.back().calculated_header_.get_future();
         future.get();
         const auto tip = [&] {
-            const auto& [hash, height, type, count, filter] =
-                parsed.second.back();
+            const auto back = count - 1u;
 
-            return block::Position{height, hash};
+            return block::Position{blocks.at(back).Height(), hashes.at(back)};
         }();
         make_blank<block::Position>::value(api_);
         const auto stored =
@@ -639,7 +652,11 @@ auto FilterOracle::ProcessSyncData(SyncClientFilterData& data) const noexcept
     auto post = ScopeGuard{[&] { --data.job_counter_; }};
 
     try {
-        const auto& [block, height, type, count, bytes] = data.incoming_data_;
+        const auto& block = data.block_hash_;
+        const auto height = data.incoming_data_.Height();
+        const auto type = data.incoming_data_.FilterType();
+        const auto count = data.incoming_data_.FilterElements();
+        const auto bytes = data.incoming_data_.Filter();
         LogTrace(OT_METHOD)(__FUNCTION__)(": Received filter for ")(
             DisplayString(chain_))(" block at height ")(height)
             .Flush();
@@ -652,9 +669,9 @@ auto FilterOracle::ProcessSyncData(SyncClientFilterData& data) const noexcept
             api_,
             params.first,
             params.second,
-            blockchain::internal::BlockHashToFilterKey(block->Bytes()),
+            blockchain::internal::BlockHashToFilterKey(block.Bytes()),
             count,
-            bytes->Bytes());
+            bytes);
 
         if (false == bool(pGCS)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to instantiate ")(

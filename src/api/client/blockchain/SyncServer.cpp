@@ -25,21 +25,20 @@
 
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/network/blockchain/sync/Acknowledgement.hpp"
+#include "opentxs/network/blockchain/sync/Base.hpp"
+#include "opentxs/network/blockchain/sync/MessageType.hpp"
+#include "opentxs/network/blockchain/sync/Request.hpp"
+#include "opentxs/network/blockchain/sync/State.hpp"
+#include "opentxs/network/blockchain/sync/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
-#include "opentxs/protobuf/BlockchainP2PChainState.pb.h"
-#include "opentxs/protobuf/BlockchainP2PHello.pb.h"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/verify/BlockchainP2PHello.hpp"
-#include "opentxs/util/WorkType.hpp"
 #include "util/ScopeGuard.hpp"
 
 #define OT_METHOD "opentxs::api::client::blockchain::SyncServer::Imp::"
@@ -176,44 +175,40 @@ private:
 
             return output;
         }();
-        const auto body = incoming->Body();
-
-        if (2 > body.size()) { return; }
 
         try {
-            const auto type = body.at(0).as<WorkType>();
+            namespace sync = opentxs::network::blockchain::sync;
+            const auto base = sync::Factory(api_, incoming);
+            const auto type = base->Type();
 
             switch (type) {
-                case WorkType::SyncRequest: {
-                    break;
-                }
+                case sync::MessageType::sync_request: {
+                } break;
                 default: {
                     LogOutput(OT_METHOD)(__FUNCTION__)(
-                        ": Unsupported message type ")(value(type))
+                        ": Unsupported message type ")(opentxs::print(type))
                         .Flush();
 
                     return;
                 }
             }
 
-            const auto hello =
-                proto::Factory<proto::BlockchainP2PHello>(body.at(1));
-
-            if (false == proto::Validate(hello, VERBOSE)) { return; }
+            const auto& request = base->asRequest();
 
             {
-                auto outgoing = api_.ZeroMQ().TaggedReply(
-                    incoming, WorkType::SyncAcknowledgement);
-                outgoing->AddFrame(parent_.Hello());
-                outgoing->AddFrame(update_public_endpoint_);
-                OTSocket::send_message(lock, socket, outgoing);
+                const auto ack = sync::Acknowledgement{
+                    parent_.Hello(), update_public_endpoint_};
+                auto msg = api_.ZeroMQ().ReplyMessage(incoming);
+
+                if (ack.Serialize(msg)) {
+                    OTSocket::send_message(lock, socket, msg);
+                }
             }
 
-            for (const auto& state : hello.state()) {
-                const auto chain = static_cast<Chain>(state.chain());
-
+            for (const auto& state : request.State()) {
                 try {
-                    const auto& [endpoint, enabled, internal] = map_.at(chain);
+                    const auto& [endpoint, enabled, internal] =
+                        map_.at(state.Chain());
 
                     if (enabled) {
                         OTSocket::send_message(

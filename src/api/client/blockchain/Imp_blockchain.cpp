@@ -27,7 +27,6 @@
 #include "internal/blockchain/client/Factory.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/ThreadPool.hpp"
@@ -36,26 +35,19 @@
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/client/FilterOracle.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/crypto/HashType.hpp"
+#include "opentxs/network/blockchain/sync/Data.hpp"
+#include "opentxs/network/blockchain/sync/State.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameIterator.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Sender.tpp"  // IWYU pragma: keep
-#include "opentxs/protobuf/BlockchainP2PChainState.pb.h"
-#include "opentxs/protobuf/BlockchainP2PHello.pb.h"
-#include "opentxs/protobuf/BlockchainP2PSync.pb.h"
-#include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/StorageThread.pb.h"
 #include "opentxs/protobuf/StorageThreadItem.pb.h"
-#include "opentxs/protobuf/verify/BlockchainP2PSync.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Container.hpp"
 #include "util/Work.hpp"
@@ -483,7 +475,7 @@ auto BlockchainImp::heartbeat() const noexcept -> void
     }
 }
 
-auto BlockchainImp::Hello() const noexcept -> proto::BlockchainP2PHello
+auto BlockchainImp::Hello() const noexcept -> SyncState
 {
     auto lock = Lock{lock_};
     auto chains = [&] {
@@ -500,22 +492,15 @@ auto BlockchainImp::Hello() const noexcept -> proto::BlockchainP2PHello
 }
 
 auto BlockchainImp::hello(const Lock&, const Chains& chains) const noexcept
-    -> proto::BlockchainP2PHello
+    -> SyncState
 {
-    auto output = proto::BlockchainP2PHello{};
-    output.set_version(opentxs::blockchain::client::sync_hello_version_);
+    auto output = SyncState{};
 
     for (const auto chain : chains) {
         const auto& network = networks_.at(chain);
         const auto& filter = network->FilterOracle();
         const auto type = filter.DefaultType();
-        const auto best = filter.FilterTip(type);
-        auto& state = *output.add_state();
-        state.set_version(opentxs::blockchain::client::sync_state_version_);
-        state.set_chain(static_cast<std::uint32_t>(chain));
-        state.set_height(static_cast<std::uint64_t>(best.first));
-        const auto bytes = best.second->Bytes();
-        state.set_hash(bytes.data(), bytes.size());
+        output.emplace_back(chain, filter.FilterTip(type));
     }
 
     return output;
@@ -641,69 +626,15 @@ auto BlockchainImp::ProcessMergedContact(
     return true;
 }
 
-auto BlockchainImp::ProcessSyncData(OTZMQMessage&& in) const noexcept -> void
+auto BlockchainImp::ProcessSyncData(
+    const opentxs::network::blockchain::sync::Data& data,
+    OTZMQMessage&& in) const noexcept -> void
 {
-    const auto b = in->Body();
-
-    OT_ASSERT(3 < b.size());
-
-    using Network = opentxs::blockchain::client::internal::Network;
-    auto chain = std::optional<Chain>{std::nullopt};
-    using FilterType = opentxs::blockchain::filter::Type;
-    auto filterType = std::optional<FilterType>{std::nullopt};
-    using Height = opentxs::blockchain::block::Height;
-    auto height = Height{-1};
-    auto work = MakeWork(api_, Network::Task::SyncData);
-    work->AddFrame(b.at(1));
-
-    for (auto i{std::next(b.begin(), 3)}; i != b.end(); std::advance(i, 1)) {
-        const auto sync = proto::Factory<proto::BlockchainP2PSync>(*i);
-
-        if (false == proto::Validate(sync, VERBOSE)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid sync data").Flush();
-
-            return;
-        }
-
-        const auto incomingChain = static_cast<Chain>(sync.chain());
-        const auto incomingHeight = static_cast<Height>(sync.height());
-        const auto incomingType = static_cast<FilterType>(sync.filter_type());
-
-        if (chain.has_value()) {
-            if (incomingHeight != ++height) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Non-contiguous sync data")
-                    .Flush();
-
-                return;
-            }
-
-            if (incomingChain != chain.value()) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid chain").Flush();
-
-                return;
-            }
-
-            if (incomingType != filterType.value()) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid filter type")
-                    .Flush();
-
-                return;
-            }
-        } else {
-            chain = incomingChain;
-            height = incomingHeight;
-            filterType = incomingType;
-        }
-
-        work->AddFrame(std::move(*i));  // TODO overload AddFrame so this avoids
-                                        // making a copy
-    }
-
     auto lock = Lock{lock_};
 
     try {
-        auto& network = *networks_.at(chain.value());
-        network.Submit(work);
+        auto& network = *networks_.at(data.State().Chain());
+        network.Submit(in);
     } catch (...) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Chain not active").Flush();
 

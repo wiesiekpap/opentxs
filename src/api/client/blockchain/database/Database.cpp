@@ -486,7 +486,7 @@ auto Database::LookupContact(const Data& pubkeyHash) const noexcept
 auto Database::LoadSync(
     const Chain chain,
     const Height height,
-    opentxs::network::zeromq::Message& output) const noexcept -> bool
+    opentxs::network::blockchain::sync::Data& output) const noexcept -> bool
 {
 #if OPENTXS_BLOCK_STORAGE_ENABLED
     return imp_.sync_.Load(chain, height, output);

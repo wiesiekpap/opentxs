@@ -41,7 +41,6 @@
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/protobuf/BlockchainP2PHello.pb.h"
 #include "opentxs/protobuf/HDPath.pb.h"
 #include "util/Container.hpp"
 #include "util/HDIndex.hpp"
@@ -702,10 +701,7 @@ auto Blockchain::Imp::HDSubaccount(
     return nym.HDChain(accountID);
 }
 
-auto Blockchain::Imp::Hello() const noexcept -> proto::BlockchainP2PHello
-{
-    return {};
-}
+auto Blockchain::Imp::Hello() const noexcept -> SyncState { return {}; }
 
 auto Blockchain::Imp::IndexItem(const ReadView bytes) const noexcept
     -> PatternID
@@ -1035,7 +1031,11 @@ auto Blockchain::Imp::ProcessMergedContact(const Contact&, const Contact&)
     return false;
 }
 
-auto Blockchain::Imp::ProcessSyncData(OTZMQMessage&&) const noexcept -> void {}
+auto Blockchain::Imp::ProcessSyncData(
+    const opentxs::network::blockchain::sync::Data&,
+    OTZMQMessage&&) const noexcept -> void
+{
+}
 
 auto Blockchain::Imp::ProcessTransaction(
     const Chain,

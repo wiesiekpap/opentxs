@@ -27,8 +27,8 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/network/blockchain/sync/Block.hpp"
 #include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
-#include "opentxs/protobuf/BlockchainP2PSync.pb.h"
 #include "opentxs/protobuf/BlockchainTransaction.pb.h"
 #include "util/LMDB.hpp"
 
@@ -65,10 +65,14 @@ struct GCS;
 
 namespace network
 {
-namespace zeromq
+namespace blockchain
 {
-class Message;
-}  // namespace zeromq
+namespace sync
+{
+class Block;
+class Data;
+}  // namespace sync
+}  // namespace blockchain
 }  // namespace network
 
 namespace proto
@@ -99,7 +103,7 @@ public:
     using Chain = opentxs::blockchain::Type;
     using EnabledChain = std::pair<Chain, std::string>;
     using Height = opentxs::blockchain::block::Height;
-    using SyncItems = std::vector<proto::BlockchainP2PSync>;
+    using SyncItems = std::vector<opentxs::network::blockchain::sync::Block>;
 
     auto AddOrUpdate(Address_p address) const noexcept -> bool;
     auto AllocateStorageFolder(const std::string& dir) const noexcept
@@ -143,7 +147,8 @@ public:
     auto LoadSync(
         const Chain chain,
         const Height height,
-        opentxs::network::zeromq::Message& output) const noexcept -> bool;
+        opentxs::network::blockchain::sync::Data& output) const noexcept
+        -> bool;
     auto LoadTransaction(const ReadView txid) const noexcept
         -> std::optional<proto::BlockchainTransaction>;
     auto LookupContact(const Data& pubkeyHash) const noexcept
