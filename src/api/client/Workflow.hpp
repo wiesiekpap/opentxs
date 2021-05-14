@@ -125,6 +125,14 @@ public:
     auto ImportCheque(
         const identifier::Nym& nymID,
         const opentxs::Cheque& cheque) const -> OTIdentifier final;
+    auto InstantiateCheque(
+        const identifier::Nym& nymID,
+        const Identifier& workflowID) const -> Cheque final;
+#if OT_CASH
+    auto InstantiatePurse(
+        const identifier::Nym& nymID,
+        const Identifier& workflowID) const -> Purse final;
+#endif  // OT_CASH
     auto List(
         const identifier::Nym& nymID,
         const api::client::PaymentWorkflowType type,
@@ -143,8 +151,8 @@ public:
         const Identifier& workflowID) const -> Transfer final;
     auto LoadWorkflow(
         const identifier::Nym& nymID,
-        const Identifier& workflowID) const
-        -> std::shared_ptr<proto::PaymentWorkflow> final;
+        const Identifier& workflowID,
+        proto::PaymentWorkflow& out) const -> bool final;
 #if OT_CASH
     auto ReceiveCash(
         const identifier::Nym& receiver,

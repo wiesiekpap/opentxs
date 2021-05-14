@@ -37,7 +37,6 @@
 #include "opentxs/protobuf/KeyCredential.pb.h"
 #include "opentxs/protobuf/MasterCredentialParameters.pb.h"
 #include "opentxs/protobuf/NymIDSource.pb.h"
-#include "opentxs/protobuf/PaymentCode.pb.h"
 #include "opentxs/protobuf/SourceProof.pb.h"
 #include "util/Container.hpp"
 

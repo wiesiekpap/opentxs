@@ -34,7 +34,6 @@
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Nym.pb.h"
 #include "opentxs/protobuf/PeerObject.pb.h"
-#include "opentxs/protobuf/PeerReply.pb.h"
 #include "opentxs/protobuf/PeerRequest.pb.h"
 #include "opentxs/protobuf/verify/PeerObject.hpp"
 

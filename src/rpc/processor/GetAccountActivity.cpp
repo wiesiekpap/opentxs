@@ -22,6 +22,7 @@
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/protobuf/PaymentWorkflow.pb.h"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/rpc/AccountEventType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
@@ -87,12 +88,12 @@ auto RPC::get_account_activity(const request::Base& base) const
                     return {};
                 }();
                 const auto state = [&] {
-                    const auto workflowID =
-                        api.Factory().Identifier(row.Workflow());
-                    const auto workflow =
-                        api.Workflow().LoadWorkflow(owner, workflowID);
+                    const auto id = api.Factory().Identifier(row.Workflow());
+                    auto proto = proto::PaymentWorkflow{};
 
-                    if (workflow) { return workflow->state(); }
+                    if (api.Workflow().LoadWorkflow(owner, id, proto)) {
+                        return proto.state();
+                    }
 
                     return proto::PAYMENTWORKFLOWSTATE_ERROR;
                 }();

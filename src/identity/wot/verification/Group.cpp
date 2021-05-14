@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "identity/wot/verification/Group.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <map>
 #include <stdexcept>
 #include <utility>

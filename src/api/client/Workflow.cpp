@@ -11,6 +11,7 @@
 #include <chrono>
 #include <iterator>
 #include <memory>
+#include <stdexcept>
 #include <type_traits>
 
 #include "internal/api/Api.hpp"
@@ -165,32 +166,32 @@ auto Workflow::ExtractCheque(const proto::PaymentWorkflow& workflow)
     return workflow.source(0).item();
 }
 
-#if OT_CASH
-auto Workflow::ExtractPurse(const proto::PaymentWorkflow& workflow)
-    -> std::unique_ptr<proto::Purse>
+auto Workflow::ExtractPurse(
+    const proto::PaymentWorkflow& workflow,
+    proto::Purse& out) -> bool
 {
+#if OT_CASH
     if (false == ContainsCash(workflow)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Wrong workflow type").Flush();
 
-        return {};
+        return false;
     }
 
     if (1 != workflow.source().size()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid workflow").Flush();
 
-        return {};
+        return false;
     }
 
-    auto output = std::make_unique<proto::Purse>();
-
-    OT_ASSERT(output);
-
     const auto& serialized = workflow.source(0).item();
-    *output = proto::Factory<proto::Purse>(serialized);
+    out = proto::Factory<proto::Purse>(serialized);
 
-    return output;
-}
+    return true;
+#else
+
+    return false;
 #endif
+}
 
 auto Workflow::ExtractTransfer(const proto::PaymentWorkflow& workflow)
     -> std::string
@@ -261,7 +262,7 @@ auto Workflow::InstantiateCheque(
 
 #if OT_CASH
 auto Workflow::InstantiatePurse(
-    const api::internal::Core& core,
+    const api::internal::Core& api,
     const proto::PaymentWorkflow& workflow) -> Workflow::Purse
 {
     Purse output{PaymentWorkflowState::Error, nullptr};
@@ -270,22 +271,29 @@ auto Workflow::InstantiatePurse(
     switch (internal::translate(workflow.type())) {
         case PaymentWorkflowType::OutgoingCash:
         case PaymentWorkflowType::IncomingCash: {
-            const auto serialized = ExtractPurse(workflow);
+            try {
+                const auto serialized = [&] {
+                    auto out = proto::Purse{};
 
-            if (false == bool(serialized)) { return output; }
+                    if (false == ExtractPurse(workflow, out)) {
+                        throw std::runtime_error{"Missing purse"};
+                    }
 
-            purse.reset(core.Factory().Purse(*serialized).release());
+                    return out;
+                }();
 
-            if (false == bool(purse)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": Failed to instantiate purse")
-                    .Flush();
-                purse.reset();
+                purse = api.Factory().Purse(serialized);
+
+                if (false == bool(purse)) {
+                    throw std::runtime_error{"Failed to instantiate purse"};
+                }
+
+                state = internal::translate(workflow.state());
+            } catch (const std::exception& e) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
                 return output;
             }
-
-            state = internal::translate(workflow.state());
         } break;
         case PaymentWorkflowType::Error:
         case PaymentWorkflowType::OutgoingCheque:
@@ -2297,6 +2305,63 @@ auto Workflow::ImportCheque(
     return workflowID;
 }
 
+auto Workflow::InstantiateCheque(
+    const identifier::Nym& nym,
+    const Identifier& id) const -> Cheque
+{
+    try {
+        const auto workflow = [&] {
+            auto out = proto::PaymentWorkflow{};
+
+            if (false == LoadWorkflow(nym, id, out)) {
+                throw std::runtime_error{
+                    std::string{"Workflow "} + id.str() + " not found"};
+            }
+
+            return out;
+        }();
+
+        if (false == ContainsCheque(workflow)) {
+
+            throw std::runtime_error{
+                std::string{"Workflow "} + id.str() +
+                " does not contain a cheque"};
+        }
+
+        return client::Workflow::InstantiateCheque(api_, workflow);
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(":")(e.what()).Flush();
+
+        return {};
+    }
+}
+
+#if OT_CASH
+auto Workflow::InstantiatePurse(
+    const identifier::Nym& nym,
+    const Identifier& id) const -> Purse
+{
+    try {
+        const auto workflow = [&] {
+            auto out = proto::PaymentWorkflow{};
+
+            if (false == LoadWorkflow(nym, id, out)) {
+                throw std::runtime_error{
+                    std::string{"Workflow "} + id.str() + " not found"};
+            }
+
+            return out;
+        }();
+
+        return client::Workflow::InstantiatePurse(api_, workflow);
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(":")(e.what()).Flush();
+
+        return {};
+    }
+}
+#endif
+
 auto Workflow::isCheque(const opentxs::Cheque& cheque) -> bool
 {
     if (cheque.HasRemitter()) {
@@ -2382,7 +2447,7 @@ auto Workflow::LoadCheque(
         return {};
     }
 
-    return InstantiateCheque(api_, *workflow);
+    return client::Workflow::InstantiateCheque(api_, *workflow);
 }
 
 auto Workflow::LoadChequeByWorkflow(
@@ -2403,7 +2468,7 @@ auto Workflow::LoadChequeByWorkflow(
         return {};
     }
 
-    return InstantiateCheque(api_, *workflow);
+    return client::Workflow::InstantiateCheque(api_, *workflow);
 }
 
 auto Workflow::LoadTransfer(
@@ -2452,10 +2517,19 @@ auto Workflow::LoadTransferByWorkflow(
 
 auto Workflow::LoadWorkflow(
     const identifier::Nym& nymID,
-    const Identifier& workflowID) const
-    -> std::shared_ptr<proto::PaymentWorkflow>
+    const Identifier& workflowID,
+    proto::PaymentWorkflow& out) const -> bool
 {
-    return get_workflow_by_id(nymID.str(), workflowID.str());
+    auto pWorkflow = get_workflow_by_id(nymID.str(), workflowID.str());
+
+    if (pWorkflow) {
+        out = *pWorkflow;
+
+        return true;
+    } else {
+
+        return false;
+    }
 }
 
 #if OT_CASH
@@ -2727,7 +2801,7 @@ auto Workflow::WorkflowParty(
     const Identifier& workflowID,
     const int index) const -> const std::string
 {
-    auto workflow = LoadWorkflow(nymID, workflowID);
+    auto workflow = get_workflow_by_id(nymID.str(), workflowID.str());
 
     if (false == bool{workflow}) return {};
 
@@ -2739,7 +2813,7 @@ auto Workflow::WorkflowPartySize(
     const Identifier& workflowID,
     int& partysize) const -> bool
 {
-    auto workflow = LoadWorkflow(nymID, workflowID);
+    auto workflow = get_workflow_by_id(nymID.str(), workflowID.str());
 
     if (false == bool{workflow}) { return false; }
 
@@ -2752,7 +2826,7 @@ auto Workflow::WorkflowState(
     const identifier::Nym& nymID,
     const Identifier& workflowID) const -> PaymentWorkflowState
 {
-    auto workflow = LoadWorkflow(nymID, workflowID);
+    auto workflow = get_workflow_by_id(nymID.str(), workflowID.str());
 
     if (false == bool{workflow}) { return PaymentWorkflowState::Error; }
 
@@ -2763,7 +2837,7 @@ auto Workflow::WorkflowType(
     const identifier::Nym& nymID,
     const Identifier& workflowID) const -> PaymentWorkflowType
 {
-    auto workflow = LoadWorkflow(nymID, workflowID);
+    auto workflow = get_workflow_by_id(nymID.str(), workflowID.str());
 
     if (false == bool{workflow}) { return PaymentWorkflowType::Error; }
 

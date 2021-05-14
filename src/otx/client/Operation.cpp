@@ -15,6 +15,7 @@
 #include <iterator>
 #include <map>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -72,7 +73,11 @@
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/protobuf/Check.hpp"
+#include "opentxs/protobuf/Nym.pb.h"
+#include "opentxs/protobuf/PaymentWorkflow.pb.h"
 #include "opentxs/protobuf/PeerObject.pb.h"
+#include "opentxs/protobuf/PeerReply.pb.h"
+#include "opentxs/protobuf/PeerRequest.pb.h"
 #include "opentxs/protobuf/Purse.pb.h"
 #include "opentxs/protobuf/ServerContract.pb.h"
 #include "opentxs/protobuf/UnitDefinition.pb.h"  // IWYU pragma: keep
@@ -2423,54 +2428,63 @@ auto Operation::SendCash(
 
     const auto& recipient = *pRecipient;
     const auto& sender = *pSender;
-    auto pWorkflow = api_.Workflow().LoadWorkflow(nym_id_, workflowID);
 
-    if (false == bool(pWorkflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load workflow").Flush();
+    try {
+        const auto workflow = [&] {
+            auto out = proto::PaymentWorkflow{};
+
+            if (!api_.Workflow().LoadWorkflow(nym_id_, workflowID, out)) {
+                throw std::runtime_error{"Failed to load workflow"};
+            }
+
+            return out;
+        }();
+
+        auto [state, pPurse] =
+            api::client::Workflow::InstantiatePurse(api_, workflow);
+
+        if (api::client::PaymentWorkflowState::Unsent != state) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect workflow state")
+                .Flush();
+
+            return false;
+        }
+
+        if (false == bool(pPurse)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Purse not found").Flush();
+
+            return false;
+        }
+
+        auto& purse = *pPurse;
+
+        if (false == purse.Unlock(sender, reason_)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to unlock pursed")
+                .Flush();
+
+            return false;
+        }
+
+        if (false == purse.AddNym(recipient, reason_)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": Failed to encrypt purse to recipient")
+                .Flush();
+
+            return false;
+        }
+
+        START()
+
+        target_nym_id_ = recipientID;
+        generic_id_ = workflowID;
+        purse_ = std::move(pPurse);
+
+        return start(lock, Type::SendCash, {});
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
         return false;
     }
-
-    const auto& workflow = *pWorkflow;
-    auto [state, pPurse] =
-        api::client::Workflow::InstantiatePurse(api_, workflow);
-
-    if (api::client::PaymentWorkflowState::Unsent != state) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect workflow state")
-            .Flush();
-
-        return false;
-    }
-
-    if (false == bool(pPurse)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Purse not found").Flush();
-
-        return false;
-    }
-
-    auto& purse = *pPurse;
-
-    if (false == purse.Unlock(sender, reason_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to unlock pursed").Flush();
-
-        return false;
-    }
-
-    if (false == purse.AddNym(recipient, reason_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to encrypt purse to recipient")
-            .Flush();
-
-        return false;
-    }
-
-    START()
-
-    target_nym_id_ = recipientID;
-    generic_id_ = workflowID;
-    purse_ = std::move(pPurse);
-
-    return start(lock, Type::SendCash, {});
 }
 #endif
 

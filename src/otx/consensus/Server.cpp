@@ -1729,9 +1729,9 @@ auto Server::harvest_unused(
     // harvested
     for (const auto& [id, alias] : workflows) {
         const auto workflowID = api_.Factory().Identifier(id);
-        const auto workflow = client.Workflow().LoadWorkflow(nymID, workflowID);
+        auto proto = proto::PaymentWorkflow{};
 
-        if (false == bool(workflow)) {
+        if (false == client.Workflow().LoadWorkflow(nymID, workflowID, proto)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load workflow ")(
                 workflowID)(".")
                 .Flush();
@@ -1739,7 +1739,7 @@ auto Server::harvest_unused(
             continue;
         }
 
-        switch (opentxs::api::client::internal::translate(workflow->type())) {
+        switch (opentxs::api::client::internal::translate(proto.type())) {
             case api::client::PaymentWorkflowType::OutgoingCheque:
             case api::client::PaymentWorkflowType::OutgoingInvoice: {
                 keepStates.insert(api::client::PaymentWorkflowState::Unsent);
@@ -1772,18 +1772,18 @@ auto Server::harvest_unused(
         }
 
         if (0 == keepStates.count(opentxs::api::client::internal::translate(
-                     workflow->state()))) {
+                     proto.state()))) {
             continue;
         }
 
         // At this point, this workflow contains a transaction whose
         // number(s) must not be added to the available list (recovered).
 
-        switch (opentxs::api::client::internal::translate(workflow->type())) {
+        switch (opentxs::api::client::internal::translate(proto.type())) {
             case api::client::PaymentWorkflowType::OutgoingCheque:
             case api::client::PaymentWorkflowType::OutgoingInvoice: {
                 [[maybe_unused]] auto [state, cheque] =
-                    api::client::Workflow::InstantiateCheque(api_, *workflow);
+                    api::client::Workflow::InstantiateCheque(api_, proto);
 
                 if (false == bool(cheque)) {
                     LogOutput(OT_METHOD)(__FUNCTION__)(
@@ -1799,7 +1799,7 @@ auto Server::harvest_unused(
             case api::client::PaymentWorkflowType::OutgoingTransfer:
             case api::client::PaymentWorkflowType::InternalTransfer: {
                 [[maybe_unused]] auto [state, pTransfer] =
-                    api::client::Workflow::InstantiateTransfer(api_, *workflow);
+                    api::client::Workflow::InstantiateTransfer(api_, proto);
 
                 if (false == bool(pTransfer)) {
                     LogOutput(OT_METHOD)(__FUNCTION__)(

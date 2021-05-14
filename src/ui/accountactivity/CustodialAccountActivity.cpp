@@ -504,18 +504,19 @@ auto CustodialAccountActivity::process_workflow(
     const Identifier& workflowID,
     std::set<AccountActivityRowID>& active) noexcept -> void
 {
-    const auto workflow =
-        Widget::api_.Workflow().LoadWorkflow(primary_id_, workflowID);
+    const auto workflow = [&] {
+        auto out = proto::PaymentWorkflow{};
+        Widget::api_.Workflow().LoadWorkflow(primary_id_, workflowID, out);
 
-    OT_ASSERT(workflow)
-
-    const auto rows = extract_rows(*workflow);
+        return out;
+    }();
+    const auto rows = extract_rows(workflow);
 
     for (const auto& [type, row] : rows) {
         const auto& [time, event_p] = row;
         auto key = AccountActivityRowID{Identifier::Factory(workflowID), type};
         auto custom = CustomData{
-            new proto::PaymentWorkflow(*workflow),
+            new proto::PaymentWorkflow(workflow),
             new proto::PaymentEvent(*event_p)};
         add_item(key, time, custom);
         active.emplace(std::move(key));
