@@ -283,13 +283,6 @@ auto Server::contract(const Lock& lock) const -> proto::ServerContract
     return contract;
 }
 
-auto Server::Contract() const -> proto::ServerContract
-{
-    Lock lock(lock_);
-
-    return contract(lock);
-}
-
 auto Server::IDVersion(const Lock& lock) const -> proto::ServerContract
 {
     OT_ASSERT(verify_write_lock(lock));
@@ -343,23 +336,41 @@ auto Server::SigVersion(const Lock& lock) const -> proto::ServerContract
     return contract;
 }
 
-auto Server::PublicContract() const -> proto::ServerContract
+auto Server::Serialize() const -> OTData
 {
     Lock lock(lock_);
 
-    auto serialized = contract(lock);
+    return api_.Factory().Data(contract(lock));
+}
 
-    if (nym_) {
-        auto publicNym = nym_->asPublicNym();
+auto Server::Serialize(AllocateOutput destination, bool includeNym) const
+    -> bool
+{
+    auto serialized = proto::ServerContract{};
+    if (false == Serialize(serialized, includeNym)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize server.")
+            .Flush();
+        return false;
+    }
+
+    write(serialized, destination);
+
+    return true;
+}
+
+auto Server::Serialize(proto::ServerContract& serialized, bool includeNym) const
+    -> bool
+{
+    Lock lock(lock_);
+
+    serialized = contract(lock);
+
+    if (includeNym && nym_) {
+        auto publicNym = proto::Nym{};
+        if (false == nym_->Serialize(publicNym)) { return false; }
         *(serialized.mutable_publicnym()) = publicNym;
     }
 
-    return serialized;
-}
-
-auto Server::PublicContract(AllocateOutput destination) const -> bool
-{
-    write(PublicContract(), destination);
     return true;
 }
 
@@ -375,13 +386,6 @@ auto Server::Statistics(String& strContents) const -> bool
         strID->Get());
 
     return true;
-}
-
-auto Server::Serialize() const -> OTData
-{
-    Lock lock(lock_);
-
-    return api_.Factory().Data(contract(lock));
 }
 
 auto Server::TransportKey() const -> const Data&

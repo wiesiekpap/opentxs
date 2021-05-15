@@ -440,7 +440,14 @@ void MessageProcessor::process_notification(const zmq::Message& incoming)
 
     OT_ASSERT(message->Validate());
 
-    const auto reply = server_.API().Factory().Data(message->Contract());
+    auto serialized = proto::ServerReply{};
+    if (false == message->Serialize(serialized)) {
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": Failed to serialize reply.")
+            .Flush();
+
+        return;
+    }
+    const auto reply = server_.API().Factory().Data(serialized);
     auto pushNotification = zmq::Message::Factory();
     pushNotification->AddFrame(connection);
     pushNotification->AddFrame();

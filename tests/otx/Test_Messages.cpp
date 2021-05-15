@@ -75,7 +75,7 @@ public:
         const ot::api::client::Manager& client)
     {
         auto bytes = ot::Space{};
-        server_contract_->PublicContract(ot::writer(bytes));
+        server_contract_->Serialize(ot::writer(bytes), true);
         auto clientVersion = client.Wallet().Server(ot::reader(bytes));
         client.OTX().SetIntroductionServer(clientVersion);
     }
@@ -133,7 +133,7 @@ TEST_F(Test_Messages, activateRequest)
     EXPECT_TRUE(request->Validate());
 
     auto bytes = ot::Space{};
-    EXPECT_TRUE(request->Contract(ot::writer(bytes)));
+    EXPECT_TRUE(request->Serialize(ot::writer(bytes)));
 
     const auto serverCopy =
         ot::otx::Request::Factory(server_, ot::reader(bytes));
@@ -183,7 +183,7 @@ TEST_F(Test_Messages, pushReply)
     EXPECT_TRUE(reply->Validate());
 
     auto bytes = ot::Space{};
-    EXPECT_TRUE(reply->Contract(ot::writer(bytes)));
+    EXPECT_TRUE(reply->Serialize(ot::writer(bytes)));
 
     EXPECT_EQ(ot::otx::Reply::DefaultVersion, reply->Version());
     EXPECT_EQ(replyID->str(), reply->ID()->str());

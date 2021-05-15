@@ -180,15 +180,20 @@ Source::Source(const api::Factory& factory, const PaymentCode& source) noexcept
 }
 
 Source::Source(const Source& rhs) noexcept
-    : Source(rhs.factory_, *rhs.Serialize())
+    : Source(rhs.factory_, [&](const Source& rhs) -> proto::NymIDSource {
+        auto serialized = proto::NymIDSource{};
+        rhs.Serialize(serialized);
+        return serialized;
+    }(rhs))
 {
 }
 
 auto Source::asData() const -> OTData
 {
-    std::shared_ptr<proto::NymIDSource> serialized = Serialize();
+    auto serialized = proto::NymIDSource{};
+    if (false == Serialize(serialized)) { return OTData{nullptr}; }
 
-    return factory_.Data(*serialized);
+    return factory_.Data(serialized);
 }
 
 auto Source::deserialize_paymentcode(
@@ -263,30 +268,33 @@ auto Source::NymID() const noexcept -> OTNymID
     return nymID;
 }
 
-auto Source::Serialize() const noexcept -> std::shared_ptr<proto::NymIDSource>
+auto Source::Serialize(proto::NymIDSource& source) const noexcept -> bool
 {
-    auto source = std::make_shared<proto::NymIDSource>();
-    source->set_version(version_);
-    source->set_type(translate(type_));
+    source.set_version(version_);
+    source.set_type(translate(type_));
 
     switch (type_) {
         case identity::SourceType::PubKey: {
             OT_ASSERT(pubkey_.get())
 
-            auto key = pubkey_->Serialize();
-            key->set_role(proto::KEYROLE_SIGN);
-            *(source->mutable_key()) = *key;
+            auto key = proto::AsymmetricKey{};
+            if (false == pubkey_->Serialize(key)) { return false; }
+            key.set_role(proto::KEYROLE_SIGN);
+            *(source.mutable_key()) = key;
 
         } break;
         case identity::SourceType::Bip47: {
-            *(source->mutable_paymentcode()) = payment_code_->Serialize();
+            if (false ==
+                payment_code_->Serialize(*(source.mutable_paymentcode()))) {
+                return false;
+            }
 
         } break;
         default: {
         }
     }
 
-    return source;
+    return true;
 }
 
 auto Source::sourcetype_map() noexcept -> const SourceTypeMap&
@@ -333,7 +341,6 @@ auto Source::Verify(
 {
     bool isSelfSigned, sameSource;
     std::unique_ptr<proto::AsymmetricKey> signingKey;
-    std::shared_ptr<proto::AsymmetricKey> sourceKey;
 
     switch (type_) {
         case identity::SourceType::PubKey: {
@@ -359,8 +366,14 @@ auto Source::Verify(
                 return false;
             }
 
-            sourceKey = pubkey_->Serialize();
-            sameSource = (sourceKey->key() == signingKey->key());
+            auto sourceKey = proto::AsymmetricKey{};
+            if (false == pubkey_->Serialize(sourceKey)) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize key")
+                    .Flush();
+
+                return false;
+            }
+            sameSource = (sourceKey.key() == signingKey->key());
 
             if (!sameSource) {
                 LogOutput(OT_METHOD)(__FUNCTION__)(": Master credential was not"

@@ -1640,7 +1640,13 @@ auto Wallet::PeerReplyReceive(
         return false;
     }
 
-    const proto::PeerReply serialized{reply.Reply()->Contract()};
+    auto serialized = proto::PeerReply{};
+    if (false == reply.Reply()->Serialize(serialized)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize reply.")
+            .Flush();
+
+        return false;
+    }
     const bool receivedReply =
         api_.Storage().Store(serialized, nymID, StorageBox::INCOMINGPEERREPLY);
 
@@ -1849,7 +1855,13 @@ auto Wallet::PeerRequestReceive(
         return false;
     }
 
-    const proto::PeerRequest serialized{request.Request()->Contract()};
+    auto serialized = proto::PeerRequest{};
+    if (false == request.Request()->Serialize(serialized)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize request.")
+            .Flush();
+
+        return false;
+    }
     const auto nymID = nym.str();
     Lock lock(peer_lock(nymID));
     const auto saved = api_.Storage().Store(
@@ -2164,9 +2176,12 @@ void Wallet::save(
 
 auto Wallet::SaveCredentialIDs(const identity::Nym& nym) const -> bool
 {
-    const auto index = dynamic_cast<const identity::internal::Nym&>(nym)
-                           .SerializeCredentialIndex(
-                               identity::internal::Nym::Mode::Abbreviated);
+    auto index = proto::Nym{};
+    if (false == dynamic_cast<const identity::internal::Nym&>(nym)
+                     .SerializeCredentialIndex(
+                         index, identity::internal::Nym::Mode::Abbreviated)) {
+        return false;
+    }
     const bool valid = proto::Validate(index, VERBOSE);
 
     if (!valid) { return false; }
@@ -2285,7 +2300,12 @@ auto Wallet::server(std::unique_ptr<contract::Server> contract) const
         contract->SetAlias(serverNymName);
     }
 
-    if (api_.Storage().Store(contract->Contract(), contract->Alias())) {
+    auto serialized = proto::ServerContract{};
+    if (false == contract->Serialize(serialized)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize contract.")
+            .Flush();
+    }
+    if (api_.Storage().Store(serialized, contract->Alias())) {
         {
             Lock mapLock(server_map_lock_);
             server_map_[server].reset(contract.release());
@@ -2332,8 +2352,14 @@ auto Wallet::Server(const proto::ServerContract& contract) const
                     serverID->Assign(candidate->ID());
                 }
 
+                auto serialized = proto::ServerContract{};
+                if (false == candidate->Serialize(serialized)) {
+                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                        ": Failed to serialize server contract.")
+                        .Flush();
+                }
                 const auto stored = api_.Storage().Store(
-                    candidate->Contract(), candidate->EffectiveName());
+                    serialized, candidate->EffectiveName());
 
                 if (stored) {
                     {
@@ -2438,7 +2464,13 @@ auto Wallet::server_to_nym(Identifier& input) const -> OTNymID
         try {
             const auto contract = Server(
                 identifier::Server::Factory(input.str()));  // TODO conversion
-            output->SetString(contract->Contract().nymid());
+            auto serialized = proto::ServerContract{};
+            if (false == contract->Serialize(serialized)) {
+                LogDetail(OT_METHOD)(__FUNCTION__)(
+                    ": Failed to serialize server contract: ")(input)
+                    .Flush();
+            }
+            output->SetString(serialized.nymid());
         } catch (...) {
             LogDetail(OT_METHOD)(__FUNCTION__)(": Non-existent server: ")(input)
                 .Flush();
@@ -2578,7 +2610,13 @@ auto Wallet::unit_definition(std::shared_ptr<contract::Unit>&& contract) const
     const auto unit = contract->ID()->str();
     const auto id = api_.Factory().UnitID(unit);
 
-    if (api_.Storage().Store(contract->Contract(), contract->Alias())) {
+    auto serialized = proto::UnitDefinition{};
+    if (false == contract->Serialize(serialized)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Failed to serialize unit definition")
+            .Flush();
+    }
+    if (api_.Storage().Store(serialized, contract->Alias())) {
         {
             Lock mapLock(unit_map_lock_);
             auto it = unit_map_.find(unit);
@@ -2627,8 +2665,14 @@ auto Wallet::UnitDefinition(const proto::UnitDefinition& contract) const
                     unitID->Assign(candidate->ID());
                 }
 
-                const auto stored = api_.Storage().Store(
-                    candidate->Contract(), candidate->Alias());
+                auto serialized = proto::UnitDefinition{};
+                if (false == candidate->Serialize(serialized)) {
+                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                        ": Failed to serialize unit definition.")
+                        .Flush();
+                }
+                const auto stored =
+                    api_.Storage().Store(serialized, candidate->Alias());
 
                 if (stored) {
                     {

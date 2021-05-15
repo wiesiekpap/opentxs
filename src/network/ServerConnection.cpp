@@ -280,7 +280,15 @@ void ServerConnection::process_incoming(const proto::ServerReply& in)
             return;
         }
 
-        notification_socket_->Send(api_.Factory().Data(message->Contract()));
+        auto serialized = proto::ServerReply{};
+        if (false == message->Serialize(serialized)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize reply.")
+                .Flush();
+
+            return;
+        }
+
+        notification_socket_->Send(api_.Factory().Data(serialized));
     } catch (...) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to instantiate reply")
             .Flush();
@@ -360,7 +368,14 @@ void ServerConnection::register_for_push(
     request->SetIncludeNym(true, reason);
     auto message = zmq::Message::Factory();
     message->AddFrame();
-    message->AddFrame(request->Contract());
+    auto serialized = proto::ServerRequest{};
+    if (false == request->Serialize(serialized)) {
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": Failed to serialize request.")
+            .Flush();
+
+        return;
+    }
+    message->AddFrame(serialized);
     message->AddFrame();
     Lock socketLock(lock_);
     isRegistered = get_async(socketLock).Send(message);

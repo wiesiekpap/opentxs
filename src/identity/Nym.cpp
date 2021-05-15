@@ -485,16 +485,23 @@ auto Nym::AddSocialMediaProfile(
 
 auto Nym::Alias() const -> std::string { return alias_; }
 
-auto Nym::asPublicNym(AllocateOutput destination) const -> bool
+auto Nym::Serialize(AllocateOutput destination) const -> bool
 {
-    write(asPublicNym(), destination);
+    auto serialized = proto::Nym{};
+    if (false == Serialize(serialized)) { return false; }
+
+    write(serialized, destination);
 
     return true;
 }
 
-auto Nym::asPublicNym() const -> const Nym::Serialized
+auto Nym::Serialize(Nym::Serialized& serialized) const -> bool
 {
-    return SerializeCredentialIndex(Mode::Full);
+    if (false == SerializeCredentialIndex(serialized, Mode::Full)) {
+        return false;
+    }
+
+    return true;
 }
 
 auto Nym::at(const std::size_t& index) const noexcept(false)
@@ -955,23 +962,19 @@ void Nym::init_claims(const eLock& lock) const
 
     OT_ASSERT(contact_data_);
 
-    std::unique_ptr<proto::ContactData> serialized{nullptr};
-
     for (auto& it : active_) {
         OT_ASSERT(nullptr != it.second);
 
         const auto& credSet = *it.second;
-        credSet.GetContactData(serialized);
-
-        if (serialized) {
-            OT_ASSERT(proto::Validate(
-                *serialized, VERBOSE, proto::ClaimType::Normal));
+        auto serialized = proto::ContactData{};
+        if (credSet.GetContactData(serialized)) {
+            OT_ASSERT(
+                proto::Validate(serialized, VERBOSE, proto::ClaimType::Normal));
 
             opentxs::ContactData claimCred(
-                api_, nymID, dataVersion, *serialized);
+                api_, nymID, dataVersion, serialized);
             contact_data_.reset(
                 new opentxs::ContactData(*contact_data_ + claimCred));
-            serialized.reset();
         }
     }
 
@@ -1111,10 +1114,8 @@ auto Nym::normalize(
     return output;
 }
 
-auto Nym::Path(proto::HDPath& output) const -> bool
+auto Nym::path(const sLock& lock, proto::HDPath& output) const -> bool
 {
-    sLock lock(shared_lock_);
-
     for (const auto& it : active_) {
         OT_ASSERT(nullptr != it.second);
         const auto& authority = *it.second;
@@ -1132,36 +1133,48 @@ auto Nym::Path(proto::HDPath& output) const -> bool
     return false;
 }
 
+auto Nym::Path(proto::HDPath& output) const -> bool
+{
+    sLock lock(shared_lock_);
+
+    return path(lock, output);
+}
+
 auto Nym::PathRoot() const -> const std::string
 {
-    auto path = proto::HDPath{};
-    if (false == Path(path)) return "";
-    return path.root();
+    sLock lock(shared_lock_);
+
+    auto proto = proto::HDPath{};
+    if (false == path(lock, proto)) return "";
+    return proto.root();
 }
 
 auto Nym::PathChildSize() const -> int
 {
-    auto path = proto::HDPath{};
-    if (false == Path(path)) return 0;
-    return path.child_size();
+    sLock lock(shared_lock_);
+
+    auto proto = proto::HDPath{};
+    if (false == path(lock, proto)) return 0;
+    return proto.child_size();
 }
 
 auto Nym::PathChild(int index) const -> std::uint32_t
 {
-    auto path = proto::HDPath{};
-    if (false == Path(path)) return 0;
-    return path.child(index);
+    sLock lock(shared_lock_);
+
+    auto proto = proto::HDPath{};
+    if (false == path(lock, proto)) return 0;
+    return proto.child(index);
 }
 
 auto Nym::PaymentCode() const -> std::string
 {
     if (identity::SourceType::Bip47 != source_.Type()) { return ""; }
 
-    auto serialized = source_.Serialize();
+    auto serialized = proto::NymIDSource{};
+    if (false == source_.Serialize(serialized)) { return ""; }
 
-    if (!serialized) { return ""; }
-
-    auto paymentCode = api_.Factory().PaymentCode(serialized->paymentcode());
+    auto paymentCode = api_.Factory().PaymentCode(serialized.paymentcode());
 
     return paymentCode->asBase58();
 }
@@ -1250,13 +1263,16 @@ void Nym::revoke_verification_credentials(const eLock& lock)
 auto Nym::SerializeCredentialIndex(AllocateOutput destination, const Mode mode)
     const -> bool
 {
-    return write(SerializeCredentialIndex(mode), destination);
+    auto serialized = proto::Nym{};
+    if (false == SerializeCredentialIndex(serialized, mode)) { return false; }
+
+    return write(serialized, destination);
 }
 
-auto Nym::SerializeCredentialIndex(const Mode mode) const -> Nym::Serialized
+auto Nym::SerializeCredentialIndex(Serialized& index, const Mode mode) const
+    -> bool
 {
     sLock lock(shared_lock_);
-    Serialized index;
     index.set_version(version_);
     auto nymID = String::Factory(id_);
     index.set_nymid(nymID->Get());
@@ -1270,27 +1286,36 @@ auto Nym::SerializeCredentialIndex(const Mode mode) const -> Nym::Serialized
     }
 
     index.set_revision(revision_.load());
-    *(index.mutable_source()) = *(source_.Serialize());
+
+    if (false == source_.Serialize(*(index.mutable_source()))) { return false; }
 
     for (auto& it : active_) {
         if (nullptr != it.second) {
-            auto credset = it.second->Serialize(static_cast<bool>(mode));
+            auto credset = proto::Authority{};
+            if (false ==
+                it.second->Serialize(credset, static_cast<bool>(mode))) {
+                return false;
+            }
             auto pCredSet = index.add_activecredentials();
-            *pCredSet = *credset;
+            *pCredSet = credset;
             pCredSet = nullptr;
         }
     }
 
     for (auto& it : m_mapRevokedSets) {
         if (nullptr != it.second) {
-            auto credset = it.second->Serialize(static_cast<bool>(mode));
+            auto credset = proto::Authority{};
+            if (false ==
+                it.second->Serialize(credset, static_cast<bool>(mode))) {
+                return false;
+            }
             auto pCredSet = index.add_revokedcredentials();
-            *pCredSet = *credset;
+            *pCredSet = credset;
             pCredSet = nullptr;
         }
     }
 
-    return index;
+    return true;
 }
 
 void Nym::SerializeNymIDSource(Tag& parent) const

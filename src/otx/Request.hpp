@@ -49,13 +49,13 @@ class Request final : public otx::Request,
                       public opentxs::contract::implementation::Signable
 {
 public:
-    auto Contract() const -> proto::ServerRequest final;
-    auto Contract(AllocateOutput destination) const -> bool final;
     auto Initiator() const -> const identifier::Nym& final
     {
         return initiator_;
     }
     auto Number() const -> RequestNumber final;
+    auto Serialize(AllocateOutput destination) const -> bool final;
+    auto Serialize(proto::ServerRequest& serialized) const -> bool final;
     auto Server() const -> const identifier::Server& final { return server_; }
     auto Type() const -> otx::ServerRequestType final { return type_; }
 
@@ -83,6 +83,8 @@ private:
     auto id_version(const Lock& lock) const -> proto::ServerRequest;
     auto Name() const -> std::string final { return {}; }
     auto Serialize() const -> OTData final;
+    auto serialize(const Lock& lock, proto::ServerRequest& serialized) const
+        -> bool;
     auto signature_version(const Lock& lock) const -> proto::ServerRequest;
     auto update_signature(const Lock& lock, const PasswordPrompt& reason)
         -> bool final;

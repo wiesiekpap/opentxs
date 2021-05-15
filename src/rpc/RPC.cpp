@@ -958,9 +958,13 @@ auto RPC::get_nyms(const proto::RPCCommand& command) const -> proto::RPCResponse
         auto pNym = session.Wallet().Nym(identifier::Nym::Factory(id));
 
         if (pNym) {
-            const auto& nym = *pNym;
-            *output.add_nym() = nym.asPublicNym();
-            add_output_status(output, proto::RPCRESPONSE_SUCCESS);
+            auto publicNym = proto::Nym{};
+            if (false == pNym->Serialize(publicNym)) {
+                add_output_status(output, proto::RPCRESPONSE_NYM_NOT_FOUND);
+            } else {
+                *output.add_nym() = publicNym;
+                add_output_status(output, proto::RPCRESPONSE_SUCCESS);
+            }
         } else {
             add_output_status(output, proto::RPCRESPONSE_NYM_NOT_FOUND);
         }
@@ -1115,8 +1119,13 @@ auto RPC::get_server_contracts(const proto::RPCCommand& command) const
         try {
             const auto contract =
                 session.Wallet().Server(identifier::Server::Factory(id));
-            *output.add_notary() = contract->PublicContract();
-            add_output_status(output, proto::RPCRESPONSE_SUCCESS);
+            auto serialized = proto::ServerContract{};
+            if (false == contract->Serialize(serialized, true)) {
+                add_output_status(output, proto::RPCRESPONSE_NONE);
+            } else {
+                *output.add_notary() = serialized;
+                add_output_status(output, proto::RPCRESPONSE_SUCCESS);
+            }
         } catch (...) {
             add_output_status(output, proto::RPCRESPONSE_NONE);
         }
@@ -1179,8 +1188,13 @@ auto RPC::get_unit_definitions(const proto::RPCCommand& command) const
                 add_output_status(output, proto::RPCRESPONSE_INVALID);
 
             } else {
-                *output.add_unit() = contract->PublicContract();
-                add_output_status(output, proto::RPCRESPONSE_SUCCESS);
+                auto serialized = proto::UnitDefinition{};
+                if (false == contract->Serialize(serialized, true)) {
+                    add_output_status(output, proto::RPCRESPONSE_NONE);
+                } else {
+                    *output.add_unit() = serialized;
+                    add_output_status(output, proto::RPCRESPONSE_SUCCESS);
+                }
             }
         } catch (...) {
             add_output_status(output, proto::RPCRESPONSE_NONE);
