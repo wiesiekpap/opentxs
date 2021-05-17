@@ -65,6 +65,7 @@ class Primary;
 
 namespace proto
 {
+class Authority;
 class ContactData;
 class Credential;
 class HDPath;

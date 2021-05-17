@@ -15,6 +15,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"
+#include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/RSA.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 

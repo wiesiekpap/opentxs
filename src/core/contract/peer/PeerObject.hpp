@@ -40,6 +40,11 @@ namespace blind
 class Purse;
 }  // namespace blind
 
+namespace proto
+{
+class PeerObject;
+}  // namespace proto
+
 class Armored;
 class Factory;
 class PasswordPrompt;

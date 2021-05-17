@@ -2151,14 +2151,8 @@ TEST_F(Test_Basic, depositCheque)
 {
     const auto accountID = find_user_account();
     const auto workflowID = Identifier::Factory(incoming_cheque_workflow_id_);
-    const auto workflow =
-        client_2_.Workflow().LoadWorkflow(bob_nym_id_, workflowID);
-
-    ASSERT_TRUE(workflow);
-    ASSERT_TRUE(api::client::Workflow::ContainsCheque(*workflow));
-
     auto [state, pCheque] =
-        api::client::Workflow::InstantiateCheque(client_2_, *workflow);
+        client_2_.Workflow().InstantiateCheque(bob_nym_id_, workflowID);
 
     ASSERT_EQ(api::client::PaymentWorkflowState::Conveyed, state);
     ASSERT_TRUE(pCheque);
@@ -2509,11 +2503,6 @@ TEST_F(Test_Basic, getAccountData_after_incomingTransfer)
     incoming_transfer_workflow_id_ = *workflows.cbegin();
 
     EXPECT_NE(incoming_transfer_workflow_id_.size(), 0);
-
-    auto workflow = client_2_.Workflow().LoadWorkflow(
-        bob_nym_id_, Identifier::Factory(incoming_transfer_workflow_id_));
-
-    ASSERT_TRUE(workflow);
 
     auto partysize = int{-1};
     EXPECT_TRUE(client_2_.Workflow().WorkflowPartySize(
@@ -3882,14 +3871,8 @@ TEST_F(Test_Basic, receive_cash)
     ASSERT_EQ(1, workflows.size());
 
     const auto& workflowID = Identifier::Factory(*workflows.begin());
-    const auto pWorkflow =
-        client_1_.Workflow().LoadWorkflow(alice_nym_id_, workflowID);
-
-    ASSERT_TRUE(pWorkflow);
-
-    const auto& workflow = *pWorkflow;
     auto [state, pPurse] =
-        client_1_.Workflow().InstantiatePurse(client_1_, workflow);
+        client_1_.Workflow().InstantiatePurse(alice_nym_id_, workflowID);
 
     ASSERT_TRUE(pPurse);
 

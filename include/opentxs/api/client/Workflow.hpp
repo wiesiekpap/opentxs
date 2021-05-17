@@ -11,7 +11,6 @@
 #include <memory>
 #include <vector>
 
-#include "opentxs/Proto.hpp"
 #include "opentxs/api/client/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 
@@ -147,22 +146,22 @@ public:
     OPENTXS_NO_EXPORT static bool ContainsCash(
         const proto::PaymentWorkflow& workflow);
 #endif
-    static bool ContainsCheque(const proto::PaymentWorkflow& workflow);
+    OPENTXS_NO_EXPORT static bool ContainsCheque(
+        const proto::PaymentWorkflow& workflow);
     OPENTXS_NO_EXPORT static bool ContainsTransfer(
         const proto::PaymentWorkflow& workflow);
     OPENTXS_NO_EXPORT static std::string ExtractCheque(
         const proto::PaymentWorkflow& workflow);
-#if OT_CASH
-    OPENTXS_NO_EXPORT static std::unique_ptr<proto::Purse> ExtractPurse(
-        const proto::PaymentWorkflow& workflow);
-#endif
+    OPENTXS_NO_EXPORT static bool ExtractPurse(
+        const proto::PaymentWorkflow& workflow,
+        proto::Purse& out);
     OPENTXS_NO_EXPORT static std::string ExtractTransfer(
         const proto::PaymentWorkflow& workflow);
-    static Cheque InstantiateCheque(
+    OPENTXS_NO_EXPORT static Cheque InstantiateCheque(
         const api::internal::Core& api,
         const proto::PaymentWorkflow& workflow);
 #if OT_CASH
-    static Purse InstantiatePurse(
+    OPENTXS_NO_EXPORT static Purse InstantiatePurse(
         const api::internal::Core& api,
         const proto::PaymentWorkflow& workflow);
 #endif
@@ -250,6 +249,14 @@ public:
     virtual OTIdentifier ImportCheque(
         const identifier::Nym& nymID,
         const opentxs::Cheque& cheque) const = 0;
+    virtual Cheque InstantiateCheque(
+        const identifier::Nym& nymID,
+        const Identifier& workflowID) const = 0;
+#if OT_CASH
+    virtual Purse InstantiatePurse(
+        const identifier::Nym& nymID,
+        const Identifier& workflowID) const = 0;
+#endif
     virtual std::set<OTIdentifier> List(
         const identifier::Nym& nymID,
         const api::client::PaymentWorkflowType type,
@@ -267,9 +274,10 @@ public:
         const identifier::Nym& nymID,
         const Identifier& workflowID) const = 0;
     /** Load a serialized workflow, if it exists*/
-    virtual std::shared_ptr<proto::PaymentWorkflow> LoadWorkflow(
+    OPENTXS_NO_EXPORT virtual bool LoadWorkflow(
         const identifier::Nym& nymID,
-        const Identifier& workflowID) const = 0;
+        const Identifier& workflowID,
+        proto::PaymentWorkflow& out) const = 0;
 #if OT_CASH
     virtual OTIdentifier ReceiveCash(
         const identifier::Nym& receiver,

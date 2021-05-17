@@ -34,7 +34,6 @@
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/HDPath.pb.h"
 #include "opentxs/protobuf/MasterCredentialParameters.pb.h"
-#include "opentxs/protobuf/NymIDSource.pb.h"
 #include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/protobuf/SourceProof.pb.h"
 #include "opentxs/protobuf/verify/Credential.hpp"

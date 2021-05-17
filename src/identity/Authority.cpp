@@ -42,7 +42,6 @@
 #include "opentxs/identity/Source.hpp"
 #include "opentxs/identity/credential/Key.hpp"
 #include "opentxs/identity/credential/Verification.hpp"
-#include "opentxs/protobuf/Authority.pb.h"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/ContactData.pb.h"
 #include "opentxs/protobuf/Credential.pb.h"
@@ -52,6 +51,7 @@
 #include "opentxs/protobuf/Verification.pb.h"
 #include "opentxs/protobuf/verify/Credential.hpp"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
+#include "opentxs/protobuf/Authority.pb.h"  // IWYU pragma: keep
 
 #define OT_METHOD "opentxs::identity::implementation::Authority::"
 

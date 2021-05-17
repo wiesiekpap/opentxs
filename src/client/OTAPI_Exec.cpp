@@ -30,7 +30,6 @@
 #include "opentxs/core/NumList.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
-#include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/basket/Basket.hpp"
 #include "opentxs/core/contract/basket/BasketContract.hpp"
 #include "opentxs/core/identifier/Nym.hpp"

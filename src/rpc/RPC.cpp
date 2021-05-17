@@ -238,86 +238,95 @@ auto RPC::accept_pending_payments(const proto::RPCCommand& command) const
     CHECK_INPUT(acceptpendingpayment, proto::RPCRESPONSE_INVALID);
 
     for (auto acceptpendingpayment : command.acceptpendingpayment()) {
-        const auto destinationaccountID =
-            Identifier::Factory(acceptpendingpayment.destinationaccount());
+        const auto destinationaccountID = client.Factory().Identifier(
+            acceptpendingpayment.destinationaccount());
         const auto workflowID =
-            Identifier::Factory(acceptpendingpayment.workflow());
+            client.Factory().Identifier(acceptpendingpayment.workflow());
         const auto nymID = client.Storage().AccountOwner(destinationaccountID);
-        const auto paymentWorkflow =
-            client.Workflow().LoadWorkflow(nymID, workflowID);
 
-        if (false == bool(paymentWorkflow)) {
-            LogDetail(OT_METHOD)(__FUNCTION__)(": Invalid workflow ")(
-                workflowID)
-                .Flush();
-            add_output_task(output, "");
-            add_output_status(output, proto::RPCRESPONSE_WORKFLOW_NOT_FOUND);
+        try {
+            const auto paymentWorkflow = [&] {
+                auto out = proto::PaymentWorkflow{};
 
-            continue;
-        }
-
-        std::shared_ptr<const OTPayment> payment{};
-
-        switch (api::client::internal::translate(paymentWorkflow->type())) {
-            case api::client::PaymentWorkflowType::IncomingCheque:
-            case api::client::PaymentWorkflowType::IncomingInvoice: {
-                auto chequeState =
-                    opentxs::api::client::Workflow::InstantiateCheque(
-                        client, *paymentWorkflow);
-                const auto& [state, cheque] = chequeState;
-
-                if (false == bool(cheque)) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
-                        ": Unable to load cheque from workflow")
-                        .Flush();
+                if (!client.Workflow().LoadWorkflow(nymID, workflowID, out)) {
                     add_output_task(output, "");
                     add_output_status(
-                        output, proto::RPCRESPONSE_CHEQUE_NOT_FOUND);
+                        output, proto::RPCRESPONSE_WORKFLOW_NOT_FOUND);
+
+                    throw std::runtime_error{
+                        std::string{"Invalid workflow"} + workflowID->str()};
+                }
+
+                return out;
+            }();
+
+            auto payment = std::shared_ptr<const OTPayment>{};
+
+            switch (api::client::internal::translate(paymentWorkflow.type())) {
+                case api::client::PaymentWorkflowType::IncomingCheque:
+                case api::client::PaymentWorkflowType::IncomingInvoice: {
+                    auto chequeState =
+                        opentxs::api::client::Workflow::InstantiateCheque(
+                            client, paymentWorkflow);
+                    const auto& [state, cheque] = chequeState;
+
+                    if (false == bool(cheque)) {
+                        LogOutput(OT_METHOD)(__FUNCTION__)(
+                            ": Unable to load cheque from workflow")
+                            .Flush();
+                        add_output_task(output, "");
+                        add_output_status(
+                            output, proto::RPCRESPONSE_CHEQUE_NOT_FOUND);
+
+                        continue;
+                    }
+
+                    payment.reset(
+                        client.Factory().Payment(*cheque, reason).release());
+                } break;
+                case api::client::PaymentWorkflowType::OutgoingCheque:
+                case api::client::PaymentWorkflowType::OutgoingInvoice:
+                case api::client::PaymentWorkflowType::Error:
+                default: {
+                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                        ": Unsupported workflow type")
+                        .Flush();
+                    add_output_task(output, "");
+                    add_output_status(output, proto::RPCRESPONSE_ERROR);
 
                     continue;
                 }
+            }
 
-                payment.reset(
-                    client.Factory().Payment(*cheque, reason).release());
-            } break;
-            case api::client::PaymentWorkflowType::OutgoingCheque:
-            case api::client::PaymentWorkflowType::OutgoingInvoice:
-            case api::client::PaymentWorkflowType::Error:
-            default: {
+            if (false == bool(payment)) {
                 LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": Unsupported workflow type")
+                    ": Failed to instantiate payment")
                     .Flush();
                 add_output_task(output, "");
-                add_output_status(output, proto::RPCRESPONSE_ERROR);
+                add_output_status(output, proto::RPCRESPONSE_PAYMENT_NOT_FOUND);
 
                 continue;
             }
-        }
 
-        if (false == bool(payment)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to instantiate payment")
-                .Flush();
-            add_output_task(output, "");
-            add_output_status(output, proto::RPCRESPONSE_PAYMENT_NOT_FOUND);
+            INIT_OTX(DepositPayment, nymID, destinationaccountID, payment);
+
+            if (false == ready) {
+                add_output_task(output, "");
+                add_output_status(output, proto::RPCRESPONSE_START_TASK_FAILED);
+            } else {
+                queue_task(
+                    nymID,
+                    std::to_string(taskID),
+                    [&](const auto& in, auto& out) -> void {
+                        evaluate_deposit_payment(client, in, out);
+                    },
+                    std::move(future),
+                    output);
+            }
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
             continue;
-        }
-
-        INIT_OTX(DepositPayment, nymID, destinationaccountID, payment);
-
-        if (false == ready) {
-            add_output_task(output, "");
-            add_output_status(output, proto::RPCRESPONSE_START_TASK_FAILED);
-        } else {
-            queue_task(
-                nymID,
-                std::to_string(taskID),
-                [&](const auto& in, auto& out) -> void {
-                    evaluate_deposit_payment(client, in, out);
-                },
-                std::move(future),
-                output);
         }
     }
 
@@ -487,40 +496,47 @@ auto RPC::create_compatible_account(const proto::RPCCommand& command) const
     CHECK_INPUT(identifier, proto::RPCRESPONSE_INVALID);
 
     const auto workflowID = Identifier::Factory(command.identifier(0));
-    const auto pPaymentWorkflow =
-        client.Workflow().LoadWorkflow(ownerID, workflowID);
-
-    if (false == bool(pPaymentWorkflow)) {
-        add_output_status(output, proto::RPCRESPONSE_WORKFLOW_NOT_FOUND);
-
-        return output;
-    }
-
-    const auto& workflow = *pPaymentWorkflow;
     auto notaryID = identifier::Server::Factory();
     auto unitID = identifier::UnitDefinition::Factory();
 
-    switch (api::client::internal::translate(workflow.type())) {
-        case api::client::PaymentWorkflowType::IncomingCheque: {
-            auto chequeState =
-                opentxs::api::client::Workflow::InstantiateCheque(
-                    client, workflow);
-            const auto& [state, cheque] = chequeState;
+    try {
+        const auto workflow = [&] {
+            auto out = proto::PaymentWorkflow{};
 
-            if (false == bool(cheque)) {
-                add_output_status(output, proto::RPCRESPONSE_CHEQUE_NOT_FOUND);
+            if (!client.Workflow().LoadWorkflow(ownerID, workflowID, out)) {
+                throw std::runtime_error{""};
+            }
+
+            return out;
+        }();
+
+        switch (api::client::internal::translate(workflow.type())) {
+            case api::client::PaymentWorkflowType::IncomingCheque: {
+                auto chequeState =
+                    opentxs::api::client::Workflow::InstantiateCheque(
+                        client, workflow);
+                const auto& [state, cheque] = chequeState;
+
+                if (false == bool(cheque)) {
+                    add_output_status(
+                        output, proto::RPCRESPONSE_CHEQUE_NOT_FOUND);
+
+                    return output;
+                }
+
+                notaryID->SetString(cheque->GetNotaryID().str());
+                unitID->SetString(cheque->GetInstrumentDefinitionID().str());
+            } break;
+            default: {
+                add_output_status(output, proto::RPCRESPONSE_INVALID);
 
                 return output;
             }
-
-            notaryID->SetString(cheque->GetNotaryID().str());
-            unitID->SetString(cheque->GetInstrumentDefinitionID().str());
-        } break;
-        default: {
-            add_output_status(output, proto::RPCRESPONSE_INVALID);
-
-            return output;
         }
+    } catch (...) {
+        add_output_status(output, proto::RPCRESPONSE_WORKFLOW_NOT_FOUND);
+
+        return output;
     }
 
     INIT_OTX(RegisterAccount, ownerID, notaryID, unitID, "");
@@ -887,38 +903,46 @@ auto RPC::get_compatible_accounts(const proto::RPCCommand& command) const
     CHECK_INPUT(identifier, proto::RPCRESPONSE_INVALID);
 
     const auto workflowID = Identifier::Factory(command.identifier(0));
-    const auto pWorkflow = client.Workflow().LoadWorkflow(ownerID, workflowID);
-
-    if (false == bool(pWorkflow)) {
-        add_output_status(output, proto::RPCRESPONSE_WORKFLOW_NOT_FOUND);
-
-        return output;
-    }
-
-    const auto& workflow = *pWorkflow;
     auto unitID = identifier::UnitDefinition::Factory();
 
-    switch (api::client::internal::translate(workflow.type())) {
-        case api::client::PaymentWorkflowType::IncomingCheque:
-        case api::client::PaymentWorkflowType::IncomingInvoice: {
-            auto chequeState =
-                opentxs::api::client::Workflow::InstantiateCheque(
-                    client, workflow);
-            const auto& [state, cheque] = chequeState;
+    try {
+        const auto workflow = [&] {
+            auto out = proto::PaymentWorkflow{};
 
-            if (false == bool(cheque)) {
+            if (!client.Workflow().LoadWorkflow(ownerID, workflowID, out)) {
+                throw std::runtime_error{""};
+            }
+
+            return out;
+        }();
+
+        switch (api::client::internal::translate(workflow.type())) {
+            case api::client::PaymentWorkflowType::IncomingCheque:
+            case api::client::PaymentWorkflowType::IncomingInvoice: {
+                auto chequeState =
+                    opentxs::api::client::Workflow::InstantiateCheque(
+                        client, workflow);
+                const auto& [state, cheque] = chequeState;
+
+                if (false == bool(cheque)) {
+                    add_output_status(
+                        output, proto::RPCRESPONSE_CHEQUE_NOT_FOUND);
+
+                    return output;
+                }
+
+                unitID->Assign(cheque->GetInstrumentDefinitionID());
+            } break;
+            default: {
                 add_output_status(output, proto::RPCRESPONSE_CHEQUE_NOT_FOUND);
 
                 return output;
             }
-
-            unitID->Assign(cheque->GetInstrumentDefinitionID());
-        } break;
-        default: {
-            add_output_status(output, proto::RPCRESPONSE_CHEQUE_NOT_FOUND);
-
-            return output;
         }
+    } catch (...) {
+        add_output_status(output, proto::RPCRESPONSE_WORKFLOW_NOT_FOUND);
+
+        return output;
     }
 
     const auto owneraccounts = client.Storage().AccountsByOwner(ownerID);
@@ -997,39 +1021,51 @@ auto RPC::get_pending_payments(const proto::RPCCommand& command) const
         std::inserter(workflows, workflows.end()));
 
     for (auto workflowID : workflows) {
-        const auto paymentWorkflow = workflow.LoadWorkflow(ownerID, workflowID);
+        try {
+            const auto paymentWorkflow = [&] {
+                auto out = proto::PaymentWorkflow{};
 
-        if (false == bool(paymentWorkflow)) { continue; }
+                if (!workflow.LoadWorkflow(ownerID, workflowID, out)) {
+                    throw std::runtime_error{""};
+                }
 
-        auto chequeState = opentxs::api::client::Workflow::InstantiateCheque(
-            client, *paymentWorkflow);
+                return out;
+            }();
 
-        const auto& [state, cheque] = chequeState;
+            auto chequeState =
+                opentxs::api::client::Workflow::InstantiateCheque(
+                    client, paymentWorkflow);
 
-        if (false == bool(cheque)) { continue; }
+            const auto& [state, cheque] = chequeState;
 
-        auto& accountEvent = *output.add_accountevent();
-        accountEvent.set_version(ACCOUNTEVENT_VERSION);
-        auto accountEventType = proto::ACCOUNTEVENT_INCOMINGCHEQUE;
+            if (false == bool(cheque)) { continue; }
 
-        if (api::client::PaymentWorkflowType::IncomingInvoice ==
-            api::client::internal::translate(paymentWorkflow->type())) {
-            accountEventType = proto::ACCOUNTEVENT_INCOMINGINVOICE;
+            auto& accountEvent = *output.add_accountevent();
+            accountEvent.set_version(ACCOUNTEVENT_VERSION);
+            auto accountEventType = proto::ACCOUNTEVENT_INCOMINGCHEQUE;
+
+            if (api::client::PaymentWorkflowType::IncomingInvoice ==
+                api::client::internal::translate(paymentWorkflow.type())) {
+                accountEventType = proto::ACCOUNTEVENT_INCOMINGINVOICE;
+            }
+
+            accountEvent.set_type(accountEventType);
+            const auto contactID =
+                client.Contacts().ContactID(cheque->GetSenderNymID());
+            accountEvent.set_contact(contactID->str());
+            accountEvent.set_workflow(paymentWorkflow.id());
+            accountEvent.set_pendingamount(cheque->GetAmount());
+
+            if (0 < paymentWorkflow.event_size()) {
+                const auto paymentEvent = paymentWorkflow.event(0);
+                accountEvent.set_timestamp(paymentEvent.time());
+            }
+
+            accountEvent.set_memo(cheque->GetMemo().Get());
+        } catch (...) {
+
+            continue;
         }
-
-        accountEvent.set_type(accountEventType);
-        const auto contactID =
-            client.Contacts().ContactID(cheque->GetSenderNymID());
-        accountEvent.set_contact(contactID->str());
-        accountEvent.set_workflow(paymentWorkflow->id());
-        accountEvent.set_pendingamount(cheque->GetAmount());
-
-        if (0 < paymentWorkflow->event_size()) {
-            const auto paymentEvent = paymentWorkflow->event(0);
-            accountEvent.set_timestamp(paymentEvent.time());
-        }
-
-        accountEvent.set_memo(cheque->GetMemo().Get());
     }
 
     if (0 == output.accountevent_size()) {
@@ -1211,15 +1247,24 @@ auto RPC::get_workflow(const proto::RPCCommand& command) const
     CHECK_INPUT(getworkflow, proto::RPCRESPONSE_INVALID);
 
     for (const auto& getworkflow : command.getworkflow()) {
-        const auto workflow = client.Workflow().LoadWorkflow(
-            identifier::Nym::Factory(getworkflow.nymid()),
-            Identifier::Factory(getworkflow.workflowid()));
+        try {
+            const auto workflow = [&] {
+                auto out = proto::PaymentWorkflow{};
 
-        if (workflow) {
+                if (false == client.Workflow().LoadWorkflow(
+                                 identifier::Nym::Factory(getworkflow.nymid()),
+                                 Identifier::Factory(getworkflow.workflowid()),
+                                 out)) {
+                    throw std::runtime_error{""};
+                }
+
+                return out;
+            }();
+
             auto& paymentworkflow = *output.add_workflow();
-            paymentworkflow = *workflow;
+            paymentworkflow = workflow;
             add_output_status(output, proto::RPCRESPONSE_SUCCESS);
-        } else {
+        } catch (...) {
             add_output_status(output, proto::RPCRESPONSE_NONE);
         }
     }
