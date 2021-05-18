@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/client/Issuer.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
@@ -51,16 +50,22 @@ public:
     auto BailmentInitiated(const identifier::UnitDefinition& unitID) const
         -> bool final;
     auto BailmentInstructions(
+        const api::Core& client,
         const identifier::UnitDefinition& unitID,
         const bool onlyUnused = true) const
         -> std::vector<BailmentDetails> final;
     auto BailmentInstructionsSize(
+        const api::Core& client,
         const identifier::UnitDefinition& unitID) const -> std::size_t final;
-    auto ConnectionInfo(const contract::peer::ConnectionInfoType type) const
+    auto ConnectionInfo(
+        const api::Core& client,
+        const contract::peer::ConnectionInfoType type) const
         -> std::vector<ConnectionDetails> final;
     auto ConnectionInfoInitiated(
         const contract::peer::ConnectionInfoType type) const -> bool final;
-    auto ConnectionInfoSize(const contract::peer::ConnectionInfoType type) const
+    auto ConnectionInfoSize(
+        const api::Core& client,
+        const contract::peer::ConnectionInfoType type) const
         -> std::size_t final;
     auto GetRequests(
         const contract::peer::PeerRequestType type,
@@ -73,7 +78,7 @@ public:
     auto PrimaryServer() const -> OTServerID final;
     auto RequestTypes() const
         -> std::set<contract::peer::PeerRequestType> final;
-    auto Serialize() const -> proto::Issuer final;
+    auto Serialize(proto::Issuer&) const -> bool final;
     auto StoreSecretComplete() const -> bool final;
     auto StoreSecretInitiated() const -> bool final;
 
@@ -126,10 +131,12 @@ private:
 
     auto bailment_instructions(
         const Lock& lock,
+        const api::Core& client,
         const identifier::UnitDefinition& unitID,
         const bool onlyUnused = true) const -> std::vector<BailmentDetails>;
     auto connection_info(
         const Lock& lock,
+        const api::Core& client,
         const contract::peer::ConnectionInfoType type) const
         -> std::vector<Issuer::ConnectionDetails>;
     auto find_request(

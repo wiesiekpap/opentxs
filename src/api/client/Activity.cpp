@@ -20,6 +20,7 @@
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -786,17 +787,33 @@ auto Activity::start_publisher(const std::string& endpoint) const noexcept
     return output;
 }
 
-auto Activity::Thread(const identifier::Nym& nymID, const Identifier& threadID)
-    const noexcept -> std::shared_ptr<proto::StorageThread>
+auto Activity::Thread(
+    const identifier::Nym& nymID,
+    const Identifier& threadID,
+    proto::StorageThread& output) const noexcept -> bool
 {
     sLock lock(shared_lock_);
-    auto output = std::make_shared<proto::StorageThread>();
 
-    OT_ASSERT(output);
+    if (false == api_.Storage().Load(nymID.str(), threadID.str(), output)) {
+        return false;
+    }
 
-    api_.Storage().Load(nymID.str(), threadID.str(), *output);
+    return true;
+}
 
-    return output;
+auto Activity::Thread(
+    const identifier::Nym& nymID,
+    const Identifier& threadID,
+    AllocateOutput output) const noexcept -> bool
+{
+    sLock lock(shared_lock_);
+
+    auto serialized = proto::StorageThread{};
+    if (false == api_.Storage().Load(nymID.str(), threadID.str(), serialized)) {
+        return false;
+    }
+
+    return write(serialized, output);
 }
 
 void Activity::thread_preload_thread(

@@ -13,7 +13,6 @@
 #include <string>
 #include <tuple>
 
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 
@@ -197,9 +196,14 @@ public:
         const std::size_t start,
         const std::size_t count,
         const PasswordPrompt& reason) const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual std::shared_ptr<proto::StorageThread> Thread(
+    OPENTXS_NO_EXPORT virtual bool Thread(
         const identifier::Nym& nymID,
-        const Identifier& threadID) const noexcept = 0;
+        const Identifier& threadID,
+        proto::StorageThread& serialized) const noexcept = 0;
+    virtual bool Thread(
+        const identifier::Nym& nymID,
+        const Identifier& threadID,
+        AllocateOutput output) const noexcept = 0;
     /**   Obtain a list of thread ids for the specified nym
      *
      *    \param[in] nym the identifier of the nym

@@ -487,13 +487,14 @@ void ActivityThread::process_thread(const Message& message) noexcept
 
     if (threadID_ != threadID) { return; }
 
-    const auto thread = api_.Activity().Thread(primary_id_, threadID_);
+    auto thread = proto::StorageThread{};
+    auto loaded = api_.Activity().Thread(primary_id_, threadID_, thread);
 
-    OT_ASSERT(thread)
+    OT_ASSERT(loaded)
 
     std::set<ActivityThreadRowID> active{};
 
-    for (const auto& item : thread->item()) {
+    for (const auto& item : thread.item()) {
         const auto itemID = process_item(item);
         active.emplace(itemID);
     }
@@ -637,10 +638,11 @@ auto ActivityThread::SetDraft(const std::string& draft) const noexcept -> bool
 
 void ActivityThread::startup() noexcept
 {
-    const auto thread = api_.Activity().Thread(primary_id_, threadID_);
+    auto thread = proto::StorageThread{};
+    auto loaded = api_.Activity().Thread(primary_id_, threadID_, thread);
 
-    if (thread) {
-        load_thread(*thread);
+    if (loaded) {
+        load_thread(thread);
     } else {
         new_thread();
     }

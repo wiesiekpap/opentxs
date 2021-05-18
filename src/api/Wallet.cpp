@@ -1381,17 +1381,17 @@ auto Wallet::peer_lock(const std::string& nymID) const -> std::mutex&
 auto Wallet::PeerReply(
     const identifier::Nym& nym,
     const Identifier& reply,
-    const StorageBox& box) const -> std::shared_ptr<proto::PeerReply>
+    const StorageBox& box,
+    proto::PeerReply& output) const -> bool
 {
     const auto nymID = nym.str();
-    auto output = std::make_shared<proto::PeerReply>();
-
-    OT_ASSERT(output);
 
     Lock lock(peer_lock(nymID));
-    api_.Storage().Load(nymID, reply.str(), box, *output, true);
+    if (false == api_.Storage().Load(nymID, reply.str(), box, output, true)) {
+        return false;
+    }
 
-    return output;
+    return true;
 }
 
 auto Wallet::PeerReply(
@@ -1400,11 +1400,10 @@ auto Wallet::PeerReply(
     const StorageBox& box,
     AllocateOutput destination) const -> bool
 {
-    auto peerreply = PeerReply(nym, reply, box);
+    auto peerreply = proto::PeerReply{};
+    if (false == PeerReply(nym, reply, box, peerreply)) { return false; }
 
-    OT_ASSERT(peerreply);
-
-    return write(*peerreply, destination);
+    return write(peerreply, destination);
 }
 
 auto Wallet::PeerReplyComplete(
@@ -1690,17 +1689,18 @@ auto Wallet::PeerRequest(
     const identifier::Nym& nym,
     const Identifier& request,
     const StorageBox& box,
-    std::time_t& time) const -> std::shared_ptr<proto::PeerRequest>
+    std::time_t& time,
+    proto::PeerRequest& output) const -> bool
 {
     const auto nymID = nym.str();
-    auto output = std::make_shared<proto::PeerRequest>();
-
-    OT_ASSERT(output);
 
     Lock lock(peer_lock(nymID));
-    api_.Storage().Load(nymID, request.str(), box, *output, time, true);
+    if (false ==
+        api_.Storage().Load(nymID, request.str(), box, output, time, true)) {
+        return false;
+    }
 
-    return output;
+    return true;
 }
 
 auto Wallet::PeerRequest(
@@ -1710,11 +1710,12 @@ auto Wallet::PeerRequest(
     std::time_t& time,
     AllocateOutput destination) const -> bool
 {
-    auto peerrequest = PeerRequest(nym, request, box, time);
+    auto peerrequest = proto::PeerRequest{};
+    if (false == PeerRequest(nym, request, box, time, peerrequest)) {
+        return false;
+    }
 
-    OT_ASSERT(peerrequest);
-
-    return write(*peerrequest, destination);
+    return write(peerrequest, destination);
 }
 
 auto Wallet::PeerRequestComplete(
@@ -2114,7 +2115,12 @@ void Wallet::save(const Lock& lock, api::client::Issuer* in) const
 
     const auto& nymID = in->LocalNymID();
     const auto& issuerID = in->IssuerID();
-    api_.Storage().Store(nymID.str(), in->Serialize());
+    auto serialized = proto::Issuer{};
+    auto loaded = in->Serialize(serialized);
+
+    OT_ASSERT(loaded);
+
+    api_.Storage().Store(nymID.str(), serialized);
 
     {
         const auto& socket = issuer_publisher_.get();

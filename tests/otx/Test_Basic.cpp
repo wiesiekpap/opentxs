@@ -26,6 +26,7 @@
 #include "internal/otx/client/Client.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Proto.tpp"
 #include "opentxs/Shared.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -678,13 +679,15 @@ public:
         ASSERT_TRUE(foundrequest);
 
         std::time_t notused;
-        const auto processedrequest = client_2_.Wallet().PeerRequest(
+        auto processedrequest = ot::Space{};
+        auto loaded = client_2_.Wallet().PeerRequest(
             bob_nym_id_,
             peerrequest->ID(),
             StorageBox::PROCESSEDPEERREQUEST,
-            notused);
+            notused,
+            ot::writer(processedrequest));
 
-        ASSERT_TRUE(processedrequest);
+        ASSERT_TRUE(loaded);
 
         auto complete =
             client_2_.Wallet().PeerReplyComplete(bob_nym_id_, peerreply->ID());
@@ -702,10 +705,14 @@ public:
 
         ASSERT_TRUE(foundfinishedreply);
 
-        const auto finishedreply = client_2_.Wallet().PeerReply(
-            bob_nym_id_, peerreply->ID(), StorageBox::FINISHEDPEERREPLY);
+        auto finishedreply = ot::Space{};
+        loaded = client_2_.Wallet().PeerReply(
+            bob_nym_id_,
+            peerreply->ID(),
+            StorageBox::FINISHEDPEERREPLY,
+            ot::writer(finishedreply));
 
-        ASSERT_TRUE(finishedreply);
+        ASSERT_TRUE(loaded);
     }
 
     void send_peer_request(

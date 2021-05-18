@@ -571,7 +571,8 @@ void Pair::check_accounts(
                     State::get_account(unitID, accountID, accountDetails);
                 uniqueRegistered.emplace(unitID);
                 auto& bailmentCount = std::get<2>(details);
-                const auto instructions = issuer.BailmentInstructions(unitID);
+                const auto instructions =
+                    issuer.BailmentInstructions(client_, unitID);
                 bailmentCount = instructions.size();
                 const bool needBailment =
                     (MINIMUM_UNUSED_BAILMENTS > instructions.size());
@@ -606,8 +607,8 @@ void Pair::check_connection_info(
 
     if (false == trusted) { return; }
 
-    const auto btcrpc =
-        issuer.ConnectionInfo(contract::peer::ConnectionInfoType::BtcRpc);
+    const auto btcrpc = issuer.ConnectionInfo(
+        client_, contract::peer::ConnectionInfoType::BtcRpc);
     const bool needInfo =
         (btcrpc.empty() &&
          (false == issuer.ConnectionInfoInitiated(
@@ -860,10 +861,11 @@ void Pair::process_peer_replies(const Lock& lock, const identifier::Nym& nymID)
 
     for (const auto& it : replies) {
         const auto replyID = Identifier::Factory(it.first);
-        const auto reply = client_.Wallet().PeerReply(
-            nymID, replyID, StorageBox::INCOMINGPEERREPLY);
+        auto reply = proto::PeerReply{};
+        if (false ==
+            client_.Wallet().PeerReply(
+                nymID, replyID, StorageBox::INCOMINGPEERREPLY, reply)) {
 
-        if (false == bool(reply)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load peer reply ")(
                 it.first)(".")
                 .Flush();
@@ -871,31 +873,31 @@ void Pair::process_peer_replies(const Lock& lock, const identifier::Nym& nymID)
             continue;
         }
 
-        const auto& type = reply->type();
+        const auto& type = reply.type();
 
         switch (contract::peer::internal::translate(type)) {
             case contract::peer::PeerRequestType::Bailment: {
                 LogDetail(OT_METHOD)(__FUNCTION__)(": Received bailment reply.")
                     .Flush();
-                process_request_bailment(lock, nymID, *reply);
+                process_request_bailment(lock, nymID, reply);
             } break;
             case contract::peer::PeerRequestType::OutBailment: {
                 LogDetail(OT_METHOD)(__FUNCTION__)(
                     ": Received outbailment reply.")
                     .Flush();
-                process_request_outbailment(lock, nymID, *reply);
+                process_request_outbailment(lock, nymID, reply);
             } break;
             case contract::peer::PeerRequestType::ConnectionInfo: {
                 LogDetail(OT_METHOD)(__FUNCTION__)(
                     ": Received connection info reply.")
                     .Flush();
-                process_connection_info(lock, nymID, *reply);
+                process_connection_info(lock, nymID, reply);
             } break;
             case contract::peer::PeerRequestType::StoreSecret: {
                 LogDetail(OT_METHOD)(__FUNCTION__)(
                     ": Received store secret reply.")
                     .Flush();
-                process_store_secret(lock, nymID, *reply);
+                process_store_secret(lock, nymID, reply);
             } break;
             case contract::peer::PeerRequestType::Error:
             case contract::peer::PeerRequestType::PendingBailment:
@@ -918,10 +920,14 @@ void Pair::process_peer_requests(const Lock& lock, const identifier::Nym& nymID)
     for (const auto& it : requests) {
         const auto requestID = Identifier::Factory(it.first);
         std::time_t time{};
-        const auto request = client_.Wallet().PeerRequest(
-            nymID, requestID, StorageBox::INCOMINGPEERREQUEST, time);
+        auto request = proto::PeerRequest{};
+        if (false == client_.Wallet().PeerRequest(
+                         nymID,
+                         requestID,
+                         StorageBox::INCOMINGPEERREQUEST,
+                         time,
+                         request)) {
 
-        if (false == bool(request)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(
                 ": Failed to load peer request ")(it.first)(".")
                 .Flush();
@@ -929,14 +935,14 @@ void Pair::process_peer_requests(const Lock& lock, const identifier::Nym& nymID)
             continue;
         }
 
-        const auto& type = request->type();
+        const auto& type = request.type();
 
         switch (contract::peer::internal::translate(type)) {
             case contract::peer::PeerRequestType::PendingBailment: {
                 LogOutput(OT_METHOD)(__FUNCTION__)(
                     ": Received pending bailment notification.")
                     .Flush();
-                process_pending_bailment(lock, nymID, *request);
+                process_pending_bailment(lock, nymID, request);
             } break;
             case contract::peer::PeerRequestType::Error:
             case contract::peer::PeerRequestType::Bailment:

@@ -332,32 +332,33 @@ TEST_F(Test_Pair, pair_untrusted)
             issuer.AccountList(ot::contact::ContactItemType::USD, unit_id_)
                 .size());
         EXPECT_FALSE(issuer.BailmentInitiated(unit_id_));
-        EXPECT_EQ(3, issuer.BailmentInstructionsSize(unit_id_));
+        EXPECT_EQ(3, issuer.BailmentInstructionsSize(api_chris_, unit_id_));
         EXPECT_EQ(
             issuer.ConnectionInfoSize(
-                ot::contract::peer::ConnectionInfoType::Bitcoin),
+                api_chris_, ot::contract::peer::ConnectionInfoType::Bitcoin),
             0);
         EXPECT_EQ(
             issuer.ConnectionInfoSize(
-                ot::contract::peer::ConnectionInfoType::BtcRpc),
-            0);
-        EXPECT_EQ(
-
-            issuer.ConnectionInfoSize(
-                ot::contract::peer::ConnectionInfoType::BitMessage),
+                api_chris_, ot::contract::peer::ConnectionInfoType::BtcRpc),
             0);
         EXPECT_EQ(
 
             issuer.ConnectionInfoSize(
+                api_chris_, ot::contract::peer::ConnectionInfoType::BitMessage),
+            0);
+        EXPECT_EQ(
+
+            issuer.ConnectionInfoSize(
+                api_chris_,
                 ot::contract::peer::ConnectionInfoType::BitMessageRPC),
             0);
         EXPECT_EQ(
             issuer.ConnectionInfoSize(
-                ot::contract::peer::ConnectionInfoType::SSH),
+                api_chris_, ot::contract::peer::ConnectionInfoType::SSH),
             0);
         EXPECT_EQ(
             issuer.ConnectionInfoSize(
-                ot::contract::peer::ConnectionInfoType::CJDNS),
+                api_chris_, ot::contract::peer::ConnectionInfoType::CJDNS),
             0);
         EXPECT_FALSE(issuer.ConnectionInfoInitiated(
             ot::contract::peer::ConnectionInfoType::Bitcoin));
@@ -432,32 +433,33 @@ TEST_F(Test_Pair, pair_trusted)
             issuer.AccountList(ot::contact::ContactItemType::USD, unit_id_)
                 .size());
         EXPECT_FALSE(issuer.BailmentInitiated(unit_id_));
-        EXPECT_EQ(3, issuer.BailmentInstructionsSize(unit_id_));
+        EXPECT_EQ(3, issuer.BailmentInstructionsSize(api_chris_, unit_id_));
         EXPECT_EQ(
             issuer.ConnectionInfoSize(
-                ot::contract::peer::ConnectionInfoType::Bitcoin),
+                api_chris_, ot::contract::peer::ConnectionInfoType::Bitcoin),
             0);
         EXPECT_EQ(
             issuer.ConnectionInfoSize(
-                ot::contract::peer::ConnectionInfoType::BtcRpc),
-            0);
-        EXPECT_EQ(
-
-            issuer.ConnectionInfoSize(
-                ot::contract::peer::ConnectionInfoType::BitMessage),
+                api_chris_, ot::contract::peer::ConnectionInfoType::BtcRpc),
             0);
         EXPECT_EQ(
 
             issuer.ConnectionInfoSize(
+                api_chris_, ot::contract::peer::ConnectionInfoType::BitMessage),
+            0);
+        EXPECT_EQ(
+
+            issuer.ConnectionInfoSize(
+                api_chris_,
                 ot::contract::peer::ConnectionInfoType::BitMessageRPC),
             0);
         EXPECT_EQ(
             issuer.ConnectionInfoSize(
-                ot::contract::peer::ConnectionInfoType::SSH),
+                api_chris_, ot::contract::peer::ConnectionInfoType::SSH),
             0);
         EXPECT_EQ(
             issuer.ConnectionInfoSize(
-                ot::contract::peer::ConnectionInfoType::CJDNS),
+                api_chris_, ot::contract::peer::ConnectionInfoType::CJDNS),
             0);
         EXPECT_FALSE(issuer.ConnectionInfoInitiated(
             ot::contract::peer::ConnectionInfoType::Bitcoin));

@@ -196,19 +196,23 @@ auto Reply::IDVersion(const Lock& lock) const -> SerializedType
 auto Reply::LoadRequest(
     const api::internal::Core& api,
     const Nym_p& nym,
-    const Identifier& requestID) -> std::shared_ptr<proto::PeerRequest>
+    const Identifier& requestID,
+    proto::PeerRequest& output) -> bool
 {
-    std::shared_ptr<proto::PeerRequest> output;
     std::time_t notUsed = 0;
 
-    output = api.Wallet().PeerRequest(
-        nym->ID(), requestID, StorageBox::INCOMINGPEERREQUEST, notUsed);
+    auto loaded = api.Wallet().PeerRequest(
+        nym->ID(), requestID, StorageBox::INCOMINGPEERREQUEST, notUsed, output);
 
-    if (!output) {
-        output = api.Wallet().PeerRequest(
-            nym->ID(), requestID, StorageBox::PROCESSEDPEERREQUEST, notUsed);
+    if (false == loaded) {
+        loaded = api.Wallet().PeerRequest(
+            nym->ID(),
+            requestID,
+            StorageBox::PROCESSEDPEERREQUEST,
+            notUsed,
+            output);
 
-        if (output) {
+        if (loaded) {
             LogOutput(OT_METHOD)(__FUNCTION__)(
                 ": Request has already been processed.")
                 .Flush();
@@ -218,7 +222,7 @@ auto Reply::LoadRequest(
         }
     }
 
-    return output;
+    return true;
 }
 
 auto Reply::Serialize() const -> OTData

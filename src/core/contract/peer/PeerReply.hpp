@@ -68,7 +68,8 @@ public:
     static auto LoadRequest(
         const api::internal::Core& api,
         const Nym_p& nym,
-        const Identifier& requestID) -> std::shared_ptr<proto::PeerRequest>;
+        const Identifier& requestID,
+        proto::PeerRequest& request) -> bool;
 
     auto asAcknowledgement() const noexcept
         -> const reply::Acknowledgement& override;

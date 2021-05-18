@@ -42,11 +42,11 @@ auto Factory::NoticeAcknowledgement(
     -> std::shared_ptr<contract::peer::reply::Acknowledgement>
 {
     try {
-        auto pRequest = ParentType::LoadRequest(api, nym, request);
+        auto peerRequest = proto::PeerRequest{};
+        if (false == ParentType::LoadRequest(api, nym, request, peerRequest)) {
+            return {};
+        }
 
-        if (false == bool(pRequest)) { return {}; }
-
-        const auto peerRequest = *pRequest;
         auto output = std::make_shared<ReturnType>(
             api,
             nym,
