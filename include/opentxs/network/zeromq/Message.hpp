@@ -74,9 +74,9 @@ public:
     virtual std::size_t size() const = 0;
 
     virtual Frame& AddFrame() = 0;
+#ifndef SWIG
     OPENTXS_NO_EXPORT virtual Frame& AddFrame(
         const ::google::protobuf::MessageLite& input) = 0;
-#ifndef SWIG
     template <
         typename Input,
         std::enable_if_t<

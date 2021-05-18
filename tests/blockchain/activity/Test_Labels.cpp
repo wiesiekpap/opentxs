@@ -16,6 +16,7 @@
 #include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/contact/Contact.hpp"
@@ -32,6 +33,8 @@ ot::Bip32Index second_index_{};
 constexpr auto label_1_{"label one"};
 constexpr auto label_2_{"label two"};
 
+namespace ottest
+{
 TEST_F(Test_BlockchainActivity, init)
 {
     EXPECT_FALSE(nym_1_id().empty());
@@ -310,3 +313,4 @@ TEST_F(Test_BlockchainActivity, memo)
     ASSERT_TRUE(transaction);
     EXPECT_TRUE(transaction->Memo(api_.Blockchain()).empty());
 }
+}  // namespace ottest

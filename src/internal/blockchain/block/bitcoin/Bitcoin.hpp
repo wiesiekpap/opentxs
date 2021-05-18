@@ -16,9 +16,9 @@
 #include <utility>
 #include <vector>
 
+#include "Proto.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
@@ -217,7 +217,7 @@ struct Script : virtual public bitcoin::Script {
 
     ~Script() override = default;
 };
-struct Transaction : virtual public bitcoin::Transaction {
+struct OPENTXS_EXPORT Transaction : virtual public bitcoin::Transaction {
     using SigHash = blockchain::bitcoin::SigOption;
 
     virtual auto GetPreimageBTC(
@@ -225,11 +225,11 @@ struct Transaction : virtual public bitcoin::Transaction {
         const blockchain::bitcoin::SigHash& hashType) const noexcept
         -> Space = 0;
 
-    OPENTXS_EXPORT virtual auto AssociatePreviousOutput(
+    virtual auto AssociatePreviousOutput(
         const api::client::Blockchain& api,
         const std::size_t inputIndex,
         const proto::BlockchainTransactionOutput& output) noexcept -> bool = 0;
-    OPENTXS_EXPORT virtual auto ForTestingOnlyAddKey(
+    virtual auto ForTestingOnlyAddKey(
         const std::size_t index,
         const api::client::blockchain::Key& key) noexcept -> bool = 0;
     virtual auto MergeMetadata(
@@ -321,12 +321,12 @@ OPENTXS_EXPORT auto BitcoinTransaction(
     const Time& time,
     blockchain::bitcoin::EncodedTransaction&& parsed) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Transaction>;
-OPENTXS_EXPORT auto BitcoinTransaction(
+auto BitcoinTransaction(
     const api::Core& api,
     const api::client::Blockchain& blockchain,
     const proto::BlockchainTransaction& serialized) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Transaction>;
-OPENTXS_EXPORT auto BitcoinTransactionInput(
+auto BitcoinTransactionInput(
     const api::Core& api,
     const api::client::Blockchain& blockchain,
     const blockchain::Type chain,
@@ -344,7 +344,7 @@ auto BitcoinTransactionInput(
     const UTXO& spends,
     const std::optional<std::uint32_t> sequence = {}) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Input>;
-OPENTXS_EXPORT auto BitcoinTransactionInput(
+auto BitcoinTransactionInput(
     const api::Core& api,
     const api::client::Blockchain& blockchain,
     const blockchain::Type chain,
@@ -365,7 +365,7 @@ auto BitcoinTransactionOutput(
     std::unique_ptr<const blockchain::block::bitcoin::internal::Script> script,
     const std::set<api::client::blockchain::Key>& keys) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Output>;
-OPENTXS_EXPORT auto BitcoinTransactionOutput(
+auto BitcoinTransactionOutput(
     const api::Core& api,
     const api::client::Blockchain& blockchain,
     const blockchain::Type chain,
@@ -374,7 +374,7 @@ OPENTXS_EXPORT auto BitcoinTransactionOutput(
     const blockchain::bitcoin::CompactSize& cs,
     const ReadView script) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Output>;
-OPENTXS_EXPORT auto BitcoinTransactionOutput(
+auto BitcoinTransactionOutput(
     const api::Core& api,
     const api::client::Blockchain& blockchain,
     const blockchain::Type chain,

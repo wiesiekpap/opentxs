@@ -9,76 +9,79 @@
 #include <string>
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
-#include "internal/network/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
+#include "opentxs/network/zeromq/Message.hpp"
 
-using namespace opentxs;
+namespace zmq = opentxs::network::zeromq;
 
-TEST(Frame, Factory1)
+namespace ottest
 {
-    OTZMQFrame message{factory::ZMQFrame()};
+class Frame : public ::testing::Test
+{
+protected:
+    const std::string test_string_{"testString"};
+    ot::OTZMQMessage message_{zmq::Message::Factory()};
+};
 
-    ASSERT_NE(nullptr, &message.get());
+TEST_F(Frame, Factory1)
+{
+    auto& frame = message_->AddFrame();
+
+    EXPECT_NE(nullptr, frame.operator zmq_msg_t*());
 }
 
-TEST(Frame, Factory2)
+TEST_F(Frame, Factory2)
 {
-    auto data = Data::Factory("0", 1);
+    const auto data = ot::Data::Factory("0", 1);
+    auto& frame = message_->AddFrame(data->data(), data->size());
 
-    OTZMQFrame message{factory::ZMQFrame(data->data(), data->size())};
-
-    ASSERT_NE(nullptr, &message.get());
-    ASSERT_EQ(message->size(), data->size());
+    EXPECT_NE(nullptr, frame.operator zmq_msg_t*());
+    EXPECT_EQ(data->Bytes(), frame.Bytes());
 }
 
-TEST(Frame, operator_string)
+TEST_F(Frame, operator_string)
 {
-    const auto test = Data::Factory("testString", 10);
+    auto& frame = message_->AddFrame(test_string_);
+    const auto text = std::string{frame};
 
-    OTZMQFrame message{factory::ZMQFrame(test->data(), test->size())};
-
-    ASSERT_NE(nullptr, &message.get());
-    std::string messageString = message.get();
-    ASSERT_STREQ("testString", messageString.c_str());
+    EXPECT_EQ(text, test_string_);
 }
 
-TEST(Frame, data)
+TEST_F(Frame, data)
 {
-    OTZMQFrame message{factory::ZMQFrame()};
+    auto& frame = message_->AddFrame();
+    auto* data = frame.data();
 
-    const void* data = message->data();
-    ASSERT_NE(nullptr, data);
-
-    zmq_msg_t* zmq_msg = message.get();
-    ASSERT_EQ(data, zmq_msg_data(zmq_msg));
+    EXPECT_NE(data, nullptr);
+    EXPECT_EQ(data, ::zmq_msg_data(frame));
 }
 
-TEST(Frame, size)
+TEST_F(Frame, size)
 {
-    OTZMQFrame message{factory::ZMQFrame()};
+    {
+        auto& frame = message_->AddFrame();
+        auto size = frame.size();
 
-    std::size_t size = message->size();
-    ASSERT_EQ(size, 0);
+        EXPECT_EQ(size, 0);
+        EXPECT_EQ(size, ::zmq_msg_size(frame));
+    }
+    {
+        auto& frame = message_->AddFrame(test_string_);
+        auto size = frame.size();
 
-    zmq_msg_t* zmq_msg = message.get();
-    ASSERT_EQ(zmq_msg_size(zmq_msg), 0);
-
-    const auto test = Data::Factory("testString", 10);
-    message = OTZMQFrame{factory::ZMQFrame(test->data(), test->size())};
-    size = message->size();
-    ASSERT_EQ(10, size);
-
-    zmq_msg = message.get();
-    ASSERT_EQ(10, zmq_msg_size(zmq_msg));
+        EXPECT_EQ(size, 10);
+        EXPECT_EQ(size, ::zmq_msg_size(frame));
+    }
 }
 
-TEST(Frame, zmq_msg_t)
+TEST_F(Frame, zmq_msg_t)
 {
-    OTZMQFrame message{factory::ZMQFrame()};
+    auto& frame = message_->AddFrame();
+    auto* ptr = frame.operator zmq_msg_t*();
 
-    zmq_msg_t* zmq_msg = message.get();
-    ASSERT_NE(nullptr, zmq_msg);
+    EXPECT_NE(ptr, nullptr);
 }
+}  // namespace ottest

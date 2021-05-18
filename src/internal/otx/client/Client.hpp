@@ -15,6 +15,7 @@
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
+#include "opentxs/otx/Types.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "util/Blank.hpp"
 
@@ -222,35 +223,9 @@ struct make_blank<otx::client::WithdrawCashTask> {
 
 namespace opentxs::otx::client::internal
 {
-struct Operation {
+struct OPENTXS_EXPORT Operation {
     using Result = otx::context::Server::DeliveryResult;
     using Future = std::future<Result>;
-
-    enum class Type {
-        Invalid = 0,
-        AddClaim,
-        CheckNym,
-        ConveyPayment,
-        DepositCash,
-        DepositCheque,
-        DownloadContract,
-        DownloadMint,
-        GetTransactionNumbers,
-        IssueUnitDefinition,
-        PublishNym,
-        PublishServer,
-        PublishUnit,
-        RefreshAccount,
-        RegisterAccount,
-        RegisterNym,
-        RequestAdmin,
-        SendCash,
-        SendMessage,
-        SendPeerReply,
-        SendPeerRequest,
-        SendTransfer,
-        WithdrawCash,
-    };
 
     virtual auto NymID() const -> const identifier::Nym& = 0;
     virtual auto ServerID() const -> const identifier::Server& = 0;
@@ -311,14 +286,14 @@ struct Operation {
     virtual void SetPush(const bool enabled) = 0;
     virtual void Shutdown() = 0;
     virtual auto Start(
-        const Type type,
+        const otx::OperationType type,
         const otx::context::Server::ExtraArgs& args = {}) -> bool = 0;
     virtual auto Start(
-        const Type type,
+        const otx::OperationType type,
         const identifier::UnitDefinition& targetUnitID,
         const otx::context::Server::ExtraArgs& args = {}) -> bool = 0;
     virtual auto Start(
-        const Type type,
+        const otx::OperationType type,
         const identifier::Nym& targetNymID,
         const otx::context::Server::ExtraArgs& args = {}) -> bool = 0;
     virtual auto UpdateAccount(const Identifier& accountID) -> bool = 0;

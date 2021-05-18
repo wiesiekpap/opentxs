@@ -6,7 +6,7 @@
 #ifndef OPENTXS_PROTO_TPP
 #define OPENTXS_PROTO_TPP
 
-#include "opentxs/Proto.hpp"    // IWYU pragma: associated
+#include "Proto.hpp"            // IWYU pragma: associated
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cassert>

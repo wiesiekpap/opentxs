@@ -21,6 +21,7 @@
 #include <utility>
 #include <vector>
 
+#include "Proto.hpp"
 #include "api/client/blockchain/database/Database.hpp"
 #include "blockchain/database/Blocks.hpp"
 #include "blockchain/database/Filters.hpp"
@@ -33,7 +34,6 @@
 #include "internal/blockchain/database/Database.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"

@@ -6,16 +6,20 @@ jobs:
   build:
     strategy:
       matrix:
-        platform: [windows-2019, macos-10.15, ubuntu-20.04]
+        platform: [windows-2019]
         include:
-          - platform: 'ubuntu-20.04'
-            vcpkg_triplet: 'x64-linux'
-            cmake_extra: ''
-          - platform: 'macos-10.15'
-            vcpkg_triplet: 'x64-osx'
-            cmake_extra: ''
+# vcpkg and github actions are so broken they are almost not even worth using
+#          - platform: 'ubuntu-20.04'
+#            vcpkg_triplet: 'x64-linux'
+#            vcpkg_pkg_list: 'vcpkg-nonwindows'
+#            cmake_extra: ''
+#          - platform: 'macos-10.15'
+#            vcpkg_triplet: 'x64-osx'
+#            vcpkg_pkg_list: 'vcpkg-nonwindows'
+#            cmake_extra: ''
           - platform: 'windows-2019'
             vcpkg_triplet: 'x64-windows'
+            vcpkg_pkg_list: 'vcpkg'
             cmake_extra: '-DOT_INSTALL_LIBRARY_DEPENDENCIES=OFF'
     runs-on: ${{ matrix.platform }}
     steps:
@@ -40,7 +44,7 @@ jobs:
     - name: Run vcpkg
       uses: lukka/run-vcpkg@v5
       with:
-        vcpkgArguments: '--triplet ${{ matrix.vcpkg_triplet }} --overlay-ports=${{ github.workspace }}/vcpkg/ports --overlay-triplets=${{ github.workspace }}/vcpkg/triplets @${{ github.workspace }}/vcpkg/vcpkg.txt'
+        vcpkgArguments: '--triplet ${{ matrix.vcpkg_triplet }} --overlay-ports=${{ github.workspace }}/vcpkg/ports --overlay-triplets=${{ github.workspace }}/vcpkg/triplets @${{ github.workspace }}/vcpkg/${{ matrix.vcpkg_pkg_list }}.txt'
         vcpkgDirectory: '${{ github.workspace }}/deps/vcpkg'
     - name: 'Compile'
       uses: lukka/run-cmake@v3

@@ -108,8 +108,6 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/Exclusive.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/OT.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/Pimpl.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/Proto.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/Proto.tpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/Shared.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/SharedPimpl.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/Types.hpp"
@@ -126,6 +124,8 @@ target_sources(
     "Exclusive.tpp"
     "OT.cpp"
     "Proto.cpp"
+    "Proto.hpp"
+    "Proto.tpp"
 )
 set_target_properties(
   opentxs

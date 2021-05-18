@@ -8,10 +8,10 @@
 #include <memory>
 #include <utility>
 
+#include "Proto.hpp"
 #include "crypto/key/EllipticCurve.hpp"
 #include "crypto/key/HD.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Secret.hpp"

@@ -19,11 +19,11 @@
 #include <utility>
 #include <vector>
 
+#include "Proto.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/blockchain/PaymentCode.hpp"

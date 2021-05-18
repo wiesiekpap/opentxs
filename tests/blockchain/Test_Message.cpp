@@ -52,7 +52,7 @@ namespace
 class Test_Message : public ::testing::Test
 {
 public:
-    const ot::api::client::internal::Manager& api_;
+    const ot::api::client::Manager& api_;
 
     void test_service_bit(const bp::Service service)
     {
@@ -63,8 +63,7 @@ public:
     }
 
     Test_Message()
-        : api_(dynamic_cast<const ot::api::client::internal::Manager&>(
-              ot::Context().StartClient(OTTestEnvironment::test_args_, 0)))
+        : api_(ot::Context().StartClient(OTTestEnvironment::test_args_, 0))
     {
     }
 };

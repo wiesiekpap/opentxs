@@ -14,7 +14,7 @@
 #include <tuple>
 #include <utility>
 
-#include "opentxs/Proto.hpp"
+#include "Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Editor.hpp"
 #include "opentxs/contact/ContactItemType.hpp"

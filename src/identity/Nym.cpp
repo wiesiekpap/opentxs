@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"    // IWYU pragma: associated
 #include "identity/Nym.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
 #include <atomic>
 #include <iterator>
 #include <limits>
@@ -17,10 +18,10 @@
 #include <vector>
 
 #include "2_Factory.hpp"
+#include "Proto.tpp"
 #include "internal/api/Api.hpp"
 #include "internal/identity/Identity.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/HDSeed.hpp"
 #include "opentxs/contact/ContactData.hpp"

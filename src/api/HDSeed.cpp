@@ -7,18 +7,19 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "api/HDSeed.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <utility>
 
+#include "Proto.tpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/Factory.hpp"
 #include "internal/api/crypto/Crypto.hpp"
 #include "internal/crypto/key/Factory.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/HDSeed.hpp"

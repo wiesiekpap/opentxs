@@ -21,12 +21,12 @@ extern "C" {
 #include <memory>
 #include <optional>
 
+#include "Proto.hpp"
 #if OT_CRYPTO_SUPPORTED_KEY_RSA
 #include "crypto/library/AsymmetricProvider.hpp"
 #endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 #include "internal/crypto/library/OpenSSL.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"

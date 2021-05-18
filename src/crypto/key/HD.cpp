@@ -16,11 +16,11 @@
 #include <utility>
 #include <vector>
 
+#include "Proto.hpp"
 #include "crypto/key/EllipticCurve.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/crypto/key/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"

@@ -31,8 +31,6 @@
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"

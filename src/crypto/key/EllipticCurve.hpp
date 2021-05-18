@@ -8,9 +8,9 @@
 #include <memory>
 #include <string>
 
+#include "Proto.hpp"
 #include "crypto/key/Asymmetric.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Secret.hpp"

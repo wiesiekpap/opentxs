@@ -8,8 +8,8 @@
 
 #pragma once
 
+#include "Proto.hpp"
 #include "core/contract/peer/PeerReply.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/peer/NoticeAcknowledgement.hpp"

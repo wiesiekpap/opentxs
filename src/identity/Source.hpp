@@ -9,7 +9,7 @@
 #include <map>
 #include <memory>
 
-#include "opentxs/Proto.hpp"
+#include "Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"

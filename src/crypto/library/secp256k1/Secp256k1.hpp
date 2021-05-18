@@ -11,11 +11,11 @@ extern "C" {
 #include <iosfwd>
 #include <optional>
 
+#include "Proto.hpp"
 #include "crypto/library/AsymmetricProvider.hpp"
 #include "crypto/library/EcdsaProvider.hpp"
 #include "internal/crypto/library/Secp256k1.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"

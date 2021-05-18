@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 
-#include "opentxs/Proto.hpp"
+#include "Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Editor.hpp"

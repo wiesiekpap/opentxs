@@ -9,10 +9,10 @@
 #include <memory>
 #include <string>
 
+#include "Proto.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/crypto/Crypto.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"

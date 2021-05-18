@@ -13,7 +13,7 @@
 #include <string>
 #include <string_view>
 
-#include "opentxs/Proto.hpp"
+#include "Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/protobuf/BlockchainP2PSync.pb.h"
 

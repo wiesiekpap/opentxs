@@ -17,9 +17,9 @@
 #include <utility>
 #include <vector>
 
+#include "Proto.hpp"
 #include "internal/blockchain/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -70,12 +70,12 @@ OPENTXS_EXPORT auto GolombDecode(
 OPENTXS_EXPORT auto GolombEncode(
     const std::uint8_t P,
     const std::vector<std::uint64_t>& hashedSet) noexcept(false) -> Space;
-OPENTXS_EXPORT auto HashToRange(
+auto HashToRange(
     const api::Core& api,
     const ReadView key,
     const std::uint64_t range,
     const ReadView item) noexcept(false) -> std::uint64_t;
-OPENTXS_EXPORT auto HashedSetConstruct(
+auto HashedSetConstruct(
     const api::Core& api,
     const ReadView key,
     const std::uint32_t N,
@@ -90,14 +90,14 @@ namespace opentxs::blockchain::internal
 // https://github.com/rasky/gcs/blob/master/cpp/gcs.cpp
 // The license there reads:
 // "This is free and unencumbered software released into the public domain."
-class BitReader
+class OPENTXS_EXPORT BitReader
 {
 public:
-    OPENTXS_EXPORT auto eof() -> bool;
-    OPENTXS_EXPORT auto read(std::size_t nbits) -> std::uint64_t;
+    auto eof() -> bool;
+    auto read(std::size_t nbits) -> std::uint64_t;
 
-    OPENTXS_EXPORT BitReader(const Space& data);
-    OPENTXS_EXPORT BitReader(std::uint8_t* data, int len);
+    BitReader(const Space& data);
+    BitReader(std::uint8_t* data, int len);
 
 private:
     OTData raw_data_;
@@ -117,13 +117,13 @@ private:
 // https://github.com/rasky/gcs/blob/master/cpp/gcs.cpp
 // The license there reads:
 // "This is free and unencumbered software released into the public domain."
-class BitWriter
+class OPENTXS_EXPORT BitWriter
 {
 public:
-    OPENTXS_EXPORT void flush();
-    OPENTXS_EXPORT void write(std::size_t nbits, std::uint64_t value);
+    void flush();
+    void write(std::size_t nbits, std::uint64_t value);
 
-    OPENTXS_EXPORT BitWriter(Space& output);
+    BitWriter(Space& output);
 
 private:
     static constexpr auto ACCUM_BITS = std::size_t{sizeof(std::uint64_t) * 8u};
@@ -184,7 +184,6 @@ OPENTXS_EXPORT auto FilterToHeader(
 auto Format(const Type chain, const opentxs::Amount) noexcept -> std::string;
 OPENTXS_EXPORT auto GetFilterParams(const filter::Type type) noexcept(false)
     -> FilterParams;
-OPENTXS_EXPORT
 auto Grind(const std::function<void()> function) noexcept -> void;
 auto Serialize(const Type chain, const filter::Type type) noexcept(false)
     -> std::uint8_t;
@@ -219,9 +218,11 @@ OPENTXS_EXPORT auto GCS(
     const blockchain::filter::Type type,
     const blockchain::block::Block& block) noexcept
     -> std::unique_ptr<blockchain::client::GCS>;
+auto GCS(const api::Core& api, const proto::GCS& serialized) noexcept
+    -> std::unique_ptr<blockchain::client::GCS>;
 OPENTXS_EXPORT auto GCS(
     const api::Core& api,
-    const proto::GCS& serialized) noexcept
+    const ReadView serialized) noexcept
     -> std::unique_ptr<blockchain::client::GCS>;
 OPENTXS_EXPORT auto GCS(
     const api::Core& api,

@@ -38,7 +38,7 @@ namespace
 class Test_NymData : public ::testing::Test
 {
 public:
-    const ot::api::client::internal::Manager& client_;
+    const ot::api::client::Manager& client_;
     ot::OTPasswordPrompt reason_;
     ot::NymData nymData_;
 
@@ -56,8 +56,7 @@ public:
     }
 
     Test_NymData()
-        : client_(dynamic_cast<const ot::api::client::internal::Manager&>(
-              ot::Context().StartClient({}, 0)))
+        : client_(ot::Context().StartClient({}, 0))
         , reason_(client_.Factory().PasswordPrompt(__FUNCTION__))
         , nymData_(client_.Wallet().mutable_Nym(
               client_.Wallet().Nym(reason_, "testNym")->ID(),
@@ -96,7 +95,7 @@ TEST_F(Test_NymData, AddContract)
 
     const auto identifier1(ot::identifier::UnitDefinition::Factory(
         ot::identity::credential::Contact::ClaimID(
-            client_,
+            dynamic_cast<const ot::api::client::internal::Manager&>(client_),
             "testNym",
             ot::contact::ContactSectionName::Contract,
             ot::contact::ContactItemType::USD,
@@ -147,7 +146,7 @@ TEST_F(Test_NymData, AddPreferredOTServer)
 {
     const auto identifier(ot::identifier::Server::Factory(
         ot::identity::credential::Contact::ClaimID(
-            client_,
+            dynamic_cast<const ot::api::client::internal::Manager&>(client_),
             "testNym",
             ot::contact::ContactSectionName::Communication,
             ot::contact::ContactItemType::Opentxs,
@@ -250,7 +249,7 @@ TEST_F(Test_NymData, DeleteClaim)
 
     const auto identifier(ot::identifier::UnitDefinition::Factory(
         ot::identity::credential::Contact::ClaimID(
-            client_,
+            dynamic_cast<const ot::api::client::internal::Manager&>(client_),
             "testNym",
             ot::contact::ContactSectionName::Contract,
             ot::contact::ContactItemType::USD,
@@ -291,7 +290,7 @@ TEST_F(Test_NymData, HaveContract)
 {
     const auto identifier1(ot::identifier::UnitDefinition::Factory(
         ot::identity::credential::Contact::ClaimID(
-            client_,
+            dynamic_cast<const ot::api::client::internal::Manager&>(client_),
             "testNym",
             ot::contact::ContactSectionName::Contract,
             ot::contact::ContactItemType::USD,
@@ -326,7 +325,7 @@ TEST_F(Test_NymData, HaveContract)
 
     const auto identifier2(ot::identifier::UnitDefinition::Factory(
         ot::identity::credential::Contact::ClaimID(
-            client_,
+            dynamic_cast<const ot::api::client::internal::Manager&>(client_),
             "testNym",
             ot::contact::ContactSectionName::Contract,
             ot::contact::ContactItemType::USD,
@@ -413,7 +412,7 @@ TEST_F(Test_NymData, PreferredOTServer)
 
     const auto identifier(ot::identifier::Server::Factory(
         ot::identity::credential::Contact::ClaimID(
-            client_,
+            dynamic_cast<const ot::api::client::internal::Manager&>(client_),
             "testNym",
             ot::contact::ContactSectionName::Communication,
             ot::contact::ContactItemType::Opentxs,
@@ -442,7 +441,7 @@ TEST_F(Test_NymData, PrintContactData)
 TEST_F(Test_NymData, SetContactData)
 {
     const ot::ContactData contactData(
-        client_,
+        dynamic_cast<const ot::api::client::internal::Manager&>(client_),
         std::string("contactData"),
         nymData_.Nym().ContactDataVersion(),
         nymData_.Nym().ContactDataVersion(),

@@ -19,6 +19,7 @@
 #include "opentxs/network/zeromq/ListenCallbackSwig.hpp"
 #include "opentxs/network/zeromq/PairEventCallbackSwig.hpp"
 #include "opentxs/opentxs.hpp"
+#include <google/protobuf/message_lite.h>
 
 using Clock = opentxs::Clock;
 %}

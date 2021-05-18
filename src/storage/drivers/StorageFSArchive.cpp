@@ -12,8 +12,8 @@
 #include <memory>
 
 #include "2_Factory.hpp"
+#include "Proto.tpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Flag.hpp"

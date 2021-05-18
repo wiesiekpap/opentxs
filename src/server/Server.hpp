@@ -14,9 +14,9 @@
 #include <tuple>
 #include <utility>
 
+#include "Proto.hpp"
 #include "internal/api/server/Server.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/AddressType.hpp"
 #include "opentxs/core/Message.hpp"

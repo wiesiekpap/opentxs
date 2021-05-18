@@ -17,9 +17,9 @@
 #include <utility>
 #include <vector>
 
+#include "Proto.hpp"
 #include "api/client/blockchain/BalanceNode.hpp"
 #include "internal/api/client/blockchain/Blockchain.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/client/blockchain/Deterministic.hpp"

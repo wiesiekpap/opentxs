@@ -12,10 +12,10 @@
 #include <set>
 #include <string>
 
+#include "Proto.hpp"
 #include "core/contract/Signable.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Editor.hpp"
 #include "opentxs/core/Data.hpp"

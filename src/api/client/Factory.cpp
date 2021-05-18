@@ -12,10 +12,11 @@
 #include <cstddef>
 #include <cstring>
 #include <iterator>
+#include <limits>
 #include <tuple>
 #include <utility>
 
-#include "opentxs/Proto.tpp"
+#include "Proto.tpp"
 #if OT_BLOCKCHAIN
 #include "blockchain/bitcoin/CompactSize.hpp"
 #endif  // OT_BLOCKCHAIN
@@ -166,7 +167,8 @@ auto Factory::BitcoinGenerationTransaction(
 auto Factory::BitcoinTransaction(
     const opentxs::blockchain::Type chain,
     const ReadView bytes,
-    const bool isGeneration) const noexcept
+    const bool isGeneration,
+    const Time& time) const noexcept
     -> std::unique_ptr<const opentxs::blockchain::block::bitcoin::Transaction>
 {
     using Encoded = opentxs::blockchain::bitcoin::EncodedTransaction;
@@ -175,8 +177,8 @@ auto Factory::BitcoinTransaction(
         api_,
         client_.Blockchain(),
         chain,
-        isGeneration,
-        Clock::now(),
+        isGeneration ? 0u : std::numeric_limits<std::size_t>::max(),
+        time,
         Encoded::Deserialize(api_, chain, bytes));
 }
 

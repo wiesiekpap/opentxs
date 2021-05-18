@@ -469,7 +469,7 @@ struct PeerManager {
     virtual ~PeerManager() = default;
 };
 
-struct Network : virtual public opentxs::blockchain::Network {
+struct OPENTXS_EXPORT Network : virtual public opentxs::blockchain::Network {
     enum class Task : OTZMQWorkType {
         Shutdown = value(WorkType::Shutdown),
         SyncReply = value(WorkType::SyncReply),

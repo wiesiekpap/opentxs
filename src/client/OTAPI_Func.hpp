@@ -14,8 +14,8 @@
 #include <mutex>
 #include <string>
 
+#include "Proto.hpp"
 #include "internal/api/client/Client.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Editor.hpp"
 #include "opentxs/client/ServerAction.hpp"

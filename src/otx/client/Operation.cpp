@@ -21,13 +21,13 @@
 #include <utility>
 
 #include "2_Factory.hpp"
+#include "Proto.tpp"
 #include "core/OTStorage.hpp"
 #include "core/StateMachine.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/otx/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/Shared.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Version.hpp"
@@ -69,6 +69,8 @@
 #include "opentxs/ext/OTPayment.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
+#include "opentxs/otx/OperationType.hpp"
+#include "opentxs/otx/Types.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
@@ -302,54 +304,54 @@ auto Factory::Operation(
 
 namespace opentxs::otx::client::implementation
 {
-const std::map<Operation::Type, Operation::Category> Operation::category_{
-    {Type::AddClaim, Category::Basic},
-    {Type::CheckNym, Category::Basic},
-    {Type::ConveyPayment, Category::Basic},
-    {Type::DepositCash, Category::Transaction},
-    {Type::DepositCheque, Category::Transaction},
-    {Type::DownloadContract, Category::Basic},
-    {Type::DownloadMint, Category::Basic},
-    {Type::GetTransactionNumbers, Category::NymboxPre},
-    {Type::IssueUnitDefinition, Category::CreateAccount},
-    {Type::PublishNym, Category::Basic},
-    {Type::PublishServer, Category::Basic},
-    {Type::PublishUnit, Category::Basic},
-    {Type::RefreshAccount, Category::UpdateAccount},
-    {Type::RegisterAccount, Category::CreateAccount},
-    {Type::RegisterNym, Category::NymboxPost},
-    {Type::RequestAdmin, Category::Basic},
-    {Type::SendCash, Category::Basic},
-    {Type::SendMessage, Category::Basic},
-    {Type::SendPeerReply, Category::Basic},
-    {Type::SendPeerRequest, Category::Basic},
-    {Type::SendTransfer, Category::Transaction},
-    {Type::WithdrawCash, Category::Transaction},
+const std::map<otx::OperationType, Operation::Category> Operation::category_{
+    {otx::OperationType::AddClaim, Category::Basic},
+    {otx::OperationType::CheckNym, Category::Basic},
+    {otx::OperationType::ConveyPayment, Category::Basic},
+    {otx::OperationType::DepositCash, Category::Transaction},
+    {otx::OperationType::DepositCheque, Category::Transaction},
+    {otx::OperationType::DownloadContract, Category::Basic},
+    {otx::OperationType::DownloadMint, Category::Basic},
+    {otx::OperationType::GetTransactionNumbers, Category::NymboxPre},
+    {otx::OperationType::IssueUnitDefinition, Category::CreateAccount},
+    {otx::OperationType::PublishNym, Category::Basic},
+    {otx::OperationType::PublishServer, Category::Basic},
+    {otx::OperationType::PublishUnit, Category::Basic},
+    {otx::OperationType::RefreshAccount, Category::UpdateAccount},
+    {otx::OperationType::RegisterAccount, Category::CreateAccount},
+    {otx::OperationType::RegisterNym, Category::NymboxPost},
+    {otx::OperationType::RequestAdmin, Category::Basic},
+    {otx::OperationType::SendCash, Category::Basic},
+    {otx::OperationType::SendMessage, Category::Basic},
+    {otx::OperationType::SendPeerReply, Category::Basic},
+    {otx::OperationType::SendPeerRequest, Category::Basic},
+    {otx::OperationType::SendTransfer, Category::Transaction},
+    {otx::OperationType::WithdrawCash, Category::Transaction},
 };
 
-const std::map<Operation::Type, std::size_t> Operation::transaction_numbers_{
-    {Type::AddClaim, 0},
-    {Type::CheckNym, 0},
-    {Type::ConveyPayment, 0},
-    {Type::DepositCash, 2},
-    {Type::DepositCheque, 2},
-    {Type::DownloadContract, 0},
-    {Type::DownloadMint, 0},
-    {Type::GetTransactionNumbers, 0},
-    {Type::IssueUnitDefinition, 0},
-    {Type::PublishNym, 0},
-    {Type::PublishServer, 0},
-    {Type::PublishUnit, 0},
-    {Type::RefreshAccount, 1},
-    {Type::RegisterAccount, 0},
-    {Type::RegisterNym, 0},
-    {Type::RequestAdmin, 0},
-    {Type::SendCash, 0},
-    {Type::SendMessage, 0},
-    {Type::SendPeerReply, 0},
-    {Type::SendPeerRequest, 0},
-    {Type::SendTransfer, 2},
-    {Type::WithdrawCash, 2},
+const std::map<otx::OperationType, std::size_t> Operation::transaction_numbers_{
+    {otx::OperationType::AddClaim, 0},
+    {otx::OperationType::CheckNym, 0},
+    {otx::OperationType::ConveyPayment, 0},
+    {otx::OperationType::DepositCash, 2},
+    {otx::OperationType::DepositCheque, 2},
+    {otx::OperationType::DownloadContract, 0},
+    {otx::OperationType::DownloadMint, 0},
+    {otx::OperationType::GetTransactionNumbers, 0},
+    {otx::OperationType::IssueUnitDefinition, 0},
+    {otx::OperationType::PublishNym, 0},
+    {otx::OperationType::PublishServer, 0},
+    {otx::OperationType::PublishUnit, 0},
+    {otx::OperationType::RefreshAccount, 1},
+    {otx::OperationType::RegisterAccount, 0},
+    {otx::OperationType::RegisterNym, 0},
+    {otx::OperationType::RequestAdmin, 0},
+    {otx::OperationType::SendCash, 0},
+    {otx::OperationType::SendMessage, 0},
+    {otx::OperationType::SendPeerReply, 0},
+    {otx::OperationType::SendPeerRequest, 0},
+    {otx::OperationType::SendTransfer, 2},
+    {otx::OperationType::WithdrawCash, 2},
 };
 
 Operation::Operation(
@@ -362,7 +364,7 @@ Operation::Operation(
     , reason_(reason)
     , nym_id_(nym)
     , server_id_(server)
-    , type_(Type::Invalid)
+    , type_(otx::OperationType::Invalid)
     , state_(State::Idle)
     , refresh_account_(false)
     , args_()
@@ -441,7 +443,7 @@ auto Operation::AddClaim(
     claim_section_ = section;
     claim_type_ = type;
 
-    return start(lock, Type::AddClaim, {});
+    return start(lock, otx::OperationType::AddClaim, {});
 }
 
 auto Operation::check_future(otx::context::Server::SendFuture& future) -> bool
@@ -454,94 +456,94 @@ auto Operation::check_future(otx::context::Server::SendFuture& future) -> bool
 auto Operation::construct() -> std::shared_ptr<Message>
 {
     switch (type_.load()) {
-        case Type::AddClaim: {
+        case otx::OperationType::AddClaim: {
 
             return construct_add_claim();
         }
-        case Type::CheckNym: {
+        case otx::OperationType::CheckNym: {
 
             return construct_check_nym();
         }
-        case Type::ConveyPayment: {
+        case otx::OperationType::ConveyPayment: {
 
             return construct_convey_payment();
         }
 #if OT_CASH
-        case Type::DepositCash: {
+        case otx::OperationType::DepositCash: {
 
             return construct_deposit_cash();
         }
 #endif
-        case Type::DepositCheque: {
+        case otx::OperationType::DepositCheque: {
 
             return construct_deposit_cheque();
         }
-        case Type::DownloadContract: {
+        case otx::OperationType::DownloadContract: {
 
             return construct_download_contract();
         }
 #if OT_CASH
-        case Type::DownloadMint: {
+        case otx::OperationType::DownloadMint: {
 
             return construct_download_mint();
         }
 #endif
-        case Type::GetTransactionNumbers: {
+        case otx::OperationType::GetTransactionNumbers: {
 
             return construct_get_transaction_numbers();
         }
-        case Type::IssueUnitDefinition: {
+        case otx::OperationType::IssueUnitDefinition: {
 
             return construct_issue_unit_definition();
         }
-        case Type::PublishNym: {
+        case otx::OperationType::PublishNym: {
 
             return construct_publish_nym();
         }
-        case Type::PublishServer: {
+        case otx::OperationType::PublishServer: {
 
             return construct_publish_server();
         }
-        case Type::PublishUnit: {
+        case otx::OperationType::PublishUnit: {
 
             return construct_publish_unit();
         }
-        case Type::RegisterAccount: {
+        case otx::OperationType::RegisterAccount: {
 
             return construct_register_account();
         }
-        case Type::RegisterNym: {
+        case otx::OperationType::RegisterNym: {
 
             return construct_register_nym();
         }
-        case Type::RequestAdmin: {
+        case otx::OperationType::RequestAdmin: {
 
             return construct_request_admin();
         }
 #if OT_CASH
-        case Type::SendCash: {
+        case otx::OperationType::SendCash: {
 
             return construct_send_cash();
         }
 #endif
-        case Type::SendMessage: {
+        case otx::OperationType::SendMessage: {
 
             return construct_send_message();
         }
-        case Type::SendPeerReply: {
+        case otx::OperationType::SendPeerReply: {
 
             return construct_send_peer_reply();
         }
-        case Type::SendPeerRequest: {
+        case otx::OperationType::SendPeerRequest: {
 
             return construct_send_peer_request();
         }
-        case Type::SendTransfer: {
+        case otx::OperationType::SendTransfer: {
 
             return construct_send_transfer();
         }
 #if OT_CASH
-        case Type::WithdrawCash: {
+        case otx::OperationType::WithdrawCash: {
 
             return construct_withdraw_cash();
         }
@@ -1452,7 +1454,7 @@ auto Operation::ConveyPayment(
     target_nym_id_ = recipient;
     payment_ = payment;
 
-    return start(lock, Type::ConveyPayment, {});
+    return start(lock, otx::OperationType::ConveyPayment, {});
 }
 
 #if OT_CASH
@@ -1498,7 +1500,7 @@ auto Operation::DepositCash(
     affected_accounts_.insert(depositAccountID);
     purse_ = purse;
 
-    return start(lock, Type::DepositCash, {});
+    return start(lock, otx::OperationType::DepositCash, {});
 }
 #endif
 
@@ -1512,7 +1514,7 @@ auto Operation::DepositCheque(
     affected_accounts_.insert(depositAccountID);
     cheque_ = cheque;
 
-    return start(lock, Type::DepositCheque, {});
+    return start(lock, otx::OperationType::DepositCheque, {});
 }
 
 auto Operation::download_accounts(
@@ -1667,7 +1669,7 @@ auto Operation::DownloadContract(const Identifier& ID, const ContractType type)
     generic_id_ = ID;
     contract_type_ = type;
 
-    return start(lock, Type::DownloadContract, {});
+    return start(lock, otx::OperationType::DownloadContract, {});
 }
 
 void Operation::evaluate_transaction_reply(
@@ -1847,7 +1849,7 @@ void Operation::execute()
                 set_result(std::move(finished));
                 state_.store(State::AccountPost);
             } else {
-                if (Type::SendMessage == type_.load()) {
+                if (otx::OperationType::SendMessage == type_.load()) {
                     OT_ASSERT(outmail_message_);
 
                     const auto messageID = api_.Activity().Mail(
@@ -2018,7 +2020,7 @@ auto Operation::IssueUnitDefinition(
 
     unit_definition_ = unitDefinition;
 
-    return start(lock, Type::IssueUnitDefinition, args);
+    return start(lock, otx::OperationType::IssueUnitDefinition, args);
 }
 
 auto Operation::IssueUnitDefinition(
@@ -2331,7 +2333,7 @@ auto Operation::PublishContract(const identifier::Nym& id) -> bool
 
     target_nym_id_ = id;
 
-    return start(lock, Type::PublishNym, {});
+    return start(lock, otx::OperationType::PublishNym, {});
 }
 
 auto Operation::PublishContract(const identifier::Server& id) -> bool
@@ -2340,7 +2342,7 @@ auto Operation::PublishContract(const identifier::Server& id) -> bool
 
     target_server_id_ = id;
 
-    return start(lock, Type::PublishServer, {});
+    return start(lock, otx::OperationType::PublishServer, {});
 }
 
 auto Operation::PublishContract(const identifier::UnitDefinition& id) -> bool
@@ -2349,7 +2351,7 @@ auto Operation::PublishContract(const identifier::UnitDefinition& id) -> bool
 
     target_unit_id_ = id;
 
-    return start(lock, Type::PublishUnit, {});
+    return start(lock, otx::OperationType::PublishUnit, {});
 }
 
 void Operation::refresh()
@@ -2365,7 +2367,7 @@ auto Operation::RequestAdmin(const String& password) -> bool
 
     memo_ = password;
 
-    return start(lock, Type::RequestAdmin, {});
+    return start(lock, otx::OperationType::RequestAdmin, {});
 }
 
 void Operation::reset()
@@ -2479,7 +2481,7 @@ auto Operation::SendCash(
         generic_id_ = workflowID;
         purse_ = std::move(pPurse);
 
-        return start(lock, Type::SendCash, {});
+        return start(lock, otx::OperationType::SendCash, {});
     } catch (const std::exception& e) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
@@ -2499,7 +2501,7 @@ auto Operation::SendMessage(
     memo_ = message;
     set_id_ = setID;
 
-    return start(lock, Type::SendMessage, {});
+    return start(lock, otx::OperationType::SendMessage, {});
 }
 
 auto Operation::SendPeerReply(
@@ -2513,7 +2515,7 @@ auto Operation::SendPeerReply(
     peer_reply_ = peerreply;
     peer_request_ = peerrequest;
 
-    return start(lock, Type::SendPeerReply, {});
+    return start(lock, otx::OperationType::SendPeerReply, {});
 }
 
 auto Operation::SendPeerRequest(
@@ -2525,7 +2527,7 @@ auto Operation::SendPeerRequest(
     target_nym_id_ = targetNymID;
     peer_request_ = peerrequest;
 
-    return start(lock, Type::SendPeerRequest, {});
+    return start(lock, otx::OperationType::SendPeerRequest, {});
 }
 
 auto Operation::SendTransfer(
@@ -2542,7 +2544,7 @@ auto Operation::SendTransfer(
     memo_ = memo;
     affected_accounts_.insert(sourceAccountID);
 
-    return start(lock, Type::SendTransfer, {});
+    return start(lock, otx::OperationType::SendTransfer, {});
 }
 
 void Operation::set_consensus_hash(
@@ -2574,14 +2576,14 @@ void Operation::set_result(otx::context::Server::DeliveryResult&& result)
 void Operation::Shutdown() { Stop(); }
 
 auto Operation::Start(
-    const Type type,
+    const otx::OperationType type,
     const otx::context::Server::ExtraArgs& args) -> bool
 {
     START()
 
     switch (type) {
-        case Type::GetTransactionNumbers:
-        case Type::RegisterNym: {
+        case otx::OperationType::GetTransactionNumbers:
+        case otx::OperationType::RegisterNym: {
             break;
         }
         default: {
@@ -2595,15 +2597,15 @@ auto Operation::Start(
 }
 
 auto Operation::Start(
-    const Type type,
+    const otx::OperationType type,
     const identifier::UnitDefinition& targetUnitID,
     const otx::context::Server::ExtraArgs& args) -> bool
 {
     START()
 
     switch (type) {
-        case Type::DownloadMint:
-        case Type::RegisterAccount: {
+        case otx::OperationType::DownloadMint:
+        case otx::OperationType::RegisterAccount: {
             break;
         }
         default: {
@@ -2619,14 +2621,14 @@ auto Operation::Start(
 }
 
 auto Operation::Start(
-    const Type type,
+    const otx::OperationType type,
     const identifier::Nym& targetNymID,
     const otx::context::Server::ExtraArgs& args) -> bool
 {
     START()
 
     switch (type) {
-        case Type::CheckNym: {
+        case otx::OperationType::CheckNym: {
             break;
         }
         default: {
@@ -2643,13 +2645,15 @@ auto Operation::Start(
 
 auto Operation::start(
     const Lock& decisionLock,
-    const Type type,
+    const otx::OperationType type,
     const otx::context::Server::ExtraArgs& args) -> bool
 {
     type_.store(type);
     args_ = args;
 
-    if (Type::RefreshAccount == type) { refresh_account_.store(true); }
+    if (otx::OperationType::RefreshAccount == type) {
+        refresh_account_.store(true);
+    }
 
     return trigger(decisionLock);
 }
@@ -2768,11 +2772,11 @@ void Operation::update_workflow(
     const otx::context::Server::DeliveryResult& result) const
 {
     switch (type_.load()) {
-        case Type::ConveyPayment: {
+        case otx::OperationType::ConveyPayment: {
             update_workflow_convey_payment(request, result);
         } break;
 #if OT_CASH
-        case Type::SendCash: {
+        case otx::OperationType::SendCash: {
             update_workflow_send_cash(request, result);
         } break;
 #endif
@@ -2843,7 +2847,7 @@ auto Operation::UpdateAccount(const Identifier& accountID) -> bool
     affected_accounts_.insert(accountID);
     redownload_accounts_.clear();
 
-    return start(lock, Type::RefreshAccount, {});
+    return start(lock, otx::OperationType::RefreshAccount, {});
 }
 
 #if OT_CASH
@@ -2856,7 +2860,7 @@ auto Operation::WithdrawCash(const Identifier& accountID, const Amount amount)
     amount_ = amount;
     affected_accounts_.insert(accountID);
 
-    return start(lock, Type::WithdrawCash, {});
+    return start(lock, otx::OperationType::WithdrawCash, {});
 }
 #endif
 

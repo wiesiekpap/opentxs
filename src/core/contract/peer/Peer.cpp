@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"                        // IWYU pragma: associated
 #include "internal/core/contract/peer/Peer.hpp"  // IWYU pragma: associated
 
-#include "opentxs/Proto.tpp"
+#include "Proto.tpp"
 #include "opentxs/core/contract/peer/ConnectionInfoType.hpp"
 #include "opentxs/core/contract/peer/PeerObjectType.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"

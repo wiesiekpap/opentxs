@@ -16,6 +16,8 @@
 
 #include "2_Factory.hpp"
 #include "Exclusive.tpp"
+#include "Proto.hpp"
+#include "Proto.tpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Factory.hpp"
 #include "internal/contact/Contact.hpp"
@@ -25,8 +27,6 @@
 #include "internal/otx/consensus/Consensus.hpp"
 #include "opentxs/Exclusive.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/Shared.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"

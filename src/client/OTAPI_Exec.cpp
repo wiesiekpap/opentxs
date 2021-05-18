@@ -14,9 +14,9 @@
 #include <string>
 #include <utility>
 
+#include "Proto.tpp"
 #include "internal/api/Api.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Factory.hpp"

@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"         // IWYU pragma: associated
 #include "api/client/Issuer.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <cstdint>
 #include <ctime>
 #include <memory>
@@ -35,7 +34,9 @@
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/protobuf/Bailment.pb.h"
 #include "opentxs/protobuf/Check.hpp"
+#include "opentxs/protobuf/ConnectionInfo.pb.h"
 #include "opentxs/protobuf/Issuer.pb.h"
 #include "opentxs/protobuf/PeerReply.pb.h"
 #include "opentxs/protobuf/PeerRequest.pb.h"

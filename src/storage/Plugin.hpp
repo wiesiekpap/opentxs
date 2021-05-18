@@ -10,9 +10,9 @@
 #include <memory>
 #include <string>
 
+#include "Proto.hpp"
+#include "Proto.tpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/api/storage/Plugin.hpp"

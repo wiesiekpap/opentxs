@@ -26,7 +26,6 @@
 #include "internal/otx/client/Client.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/Shared.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -79,6 +78,7 @@
 #include "opentxs/ext/OTPayment.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
+#include "opentxs/otx/OperationType.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
@@ -1180,8 +1180,8 @@ TEST_F(Test_Basic, registerNym_first_time)
 
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *alice_state_machine_;
-    auto started = stateMachine.Start(
-        otx::client::internal::Operation::Type::RegisterNym, extra_args_);
+    auto started =
+        stateMachine.Start(ot::otx::OperationType::RegisterNym, extra_args_);
 
     ASSERT_TRUE(started);
 
@@ -1229,8 +1229,7 @@ TEST_F(Test_Basic, getTransactionNumbers_Alice)
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *alice_state_machine_;
     auto started = stateMachine.Start(
-        otx::client::internal::Operation::Type::GetTransactionNumbers,
-        extra_args_);
+        ot::otx::OperationType::GetTransactionNumbers, extra_args_);
 
     ASSERT_TRUE(started);
 
@@ -1281,8 +1280,8 @@ TEST_F(Test_Basic, Reregister)
     verify_state_pre(*clientContext, serverContext.get(), sequence);
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *alice_state_machine_;
-    auto started = stateMachine.Start(
-        otx::client::internal::Operation::Type::RegisterNym, extra_args_);
+    auto started =
+        stateMachine.Start(ot::otx::OperationType::RegisterNym, extra_args_);
 
     ASSERT_TRUE(started);
 
@@ -1395,9 +1394,7 @@ TEST_F(Test_Basic, checkNym_missing)
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *alice_state_machine_;
     auto started = stateMachine.Start(
-        otx::client::internal::Operation::Type::CheckNym,
-        bob_nym_id_,
-        extra_args_);
+        ot::otx::OperationType::CheckNym, bob_nym_id_, extra_args_);
 
     ASSERT_TRUE(started);
 
@@ -1498,9 +1495,7 @@ TEST_F(Test_Basic, checkNym)
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *alice_state_machine_;
     auto started = stateMachine.Start(
-        otx::client::internal::Operation::Type::CheckNym,
-        bob_nym_id_,
-        extra_args_);
+        ot::otx::OperationType::CheckNym, bob_nym_id_, extra_args_);
 
     ASSERT_TRUE(started);
 
@@ -1694,8 +1689,8 @@ TEST_F(Test_Basic, registerNym_Bob)
 
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *bob_state_machine_;
-    auto started = stateMachine.Start(
-        otx::client::internal::Operation::Type::RegisterNym, extra_args_);
+    auto started =
+        stateMachine.Start(ot::otx::OperationType::RegisterNym, extra_args_);
 
     ASSERT_TRUE(started);
 
@@ -1931,7 +1926,7 @@ TEST_F(Test_Basic, registerAccount)
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *bob_state_machine_;
     auto started = stateMachine.Start(
-        otx::client::internal::Operation::Type::RegisterAccount,
+        ot::otx::OperationType::RegisterAccount,
         find_unit_definition_id_1(),
         extra_args_);
 
@@ -2313,8 +2308,8 @@ TEST_F(Test_Basic, resync)
     verify_state_pre(*clientContext, serverContext.get(), sequence);
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *alice_state_machine_;
-    auto started = stateMachine.Start(
-        otx::client::internal::Operation::Type::RegisterNym, {"", true});
+    auto started =
+        stateMachine.Start(ot::otx::OperationType::RegisterNym, {"", true});
 
     ASSERT_TRUE(started);
 
@@ -2629,7 +2624,7 @@ TEST_F(Test_Basic, register_second_account)
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *bob_state_machine_;
     auto started = stateMachine.Start(
-        otx::client::internal::Operation::Type::RegisterAccount,
+        ot::otx::OperationType::RegisterAccount,
         find_unit_definition_id_1(),
         extra_args_);
 
@@ -3280,7 +3275,7 @@ TEST_F(Test_Basic, renameServer)
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *alice_state_machine_;
     auto started = stateMachine.Start(
-        otx::client::internal::Operation::Type::CheckNym,
+        ot::otx::OperationType::CheckNym,
         context.RemoteNym().ID(),
         extra_args_);
 
@@ -3638,9 +3633,7 @@ TEST_F(Test_Basic, downloadMint)
     verify_state_pre(*clientContext, serverContext.get(), sequence);
     auto& stateMachine = *bob_state_machine_;
     auto started = stateMachine.Start(
-        otx::client::internal::Operation::Type::DownloadMint,
-        find_unit_definition_id_1(),
-        {});
+        ot::otx::OperationType::DownloadMint, find_unit_definition_id_1(), {});
 
     ASSERT_TRUE(started);
 

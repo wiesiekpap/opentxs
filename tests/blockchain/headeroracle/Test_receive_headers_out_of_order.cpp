@@ -13,6 +13,8 @@
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/client/HeaderOracle.hpp"
 
+namespace ottest
+{
 TEST_F(Test_HeaderOracle, receive_headers_out_of_order)
 {
     EXPECT_TRUE(create_blocks(create_5_));
@@ -102,3 +104,4 @@ TEST_F(Test_HeaderOracle, receive_headers_out_of_order)
         }
     }
 }
+}  // namespace ottest

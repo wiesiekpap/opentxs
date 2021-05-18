@@ -10,11 +10,11 @@
 #include <stdexcept>
 
 #include "2_Factory.hpp"
+#include "Proto.tpp"
 #include "internal/api/Api.hpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Contacts.hpp"

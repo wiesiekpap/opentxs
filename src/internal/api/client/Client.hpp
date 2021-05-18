@@ -84,15 +84,13 @@ using PaymentWorkflowTypeReverseMap =
 
 auto paymentworkflowstate_map() noexcept -> const PaymentWorkflowStateMap&;
 auto paymentworkflowtype_map() noexcept -> const PaymentWorkflowTypeMap&;
-OPENTXS_EXPORT auto translate(
-    const api::client::PaymentWorkflowState in) noexcept
+auto translate(const api::client::PaymentWorkflowState in) noexcept
     -> proto::PaymentWorkflowState;
-OPENTXS_EXPORT auto translate(
-    const api::client::PaymentWorkflowType in) noexcept
+auto translate(const api::client::PaymentWorkflowType in) noexcept
     -> proto::PaymentWorkflowType;
-OPENTXS_EXPORT auto translate(const proto::PaymentWorkflowState in) noexcept
+auto translate(const proto::PaymentWorkflowState in) noexcept
     -> api::client::PaymentWorkflowState;
-OPENTXS_EXPORT auto translate(const proto::PaymentWorkflowType in) noexcept
+auto translate(const proto::PaymentWorkflowType in) noexcept
     -> api::client::PaymentWorkflowType;
 
 struct Blockchain;
@@ -177,10 +175,8 @@ struct Activity : virtual public api::client::Activity {
 };
 struct Blockchain : virtual public api::client::Blockchain {
     /// Throws std::runtime_error if type is invalid
-    OPENTXS_EXPORT virtual auto BalanceTree(
-        const identifier::Nym& nymID,
-        const Chain chain) const noexcept(false)
-        -> const blockchain::internal::BalanceTree& = 0;
+    virtual auto BalanceTree(const identifier::Nym& nymID, const Chain chain)
+        const noexcept(false) -> const blockchain::internal::BalanceTree& = 0;
     virtual auto BlockchainDB() const noexcept
         -> const blockchain::database::implementation::Database& = 0;
     virtual auto Contacts() const noexcept -> const api::client::Contacts& = 0;

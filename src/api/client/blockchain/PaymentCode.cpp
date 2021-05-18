@@ -16,13 +16,13 @@
 #include <tuple>
 #include <utility>
 
+#include "Proto.hpp"
 #include "api/client/blockchain/Deterministic.hpp"
 #include "api/client/blockchain/Element.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/client/blockchain/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Contacts.hpp"

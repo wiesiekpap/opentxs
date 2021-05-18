@@ -17,7 +17,6 @@
 #include "integration/Helpers.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"

@@ -17,7 +17,7 @@ extern "C" {
 #include <string>
 #include <utility>
 
-#include "opentxs/Proto.tpp"
+#include "Proto.tpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"

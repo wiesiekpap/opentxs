@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "2_Factory.hpp"
+#include "Proto.tpp"
 #include "core/crypto/PaymentCode.hpp"
 #include "crypto/key/Null.hpp"
 #include "internal/api/Api.hpp"
@@ -30,7 +31,6 @@
 #include "internal/network/zeromq/socket/Socket.hpp"
 #include "opentxs/OT.hpp"  // TODO remove
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #if OT_CRYPTO_WITH_BIP32

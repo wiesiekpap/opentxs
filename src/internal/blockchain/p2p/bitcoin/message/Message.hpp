@@ -468,7 +468,7 @@ auto BitcoinP2PGetaddr(
     -> blockchain::p2p::bitcoin::message::internal::Getaddr*;
 auto BitcoinP2PGetaddr(const api::Core& api, const blockchain::Type network)
     -> blockchain::p2p::bitcoin::message::internal::Getaddr*;
-OPENTXS_EXPORT auto BitcoinP2PGetblocks(
+auto BitcoinP2PGetblocks(
     const api::Core& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> header,
     const blockchain::p2p::bitcoin::ProtocolVersion version,
@@ -559,7 +559,7 @@ auto BitcoinP2PGetheaders(
     std::vector<blockchain::block::pHash>&& history,
     blockchain::block::pHash&& stop)
     -> blockchain::p2p::bitcoin::message::internal::Getheaders*;
-OPENTXS_EXPORT auto BitcoinP2PHeaders(
+auto BitcoinP2PHeaders(
     const api::Core& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> header,
     const blockchain::p2p::bitcoin::ProtocolVersion version,

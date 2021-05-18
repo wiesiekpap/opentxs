@@ -25,6 +25,8 @@
 #include <utility>
 #include <vector>
 
+#include "Proto.hpp"
+#include "Proto.tpp"
 #include "blockchain/bitcoin/CompactSize.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -39,7 +41,9 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/crypto/HashType.hpp"
+#include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/GCS.pb.h"
+#include "opentxs/protobuf/verify/GCS.hpp"
 #include "util/Container.hpp"
 
 //#define OT_METHOD "opentxs::blockchain::implementation::GCS::"
@@ -97,6 +101,24 @@ auto GCS(const api::Core& api, const proto::GCS& in) noexcept
     try {
         return std::make_unique<ReturnType>(
             api, in.bits(), in.fprate(), in.count(), in.key(), in.filter());
+    } catch (const std::exception& e) {
+        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+
+        return nullptr;
+    }
+}
+
+auto GCS(const api::Core& api, const ReadView in) noexcept
+    -> std::unique_ptr<blockchain::client::GCS>
+{
+    try {
+        const auto proto = proto::Factory<proto::GCS>(in.data(), in.size());
+
+        if (false == proto::Validate(proto, VERBOSE)) {
+            throw std::runtime_error{"invalid serialized gcs"};
+        }
+
+        return GCS(api, proto);
     } catch (const std::exception& e) {
         LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
 
@@ -474,9 +496,8 @@ auto GCS::Match(const Targets& targets) const noexcept -> Matches
     return output;
 }
 
-auto GCS::Serialize() const noexcept -> proto::GCS
+auto GCS::Serialize(proto::GCS& output) const noexcept -> bool
 {
-    auto output = proto::GCS{};
     output.set_version(version_);
     output.set_bits(bits_);
     output.set_fprate(false_positive_rate_);
@@ -485,7 +506,16 @@ auto GCS::Serialize() const noexcept -> proto::GCS
     output.set_filter(
         static_cast<const char*>(compressed_->data()), compressed_->size());
 
-    return output;
+    return true;
+}
+
+auto GCS::Serialize(AllocateOutput out) const noexcept -> bool
+{
+    auto proto = proto::GCS{};
+
+    if (false == Serialize(proto)) { return false; }
+
+    return proto::write(proto, out);
 }
 
 auto GCS::Test(const Data& target) const noexcept -> bool

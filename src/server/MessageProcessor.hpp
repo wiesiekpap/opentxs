@@ -13,7 +13,7 @@
 #include <string>
 #include <thread>
 
-#include "opentxs/Proto.hpp"
+#include "Proto.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"

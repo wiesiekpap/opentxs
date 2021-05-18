@@ -16,9 +16,9 @@
 #include <string>
 #include <utility>
 
+#include "Proto.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/otx/client/Client.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/client/OTX.hpp"

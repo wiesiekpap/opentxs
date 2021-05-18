@@ -12,9 +12,9 @@
 #include <optional>
 #include <vector>
 
+#include "Proto.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/client/FilterOracle.hpp"
 #include "opentxs/core/Data.hpp"
@@ -26,6 +26,11 @@ namespace api
 {
 class Core;
 }  // namespace api
+
+namespace proto
+{
+class GCS;
+}  // namespace proto
 }  // namespace opentxs
 
 namespace opentxs::blockchain::implementation
@@ -39,7 +44,8 @@ public:
     auto Hash() const noexcept -> OTData final;
     auto Header(const ReadView previous) const noexcept -> OTData final;
     auto Match(const Targets&) const noexcept -> Matches final;
-    auto Serialize() const noexcept -> proto::GCS final;
+    auto Serialize(proto::GCS& out) const noexcept -> bool final;
+    auto Serialize(AllocateOutput out) const noexcept -> bool final;
     auto Test(const Data& target) const noexcept -> bool final;
     auto Test(const ReadView target) const noexcept -> bool final;
     auto Test(const std::vector<OTData>& targets) const noexcept -> bool final;

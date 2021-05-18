@@ -20,6 +20,7 @@
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/ContactItemAttribute.hpp"
+#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/contact/ContactSectionName.hpp"
 #include "opentxs/core/Identifier.hpp"
 
@@ -30,15 +31,14 @@ class Test_ContactGroup : public ::testing::Test
 {
 public:
     Test_ContactGroup()
-        : api_(dynamic_cast<const ot::api::client::internal::Manager&>(
-              ot::Context().StartClient({}, 0)))
+        : api_(ot::Context().StartClient({}, 0))
         , contactGroup_(
               std::string("testContactGroupNym1"),
               ot::contact::ContactSectionName::Identifier,
               ot::contact::ContactItemType::Employee,
               {})
         , primary_(new ot::ContactItem(
-              api_,
+              dynamic_cast<const ot::api::client::internal::Manager&>(api_),
               std::string("primaryContactItem"),
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
@@ -50,7 +50,7 @@ public:
               NULL_END,
               ""))
         , active_(new ot::ContactItem(
-              api_,
+              dynamic_cast<const ot::api::client::internal::Manager&>(api_),
               std::string("activeContactItem"),
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
@@ -64,7 +64,7 @@ public:
     {
     }
 
-    const ot::api::client::internal::Manager& api_;
+    const ot::api::client::Manager& api_;
     const ot::ContactGroup contactGroup_;
     const std::shared_ptr<ot::ContactItem> primary_;
     const std::shared_ptr<ot::ContactItem> active_;
@@ -76,7 +76,7 @@ TEST_F(Test_ContactGroup, first_constructor)
 {
     // Test constructing a group with a map containing two primary items.
     const std::shared_ptr<ot::ContactItem> primary2(new ot::ContactItem(
-        api_,
+        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
         std::string("primaryContactItemNym2"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -173,7 +173,7 @@ TEST_F(Test_ContactGroup, operator_plus)
 
     // Test adding a group with 2 items to a group with 1 item.
     const std::shared_ptr<ot::ContactItem> primary2(new ot::ContactItem(
-        api_,
+        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
         std::string("primaryContactItemNym2"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -282,7 +282,7 @@ TEST_F(Test_ContactGroup, Best_primary)
 TEST_F(Test_ContactGroup, Best_active_and_local)
 {
     const std::shared_ptr<ot::ContactItem> local(new ot::ContactItem(
-        api_,
+        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
         std::string("localContactItemNym"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,

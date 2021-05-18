@@ -5,8 +5,8 @@
 
 #pragma once
 
+#include "Proto.hpp"
 #include "internal/identity/wot/verification/Verification.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/identity/wot/verification/Item.hpp"

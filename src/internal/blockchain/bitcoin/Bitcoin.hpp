@@ -117,7 +117,7 @@ struct EncodedInputWitness {
     auto size() const noexcept -> std::size_t;
 };
 
-struct EncodedTransaction {
+struct OPENTXS_EXPORT EncodedTransaction {
     be::little_int32_buf_t version_{};
     std::optional<std::byte> segwit_flag_{};
     CompactSize input_count_{};
@@ -139,7 +139,7 @@ struct EncodedTransaction {
         const api::Core& api,
         const blockchain::Type chain,
         ReadView bytes) noexcept -> bool;
-    OPENTXS_EXPORT static auto Deserialize(
+    static auto Deserialize(
         const api::Core& api,
         const blockchain::Type chain,
         const ReadView bytes) noexcept(false) -> EncodedTransaction;

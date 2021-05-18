@@ -16,10 +16,10 @@
 #include <vector>
 
 #include "1_Internal.hpp"
+#include "Proto.hpp"
 #include "core/Worker.hpp"
 #include "display/Definition.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"

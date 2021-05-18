@@ -33,6 +33,8 @@ std::string txid_{};
 ot::Bip32Index first_index_{};
 ot::Bip32Index second_index_{};
 
+namespace ottest
+{
 TEST_F(Test_BlockchainActivity, init)
 {
     EXPECT_FALSE(nym_1_id().empty());
@@ -214,3 +216,4 @@ TEST_F(Test_BlockchainActivity, unassign)
     ASSERT_TRUE(thread3);
     ASSERT_TRUE(thread4);
 }
+}  // namespace ottest

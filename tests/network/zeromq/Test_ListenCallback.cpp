@@ -4,10 +4,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <future>
 #include <string>
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
-#include "internal/network/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
@@ -16,39 +16,41 @@
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 
-using namespace opentxs;
+namespace zmq = opentxs::network::zeromq;
 
-namespace
+namespace ottest
 {
-class Test_ListenCallback : public ::testing::Test
+class ListenCallback : public ::testing::Test
 {
-public:
-    const std::string testMessage_{"zeromq test message"};
+private:
+    std::promise<std::string> promise_;
+
+protected:
+    const std::string testMessage_;
+    std::future<std::string> future_;
+    ot::OTZMQListenCallback callback_;
+
+    ListenCallback() noexcept
+        : promise_()
+        , testMessage_("zeromq test message")
+        , future_(promise_.get_future())
+        , callback_(zmq::ListenCallback::Factory([&](auto& input) -> void {
+            promise_.set_value(std::string{input.at(0).Bytes()});
+        }))
+    {
+    }
 };
-}  // namespace
 
-TEST(ListenCallback, ListenCallback_Factory)
+TEST_F(ListenCallback, ListenCallback_Process)
 {
-    auto listenCallback =
-        network::zeromq::ListenCallback::Factory([](auto&) -> void {});
+    auto message = [&] {
+        auto out = zmq::Message::Factory();
+        out->AddFrame(testMessage_);
 
-    ASSERT_NE(nullptr, &listenCallback.get());
+        return out;
+    }();
+    callback_->Process(message);
+
+    EXPECT_EQ(testMessage_, future_.get());
 }
-
-TEST_F(Test_ListenCallback, ListenCallback_Process)
-{
-    auto listenCallback = network::zeromq::ListenCallback::Factory(
-        [this](network::zeromq::Message& input) -> void {
-            const std::string& inputString = *input.Body().begin();
-            EXPECT_EQ(testMessage_, inputString);
-        });
-
-    ASSERT_NE(nullptr, &listenCallback.get());
-
-    auto testMessage = OTZMQMessage{
-        factory::ZMQMessage(testMessage_.data(), testMessage_.size())};
-
-    ASSERT_NE(nullptr, &testMessage.get());
-
-    listenCallback->Process(testMessage);
-}
+}  // namespace ottest

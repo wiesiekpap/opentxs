@@ -21,12 +21,12 @@
 #include <utility>
 
 #include "2_Factory.hpp"
+#include "Proto.hpp"
 #include "core/OTStorage.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/contact/Contact.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Shared.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Legacy.hpp"

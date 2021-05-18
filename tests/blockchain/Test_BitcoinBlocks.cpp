@@ -164,8 +164,13 @@ struct Test_BitcoinBlock : public ::testing::Test {
         if (false == bool(gcs)) { return false; }
 
         {
-            const auto proto = gcs->Serialize();
-            const auto gcs2 = ot::factory::GCS(api_, proto);
+            const auto proto = [&] {
+                auto out = ot::Space{};
+                gcs->Serialize(ot::writer(out));
+
+                return out;
+            }();
+            const auto gcs2 = ot::factory::GCS(api_, ot::reader(proto));
 
             EXPECT_TRUE(gcs2);
 

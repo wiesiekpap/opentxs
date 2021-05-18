@@ -10,7 +10,7 @@
 #include <set>
 #include <sstream>
 
-#include "opentxs/Proto.hpp"
+#include "Proto.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
 

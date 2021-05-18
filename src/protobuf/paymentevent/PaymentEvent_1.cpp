@@ -11,7 +11,7 @@
 #include <set>
 #include <stdexcept>
 
-#include "opentxs/Proto.hpp"
+#include "Proto.hpp"
 #include "opentxs/protobuf/PaymentEvent.pb.h"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/protobuf/verify/VerifyWorkflows.hpp"

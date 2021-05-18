@@ -7,8 +7,8 @@
 #include "1_Internal.hpp"                        // IWYU pragma: associated
 #include "network/zeromq/PairEventCallback.hpp"  // IWYU pragma: associated
 
+#include "Proto.tpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"

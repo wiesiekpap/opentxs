@@ -13,9 +13,9 @@
 #include <string>
 #include <string_view>
 
+#include "Proto.hpp"
 #include "crypto/Seed.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/HDSeed.hpp"

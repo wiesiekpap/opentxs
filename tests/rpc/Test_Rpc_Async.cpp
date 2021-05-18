@@ -20,7 +20,6 @@
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"

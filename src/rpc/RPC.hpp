@@ -18,8 +18,8 @@
 #include <tuple>
 #include <vector>
 
+#include "Proto.hpp"
 #include "internal/rpc/RPC.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/client/OTX.hpp"

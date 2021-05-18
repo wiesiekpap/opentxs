@@ -13,6 +13,7 @@
 #include <string>
 
 #include "internal/api/client/Client.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/client/Activity.hpp"

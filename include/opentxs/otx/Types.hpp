@@ -18,8 +18,34 @@ namespace otx
 enum class ConsensusType : std::uint8_t;
 enum class LastReplyStatus : std::uint8_t;
 enum class OTXPushType : std::uint8_t;
-enum class ServerRequestType : std::uint8_t;
+enum class OperationType : std::uint16_t;
 enum class ServerReplyType : std::uint8_t;
+enum class ServerRequestType : std::uint8_t;
 }  // namespace otx
+
+constexpr auto value(const otx::ConsensusType in) noexcept
+{
+    return static_cast<std::uint8_t>(in);
+}
+constexpr auto value(const otx::LastReplyStatus in) noexcept
+{
+    return static_cast<std::uint8_t>(in);
+}
+constexpr auto value(const otx::OTXPushType in) noexcept
+{
+    return static_cast<std::uint8_t>(in);
+}
+constexpr auto value(const otx::OperationType in) noexcept
+{
+    return static_cast<std::uint16_t>(in);
+}
+constexpr auto value(const otx::ServerReplyType in) noexcept
+{
+    return static_cast<std::uint8_t>(in);
+}
+constexpr auto value(const otx::ServerRequestType in) noexcept
+{
+    return static_cast<std::uint8_t>(in);
+}
 }  // namespace opentxs
 #endif

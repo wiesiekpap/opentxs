@@ -16,12 +16,12 @@
 #include <utility>
 #include <vector>
 
+#include "Proto.tpp"
 #include "crypto/key/SymmetricNull.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/crypto/key/Factory.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"

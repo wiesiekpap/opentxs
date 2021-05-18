@@ -62,7 +62,7 @@ public:
 
     static const TestMap gcs_;
 
-    const ot::api::client::internal::Manager& api_;
+    const ot::api::client::Manager& api_;
 
     auto TestGCSBlock(const ot::blockchain::block::Height height) const -> bool
     {
@@ -101,8 +101,7 @@ public:
     }
 
     Test_Filters()
-        : api_(dynamic_cast<const ot::api::client::internal::Manager&>(
-              ot::Context().StartClient(OTTestEnvironment::test_args_, 0)))
+        : api_(ot::Context().StartClient(OTTestEnvironment::test_args_, 0))
     {
     }
 };

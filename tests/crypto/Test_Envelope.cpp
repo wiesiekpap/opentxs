@@ -13,8 +13,6 @@
 #include <vector>
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
-#include "internal/api/Api.hpp"
-#include "internal/api/client/Client.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -44,8 +42,8 @@ public:
     static const Expected expected_;
     static Nyms nyms_;
 
-    const ot::api::internal::Core& sender_;
-    const ot::api::internal::Core& recipient_;
+    const ot::api::Core& sender_;
+    const ot::api::Core& recipient_;
     const ot::OTPasswordPrompt reason_s_;
     const ot::OTPasswordPrompt reason_r_;
     const ot::OTString plaintext_;
@@ -68,10 +66,8 @@ public:
     }
 
     Test_Envelope()
-        : sender_(dynamic_cast<const ot::api::client::internal::Manager&>(
-              ot::Context().StartClient({}, 0)))
-        , recipient_(dynamic_cast<const ot::api::client::internal::Manager&>(
-              ot::Context().StartClient({}, 1)))
+        : sender_(ot::Context().StartClient({}, 0))
+        , recipient_(ot::Context().StartClient({}, 1))
         , reason_s_(sender_.Factory().PasswordPrompt(__FUNCTION__))
         , reason_r_(recipient_.Factory().PasswordPrompt(__FUNCTION__))
         , plaintext_(ot::String::Factory(

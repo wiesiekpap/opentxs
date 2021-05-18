@@ -13,9 +13,9 @@
 #include <map>
 #include <string>
 
+#include "Proto.hpp"
+#include "Proto.tpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"

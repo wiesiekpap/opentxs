@@ -13,8 +13,8 @@
 #include <utility>
 #include <vector>
 
+#include "Proto.hpp"
 #include "api/client/ui/UpdateManager.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/Version.hpp"

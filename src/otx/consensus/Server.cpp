@@ -18,6 +18,7 @@
 #include <stdexcept>
 #include <type_traits>
 
+#include "Proto.tpp"
 #include "core/OTStorage.hpp"
 #include "core/StateMachine.hpp"
 #include "internal/api/Api.hpp"
@@ -25,7 +26,6 @@
 #include "internal/otx/OTX.hpp"
 #include "opentxs/Exclusive.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/Shared.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/api/Endpoints.hpp"

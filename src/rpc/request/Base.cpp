@@ -13,8 +13,8 @@
 #include <stdexcept>
 #include <utility>
 
+#include "Proto.hpp"
 #include "internal/rpc/RPC.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/protobuf/RPCCommand.pb.h"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/request/GetAccountActivity.hpp"

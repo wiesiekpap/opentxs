@@ -18,9 +18,9 @@
 #include <utility>
 #include <vector>
 
+#include "Proto.hpp"
 #include "internal/api/storage/Storage.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Editor.hpp"

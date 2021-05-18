@@ -11,7 +11,6 @@
 
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Core.hpp"

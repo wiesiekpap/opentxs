@@ -19,9 +19,9 @@
 #include <tuple>
 #include <vector>
 
+#include "Proto.hpp"
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Factory.hpp"

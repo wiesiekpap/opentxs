@@ -20,12 +20,12 @@
 #include <vector>
 
 #include "2_Factory.hpp"
+#include "Proto.hpp"
+#include "Proto.tpp"
 #include "internal/api/Api.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/crypto/key/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/HDSeed.hpp"
