@@ -13,17 +13,21 @@
 #include <tuple>
 #include <vector>
 
-#include "opentxs/Proto.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/contract/peer/BailmentReply.hpp"
+#include "opentxs/core/contract/peer/ConnectionReply.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 
 namespace opentxs
 {
+namespace api
+{
+class Core;
+}  // namespace api
+
 namespace proto
 {
-class BailmentReply;
-class ConnectionInfoReply;
 class Issuer;
 }  // namespace proto
 
@@ -43,9 +47,8 @@ namespace client
 class Issuer
 {
 public:
-    using BailmentDetails = std::pair<OTIdentifier, proto::BailmentReply>;
-    using ConnectionDetails =
-        std::pair<OTIdentifier, proto::ConnectionInfoReply>;
+    using BailmentDetails = std::pair<OTIdentifier, OTBailmentReply>;
+    using ConnectionDetails = std::pair<OTIdentifier, OTConnectionReply>;
 
     enum class RequestStatus : std::int32_t {
         All = -1,
@@ -63,15 +66,19 @@ public:
     virtual bool BailmentInitiated(
         const identifier::UnitDefinition& unitID) const = 0;
     virtual std::vector<BailmentDetails> BailmentInstructions(
+        const api::Core& client,
         const identifier::UnitDefinition& unitID,
         const bool onlyUnused = true) const = 0;
     virtual std::size_t BailmentInstructionsSize(
+        const api::Core& client,
         const identifier::UnitDefinition& unitID) const = 0;
     virtual std::vector<ConnectionDetails> ConnectionInfo(
+        const api::Core& client,
         const contract::peer::ConnectionInfoType type) const = 0;
     virtual bool ConnectionInfoInitiated(
         const contract::peer::ConnectionInfoType type) const = 0;
     virtual std::size_t ConnectionInfoSize(
+        const api::Core& client,
         const contract::peer::ConnectionInfoType type) const = 0;
     virtual std::set<std::tuple<OTIdentifier, OTIdentifier, bool>> GetRequests(
         const contract::peer::PeerRequestType type,
@@ -82,7 +89,7 @@ public:
     virtual const std::string& PairingCode() const = 0;
     virtual OTServerID PrimaryServer() const = 0;
     virtual std::set<contract::peer::PeerRequestType> RequestTypes() const = 0;
-    virtual proto::Issuer Serialize() const = 0;
+    OPENTXS_NO_EXPORT virtual bool Serialize(proto::Issuer&) const = 0;
     virtual bool StoreSecretComplete() const = 0;
     virtual bool StoreSecretInitiated() const = 0;
 

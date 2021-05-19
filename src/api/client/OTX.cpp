@@ -84,6 +84,8 @@
 #include "opentxs/otx/Reply.hpp"
 #include "opentxs/otx/ServerReplyType.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
+#include "opentxs/protobuf/PeerReply.pb.h"
+#include "opentxs/protobuf/PeerRequest.pb.h"
 #include "opentxs/protobuf/ServerContract.pb.h"
 #include "opentxs/protobuf/ServerReply.pb.h"
 #include "opentxs/util/WorkType.hpp"
@@ -310,10 +312,13 @@ auto OTX::AcknowledgeBailment(
     start_introduction_server(localNymID);
     const auto nym = client_.Wallet().Nym(localNymID);
     auto time = std::time_t{0};
-    auto serializedRequest = client_.Wallet().PeerRequest(
-        nym->ID(), requestID, StorageBox::INCOMINGPEERREQUEST, time);
-
-    if (false == bool(serializedRequest)) {
+    auto serializedRequest = proto::PeerRequest{};
+    if (false == client_.Wallet().PeerRequest(
+                     nym->ID(),
+                     requestID,
+                     StorageBox::INCOMINGPEERREQUEST,
+                     time,
+                     serializedRequest)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load request.").Flush();
 
         return error_task();
@@ -323,7 +328,7 @@ auto OTX::AcknowledgeBailment(
 
     try {
         auto instantiatedRequest =
-            client_.Factory().BailmentRequest(recipientNym, *serializedRequest);
+            client_.Factory().BailmentRequest(recipientNym, serializedRequest);
         auto peerreply = client_.Factory().BailmentReply(
             nym,
             instantiatedRequest->Initiator(),
@@ -388,10 +393,13 @@ auto OTX::AcknowledgeConnection(
     }
 
     auto time = std::time_t{0};
-    auto serializedRequest = client_.Wallet().PeerRequest(
-        nym->ID(), requestID, StorageBox::INCOMINGPEERREQUEST, time);
-
-    if (false == bool(serializedRequest)) {
+    auto serializedRequest = proto::PeerRequest{};
+    if (false == client_.Wallet().PeerRequest(
+                     nym->ID(),
+                     requestID,
+                     StorageBox::INCOMINGPEERREQUEST,
+                     time,
+                     serializedRequest)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load request.").Flush();
 
         return error_task();
@@ -401,7 +409,7 @@ auto OTX::AcknowledgeConnection(
 
     try {
         auto instantiatedRequest =
-            client_.Factory().BailmentRequest(recipientNym, *serializedRequest);
+            client_.Factory().BailmentRequest(recipientNym, serializedRequest);
         auto peerreply = client_.Factory().ConnectionReply(
             nym,
             instantiatedRequest->Initiator(),
@@ -443,10 +451,13 @@ auto OTX::AcknowledgeNotice(
     start_introduction_server(localNymID);
     const auto nym = client_.Wallet().Nym(localNymID);
     std::time_t time{0};
-    auto serializedRequest = client_.Wallet().PeerRequest(
-        nym->ID(), requestID, StorageBox::INCOMINGPEERREQUEST, time);
-
-    if (false == bool(serializedRequest)) {
+    auto serializedRequest = proto::PeerRequest{};
+    if (false == client_.Wallet().PeerRequest(
+                     nym->ID(),
+                     requestID,
+                     StorageBox::INCOMINGPEERREQUEST,
+                     time,
+                     serializedRequest)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load request.").Flush();
 
         return error_task();
@@ -456,7 +467,7 @@ auto OTX::AcknowledgeNotice(
 
     try {
         auto instantiatedRequest =
-            client_.Factory().BailmentRequest(recipientNym, *serializedRequest);
+            client_.Factory().BailmentRequest(recipientNym, serializedRequest);
         auto peerreply = client_.Factory().ReplyAcknowledgement(
             nym,
             instantiatedRequest->Initiator(),
@@ -495,10 +506,13 @@ auto OTX::AcknowledgeOutbailment(
     start_introduction_server(localNymID);
     const auto nym = client_.Wallet().Nym(localNymID);
     std::time_t time{0};
-    auto serializedRequest = client_.Wallet().PeerRequest(
-        nym->ID(), requestID, StorageBox::INCOMINGPEERREQUEST, time);
-
-    if (false == bool(serializedRequest)) {
+    auto serializedRequest = proto::PeerRequest{};
+    if (false == client_.Wallet().PeerRequest(
+                     nym->ID(),
+                     requestID,
+                     StorageBox::INCOMINGPEERREQUEST,
+                     time,
+                     serializedRequest)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load request.").Flush();
 
         return error_task();
@@ -508,7 +522,7 @@ auto OTX::AcknowledgeOutbailment(
 
     try {
         auto instantiatedRequest =
-            client_.Factory().BailmentRequest(recipientNym, *serializedRequest);
+            client_.Factory().BailmentRequest(recipientNym, serializedRequest);
         auto peerreply = client_.Factory().OutbailmentReply(
             nym,
             instantiatedRequest->Initiator(),

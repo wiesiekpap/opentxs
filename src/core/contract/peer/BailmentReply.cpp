@@ -41,11 +41,10 @@ auto Factory::BailmentReply(
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::shared_ptr<contract::peer::reply::Bailment>
 {
-    auto pRequest = ParentType::LoadRequest(api, nym, request);
-
-    if (false == bool(pRequest)) { return {}; }
-
-    const auto peerRequest = *pRequest;
+    auto peerRequest = proto::PeerRequest{};
+    if (false == ParentType::LoadRequest(api, nym, request, peerRequest)) {
+        return {};
+    }
 
     try {
         auto output = std::make_shared<ReturnType>(

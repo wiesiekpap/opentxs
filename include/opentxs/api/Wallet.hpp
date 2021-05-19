@@ -16,7 +16,6 @@
 #include <set>
 #include <string>
 
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Editor.hpp"
 #include "opentxs/blind/CashType.hpp"
@@ -293,10 +292,11 @@ public:
      *    \returns A smart pointer to the object. The smart pointer will not be
      *             instantiated if the object does not exist or is invalid.
      */
-    OPENTXS_NO_EXPORT virtual std::shared_ptr<proto::PeerReply> PeerReply(
+    OPENTXS_NO_EXPORT virtual bool PeerReply(
         const identifier::Nym& nym,
         const Identifier& reply,
-        const StorageBox& box) const = 0;
+        const StorageBox& box,
+        proto::PeerReply& serialized) const = 0;
 
     virtual bool PeerReply(
         const identifier::Nym& nym,
@@ -399,11 +399,12 @@ public:
      *    \returns A smart pointer to the object. The smart pointer will not be
      *             instantiated if the object does not exist or is invalid.
      */
-    OPENTXS_NO_EXPORT virtual std::shared_ptr<proto::PeerRequest> PeerRequest(
+    OPENTXS_NO_EXPORT virtual bool PeerRequest(
         const identifier::Nym& nym,
         const Identifier& request,
         const StorageBox& box,
-        std::time_t& time) const = 0;
+        std::time_t& time,
+        proto::PeerRequest& serialized) const = 0;
 
     virtual bool PeerRequest(
         const identifier::Nym& nym,

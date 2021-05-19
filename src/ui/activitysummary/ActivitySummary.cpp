@@ -181,14 +181,15 @@ auto ActivitySummary::newest_item(
 void ActivitySummary::process_thread(const std::string& id) noexcept
 {
     const auto threadID = Identifier::Factory(id);
-    const auto thread = api_.Activity().Thread(primary_id_, threadID);
+    auto thread = proto::StorageThread{};
+    auto loaded = api_.Activity().Thread(primary_id_, threadID, thread);
 
-    OT_ASSERT(thread);
+    OT_ASSERT(loaded);
 
     auto custom = CustomData{};
-    const auto name = display_name(*thread);
+    const auto name = display_name(thread);
     const auto time = Time(
-        std::chrono::seconds(newest_item(threadID, *thread, custom).time()));
+        std::chrono::seconds(newest_item(threadID, thread, custom).time()));
     const ActivitySummarySortKey index{time, name};
     add_item(threadID, index, custom);
 }

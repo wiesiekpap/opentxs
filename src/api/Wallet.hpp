@@ -203,7 +203,8 @@ public:
     auto PeerReply(
         const identifier::Nym& nym,
         const Identifier& reply,
-        const StorageBox& box) const -> std::shared_ptr<proto::PeerReply> final;
+        const StorageBox& box,
+        proto::PeerReply& serialized) const -> bool final;
     auto PeerReply(
         const identifier::Nym& nym,
         const Identifier& reply,
@@ -233,7 +234,8 @@ public:
         const identifier::Nym& nym,
         const Identifier& request,
         const StorageBox& box,
-        std::time_t& time) const -> std::shared_ptr<proto::PeerRequest> final;
+        std::time_t& time,
+        proto::PeerRequest& serialized) const -> bool final;
     auto PeerRequest(
         const identifier::Nym& nym,
         const Identifier& request,

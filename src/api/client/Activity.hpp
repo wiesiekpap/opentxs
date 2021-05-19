@@ -121,8 +121,14 @@ public:
         const std::size_t start,
         const std::size_t count,
         const PasswordPrompt& reason) const noexcept final;
-    auto Thread(const identifier::Nym& nymID, const Identifier& threadID)
-        const noexcept -> std::shared_ptr<proto::StorageThread> final;
+    auto Thread(
+        const identifier::Nym& nymID,
+        const Identifier& threadID,
+        proto::StorageThread& serialzied) const noexcept -> bool final;
+    auto Thread(
+        const identifier::Nym& nymID,
+        const Identifier& threadID,
+        AllocateOutput output) const noexcept -> bool final;
     auto Threads(const identifier::Nym& nym, const bool unreadOnly = false)
         const noexcept -> ObjectList final;
     auto UnreadCount(const identifier::Nym& nym) const noexcept

@@ -76,10 +76,15 @@ TEST_F(Test_BlockchainActivity, init)
         EXPECT_EQ(api_.Contacts().ContactName(contact_6_id()), contact_6_name_);
     }
 
-    auto thread1 = api_.Activity().Thread(nym_1_id(), contact_3_id());
-    auto thread2 = api_.Activity().Thread(nym_1_id(), contact_4_id());
-    auto thread3 = api_.Activity().Thread(nym_1_id(), contact_5_id());
-    auto thread4 = api_.Activity().Thread(nym_1_id(), contact_6_id());
+    auto bytes = ot::Space{};
+    auto thread1 =
+        api_.Activity().Thread(nym_1_id(), contact_3_id(), ot::writer(bytes));
+    auto thread2 =
+        api_.Activity().Thread(nym_1_id(), contact_4_id(), ot::writer(bytes));
+    auto thread3 =
+        api_.Activity().Thread(nym_1_id(), contact_5_id(), ot::writer(bytes));
+    auto thread4 =
+        api_.Activity().Thread(nym_1_id(), contact_6_id(), ot::writer(bytes));
 
     EXPECT_FALSE(thread1);
     EXPECT_FALSE(thread2);
@@ -141,8 +146,11 @@ TEST_F(Test_BlockchainActivity, setup)
     ASSERT_TRUE(api_.Blockchain().ProcessTransaction(
         ot::blockchain::Type::Bitcoin, *tx2, reason_));
 
-    auto thread1 = api_.Activity().Thread(nym_1_id(), contact_5_id());
-    auto thread2 = api_.Activity().Thread(nym_1_id(), contact_6_id());
+    auto bytes = ot::Space{};
+    auto thread1 =
+        api_.Activity().Thread(nym_1_id(), contact_5_id(), ot::writer(bytes));
+    auto thread2 =
+        api_.Activity().Thread(nym_1_id(), contact_6_id(), ot::writer(bytes));
 
     ASSERT_TRUE(thread1);
     ASSERT_TRUE(thread2);
