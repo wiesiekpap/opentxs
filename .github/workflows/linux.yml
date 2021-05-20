@@ -5,6 +5,7 @@ on: [push, pull_request]
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         compiler: [gcc-10, clang-10]
         include:
@@ -18,8 +19,9 @@ jobs:
             docker: 1
     runs-on:  ${{ matrix.platform }}
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2.3.4
       with:
+        fetch-depth: '0'
         submodules: 'recursive'
     - name: Get more disk space
       run: |

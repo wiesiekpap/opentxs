@@ -15,10 +15,12 @@ boost-program-options
 boost-stacktrace
 boost-system
 boost-thread
+gettext
 gtest
 libsodium
 lmdb
 openssl
+pcre2
 protobuf
 qt5-base
 qt5-declarative
