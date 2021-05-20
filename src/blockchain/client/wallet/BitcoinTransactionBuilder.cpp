@@ -25,13 +25,13 @@
 #include <tuple>
 #include <vector>
 
+#include "Proto.hpp"
 #include "blockchain/bitcoin/CompactSize.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"

@@ -10,10 +10,10 @@
 #include <optional>
 #include <string>
 
+#include "Proto.hpp"
 #include "identity/credential/Base.hpp"
 #include "internal/identity/credential/Credential.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"

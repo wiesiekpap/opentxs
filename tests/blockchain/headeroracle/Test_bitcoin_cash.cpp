@@ -12,8 +12,6 @@
 #include <vector>
 
 #include "Helpers.hpp"
-#include "internal/api/client/Client.hpp"
-#include "internal/blockchain/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -25,6 +23,8 @@
 std::vector<std::unique_ptr<bb::Header>> headers_btc_{};
 std::vector<std::unique_ptr<bb::Header>> headers_bch_{};
 
+namespace ottest
+{
 TEST_F(Test_HeaderOracle_btc, init_opentxs) {}
 
 TEST_F(Test_HeaderOracle_btc, stage_headers)
@@ -72,7 +72,7 @@ TEST_F(Test_HeaderOracle_btc, receive_bch)
 
     ASSERT_TRUE(network);
 
-    auto& oracle = network->HeaderOracleInternal();
+    auto& oracle = const_cast<bc::HeaderOracle&>(network->HeaderOracle());
 
     EXPECT_TRUE(oracle.AddHeaders(headers_bch_));
 
@@ -88,3 +88,4 @@ TEST_F(Test_HeaderOracle_btc, receive_bch)
 
     EXPECT_EQ(expectedWork, header->Work()->Decimal());
 }
+}  // namespace ottest

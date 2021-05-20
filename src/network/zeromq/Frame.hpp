@@ -12,9 +12,9 @@
 #include <iosfwd>
 #include <string>
 
+#include "Proto.hpp"
 #include "internal/network/Factory.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 
 namespace opentxs::network::zeromq::implementation

@@ -13,8 +13,8 @@
 #include <set>
 #include <string>
 
+#include "Proto.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/otx/ConsensusType.hpp"

@@ -11,12 +11,12 @@
 #include <memory>
 #include <stdexcept>
 
+#include "Proto.tpp"
 #include "core/contract/Signable.hpp"
 #include "identity/credential/Base.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Identifier.hpp"

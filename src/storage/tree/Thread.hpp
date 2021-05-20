@@ -13,7 +13,7 @@
 #include <string>
 #include <tuple>
 
-#include "opentxs/Proto.hpp"
+#include "Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Editor.hpp"
 #include "opentxs/protobuf/StorageThread.pb.h"

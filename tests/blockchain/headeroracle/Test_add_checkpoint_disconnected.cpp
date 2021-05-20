@@ -10,6 +10,8 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/client/HeaderOracle.hpp"
 
+namespace ottest
+{
 TEST_F(Test_HeaderOracle, add_checkpoint_disconnected)
 {
     EXPECT_TRUE(create_blocks(create_9_));
@@ -27,3 +29,4 @@ TEST_F(Test_HeaderOracle, add_checkpoint_disconnected)
     EXPECT_TRUE(verify_best_chain(best_chain_9_));
     EXPECT_TRUE(verify_siblings(siblings_9_));
 }
+}  // namespace ottest

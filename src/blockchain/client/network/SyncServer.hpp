@@ -16,11 +16,11 @@
 #include <mutex>
 #include <thread>
 
+#include "Proto.hpp"
+#include "Proto.tpp"
 #include "blockchain/DownloadManager.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "network/zeromq/socket/Socket.hpp"
-#include "opentxs/Proto.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/core/Log.hpp"

@@ -29,10 +29,9 @@ class Test_ContactItem : public ::testing::Test
 {
 public:
     Test_ContactItem()
-        : api_(dynamic_cast<const ot::api::client::internal::Manager&>(
-              ot::Context().StartClient({}, 0)))
+        : api_(ot::Context().StartClient({}, 0))
         , contactItem_(
-              api_,
+              dynamic_cast<const ot::api::client::internal::Manager&>(api_),
               std::string("testNym"),
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
@@ -46,7 +45,7 @@ public:
     {
     }
 
-    const ot::api::client::internal::Manager& api_;
+    const ot::api::client::Manager& api_;
     const ot::ContactItem contactItem_;
 };
 
@@ -55,7 +54,7 @@ public:
 TEST_F(Test_ContactItem, first_constructor)
 {
     const ot::ContactItem contactItem1(
-        api_,
+        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
         std::string("testContactItemNym"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -69,7 +68,7 @@ TEST_F(Test_ContactItem, first_constructor)
 
     const ot::OTIdentifier identifier(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            api_,
+            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
             "testContactItemNym",
             ot::contact::ContactSectionName::Identifier,
             ot::contact::ContactItemType::Employee,
@@ -94,7 +93,7 @@ TEST_F(Test_ContactItem, first_constructor)
 TEST_F(Test_ContactItem, first_constructor_different_versions)
 {
     const ot::ContactItem contactItem1(
-        api_,
+        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
         std::string("testContactItemNym"),
         CONTACT_CONTACT_DATA_VERSION - 1,  // previous version
         CONTACT_CONTACT_DATA_VERSION,
@@ -111,7 +110,7 @@ TEST_F(Test_ContactItem, first_constructor_different_versions)
 TEST_F(Test_ContactItem, second_constructor)
 {
     const ot::ContactItem contactItem1(
-        api_,
+        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
         std::string("testContactItemNym"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -129,7 +128,7 @@ TEST_F(Test_ContactItem, second_constructor)
 
     const ot::OTIdentifier identifier(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            api_,
+            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
             "testContactItemNym",
             ot::contact::ContactSectionName::Identifier,
             ot::contact::ContactItemType::Employee,
@@ -176,7 +175,7 @@ TEST_F(Test_ContactItem, operator_equal_true)
 TEST_F(Test_ContactItem, operator_equal_false)
 {
     ot::ContactItem contactItem2(
-        api_,
+        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
         std::string("testNym2"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -197,7 +196,7 @@ TEST_F(Test_ContactItem, public_accessors)
 {
     const ot::OTIdentifier identifier(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            api_,
+            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
             "testNym",
             ot::contact::ContactSectionName::Identifier,
             ot::contact::ContactItemType::Employee,
@@ -272,7 +271,7 @@ TEST_F(Test_ContactItem, Serialize)
     EXPECT_TRUE(contactItem_.Serialize(ot::writer(bytes), false));
 
     auto restored1 = ot::ContactItem{
-        api_,
+        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
         "testNym",
         contactItem_.Version(),
         contactItem_.Section(),
@@ -288,7 +287,7 @@ TEST_F(Test_ContactItem, Serialize)
     EXPECT_TRUE(contactItem_.Serialize(ot::writer(bytes), true));
 
     auto restored2 = ot::ContactItem{
-        api_,
+        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
         "testNym",
         contactItem_.Version(),
         contactItem_.Section(),

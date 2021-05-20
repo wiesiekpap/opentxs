@@ -12,7 +12,7 @@
 #include <string>
 #include <tuple>
 
-#include "opentxs/Proto.hpp"
+#include "Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Identifier.hpp"

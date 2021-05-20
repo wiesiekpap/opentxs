@@ -51,6 +51,7 @@
 #include "opentxs/ext/OTPayment.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
+#include "opentxs/otx/OperationType.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/protobuf/UnitDefinition.pb.h"
 #include "otx/client/StateMachine.hpp"
@@ -464,8 +465,7 @@ auto StateMachine::download_mint(
     const TaskID taskID,
     const DownloadMintTask& task) const -> bool
 {
-    DO_OPERATION(
-        Start, client::internal::Operation::Type::DownloadMint, task.first, {});
+    DO_OPERATION(Start, otx::OperationType::DownloadMint, task.first, {});
 
     return finish_task(taskID, success, std::move(result));
 }
@@ -478,7 +478,7 @@ auto StateMachine::download_nym(const TaskID taskID, const CheckNymTask& id)
 
     otx::context::Server::ExtraArgs args{};
 
-    DO_OPERATION(Start, client::internal::Operation::Type::CheckNym, id, args);
+    DO_OPERATION(Start, otx::OperationType::CheckNym, id, args);
 
     resolve_unknown(id, success, unknown_nyms_);
 
@@ -599,8 +599,7 @@ auto StateMachine::get_transaction_numbers(const TaskID taskID) const -> bool
 {
     otx::context::Server::ExtraArgs args{};
 
-    DO_OPERATION(
-        Start, client::internal::Operation::Type::GetTransactionNumbers, args);
+    DO_OPERATION(Start, otx::OperationType::GetTransactionNumbers, args);
 
     return finish_task(taskID, success, std::move(result));
 }
@@ -922,10 +921,7 @@ auto StateMachine::register_account(
     otx::context::Server::ExtraArgs args{label, false};
 
     DO_OPERATION(
-        Start,
-        client::internal::Operation::Type::RegisterAccount,
-        unitID,
-        {label, false});
+        Start, otx::OperationType::RegisterAccount, unitID, {label, false});
 
     finish_task(taskID, success, std::move(result));
 
@@ -953,7 +949,7 @@ auto StateMachine::register_nym(
 
     if (resync) { std::get<1>(args) = true; }
 
-    DO_OPERATION(Start, client::internal::Operation::Type::RegisterNym, args);
+    DO_OPERATION(Start, otx::OperationType::RegisterNym, args);
 
     return finish_task(taskID, success, std::move(result));
 }

@@ -7,9 +7,9 @@
 
 #include <memory>
 
+#include "Proto.hpp"
 #include "identity/credential/Base.hpp"
 #include "internal/identity/credential/Credential.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/protobuf/VerificationSet.pb.h"
 

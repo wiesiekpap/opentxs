@@ -13,10 +13,10 @@
 #include <memory>
 #include <set>
 
+#include "Proto.hpp"
 #include "core/StateMachine.hpp"
 #include "internal/otx/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Editor.hpp"
@@ -33,6 +33,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/otx/OperationType.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 
@@ -141,14 +142,15 @@ public:
         const String& memo) -> bool override;
     void SetPush(const bool on) override { enable_otx_push_.store(on); }
     void Shutdown() override;
-    auto Start(const Type type, const otx::context::Server::ExtraArgs& args)
-        -> bool override;
     auto Start(
-        const Type type,
+        const otx::OperationType type,
+        const otx::context::Server::ExtraArgs& args) -> bool override;
+    auto Start(
+        const otx::OperationType type,
         const identifier::UnitDefinition& targetUnitID,
         const otx::context::Server::ExtraArgs& args) -> bool override;
     auto Start(
-        const Type type,
+        const otx::OperationType type,
         const identifier::Nym& targetNymID,
         const otx::context::Server::ExtraArgs& args) -> bool override;
     auto UpdateAccount(const Identifier& accountID) -> bool override;
@@ -188,14 +190,14 @@ private:
         Outbox = 2,
     };
 
-    static const std::map<Type, Category> category_;
-    static const std::map<Type, std::size_t> transaction_numbers_;
+    static const std::map<otx::OperationType, Category> category_;
+    static const std::map<otx::OperationType, std::size_t> transaction_numbers_;
 
     const api::client::internal::Manager& api_;
     const OTPasswordPrompt reason_;
     const OTNymID nym_id_;
     const OTServerID server_id_;
-    std::atomic<Type> type_;
+    std::atomic<otx::OperationType> type_;
     std::atomic<State> state_;
     std::atomic<bool> refresh_account_;
     otx::context::Server::ExtraArgs args_;
@@ -341,7 +343,7 @@ private:
     void set_result(otx::context::Server::DeliveryResult&& result);
     auto start(
         const Lock& decisionLock,
-        const Type type,
+        const otx::OperationType type,
         const otx::context::Server::ExtraArgs& args) -> bool;
     auto state_machine() -> bool;
     void transaction_numbers();

@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "Helpers.hpp"
-#include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/blockchain/Work.hpp"
@@ -23,6 +22,8 @@
 
 std::vector<std::unique_ptr<bb::Header>> headers_{};
 
+namespace ottest
+{
 TEST_F(Test_HeaderOracle_btc, init_opentxs) {}
 
 TEST_F(Test_HeaderOracle_btc, stage_headers)
@@ -56,3 +57,4 @@ TEST_F(Test_HeaderOracle_btc, receive)
 
     EXPECT_EQ(expectedWork, header->Work()->Decimal());
 }
+}  // namespace ottest

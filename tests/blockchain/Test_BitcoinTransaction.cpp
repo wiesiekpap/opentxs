@@ -97,7 +97,7 @@ const auto in_hex_3_ = std::string{
     "12b250f13fad473e5cab6dcceaa2d53cf2c82e8e03d95a0e70836b"};
 
 struct Test_BitcoinTransaction : public ::testing::Test {
-    const ot::api::client::internal::Manager& api_;
+    const ot::api::client::Manager& api_;
     const ot::OTData tx_id_;
     const ot::OTData tx_bytes_;
     const ot::OTData mutated_bytes_;
@@ -112,8 +112,7 @@ struct Test_BitcoinTransaction : public ::testing::Test {
     using Position = ot::blockchain::block::bitcoin::Script::Position;
 
     Test_BitcoinTransaction()
-        : api_(dynamic_cast<const ot::api::client::internal::Manager&>(
-              ot::Context().StartClient({}, 0)))
+        : api_(ot::Context().StartClient({}, 0))
         , tx_id_(api_.Factory().Data(txid_hex_, ot::StringStyle::Hex))
         , tx_bytes_(api_.Factory().Data(transaction_hex_, ot::StringStyle::Hex))
         , mutated_bytes_(api_.Factory().Data(
@@ -279,7 +278,7 @@ TEST_F(Test_BitcoinTransaction, serialization)
         std::memcmp(bytes.data(), tx_bytes_->data(), tx_bytes_->size()), 0);
 
     auto transaction2 = api_.Factory().BitcoinTransaction(
-        ot::blockchain::Type::UnitTest, ot::reader(bytes), true);
+        ot::blockchain::Type::UnitTest, ot::reader(bytes), false);
 
     ASSERT_TRUE(transaction2);
     EXPECT_EQ(transaction2->Locktime(), 0);

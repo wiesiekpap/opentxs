@@ -15,11 +15,11 @@
 #include <vector>
 
 #include "2_Factory.hpp"
+#include "Proto.tpp"
 #include "internal/api/Api.hpp"
 #include "internal/network/Factory.hpp"
 #include "network/DhtConfig.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"

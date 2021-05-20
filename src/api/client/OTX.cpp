@@ -19,11 +19,11 @@
 #include <type_traits>
 #include <vector>
 
+#include "Proto.tpp"
 #include "core/StateMachine.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/client/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/Shared.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Version.hpp"
@@ -83,8 +83,8 @@
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/otx/Reply.hpp"
 #include "opentxs/otx/ServerReplyType.hpp"
+#include "opentxs/otx/Types.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
-#include "opentxs/protobuf/PeerReply.pb.h"
 #include "opentxs/protobuf/PeerRequest.pb.h"
 #include "opentxs/protobuf/ServerContract.pb.h"
 #include "opentxs/protobuf/ServerReply.pb.h"

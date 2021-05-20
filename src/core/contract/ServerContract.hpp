@@ -13,9 +13,9 @@
 #include <memory>
 #include <string>
 
+#include "Proto.hpp"
 #include "core/contract/Signable.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"

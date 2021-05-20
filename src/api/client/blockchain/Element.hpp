@@ -16,9 +16,9 @@
 #include <string>
 #include <vector>
 
+#include "Proto.hpp"
 #include "internal/api/client/blockchain/Blockchain.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/client/blockchain/BalanceNode.hpp"
 #include "opentxs/api/client/blockchain/BalanceTree.hpp"

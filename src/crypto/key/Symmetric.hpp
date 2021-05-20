@@ -12,10 +12,10 @@
 #include <optional>
 #include <string>
 
+#include "Proto.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/crypto/key/Factory.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/core/Identifier.hpp"

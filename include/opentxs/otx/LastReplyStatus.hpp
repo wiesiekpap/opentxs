@@ -22,11 +22,6 @@ enum class LastReplyStatus : std::uint8_t {
     Unknown = 4,
     NotSent = 5,
 };
-
-constexpr auto value(const LastReplyStatus in) noexcept
-{
-    return static_cast<std::uint8_t>(in);
-}
 }  // namespace otx
 }  // namespace opentxs
 #endif

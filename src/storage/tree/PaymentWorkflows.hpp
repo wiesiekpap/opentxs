@@ -11,7 +11,7 @@
 #include <string>
 #include <utility>
 
-#include "opentxs/Proto.hpp"
+#include "Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Editor.hpp"
 #include "opentxs/api/client/PaymentWorkflowState.hpp"

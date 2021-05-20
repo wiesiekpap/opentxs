@@ -20,11 +20,11 @@
 #include <string_view>
 #include <utility>
 
+#include "Proto.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"

@@ -14,10 +14,10 @@
 #include <string_view>
 #include <vector>
 
+#include "Proto.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/crypto/Crypto.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -307,7 +307,8 @@ public:
     auto BitcoinTransaction(
         const opentxs::blockchain::Type chain,
         const ReadView bytes,
-        const bool isGeneration) const noexcept
+        const bool isGeneration,
+        const Time& time) const noexcept
         -> std::unique_ptr<
             const opentxs::blockchain::block::bitcoin::Transaction> override
     {

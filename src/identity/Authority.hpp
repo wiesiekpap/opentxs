@@ -12,10 +12,10 @@
 #include <string>
 #include <utility>
 
+#include "Proto.hpp"
 #include "internal/identity/Identity.hpp"
 #include "internal/identity/credential/Credential.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"

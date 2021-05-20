@@ -12,8 +12,8 @@
 #include <stdexcept>
 #include <utility>
 
+#include "Proto.hpp"
 #include "internal/rpc/RPC.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/protobuf/RPCResponse.pb.h"
 #include "opentxs/protobuf/RPCStatus.pb.h"
 #include "opentxs/protobuf/RPCTask.pb.h"

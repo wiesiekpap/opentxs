@@ -7,7 +7,7 @@
 
 #include <cstdint>
 
-#include "opentxs/Proto.hpp"
+#include "Proto.hpp"
 #include "opentxs/crypto/Types.hpp"
 
 namespace opentxs::crypto
@@ -15,7 +15,7 @@ namespace opentxs::crypto
 class Pbkdf2
 {
 public:
-    OPENTXS_EXPORT virtual auto PKCS5_PBKDF2_HMAC(
+    virtual auto PKCS5_PBKDF2_HMAC(
         const void* input,
         const std::size_t inputSize,
         const void* salt,

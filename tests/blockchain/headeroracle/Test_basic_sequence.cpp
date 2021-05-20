@@ -12,6 +12,8 @@
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/client/HeaderOracle.hpp"
 
+namespace ottest
+{
 TEST_F(Test_HeaderOracle, basic_sequence)
 {
     const auto [heightBefore, hashBefore] = header_oracle_.BestChain();
@@ -74,3 +76,4 @@ TEST_F(Test_HeaderOracle, basic_sequence)
         }
     }
 }
+}  // namespace ottest

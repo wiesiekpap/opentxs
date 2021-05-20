@@ -167,17 +167,11 @@ set(PROTO_SOURCES
     ZMQEnums.proto
 )
 
-if(OPENTXS_HIDDEN_SYMBOLS)
-  protobuf_generate_cpp(
-    PROTO_SRC PROTO_HEADER EXPORT_MACRO OPENTXS_EXPORT ${PROTO_SOURCES}
-  )
-else()
-  protobuf_generate_cpp(
-    PROTO_SRC
-    PROTO_HEADER
-    ${PROTO_SOURCES}
-  )
-endif()
+protobuf_generate_cpp(
+  PROTO_SRC
+  PROTO_HEADER
+  ${PROTO_SOURCES}
+)
 
 add_library(messages OBJECT ${PROTO_SRC} ${PROTO_HEADER})
 add_library(
@@ -217,11 +211,7 @@ if(${CMAKE_CXX_COMPILER_ID}
 endif()
 
 set_target_properties(
-  messages
-  PROPERTIES
-    C_INCLUDE_WHAT_YOU_USE ""
-    CXX_INCLUDE_WHAT_YOU_USE ""
-    MSVC_RUNTIME_LIBRARY "${MSVC_RUNTIME_DEFAULT}"
+  messages PROPERTIES MSVC_RUNTIME_LIBRARY "${MSVC_RUNTIME_DEFAULT}"
 )
 
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:messages>)

@@ -32,40 +32,39 @@ namespace blockchain
 {
 namespace client
 {
-struct GCS {
+struct OPENTXS_EXPORT GCS {
     using Targets = std::vector<ReadView>;
     using Matches = std::vector<Targets::const_iterator>;
 
     /// Serialized filter only, no element count
-    OPENTXS_EXPORT virtual Space Compressed() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::uint32_t ElementCount() const noexcept = 0;
+    virtual Space Compressed() const noexcept = 0;
+    virtual std::uint32_t ElementCount() const noexcept = 0;
     /// Element count as CompactSize followed by serialized filter
-    OPENTXS_EXPORT virtual OTData Encode() const noexcept = 0;
-    OPENTXS_EXPORT virtual filter::pHash Hash() const noexcept = 0;
-    OPENTXS_EXPORT virtual filter::pHeader Header(
-        const ReadView previous) const noexcept = 0;
-    OPENTXS_EXPORT virtual Matches Match(const Targets&) const noexcept = 0;
-    virtual proto::GCS Serialize() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Test(const Data& target) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Test(const ReadView target) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Test(
-        const std::vector<OTData>& targets) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Test(
-        const std::vector<Space>& targets) const noexcept = 0;
+    virtual OTData Encode() const noexcept = 0;
+    virtual filter::pHash Hash() const noexcept = 0;
+    virtual filter::pHeader Header(const ReadView previous) const noexcept = 0;
+    virtual Matches Match(const Targets&) const noexcept = 0;
+    OPENTXS_NO_EXPORT virtual bool Serialize(
+        proto::GCS& out) const noexcept = 0;
+    virtual bool Serialize(AllocateOutput out) const noexcept = 0;
+    virtual bool Test(const Data& target) const noexcept = 0;
+    virtual bool Test(const ReadView target) const noexcept = 0;
+    virtual bool Test(const std::vector<OTData>& targets) const noexcept = 0;
+    virtual bool Test(const std::vector<Space>& targets) const noexcept = 0;
 
     virtual ~GCS() = default;
 };
 
-class FilterOracle
+class OPENTXS_EXPORT FilterOracle
 {
 public:
-    OPENTXS_EXPORT virtual filter::Type DefaultType() const noexcept = 0;
-    OPENTXS_EXPORT virtual block::Position FilterTip(
+    virtual filter::Type DefaultType() const noexcept = 0;
+    virtual block::Position FilterTip(
         const filter::Type type) const noexcept = 0;
-    OPENTXS_EXPORT virtual std::unique_ptr<const GCS> LoadFilter(
+    virtual std::unique_ptr<const GCS> LoadFilter(
         const filter::Type type,
         const block::Hash& block) const noexcept = 0;
-    OPENTXS_EXPORT virtual filter::pHeader LoadFilterHeader(
+    virtual filter::pHeader LoadFilterHeader(
         const filter::Type type,
         const block::Hash& block) const noexcept = 0;
 

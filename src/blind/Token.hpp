@@ -7,7 +7,7 @@
 
 #include <cstdint>
 
-#include "opentxs/Proto.hpp"
+#include "Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blind/CashType.hpp"
 #include "opentxs/blind/Token.hpp"

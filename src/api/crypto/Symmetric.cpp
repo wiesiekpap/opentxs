@@ -9,9 +9,9 @@
 
 #include <memory>
 
+#include "Proto.tpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/crypto/Factory.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/core/Log.hpp"

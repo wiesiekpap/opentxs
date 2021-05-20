@@ -15,8 +15,6 @@
 #include <vector>
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
-#include "internal/api/client/Client.hpp"
-#include "internal/contact/Contact.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Shared.hpp"

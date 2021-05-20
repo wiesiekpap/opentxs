@@ -19,11 +19,11 @@
 #include <vector>
 
 #include "2_Factory.hpp"
+#include "Proto.tpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/server/Server.hpp"
 #include "opentxs/Exclusive.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"

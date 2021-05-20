@@ -15,7 +15,7 @@
 #include <thread>
 #include <utility>
 
-#include "opentxs/Proto.hpp"
+#include "Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/AddressType.hpp"
 #include "opentxs/core/Flag.hpp"

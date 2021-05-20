@@ -39,23 +39,15 @@ auto lastreplystatus_map() noexcept -> const LastReplyStatusMap&;
 auto otxpushtype_map() noexcept -> const OTXPushTypeMap&;
 auto serverreplytype_map() noexcept -> const ServerReplyTypeMap&;
 auto serverrequesttype_map() noexcept -> const ServerRequestTypeMap&;
-OPENTXS_EXPORT auto translate(ConsensusType in) noexcept
-    -> proto::ConsensusType;
-OPENTXS_EXPORT auto translate(LastReplyStatus in) noexcept
-    -> proto::LastReplyStatus;
-OPENTXS_EXPORT auto translate(OTXPushType in) noexcept -> proto::OTXPushType;
-OPENTXS_EXPORT auto translate(ServerReplyType in) noexcept
-    -> proto::ServerReplyType;
-OPENTXS_EXPORT auto translate(ServerRequestType in) noexcept
-    -> proto::ServerRequestType;
-OPENTXS_EXPORT auto translate(proto::ConsensusType in) noexcept
-    -> ConsensusType;
-OPENTXS_EXPORT auto translate(proto::LastReplyStatus in) noexcept
-    -> LastReplyStatus;
-OPENTXS_EXPORT auto translate(proto::OTXPushType in) noexcept -> OTXPushType;
-OPENTXS_EXPORT auto translate(proto::ServerReplyType in) noexcept
-    -> ServerReplyType;
-OPENTXS_EXPORT auto translate(proto::ServerRequestType in) noexcept
-    -> ServerRequestType;
+auto translate(ConsensusType in) noexcept -> proto::ConsensusType;
+auto translate(LastReplyStatus in) noexcept -> proto::LastReplyStatus;
+auto translate(OTXPushType in) noexcept -> proto::OTXPushType;
+auto translate(ServerReplyType in) noexcept -> proto::ServerReplyType;
+auto translate(ServerRequestType in) noexcept -> proto::ServerRequestType;
+auto translate(proto::ConsensusType in) noexcept -> ConsensusType;
+auto translate(proto::LastReplyStatus in) noexcept -> LastReplyStatus;
+auto translate(proto::OTXPushType in) noexcept -> OTXPushType;
+auto translate(proto::ServerReplyType in) noexcept -> ServerReplyType;
+auto translate(proto::ServerRequestType in) noexcept -> ServerRequestType;
 
 }  // namespace opentxs::otx::internal

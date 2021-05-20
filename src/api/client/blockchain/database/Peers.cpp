@@ -15,8 +15,8 @@
 #include <random>
 #include <utility>
 
+#include "Proto.tpp"
 #include "internal/blockchain/p2p/P2P.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"

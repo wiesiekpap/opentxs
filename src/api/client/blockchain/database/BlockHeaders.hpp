@@ -5,8 +5,8 @@
 
 #pragma once
 
+#include "Proto.hpp"
 #include "internal/api/client/blockchain/Blockchain.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/protobuf/BlockchainBlockHeader.pb.h"

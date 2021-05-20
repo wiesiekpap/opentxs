@@ -14,11 +14,11 @@
 #include <stdexcept>
 #include <type_traits>
 
+#include "Proto.tpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/client/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"

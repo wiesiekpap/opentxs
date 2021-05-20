@@ -13,9 +13,9 @@
 #include <stdexcept>
 #include <string>
 
+#include "Proto.hpp"
+#include "Proto.hpp"
 #include "blind/Token.hpp"
-#include "opentxs/Proto.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blind/Token.hpp"
 #include "opentxs/blind/TokenState.hpp"

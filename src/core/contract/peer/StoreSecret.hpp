@@ -10,8 +10,8 @@
 
 #include <string>
 
+#include "Proto.hpp"
 #include "core/contract/peer/PeerRequest.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/contract/peer/StoreSecret.hpp"

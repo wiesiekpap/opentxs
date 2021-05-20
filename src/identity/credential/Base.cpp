@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <string>
 
+#include "Proto.tpp"
 #include "core/contract/Signable.hpp"
 #include "identity/credential/Base.hpp"
 #include "internal/api/Api.hpp"
@@ -19,7 +20,6 @@
 #include "internal/identity/Identity.hpp"
 #include "internal/identity/credential/Credential.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/core/Armored.hpp"

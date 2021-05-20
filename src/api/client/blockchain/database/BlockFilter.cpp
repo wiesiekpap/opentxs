@@ -13,9 +13,9 @@
 #include <type_traits>
 #include <utility>
 
+#include "Proto.tpp"
 #include "internal/api/Api.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/Blockchain.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/blockchain/client/FilterOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
@@ -191,12 +191,20 @@ auto BlockFilter::StoreFilters(
         OT_ASSERT(pFilter);
 
         const auto& filter = *pFilter;
-        const auto proto = filter.Serialize();
-        auto bytes = space(proto.ByteSize());
-        proto.SerializeWithCachedSizesToArray(
-            reinterpret_cast<std::uint8_t*>(bytes.data()));
 
         try {
+            const auto proto = [&] {
+                auto out = proto::GCS{};
+
+                if (false == filter.Serialize(out)) {
+                    throw std::runtime_error{"Failed to serialize gcs"};
+                }
+
+                return out;
+            }();
+            auto bytes = space(proto.ByteSize());
+            proto.SerializeWithCachedSizesToArray(
+                reinterpret_cast<std::uint8_t*>(bytes.data()));
             const auto stored = lmdb_.Store(
                 translate_filter(type), block, reader(bytes), parentTxn);
 

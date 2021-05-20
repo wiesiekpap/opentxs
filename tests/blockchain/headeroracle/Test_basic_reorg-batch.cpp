@@ -8,6 +8,8 @@
 
 #include "Helpers.hpp"
 
+namespace ottest
+{
 TEST_F(Test_HeaderOracle, basic_reorg_batch)
 {
     EXPECT_TRUE(create_blocks(create_2_));
@@ -15,3 +17,4 @@ TEST_F(Test_HeaderOracle, basic_reorg_batch)
     EXPECT_TRUE(verify_post_state(post_state_2_));
     EXPECT_TRUE(verify_siblings(siblings_2_));
 }
+}  // namespace ottest

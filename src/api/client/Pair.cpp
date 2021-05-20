@@ -17,12 +17,12 @@
 #include <set>
 #include <type_traits>
 
+#include "Proto.tpp"
 #include "core/StateMachine.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/client/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/api/Editor.hpp"
 #include "opentxs/api/Endpoints.hpp"

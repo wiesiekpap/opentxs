@@ -13,10 +13,10 @@
 #include <tuple>
 #include <utility>
 
+#include "Proto.hpp"
+#include "Proto.tpp"
 #include "internal/contact/Contact.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/ContactItemAttribute.hpp"

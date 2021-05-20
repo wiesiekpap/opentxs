@@ -12,8 +12,8 @@
 #include <iosfwd>
 #include <string>
 
+#include "Proto.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/crypto/HashType.hpp"
 

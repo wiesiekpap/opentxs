@@ -12,8 +12,8 @@
 #include <utility>
 
 #include "2_Factory.hpp"
+#include "Proto.hpp"
 #include "internal/identity/wot/verification/Verification.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/Basic.hpp"

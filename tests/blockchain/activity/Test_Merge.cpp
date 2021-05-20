@@ -33,6 +33,8 @@ ot::Bip32Index second_index_{};
 ot::Bip32Index third_index_{};
 ot::Bip32Index fourth_index_{};
 
+namespace ottest
+{
 TEST_F(Test_BlockchainActivity, init)
 {
     EXPECT_FALSE(nym_1_id().empty());
@@ -163,3 +165,4 @@ TEST_F(Test_BlockchainActivity, merge)
 {
     // TODO ASSERT_TRUE(api_.Contacts().Merge(contact_5_id(), contact_6_id()));
 }
+}  // namespace ottest

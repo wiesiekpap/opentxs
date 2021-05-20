@@ -76,24 +76,16 @@ auto paireventtype_map() noexcept -> const PairEventTypeMap&;
 auto peerobjecttype_map() noexcept -> const PeerObjectTypeMap&;
 auto peerrequesttype_map() noexcept -> const PeerRequestTypeMap&;
 auto secrettype_map() noexcept -> const SecretTypeMap&;
-OPENTXS_EXPORT auto translate(const ConnectionInfoType in) noexcept
+auto translate(const ConnectionInfoType in) noexcept
     -> proto::ConnectionInfoType;
-OPENTXS_EXPORT auto translate(const PairEventType in) noexcept
-    -> proto::PairEventType;
-OPENTXS_EXPORT auto translate(const PeerObjectType in) noexcept
-    -> proto::PeerObjectType;
-OPENTXS_EXPORT auto translate(const PeerRequestType in) noexcept
-    -> proto::PeerRequestType;
-OPENTXS_EXPORT auto translate(const SecretType in) noexcept
-    -> proto::SecretType;
-OPENTXS_EXPORT auto translate(const proto::ConnectionInfoType in) noexcept
+auto translate(const PairEventType in) noexcept -> proto::PairEventType;
+auto translate(const PeerObjectType in) noexcept -> proto::PeerObjectType;
+auto translate(const PeerRequestType in) noexcept -> proto::PeerRequestType;
+auto translate(const SecretType in) noexcept -> proto::SecretType;
+auto translate(const proto::ConnectionInfoType in) noexcept
     -> ConnectionInfoType;
-OPENTXS_EXPORT auto translate(const proto::PairEventType in) noexcept
-    -> PairEventType;
-OPENTXS_EXPORT auto translate(const proto::PeerObjectType in) noexcept
-    -> PeerObjectType;
-OPENTXS_EXPORT auto translate(const proto::PeerRequestType in) noexcept
-    -> PeerRequestType;
-OPENTXS_EXPORT auto translate(const proto::SecretType in) noexcept
-    -> SecretType;
+auto translate(const proto::PairEventType in) noexcept -> PairEventType;
+auto translate(const proto::PeerObjectType in) noexcept -> PeerObjectType;
+auto translate(const proto::PeerRequestType in) noexcept -> PeerRequestType;
+auto translate(const proto::SecretType in) noexcept -> SecretType;
 }  // namespace opentxs::contract::peer::internal

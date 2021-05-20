@@ -12,8 +12,8 @@
 #include <string>
 #include <utility>
 
+#include "Proto.tpp"
 #include "network/blockchain/sync/Base.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Log.hpp"

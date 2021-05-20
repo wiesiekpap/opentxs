@@ -19,11 +19,6 @@ enum class ServerReplyType : std::uint8_t {
     Activate = 1,
     Push = 255,
 };
-
-constexpr auto value(const ServerReplyType in) noexcept
-{
-    return static_cast<std::uint8_t>(in);
-}
 }  // namespace otx
 }  // namespace opentxs
 #endif

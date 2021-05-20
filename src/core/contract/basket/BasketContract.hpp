@@ -11,8 +11,8 @@
 #include <cstdint>
 #include <string>
 
+#include "Proto.hpp"
 #include "core/contract/UnitDefinition.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/contact/Types.hpp"

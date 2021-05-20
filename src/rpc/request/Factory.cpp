@@ -9,8 +9,8 @@
 
 #include <stdexcept>
 
+#include "Proto.tpp"
 #include "internal/rpc/RPC.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/RPCCommand.pb.h"
 #include "opentxs/protobuf/verify/RPCCommand.hpp"

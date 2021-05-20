@@ -9,6 +9,7 @@
 
 #include <ctime>
 #include <list>
+#include <memory>
 
 #include "internal/api/Api.hpp"
 #include "internal/core/contract/Contract.hpp"

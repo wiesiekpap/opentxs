@@ -26,16 +26,10 @@ using TokenStateReverseMap = std::map<proto::TokenState, blind::TokenState>;
 auto cashtype_map() noexcept -> const CashTypeMap&;
 auto pursetype_map() noexcept -> const PurseTypeMap&;
 auto tokenstate_map() noexcept -> const TokenStateMap&;
-OPENTXS_EXPORT auto translate(const blind::CashType in) noexcept
-    -> proto::CashType;
-OPENTXS_EXPORT auto translate(const blind::PurseType in) noexcept
-    -> proto::PurseType;
-OPENTXS_EXPORT auto translate(const blind::TokenState in) noexcept
-    -> proto::TokenState;
-OPENTXS_EXPORT auto translate(const proto::CashType in) noexcept
-    -> blind::CashType;
-OPENTXS_EXPORT auto translate(const proto::PurseType in) noexcept
-    -> blind::PurseType;
-OPENTXS_EXPORT auto translate(const proto::TokenState in) noexcept
-    -> blind::TokenState;
+auto translate(const blind::CashType in) noexcept -> proto::CashType;
+auto translate(const blind::PurseType in) noexcept -> proto::PurseType;
+auto translate(const blind::TokenState in) noexcept -> proto::TokenState;
+auto translate(const proto::CashType in) noexcept -> blind::CashType;
+auto translate(const proto::PurseType in) noexcept -> blind::PurseType;
+auto translate(const proto::TokenState in) noexcept -> blind::TokenState;
 }  // namespace opentxs::blind::internal

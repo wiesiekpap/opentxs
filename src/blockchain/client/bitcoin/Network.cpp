@@ -7,10 +7,10 @@
 #include "1_Internal.hpp"                         // IWYU pragma: associated
 #include "blockchain/client/bitcoin/Network.hpp"  // IWYU pragma: associated
 
+#include "Proto.tpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/client/Factory.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep
 

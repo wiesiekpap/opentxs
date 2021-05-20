@@ -14,7 +14,7 @@
 #include <mutex>
 #include <string>
 
-#include "opentxs/Proto.hpp"
+#include "Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
 #include "opentxs/core/AddressType.hpp"

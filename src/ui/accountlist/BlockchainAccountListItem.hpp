@@ -14,10 +14,10 @@
 #include <string>
 
 #include "1_Internal.hpp"
+#include "Proto.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/ui/UI.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"

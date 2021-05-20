@@ -7,7 +7,6 @@
 
 #include <gtest/gtest.h>
 
-#include "opentxs/Proto.tpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/client/HeaderOracle.hpp"
 #include "opentxs/network/blockchain/sync/Acknowledgement.hpp"

@@ -15,10 +15,10 @@
 #include <type_traits>
 #include <utility>
 
+#include "Proto.hpp"
 #include "core/Data.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"

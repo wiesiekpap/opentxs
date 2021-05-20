@@ -16,7 +16,7 @@
 #include <tuple>
 #include <utility>
 
-#include "opentxs/Proto.hpp"
+#include "Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/core/Log.hpp"

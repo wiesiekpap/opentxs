@@ -12,12 +12,12 @@ namespace opentxs::crypto
 class Ripemd160
 {
 public:
-    OPENTXS_EXPORT virtual auto RIPEMD160(
+    virtual auto RIPEMD160(
         const std::uint8_t* input,
         const std::size_t inputSize,
         std::uint8_t* output) const -> bool = 0;
 
-    OPENTXS_EXPORT virtual ~Ripemd160() = default;
+    virtual ~Ripemd160() = default;
 
 protected:
     Ripemd160() = default;

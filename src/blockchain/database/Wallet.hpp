@@ -18,6 +18,7 @@
 // #include <utility>
 #include <vector>
 
+#include "Proto.hpp"
 #include "api/client/blockchain/database/Database.hpp"
 #include "blockchain/database/wallet/Output.hpp"
 #include "blockchain/database/wallet/Proposal.hpp"
@@ -29,7 +30,6 @@
 #include "internal/blockchain/database/Database.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"

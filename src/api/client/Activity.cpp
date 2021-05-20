@@ -17,10 +17,10 @@
 #include <utility>
 #include <vector>
 
+#include "Proto.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"

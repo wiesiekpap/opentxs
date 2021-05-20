@@ -13,6 +13,8 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/client/HeaderOracle.hpp"
 
+namespace ottest
+{
 TEST_F(Test_HeaderOracle, basic_reorg)
 {
     EXPECT_TRUE(create_blocks(create_2_));
@@ -115,3 +117,4 @@ TEST_F(Test_HeaderOracle, basic_reorg)
         EXPECT_TRUE(gotException);
     }
 }
+}  // namespace ottest

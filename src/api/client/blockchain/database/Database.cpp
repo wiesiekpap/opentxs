@@ -18,7 +18,6 @@ extern "C" {
 #include <iterator>
 #include <map>
 #include <stdexcept>
-#include <type_traits>
 #include <utility>
 
 #include "api/client/blockchain/database/BlockFilter.hpp"

@@ -9,13 +9,13 @@
 #include <cstdint>
 #include <optional>
 
+#include "Proto.hpp"
 #include "crypto/library/AsymmetricProvider.hpp"
 #include "crypto/library/EcdsaProvider.hpp"
 #include "crypto/library/Pbkdf2.hpp"
 #include "crypto/library/Ripemd160.hpp"
 #include "internal/crypto/library/Sodium.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"

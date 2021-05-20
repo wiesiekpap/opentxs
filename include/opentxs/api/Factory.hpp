@@ -267,7 +267,8 @@ public:
     virtual auto BitcoinTransaction(
         const opentxs::blockchain::Type chain,
         const ReadView bytes,
-        const bool isGeneration) const noexcept
+        const bool isGeneration,
+        const Time& time = Clock::now()) const noexcept
         -> std::unique_ptr<
             const opentxs::blockchain::block::bitcoin::Transaction> = 0;
     virtual OTBlockchainAddress BlockchainAddress(

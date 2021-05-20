@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <utility>
 
-#include "opentxs/Proto.hpp"
+#include "Proto.hpp"
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Contact.hpp"

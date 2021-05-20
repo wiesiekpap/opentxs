@@ -9,7 +9,7 @@
 #include <mutex>
 #include <string>
 
-#include "opentxs/Proto.hpp"
+#include "Proto.hpp"
 #include "opentxs/api/Editor.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/protobuf/StorageUnits.pb.h"

@@ -15,9 +15,9 @@
 #include <memory>
 #include <thread>
 
+#include "Proto.tpp"
 #include "internal/api/Api.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/network/ZMQ.hpp"

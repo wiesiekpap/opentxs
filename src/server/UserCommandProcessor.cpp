@@ -14,6 +14,7 @@
 #include <string>
 #include <utility>
 
+#include "Proto.tpp"
 #include "core/OTStorage.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/server/Server.hpp"
@@ -21,7 +22,6 @@
 #include "internal/core/contract/Contract.hpp"
 #include "opentxs/Exclusive.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/api/Editor.hpp"
 #include "opentxs/api/Factory.hpp"

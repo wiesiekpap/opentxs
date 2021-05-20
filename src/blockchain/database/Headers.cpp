@@ -18,13 +18,13 @@
 #include <string_view>
 #include <utility>
 
+#include "Proto.tpp"
 #include "blockchain/client/UpdateTransaction.hpp"
 #include "core/Worker.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"

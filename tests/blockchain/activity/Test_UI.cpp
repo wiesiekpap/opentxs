@@ -35,6 +35,7 @@
 #include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/contact/Contact.hpp"
@@ -86,6 +87,8 @@ Counter activity_thread_1_{};
 Counter activity_thread_2_{};
 Counter activity_thread_3_{};
 
+namespace ottest
+{
 TEST_F(Test_BlockchainActivity, init)
 {
     EXPECT_FALSE(nym_1_id().empty());
@@ -533,14 +536,14 @@ TEST_F(Test_BlockchainActivity, initial_state_account_list_qt)
         const auto accountName = widget.data(widget.index(0, 2));
         const auto displayBalance = widget.data(widget.index(0, 3));
 
-        EXPECT_EQ(notaryID.toString(), btc_notary_id_);
+        EXPECT_EQ(notaryID.toString().toStdString(), btc_notary_id_);
         EXPECT_EQ(
             unit.toInt(), static_cast<int>(ot::contact::ContactItemType::BTC));
-        EXPECT_EQ(accountID.toString(), btc_account_id_);
+        EXPECT_EQ(accountID.toString().toStdString(), btc_account_id_);
         EXPECT_EQ(balance.toInt(), 0);
         EXPECT_EQ(polarity.toInt(), 0);
         EXPECT_EQ(type.toInt(), static_cast<int>(ot::AccountType::Blockchain));
-        EXPECT_EQ(contractID.toString(), btc_unit_id_);
+        EXPECT_EQ(contractID.toString().toStdString(), btc_unit_id_);
         EXPECT_EQ(notaryName.toString(), u8"Bitcoin");
         EXPECT_EQ(unitName.toString(), u8"BTC");
         EXPECT_EQ(accountName.toString(), u8"This device");
@@ -592,7 +595,7 @@ TEST_F(Test_BlockchainActivity, initial_state_account_activity_qt)
 
     EXPECT_EQ(widget.columnCount(), 5);
     EXPECT_EQ(widget.rowCount(), 0);
-    EXPECT_EQ(widget.accountID(), btc_account_id_);
+    EXPECT_EQ(widget.accountID().toStdString(), btc_account_id_);
     EXPECT_EQ(widget.balancePolarity(), 0);
     EXPECT_EQ(widget.displayBalance(), u8"0 ₿");
 
@@ -782,7 +785,7 @@ TEST_F(Test_BlockchainActivity, receive_assigned_account_activity_qt)
 
     EXPECT_EQ(widget.columnCount(), 5);
     EXPECT_EQ(widget.rowCount(), 2);
-    EXPECT_EQ(widget.accountID(), btc_account_id_);
+    EXPECT_EQ(widget.accountID().toStdString(), btc_account_id_);
     EXPECT_EQ(widget.balancePolarity(), 0);         // FIXME
     EXPECT_EQ(widget.displayBalance(), u8"0 ₿");  // FIXME
 
@@ -1113,7 +1116,7 @@ TEST_F(Test_BlockchainActivity, send_account_activity_qt)
 
     EXPECT_EQ(widget.columnCount(), 5);
     EXPECT_EQ(widget.rowCount(), 3);
-    EXPECT_EQ(widget.accountID(), btc_account_id_);
+    EXPECT_EQ(widget.accountID().toStdString(), btc_account_id_);
     EXPECT_EQ(widget.balancePolarity(), 0);         // FIXME
     EXPECT_EQ(widget.displayBalance(), u8"0 ₿");  // FIXME
 
@@ -1457,7 +1460,7 @@ TEST_F(Test_BlockchainActivity, receive_unassigned_account_activity_qt)
 
     EXPECT_EQ(widget.columnCount(), 5);
     EXPECT_EQ(widget.rowCount(), 4);
-    EXPECT_EQ(widget.accountID(), btc_account_id_);
+    EXPECT_EQ(widget.accountID().toStdString(), btc_account_id_);
     EXPECT_EQ(widget.balancePolarity(), 0);         // FIXME
     EXPECT_EQ(widget.displayBalance(), u8"0 ₿");  // FIXME
 
@@ -1701,3 +1704,4 @@ TEST_F(Test_BlockchainActivity, shutdown)
     EXPECT_EQ(activity_thread_2_.expected_, activity_thread_2_.updated_);
     EXPECT_EQ(activity_thread_3_.expected_, activity_thread_3_.updated_);
 }
+}  // namespace ottest

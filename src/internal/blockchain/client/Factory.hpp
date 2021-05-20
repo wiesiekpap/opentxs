@@ -105,7 +105,7 @@ auto BlockchainPeerManager(
     const std::string& seednode,
     const std::string& shutdown) noexcept
     -> std::unique_ptr<blockchain::client::internal::PeerManager>;
-OPENTXS_EXPORT auto BlockchainWallet(
+auto BlockchainWallet(
     const api::Core& api,
     const api::client::internal::Blockchain& blockchain,
     const blockchain::client::internal::Network& parent,

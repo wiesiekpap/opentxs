@@ -11,9 +11,9 @@
 #include <iosfwd>
 #include <string>
 
+#include "Proto.hpp"
 #include "core/Data.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Data.hpp"

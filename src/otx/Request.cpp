@@ -10,12 +10,12 @@
 #include <list>
 #include <memory>
 
+#include "Proto.hpp"
+#include "Proto.tpp"
 #include "core/contract/Signable.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/otx/OTX.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/core/Flag.hpp"

@@ -30,8 +30,14 @@ namespace opentxs
 {
 namespace api
 {
+class Core;
 class Wallet;
 }  // namespace api
+
+namespace proto
+{
+class Issuer;
+}  // namespace proto
 
 class Factory;
 }  // namespace opentxs

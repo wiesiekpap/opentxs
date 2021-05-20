@@ -17,13 +17,13 @@
 #include <vector>
 
 #include "2_Factory.hpp"
+#include "Proto.hpp"
+#include "Proto.tpp"
 #include "blind/Token.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/server/Server.hpp"
 #include "internal/blind/Blind.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Proto.hpp"
-#include "opentxs/Proto.tpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
 #include "opentxs/blind/Mint.hpp"

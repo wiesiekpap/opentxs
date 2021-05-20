@@ -8,8 +8,8 @@
 #include <map>
 #include <memory>
 
+#include "Proto.hpp"
 #include "internal/api/Api.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/crypto/Config.hpp"

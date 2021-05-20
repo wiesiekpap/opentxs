@@ -18,9 +18,9 @@
 #include <utility>
 #include <vector>
 
+#include "Proto.hpp"
 #include "core/StateMachine.hpp"
 #include "internal/api/client/Client.hpp"
-#include "opentxs/Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/Version.hpp"
