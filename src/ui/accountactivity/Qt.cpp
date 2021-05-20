@@ -39,10 +39,10 @@ auto AccountActivityQt::balancePolarity() const noexcept -> int
     return parent_.BalancePolarity();
 }
 
-auto AccountActivityQt::depositChains() const noexcept -> QList<int>
+auto AccountActivityQt::depositChains() const noexcept -> QVariantList
 {
     const auto input = parent_.DepositChains();
-    auto output = QList<int>{};
+    auto output = QVariantList{};
     std::transform(
         std::begin(input), std::end(input), std::back_inserter(output), [
         ](const auto& in) -> auto { return static_cast<int>(in); });
@@ -110,11 +110,14 @@ auto AccountActivityQt::syncPercentage() const noexcept -> double
     return parent_.SyncPercentage();
 }
 
-auto AccountActivityQt::syncProgress() const noexcept -> QPair<int, int>
+auto AccountActivityQt::syncProgress() const noexcept -> QVariantList
 {
-    auto progress = parent_.SyncProgress();
+    const auto progress = parent_.SyncProgress();
+    auto out = QVariantList{};
+    out.push_back(progress.first);
+    out.push_back(progress.second);
 
-    return {progress.first, progress.second};
+    return out;
 }
 
 auto AccountActivityQt::validateAddress(const QString& address) const noexcept

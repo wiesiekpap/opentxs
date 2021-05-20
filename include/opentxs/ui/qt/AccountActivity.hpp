@@ -7,6 +7,7 @@
 #define OPENTXS_UI_ACCOUNTACTIVITYQT_HPP
 
 #include <QIdentityProxyModel>
+#include <QVariant>
 
 #include "opentxs/opentxs_export.hpp"              // IWYU pragma: keep
 #include "opentxs/ui/qt/AmountValidator.hpp"       // IWYU pragma: keep
@@ -36,13 +37,12 @@ class OPENTXS_EXPORT opentxs::ui::AccountActivityQt final
     Q_PROPERTY(QObject* scaleModel READ getScaleModel CONSTANT)
     Q_PROPERTY(QString accountID READ accountID NOTIFY updated)
     Q_PROPERTY(int balancePolarity READ balancePolarity NOTIFY updated)
-    Q_PROPERTY(QList<int> depositChains READ depositChains NOTIFY updated)
+    Q_PROPERTY(QVariantList depositChains READ depositChains NOTIFY updated)
     Q_PROPERTY(QString displayBalance READ displayBalance NOTIFY updated)
     Q_PROPERTY(
         double syncPercentage READ syncPercentage NOTIFY syncPercentageUpdated)
-    using Progress = QPair<int, int>;
     Q_PROPERTY(
-        Progress syncProgress READ syncProgress NOTIFY syncProgressUpdated)
+        QVariantList syncProgress READ syncProgress NOTIFY syncProgressUpdated)
 
 signals:
     void updated() const;
@@ -79,7 +79,9 @@ public:
 
     QString accountID() const noexcept;
     int balancePolarity() const noexcept;
-    QList<int> depositChains() const noexcept;
+    // Each item in the list is an opentxs::blockchain::Type enum value cast to
+    // an int
+    QVariantList depositChains() const noexcept;
     QString displayBalance() const noexcept;
     AmountValidator* getAmountValidator() const noexcept;
     DestinationValidator* getDestValidator() const noexcept;
@@ -94,7 +96,7 @@ public:
         const QString& memo) const noexcept;
     Q_INVOKABLE QString getDepositAddress(const int chain = 0) const noexcept;
     double syncPercentage() const noexcept;
-    QPair<int, int> syncProgress() const noexcept;
+    QVariantList syncProgress() const noexcept;
     Q_INVOKABLE bool validateAddress(const QString& address) const noexcept;
     Q_INVOKABLE QString validateAmount(const QString& amount) const noexcept;
 
