@@ -59,9 +59,9 @@ public:
 
     Test_Messages()
         : client_(dynamic_cast<const ot::api::client::internal::Manager&>(
-              Context().StartClient(OTTestEnvironment::test_args_, 0)))
+              Context().StartClient(OTTestEnvironment::Args(), 0)))
         , server_(dynamic_cast<const ot::api::server::internal::Manager&>(
-              Context().StartServer(OTTestEnvironment::test_args_, 0, true)))
+              Context().StartServer(OTTestEnvironment::Args(), 0, true)))
         , reason_c_(client_.Factory().PasswordPrompt(__FUNCTION__))
         , reason_s_(server_.Factory().PasswordPrompt(__FUNCTION__))
         , server_id_(server_.ID())

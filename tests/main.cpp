@@ -15,7 +15,7 @@ int main(int argc, char** argv)
 {
     auto parser = ArgumentParser{};
     parser.parse(
-        argc, argv, const_cast<ot::ArgList&>(OTTestEnvironment::test_args_));
+        argc, argv, const_cast<ot::ArgList&>(OTTestEnvironment::Args()));
 
     if (parser.show_help_) {
         std::cout << parser.options() << "\n";

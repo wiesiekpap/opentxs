@@ -44,7 +44,7 @@ public:
     const ot::ui::BlockchainSelection& test_;
 
     Test_BlockchainSelector()
-        : client_(ot::Context().StartClient(OTTestEnvironment::test_args_, 0))
+        : client_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
         , full_([&]() -> auto& {
             static std::atomic_bool init{true};
             static auto cb =

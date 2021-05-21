@@ -80,7 +80,7 @@ public:
     }
 
     Test_BIP39()
-        : api_(ot::Context().StartClient(OTTestEnvironment::test_args_, 0))
+        : api_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
         , reason_(api_.Factory().PasswordPrompt(__FUNCTION__))
     {
     }

@@ -419,7 +419,7 @@ auto RPC_fixture::SetIntroductionServer(
 auto RPC_fixture::StartClient(int index) const noexcept
     -> const ot::api::client::Manager&
 {
-    const auto& out = ot_.StartClient(OTTestEnvironment::test_args_, index);
+    const auto& out = ot_.StartClient(OTTestEnvironment::Args(), index);
     init_maps(out.Instance());
 
     return out;
@@ -428,8 +428,7 @@ auto RPC_fixture::StartClient(int index) const noexcept
 auto RPC_fixture::StartServer(int index) const noexcept
     -> const ot::api::server::Manager&
 {
-    const auto& out =
-        ot_.StartServer(OTTestEnvironment::test_args_, index, true);
+    const auto& out = ot_.StartServer(OTTestEnvironment::Args(), index, true);
     const auto instance = out.Instance();
     init_maps(instance);
     auto& nyms = local_nym_map_.at(instance);

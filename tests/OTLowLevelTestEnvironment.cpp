@@ -9,24 +9,41 @@
 #include "OTLowLevelTestEnvironment.hpp"
 #include "opentxs/OT.hpp"
 
-const ot::ArgList OTLowLevelTestEnvironment::test_args_{
-    {OPENTXS_ARG_HOME, {OTLowLevelTestEnvironment::random_path()}},
-};
-
 namespace fs = boost::filesystem;
 
-std::string OTLowLevelTestEnvironment::random_path()
+auto OTLowLevelTestEnvironment::Args() noexcept -> const ot::ArgList&
 {
-    const auto path = fs::temp_directory_path() /
-                      fs::unique_path("opentxs-test-%%%%-%%%%-%%%%-%%%%");
+    static const auto out = ot::ArgList{
+        {OPENTXS_ARG_HOME, {home()}},
+    };
 
-    assert(fs::create_directories(path));
+    return out;
+}
 
-    return path.string();
+auto OTLowLevelTestEnvironment::home() noexcept -> const std::string&
+{
+    static const auto output = [&] {
+        const auto path = fs::temp_directory_path() /
+                          fs::unique_path("opentxs-test-%%%%-%%%%-%%%%-%%%%");
+
+        assert(fs::create_directories(path));
+
+        return path.string();
+    }();
+
+    return output;
 }
 
 void OTLowLevelTestEnvironment::SetUp() {}
 
-void OTLowLevelTestEnvironment::TearDown() { ot::Cleanup(); }
+void OTLowLevelTestEnvironment::TearDown()
+{
+    ot::Cleanup();
+
+    try {
+        fs::remove_all(home());
+    } catch (...) {
+    }
+}
 
 OTLowLevelTestEnvironment::~OTLowLevelTestEnvironment() = default;

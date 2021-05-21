@@ -89,6 +89,12 @@ else()
   endif()
 endif()
 
+if(WIN32 AND OT_STATIC_DEPENDENCIES)
+  target_compile_definitions(
+    opentxs-util PRIVATE SODIUM_STATIC=1 SODIUM_EXPORT=
+  )
+endif()
+
 target_sources(opentxs-util PRIVATE ${cxx-install-headers})
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-util>)
 add_dependencies(opentxs-util generated_code)

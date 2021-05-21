@@ -14,9 +14,16 @@ target_link_libraries(
                                         unofficial-sodium::sodium
 )
 target_link_libraries(opentxs PUBLIC unofficial-sodium::sodium)
+
 target_include_directories(
   opentxs-crypto-library-sodium SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps"
 )
+
+if(WIN32 AND OT_STATIC_DEPENDENCIES)
+  target_compile_definitions(
+    opentxs-crypto-library-sodium PRIVATE SODIUM_STATIC=1 SODIUM_EXPORT=
+  )
+endif()
 
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-crypto-library-sodium>)
 add_dependencies(opentxs-crypto-library-sodium generated_code)

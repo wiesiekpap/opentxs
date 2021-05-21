@@ -9,25 +9,42 @@
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/OT.hpp"
 
-const ot::ArgList OTTestEnvironment::test_args_{
-    {OPENTXS_ARG_HOME, {OTTestEnvironment::random_path()}},
-    {OPENTXS_ARG_STORAGE_PLUGIN, {"mem"}},
-};
-
 namespace fs = boost::filesystem;
 
-std::string OTTestEnvironment::random_path()
+auto OTTestEnvironment::Args() noexcept -> const ot::ArgList&
 {
-    const auto path = fs::temp_directory_path() /
-                      fs::unique_path("opentxs-test-%%%%-%%%%-%%%%-%%%%");
+    static const auto out = ot::ArgList{
+        {OPENTXS_ARG_HOME, {home()}},
+        {OPENTXS_ARG_STORAGE_PLUGIN, {"mem"}},
+    };
 
-    assert(fs::create_directories(path));
-
-    return path.string();
+    return out;
 }
 
-void OTTestEnvironment::SetUp() { ot::InitContext(test_args_); }
+auto OTTestEnvironment::home() noexcept -> const std::string&
+{
+    static const auto output = [&] {
+        const auto path = fs::temp_directory_path() /
+                          fs::unique_path("opentxs-test-%%%%-%%%%-%%%%-%%%%");
 
-void OTTestEnvironment::TearDown() { ot::Cleanup(); }
+        assert(fs::create_directories(path));
+
+        return path.string();
+    }();
+
+    return output;
+}
+
+void OTTestEnvironment::SetUp() { ot::InitContext(Args()); }
+
+void OTTestEnvironment::TearDown()
+{
+    ot::Cleanup();
+
+    try {
+        fs::remove_all(home());
+    } catch (...) {
+    }
+}
 
 OTTestEnvironment::~OTTestEnvironment() = default;

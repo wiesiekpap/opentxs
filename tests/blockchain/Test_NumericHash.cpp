@@ -31,7 +31,7 @@ public:
     const ot::api::client::Manager& api_;
 
     Test_NumericHash()
-        : api_(ot::Context().StartClient(OTTestEnvironment::test_args_, 0))
+        : api_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
     {
     }
 };
