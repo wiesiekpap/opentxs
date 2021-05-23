@@ -182,13 +182,13 @@ public:
 
     Test_Basic()
         : client_1_(dynamic_cast<const ot::api::client::internal::Manager&>(
-              Context().StartClient(OTTestEnvironment::test_args_, 0)))
+              Context().StartClient(OTTestEnvironment::Args(), 0)))
         , client_2_(dynamic_cast<const ot::api::client::internal::Manager&>(
-              Context().StartClient(OTTestEnvironment::test_args_, 1)))
+              Context().StartClient(OTTestEnvironment::Args(), 1)))
         , server_1_(dynamic_cast<const ot::api::server::internal::Manager&>(
-              Context().StartServer(OTTestEnvironment::test_args_, 0, true)))
+              Context().StartServer(OTTestEnvironment::Args(), 0, true)))
         , server_2_(dynamic_cast<const ot::api::server::internal::Manager&>(
-              Context().StartServer(OTTestEnvironment::test_args_, 1, true)))
+              Context().StartServer(OTTestEnvironment::Args(), 1, true)))
         , reason_c1_(client_1_.Factory().PasswordPrompt(__FUNCTION__))
         , reason_c2_(client_2_.Factory().PasswordPrompt(__FUNCTION__))
         , reason_s1_(server_1_.Factory().PasswordPrompt(__FUNCTION__))

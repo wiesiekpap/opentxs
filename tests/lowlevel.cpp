@@ -17,7 +17,7 @@ int main(int argc, char** argv)
     parser.parse(
         argc,
         argv,
-        const_cast<ot::ArgList&>(OTLowLevelTestEnvironment::test_args_));
+        const_cast<ot::ArgList&>(OTLowLevelTestEnvironment::Args()));
 
     if (parser.show_help_) {
         std::cout << parser.options() << "\n";

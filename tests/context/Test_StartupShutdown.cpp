@@ -11,12 +11,12 @@
 
 TEST(StartupShutdown, create)
 {
-    ot::InitContext(OTLowLevelTestEnvironment::test_args_);
+    ot::InitContext(OTLowLevelTestEnvironment::Args());
     ot::Cleanup();
 }
 
 TEST(StartupShutdown, restart)
 {
-    ot::InitContext(OTLowLevelTestEnvironment::test_args_);
+    ot::InitContext(OTLowLevelTestEnvironment::Args());
     ot::Cleanup();
 }

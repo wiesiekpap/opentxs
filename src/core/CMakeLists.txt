@@ -102,6 +102,13 @@ target_link_libraries(opentxs PUBLIC ZLIB::ZLIB unofficial-sodium::sodium)
 target_include_directories(
   opentxs-core SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
+
+if(WIN32 AND OT_STATIC_DEPENDENCIES)
+  target_compile_definitions(
+    opentxs-core PRIVATE SODIUM_STATIC=1 SODIUM_EXPORT=
+  )
+endif()
+
 target_sources(opentxs-core PRIVATE ${cxx-install-headers})
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-core>)
 add_dependencies(opentxs-core generated_code)

@@ -45,16 +45,6 @@ target_link_libraries(
     Boost::headers
     lmdb
 )
-target_compile_definitions(
-  opentxs-api-client-blockchain-database
-  PRIVATE
-    OPENTXS_DEFAULT_BLOCK_STORAGE_POLICY=${OPENTXS_DEFAULT_BLOCK_STORAGE_POLICY}
-)
-target_sources(
-  opentxs PRIVATE $<TARGET_OBJECTS:opentxs-api-client-blockchain-database>
-)
-add_dependencies(opentxs-api-client-blockchain-database generated_code)
-
 target_link_libraries(
   opentxs
   PUBLIC
@@ -62,3 +52,20 @@ target_link_libraries(
     Boost::thread
     lmdb
 )
+target_compile_definitions(
+  opentxs-api-client-blockchain-database
+  PRIVATE
+    OPENTXS_DEFAULT_BLOCK_STORAGE_POLICY=${OPENTXS_DEFAULT_BLOCK_STORAGE_POLICY}
+)
+
+if(WIN32 AND OT_STATIC_DEPENDENCIES)
+  target_compile_definitions(
+    opentxs-api-client-blockchain-database PRIVATE SODIUM_STATIC=1
+                                                   SODIUM_EXPORT=
+  )
+endif()
+
+target_sources(
+  opentxs PRIVATE $<TARGET_OBJECTS:opentxs-api-client-blockchain-database>
+)
+add_dependencies(opentxs-api-client-blockchain-database generated_code)

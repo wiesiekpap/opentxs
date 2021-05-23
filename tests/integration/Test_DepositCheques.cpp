@@ -97,12 +97,10 @@ public:
     const OTServerContract server_contract_;
 
     Test_DepositCheques()
-        : alice_client_(Context().StartClient(OTTestEnvironment::test_args_, 0))
-        , bob_client_(Context().StartClient(OTTestEnvironment::test_args_, 1))
-        , server_1_(
-              Context().StartServer(OTTestEnvironment::test_args_, 0, true))
-        , issuer_client_(
-              Context().StartClient(OTTestEnvironment::test_args_, 2))
+        : alice_client_(Context().StartClient(OTTestEnvironment::Args(), 0))
+        , bob_client_(Context().StartClient(OTTestEnvironment::Args(), 1))
+        , server_1_(Context().StartServer(OTTestEnvironment::Args(), 0, true))
+        , issuer_client_(Context().StartClient(OTTestEnvironment::Args(), 2))
         , server_contract_(server_1_.Wallet().Server(server_1_.ID()))
     {
 #if OT_CASH

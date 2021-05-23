@@ -1027,7 +1027,7 @@ protected:
         , client_count_(clientCount)
         , miner_(ot_.StartClient(
               [] {
-                  auto args = OTTestEnvironment::test_args_;
+                  auto args = OTTestEnvironment::Args();
                   auto& level = args[OPENTXS_ARG_BLOCK_STORAGE_LEVEL];
                   level.clear();
                   level.emplace("2");
@@ -1179,7 +1179,7 @@ class Regtest_fixture_normal : public Regtest_fixture_base
 protected:
     [[maybe_unused]] Regtest_fixture_normal(const int clientCount)
         : Regtest_fixture_base(clientCount, [] {
-            auto args = OTTestEnvironment::test_args_;
+            auto args = OTTestEnvironment::Args();
             auto& level = args[OPENTXS_ARG_BLOCK_STORAGE_LEVEL];
             level.clear();
             level.emplace("1");
@@ -1228,7 +1228,7 @@ protected:
         : Regtest_fixture_base(
               1,
               [] {
-                  auto args = OTTestEnvironment::test_args_;
+                  auto args = OTTestEnvironment::Args();
                   auto& level = args[OPENTXS_ARG_BLOCK_STORAGE_LEVEL];
                   level.clear();
                   level.emplace("2");

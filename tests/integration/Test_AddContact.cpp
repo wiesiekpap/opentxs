@@ -54,12 +54,11 @@ struct Test_AddContact : public ::testing::Test {
     const ot::api::server::Manager& api_server_1_;
 
     Test_AddContact()
-        : api_alex_(ot::Context().StartClient(OTTestEnvironment::test_args_, 0))
-        , api_bob_(ot::Context().StartClient(OTTestEnvironment::test_args_, 1))
-        , api_chris_(
-              ot::Context().StartClient(OTTestEnvironment::test_args_, 2))
+        : api_alex_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
+        , api_bob_(ot::Context().StartClient(OTTestEnvironment::Args(), 1))
+        , api_chris_(ot::Context().StartClient(OTTestEnvironment::Args(), 2))
         , api_server_1_(
-              ot::Context().StartServer(OTTestEnvironment::test_args_, 0, true))
+              ot::Context().StartServer(OTTestEnvironment::Args(), 0, true))
     {
         const_cast<Server&>(server_1_).init(api_server_1_);
         const_cast<User&>(alex_).init(api_alex_, server_1_);

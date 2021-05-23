@@ -64,7 +64,7 @@ public:
 
     Test_Basic()
         : api_(dynamic_cast<const ot::api::client::internal::Manager&>(
-              ot::Context().StartClient(OTTestEnvironment::test_args_, 0)))
+              ot::Context().StartClient(OTTestEnvironment::Args(), 0)))
         , reason_(api_.Factory().PasswordPrompt(__FUNCTION__))
         , alice_()
         , bob_()

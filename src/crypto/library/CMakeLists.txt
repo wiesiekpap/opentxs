@@ -52,7 +52,16 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/library/HashingProvider.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/library/SymmetricProvider.hpp"
 )
-target_link_libraries(opentxs-crypto-library PRIVATE opentxs::messages)
+target_link_libraries(
+  opentxs-crypto-library PRIVATE opentxs::messages unofficial-sodium::sodium
+)
+target_link_libraries(opentxs PUBLIC unofficial-sodium::sodium)
+
+if(WIN32 AND OT_STATIC_DEPENDENCIES)
+  target_compile_definitions(
+    opentxs-crypto-library PRIVATE SODIUM_STATIC=1 SODIUM_EXPORT=
+  )
+endif()
 
 if(${CMAKE_CXX_COMPILER_ID}
    MATCHES

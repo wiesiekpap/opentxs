@@ -16,7 +16,7 @@ namespace ot = opentxs;
 class OTLowLevelTestEnvironment : public testing::Environment
 {
 public:
-    static const ot::ArgList test_args_;
+    static auto Args() noexcept -> const ot::ArgList&;
 
     void SetUp() override;
     void TearDown() override;
@@ -24,5 +24,5 @@ public:
     ~OTLowLevelTestEnvironment() override;
 
 private:
-    static std::string random_path();
+    static auto home() noexcept -> const std::string&;
 };

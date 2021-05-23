@@ -100,12 +100,10 @@ public:
     ot::OTZMQSubscribeSocket chris_rename_notary_listener_;
 
     Test_Pair()
-        : api_issuer_(
-              ot::Context().StartClient(OTTestEnvironment::test_args_, 0))
-        , api_chris_(
-              ot::Context().StartClient(OTTestEnvironment::test_args_, 1))
+        : api_issuer_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
+        , api_chris_(ot::Context().StartClient(OTTestEnvironment::Args(), 1))
         , api_server_1_(
-              ot::Context().StartServer(OTTestEnvironment::test_args_, 0, true))
+              ot::Context().StartServer(OTTestEnvironment::Args(), 0, true))
         , issuer_peer_request_cb_(ot::network::zeromq::ListenCallback::Factory(
               [this](const auto& in) { issuer_peer_request(in); }))
         , chris_rename_notary_cb_(ot::network::zeromq::ListenCallback::Factory(

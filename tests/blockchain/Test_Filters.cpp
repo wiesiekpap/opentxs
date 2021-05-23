@@ -101,7 +101,7 @@ public:
     }
 
     Test_Filters()
-        : api_(ot::Context().StartClient(OTTestEnvironment::test_args_, 0))
+        : api_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
     {
     }
 };
