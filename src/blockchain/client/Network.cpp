@@ -266,8 +266,8 @@ auto Network::AddBlock(
     const auto& id = block.ID();
 
     if (std::future_status::ready !=
-        block_.LoadBitcoin(id).wait_for(std::chrono::seconds(10))) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": invalid ")(DisplayString(chain_))(
+        block_.LoadBitcoin(id).wait_for(std::chrono::seconds(60))) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": failed to load ")(DisplayString(chain_))(
             " block")
             .Flush();
 

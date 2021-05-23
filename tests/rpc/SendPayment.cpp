@@ -14,6 +14,8 @@
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/client/OTX.hpp"
+#include "opentxs/api/client/Pair.hpp"
 #include "opentxs/api/server/Manager.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
@@ -48,6 +50,8 @@ TEST_F(RPC_fixture, preconditions)
     {
         const auto& server = ot_.Server(0);
         const auto& session = StartClient(0);
+        session.OTX().DisableAutoaccept();
+        session.Pair().Stop().get();
         const auto instance = session.Instance();
         const auto& nyms = local_nym_map_.at(instance);
         const auto& seeds = seed_map_.at(instance);
@@ -292,11 +296,13 @@ TEST_F(RPC_fixture, cheque)
 
     RefreshAccount(api, api.Factory().NymID(chris_), server.ID());
 
+    ASSERT_TRUE(push_.wait(4));
+
     EXPECT_EQ(DepositCheques(api, server, chris_), 1);
 
     RefreshAccount(api, api.Factory().NymID(brian_), server.ID());
 
-    ASSERT_TRUE(push_.wait(5));
+    ASSERT_TRUE(push_.wait(1));
     // TODO validate each push message
 }
 

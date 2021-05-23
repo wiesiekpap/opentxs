@@ -60,19 +60,12 @@ public:
         const identifier::UnitDefinition& unitID,
         const bool onlyUnused = true) const
         -> std::vector<BailmentDetails> final;
-    auto BailmentInstructionsSize(
-        const api::Core& client,
-        const identifier::UnitDefinition& unitID) const -> std::size_t final;
     auto ConnectionInfo(
         const api::Core& client,
         const contract::peer::ConnectionInfoType type) const
         -> std::vector<ConnectionDetails> final;
     auto ConnectionInfoInitiated(
         const contract::peer::ConnectionInfoType type) const -> bool final;
-    auto ConnectionInfoSize(
-        const api::Core& client,
-        const contract::peer::ConnectionInfoType type) const
-        -> std::size_t final;
     auto GetRequests(
         const contract::peer::PeerRequestType type,
         const RequestStatus state = RequestStatus::All) const
@@ -135,16 +128,6 @@ private:
     std::map<contact::ContactItemType, std::set<UnitAccountPair>> account_map_;
     WorkflowMap peer_requests_;
 
-    auto bailment_instructions(
-        const Lock& lock,
-        const api::Core& client,
-        const identifier::UnitDefinition& unitID,
-        const bool onlyUnused = true) const -> std::vector<BailmentDetails>;
-    auto connection_info(
-        const Lock& lock,
-        const api::Core& client,
-        const contract::peer::ConnectionInfoType type) const
-        -> std::vector<Issuer::ConnectionDetails>;
     auto find_request(
         const Lock& lock,
         const contract::peer::PeerRequestType type,

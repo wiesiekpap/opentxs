@@ -384,12 +384,12 @@ auto Issuer::BailmentInitiated(const identifier::UnitDefinition& unitID) const
     return 0 != count;
 }
 
-auto Issuer::bailment_instructions(
-    const Lock& lock,
+auto Issuer::BailmentInstructions(
     const api::Core& client,
     const identifier::UnitDefinition& unitID,
     const bool onlyUnused) const -> std::vector<Issuer::BailmentDetails>
 {
+    Lock lock(lock_);
     std::vector<BailmentDetails> output{};
     const auto replies = get_requests(
         lock,
@@ -448,29 +448,16 @@ auto Issuer::bailment_instructions(
     return output;
 }
 
-auto Issuer::BailmentInstructions(
-    const api::Core& client,
-    const identifier::UnitDefinition& unitID,
-    const bool onlyUnused) const -> std::vector<Issuer::BailmentDetails>
-{
-    Lock lock(lock_);
-    return bailment_instructions(lock, client, unitID, onlyUnused);
-}
-
-auto Issuer::BailmentInstructionsSize(
-    const api::Core& client,
-    const identifier::UnitDefinition& unitID) const -> std::size_t
-{
-    Lock lock(lock_);
-    return bailment_instructions(lock, client, unitID).size();
-}
-
-auto Issuer::connection_info(
-    const Lock& lock,
+auto Issuer::ConnectionInfo(
     const api::Core& client,
     const contract::peer::ConnectionInfoType type) const
     -> std::vector<Issuer::ConnectionDetails>
 {
+    LogVerbose(OT_METHOD)(__FUNCTION__)(": Searching for type ")(
+        static_cast<std::uint32_t>(type))(
+        " connection info requests (which have replies).")
+        .Flush();
+    Lock lock(lock_);
     std::vector<ConnectionDetails> output{};
     const auto replies = get_requests(
         lock,
@@ -540,19 +527,6 @@ auto Issuer::connection_info(
     return output;
 }
 
-auto Issuer::ConnectionInfo(
-    const api::Core& client,
-    const contract::peer::ConnectionInfoType type) const
-    -> std::vector<Issuer::ConnectionDetails>
-{
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": Searching for type ")(
-        static_cast<std::uint32_t>(type))(
-        " connection info requests (which have replies).")
-        .Flush();
-    Lock lock(lock_);
-    return connection_info(lock, client, type);
-}
-
 auto Issuer::ConnectionInfoInitiated(
     const contract::peer::ConnectionInfoType type) const -> bool
 {
@@ -603,15 +577,6 @@ auto Issuer::ConnectionInfoInitiated(
     }
 
     return 0 != count;
-}
-
-auto Issuer::ConnectionInfoSize(
-    const api::Core& client,
-    const contract::peer::ConnectionInfoType type) const -> std::size_t
-{
-    Lock lock(lock_);
-
-    return connection_info(lock, client, type).size();
 }
 
 auto Issuer::find_request(
