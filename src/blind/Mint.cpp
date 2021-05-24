@@ -37,24 +37,24 @@
 namespace opentxs::blind::mint::implementation
 {
 Mint::Mint(
-    const api::internal::Core& core,
+    const api::internal::Core& api,
     const String& strNotaryID,
     const String& strServerNymID,
     const String& strInstrumentDefinitionID)
     : m_mapPrivate()
     , m_mapPublic()
-    , m_NotaryID(api_.Factory().ServerID(strNotaryID))
-    , m_ServerNymID(api_.Factory().NymID(strServerNymID))
-    , m_InstrumentDefinitionID(api_.Factory().UnitID(strInstrumentDefinitionID))
+    , m_NotaryID(api.Factory().ServerID(strNotaryID))
+    , m_ServerNymID(api.Factory().NymID(strServerNymID))
+    , m_InstrumentDefinitionID(api.Factory().UnitID(strInstrumentDefinitionID))
     , m_nDenominationCount(0)
     , m_bSavePrivateKeys(false)
     , m_nSeries(0)
     , m_VALID_FROM(Time::min())
     , m_VALID_TO(Time::min())
     , m_EXPIRATION(Time::min())
-    , m_CashAccountID(api_.Factory().Identifier())
+    , m_CashAccountID(api.Factory().Identifier())
 {
-    m_strFoldername->Set(api_.Legacy().Mint());
+    m_strFoldername->Set(api.Legacy().Mint());
     m_strFilename->Format(
         "%s%s%s",
         strNotaryID.Get(),
@@ -65,23 +65,23 @@ Mint::Mint(
 }
 
 Mint::Mint(
-    const api::internal::Core& core,
+    const api::internal::Core& api,
     const String& strNotaryID,
     const String& strInstrumentDefinitionID)
     : m_mapPrivate()
     , m_mapPublic()
-    , m_NotaryID(api_.Factory().ServerID(strNotaryID))
-    , m_ServerNymID(api_.Factory().NymID())
-    , m_InstrumentDefinitionID(api_.Factory().UnitID(strInstrumentDefinitionID))
+    , m_NotaryID(api.Factory().ServerID(strNotaryID))
+    , m_ServerNymID(api.Factory().NymID())
+    , m_InstrumentDefinitionID(api.Factory().UnitID(strInstrumentDefinitionID))
     , m_nDenominationCount(0)
     , m_bSavePrivateKeys(false)
     , m_nSeries(0)
     , m_VALID_FROM(Time::min())
     , m_VALID_TO(Time::min())
     , m_EXPIRATION(Time::min())
-    , m_CashAccountID(api_.Factory().Identifier())
+    , m_CashAccountID(api.Factory().Identifier())
 {
-    m_strFoldername->Set(api_.Legacy().Mint());
+    m_strFoldername->Set(api.Legacy().Mint());
     m_strFilename->Format(
         "%s%s%s",
         strNotaryID.Get(),
@@ -91,19 +91,19 @@ Mint::Mint(
     InitMint();
 }
 
-Mint::Mint(const api::internal::Core& core)
+Mint::Mint(const api::internal::Core& api)
     : m_mapPrivate()
     , m_mapPublic()
-    , m_NotaryID(api_.Factory().ServerID())
-    , m_ServerNymID(api_.Factory().NymID())
-    , m_InstrumentDefinitionID(api_.Factory().UnitID())
+    , m_NotaryID(api.Factory().ServerID())
+    , m_ServerNymID(api.Factory().NymID())
+    , m_InstrumentDefinitionID(api.Factory().UnitID())
     , m_nDenominationCount(0)
     , m_bSavePrivateKeys(false)
     , m_nSeries(0)
     , m_VALID_FROM(Time::min())
     , m_VALID_TO(Time::min())
     , m_EXPIRATION(Time::min())
-    , m_CashAccountID(api_.Factory().Identifier())
+    , m_CashAccountID(api.Factory().Identifier())
 {
     InitMint();
 }
