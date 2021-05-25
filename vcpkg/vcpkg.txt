@@ -24,6 +24,5 @@ pcre2
 protobuf
 qt5-base
 qt5-declarative
-secp256k1
 sqlite3
 zeromq[sodium]
