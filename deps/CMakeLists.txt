@@ -97,3 +97,56 @@ set_target_properties(
   bech32 PROPERTIES C_INCLUDE_WHAT_YOU_USE "" CXX_INCLUDE_WHAT_YOU_USE ""
 )
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:bech32>)
+
+if(OT_BUNDLED_SECP256K1 AND OT_CRYPTO_USING_LIBSECP256K1)
+  set(SECP256K1_ENABLE_COVERAGE
+      OFF
+      CACHE
+        BOOL
+        ""
+        FORCE
+  )
+  set(SECP256K1_ENABLE_BRANCH_COVERAGE
+      OFF
+      CACHE
+        BOOL
+        ""
+        FORCE
+  )
+  set(SECP256K1_BUILD_TEST
+      OFF
+      CACHE
+        BOOL
+        ""
+        FORCE
+  )
+  set(SECP256K1_BUILD_BENCH
+      OFF
+      CACHE
+        BOOL
+        ""
+        FORCE
+  )
+  set(SECP256K1_ENABLE_MODULE_ECDH
+      ON
+      CACHE
+        BOOL
+        ""
+        FORCE
+  )
+  set(SECP256K1_ECMULT_STATIC_PRECOMPUTATION
+      OFF
+      CACHE
+        BOOL
+        ""
+        FORCE
+  )
+  set(SECP256K1_ENABLE_JNI
+      OFF
+      CACHE
+        BOOL
+        ""
+        FORCE
+  )
+  add_subdirectory(secp256k1)
+endif()

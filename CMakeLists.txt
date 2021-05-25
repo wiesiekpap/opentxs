@@ -195,6 +195,11 @@ option(
   "Link against static version of dependencies"
   ${OT_USE_VCPKG_TARGETS}
 )
+option(
+  OT_BUNDLED_SECP256K1
+  "Embed submodule version of secp256k1 instead of linking to external library"
+  ${OT_CRYPTO_USING_LIBSECP256K1}
+)
 
 if(OT_CRYPTO_SUPPORTED_KEY_RSA
    OR OT_CASH_USING_LUCRE
@@ -522,7 +527,7 @@ if(OT_CRYPTO_USING_OPENSSL)
   )
 endif()
 
-if(OT_CRYPTO_USING_LIBSECP256K1)
+if(OT_CRYPTO_USING_LIBSECP256K1 AND NOT OT_BUNDLED_SECP256K1)
   find_package(unofficial-secp256k1 REQUIRED)
 endif()
 

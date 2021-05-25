@@ -18,6 +18,7 @@ add_subdirectory(display)
 add_subdirectory(ext)
 add_subdirectory(identity)
 add_subdirectory(iterator)
+add_subdirectory(license)
 add_subdirectory(network)
 add_subdirectory(otx)
 add_subdirectory(protobuf)
@@ -26,72 +27,6 @@ add_subdirectory(server)
 add_subdirectory(storage)
 add_subdirectory(ui)
 add_subdirectory(util)
-
-file(
-  READ
-  "${CMAKE_CURRENT_SOURCE_DIR}/api/crypto/base58/COPYING"
-  BASE58_LICENSE_TEXT
-)
-file(
-  READ
-  "${opentxs_SOURCE_DIR}/deps/base64/COPYING"
-  BASE64_LICENSE_TEXT
-)
-file(
-  READ
-  "${opentxs_SOURCE_DIR}/deps/ChaiScript/LICENSE"
-  CHAISCRIPT_LICENSE_TEXT
-)
-file(
-  READ
-  "${opentxs_SOURCE_DIR}/deps/irrxml/COPYING"
-  IRRXML_LICENSE_TEXT
-)
-file(
-  READ
-  "${opentxs_SOURCE_DIR}/deps/lucre/LICENCE"
-  LUCRE_LICENSE_TEXT
-)
-file(
-  READ
-  "${opentxs_SOURCE_DIR}/LICENSE"
-  OPENTXS_LICENSE_TEXT
-)
-file(
-  READ
-  "${opentxs_SOURCE_DIR}/CREDITS"
-  OPENTXS_CREDITS_TEXT
-)
-file(
-  READ
-  "${opentxs_SOURCE_DIR}/MPL-2.0"
-  MPL20_LICENSE_TEXT
-)
-file(
-  READ
-  "${opentxs_SOURCE_DIR}/serialization/LICENSE.txt"
-  PROTOBUF_LICENSE_TEXT
-)
-file(
-  READ
-  "${opentxs_SOURCE_DIR}/deps/simpleini/LICENCE.txt"
-  SIMPLEINI_LICENSE_TEXT
-)
-file(
-  READ
-  "${CMAKE_CURRENT_SOURCE_DIR}/crypto/library/trezor/COPYING"
-  TREZOR_LICENSE_TEXT
-)
-file(
-  READ
-  "${opentxs_SOURCE_DIR}/deps/LICENSE.bech32"
-  BECH32_LICENSE_TEXT
-)
-configure_file(
-  "License.cpp.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/License.cpp"
-  @ONLY
-)
 
 include(GenerateExportHeader)
 generate_export_header(
@@ -116,7 +51,6 @@ set(cxx-install-headers
 target_sources(
   opentxs
   PRIVATE
-    "${CMAKE_CURRENT_BINARY_DIR}/License.cpp"
     "0_stdafx.hpp"
     "1_Internal.hpp"
     "2_Factory.hpp"
@@ -134,16 +68,6 @@ set_target_properties(
     "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH}"
     SOVERSION 1
     POSITION_INDEPENDENT_CODE 1
-)
-
-set(LICENSE_DEFINITIONS
-    "OT_SCRIPT_CHAI=${SCRIPT_CHAI_EXPORT}"
-    "OT_CASH_USING_LUCRE=${CASH_LUCRE_EXPORT}"
-    "OT_CRYPTO_USING_PACKETCRYPT=${PACKETCRYPT_EXPORT}"
-)
-set_source_files_properties(
-  "${CMAKE_CURRENT_BINARY_DIR}/License.cpp" PROPERTIES COMPILE_DEFINITIONS
-                                                       ${LICENSE_DEFINITIONS}
 )
 
 if(CMAKE_DL_LIBS)
@@ -291,7 +215,7 @@ if(OT_INSTALL_LIBRARY_DEPENDENCIES)
     )
   endif()
 
-  if(LIBSECP256K1_EXPORT)
+  if(LIBSECP256K1_EXPORT AND NOT OT_BUNDLED_SECP256K1)
     install(
       FILES "${SECP256K1_LIBRARY}"
       DESTINATION ${CMAKE_INSTALL_LIBDIR}

@@ -9,10 +9,20 @@ add_library(
   "Secp256k1.cpp"
   "Secp256k1.hpp"
 )
+
 target_link_libraries(
-  opentxs-crypto-library-secp256k1 PRIVATE unofficial::secp256k1
+  opentxs-crypto-library-secp256k1 PRIVATE opentxs::messages
 )
-target_link_libraries(opentxs PUBLIC unofficial::secp256k1)
+
+if(OT_BUNDLED_SECP256K1)
+  target_link_libraries(opentxs-crypto-library-secp256k1 PRIVATE secp256k1-obj)
+  target_sources(opentxs PRIVATE $<TARGET_OBJECTS:secp256k1-obj>)
+else()
+  target_link_libraries(
+    opentxs-crypto-library-secp256k1 PRIVATE unofficial::secp256k1
+  )
+  target_link_libraries(opentxs PUBLIC unofficial::secp256k1)
+endif()
 
 target_sources(
   opentxs PRIVATE $<TARGET_OBJECTS:opentxs-crypto-library-secp256k1>

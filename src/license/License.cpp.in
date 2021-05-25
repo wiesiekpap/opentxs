@@ -3483,6 +3483,9 @@ auto LicenseData() noexcept -> const LicenseMap&
              std::string{
                  reinterpret_cast<const char*>(lgpl_2_1), lgpl_2_1_len}},
 #endif  // OT_CRYPTO_USING_PACKETCRYPT
+#if OT_CRYPTO_USING_LIBSECP256K1
+            {"secp256k1", R"~!~(@LIBSECP256K1_LICENSE_TEXT@)~!~"},
+#endif  // OT_CRYPTO_USING_LIBSECP256K1
     };
 
     return map;
