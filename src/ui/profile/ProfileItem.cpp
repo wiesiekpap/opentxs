@@ -9,6 +9,7 @@
 
 #include <set>
 #include <tuple>
+#include <utility>
 
 #include "internal/api/client/Client.hpp"
 #include "internal/contact/Contact.hpp"
@@ -19,7 +20,6 @@
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/ContactItemAttribute.hpp"
 #include "opentxs/core/Log.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
 #include "ui/base/Widget.hpp"
 
 namespace opentxs::factory

@@ -454,6 +454,7 @@ struct PeerManager {
     virtual auto Disconnect(const int id) const noexcept -> void = 0;
     virtual auto Endpoint(const Task type) const noexcept -> std::string = 0;
     virtual auto GetPeerCount() const noexcept -> std::size_t = 0;
+    virtual auto GetVerifiedPeerCount() const noexcept -> std::size_t = 0;
     virtual auto Heartbeat() const noexcept -> void = 0;
     virtual auto JobReady(const Task type) const noexcept -> void = 0;
     virtual auto Listen(const p2p::Address& address) const noexcept -> bool = 0;
@@ -462,6 +463,8 @@ struct PeerManager {
     virtual auto RequestBlocks(
         const std::vector<ReadView>& hashes) const noexcept -> bool = 0;
     virtual auto RequestHeaders() const noexcept -> bool = 0;
+    virtual auto VerifyPeer(const int id, const std::string& address)
+        const noexcept -> void = 0;
 
     virtual auto init() noexcept -> void = 0;
     virtual auto Shutdown() noexcept -> std::shared_future<void> = 0;

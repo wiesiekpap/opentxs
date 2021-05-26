@@ -132,6 +132,18 @@ auto UI::BlockchainSelectionQt(
     return imp_->BlockchainSelectionQt(type, updateCB);
 }
 
+auto UI::BlockchainStatistics(const SimpleCallback updateCB) const noexcept
+    -> const opentxs::ui::BlockchainStatistics&
+{
+    return imp_->BlockchainStatistics(updateCB);
+}
+
+auto UI::BlockchainStatisticsQt(const SimpleCallback updateCB) const noexcept
+    -> opentxs::ui::BlockchainStatisticsQt*
+{
+    return imp_->BlockchainStatisticsQt(updateCB);
+}
+
 auto UI::BlockchainUnitID(const opentxs::blockchain::Type chain) const noexcept
     -> const identifier::UnitDefinition&
 {

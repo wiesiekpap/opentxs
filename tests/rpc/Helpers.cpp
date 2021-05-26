@@ -5,26 +5,45 @@
 
 #include "rpc/Helpers.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
+#include <chrono>
+#include <future>
+#include <iterator>
 #include <list>
 #include <mutex>
+#include <utility>
 
 #include "OTTestEnvironment.hpp"
 #include "UIHelpers.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
+#include "opentxs/Pimpl.hpp"
+#include "opentxs/SharedPimpl.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/HDSeed.hpp"
+#include "opentxs/api/Primitives.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/client/UI.hpp"
 #include "opentxs/api/server/Manager.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/Log.hpp"
 #include "opentxs/core/Message.hpp"
+#include "opentxs/core/Secret.hpp"
+#include "opentxs/core/String.hpp"
+#include "opentxs/core/contract/ServerContract.hpp"
+#include "opentxs/core/contract/UnitDefinition.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
-#include "opentxs/crypto/Types.hpp"
+#include "opentxs/identity/Nym.hpp"
+#include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"

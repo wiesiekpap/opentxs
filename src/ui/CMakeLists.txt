@@ -17,6 +17,7 @@ add_subdirectory(activitysummary)
 add_subdirectory(activitythread)
 add_subdirectory(base)
 add_subdirectory(blockchainselection)
+add_subdirectory(blockchainstatistics)
 add_subdirectory(contact)
 add_subdirectory(contactlist)
 

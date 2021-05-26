@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"      // IWYU pragma: associated
 #include "internal/ui/UI.hpp"  // IWYU pragma: associated
 
-#include <QObject>
 #include <QQmlEngine>
 
 namespace opentxs::ui

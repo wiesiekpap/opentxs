@@ -5,30 +5,28 @@
 
 #include "Helpers.hpp"  // IWYU pragma: associated
 
-#include <gtest/gtest.h>
 #include <iterator>
 #include <regex>
+#include <sstream>
 #include <string>
+#include <vector>
 
-#include "OTTestEnvironment.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/OT.hpp"
+#include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/Manager.hpp"
-#include "opentxs/api/client/blockchain/BalanceNode.hpp"
-#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/Log.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
-#include "opentxs/core/crypto/NymParameters.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 
 namespace ottest

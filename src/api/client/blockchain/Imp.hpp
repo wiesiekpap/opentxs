@@ -197,6 +197,8 @@ struct Blockchain::Imp {
         noexcept(false) -> const blockchain::internal::BalanceTree&;
     virtual auto BlockchainDB() const noexcept
         -> const blockchain::database::implementation::Database&;
+    virtual auto BlockQueueUpdate() const noexcept
+        -> const zmq::socket::Publish&;
     auto CalculateAddress(
         const Chain chain,
         const Style format,
@@ -216,6 +218,7 @@ struct Blockchain::Imp {
     virtual auto EnabledChains() const noexcept -> std::set<Chain>;
     auto EncodeAddress(const Style style, const Chain chain, const Data& data)
         const noexcept -> std::string;
+    virtual auto FilterUpdate() const noexcept -> const zmq::socket::Publish&;
     virtual auto GetChain(const Chain type) const noexcept(false)
         -> const opentxs::blockchain::Network&;
     auto GetKey(const blockchain::Key& id) const noexcept(false)
@@ -267,6 +270,8 @@ struct Blockchain::Imp {
         const Chain chain,
         const PasswordPrompt& reason) const noexcept(false)
         -> const blockchain::PaymentCode&;
+    virtual auto PeerUpdate() const noexcept
+        -> const opentxs::network::zeromq::socket::Publish&;
     virtual auto ProcessContact(const Contact& contact) const noexcept -> bool;
     virtual auto ProcessMergedContact(
         const Contact& parent,

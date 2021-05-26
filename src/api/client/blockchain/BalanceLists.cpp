@@ -91,7 +91,11 @@ auto BalanceLists::LookupAccount(const Identifier& id) const noexcept
 auto BalanceLists::populate() const noexcept -> void
 {
     auto lock = Lock{lock_};
+    populate(lock);
+}
 
+auto BalanceLists::populate(const Lock& lock) const noexcept -> void
+{
     if (populated_) { return; }
 
     for (const auto chain : opentxs::blockchain::SupportedChains()) {

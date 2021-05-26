@@ -98,5 +98,6 @@ private:
     auto get(const Lock& lock, const Chain chain) const noexcept
         -> client::blockchain::internal::BalanceList&;
     auto populate() const noexcept -> void;
+    auto populate(const Lock& lock) const noexcept -> void;
 };
 }  // namespace opentxs::api::client::implementation

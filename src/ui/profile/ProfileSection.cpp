@@ -24,6 +24,7 @@
 #include "opentxs/contact/ContactSectionName.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/ui/ProfileSection.hpp"
 #include "ui/base/Combined.hpp"

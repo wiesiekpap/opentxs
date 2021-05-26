@@ -139,6 +139,7 @@ Network::Network(
     , header_p_(factory::HeaderOracle(api, *database_p_, type))
     , block_p_(factory::BlockOracle(
           api,
+          blockchain,
           *this,
           *header_p_,
           *database_p_,
@@ -156,6 +157,7 @@ Network::Network(
           shutdown_sender_.endpoint_))
     , peer_p_(factory::BlockchainPeerManager(
           api,
+          blockchain,
           config_,
           *this,
           *header_p_,
@@ -189,6 +191,7 @@ Network::Network(
     , block_(*block_p_)
     , wallet_(*wallet_p_)
     , parent_(blockchain)
+    , start_(Clock::now())
     , sync_endpoint_(syncEndpoint)
     , sync_server_([&] {
         if (config_.provide_sync_server_) {
@@ -340,9 +343,16 @@ auto Network::GetConfirmations(const std::string& txid) const noexcept
 
 auto Network::GetPeerCount() const noexcept -> std::size_t
 {
-    if (false == running_.get()) { return false; }
+    if (false == running_.get()) { return 0; }
 
     return peer_.GetPeerCount();
+}
+
+auto Network::GetVerifiedPeerCount() const noexcept -> std::size_t
+{
+    if (false == running_.get()) { return 0; }
+
+    return peer_.GetVerifiedPeerCount();
 }
 
 auto Network::init() noexcept -> void
@@ -372,10 +382,13 @@ auto Network::is_synchronized_blocks() const noexcept -> bool
 
 auto Network::is_synchronized_filters() const noexcept -> bool
 {
+    static constexpr auto limit = std::chrono::minutes{15};
     const auto target = this->target();
     const auto progress = filters_.Tip(filters_.DefaultType()).first;
+    const auto elapsed = Clock::now() - start_;
 
-    return (progress >= target) || config_.use_sync_server_;
+    return (progress >= target) ||
+           (config_.use_sync_server_ && (elapsed >= limit));
 }
 
 auto Network::is_synchronized_headers() const noexcept -> bool
@@ -897,9 +910,11 @@ auto Network::state_machine() noexcept -> bool
 
 auto Network::state_machine_headers() noexcept -> void
 {
-    constexpr auto limit = std::chrono::seconds{20};
+    constexpr auto limit = std::chrono::minutes{5};
+    constexpr auto timeout = std::chrono::seconds{30};
     constexpr auto rateLimit = std::chrono::seconds{1};
-    const auto interval = Clock::now() - headers_requested_;
+    const auto requestInterval = Clock::now() - headers_requested_;
+    const auto receiveInterval = Clock::now() - headers_received_;
     const auto requestHeaders = [&] {
         LogVerbose(OT_METHOD)(__FUNCTION__)(": Requesting ")(DisplayString(
             chain_))(" block headers from all connected peers (instance ")(
@@ -910,17 +925,19 @@ auto Network::state_machine_headers() noexcept -> void
         headers_requested_ = Clock::now();
     };
 
+    if (requestInterval < rateLimit) { return; }
+
     if (waiting_for_headers_.get()) {
-        if (interval < limit) { return; }
+        if (requestInterval < timeout) { return; }
 
         LogDetail(OT_METHOD)(__FUNCTION__)(": ")(DisplayString(chain_))(
             " headers not received before timeout (instance ")(api_.Instance())(
             ")")
             .Flush();
         requestHeaders();
-    } else if ((false == is_synchronized_headers()) && (interval > rateLimit)) {
+    } else if ((!is_synchronized_headers()) && (!config_.use_sync_server_)) {
         requestHeaders();
-    } else if ((Clock::now() - headers_received_) >= limit) {
+    } else if (receiveInterval >= limit) {
         requestHeaders();
     }
 }
@@ -995,7 +1012,7 @@ auto Network::UpdateLocalHeight(const block::Position position) const noexcept
     if (false == running_.get()) { return; }
 
     const auto& [height, hash] = position;
-    LogNormal(DisplayString(chain_))(" block header chain updated to hash ")(
+    LogDetail(DisplayString(chain_))(" block header chain updated to hash ")(
         hash->asHex())(" at height ")(height)
         .Flush();
     local_chain_height_.store(height);

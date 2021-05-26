@@ -32,11 +32,13 @@
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip39.hpp"
+#include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
+#include "opentxs/crypto/key/asymmetric/Role.hpp"
 
 namespace
 {

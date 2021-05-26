@@ -40,14 +40,27 @@ BalanceOracle::BalanceOracle(
     , api_(api)
     , zmq_(api_.ZeroMQ())
     , cb_(zmq::ListenCallback::Factory([this](auto& in) { cb(in); }))
-    , socket_(zmq_.RouterSocket(cb_, zmq::socket::Socket::Direction::Bind))
+    , socket_([&] {
+        auto out = zmq_.RouterSocket(cb_, zmq::socket::Socket::Direction::Bind);
+        const auto started = out->Start(api_.Endpoints().BlockchainBalance());
+
+        OT_ASSERT(started);
+
+        return out;
+    }())
+    , publisher_([&] {
+        auto out = zmq_.PublishSocket();
+        const auto started =
+            out->Start(api_.Endpoints().BlockchainWalletUpdated());
+
+        OT_ASSERT(started);
+
+        return out;
+    }())
     , lock_()
     , subscribers_()
     , nym_subscribers_()
 {
-    const auto started = socket_->Start(api_.Endpoints().BlockchainBalance());
-
-    OT_ASSERT(started);
 }
 
 auto BalanceOracle::cb(opentxs::network::zeromq::Message& in) noexcept -> void
@@ -100,7 +113,7 @@ auto BalanceOracle::cb(opentxs::network::zeromq::Message& in) noexcept -> void
             output = network.GetBalance();
         }
 
-        Lock lock(lock_);
+        auto lock = Lock{lock_};
 
         if (haveNym) {
             nym_subscribers_[chain][nym].emplace(
@@ -128,18 +141,28 @@ auto BalanceOracle::RefreshBalance(
 auto BalanceOracle::UpdateBalance(const Chain chain, const Balance balance)
     const noexcept -> void
 {
-    auto cb = [&](const auto& in) {
-        auto out = zmq_.Message(in);
+    const auto make = [&](auto& out, auto type) {
         out->AddFrame();
-        out->AddFrame(value(WorkType::BlockchainBalance));
+        out->AddFrame(value(type));
         out->AddFrame(chain);
         out->AddFrame(balance.first);
         out->AddFrame(balance.second);
+    };
+    {
+        auto out = zmq_.Message();
+        make(out, WorkType::BlockchainWalletUpdated);
+        publisher_->Send(out);
+    }
+    const auto notify = [&](const auto& in) {
+        auto out = zmq_.Message(in);
+        make(out, WorkType::BlockchainBalance);
         socket_->Send(out);
     };
-    Lock lock(lock_);
-    const auto& subscribers = subscribers_[chain];
-    std::for_each(std::begin(subscribers), std::end(subscribers), cb);
+    {
+        auto lock = Lock{lock_};
+        const auto& subscribers = subscribers_[chain];
+        std::for_each(std::begin(subscribers), std::end(subscribers), notify);
+    }
 }
 
 auto BalanceOracle::UpdateBalance(
@@ -147,18 +170,28 @@ auto BalanceOracle::UpdateBalance(
     const Chain chain,
     const Balance balance) const noexcept -> void
 {
-    auto cb = [&](const auto& in) {
-        auto out = zmq_.Message(in);
+    const auto make = [&](auto& out, auto type) {
         out->AddFrame();
-        out->AddFrame(value(WorkType::BlockchainBalance));
+        out->AddFrame(value(type));
         out->AddFrame(chain);
         out->AddFrame(balance.first);
         out->AddFrame(balance.second);
         out->AddFrame(owner);
+    };
+    {
+        auto out = zmq_.Message();
+        make(out, WorkType::BlockchainWalletUpdated);
+        publisher_->Send(out);
+    }
+    const auto notify = [&](const auto& in) {
+        auto out = zmq_.Message(in);
+        make(out, WorkType::BlockchainBalance);
         socket_->Send(out);
     };
-    Lock lock(lock_);
-    const auto& subscribers = nym_subscribers_[chain][owner];
-    std::for_each(std::begin(subscribers), std::end(subscribers), cb);
+    {
+        auto lock = Lock{lock_};
+        const auto& subscribers = nym_subscribers_[chain][owner];
+        std::for_each(std::begin(subscribers), std::end(subscribers), notify);
+    }
 }
 }  // namespace opentxs::api::client::implementation

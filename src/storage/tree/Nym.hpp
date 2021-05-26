@@ -19,6 +19,7 @@
 #include "Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Editor.hpp"
+#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"

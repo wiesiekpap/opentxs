@@ -179,13 +179,19 @@ struct Blockchain : virtual public api::client::Blockchain {
         const noexcept(false) -> const blockchain::internal::BalanceTree& = 0;
     virtual auto BlockchainDB() const noexcept
         -> const blockchain::database::implementation::Database& = 0;
+    virtual auto BlockQueueUpdate() const noexcept
+        -> const opentxs::network::zeromq::socket::Publish& = 0;
     virtual auto Contacts() const noexcept -> const api::client::Contacts& = 0;
+    virtual auto FilterUpdate() const noexcept
+        -> const opentxs::network::zeromq::socket::Publish& = 0;
     using SyncData = std::vector<opentxs::network::blockchain::sync::State>;
     virtual auto Hello() const noexcept -> SyncData = 0;
     virtual auto IsEnabled(const opentxs::blockchain::Type chain) const noexcept
         -> bool = 0;
     virtual auto KeyEndpoint() const noexcept -> const std::string& = 0;
     virtual auto KeyGenerated(const Chain chain) const noexcept -> void = 0;
+    virtual auto PeerUpdate() const noexcept
+        -> const opentxs::network::zeromq::socket::Publish& = 0;
     virtual bool ProcessContact(const Contact& contact) const noexcept = 0;
     virtual bool ProcessMergedContact(
         const Contact& parent,

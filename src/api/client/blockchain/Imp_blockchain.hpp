@@ -133,6 +133,7 @@ private:
     const zmq::Context& zmq_;
     OTZMQListenCallback cb_;
     OTZMQRouterSocket socket_;
+    OTZMQPublishSocket publisher_;
     mutable std::mutex lock_;
     mutable std::map<Chain, Subscribers> subscribers_;
     mutable std::map<Chain, std::map<OTNymID, Subscribers>> nym_subscribers_;
@@ -188,10 +189,12 @@ struct BlockchainImp final : public Blockchain::Imp {
         const noexcept -> bool final;
     auto BlockchainDB() const noexcept
         -> const blockchain::database::implementation::Database& final;
+    auto BlockQueueUpdate() const noexcept -> const zmq::socket::Publish& final;
     auto Disable(const Chain type) const noexcept -> bool final;
     auto Enable(const Chain type, const std::string& seednode) const noexcept
         -> bool final;
     auto EnabledChains() const noexcept -> std::set<Chain> final;
+    auto FilterUpdate() const noexcept -> const zmq::socket::Publish& final;
     auto GetChain(const Chain type) const noexcept(false)
         -> const opentxs::blockchain::Network& final;
     auto Hello() const noexcept -> SyncState final;
@@ -206,6 +209,8 @@ struct BlockchainImp final : public Blockchain::Imp {
         -> std::unique_ptr<const Tx> final;
     auto LookupContacts(const Data& pubkeyHash) const noexcept
         -> ContactList final;
+    auto PeerUpdate() const noexcept
+        -> const opentxs::network::zeromq::socket::Publish& final;
     auto ProcessContact(const Contact& contact) const noexcept -> bool final;
     auto ProcessMergedContact(const Contact& parent, const Contact& child)
         const noexcept -> bool final;
@@ -273,11 +278,14 @@ private:
     blockchain::database::implementation::Database db_;
     OTZMQPublishSocket reorg_;
     OTZMQPublishSocket transaction_updates_;
-    OTZMQPublishSocket peer_updates_;
+    OTZMQPublishSocket connected_peer_updates_;
+    OTZMQPublishSocket active_peer_updates_;
     OTZMQPublishSocket key_updates_;
     OTZMQPublishSocket sync_updates_;
     OTZMQPublishSocket scan_updates_;
     OTZMQPublishSocket new_blockchain_accounts_;
+    OTZMQPublishSocket new_filters_;
+    OTZMQPublishSocket block_download_queue_;
     const Config base_config_;
     mutable std::map<Chain, Config> config_;
     mutable std::map<

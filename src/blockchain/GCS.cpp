@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"      // IWYU pragma: associated
 #include "blockchain/GCS.hpp"  // IWYU pragma: associated
 
-#include <boost/core/enable_if.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/endian/buffers.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
@@ -22,6 +21,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 #include <vector>
 

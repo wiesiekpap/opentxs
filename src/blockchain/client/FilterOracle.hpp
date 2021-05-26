@@ -86,6 +86,11 @@ class Data;
 
 namespace zeromq
 {
+namespace socket
+{
+class Publish;
+}  // namespace socket
+
 class Message;
 }  // namespace zeromq
 }  // namespace network
@@ -190,6 +195,7 @@ private:
     const internal::Network& network_;
     const internal::HeaderOracle& header_;
     const internal::FilterDatabase& database_;
+    const network::zeromq::socket::Publish& filter_notifier_;
     const blockchain::Type chain_;
     const filter::Type default_type_;
     mutable std::recursive_mutex lock_;

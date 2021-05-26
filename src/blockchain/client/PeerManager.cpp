@@ -13,6 +13,7 @@
 #include <string_view>
 
 #include "core/Worker.hpp"
+#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/client/Client.hpp"
 #include "internal/blockchain/client/Factory.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"  // IWYU pragma: keep
@@ -37,6 +38,7 @@ namespace opentxs::factory
 {
 auto BlockchainPeerManager(
     const api::Core& api,
+    const api::client::internal::Blockchain& blockchain,
     const blockchain::client::internal::Config& config,
     const blockchain::client::internal::Network& network,
     const blockchain::client::internal::HeaderOracle& headers,
@@ -53,6 +55,7 @@ auto BlockchainPeerManager(
 
     return std::make_unique<ReturnType>(
         api,
+        blockchain,
         config,
         network,
         headers,
@@ -70,6 +73,7 @@ namespace opentxs::blockchain::client::implementation
 {
 PeerManager::PeerManager(
     const api::Core& api,
+    const api::client::internal::Blockchain& blockchain,
     const internal::Config& config,
     const internal::Network& network,
     const internal::HeaderOracle& headers,
@@ -82,10 +86,13 @@ PeerManager::PeerManager(
     const std::string& shutdown) noexcept
     : internal::PeerManager()
     , Worker(api, std::chrono::milliseconds(100))
+    , network_(network)
     , database_(database)
+    , chain_(chain)
     , jobs_(api)
     , peers_(
           api,
+          blockchain,
           config,
           network,
           headers,
@@ -99,6 +106,8 @@ PeerManager::PeerManager(
           chain,
           seednode,
           peer_target(chain, policy))
+    , verified_lock_()
+    , verified_peers_()
     , init_promise_()
     , init_(init_promise_.get_future())
 {
@@ -185,6 +194,13 @@ auto PeerManager::Disconnect(const int id) const noexcept -> void
     auto work = MakeWork(Work::Disconnect);
     work->AddFrame(id);
     pipeline_->Push(work);
+}
+
+auto PeerManager::GetVerifiedPeerCount() const noexcept -> std::size_t
+{
+    auto lock = Lock{verified_lock_};
+
+    return verified_peers_.size();
 }
 
 auto PeerManager::init() noexcept -> void
@@ -281,7 +297,15 @@ auto PeerManager::pipeline(zmq::Message& message) noexcept -> void
         case Work::Disconnect: {
             OT_ASSERT(1 < body.size());
 
-            peers_.Disconnect(body.at(1).as<int>());
+            const auto id = body.at(1).as<int>();
+
+            {
+                auto lock = Lock{verified_lock_};
+                verified_peers_.erase(id);
+            }
+
+            peers_.Disconnect(id);
+            network_.Blockchain().UpdatePeer(chain_, "");
             do_work();
         } break;
         case Work::AddPeer: {
@@ -410,6 +434,17 @@ auto PeerManager::state_machine() noexcept -> bool
     if (false == running_.get()) { return false; }
 
     return peers_.Run();
+}
+
+auto PeerManager::VerifyPeer(const int id, const std::string& address)
+    const noexcept -> void
+{
+    {
+        auto lock = Lock{verified_lock_};
+        verified_peers_.emplace(id);
+    }
+
+    network_.Blockchain().UpdatePeer(chain_, address);
 }
 
 PeerManager::~PeerManager() { Shutdown().get(); }

@@ -14,6 +14,7 @@
 #include <string>
 
 #include "internal/api/client/Client.hpp"
+#include "internal/core/Core.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #if OT_QT

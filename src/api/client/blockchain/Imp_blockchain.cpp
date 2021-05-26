@@ -87,7 +87,16 @@ BlockchainImp::BlockchainImp(
 
         return out;
     }())
-    , peer_updates_([&] {
+    , connected_peer_updates_([&] {
+        auto out = api_.ZeroMQ().PublishSocket();
+        const auto listen =
+            out->Start(api_.Endpoints().BlockchainPeerConnection());
+
+        OT_ASSERT(listen);
+
+        return out;
+    }())
+    , active_peer_updates_([&] {
         auto out = api_.ZeroMQ().PublishSocket();
         const auto listen = out->Start(api_.Endpoints().BlockchainPeer());
 
@@ -125,6 +134,23 @@ BlockchainImp::BlockchainImp(
         auto out = api_.ZeroMQ().PublishSocket();
         const auto listen =
             out->Start(api_.Endpoints().BlockchainAccountCreated());
+
+        OT_ASSERT(listen);
+
+        return out;
+    }())
+    , new_filters_([&] {
+        auto out = api_.ZeroMQ().PublishSocket();
+        const auto listen = out->Start(api_.Endpoints().BlockchainNewFilter());
+
+        OT_ASSERT(listen);
+
+        return out;
+    }())
+    , block_download_queue_([&] {
+        auto out = api_.ZeroMQ().PublishSocket();
+        const auto listen =
+            out->Start(api_.Endpoints().BlockchainBlockDownloadQueue());
 
         OT_ASSERT(listen);
 
@@ -322,6 +348,12 @@ auto BlockchainImp::BlockchainDB() const noexcept
     return db_;
 }
 
+auto BlockchainImp::BlockQueueUpdate() const noexcept
+    -> const zmq::socket::Publish&
+{
+    return block_download_queue_;
+}
+
 auto BlockchainImp::broadcast_update_signal(
     const std::vector<pTxid>& transactions) const noexcept -> void
 {
@@ -442,6 +474,11 @@ auto BlockchainImp::EnabledChains() const noexcept -> std::set<Chain>
         [](const auto value) { return value.first; });
 
     return out;
+}
+
+auto BlockchainImp::FilterUpdate() const noexcept -> const zmq::socket::Publish&
+{
+    return new_filters_;
 }
 
 auto BlockchainImp::GetChain(const Chain type) const noexcept(false)
@@ -607,6 +644,11 @@ auto BlockchainImp::notify_new_account(
     }
 
     balances_.RefreshBalance(owner, chain);
+}
+
+auto BlockchainImp::PeerUpdate() const noexcept -> const zmq::socket::Publish&
+{
+    return connected_peer_updates_;
 }
 
 auto BlockchainImp::ProcessContact(const Contact& contact) const noexcept
@@ -844,6 +886,7 @@ auto BlockchainImp::start(
             LogVerbose(OT_METHOD)(__FUNCTION__)(": started chain ")(
                 static_cast<std::uint32_t>(type))
                 .Flush();
+            balance_lists_.Get(type);
             publish_chain_state(type, true);
 
             return it->second->Connect();
@@ -956,6 +999,6 @@ auto BlockchainImp::UpdatePeer(
     auto work = MakeWork(api_, WorkType::BlockchainPeerAdded);
     work->AddFrame(chain);
     work->AddFrame(address);
-    peer_updates_->Send(work);
+    active_peer_updates_->Send(work);
 }
 }  // namespace opentxs::api::client::implementation

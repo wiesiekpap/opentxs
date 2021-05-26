@@ -7,7 +7,6 @@
 #include <sys/types.h>
 #include <algorithm>
 #include <chrono>
-#include <functional>
 #include <future>
 #include <iostream>
 #include <list>
@@ -22,8 +21,8 @@
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "internal/api/client/Client.hpp"
 #include "internal/api/server/Server.hpp"
-#include "internal/core/contract/peer/Peer.hpp"
 #include "internal/otx/client/Client.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Shared.hpp"
@@ -47,12 +46,15 @@
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blind/Purse.hpp"
 #include "opentxs/blind/Token.hpp"
+#include "opentxs/blind/Types.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/client/OT_API.hpp"
+#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/contact/ContactSectionName.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Cheque.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Ledger.hpp"
 #include "opentxs/core/Log.hpp"
@@ -63,9 +65,13 @@
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
 #include "opentxs/core/contract/peer/BailmentNotice.hpp"
+#include "opentxs/core/contract/peer/BailmentReply.hpp"
 #include "opentxs/core/contract/peer/BailmentRequest.hpp"
 #include "opentxs/core/contract/peer/ConnectionInfoType.hpp"
+#include "opentxs/core/contract/peer/ConnectionReply.hpp"
 #include "opentxs/core/contract/peer/ConnectionRequest.hpp"
+#include "opentxs/core/contract/peer/NoticeAcknowledgement.hpp"
+#include "opentxs/core/contract/peer/OutBailmentReply.hpp"
 #include "opentxs/core/contract/peer/OutBailmentRequest.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
@@ -77,6 +83,7 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/ext/OTPayment.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/otx/OperationType.hpp"
 #include "opentxs/otx/consensus/Base.hpp"

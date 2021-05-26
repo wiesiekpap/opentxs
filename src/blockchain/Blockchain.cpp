@@ -21,7 +21,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "display/Definition.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -446,19 +445,6 @@ auto FilterToHeader(
 {
     return FilterHashToHeader(
         api, FilterToHash(api, filter)->Bytes(), previous);
-}
-
-auto Format(const Type chain, const opentxs::Amount amount) noexcept
-    -> std::string
-{
-    try {
-        const auto& definition = params::Data::Chains().at(chain).scales_;
-
-        return definition.Format(amount);
-    } catch (...) {
-
-        return {};
-    }
 }
 
 auto GetFilterParams(const filter::Type type) noexcept(false) -> FilterParams

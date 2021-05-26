@@ -84,4 +84,8 @@ target_compile_definitions(
     OT_CRYPTO_USING_PACKETCRYPT=${PACKETCRYPT_EXPORT}
     OT_CRYPTO_USING_LIBSECP256K1=${LIBSECP256K1_EXPORT}
 )
+set_target_properties(
+  opentxs-license PROPERTIES C_INCLUDE_WHAT_YOU_USE "" CXX_INCLUDE_WHAT_YOU_USE
+                                                       ""
+)
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-license>)

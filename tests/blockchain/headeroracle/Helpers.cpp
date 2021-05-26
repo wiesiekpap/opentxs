@@ -5,11 +5,13 @@
 
 #include "Helpers.hpp"  // IWYU pragma: associated
 
-#include "OTTestEnvironment.hpp"
+#include <type_traits>
+
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/client/Client.hpp"
 #include "internal/blockchain/client/Factory.hpp"
 #include "opentxs/OT.hpp"
+#include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
@@ -17,8 +19,8 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Network.hpp"
-#include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/blockchain/client/HeaderOracle.hpp"
+#include "opentxs/core/Data.hpp"
 
 namespace ottest
 {

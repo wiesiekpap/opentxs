@@ -7,8 +7,10 @@
 #include "1_Internal.hpp"   // IWYU pragma: associated
 #include "util/Random.hpp"  // IWYU pragma: associated
 
+#include <cstddef>
 #include <cstring>
 #include <functional>
+#include <iterator>
 #include <random>
 
 namespace opentxs

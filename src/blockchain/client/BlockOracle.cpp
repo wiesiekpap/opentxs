@@ -12,6 +12,7 @@
 
 #include "blockchain/client/blockoracle/BlockDownloader.hpp"
 #include "core/Worker.hpp"
+#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/client/Client.hpp"
 #include "internal/blockchain/client/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -31,6 +32,7 @@ namespace opentxs::factory
 {
 auto BlockOracle(
     const api::Core& api,
+    const api::client::internal::Blockchain& blockchain,
     const blockchain::client::internal::Network& network,
     const blockchain::client::internal::HeaderOracle& header,
     const blockchain::client::internal::BlockDatabase& db,
@@ -41,7 +43,7 @@ auto BlockOracle(
     using ReturnType = blockchain::client::implementation::BlockOracle;
 
     return std::make_unique<ReturnType>(
-        api, network, header, db, chain, shutdown);
+        api, blockchain, network, header, db, chain, shutdown);
 }
 }  // namespace opentxs::factory
 
@@ -49,6 +51,7 @@ namespace opentxs::blockchain::client::implementation
 {
 BlockOracle::BlockOracle(
     const api::Core& api,
+    const api::client::internal::Blockchain& blockchain,
     const internal::Network& network,
     const internal::HeaderOracle& header,
     const internal::BlockDatabase& db,
@@ -58,7 +61,7 @@ BlockOracle::BlockOracle(
     , network_(network)
     , db_(db)
     , lock_()
-    , cache_(api, network, db, chain)
+    , cache_(api, network, db, blockchain.BlockQueueUpdate(), chain)
     , block_downloader_([&]() -> std::unique_ptr<BlockDownloader> {
         using Policy = api::client::blockchain::BlockStorage;
 

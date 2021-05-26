@@ -31,6 +31,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/client/OTX.hpp"
+#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/ui/ActivityThread.hpp"
 #include "ui/base/List.hpp"

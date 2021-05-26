@@ -6,7 +6,9 @@
 #include "rpc/Helpers.hpp"  // IWYU pragma: associated
 
 #include <gtest/gtest.h>
-#include <array>
+#include <algorithm>
+#include <atomic>
+#include <iterator>
 
 #include "UIHelpers.hpp"
 #include "opentxs/api/Context.hpp"
@@ -14,11 +16,14 @@
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/server/Manager.hpp"
-#include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
+#include "opentxs/rpc/request/Base.hpp"
 #include "opentxs/rpc/request/GetAccountBalance.hpp"
+#include "opentxs/rpc/response/Base.hpp"
 #include "opentxs/rpc/response/GetAccountBalance.hpp"
 #include "paymentcode/VectorsV3.hpp"
 

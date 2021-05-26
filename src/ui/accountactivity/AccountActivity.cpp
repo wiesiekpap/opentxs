@@ -7,15 +7,7 @@
 #include "1_Internal.hpp"                          // IWYU pragma: associated
 #include "ui/accountactivity/AccountActivity.hpp"  // IWYU pragma: associated
 
-#if OT_QT
-#include <QList>
-#include <QObject>
-#include <QString>
-#endif  // OT_QT
-#include <algorithm>
 #include <future>
-#include <iterator>
-#include <memory>
 #include <utility>
 
 #include "internal/api/client/Client.hpp"
@@ -50,6 +42,11 @@ AccountActivity::AccountActivity(
 #if OT_QT
           ,
           Roles{
+              {AccountActivityQt::AmountRole, "amount"},
+              {AccountActivityQt::TextRole, "description"},
+              {AccountActivityQt::MemoRole, "memo"},
+              {AccountActivityQt::TimeRole, "timestamp"},
+              {AccountActivityQt::UUIDRole, "uuid"},
               {AccountActivityQt::PolarityRole, "polarity"},
               {AccountActivityQt::ContactsRole, "contacts"},
               {AccountActivityQt::WorkflowRole, "workflow"},

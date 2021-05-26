@@ -34,6 +34,8 @@ namespace implementation
 class AccountActivity;
 }  // namespace implementation
 }  // namespace ui
+
+class Identifier;
 }  // namespace opentxs
 
 namespace opentxs::ui

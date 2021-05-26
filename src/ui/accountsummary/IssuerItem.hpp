@@ -24,6 +24,7 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/client/Issuer.hpp"
+#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "ui/base/Combined.hpp"
 #include "ui/base/List.hpp"

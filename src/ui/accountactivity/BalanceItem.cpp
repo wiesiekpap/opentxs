@@ -32,7 +32,6 @@
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/protobuf/PaymentWorkflow.pb.h"
-#include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #if OT_QT
 #include "opentxs/ui/qt/AccountActivity.hpp"
 #endif  // OT_QT
@@ -219,30 +218,62 @@ auto BalanceItem::get_contact_name(const identifier::Nym& nymID) const noexcept
 QVariant BalanceItem::qt_data(const int column, int role) const noexcept
 {
     switch (role) {
+        case Qt::TextAlignmentRole: {
+            switch (column) {
+                case AccountActivityQt::TextColumn:
+                case AccountActivityQt::MemoColumn: {
+
+                    return Qt::AlignLeft;
+                }
+                default: {
+
+                    return Qt::AlignHCenter;
+                }
+            }
+        }
         case Qt::DisplayRole: {
             switch (column) {
                 case AccountActivityQt::AmountColumn: {
-                    return DisplayAmount().c_str();
+
+                    return qt_data(column, AccountActivityQt::AmountRole);
                 }
                 case AccountActivityQt::TextColumn: {
-                    return Text().c_str();
+
+                    return qt_data(column, AccountActivityQt::TextRole);
                 }
                 case AccountActivityQt::MemoColumn: {
-                    return Memo().c_str();
+
+                    return qt_data(column, AccountActivityQt::MemoRole);
                 }
                 case AccountActivityQt::TimeColumn: {
-                    auto qdatetime = QDateTime{};
-                    qdatetime.setSecsSinceEpoch(Clock::to_time_t(Timestamp()));
 
-                    return qdatetime;
+                    return qt_data(column, AccountActivityQt::TimeRole);
                 }
                 case AccountActivityQt::UUIDColumn: {
-                    return UUID().c_str();
+
+                    return qt_data(column, AccountActivityQt::UUIDRole);
                 }
                 default: {
-                    return {};
                 }
             }
+        } break;
+        case AccountActivityQt::AmountRole: {
+            return DisplayAmount().c_str();
+        }
+        case AccountActivityQt::TextRole: {
+            return Text().c_str();
+        }
+        case AccountActivityQt::MemoRole: {
+            return Memo().c_str();
+        }
+        case AccountActivityQt::TimeRole: {
+            auto qdatetime = QDateTime{};
+            qdatetime.setSecsSinceEpoch(Clock::to_time_t(Timestamp()));
+
+            return qdatetime;
+        }
+        case AccountActivityQt::UUIDRole: {
+            return UUID().c_str();
         }
         case AccountActivityQt::PolarityRole: {
             return polarity(Amount());
@@ -263,9 +294,10 @@ QVariant BalanceItem::qt_data(const int column, int role) const noexcept
             return static_cast<int>(Type());
         }
         default: {
-            return {};
         }
     };
+
+    return {};
 }
 #endif
 

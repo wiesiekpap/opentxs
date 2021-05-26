@@ -13,7 +13,6 @@
 #include "1_Internal.hpp"
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "internal/api/client/Client.hpp"
-#include "internal/contact/Contact.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/Manager.hpp"

@@ -14,6 +14,7 @@
 #include <iosfwd>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <set>
 #include <string>
 #include <utility>
@@ -43,6 +44,14 @@ namespace opentxs
 {
 namespace api
 {
+namespace client
+{
+namespace internal
+{
+struct Blockchain;
+}  // namespace internal
+}  // namespace client
+
 class Core;
 }  // namespace api
 
@@ -76,6 +85,7 @@ namespace zeromq
 {
 namespace socket
 {
+class Publish;
 class Sender;
 }  // namespace socket
 
@@ -120,6 +130,7 @@ public:
 
         Peers(
             const api::Core& api,
+            const api::client::internal::Blockchain& blockchain,
             const internal::Config& config,
             const internal::Network& network,
             const internal::HeaderOracle& headers,
@@ -149,6 +160,7 @@ public:
         const internal::BlockOracle& block_;
         const internal::PeerDatabase& database_;
         const internal::PeerManager& parent_;
+        const network::zeromq::socket::Publish& connected_peers_;
         const api::client::blockchain::BlockStorage policy_;
         const Flag& running_;
         const std::string& shutdown_endpoint_;
@@ -163,6 +175,7 @@ public:
         std::atomic<std::size_t> count_;
         Addresses connected_;
         std::unique_ptr<IncomingConnectionManager> incoming_zmq_;
+        std::map<OTIdentifier, Time> attempt_;
 
         static auto get_preferred_services(
             const internal::Config& config) noexcept -> std::set<p2p::Service>;
@@ -183,6 +196,9 @@ public:
 
         auto add_peer(Endpoint endpoint) noexcept -> int;
         auto add_peer(const int id, Endpoint endpoint) noexcept -> int;
+        auto adjust_count(int adjustment) noexcept -> void;
+        auto previous_failure_timeout(
+            const Identifier& addressID) const noexcept -> bool;
         auto peer_factory(Endpoint endpoint, const int id) noexcept
             -> std::unique_ptr<p2p::internal::Peer>;
     };
@@ -216,6 +232,7 @@ public:
     {
         return peers_.Count();
     }
+    auto GetVerifiedPeerCount() const noexcept -> std::size_t final;
     auto Heartbeat() const noexcept -> void final
     {
         jobs_.Dispatch(Task::Heartbeat);
@@ -226,6 +243,9 @@ public:
     auto RequestBlocks(const std::vector<ReadView>& hashes) const noexcept
         -> bool final;
     auto RequestHeaders() const noexcept -> bool final;
+    auto VerifyPeer(const int id, const std::string& address) const noexcept
+        -> void final;
+
     auto Shutdown() noexcept -> std::shared_future<void> final
     {
         return stop_worker();
@@ -235,6 +255,7 @@ public:
 
     PeerManager(
         const api::Core& api,
+        const api::client::internal::Blockchain& blockchain,
         const internal::Config& config,
         const internal::Network& network,
         const internal::HeaderOracle& headers,
@@ -286,9 +307,13 @@ private:
         Jobs() = delete;
     };
 
+    const internal::Network& network_;
     const internal::PeerDatabase& database_;
+    const Type chain_;
     mutable Jobs jobs_;
     mutable Peers peers_;
+    mutable std::mutex verified_lock_;
+    mutable std::set<int> verified_peers_;
     std::promise<void> init_promise_;
     std::shared_future<void> init_;
 

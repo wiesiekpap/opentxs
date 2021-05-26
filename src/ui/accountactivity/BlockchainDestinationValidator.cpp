@@ -22,6 +22,7 @@
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/blockchain/AddressStyle.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"

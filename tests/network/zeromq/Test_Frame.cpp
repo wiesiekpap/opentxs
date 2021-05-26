@@ -5,12 +5,10 @@
 
 #include <gtest/gtest.h>
 #include <zmq.h>
-#include <iosfwd>
 #include <string>
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/Message.hpp"

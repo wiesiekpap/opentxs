@@ -21,6 +21,8 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ContactSectionName.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/ui/ProfileSection.hpp"
 #include "ui/base/Combined.hpp"

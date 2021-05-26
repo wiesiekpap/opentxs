@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "IncomingConnectionManager.hpp"
+#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/client/Client.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
@@ -36,6 +37,7 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
+#include "opentxs/network/zeromq/Context.hpp"
 
 #define OT_METHOD                                                              \
     "opentxs::blockchain::client::implementation::PeerManager::Peers::"
@@ -44,6 +46,7 @@ namespace opentxs::blockchain::client::implementation
 {
 PeerManager::Peers::Peers(
     const api::Core& api,
+    const api::client::internal::Blockchain& blockchain,
     const internal::Config& config,
     const internal::Network& network,
     const internal::HeaderOracle& headers,
@@ -66,6 +69,7 @@ PeerManager::Peers::Peers(
     , block_(block)
     , database_(database)
     , parent_(parent)
+    , connected_peers_(blockchain.PeerUpdate())
     , policy_(policy)
     , running_(running)
     , shutdown_endpoint_(shutdown)
@@ -90,6 +94,7 @@ PeerManager::Peers::Peers(
     , count_()
     , connected_()
     , incoming_zmq_()
+    , attempt_()
 {
     const auto& data = params::Data::Chains().at(chain_);
     database_.AddOrUpdate(Endpoint{factory::BlockchainAddress(
@@ -125,7 +130,8 @@ auto PeerManager::Peers::add_peer(const int id, Endpoint endpoint) noexcept
 
             if (added) {
                 ++count;
-                ++count_;
+                adjust_count(1);
+                attempt_[addressID] = Clock::now();
                 connected_.emplace(std::move(addressID));
 
                 return id;
@@ -134,6 +140,22 @@ auto PeerManager::Peers::add_peer(const int id, Endpoint endpoint) noexcept
     }
 
     return -1;
+}
+
+auto PeerManager::Peers::adjust_count(int adjustment) noexcept -> void
+{
+    if (0 < adjustment) {
+        ++count_;
+    } else if (0 > adjustment) {
+        --count_;
+    } else {
+        count_.store(0);
+    }
+
+    auto out = api_.ZeroMQ().TaggedMessage(WorkType::BlockchainPeerConnected);
+    out->AddFrame(chain_);
+    out->AddFrame(count_.load());
+    connected_peers_.Send(out);
 }
 
 auto PeerManager::Peers::AddListener(
@@ -218,7 +240,7 @@ auto PeerManager::Peers::Disconnect(const int id) noexcept -> void
     peer.Shutdown().get();
     it->second.reset();
     peers_.erase(it);
-    --count_;
+    adjust_count(-1);
     connected_.erase(address);
 }
 
@@ -316,6 +338,15 @@ auto PeerManager::Peers::get_dns_peer() const noexcept -> Endpoint
 
             if (output) {
                 database_.AddOrUpdate(output->clone_internal());
+
+                if (previous_failure_timeout(output->ID())) {
+                    LogVerbose(OT_METHOD)(__FUNCTION__)(": Skipping ")(
+                        DisplayString(chain_))(" peer ")(output->Display())(
+                        " due to retry timeout")
+                        .Flush();
+
+                    continue;
+                }
 
                 return output;
             }
@@ -415,6 +446,14 @@ auto PeerManager::Peers::get_preferred_peer(
         return {};
     }
 
+    if (output && previous_failure_timeout(output->ID())) {
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": Skipping ")(DisplayString(
+            chain_))(" peer ")(output->Display())(" due to retry timeout")
+            .Flush();
+
+        return {};
+    }
+
     return output;
 }
 
@@ -462,6 +501,21 @@ auto PeerManager::Peers::peer_factory(Endpoint endpoint, const int id) noexcept
     }
 }
 
+auto PeerManager::Peers::previous_failure_timeout(
+    const Identifier& addressID) const noexcept -> bool
+{
+    static constexpr auto timeout = std::chrono::minutes{10};
+
+    if (const auto it = attempt_.find(addressID); attempt_.end() == it) {
+
+        return false;
+    } else {
+        const auto& last = it->second;
+
+        return (Clock::now() - last) < timeout;
+    }
+}
+
 auto PeerManager::Peers::set_default_peer(
     const std::string node,
     const Data& localhost,
@@ -506,7 +560,7 @@ auto PeerManager::Peers::Shutdown() noexcept -> void
     }
 
     peers_.clear();
-    count_.store(0);
+    adjust_count(0);
     active_.clear();
 }
 

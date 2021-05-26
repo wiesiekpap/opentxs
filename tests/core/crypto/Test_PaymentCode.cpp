@@ -10,6 +10,7 @@
 #include <type_traits>
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -21,6 +22,7 @@
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
+#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"

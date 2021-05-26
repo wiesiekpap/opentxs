@@ -7,10 +7,12 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "ui/unitlist/UnitList.hpp"  // IWYU pragma: associated
 
+#include <map>
 #include <memory>
 #include <set>
 #include <thread>
 #include <utility>
+#include <vector>
 
 #include "internal/api/client/Client.hpp"
 #include "internal/contact/Contact.hpp"

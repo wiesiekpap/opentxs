@@ -18,7 +18,6 @@
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"

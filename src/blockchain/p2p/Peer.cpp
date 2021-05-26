@@ -12,7 +12,6 @@
 #include <string_view>
 
 #include "blockchain/DownloadTask.hpp"
-#include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -141,7 +140,7 @@ auto Peer::check_handshake() noexcept -> void
 
     if (state.first_action_ && state.second_action_ &&
         (false == state.done())) {
-        LogNormal(
+        LogDetail(
             address_.Incoming() ? "Incoming connection from "
                                 : "Connected to ")(
             DisplayString(address_.Chain()))(" peer at ")(address_.Display())
@@ -512,7 +511,7 @@ auto Peer::state_machine() noexcept -> bool
                 .Flush();
             subscribe();
             state_.value_.store(State::Run);
-            network_.Blockchain().UpdatePeer(chain_, address_.Display());
+            manager_.VerifyPeer(id_, address_.Display());
             [[fallthrough]];
         }
         case State::Run: {

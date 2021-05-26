@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "Helpers.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Activity.hpp"
 #include "opentxs/api/client/Blockchain.hpp"

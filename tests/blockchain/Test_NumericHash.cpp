@@ -10,16 +10,25 @@
 #include <string>
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
-#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/NumericHash.hpp"
 #include "opentxs/blockchain/Work.hpp"
 #include "opentxs/core/Data.hpp"
+
+namespace opentxs
+{
+namespace api
+{
+namespace client
+{
+class Manager;
+}  // namespace client
+}  // namespace api
+}  // namespace opentxs
 
 namespace be = boost::endian;
 
