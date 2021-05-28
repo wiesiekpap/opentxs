@@ -143,7 +143,7 @@ HD::HD(
                               parent.Parent().Parent(),
                               *this,
                               parent.Chain(),
-                              data_.external_.type_,
+                              externalType,
                               address)));
               }
 

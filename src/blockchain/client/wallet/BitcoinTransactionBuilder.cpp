@@ -425,7 +425,8 @@ struct BitcoinTransactionBuilder::Imp {
 
         for (const auto& [input, value] : inputs_) {
             if (false == sign_input(++index, *input, txcopy, bip143)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to sign input")
+                LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to sign input ")(
+                    index)
                     .Flush();
 
                 return false;
@@ -578,6 +579,10 @@ private:
         auto views = block::bitcoin::internal::Input::Signatures{};
 
         for (const auto& id : input.Keys()) {
+            LogVerbose(OT_METHOD)(__FUNCTION__)(": Loading element ")(
+                opentxs::print(id))(" to sign previous output ")(
+                input.PreviousOutput().str())
+                .Flush();
             const auto& node = blockchain_.GetKey(id);
 
             if (const auto got = node.KeyID(); got != id) {
@@ -587,7 +592,7 @@ private:
                 LogOutput(OT_METHOD)(__FUNCTION__)(": requested: ")(
                     opentxs::print(id))
                     .Flush();
-                LogOutput(OT_METHOD)(__FUNCTION__)(": got: ")(
+                LogOutput(OT_METHOD)(__FUNCTION__)(":       got: ")(
                     opentxs::print(got))
                     .Flush();
 
@@ -656,6 +661,10 @@ private:
         auto views = block::bitcoin::internal::Input::Signatures{};
 
         for (const auto& id : input.Keys()) {
+            LogVerbose(OT_METHOD)(__FUNCTION__)(": Loading element ")(
+                opentxs::print(id))(" to sign previous output ")(
+                input.PreviousOutput().str())
+                .Flush();
             const auto& node = blockchain_.GetKey(id);
 
             if (const auto got = node.KeyID(); got != id) {
@@ -665,7 +674,7 @@ private:
                 LogOutput(OT_METHOD)(__FUNCTION__)(": requested: ")(
                     opentxs::print(id))
                     .Flush();
-                LogOutput(OT_METHOD)(__FUNCTION__)(": got: ")(
+                LogOutput(OT_METHOD)(__FUNCTION__)(":       got: ")(
                     opentxs::print(got))
                     .Flush();
 
@@ -733,6 +742,10 @@ private:
         auto views = block::bitcoin::internal::Input::Signatures{};
 
         for (const auto& id : input.Keys()) {
+            LogVerbose(OT_METHOD)(__FUNCTION__)(": Loading element ")(
+                opentxs::print(id))(" to sign previous output ")(
+                input.PreviousOutput().str())
+                .Flush();
             const auto& node = blockchain_.GetKey(id);
 
             if (const auto got = node.KeyID(); got != id) {
@@ -742,7 +755,7 @@ private:
                 LogOutput(OT_METHOD)(__FUNCTION__)(": requested: ")(
                     opentxs::print(id))
                     .Flush();
-                LogOutput(OT_METHOD)(__FUNCTION__)(": got: ")(
+                LogOutput(OT_METHOD)(__FUNCTION__)(":       got: ")(
                     opentxs::print(got))
                     .Flush();
 
@@ -837,7 +850,9 @@ private:
         auto pKey = element.PrivateKey(reason);
 
         if (!pKey) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": failed to obtain private key")
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": failed to obtain private key ")(
+                opentxs::print(element.KeyID()))
                 .Flush();
 
             return {};

@@ -16,6 +16,7 @@
 #include <string_view>
 #include <utility>
 
+#include "api/client/blockchain/BalanceLists.hpp"
 #include "api/client/blockchain/SyncClient.hpp"
 #include "api/client/blockchain/SyncServer.hpp"
 #include "core/Worker.hpp"

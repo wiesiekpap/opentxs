@@ -253,7 +253,7 @@ private:
         builder.FinalizeOutputs();
 
         if (false == builder.SignInputs()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to sign inputs")
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Transaction signing failure")
                 .Flush();
             output = BuildResult::PermanentFailure;
 

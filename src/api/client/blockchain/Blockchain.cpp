@@ -70,9 +70,9 @@ auto operator!=(
     const auto& [lAccount, lSubchain, lIndex] = lhs;
     const auto& [rAccount, rSubchain, rIndex] = rhs;
 
-    if (lAccount == rAccount) { return false; }
+    if (lAccount != rAccount) { return true; }
 
-    if (lSubchain == rSubchain) { return false; }
+    if (lSubchain != rSubchain) { return true; }
 
     return lIndex != rIndex;
 }
