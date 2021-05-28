@@ -80,17 +80,6 @@ auto DisplayString(const Type type) noexcept -> std::string
     }
 }
 
-auto IsTestnet(const Type type) noexcept -> bool
-{
-    try {
-
-        return params::Data::Chains().at(type).testnet_;
-    } catch (...) {
-
-        return false;
-    }
-}
-
 auto FilterHash(
     const api::Core& api,
     const Type chain,
@@ -113,6 +102,17 @@ auto FilterHash(
         default: {
             return BlockHash(api, chain, input, output);
         }
+    }
+}
+
+auto IsTestnet(const Type type) noexcept -> bool
+{
+    try {
+
+        return params::Data::Chains().at(type).testnet_;
+    } catch (...) {
+
+        return false;
     }
 }
 
@@ -305,6 +305,22 @@ auto BlankHash() noexcept -> pHash
         Data::Mode::Hex);
 }
 }  // namespace opentxs::blockchain::block
+
+namespace opentxs::blockchain::internal
+{
+auto Format(const Type chain, const opentxs::Amount amount) noexcept
+    -> std::string
+{
+    try {
+        const auto& definition = params::Data::Chains().at(chain).scales_;
+
+        return definition.Format(amount);
+    } catch (...) {
+
+        return {};
+    }
+}
+}  // namespace opentxs::blockchain::internal
 
 namespace opentxs::blockchain::params
 {

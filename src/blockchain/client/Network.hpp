@@ -151,6 +151,7 @@ public:
     }
     auto GetPeerCount() const noexcept -> std::size_t final;
     auto GetType() const noexcept -> Type final { return chain_; }
+    auto GetVerifiedPeerCount() const noexcept -> std::size_t final;
     auto HeaderOracleInternal() const noexcept
         -> const internal::HeaderOracle& final
     {
@@ -286,6 +287,7 @@ private:
     };
 
     const api::client::internal::Blockchain& parent_;
+    const Time start_;
     const std::string sync_endpoint_;
     std::unique_ptr<SyncServer> sync_server_;
     mutable std::atomic<block::Height> local_chain_height_;

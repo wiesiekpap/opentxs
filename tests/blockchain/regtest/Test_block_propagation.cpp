@@ -9,7 +9,7 @@
 
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
 
-namespace
+namespace ottest
 {
 TEST_F(Regtest_fixture_single, init_opentxs) {}
 
@@ -24,4 +24,4 @@ TEST_F(Regtest_fixture_single, extend) { EXPECT_TRUE(Mine(10, 5)); }
 TEST_F(Regtest_fixture_single, reorg) { EXPECT_TRUE(Mine(12, 5)); }
 
 TEST_F(Regtest_fixture_single, shutdown) { Shutdown(); }
-}  // namespace
+}  // namespace ottest

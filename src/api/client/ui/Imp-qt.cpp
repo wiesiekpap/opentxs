@@ -20,6 +20,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/ui/Blockchains.hpp"
 #include "opentxs/ui/qt/BlockchainSelection.hpp"
+#include "opentxs/ui/qt/BlockchainStatistics.hpp"
 #include "opentxs/ui/qt/SeedValidator.hpp"
 
 //#define OT_METHOD "opentxs::api::client::UI"
@@ -45,6 +46,7 @@ ImpQt::ImpQt(
     , seed_validators_()
     , unit_lists_qt_()
     , blockchain_selection_qt_()
+    , blockchain_statistics_qt_()
 {
     // WARNING: do not access api_.Wallet() during construction
 }
@@ -209,6 +211,22 @@ auto ImpQt::BlockchainSelectionQt(
     return it->second.get();
 }
 
+auto ImpQt::BlockchainStatisticsQt(const SimpleCallback cb) const noexcept
+    -> opentxs::ui::BlockchainStatisticsQt*
+{
+    auto lock = Lock{lock_};
+
+    if (false == bool(blockchain_statistics_qt_)) {
+        blockchain_statistics_qt_ =
+            opentxs::factory::BlockchainStatisticsQtModel(
+                *blockchain_statistics(lock, cb));
+    }
+
+    OT_ASSERT(blockchain_statistics_qt_);
+
+    return blockchain_statistics_qt_.get();
+}
+
 auto ImpQt::ContactQt(const Identifier& contactID, const SimpleCallback cb)
     const noexcept -> opentxs::ui::ContactQt*
 {
@@ -337,6 +355,7 @@ auto ImpQt::SeedValidator(
 
 auto ImpQt::ShutdownModels() noexcept -> void
 {
+    blockchain_statistics_qt_.reset();
     blockchain_selection_qt_.clear();
     unit_lists_qt_.clear();
     profiles_qt_.clear();

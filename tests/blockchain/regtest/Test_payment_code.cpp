@@ -6,14 +6,21 @@
 #include "Helpers.hpp"  // IWYU pragma: associated
 
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <deque>
 #include <optional>
+#include <set>
+#include <string>
+#include <utility>
 
 #include "UIHelpers.hpp"
+#include "opentxs/Pimpl.hpp"
 #include "opentxs/SharedPimpl.hpp"
+#include "opentxs/api/Context.hpp"
 #include "opentxs/api/HDSeed.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/UI.hpp"
 #include "opentxs/api/client/blockchain/BalanceNode.hpp"
 #include "opentxs/api/client/blockchain/BalanceNodeType.hpp"
@@ -21,7 +28,11 @@
 #include "opentxs/api/client/blockchain/HD.hpp"
 #include "opentxs/api/client/blockchain/PaymentCode.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"
+#include "opentxs/api/client/blockchain/Types.hpp"
+#include "opentxs/blockchain/FilterType.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/Network.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
@@ -30,8 +41,11 @@
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/client/BlockOracle.hpp"
 #include "opentxs/blockchain/client/FilterOracle.hpp"
+#include "opentxs/blockchain/client/HeaderOracle.hpp"
 #include "opentxs/blockchain/client/Wallet.hpp"
+#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/Log.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -39,14 +53,16 @@
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
 #include "opentxs/rpc/request/ListAccounts.hpp"
+#include "opentxs/rpc/response/Base.hpp"
 #include "opentxs/rpc/response/ListAccounts.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
 #include "opentxs/ui/BalanceItem.hpp"
 #include "paymentcode/VectorsV3.hpp"
 
+namespace ottest
+{
 Counter account_activity_alice_{};
 Counter account_activity_bob_{};
 
@@ -275,8 +291,6 @@ std::unique_ptr<ScanListener> Regtest_payment_code::listener_alice_p_{};
 std::unique_ptr<ScanListener> Regtest_payment_code::listener_bob_p_{};
 Regtest_payment_code::Expected Regtest_payment_code::expected_{};
 
-namespace
-{
 TEST_F(Regtest_payment_code, init_opentxs) {}
 
 TEST_F(Regtest_payment_code, start_chains) { EXPECT_TRUE(Start()); }
@@ -1633,4 +1647,4 @@ TEST_F(Regtest_payment_code, second_outgoing_transaction)
 }
 
 TEST_F(Regtest_payment_code, shutdown) { Shutdown(); }
-}  // namespace
+}  // namespace ottest

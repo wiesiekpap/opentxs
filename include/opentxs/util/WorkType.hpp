@@ -34,6 +34,10 @@ enum class WorkType : OTZMQWorkType {
     BlockchainStateChange = 134,
     BlockchainSyncProgress = 145,
     BlockchainWalletScanProgress = 136,
+    BlockchainNewFilter = 137,
+    BlockchainBlockDownloadQueue = 138,
+    BlockchainPeerConnected = 139,
+    BlockchainWalletUpdated = 140,
     OTXConnectionStatus = 256,
     OTXTaskComplete = 257,
     OTXSearchNym = 258,
@@ -143,8 +147,8 @@ constexpr auto value(const WorkType in) noexcept
  *          1: txid (encoded as byte sequence)
  *          2: chain type as blockchain::Type
  *
- *   BlockchainPeerAdded: reports when a new peer is connected for any active
- *                        blockchain
+ *   BlockchainPeerAdded: reports when a new peer has reached the active state
+ *                        for any active blockchain
  *       * Additional frames:
  *          1: chain type as blockchain::Type
  *          2: peer address as string
@@ -177,6 +181,34 @@ constexpr auto value(const WorkType in) noexcept
  *          5: last scan height as blockchain::block::Height
  *          6: last scan hash as blockchain::block::Hash (encoded as byte
  *             sequence)
+ *
+ *   BlockchainNewFilter: reports the receipt of a new cfilter
+ *       * Additional frames:
+ *          1: chain type as blockchain::Type
+ *          2: filter type as blockchain::filter::Type
+ *          3: corresponding height as blockchain::block::Height
+ *          4: corresponding block hash as blockchain::block::Hash (encoded as
+ *             byte sequence)
+ *
+ *   BlockchainBlockDownloadQueue: reports change to the state of the block
+ *                                 download queue
+ *       * Additional frames:
+ *          1: chain type as blockchain::Type
+ *          2: queue size as std::size_t
+ *
+ *   BlockchainPeerConnected: reports when the number of open incoming or
+ *                            outgoing peer connections has changed
+ *       * Additional frames:
+ *          1: chain type as blockchain::Type
+ *          2: peer count as std::size_t
+ *
+ *   BlockchainWalletUpdated: reports the blockchain wallet balance updates
+ *       * Additional frames:
+ *          1: chain type as blockchain::Type
+ *          2: confirmed balance as Amount
+ *          3: unconfirmed balance as Amount
+ *          4: [optional] account owner as identifier::Nym (encoded as byte
+ *                        sequence)
  *
  *   OTXConnectionStatus: reports state changes to notary connections
  *       * Additional frames:

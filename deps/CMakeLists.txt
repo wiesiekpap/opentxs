@@ -149,4 +149,12 @@ if(OT_BUNDLED_SECP256K1 AND OT_CRYPTO_USING_LIBSECP256K1)
         FORCE
   )
   add_subdirectory(secp256k1)
+  set_target_properties(
+    secp256k1-obj PROPERTIES C_INCLUDE_WHAT_YOU_USE "" CXX_INCLUDE_WHAT_YOU_USE
+                                                       ""
+  )
+  set_target_properties(
+    secp256k1-lib PROPERTIES C_INCLUDE_WHAT_YOU_USE "" CXX_INCLUDE_WHAT_YOU_USE
+                                                       ""
+  )
 endif()

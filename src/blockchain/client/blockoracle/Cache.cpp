@@ -22,7 +22,11 @@
 #include "opentxs/blockchain/client/BlockOracle.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
+#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/util/WorkType.hpp"
 
 #define OT_METHOD                                                              \
     "opentxs::blockchain::client::implementation::BlockOracle::Cache::"
@@ -36,10 +40,12 @@ BlockOracle::Cache::Cache(
     const api::Core& api,
     const internal::Network& network,
     const internal::BlockDatabase& db,
+    const network::zeromq::socket::Publish& socket,
     const blockchain::Type chain) noexcept
     : api_(api)
     , network_(network)
     , db_(db)
+    , cache_size_publisher_(socket)
     , chain_(chain)
     , lock_()
     , pending_()
@@ -52,6 +58,22 @@ auto BlockOracle::Cache::download(const block::Hash& block) const noexcept
     -> bool
 {
     return network_.RequestBlock(block);
+}
+
+auto BlockOracle::Cache::DownloadQueue() const noexcept -> std::size_t
+{
+    auto lock = Lock{lock_};
+
+    return pending_.size();
+}
+
+auto BlockOracle::Cache::publish(std::size_t size) const noexcept -> void
+{
+    auto work =
+        api_.ZeroMQ().TaggedMessage(WorkType::BlockchainBlockDownloadQueue);
+    work->AddFrame(chain_);
+    work->AddFrame(size);
+    cache_size_publisher_.Send(work);
 }
 
 auto BlockOracle::Cache::ReceiveBlock(const zmq::Frame& in) const noexcept
@@ -68,7 +90,7 @@ auto BlockOracle::Cache::ReceiveBlock(BitcoinBlock_p in) const noexcept -> void
         return;
     }
 
-    Lock lock{lock_};
+    auto lock = Lock{lock_};
     auto& block = *in;
 
     if (api::client::blockchain::BlockStorage::None != db_.BlockPolicy()) {
@@ -91,6 +113,7 @@ auto BlockOracle::Cache::ReceiveBlock(BitcoinBlock_p in) const noexcept -> void
     LogVerbose(OT_METHOD)(__FUNCTION__)(": Cached block ")(id.asHex()).Flush();
     mem_.push(std::move(id), std::move(future));
     pending_.erase(pending);
+    publish(pending_.size());
 }
 
 auto BlockOracle::Cache::Request(const block::Hash& block) const noexcept
@@ -109,7 +132,7 @@ auto BlockOracle::Cache::Request(const BlockHashes& hashes) const noexcept
     auto output = BitcoinBlockFutures{};
     output.reserve(hashes.size());
     auto download = std::map<block::pHash, BitcoinBlockFutures::iterator>{};
-    Lock lock{lock_};
+    auto lock = Lock{lock_};
 
     if (false == running_) {
         std::for_each(hashes.begin(), hashes.end(), [&](const auto&) {
@@ -184,6 +207,8 @@ auto BlockOracle::Cache::Request(const BlockHashes& hashes) const noexcept
             *futureOut = future;
             queued = messageSent;
         }
+
+        publish(pending_.size());
     }
 
     return output;
@@ -191,7 +216,7 @@ auto BlockOracle::Cache::Request(const BlockHashes& hashes) const noexcept
 
 auto BlockOracle::Cache::Shutdown() noexcept -> void
 {
-    Lock lock{lock_};
+    auto lock = Lock{lock_};
 
     if (running_) {
         running_ = false;
@@ -203,12 +228,13 @@ auto BlockOracle::Cache::Shutdown() noexcept -> void
         }
 
         pending_.clear();
+        publish(pending_.size());
     }
 }
 
 auto BlockOracle::Cache::StateMachine() const noexcept -> bool
 {
-    Lock lock{lock_};
+    auto lock = Lock{lock_};
 
     if (false == running_) { return false; }
 

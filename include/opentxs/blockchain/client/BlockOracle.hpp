@@ -30,6 +30,8 @@ public:
     using BlockHashes = std::vector<block::pHash>;
     using BitcoinBlockFutures = std::vector<BitcoinBlockFuture>;
 
+    OPENTXS_EXPORT virtual auto DownloadQueue() const noexcept
+        -> std::size_t = 0;
     OPENTXS_EXPORT virtual auto LoadBitcoin(
         const block::Hash& block) const noexcept -> BitcoinBlockFuture = 0;
     OPENTXS_EXPORT virtual auto LoadBitcoin(

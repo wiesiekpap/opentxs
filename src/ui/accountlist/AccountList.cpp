@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <future>
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -16,6 +17,7 @@
 #include <vector>
 
 #include "internal/api/client/Client.hpp"
+#include "internal/core/Core.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Shared.hpp"
 #include "opentxs/api/Endpoints.hpp"
@@ -26,9 +28,6 @@
 #include "opentxs/api/client/blockchain/BalanceTree.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/api/storage/Storage.hpp"
-#if OT_BLOCKCHAIN
-#include "opentxs/blockchain/Blockchain.hpp"
-#endif  // OT_BLOCKCHAIN
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"

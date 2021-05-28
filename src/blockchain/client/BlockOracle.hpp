@@ -36,6 +36,11 @@ namespace api
 {
 namespace client
 {
+namespace internal
+{
+struct Blockchain;
+}  // namespace internal
+
 class Blockchain;
 }  // namespace client
 
@@ -54,6 +59,11 @@ namespace network
 {
 namespace zeromq
 {
+namespace socket
+{
+class Publish;
+}  // namespace socket
+
 class Frame;
 class Message;
 }  // namespace zeromq
@@ -76,6 +86,10 @@ public:
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
+    auto DownloadQueue() const noexcept -> std::size_t final
+    {
+        return cache_.DownloadQueue();
+    }
     auto GetBlockJob() const noexcept -> BlockJob final;
     auto Heartbeat() const noexcept -> void final;
     auto LoadBitcoin(const block::Hash& block) const noexcept
@@ -100,6 +114,7 @@ public:
 
     BlockOracle(
         const api::Core& api,
+        const api::client::internal::Blockchain& blockchain,
         const internal::Network& network,
         const internal::HeaderOracle& header,
         const internal::BlockDatabase& db,
@@ -116,6 +131,7 @@ private:
     using Pending = std::map<block::pHash, PendingData>;
 
     struct Cache {
+        auto DownloadQueue() const noexcept -> std::size_t;
         auto ReceiveBlock(const zmq::Frame& in) const noexcept -> void;
         auto ReceiveBlock(BitcoinBlock_p in) const noexcept -> void;
         auto Request(const block::Hash& block) const noexcept
@@ -130,6 +146,7 @@ private:
             const api::Core& api_,
             const internal::Network& network,
             const internal::BlockDatabase& db,
+            const network::zeromq::socket::Publish& socket,
             const blockchain::Type chain) noexcept;
         ~Cache() { Shutdown(); }
 
@@ -160,6 +177,7 @@ private:
         const api::Core& api_;
         const internal::Network& network_;
         const internal::BlockDatabase& db_;
+        const network::zeromq::socket::Publish& cache_size_publisher_;
         const blockchain::Type chain_;
         mutable std::mutex lock_;
         mutable Pending pending_;
@@ -167,6 +185,7 @@ private:
         bool running_;
 
         auto download(const block::Hash& block) const noexcept -> bool;
+        auto publish(std::size_t cache) const noexcept -> void;
     };
 
     const internal::Network& network_;

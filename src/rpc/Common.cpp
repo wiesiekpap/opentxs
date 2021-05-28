@@ -8,7 +8,12 @@
 #include "internal/rpc/RPC.hpp"  // IWYU pragma: associated
 
 #include <boost/container/flat_map.hpp>
+#include <boost/container/vector.hpp>
+#include <boost/intrusive/detail/iterator.hpp>
+#include <boost/move/algo/detail/set_difference.hpp>
+#include <boost/move/algo/move.hpp>
 #include <functional>
+#include <string>
 
 #include "opentxs/protobuf/RPCEnums.pb.h"
 #include "opentxs/rpc/AccountEventType.hpp"
@@ -18,6 +23,7 @@
 #include "opentxs/rpc/PaymentType.hpp"
 #include "opentxs/rpc/PushType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
+#include "opentxs/rpc/Types.hpp"
 #include "util/Container.hpp"
 
 namespace opentxs

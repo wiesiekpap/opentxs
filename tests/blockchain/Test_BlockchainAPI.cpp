@@ -4,7 +4,6 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
-#include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <iostream>
@@ -21,6 +20,7 @@
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "crypto/Bip32Vectors.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -42,6 +42,7 @@
 #include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
+#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"

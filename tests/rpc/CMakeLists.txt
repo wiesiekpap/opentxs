@@ -17,6 +17,11 @@ if(OT_BLOCKCHAIN_EXPORT)
   add_opentx_test(
     unittests-opentxs-rpc-send-payment-blockchain SendPayment_blockchain.cpp
   )
+  target_sources(
+    unittests-opentxs-rpc-send-payment-blockchain
+    PRIVATE "${opentxs_SOURCE_DIR}/tests/blockchain/regtest/Helpers.cpp"
+  )
+
 endif()
 
 # Prevent building tests that still include protobuf generated header files.

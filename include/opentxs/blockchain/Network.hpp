@@ -48,53 +48,50 @@ namespace opentxs
 {
 namespace blockchain
 {
-class Network
+class OPENTXS_EXPORT Network
 {
 public:
     using PendingOutgoing = std::future<block::pTxid>;
 
-    OPENTXS_EXPORT virtual auto AddBlock(
+    virtual auto AddBlock(
         const std::shared_ptr<const block::bitcoin::Block> block) const noexcept
         -> bool = 0;
-    OPENTXS_EXPORT virtual auto AddPeer(
-        const p2p::Address& address) const noexcept -> bool = 0;
-    OPENTXS_EXPORT virtual auto BlockOracle() const noexcept
-        -> const client::BlockOracle& = 0;
-    OPENTXS_EXPORT virtual auto FilterOracle() const noexcept
+    virtual auto AddPeer(const p2p::Address& address) const noexcept
+        -> bool = 0;
+    virtual auto BlockOracle() const noexcept -> const client::BlockOracle& = 0;
+    virtual auto FilterOracle() const noexcept
         -> const client::FilterOracle& = 0;
-    OPENTXS_EXPORT virtual auto GetBalance() const noexcept -> Balance = 0;
-    OPENTXS_EXPORT virtual auto GetBalance(
-        const identifier::Nym& owner) const noexcept -> Balance = 0;
-    OPENTXS_EXPORT virtual auto GetConfirmations(
-        const std::string& txid) const noexcept -> ChainHeight = 0;
-    OPENTXS_EXPORT virtual auto GetHeight() const noexcept -> ChainHeight = 0;
-    OPENTXS_EXPORT virtual auto GetPeerCount() const noexcept
-        -> std::size_t = 0;
-    OPENTXS_EXPORT virtual auto GetType() const noexcept -> Type = 0;
-    OPENTXS_EXPORT virtual auto HeaderOracle() const noexcept
+    virtual auto GetBalance() const noexcept -> Balance = 0;
+    virtual auto GetBalance(const identifier::Nym& owner) const noexcept
+        -> Balance = 0;
+    virtual auto GetConfirmations(const std::string& txid) const noexcept
+        -> ChainHeight = 0;
+    virtual auto GetHeight() const noexcept -> ChainHeight = 0;
+    virtual auto GetPeerCount() const noexcept -> std::size_t = 0;
+    virtual auto GetType() const noexcept -> Type = 0;
+    virtual auto GetVerifiedPeerCount() const noexcept -> std::size_t = 0;
+    virtual auto HeaderOracle() const noexcept
         -> const client::HeaderOracle& = 0;
-    OPENTXS_EXPORT virtual auto Listen(
-        const p2p::Address& address) const noexcept -> bool = 0;
-    OPENTXS_EXPORT virtual auto SendToAddress(
+    virtual auto Listen(const p2p::Address& address) const noexcept -> bool = 0;
+    virtual auto SendToAddress(
         const identifier::Nym& sender,
         const std::string& address,
         const Amount amount,
         const std::string& memo = {}) const noexcept -> PendingOutgoing = 0;
-    OPENTXS_EXPORT virtual auto SendToPaymentCode(
+    virtual auto SendToPaymentCode(
         const identifier::Nym& sender,
         const std::string& recipient,
         const Amount amount,
         const std::string& memo = {}) const noexcept -> PendingOutgoing = 0;
-    OPENTXS_EXPORT virtual auto SendToPaymentCode(
+    virtual auto SendToPaymentCode(
         const identifier::Nym& sender,
         const PaymentCode& recipient,
         const Amount amount,
         const std::string& memo = {}) const noexcept -> PendingOutgoing = 0;
-    OPENTXS_EXPORT virtual auto Wallet() const noexcept
-        -> const client::Wallet& = 0;
+    virtual auto Wallet() const noexcept -> const client::Wallet& = 0;
 
-    OPENTXS_EXPORT virtual auto Connect() noexcept -> bool = 0;
-    OPENTXS_EXPORT virtual auto Disconnect() noexcept -> bool = 0;
+    virtual auto Connect() noexcept -> bool = 0;
+    virtual auto Disconnect() noexcept -> bool = 0;
 
     virtual ~Network() = default;
 

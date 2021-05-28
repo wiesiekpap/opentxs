@@ -5,6 +5,17 @@
 
 #pragma once
 
+#include <gtest/gtest.h>
+#include <iosfwd>
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include <utility>
+#include <vector>
+
 #include "OTTestEnvironment.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
@@ -14,8 +25,29 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Network.hpp"
+#include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/blockchain/client/HeaderOracle.hpp"
+
+namespace opentxs
+{
+namespace api
+{
+namespace client
+{
+class Manager;
+}  // namespace client
+}  // namespace api
+
+namespace blockchain
+{
+namespace client
+{
+class HeaderOracle;
+}  // namespace client
+}  // namespace blockchain
+}  // namespace opentxs
 
 namespace b = ot::blockchain;
 namespace bb = b::block;

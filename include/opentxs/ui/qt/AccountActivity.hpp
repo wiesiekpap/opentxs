@@ -7,12 +7,16 @@
 #define OPENTXS_UI_ACCOUNTACTIVITYQT_HPP
 
 #include <QIdentityProxyModel>
+#include <QObject>
+#include <QString>
 #include <QVariant>
 
 #include "opentxs/opentxs_export.hpp"              // IWYU pragma: keep
 #include "opentxs/ui/qt/AmountValidator.hpp"       // IWYU pragma: keep
 #include "opentxs/ui/qt/DestinationValidator.hpp"  // IWYU pragma: keep
 #include "opentxs/ui/qt/DisplayScale.hpp"          // IWYU pragma: keep
+
+class QObject;
 
 namespace opentxs
 {
@@ -50,31 +54,26 @@ signals:
     void syncProgressUpdated(int, int) const;
 
 public:
-    // User roles return the same data for all columns
+    // Five columns when used in a table view
     //
-    // PolarityRole: int (-1, 0, or 1)
-    // ContactsRole: QStringList
-    // WorkflowRole: QString
-    // TypeRole: int (opentxs::StorageBox)
-    //
-    // Qt::DisplayRole, AmountColumn: QString
-    // Qt::DisplayRole, TextColumn: QString
-    // Qt::DisplayRole, MemoColumn: QString
-    // Qt::DisplayRole, TimeColumn: QDateTime
-    // Qt::DisplayRole, UUIDColumn: QString
-
+    // All data is available in a list view via the user roles defined below:
     enum Roles {
-        PolarityRole = Qt::UserRole + 0,
-        ContactsRole = Qt::UserRole + 1,
-        WorkflowRole = Qt::UserRole + 2,
-        TypeRole = Qt::UserRole + 3,
+        AmountRole = Qt::UserRole + 0,    // QString
+        TextRole = Qt::UserRole + 1,      // QString
+        MemoRole = Qt::UserRole + 2,      // QString
+        TimeRole = Qt::UserRole + 3,      // QDateTime
+        UUIDRole = Qt::UserRole + 4,      // QString
+        PolarityRole = Qt::UserRole + 5,  // int, -1, 0, or 1
+        ContactsRole = Qt::UserRole + 6,  // QStringList
+        WorkflowRole = Qt::UserRole + 7,  // QString
+        TypeRole = Qt::UserRole + 8,      // int, opentxs::StorageBox)
     };
     enum Columns {
-        AmountColumn = 0,
+        TimeColumn = 0,
         TextColumn = 1,
-        MemoColumn = 2,
-        TimeColumn = 3,
-        UUIDColumn = 4,
+        AmountColumn = 2,
+        UUIDColumn = 3,
+        MemoColumn = 4,
     };
 
     QString accountID() const noexcept;
@@ -86,6 +85,10 @@ public:
     AmountValidator* getAmountValidator() const noexcept;
     DestinationValidator* getDestValidator() const noexcept;
     DisplayScaleQt* getScaleModel() const noexcept;
+    auto headerData(
+        int section,
+        Qt::Orientation orientation,
+        int role = Qt::DisplayRole) const -> QVariant final;
     Q_INVOKABLE bool sendToAddress(
         const QString& address,
         const QString& amount,

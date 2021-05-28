@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"

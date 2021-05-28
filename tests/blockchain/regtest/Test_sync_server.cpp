@@ -6,13 +6,19 @@
 #include "Helpers.hpp"  // IWYU pragma: associated
 
 #include <gtest/gtest.h>
+#include <utility>
 
+#include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/blockchain/Network.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/client/HeaderOracle.hpp"
 #include "opentxs/network/blockchain/sync/Acknowledgement.hpp"
+#include "opentxs/network/blockchain/sync/Base.hpp"
 #include "opentxs/network/blockchain/sync/Data.hpp"
+#include "opentxs/network/blockchain/sync/MessageType.hpp"
 
-namespace
+namespace ottest
 {
 TEST_F(Regtest_fixture_sync, init_opentxs) {}
 
@@ -223,4 +229,4 @@ TEST_F(Regtest_fixture_sync, sync_reorg)
 }
 
 TEST_F(Regtest_fixture_sync, shutdown) { Shutdown(); }
-}  // namespace
+}  // namespace ottest

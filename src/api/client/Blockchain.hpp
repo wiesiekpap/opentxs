@@ -175,6 +175,8 @@ public:
         noexcept(false) -> const blockchain::internal::BalanceTree& final;
     auto BlockchainDB() const noexcept
         -> const blockchain::database::implementation::Database& final;
+    auto BlockQueueUpdate() const noexcept
+        -> const opentxs::network::zeromq::socket::Publish& final;
     auto CalculateAddress(
         const Chain chain,
         const blockchain::AddressStyle format,
@@ -192,6 +194,8 @@ public:
     auto EnabledChains() const noexcept -> std::set<Chain> final;
     auto EncodeAddress(const Style style, const Chain chain, const Data& data)
         const noexcept -> std::string final;
+    auto FilterUpdate() const noexcept
+        -> const opentxs::network::zeromq::socket::Publish& final;
     auto GetChain(const Chain type) const noexcept(false)
         -> const opentxs::blockchain::Network& final;
     auto GetKey(const blockchain::Key& id) const noexcept(false)
@@ -249,6 +253,8 @@ public:
         const Chain chain,
         const PasswordPrompt& reason) const noexcept(false)
         -> const blockchain::PaymentCode& final;
+    auto PeerUpdate() const noexcept
+        -> const opentxs::network::zeromq::socket::Publish& final;
     auto PubkeyHash(const Chain chain, const Data& pubkey) const noexcept(false)
         -> OTData final;
     auto ProcessContact(const Contact& contact) const noexcept -> bool final;

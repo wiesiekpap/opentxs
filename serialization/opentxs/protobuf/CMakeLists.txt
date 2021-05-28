@@ -211,7 +211,11 @@ if(${CMAKE_CXX_COMPILER_ID}
 endif()
 
 set_target_properties(
-  messages PROPERTIES MSVC_RUNTIME_LIBRARY "${MSVC_RUNTIME_DEFAULT}"
+  messages
+  PROPERTIES
+    MSVC_RUNTIME_LIBRARY "${MSVC_RUNTIME_DEFAULT}"
+    C_INCLUDE_WHAT_YOU_USE ""
+    CXX_INCLUDE_WHAT_YOU_USE ""
 )
 
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:messages>)

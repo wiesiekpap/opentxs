@@ -6,16 +6,23 @@
 #include "rpc/Helpers.hpp"  // IWYU pragma: associated
 
 #include <gtest/gtest.h>
+#include <algorithm>
+#include <iterator>
+#include <list>
 
+#include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/server/Manager.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
+#include "opentxs/rpc/request/Base.hpp"
 #include "opentxs/rpc/request/ListAccounts.hpp"
+#include "opentxs/rpc/response/Base.hpp"
 #include "opentxs/rpc/response/ListAccounts.hpp"
 #include "paymentcode/VectorsV3.hpp"
 

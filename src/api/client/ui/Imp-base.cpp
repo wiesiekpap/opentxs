@@ -26,6 +26,7 @@
 #include "ui/activitysummary/ActivitySummary.hpp"
 #include "ui/activitythread/ActivityThread.hpp"
 #include "ui/blockchainselection/BlockchainSelection.hpp"
+#include "ui/blockchainstatistics/BlockchainStatistics.hpp"
 #include "ui/contact/Contact.hpp"
 #include "ui/contactlist/ContactList.hpp"
 #include "ui/messagablelist/MessagableList.hpp"
@@ -56,6 +57,7 @@ UI::Imp::Imp(
     , profiles_()
     , unit_lists_()
     , blockchain_selection_()
+    , blockchain_statistics_()
     , update_manager_(api_)
 {
     // WARNING: do not access api_.Wallet() during construction
@@ -82,9 +84,9 @@ auto UI::Imp::account_activity(
 #if OT_BLOCKCHAIN
                          (chain.has_value()
                               ? opentxs::factory::BlockchainAccountActivityModel
-                              : opentxs::factory::AccountActivityModel)
+                              : opentxs::factory::CustodialAccountActivityModel)
 #else  // OT_BLOCKCHAIN
-                         (opentxs::factory::AccountActivityModel)
+                         (opentxs::factory::CustodialAccountActivityModel)
 #endif  // OT_BLOCKCHAIN
                              (api_, nymID, accountID, cb)))
                  .first;
@@ -295,6 +297,27 @@ auto UI::Imp::BlockchainSelection(
     return *blockchain_selection(lock, type, updateCB);
 }
 
+auto UI::Imp::blockchain_statistics(const Lock& lock, const SimpleCallback cb)
+    const noexcept -> BlockchainStatisticsPointer&
+{
+    if (false == bool(blockchain_statistics_)) {
+        blockchain_statistics_ =
+            opentxs::factory::BlockchainStatisticsModel(api_, blockchain_, cb);
+    }
+
+    OT_ASSERT(blockchain_statistics_);
+
+    return blockchain_statistics_;
+}
+
+auto UI::Imp::BlockchainStatistics(const SimpleCallback updateCB) const noexcept
+    -> const opentxs::ui::BlockchainStatistics&
+{
+    auto lock = Lock{lock_};
+
+    return *blockchain_statistics(lock, updateCB);
+}
+
 auto UI::Imp::BlockchainUnitID(const opentxs::blockchain::Type chain)
     const noexcept -> const identifier::UnitDefinition&
 {
@@ -494,6 +517,9 @@ auto UI::Imp::ShutdownCallbacks() noexcept -> void
         }
     };
     auto lock = Lock{lock_};
+
+    if (blockchain_statistics_) { blockchain_statistics_->ClearCallbacks(); }
+
     clearCallbacks(blockchain_selection_);
     clearCallbacks(unit_lists_);
     clearCallbacks(profiles_);
@@ -510,6 +536,7 @@ auto UI::Imp::ShutdownCallbacks() noexcept -> void
 
 auto UI::Imp::ShutdownModels() noexcept -> void
 {
+    blockchain_statistics_.reset();
     blockchain_selection_.clear();
     unit_lists_.clear();
     profiles_.clear();

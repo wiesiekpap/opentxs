@@ -12,7 +12,9 @@
 #include "opentxs/api/server/Manager.hpp"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
+#include "opentxs/rpc/request/Base.hpp"
 #include "opentxs/rpc/request/ListNyms.hpp"
+#include "opentxs/rpc/response/Base.hpp"
 #include "opentxs/rpc/response/ListNyms.hpp"
 #include "paymentcode/VectorsV3.hpp"
 

@@ -6,8 +6,14 @@
 #include "Helpers.hpp"  // IWYU pragma: associated
 
 #include <gtest/gtest.h>
+#include <chrono>
 
-namespace
+#include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/blockchain/Network.hpp"
+#include "opentxs/core/Log.hpp"
+
+namespace ottest
 {
 TEST_F(Regtest_fixture_single, init_opentxs) {}
 
@@ -36,4 +42,4 @@ TEST_F(Regtest_fixture_single, client_disconnection_timeout)
 }
 
 TEST_F(Regtest_fixture_single, shutdown) { Shutdown(); }
-}  // namespace
+}  // namespace ottest

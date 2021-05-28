@@ -8,6 +8,7 @@
 #if OT_QT
 #include <QVariant>
 #endif  // OT_QT
+#include <algorithm>
 #include <chrono>
 #include <memory>
 #include <string>

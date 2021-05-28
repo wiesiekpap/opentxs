@@ -6,11 +6,17 @@
 #include "Helpers.hpp"  // IWYU pragma: associated
 
 #include <gtest/gtest.h>
-#include <algorithm>
+#include <chrono>
+#include <set>
+#include <string>
 #include <vector>
 
 #include "opentxs/Bytes.hpp"
+#include "opentxs/Pimpl.hpp"
+#include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
+#include "opentxs/blockchain/Network.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
@@ -20,7 +26,7 @@
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/client/HeaderOracle.hpp"
 
-namespace
+namespace ottest
 {
 TEST_F(Regtest_fixture_single, init_opentxs) {}
 
@@ -123,4 +129,4 @@ TEST_F(Regtest_fixture_single, generate_block)
 }
 
 TEST_F(Regtest_fixture_single, shutdown) { Shutdown(); }
-}  // namespace
+}  // namespace ottest

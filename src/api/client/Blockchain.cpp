@@ -167,6 +167,12 @@ auto Blockchain::BlockchainDB() const noexcept
     return imp_->BlockchainDB();
 }
 
+auto Blockchain::BlockQueueUpdate() const noexcept
+    -> const zmq::socket::Publish&
+{
+    return imp_->BlockQueueUpdate();
+}
+
 auto Blockchain::CalculateAddress(
     const Chain chain,
     const Style format,
@@ -215,6 +221,11 @@ auto Blockchain::EncodeAddress(
     const Data& data) const noexcept -> std::string
 {
     return imp_->EncodeAddress(style, chain, data);
+}
+
+auto Blockchain::FilterUpdate() const noexcept -> const zmq::socket::Publish&
+{
+    return imp_->FilterUpdate();
 }
 
 auto Blockchain::GetChain(const Chain type) const noexcept(false)
@@ -359,6 +370,12 @@ auto Blockchain::PaymentCodeSubaccount(
 {
     return imp_->PaymentCodeSubaccount(
         nymID, local, remote, path, chain, reason);
+}
+
+auto Blockchain::PeerUpdate() const noexcept
+    -> const opentxs::network::zeromq::socket::Publish&
+{
+    return imp_->PeerUpdate();
 }
 
 auto Blockchain::ProcessContact(const Contact& contact) const noexcept -> bool

@@ -7,11 +7,13 @@
 
 #include <gtest/gtest.h>
 #include <iterator>
+#include <memory>
 #include <regex>
 #include <string>
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/OT.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
@@ -29,6 +31,29 @@
 #include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
+
+namespace opentxs
+{
+namespace api
+{
+namespace client
+{
+class Manager;
+}  // namespace client
+}  // namespace api
+
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
+
+namespace proto
+{
+class BlockchainTransactionOutput;
+}  // namespace proto
+
+class Identifier;
+}  // namespace opentxs
 
 namespace ottest
 {

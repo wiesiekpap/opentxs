@@ -75,6 +75,8 @@ class ActivityThreadQt;
 class BalanceItem;
 class BlockchainSelection;
 class BlockchainSelectionQt;
+class BlockchainStatistics;
+class BlockchainStatisticsQt;
 class Contact;
 class ContactItem;
 class ContactList;
@@ -167,6 +169,10 @@ public:
     /// Caller does not own this pointer
     opentxs::ui::BlockchainSelectionQt* BlockchainSelectionQt(
         const opentxs::ui::Blockchains type,
+        const SimpleCallback updateCB = {}) const noexcept;
+    const opentxs::ui::BlockchainStatistics& BlockchainStatistics(
+        const SimpleCallback updateCB = {}) const noexcept;
+    opentxs::ui::BlockchainStatisticsQt* BlockchainStatisticsQt(
         const SimpleCallback updateCB = {}) const noexcept;
     const identifier::UnitDefinition& BlockchainUnitID(
         const opentxs::blockchain::Type chain) const noexcept;

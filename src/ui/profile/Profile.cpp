@@ -11,12 +11,14 @@
 #include <QString>
 #endif  // OT_QT
 #include <algorithm>
+#include <list>
 #include <map>
 #include <memory>
 #include <set>
 #include <thread>
 #include <tuple>
 #include <utility>
+#include <vector>
 
 #include "internal/api/client/Client.hpp"
 #include "internal/contact/Contact.hpp"

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "Helpers.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/api/client/Activity.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"

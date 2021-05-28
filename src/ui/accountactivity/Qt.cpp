@@ -10,8 +10,20 @@
 #include <QList>
 #include <QObject>
 #include <QString>
+#include <algorithm>
+#include <iterator>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
+#include "internal/api/client/Client.hpp"
+#include "internal/ui/UI.hpp"
+#include "opentxs/api/Factory.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/core/Identifier.hpp"
 #include "ui/accountactivity/AccountActivity.hpp"
+#include "ui/base/Widget.hpp"
 
 namespace opentxs::factory
 {
@@ -75,6 +87,34 @@ auto AccountActivityQt::getDestValidator() const noexcept
 auto AccountActivityQt::getScaleModel() const noexcept -> DisplayScaleQt*
 {
     return &parent_.scales_qt_;
+}
+
+auto AccountActivityQt::headerData(int section, Qt::Orientation, int role) const
+    -> QVariant
+{
+    if (Qt::DisplayRole != role) { return {}; }
+
+    switch (section) {
+        case TimeColumn: {
+            return "Time";
+        }
+        case TextColumn: {
+            return "Event";
+        }
+        case AmountColumn: {
+            return "Amount";
+        }
+        case UUIDColumn: {
+            return "Transaction ID";
+        }
+        case MemoColumn: {
+            return "Memo";
+        }
+        default: {
+
+            return {};
+        }
+    }
 }
 
 auto AccountActivityQt::init() noexcept -> void

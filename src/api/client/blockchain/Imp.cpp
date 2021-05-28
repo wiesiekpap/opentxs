@@ -360,6 +360,12 @@ auto Blockchain::Imp::BlockchainDB() const noexcept
     OT_FAIL;
 }
 
+auto Blockchain::Imp::BlockQueueUpdate() const noexcept
+    -> const zmq::socket::Publish&
+{
+    OT_FAIL;
+}
+
 auto Blockchain::Imp::CalculateAddress(
     const Chain chain,
     const Style format,
@@ -610,6 +616,12 @@ auto Blockchain::Imp::EncodeAddress(
     }
 }
 
+auto Blockchain::Imp::FilterUpdate() const noexcept
+    -> const zmq::socket::Publish&
+{
+    OT_FAIL;
+}
+
 auto Blockchain::Imp::GetChain(const Chain type) const noexcept(false)
     -> const opentxs::blockchain::Network&
 {
@@ -781,12 +793,14 @@ auto Blockchain::Imp::NewHDSubaccount(
     const Chain chain,
     const PasswordPrompt& reason) const noexcept -> OTIdentifier
 {
-    if (false == validate_nym(nymID)) { return Identifier::Factory(); }
+    static const auto blank = api_.Factory().Identifier();
+
+    if (false == validate_nym(nymID)) { return blank; }
 
     if (Chain::Unknown == chain) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid chain").Flush();
 
-        return Identifier::Factory();
+        return blank;
     }
 
     auto nym = api_.Wallet().Nym(nymID);
@@ -794,30 +808,30 @@ auto Blockchain::Imp::NewHDSubaccount(
     if (false == bool(nym)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Nym does not exist.").Flush();
 
-        return Identifier::Factory();
+        return blank;
     }
 
-    proto::HDPath nymPath{};
+    auto nymPath = proto::HDPath{};
 
     if (false == nym->Path(nymPath)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": No nym path.").Flush();
 
-        return Identifier::Factory();
+        return blank;
     }
 
     if (0 == nymPath.root().size()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Missing root.").Flush();
 
-        return Identifier::Factory();
+        return blank;
     }
 
     if (2 > nymPath.child().size()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid path.").Flush();
 
-        return Identifier::Factory();
+        return blank;
     }
 
-    proto::HDPath accountPath{};
+    auto accountPath = proto::HDPath{};
     init_path(
         nymPath.root(),
         Translate(chain),
@@ -826,9 +840,16 @@ auto Blockchain::Imp::NewHDSubaccount(
         accountPath);
 
     try {
-        auto accountID = Identifier::Factory();
+        auto accountID{blank};
         auto& tree = balance_lists_.Get(chain).Nym(nymID);
         tree.AddHDNode(accountPath, reason, accountID);
+
+        OT_ASSERT(false == accountID->empty());
+
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": Created new HD subaccount ")(
+            accountID)(" for ")(DisplayString(chain))(" account ")(
+            tree.AccountID())(" owned by ")(nymID.str())
+            .Flush();
         accounts_.New(AccountType::HD, chain, accountID, nymID);
         notify_new_account(accountID, nymID, chain, AccountType::HD);
 
@@ -837,7 +858,7 @@ auto Blockchain::Imp::NewHDSubaccount(
         LogVerbose(OT_METHOD)(__FUNCTION__)(": Failed to create account")
             .Flush();
 
-        return Identifier::Factory();
+        return blank;
     }
 }
 
@@ -896,9 +917,18 @@ auto Blockchain::Imp::new_payment_code(
     }
 
     try {
-        auto accountID = blank;
+        auto accountID{blank};
         auto& tree = balance_lists_.Get(chain).Nym(nymID);
         tree.AddUpdatePaymentCode(local, remote, path, reason, accountID);
+
+        OT_ASSERT(false == accountID->empty());
+
+        LogVerbose(OT_METHOD)(__FUNCTION__)(
+            ": Created new payment code subaccount ")(accountID)(" for ")(
+            DisplayString(chain))(" account ")(tree.AccountID())(" owned by ")(
+            nymID.str())(" in reference to remote payment code ")(
+            remote.asBase58())
+            .Flush();
         accounts_.New(AccountType::PaymentCode, chain, accountID, nymID);
         notify_new_account(accountID, nymID, chain, AccountType::PaymentCode);
 
@@ -1018,6 +1048,11 @@ auto Blockchain::Imp::PaymentCodeSubaccount(
     auto& tree = balanceList.Nym(nymID);
 
     return tree.PaymentCode(accountID);
+}
+
+auto Blockchain::Imp::PeerUpdate() const noexcept -> const zmq::socket::Publish&
+{
+    OT_FAIL;
 }
 
 auto Blockchain::Imp::ProcessContact(const Contact&) const noexcept -> bool

@@ -6,9 +6,10 @@
 #include "rpc/Helpers.hpp"  // IWYU pragma: associated
 
 #include <gtest/gtest.h>
-#include <array>
+#include <future>
 
-#include "UIHelpers.hpp"
+#include "opentxs/Pimpl.hpp"
+#include "opentxs/Shared.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
@@ -17,13 +18,16 @@
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/client/Pair.hpp"
 #include "opentxs/api/server/Manager.hpp"
-#include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Account.hpp"
+#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/PaymentType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
+#include "opentxs/rpc/request/Base.hpp"
 #include "opentxs/rpc/request/SendPayment.hpp"
+#include "opentxs/rpc/response/Base.hpp"
 #include "opentxs/rpc/response/SendPayment.hpp"
 #include "paymentcode/VectorsV3.hpp"
 

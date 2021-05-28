@@ -15,6 +15,7 @@
 #include <set>
 #include <thread>
 #include <utility>
+#include <vector>
 
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -23,6 +24,7 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/contact/Contact.hpp"
+#include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactSection.hpp"
 #include "opentxs/contact/ContactSectionName.hpp"
 #include "opentxs/core/Identifier.hpp"

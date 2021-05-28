@@ -19,15 +19,19 @@
 #define ACCOUNT_UPDATE_ENDPOINT "accountupdate"
 #define BLOCKCHAIN_ACCOUNT_CREATED "blockchain/account/new"
 #define BLOCKCHAIN_ASIO_ENDPOINT "blockchain/asio"
-#define BLOCKCHAIN_BALANCE_ENDPOINT "blockchain/balance"
+#define BLOCKCHAIN_BALANCE_ENDPOINT "blockchain/balance/interactive"
 #define BLOCKCHAIN_BLOCK_UPDATED "blockchain/block/"
-#define BLOCKCHAIN_FILTER_UPDATED "blockchain/filter/"
-#define BLOCKCHAIN_PEER_ENDPOINT "blockchain/peer/"
+#define BLOCKCHAIN_BLOCK_QUEUE_UPDATED "blockchain/block/queue"
+#define BLOCKCHAIN_FILTER_ENDPOINT "blockchain/filter"
+#define BLOCKCHAIN_FILTER_INTERNAL "blockchain/filter/internal"
+#define BLOCKCHAIN_PEER_ACTIVE_ENDPOINT "blockchain/peer/active"
+#define BLOCKCHAIN_PEER_CONNECTED_ENDPOINT "blockchain/peer/connected"
 #define BLOCKCHAIN_REORG_ENDPOINT "blockchain/reorg"
 #define BLOCKCHAIN_SCAN_ENDPOINT "blockchain/scan"
 #define BLOCKCHAIN_STATE_ENDPOINT "blockchain/state"
 #define BLOCKCHAIN_SYNC_ENDPOINT "blockchain/sync"
 #define BLOCKCHAIN_TRANSACTIONS_ENDPOINT "blockchain/transactions"
+#define BLOCKCHAIN_BALANCE_PUBLISHER_ENDPOINT "blockchain/balance"
 #define CONNECTION_STATUS_ENDPOINT "connectionstatus"
 #define CONTACT_UPDATE_ENDPOINT "contactupdate"
 #define DHT_NYM_REQUEST_ENDPOINT "dht/requestnym"
@@ -107,9 +111,27 @@ auto Endpoints::BlockchainBalance() const noexcept -> std::string
     return build_inproc_path(BLOCKCHAIN_BALANCE_ENDPOINT, ENDPOINT_VERSION_1);
 }
 
+auto Endpoints::BlockchainBlockDownloadQueue() const noexcept -> std::string
+{
+    return build_inproc_path(
+        BLOCKCHAIN_BLOCK_QUEUE_UPDATED, ENDPOINT_VERSION_1);
+}
+
+auto Endpoints::BlockchainNewFilter() const noexcept -> std::string
+{
+    return build_inproc_path(BLOCKCHAIN_FILTER_ENDPOINT, ENDPOINT_VERSION_1);
+}
+
 auto Endpoints::BlockchainPeer() const noexcept -> std::string
 {
-    return build_inproc_path(BLOCKCHAIN_PEER_ENDPOINT, ENDPOINT_VERSION_1);
+    return build_inproc_path(
+        BLOCKCHAIN_PEER_ACTIVE_ENDPOINT, ENDPOINT_VERSION_1);
+}
+
+auto Endpoints::BlockchainPeerConnection() const noexcept -> std::string
+{
+    return build_inproc_path(
+        BLOCKCHAIN_PEER_CONNECTED_ENDPOINT, ENDPOINT_VERSION_1);
 }
 
 auto Endpoints::BlockchainReorg() const noexcept -> std::string
@@ -144,6 +166,12 @@ auto Endpoints::BlockchainTransactions(
     auto path = std::string{BLOCKCHAIN_TRANSACTIONS_ENDPOINT} + '/' + nym.str();
 
     return build_inproc_path(path, ENDPOINT_VERSION_1);
+}
+
+auto Endpoints::BlockchainWalletUpdated() const noexcept -> std::string
+{
+    return build_inproc_path(
+        BLOCKCHAIN_BALANCE_PUBLISHER_ENDPOINT, ENDPOINT_VERSION_1);
 }
 
 auto Endpoints::ConnectionStatus() const noexcept -> std::string
@@ -203,7 +231,7 @@ auto Endpoints::InternalBlockchainBlockUpdated(
 auto Endpoints::InternalBlockchainFilterUpdated(
     const opentxs::blockchain::Type chain) const noexcept -> std::string
 {
-    auto path = std::string{BLOCKCHAIN_FILTER_UPDATED} +
+    auto path = std::string{BLOCKCHAIN_FILTER_INTERNAL} +
                 std::to_string(static_cast<std::uint32_t>(chain));
 
     return build_inproc_path(path, ENDPOINT_VERSION_1);

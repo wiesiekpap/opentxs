@@ -40,13 +40,14 @@
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/protobuf/PaymentEvent.pb.h"
 #include "opentxs/protobuf/PaymentWorkflow.pb.h"
+#include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "ui/base/Widget.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::CustodialAccountActivity::"
 
 namespace opentxs::factory
 {
-auto AccountActivityModel(
+auto CustodialAccountActivityModel(
     const api::client::internal::Manager& api,
     const identifier::Nym& nymID,
     const Identifier& accountID,

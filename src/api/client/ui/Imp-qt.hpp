@@ -24,6 +24,7 @@
 #include "opentxs/ui/qt/ActivityThread.hpp"
 #include "opentxs/ui/qt/BlankModel.hpp"
 #include "opentxs/ui/qt/BlockchainSelection.hpp"
+#include "opentxs/ui/qt/BlockchainStatistics.hpp"
 #include "opentxs/ui/qt/Contact.hpp"
 #include "opentxs/ui/qt/ContactList.hpp"
 #include "opentxs/ui/qt/MessagableList.hpp"
@@ -88,6 +89,8 @@ public:
         const opentxs::ui::Blockchains type,
         const SimpleCallback updateCB) const noexcept
         -> opentxs::ui::BlockchainSelectionQt* final;
+    auto BlockchainStatisticsQt(const SimpleCallback updateCB) const noexcept
+        -> opentxs::ui::BlockchainStatisticsQt* final;
     auto ContactQt(const Identifier& contactID, const SimpleCallback cb)
         const noexcept -> opentxs::ui::ContactQt* final;
     auto ContactListQt(const identifier::Nym& nymID, const SimpleCallback cb)
@@ -157,6 +160,8 @@ private:
         std::unique_ptr<opentxs::ui::BlockchainSelectionQt>;
     using BlockchainSelectionQtType =
         std::map<opentxs::ui::Blockchains, BlockchainSelectionQtPointer>;
+    using BlockchainStatisticsQtPointer =
+        std::unique_ptr<opentxs::ui::BlockchainStatisticsQt>;
 
     struct Blank {
         auto get(const std::size_t columns) noexcept
@@ -181,6 +186,7 @@ private:
     mutable SeedValidatorMap seed_validators_;
     mutable UnitListQtMap unit_lists_qt_;
     mutable BlockchainSelectionQtType blockchain_selection_qt_;
+    mutable BlockchainStatisticsQtPointer blockchain_statistics_qt_;
 
     ImpQt() = delete;
     ImpQt(const ImpQt&) = delete;

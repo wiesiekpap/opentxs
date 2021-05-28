@@ -12,6 +12,7 @@
 #include <set>
 #include <thread>
 #include <utility>
+#include <vector>
 
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Types.hpp"

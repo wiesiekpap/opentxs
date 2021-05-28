@@ -88,6 +88,8 @@ class ActivityThread;
 class ActivityThreadQt;
 class BlockchainSelection;
 class BlockchainSelectionQt;
+class BlockchainStatistics;
+class BlockchainStatisticsQt;
 class Contact;
 class ContactList;
 class ContactListQt;
@@ -110,6 +112,7 @@ class AccountSummary;
 class ActivitySummary;
 class ActivityThread;
 class BlockchainSelection;
+class BlockchainStatistics;
 class Contact;
 class ContactList;
 class MessagableList;
@@ -200,6 +203,13 @@ public:
         const opentxs::ui::Blockchains type,
         const SimpleCallback updateCB) const noexcept
         -> opentxs::ui::BlockchainSelectionQt*
+    {
+        return nullptr;
+    }
+    auto BlockchainStatistics(const SimpleCallback updateCB) const noexcept
+        -> const opentxs::ui::BlockchainStatistics&;
+    virtual auto BlockchainStatisticsQt(const SimpleCallback updateCB)
+        const noexcept -> opentxs::ui::BlockchainStatisticsQt*
     {
         return nullptr;
     }
@@ -329,6 +339,8 @@ protected:
         std::unique_ptr<opentxs::ui::implementation::BlockchainSelection>;
     using BlockchainSelectionMap =
         std::map<opentxs::ui::Blockchains, BlockchainSelectionPointer>;
+    using BlockchainStatisticsPointer =
+        std::unique_ptr<opentxs::ui::implementation::BlockchainStatistics>;
 
     const api::client::internal::Manager& api_;
     const api::client::internal::Blockchain& blockchain_;
@@ -345,6 +357,7 @@ protected:
     mutable ProfileMap profiles_;
     mutable UnitListMap unit_lists_;
     mutable BlockchainSelectionMap blockchain_selection_;
+    mutable BlockchainStatisticsPointer blockchain_statistics_;
     ui::UpdateManager update_manager_;
 
     auto account_activity(
@@ -380,6 +393,8 @@ protected:
         const opentxs::ui::Blockchains type,
         const SimpleCallback updateCB) const noexcept
         -> BlockchainSelectionMap::mapped_type&;
+    auto blockchain_statistics(const Lock& lock, const SimpleCallback updateCB)
+        const noexcept -> BlockchainStatisticsPointer&;
     auto contact(
         const Lock& lock,
         const Identifier& contactID,

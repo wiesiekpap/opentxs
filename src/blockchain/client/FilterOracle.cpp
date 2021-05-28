@@ -25,6 +25,7 @@
 #include "blockchain/client/filteroracle/FilterDownloader.hpp"
 #include "blockchain/client/filteroracle/HeaderDownloader.hpp"
 #include "internal/api/Api.hpp"
+#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/client/Client.hpp"
 #include "internal/blockchain/client/Factory.hpp"
@@ -132,6 +133,7 @@ FilterOracle::FilterOracle(
     , network_(network)
     , header_(header)
     , database_(database)
+    , filter_notifier_(blockchain.FilterUpdate())
     , chain_(chain)
     , default_type_([&] {
         if (config.generate_cfilters_ || config.use_sync_server_) {
@@ -395,11 +397,21 @@ auto FilterOracle::new_tip(
     const block::Position& tip) const noexcept -> void
 {
     last_sync_progress_ = Clock::now();
-    auto work = MakeWork(api_, OT_ZMQ_NEW_FILTER_SIGNAL);
-    work->AddFrame(type);
-    work->AddFrame(tip.first);
-    work->AddFrame(tip.second);
-    new_filters_->Send(work);
+    {
+        auto work = MakeWork(api_, OT_ZMQ_NEW_FILTER_SIGNAL);
+        work->AddFrame(type);
+        work->AddFrame(tip.first);
+        work->AddFrame(tip.second);
+        new_filters_->Send(work);
+    }
+    {
+        auto work = MakeWork(api_, WorkType::BlockchainNewFilter);
+        work->AddFrame(chain_);
+        work->AddFrame(type);
+        work->AddFrame(tip.first);
+        work->AddFrame(tip.second);
+        filter_notifier_.Send(work);
+    }
 }
 
 auto FilterOracle::ProcessBlock(

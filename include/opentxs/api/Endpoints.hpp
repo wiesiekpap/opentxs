@@ -67,7 +67,30 @@ public:
      */
     OPENTXS_EXPORT virtual std::string BlockchainBalance() const noexcept = 0;
 
-    /** Blockchain peer connection
+    /** Blockchain block download queue notifications
+     *
+     *  A subscribe socket can connect to this endpoint to receive
+     *  BlockchainBlockDownloadQueue tagged messages
+     *
+     *  See opentxs/util/WorkTypes.hpp for message format documentation
+     *
+     *  This endpoint is active for client sessions only.
+     */
+    OPENTXS_EXPORT virtual std::string BlockchainBlockDownloadQueue()
+        const noexcept = 0;
+
+    /** Blockchain filter oracle notifications
+     *
+     *  A subscribe socket can connect to this endpoint to receive
+     *  BlockchainNewFilter tagged messages
+     *
+     *  See opentxs/util/WorkTypes.hpp for message format documentation
+     *
+     *  This endpoint is active for client sessions only.
+     */
+    OPENTXS_EXPORT virtual std::string BlockchainNewFilter() const noexcept = 0;
+
+    /** Blockchain peer connection ready
      *
      *  A subscribe socket can connect to this endpoint to receive
      *  BlockchainPeerAdded tagged messages
@@ -77,6 +100,18 @@ public:
      *  This endpoint is active for client sessions only.
      */
     OPENTXS_EXPORT virtual std::string BlockchainPeer() const noexcept = 0;
+
+    /** Blockchain peer connection initiated or lost
+     *
+     *  A subscribe socket can connect to this endpoint to receive
+     *  BlockchainPeerConnected tagged messages
+     *
+     *  See opentxs/util/WorkTypes.hpp for message format documentation
+     *
+     *  This endpoint is active for client sessions only.
+     */
+    OPENTXS_EXPORT virtual std::string BlockchainPeerConnection()
+        const noexcept = 0;
 
     /** Blockchain reorg and update notifications
      *
@@ -148,6 +183,18 @@ public:
      */
     OPENTXS_EXPORT virtual std::string BlockchainTransactions(
         const identifier::Nym& nym) const noexcept = 0;
+
+    /** Blockchain wallet balance updates
+     *
+     *  A subscribe socket can connect to this endpoint to receive
+     *  BlockchainWalletUpdated tagged messages
+     *
+     *  See opentxs/util/WorkTypes.hpp for message format documentation
+     *
+     *  This endpoint is active for client sessions only.
+     */
+    OPENTXS_EXPORT virtual std::string BlockchainWalletUpdated()
+        const noexcept = 0;
 
     /** Connection state notifications
      *

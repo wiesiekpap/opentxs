@@ -94,6 +94,7 @@ OPENTXS_EXPORT auto BlockchainNetworkBitcoin(
     -> std::unique_ptr<blockchain::client::internal::Network>;
 auto BlockchainPeerManager(
     const api::Core& api,
+    const api::client::internal::Blockchain& blockchain,
     const blockchain::client::internal::Config& config,
     const blockchain::client::internal::Network& network,
     const blockchain::client::internal::HeaderOracle& headers,
@@ -115,6 +116,7 @@ auto BlockchainWallet(
     -> std::unique_ptr<blockchain::client::internal::Wallet>;
 auto BlockOracle(
     const api::Core& api,
+    const api::client::internal::Blockchain& blockchain,
     const blockchain::client::internal::Network& network,
     const blockchain::client::internal::HeaderOracle& header,
     const blockchain::client::internal::BlockDatabase& db,

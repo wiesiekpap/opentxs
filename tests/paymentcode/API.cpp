@@ -10,6 +10,7 @@
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "VectorsV3.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"

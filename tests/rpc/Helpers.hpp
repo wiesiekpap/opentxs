@@ -10,6 +10,8 @@
 #pragma once
 
 #include <gtest/gtest.h>
+#include <cstdint>
+#include <iosfwd>
 #include <map>
 #include <memory>
 #include <set>
@@ -32,8 +34,8 @@ namespace server
 class Manager;
 }  // namespace server
 
-class Core;
 class Context;
+class Core;
 }  // namespace api
 
 namespace identifier

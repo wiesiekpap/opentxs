@@ -10,12 +10,14 @@
 #include <algorithm>
 #include <chrono>
 #include <list>
+#include <map>
 #include <memory>
 #include <ostream>
 #include <set>
 #include <string>
 #include <thread>
 #include <utility>
+#include <vector>
 
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
