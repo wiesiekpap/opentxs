@@ -21,6 +21,7 @@
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
@@ -66,6 +67,9 @@ Element::Element(
     , cached_(std::nullopt)
 {
     if (false == bool(pkey_)) { throw std::runtime_error("No key provided"); }
+    if (Subchain::Error == subchain_) {
+        throw std::runtime_error("Invalid subchain");
+    }
 }
 
 Element::Element(
@@ -194,8 +198,7 @@ auto Element::elements(const rLock&) const noexcept -> std::set<OTData>
 
 auto Element::IncomingTransactions() const noexcept -> std::set<std::string>
 {
-    return parent_.IncomingTransactions(
-        blockchain::Key{parent_.ID().str(), subchain_, index_});
+    return parent_.IncomingTransactions(KeyID());
 }
 
 auto Element::instantiate(

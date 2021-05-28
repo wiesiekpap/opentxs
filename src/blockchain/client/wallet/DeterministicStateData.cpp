@@ -18,8 +18,11 @@
 #include <vector>
 
 #include "internal/api/client/Client.hpp"
+#include "internal/blockchain/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/blockchain/BalanceNode.hpp"
 #include "opentxs/api/client/blockchain/BalanceTree.hpp"
 #include "opentxs/api/client/blockchain/Deterministic.hpp"
@@ -150,6 +153,12 @@ auto DeterministicStateData::handle_confirmed_matches(
                     const auto& key = *pKey;
 
                     if (key.PublicKey() == script.Pubkey().value()) {
+                        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
+                            " element ")(index)(": P2PK match found for ")(
+                            DisplayString(network_.Chain()))(" transaction ")(
+                            txid->asHex())(" output ")(i)(" via ")(
+                            api_.Factory().Data(key.PublicKey())->asHex())
+                            .Flush();
                         outputs.emplace_back(i);
                         blockchain_.Confirm(element.KeyID(), txid);
 
@@ -162,6 +171,12 @@ auto DeterministicStateData::handle_confirmed_matches(
                     OT_ASSERT(script.PubkeyHash().has_value());
 
                     if (hash->Bytes() == script.PubkeyHash().value()) {
+                        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
+                            " element ")(index)(": P2PKH match found for ")(
+                            DisplayString(network_.Chain()))(" transaction ")(
+                            txid->asHex())(" output ")(i)(" via ")(
+                            hash->asHex())
+                            .Flush();
                         outputs.emplace_back(i);
                         blockchain_.Confirm(element.KeyID(), txid);
 
@@ -188,6 +203,13 @@ auto DeterministicStateData::handle_confirmed_matches(
                     const auto& key = *pKey;
 
                     if (key.PublicKey() == script.MultisigPubkey(0).value()) {
+                        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
+                            " element ")(index)(": ")(m.value())(" of ")(
+                            n.value())(" P2MS match found for ")(
+                            DisplayString(network_.Chain()))(" transaction ")(
+                            txid->asHex())(" output ")(i)(" via ")(
+                            api_.Factory().Data(key.PublicKey())->asHex())
+                            .Flush();
                         outputs.emplace_back(i);
                         blockchain_.Confirm(element.KeyID(), txid);
 

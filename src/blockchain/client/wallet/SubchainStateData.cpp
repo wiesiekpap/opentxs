@@ -415,16 +415,24 @@ auto SubchainStateData::index_element(
     const Bip32Index index,
     WalletDatabase::ElementMap& output) noexcept -> void
 {
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(" indexing public key ")(
-        api_.Factory().Data(input.Key()->PublicKey())->asHex())(" at index ")(
-        index)
+    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(" element ")(index)(
+        " extracting filter matching patterns")
         .Flush();
     auto& list = output[index];
     auto scripts = std::vector<std::unique_ptr<const block::bitcoin::Script>>{};
     scripts.reserve(2);  // WARNING keep this number up to date if new scripts
                          // are added
+    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(" element ")(index)(
+        ": using public key ")(
+        api_.Factory().Data(input.Key()->PublicKey())->asHex())(
+        " for P2PK pattern")
+        .Flush();
     const auto& p2pk = scripts.emplace_back(
         api_.Factory().BitcoinScriptP2PK(network_.Chain(), *input.Key()));
+    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(" element ")(index)(
+        ": using pubkey hash ")(input.PubkeyHash()->asHex())(
+        " for P2PKH pattern")
+        .Flush();
     const auto& p2pkh = scripts.emplace_back(
         api_.Factory().BitcoinScriptP2PKH(network_.Chain(), *input.Key()));
 
