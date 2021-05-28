@@ -3,9 +3,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: private
-// IWYU pragma: friend ".*src/ui/BlockchainAccountActivity.cpp"
-
 #pragma once
 
 #include <atomic>
@@ -41,6 +38,9 @@
 #include "opentxs/ui/AccountActivity.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "ui/accountactivity/AccountActivity.hpp"
+#if OT_QT
+#include "ui/accountactivity/SendMonitor.hpp"
+#endif  // OT_QT
 #include "ui/base/List.hpp"
 #include "ui/base/Widget.hpp"
 #include "util/Work.hpp"
@@ -131,7 +131,16 @@ public:
     auto Send(
         const std::string& address,
         const std::string& amount,
-        const std::string& memo) const noexcept -> bool final;
+        const std::string& memo,
+        Scale scale) const noexcept -> bool final;
+#if OT_QT
+    auto Send(
+        const std::string& address,
+        const std::string& amount,
+        const std::string& memo,
+        Scale scale,
+        SendMonitor::Callback cb) const noexcept -> int final;
+#endif  // OT_QT
     auto SyncPercentage() const noexcept -> double final
     {
         return progress_.get_percentage();

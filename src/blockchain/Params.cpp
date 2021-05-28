@@ -8,7 +8,10 @@
 #include "internal/blockchain/Blockchain.hpp"  // IWYU pragma: associated
 #include "internal/blockchain/Params.hpp"      // IWYU pragma: associated
 
+#include <boost/container/flat_map.hpp>
 #include <boost/container/vector.hpp>
+#include <boost/move/algo/detail/set_difference.hpp>
+#include <boost/move/algo/move.hpp>
 #include <memory>
 #include <set>
 #include <type_traits>
@@ -21,10 +24,49 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/SendResult.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/crypto/HashType.hpp"
+
+namespace opentxs
+{
+using Code = blockchain::SendResult;
+
+auto print(Code code) noexcept -> std::string
+{
+    static const auto map = boost::container::flat_map<Code, std::string>{
+        {Code::InvalidSenderNym, "invalid sender nym"},
+        {Code::AddressNotValidforChain,
+         "provided address is not valid for specified blockchain"},
+        {Code::UnsupportedAddressFormat, "address format is not supported"},
+        {Code::SenderMissingPaymentCode,
+         "sender nym does not contain a valid payment code"},
+        {Code::UnsupportedRecipientPaymentCode,
+         "recipient payment code version is not supported"},
+        {Code::HDDerivationFailure, "key derivation error"},
+        {Code::DatabaseError, "database error"},
+        {Code::DuplicateProposal, "duplicate spend proposal"},
+        {Code::OutputCreationError, "failed to create transaction outputs"},
+        {Code::ChangeError, "failed to create change output"},
+        {Code::InsufficientFunds, "insufficient funds"},
+        {Code::InputCreationError, "failed to create transaction inputs"},
+        {Code::SignatureError, "error signing transaction"},
+        {Code::SendFailed, "failed to broadcast transaction"},
+        {Code::Sent, "successfully broadcast transaction"},
+    };
+
+    try {
+
+        return map.at(code);
+    } catch (...) {
+
+        return "unspecified error";
+    }
+}
+}  // namespace opentxs
 
 namespace opentxs::blockchain
 {

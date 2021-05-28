@@ -36,6 +36,9 @@
 #include "opentxs/ui/qt/DisplayScale.hpp"
 #endif  // OT_QT
 #include "opentxs/util/WorkType.hpp"
+#if OT_QT
+#include "ui/accountactivity/SendMonitor.hpp"
+#endif  // OT_QT
 #include "ui/base/List.hpp"
 #include "ui/base/Widget.hpp"
 #include "util/Polarity.hpp"
@@ -108,6 +111,7 @@ public:
     DisplayScaleQt scales_qt_;
     AmountValidator amount_validator_;
     DestinationValidator destination_validator_;
+    mutable SendMonitor send_monitor_;
 #endif  // OT_QT
 
     auto AccountID() const noexcept -> std::string final
@@ -141,6 +145,7 @@ public:
     {
         return notary_.get();
     }
+    using ui::AccountActivity::Send;
     auto Send(
         [[maybe_unused]] const Identifier& contact,
         [[maybe_unused]] const Amount amount,
@@ -152,11 +157,22 @@ public:
     auto Send(
         [[maybe_unused]] const Identifier& contact,
         [[maybe_unused]] const std::string& amount,
-        [[maybe_unused]] const std::string& memo) const noexcept
-        -> bool override
+        [[maybe_unused]] const std::string& memo,
+        [[maybe_unused]] Scale scale) const noexcept -> bool override
     {
         return false;
     }
+#if OT_QT
+    virtual auto Send(
+        [[maybe_unused]] const Identifier& contact,
+        [[maybe_unused]] const std::string& amount,
+        [[maybe_unused]] const std::string& memo,
+        [[maybe_unused]] Scale scale,
+        [[maybe_unused]] SendMonitor::Callback cb) const noexcept -> int
+    {
+        return false;
+    }
+#endif  // OT_QT
     auto Send(
         [[maybe_unused]] const std::string& address,
         [[maybe_unused]] const Amount amount,
@@ -168,11 +184,22 @@ public:
     auto Send(
         [[maybe_unused]] const std::string& address,
         [[maybe_unused]] const std::string& amount,
-        [[maybe_unused]] const std::string& memo) const noexcept
-        -> bool override
+        [[maybe_unused]] const std::string& memo,
+        [[maybe_unused]] Scale scale) const noexcept -> bool override
     {
         return false;
     }
+#if OT_QT
+    virtual auto Send(
+        [[maybe_unused]] const std::string& address,
+        [[maybe_unused]] const std::string& amount,
+        [[maybe_unused]] const std::string& memo,
+        [[maybe_unused]] Scale scale,
+        [[maybe_unused]] SendMonitor::Callback cb) const noexcept -> int
+    {
+        return false;
+    }
+#endif  // OT_QT
     auto SyncPercentage() const noexcept -> double override { return 100; }
     auto SyncProgress() const noexcept -> std::pair<int, int> override
     {

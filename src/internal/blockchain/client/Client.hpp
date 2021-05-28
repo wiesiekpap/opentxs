@@ -480,8 +480,10 @@ struct OPENTXS_EXPORT Network : virtual public opentxs::blockchain::Network {
         SubmitBlockHeader = OT_ZMQ_INTERNAL_SIGNAL + 0,
         SubmitBlock = OT_ZMQ_INTERNAL_SIGNAL + 2,
         Heartbeat = OT_ZMQ_INTERNAL_SIGNAL + 3,
-        StateMachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
+        SendToAddress = OT_ZMQ_INTERNAL_SIGNAL + 4,
+        SendToPaymentCode = OT_ZMQ_INTERNAL_SIGNAL + 5,
         FilterUpdate = OT_ZMQ_NEW_FILTER_SIGNAL,
+        StateMachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
     virtual auto Blockchain() const noexcept
@@ -557,8 +559,8 @@ struct Wallet : virtual public client::Wallet {
     static auto ProcessThreadPool(const zmq::Message& task) noexcept -> void;
 
     virtual auto ConstructTransaction(
-        const proto::BlockchainTransactionProposal& tx) const noexcept
-        -> std::future<block::pTxid> = 0;
+        const proto::BlockchainTransactionProposal& tx,
+        std::promise<SendOutcome>&& promise) const noexcept -> void = 0;
 
     virtual auto Init() noexcept -> void = 0;
     virtual auto Shutdown() noexcept -> std::shared_future<void> = 0;

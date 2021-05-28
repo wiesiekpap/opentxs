@@ -447,7 +447,7 @@ TEST_F(Regtest_stress, generate_transactions)
                 while (State::ready != future.wait_for(limit)) { ; }
 
                 try {
-                    auto txid = future.get();
+                    auto [code, txid] = future.get();
 
                     OT_ASSERT(false == txid->empty());
 

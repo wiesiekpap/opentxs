@@ -51,7 +51,7 @@ namespace blockchain
 class OPENTXS_EXPORT Network
 {
 public:
-    using PendingOutgoing = std::future<block::pTxid>;
+    using PendingOutgoing = std::future<SendOutcome>;
 
     virtual auto AddBlock(
         const std::shared_ptr<const block::bitcoin::Block> block) const noexcept

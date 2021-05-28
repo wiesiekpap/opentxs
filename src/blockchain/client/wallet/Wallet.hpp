@@ -98,8 +98,9 @@ namespace opentxs::blockchain::client::implementation
 class Wallet final : virtual public internal::Wallet, Worker<Wallet, api::Core>
 {
 public:
-    auto ConstructTransaction(const proto::BlockchainTransactionProposal& tx)
-        const noexcept -> std::future<block::pTxid> final;
+    auto ConstructTransaction(
+        const proto::BlockchainTransactionProposal& tx,
+        std::promise<SendOutcome>&& promise) const noexcept -> void final;
     auto GetBalance() const noexcept -> Balance final;
     auto GetBalance(const identifier::Nym& owner) const noexcept
         -> Balance final;

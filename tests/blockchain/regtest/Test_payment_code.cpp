@@ -507,7 +507,7 @@ TEST_F(Regtest_payment_code, send_to_bob)
         client_1_.Factory().PaymentCode(vectors_3_.bob_.payment_code_),
         1000000000,
         memo_outgoing_);
-    const auto& txid = transactions_.emplace_back(future.get());
+    const auto& txid = transactions_.emplace_back(future.get().second);
 
     EXPECT_FALSE(txid->empty());
 
@@ -1350,7 +1350,7 @@ TEST_F(Regtest_payment_code, second_send_to_bob)
         client_1_.Factory().PaymentCode(vectors_3_.bob_.payment_code_),
         1500000000,
         memo_outgoing_);
-    const auto& txid = transactions_.emplace_back(future.get());
+    const auto& txid = transactions_.emplace_back(future.get().second);
 
     EXPECT_FALSE(txid->empty());
 

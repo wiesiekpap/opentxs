@@ -32,6 +32,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/client/Wallet.hpp"
 #include "opentxs/core/Flag.hpp"
+#include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
@@ -285,6 +286,33 @@ private:
         int counter_{-1};
         std::map<int, std::promise<void>> map_{};
     };
+    struct SendPromises {
+        auto finish(int index) noexcept -> std::promise<SendOutcome>
+        {
+            auto lock = Lock{lock_};
+            auto it = map_.find(index);
+
+            OT_ASSERT(map_.end() != it);
+
+            auto output{std::move(it->second)};
+            map_.erase(it);
+
+            return output;
+        }
+        auto get() noexcept -> std::pair<int, PendingOutgoing>
+        {
+            auto lock = Lock{lock_};
+            const auto counter = ++counter_;
+            auto& promise = map_[counter];
+
+            return std::make_pair(counter, promise.get_future());
+        }
+
+    private:
+        std::mutex lock_{};
+        int counter_{-1};
+        std::map<int, std::promise<SendOutcome>> map_{};
+    };
 
     const api::client::internal::Blockchain& parent_;
     const Time start_;
@@ -296,6 +324,7 @@ private:
     Time headers_requested_;
     Time headers_received_;
     mutable WorkPromises work_promises_;
+    mutable SendPromises send_promises_;
     std::atomic<State> state_;
     std::promise<void> init_promise_;
     std::shared_future<void> init_;
@@ -314,6 +343,8 @@ private:
     auto process_block(zmq::Message& in) noexcept -> void;
     auto process_filter_update(zmq::Message& in) noexcept -> void;
     auto process_header(zmq::Message& in) noexcept -> void;
+    auto process_send_to_address(zmq::Message& in) noexcept -> void;
+    auto process_send_to_payment_code(zmq::Message& in) noexcept -> void;
     auto process_sync_data(zmq::Message& in) noexcept -> void;
     auto shutdown(std::promise<void>& promise) noexcept -> void;
     auto state_machine() noexcept -> bool;

@@ -96,13 +96,11 @@ Wallet::Wallet(
 }
 
 auto Wallet::ConstructTransaction(
-    const proto::BlockchainTransactionProposal& tx) const noexcept
-    -> std::future<block::pTxid>
+    const proto::BlockchainTransactionProposal& tx,
+    std::promise<SendOutcome>&& promise) const noexcept -> void
 {
-    auto output = proposals_.Add(tx);
+    proposals_.Add(tx, std::move(promise));
     trigger();
-
-    return output;
 }
 
 auto Wallet::convert(const DBUTXOs& in) const noexcept -> std::vector<UTXO>

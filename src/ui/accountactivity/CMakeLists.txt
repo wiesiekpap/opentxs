@@ -54,6 +54,8 @@ if(OT_WITH_QT)
       "DestinationValidator.cpp"
       "DestinationValidator.hpp"
       "Qt.cpp"
+      "SendMonitor.cpp"
+      "SendMonitor.hpp"
       ${MOC_SRCS}
   )
   target_link_libraries(opentxs-ui-accountactivity PRIVATE Qt5::Gui)

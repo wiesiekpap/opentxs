@@ -22,7 +22,9 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/ui/AccountActivity.hpp"
 #include "ui/accountactivity/AccountActivity.hpp"
+#include "ui/accountactivity/SendMonitor.hpp"
 #include "ui/base/Widget.hpp"
 
 namespace opentxs::factory
@@ -128,21 +130,37 @@ auto AccountActivityQt::init() noexcept -> void
 auto AccountActivityQt::sendToAddress(
     const QString& address,
     const QString& amount,
-    const QString& memo) const noexcept -> bool
+    const QString& memo,
+    int scale) const noexcept -> int
 {
+    if (0 > scale) { return false; }
+
     return parent_.Send(
-        address.toStdString(), amount.toStdString(), memo.toStdString());
+        address.toStdString(),
+        amount.toStdString(),
+        memo.toStdString(),
+        static_cast<AccountActivity::Scale>(scale),
+        [this](auto key, auto code, auto text) {
+            emit transactionSendResult(key, code, text);
+        });
 }
 
 auto AccountActivityQt::sendToContact(
     const QString& contactID,
     const QString& amount,
-    const QString& memo) const noexcept -> bool
+    const QString& memo,
+    int scale) const noexcept -> int
 {
+    if (0 > scale) { return false; }
+
     return parent_.Send(
         parent_.Widget::api_.Factory().Identifier(contactID.toStdString()),
         amount.toStdString(),
-        memo.toStdString());
+        memo.toStdString(),
+        static_cast<AccountActivity::Scale>(scale),
+        [this](auto key, auto code, auto text) {
+            emit transactionSendResult(key, code, text);
+        });
 }
 
 auto AccountActivityQt::syncPercentage() const noexcept -> double
@@ -171,4 +189,6 @@ auto AccountActivityQt::validateAmount(const QString& amount) const noexcept
 {
     return parent_.ValidateAmount(amount.toStdString()).c_str();
 }
+
+AccountActivityQt::~AccountActivityQt() { parent_.send_monitor_.shutdown(); }
 }  // namespace opentxs::ui
