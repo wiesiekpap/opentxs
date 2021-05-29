@@ -65,6 +65,7 @@ AccountActivity::AccountActivity(
           static_cast<std::int8_t>(type),
           accountID,
           *this)
+    , send_monitor_()
 #endif  // OT_QT
     , balance_(0)
     , account_id_(accountID)
@@ -118,5 +119,8 @@ AccountActivity::~AccountActivity()
 {
     wait_for_startup();
     stop_worker().get();
+#if OT_QT
+    send_monitor_.shutdown();
+#endif  // OT_QT
 }
 }  // namespace opentxs::ui::implementation

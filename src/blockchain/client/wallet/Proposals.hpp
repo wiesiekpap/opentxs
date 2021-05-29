@@ -87,7 +87,8 @@ class Proposals
 public:
     using Proposal = proto::BlockchainTransactionProposal;
 
-    auto Add(const Proposal& tx) const noexcept -> std::future<block::pTxid>;
+    auto Add(const Proposal& tx, std::promise<SendOutcome>&& promise)
+        const noexcept -> void;
 
     auto Run() noexcept -> bool;
 

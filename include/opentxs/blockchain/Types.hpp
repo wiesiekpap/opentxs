@@ -9,6 +9,7 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
+#include <string>
 #include <tuple>
 #include <utility>
 
@@ -30,6 +31,7 @@ enum class Type : TypeEnum;
 
 enum class Type : TypeEnum;
 enum class BloomUpdateFlag : std::uint8_t;
+enum class SendResult : TypeEnum;
 
 using Amount = std::uint64_t;
 using ChainHeight = std::int64_t;
@@ -38,5 +40,7 @@ using ConfirmedBalance = Amount;
 using UnconfirmedBalance = Amount;
 using Balance = std::pair<ConfirmedBalance, UnconfirmedBalance>;
 }  // namespace blockchain
+
+auto print(blockchain::SendResult) noexcept -> std::string;
 }  // namespace opentxs
 #endif

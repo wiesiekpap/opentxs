@@ -31,6 +31,7 @@
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/blockchain/PaymentCode.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/SendResult.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -47,18 +48,19 @@ namespace opentxs::blockchain::client::wallet
 {
 struct Proposals::Imp {
 public:
-    auto Add(const Proposal& tx) const noexcept -> std::future<block::pTxid>
+    auto Add(const Proposal& tx, std::promise<SendOutcome>&& promise)
+        const noexcept -> void
     {
         auto lock = Lock{lock_};
         auto id = api_.Factory().Identifier(tx.id());
 
         if (false == db_.AddProposal(id, tx)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Database error").Flush();
-
-            return {};
+            static const auto blank = api_.Factory().Data();
+            promise.set_value({SendResult::DatabaseError, blank});
         }
 
-        return pending_.Add(std::move(id));
+        pending_.Add(std::move(id), std::move(promise));
     }
     auto Run() noexcept -> bool
     {
@@ -81,7 +83,7 @@ public:
         , db_(db)
         , chain_(chain)
         , lock_()
-        , pending_()
+        , pending_(api_)
         , confirming_()
     {
         for (const auto& serialized : db_.LoadProposals()) {
@@ -90,7 +92,7 @@ public:
             if (serialized.has_finished()) {
                 confirming_.emplace(std::move(id), Time{});
             } else {
-                pending_.Add(std::move(id));
+                pending_.Add(std::move(id), {});
             }
         }
     }
@@ -105,9 +107,8 @@ private:
     using Builder = std::function<BuildResult(
         const Identifier& id,
         Proposal&,
-        std::promise<block::pTxid>&)>;
-    using Promise = std::promise<block::pTxid>;
-    using Future = std::future<block::pTxid>;
+        std::promise<SendOutcome>&)>;
+    using Promise = std::promise<SendOutcome>;
     using Data = std::pair<OTIdentifier, Promise>;
 
     struct Pending {
@@ -124,21 +125,21 @@ private:
             return 0 < data_.size();
         }
 
-        auto Add(OTIdentifier&& id) noexcept -> Future
+        auto Add(
+            OTIdentifier&& id,
+            std::promise<SendOutcome>&& promise) noexcept -> void
         {
             auto lock = Lock{lock_};
 
             if (0 < ids_.count(id)) {
                 LogOutput(OT_METHOD)(__FUNCTION__)(": Proposal already exists")
                     .Flush();
-
-                return {};
+                static const auto blank = api_.Factory().Data();
+                promise.set_value({SendResult::DuplicateProposal, blank});
             }
 
             ids_.emplace(id);
-            data_.emplace_back(std::move(id), Promise{});
-
-            return data_.back().second.get_future();
+            data_.emplace_back(std::move(id), std::move(promise));
         }
         auto Add(Data&& job) noexcept -> void
         {
@@ -175,10 +176,19 @@ private:
             return std::move(data_.front());
         }
 
+        Pending(const api::Core& api) noexcept
+            : api_(api)
+            , lock_()
+            , data_()
+            , ids_()
+        {
+        }
+
     private:
-        mutable std::mutex lock_{};
-        std::deque<Data> data_{};
-        std::set<OTIdentifier> ids_{};
+        const api::Core& api_;
+        mutable std::mutex lock_;
+        std::deque<Data> data_;
+        std::set<OTIdentifier> ids_;
     };
 
     const api::Core& api_;
@@ -198,21 +208,35 @@ private:
     auto build_transaction_bitcoin(
         const Identifier& id,
         Proposal& proposal,
-        std::promise<block::pTxid>& promise) const noexcept -> BuildResult
+        std::promise<SendOutcome>& promise) const noexcept -> BuildResult
     {
+        static const auto blank = api_.Factory().Data();
         auto output = BuildResult::Success;
+        auto rc = SendResult::UnspecifiedError;
+        auto txid{blank};
         auto builder = BitcoinTransactionBuilder{
             api_, blockchain_, db_, id, proposal, chain_, network_.FeeRate()};
         auto post = ScopeGuard{[&] {
-            if (BuildResult::PermanentFailure != output) { return; }
+            switch (output) {
+                case BuildResult::TemporaryFailure: {
+                } break;
+                case BuildResult::PermanentFailure: {
+                    builder.ReleaseKeys();
+                    [[fallthrough]];
+                }
+                case BuildResult::Success:
+                default: {
 
-            builder.ReleaseKeys();
+                    promise.set_value({rc, txid});
+                }
+            }
         }};
 
         if (false == builder.CreateOutputs(proposal)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to create outputs")
                 .Flush();
             output = BuildResult::PermanentFailure;
+            rc = SendResult::OutputCreationError;
 
             return output;
         }
@@ -222,6 +246,7 @@ private:
                 ": Failed to allocate change output")
                 .Flush();
             output = BuildResult::PermanentFailure;
+            rc = SendResult::ChangeError;
 
             return output;
         }
@@ -235,6 +260,7 @@ private:
                 LogOutput(OT_METHOD)(__FUNCTION__)(": Insufficient funds")
                     .Flush();
                 output = BuildResult::PermanentFailure;
+                rc = SendResult::InsufficientFunds;
 
                 return output;
             }
@@ -243,6 +269,7 @@ private:
                 LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to add input")
                     .Flush();
                 output = BuildResult::PermanentFailure;
+                rc = SendResult::InputCreationError;
 
                 return output;
             }
@@ -256,6 +283,7 @@ private:
             LogOutput(OT_METHOD)(__FUNCTION__)(": Transaction signing failure")
                 .Flush();
             output = BuildResult::PermanentFailure;
+            rc = SendResult::SignatureError;
 
             return output;
         }
@@ -289,6 +317,7 @@ private:
             LogOutput(OT_METHOD)(__FUNCTION__)(": Database error (proposal)")
                 .Flush();
             output = BuildResult::PermanentFailure;
+            rc = SendResult::DatabaseError;
 
             return output;
         }
@@ -297,17 +326,20 @@ private:
             LogOutput(OT_METHOD)(__FUNCTION__)(": Database error (transaction)")
                 .Flush();
             output = BuildResult::PermanentFailure;
+            rc = SendResult::DatabaseError;
 
             return output;
         }
 
-        promise.set_value(transaction.ID());
+        txid = transaction.ID();
         const auto sent = network_.BroadcastTransaction(transaction);
 
         try {
             if (false == sent) {
                 throw std::runtime_error{"Failed to send tx"};
             }
+
+            rc = SendResult::Sent;
 
             for (const auto& notif : proposal.notification()) {
                 using PC = api::client::blockchain::internal::PaymentCode;
@@ -359,10 +391,7 @@ private:
             case Type::PKT_testnet:
             case Type::UnitTest: {
 
-                return [this](
-                           const Identifier& id,
-                           Proposal& in,
-                           std::promise<block::pTxid>& out) -> auto
+                return [this](const auto& id, auto& in, auto& out) -> auto
                 {
                     return build_transaction_bitcoin(id, in, out);
                 };
@@ -461,10 +490,10 @@ Proposals::Proposals(
     OT_ASSERT(imp_);
 }
 
-auto Proposals::Add(const Proposal& tx) const noexcept
-    -> std::future<block::pTxid>
+auto Proposals::Add(const Proposal& tx, std::promise<SendOutcome>&& promise)
+    const noexcept -> void
 {
-    return imp_->Add(tx);
+    imp_->Add(tx, std::move(promise));
 }
 
 auto Proposals::Run() noexcept -> bool { return imp_->Run(); }

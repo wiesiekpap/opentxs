@@ -50,6 +50,7 @@ class OPENTXS_EXPORT opentxs::ui::AccountActivityQt final
 
 signals:
     void updated() const;
+    void transactionSendResult(int, int, QString) const;
     void syncPercentageUpdated(double) const;
     void syncProgressUpdated(int, int) const;
 
@@ -89,14 +90,16 @@ public:
         int section,
         Qt::Orientation orientation,
         int role = Qt::DisplayRole) const -> QVariant final;
-    Q_INVOKABLE bool sendToAddress(
+    Q_INVOKABLE int sendToAddress(
         const QString& address,
         const QString& amount,
-        const QString& memo) const noexcept;
-    Q_INVOKABLE bool sendToContact(
+        const QString& memo,
+        int scale = 0) const noexcept;
+    Q_INVOKABLE int sendToContact(
         const QString& contactID,
         const QString& amount,
-        const QString& memo) const noexcept;
+        const QString& memo,
+        int scale = 0) const noexcept;
     Q_INVOKABLE QString getDepositAddress(const int chain = 0) const noexcept;
     double syncPercentage() const noexcept;
     QVariantList syncProgress() const noexcept;
@@ -105,7 +108,7 @@ public:
 
     AccountActivityQt(implementation::AccountActivity& parent) noexcept;
 
-    ~AccountActivityQt() final = default;
+    ~AccountActivityQt() final;
 
 private:
     implementation::AccountActivity& parent_;

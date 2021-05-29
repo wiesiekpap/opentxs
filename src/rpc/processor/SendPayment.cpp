@@ -113,7 +113,7 @@ auto RPC::send_payment_blockchain(
                 return network.SendToAddress(owner, address, amount, memo);
             }
         }();
-        const auto txid = future.get();
+        const auto [code, txid] = future.get();
 
         if (txid->empty()) { return reply(ResponseCode::transaction_failed); }
 

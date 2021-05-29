@@ -321,6 +321,8 @@ using pHash = blockchain::pHash;
 using Header = Hash;
 using pHeader = pHash;
 }  // namespace filter
+
+using SendOutcome = std::pair<SendResult, block::pTxid>;
 }  // namespace blockchain
 }  // namespace opentxs
 #endif

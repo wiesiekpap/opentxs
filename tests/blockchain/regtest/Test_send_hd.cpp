@@ -636,7 +636,7 @@ TEST_F(Regtest_fixture_hd, spend)
 
     auto future =
         network.SendToAddress(alex_.ID(), address, 1400000000, memo_outgoing_);
-    const auto& txid = transactions_.emplace_back(future.get());
+    const auto& txid = transactions_.emplace_back(future.get().second);
 
     EXPECT_FALSE(txid->empty());
 

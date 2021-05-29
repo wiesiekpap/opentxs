@@ -323,19 +323,53 @@ auto BlockchainAccountActivity::Send(
         return false;
     }
 }
+
+#if OT_QT
+auto BlockchainAccountActivity::Send(
+    const std::string& address,
+    const std::string& input,
+    const std::string& memo,
+    Scale scale,
+    SendMonitor::Callback cb) const noexcept -> int
+{
+    try {
+        const auto& network = Widget::api_.Blockchain().GetChain(chain_);
+        const auto recipient = Widget::api_.Factory().PaymentCode(address);
+        const auto amount = scales_.Import(input, scale);
+
+        if (0 < recipient->Version()) {
+
+            return send_monitor_.watch(
+                network.SendToPaymentCode(primary_id_, recipient, amount, memo),
+                std::move(cb));
+        } else {
+
+            return send_monitor_.watch(
+                network.SendToAddress(primary_id_, address, amount, memo),
+                std::move(cb));
+        }
+    } catch (...) {
+
+        return -1;
+    }
+}
+#endif  // OT_QT
+
 auto BlockchainAccountActivity::Send(
     const std::string& address,
     const std::string& amount,
-    const std::string& memo) const noexcept -> bool
+    const std::string& memo,
+    Scale scale) const noexcept -> bool
 {
     try {
 
-        return Send(address, scales_.Import(amount), memo);
+        return Send(address, scales_.Import(amount, scale), memo);
     } catch (...) {
 
         return false;
     }
 }
+
 auto BlockchainAccountActivity::SetSyncCallback(const SyncCallback cb) noexcept
     -> void
 {

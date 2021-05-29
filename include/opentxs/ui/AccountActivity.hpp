@@ -33,54 +33,55 @@ namespace opentxs
 {
 namespace ui
 {
-class AccountActivity : virtual public List
+class OPENTXS_EXPORT AccountActivity : virtual public List
 {
 public:
-    OPENTXS_EXPORT virtual std::string AccountID() const noexcept = 0;
-    OPENTXS_EXPORT virtual Amount Balance() const noexcept = 0;
-    OPENTXS_EXPORT virtual int BalancePolarity() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string ContractID() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string DepositAddress() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string DepositAddress(
+    using Scale = unsigned int;
+
+    virtual std::string AccountID() const noexcept = 0;
+    virtual Amount Balance() const noexcept = 0;
+    virtual int BalancePolarity() const noexcept = 0;
+    virtual std::string ContractID() const noexcept = 0;
+    virtual std::string DepositAddress() const noexcept = 0;
+    virtual std::string DepositAddress(
         const blockchain::Type chain) const noexcept = 0;
-    OPENTXS_EXPORT virtual std::vector<blockchain::Type> DepositChains()
+    virtual std::vector<blockchain::Type> DepositChains() const noexcept = 0;
+    virtual std::string DisplayBalance() const noexcept = 0;
+    virtual std::string DisplayUnit() const noexcept = 0;
+    virtual opentxs::SharedPimpl<opentxs::ui::BalanceItem> First()
         const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string DisplayBalance() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string DisplayUnit() const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::BalanceItem>
-    First() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string Name() const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::BalanceItem> Next()
+    virtual std::string Name() const noexcept = 0;
+    virtual opentxs::SharedPimpl<opentxs::ui::BalanceItem> Next()
         const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string NotaryID() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string NotaryName() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Send(
+    virtual std::string NotaryID() const noexcept = 0;
+    virtual std::string NotaryName() const noexcept = 0;
+    virtual bool Send(
         const Identifier& contact,
         const Amount amount,
         const std::string& memo = {}) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Send(
+    virtual bool Send(
         const Identifier& contact,
         const std::string& amount,
-        const std::string& memo = {}) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Send(
+        const std::string& memo = {},
+        Scale scale = 0) const noexcept = 0;
+    virtual bool Send(
         const std::string& address,
         const Amount amount,
         const std::string& memo = {}) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Send(
+    virtual bool Send(
         const std::string& address,
         const std::string& amount,
-        const std::string& memo = {}) const noexcept = 0;
-    OPENTXS_EXPORT virtual double SyncPercentage() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::pair<int, int> SyncProgress()
-        const noexcept = 0;
-    OPENTXS_EXPORT virtual AccountType Type() const noexcept = 0;
-    OPENTXS_EXPORT virtual contact::ContactItemType Unit() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool ValidateAddress(
-        const std::string& text) const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string ValidateAmount(
+        const std::string& memo = {},
+        Scale scale = 0) const noexcept = 0;
+    virtual double SyncPercentage() const noexcept = 0;
+    virtual std::pair<int, int> SyncProgress() const noexcept = 0;
+    virtual AccountType Type() const noexcept = 0;
+    virtual contact::ContactItemType Unit() const noexcept = 0;
+    virtual bool ValidateAddress(const std::string& text) const noexcept = 0;
+    virtual std::string ValidateAmount(
         const std::string& text) const noexcept = 0;
 
-    OPENTXS_EXPORT ~AccountActivity() override = default;
+    ~AccountActivity() override = default;
 
 protected:
     AccountActivity() noexcept = default;

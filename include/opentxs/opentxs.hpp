@@ -75,6 +75,7 @@
 #include "opentxs/blockchain/Network.hpp"
 #include "opentxs/blockchain/NumericHash.hpp"
 #endif  // OT_BLOCKCHAIN
+#include "opentxs/blockchain/SendResult.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/Work.hpp"
