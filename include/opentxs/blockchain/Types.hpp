@@ -41,6 +41,6 @@ using UnconfirmedBalance = Amount;
 using Balance = std::pair<ConfirmedBalance, UnconfirmedBalance>;
 }  // namespace blockchain
 
-auto print(blockchain::SendResult) noexcept -> std::string;
+OPENTXS_EXPORT auto print(blockchain::SendResult) noexcept -> std::string;
 }  // namespace opentxs
 #endif
