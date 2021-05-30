@@ -6,12 +6,11 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
-#include <utility>
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "internal/api/client/Client.hpp"
 #include "internal/api/server/Server.hpp"
-#include "internal/otx/OTX.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/SharedPimpl.hpp"

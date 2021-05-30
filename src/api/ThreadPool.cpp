@@ -7,8 +7,8 @@
 #include "1_Internal.hpp"      // IWYU pragma: associated
 #include "api/ThreadPool.hpp"  // IWYU pragma: associated
 
+#include <cstddef>
 #include <functional>
-#include <iosfwd>
 #include <memory>
 #include <stdexcept>
 #include <thread>

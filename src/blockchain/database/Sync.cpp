@@ -7,12 +7,12 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "blockchain/database/Sync.hpp"  // IWYU pragma: associated
 
-#include <iosfwd>
+#include <cstddef>
 #include <utility>
 
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
-#include "internal/blockchain/client/Client.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"

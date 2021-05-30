@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <chrono>
 #include <future>
+#include <iosfwd>
 #include <iterator>
 #include <optional>
 #include <sstream>
@@ -24,8 +25,8 @@
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "internal/blockchain/client/Client.hpp"
-#include "internal/blockchain/client/Factory.hpp"
+#include "internal/blockchain/node/Factory.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Endpoints.hpp"
@@ -36,14 +37,12 @@
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/blockchain/client/FilterOracle.hpp"
+#include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/crypto/HashType.hpp"
-#include "opentxs/network/blockchain/sync/Data.hpp"
-#include "opentxs/network/blockchain/sync/State.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Sender.tpp"  // IWYU pragma: keep
@@ -158,7 +157,7 @@ BlockchainImp::BlockchainImp(
         return out;
     }())
     , base_config_([&] {
-        auto output = opentxs::blockchain::client::internal::Config{};
+        auto output = opentxs::blockchain::node::internal::Config{};
         const auto sync = [&] {
             try {
                 const auto& arg = args.at(OPENTXS_ARG_BLOCKCHAIN_SYNC);
@@ -203,8 +202,7 @@ BlockchainImp::BlockchainImp(
     , networks_()
     , sync_client_([&]() -> std::unique_ptr<blockchain::SyncClient> {
         if (base_config_.use_sync_server_) {
-            return std::make_unique<blockchain::SyncClient>(
-                api_, parent_, base_config_.sync_endpoint_);
+            return std::make_unique<blockchain::SyncClient>(api_, parent_);
         }
 
         return {};
@@ -237,11 +235,9 @@ BlockchainImp::BlockchainImp(
     , running_(true)
     , heartbeat_(&BlockchainImp::heartbeat, this)
 {
-    if (sync_client_) { sync_client_->Heartbeat(Hello()); }
-
     using Work = api::internal::ThreadPool::Work;
-    using Wallet = opentxs::blockchain::client::internal::Wallet;
-    using Filters = opentxs::blockchain::client::internal::FilterOracle;
+    using Wallet = opentxs::blockchain::node::internal::Wallet;
+    using Filters = opentxs::blockchain::node::internal::FilterOracle;
     constexpr auto value = [](auto work) {
         return static_cast<OTZMQWorkType>(work);
     };
@@ -255,6 +251,13 @@ BlockchainImp::BlockchainImp(
     pool.Register(value(Work::CalculateBlockFilters), [](const auto& work) {
         Filters::ProcessThreadPool(work);
     });
+
+    try {
+        const auto& endpoints = args.at(OPENTXS_ARG_BLOCKCHAIN_SYNC);
+
+        for (const auto& endpoint : endpoints) { AddSyncServer(endpoint); }
+    } catch (...) {
+    }
 }
 
 auto BlockchainImp::ActivityDescription(
@@ -319,6 +322,12 @@ auto BlockchainImp::ActivityDescription(
     if (false == memo.empty()) { output << ": " << memo; }
 
     return output.str();
+}
+
+auto BlockchainImp::AddSyncServer(const std::string& endpoint) const noexcept
+    -> bool
+{
+    return db_.AddSyncServer(endpoint);
 }
 
 auto BlockchainImp::AssignTransactionMemo(
@@ -407,6 +416,12 @@ auto BlockchainImp::check_hello(const Lock&) const noexcept -> Chains
     return output;
 }
 
+auto BlockchainImp::DeleteSyncServer(const std::string& endpoint) const noexcept
+    -> bool
+{
+    return db_.DeleteSyncServer(endpoint);
+}
+
 auto BlockchainImp::Disable(const Chain type) const noexcept -> bool
 {
     auto lock = Lock{lock_};
@@ -483,11 +498,16 @@ auto BlockchainImp::FilterUpdate() const noexcept -> const zmq::socket::Publish&
 }
 
 auto BlockchainImp::GetChain(const Chain type) const noexcept(false)
-    -> const opentxs::blockchain::Network&
+    -> const opentxs::blockchain::node::Manager&
 {
     auto lock = Lock{lock_};
 
     return *networks_.at(type);
+}
+
+auto BlockchainImp::GetSyncServers() const noexcept -> Blockchain::Endpoints
+{
+    return db_.GetSyncServers();
 }
 
 auto BlockchainImp::heartbeat() const noexcept -> void
@@ -500,10 +520,6 @@ auto BlockchainImp::heartbeat() const noexcept -> void
         }
 
         auto lock = Lock{lock_};
-
-        if (sync_client_) {
-            sync_client_->Heartbeat(hello(lock, check_hello(lock)));
-        }
 
         for (const auto& [key, value] : networks_) {
             if (false == running_) { return; }
@@ -556,6 +572,13 @@ auto BlockchainImp::IndexItem(const ReadView bytes) const noexcept -> PatternID
     OT_ASSERT(hashed);
 
     return output;
+}
+
+auto BlockchainImp::Init() noexcept -> void
+{
+    Blockchain::Imp::Init();
+
+    if (sync_client_) { sync_client_->Init(); }
 }
 
 auto BlockchainImp::IsEnabled(
@@ -669,22 +692,6 @@ auto BlockchainImp::ProcessMergedContact(
     return true;
 }
 
-auto BlockchainImp::ProcessSyncData(
-    const opentxs::network::blockchain::sync::Data& data,
-    OTZMQMessage&& in) const noexcept -> void
-{
-    auto lock = Lock{lock_};
-
-    try {
-        auto& network = *networks_.at(data.State().Chain());
-        network.Submit(in);
-    } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Chain not active").Flush();
-
-        return;
-    }
-}
-
 auto BlockchainImp::ProcessTransaction(
     const Chain chain,
     const Tx& in,
@@ -767,12 +774,6 @@ auto BlockchainImp::ReportProgress(
     work->AddFrame(current);
     work->AddFrame(target);
     sync_updates_->Send(work);
-
-    if (sync_client_ && sync_client_->IsActive(chain)) {
-        auto lock = Lock{lock_};
-        last_hello_[chain] = Clock::now();
-        sync_client_->Heartbeat(hello(lock, {chain}));
-    }
 }
 
 auto BlockchainImp::ReportScan(
@@ -817,6 +818,8 @@ auto BlockchainImp::Shutdown() noexcept -> void
 
         networks_.clear();
     }
+
+    Blockchain::Imp::Shutdown();
 }
 
 auto BlockchainImp::Start(const Chain type, const std::string& seednode)
@@ -866,16 +869,8 @@ auto BlockchainImp::start(
                 }
 
                 auto [it, added] = config_.emplace(type, base_config_);
-                auto& active = it->second.use_sync_server_;
 
                 OT_ASSERT(added);
-
-                if (active) {
-                    OT_ASSERT(sync_client_);
-
-                    active = sync_client_->IsConnected() &&
-                             sync_client_->IsActive(type);
-                }
 
                 return it->second;
             }();
@@ -947,6 +942,17 @@ auto BlockchainImp::stop(const Lock& lock, const Chain type) const noexcept
     publish_chain_state(type, false);
 
     return true;
+}
+
+auto BlockchainImp::SyncEndpoint() const noexcept -> const std::string&
+{
+    if (sync_client_) {
+
+        return sync_client_->Endpoint();
+    } else {
+
+        return Blockchain::Imp::SyncEndpoint();
+    }
 }
 
 auto BlockchainImp::UpdateBalance(

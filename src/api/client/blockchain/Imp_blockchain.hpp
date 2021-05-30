@@ -6,6 +6,7 @@
 #pragma once
 
 #include <atomic>
+#include <cstddef>
 #include <functional>
 #include <iosfwd>
 #include <map>
@@ -22,7 +23,7 @@
 #include "api/client/blockchain/SyncServer.hpp"
 #include "api/client/blockchain/database/Database.hpp"
 #include "internal/api/client/Client.hpp"
-#include "internal/blockchain/client/Client.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
@@ -30,8 +31,8 @@
 #include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/Network.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
@@ -96,6 +97,7 @@ class Data;
 namespace zeromq
 {
 class Context;
+class Message;
 }  // namespace zeromq
 }  // namespace network
 
@@ -171,7 +173,7 @@ struct BlockchainImp final : public Blockchain::Imp {
     using pTxid = opentxs::blockchain::block::pTxid;
     using LastHello = std::map<Chain, Time>;
     using Chains = std::vector<Chain>;
-    using Config = opentxs::blockchain::client::internal::Config;
+    using Config = opentxs::blockchain::node::internal::Config;
     using Tx = Blockchain::Tx;
     using TxidHex = Blockchain::TxidHex;
     using PatternID = Blockchain::PatternID;
@@ -185,18 +187,23 @@ struct BlockchainImp final : public Blockchain::Imp {
         const identifier::Nym& nym,
         const Chain chain,
         const Tx& transaction) const noexcept -> std::string final;
+    auto AddSyncServer(const std::string& endpoint) const noexcept
+        -> bool final;
     auto AssignTransactionMemo(const TxidHex& id, const std::string& label)
         const noexcept -> bool final;
     auto BlockchainDB() const noexcept
         -> const blockchain::database::implementation::Database& final;
     auto BlockQueueUpdate() const noexcept -> const zmq::socket::Publish& final;
+    auto DeleteSyncServer(const std::string& endpoint) const noexcept
+        -> bool final;
     auto Disable(const Chain type) const noexcept -> bool final;
     auto Enable(const Chain type, const std::string& seednode) const noexcept
         -> bool final;
     auto EnabledChains() const noexcept -> std::set<Chain> final;
     auto FilterUpdate() const noexcept -> const zmq::socket::Publish& final;
     auto GetChain(const Chain type) const noexcept(false)
-        -> const opentxs::blockchain::Network& final;
+        -> const opentxs::blockchain::node::Manager& final;
+    auto GetSyncServers() const noexcept -> Blockchain::Endpoints final;
     auto Hello() const noexcept -> SyncState final;
     auto IndexItem(const ReadView bytes) const noexcept -> PatternID final;
     auto IsEnabled(const opentxs::blockchain::Type chain) const noexcept
@@ -214,9 +221,6 @@ struct BlockchainImp final : public Blockchain::Imp {
     auto ProcessContact(const Contact& contact) const noexcept -> bool final;
     auto ProcessMergedContact(const Contact& parent, const Contact& child)
         const noexcept -> bool final;
-    auto ProcessSyncData(
-        const opentxs::network::blockchain::sync::Data& data,
-        OTZMQMessage&& in) const noexcept -> void final;
     auto ProcessTransaction(
         const Chain chain,
         const Tx& in,
@@ -243,6 +247,7 @@ struct BlockchainImp final : public Blockchain::Imp {
         const std::string& update,
         const std::string& publicUpdate) const noexcept -> bool final;
     auto Stop(const Chain type) const noexcept -> bool final;
+    auto SyncEndpoint() const noexcept -> const std::string& final;
     auto UpdateBalance(
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::Balance balance) const noexcept
@@ -258,6 +263,7 @@ struct BlockchainImp final : public Blockchain::Imp {
         const opentxs::blockchain::Type chain,
         const std::string& address) const noexcept -> void final;
 
+    auto Init() noexcept -> void final;
     auto Shutdown() noexcept -> void final;
 
     BlockchainImp(
@@ -290,7 +296,7 @@ private:
     mutable std::map<Chain, Config> config_;
     mutable std::map<
         Chain,
-        std::unique_ptr<opentxs::blockchain::client::internal::Network>>
+        std::unique_ptr<opentxs::blockchain::node::internal::Network>>
         networks_;
     std::unique_ptr<blockchain::SyncClient> sync_client_;
     std::unique_ptr<blockchain::SyncServer> sync_server_;

@@ -15,15 +15,19 @@
 
 #include "network/blockchain/sync/Base.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/blockchain/sync/Acknowledgement.hpp"
 #include "opentxs/network/blockchain/sync/Data.hpp"
 #include "opentxs/network/blockchain/sync/MessageType.hpp"
+#include "opentxs/network/blockchain/sync/Query.hpp"
 #include "opentxs/network/blockchain/sync/Request.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/protobuf/BlockchainP2PHello.pb.h"
 #include "opentxs/protobuf/BlockchainP2PSync.pb.h"
 #include "util/Container.hpp"
+
+#define OT_METHOD "opentxs::network::blockchain::sync::Base::"
 
 namespace opentxs::network::blockchain::sync
 {
@@ -40,6 +44,7 @@ auto map() noexcept -> const ForwardMap&
         {MessageType::sync_ack, WorkType::SyncAcknowledgement},
         {MessageType::sync_reply, WorkType::SyncReply},
         {MessageType::new_block_header, WorkType::NewBlock},
+        {MessageType::query, WorkType::SyncQuery},
     };
 
     return data;
@@ -106,6 +111,13 @@ auto Base::Imp::asData() const noexcept -> const Data&
     return blank;
 }
 
+auto Base::Imp::asQuery() const noexcept -> const Query&
+{
+    static const auto blank = Query{};
+
+    return blank;
+}
+
 auto Base::Imp::asRequest() const noexcept -> const Request&
 {
     static const auto blank = Request{};
@@ -115,18 +127,7 @@ auto Base::Imp::asRequest() const noexcept -> const Request&
 
 auto Base::Imp::serialize(zeromq::Message& out) const noexcept -> bool
 {
-    if (MessageType::error == type_) { return false; }
-
-    if (0u == out.size()) {
-        out.AddFrame();
-    } else if (0u != out.at(out.size() - 1u).size()) {
-        // NOTE supplied message should either be empty or else have header
-        // frames followed by an empty delimiter frame.
-
-        return false;
-    }
-
-    out.AddFrame(translate(type_));
+    if (false == serialize_type(out)) { return false; }
 
     try {
         const auto hello = [&] {
@@ -164,6 +165,29 @@ auto Base::Imp::serialize(zeromq::Message& out) const noexcept -> bool
     return true;
 }
 
+auto Base::Imp::serialize_type(zeromq::Message& out) const noexcept -> bool
+{
+    if (MessageType::error == type_) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid type").Flush();
+
+        return false;
+    }
+
+    if (0u == out.size()) {
+        out.AddFrame();
+    } else if (0u != out.at(out.size() - 1u).size()) {
+        // NOTE supplied message should either be empty or else have header
+        // frames followed by an empty delimiter frame.
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message").Flush();
+
+        return false;
+    }
+
+    out.AddFrame(translate(type_));
+
+    return true;
+}
+
 auto Base::Imp::translate(LocalType in) noexcept -> RemoteType
 {
     return map().at(in);
@@ -180,6 +204,8 @@ auto Base::asAcknowledgement() const noexcept -> const Acknowledgement&
 }
 
 auto Base::asData() const noexcept -> const Data& { return imp_->asData(); }
+
+auto Base::asQuery() const noexcept -> const Query& { return imp_->asQuery(); }
 
 auto Base::asRequest() const noexcept -> const Request&
 {

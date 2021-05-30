@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <numeric>
 #include <utility>
 
 #include "internal/network/Factory.hpp"
@@ -64,41 +65,51 @@ namespace opentxs::network::zeromq::implementation
 {
 Message::Message()
     : messages_()
+    , total_(std::nullopt)
 {
 }
 
 Message::Message(const Message& rhs)
     : zeromq::Message()
     , messages_()
+    , total_(rhs.total_)
 {
     for (auto& message : rhs.messages_) { messages_.emplace_back(message); }
 }
 
 auto Message::AddFrame() -> Frame&
 {
-    messages_.emplace_back(factory::ZMQFrame());
+    auto& frame = messages_.emplace_back(factory::ZMQFrame());
 
-    return messages_.back().get();
+    if (total_.has_value()) { total_.value() += frame->size(); }
+
+    return frame;
 }
 
 auto Message::AddFrame(const void* input, const std::size_t size) -> Frame&
 {
-    messages_.emplace_back(factory::ZMQFrame(input, size));
+    auto& frame = messages_.emplace_back(factory::ZMQFrame(input, size));
 
-    return messages_.back().get();
+    if (total_.has_value()) { total_.value() += frame->size(); }
+
+    return frame;
 }
 
 auto Message::AddFrame(const ProtobufType& input) -> Frame&
 {
-    messages_.emplace_back(factory::ZMQFrame(input));
+    auto& frame = messages_.emplace_back(factory::ZMQFrame(input));
 
-    return messages_.back().get();
+    if (total_.has_value()) { total_.value() += frame->size(); }
+
+    return frame;
 }
 
 auto Message::AppendBytes() noexcept -> AllocateOutput
 {
     return [this](const std::size_t size) -> WritableView {
         auto& frame = messages_.emplace_back(factory::ZMQFrame(size));
+
+        if (total_.has_value()) { total_.value() += frame->size(); }
 
         return {const_cast<void*>(frame->data()), frame->size()};
     };
@@ -236,6 +247,12 @@ auto Message::PrependEmptyFrame() -> void
 auto Message::Replace(const std::size_t index, OTZMQFrame&& frame) -> Frame&
 {
     auto& position = messages_.at(index);
+
+    if (total_.has_value()) {
+        total_.value() -= position->size();
+        total_.value() += frame->size();
+    }
+
     std::swap(position, frame);
 
     return position;
@@ -248,7 +265,14 @@ auto Message::set_field(const std::size_t position, const zeromq::Frame& input)
 
     if (effectivePosition >= messages_.size()) { return false; }
 
-    messages_[effectivePosition] = input;
+    auto& frame = messages_[effectivePosition];
+
+    if (total_.has_value()) {
+        total_.value() -= frame->size();
+        total_.value() += input.size();
+    }
+
+    frame = input;
 
     return true;
 }
@@ -263,4 +287,17 @@ auto Message::StartBody() noexcept -> void
 }
 
 auto Message::size() const -> std::size_t { return messages_.size(); }
+
+auto Message::Total() const -> std::size_t
+{
+    if (false == total_.has_value()) {
+        total_ = std::accumulate(
+            messages_.begin(),
+            messages_.end(),
+            std::size_t{0},
+            [](const auto& lhs, const auto& rhs) { return lhs + rhs->size(); });
+    }
+
+    return total_.value();
+}
 }  // namespace opentxs::network::zeromq::implementation

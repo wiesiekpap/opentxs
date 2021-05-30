@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/network/blockchain/sync/Base.hpp"
 #include "opentxs/network/blockchain/sync/State.hpp"
 
@@ -29,6 +30,9 @@ public:
 
     auto Endpoint() const noexcept -> const std::string&;
     auto State() const noexcept -> const StateData&;
+    /// throws std::out_of_range if specified chain is not present
+    auto State(opentxs::blockchain::Type chain) const noexcept(false)
+        -> const sync::State&;
 
     OPENTXS_NO_EXPORT Acknowledgement(
         StateData in,

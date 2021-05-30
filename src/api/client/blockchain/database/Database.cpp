@@ -25,6 +25,7 @@ extern "C" {
 #if OPENTXS_BLOCK_STORAGE_ENABLED
 #include "api/client/blockchain/database/Blocks.hpp"
 #endif  // OPENTXS_BLOCK_STORAGE_ENABLED
+#include "api/client/blockchain/database/Config.hpp"
 #include "api/client/blockchain/database/Peers.hpp"
 #if OPENTXS_BLOCK_STORAGE_ENABLED
 #include "api/client/blockchain/database/Sync.hpp"
@@ -75,6 +76,7 @@ struct Database::Imp {
     Sync sync_;
 #endif  // OPENTXS_BLOCK_STORAGE_ENABLED
     Wallet wallet_;
+    Config config_;
 
     static auto block_storage_enabled() noexcept -> bool
     {
@@ -96,7 +98,8 @@ struct Database::Imp {
         if (db.has_value()) { output = std::max(output, db.value()); }
 
         if ((false == db.has_value()) || (output != db.value())) {
-            lmdb.Store(Config, tsv(Key::BlockStoragePolicy), tsv(output));
+            lmdb.Store(
+                Table::Config, tsv(Key::BlockStoragePolicy), tsv(output));
         }
 
         return output;
@@ -128,7 +131,7 @@ struct Database::Imp {
         opentxs::storage::lmdb::LMDB& db) noexcept
         -> std::optional<BlockStorage>
     {
-        if (false == db.Exists(Config, tsv(Key::BlockStoragePolicy))) {
+        if (false == db.Exists(Table::Config, tsv(Key::BlockStoragePolicy))) {
             return std::nullopt;
         }
 
@@ -139,7 +142,7 @@ struct Database::Imp {
             std::memcpy(&output, in.data(), in.size());
         };
 
-        if (false == db.Load(Config, tsv(Key::BlockStoragePolicy), cb)) {
+        if (false == db.Load(Table::Config, tsv(Key::BlockStoragePolicy), cb)) {
             return std::nullopt;
         }
 
@@ -193,7 +196,7 @@ struct Database::Imp {
         ::crypto_shorthash_keygen(
             reinterpret_cast<unsigned char*>(output.data()));
         const auto saved =
-            db.Store(Config, tsv(Key::SiphashKey), reader(output));
+            db.Store(Table::Config, tsv(Key::SiphashKey), reader(output));
 
         OT_ASSERT(saved.first);
 
@@ -202,7 +205,7 @@ struct Database::Imp {
     static auto siphash_key_configured(
         opentxs::storage::lmdb::LMDB& db) noexcept -> std::optional<SiphashKey>
     {
-        if (false == db.Exists(Config, tsv(Key::SiphashKey))) {
+        if (false == db.Exists(Table::Config, tsv(Key::SiphashKey))) {
             return std::nullopt;
         }
 
@@ -213,7 +216,7 @@ struct Database::Imp {
             std::memcpy(output.data(), in.data(), in.size());
         };
 
-        if (false == db.Load(Config, tsv(Key::SiphashKey), cb)) {
+        if (false == db.Load(Table::Config, tsv(Key::SiphashKey), cb)) {
             return std::nullopt;
         }
 
@@ -246,23 +249,24 @@ struct Database::Imp {
               common_path_->Get(),
               [] {
                   auto output = opentxs::storage::lmdb::TablesToInit{
-                      {BlockHeaders, 0},
-                      {PeerDetails, 0},
-                      {PeerChainIndex, MDB_DUPSORT | MDB_INTEGERKEY},
-                      {PeerProtocolIndex, MDB_DUPSORT | MDB_INTEGERKEY},
-                      {PeerServiceIndex, MDB_DUPSORT | MDB_INTEGERKEY},
-                      {PeerNetworkIndex, MDB_DUPSORT | MDB_INTEGERKEY},
-                      {PeerConnectedIndex, MDB_DUPSORT | MDB_INTEGERKEY},
-                      {FiltersBasic, 0},
-                      {FiltersBCH, 0},
-                      {FiltersOpentxs, 0},
-                      {FilterHeadersBasic, 0},
-                      {FilterHeadersBCH, 0},
-                      {FilterHeadersOpentxs, 0},
-                      {Config, MDB_INTEGERKEY},
-                      {BlockIndex, 0},
-                      {Enabled, MDB_INTEGERKEY},
-                      {SyncTips, MDB_INTEGERKEY},
+                      {Table::BlockHeaders, 0},
+                      {Table::PeerDetails, 0},
+                      {Table::PeerChainIndex, MDB_DUPSORT | MDB_INTEGERKEY},
+                      {Table::PeerProtocolIndex, MDB_DUPSORT | MDB_INTEGERKEY},
+                      {Table::PeerServiceIndex, MDB_DUPSORT | MDB_INTEGERKEY},
+                      {Table::PeerNetworkIndex, MDB_DUPSORT | MDB_INTEGERKEY},
+                      {Table::PeerConnectedIndex, MDB_DUPSORT | MDB_INTEGERKEY},
+                      {Table::FiltersBasic, 0},
+                      {Table::FiltersBCH, 0},
+                      {Table::FiltersOpentxs, 0},
+                      {Table::FilterHeadersBasic, 0},
+                      {Table::FilterHeadersBCH, 0},
+                      {Table::FilterHeadersOpentxs, 0},
+                      {Table::Config, MDB_INTEGERKEY},
+                      {Table::BlockIndex, 0},
+                      {Table::Enabled, MDB_INTEGERKEY},
+                      {Table::SyncTips, MDB_INTEGERKEY},
+                      {Table::ConfigMulti, MDB_DUPSORT | MDB_INTEGERKEY},
                   };
 
                   for (const auto& [table, name] : SyncTables()) {
@@ -281,6 +285,7 @@ struct Database::Imp {
         , sync_(api_, lmdb_, blocks_path_->Get())
 #endif  // OPENTXS_BLOCK_STORAGE_ENABLED
         , wallet_(blockchain, lmdb_)
+        , config_(api_, lmdb_)
     {
         OT_ASSERT(crypto_shorthash_KEYBYTES == siphash_key_.size());
 
@@ -291,23 +296,24 @@ struct Database::Imp {
 
 const opentxs::storage::lmdb::TableNames Database::Imp::table_names_ = [] {
     auto output = opentxs::storage::lmdb::TableNames{
-        {BlockHeaders, "block_headers"},
-        {PeerDetails, "peers"},
-        {PeerChainIndex, "peer_chain_index"},
-        {PeerProtocolIndex, "peer_protocol_index"},
-        {PeerServiceIndex, "peer_service_index"},
-        {PeerNetworkIndex, "peer_network_index"},
-        {PeerConnectedIndex, "peer_connected_index"},
-        {FiltersBasic, "block_filters_basic"},
-        {FiltersBCH, "block_filters_bch"},
-        {FiltersOpentxs, "block_filters_opentxs"},
-        {FilterHeadersBasic, "block_filter_headers_basic"},
-        {FilterHeadersBCH, "block_filter_headers_bch"},
-        {FilterHeadersOpentxs, "block_filter_headers_opentxs"},
-        {Config, "config"},
-        {BlockIndex, "blocks"},
-        {Enabled, "enabled_chains_2"},
-        {SyncTips, "sync_tips"},
+        {Table::BlockHeaders, "block_headers"},
+        {Table::PeerDetails, "peers"},
+        {Table::PeerChainIndex, "peer_chain_index"},
+        {Table::PeerProtocolIndex, "peer_protocol_index"},
+        {Table::PeerServiceIndex, "peer_service_index"},
+        {Table::PeerNetworkIndex, "peer_network_index"},
+        {Table::PeerConnectedIndex, "peer_connected_index"},
+        {Table::FiltersBasic, "block_filters_basic"},
+        {Table::FiltersBCH, "block_filters_bch"},
+        {Table::FiltersOpentxs, "block_filters_opentxs"},
+        {Table::FilterHeadersBasic, "block_filter_headers_basic"},
+        {Table::FilterHeadersBCH, "block_filter_headers_bch"},
+        {Table::FilterHeadersOpentxs, "block_filter_headers_opentxs"},
+        {Table::Config, "config"},
+        {Table::BlockIndex, "blocks"},
+        {Table::Enabled, "enabled_chains_2"},
+        {Table::SyncTips, "sync_tips"},
+        {Table::ConfigMulti, "config_multiple_values"},
     };
 
     for (const auto& [table, name] : SyncTables()) {
@@ -345,6 +351,11 @@ auto Database::AssociateTransaction(
     const std::vector<PatternID>& patterns) const noexcept -> bool
 {
     return imp_.wallet_.AssociateTransaction(txid, patterns);
+}
+
+auto Database::AddSyncServer(const std::string& endpoint) const noexcept -> bool
+{
+    return imp_.config_.AddSyncServer(endpoint);
 }
 
 auto Database::BlockHeaderExists(const BlockHash& hash) const noexcept -> bool
@@ -385,6 +396,12 @@ auto Database::BlockStore(const BlockHash& block, const std::size_t bytes)
 #endif
 }
 
+auto Database::DeleteSyncServer(const std::string& endpoint) const noexcept
+    -> bool
+{
+    return imp_.config_.DeleteSyncServer(endpoint);
+}
+
 auto Database::Disable(const Chain type) const noexcept -> bool
 {
     const auto key = std::size_t{static_cast<std::uint32_t>(type)};
@@ -420,6 +437,11 @@ auto Database::Find(
     return imp_.peers_.Find(chain, protocol, onNetworks, withServices);
 }
 
+auto Database::GetSyncServers() const noexcept -> Endpoints
+{
+    return imp_.config_.GetSyncServers();
+}
+
 auto Database::HashKey() const noexcept -> ReadView
 {
     return reader(imp_.siphash_key_);
@@ -449,7 +471,7 @@ auto Database::LoadBlockHeader(const BlockHash& hash) const noexcept(false)
 }
 
 auto Database::LoadFilter(const FilterType type, const ReadView blockHash)
-    const noexcept -> std::unique_ptr<const opentxs::blockchain::client::GCS>
+    const noexcept -> std::unique_ptr<const opentxs::blockchain::node::GCS>
 {
     return imp_.filters_.LoadFilter(type, blockHash);
 }

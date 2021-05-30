@@ -36,7 +36,6 @@
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #endif  // OT_BLOCKCHAIN
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
@@ -214,14 +213,14 @@ auto Factory::BlockHeader(const proto::BlockchainBlockHeader& serialized) const
     }
 }
 
-auto Factory::BlockHeader(const ReadView& bytes) const -> BlockHeaderP
+auto Factory::BlockHeader(const ReadView bytes) const -> BlockHeaderP
 {
     return BlockHeader(proto::Factory<proto::BlockchainBlockHeader>(bytes));
 }
 
 auto Factory::BlockHeader(
     const opentxs::blockchain::Type type,
-    const opentxs::Data& raw) const -> BlockHeaderP
+    const ReadView raw) const -> BlockHeaderP
 {
     switch (type) {
         case opentxs::blockchain::Type::Bitcoin:
@@ -233,7 +232,7 @@ auto Factory::BlockHeader(
         case opentxs::blockchain::Type::PKT:
         case opentxs::blockchain::Type::PKT_testnet:
         case opentxs::blockchain::Type::UnitTest: {
-            return factory::BitcoinBlockHeader(client_, type, raw.Bytes());
+            return factory::BitcoinBlockHeader(client_, type, raw);
         }
         case opentxs::blockchain::Type::Unknown:
         case opentxs::blockchain::Type::Ethereum_frontier:

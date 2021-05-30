@@ -9,6 +9,7 @@
 
 #include <zmq.h>
 #include <cerrno>
+#include <cstddef>
 #include <cstdint>
 #include <iostream>
 #include <memory>

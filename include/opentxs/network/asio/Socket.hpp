@@ -10,6 +10,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <cstddef>
 #include <future>
 #include <iosfwd>
 #include <memory>

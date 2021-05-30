@@ -51,8 +51,10 @@ struct Base::Imp {
 
     virtual auto asAcknowledgement() const noexcept -> const Acknowledgement&;
     virtual auto asData() const noexcept -> const Data&;
+    virtual auto asQuery() const noexcept -> const Query&;
     virtual auto asRequest() const noexcept -> const Request&;
-    auto serialize(zeromq::Message& out) const noexcept -> bool;
+    virtual auto serialize(zeromq::Message& out) const noexcept -> bool;
+    auto serialize_type(zeromq::Message& out) const noexcept -> bool;
 
     Imp(VersionNumber version,
         MessageType type,

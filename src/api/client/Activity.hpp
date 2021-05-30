@@ -6,6 +6,7 @@
 #pragma once
 
 #include <chrono>
+#include <cstddef>
 #include <iosfwd>
 #include <map>
 #include <memory>

@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
+#include <iosfwd>
 #include <iterator>
 #include <set>
 #include <sstream>

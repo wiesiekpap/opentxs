@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"          // IWYU pragma: associated
 #include "display/Definition.hpp"  // IWYU pragma: associated
 
-#include <iosfwd>
+#include <cstddef>
 #include <stdexcept>
 
 #include "display/Definition_imp.hpp"

@@ -3,12 +3,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: private
-// IWYU pragma: friend ".*src/network/zeromq/Message.cpp"
-
 #pragma once
 
+#include <cstddef>
 #include <iosfwd>
+#include <optional>
 #include <vector>
 
 #include "Proto.hpp"
@@ -36,6 +35,7 @@ public:
     auto Header_begin() const -> FrameIterator final;
     auto Header_end() const -> FrameIterator final;
     auto size() const -> std::size_t final;
+    auto Total() const -> std::size_t final;
 
     auto AddFrame() -> Frame& final;
     auto AddFrame(const ProtobufType& input) -> Frame& final;
@@ -72,6 +72,8 @@ private:
     friend network::zeromq::Message* opentxs::factory::ZMQMessage(
         const ProtobufType&) noexcept;
     friend network::zeromq::Message;
+
+    mutable std::optional<std::size_t> total_;
 
     auto clone() const -> Message* override { return new Message(*this); }
     auto hasDivider() const -> bool;

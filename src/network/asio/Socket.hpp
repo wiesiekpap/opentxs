@@ -8,6 +8,7 @@
 #pragma once
 
 #include <boost/asio.hpp>
+#include <cstddef>
 #include <iosfwd>
 
 #include "opentxs/Bytes.hpp"

@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <deque>
 #include <functional>
@@ -46,7 +47,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
-#include "opentxs/blockchain/client/Wallet.hpp"
+#include "opentxs/blockchain/node/Wallet.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/core/Data.hpp"
 
@@ -285,7 +286,7 @@ protected:
     using Generator = std::function<Transaction(Height)>;
     using Outpoint = ot::blockchain::block::Outpoint;
     using Script = ot::blockchain::block::bitcoin::Script;
-    using UTXO = ot::blockchain::client::Wallet::UTXO;
+    using UTXO = ot::blockchain::node::Wallet::UTXO;
     using Key = ot::OTData;
     using Amount = std::int64_t;
     using OutpointMetadata = std::tuple<Key, Amount, Pattern>;

@@ -35,14 +35,14 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
-#include "opentxs/blockchain/Network.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
-#include "opentxs/blockchain/client/FilterOracle.hpp"
-#include "opentxs/blockchain/client/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/FilterOracle.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Data.hpp"
 
-namespace
+namespace ottest
 {
 struct Test_BitcoinBlock : public ::testing::Test {
     const ot::api::client::Manager& api_;
@@ -436,4 +436,4 @@ TEST_F(Test_BitcoinBlock, bch_filter_1307723)
 
     EXPECT_EQ(header.get(), expectedHeader.get());
 }
-}  // namespace
+}  // namespace ottest

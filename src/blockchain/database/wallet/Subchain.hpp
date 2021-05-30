@@ -9,7 +9,7 @@
 #include <mutex>
 #include <optional>
 
-#include "internal/blockchain/client/Client.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -30,7 +30,7 @@ class SubchainData
 {
 public:
     using Common = api::client::blockchain::database::implementation::Database;
-    using Parent = client::internal::WalletDatabase;
+    using Parent = node::internal::WalletDatabase;
     using SubchainID = Identifier;
     using pSubchainID = OTIdentifier;
     using SubchainIndex = Parent::SubchainIndex;

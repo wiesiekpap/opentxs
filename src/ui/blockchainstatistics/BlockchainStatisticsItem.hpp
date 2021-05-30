@@ -9,6 +9,7 @@
 #include <QVariant>
 #endif  // OT_QT
 #include <atomic>
+#include <cstddef>
 #include <iosfwd>
 #include <memory>
 #include <string>

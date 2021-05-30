@@ -4,7 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 // IWYU pragma: no_include "api/client/blockchain/database/Database.hpp"
-// IWYU pragma: no_include "internal/blockchain/client/Client.hpp"
+// IWYU pragma: no_include "internal/blockchain/node/Node.hpp"
 // IWYU pragma: no_include "opentxs/api/client/Contacts.hpp"
 // IWYU pragma: no_include "opentxs/api/client/blockchain/AddressStyle.hpp"
 // IWYU pragma: no_include "opentxs/api/client/blockchain/BalanceTree.hpp"
@@ -12,7 +12,7 @@
 // IWYU pragma: no_include "opentxs/api/client/blockchain/PaymentCode.hpp"
 // IWYU pragma: no_include "opentxs/api/client/blockchain/Subchain.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
-// IWYU pragma: no_include "opentxs/blockchain/Network.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/node/Manager.hpp"
 // IWYU pragma: no_include "opentxs/core/identifier/Nym.hpp"
 // IWYU pragma: no_include "opentxs/network/zeromq/socket/Publish.hpp"
 
@@ -89,7 +89,10 @@ class Legacy;
 
 namespace blockchain
 {
-class Network;
+namespace node
+{
+class Manager;
+}  // namespace node
 }  // namespace blockchain
 
 namespace identifier
@@ -157,6 +160,8 @@ public:
         const identifier::Nym& nym,
         const Chain chain,
         const Tx& transaction) const noexcept -> std::string final;
+    auto AddSyncServer(const std::string& endpoint) const noexcept
+        -> bool final;
     auto AssignContact(
         const identifier::Nym& nymID,
         const Identifier& accountID,
@@ -185,9 +190,12 @@ public:
         const blockchain::Key key,
         const opentxs::blockchain::block::Txid& tx) const noexcept
         -> bool final;
+    auto ConnectedSyncServers() const noexcept -> Endpoints final;
     auto Contacts() const noexcept -> const api::client::Contacts& final;
     auto DecodeAddress(const std::string& encoded) const noexcept
         -> DecodedAddress final;
+    auto DeleteSyncServer(const std::string& endpoint) const noexcept
+        -> bool final;
     auto Disable(const Chain type) const noexcept -> bool final;
     auto Enable(const Chain type, const std::string& seednode) const noexcept
         -> bool final;
@@ -197,9 +205,10 @@ public:
     auto FilterUpdate() const noexcept
         -> const opentxs::network::zeromq::socket::Publish& final;
     auto GetChain(const Chain type) const noexcept(false)
-        -> const opentxs::blockchain::Network& final;
+        -> const opentxs::blockchain::node::Manager& final;
     auto GetKey(const blockchain::Key& id) const noexcept(false)
         -> const blockchain::BalanceNode::Element& final;
+    auto GetSyncServers() const noexcept -> Endpoints final;
     auto HDSubaccount(const identifier::Nym& nymID, const Identifier& accountID)
         const noexcept(false) -> const blockchain::HD& final;
     auto Hello() const noexcept -> SyncData final;
@@ -260,9 +269,6 @@ public:
     auto ProcessContact(const Contact& contact) const noexcept -> bool final;
     auto ProcessMergedContact(const Contact& parent, const Contact& child)
         const noexcept -> bool final;
-    auto ProcessSyncData(
-        const opentxs::network::blockchain::sync::Data& data,
-        OTZMQMessage&& in) const noexcept -> void final;
     auto ProcessTransaction(
         const Chain chain,
         const Tx& transaction,
@@ -297,6 +303,7 @@ public:
     auto Stop(const Chain type) const noexcept -> bool final;
     auto SubaccountList(const identifier::Nym& nymID, const Chain chain)
         const noexcept -> std::set<OTIdentifier> final;
+    auto SyncEndpoint() const noexcept -> const std::string& final;
     auto UpdateBalance(
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::Balance balance) const noexcept

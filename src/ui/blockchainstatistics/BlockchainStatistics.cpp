@@ -12,8 +12,8 @@
 #include <QVariant>
 #endif  // OT_QT
 #include <algorithm>
+#include <cstddef>
 #include <future>
-#include <iosfwd>
 #include <map>
 #include <memory>
 #include <set>
@@ -25,11 +25,11 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/Network.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/blockchain/client/BlockOracle.hpp"
-#include "opentxs/blockchain/client/FilterOracle.hpp"
-#include "opentxs/blockchain/client/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/BlockOracle.hpp"
+#include "opentxs/blockchain/node/FilterOracle.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"

@@ -15,10 +15,10 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/Network.hpp"
 #include "opentxs/blockchain/Work.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/blockchain/client/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Data.hpp"
 
 std::vector<std::unique_ptr<bb::Header>> headers_btc_{};
@@ -32,7 +32,7 @@ TEST_F(Test_HeaderOracle_btc, stage_headers)
 {
     for (const auto& hex : bitcoin_) {
         const auto raw = ot::Data::Factory(hex, ot::Data::Mode::Hex);
-        auto pHeader = api_.Factory().BlockHeader(type_, raw);
+        auto pHeader = api_.Factory().BlockHeader(type_, raw->Bytes());
 
         ASSERT_TRUE(pHeader);
 
@@ -41,8 +41,8 @@ TEST_F(Test_HeaderOracle_btc, stage_headers)
 
     for (const auto& hex : bitcoin_) {
         const auto raw = ot::Data::Factory(hex, ot::Data::Mode::Hex);
-        auto pHeader =
-            api_.Factory().BlockHeader(ot::blockchain::Type::BitcoinCash, raw);
+        auto pHeader = api_.Factory().BlockHeader(
+            ot::blockchain::Type::BitcoinCash, raw->Bytes());
 
         ASSERT_TRUE(pHeader);
 

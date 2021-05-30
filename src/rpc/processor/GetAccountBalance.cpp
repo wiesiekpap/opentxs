@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "rpc/RPC.tpp"     // IWYU pragma: associated
 
-#include <iosfwd>
+#include <cstddef>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -24,7 +24,7 @@
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/storage/Storage.hpp"
-#include "opentxs/blockchain/Network.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"

@@ -12,6 +12,7 @@ extern "C" {
 #include <sqlite3.h>
 }
 
+#include <cstddef>
 #include <future>
 #include <iosfwd>
 #include <mutex>

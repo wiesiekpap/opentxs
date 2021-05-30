@@ -11,7 +11,6 @@
 #include <cstdint>
 #include <functional>
 #include <future>
-#include <iosfwd>
 #include <iterator>
 #include <list>
 #include <map>

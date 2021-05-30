@@ -15,11 +15,11 @@
 #include <string>
 #include <thread>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "util/ScopeGuard.hpp"
 

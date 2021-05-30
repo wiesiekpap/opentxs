@@ -36,11 +36,11 @@ namespace opentxs::blockchain::p2p::implementation
 {
 Peer::Peer(
     const api::Core& api,
-    const client::internal::Config& config,
-    const client::internal::Network& network,
-    const client::internal::FilterOracle& filter,
-    const client::internal::BlockOracle& block,
-    const client::internal::PeerManager& manager,
+    const node::internal::Config& config,
+    const node::internal::Network& network,
+    const node::internal::FilterOracle& filter,
+    const node::internal::BlockOracle& block,
+    const node::internal::PeerManager& manager,
     const int id,
     const std::string& shutdown,
     const std::size_t headerSize,

@@ -7,6 +7,7 @@
 
 #include <boost/container/flat_set.hpp>
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <map>
@@ -22,8 +23,8 @@
 #include "api/client/blockchain/database/Database.hpp"
 #include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Blockchain.hpp"
-#include "internal/blockchain/client/Client.hpp"
 #include "internal/blockchain/database/Database.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -55,10 +56,10 @@ class Header;
 class Header;
 }  // namespace block
 
-namespace client
+namespace node
 {
 class UpdateTransaction;
-}  // namespace client
+}  // namespace node
 }  // namespace blockchain
 }  // namespace opentxs
 
@@ -75,7 +76,7 @@ public:
         return load_header(best().second);
     }
     auto CurrentCheckpoint() const noexcept -> block::Position;
-    auto DisconnectedHashes() const noexcept -> client::DisconnectedList;
+    auto DisconnectedHashes() const noexcept -> node::DisconnectedList;
     auto HasDisconnectedChildren(const block::Hash& hash) const noexcept
         -> bool;
     auto HaveCheckpoint() const noexcept -> bool;
@@ -89,7 +90,7 @@ public:
         return load_header(hash);
     }
     auto RecentHashes() const noexcept -> std::vector<block::pHash>;
-    auto SiblingHashes() const noexcept -> client::Hashes;
+    auto SiblingHashes() const noexcept -> node::Hashes;
     // Returns null pointer if the header does not exist
     auto TryLoadBitcoinHeader(const block::Hash& hash) const noexcept
         -> std::unique_ptr<block::bitcoin::Header>;
@@ -97,18 +98,18 @@ public:
     auto TryLoadHeader(const block::Hash& hash) const noexcept
         -> std::unique_ptr<block::Header>;
 
-    auto ApplyUpdate(const client::UpdateTransaction& update) noexcept -> bool;
+    auto ApplyUpdate(const node::UpdateTransaction& update) noexcept -> bool;
 
     Headers(
         const api::Core& api,
-        const client::internal::Network& network,
+        const node::internal::Network& network,
         const Common& common,
         const opentxs::storage::lmdb::LMDB& lmdb,
         const blockchain::Type type) noexcept;
 
 private:
     const api::Core& api_;
-    const client::internal::Network& network_;
+    const node::internal::Network& network_;
     const Common& common_;
     const opentxs::storage::lmdb::LMDB& lmdb_;
     mutable std::mutex lock_;

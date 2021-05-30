@@ -4,11 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_subdirectory(api)
-
-if(OT_CASH_EXPORT)
-  add_subdirectory(blind)
-endif()
-
+add_subdirectory(blind)
 add_subdirectory(blockchain)
 add_subdirectory(client)
 add_subdirectory(contact)

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "internal/blockchain/client/Client.hpp"
+#include "internal/blockchain/node/Node.hpp"
 
 namespace opentxs
 {
@@ -30,10 +30,10 @@ class HeaderOracle;
 
 namespace opentxs::crypto::implementation
 {
-class PacketCrypt final : public blockchain::client::internal::BlockValidator
+class PacketCrypt final : public blockchain::node::internal::BlockValidator
 {
 public:
-    using HeaderOracle = blockchain::client::HeaderOracle;
+    using HeaderOracle = blockchain::node::HeaderOracle;
 
     auto Validate(const BitcoinBlock& block) const noexcept -> bool final;
 

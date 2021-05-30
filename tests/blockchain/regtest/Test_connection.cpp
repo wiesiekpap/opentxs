@@ -10,7 +10,7 @@
 
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Manager.hpp"
-#include "opentxs/blockchain/Network.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Log.hpp"
 
 namespace ottest

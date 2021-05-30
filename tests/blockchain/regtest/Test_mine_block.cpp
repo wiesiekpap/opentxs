@@ -16,7 +16,6 @@
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
-#include "opentxs/blockchain/Network.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
@@ -24,7 +23,8 @@
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
-#include "opentxs/blockchain/client/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
 
 namespace ottest
 {
@@ -38,8 +38,7 @@ TEST_F(Regtest_fixture_single, generate_block)
     const auto& headerOracle = network.HeaderOracle();
     auto previousHeader = [&] {
         const auto genesis = headerOracle.LoadHeader(
-            ot::blockchain::client::HeaderOracle::GenesisBlockHash(
-                test_chain_));
+            ot::blockchain::node::HeaderOracle::GenesisBlockHash(test_chain_));
 
         return genesis->as_Bitcoin();
     }();

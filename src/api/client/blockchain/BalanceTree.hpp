@@ -9,6 +9,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cstddef>
 #include <iosfwd>
 #include <map>
 #include <memory>

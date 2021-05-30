@@ -6,6 +6,7 @@
 #pragma once
 
 #include <boost/endian/buffers.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <iosfwd>

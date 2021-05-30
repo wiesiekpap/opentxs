@@ -27,6 +27,7 @@ auto print(Type value) noexcept -> std::string
         {Type::sync_ack, "sync acknowledgment"},
         {Type::sync_reply, "sync reply"},
         {Type::new_block_header, "sync push"},
+        {Type::query, "sync query"},
     };
 
     try {

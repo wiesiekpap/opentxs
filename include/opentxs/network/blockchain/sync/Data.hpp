@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "opentxs/Bytes.hpp"
+#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/network/blockchain/sync/Base.hpp"
 #include "opentxs/network/blockchain/sync/Block.hpp"
 #include "opentxs/network/blockchain/sync/State.hpp"
@@ -18,6 +19,11 @@
 
 namespace opentxs
 {
+namespace api
+{
+class Core;
+}  // namespace api
+
 namespace network
 {
 namespace blockchain
@@ -42,8 +48,10 @@ class OPENTXS_EXPORT Data final : public Base
 {
 public:
     using SyncData = std::vector<Block>;
+    using Position = opentxs::blockchain::block::Position;
 
     auto Blocks() const noexcept -> const SyncData&;
+    auto LastPosition(const api::Core& api) const noexcept -> Position;
     auto PreviousCfheader() const noexcept -> ReadView;
     auto State() const noexcept -> const sync::State&;
 

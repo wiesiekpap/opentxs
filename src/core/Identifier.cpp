@@ -8,6 +8,7 @@
 #include "core/Identifier.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
+#include <iosfwd>
 #include <map>
 #include <memory>
 #include <set>

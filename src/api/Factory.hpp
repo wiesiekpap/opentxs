@@ -331,13 +331,13 @@ public:
     {
         return {};
     }
-    auto BlockHeader(const ReadView& serialized) const -> BlockHeaderP override
+    auto BlockHeader(const ReadView protobuf) const -> BlockHeaderP override
     {
         return {};
     }
     auto BlockHeader(
         const opentxs::blockchain::Type type,
-        const opentxs::Data& raw) const -> BlockHeaderP override
+        const ReadView native) const -> BlockHeaderP override
     {
         return {};
     }

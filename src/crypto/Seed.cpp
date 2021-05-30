@@ -10,8 +10,8 @@
 #include <boost/container/flat_map.hpp>
 #include <boost/container/vector.hpp>
 #include <algorithm>
+#include <cstddef>
 #include <functional>
-#include <iosfwd>
 #include <mutex>
 #include <stdexcept>
 #include <utility>

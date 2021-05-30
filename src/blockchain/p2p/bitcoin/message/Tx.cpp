@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"                         // IWYU pragma: associated
 #include "blockchain/p2p/bitcoin/message/Tx.hpp"  // IWYU pragma: associated
 
-#include <iosfwd>
+#include <cstddef>
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"

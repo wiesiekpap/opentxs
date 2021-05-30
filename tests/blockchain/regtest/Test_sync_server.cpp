@@ -8,15 +8,19 @@
 #include <gtest/gtest.h>
 #include <utility>
 
+#include "opentxs/Pimpl.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Manager.hpp"
-#include "opentxs/blockchain/Network.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
-#include "opentxs/blockchain/client/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/network/blockchain/sync/Acknowledgement.hpp"
 #include "opentxs/network/blockchain/sync/Base.hpp"
 #include "opentxs/network/blockchain/sync/Data.hpp"
 #include "opentxs/network/blockchain/sync/MessageType.hpp"
+#include "opentxs/network/blockchain/sync/Query.hpp"
+#include "opentxs/network/zeromq/FrameSection.hpp"
+#include "opentxs/network/zeromq/Message.hpp"
 
 namespace ottest
 {
@@ -225,6 +229,77 @@ TEST_F(Regtest_fixture_sync, sync_reorg)
         EXPECT_TRUE(sync_req_.check(blocks.at(1), 11));
         EXPECT_TRUE(sync_req_.check(blocks.at(2), 12));
         EXPECT_TRUE(sync_req_.check(blocks.at(3), 13));
+    }
+}
+
+TEST_F(Regtest_fixture_sync, query)
+{
+    const auto original = otsync::Query{0};
+
+    EXPECT_EQ(original.Type(), otsync::MessageType::query);
+    EXPECT_NE(original.Version(), 0);
+
+    {
+        const auto serialized = [&] {
+            auto out = client_1_.ZeroMQ().Message();
+
+            EXPECT_TRUE(original.Serialize(out));
+
+            return out;
+        }();
+
+        EXPECT_EQ(serialized->size(), 2);
+
+        const auto header = serialized->Header();
+        const auto body = serialized->Body();
+
+        EXPECT_EQ(header.size(), 0);
+        EXPECT_EQ(body.size(), 1);
+
+        auto recovered = otsync::Factory(client_1_, serialized);
+
+        ASSERT_TRUE(recovered);
+
+        EXPECT_EQ(recovered->Type(), otsync::MessageType::query);
+        EXPECT_NE(recovered->Version(), 0);
+
+        const auto& query = recovered->asQuery();
+
+        EXPECT_EQ(query.Type(), otsync::MessageType::query);
+        EXPECT_NE(query.Version(), 0);
+    }
+
+    {
+        const auto serialized = [&] {
+            auto out = client_1_.ZeroMQ().Message();
+            out->AddFrame("Header frame 1");
+            out->AddFrame("Header frame 2");
+            out->AddFrame();
+
+            EXPECT_TRUE(original.Serialize(out));
+
+            return out;
+        }();
+
+        EXPECT_EQ(serialized->size(), 4);
+
+        const auto header = serialized->Header();
+        const auto body = serialized->Body();
+
+        EXPECT_EQ(header.size(), 2);
+        EXPECT_EQ(body.size(), 1);
+
+        auto recovered = otsync::Factory(client_1_, serialized);
+
+        ASSERT_TRUE(recovered);
+
+        EXPECT_EQ(recovered->Type(), otsync::MessageType::query);
+        EXPECT_NE(recovered->Version(), 0);
+
+        const auto& query = recovered->asQuery();
+
+        EXPECT_EQ(query.Type(), otsync::MessageType::query);
+        EXPECT_NE(query.Version(), 0);
     }
 }
 

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <boost/filesystem.hpp>
+#include <cstddef>
 #include <iosfwd>
 #include <string>
 

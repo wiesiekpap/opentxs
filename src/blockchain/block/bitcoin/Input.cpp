@@ -13,6 +13,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <iosfwd>
 #include <iterator>
 #include <optional>
 #include <set>

@@ -48,7 +48,10 @@ class Transaction;
 }  // namespace bitcoin
 }  // namespace block
 
-class Network;
+namespace node
+{
+class Manager;
+}  // namespace node
 }  // namespace blockchain
 
 namespace proto
@@ -80,6 +83,7 @@ public:
     using TxidHex = std::string;
     using PatternID = opentxs::blockchain::PatternID;
     using AccountData = std::pair<Chain, OTNymID>;
+    using Endpoints = std::vector<std::string>;
 
     enum class AccountType : std::uint8_t {
         HD = 0,
@@ -112,6 +116,7 @@ public:
         const identifier::Nym& nym,
         const Chain chain,
         const Tx& transaction) const noexcept = 0;
+    virtual bool AddSyncServer(const std::string& endpoint) const noexcept = 0;
     virtual bool AssignContact(
         const identifier::Nym& nymID,
         const Identifier& accountID,
@@ -134,8 +139,11 @@ public:
     virtual bool Confirm(
         const blockchain::Key key,
         const opentxs::blockchain::block::Txid& tx) const noexcept = 0;
+    virtual Endpoints ConnectedSyncServers() const noexcept = 0;
     virtual DecodedAddress DecodeAddress(
         const std::string& encoded) const noexcept = 0;
+    virtual bool DeleteSyncServer(
+        const std::string& endpoint) const noexcept = 0;
     virtual bool Disable(const Chain type) const noexcept = 0;
     virtual bool Enable(const Chain type, const std::string& seednode = "")
         const noexcept = 0;
@@ -145,11 +153,12 @@ public:
         const Chain chain,
         const Data& data) const noexcept = 0;
     /// throws std::out_of_range if chain has not been started
-    virtual const opentxs::blockchain::Network& GetChain(const Chain type) const
-        noexcept(false) = 0;
+    virtual const opentxs::blockchain::node::Manager& GetChain(
+        const Chain type) const noexcept(false) = 0;
     /// Throws std::out_of_range if the specified key does not exist
     virtual const blockchain::BalanceNode::Element& GetKey(
         const blockchain::Key& id) const noexcept(false) = 0;
+    virtual Endpoints GetSyncServers() const noexcept = 0;
     /// Throws std::out_of_range if the specified account does not exist
     virtual const blockchain::HD& HDSubaccount(
         const identifier::Nym& nymID,

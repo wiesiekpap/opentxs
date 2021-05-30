@@ -10,6 +10,7 @@
 #include <boost/container/flat_set.hpp>
 #include <boost/container/vector.hpp>
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <iosfwd>

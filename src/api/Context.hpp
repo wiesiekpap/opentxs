@@ -7,6 +7,7 @@
 
 #include <boost/interprocess/sync/file_lock.hpp>
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <map>

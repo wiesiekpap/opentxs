@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
+
 #pragma once
 
 #include <map>
@@ -10,10 +12,9 @@
 #include <string>
 #include <vector>
 
-#include "internal/api/client/Client.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/network/blockchain/sync/State.hpp"
+#include "opentxs/util/WorkType.hpp"
+#include "util/Work.hpp"
 
 namespace opentxs
 {
@@ -34,20 +35,24 @@ class Core;
 namespace opentxs::api::client::blockchain
 {
 struct SyncClient {
-    using Blockchain = client::internal::Blockchain;
-    using Chain = opentxs::blockchain::Type;
-    using Position = opentxs::blockchain::block::Position;
-    using States = std::map<Chain, Position>;
-    using SyncState = std::vector<opentxs::network::blockchain::sync::State>;
+    enum class Task : OTZMQWorkType {
+        Shutdown = value(WorkType::Shutdown),
+        Ack = value(WorkType::SyncAcknowledgement),
+        Reply = value(WorkType::SyncReply),
+        Push = value(WorkType::NewBlock),
+        Server = value(WorkType::SyncServerUpdated),
+        Register = OT_ZMQ_INTERNAL_SIGNAL + 0,
+        Request = OT_ZMQ_INTERNAL_SIGNAL + 1,
+        Processed = OT_ZMQ_INTERNAL_SIGNAL + 2,
+    };
 
-    auto Heartbeat(SyncState data) const noexcept -> void;
-    auto IsActive(const Chain chain) const noexcept -> bool;
-    auto IsConnected() const noexcept -> bool;
+    auto Endpoint() const noexcept -> const std::string&;
+
+    auto Init() noexcept -> void;
 
     SyncClient(
         const api::Core& api,
-        Blockchain& parent,
-        const std::string& endpoint) noexcept;
+        const client::internal::Blockchain& parent) noexcept;
 
     ~SyncClient();
 
@@ -56,5 +61,11 @@ private:
 
     std::unique_ptr<Imp> imp_p_;
     Imp& imp_;
+
+    SyncClient() = delete;
+    SyncClient(const SyncClient&) = delete;
+    SyncClient(SyncClient&&) = delete;
+    auto operator=(const SyncClient&) -> SyncClient& = delete;
+    auto operator=(SyncClient&&) -> SyncClient& = delete;
 };
 }  // namespace opentxs::api::client::blockchain

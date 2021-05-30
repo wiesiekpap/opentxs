@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <iosfwd>
 #include <mutex>
 #include <string>

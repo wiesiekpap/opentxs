@@ -17,6 +17,7 @@ extern "C" {
 #include <cassert>
 #include <fstream>  // IWYU pragma: keep
 #include <functional>
+#include <iosfwd>
 #include <limits>
 #include <map>
 #include <mutex>

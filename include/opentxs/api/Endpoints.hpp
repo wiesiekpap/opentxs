@@ -160,6 +160,18 @@ public:
     OPENTXS_EXPORT virtual std::string BlockchainSyncProgress()
         const noexcept = 0;
 
+    /** Blockchain sync server database changes
+     *
+     *  A subscribe socket can connect to this endpoint to receive
+     *  SyncServerUpdated tagged messages
+     *
+     *  See opentxs/util/WorkTypes.hpp for message format documentation
+     *
+     *  This endpoint is active for client sessions only.
+     */
+    OPENTXS_EXPORT virtual std::string BlockchainSyncServerUpdated()
+        const noexcept = 0;
+
     /** Blockchain transaction notifications (global)
      *
      *  A subscribe socket can connect to this endpoint to receive

@@ -12,6 +12,7 @@ add_library(
   "Common.cpp"
   "Data.cpp"
   "Factory.cpp"
+  "Query.cpp"
   "Request.cpp"
   "State.cpp"
 )
@@ -21,6 +22,7 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/network/blockchain/sync/Block.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/network/blockchain/sync/Data.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/network/blockchain/sync/MessageType.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/network/blockchain/sync/Query.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/network/blockchain/sync/Request.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/network/blockchain/sync/State.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/network/blockchain/sync/Types.hpp"
