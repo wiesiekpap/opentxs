@@ -337,8 +337,13 @@ void Context::Init_Rlimit() noexcept
     auto original = ::rlimit{};
     auto desired = ::rlimit{};
     auto result = ::rlimit{};
+#ifdef __APPLE__
+    desired.rlim_cur = OPEN_MAX;
+    desired.rlim_max = OPEN_MAX;
+#else
     desired.rlim_cur = 32768;
     desired.rlim_max = 32768;
+#endif
 
     if (0 != ::getrlimit(RLIMIT_NOFILE, &original)) {
         LogNormal("Failed to query resource limits").Flush();
@@ -351,9 +356,10 @@ void Context::Init_Rlimit() noexcept
         .Flush();
 
     if (0 != ::setrlimit(RLIMIT_NOFILE, &desired)) {
-        LogNormal("Failed to set open file limit to 32768. You must increase "
-                  "this user account's resource limits via the method "
-                  "appropriate for your operating system.")
+        LogNormal("Failed to set open file limit to ")(desired.rlim_cur)(
+            ". You must increase "
+            "this user account's resource limits via the method "
+            "appropriate for your operating system.")
             .Flush();
 
         return;
