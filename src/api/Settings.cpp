@@ -12,7 +12,6 @@
 #include <cstdint>
 #include <cstdlib>  // IWYU pragma: keep
 #include <memory>
-#include <ostream>
 
 #include "internal/api/Factory.hpp"
 #include "opentxs/Types.hpp"

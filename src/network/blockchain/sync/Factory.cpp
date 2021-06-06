@@ -27,6 +27,7 @@
 #include "opentxs/network/blockchain/sync/Acknowledgement.hpp"
 #include "opentxs/network/blockchain/sync/Block.hpp"
 #include "opentxs/network/blockchain/sync/Data.hpp"
+#include "opentxs/network/blockchain/sync/Query.hpp"
 #include "opentxs/network/blockchain/sync/Request.hpp"
 #include "opentxs/network/blockchain/sync/State.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
@@ -49,11 +50,9 @@ auto Factory(const api::Core& api, const zeromq::Message& in) noexcept
     const auto b = in.Body();
 
     try {
-        if (2 > b.size()) { throw std::runtime_error{"Insufficient frames"}; }
+        if (0 >= b.size()) { throw std::runtime_error{"Insufficient frames"}; }
 
         const auto& typeFrame = b.at(0);
-        const auto& helloFrame = b.at(1);
-
         const auto type = [&] {
             try {
 
@@ -63,6 +62,13 @@ auto Factory(const api::Core& api, const zeromq::Message& in) noexcept
                 throw std::runtime_error{"Invalid type"};
             }
         }();
+
+        if (WorkType::SyncQuery == type) { return std::make_unique<Query>(0); }
+
+        if (1 >= b.size()) { throw std::runtime_error{"Insufficient frames"}; }
+
+        const auto& helloFrame = b.at(1);
+
         const auto hello =
             proto::Factory<proto::BlockchainP2PHello>(helloFrame);
 
@@ -165,11 +171,13 @@ auto Factory(const api::Core& api, const zeromq::Message& in) noexcept
 
                 return std::make_unique<Request>(std::move(chains));
             }
+            case WorkType::SyncQuery: {
+                OT_FAIL;
+            }
             default: {
                 throw std::runtime_error{"Unsupported type"};
             }
         }
-
     } catch (const std::exception& e) {
         LogOutput("opentxs::network::blockchain::sync::Base::")(__FUNCTION__)(
             ": ")(e.what())

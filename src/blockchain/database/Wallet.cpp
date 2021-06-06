@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "blockchain/database/Wallet.hpp"  // IWYU pragma: associated
 
-#include <iosfwd>
 #include <mutex>
 #include <stdexcept>
 #include <utility>

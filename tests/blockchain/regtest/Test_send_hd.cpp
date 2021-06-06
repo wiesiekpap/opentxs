@@ -26,16 +26,16 @@
 #include "opentxs/api/client/blockchain/HD.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
-#include "opentxs/blockchain/Network.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
-#include "opentxs/blockchain/client/BlockOracle.hpp"
-#include "opentxs/blockchain/client/HeaderOracle.hpp"
-#include "opentxs/blockchain/client/Wallet.hpp"
+#include "opentxs/blockchain/node/BlockOracle.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
+#include "opentxs/blockchain/node/Wallet.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -73,7 +73,7 @@ class Regtest_fixture_hd : public Regtest_fixture_normal
 {
 protected:
     using Subchain = ot::api::client::blockchain::Subchain;
-    using UTXO = ot::blockchain::client::Wallet::UTXO;
+    using UTXO = ot::blockchain::node::Wallet::UTXO;
 
     static ot::Nym_p alex_p_;
     static std::deque<ot::blockchain::block::pTxid> transactions_;
@@ -374,7 +374,7 @@ TEST_F(Regtest_fixture_hd, wallet_after_receive)
     EXPECT_EQ(wallet.GetBalance(nym, blankAccount), noBalance);
     EXPECT_EQ(wallet.GetBalance(blankNym, account), noBalance);
 
-    using TxoState = ot::blockchain::client::Wallet::TxoState;
+    using TxoState = ot::blockchain::node::Wallet::TxoState;
     auto type = TxoState::All;
 
     EXPECT_EQ(wallet.GetOutputs(type).size(), 100u);
@@ -672,7 +672,7 @@ TEST_F(Regtest_fixture_hd, wallet_after_unconfirmed_spend)
     EXPECT_EQ(wallet.GetBalance(nym, blankAccount), noBalance);
     EXPECT_EQ(wallet.GetBalance(blankNym, account), noBalance);
 
-    using TxoState = ot::blockchain::client::Wallet::TxoState;
+    using TxoState = ot::blockchain::node::Wallet::TxoState;
     auto type = TxoState::All;
 
     EXPECT_EQ(wallet.GetOutputs(type).size(), 101u);
@@ -883,7 +883,7 @@ TEST_F(Regtest_fixture_hd, wallet_after_confirmed_spend)
     EXPECT_EQ(wallet.GetBalance(nym, blankAccount), noBalance);
     EXPECT_EQ(wallet.GetBalance(blankNym, account), noBalance);
 
-    using TxoState = ot::blockchain::client::Wallet::TxoState;
+    using TxoState = ot::blockchain::node::Wallet::TxoState;
     auto type = TxoState::All;
 
     EXPECT_EQ(wallet.GetOutputs(type).size(), 101u);

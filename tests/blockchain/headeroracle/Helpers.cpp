@@ -8,8 +8,8 @@
 #include <type_traits>
 
 #include "internal/api/client/Client.hpp"
-#include "internal/blockchain/client/Client.hpp"
-#include "internal/blockchain/client/Factory.hpp"
+#include "internal/blockchain/node/Factory.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Context.hpp"
@@ -18,8 +18,8 @@
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/Network.hpp"
-#include "opentxs/blockchain/client/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Data.hpp"
 
 namespace ottest
@@ -2690,10 +2690,10 @@ auto Test_HeaderOracle_base::get_test_block(const std::string& hash)
 
 auto Test_HeaderOracle_base::init_network(
     const ot::api::client::Manager& api,
-    const b::Type type) noexcept -> std::unique_ptr<b::Network>
+    const b::Type type) noexcept -> std::unique_ptr<bc::Manager>
 {
     static const auto config = [] {
-        auto output = ot::blockchain::client::internal::Config{};
+        auto output = ot::blockchain::node::internal::Config{};
         output.download_cfilters_ = true;
 
         return output;

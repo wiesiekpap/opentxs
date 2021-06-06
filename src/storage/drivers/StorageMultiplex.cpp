@@ -7,8 +7,8 @@
 #include "1_Internal.hpp"                        // IWYU pragma: associated
 #include "storage/drivers/StorageMultiplex.hpp"  // IWYU pragma: associated
 
+#include <cstddef>
 #include <cstdint>
-#include <iosfwd>
 #include <limits>
 #include <memory>
 #include <stdexcept>

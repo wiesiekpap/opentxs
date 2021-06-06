@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <memory>
@@ -17,7 +18,7 @@
 #include "Proto.hpp"
 #include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Blockchain.hpp"
-#include "internal/blockchain/client/Client.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
@@ -57,10 +58,10 @@ class Block;
 class Header;
 }  // namespace block
 
-namespace client
+namespace node
 {
 struct GCS;
-}  // namespace client
+}  // namespace node
 }  // namespace blockchain
 
 namespace network
@@ -94,6 +95,7 @@ public:
         NextBlockAddress = 1,
         SiphashKey = 2,
         NextSyncAddress = 3,
+        SyncServerEndpoint = 4,
     };
 
     using BlockHash = opentxs::blockchain::block::Hash;
@@ -104,8 +106,10 @@ public:
     using EnabledChain = std::pair<Chain, std::string>;
     using Height = opentxs::blockchain::block::Height;
     using SyncItems = std::vector<opentxs::network::blockchain::sync::Block>;
+    using Endpoints = std::vector<std::string>;
 
     auto AddOrUpdate(Address_p address) const noexcept -> bool;
+    auto AddSyncServer(const std::string& endpoint) const noexcept -> bool;
     auto AllocateStorageFolder(const std::string& dir) const noexcept
         -> std::string;
     auto AssociateTransaction(
@@ -117,6 +121,7 @@ public:
     auto BlockPolicy() const noexcept -> BlockStorage;
     auto BlockStore(const BlockHash& block, const std::size_t bytes)
         const noexcept -> BlockWriter;
+    auto DeleteSyncServer(const std::string& endpoint) const noexcept -> bool;
     auto Disable(const Chain type) const noexcept -> bool;
     auto Enable(const Chain type, const std::string& seednode) const noexcept
         -> bool;
@@ -125,6 +130,7 @@ public:
         const Protocol protocol,
         const std::set<Type> onNetworks,
         const std::set<Service> withServices) const noexcept -> Address_p;
+    auto GetSyncServers() const noexcept -> Endpoints;
     auto HashKey() const noexcept -> ReadView;
     auto HaveFilter(const FilterType type, const ReadView blockHash)
         const noexcept -> bool;
@@ -134,8 +140,8 @@ public:
     auto LoadBlockHeader(const BlockHash& hash) const noexcept(false)
         -> proto::BlockchainBlockHeader;
     auto LoadEnabledChains() const noexcept -> std::vector<EnabledChain>;
-    auto LoadFilter(const FilterType type, const ReadView blockHash) const
-        noexcept -> std::unique_ptr<const opentxs::blockchain::client::GCS>;
+    auto LoadFilter(const FilterType type, const ReadView blockHash)
+        const noexcept -> std::unique_ptr<const opentxs::blockchain::node::GCS>;
     auto LoadFilterHash(
         const FilterType type,
         const ReadView blockHash,

@@ -12,6 +12,7 @@
 #include <QHash>
 #endif  // OT_QT
 #include <atomic>
+#include <cstddef>
 #include <functional>
 #include <iosfwd>
 #include <map>

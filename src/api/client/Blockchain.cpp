@@ -128,6 +128,12 @@ auto Blockchain::ActivityDescription(
     return imp_->ActivityDescription(nym, chain, transaction);
 }
 
+auto Blockchain::AddSyncServer(const std::string& endpoint) const noexcept
+    -> bool
+{
+    return imp_->AddSyncServer(endpoint);
+}
+
 auto Blockchain::AssignContact(
     const identifier::Nym& nymID,
     const Identifier& accountID,
@@ -188,6 +194,11 @@ auto Blockchain::Confirm(
     return imp_->Confirm(key, tx);
 }
 
+auto Blockchain::ConnectedSyncServers() const noexcept -> Endpoints
+{
+    return imp_->ConnectedSyncServers();
+}
+
 auto Blockchain::Contacts() const noexcept -> const api::client::Contacts&
 {
     return imp_->Contacts();
@@ -197,6 +208,12 @@ auto Blockchain::DecodeAddress(const std::string& encoded) const noexcept
     -> DecodedAddress
 {
     return imp_->DecodeAddress(encoded);
+}
+
+auto Blockchain::DeleteSyncServer(const std::string& endpoint) const noexcept
+    -> bool
+{
+    return imp_->DeleteSyncServer(endpoint);
 }
 
 auto Blockchain::Disable(const Chain type) const noexcept -> bool
@@ -229,7 +246,7 @@ auto Blockchain::FilterUpdate() const noexcept -> const zmq::socket::Publish&
 }
 
 auto Blockchain::GetChain(const Chain type) const noexcept(false)
-    -> const opentxs::blockchain::Network&
+    -> const opentxs::blockchain::node::Manager&
 {
     return imp_->GetChain(type);
 }
@@ -238,6 +255,11 @@ auto Blockchain::GetKey(const blockchain::Key& id) const noexcept(false)
     -> const blockchain::BalanceNode::Element&
 {
     return imp_->GetKey(id);
+}
+
+auto Blockchain::GetSyncServers() const noexcept -> Endpoints
+{
+    return imp_->GetSyncServers();
 }
 
 auto Blockchain::HDSubaccount(
@@ -390,13 +412,6 @@ auto Blockchain::ProcessMergedContact(
     return imp_->ProcessMergedContact(parent, child);
 }
 
-auto Blockchain::ProcessSyncData(
-    const opentxs::network::blockchain::sync::Data& data,
-    OTZMQMessage&& in) const noexcept -> void
-{
-    imp_->ProcessSyncData(data, std::move(in));
-}
-
 auto Blockchain::ProcessTransaction(
     const Chain chain,
     const Tx& in,
@@ -477,6 +492,11 @@ auto Blockchain::StartSyncServer(
 auto Blockchain::Stop(const Chain type) const noexcept -> bool
 {
     return imp_->Stop(type);
+}
+
+auto Blockchain::SyncEndpoint() const noexcept -> const std::string&
+{
+    return imp_->SyncEndpoint();
 }
 
 auto Blockchain::Unconfirm(

@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <atomic>
 #include <cinttypes>
-#include <cstring>
 #include <functional>
 #include <iterator>
 #include <list>

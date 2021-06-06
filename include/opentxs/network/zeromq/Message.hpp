@@ -72,6 +72,7 @@ public:
     virtual FrameIterator Header_begin() const = 0;
     virtual FrameIterator Header_end() const = 0;
     virtual std::size_t size() const = 0;
+    virtual std::size_t Total() const = 0;
 
     virtual Frame& AddFrame() = 0;
 #ifndef SWIG

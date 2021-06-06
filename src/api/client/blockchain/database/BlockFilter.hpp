@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "internal/api/client/blockchain/Blockchain.hpp"
-#include "internal/blockchain/client/Client.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "util/LMDB.hpp"
@@ -24,10 +24,10 @@ class Core;
 
 namespace blockchain
 {
-namespace client
+namespace node
 {
 struct GCS;
-}  // namespace client
+}  // namespace node
 }  // namespace blockchain
 
 namespace storage
@@ -48,8 +48,8 @@ public:
         const noexcept -> bool;
     auto HaveFilterHeader(const FilterType type, const ReadView blockHash)
         const noexcept -> bool;
-    auto LoadFilter(const FilterType type, const ReadView blockHash) const
-        noexcept -> std::unique_ptr<const opentxs::blockchain::client::GCS>;
+    auto LoadFilter(const FilterType type, const ReadView blockHash)
+        const noexcept -> std::unique_ptr<const opentxs::blockchain::node::GCS>;
     auto LoadFilterHash(
         const FilterType type,
         const ReadView blockHash,

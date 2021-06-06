@@ -12,6 +12,7 @@
 #include <chrono>
 #include <cstdint>
 #include <future>
+#include <iosfwd>
 #include <iostream>
 #include <memory>
 #include <thread>

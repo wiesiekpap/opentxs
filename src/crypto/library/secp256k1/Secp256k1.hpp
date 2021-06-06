@@ -8,6 +8,7 @@
 extern "C" {
 #include <secp256k1.h>
 }
+#include <cstddef>
 #include <iosfwd>
 #include <optional>
 

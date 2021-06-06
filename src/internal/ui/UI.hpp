@@ -12,6 +12,7 @@
 #include <QVariant>
 #endif  // OT_QT
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <memory>

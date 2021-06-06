@@ -10,6 +10,7 @@
 #pragma once
 
 #include <gtest/gtest.h>
+#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <map>

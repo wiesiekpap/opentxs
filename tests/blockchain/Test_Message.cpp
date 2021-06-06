@@ -39,7 +39,7 @@ class tcp;
 
 namespace b = ot::blockchain;
 namespace bb = b::bitcoin;
-namespace bc = b::client;
+namespace bc = b::node;
 namespace bp = b::p2p::bitcoin;
 namespace zmq = ot::network::zeromq;
 

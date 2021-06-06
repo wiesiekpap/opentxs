@@ -10,26 +10,26 @@
 
 #include "Helpers.hpp"
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
-#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/NumericHash.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/blockchain/client/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
 
 namespace b = ot::blockchain;
 namespace bb = b::block;
-namespace bc = b::client;
+namespace bc = b::node;
 
-namespace
+namespace ottest
 {
 class Test_BlockHeader : public ::testing::Test
 {
@@ -161,4 +161,4 @@ TEST_F(Test_BlockHeader, serialize_deserialize)
     EXPECT_EQ(restored->Valid(), header.Valid());
     EXPECT_EQ(restored->Work(), header.Work());
 }
-}  // namespace
+}  // namespace ottest

@@ -14,7 +14,10 @@ namespace opentxs
 {
 namespace blockchain
 {
-class Network;
+namespace client
+{
+class Manager;
+}  // namespace client
 }  // namespace blockchain
 }  // namespace opentxs
 

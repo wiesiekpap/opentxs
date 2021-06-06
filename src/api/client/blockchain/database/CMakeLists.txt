@@ -9,6 +9,8 @@ add_library(
   "BlockFilter.hpp"
   "BlockHeaders.cpp"
   "BlockHeaders.hpp"
+  "Config.cpp"
+  "Config.hpp"
   "Database.cpp"
   "Database.hpp"
   "Peers.cpp"

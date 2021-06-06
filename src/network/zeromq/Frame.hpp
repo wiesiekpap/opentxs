@@ -9,6 +9,7 @@
 #pragma once
 
 #include <zmq.h>
+#include <cstddef>
 #include <iosfwd>
 #include <string>
 

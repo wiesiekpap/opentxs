@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <atomic>
-#include <iosfwd>
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>

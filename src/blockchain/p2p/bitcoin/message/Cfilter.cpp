@@ -22,7 +22,7 @@
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/blockchain/client/FilterOracle.hpp"
+#include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
@@ -122,7 +122,7 @@ auto BitcoinP2PCfilter(
     const blockchain::Type network,
     const blockchain::filter::Type type,
     const blockchain::block::Hash& hash,
-    const blockchain::client::GCS& filter)
+    const blockchain::node::GCS& filter)
     -> blockchain::p2p::bitcoin::message::internal::Cfilter*
 {
     namespace bitcoin = blockchain::p2p::bitcoin;

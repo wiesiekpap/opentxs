@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <iosfwd>
 #include <map>
 #include <mutex>
@@ -12,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include "internal/blockchain/client/Client.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"

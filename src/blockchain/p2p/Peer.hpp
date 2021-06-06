@@ -8,6 +8,7 @@
 #include <boost/system/error_code.hpp>
 #include <atomic>
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <deque>
 #include <functional>
@@ -24,7 +25,7 @@
 #include <vector>
 
 #include "core/Worker.hpp"
-#include "internal/blockchain/client/Client.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
@@ -78,7 +79,7 @@ class Peer : virtual public internal::Peer, public Worker<Peer, api::Core>
 public:
     using SendStatus = std::future<bool>;
     using SendPromise = std::promise<bool>;
-    using Task = client::internal::PeerManager::Task;
+    using Task = node::internal::PeerManager::Task;
 
     struct Address {
         using pointer = std::unique_ptr<internal::Address>;
@@ -283,19 +284,19 @@ protected:
         }
     };
 
-    const client::internal::Network& network_;
-    const client::internal::FilterOracle& filter_;
-    const client::internal::BlockOracle& block_;
-    const client::internal::PeerManager& manager_;
+    const node::internal::Network& network_;
+    const node::internal::FilterOracle& filter_;
+    const node::internal::BlockOracle& block_;
+    const node::internal::PeerManager& manager_;
     const blockchain::Type chain_;
     std::atomic_bool header_probe_;
     std::atomic_bool cfilter_probe_;
     Address address_;
     DownloadPeers download_peers_;
     States state_;
-    client::CfheaderJob cfheader_job_;
-    client::CfilterJob cfilter_job_;
-    client::BlockJob block_job_;
+    node::CfheaderJob cfheader_job_;
+    node::CfilterJob cfilter_job_;
+    node::BlockJob block_job_;
 
     auto connection() const noexcept -> const ConnectionManager&
     {
@@ -329,11 +330,11 @@ protected:
 
     Peer(
         const api::Core& api,
-        const client::internal::Config& config,
-        const client::internal::Network& network,
-        const client::internal::FilterOracle& filter,
-        const client::internal::BlockOracle& block,
-        const client::internal::PeerManager& manager,
+        const node::internal::Config& config,
+        const node::internal::Network& network,
+        const node::internal::FilterOracle& filter,
+        const node::internal::BlockOracle& block,
+        const node::internal::PeerManager& manager,
         const int id,
         const std::string& shutdown,
         const std::size_t headerSize,

@@ -28,6 +28,9 @@ if(OT_BLOCKCHAIN_EXPORT)
     unittests-opentxs-blockchain-script-bitcoin Test_BitcoinScript.cpp
   )
   add_opentx_test(
+    unittests-opentxs-blockchain-api-sync-server Test_SyncServerDB.cpp
+  )
+  add_opentx_test(
     unittests-opentxs-blockchain-transaction-bitcoin
     Test_BitcoinTransaction.cpp
   )

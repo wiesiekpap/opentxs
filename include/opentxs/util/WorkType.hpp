@@ -38,6 +38,7 @@ enum class WorkType : OTZMQWorkType {
     BlockchainBlockDownloadQueue = 138,
     BlockchainPeerConnected = 139,
     BlockchainWalletUpdated = 140,
+    SyncServerUpdated = 141,
     OTXConnectionStatus = 256,
     OTXTaskComplete = 257,
     OTXSearchNym = 258,
@@ -50,6 +51,7 @@ enum class WorkType : OTZMQWorkType {
     SyncAcknowledgement = 1025,
     SyncReply = 1026,
     NewBlock = 1027,
+    SyncQuery = 1028,
     AsioRegister = 2048,
     AsioConnect = 2049,
     AsioDisconnect = 2050,
@@ -209,6 +211,11 @@ constexpr auto value(const WorkType in) noexcept
  *          3: unconfirmed balance as Amount
  *          4: [optional] account owner as identifier::Nym (encoded as byte
  *                        sequence)
+ *
+ *   SyncServerUpdated: reports that a blockchain sync server endpoint has been
+ *                      added or removed from the database
+ *          1: endpoint as a string
+ *          2: operation as bool (added = true, removed = false)
  *
  *   OTXConnectionStatus: reports state changes to notary connections
  *       * Additional frames:

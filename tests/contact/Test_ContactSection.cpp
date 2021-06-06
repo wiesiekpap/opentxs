@@ -8,20 +8,21 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "1_Internal.hpp"
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "internal/api/client/Client.hpp"
-#include "internal/contact/Contact.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/ContactItemAttribute.hpp"
+#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/contact/ContactSection.hpp"
 #include "opentxs/contact/ContactSectionName.hpp"
-#include "opentxs/core/Identifier.hpp"
 
 namespace
 {

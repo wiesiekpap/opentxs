@@ -7,6 +7,7 @@
 
 #include <boost/container/flat_map.hpp>
 #include <atomic>
+#include <cstddef>
 #include <functional>
 #include <iosfwd>
 #include <map>

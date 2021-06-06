@@ -11,6 +11,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <cstddef>
 #include <iosfwd>
 #include <map>
 #include <memory>

@@ -286,10 +286,10 @@ public:
     using BlockHeaderP = std::unique_ptr<opentxs::blockchain::block::Header>;
     OPENTXS_NO_EXPORT virtual BlockHeaderP BlockHeader(
         const proto::BlockchainBlockHeader& serialized) const = 0;
-    virtual BlockHeaderP BlockHeader(const ReadView& serialized) const = 0;
+    virtual BlockHeaderP BlockHeader(const ReadView protobuf) const = 0;
     virtual BlockHeaderP BlockHeader(
         const opentxs::blockchain::Type type,
-        const Data& raw) const = 0;
+        const ReadView native) const = 0;
     virtual BlockHeaderP BlockHeader(
         const opentxs::blockchain::block::Block& block) const = 0;
     virtual BlockHeaderP BlockHeaderForUnitTests(

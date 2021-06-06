@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <array>
 #include <cstring>
+#include <iosfwd>
 #include <iterator>
 #include <map>
 #include <mutex>
@@ -29,7 +30,7 @@
 #include "blockchain/database/wallet/Transaction.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "internal/blockchain/client/Client.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -664,7 +665,7 @@ private:
     using pSubchainID = OTIdentifier;
     using Outpoint = block::Outpoint;
     using Outpoints = std::set<Outpoint>;
-    using TxoState = client::Wallet::TxoState;
+    using TxoState = node::Wallet::TxoState;
     using Output = std::
         tuple<TxoState, block::Position, proto::BlockchainTransactionOutput>;
     using OutputMap =

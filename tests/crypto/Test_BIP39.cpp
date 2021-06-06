@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <cctype>
-#include <iosfwd>
+#include <cstddef>
 #include <map>
 #include <set>
 #include <string>

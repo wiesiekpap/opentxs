@@ -1,0 +1,187 @@
+// Copyright (c) 2010-2021 The Open-Transactions developers
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+#include <gtest/gtest.h>
+#include <algorithm>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "Helpers.hpp"
+#include "OTTestEnvironment.hpp"
+#include "opentxs/Bytes.hpp"
+#include "opentxs/OT.hpp"
+#include "opentxs/Version.hpp"
+#include "opentxs/api/Context.hpp"
+#include "opentxs/api/Endpoints.hpp"
+#include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/network/zeromq/Frame.hpp"
+#include "opentxs/network/zeromq/FrameSection.hpp"
+#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/util/WorkType.hpp"
+
+namespace ot = opentxs;
+
+namespace ottest
+{
+class SyncServerDB : public ::testing::Test
+{
+protected:
+    using Endpoints = std::vector<std::string>;
+
+    static constexpr auto first_server_{"tcp://example.com:1"};
+    static constexpr auto second_server_{"tcp://example.com:2"};
+    static constexpr auto other_server_{"tcp://example.com:3"};
+    static std::unique_ptr<Listener> listener_p_;
+
+    const ot::api::client::Manager& api_;
+    Listener& listener_;
+
+    static auto count(
+        const Endpoints& endpoints,
+        const std::string& value) noexcept -> std::size_t
+    {
+        return std::count(endpoints.begin(), endpoints.end(), value);
+    }
+
+    auto cleanup() noexcept { listener_p_.reset(); }
+
+    SyncServerDB()
+        : api_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
+        , listener_([&]() -> auto& {
+            if (!listener_p_) {
+                listener_p_ = std::make_unique<Listener>(
+                    api_, api_.Endpoints().BlockchainSyncServerUpdated());
+            }
+
+            return *listener_p_;
+        }())
+    {
+    }
+};
+
+std::unique_ptr<Listener> SyncServerDB::listener_p_{};
+
+TEST_F(SyncServerDB, init_library) {}
+
+TEST_F(SyncServerDB, empty_db)
+{
+    const auto endpoints = api_.Blockchain().GetSyncServers();
+
+    EXPECT_EQ(endpoints.size(), 0);
+}
+
+TEST_F(SyncServerDB, import_first_server)
+{
+    EXPECT_TRUE(api_.Blockchain().AddSyncServer(first_server_));
+
+    const auto endpoints = api_.Blockchain().GetSyncServers();
+
+    EXPECT_EQ(endpoints.size(), 1);
+    EXPECT_EQ(count(endpoints, first_server_), 1);
+    EXPECT_EQ(count(endpoints, second_server_), 0);
+    EXPECT_EQ(count(endpoints, other_server_), 0);
+
+    const auto& message = listener_.get(0);
+    const auto body = message.Body();
+
+    ASSERT_EQ(body.size(), 3);
+    EXPECT_EQ(body.at(0).as<ot::WorkType>(), ot::WorkType::SyncServerUpdated);
+    EXPECT_STREQ(body.at(1).Bytes().data(), first_server_);
+    EXPECT_TRUE(body.at(2).as<bool>());
+}
+
+TEST_F(SyncServerDB, import_second_server)
+{
+    EXPECT_TRUE(api_.Blockchain().AddSyncServer(second_server_));
+
+    const auto endpoints = api_.Blockchain().GetSyncServers();
+
+    EXPECT_EQ(endpoints.size(), 2);
+    EXPECT_EQ(count(endpoints, first_server_), 1);
+    EXPECT_EQ(count(endpoints, second_server_), 1);
+    EXPECT_EQ(count(endpoints, other_server_), 0);
+
+    const auto& message = listener_.get(1);
+    const auto body = message.Body();
+
+    ASSERT_EQ(body.size(), 3);
+    EXPECT_EQ(body.at(0).as<ot::WorkType>(), ot::WorkType::SyncServerUpdated);
+    EXPECT_STREQ(body.at(1).Bytes().data(), second_server_);
+    EXPECT_TRUE(body.at(2).as<bool>());
+}
+
+TEST_F(SyncServerDB, import_existing_server)
+{
+    EXPECT_TRUE(api_.Blockchain().AddSyncServer(second_server_));
+
+    const auto endpoints = api_.Blockchain().GetSyncServers();
+
+    EXPECT_EQ(endpoints.size(), 2);
+    EXPECT_EQ(count(endpoints, first_server_), 1);
+    EXPECT_EQ(count(endpoints, second_server_), 1);
+    EXPECT_EQ(count(endpoints, other_server_), 0);
+}
+
+TEST_F(SyncServerDB, import_empty_string)
+{
+    EXPECT_FALSE(api_.Blockchain().AddSyncServer(""));
+
+    const auto endpoints = api_.Blockchain().GetSyncServers();
+
+    EXPECT_EQ(endpoints.size(), 2);
+    EXPECT_EQ(count(endpoints, first_server_), 1);
+    EXPECT_EQ(count(endpoints, second_server_), 1);
+    EXPECT_EQ(count(endpoints, other_server_), 0);
+}
+
+TEST_F(SyncServerDB, delete_non_existing)
+{
+    EXPECT_TRUE(api_.Blockchain().DeleteSyncServer(other_server_));
+
+    const auto endpoints = api_.Blockchain().GetSyncServers();
+
+    EXPECT_EQ(endpoints.size(), 2);
+    EXPECT_EQ(count(endpoints, first_server_), 1);
+    EXPECT_EQ(count(endpoints, second_server_), 1);
+    EXPECT_EQ(count(endpoints, other_server_), 0);
+}
+
+TEST_F(SyncServerDB, delete_existing)
+{
+    EXPECT_TRUE(api_.Blockchain().DeleteSyncServer(first_server_));
+
+    const auto endpoints = api_.Blockchain().GetSyncServers();
+
+    EXPECT_EQ(endpoints.size(), 1);
+    EXPECT_EQ(count(endpoints, first_server_), 0);
+    EXPECT_EQ(count(endpoints, second_server_), 1);
+    EXPECT_EQ(count(endpoints, other_server_), 0);
+
+    const auto& message = listener_.get(2);
+    const auto body = message.Body();
+
+    ASSERT_EQ(body.size(), 3);
+    EXPECT_EQ(body.at(0).as<ot::WorkType>(), ot::WorkType::SyncServerUpdated);
+    EXPECT_STREQ(body.at(1).Bytes().data(), first_server_);
+    EXPECT_FALSE(body.at(2).as<bool>());
+}
+
+TEST_F(SyncServerDB, delete_empty_string)
+{
+    EXPECT_FALSE(api_.Blockchain().DeleteSyncServer(""));
+
+    const auto endpoints = api_.Blockchain().GetSyncServers();
+
+    EXPECT_EQ(endpoints.size(), 1);
+    EXPECT_EQ(count(endpoints, first_server_), 0);
+    EXPECT_EQ(count(endpoints, second_server_), 1);
+    EXPECT_EQ(count(endpoints, other_server_), 0);
+}
+
+TEST_F(SyncServerDB, cleanup) { cleanup(); }
+}  // namespace ottest

@@ -19,7 +19,7 @@
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/Blockchain.hpp"
-#include "internal/blockchain/client/Client.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -35,8 +35,8 @@
 #include "opentxs/blockchain/BloomFilter.hpp"
 #include "opentxs/blockchain/BloomUpdateFlag.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
-#include "opentxs/blockchain/client/FilterOracle.hpp"
-#include "opentxs/blockchain/client/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/FilterOracle.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
 
 namespace
@@ -514,9 +514,8 @@ TEST_F(Test_Filters, hash)
 {
     namespace bc = ot::blockchain::internal;
 
-    const auto& block_0 =
-        ot::blockchain::client::HeaderOracle::GenesisBlockHash(
-            ot::blockchain::Type::Bitcoin_testnet3);
+    const auto& block_0 = ot::blockchain::node::HeaderOracle::GenesisBlockHash(
+        ot::blockchain::Type::Bitcoin_testnet3);
     const auto preimage =
         api_.Factory().Data("0x019dfca8", ot::StringStyle::Hex);
     const auto filter_0 = api_.Factory().Data("0x9dfca8", ot::StringStyle::Hex);
@@ -606,7 +605,7 @@ TEST_F(Test_Filters, test_set_intersection)
     }();
 
     const auto targets = [&] {
-        auto out = ot::blockchain::client::GCS::Targets{};
+        auto out = ot::blockchain::node::GCS::Targets{};
         out.reserve(subset.size());
         std::transform(
             subset.begin(),

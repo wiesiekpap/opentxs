@@ -6,6 +6,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <map>
@@ -26,8 +27,8 @@
 #include "blockchain/database/wallet/Transaction.hpp"
 #include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Blockchain.hpp"
-#include "internal/blockchain/client/Client.hpp"
 #include "internal/blockchain/database/Database.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -37,7 +38,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
-#include "opentxs/blockchain/client/Wallet.hpp"
+#include "opentxs/blockchain/node/Wallet.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -93,7 +94,7 @@ class Wallet
 {
 public:
     using Common = api::client::blockchain::database::implementation::Database;
-    using Parent = client::internal::WalletDatabase;
+    using Parent = node::internal::WalletDatabase;
     using FilterType = Parent::FilterType;
     using NodeID = Parent::NodeID;
     using pNodeID = Parent::pNodeID;
@@ -107,7 +108,7 @@ public:
     using MatchingIndices = Parent::MatchingIndices;
     using UTXO = Parent::UTXO;
     using Spend = Parent::Spend;
-    using State = client::Wallet::TxoState;
+    using State = node::Wallet::TxoState;
 
     auto AddConfirmedTransaction(
         const NodeID& balanceNode,

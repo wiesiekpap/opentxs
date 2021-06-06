@@ -19,7 +19,7 @@
 #include <utility>
 
 #include "Proto.tpp"
-#include "blockchain/client/UpdateTransaction.hpp"
+#include "blockchain/node/UpdateTransaction.hpp"
 #include "core/Worker.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
@@ -30,7 +30,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
-#include "opentxs/blockchain/client/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -53,7 +53,7 @@ auto tsv(const Input& in) noexcept -> ReadView
 
 Headers::Headers(
     const api::Core& api,
-    const client::internal::Network& network,
+    const node::internal::Network& network,
     const Common& common,
     const opentxs::storage::lmdb::LMDB& lmdb,
     const blockchain::Type type) noexcept
@@ -80,7 +80,7 @@ Headers::Headers(
     }
 }
 
-auto Headers::ApplyUpdate(const client::UpdateTransaction& update) noexcept
+auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     -> bool
 {
     if (false == common_.StoreBlockHeaders(update.UpdatedHeaders())) {
@@ -354,10 +354,10 @@ auto Headers::CurrentCheckpoint() const noexcept -> block::Position
     return checkpoint(lock);
 }
 
-auto Headers::DisconnectedHashes() const noexcept -> client::DisconnectedList
+auto Headers::DisconnectedHashes() const noexcept -> node::DisconnectedList
 {
     Lock lock(lock_);
-    auto output = client::DisconnectedList{};
+    auto output = node::DisconnectedList{};
     lmdb_.Read(
         BlockHeaderDisconnected,
         [&](const auto key, const auto value) -> bool {
@@ -404,7 +404,7 @@ auto Headers::HeaderExists(const block::Hash& hash) const noexcept -> bool
 auto Headers::import_genesis(const blockchain::Type type) const noexcept -> void
 {
     auto success{false};
-    const auto& hash = client::HeaderOracle::GenesisBlockHash(type);
+    const auto& hash = node::HeaderOracle::GenesisBlockHash(type);
 
     try {
         const auto serialized = common_.LoadBlockHeader(hash);
@@ -577,10 +577,10 @@ auto Headers::recent_hashes(const Lock& lock) const noexcept
     return output;
 }
 
-auto Headers::SiblingHashes() const noexcept -> client::Hashes
+auto Headers::SiblingHashes() const noexcept -> node::Hashes
 {
     Lock lock(lock_);
-    auto output = client::Hashes{};
+    auto output = node::Hashes{};
     lmdb_.Read(
         BlockHeaderSiblings,
         [&](const auto, const auto value) -> bool {

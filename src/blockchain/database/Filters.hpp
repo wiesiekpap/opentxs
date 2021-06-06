@@ -22,8 +22,8 @@
 #include "api/client/blockchain/database/Database.hpp"
 #include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Blockchain.hpp"
-#include "internal/blockchain/client/Client.hpp"
 #include "internal/blockchain/database/Database.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -45,10 +45,10 @@ class Core;
 
 namespace blockchain
 {
-namespace client
+namespace node
 {
 struct GCS;
-}  // namespace client
+}  // namespace node
 }  // namespace blockchain
 
 namespace storage
@@ -66,7 +66,7 @@ class Filters
 {
 public:
     using Common = api::client::blockchain::database::implementation::Database;
-    using Parent = client::internal::FilterDatabase;
+    using Parent = node::internal::FilterDatabase;
     using Hash = Parent::Hash;
     using Header = Parent::Header;
     using Filter = Parent::Filter;
@@ -85,7 +85,7 @@ public:
         return common_.HaveFilterHeader(type, block.Bytes());
     }
     auto LoadFilter(const filter::Type type, const ReadView block)
-        const noexcept -> std::unique_ptr<const blockchain::client::GCS>
+        const noexcept -> std::unique_ptr<const blockchain::node::GCS>
     {
         return common_.LoadFilter(type, block);
     }

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <boost/container/flat_map.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <iosfwd>

@@ -41,12 +41,12 @@
 #include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
-#include "opentxs/blockchain/Network.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
-#include "opentxs/blockchain/client/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
@@ -485,7 +485,6 @@ auto Regtest_fixture_base::Mine(
     const std::vector<Transaction>& extra) noexcept -> bool
 {
     const auto targetHeight = ancestor + static_cast<Height>(count);
-
     auto blocks = std::vector<BlockListener::Future>{};
     auto wallets = std::vector<WalletListener::Future>{};
     blocks.reserve(client_count_);
@@ -540,7 +539,7 @@ auto Regtest_fixture_base::Mine(
     }
 
     auto output = true;
-    constexpr auto limit = std::chrono::minutes(30);
+    constexpr auto limit = std::chrono::minutes(5);
     using Status = std::future_status;
 
     for (auto& future : blocks) {

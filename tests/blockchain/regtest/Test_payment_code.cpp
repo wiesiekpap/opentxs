@@ -30,7 +30,6 @@
 #include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/FilterType.hpp"  // IWYU pragma: keep
-#include "opentxs/blockchain/Network.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"  // IWYU pragma: keep
@@ -39,10 +38,11 @@
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
-#include "opentxs/blockchain/client/BlockOracle.hpp"
-#include "opentxs/blockchain/client/FilterOracle.hpp"
-#include "opentxs/blockchain/client/HeaderOracle.hpp"
-#include "opentxs/blockchain/client/Wallet.hpp"
+#include "opentxs/blockchain/node/BlockOracle.hpp"
+#include "opentxs/blockchain/node/FilterOracle.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
+#include "opentxs/blockchain/node/Wallet.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -372,7 +372,7 @@ TEST_F(Regtest_payment_code, alice_after_receive_wallet)
     EXPECT_EQ(wallet.GetBalance(nym, blankAccount), noBalance);
     EXPECT_EQ(wallet.GetBalance(blankNym, account), noBalance);
 
-    using TxoState = ot::blockchain::client::Wallet::TxoState;
+    using TxoState = ot::blockchain::node::Wallet::TxoState;
     auto type = TxoState::All;
 
     EXPECT_EQ(wallet.GetOutputs(type).size(), 1u);
@@ -561,7 +561,7 @@ TEST_F(Regtest_payment_code, alice_after_unconfirmed_spend_wallet)
     EXPECT_EQ(wallet.GetBalance(blankNym, accountHD), noBalance);
     EXPECT_EQ(wallet.GetBalance(blankNym, accountPC), noBalance);
 
-    using TxoState = ot::blockchain::client::Wallet::TxoState;
+    using TxoState = ot::blockchain::node::Wallet::TxoState;
     auto type = TxoState::All;
 
     EXPECT_EQ(wallet.GetOutputs(type).size(), 2u);
@@ -884,7 +884,7 @@ TEST_F(Regtest_payment_code, alice_after_confirmed_spend_wallet)
     EXPECT_EQ(wallet.GetBalance(blankNym, accountHD), noBalance);
     EXPECT_EQ(wallet.GetBalance(blankNym, accountPC), noBalance);
 
-    using TxoState = ot::blockchain::client::Wallet::TxoState;
+    using TxoState = ot::blockchain::node::Wallet::TxoState;
     auto type = TxoState::All;
 
     EXPECT_EQ(wallet.GetOutputs(type).size(), 2u);
@@ -1204,7 +1204,7 @@ TEST_F(Regtest_payment_code, bob_after_receive_wallet)
     EXPECT_EQ(wallet.GetBalance(blankNym, accountHD), noBalance);
     EXPECT_EQ(wallet.GetBalance(blankNym, accountPC), noBalance);
 
-    using TxoState = ot::blockchain::client::Wallet::TxoState;
+    using TxoState = ot::blockchain::node::Wallet::TxoState;
     auto type = TxoState::All;
 
     EXPECT_EQ(wallet.GetOutputs(type).size(), 1u);
@@ -1402,7 +1402,7 @@ TEST_F(Regtest_payment_code, alice_after_unconfirmed_second_spend_wallet)
     EXPECT_EQ(wallet.GetBalance(blankNym, accountHD), noBalance);
     EXPECT_EQ(wallet.GetBalance(blankNym, accountPC), noBalance);
 
-    using TxoState = ot::blockchain::client::Wallet::TxoState;
+    using TxoState = ot::blockchain::node::Wallet::TxoState;
     auto type = TxoState::All;
 
     EXPECT_EQ(wallet.GetOutputs(type).size(), 3u);

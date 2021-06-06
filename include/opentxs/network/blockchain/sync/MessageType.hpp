@@ -22,6 +22,7 @@ enum class MessageType : TypeEnum {
     sync_ack = 2,
     sync_reply = 3,
     new_block_header = 4,
+    query = 5,
 };
 }  // namespace sync
 }  // namespace blockchain

@@ -624,7 +624,7 @@ auto Blockchain::Imp::FilterUpdate() const noexcept
 }
 
 auto Blockchain::Imp::GetChain(const Chain type) const noexcept(false)
-    -> const opentxs::blockchain::Network&
+    -> const opentxs::blockchain::node::Manager&
 {
     throw std::out_of_range{"No blockchain support"};
 }
@@ -1067,12 +1067,6 @@ auto Blockchain::Imp::ProcessMergedContact(const Contact&, const Contact&)
     return false;
 }
 
-auto Blockchain::Imp::ProcessSyncData(
-    const opentxs::network::blockchain::sync::Data&,
-    OTZMQMessage&&) const noexcept -> void
-{
-}
-
 auto Blockchain::Imp::ProcessTransaction(
     const Chain,
     const Tx&,
@@ -1243,6 +1237,13 @@ auto Blockchain::Imp::StartSyncServer(
 auto Blockchain::Imp::Stop(const Chain type) const noexcept -> bool
 {
     return false;
+}
+
+auto Blockchain::Imp::SyncEndpoint() const noexcept -> const std::string&
+{
+    static const auto blank = std::string{};
+
+    return blank;
 }
 
 auto Blockchain::Imp::Unconfirm(

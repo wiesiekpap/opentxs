@@ -10,6 +10,7 @@
 #include <array>
 #include <chrono>
 #include <deque>
+#include <iostream>
 #include <set>
 #include <string>
 #include <utility>
@@ -28,12 +29,12 @@
 #include "opentxs/api/client/blockchain/HD.hpp"
 #include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/api/client/blockchain/Types.hpp"
-#include "opentxs/blockchain/Network.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"   // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/crypto/Language.hpp"
@@ -330,7 +331,7 @@ TEST_F(Regtest_stress, alice_after_receive_wallet)
     EXPECT_EQ(wallet.GetBalance(nym, blankAccount), noBalance);
     EXPECT_EQ(wallet.GetBalance(blankNym, account), noBalance);
 
-    using TxoState = ot::blockchain::client::Wallet::TxoState;
+    using TxoState = ot::blockchain::node::Wallet::TxoState;
     auto type = TxoState::All;
 
     EXPECT_EQ(wallet.GetOutputs(type).size(), outputs);
@@ -412,7 +413,7 @@ TEST_F(Regtest_stress, generate_transactions)
         listener_bob_.get_future(bob_account_, Subchain::External, stop);
     auto transactions =
         std::vector<ot::OTData>{tx_per_block_, client_1_.Factory().Data()};
-    using Future = ot::blockchain::Network::PendingOutgoing;
+    using Future = ot::blockchain::node::Manager::PendingOutgoing;
     auto futures = std::array<Future, tx_per_block_>{};
 
     ASSERT_EQ(transactions.size(), tx_per_block_);

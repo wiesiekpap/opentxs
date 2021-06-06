@@ -3,9 +3,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: private
-// IWYU pragma: friend ".*src/api/Endpoints.cpp"
-
 #pragma once
 
 #include <string>
@@ -46,6 +43,7 @@ public:
     auto BlockchainScanProgress() const noexcept -> std::string final;
     auto BlockchainStateChange() const noexcept -> std::string final;
     auto BlockchainSyncProgress() const noexcept -> std::string final;
+    auto BlockchainSyncServerUpdated() const noexcept -> std::string final;
     auto BlockchainTransactions() const noexcept -> std::string final;
     auto BlockchainTransactions(const identifier::Nym& nym) const noexcept
         -> std::string final;

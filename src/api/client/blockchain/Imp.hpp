@@ -80,7 +80,10 @@ class Core;
 
 namespace blockchain
 {
-class Network;
+namespace node
+{
+class Manager;
+}  // namespace node
 }  // namespace blockchain
 
 namespace network
@@ -173,6 +176,11 @@ struct Blockchain::Imp {
         const Tx& transaction) const noexcept -> std::string;
     auto address_prefix(const Style style, const Chain chain) const
         noexcept(false) -> OTData;
+    virtual auto AddSyncServer(
+        [[maybe_unused]] const std::string& endpoint) const noexcept -> bool
+    {
+        return false;
+    }
     auto AssignContact(
         const identifier::Nym& nymID,
         const Identifier& accountID,
@@ -206,12 +214,21 @@ struct Blockchain::Imp {
     auto Confirm(
         const blockchain::Key key,
         const opentxs::blockchain::block::Txid& tx) const noexcept -> bool;
+    virtual auto ConnectedSyncServers() const noexcept -> Endpoints
+    {
+        return {};
+    }
     auto Contacts() const noexcept -> const api::client::Contacts&
     {
         return contacts_;
     }
     auto DecodeAddress(const std::string& encoded) const noexcept
         -> DecodedAddress;
+    virtual auto DeleteSyncServer(
+        [[maybe_unused]] const std::string& endpoint) const noexcept -> bool
+    {
+        return false;
+    }
     virtual auto Disable(const Chain type) const noexcept -> bool;
     virtual auto Enable(const Chain type, const std::string& seednode)
         const noexcept -> bool;
@@ -220,9 +237,10 @@ struct Blockchain::Imp {
         const noexcept -> std::string;
     virtual auto FilterUpdate() const noexcept -> const zmq::socket::Publish&;
     virtual auto GetChain(const Chain type) const noexcept(false)
-        -> const opentxs::blockchain::Network&;
+        -> const opentxs::blockchain::node::Manager&;
     auto GetKey(const blockchain::Key& id) const noexcept(false)
         -> const blockchain::BalanceNode::Element&;
+    virtual auto GetSyncServers() const noexcept -> Endpoints { return {}; }
     auto HDSubaccount(const identifier::Nym& nymID, const Identifier& accountID)
         const noexcept(false) -> const blockchain::HD&;
     using SyncState = std::vector<opentxs::network::blockchain::sync::State>;
@@ -276,9 +294,6 @@ struct Blockchain::Imp {
     virtual auto ProcessMergedContact(
         const Contact& parent,
         const Contact& child) const noexcept -> bool;
-    virtual auto ProcessSyncData(
-        const opentxs::network::blockchain::sync::Data& data,
-        OTZMQMessage&& in) const noexcept -> void;
     virtual auto ProcessTransaction(
         const Chain chain,
         const Tx& in,
@@ -316,6 +331,7 @@ struct Blockchain::Imp {
     {
         return accounts_.List(nymID, chain);
     }
+    virtual auto SyncEndpoint() const noexcept -> const std::string&;
     auto Unconfirm(
         const blockchain::Key key,
         const opentxs::blockchain::block::Txid& tx,
@@ -333,7 +349,7 @@ struct Blockchain::Imp {
         const opentxs::blockchain::Type chain,
         const std::string& address) const noexcept -> void;
 
-    auto Init() noexcept -> void;
+    virtual auto Init() noexcept -> void;
     virtual auto Shutdown() noexcept -> void;
 
     Imp(const api::internal::Core& api,

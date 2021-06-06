@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <iosfwd>
 #include <map>
 #include <memory>

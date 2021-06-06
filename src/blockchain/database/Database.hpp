@@ -10,6 +10,7 @@
 
 #include <boost/container/flat_set.hpp>
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <map>
@@ -30,8 +31,8 @@
 #include "blockchain/database/Wallet.hpp"
 #include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Blockchain.hpp"
-#include "internal/blockchain/client/Client.hpp"
 #include "internal/blockchain/database/Database.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -89,11 +90,15 @@ class Block;
 class Header;
 }  // namespace block
 
-namespace client
+namespace node
 {
 class UpdateTransaction;
+}  // namespace node
+
+namespace node
+{
 struct GCS;
-}  // namespace client
+}  // namespace node
 }  // namespace blockchain
 
 namespace identifier
@@ -165,7 +170,7 @@ public:
     {
         return wallet_.AddProposal(id, tx);
     }
-    auto ApplyUpdate(const client::UpdateTransaction& update) const noexcept
+    auto ApplyUpdate(const node::UpdateTransaction& update) const noexcept
         -> bool final
     {
         return headers_.ApplyUpdate(update);
@@ -229,7 +234,7 @@ public:
     {
         return wallet_.ForgetProposals(ids);
     }
-    auto DisconnectedHashes() const noexcept -> client::DisconnectedList final
+    auto DisconnectedHashes() const noexcept -> node::DisconnectedList final
     {
         return headers_.DisconnectedHashes();
     }
@@ -328,7 +333,7 @@ public:
         return headers_.IsSibling(hash);
     }
     auto LoadFilter(const filter::Type type, const ReadView block)
-        const noexcept -> std::unique_ptr<const client::GCS> final
+        const noexcept -> std::unique_ptr<const node::GCS> final
     {
         return filters_.LoadFilter(type, block);
     }
@@ -417,7 +422,7 @@ public:
     {
         return sync_.SetTip(position);
     }
-    auto SiblingHashes() const noexcept -> client::Hashes final
+    auto SiblingHashes() const noexcept -> node::Hashes final
     {
         return headers_.SiblingHashes();
     }
@@ -500,7 +505,7 @@ public:
     Database(
         const api::Core& api,
         const api::client::internal::Blockchain& blockchain,
-        const client::internal::Network& network,
+        const node::internal::Network& network,
         const database::Common& common,
         const blockchain::Type type) noexcept;
 

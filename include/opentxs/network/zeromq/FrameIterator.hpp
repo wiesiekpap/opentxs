@@ -9,6 +9,7 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <atomic>
+#include <cstddef>
 #include <iosfwd>
 #include <iterator>
 

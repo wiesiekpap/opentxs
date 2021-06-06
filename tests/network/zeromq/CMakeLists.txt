@@ -45,6 +45,9 @@ add_opentx_test(unittests-opentxs-network-zeromq-router Test_RouterSocket.cpp)
 add_opentx_test(
   unittests-opentxs-network-zeromq-routerdealer Test_RouterDealer.cpp
 )
+add_opentx_test(
+  unittests-opentxs-network-zeromq-routerrouter Test_RouterRouter.cpp
+)
 add_opentx_test(unittests-opentxs-network-zeromq-stress Test_Stress.cpp)
 add_opentx_test(
   unittests-opentxs-network-zeromq-subscribe Test_SubscribeSocket.cpp

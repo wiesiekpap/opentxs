@@ -10,7 +10,7 @@
 #include <boost/container/flat_map.hpp>
 #include <boost/container/vector.hpp>
 #include <algorithm>
-#include <iosfwd>
+#include <cstddef>
 #include <memory>
 #include <type_traits>
 #include <utility>
@@ -25,7 +25,7 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/blockchain/client/FilterOracle.hpp"
+#include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -93,7 +93,7 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
         const auto& blockHash = block.Hash();
         const auto bytes =
             api_.Factory().Data(genesis.second, StringStyle::Hex);
-        auto gcs = std::unique_ptr<const client::GCS>{factory::GCS(
+        auto gcs = std::unique_ptr<const node::GCS>{factory::GCS(
             api_,
             style,
             blockchain::internal::BlockHashToFilterKey(blockHash.Bytes()),
@@ -106,9 +106,8 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
 
         if (needHeader) {
             auto header = api_.Factory().Data(genesis.first, StringStyle::Hex);
-            auto headers =
-                std::vector<client::internal::FilterDatabase::Header>{
-                    {blockHash, std::move(header), filterHash->Bytes()}};
+            auto headers = std::vector<node::internal::FilterDatabase::Header>{
+                {blockHash, std::move(header), filterHash->Bytes()}};
             success = common_.StoreFilterHeaders(style, headers);
 
             OT_ASSERT(success);
@@ -120,7 +119,7 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
 
         if (needFilter) {
             auto filters =
-                std::vector<client::internal::FilterDatabase::Filter>{};
+                std::vector<node::internal::FilterDatabase::Filter>{};
             filters.emplace_back(blockHash.Bytes(), std::move(gcs));
 
             success = common_.StoreFilters(style, filters);

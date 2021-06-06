@@ -15,7 +15,10 @@
 #include "Proto.tpp"
 #include "network/blockchain/sync/Base.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/Core.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/blockchain/sync/MessageType.hpp"
@@ -127,6 +130,26 @@ auto Data::Add(ReadView data) noexcept -> bool
 }
 
 auto Data::Blocks() const noexcept -> const SyncData& { return imp_->blocks_; }
+
+auto Data::LastPosition(const api::Core& api) const noexcept -> Position
+{
+    static const auto blank = Position{-1, api.Factory().Data()};
+#if OT_BLOCKCHAIN
+    const auto& blocks = imp_->blocks_;
+
+    if (0u == blocks.size()) { return blank; }
+
+    const auto& last = blocks.back();
+    const auto header = api.Factory().BlockHeader(last.Chain(), last.Header());
+
+    if (!header) { return blank; }
+
+    return {last.Height(), header->Hash()};
+#else
+
+    return blank;
+#endif  // OT_BLOCKCHAIN
+}
 
 auto Data::PreviousCfheader() const noexcept -> ReadView
 {

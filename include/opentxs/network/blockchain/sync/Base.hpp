@@ -31,6 +31,7 @@ namespace sync
 class Acknowledgement;
 class Base;
 class Data;
+class Query;
 class Request;
 }  // namespace sync
 }  // namespace blockchain
@@ -61,6 +62,7 @@ public:
 
     auto asAcknowledgement() const noexcept -> const Acknowledgement&;
     auto asData() const noexcept -> const Data&;
+    auto asQuery() const noexcept -> const Query&;
     auto asRequest() const noexcept -> const Request&;
 
     auto Serialize(zeromq::Message& out) const noexcept -> bool;

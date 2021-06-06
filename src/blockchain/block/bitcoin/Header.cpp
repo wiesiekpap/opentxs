@@ -23,7 +23,7 @@
 #include "Proto.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "internal/blockchain/client/Client.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -31,7 +31,7 @@
 #include "opentxs/blockchain/NumericHash.hpp"
 #include "opentxs/blockchain/Work.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
-#include "opentxs/blockchain/client/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -164,7 +164,7 @@ auto BitcoinBlockHeader(
 
     auto hash = ReturnType::calculate_hash(api, chain, raw);
     const auto isGenesis =
-        blockchain::client::HeaderOracle::GenesisBlockHash(chain) == hash;
+        blockchain::node::HeaderOracle::GenesisBlockHash(chain) == hash;
 
     try {
         return std::make_unique<ReturnType>(

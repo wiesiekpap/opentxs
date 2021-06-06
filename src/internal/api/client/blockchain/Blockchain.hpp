@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <iosfwd>
@@ -19,7 +20,7 @@
 #include <utility>
 #include <vector>
 
-#include "internal/blockchain/client/Client.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
@@ -141,17 +142,16 @@ using Chain = opentxs::blockchain::Type;
 #if OT_BLOCKCHAIN
 using Address = opentxs::blockchain::p2p::internal::Address;
 using Address_p = std::unique_ptr<Address>;
-using FilterData =
-    opentxs::blockchain::client::internal::FilterDatabase::Filter;
-using FilterHash = opentxs::blockchain::client::internal::FilterDatabase::Hash;
+using FilterData = opentxs::blockchain::node::internal::FilterDatabase::Filter;
+using FilterHash = opentxs::blockchain::node::internal::FilterDatabase::Hash;
 using FilterHeader =
-    opentxs::blockchain::client::internal::FilterDatabase::Header;
+    opentxs::blockchain::node::internal::FilterDatabase::Header;
 using FilterType = opentxs::blockchain::filter::Type;
 using Position = opentxs::blockchain::block::Position;
 using Protocol = opentxs::blockchain::p2p::Protocol;
 using Service = opentxs::blockchain::p2p::Service;
 using Type = opentxs::blockchain::p2p::Network;
-using UpdatedHeader = opentxs::blockchain::client::UpdatedHeader;
+using UpdatedHeader = opentxs::blockchain::node::UpdatedHeader;
 using SyncTableData = std::pair<int, std::string>;
 
 enum Table {
@@ -172,6 +172,7 @@ enum Table {
     BlockIndex = 14,
     Enabled = 15,
     SyncTips = 16,
+    ConfigMulti = 17,
 };
 
 auto ChainToSyncTable(const Chain chain) noexcept(false) -> int;

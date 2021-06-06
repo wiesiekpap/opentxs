@@ -14,7 +14,7 @@ extern "C" {
 #include <memory>
 #include <string>
 
-#include "internal/blockchain/client/Factory.hpp"
+#include "internal/blockchain/node/Factory.hpp"
 #include "opentxs/core/Log.hpp"
 #include "util/LMDB.hpp"
 
@@ -25,7 +25,7 @@ namespace opentxs::factory
 auto BlockchainDatabase(
     const api::Core& api,
     const api::client::internal::Blockchain& blockchain,
-    const blockchain::client::internal::Network& network,
+    const blockchain::node::internal::Network& network,
     const api::client::blockchain::database::implementation::Database& common,
     const blockchain::Type type) noexcept
     -> std::unique_ptr<blockchain::internal::Database>
@@ -59,7 +59,7 @@ const opentxs::storage::lmdb::TableNames Database::table_names_{
 Database::Database(
     const api::Core& api,
     const api::client::internal::Blockchain& blockchain,
-    const client::internal::Network& network,
+    const node::internal::Network& network,
     const database::Common& common,
     const blockchain::Type type) noexcept
     : chain_(type)

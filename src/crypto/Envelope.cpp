@@ -8,7 +8,7 @@
 #include "crypto/Envelope.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
-#include <iosfwd>
+#include <cstddef>
 #include <iterator>
 #include <map>
 #include <numeric>

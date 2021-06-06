@@ -23,7 +23,7 @@
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/Network.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"

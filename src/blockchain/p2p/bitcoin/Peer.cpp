@@ -43,9 +43,9 @@
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
-#include "opentxs/blockchain/client/BlockOracle.hpp"
-#include "opentxs/blockchain/client/FilterOracle.hpp"
-#include "opentxs/blockchain/client/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/BlockOracle.hpp"
+#include "opentxs/blockchain/node/FilterOracle.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/p2p/Peer.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
@@ -64,12 +64,12 @@ namespace opentxs::factory
 {
 auto BitcoinP2PPeerLegacy(
     const api::Core& api,
-    const blockchain::client::internal::Config& config,
-    const blockchain::client::internal::Network& network,
-    const blockchain::client::internal::HeaderOracle& header,
-    const blockchain::client::internal::FilterOracle& filter,
-    const blockchain::client::internal::BlockOracle& block,
-    const blockchain::client::internal::PeerManager& manager,
+    const blockchain::node::internal::Config& config,
+    const blockchain::node::internal::Network& network,
+    const blockchain::node::internal::HeaderOracle& header,
+    const blockchain::node::internal::FilterOracle& filter,
+    const blockchain::node::internal::BlockOracle& block,
+    const blockchain::node::internal::PeerManager& manager,
     const api::client::blockchain::BlockStorage policy,
     const int id,
     std::unique_ptr<blockchain::p2p::internal::Address> address,
@@ -157,12 +157,12 @@ const std::string Peer::user_agent_{"/opentxs:" OPENTXS_VERSION_STRING "/"};
 
 Peer::Peer(
     const api::Core& api,
-    const client::internal::Config& config,
-    const client::internal::Network& network,
-    const client::internal::HeaderOracle& header,
-    const client::internal::FilterOracle& filter,
-    const client::internal::BlockOracle& block,
-    const client::internal::PeerManager& manager,
+    const node::internal::Config& config,
+    const node::internal::Network& network,
+    const node::internal::HeaderOracle& header,
+    const node::internal::FilterOracle& filter,
+    const node::internal::BlockOracle& block,
+    const node::internal::PeerManager& manager,
     const api::client::blockchain::BlockStorage policy,
     const std::string& shutdown,
     const int id,
@@ -375,7 +375,7 @@ auto Peer::process_addr(
 
     const auto& message = *pMessage;
     download_peers_.Bump();
-    using DB = blockchain::client::internal::PeerDatabase;
+    using DB = blockchain::node::internal::PeerDatabase;
     auto peers = std::vector<DB::Address>{};
 
     for (const auto& address : message) {
@@ -419,7 +419,7 @@ auto Peer::process_block(
         }
 
         if (submit) {
-            using Task = client::internal::Network::Task;
+            using Task = node::internal::Network::Task;
             auto work = MakeWork(Task::SubmitBlock);
             work->AddFrame(payload);
             network_.Submit(work);
@@ -870,7 +870,7 @@ auto Peer::process_getcfheaders(
 
     if (previousHeader->empty()) { return; }
 
-    auto filterHashes = std::vector<client::internal::FilterOracle::Header>{};
+    auto filterHashes = std::vector<node::internal::FilterOracle::Header>{};
     const auto start = std::size_t{fromGenesis ? 0u : 1u};
     static const auto blank = std::array<char, 32>{};
     const auto previous = fromGenesis ? ReadView{blank.data(), blank.size()}
@@ -968,7 +968,7 @@ auto Peer::process_getcfilters(
         return;
     }
 
-    auto data = std::vector<std::unique_ptr<const client::GCS>>{};
+    auto data = std::vector<std::unique_ptr<const node::GCS>>{};
     data.reserve(count);
     const auto& filters = network_.FilterOracle();
     const auto type = message.Type();
@@ -1109,7 +1109,7 @@ auto Peer::process_getheaders(
     }
 
     const auto& in = *pIn;
-    auto previous = client::HeaderOracle::Hashes{};
+    auto previous = node::HeaderOracle::Hashes{};
     std::copy(in.begin(), in.end(), std::back_inserter(previous));
     const auto hashes = headers_.BestHashes(previous, in.StopHash(), 2000);
     auto headers = std::vector<std::unique_ptr<block::bitcoin::Header>>{};
@@ -1201,7 +1201,7 @@ auto Peer::process_headers(
         check_verify();
     } else {
         get_headers_.Finish();
-        using Task = client::internal::Network::Task;
+        using Task = node::internal::Network::Task;
         auto work = MakeWork(Task::SubmitBlockHeader);
 
         for (const auto& header : message) {

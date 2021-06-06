@@ -8,6 +8,7 @@
 #include "network/zeromq/zap/Request.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
+#include <cstddef>
 #include <memory>
 #include <set>
 #include <sstream>

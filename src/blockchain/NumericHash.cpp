@@ -9,6 +9,7 @@
 
 #include <boost/endian/buffers.hpp>
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <memory>
@@ -16,7 +17,11 @@
 
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Types.hpp"
+#include "opentxs/api/Core.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/NumericHash.hpp"
@@ -113,7 +118,20 @@ auto operator<=(
 
 namespace opentxs::blockchain
 {
-std::int32_t NumericHash::MaxTarget(const blockchain::Type chain) noexcept
+auto HashToNumber(const api::Core& api, ReadView hex) noexcept -> std::string
+{
+    return HashToNumber(api.Factory().Data(std::string{hex}, StringStyle::Hex));
+}
+
+auto HashToNumber(const Hash& hash) noexcept -> std::string
+{
+    const auto number = factory::NumericHash(hash);
+
+    return number->asHex();
+}
+
+auto NumericHash::MaxTarget(const blockchain::Type chain) noexcept
+    -> std::int32_t
 {
     try {
 
@@ -122,6 +140,18 @@ std::int32_t NumericHash::MaxTarget(const blockchain::Type chain) noexcept
 
         return {};
     }
+}
+
+auto NumberToHash(const api::Core& api, ReadView hex) noexcept -> pHash
+{
+    const auto hash = api.Factory().Data(std::string{hex}, StringStyle::Hex);
+    auto out = api.Factory().Data();
+
+    for (auto i{hash->size()}; i > 0u; --i) {
+        out += std::to_integer<std::uint8_t>(hash->at(i - 1u));
+    }
+
+    return out;
 }
 }  // namespace opentxs::blockchain
 

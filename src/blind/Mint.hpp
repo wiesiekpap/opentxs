@@ -6,6 +6,7 @@
 #pragma once
 
 #include <irrxml/irrXML.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <map>

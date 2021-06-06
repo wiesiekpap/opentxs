@@ -6,6 +6,7 @@
 add_library(
   opentxs-util OBJECT
   "AsyncValue.hpp"
+  "Backoff.hpp"
   "Blank.hpp"
   "Container.hpp"
   "Gatekeeper.cpp"

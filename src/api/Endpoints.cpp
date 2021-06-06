@@ -30,6 +30,7 @@
 #define BLOCKCHAIN_SCAN_ENDPOINT "blockchain/scan"
 #define BLOCKCHAIN_STATE_ENDPOINT "blockchain/state"
 #define BLOCKCHAIN_SYNC_ENDPOINT "blockchain/sync"
+#define BLOCKCHAIN_SYNC_DB_ENDPOINT "blockchain/sync/db"
 #define BLOCKCHAIN_TRANSACTIONS_ENDPOINT "blockchain/transactions"
 #define BLOCKCHAIN_BALANCE_PUBLISHER_ENDPOINT "blockchain/balance"
 #define CONNECTION_STATUS_ENDPOINT "connectionstatus"
@@ -152,6 +153,11 @@ auto Endpoints::BlockchainStateChange() const noexcept -> std::string
 auto Endpoints::BlockchainSyncProgress() const noexcept -> std::string
 {
     return build_inproc_path(BLOCKCHAIN_SYNC_ENDPOINT, ENDPOINT_VERSION_1);
+}
+
+auto Endpoints::BlockchainSyncServerUpdated() const noexcept -> std::string
+{
+    return build_inproc_path(BLOCKCHAIN_SYNC_DB_ENDPOINT, ENDPOINT_VERSION_1);
 }
 
 auto Endpoints::BlockchainTransactions() const noexcept -> std::string

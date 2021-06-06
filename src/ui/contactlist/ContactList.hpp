@@ -12,6 +12,7 @@
 #include <QAbstractItemModel>
 #include <QHash>
 #endif  // OT_QT
+#include <cstddef>
 #include <iosfwd>
 #include <map>
 #include <memory>

@@ -5,7 +5,6 @@
 
 #include <gtest/gtest.h>
 #include <cstring>
-#include <iosfwd>
 #include <limits>
 #include <memory>
 #include <optional>
@@ -13,7 +12,6 @@
 #include <vector>
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
-#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
@@ -32,7 +30,9 @@
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
+#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/crypto/HashType.hpp"
 
 namespace
 {

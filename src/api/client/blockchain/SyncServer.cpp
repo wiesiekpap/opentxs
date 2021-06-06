@@ -182,6 +182,7 @@ private:
             const auto type = base->Type();
 
             switch (type) {
+                case sync::MessageType::query:
                 case sync::MessageType::sync_request: {
                 } break;
                 default: {
@@ -193,8 +194,6 @@ private:
                 }
             }
 
-            const auto& request = base->asRequest();
-
             {
                 const auto ack = sync::Acknowledgement{
                     parent_.Hello(), update_public_endpoint_};
@@ -205,16 +204,20 @@ private:
                 }
             }
 
-            for (const auto& state : request.State()) {
-                try {
-                    const auto& [endpoint, enabled, internal] =
-                        map_.at(state.Chain());
+            if (sync::MessageType::sync_request == type) {
+                const auto& request = base->asRequest();
 
-                    if (enabled) {
-                        OTSocket::send_message(
-                            lock, internal.get(), OTZMQMessage{incoming});
+                for (const auto& state : request.State()) {
+                    try {
+                        const auto& [endpoint, enabled, internal] =
+                            map_.at(state.Chain());
+
+                        if (enabled) {
+                            OTSocket::send_message(
+                                lock, internal.get(), OTZMQMessage{incoming});
+                        }
+                    } catch (...) {
                     }
-                } catch (...) {
                 }
             }
         } catch (const std::exception& e) {
@@ -230,8 +233,16 @@ private:
 
         if ((0u == hSize) && (0u == bSize)) { return; }
 
-        auto* outgoing = (0u < hSize) ? sync_.get() : update_.get();
-        OTSocket::send_message(lock, outgoing, incoming);
+        if (0u < hSize) {
+            LogTrace(OT_METHOD)(__FUNCTION__)(": transmitting sync reply")
+                .Flush();
+            OTSocket::send_message(lock, sync_.get(), incoming);
+        } else {
+            LogTrace(OT_METHOD)(__FUNCTION__)(
+                ": broadcasting push notification")
+                .Flush();
+            OTSocket::send_message(lock, update_.get(), incoming);
+        }
     }
 };
 
@@ -297,7 +308,26 @@ auto SyncServer::Start(
     }};
 
     if (false == imp_.running_) {
-        if (0 != ::zmq_bind(imp_.sync_.get(), sync.c_str())) {
+        if (0 == ::zmq_setsockopt(
+                     imp_.sync_.get(),
+                     ZMQ_ROUTING_ID,
+                     publicSync.data(),
+                     publicSync.size())) {
+            LogDebug("Sync socket identity set to public endpoint: ")(
+                publicSync)
+                .Flush();
+        } else {
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": failed to set sync socket identity")
+                .Flush();
+
+            return false;
+        }
+
+        if (0 == ::zmq_bind(imp_.sync_.get(), sync.c_str())) {
+            LogNormal("Blockchain sync server listener bound to ")(sync)
+                .Flush();
+        } else {
             LogOutput(OT_METHOD)(__FUNCTION__)(
                 ": failed to bind sync endpoint to ")(sync)
                 .Flush();
@@ -305,7 +335,10 @@ auto SyncServer::Start(
             return false;
         }
 
-        if (0 != ::zmq_bind(imp_.update_.get(), update.c_str())) {
+        if (0 == ::zmq_bind(imp_.update_.get(), update.c_str())) {
+            LogNormal("Blockchain sync server publisher bound to ")(update)
+                .Flush();
+        } else {
             LogOutput(OT_METHOD)(__FUNCTION__)(
                 ": failed to bind update endpoint to ")(update)
                 .Flush();
@@ -313,9 +346,6 @@ auto SyncServer::Start(
             return false;
         }
 
-        LogNormal("Blockchain sync server listening on endpoints ")(sync)(
-            " and ")(update)
-            .Flush();
         output = true;
         imp_.running_ = output;
         imp_.thread_ = std::thread{&Imp::thread, imp_p_.get()};

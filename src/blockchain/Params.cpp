@@ -448,13 +448,13 @@ auto Data::Chains() noexcept -> const ChainData&
              "62616e6b73ffffffff0100f2052a01000000434104678afdb0fe5548271967f1a"
              "67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e5"
              "1ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000",
-             {669000,
-              "40835bba9575bad7113832b196a9a8a668e9d18cd4180600000000000000000"
+             {685000,
+              "216a726ecbb6e0b6abe0bd28ac85b4ee489fe0d9683a0400000000000000000"
               "0",
-              "aa6a6505653863017589dfdfbe5f79c90cc088b726a60900000000000000000"
+              "57806e92f54ce1d008054d6761fa726e3ccfe1795a3b0600000000000000000"
               "0",
-              "014ccfa63ff505fb37a4d6715da6aff2eee9ef85fa25c6007d7934119c4ec7f"
-              "7"},
+              "448582cd7e611211c55dd389e8902ed0c0dc0702745d3495bf146de1933cdb7"
+              "a"},
              filter::Type::ES,
              p2p::Protocol::bitcoin,
              3652501241,
@@ -511,13 +511,13 @@ auto Data::Chains() noexcept -> const ChainData&
              "62616e6b73ffffffff0100f2052a01000000434104678afdb0fe5548271967f1a"
              "67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e5"
              "1ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000",
-             {1933000,
-              "323c4a90050ba9365af541077d70d65436264705a346283d250000000000000"
+             {1977000,
+              "d7920436929a9670a05690b5167644685033254346c4ee531f0000000000000"
               "0",
-              "7a029b38c7439924e37ae9e90180110e9015c46fe00deb67860000000000000"
+              "d30d2c8b3f3503680df7a2e5f55435c231ccb711a735e0a3160000000000000"
               "0",
-              "28a92fbfb2d5442153598973bd37e96ab0ad3e5e2dabcc27e1662cb35890d24"
-              "c"},
+              "7402b0da7ea32a455532638aef4445833d8d912a013e92e64c33ce05fea9c04"
+              "8"},
              filter::Type::ES,
              p2p::Protocol::bitcoin,
              118034699,
@@ -571,13 +571,13 @@ auto Data::Chains() noexcept -> const ChainData&
              "62616e6b73ffffffff0100f2052a01000000434104678afdb0fe5548271967f1a"
              "67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e5"
              "1ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000",
-             {673000,
-              "ee03e249d21f96580738c0ddcf5c9566bffa33bfcc34e303000000000000000"
+             {690000,
+              "35c52b0de207e9474c4f0eceeccc591743d6d4a316319901000000000000000"
               "0",
-              "6a0d0811e0574df72f03551525cab328b74748d55a160003000000000000000"
+              "40d283b63ffa1e805d562daa47ff424e4c0668054d4f5800000000000000000"
               "0",
-              "1f713c7d671dadd55108f16aaae015f686e800dd6f232c74305fb97ba4212de"
-              "b"},
+              "11497271e790b60006c6ff6a3cbcadd7531a6a2ac73abbd43063becab681087"
+              "d"},
              filter::Type::ES,
              p2p::Protocol::bitcoin,
              3908297187,
@@ -632,13 +632,13 @@ auto Data::Chains() noexcept -> const ChainData&
              "62616e6b73ffffffff0100f2052a01000000434104678afdb0fe5548271967f1a"
              "67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e5"
              "1ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000",
-             {1433000,
-              "1306b6a4a7375b9758d255a22cae01a932d726dc3a89d5ad6cfab0560000000"
+             {1448000,
+              "c0e79ca991ea97678762962f23fae20b809c3335fc10637a016797c60000000"
               "0",
-              "b25e953224538d9a8241fb02d7b93efecd9809ba0e45222c98915b790000000"
+              "1865d252ab6fdac1d58e19bcbd55c6562f38ca31d47843652bd54f180000000"
               "0",
-              "1f713c7d671dadd55108f16aaae015f686e800dd6f232c74305fb97ba4212de"
-              "b"},
+              "11497271e790b60006c6ff6a3cbcadd7531a6a2ac73abbd43063becab681087"
+              "d"},
              filter::Type::ES,
              p2p::Protocol::bitcoin,
              4109624820,
@@ -752,13 +752,13 @@ auto Data::Chains() noexcept -> const ChainData&
              "ffffffff0100f2052a010000004341040184710fa689ad5023690c80f3a49c8f1"
              "3f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b"
              "51850b4acf21b179c45070ac7b03a9ac00000000",
-             {1995000,
-              "771ed07e93f19f0f6d6fd5787d24515579f419708b714576de9d7870358d04e"
-              "7",
-              "bca70132f4c9c0283287b2396af276bebe350cbb9f70f2da91f70c38b967111"
-              "a",
-              "10cd5534e31f83c8d0ecf808d542d8dfebdb8ab7b86c17c7c60bacbdad835f7"
-              "f"},
+             {2062000,
+              "50007943859fef83aa22553406e804f832ff2c49f194df88ac300eb06aa829f"
+              "c",
+              "486f8d8091d9b7a1840e595404d03b7b56d5100e6710b38339f8dd272ca8a0e"
+              "d",
+              "828882828006369b121edf94644aea4e8f4fb4bf75c6b49c59394f4a11569f9"
+              "6"},
              filter::Type::ES,
              p2p::Protocol::bitcoin,
              3686187259,
@@ -811,13 +811,13 @@ auto Data::Chains() noexcept -> const ChainData&
              "ffffffff0100f2052a010000004341040184710fa689ad5023690c80f3a49c8f1"
              "3f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b"
              "51850b4acf21b179c45070ac7b03a9ac00000000",
-             {1800000,
-              "b722daa3a85d3dee31b70152138dbe693c2a2b2b71fa932c676b6d928b2db13"
-              "9",
-              "719b83bb7b98a9e25bca2d0af94778e9b93683779e2c7b9ca2d6e49e493c6bc"
-              "9",
-              "7390ab2c14b779b2671cad4d6f88d948aef9f459a093bd84057346178a86e3d"
-              "b"},
+             {1912000,
+              "d55e8ef6f9799e242cbcea24ec2f820b3e75c4aeed647a556d9261cb51087e4"
+              "2",
+              "745f5c9312b5ef9356d0c9334630ae4daedb27de8305c77b809d825384dd6c9"
+              "c",
+              "0c61280e3a238aa80dc5568627fba14723011c3aa1588c24fc0f104f1cc7afd"
+              "3"},
              filter::Type::ES,
              p2p::Protocol::bitcoin,
              4056470269,
@@ -1040,13 +1040,13 @@ auto Data::Chains() noexcept -> const ChainData&
              "5c0d4012d3ae2672319e7f9eb15a57516aeefabbbc062265f67e308f2b0000000"
              "000000000326a3009f91102ffff0f20f935b3001ef51ba8f24921a404bc376a0c"
              "713274bd1cc68c2c57f66f5c0be7ca001000000000000000000000",
-             {778000,
-              "8289e45f7a7e7f2f4b52711fe477f41034723c0fda5ebdb6754c0e5e36ff2ea"
-              "c",
-              "a6a753115c2d94671543549750b590bb3ff094cbd4d5c4fa1493f22685f1b9d"
-              "e",
-              "09fac5d72bd9280fda54bef1f7e3922893c85f12354e84b0cb9c717e4fba5ea"
-              "4"},
+             {949000,
+              "ac2100eb8324a5b348cc75a24057fad2671367efb6d22a3804c01102aa83065"
+              "b",
+              "bf8ce4a7eed5793485dbcb12f787572e62e688f48a290b20f71cc04e3f93276"
+              "2",
+              "8d901e19e0228436450aa65234e38f083adfd6833bda4589cbf2cd2003053b9"
+              "8"},
              filter::Type::ES,
              p2p::Protocol::bitcoin,
              137298172,

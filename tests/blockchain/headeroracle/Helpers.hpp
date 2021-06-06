@@ -6,6 +6,7 @@
 #pragma once
 
 #include <gtest/gtest.h>
+#include <cstddef>
 #include <iosfwd>
 #include <map>
 #include <memory>
@@ -24,11 +25,11 @@
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/Network.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
-#include "opentxs/blockchain/client/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
 
 namespace opentxs
 {
@@ -42,16 +43,17 @@ class Manager;
 
 namespace blockchain
 {
-namespace client
+namespace node
 {
 class HeaderOracle;
-}  // namespace client
+class Manager;
+}  // namespace node
 }  // namespace blockchain
 }  // namespace opentxs
 
 namespace b = ot::blockchain;
 namespace bb = b::block;
-namespace bc = b::client;
+namespace bc = b::node;
 
 #define BLOCK_1 "block 01_XXXXXXXXXXXXXXXXXXXXXXX"
 #define BLOCK_2 "block 02_XXXXXXXXXXXXXXXXXXXXXXX"
@@ -137,13 +139,13 @@ public:
 
     const ot::api::client::Manager& api_;
     const b::Type type_;
-    std::unique_ptr<b::Network> network_;
+    std::unique_ptr<bc::Manager> network_;
     bc::HeaderOracle& header_oracle_;
     std::map<std::string, std::unique_ptr<bb::Header>> test_blocks_;
 
     static auto init_network(
         const ot::api::client::Manager& api,
-        const b::Type type) noexcept -> std::unique_ptr<b::Network>;
+        const b::Type type) noexcept -> std::unique_ptr<bc::Manager>;
 
     auto apply_blocks(const std::vector<Test>& vector) -> bool;
     auto apply_blocks_batch(const std::vector<Test>& vector) -> bool;

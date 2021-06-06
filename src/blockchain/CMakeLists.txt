@@ -6,8 +6,8 @@
 if(OT_BLOCKCHAIN_EXPORT)
   add_subdirectory(bitcoin)
   add_subdirectory(block)
-  add_subdirectory(client)
   add_subdirectory(database)
+  add_subdirectory(node)
   add_subdirectory(p2p)
 endif()
 
@@ -16,6 +16,8 @@ add_library(
   "${opentxs_SOURCE_DIR}/src/internal/blockchain/Params.hpp"
   "DownloadManager.hpp"
   "DownloadTask.hpp"
+  "NumericHash.cpp"
+  "NumericHash.hpp"
   "Params.cpp"
 )
 set(cxx-install-headers
@@ -39,8 +41,6 @@ if(OT_BLOCKCHAIN_EXPORT)
       "BloomFilter.cpp"
       "GCS.cpp"
       "GCS.hpp"
-      "NumericHash.cpp"
-      "NumericHash.hpp"
       "Work.cpp"
       "Work.hpp"
   )
@@ -48,7 +48,6 @@ if(OT_BLOCKCHAIN_EXPORT)
     APPEND
     cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/BloomFilter.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/Network.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/NumericHash.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/Work.hpp"
   )

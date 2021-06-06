@@ -7,6 +7,7 @@
 
 #include "internal/crypto/library/Ripemd160.hpp"
 
+#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <mutex>

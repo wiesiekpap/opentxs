@@ -8,6 +8,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <memory>

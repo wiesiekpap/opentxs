@@ -10,6 +10,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <cstddef>
 #include <future>
 #include <iosfwd>
 #include <map>
@@ -21,7 +22,7 @@
 #include "blockchain/p2p/Peer.hpp"
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
-#include "internal/blockchain/client/Client.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/Types.hpp"
@@ -68,12 +69,12 @@ public:
 
     Peer(
         const api::Core& api,
-        const client::internal::Config& config,
-        const client::internal::Network& network,
-        const client::internal::HeaderOracle& header,
-        const client::internal::FilterOracle& filter,
-        const client::internal::BlockOracle& block,
-        const client::internal::PeerManager& manager,
+        const node::internal::Config& config,
+        const node::internal::Network& network,
+        const node::internal::HeaderOracle& header,
+        const node::internal::FilterOracle& filter,
+        const node::internal::BlockOracle& block,
+        const node::internal::PeerManager& manager,
         const api::client::blockchain::BlockStorage policy,
         const std::string& shutdown,
         const int id,
@@ -126,7 +127,7 @@ private:
     static const ProtocolVersion default_protocol_version_{70015};
     static const std::string user_agent_;
 
-    const client::internal::HeaderOracle& headers_;
+    const node::internal::HeaderOracle& headers_;
     std::atomic<ProtocolVersion> protocol_;
     const Nonce nonce_;
     const std::set<p2p::Service> local_services_;

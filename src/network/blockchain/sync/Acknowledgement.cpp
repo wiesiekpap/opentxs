@@ -8,6 +8,7 @@
 #include "opentxs/network/blockchain/sync/Acknowledgement.hpp"  // IWYU pragma: associated
 
 #include <memory>
+#include <stdexcept>
 #include <utility>
 
 #include "network/blockchain/sync/Base.hpp"
@@ -64,6 +65,17 @@ auto Acknowledgement::Endpoint() const noexcept -> const std::string&
 auto Acknowledgement::State() const noexcept -> const StateData&
 {
     return imp_->state_;
+}
+
+auto Acknowledgement::State(opentxs::blockchain::Type chain) const
+    noexcept(false) -> const sync::State&
+{
+    for (const auto& state : imp_->state_) {
+        if (state.Chain() == chain) { return state; }
+    }
+
+    throw std::out_of_range{
+        "specified chain does not exist in acknowledgement"};
 }
 
 Acknowledgement::~Acknowledgement() = default;

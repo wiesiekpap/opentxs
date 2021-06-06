@@ -196,9 +196,6 @@ struct Blockchain : virtual public api::client::Blockchain {
     virtual bool ProcessMergedContact(
         const Contact& parent,
         const Contact& child) const noexcept = 0;
-    virtual auto ProcessSyncData(
-        const opentxs::network::blockchain::sync::Data& data,
-        OTZMQMessage&& in) const noexcept -> void = 0;
     virtual auto PubkeyHash(
         const opentxs::blockchain::Type chain,
         const Data& pubkey) const noexcept(false) -> OTData = 0;
@@ -217,6 +214,7 @@ struct Blockchain : virtual public api::client::Blockchain {
         const opentxs::blockchain::block::Position& progress) const noexcept
         -> void = 0;
     virtual auto RestoreNetworks() const noexcept -> void = 0;
+    virtual auto SyncEndpoint() const noexcept -> const std::string& = 0;
     virtual auto UpdateBalance(
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::Balance balance) const noexcept -> void = 0;
