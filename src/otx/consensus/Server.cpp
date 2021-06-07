@@ -37,6 +37,7 @@
 #include "opentxs/api/client/PaymentWorkflowState.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
 #include "opentxs/api/client/Workflow.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #if OT_CASH
 #include "opentxs/blind/Mint.hpp"
@@ -198,12 +199,12 @@ Server::Server(
     , inbox_()
     , outbox_()
     , numbers_(nullptr)
-    , find_nym_(
-          api.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Connect))
-    , find_server_(
-          api.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Connect))
-    , find_unit_definition_(
-          api.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Connect))
+    , find_nym_(api.Network().ZeroMQ().PushSocket(
+          zmq::socket::Socket::Direction::Connect))
+    , find_server_(api.Network().ZeroMQ().PushSocket(
+          zmq::socket::Socket::Direction::Connect))
+    , find_unit_definition_(api.Network().ZeroMQ().PushSocket(
+          zmq::socket::Socket::Direction::Connect))
 
 {
     {
@@ -259,12 +260,12 @@ Server::Server(
     , inbox_()
     , outbox_()
     , numbers_(nullptr)
-    , find_nym_(
-          api.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Connect))
-    , find_server_(
-          api.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Connect))
-    , find_unit_definition_(
-          api.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Connect))
+    , find_nym_(api.Network().ZeroMQ().PushSocket(
+          zmq::socket::Socket::Direction::Connect))
+    , find_server_(api.Network().ZeroMQ().PushSocket(
+          zmq::socket::Socket::Direction::Connect))
+    , find_unit_definition_(api.Network().ZeroMQ().PushSocket(
+          zmq::socket::Socket::Direction::Connect))
 {
     for (const auto& it : serialized.servercontext().tentativerequestnumber()) {
         tentative_transaction_numbers_.insert(it);
@@ -735,17 +736,20 @@ auto Server::add_item_to_workflow(
     // The sender nym and notary of the cheque may not match the sender nym and
     // notary of the message which conveyed the cheque.
     {
-        auto work = api_.ZeroMQ().TaggedMessage(WorkType::OTXSearchNym);
+        auto work =
+            api_.Network().ZeroMQ().TaggedMessage(WorkType::OTXSearchNym);
         work->AddFrame(cheque.GetSenderNymID());
         find_nym_->Send(work);
     }
     {
-        auto work = api_.ZeroMQ().TaggedMessage(WorkType::OTXSearchServer);
+        auto work =
+            api_.Network().ZeroMQ().TaggedMessage(WorkType::OTXSearchServer);
         work->AddFrame(cheque.GetNotaryID());
         find_server_->Send(work);
     }
     {
-        auto work = api_.ZeroMQ().TaggedMessage(WorkType::OTXSearchUnit);
+        auto work =
+            api_.Network().ZeroMQ().TaggedMessage(WorkType::OTXSearchUnit);
         work->AddFrame(cheque.GetInstrumentDefinitionID());
         find_unit_definition_->Send(work);
     }

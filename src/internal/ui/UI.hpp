@@ -78,10 +78,17 @@ namespace client
 {
 namespace internal
 {
-struct Blockchain;
 struct Manager;
 }  // namespace internal
 }  // namespace client
+
+namespace network
+{
+namespace internal
+{
+struct Blockchain;
+}  // namespace internal
+}  // namespace network
 }  // namespace api
 
 namespace contract
@@ -1302,7 +1309,7 @@ auto BlockchainActivityThreadItem(
     -> std::shared_ptr<ui::implementation::ActivityThreadRowInternal>;
 auto BlockchainSelectionModel(
     const api::client::internal::Manager& api,
-    const api::client::internal::Blockchain& blockchain,
+    const api::network::internal::Blockchain& blockchain,
     const ui::Blockchains type,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::implementation::BlockchainSelection>;
@@ -1318,7 +1325,6 @@ auto BlockchainSelectionQtModel(
     -> std::unique_ptr<ui::BlockchainSelectionQt>;
 auto BlockchainStatisticsModel(
     const api::client::internal::Manager& api,
-    const api::client::internal::Blockchain& blockchain,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::implementation::BlockchainStatistics>;
 auto BlockchainStatisticsItem(

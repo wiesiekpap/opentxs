@@ -22,6 +22,7 @@
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -73,28 +74,28 @@ MessageProcessor::MessageProcessor(
           [=](const zmq::Message& incoming) -> void {
               this->process_frontend(incoming);
           }))
-    , frontend_socket_(server.API().ZeroMQ().RouterSocket(
+    , frontend_socket_(server_.API().Network().ZeroMQ().RouterSocket(
           frontend_callback_,
           zmq::socket::Socket::Direction::Bind))
     , backend_callback_(zmq::ReplyCallback::Factory(
           [=](const zmq::Message& incoming) -> OTZMQMessage {
               return this->process_backend(incoming);
           }))
-    , backend_socket_(server.API().ZeroMQ().ReplySocket(
+    , backend_socket_(server_.API().Network().ZeroMQ().ReplySocket(
           backend_callback_,
           zmq::socket::Socket::Direction::Bind))
     , internal_callback_(zmq::ListenCallback::Factory(
           [=](const zmq::Message& incoming) -> void {
               this->process_internal(incoming);
           }))
-    , internal_socket_(server.API().ZeroMQ().DealerSocket(
+    , internal_socket_(server_.API().Network().ZeroMQ().DealerSocket(
           internal_callback_,
           zmq::socket::Socket::Direction::Connect))
     , notification_callback_(zmq::ListenCallback::Factory(
           [=](const zmq::Message& incoming) -> void {
               this->process_notification(incoming);
           }))
-    , notification_socket_(server.API().ZeroMQ().PullSocket(
+    , notification_socket_(server_.API().Network().ZeroMQ().PullSocket(
           notification_callback_,
           zmq::socket::Socket::Direction::Bind))
     , thread_()
@@ -240,7 +241,7 @@ auto MessageProcessor::process_backend(const zmq::Message& incoming)
 
     if (error) { reply = ""; }
 
-    auto output = server_.API().ZeroMQ().ReplyMessage(incoming);
+    auto output = server_.API().Network().ZeroMQ().ReplyMessage(incoming);
     output->AddFrame(reply);
 
     return output;

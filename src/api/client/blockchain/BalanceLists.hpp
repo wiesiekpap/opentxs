@@ -14,18 +14,18 @@
 #include <vector>
 
 #include "api/client/Blockchain.hpp"
-#include "api/client/blockchain/BalanceTreeIndex.hpp"
+#include "blockchain/crypto/AccountIndex.hpp"
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/blockchain/BalanceNode.hpp"
-#include "opentxs/api/client/blockchain/Subchain.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/crypto/Subaccount.hpp"
+#include "opentxs/blockchain/crypto/Subchain.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -40,14 +40,6 @@ namespace api
 {
 namespace client
 {
-namespace blockchain
-{
-namespace internal
-{
-struct BalanceList;
-}  // namespace internal
-}  // namespace blockchain
-
 namespace internal
 {
 struct Blockchain;
@@ -59,6 +51,17 @@ namespace internal
 struct Core;
 }  // namespace internal
 }  // namespace api
+
+namespace blockchain
+{
+namespace crypto
+{
+namespace internal
+{
+struct Wallet;
+}  // namespace internal
+}  // namespace crypto
+}  // namespace blockchain
 
 namespace identifier
 {
@@ -78,7 +81,7 @@ struct BalanceLists {
         -> std::set<OTIdentifier>;
     auto AccountList() const noexcept -> std::set<OTIdentifier>;
     auto Get(const Chain chain) noexcept
-        -> client::blockchain::internal::BalanceList&;
+        -> opentxs::blockchain::crypto::internal::Wallet&;
     auto LookupAccount(const Identifier& id) const noexcept -> AccountData;
 
     BalanceLists(
@@ -91,12 +94,13 @@ private:
     internal::BalanceTreeIndex index_;
     mutable std::mutex lock_;
     mutable bool populated_;
-    mutable std::
-        map<Chain, std::unique_ptr<client::blockchain::internal::BalanceList>>
-            lists_;
+    mutable std::map<
+        Chain,
+        std::unique_ptr<opentxs::blockchain::crypto::internal::Wallet>>
+        lists_;
 
     auto get(const Lock& lock, const Chain chain) const noexcept
-        -> client::blockchain::internal::BalanceList&;
+        -> opentxs::blockchain::crypto::internal::Wallet&;
     auto populate() const noexcept -> void;
     auto populate(const Lock& lock) const noexcept -> void;
 };

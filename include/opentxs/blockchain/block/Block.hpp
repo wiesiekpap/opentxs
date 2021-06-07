@@ -14,10 +14,10 @@
 #include <vector>
 
 #include "opentxs/Bytes.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 
@@ -42,7 +42,7 @@ class Block
 {
 public:
     using FilterType = filter::Type;
-    using Subchain = api::client::blockchain::Subchain;
+    using Subchain = blockchain::crypto::Subchain;
     using SubchainID = std::pair<Subchain, OTIdentifier>;
     using ElementID = std::pair<Bip32Index, SubchainID>;
     using Pattern = std::pair<ElementID, Space>;
@@ -52,7 +52,7 @@ public:
     using InputMatches = std::vector<InputMatch>;
     using OutputMatches = std::vector<Match>;
     using Matches = std::pair<InputMatches, OutputMatches>;
-    using KeyID = api::client::blockchain::Key;
+    using KeyID = blockchain::crypto::Key;
     using ContactID = OTIdentifier;
     using KeyData = std::map<KeyID, std::pair<ContactID, ContactID>>;
 

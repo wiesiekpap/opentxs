@@ -32,6 +32,7 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Legacy.hpp"
 #include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/network/Network.hpp"
 #if OT_CASH
 #include "opentxs/blind/Mint.hpp"
 #include "opentxs/blind/Purse.hpp"
@@ -97,8 +98,8 @@ Notary::Notary(
     : server_(server)
     , reason_(reason)
     , manager_(manager)
-    , notification_socket_(
-          manager_.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Connect))
+    , notification_socket_(manager_.Network().ZeroMQ().PushSocket(
+          zmq::socket::Socket::Direction::Connect))
 {
     const auto bound = notification_socket_->Start(
         manager_.Endpoints().InternalPushNotification());

@@ -5,9 +5,6 @@
 
 #pragma once
 
-// IWYU pragma: private
-// IWYU pragma: friend ".*src/storage/drivers/StorageMemDB.cpp"
-
 #include <future>
 #include <map>
 #include <string>

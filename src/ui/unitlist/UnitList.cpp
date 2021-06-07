@@ -21,6 +21,7 @@
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -96,7 +97,7 @@ UnitList::UnitList(
 #if OT_BLOCKCHAIN
     , blockchain_balance_cb_(zmq::ListenCallback::Factory(
           [this](const auto& in) { process_blockchain_balance(in); }))
-    , blockchain_balance_(api_.ZeroMQ().DealerSocket(
+    , blockchain_balance_(api_.Network().ZeroMQ().DealerSocket(
           blockchain_balance_cb_,
           zmq::socket::Socket::Direction::Connect))
 #endif  // OT_BLOCKCHAIN
@@ -191,7 +192,8 @@ auto UnitList::startup() noexcept -> void
 #if OT_BLOCKCHAIN
     for (const auto& chain : blockchain::SupportedChains()) {
         if (0 < api_.Blockchain().SubaccountList(primary_id_, chain).size()) {
-            auto out = api_.ZeroMQ().TaggedMessage(WorkType::BlockchainBalance);
+            auto out = api_.Network().ZeroMQ().TaggedMessage(
+                WorkType::BlockchainBalance);
             out->AddFrame(chain);
             blockchain_balance_->Send(out);
         }

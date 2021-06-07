@@ -21,6 +21,8 @@
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
@@ -95,7 +97,7 @@ auto RPC::send_payment_blockchain(
         return reply(ResponseCode::account_not_found);
     }
 
-    blockchain.Start(chain);
+    api.Network().Blockchain().Start(chain);
 
     try {
         auto future = [&] {
@@ -103,7 +105,7 @@ auto RPC::send_payment_blockchain(
             const auto amount = in.Amount();
             const auto& address = in.DestinationAccount();
             const auto& memo = in.Memo();
-            const auto& network = blockchain.GetChain(chain);
+            const auto& network = api.Network().Blockchain().GetChain(chain);
             const auto recipient = api.Factory().PaymentCode(address);
 
             if (0 < recipient->Version()) {

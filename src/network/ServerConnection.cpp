@@ -20,6 +20,7 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
@@ -459,7 +460,8 @@ auto ServerConnection::Send(
 
     Lock socketLock(lock_);
     Cleanup cleanup(socketLock, *this, status, reply);
-    auto request = api_.ZeroMQ().Message(std::string(envelope->Get()));
+    auto request =
+        api_.Network().ZeroMQ().Message(std::string(envelope->Get()));
     auto sendresult = get_sync(socketLock).Send(request);
 
     if (status_->On()) { publish(); }

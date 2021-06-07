@@ -5,6 +5,7 @@
 
 add_library(opentxs-blockchain-database OBJECT "")
 
+add_subdirectory(common)
 add_subdirectory(wallet)
 
 target_sources(

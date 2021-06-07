@@ -13,7 +13,6 @@
 #include <limits>
 #include <utility>
 
-#include "2_Factory.hpp"
 #include "api/Scheduler.hpp"
 #include "api/StorageParent.hpp"
 #include "api/ZMQ.hpp"
@@ -25,7 +24,6 @@
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
-#include "opentxs/api/network/Dht.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -96,12 +94,12 @@ Core::Core(
     const opentxs::network::zeromq::Context& zmq,
     const std::string& dataFolder,
     const int instance,
-    const bool dhtDefault,
+    NetworkMaker network,
     std::unique_ptr<api::internal::Factory> factory)
     : ZMQ(zmq, instance)
     , Scheduler(parent, running)
     , StorageParent(running, args, crypto, config, parent.Legacy(), dataFolder)
-    , asio_(parent.Asio())
+    , network_(network(zmq_context_, endpoints_, *this))
     , factory_p_(std::move(factory))
     , factory_(*factory_p_)
     , asymmetric_(factory_.Asymmetric())
@@ -114,15 +112,6 @@ Core::Core(
           crypto_.BIP32(),
           crypto_.BIP39()))
     , wallet_(nullptr)
-    , dht_(opentxs::Factory::Dht(
-          dhtDefault,
-          *this,
-          nym_publish_interval_,
-          nym_refresh_interval_,
-          server_publish_interval_,
-          server_refresh_interval_,
-          unit_publish_interval_,
-          unit_refresh_interval_))
     , encrypted_secret_()
     , master_key_lock_()
     , master_secret_()
@@ -139,7 +128,6 @@ Core::Core(
     , timeout_thread_running_(false)
 {
     OT_ASSERT(seeds_);
-    OT_ASSERT(dht_);
 
     if (master_secret_) {
         opentxs::Lock lock(master_key_lock_);
@@ -161,19 +149,12 @@ void Core::bump_password_timer(const opentxs::Lock& lock) const
 
 void Core::cleanup()
 {
-    dht_.reset();
+    network_.Shutdown();
     wallet_.reset();
     seeds_.reset();
     factory_p_.reset();
 
     if (password_timeout_.joinable()) { password_timeout_.join(); }
-}
-
-auto Core::DHT() const -> const api::network::Dht&
-{
-    OT_ASSERT(dht_)
-
-    return *dht_;
 }
 
 auto Core::get_api(const PasswordPrompt& reason) noexcept
@@ -305,20 +286,21 @@ auto Core::MasterKey(const opentxs::Lock& lock) const
     return master_key_;
 }
 
-auto Core::Seeds() const -> const api::HDSeed&
+auto Core::Seeds() const noexcept -> const api::HDSeed&
 {
     OT_ASSERT(seeds_);
 
     return *seeds_;
 }
 
-void Core::SetMasterKeyTimeout(const std::chrono::seconds& timeout) const
+void Core::SetMasterKeyTimeout(
+    const std::chrono::seconds& timeout) const noexcept
 {
     opentxs::Lock lock(master_key_lock_);
     password_duration_ = timeout;
 }
 
-auto Core::Storage() const -> const api::storage::Storage&
+auto Core::Storage() const noexcept -> const api::storage::Storage&
 {
     OT_ASSERT(storage_)
 
@@ -367,7 +349,7 @@ void Core::password_timeout() const
     }
 }
 
-auto Core::Wallet() const -> const api::Wallet&
+auto Core::Wallet() const noexcept -> const api::Wallet&
 {
     OT_ASSERT(wallet_);
 

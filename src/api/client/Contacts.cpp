@@ -20,6 +20,7 @@
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/contact/ContactData.hpp"
@@ -67,7 +68,7 @@ Contacts::Contacts(const api::client::internal::Manager& api)
 
         return output;
     }())
-    , publisher_(api.ZeroMQ().PublishSocket())
+    , publisher_(api.Network().ZeroMQ().PublishSocket())
 {
     // WARNING: do not access api_.Wallet() during construction
     publisher_->Start(api_.Endpoints().ContactUpdate());
@@ -653,7 +654,8 @@ void Contacts::refresh_indices(const rLock& lock, opentxs::Contact& contact)
     contact_name_map_[id] = contact.Label();
 
     {
-        auto work = api_.ZeroMQ().TaggedMessage(WorkType::ContactUpdated);
+        auto work =
+            api_.Network().ZeroMQ().TaggedMessage(WorkType::ContactUpdated);
         work->AddFrame(id);
         publisher_->Send(work);
     }

@@ -19,13 +19,13 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Manager.hpp"
-#include "opentxs/api/client/blockchain/AddressStyle.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/core/Data.hpp"
 
 namespace ot = opentxs;
 
-using Style = ot::api::client::blockchain::AddressStyle;
+using Style = ot::blockchain::crypto::AddressStyle;
 using Chain = ot::blockchain::Type;
 using TestData = std::map<std::string, std::pair<Style, std::set<Chain>>>;
 using SegwitGood = std::map<std::string, std::pair<Chain, std::string>>;

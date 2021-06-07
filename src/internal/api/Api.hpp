@@ -33,6 +33,11 @@ class Primitives;
 class Settings;
 }  // namespace api
 
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
+
 class OTCaller;
 }  // namespace opentxs
 
@@ -70,6 +75,7 @@ struct Core : virtual public api::Core {
     virtual auto Lock() const -> std::mutex& = 0;
     virtual auto MasterKey(const opentxs::Lock& lock) const
         -> const opentxs::crypto::key::Symmetric& = 0;
+    virtual auto NewNym(const identifier::Nym& id) const noexcept -> void = 0;
 
     ~Core() override = default;
 };

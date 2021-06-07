@@ -64,7 +64,7 @@ public:
         const api::Core& api,
         const internal::FilterDatabase& db,
         const internal::HeaderOracle& header,
-        const internal::Network& network,
+        const internal::Network& node,
         const blockchain::Type chain,
         const filter::Type type,
         const std::string& shutdown,
@@ -85,7 +85,7 @@ public:
         , FilterWorker(api, std::chrono::milliseconds{20})
         , db_(db)
         , header_(header)
-        , network_(network)
+        , node_(node)
         , chain_(chain)
         , type_(type)
         , notify_(notify)
@@ -101,14 +101,14 @@ private:
 
     const internal::FilterDatabase& db_;
     const internal::HeaderOracle& header_;
-    const internal::Network& network_;
+    const internal::Network& node_;
     const blockchain::Type chain_;
     const filter::Type type_;
     const NotifyCallback& notify_;
 
     auto batch_ready() const noexcept -> void
     {
-        network_.JobReady(internal::PeerManager::Task::JobAvailableCfilters);
+        node_.JobReady(internal::PeerManager::Task::JobAvailableCfilters);
     }
     auto batch_size(std::size_t in) const noexcept -> std::size_t
     {

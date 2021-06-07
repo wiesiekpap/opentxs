@@ -40,6 +40,7 @@
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
+#include "opentxs/api/network/Network.hpp"
 #if OT_CASH
 #include "opentxs/blind/Mint.hpp"
 #include "opentxs/blind/Purse.hpp"
@@ -1970,7 +1971,8 @@ auto Factory::Pipeline(
     std::function<void(opentxs::network::zeromq::Message&)> callback) const
     -> OTZMQPipeline
 {
-    return OTZMQPipeline{factory::Pipeline(api_, api_.ZeroMQ(), callback)};
+    return OTZMQPipeline{
+        factory::Pipeline(api_, api_.Network().ZeroMQ(), callback)};
 }
 
 #if OT_CASH

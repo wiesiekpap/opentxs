@@ -20,24 +20,23 @@
 #include <vector>
 
 #include "Proto.hpp"
-#include "api/client/blockchain/database/Database.hpp"
 #include "blockchain/database/wallet/Output.hpp"
 #include "blockchain/database/wallet/Proposal.hpp"
 #include "blockchain/database/wallet/Subchain.hpp"
 #include "blockchain/database/wallet/Transaction.hpp"
-#include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Blockchain.hpp"
+#include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -71,6 +70,14 @@ class Output;
 class Transaction;
 }  // namespace bitcoin
 }  // namespace block
+
+namespace database
+{
+namespace common
+{
+class Database;
+}  // namespace common
+}  // namespace database
 }  // namespace blockchain
 
 namespace identifier
@@ -93,7 +100,6 @@ namespace opentxs::blockchain::database
 class Wallet
 {
 public:
-    using Common = api::client::blockchain::database::implementation::Database;
     using Parent = node::internal::WalletDatabase;
     using FilterType = Parent::FilterType;
     using NodeID = Parent::NodeID;
@@ -154,10 +160,7 @@ public:
     auto LoadProposals() const noexcept
         -> std::vector<proto::BlockchainTransactionProposal>;
     auto LookupContact(const Data& pubkeyHash) const noexcept
-        -> std::set<OTIdentifier>
-    {
-        return common_.LookupContact(pubkeyHash);
-    }
+        -> std::set<OTIdentifier>;
     auto ReorgTo(
         const NodeID& balanceNode,
         const Subchain subchain,
@@ -188,11 +191,11 @@ public:
     Wallet(
         const api::Core& api,
         const api::client::internal::Blockchain& blockchain,
-        const Common& common,
+        const common::Database& common,
         const blockchain::Type chain) noexcept;
 
 private:
-    const Common& common_;
+    const common::Database& common_;
     mutable wallet::SubchainData subchains_;
     mutable wallet::Proposal proposals_;
     mutable wallet::Transaction transactions_;

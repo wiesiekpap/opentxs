@@ -18,6 +18,17 @@
 
 namespace opentxs
 {
+namespace blockchain
+{
+namespace block
+{
+namespace bitcoin
+{
+class Script;
+}  // namespace bitcoin
+}  // namespace block
+}  // namespace blockchain
+
 namespace proto
 {
 class BlockchainTransactionOutput;

@@ -19,9 +19,8 @@
 #include <vector>
 
 #include "Proto.hpp"
-#include "api/client/blockchain/database/Database.hpp"
-#include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Blockchain.hpp"
+#include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
@@ -58,6 +57,14 @@ class Block;
 
 class Block;
 }  // namespace block
+
+namespace database
+{
+namespace common
+{
+class Database;
+}  // namespace common
+}  // namespace database
 }  // namespace blockchain
 
 namespace storage
@@ -82,13 +89,13 @@ public:
 
     Blocks(
         const api::Core& api,
-        const Common& common,
+        const common::Database& common,
         const opentxs::storage::lmdb::LMDB& lmdb,
         const blockchain::Type type) noexcept;
 
 private:
     const api::Core& api_;
-    const Common& common_;
+    const common::Database& common_;
     const opentxs::storage::lmdb::LMDB& lmdb_;
     const block::Position blank_position_;
     const blockchain::Type chain_;

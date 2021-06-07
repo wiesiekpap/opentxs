@@ -23,6 +23,8 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -51,13 +53,12 @@ namespace opentxs::factory
 {
 auto BlockchainStatisticsModel(
     const api::client::internal::Manager& api,
-    const api::client::internal::Blockchain& blockchain,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::implementation::BlockchainStatistics>
 {
     using ReturnType = ui::implementation::BlockchainStatistics;
 
-    return std::make_unique<ReturnType>(api, blockchain, cb);
+    return std::make_unique<ReturnType>(api, cb);
 }
 
 #if OT_QT
@@ -121,7 +122,6 @@ namespace opentxs::ui::implementation
 {
 BlockchainStatistics::BlockchainStatistics(
     const api::client::internal::Manager& api,
-    const api::client::internal::Blockchain& blockchain,
     const SimpleCallback& cb) noexcept
     : BlockchainStatisticsList(
           api,
@@ -144,7 +144,7 @@ BlockchainStatistics::BlockchainStatistics(
 #endif
           )
     , Worker(api, {})
-    , blockchain_(blockchain)
+    , blockchain_(api.Network().Blockchain())
 {
     init_executor({
         api.Endpoints().BlockchainBlockDownloadQueue(),

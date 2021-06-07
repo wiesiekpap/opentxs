@@ -17,7 +17,6 @@
 #include <vector>
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
-#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
@@ -38,6 +37,7 @@
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/crypto/HashType.hpp"
 
 namespace
 {

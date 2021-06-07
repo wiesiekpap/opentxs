@@ -3,9 +3,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: private
-// IWYU pragma: friend ".*src/blockchain/p2p/bitcoin/message/Feefilter.cpp"
-
 #pragma once
 
 #include "1_Internal.hpp"  // IWYU pragma: associated

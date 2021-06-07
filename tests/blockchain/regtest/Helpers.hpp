@@ -3,10 +3,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: no_include "opentxs/api/client/blockchain/Subchain.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/crypto/Subchain.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/FilterType.hpp"
 // IWYU pragma: no_include "opentxs/network/zeromq/ListenCallback.hpp"
-// IWYU pragma: no_include "opentxs/api/client/blockchain/BalanceNode.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/crypto/Subaccount.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/block/Outpoint.hpp"
 // IWYU pragma: no_include "opentxs/network/blockchain/sync/State.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/FilterType.hpp"
@@ -42,11 +42,11 @@
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/core/Data.hpp"
@@ -57,11 +57,6 @@ namespace api
 {
 namespace client
 {
-namespace blockchain
-{
-class BalanceNode;
-}  // namespace blockchain
-
 class Manager;
 }  // namespace client
 
@@ -75,6 +70,11 @@ namespace block
 {
 struct Outpoint;
 }  // namespace block
+
+namespace crypto
+{
+class Subaccount;
+}  // namespace crypto
 
 namespace p2p
 {
@@ -256,15 +256,15 @@ private:
 
 struct ScanListener {
     using Callback = ot::network::zeromq::ListenCallback;
-    using Account = ot::api::client::blockchain::BalanceNode;
-    using Subchain = ot::api::client::blockchain::Subchain;
+    using Subaccount = ot::blockchain::crypto::Subaccount;
+    using Subchain = ot::blockchain::crypto::Subchain;
     using Height = ot::blockchain::block::Height;
     using Future = std::future<void>;
 
     auto wait(const Future& future) const noexcept -> bool;
 
     auto get_future(
-        const Account& account,
+        const Subaccount& account,
         Subchain subchain,
         Height target) noexcept -> Future;
 

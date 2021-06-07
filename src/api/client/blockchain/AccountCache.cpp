@@ -19,6 +19,7 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 
@@ -37,7 +38,7 @@ AccountCache::AccountCache(const api::Core& api) noexcept
 
 auto AccountCache::build_account_map(
     const Lock&,
-    const Chain chain,
+    const opentxs::blockchain::Type chain,
     std::optional<NymAccountMap>& map) const noexcept -> void
 {
     const auto nyms = api_.Wallet().LocalNyms();
@@ -47,28 +48,13 @@ auto AccountCache::build_account_map(
 
     auto& output = map.value();
     std::for_each(std::begin(nyms), std::end(nyms), [&](const auto& nym) {
-        const auto hd =
-            api_.Storage().BlockchainAccountList(nym->str(), Translate(chain));
-        std::for_each(std::begin(hd), std::end(hd), [&](const auto& account) {
-            auto& set = output[nym];
-            auto accountID = api_.Factory().Identifier(account);
-            account_index_.emplace(accountID, nym);
-            account_type_.emplace(accountID, AccountType::HD);
-            set.emplace(std::move(accountID));
-        });
-        const auto pc =
-            api_.Storage().Bip47ChannelsByChain(nym, Translate(chain));
-        std::for_each(std::begin(pc), std::end(pc), [&](const auto& accountID) {
-            auto& set = output[nym];
-            account_index_.emplace(accountID, nym);
-            account_type_.emplace(accountID, AccountType::PaymentCode);
-            set.emplace(std::move(accountID));
-        });
+        load_nym(chain, nym, output);
     });
 }
 
-auto AccountCache::get_account_map(const Lock& lock, const Chain chain)
-    const noexcept -> NymAccountMap&
+auto AccountCache::get_account_map(
+    const Lock& lock,
+    const opentxs::blockchain::Type chain) const noexcept -> NymAccountMap&
 {
     auto& map = account_map_[chain];
 
@@ -79,8 +65,10 @@ auto AccountCache::get_account_map(const Lock& lock, const Chain chain)
     return map.value();
 }
 
-auto AccountCache::List(const identifier::Nym& nymID, const Chain chain)
-    const noexcept -> std::set<OTIdentifier>
+auto AccountCache::List(
+    const identifier::Nym& nymID,
+    const opentxs::blockchain::Type chain) const noexcept
+    -> std::set<OTIdentifier>
 {
     Lock lock(lock_);
     const auto& map = get_account_map(lock, chain);
@@ -91,9 +79,35 @@ auto AccountCache::List(const identifier::Nym& nymID, const Chain chain)
     return it->second;
 }
 
+auto AccountCache::load_nym(
+    const opentxs::blockchain::Type chain,
+    const identifier::Nym& nym,
+    NymAccountMap& output) const noexcept -> void
+{
+    const auto hd =
+        api_.Storage().BlockchainAccountList(nym.str(), Translate(chain));
+    std::for_each(std::begin(hd), std::end(hd), [&](const auto& account) {
+        auto& set = output[nym];
+        auto accountID = api_.Factory().Identifier(account);
+        account_index_.emplace(accountID, nym);
+        account_type_.emplace(
+            accountID, opentxs::blockchain::crypto::SubaccountType::HD);
+        set.emplace(std::move(accountID));
+    });
+    const auto pc = api_.Storage().Bip47ChannelsByChain(nym, Translate(chain));
+    std::for_each(std::begin(pc), std::end(pc), [&](const auto& accountID) {
+        auto& set = output[nym];
+        account_index_.emplace(accountID, nym);
+        account_type_.emplace(
+            accountID,
+            opentxs::blockchain::crypto::SubaccountType::PaymentCode);
+        set.emplace(std::move(accountID));
+    });
+}
+
 auto AccountCache::New(
-    const AccountType type,
-    const Chain chain,
+    const opentxs::blockchain::crypto::SubaccountType type,
+    const opentxs::blockchain::Type chain,
     const Identifier& account,
     const identifier::Nym& owner) const noexcept -> void
 {
@@ -128,7 +142,7 @@ auto AccountCache::Populate() noexcept -> void
 }
 
 auto AccountCache::Type(const Identifier& accountID) const noexcept
-    -> AccountType
+    -> opentxs::blockchain::crypto::SubaccountType
 {
     static const auto blank = api_.Factory().NymID();
 
@@ -137,7 +151,7 @@ auto AccountCache::Type(const Identifier& accountID) const noexcept
         return account_type_.at(accountID);
     } catch (...) {
 
-        return AccountType::Error;
+        return opentxs::blockchain::crypto::SubaccountType::Error;
     }
 }
 }  // namespace opentxs::api::client::implementation

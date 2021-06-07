@@ -21,6 +21,7 @@
 #include "blockchain/node/FilterOracle.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "network/zeromq/socket/Socket.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/core/Log.hpp"
@@ -69,7 +70,7 @@ public:
         const node::internal::SyncDatabase& db,
         const node::internal::HeaderOracle& header,
         const node::internal::FilterOracle& filter,
-        const node::internal::Network& network,
+        const node::internal::Network& node,
         const blockchain::Type chain,
         const filter::Type type,
         const std::string& shutdown,
@@ -89,12 +90,12 @@ public:
         , db_(db)
         , header_(header)
         , filter_(filter)
-        , network_(network)
+        , node_(node)
         , chain_(chain)
         , type_(type)
         , linger_(0)
         , endpoint_(publishEndpoint)
-        , socket_(::zmq_socket(api_.ZeroMQ(), ZMQ_PAIR), ::zmq_close)
+        , socket_(::zmq_socket(api_.Network().ZeroMQ(), ZMQ_PAIR), ::zmq_close)
         , zmq_lock_()
         , zmq_running_(true)
         , zmq_thread_(&SyncServer::zmq_thread, this)
@@ -119,7 +120,7 @@ private:
     const node::internal::SyncDatabase& db_;
     const node::internal::HeaderOracle& header_;
     const node::internal::FilterOracle& filter_;
-    const node::internal::Network& network_;
+    const node::internal::Network& node_;
     const blockchain::Type chain_;
     const filter::Type type_;
     const int linger_;
@@ -287,7 +288,7 @@ private:
     auto process_zmq(const Lock& lock) noexcept -> void
     {
         const auto incoming = [&] {
-            auto output = api_.ZeroMQ().Message();
+            auto output = api_.Network().ZeroMQ().Message();
             OTSocket::receive_message(lock, socket_.get(), output);
 
             return output;
@@ -321,7 +322,7 @@ private:
 
             if (needSync) { send = db_.LoadSync(height, reply); }
 
-            auto out = api_.ZeroMQ().ReplyMessage(incoming);
+            auto out = api_.Network().ZeroMQ().ReplyMessage(incoming);
 
             if (send && reply.Serialize(out)) {
                 OTSocket::send_message(lock, socket_.get(), out);
@@ -406,7 +407,7 @@ private:
             {chain_, pos},
             std::move(items),
             previousFilterHeader->Bytes()};
-        auto work = api_.ZeroMQ().Message();
+        auto work = api_.Network().ZeroMQ().Message();
 
         if (msg.Serialize(work) && zmq_running_) {
             // NOTE the appropriate lock is already being held in the pipeline

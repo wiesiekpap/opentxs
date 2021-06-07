@@ -21,10 +21,11 @@
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Manager.hpp"
-#include "opentxs/api/client/blockchain/BalanceTree.hpp"
-#include "opentxs/api/client/blockchain/HD.hpp"
-#include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
+#include "opentxs/blockchain/crypto/Element.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/crypto/HD.hpp"
+#include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
@@ -56,7 +57,7 @@ protected:
     const ot::api::client::Manager& api_;
     const ot::OTPasswordPrompt reason_;
     const ot::identifier::Nym& nym_id_;
-    const ot::api::client::blockchain::HD& account_;
+    const ot::blockchain::crypto::HD& account_;
 
     Test_BIP44()
         : api_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
@@ -213,7 +214,7 @@ TEST_F(Test_BIP44, balance_elements)
     };
 
     for (auto i{0u}; i < count_; ++i) {
-        using Subchain = ot::api::client::blockchain::Subchain;
+        using Subchain = ot::blockchain::crypto::Subchain;
 
         EXPECT_TRUE(test(Subchain::External, i, external_));
         EXPECT_TRUE(test(Subchain::Internal, i, internal_));

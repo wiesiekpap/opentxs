@@ -15,11 +15,11 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
@@ -98,7 +98,7 @@ public:
     }
     auto ForTestingOnlyAddKey(
         const std::size_t index,
-        const api::client::blockchain::Key& key) noexcept -> bool final;
+        const blockchain::crypto::Key& key) noexcept -> bool final;
     auto MergeMetadata(const Output::SerializeType& rhs) noexcept(false)
         -> void final
     {

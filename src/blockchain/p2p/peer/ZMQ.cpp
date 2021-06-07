@@ -12,6 +12,7 @@
 
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -83,7 +84,7 @@ struct ZMQConnectionManager final : public Peer::ConnectionManager {
 
         const auto bytes = payload.Bytes();
         auto it = bytes.data();
-        auto message = api_.ZeroMQ().Message();
+        auto message = api_.Network().ZeroMQ().Message();
         message->PrependEmptyFrame();
         message->AddFrame(it, header_bytes_);
         const auto body = bytes.size() - header_bytes_;
@@ -115,7 +116,7 @@ struct ZMQConnectionManager final : public Peer::ConnectionManager {
         , header_bytes_(headerSize)
         , cb_(zmq::ListenCallback::Factory(
               [&](auto& in) { this->pipeline(in); }))
-        , dealer_(api.ZeroMQ().DealerSocket(
+        , dealer_(api.Network().ZeroMQ().DealerSocket(
               cb_,
               zmq::socket::Socket::Direction::Connect))
     {

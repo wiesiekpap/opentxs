@@ -20,9 +20,8 @@
 #include <vector>
 
 #include "Proto.hpp"
-#include "api/client/blockchain/database/Database.hpp"
-#include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Blockchain.hpp"
+#include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
@@ -56,6 +55,14 @@ class Header;
 class Header;
 }  // namespace block
 
+namespace database
+{
+namespace common
+{
+class Database;
+}  // namespace common
+}  // namespace database
+
 namespace node
 {
 class UpdateTransaction;
@@ -67,8 +74,6 @@ namespace opentxs::blockchain::database
 {
 struct Headers {
 public:
-    using Common = api::client::blockchain::database::implementation::Database;
-
     auto BestBlock(const block::Height position) const noexcept(false)
         -> block::pHash;
     auto CurrentBest() const noexcept -> std::unique_ptr<block::Header>
@@ -103,14 +108,14 @@ public:
     Headers(
         const api::Core& api,
         const node::internal::Network& network,
-        const Common& common,
+        const common::Database& common,
         const opentxs::storage::lmdb::LMDB& lmdb,
         const blockchain::Type type) noexcept;
 
 private:
     const api::Core& api_;
     const node::internal::Network& network_;
-    const Common& common_;
+    const common::Database& common_;
     const opentxs::storage::lmdb::LMDB& lmdb_;
     mutable std::mutex lock_;
 

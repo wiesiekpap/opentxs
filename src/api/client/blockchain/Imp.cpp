@@ -19,20 +19,23 @@
 
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
-#include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
+#include "internal/blockchain/crypto/Crypto.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/blockchain/AddressStyle.hpp"
-#include "opentxs/api/client/blockchain/HD.hpp"
-#include "opentxs/api/client/blockchain/PaymentCode.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/crypto/AddressStyle.hpp"
+#include "opentxs/blockchain/crypto/Element.hpp"
+#include "opentxs/blockchain/crypto/HD.hpp"
+#include "opentxs/blockchain/crypto/PaymentCode.hpp"
+#include "opentxs/blockchain/crypto/SubaccountType.hpp"
+#include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
@@ -67,15 +70,14 @@ enum class Prefix : std::uint8_t {
 };
 
 using Style = Blockchain::Style;
-using Chain = Blockchain::Chain;
 using AddressMap = std::map<Prefix, std::string>;
 using AddressReverseMap = std::map<std::string, Prefix>;
-using StylePair = std::pair<Style, Chain>;
+using StylePair = std::pair<Style, opentxs::blockchain::Type>;
 // Style, preferred prefix, additional prefixes
 using StyleMap = std::map<StylePair, std::pair<Prefix, std::set<Prefix>>>;
 using StyleReverseMap = std::map<Prefix, std::set<StylePair>>;
-using HrpMap = std::map<Chain, std::string>;
-using HrpReverseMap = std::map<std::string, Chain>;
+using HrpMap = std::map<opentxs::blockchain::Type, std::string>;
+using HrpReverseMap = std::map<std::string, opentxs::blockchain::Type>;
 
 auto reverse(const StyleMap& in) noexcept -> StyleReverseMap;
 auto reverse(const StyleMap& in) noexcept -> StyleReverseMap
@@ -107,40 +109,50 @@ const AddressReverseMap address_prefix_reverse_map_{
 };
 const AddressMap address_prefix_map_{reverse_map(address_prefix_reverse_map_)};
 const StyleMap address_style_map_{
-    {{Style::P2PKH, Chain::UnitTest}, {Prefix::BitcoinTestnetP2PKH, {}}},
-    {{Style::P2PKH, Chain::BitcoinCash_testnet3},
+    {{Style::P2PKH, opentxs::blockchain::Type::UnitTest},
      {Prefix::BitcoinTestnetP2PKH, {}}},
-    {{Style::P2PKH, Chain::BitcoinCash}, {Prefix::BitcoinP2PKH, {}}},
-    {{Style::P2PKH, Chain::Bitcoin_testnet3},
+    {{Style::P2PKH, opentxs::blockchain::Type::BitcoinCash_testnet3},
      {Prefix::BitcoinTestnetP2PKH, {}}},
-    {{Style::P2PKH, Chain::Bitcoin}, {Prefix::BitcoinP2PKH, {}}},
-    {{Style::P2PKH, Chain::Litecoin_testnet4},
+    {{Style::P2PKH, opentxs::blockchain::Type::BitcoinCash},
+     {Prefix::BitcoinP2PKH, {}}},
+    {{Style::P2PKH, opentxs::blockchain::Type::Bitcoin_testnet3},
      {Prefix::BitcoinTestnetP2PKH, {}}},
-    {{Style::P2PKH, Chain::Litecoin}, {Prefix::LitecoinP2PKH, {}}},
-    {{Style::P2PKH, Chain::PKT_testnet}, {Prefix::BitcoinTestnetP2PKH, {}}},
-    {{Style::P2PKH, Chain::PKT}, {Prefix::PKTP2PKH, {}}},
-    {{Style::P2SH, Chain::UnitTest}, {Prefix::BitcoinTestnetP2SH, {}}},
-    {{Style::P2SH, Chain::BitcoinCash_testnet3},
+    {{Style::P2PKH, opentxs::blockchain::Type::Bitcoin},
+     {Prefix::BitcoinP2PKH, {}}},
+    {{Style::P2PKH, opentxs::blockchain::Type::Litecoin_testnet4},
+     {Prefix::BitcoinTestnetP2PKH, {}}},
+    {{Style::P2PKH, opentxs::blockchain::Type::Litecoin},
+     {Prefix::LitecoinP2PKH, {}}},
+    {{Style::P2PKH, opentxs::blockchain::Type::PKT_testnet},
+     {Prefix::BitcoinTestnetP2PKH, {}}},
+    {{Style::P2PKH, opentxs::blockchain::Type::PKT}, {Prefix::PKTP2PKH, {}}},
+    {{Style::P2SH, opentxs::blockchain::Type::UnitTest},
      {Prefix::BitcoinTestnetP2SH, {}}},
-    {{Style::P2SH, Chain::BitcoinCash}, {Prefix::BitcoinP2SH, {}}},
-    {{Style::P2SH, Chain::Bitcoin_testnet3}, {Prefix::BitcoinTestnetP2SH, {}}},
-    {{Style::P2SH, Chain::Bitcoin}, {Prefix::BitcoinP2SH, {}}},
-    {{Style::P2SH, Chain::Litecoin_testnet4},
+    {{Style::P2SH, opentxs::blockchain::Type::BitcoinCash_testnet3},
+     {Prefix::BitcoinTestnetP2SH, {}}},
+    {{Style::P2SH, opentxs::blockchain::Type::BitcoinCash},
+     {Prefix::BitcoinP2SH, {}}},
+    {{Style::P2SH, opentxs::blockchain::Type::Bitcoin_testnet3},
+     {Prefix::BitcoinTestnetP2SH, {}}},
+    {{Style::P2SH, opentxs::blockchain::Type::Bitcoin},
+     {Prefix::BitcoinP2SH, {}}},
+    {{Style::P2SH, opentxs::blockchain::Type::Litecoin_testnet4},
      {Prefix::LitecoinTestnetP2SH, {Prefix::BitcoinTestnetP2SH}}},
-    {{Style::P2SH, Chain::Litecoin},
+    {{Style::P2SH, opentxs::blockchain::Type::Litecoin},
      {Prefix::LitecoinP2SH, {Prefix::BitcoinP2SH}}},
-    {{Style::P2SH, Chain::PKT_testnet}, {Prefix::BitcoinTestnetP2SH, {}}},
-    {{Style::P2SH, Chain::PKT}, {Prefix::PKTP2SH, {}}},
+    {{Style::P2SH, opentxs::blockchain::Type::PKT_testnet},
+     {Prefix::BitcoinTestnetP2SH, {}}},
+    {{Style::P2SH, opentxs::blockchain::Type::PKT}, {Prefix::PKTP2SH, {}}},
 };
 const StyleReverseMap address_style_reverse_map_{reverse(address_style_map_)};
 const HrpMap hrp_map_{
-    {Chain::Bitcoin, "bc"},
-    {Chain::Bitcoin_testnet3, "tb"},
-    {Chain::Litecoin, "ltc"},
-    {Chain::Litecoin_testnet4, "tltc"},
-    {Chain::PKT, "pkt"},
-    {Chain::PKT_testnet, "tpk"},
-    {Chain::UnitTest, "bcrt"},
+    {opentxs::blockchain::Type::Bitcoin, "bc"},
+    {opentxs::blockchain::Type::Bitcoin_testnet3, "tb"},
+    {opentxs::blockchain::Type::Litecoin, "ltc"},
+    {opentxs::blockchain::Type::Litecoin_testnet4, "tltc"},
+    {opentxs::blockchain::Type::PKT, "pkt"},
+    {opentxs::blockchain::Type::PKT_testnet, "tpk"},
+    {opentxs::blockchain::Type::UnitTest, "bcrt"},
 };
 const HrpReverseMap hrp_reverse_map_{reverse_map(hrp_map_)};
 }  // namespace opentxs::api::client
@@ -157,25 +169,37 @@ Blockchain::Imp::Imp(
     , lock_()
     , nym_lock_()
     , accounts_(api_)
-    , balance_lists_(api_, parent)
+    , wallets_(api_, parent)
 {
+}
+
+auto Blockchain::Imp::Account(
+    const identifier::Nym& nymID,
+    const opentxs::blockchain::Type chain) const noexcept(false)
+    -> const opentxs::blockchain::crypto::internal::Account&
+{
+    if (false == validate_nym(nymID)) {
+        throw std::runtime_error("Invalid nym");
+    }
+
+    return Wallet(chain).Nym(nymID);
 }
 
 auto Blockchain::Imp::AccountList(const identifier::Nym& nym) const noexcept
     -> std::set<OTIdentifier>
 {
-    return balance_lists_.AccountList(nym);
+    return wallets_.AccountList(nym);
 }
 
-auto Blockchain::Imp::AccountList(const Chain chain) const noexcept
-    -> std::set<OTIdentifier>
+auto Blockchain::Imp::AccountList(const opentxs::blockchain::Type chain)
+    const noexcept -> std::set<OTIdentifier>
 {
-    return balance_lists_.AccountList(chain);
+    return wallets_.AccountList(chain);
 }
 
 auto Blockchain::Imp::AccountList() const noexcept -> std::set<OTIdentifier>
 {
-    return balance_lists_.AccountList();
+    return wallets_.AccountList();
 }
 
 auto Blockchain::Imp::ActivityDescription(
@@ -188,14 +212,15 @@ auto Blockchain::Imp::ActivityDescription(
 
 auto Blockchain::Imp::ActivityDescription(
     const identifier::Nym&,
-    const Chain,
+    const opentxs::blockchain::Type,
     const Tx&) const noexcept -> std::string
 {
     return {};
 }
 
-auto Blockchain::Imp::address_prefix(const Style style, const Chain chain) const
-    noexcept(false) -> OTData
+auto Blockchain::Imp::address_prefix(
+    const Style style,
+    const opentxs::blockchain::Type chain) const noexcept(false) -> OTData
 {
     return api_.Factory().Data(
         address_prefix_map_.at(address_style_map_.at({style, chain}).first),
@@ -205,7 +230,7 @@ auto Blockchain::Imp::address_prefix(const Style style, const Chain chain) const
 auto Blockchain::Imp::AssignContact(
     const identifier::Nym& nymID,
     const Identifier& accountID,
-    const blockchain::Subchain subchain,
+    const Subchain subchain,
     const Bip32Index index,
     const Identifier& contactID) const noexcept -> bool
 {
@@ -216,10 +241,10 @@ auto Blockchain::Imp::AssignContact(
     const auto chain = Translate(
         api_.Storage().BlockchainAccountType(nymID.str(), accountID.str()));
 
-    OT_ASSERT(Chain::Unknown != chain);
+    OT_ASSERT(opentxs::blockchain::Type::Unknown != chain);
 
     try {
-        auto& node = balance_lists_.Get(chain).Nym(nymID).Node(accountID);
+        auto& node = wallets_.Get(chain).Nym(nymID).Node(accountID);
 
         try {
             const auto& element = node.BalanceElement(subchain, index);
@@ -245,7 +270,7 @@ auto Blockchain::Imp::AssignContact(
 auto Blockchain::Imp::AssignLabel(
     const identifier::Nym& nymID,
     const Identifier& accountID,
-    const blockchain::Subchain subchain,
+    const Subchain subchain,
     const Bip32Index index,
     const std::string& label) const noexcept -> bool
 {
@@ -256,10 +281,10 @@ auto Blockchain::Imp::AssignLabel(
     const auto chain = Translate(
         api_.Storage().BlockchainAccountType(nymID.str(), accountID.str()));
 
-    OT_ASSERT(Chain::Unknown != chain);
+    OT_ASSERT(opentxs::blockchain::Type::Unknown != chain);
 
     try {
-        auto& node = balance_lists_.Get(chain).Nym(nymID).Node(accountID);
+        auto& node = wallets_.Get(chain).Nym(nymID).Node(accountID);
 
         try {
             const auto& element = node.BalanceElement(subchain, index);
@@ -279,28 +304,6 @@ auto Blockchain::Imp::AssignLabel(
 
         return false;
     }
-}
-
-auto Blockchain::Imp::BalanceList(const Chain chain) const noexcept(false)
-    -> const blockchain::internal::BalanceList&
-{
-    if (0 == opentxs::blockchain::DefinedChains().count(chain)) {
-        throw std::runtime_error("Invalid chain");
-    }
-
-    return balance_lists_.Get(chain);
-}
-
-auto Blockchain::Imp::BalanceTree(
-    const identifier::Nym& nymID,
-    const Chain chain) const noexcept(false)
-    -> const blockchain::internal::BalanceTree&
-{
-    if (false == validate_nym(nymID)) {
-        throw std::runtime_error("Invalid nym");
-    }
-
-    return BalanceList(chain).Nym(nymID);
 }
 
 auto Blockchain::Imp::bip44_type(
@@ -355,20 +358,8 @@ auto Blockchain::Imp::bip44_type(
     }
 }
 
-auto Blockchain::Imp::BlockchainDB() const noexcept
-    -> const blockchain::database::implementation::Database&
-{
-    OT_FAIL;
-}
-
-auto Blockchain::Imp::BlockQueueUpdate() const noexcept
-    -> const zmq::socket::Publish&
-{
-    OT_FAIL;
-}
-
 auto Blockchain::Imp::CalculateAddress(
-    const Chain chain,
+    const opentxs::blockchain::Type chain,
     const Style format,
     const Data& pubkey) const noexcept -> std::string
 {
@@ -398,7 +389,7 @@ auto Blockchain::Imp::CalculateAddress(
 }
 
 auto Blockchain::Imp::Confirm(
-    const blockchain::Key key,
+    const Key key,
     const opentxs::blockchain::block::Txid& tx) const noexcept -> bool
 {
     try {
@@ -577,25 +568,9 @@ auto Blockchain::Imp::decode_legacy(const std::string& encoded) const noexcept
     }
 }
 
-auto Blockchain::Imp::Disable(const Chain) const noexcept -> bool
-{
-    return false;
-}
-
-auto Blockchain::Imp::Enable(const Chain, const std::string& seednode)
-    const noexcept -> bool
-{
-    return false;
-}
-
-auto Blockchain::Imp::EnabledChains() const noexcept -> std::set<Chain>
-{
-    return {};
-}
-
 auto Blockchain::Imp::EncodeAddress(
     const Style style,
-    const Chain chain,
+    const opentxs::blockchain::Type chain,
     const Data& data) const noexcept -> std::string
 {
     switch (style) {
@@ -617,38 +592,27 @@ auto Blockchain::Imp::EncodeAddress(
     }
 }
 
-auto Blockchain::Imp::FilterUpdate() const noexcept
-    -> const zmq::socket::Publish&
-{
-    OT_FAIL;
-}
-
-auto Blockchain::Imp::GetChain(const Chain type) const noexcept(false)
-    -> const opentxs::blockchain::node::Manager&
-{
-    throw std::out_of_range{"No blockchain support"};
-}
-
-auto Blockchain::Imp::GetKey(const blockchain::Key& id) const noexcept(false)
-    -> const blockchain::BalanceNode::Element&
+auto Blockchain::Imp::GetKey(const Key& id) const noexcept(false)
+    -> const opentxs::blockchain::crypto::Element&
 {
     const auto [str, subchain, index] = id;
     const auto account = api_.Factory().Identifier(str);
+    using Type = opentxs::blockchain::crypto::SubaccountType;
 
     switch (accounts_.Type(account)) {
-        case AccountType::HD: {
+        case Type::HD: {
             const auto& hd = HDSubaccount(accounts_.Owner(account), account);
 
             return hd.BalanceElement(subchain, index);
         }
-        case AccountType::PaymentCode: {
+        case Type::PaymentCode: {
             const auto& pc =
                 PaymentCodeSubaccount(accounts_.Owner(account), account);
 
             return pc.BalanceElement(subchain, index);
         }
-        case AccountType::Imported:
-        case AccountType::Error:
+        case Type::Imported:
+        case Type::Error:
         default: {
         }
     }
@@ -657,12 +621,12 @@ auto Blockchain::Imp::GetKey(const blockchain::Key& id) const noexcept(false)
 }
 
 auto Blockchain::Imp::get_node(const Identifier& accountID) const
-    noexcept(false) -> blockchain::internal::BalanceNode&
+    noexcept(false) -> opentxs::blockchain::crypto::internal::Subaccount&
 {
     const auto& nymID = accounts_.Owner(accountID);
 
     switch (accounts_.Type(accountID)) {
-        case AccountType::HD: {
+        case opentxs::blockchain::crypto::SubaccountType::HD: {
             const auto type = api_.Storage().BlockchainAccountType(
                 nymID.str(), accountID.str());
 
@@ -670,26 +634,27 @@ auto Blockchain::Imp::get_node(const Identifier& accountID) const
                 throw std::out_of_range("Account does not exist");
             }
 
-            auto& balanceList = balance_lists_.Get(Translate(type));
-            auto& nym = const_cast<blockchain::internal::BalanceTree&>(
-                balanceList.Nym(nymID));
+            auto& balanceList = wallets_.Get(Translate(type));
+            auto& nym =
+                const_cast<opentxs::blockchain::crypto::internal::Account&>(
+                    balanceList.Nym(nymID));
 
             return nym.HDChain(accountID);
         }
-        case AccountType::PaymentCode: {
+        case opentxs::blockchain::crypto::SubaccountType::PaymentCode: {
             const auto type = api_.Storage().Bip47Chain(nymID, accountID);
 
             if (contact::ContactItemType::Error == type) {
                 throw std::out_of_range("Account does not exist");
             }
 
-            auto& balanceList = balance_lists_.Get(Translate(type));
+            auto& balanceList = wallets_.Get(Translate(type));
             auto& nym = balanceList.Nym(nymID);
 
             return nym.PaymentCode(accountID);
         }
-        case AccountType::Imported:
-        case AccountType::Error:
+        case opentxs::blockchain::crypto::SubaccountType::Imported:
+        case opentxs::blockchain::crypto::SubaccountType::Error:
         default: {
         }
     }
@@ -699,7 +664,8 @@ auto Blockchain::Imp::get_node(const Identifier& accountID) const
 
 auto Blockchain::Imp::HDSubaccount(
     const identifier::Nym& nymID,
-    const Identifier& accountID) const noexcept(false) -> const blockchain::HD&
+    const Identifier& accountID) const noexcept(false)
+    -> const opentxs::blockchain::crypto::HD&
 {
     const auto type =
         api_.Storage().BlockchainAccountType(nymID.str(), accountID.str());
@@ -708,13 +674,11 @@ auto Blockchain::Imp::HDSubaccount(
         throw std::out_of_range("Account does not exist");
     }
 
-    auto& balanceList = balance_lists_.Get(Translate(type));
+    auto& balanceList = wallets_.Get(Translate(type));
     auto& nym = balanceList.Nym(nymID);
 
     return nym.HDChain(accountID);
 }
-
-auto Blockchain::Imp::Hello() const noexcept -> SyncState { return {}; }
 
 auto Blockchain::Imp::IndexItem(const ReadView bytes) const noexcept
     -> PatternID
@@ -722,7 +686,14 @@ auto Blockchain::Imp::IndexItem(const ReadView bytes) const noexcept
     return {};
 }
 
-auto Blockchain::Imp::Init() noexcept -> void { accounts_.Populate(); }
+auto Blockchain::Imp::Init() noexcept -> void
+{
+    accounts_.Populate();
+
+    for (const auto& chain : opentxs::blockchain::SupportedChains()) {
+        Wallet(chain);
+    }
+}
 
 auto Blockchain::Imp::init_path(
     const std::string& root,
@@ -750,12 +721,6 @@ auto Blockchain::Imp::init_path(
     }
 }
 
-auto Blockchain::Imp::IsEnabled(const opentxs::blockchain::Type) const noexcept
-    -> bool
-{
-    return false;
-}
-
 auto Blockchain::Imp::KeyEndpoint() const noexcept -> const std::string&
 {
     static const auto blank = std::string{};
@@ -763,7 +728,10 @@ auto Blockchain::Imp::KeyEndpoint() const noexcept -> const std::string&
     return blank;
 }
 
-auto Blockchain::Imp::KeyGenerated(const Chain) const noexcept -> void {}
+auto Blockchain::Imp::KeyGenerated(
+    const opentxs::blockchain::Type) const noexcept -> void
+{
+}
 
 auto Blockchain::Imp::LoadTransactionBitcoin(const TxidHex&) const noexcept
     -> std::unique_ptr<const Tx>
@@ -780,7 +748,7 @@ auto Blockchain::Imp::LoadTransactionBitcoin(const Txid&) const noexcept
 auto Blockchain::Imp::LookupAccount(const Identifier& id) const noexcept
     -> AccountData
 {
-    return balance_lists_.LookupAccount(id);
+    return wallets_.LookupAccount(id);
 }
 
 auto Blockchain::Imp::LookupContacts(const Data&) const noexcept -> ContactList
@@ -791,14 +759,14 @@ auto Blockchain::Imp::LookupContacts(const Data&) const noexcept -> ContactList
 auto Blockchain::Imp::NewHDSubaccount(
     const identifier::Nym& nymID,
     const BlockchainAccountType standard,
-    const Chain chain,
+    const opentxs::blockchain::Type chain,
     const PasswordPrompt& reason) const noexcept -> OTIdentifier
 {
     static const auto blank = api_.Factory().Identifier();
 
     if (false == validate_nym(nymID)) { return blank; }
 
-    if (Chain::Unknown == chain) {
+    if (opentxs::blockchain::Type::Unknown == chain) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid chain").Flush();
 
         return blank;
@@ -842,7 +810,7 @@ auto Blockchain::Imp::NewHDSubaccount(
 
     try {
         auto accountID{blank};
-        auto& tree = balance_lists_.Get(chain).Nym(nymID);
+        auto& tree = wallets_.Get(chain).Nym(nymID);
         tree.AddHDNode(accountPath, reason, accountID);
 
         OT_ASSERT(false == accountID->empty());
@@ -851,8 +819,16 @@ auto Blockchain::Imp::NewHDSubaccount(
             accountID)(" for ")(DisplayString(chain))(" account ")(
             tree.AccountID())(" owned by ")(nymID.str())
             .Flush();
-        accounts_.New(AccountType::HD, chain, accountID, nymID);
-        notify_new_account(accountID, nymID, chain, AccountType::HD);
+        accounts_.New(
+            opentxs::blockchain::crypto::SubaccountType::HD,
+            chain,
+            accountID,
+            nymID);
+        notify_new_account(
+            accountID,
+            nymID,
+            chain,
+            opentxs::blockchain::crypto::SubaccountType::HD);
 
         return accountID;
     } catch (...) {
@@ -863,12 +839,19 @@ auto Blockchain::Imp::NewHDSubaccount(
     }
 }
 
+auto Blockchain::Imp::NewNym(const identifier::Nym& id) const noexcept -> void
+{
+    for (const auto& chain : opentxs::blockchain::SupportedChains()) {
+        Wallet(chain).Nym(id);
+    }
+}
+
 auto Blockchain::Imp::NewPaymentCodeSubaccount(
     const identifier::Nym& nymID,
     const opentxs::PaymentCode& local,
     const opentxs::PaymentCode& remote,
     const proto::HDPath path,
-    const Chain chain,
+    const opentxs::blockchain::Type chain,
     const PasswordPrompt& reason) const noexcept -> OTIdentifier
 {
     auto lock = Lock{nym_mutex(nymID)};
@@ -882,14 +865,14 @@ auto Blockchain::Imp::new_payment_code(
     const opentxs::PaymentCode& local,
     const opentxs::PaymentCode& remote,
     const proto::HDPath path,
-    const Chain chain,
+    const opentxs::blockchain::Type chain,
     const PasswordPrompt& reason) const noexcept -> OTIdentifier
 {
     static const auto blank = api_.Factory().Identifier();
 
     if (false == validate_nym(nymID)) { return blank; }
 
-    if (Chain::Unknown == chain) {
+    if (opentxs::blockchain::Type::Unknown == chain) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid chain").Flush();
 
         return blank;
@@ -919,7 +902,7 @@ auto Blockchain::Imp::new_payment_code(
 
     try {
         auto accountID{blank};
-        auto& tree = balance_lists_.Get(chain).Nym(nymID);
+        auto& tree = wallets_.Get(chain).Nym(nymID);
         tree.AddUpdatePaymentCode(local, remote, path, reason, accountID);
 
         OT_ASSERT(false == accountID->empty());
@@ -930,8 +913,16 @@ auto Blockchain::Imp::new_payment_code(
             nymID.str())(" in reference to remote payment code ")(
             remote.asBase58())
             .Flush();
-        accounts_.New(AccountType::PaymentCode, chain, accountID, nymID);
-        notify_new_account(accountID, nymID, chain, AccountType::PaymentCode);
+        accounts_.New(
+            opentxs::blockchain::crypto::SubaccountType::PaymentCode,
+            chain,
+            accountID,
+            nymID);
+        notify_new_account(
+            accountID,
+            nymID,
+            chain,
+            opentxs::blockchain::crypto::SubaccountType::PaymentCode);
 
         return accountID;
     } catch (...) {
@@ -950,19 +941,20 @@ auto Blockchain::Imp::nym_mutex(const identifier::Nym& nym) const noexcept
     return nym_lock_[nym];
 }
 
-auto Blockchain::Imp::Owner(const blockchain::Key& key) const noexcept
+auto Blockchain::Imp::Owner(const Key& key) const noexcept
     -> const identifier::Nym&
 {
     const auto& [account, subchain, index] = key;
     static const auto blank = api_.Factory().NymID();
 
-    if (blockchain::Subchain::Outgoing == subchain) { return blank; }
+    if (Subchain::Outgoing == subchain) { return blank; }
 
     return Owner(api_.Factory().Identifier(account));
 }
 
-auto Blockchain::Imp::p2pkh(const Chain chain, const Data& pubkeyHash)
-    const noexcept -> std::string
+auto Blockchain::Imp::p2pkh(
+    const opentxs::blockchain::Type chain,
+    const Data& pubkeyHash) const noexcept -> std::string
 {
     try {
         auto preimage = address_prefix(Style::P2PKH, chain);
@@ -983,8 +975,9 @@ auto Blockchain::Imp::p2pkh(const Chain chain, const Data& pubkeyHash)
     }
 }
 
-auto Blockchain::Imp::p2sh(const Chain chain, const Data& pubkeyHash)
-    const noexcept -> std::string
+auto Blockchain::Imp::p2sh(
+    const opentxs::blockchain::Type chain,
+    const Data& pubkeyHash) const noexcept -> std::string
 {
     try {
         auto preimage = address_prefix(Style::P2SH, chain);
@@ -1008,7 +1001,7 @@ auto Blockchain::Imp::p2sh(const Chain chain, const Data& pubkeyHash)
 auto Blockchain::Imp::PaymentCodeSubaccount(
     const identifier::Nym& nymID,
     const Identifier& accountID) const noexcept(false)
-    -> const blockchain::PaymentCode&
+    -> const opentxs::blockchain::crypto::PaymentCode&
 {
     const auto type = api_.Storage().Bip47Chain(nymID, accountID);
 
@@ -1016,7 +1009,7 @@ auto Blockchain::Imp::PaymentCodeSubaccount(
         throw std::out_of_range("Account does not exist");
     }
 
-    auto& balanceList = balance_lists_.Get(Translate(type));
+    auto& balanceList = wallets_.Get(Translate(type));
     auto& nym = balanceList.Nym(nymID);
 
     return nym.PaymentCode(accountID);
@@ -1027,13 +1020,14 @@ auto Blockchain::Imp::PaymentCodeSubaccount(
     const opentxs::PaymentCode& local,
     const opentxs::PaymentCode& remote,
     const proto::HDPath path,
-    const Chain chain,
+    const opentxs::blockchain::Type chain,
     const PasswordPrompt& reason) const noexcept(false)
-    -> const blockchain::PaymentCode&
+    -> const opentxs::blockchain::crypto::PaymentCode&
 {
     auto lock = Lock{nym_mutex(nymID)};
     const auto accountID =
-        blockchain::internal::PaymentCode::GetID(api_, chain, local, remote);
+        opentxs::blockchain::crypto::internal::PaymentCode::GetID(
+            api_, chain, local, remote);
     const auto type = api_.Storage().Bip47Chain(nymID, accountID);
 
     if (contact::ContactItemType::Error == type) {
@@ -1045,15 +1039,10 @@ auto Blockchain::Imp::PaymentCodeSubaccount(
         }
     }
 
-    auto& balanceList = balance_lists_.Get(chain);
+    auto& balanceList = wallets_.Get(chain);
     auto& tree = balanceList.Nym(nymID);
 
     return tree.PaymentCode(accountID);
-}
-
-auto Blockchain::Imp::PeerUpdate() const noexcept -> const zmq::socket::Publish&
-{
-    OT_FAIL;
 }
 
 auto Blockchain::Imp::ProcessContact(const Contact&) const noexcept -> bool
@@ -1068,7 +1057,7 @@ auto Blockchain::Imp::ProcessMergedContact(const Contact&, const Contact&)
 }
 
 auto Blockchain::Imp::ProcessTransaction(
-    const Chain,
+    const opentxs::blockchain::Type,
     const Tx&,
     const PasswordPrompt&) const noexcept -> bool
 {
@@ -1076,7 +1065,7 @@ auto Blockchain::Imp::ProcessTransaction(
 }
 
 auto Blockchain::Imp::PubkeyHash(
-    [[maybe_unused]] const Chain chain,
+    [[maybe_unused]] const opentxs::blockchain::Type chain,
     const Data& pubkey) const noexcept(false) -> OTData
 {
     if (pubkey.empty()) { throw std::runtime_error("Empty pubkey"); }
@@ -1097,12 +1086,12 @@ auto Blockchain::Imp::PubkeyHash(
     return output;
 }
 
-auto Blockchain::Imp::RecipientContact(
-    const blockchain::Key& key) const noexcept -> OTIdentifier
+auto Blockchain::Imp::RecipientContact(const Key& key) const noexcept
+    -> OTIdentifier
 {
     static const auto blank = api_.Factory().Identifier();
     const auto& [account, subchain, index] = key;
-    using Subchain = api::client::blockchain::Subchain;
+    using Subchain = opentxs::blockchain::crypto::Subchain;
 
     if (Subchain::Notification == subchain) { return blank; }
 
@@ -1139,7 +1128,7 @@ auto Blockchain::Imp::RecipientContact(
     }
 }
 
-auto Blockchain::Imp::Release(const blockchain::Key key) const noexcept -> bool
+auto Blockchain::Imp::Release(const Key key) const noexcept -> bool
 {
     try {
         const auto [id, subchain, index] = key;
@@ -1152,35 +1141,21 @@ auto Blockchain::Imp::Release(const blockchain::Key key) const noexcept -> bool
     }
 }
 
-auto Blockchain::Imp::Reorg() const noexcept -> const zmq::socket::Publish&
-{
-    OT_FAIL;
-}
-
-auto Blockchain::Imp::ReportProgress(
-    const Chain,
-    const opentxs::blockchain::block::Height,
-    const opentxs::blockchain::block::Height) const noexcept -> void
-{
-}
-
 auto Blockchain::Imp::ReportScan(
-    const Chain,
+    const opentxs::blockchain::Type,
     const identifier::Nym&,
     const Identifier&,
-    const blockchain::Subchain,
+    const Subchain,
     const opentxs::blockchain::block::Position&) const noexcept -> void
 {
 }
 
-auto Blockchain::Imp::RestoreNetworks() const noexcept -> void {}
-
-auto Blockchain::Imp::SenderContact(const blockchain::Key& key) const noexcept
+auto Blockchain::Imp::SenderContact(const Key& key) const noexcept
     -> OTIdentifier
 {
     static const auto blank = api_.Factory().Identifier();
     const auto& [account, subchain, index] = key;
-    using Subchain = api::client::blockchain::Subchain;
+    using Subchain = opentxs::blockchain::crypto::Subchain;
 
     if (Subchain::Notification == subchain) { return blank; }
 
@@ -1217,37 +1192,8 @@ auto Blockchain::Imp::SenderContact(const blockchain::Key& key) const noexcept
     }
 }
 
-auto Blockchain::Imp::Shutdown() noexcept -> void {}
-
-auto Blockchain::Imp::Start(const Chain, const std::string&) const noexcept
-    -> bool
-{
-    return false;
-}
-
-auto Blockchain::Imp::StartSyncServer(
-    const std::string&,
-    const std::string&,
-    const std::string&,
-    const std::string&) const noexcept -> bool
-{
-    return false;
-}
-
-auto Blockchain::Imp::Stop(const Chain type) const noexcept -> bool
-{
-    return false;
-}
-
-auto Blockchain::Imp::SyncEndpoint() const noexcept -> const std::string&
-{
-    static const auto blank = std::string{};
-
-    return blank;
-}
-
 auto Blockchain::Imp::Unconfirm(
-    const blockchain::Key key,
+    const Key key,
     const opentxs::blockchain::block::Txid& tx,
     const Time time) const noexcept -> bool
 {
@@ -1280,12 +1226,6 @@ auto Blockchain::Imp::UpdateElement(std::vector<ReadView>&) const noexcept
 {
 }
 
-auto Blockchain::Imp::UpdatePeer(
-    const opentxs::blockchain::Type,
-    const std::string&) const noexcept -> void
-{
-}
-
 auto Blockchain::Imp::validate_nym(const identifier::Nym& nymID) const noexcept
     -> bool
 {
@@ -1294,5 +1234,15 @@ auto Blockchain::Imp::validate_nym(const identifier::Nym& nymID) const noexcept
     }
 
     return false;
+}
+
+auto Blockchain::Imp::Wallet(const opentxs::blockchain::Type chain) const
+    noexcept(false) -> const opentxs::blockchain::crypto::internal::Wallet&
+{
+    if (0 == opentxs::blockchain::DefinedChains().count(chain)) {
+        throw std::runtime_error("Invalid chain");
+    }
+
+    return wallets_.Get(chain);
 }
 }  // namespace opentxs::api::client::implementation

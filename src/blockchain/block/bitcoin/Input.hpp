@@ -30,7 +30,6 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
@@ -38,6 +37,7 @@
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -282,7 +282,7 @@ private:
                 for (const auto& key : in.key()) {
                     keys_.emplace(
                         key.subaccount(),
-                        static_cast<api::client::blockchain::Subchain>(
+                        static_cast<blockchain::crypto::Subchain>(
                             static_cast<std::uint8_t>(key.subchain())),
                         key.index());
                 }
@@ -303,7 +303,7 @@ private:
                 [this](const auto& key) {
                     keys_.emplace(
                         key.subaccount(),
-                        static_cast<api::client::blockchain::Subchain>(
+                        static_cast<blockchain::crypto::Subchain>(
                             static_cast<std::uint8_t>(key.subchain())),
                         key.index());
                 });

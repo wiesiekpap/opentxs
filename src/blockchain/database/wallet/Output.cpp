@@ -37,7 +37,6 @@
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
@@ -47,6 +46,7 @@
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -608,7 +608,7 @@ struct Output::Imp {
             const auto& [opState, opPosition, data] = serialized;
 
             for (const auto& sKey : data.key()) {
-                using Subchain = api::client::blockchain::Subchain;
+                using Subchain = blockchain::crypto::Subchain;
                 blockchain_.Unconfirm(
                     {sKey.subaccount(),
                      static_cast<Subchain>(sKey.subchain()),
@@ -679,7 +679,7 @@ private:
     using SubchainIndex =
         robin_hood::unordered_flat_map<pSubchainID, Outpoints>;
     using NymBalances = std::map<OTNymID, Balance>;
-    using KeyID = api::client::blockchain::Key;
+    using KeyID = blockchain::crypto::Key;
     using States = std::vector<TxoState>;
     using Matches = std::vector<Outpoint>;
 

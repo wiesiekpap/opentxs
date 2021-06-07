@@ -166,7 +166,7 @@ auto Outputs::FindMatches(
 
 auto Outputs::ForTestingOnlyAddKey(
     const std::size_t index,
-    const api::client::blockchain::Key& key) noexcept -> bool
+    const blockchain::crypto::Key& key) noexcept -> bool
 {
     try {
         outputs_.at(index)->ForTestingOnlyAddKey(key);

@@ -12,6 +12,7 @@
 #include <optional>
 #include <set>
 
+#include "blockchain/database/common/Database.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Types.hpp"
@@ -81,7 +82,7 @@ struct Transaction::Imp {
 
     Imp(const api::Core& api,
         const api::client::internal::Blockchain& blockchain,
-        const Common& common) noexcept
+        const database::common::Database& common) noexcept
         : api_(api)
         , blockchain_(blockchain)
         , common_(common)
@@ -99,7 +100,7 @@ private:
 
     const api::Core& api_;
     const api::client::internal::Blockchain& blockchain_;
-    const Common& common_;
+    const database::common::Database& common_;
     mutable std::mutex lock_;
     mutable TransactionBlockMap tx_to_block_;
     mutable BlockTransactionMap block_to_tx_;
@@ -109,7 +110,7 @@ private:
 Transaction::Transaction(
     const api::Core& api,
     const api::client::internal::Blockchain& blockchain,
-    const Common& common) noexcept
+    const database::common::Database& common) noexcept
     : imp_(std::make_unique<Imp>(api, blockchain, common))
 {
     OT_ASSERT(imp_);

@@ -21,17 +21,17 @@
 #include <vector>
 
 #include "blockchain/node/wallet/BitcoinTransactionBuilder.hpp"
-#include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/blockchain/PaymentCode.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/SendResult.hpp"
+#include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -73,13 +73,13 @@ public:
     }
 
     Imp(const api::Core& api,
-        const api::client::Blockchain& blockchain,
-        const node::internal::Network& network,
+        const api::client::Blockchain& crypto,
+        const node::internal::Network& node,
         const node::internal::WalletDatabase& db,
         const Type chain) noexcept
         : api_(api)
-        , blockchain_(blockchain)
-        , network_(network)
+        , crypto_(crypto)
+        , node_(node)
         , db_(db)
         , chain_(chain)
         , lock_()
@@ -192,8 +192,8 @@ private:
     };
 
     const api::Core& api_;
-    const api::client::Blockchain& blockchain_;
-    const node::internal::Network& network_;
+    const api::client::Blockchain& crypto_;
+    const node::internal::Network& node_;
     const node::internal::WalletDatabase& db_;
     const Type chain_;
     mutable std::mutex lock_;
@@ -215,7 +215,7 @@ private:
         auto rc = SendResult::UnspecifiedError;
         auto txid{blank};
         auto builder = BitcoinTransactionBuilder{
-            api_, blockchain_, db_, id, proposal, chain_, network_.FeeRate()};
+            api_, crypto_, db_, id, proposal, chain_, node_.FeeRate()};
         auto post = ScopeGuard{[&] {
             switch (output) {
                 case BuildResult::TemporaryFailure: {
@@ -300,7 +300,7 @@ private:
         }
 
         const auto& transaction = *pTransaction;
-        auto proto = transaction.Serialize(blockchain_);
+        auto proto = transaction.Serialize(crypto_);
 
         if (false == proto.has_value()) {
             LogOutput(OT_METHOD)(__FUNCTION__)(
@@ -332,7 +332,7 @@ private:
         }
 
         txid = transaction.ID();
-        const auto sent = network_.BroadcastTransaction(transaction);
+        const auto sent = node_.BroadcastTransaction(transaction);
 
         try {
             if (false == sent) {
@@ -342,7 +342,7 @@ private:
             rc = SendResult::Sent;
 
             for (const auto& notif : proposal.notification()) {
-                using PC = api::client::blockchain::internal::PaymentCode;
+                using PC = crypto::internal::PaymentCode;
                 const auto accountID = PC::GetID(
                     api_,
                     chain_,
@@ -358,7 +358,7 @@ private:
                     return out;
                 }();
                 const auto& account =
-                    blockchain_.PaymentCodeSubaccount(nymID, accountID);
+                    crypto_.PaymentCodeSubaccount(nymID, accountID);
                 account.AddNotification(transaction.ID());
             }
         } catch (const std::exception& e) {
@@ -421,12 +421,12 @@ private:
             if (false == proposal.has_value()) { continue; }
 
             auto pTx = factory::BitcoinTransaction(
-                api_, blockchain_, proposal.value().finished());
+                api_, crypto_, proposal.value().finished());
 
             if (false == bool(pTx)) { continue; }
 
             const auto& tx = *pTx;
-            network_.BroadcastTransaction(tx);
+            node_.BroadcastTransaction(tx);
         }
     }
     auto send(const Lock& lock) noexcept -> void
@@ -481,11 +481,11 @@ private:
 
 Proposals::Proposals(
     const api::Core& api,
-    const api::client::Blockchain& blockchain,
-    const node::internal::Network& network,
+    const api::client::Blockchain& crypto,
+    const node::internal::Network& node,
     const node::internal::WalletDatabase& db,
     const Type chain) noexcept
-    : imp_(std::make_unique<Imp>(api, blockchain, network, db, chain))
+    : imp_(std::make_unique<Imp>(api, crypto, node, db, chain))
 {
     OT_ASSERT(imp_);
 }

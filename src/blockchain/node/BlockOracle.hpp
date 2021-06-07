@@ -35,7 +35,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace network
 {
 namespace internal
 {
@@ -43,7 +43,7 @@ struct Blockchain;
 }  // namespace internal
 
 class Blockchain;
-}  // namespace client
+}  // namespace network
 
 class Core;
 }  // namespace api
@@ -115,8 +115,8 @@ public:
 
     BlockOracle(
         const api::Core& api,
-        const api::client::internal::Blockchain& blockchain,
-        const internal::Network& network,
+        const api::network::internal::Blockchain& network,
+        const internal::Network& node,
         const internal::HeaderOracle& header,
         const internal::BlockDatabase& db,
         const blockchain::Type chain,
@@ -145,7 +145,7 @@ private:
 
         Cache(
             const api::Core& api_,
-            const internal::Network& network,
+            const internal::Network& node,
             const internal::BlockDatabase& db,
             const network::zeromq::socket::Publish& socket,
             const blockchain::Type chain) noexcept;
@@ -176,7 +176,7 @@ private:
         };
 
         const api::Core& api_;
-        const internal::Network& network_;
+        const internal::Network& node_;
         const internal::BlockDatabase& db_;
         const network::zeromq::socket::Publish& cache_size_publisher_;
         const blockchain::Type chain_;
@@ -189,7 +189,7 @@ private:
         auto publish(std::size_t cache) const noexcept -> void;
     };
 
-    const internal::Network& network_;
+    const internal::Network& node_;
     const internal::BlockDatabase& db_;
     mutable std::mutex lock_;
     Cache cache_;

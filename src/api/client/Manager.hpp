@@ -75,6 +75,7 @@ public:
     using Core::Lock;
     auto Lock(const identifier::Nym& nymID, const identifier::Server& serverID)
         const -> std::recursive_mutex& final;
+    auto NewNym(const identifier::Nym& id) const noexcept -> void final;
     auto OTAPI(const std::string& wallet = "") const -> const OT_API& final;
     auto OTX() const -> const client::OTX& final;
     auto Pair() const -> const api::client::Pair& final;
@@ -116,15 +117,6 @@ private:
     std::unique_ptr<internal::UI> ui_;
     mutable std::mutex map_lock_;
     mutable std::map<ContextID, std::recursive_mutex> context_locks_;
-
-    static auto init(
-        const api::Legacy& legacy,
-        const internal::Manager& parent,
-        const std::string& dataFolder,
-        const ArgList& args,
-        std::shared_ptr<internal::Blockchain>& blockchain,
-        std::unique_ptr<internal::Contacts>& contacts) noexcept
-        -> std::unique_ptr<internal::Activity>;
 
     auto get_lock(const ContextID context) const -> std::recursive_mutex&;
 

@@ -11,8 +11,10 @@
 #include <memory>
 #include <utility>
 
+#include "blockchain/database/common/Database.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
+#include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -38,7 +40,7 @@ auto tsv(const Input& in) noexcept -> ReadView
 
 Blocks::Blocks(
     const api::Core& api,
-    const Common& common,
+    const common::Database& common,
     const opentxs::storage::lmdb::LMDB& lmdb,
     const blockchain::Type type) noexcept
     : api_(api)

@@ -25,14 +25,15 @@
 #include "1_Internal.hpp"
 #if OT_BLOCKCHAIN
 #include "blockchain/DownloadTask.hpp"
+#include "internal/blockchain/database/Database.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "internal/core/Core.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/node/FilterOracle.hpp"
@@ -180,18 +181,6 @@ struct make_blank<blockchain::block::Position> {
 };
 }  // namespace opentxs
 
-namespace opentxs::api::client::blockchain
-{
-using BlockReader = ProtectedView<ReadView, std::shared_mutex, sLock>;
-using BlockWriter = ProtectedView<WritableView, std::shared_mutex, eLock>;
-
-enum class BlockStorage : std::uint8_t {
-    None = 0,
-    Cache = 1,
-    All = 2,
-};
-}  // namespace opentxs::api::client::blockchain
-
 namespace opentxs::blockchain::node
 {
 // parent hash, child hash
@@ -222,8 +211,7 @@ struct BlockDatabase {
         -> bool = 0;
     virtual auto BlockLoadBitcoin(const block::Hash& block) const noexcept
         -> std::shared_ptr<const block::bitcoin::Block> = 0;
-    virtual auto BlockPolicy() const noexcept
-        -> api::client::blockchain::BlockStorage = 0;
+    virtual auto BlockPolicy() const noexcept -> database::BlockStorage = 0;
     virtual auto BlockStore(const block::Block& block) const noexcept
         -> bool = 0;
     virtual auto BlockTip() const noexcept -> block::Position = 0;
@@ -480,8 +468,6 @@ struct OPENTXS_EXPORT Network : virtual public node::Manager {
         StateMachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
-    virtual auto Blockchain() const noexcept
-        -> const api::client::internal::Blockchain& = 0;
     virtual auto BroadcastTransaction(
         const block::bitcoin::Transaction& tx) const noexcept -> bool = 0;
     virtual auto Chain() const noexcept -> Type = 0;
@@ -568,7 +554,7 @@ struct WalletDatabase {
     using pNodeID = OTIdentifier;
     using SubchainIndex = Identifier;
     using pSubchainIndex = OTIdentifier;
-    using Subchain = api::client::blockchain::Subchain;
+    using Subchain = blockchain::crypto::Subchain;
     using SubchainID = std::pair<Subchain, pNodeID>;
     using ElementID = std::pair<Bip32Index, SubchainID>;
     using ElementMap = std::map<Bip32Index, std::vector<Space>>;
@@ -577,7 +563,7 @@ struct WalletDatabase {
     using MatchingIndices = std::vector<Bip32Index>;
     using UTXO = std::
         pair<blockchain::block::Outpoint, proto::BlockchainTransactionOutput>;
-    using KeyID = api::client::blockchain::Key;
+    using KeyID = blockchain::crypto::Key;
     using State = node::Wallet::TxoState;
 
     enum class Spend : bool {

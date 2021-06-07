@@ -19,20 +19,6 @@ namespace api
 {
 namespace client
 {
-namespace blockchain
-{
-namespace internal
-{
-struct BalanceList;
-struct BalanceNode;
-struct BalanceTree;
-struct Deterministic;
-struct HD;
-struct Imported;
-struct PaymentCode;
-}  // namespace internal
-}  // namespace blockchain
-
 namespace implementation
 {
 class UI;
@@ -544,15 +530,6 @@ public:
         const Nym_p& nym,
         const proto::UnitDefinition serialized) noexcept
         -> std::shared_ptr<contract::unit::Currency>;
-    static auto Dht(
-        const bool defaultEnable,
-        const api::internal::Core& api,
-        std::int64_t& nymPublishInterval,
-        std::int64_t& nymRefreshInterval,
-        std::int64_t& serverPublishInterval,
-        std::int64_t& serverRefreshInterval,
-        std::int64_t& unitPublishInterval,
-        std::int64_t& unitRefreshInterval) -> api::network::Dht*;
     static auto Envelope(const api::internal::Core& api) noexcept
         -> std::unique_ptr<crypto::Envelope>;
     static auto Envelope(

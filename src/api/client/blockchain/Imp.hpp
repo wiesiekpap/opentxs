@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/crypto/SubaccountType.hpp"
+
 #pragma once
 
 #include <map>
@@ -20,12 +22,12 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/blockchain/BalanceNode.hpp"
-#include "opentxs/api/client/blockchain/Subchain.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/crypto/Subaccount.hpp"
+#include "opentxs/blockchain/crypto/Subchain.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -41,27 +43,6 @@ namespace api
 {
 namespace client
 {
-namespace blockchain
-{
-namespace database
-{
-namespace implementation
-{
-class Database;
-}  // namespace implementation
-}  // namespace database
-
-namespace internal
-{
-struct BalanceList;
-struct BalanceNode;
-struct BalanceTree;
-}  // namespace internal
-
-class HD;
-class PaymentCode;
-}  // namespace blockchain
-
 namespace internal
 {
 struct Blockchain;
@@ -80,6 +61,20 @@ class Core;
 
 namespace blockchain
 {
+namespace crypto
+{
+namespace internal
+{
+struct Account;
+struct Subaccount;
+struct Wallet;
+}  // namespace internal
+
+class Element;
+class HD;
+class PaymentCode;
+}  // namespace crypto
+
 namespace node
 {
 class Manager;
@@ -120,29 +115,32 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::api::client::implementation
 {
 struct AccountCache {
-    using AccountType = Blockchain::AccountType;
-    using Chain = Blockchain::Chain;
-
-    auto List(const identifier::Nym& nymID, const Chain chain) const noexcept
+    auto List(
+        const identifier::Nym& nymID,
+        const opentxs::blockchain::Type chain) const noexcept
         -> std::set<OTIdentifier>;
     auto New(
-        const AccountType type,
-        const Chain chain,
+        const opentxs::blockchain::crypto::SubaccountType type,
+        const opentxs::blockchain::Type chain,
         const Identifier& account,
         const identifier::Nym& owner) const noexcept -> void;
     auto Owner(const Identifier& accountID) const noexcept
         -> const identifier::Nym&;
-    auto Type(const Identifier& accountID) const noexcept -> AccountType;
+    auto Type(const Identifier& accountID) const noexcept
+        -> opentxs::blockchain::crypto::SubaccountType;
 
     auto Populate() noexcept -> void;
 
     AccountCache(const api::Core& api) noexcept;
 
 private:
-    using NymAccountMap = std::map<OTNymID, std::set<OTIdentifier>>;
-    using ChainAccountMap = std::map<Chain, std::optional<NymAccountMap>>;
+    using Accounts = std::set<OTIdentifier>;
+    using NymAccountMap = std::map<OTNymID, Accounts>;
+    using ChainAccountMap =
+        std::map<opentxs::blockchain::Type, std::optional<NymAccountMap>>;
     using AccountNymIndex = std::map<OTIdentifier, OTNymID>;
-    using AccountTypeIndex = std::map<OTIdentifier, AccountType>;
+    using AccountTypeIndex =
+        std::map<OTIdentifier, opentxs::blockchain::crypto::SubaccountType>;
 
     const api::Core& api_;
     mutable std::mutex lock_;
@@ -152,18 +150,26 @@ private:
 
     auto build_account_map(
         const Lock&,
-        const Chain chain,
+        const opentxs::blockchain::Type chain,
         std::optional<NymAccountMap>& map) const noexcept -> void;
-    auto get_account_map(const Lock&, const Chain chain) const noexcept
-        -> NymAccountMap&;
+    auto get_account_map(const Lock&, const opentxs::blockchain::Type chain)
+        const noexcept -> NymAccountMap&;
+    auto load_nym(
+        const opentxs::blockchain::Type chain,
+        const identifier::Nym& nym,
+        NymAccountMap& output) const noexcept -> void;
 };
 
 struct Blockchain::Imp {
     using IDLock = std::map<OTIdentifier, std::mutex>;
 
+    auto Account(
+        const identifier::Nym& nymID,
+        const opentxs::blockchain::Type chain) const noexcept(false)
+        -> const opentxs::blockchain::crypto::internal::Account&;
     auto AccountList(const identifier::Nym& nymID) const noexcept
         -> std::set<OTIdentifier>;
-    auto AccountList(const Chain chain) const noexcept
+    auto AccountList(const opentxs::blockchain::Type chain) const noexcept
         -> std::set<OTIdentifier>;
     auto AccountList() const noexcept -> std::set<OTIdentifier>;
     virtual auto ActivityDescription(
@@ -172,25 +178,21 @@ struct Blockchain::Imp {
         const std::string& threadItemID) const noexcept -> std::string;
     virtual auto ActivityDescription(
         const identifier::Nym& nym,
-        const Chain chain,
+        const opentxs::blockchain::Type chain,
         const Tx& transaction) const noexcept -> std::string;
-    auto address_prefix(const Style style, const Chain chain) const
-        noexcept(false) -> OTData;
-    virtual auto AddSyncServer(
-        [[maybe_unused]] const std::string& endpoint) const noexcept -> bool
-    {
-        return false;
-    }
+    auto address_prefix(
+        const Style style,
+        const opentxs::blockchain::Type chain) const noexcept(false) -> OTData;
     auto AssignContact(
         const identifier::Nym& nymID,
         const Identifier& accountID,
-        const blockchain::Subchain subchain,
+        const Subchain subchain,
         const Bip32Index index,
         const Identifier& contactID) const noexcept -> bool;
     auto AssignLabel(
         const identifier::Nym& nymID,
         const Identifier& accountID,
-        const blockchain::Subchain subchain,
+        const Subchain subchain,
         const Bip32Index index,
         const std::string& label) const noexcept -> bool;
     virtual auto AssignTransactionMemo(
@@ -199,57 +201,31 @@ struct Blockchain::Imp {
     {
         return false;
     }
-    auto BalanceList(const Chain chain) const noexcept(false)
-        -> const blockchain::internal::BalanceList&;
-    auto BalanceTree(const identifier::Nym& nymID, const Chain chain) const
-        noexcept(false) -> const blockchain::internal::BalanceTree&;
-    virtual auto BlockchainDB() const noexcept
-        -> const blockchain::database::implementation::Database&;
-    virtual auto BlockQueueUpdate() const noexcept
-        -> const zmq::socket::Publish&;
     auto CalculateAddress(
-        const Chain chain,
+        const opentxs::blockchain::Type chain,
         const Style format,
         const Data& pubkey) const noexcept -> std::string;
-    auto Confirm(
-        const blockchain::Key key,
-        const opentxs::blockchain::block::Txid& tx) const noexcept -> bool;
-    virtual auto ConnectedSyncServers() const noexcept -> Endpoints
-    {
-        return {};
-    }
+    auto Confirm(const Key key, const opentxs::blockchain::block::Txid& tx)
+        const noexcept -> bool;
     auto Contacts() const noexcept -> const api::client::Contacts&
     {
         return contacts_;
     }
     auto DecodeAddress(const std::string& encoded) const noexcept
         -> DecodedAddress;
-    virtual auto DeleteSyncServer(
-        [[maybe_unused]] const std::string& endpoint) const noexcept -> bool
-    {
-        return false;
-    }
-    virtual auto Disable(const Chain type) const noexcept -> bool;
-    virtual auto Enable(const Chain type, const std::string& seednode)
-        const noexcept -> bool;
-    virtual auto EnabledChains() const noexcept -> std::set<Chain>;
-    auto EncodeAddress(const Style style, const Chain chain, const Data& data)
-        const noexcept -> std::string;
-    virtual auto FilterUpdate() const noexcept -> const zmq::socket::Publish&;
-    virtual auto GetChain(const Chain type) const noexcept(false)
-        -> const opentxs::blockchain::node::Manager&;
-    auto GetKey(const blockchain::Key& id) const noexcept(false)
-        -> const blockchain::BalanceNode::Element&;
-    virtual auto GetSyncServers() const noexcept -> Endpoints { return {}; }
+    auto EncodeAddress(
+        const Style style,
+        const opentxs::blockchain::Type chain,
+        const Data& data) const noexcept -> std::string;
+    auto GetKey(const Key& id) const noexcept(false)
+        -> const opentxs::blockchain::crypto::Element&;
     auto HDSubaccount(const identifier::Nym& nymID, const Identifier& accountID)
-        const noexcept(false) -> const blockchain::HD&;
+        const noexcept(false) -> const opentxs::blockchain::crypto::HD&;
     using SyncState = std::vector<opentxs::network::blockchain::sync::State>;
-    virtual auto Hello() const noexcept -> SyncState;
     virtual auto IndexItem(const ReadView bytes) const noexcept -> PatternID;
-    virtual auto IsEnabled(const opentxs::blockchain::Type chain) const noexcept
-        -> bool;
     virtual auto KeyEndpoint() const noexcept -> const std::string&;
-    virtual auto KeyGenerated(const Chain chain) const noexcept -> void;
+    virtual auto KeyGenerated(
+        const opentxs::blockchain::Type chain) const noexcept -> void;
     virtual auto LoadTransactionBitcoin(const TxidHex& txid) const noexcept
         -> std::unique_ptr<const Tx>;
     virtual auto LoadTransactionBitcoin(const Txid& txid) const noexcept
@@ -260,80 +236,63 @@ struct Blockchain::Imp {
     auto NewHDSubaccount(
         const identifier::Nym& nymID,
         const BlockchainAccountType standard,
-        const Chain chain,
+        const opentxs::blockchain::Type chain,
         const PasswordPrompt& reason) const noexcept -> OTIdentifier;
+    auto NewNym(const identifier::Nym& id) const noexcept -> void;
     auto NewPaymentCodeSubaccount(
         const identifier::Nym& nymID,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
         const proto::HDPath path,
-        const Chain chain,
+        const opentxs::blockchain::Type chain,
         const PasswordPrompt& reason) const noexcept -> OTIdentifier;
     auto Owner(const Identifier& accountID) const noexcept
         -> const identifier::Nym&
     {
         return accounts_.Owner(accountID);
     }
-    auto Owner(const blockchain::Key& key) const noexcept
-        -> const identifier::Nym&;
+    auto Owner(const Key& key) const noexcept -> const identifier::Nym&;
     auto PaymentCodeSubaccount(
         const identifier::Nym& nymID,
         const Identifier& accountID) const noexcept(false)
-        -> const blockchain::PaymentCode&;
+        -> const opentxs::blockchain::crypto::PaymentCode&;
     auto PaymentCodeSubaccount(
         const identifier::Nym& nymID,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
         const proto::HDPath path,
-        const Chain chain,
+        const opentxs::blockchain::Type chain,
         const PasswordPrompt& reason) const noexcept(false)
-        -> const blockchain::PaymentCode&;
-    virtual auto PeerUpdate() const noexcept
-        -> const opentxs::network::zeromq::socket::Publish&;
+        -> const opentxs::blockchain::crypto::PaymentCode&;
     virtual auto ProcessContact(const Contact& contact) const noexcept -> bool;
     virtual auto ProcessMergedContact(
         const Contact& parent,
         const Contact& child) const noexcept -> bool;
     virtual auto ProcessTransaction(
-        const Chain chain,
+        const opentxs::blockchain::Type chain,
         const Tx& in,
         const PasswordPrompt& reason) const noexcept -> bool;
-    auto PubkeyHash(const Chain chain, const Data& pubkey) const noexcept(false)
-        -> OTData;
-    auto RecipientContact(const blockchain::Key& key) const noexcept
-        -> OTIdentifier;
-    auto Release(const blockchain::Key key) const noexcept -> bool;
-    virtual auto Reorg() const noexcept -> const zmq::socket::Publish&;
-    virtual auto ReportProgress(
-        const Chain chain,
-        const opentxs::blockchain::block::Height current,
-        const opentxs::blockchain::block::Height target) const noexcept -> void;
+    auto PubkeyHash(const opentxs::blockchain::Type chain, const Data& pubkey)
+        const noexcept(false) -> OTData;
+    auto RecipientContact(const Key& key) const noexcept -> OTIdentifier;
+    auto Release(const Key key) const noexcept -> bool;
     virtual auto ReportScan(
-        const Chain chain,
+        const opentxs::blockchain::Type chain,
         const identifier::Nym& owner,
         const Identifier& account,
-        const blockchain::Subchain subchain,
+        const Subchain subchain,
         const opentxs::blockchain::block::Position& progress) const noexcept
         -> void;
-    virtual auto RestoreNetworks() const noexcept -> void;
-    auto SenderContact(const blockchain::Key& key) const noexcept
-        -> OTIdentifier;
-    virtual auto Start(const Chain type, const std::string& seednode)
-        const noexcept -> bool;
-    virtual auto StartSyncServer(
-        const std::string& sync,
-        const std::string& publicSync,
-        const std::string& update,
-        const std::string& publicUpdate) const noexcept -> bool;
-    virtual auto Stop(const Chain type) const noexcept -> bool;
-    auto SubaccountList(const identifier::Nym& nymID, const Chain chain)
-        const noexcept -> std::set<OTIdentifier>
+    auto SenderContact(const Key& key) const noexcept -> OTIdentifier;
+    auto SubaccountList(
+        const identifier::Nym& nymID,
+        const opentxs::blockchain::Type chain) const noexcept
+        -> std::set<OTIdentifier>
     {
         return accounts_.List(nymID, chain);
     }
-    virtual auto SyncEndpoint() const noexcept -> const std::string&;
     auto Unconfirm(
-        const blockchain::Key key,
+        const Key key,
         const opentxs::blockchain::block::Txid& tx,
         const Time time) const noexcept -> bool;
     virtual auto UpdateBalance(
@@ -345,12 +304,10 @@ struct Blockchain::Imp {
         const opentxs::blockchain::Balance balance) const noexcept -> void;
     virtual auto UpdateElement(
         std::vector<ReadView>& pubkeyHashes) const noexcept -> void;
-    virtual auto UpdatePeer(
-        const opentxs::blockchain::Type chain,
-        const std::string& address) const noexcept -> void;
+    auto Wallet(const opentxs::blockchain::Type chain) const noexcept(false)
+        -> const opentxs::blockchain::crypto::internal::Wallet&;
 
     virtual auto Init() noexcept -> void;
-    virtual auto Shutdown() noexcept -> void;
 
     Imp(const api::internal::Core& api,
         const api::client::Contacts& contacts,
@@ -365,7 +322,7 @@ protected:
     mutable std::mutex lock_;
     mutable IDLock nym_lock_;
     mutable AccountCache accounts_;
-    mutable BalanceLists balance_lists_;
+    mutable BalanceLists wallets_;
 
     auto bip44_type(const contact::ContactItemType type) const noexcept
         -> Bip44Type;
@@ -374,7 +331,7 @@ protected:
     auto decode_legacy(const std::string& encoded) const noexcept
         -> std::optional<DecodedAddress>;
     auto get_node(const Identifier& accountID) const noexcept(false)
-        -> blockchain::internal::BalanceNode&;
+        -> opentxs::blockchain::crypto::internal::Subaccount&;
     auto init_path(
         const std::string& root,
         const contact::ContactItemType chain,
@@ -387,12 +344,12 @@ protected:
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
         const proto::HDPath path,
-        const Chain chain,
+        const opentxs::blockchain::Type chain,
         const PasswordPrompt& reason) const noexcept -> OTIdentifier;
-    auto p2pkh(const Chain chain, const Data& pubkeyHash) const noexcept
-        -> std::string;
-    auto p2sh(const Chain chain, const Data& scriptHash) const noexcept
-        -> std::string;
+    auto p2pkh(const opentxs::blockchain::Type chain, const Data& pubkeyHash)
+        const noexcept -> std::string;
+    auto p2sh(const opentxs::blockchain::Type chain, const Data& scriptHash)
+        const noexcept -> std::string;
     auto nym_mutex(const identifier::Nym& nym) const noexcept -> std::mutex&;
     auto validate_nym(const identifier::Nym& nymID) const noexcept -> bool;
 
@@ -400,8 +357,8 @@ private:
     virtual auto notify_new_account(
         const Identifier& id,
         const identifier::Nym& owner,
-        Chain chain,
-        AccountType type) const noexcept -> void
+        opentxs::blockchain::Type chain,
+        opentxs::blockchain::crypto::SubaccountType type) const noexcept -> void
     {
     }
 };

@@ -16,13 +16,13 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace network
 {
 namespace internal
 {
 struct Blockchain;
 }  // namespace internal
-}  // namespace client
+}  // namespace network
 
 class Core;
 }  // namespace api
@@ -37,7 +37,7 @@ public:
 
     SyncClient(
         const api::Core& api,
-        const api::client::internal::Blockchain& blockchain,
+        const api::network::internal::Blockchain& network,
         const Type chain) noexcept;
 
     ~SyncClient();

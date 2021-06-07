@@ -21,9 +21,12 @@
 #include <vector>
 
 #include "internal/api/client/Client.hpp"
+#include "internal/api/network/Network.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Endpoints.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
@@ -49,7 +52,7 @@ namespace opentxs::factory
 {
 auto BlockchainSelectionModel(
     const api::client::internal::Manager& api,
-    const api::client::internal::Blockchain& blockchain,
+    const api::network::internal::Blockchain& blockchain,
     const ui::Blockchains type,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::implementation::BlockchainSelection>
@@ -144,7 +147,7 @@ namespace opentxs::ui::implementation
 {
 BlockchainSelection::BlockchainSelection(
     const api::client::internal::Manager& api,
-    const api::client::internal::Blockchain& blockchain,
+    const api::network::internal::Blockchain& blockchain,
     const ui::Blockchains type,
     const SimpleCallback& cb) noexcept
     : BlockchainSelectionList(
@@ -191,7 +194,7 @@ auto BlockchainSelection::Disable(const blockchain::Type type) const noexcept
     -> bool
 {
     const auto work = [&] {
-        auto out = Widget::api_.ZeroMQ().TaggedMessage(Work::disable);
+        auto out = Widget::api_.Network().ZeroMQ().TaggedMessage(Work::disable);
         out->AddFrame(type);
 
         return out;
@@ -209,14 +212,14 @@ auto BlockchainSelection::disable(const Message& in) noexcept -> void
 
     const auto chain = body.at(1).as<blockchain::Type>();
     process_state(chain, false);
-    blockchain_.Disable(chain);
+    Widget::api_.Network().Blockchain().Disable(chain);
 }
 
 auto BlockchainSelection::Enable(const blockchain::Type type) const noexcept
     -> bool
 {
     const auto work = [&] {
-        auto out = Widget::api_.ZeroMQ().TaggedMessage(Work::enable);
+        auto out = Widget::api_.Network().ZeroMQ().TaggedMessage(Work::enable);
         out->AddFrame(type);
 
         return out;
@@ -234,7 +237,7 @@ auto BlockchainSelection::enable(const Message& in) noexcept -> void
 
     const auto chain = body.at(1).as<blockchain::Type>();
     process_state(chain, true);
-    blockchain_.Enable(chain);
+    Widget::api_.Network().Blockchain().Enable(chain);
 }
 
 auto BlockchainSelection::EnabledCount() const noexcept -> std::size_t

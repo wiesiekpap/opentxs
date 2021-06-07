@@ -11,8 +11,8 @@
 #include <utility>
 
 #include "internal/api/Api.hpp"
-#include "internal/api/client/blockchain/Blockchain.hpp"
-#include "internal/api/client/blockchain/Factory.hpp"
+#include "internal/blockchain/crypto/Crypto.hpp"
+#include "internal/blockchain/crypto/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Log.hpp"
 
@@ -57,7 +57,7 @@ auto BalanceLists::AccountList() const noexcept -> std::set<OTIdentifier>
 }
 
 auto BalanceLists::Get(const Chain chain) noexcept
-    -> client::blockchain::internal::BalanceList&
+    -> opentxs::blockchain::crypto::internal::Wallet&
 {
     auto lock = Lock{lock_};
 
@@ -65,7 +65,7 @@ auto BalanceLists::Get(const Chain chain) noexcept
 }
 
 auto BalanceLists::get(const Lock& lock, const Chain chain) const noexcept
-    -> client::blockchain::internal::BalanceList&
+    -> opentxs::blockchain::crypto::internal::Wallet&
 {
     auto it = lists_.find(chain);
 

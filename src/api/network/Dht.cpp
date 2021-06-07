@@ -14,9 +14,9 @@
 #include <utility>
 #include <vector>
 
-#include "2_Factory.hpp"
 #include "Proto.tpp"
 #include "internal/api/Api.hpp"
+#include "internal/api/network/Factory.hpp"
 #include "internal/network/Factory.hpp"
 #include "network/DhtConfig.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -26,6 +26,7 @@
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/network/Dht.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -48,17 +49,22 @@
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs
+namespace opentxs::factory
 {
-auto Factory::Dht(
-    const bool defaultEnable,
+using ReturnType = api::network::implementation::Dht;
+
+auto DhtAPI(
     const api::internal::Core& api,
+    const opentxs::network::zeromq::Context& zeromq,
+    const api::Endpoints& endpoints,
+    const bool defaultEnable,
     std::int64_t& nymPublishInterval,
     std::int64_t& nymRefreshInterval,
     std::int64_t& serverPublishInterval,
     std::int64_t& serverRefreshInterval,
     std::int64_t& unitPublishInterval,
-    std::int64_t& unitRefreshInterval) -> api::network::Dht*
+    std::int64_t& unitRefreshInterval) noexcept
+    -> std::unique_ptr<api::network::Dht>
 {
     auto config = network::DhtConfig{};
     auto notUsed{false};
@@ -123,13 +129,17 @@ auto Factory::Dht(
         config.bootstrap_port_,
         notUsed);
 
-    return new api::network::implementation::Dht(config, api);
+    return std::make_unique<ReturnType>(api, zeromq, endpoints, config);
 }
-}  // namespace opentxs
+}  // namespace opentxs::factory
 
 namespace opentxs::api::network::implementation
 {
-Dht::Dht(opentxs::network::DhtConfig& config, const api::internal::Core& api)
+Dht::Dht(
+    const api::internal::Core& api,
+    const opentxs::network::zeromq::Context& zeromq,
+    const api::Endpoints& endpoints,
+    opentxs::network::DhtConfig& config) noexcept
     : api_(api)
     , callback_map_()
     , config_(config)
@@ -138,27 +148,27 @@ Dht::Dht(opentxs::network::DhtConfig& config, const api::internal::Core& api)
           [=](const zmq::Message& incoming) -> OTZMQMessage {
               return this->process_request(incoming, &Dht::GetPublicNym);
           })}
-    , request_nym_socket_{api_.ZeroMQ().ReplySocket(
+    , request_nym_socket_{zeromq.ReplySocket(
           request_nym_callback_,
           zmq::socket::Socket::Direction::Bind)}
     , request_server_callback_{zmq::ReplyCallback::Factory(
           [=](const zmq::Message& incoming) -> OTZMQMessage {
               return this->process_request(incoming, &Dht::GetServerContract);
           })}
-    , request_server_socket_{api_.ZeroMQ().ReplySocket(
+    , request_server_socket_{zeromq.ReplySocket(
           request_server_callback_,
           zmq::socket::Socket::Direction::Bind)}
     , request_unit_callback_{zmq::ReplyCallback::Factory(
           [=](const zmq::Message& incoming) -> OTZMQMessage {
               return this->process_request(incoming, &Dht::GetUnitDefinition);
           })}
-    , request_unit_socket_{api_.ZeroMQ().ReplySocket(
+    , request_unit_socket_{zeromq.ReplySocket(
           request_unit_callback_,
           zmq::socket::Socket::Direction::Bind)}
 {
-    request_nym_socket_->Start(api_.Endpoints().DhtRequestNym());
-    request_server_socket_->Start(api_.Endpoints().DhtRequestServer());
-    request_unit_socket_->Start(api_.Endpoints().DhtRequestUnit());
+    request_nym_socket_->Start(endpoints.DhtRequestNym());
+    request_server_socket_->Start(endpoints.DhtRequestServer());
+    request_unit_socket_->Start(endpoints.DhtRequestUnit());
 }
 
 void Dht::Insert(const std::string& key, const std::string& value) const
@@ -254,7 +264,7 @@ auto Dht::process_request(
         }
     }
 
-    return api_.ZeroMQ().Message(output);
+    return api_.Network().ZeroMQ().Message(output);
 }
 
 auto Dht::ProcessPublicNym(

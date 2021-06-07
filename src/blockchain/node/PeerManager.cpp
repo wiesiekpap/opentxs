@@ -13,7 +13,7 @@
 #include <string_view>
 
 #include "core/Worker.hpp"
-#include "internal/api/client/Client.hpp"
+#include "internal/api/network/Network.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"  // IWYU pragma: keep
@@ -38,15 +38,15 @@ namespace opentxs::factory
 {
 auto BlockchainPeerManager(
     const api::Core& api,
-    const api::client::internal::Blockchain& blockchain,
+    const api::network::internal::Blockchain& network,
     const blockchain::node::internal::Config& config,
-    const blockchain::node::internal::Network& network,
+    const blockchain::node::internal::Network& node,
     const blockchain::node::internal::HeaderOracle& headers,
     const blockchain::node::internal::FilterOracle& filter,
     const blockchain::node::internal::BlockOracle& block,
     const blockchain::node::internal::PeerDatabase& database,
     const blockchain::Type type,
-    const api::client::blockchain::BlockStorage policy,
+    const blockchain::database::BlockStorage policy,
     const std::string& seednode,
     const std::string& shutdown) noexcept
     -> std::unique_ptr<blockchain::node::internal::PeerManager>
@@ -55,9 +55,9 @@ auto BlockchainPeerManager(
 
     return std::make_unique<ReturnType>(
         api,
-        blockchain,
-        config,
         network,
+        config,
+        node,
         headers,
         filter,
         block,
@@ -73,28 +73,29 @@ namespace opentxs::blockchain::node::implementation
 {
 PeerManager::PeerManager(
     const api::Core& api,
-    const api::client::internal::Blockchain& blockchain,
+    const api::network::internal::Blockchain& network,
     const internal::Config& config,
-    const internal::Network& network,
+    const internal::Network& node,
     const internal::HeaderOracle& headers,
     const internal::FilterOracle& filter,
     const internal::BlockOracle& block,
     const internal::PeerDatabase& database,
     const Type chain,
-    const api::client::blockchain::BlockStorage policy,
+    const database::BlockStorage policy,
     const std::string& seednode,
     const std::string& shutdown) noexcept
     : internal::PeerManager()
     , Worker(api, std::chrono::milliseconds(100))
     , network_(network)
+    , node_(node)
     , database_(database)
     , chain_(chain)
     , jobs_(api)
     , peers_(
           api,
-          blockchain,
-          config,
           network,
+          config,
+          node,
           headers,
           filter,
           block,
@@ -254,20 +255,20 @@ auto PeerManager::Listen(const p2p::Address& address) const noexcept -> bool
 
 auto PeerManager::peer_target(
     const Type chain,
-    const api::client::blockchain::BlockStorage policy) noexcept -> std::size_t
+    const database::BlockStorage policy) noexcept -> std::size_t
 {
     if (Type::UnitTest == chain) { return 0; }
 
     switch (policy) {
-        case api::client::blockchain::BlockStorage::All: {
+        case database::BlockStorage::All: {
 
             return 6;
         }
-        case api::client::blockchain::BlockStorage::Cache: {
+        case database::BlockStorage::Cache: {
 
             return 4;
         }
-        case api::client::blockchain::BlockStorage::None:
+        case database::BlockStorage::None:
         default: {
 
             return 2;
@@ -305,7 +306,7 @@ auto PeerManager::pipeline(zmq::Message& message) noexcept -> void
             }
 
             peers_.Disconnect(id);
-            network_.Blockchain().UpdatePeer(chain_, "");
+            network_.UpdatePeer(chain_, "");
             do_work();
         } break;
         case Work::AddPeer: {
@@ -444,7 +445,7 @@ auto PeerManager::VerifyPeer(const int id, const std::string& address)
         verified_peers_.emplace(id);
     }
 
-    network_.Blockchain().UpdatePeer(chain_, address);
+    network_.UpdatePeer(chain_, address);
 }
 
 PeerManager::~PeerManager() { Shutdown().get(); }

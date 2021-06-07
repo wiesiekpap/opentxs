@@ -17,18 +17,20 @@
 #include <type_traits>
 
 #include "display/Definition.hpp"
-#include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
+#include "internal/blockchain/crypto/Crypto.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/blockchain/AddressStyle.hpp"
-#include "opentxs/api/client/blockchain/BalanceTree.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
+#include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
@@ -89,7 +91,7 @@ BlockchainAccountActivity::BlockchainAccountActivity(
     , confirmed_(0)
     , balance_cb_(zmq::ListenCallback::Factory(
           [this](const auto& in) { pipeline_->Push(in); }))
-    , balance_socket_(Widget::api_.ZeroMQ().DealerSocket(
+    , balance_socket_(Widget::api_.Network().ZeroMQ().DealerSocket(
           balance_cb_,
           zmq::socket::Socket::Direction::Connect))
     , progress_()
@@ -308,7 +310,8 @@ auto BlockchainAccountActivity::Send(
     const std::string& memo) const noexcept -> bool
 {
     try {
-        const auto& network = Widget::api_.Blockchain().GetChain(chain_);
+        const auto& network =
+            Widget::api_.Network().Blockchain().GetChain(chain_);
         const auto recipient = Widget::api_.Factory().PaymentCode(address);
 
         if (0 < recipient->Version()) {
@@ -333,7 +336,8 @@ auto BlockchainAccountActivity::Send(
     SendMonitor::Callback cb) const noexcept -> int
 {
     try {
-        const auto& network = Widget::api_.Blockchain().GetChain(chain_);
+        const auto& network =
+            Widget::api_.Network().Blockchain().GetChain(chain_);
         const auto recipient = Widget::api_.Factory().PaymentCode(address);
         const auto amount = scales_.Import(input, scale);
 
@@ -388,7 +392,7 @@ auto BlockchainAccountActivity::ValidateAddress(
         if (0 < code->Version()) { return true; }
     }
 
-    using Style = api::client::blockchain::AddressStyle;
+    using Style = blockchain::crypto::AddressStyle;
 
     const auto [data, style, chains, supported] =
         Widget::api_.Blockchain().DecodeAddress(in);

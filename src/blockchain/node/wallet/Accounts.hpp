@@ -75,8 +75,8 @@ public:
 
     Accounts(
         const api::Core& api,
-        const api::client::internal::Blockchain& blockchain,
-        const node::internal::Network& network,
+        const api::client::internal::Blockchain& crypto,
+        const node::internal::Network& node,
         const node::internal::WalletDatabase& db,
         const network::zeromq::socket::Push& socket,
         const Type chain,

@@ -5,9 +5,6 @@
 
 #pragma once
 
-// IWYU pragma: private
-// IWYU pragma: friend ".*src/network/zeromq/PairEventCallback.cpp"
-
 #include "opentxs/network/zeromq/PairEventCallback.hpp"
 
 namespace opentxs

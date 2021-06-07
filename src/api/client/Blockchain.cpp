@@ -14,12 +14,10 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "api/client/blockchain/Imp.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/api/client/Factory.hpp"
-#include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
+#include "internal/blockchain/crypto/Crypto.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Data.hpp"
@@ -78,15 +76,17 @@ auto Blockchain::Bip44Path(
 namespace opentxs::api::client::implementation
 {
 auto Blockchain::Account(const identifier::Nym& nymID, const Chain chain) const
-    noexcept(false) -> const blockchain::BalanceTree&
+    noexcept(false) -> const opentxs::blockchain::crypto::Account&
 {
-    return BalanceTree(nymID, chain);
+    return AccountInternal(nymID, chain);
 }
 
-auto Blockchain::Accounts(const Chain chain) const noexcept(false)
-    -> const blockchain::BalanceList&
+auto Blockchain::AccountInternal(
+    const identifier::Nym& nymID,
+    const Chain chain) const noexcept(false)
+    -> const opentxs::blockchain::crypto::internal::Account&
 {
-    return imp_->BalanceList(chain);
+    return imp_->Account(nymID, chain);
 }
 
 auto Blockchain::SubaccountList(const identifier::Nym& nymID, const Chain chain)
@@ -128,16 +128,10 @@ auto Blockchain::ActivityDescription(
     return imp_->ActivityDescription(nym, chain, transaction);
 }
 
-auto Blockchain::AddSyncServer(const std::string& endpoint) const noexcept
-    -> bool
-{
-    return imp_->AddSyncServer(endpoint);
-}
-
 auto Blockchain::AssignContact(
     const identifier::Nym& nymID,
     const Identifier& accountID,
-    const blockchain::Subchain subchain,
+    const Subchain subchain,
     const Bip32Index index,
     const Identifier& contactID) const noexcept -> bool
 {
@@ -147,7 +141,7 @@ auto Blockchain::AssignContact(
 auto Blockchain::AssignLabel(
     const identifier::Nym& nymID,
     const Identifier& accountID,
-    const blockchain::Subchain subchain,
+    const Subchain subchain,
     const Bip32Index index,
     const std::string& label) const noexcept -> bool
 {
@@ -161,24 +155,6 @@ auto Blockchain::AssignTransactionMemo(
     return imp_->AssignTransactionMemo(id, label);
 }
 
-auto Blockchain::BalanceTree(const identifier::Nym& nymID, const Chain chain)
-    const noexcept(false) -> const blockchain::internal::BalanceTree&
-{
-    return imp_->BalanceTree(nymID, chain);
-}
-
-auto Blockchain::BlockchainDB() const noexcept
-    -> const blockchain::database::implementation::Database&
-{
-    return imp_->BlockchainDB();
-}
-
-auto Blockchain::BlockQueueUpdate() const noexcept
-    -> const zmq::socket::Publish&
-{
-    return imp_->BlockQueueUpdate();
-}
-
 auto Blockchain::CalculateAddress(
     const Chain chain,
     const Style format,
@@ -188,15 +164,10 @@ auto Blockchain::CalculateAddress(
 }
 
 auto Blockchain::Confirm(
-    const blockchain::Key key,
+    const Key key,
     const opentxs::blockchain::block::Txid& tx) const noexcept -> bool
 {
     return imp_->Confirm(key, tx);
-}
-
-auto Blockchain::ConnectedSyncServers() const noexcept -> Endpoints
-{
-    return imp_->ConnectedSyncServers();
 }
 
 auto Blockchain::Contacts() const noexcept -> const api::client::Contacts&
@@ -210,28 +181,6 @@ auto Blockchain::DecodeAddress(const std::string& encoded) const noexcept
     return imp_->DecodeAddress(encoded);
 }
 
-auto Blockchain::DeleteSyncServer(const std::string& endpoint) const noexcept
-    -> bool
-{
-    return imp_->DeleteSyncServer(endpoint);
-}
-
-auto Blockchain::Disable(const Chain type) const noexcept -> bool
-{
-    return imp_->Disable(type);
-}
-
-auto Blockchain::Enable(const Chain type, const std::string& seednode)
-    const noexcept -> bool
-{
-    return imp_->Enable(type, seednode);
-}
-
-auto Blockchain::EnabledChains() const noexcept -> std::set<Chain>
-{
-    return imp_->EnabledChains();
-}
-
 auto Blockchain::EncodeAddress(
     const Style style,
     const Chain chain,
@@ -240,36 +189,19 @@ auto Blockchain::EncodeAddress(
     return imp_->EncodeAddress(style, chain, data);
 }
 
-auto Blockchain::FilterUpdate() const noexcept -> const zmq::socket::Publish&
-{
-    return imp_->FilterUpdate();
-}
-
-auto Blockchain::GetChain(const Chain type) const noexcept(false)
-    -> const opentxs::blockchain::node::Manager&
-{
-    return imp_->GetChain(type);
-}
-
-auto Blockchain::GetKey(const blockchain::Key& id) const noexcept(false)
-    -> const blockchain::BalanceNode::Element&
+auto Blockchain::GetKey(const Key& id) const noexcept(false)
+    -> const opentxs::blockchain::crypto::Element&
 {
     return imp_->GetKey(id);
 }
 
-auto Blockchain::GetSyncServers() const noexcept -> Endpoints
-{
-    return imp_->GetSyncServers();
-}
-
 auto Blockchain::HDSubaccount(
     const identifier::Nym& nymID,
-    const Identifier& accountID) const noexcept(false) -> const blockchain::HD&
+    const Identifier& accountID) const noexcept(false)
+    -> const opentxs::blockchain::crypto::HD&
 {
     return imp_->HDSubaccount(nymID, accountID);
 }
-
-auto Blockchain::Hello() const noexcept -> SyncData { return imp_->Hello(); }
 
 auto Blockchain::IndexItem(const ReadView bytes) const noexcept -> PatternID
 {
@@ -277,12 +209,6 @@ auto Blockchain::IndexItem(const ReadView bytes) const noexcept -> PatternID
 }
 
 auto Blockchain::Init() noexcept -> void { imp_->Init(); }
-
-auto Blockchain::IsEnabled(const opentxs::blockchain::Type chain) const noexcept
-    -> bool
-{
-    return imp_->IsEnabled(chain);
-}
 
 auto Blockchain::KeyEndpoint() const noexcept -> const std::string&
 {
@@ -336,6 +262,11 @@ auto Blockchain::NewHDSubaccount(
     return imp_->NewHDSubaccount(nymID, standard, chain, reason);
 }
 
+auto Blockchain::NewNym(const identifier::Nym& id) const noexcept -> void
+{
+    return imp_->NewNym(id);
+}
+
 auto Blockchain::NewPaymentCodeSubaccount(
     const identifier::Nym& nymID,
     const opentxs::PaymentCode& local,
@@ -367,8 +298,7 @@ auto Blockchain::Owner(const Identifier& accountID) const noexcept
     return imp_->Owner(accountID);
 }
 
-auto Blockchain::Owner(const blockchain::Key& key) const noexcept
-    -> const identifier::Nym&
+auto Blockchain::Owner(const Key& key) const noexcept -> const identifier::Nym&
 {
     return imp_->Owner(key);
 }
@@ -376,7 +306,7 @@ auto Blockchain::Owner(const blockchain::Key& key) const noexcept
 auto Blockchain::PaymentCodeSubaccount(
     const identifier::Nym& nymID,
     const Identifier& accountID) const noexcept(false)
-    -> const blockchain::PaymentCode&
+    -> const opentxs::blockchain::crypto::PaymentCode&
 {
     return imp_->PaymentCodeSubaccount(nymID, accountID);
 }
@@ -388,16 +318,10 @@ auto Blockchain::PaymentCodeSubaccount(
     const proto::HDPath& path,
     const Chain chain,
     const PasswordPrompt& reason) const noexcept(false)
-    -> const blockchain::PaymentCode&
+    -> const opentxs::blockchain::crypto::PaymentCode&
 {
     return imp_->PaymentCodeSubaccount(
         nymID, local, remote, path, chain, reason);
-}
-
-auto Blockchain::PeerUpdate() const noexcept
-    -> const opentxs::network::zeromq::socket::Publish&
-{
-    return imp_->PeerUpdate();
 }
 
 auto Blockchain::ProcessContact(const Contact& contact) const noexcept -> bool
@@ -427,80 +351,33 @@ auto Blockchain::PubkeyHash(
     return imp_->PubkeyHash(chain, pubkey);
 }
 
-auto Blockchain::RecipientContact(const blockchain::Key& key) const noexcept
-    -> OTIdentifier
+auto Blockchain::RecipientContact(const Key& key) const noexcept -> OTIdentifier
 {
     return imp_->RecipientContact(key);
 }
 
-auto Blockchain::Reorg() const noexcept -> const zmq::socket::Publish&
-{
-    return imp_->Reorg();
-}
-
-auto Blockchain::Release(const blockchain::Key key) const noexcept -> bool
+auto Blockchain::Release(const Key key) const noexcept -> bool
 {
     return imp_->Release(key);
-}
-
-auto Blockchain::ReportProgress(
-    const Chain chain,
-    const opentxs::blockchain::block::Height current,
-    const opentxs::blockchain::block::Height target) const noexcept -> void
-{
-    imp_->ReportProgress(chain, current, target);
 }
 
 auto Blockchain::ReportScan(
     const Chain chain,
     const identifier::Nym& owner,
     const Identifier& account,
-    const blockchain::Subchain subchain,
+    const Subchain subchain,
     const opentxs::blockchain::block::Position& progress) const noexcept -> void
 {
     imp_->ReportScan(chain, owner, account, subchain, progress);
 }
 
-auto Blockchain::RestoreNetworks() const noexcept -> void
-{
-    imp_->RestoreNetworks();
-}
-
-auto Blockchain::SenderContact(const blockchain::Key& key) const noexcept
-    -> OTIdentifier
+auto Blockchain::SenderContact(const Key& key) const noexcept -> OTIdentifier
 {
     return imp_->SenderContact(key);
 }
 
-auto Blockchain::Shutdown() noexcept -> void { imp_->Shutdown(); }
-
-auto Blockchain::Start(const Chain type, const std::string& seednode)
-    const noexcept -> bool
-{
-    return imp_->Start(type, seednode);
-}
-
-auto Blockchain::StartSyncServer(
-    const std::string& sync,
-    const std::string& publicSync,
-    const std::string& update,
-    const std::string& publicUpdate) const noexcept -> bool
-{
-    return imp_->StartSyncServer(sync, publicSync, update, publicUpdate);
-}
-
-auto Blockchain::Stop(const Chain type) const noexcept -> bool
-{
-    return imp_->Stop(type);
-}
-
-auto Blockchain::SyncEndpoint() const noexcept -> const std::string&
-{
-    return imp_->SyncEndpoint();
-}
-
 auto Blockchain::Unconfirm(
-    const blockchain::Key key,
+    const Key key,
     const opentxs::blockchain::block::Txid& tx,
     const Time time) const noexcept -> bool
 {
@@ -528,12 +405,11 @@ auto Blockchain::UpdateBalance(
     imp_->UpdateBalance(owner, chain, balance);
 }
 
-auto Blockchain::UpdatePeer(
-    const opentxs::blockchain::Type chain,
-    const std::string& address) const noexcept -> void
+auto Blockchain::Wallet(const Chain chain) const noexcept(false)
+    -> const opentxs::blockchain::crypto::Wallet&
 {
-    imp_->UpdatePeer(chain, address);
+    return imp_->Wallet(chain);
 }
 
-Blockchain::~Blockchain() { Shutdown(); }
+Blockchain::~Blockchain() = default;
 }  // namespace opentxs::api::client::implementation

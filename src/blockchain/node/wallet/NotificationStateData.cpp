@@ -26,14 +26,14 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/blockchain/PaymentCode.hpp"
-#include "opentxs/api/client/blockchain/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/crypto/PaymentCode.hpp"
+#include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -50,8 +50,8 @@ namespace opentxs::blockchain::node::wallet
 {
 NotificationStateData::NotificationStateData(
     const api::Core& api,
-    const api::client::internal::Blockchain& blockchain,
-    const node::internal::Network& network,
+    const api::client::internal::Blockchain& crypto,
+    const node::internal::Network& node,
     const WalletDatabase& db,
     const SimpleCallback& taskFinished,
     Outstanding& jobCounter,
@@ -63,8 +63,8 @@ NotificationStateData::NotificationStateData(
     proto::HDPath&& path) noexcept
     : SubchainStateData(
           api,
-          blockchain,
-          network,
+          crypto,
+          node,
           db,
           OTNymID{nym},
           calculate_id(api, chain, code),
@@ -154,7 +154,7 @@ auto NotificationStateData::handle_confirmed_matches(
     const auto& [utxo, general] = confirmed;
     LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(general.size())(
         " confirmed matches for ")(code_->asBase58())(" on ")(
-        DisplayString(network_.Chain()))
+        DisplayString(node_.Chain()))
         .Flush();
 
     if (0u == general.size()) { return; }
@@ -176,10 +176,9 @@ auto NotificationStateData::handle_confirmed_matches(
 
     for (const auto& [txid, elementID] : general) {
         const auto& [version, subchainID] = elementID;
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(
-            DisplayString(network_.Chain()))(" transaction ")(txid->asHex())(
-            " contains a version ")(version)(" notification for ")(
-            code_->asBase58())
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(DisplayString(node_.Chain()))(
+            " transaction ")(txid->asHex())(" contains a version ")(version)(
+            " notification for ")(code_->asBase58())
             .Flush();
         const auto tx = block.at(txid->Bytes());
 
@@ -215,11 +214,11 @@ auto NotificationStateData::handle_confirmed_matches(
                 const auto& sender = *pSender;
                 LogVerbose(OT_METHOD)(__FUNCTION__)(
                     ": decoded incoming notification from ")(sender.asBase58())(
-                    " on ")(DisplayString(network_.Chain()))(" for ")(
+                    " on ")(DisplayString(node_.Chain()))(" for ")(
                     code_->asBase58())
                     .Flush();
-                const auto& account = blockchain_.PaymentCodeSubaccount(
-                    owner_, code_, sender, path_, network_.Chain(), reason);
+                const auto& account = crypto_.PaymentCodeSubaccount(
+                    owner_, code_, sender, path_, node_.Chain(), reason);
                 LogVerbose(OT_METHOD)(__FUNCTION__)(": Created new account ")(
                     account.ID())
                     .Flush();

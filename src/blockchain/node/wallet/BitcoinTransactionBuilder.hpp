@@ -34,18 +34,18 @@
 #include "blockchain/node/wallet/SubchainStateData.hpp"
 #include "blockchain/node/wallet/Wallet.hpp"
 #include "core/Worker.hpp"
-#include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -108,7 +108,7 @@ public:
     using UTXO = std::
         pair<blockchain::block::Outpoint, proto::BlockchainTransactionOutput>;
     using Transaction = std::unique_ptr<block::bitcoin::internal::Transaction>;
-    using KeyID = api::client::blockchain::Key;
+    using KeyID = blockchain::crypto::Key;
     using Proposal = proto::BlockchainTransactionProposal;
 
     auto IsFunded() const noexcept -> bool;
@@ -124,7 +124,7 @@ public:
 
     BitcoinTransactionBuilder(
         const api::Core& api,
-        const api::client::Blockchain& blockchain,
+        const api::client::Blockchain& crypto,
         const node::internal::WalletDatabase& db,
         const Identifier& id,
         const Proposal& proposal,

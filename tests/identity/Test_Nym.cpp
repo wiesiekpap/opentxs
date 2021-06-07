@@ -13,6 +13,7 @@
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "internal/api/client/Client.hpp"
 #include "internal/identity/Identity.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -22,16 +23,20 @@
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/blind/Types.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
+#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/contact/ContactSection.hpp"
 #include "opentxs/contact/ContactSectionName.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/identity/CredentialType.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/Source.hpp"
+#include "opentxs/identity/SourceType.hpp"
 
 namespace ot = opentxs;
 

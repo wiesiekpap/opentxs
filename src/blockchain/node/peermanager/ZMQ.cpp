@@ -24,6 +24,7 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
@@ -88,10 +89,10 @@ public:
               [=](auto& in) { this->external(in); }))
         , cb_int_(zmq::ListenCallback::Factory(
               [=](auto& in) { this->internal(in); }))
-        , external_(api_.ZeroMQ().RouterSocket(
+        , external_(api_.Network().ZeroMQ().RouterSocket(
               cb_ex_,
               zmq::socket::Socket::Direction::Bind))
-        , internal_(api_.ZeroMQ().RouterSocket(
+        , internal_(api_.Network().ZeroMQ().RouterSocket(
               cb_int_,
               zmq::socket::Socket::Direction::Bind))
     {
@@ -187,7 +188,7 @@ private:
     {
         using Task = node::internal::PeerManager::Task;
 
-        auto forwarded = api_.ZeroMQ().Message(internalID);
+        auto forwarded = api_.Network().ZeroMQ().Message(internalID);
         forwarded->StartBody();
         forwarded->AddFrame(Task::Body);
 
@@ -229,8 +230,8 @@ private:
                 try {
                     auto& [externalID, internalID, cached] = peers_.at(peerID);
                     internalID = incomingID;
-                    auto reply =
-                        api_.ZeroMQ().TaggedReply(message, Task::Register);
+                    auto reply = api_.Network().ZeroMQ().TaggedReply(
+                        message, Task::Register);
                     internal_->Send(reply);
 
                     for (auto& message : cached) {
@@ -253,7 +254,7 @@ private:
                     auto& [externalID, internalID, cached] =
                         peers_.at(internal_index_.at(incomingID));
 
-                    auto outgoing = api_.ZeroMQ().Message(externalID);
+                    auto outgoing = api_.Network().ZeroMQ().Message(externalID);
                     outgoing->StartBody();
 
                     for (auto i = std::size_t{1}; i < body.size(); ++i) {

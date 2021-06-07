@@ -5,9 +5,6 @@
 
 #pragma once
 
-// IWYU pragma: private
-// IWYU pragma: friend ".*src/network/OpenDHT.cpp"
-
 #include <atomic>
 #include <memory>
 #include <mutex>

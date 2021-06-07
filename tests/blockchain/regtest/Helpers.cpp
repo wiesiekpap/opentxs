@@ -34,17 +34,18 @@
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Manager.hpp"
-#include "opentxs/api/client/blockchain/BalanceList.hpp"
-#include "opentxs/api/client/blockchain/BalanceTree.hpp"
-#include "opentxs/api/client/blockchain/Subchain.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
+#include "opentxs/blockchain/crypto/Subchain.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
+#include "opentxs/blockchain/crypto/Wallet.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
@@ -111,7 +112,7 @@ struct BlockListener::Imp {
                 }
             }
         }))
-        , socket_(api_.ZeroMQ().SubscribeSocket(cb_))
+        , socket_(api_.Network().ZeroMQ().SubscribeSocket(cb_))
     {
         OT_ASSERT(socket_->Start(api_.Endpoints().BlockchainReorg()));
     }
@@ -220,9 +221,9 @@ struct PeerListener::Imp {
               [this](auto& msg) { cb(msg, parent_.client_1_peers_); }))
         , client_2_cb_(ot::network::zeromq::ListenCallback::Factory(
               [this](auto& msg) { cb(msg, parent_.client_2_peers_); }))
-        , m_socket_(miner.ZeroMQ().SubscribeSocket(miner_cb_))
-        , c1_socket_(client1.ZeroMQ().SubscribeSocket(client_1_cb_))
-        , c2_socket_(client2.ZeroMQ().SubscribeSocket(client_2_cb_))
+        , m_socket_(miner.Network().ZeroMQ().SubscribeSocket(miner_cb_))
+        , c1_socket_(client1.Network().ZeroMQ().SubscribeSocket(client_1_cb_))
+        , c2_socket_(client2.Network().ZeroMQ().SubscribeSocket(client_2_cb_))
     {
         if (false ==
             m_socket_->Start(miner.Endpoints().BlockchainPeerConnection())) {
@@ -295,7 +296,7 @@ Regtest_fixture_base::Regtest_fixture_base(
             [&] {
                 auto output = std::vector<OutputBuilder>{};
                 const auto text = std::string{"null"};
-                const auto keys = std::set<ot::api::client::blockchain::Key>{};
+                const auto keys = std::set<ot::blockchain::crypto::Key>{};
                 output.emplace_back(
                     5000000000,
                     miner_.Factory().BitcoinScriptNullData(test_chain_, {text}),
@@ -316,7 +317,7 @@ Regtest_fixture_base::Regtest_fixture_base(
 auto Regtest_fixture_base::Connect() noexcept -> bool
 {
     const auto miner = [&]() -> std::function<bool()> {
-        const auto& miner = miner_.Blockchain().GetChain(test_chain_);
+        const auto& miner = miner_.Network().Blockchain().GetChain(test_chain_);
         const auto listen = miner.Listen(address_);
 
         EXPECT_TRUE(listen);
@@ -329,7 +330,8 @@ auto Regtest_fixture_base::Connect() noexcept -> bool
     }();
     const auto client1 = [&]() -> std::function<bool()> {
         if (0 < client_count_) {
-            const auto& client = client_1_.Blockchain().GetChain(test_chain_);
+            const auto& client =
+                client_1_.Network().Blockchain().GetChain(test_chain_);
             const auto added = client.AddPeer(address_);
 
             EXPECT_TRUE(added);
@@ -346,7 +348,8 @@ auto Regtest_fixture_base::Connect() noexcept -> bool
     }();
     const auto client2 = [&]() -> std::function<bool()> {
         if (1 < client_count_) {
-            const auto& client = client_2_.Blockchain().GetChain(test_chain_);
+            const auto& client =
+                client_2_.Network().Blockchain().GetChain(test_chain_);
             const auto added = client.AddPeer(address_);
 
             EXPECT_TRUE(added);
@@ -500,7 +503,7 @@ auto Regtest_fixture_base::Mine(
         wallets.emplace_back(wallet_2_.GetFuture(targetHeight));
     }
 
-    const auto& network = miner_.Blockchain().GetChain(test_chain_);
+    const auto& network = miner_.Network().Blockchain().GetChain(test_chain_);
     const auto& headerOracle = network.HeaderOracle();
     auto previousHeader =
         headerOracle.LoadHeader(headerOracle.BestHash(ancestor))->as_Bitcoin();
@@ -577,7 +580,7 @@ auto Regtest_fixture_base::Shutdown() noexcept -> void
 auto Regtest_fixture_base::Start() noexcept -> bool
 {
     const auto miner = [&]() -> std::function<bool()> {
-        const auto start = miner_.Blockchain().Start(test_chain_);
+        const auto start = miner_.Network().Blockchain().Start(test_chain_);
 
         return [=] {
             EXPECT_TRUE(start);
@@ -587,7 +590,8 @@ auto Regtest_fixture_base::Start() noexcept -> bool
     }();
     const auto client1 = [&]() -> std::function<bool()> {
         if (0 < client_count_) {
-            const auto start = client_1_.Blockchain().Start(test_chain_);
+            const auto start =
+                client_1_.Network().Blockchain().Start(test_chain_);
 
             return [=] {
                 EXPECT_TRUE(start);
@@ -601,7 +605,8 @@ auto Regtest_fixture_base::Start() noexcept -> bool
     }();
     const auto client2 = [&]() -> std::function<bool()> {
         if (1 < client_count_) {
-            const auto start = client_2_.Blockchain().Start(test_chain_);
+            const auto start =
+                client_2_.Network().Blockchain().Start(test_chain_);
 
             return [=] {
                 EXPECT_TRUE(start);
@@ -732,7 +737,7 @@ Regtest_fixture_sync::Regtest_fixture_sync()
 auto Regtest_fixture_sync::Connect() noexcept -> bool
 {
     auto output = Regtest_fixture_base::Connect();
-    output &= client_1_.Blockchain().StartSyncServer(
+    output &= client_1_.Network().Blockchain().StartSyncServer(
         sync_server_sync_,
         sync_server_sync_public_,
         sync_server_update_,
@@ -855,7 +860,7 @@ struct ScanListener::Imp {
         : api_(api)
         , cb_(Callback::Factory([&](auto& msg) { cb(msg); }))
         , socket_([&] {
-            auto out = api_.ZeroMQ().SubscribeSocket(cb_);
+            auto out = api_.Network().ZeroMQ().SubscribeSocket(cb_);
             const auto rc =
                 out->Start(api_.Endpoints().BlockchainScanProgress());
 
@@ -875,7 +880,7 @@ ScanListener::ScanListener(const ot::api::Core& api) noexcept
 }
 
 auto ScanListener::get_future(
-    const Account& account,
+    const Subaccount& account,
     Subchain subchain,
     Height target) noexcept -> Future
 {
@@ -942,7 +947,7 @@ struct SyncRequestor::Imp {
         , updated_(0)
         , buffer_()
         , cb_(zmq::ListenCallback::Factory([&](auto& msg) { cb(msg); }))
-        , socket_(api.ZeroMQ().DealerSocket(cb_, Dir::Connect))
+        , socket_(api.Network().ZeroMQ().DealerSocket(cb_, Dir::Connect))
     {
         socket_->Start(sync_server_sync_);
     }
@@ -974,7 +979,8 @@ auto SyncRequestor::check(const State& state, const std::size_t index) const
     -> bool
 {
     auto pos = [&] {
-        const auto& chain = imp_->api_.Blockchain().GetChain(test_chain_);
+        const auto& chain =
+            imp_->api_.Network().Blockchain().GetChain(test_chain_);
         auto header =
             chain.HeaderOracle().LoadHeader(imp_->cache_.get(index).get());
 
@@ -990,7 +996,7 @@ auto SyncRequestor::check(const otsync::Block& block, const std::size_t index)
     const noexcept -> bool
 {
     constexpr auto filterType{ot::blockchain::filter::Type::ES};
-    const auto& chain = imp_->api_.Blockchain().GetChain(test_chain_);
+    const auto& chain = imp_->api_.Network().Blockchain().GetChain(test_chain_);
     const auto header =
         chain.HeaderOracle().LoadHeader(imp_->cache_.get(index).get());
 
@@ -1025,7 +1031,7 @@ auto SyncRequestor::get(const std::size_t index) const -> const zmq::Message&
 
 auto SyncRequestor::request(const Position& pos) const noexcept -> bool
 {
-    auto msg = imp_->api_.ZeroMQ().Message();
+    auto msg = imp_->api_.Network().ZeroMQ().Message();
     const auto req = otsync::Request{[&] {
         auto out = otsync::Request::StateData{};
         out.emplace_back(test_chain_, pos);
@@ -1136,7 +1142,7 @@ struct SyncSubscriber::Imp {
         , errors_(0)
         , cb_(ot::network::zeromq::ListenCallback::Factory(
               [&](const auto& in) { check_update(in); }))
-        , socket_(api_.ZeroMQ().SubscribeSocket(cb_))
+        , socket_(api_.Network().ZeroMQ().SubscribeSocket(cb_))
     {
         if (false == socket_->Start(sync_server_update_)) {
             throw std::runtime_error("Failed to subscribe to updates");
@@ -1194,7 +1200,7 @@ struct WalletListener::Imp {
                 }
             }
         }))
-        , socket_(api_.ZeroMQ().SubscribeSocket(cb_))
+        , socket_(api_.Network().ZeroMQ().SubscribeSocket(cb_))
     {
         OT_ASSERT(socket_->Start(api_.Endpoints().BlockchainSyncProgress()));
     }

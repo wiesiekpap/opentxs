@@ -14,6 +14,7 @@
 #include "blockchain/DownloadManager.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -41,7 +42,7 @@ public:
         const api::Core& api,
         const internal::BlockDatabase& db,
         const internal::HeaderOracle& header,
-        const internal::Network& network,
+        const internal::Network& node,
         const blockchain::Type chain,
         const std::string& shutdown) noexcept
         : BlockDM(
@@ -58,9 +59,9 @@ public:
         , BlockWorker(api, std::chrono::milliseconds{20})
         , db_(db)
         , header_(header)
-        , network_(network)
+        , node_(node)
         , chain_(chain)
-        , socket_(api_.ZeroMQ().PublishSocket())
+        , socket_(api_.Network().ZeroMQ().PublishSocket())
     {
         init_executor({shutdown, api_.Endpoints().BlockchainReorg()});
         auto zmq = socket_->Start(
@@ -77,13 +78,13 @@ private:
 
     const internal::BlockDatabase& db_;
     const internal::HeaderOracle& header_;
-    const internal::Network& network_;
+    const internal::Network& node_;
     const blockchain::Type chain_;
     OTZMQPublishSocket socket_;
 
     auto batch_ready() const noexcept -> void
     {
-        network_.JobReady(internal::PeerManager::Task::JobAvailableBlock);
+        node_.JobReady(internal::PeerManager::Task::JobAvailableBlock);
     }
     auto batch_size(const std::size_t in) const noexcept -> std::size_t
     {

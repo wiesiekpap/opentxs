@@ -21,6 +21,7 @@ auto BlockOracle::get_validator(
         return std::make_unique<internal::BlockValidator>();
     }
 
-    return std::make_unique<crypto::implementation::PacketCrypt>(headers);
+    return std::make_unique<opentxs::crypto::implementation::PacketCrypt>(
+        headers);
 }
 }  // namespace opentxs::blockchain::node::implementation

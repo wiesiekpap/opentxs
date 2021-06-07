@@ -24,6 +24,7 @@
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/ThreadPool.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -40,7 +41,7 @@ namespace opentxs::factory
 {
 auto BlockchainWallet(
     const api::Core& api,
-    const api::client::internal::Blockchain& blockchain,
+    const api::client::internal::Blockchain& crypto,
     const blockchain::node::internal::Network& parent,
     const blockchain::node::internal::WalletDatabase& db,
     const blockchain::Type chain,
@@ -50,7 +51,7 @@ auto BlockchainWallet(
     using ReturnType = blockchain::node::implementation::Wallet;
 
     return std::make_unique<ReturnType>(
-        api, blockchain, parent, db, chain, shutdown);
+        api, crypto, parent, db, chain, shutdown);
 }
 }  // namespace opentxs::factory
 
@@ -58,7 +59,7 @@ namespace opentxs::blockchain::node::implementation
 {
 Wallet::Wallet(
     const api::Core& api,
-    const api::client::internal::Blockchain& blockchain,
+    const api::client::internal::Blockchain& crypto,
     const node::internal::Network& parent,
     const node::internal::WalletDatabase& db,
     const Type chain,
@@ -66,21 +67,14 @@ Wallet::Wallet(
     : Worker(api, std::chrono::milliseconds(10))
     , parent_(parent)
     , db_(db)
-    , blockchain_api_(blockchain)
+    , crypto_(crypto)
     , chain_(chain)
     , task_finished_([this]() { trigger(); })
     , enabled_(false)
-    , thread_pool(
-          api_.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Connect))
-    , accounts_(
-          api,
-          blockchain_api_,
-          parent_,
-          db_,
-          thread_pool,
-          chain_,
-          task_finished_)
-    , proposals_(api, blockchain_api_, parent_, db_, chain_)
+    , thread_pool(api_.Network().ZeroMQ().PushSocket(
+          zmq::socket::Socket::Direction::Connect))
+    , accounts_(api, crypto_, parent_, db_, thread_pool, chain_, task_finished_)
+    , proposals_(api, crypto_, parent_, db_, chain_)
 {
     auto zmq = thread_pool->Start(api_.ThreadPool().Endpoint());
 
@@ -91,7 +85,7 @@ Wallet::Wallet(
         api.Endpoints().BlockchainReorg(),
         api.Endpoints().NymCreated(),
         api.Endpoints().InternalBlockchainFilterUpdated(chain),
-        blockchain.KeyEndpoint(),
+        crypto_.KeyEndpoint(),
     });
 }
 
@@ -116,7 +110,7 @@ auto Wallet::convert(const DBUTXOs& in) const noexcept -> std::vector<UTXO>
             auto converted = UTXO{
                 outpoint,
                 factory::BitcoinTransactionOutput(
-                    api_, blockchain_api_, chain_, proto)};
+                    api_, crypto_, chain_, proto)};
 
             OT_ASSERT(converted.second);
 

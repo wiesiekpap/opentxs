@@ -468,6 +468,7 @@ private:
         const Nym_p& signerNym,
         const identifier::Nym& id,
         const PasswordPrompt& reason) const -> Editor<opentxs::NymFile>;
+    auto notify(const identifier::Nym& id) const noexcept -> void;
     virtual void nym_to_contact(
         [[maybe_unused]] const identity::Nym& nym,
         [[maybe_unused]] const std::string& name) const noexcept

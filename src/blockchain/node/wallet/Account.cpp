@@ -13,12 +13,12 @@
 #include "blockchain/node/wallet/DeterministicStateData.hpp"
 #include "blockchain/node/wallet/SubchainStateData.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/api/client/blockchain/BalanceTree.hpp"
-#include "opentxs/api/client/blockchain/Deterministic.hpp"
-#include "opentxs/api/client/blockchain/HD.hpp"
-#include "opentxs/api/client/blockchain/PaymentCode.hpp"
-#include "opentxs/api/client/blockchain/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
+#include "opentxs/blockchain/crypto/Deterministic.hpp"
+#include "opentxs/blockchain/crypto/HD.hpp"
+#include "opentxs/blockchain/crypto/PaymentCode.hpp"
+#include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -105,20 +105,20 @@ struct Account::Imp {
     }
 
     Imp(const api::Core& api,
-        const api::client::internal::Blockchain& blockchain,
+        const api::client::internal::Blockchain& crypto,
         const BalanceTree& ref,
-        const node::internal::Network& network,
+        const node::internal::Network& node,
         const node::internal::WalletDatabase& db,
         const zmq::socket::Push& threadPool,
         const filter::Type filter,
         Outstanding&& jobs,
         const SimpleCallback& taskFinished) noexcept
         : api_(api)
-        , blockchain_(blockchain)
+        , crypto_(crypto)
         , ref_(ref)
-        , network_(network)
+        , node_(node)
         , db_(db)
-        , filter_type_(network.FilterOracleInternal().DefaultType())
+        , filter_type_(node_.FilterOracleInternal().DefaultType())
         , thread_pool_(threadPool)
         , task_finished_(taskFinished)
         , internal_()
@@ -144,9 +144,9 @@ private:
     using Map = std::map<OTIdentifier, DeterministicStateData>;
 
     const api::Core& api_;
-    const api::client::internal::Blockchain& blockchain_;
+    const api::client::internal::Blockchain& crypto_;
     const BalanceTree& ref_;
-    const node::internal::Network& network_;
+    const node::internal::Network& node_;
     const node::internal::WalletDatabase& db_;
     const filter::Type filter_type_;
     const network::zeromq::socket::Push& thread_pool_;
@@ -159,7 +159,7 @@ private:
     Gatekeeper gatekeeper_;
 
     auto get(
-        const api::client::blockchain::Deterministic& account,
+        const crypto::Deterministic& account,
         const Subchain subchain,
         Map& map) noexcept -> DeterministicStateData&
     {
@@ -170,15 +170,15 @@ private:
         return instantiate(account, subchain, map);
     }
     auto instantiate(
-        const api::client::blockchain::Deterministic& account,
+        const crypto::Deterministic& account,
         const Subchain subchain,
         Map& map) noexcept -> DeterministicStateData&
     {
         auto [it, added] = map.try_emplace(
             account.ID(),
             api_,
-            blockchain_,
-            network_,
+            crypto_,
+            node_,
             db_,
             account,
             task_finished_,
@@ -195,9 +195,9 @@ private:
 
 Account::Account(
     const api::Core& api,
-    const api::client::internal::Blockchain& blockchain,
+    const api::client::internal::Blockchain& crypto,
     const BalanceTree& ref,
-    const node::internal::Network& network,
+    const node::internal::Network& node,
     const node::internal::WalletDatabase& db,
     const zmq::socket::Push& threadPool,
     const filter::Type filter,
@@ -205,9 +205,9 @@ Account::Account(
     const SimpleCallback& taskFinished) noexcept
     : imp_(std::make_unique<Imp>(
           api,
-          blockchain,
+          crypto,
           ref,
-          network,
+          node,
           db,
           threadPool,
           filter,

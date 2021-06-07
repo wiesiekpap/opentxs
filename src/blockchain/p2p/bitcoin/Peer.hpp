@@ -3,9 +3,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: private
-// IWYU pragma: friend ".*src/blockchain/p2p/bitcoin/Peer.cpp"
-
 #pragma once
 
 #include <atomic>
@@ -22,6 +19,7 @@
 #include "blockchain/p2p/Peer.hpp"
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
+#include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
@@ -40,6 +38,19 @@ class Core;
 
 namespace blockchain
 {
+namespace node
+{
+namespace internal
+{
+struct BlockOracle;
+struct Config;
+struct FilterOracle;
+struct HeaderOracle;
+struct Network;
+struct PeerManager;
+}  // namespace internal
+}  // namespace node
+
 namespace p2p
 {
 namespace internal
@@ -75,7 +86,7 @@ public:
         const node::internal::FilterOracle& filter,
         const node::internal::BlockOracle& block,
         const node::internal::PeerManager& manager,
-        const api::client::blockchain::BlockStorage policy,
+        const database::BlockStorage policy,
         const std::string& shutdown,
         const int id,
         std::unique_ptr<internal::Address> address,
@@ -137,7 +148,7 @@ private:
     static auto get_local_services(
         const ProtocolVersion version,
         const blockchain::Type network,
-        const api::client::blockchain::BlockStorage policy,
+        const database::BlockStorage policy,
         const std::set<p2p::Service>& input) noexcept -> std::set<p2p::Service>;
     static auto nonce(const api::Core& api) noexcept -> Nonce;
 

@@ -13,10 +13,10 @@
 
 #include "opentxs/Bytes.hpp"
 #include "opentxs/api/Primitives.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blind/CashType.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Armored.hpp"
@@ -229,7 +229,7 @@ public:
     using OutputBuilder = std::tuple<
         opentxs::blockchain::Amount,
         std::unique_ptr<const opentxs::blockchain::block::bitcoin::Script>,
-        std::set<api::client::blockchain::Key>>;
+        std::set<opentxs::blockchain::crypto::Key>>;
     virtual auto BitcoinGenerationTransaction(
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::block::Height height,

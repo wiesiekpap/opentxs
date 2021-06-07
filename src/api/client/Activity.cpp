@@ -29,6 +29,7 @@
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
 #include "opentxs/api/client/Workflow.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
@@ -173,8 +174,8 @@ auto Activity::add_blockchain_transaction(
     }
 
     std::for_each(std::begin(chains), std::end(chains), [&](const auto& chain) {
-        auto out =
-            api_.ZeroMQ().TaggedMessage(WorkType::BlockchainNewTransaction);
+        auto out = api_.Network().ZeroMQ().TaggedMessage(
+            WorkType::BlockchainNewTransaction);
         out->AddFrame(txid);
         out->AddFrame(chain);
         get_blockchain(lock, nym).Send(out);
@@ -776,7 +777,7 @@ void Activity::publish(const identifier::Nym& nymID, const Identifier& threadID)
 auto Activity::start_publisher(const std::string& endpoint) const noexcept
     -> OTZMQPublishSocket
 {
-    auto output = api_.ZeroMQ().PublishSocket();
+    auto output = api_.Network().ZeroMQ().PublishSocket();
     const auto started = output->Start(endpoint);
 
     OT_ASSERT(started);

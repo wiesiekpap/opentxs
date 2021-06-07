@@ -7,6 +7,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -31,6 +32,8 @@
 #include "opentxs/api/crypto/Symmetric.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Dht.hpp"
+#include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
@@ -49,6 +52,14 @@ class Asymmetric;
 class Legacy;
 class Settings;
 }  // namespace api
+
+namespace network
+{
+namespace zeromq
+{
+class Context;
+}  // namespace zeromq
+}  // namespace network
 
 namespace proto
 {
@@ -71,17 +82,27 @@ public:
     static auto get_api(const PasswordPrompt& reason) noexcept
         -> const api::internal::Core&;
 
-    auto Asio() const noexcept -> const network::Asio& final { return asio_; }
-    auto Asymmetric() const -> const crypto::Asymmetric& final
+    auto Asymmetric() const noexcept -> const crypto::Asymmetric& final
     {
         return asymmetric_;
     }
-    auto Config() const -> const api::Settings& final { return config_; }
-    auto Crypto() const -> const api::Crypto& final { return crypto_; }
-    auto DataFolder() const -> const std::string& final { return data_folder_; }
-    auto DHT() const -> const api::network::Dht& final;
-    auto Endpoints() const -> const api::Endpoints& final { return endpoints_; }
-    auto Factory() const -> const api::Factory& final { return factory_; }
+    auto Config() const noexcept -> const api::Settings& final
+    {
+        return config_;
+    }
+    auto Crypto() const noexcept -> const api::Crypto& final { return crypto_; }
+    auto DataFolder() const noexcept -> const std::string& final
+    {
+        return data_folder_;
+    }
+    auto Endpoints() const noexcept -> const api::Endpoints& final
+    {
+        return endpoints_;
+    }
+    auto Factory() const noexcept -> const api::Factory& final
+    {
+        return factory_;
+    }
     INTERNAL_PASSWORD_CALLBACK* GetInternalPasswordCallback() const final;
     auto GetSecret(
         const opentxs::Lock& lock,
@@ -89,7 +110,7 @@ public:
         const PasswordPrompt& reason,
         const bool twice,
         const std::string& key) const -> bool final;
-    auto Instance() const -> int final { return instance_; }
+    auto Instance() const noexcept -> int final { return instance_; }
     auto Legacy() const noexcept -> const api::Legacy& final
     {
         return parent_.Legacy();
@@ -97,10 +118,16 @@ public:
     auto Lock() const -> std::mutex& final { return master_key_lock_; }
     auto MasterKey(const opentxs::Lock& lock) const
         -> const opentxs::crypto::key::Symmetric& final;
-    auto Seeds() const -> const api::HDSeed& final;
-    void SetMasterKeyTimeout(const std::chrono::seconds& timeout) const final;
-    auto Storage() const -> const api::storage::Storage& final;
-    auto Symmetric() const -> const api::crypto::Symmetric& final
+    auto NewNym(const identifier::Nym& id) const noexcept -> void override {}
+    auto Network() const noexcept -> const network::Network& final
+    {
+        return network_;
+    }
+    auto Seeds() const noexcept -> const api::HDSeed& final;
+    auto SetMasterKeyTimeout(const std::chrono::seconds& timeout) const noexcept
+        -> void final;
+    auto Storage() const noexcept -> const api::storage::Storage& final;
+    auto Symmetric() const noexcept -> const api::crypto::Symmetric& final
     {
         return symmetric_;
     }
@@ -108,28 +135,28 @@ public:
     {
         return parent_.ThreadPool();
     }
-    auto Wallet() const -> const api::Wallet& final;
-    auto ZeroMQ() const -> const opentxs::network::zeromq::Context& final
-    {
-        return zmq_context_;
-    }
+    auto Wallet() const noexcept -> const api::Wallet& final;
 
     ~Core() override;
 
 protected:
-    const network::Asio& asio_;
+    network::Network network_;
     std::unique_ptr<api::internal::Factory> factory_p_;
     const api::internal::Factory& factory_;
     const api::crypto::internal::Asymmetric& asymmetric_;
     const api::crypto::Symmetric& symmetric_;
     std::unique_ptr<api::HDSeed> seeds_;
     std::unique_ptr<api::Wallet> wallet_;
-    std::unique_ptr<api::network::Dht> dht_;
 
 private:
     proto::Ciphertext encrypted_secret_;
 
 protected:
+    using NetworkMaker = std::function<api::network::Network::Imp*(
+        const opentxs::network::zeromq::Context& zmq,
+        const api::Endpoints& endpoints,
+        api::implementation::Scheduler& config)>;
+
     mutable std::mutex master_key_lock_;
     mutable std::optional<OTSecret> master_secret_;
     mutable OTSymmetricKey master_key_;
@@ -157,7 +184,7 @@ protected:
         const opentxs::network::zeromq::Context& zmq,
         const std::string& dataFolder,
         const int instance,
-        const bool dhtDefault,
+        NetworkMaker network,
         std::unique_ptr<api::internal::Factory> factory);
 
 private:

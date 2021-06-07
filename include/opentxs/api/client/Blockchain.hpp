@@ -15,29 +15,16 @@
 
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/blockchain/BalanceNode.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 
 namespace opentxs
 {
-namespace api
-{
-namespace client
-{
-namespace blockchain
-{
-class BalanceList;
-class BalanceTree;
-class HD;
-class PaymentCode;
-}  // namespace blockchain
-}  // namespace client
-}  // namespace api
-
 namespace blockchain
 {
 namespace block
@@ -47,6 +34,15 @@ namespace bitcoin
 class Transaction;
 }  // namespace bitcoin
 }  // namespace block
+
+namespace crypto
+{
+class Account;
+class Element;
+class HD;
+class PaymentCode;
+class Wallet;
+}  // namespace crypto
 
 namespace node
 {
@@ -75,7 +71,9 @@ class OPENTXS_EXPORT Blockchain
 {
 public:
     using Chain = opentxs::blockchain::Type;
-    using Style = blockchain::AddressStyle;
+    using Key = opentxs::blockchain::crypto::Key;
+    using Style = opentxs::blockchain::crypto::AddressStyle;
+    using Subchain = opentxs::blockchain::crypto::Subchain;
     using DecodedAddress = std::tuple<OTData, Style, std::set<Chain>, bool>;
     using ContactList = std::set<OTIdentifier>;
     using Tx = opentxs::blockchain::block::bitcoin::Transaction;
@@ -83,11 +81,6 @@ public:
     using TxidHex = std::string;
     using PatternID = opentxs::blockchain::PatternID;
     using AccountData = std::pair<Chain, OTNymID>;
-    using Endpoints = std::vector<std::string>;
-
-    enum class AccountType : std::uint8_t {
-        HD = 0,
-    };
 
     // Throws std::out_of_range for invalid chains
     static Bip44Type Bip44(Chain chain) noexcept(false);
@@ -97,12 +90,9 @@ public:
         AllocateOutput destination) noexcept(false);
 
     /// Throws std::runtime_error if chain is invalid
-    virtual const blockchain::BalanceTree& Account(
+    virtual const opentxs::blockchain::crypto::Account& Account(
         const identifier::Nym& nymID,
         const Chain chain) const noexcept(false) = 0;
-    /// Throws std::runtime_error if chain is invalid
-    virtual const blockchain::BalanceList& Accounts(const Chain chain) const
-        noexcept(false) = 0;
     virtual std::set<OTIdentifier> AccountList(
         const identifier::Nym& nymID) const noexcept = 0;
     virtual std::set<OTIdentifier> AccountList(
@@ -116,17 +106,16 @@ public:
         const identifier::Nym& nym,
         const Chain chain,
         const Tx& transaction) const noexcept = 0;
-    virtual bool AddSyncServer(const std::string& endpoint) const noexcept = 0;
     virtual bool AssignContact(
         const identifier::Nym& nymID,
         const Identifier& accountID,
-        const blockchain::Subchain subchain,
+        const Subchain subchain,
         const Bip32Index index,
         const Identifier& label) const noexcept = 0;
     virtual bool AssignLabel(
         const identifier::Nym& nymID,
         const Identifier& accountID,
-        const blockchain::Subchain subchain,
+        const Subchain subchain,
         const Bip32Index index,
         const std::string& label) const noexcept = 0;
     virtual bool AssignTransactionMemo(
@@ -134,33 +123,22 @@ public:
         const std::string& label) const noexcept = 0;
     virtual std::string CalculateAddress(
         const opentxs::blockchain::Type chain,
-        const blockchain::AddressStyle format,
+        const opentxs::blockchain::crypto::AddressStyle format,
         const Data& pubkey) const noexcept = 0;
     virtual bool Confirm(
-        const blockchain::Key key,
+        const Key key,
         const opentxs::blockchain::block::Txid& tx) const noexcept = 0;
-    virtual Endpoints ConnectedSyncServers() const noexcept = 0;
     virtual DecodedAddress DecodeAddress(
         const std::string& encoded) const noexcept = 0;
-    virtual bool DeleteSyncServer(
-        const std::string& endpoint) const noexcept = 0;
-    virtual bool Disable(const Chain type) const noexcept = 0;
-    virtual bool Enable(const Chain type, const std::string& seednode = "")
-        const noexcept = 0;
-    virtual std::set<Chain> EnabledChains() const noexcept = 0;
     virtual std::string EncodeAddress(
         const Style style,
         const Chain chain,
         const Data& data) const noexcept = 0;
-    /// throws std::out_of_range if chain has not been started
-    virtual const opentxs::blockchain::node::Manager& GetChain(
-        const Chain type) const noexcept(false) = 0;
     /// Throws std::out_of_range if the specified key does not exist
-    virtual const blockchain::BalanceNode::Element& GetKey(
-        const blockchain::Key& id) const noexcept(false) = 0;
-    virtual Endpoints GetSyncServers() const noexcept = 0;
+    virtual const opentxs::blockchain::crypto::Element& GetKey(
+        const Key& id) const noexcept(false) = 0;
     /// Throws std::out_of_range if the specified account does not exist
-    virtual const blockchain::HD& HDSubaccount(
+    virtual const opentxs::blockchain::crypto::HD& HDSubaccount(
         const identifier::Nym& nymID,
         const Identifier& accountID) const noexcept(false) = 0;
     virtual PatternID IndexItem(const ReadView bytes) const noexcept = 0;
@@ -194,13 +172,13 @@ public:
         const PasswordPrompt& reason) const noexcept = 0;
     virtual const identifier::Nym& Owner(
         const Identifier& accountID) const noexcept = 0;
-    virtual const identifier::Nym& Owner(
-        const blockchain::Key& key) const noexcept = 0;
+    virtual const identifier::Nym& Owner(const Key& key) const noexcept = 0;
     /// Throws std::out_of_range if the specified account does not exist
-    virtual const blockchain::PaymentCode& PaymentCodeSubaccount(
+    virtual const opentxs::blockchain::crypto::PaymentCode&
+    PaymentCodeSubaccount(
         const identifier::Nym& nymID,
         const Identifier& accountID) const noexcept(false) = 0;
-    OPENTXS_NO_EXPORT virtual const blockchain::PaymentCode&
+    OPENTXS_NO_EXPORT virtual const opentxs::blockchain::crypto::PaymentCode&
     PaymentCodeSubaccount(
         const identifier::Nym& nymID,
         const opentxs::PaymentCode& local,
@@ -212,26 +190,19 @@ public:
         const Chain chain,
         const Tx& transaction,
         const PasswordPrompt& reason) const noexcept = 0;
-    virtual OTIdentifier RecipientContact(
-        const blockchain::Key& key) const noexcept = 0;
-    virtual bool Release(const blockchain::Key key) const noexcept = 0;
-    virtual OTIdentifier SenderContact(
-        const blockchain::Key& key) const noexcept = 0;
-    virtual bool Start(const Chain type, const std::string& seednode = "")
-        const noexcept = 0;
-    virtual bool StartSyncServer(
-        const std::string& syncEndpoint,
-        const std::string& publicSyncEndpoint,
-        const std::string& updateEndpoint,
-        const std::string& publicUpdateEndpoint) const noexcept = 0;
-    virtual bool Stop(const Chain type) const noexcept = 0;
+    virtual OTIdentifier RecipientContact(const Key& key) const noexcept = 0;
+    virtual bool Release(const Key key) const noexcept = 0;
+    virtual OTIdentifier SenderContact(const Key& key) const noexcept = 0;
     virtual std::set<OTIdentifier> SubaccountList(
         const identifier::Nym& nymID,
         const Chain chain) const noexcept = 0;
     virtual bool Unconfirm(
-        const blockchain::Key key,
+        const Key key,
         const opentxs::blockchain::block::Txid& tx,
         const Time time = Clock::now()) const noexcept = 0;
+    /// Throws std::runtime_error if chain is invalid
+    virtual const opentxs::blockchain::crypto::Wallet& Wallet(
+        const Chain chain) const noexcept(false) = 0;
 
     OPENTXS_NO_EXPORT virtual ~Blockchain() = default;
 

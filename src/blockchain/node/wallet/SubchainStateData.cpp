@@ -21,13 +21,15 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/blockchain/Subchain.hpp"  // IWYU pragma: keep
-#include "opentxs/api/client/blockchain/Types.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/crypto/Element.hpp"
+#include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
@@ -102,8 +104,8 @@ namespace opentxs::blockchain::node::wallet
 {
 SubchainStateData::SubchainStateData(
     const api::Core& api,
-    const api::client::internal::Blockchain& blockchain,
-    const node::internal::Network& network,
+    const api::client::internal::Blockchain& crypto,
+    const node::internal::Network& node,
     const WalletDatabase& db,
     OTNymID&& owner,
     OTIdentifier&& id,
@@ -127,8 +129,8 @@ SubchainStateData::SubchainStateData(
     , outstanding_blocks_()
     , process_block_queue_()
     , api_(api)
-    , blockchain_(blockchain)
-    , network_(network)
+    , crypto_(crypto)
+    , node_(node)
     , db_(db)
     , name_()
     , null_position_(make_blank<block::Position>::value(api_))
@@ -176,7 +178,7 @@ auto SubchainStateData::check_blocks() noexcept -> bool
 
         if (0 == outstanding_blocks_.count(hash)) {
             auto [it, added] = outstanding_blocks_.emplace(
-                hash, network_.BlockOracle().LoadBitcoin(hash));
+                hash, node_.BlockOracle().LoadBitcoin(hash));
 
             OT_ASSERT(added);
 
@@ -227,7 +229,7 @@ auto SubchainStateData::check_scan() noexcept -> bool
 
     if (last_scanned_.has_value()) {
         const auto bestFilter =
-            network_.FilterOracleInternal().FilterTip(filter_type_);
+            node_.FilterOracleInternal().FilterTip(filter_type_);
 
         if (last_scanned_ == bestFilter) {
             LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
@@ -237,7 +239,7 @@ auto SubchainStateData::check_scan() noexcept -> bool
                 .Flush();
         } else {
             const auto [ancestor, best] =
-                network_.HeaderOracleInternal().CommonParent(
+                node_.HeaderOracleInternal().CommonParent(
                     last_scanned_.value());
             last_scanned_ = ancestor;
 
@@ -411,7 +413,7 @@ auto SubchainStateData::get_targets(
 
 auto SubchainStateData::index_element(
     const filter::Type type,
-    const api::client::blockchain::BalanceNode::Element& input,
+    const blockchain::crypto::Element& input,
     const Bip32Index index,
     WalletDatabase::ElementMap& output) noexcept -> void
 {
@@ -428,13 +430,13 @@ auto SubchainStateData::index_element(
         " for P2PK pattern")
         .Flush();
     const auto& p2pk = scripts.emplace_back(
-        api_.Factory().BitcoinScriptP2PK(network_.Chain(), *input.Key()));
+        api_.Factory().BitcoinScriptP2PK(node_.Chain(), *input.Key()));
     LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(" element ")(index)(
         ": using pubkey hash ")(input.PubkeyHash()->asHex())(
         " for P2PKH pattern")
         .Flush();
     const auto& p2pkh = scripts.emplace_back(
-        api_.Factory().BitcoinScriptP2PKH(network_.Chain(), *input.Key()));
+        api_.Factory().BitcoinScriptP2PKH(node_.Chain(), *input.Key()));
 
     OT_ASSERT(p2pk);
     OT_ASSERT(p2pkh);
@@ -465,7 +467,7 @@ auto SubchainStateData::init() noexcept -> void
 auto SubchainStateData::process() noexcept -> void
 {
     const auto start = Clock::now();
-    const auto& filters = network_.FilterOracleInternal();
+    const auto& filters = node_.FilterOracleInternal();
     auto it = process_block_queue_.front();
     auto postcondition = ScopeGuard{[&] {
         outstanding_blocks_.erase(it);
@@ -505,7 +507,7 @@ auto SubchainStateData::process() noexcept -> void
     const auto confirmed =
         block.FindMatches(filter_type_, outpoints, potential);
     const auto& [utxo, general] = confirmed;
-    const auto& oracle = network_.HeaderOracleInternal();
+    const auto& oracle = node_.HeaderOracleInternal();
     const auto pHeader = oracle.LoadHeader(blockHash);
 
     OT_ASSERT(pHeader);
@@ -544,8 +546,8 @@ auto SubchainStateData::queue_work(const Task task, const char* log) noexcept
     }
 
     using Pool = api::internal::ThreadPool;
-    auto work =
-        Pool::MakeWork(api_.ZeroMQ(), value(Pool::Work::BlockchainWallet));
+    auto work = Pool::MakeWork(
+        api_.Network().ZeroMQ(), value(Pool::Work::BlockchainWallet));
     work->AddFrame(task);
     work->AddFrame(reinterpret_cast<std::uintptr_t>(this));
     running_.store(true);
@@ -570,12 +572,12 @@ auto SubchainStateData::reorg() noexcept -> void
     while (false == reorg_.Empty()) {
         reorg_.Next();
         const auto tip = db_.SubchainLastScanned(index_);
-        const auto reorg = network_.HeaderOracleInternal().CalculateReorg(tip);
+        const auto reorg = node_.HeaderOracleInternal().CalculateReorg(tip);
         db_.ReorgTo(id_, subchain_, index_, reorg);
     }
 
     const auto scannedTarget =
-        network_.HeaderOracleInternal()
+        node_.HeaderOracleInternal()
             .CommonParent(db_.SubchainLastScanned(index_))
             .first;
 
@@ -596,7 +598,7 @@ auto SubchainStateData::report_scan() noexcept -> void
     if (pos == last_reported_) { return; }
 
     if (blocks_to_request_.empty() && process_block_queue_.empty()) {
-        blockchain_.ReportScan(network_.Chain(), owner_, id_, subchain_, pos);
+        crypto_.ReportScan(node_.Chain(), owner_, id_, subchain_, pos);
         last_reported_ = pos;
         db_.SubchainSetLastScanned(index_, pos);
     }
@@ -605,8 +607,8 @@ auto SubchainStateData::report_scan() noexcept -> void
 auto SubchainStateData::scan() noexcept -> void
 {
     const auto start = Clock::now();
-    const auto& headers = network_.HeaderOracleInternal();
-    const auto& filters = network_.FilterOracleInternal();
+    const auto& headers = node_.HeaderOracleInternal();
+    const auto& filters = node_.FilterOracleInternal();
     const auto best = headers.BestChain();
     const auto startHeight = std::min(
         best.first,
@@ -692,9 +694,7 @@ auto SubchainStateData::set_key_data(
 
     for (const auto& key : keys) {
         data.try_emplace(
-            key,
-            blockchain_.SenderContact(key),
-            blockchain_.RecipientContact(key));
+            key, crypto_.SenderContact(key), crypto_.RecipientContact(key));
     }
 
     tx.SetKeyData(data);

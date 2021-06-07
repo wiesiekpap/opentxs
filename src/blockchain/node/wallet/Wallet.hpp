@@ -34,17 +34,17 @@
 #include "blockchain/node/wallet/Proposals.hpp"
 #include "blockchain/node/wallet/SubchainStateData.hpp"
 #include "core/Worker.hpp"
-#include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -123,7 +123,7 @@ public:
 
     Wallet(
         const api::Core& api,
-        const api::client::internal::Blockchain& blockchain,
+        const api::client::internal::Blockchain& crypto,
         const node::internal::Network& parent,
         const node::internal::WalletDatabase& db,
         const Type chain,
@@ -148,7 +148,7 @@ private:
 
     const node::internal::Network& parent_;
     const node::internal::WalletDatabase& db_;
-    const api::client::internal::Blockchain& blockchain_api_;
+    const api::client::internal::Blockchain& crypto_;
     const Type chain_;
     const SimpleCallback task_finished_;
     std::atomic_bool enabled_;
