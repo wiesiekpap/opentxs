@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Shared.hpp"
@@ -26,6 +27,7 @@
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/contact/Contact.hpp"
+#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Message.hpp"

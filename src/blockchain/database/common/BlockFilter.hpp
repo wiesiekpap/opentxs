@@ -13,6 +13,7 @@
 #include "internal/blockchain/database/common/Common.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "util/LMDB.hpp"
 
@@ -25,6 +26,14 @@ class Core;
 
 namespace blockchain
 {
+namespace database
+{
+namespace common
+{
+class Bulk;
+}  // namespace common
+}  // namespace database
+
 namespace node
 {
 struct GCS;
@@ -71,7 +80,8 @@ public:
 
     BlockFilter(
         const api::Core& api,
-        opentxs::storage::lmdb::LMDB& lmdb) noexcept(false);
+        storage::lmdb::LMDB& lmdb,
+        Bulk& bulk) noexcept;
 
 private:
     static const std::uint32_t blockchain_filter_header_version_{1};
@@ -80,11 +90,19 @@ private:
     static const std::uint32_t blockchain_filters_version_{1};
 
     const api::Core& api_;
-    opentxs::storage::lmdb::LMDB& lmdb_;
+    storage::lmdb::LMDB& lmdb_;
+    Bulk& bulk_;
 
     static auto translate_filter(const FilterType type) noexcept(false)
         -> Table;
     static auto translate_header(const FilterType type) noexcept(false)
         -> Table;
+
+    auto store(
+        const Lock& lock,
+        storage::lmdb::LMDB::Transaction& tx,
+        const ReadView blockHash,
+        const FilterType type,
+        const node::GCS& filter) const noexcept -> bool;
 };
 }  // namespace opentxs::blockchain::database::common

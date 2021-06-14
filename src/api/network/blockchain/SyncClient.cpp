@@ -481,7 +481,7 @@ private:
                 }
             }
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogTrace(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
             return;
         }

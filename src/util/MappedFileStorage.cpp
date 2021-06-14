@@ -68,7 +68,7 @@ struct MappedFileStorage::Imp {
     const std::string filename_prefix_;
     const int table_;
     const std::size_t key_;
-    mutable MemoryPosition next_position_;
+    mutable IndexData::MemoryPosition next_position_;
     mutable std::vector<boost::iostreams::mapped_file> files_;
 
     auto calculate_file_name(
@@ -222,7 +222,7 @@ struct MappedFileStorage::Imp {
     }
     auto init_files(
         const std::string& prefix,
-        const MemoryPosition position) noexcept
+        const IndexData::MemoryPosition position) noexcept
         -> std::vector<boost::iostreams::mapped_file>
     {
         auto output = std::vector<boost::iostreams::mapped_file>{};
@@ -236,9 +236,9 @@ struct MappedFileStorage::Imp {
         return output;
     }
     auto load_position(opentxs::storage::lmdb::LMDB& db) noexcept
-        -> MemoryPosition
+        -> IndexData::MemoryPosition
     {
-        auto output = MemoryPosition{0};
+        auto output = IndexData::MemoryPosition{0};
 
         if (false == db.Exists(table_, tsv(key_))) {
             db.Store(table_, tsv(key_), tsv(output));
@@ -257,7 +257,7 @@ struct MappedFileStorage::Imp {
         return output;
     }
     auto update_next_position(
-        MemoryPosition position,
+        IndexData::MemoryPosition position,
         LMDB::Transaction& tx) noexcept -> bool
     {
         auto result = lmdb_.Store(table_, tsv(key_), tsv(position), tx);
@@ -340,6 +340,15 @@ auto MappedFileStorage::get_write_view(
     std::size_t size) const noexcept -> WritableView
 {
     return imp_.get_write_view(existing, std::move(cb), size);
+}
+
+auto MappedFileStorage::get_write_view(
+    LMDB::Transaction& tx,
+    IndexData& existing,
+    UpdateCallback&& cb,
+    std::size_t size) const noexcept -> WritableView
+{
+    return imp_.get_write_view(tx, existing, std::move(cb), size);
 }
 
 auto MappedFileStorage::get_write_view(

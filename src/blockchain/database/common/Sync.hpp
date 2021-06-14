@@ -89,7 +89,7 @@ private:
     using Tips = std::map<Chain, Height>;
 
     struct Data {
-        IndexData index_;
+        util::IndexData index_;
         std::uint64_t checksum_;
 
         operator ReadView() const noexcept

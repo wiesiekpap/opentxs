@@ -176,8 +176,7 @@ struct Account : virtual public crypto::Account {
         -> const internal::HD& = 0;
     virtual auto PaymentCode(const Identifier& account) const noexcept(false)
         -> const internal::PaymentCode& = 0;
-    virtual auto Parent() const noexcept
-        -> const internal::Wallet& override = 0;
+    virtual auto ParentInternal() const noexcept -> const internal::Wallet& = 0;
 
     virtual auto AddHDNode(
         const proto::HDPath& path,
@@ -247,8 +246,6 @@ struct Subaccount : virtual public crypto::Subaccount {
         const std::vector<Activity>& spent,
         std::set<OTIdentifier>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool = 0;
-    virtual auto BalanceElement(const Subchain type, const Bip32Index index)
-        const noexcept(false) -> const internal::Element& override = 0;
     virtual auto IncomingTransactions(const Key& key) const noexcept
         -> std::set<std::string> = 0;
     virtual auto PrivateKey(

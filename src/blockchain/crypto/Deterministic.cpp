@@ -101,7 +101,7 @@ auto Deterministic::accept(
 #endif  // OT_CRYPTO_WITH_BIP32
 
 auto Deterministic::BalanceElement(const Subchain type, const Bip32Index index)
-    const noexcept(false) -> const internal::Element&
+    const noexcept(false) -> const crypto::Element&
 {
     auto lock = rLock{lock_};
 
@@ -324,7 +324,7 @@ auto Deterministic::finish_allocation(const rLock& lock, Batch& generated)
 {
 #if OT_BLOCKCHAIN
     if (0u < generated.size()) {
-        parent_.Parent().Parent().KeyGenerated(chain_);
+        parent_.ParentInternal().Parent().KeyGenerated(chain_);
     }
 #endif  // OT_BLOCKCHAIN
 
@@ -399,7 +399,7 @@ auto Deterministic::generate(
     const auto& key = *pKey;
     auto& addressMap = (data_.internal_.type_ == type) ? data_.internal_.map_
                                                        : data_.external_.map_;
-    const auto& blockchain = parent_.Parent().Parent();
+    const auto& blockchain = parent_.ParentInternal().Parent();
     const auto [it, added] = addressMap.emplace(
         std::piecewise_construct,
         std::forward_as_tuple(index),

@@ -103,6 +103,11 @@ public:
         const Mode mode = Mode::One) const noexcept -> bool;
     auto Read(const Table table, const ReadCallback cb, const Dir dir)
         const noexcept -> bool;
+    auto ReadAndDelete(
+        const Table table,
+        const ReadCallback cb,
+        MDB_txn& tx,
+        const std::string& message) const noexcept -> bool;
     auto ReadFrom(
         const Table table,
         const ReadView key,
@@ -138,7 +143,8 @@ public:
         const TableNames& names,
         const std::string& folder,
         const TablesToInit init,
-        const Flags flags = 0)
+        const Flags flags = 0,
+        const std::size_t extraTables = 0)
     noexcept;
     // NOTE: move constructor is only defined to allow copy elision. It
     // should not be used for any other purpose.
@@ -149,6 +155,9 @@ private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
+
+    auto read(const MDB_dbi dbi, const ReadCallback cb, const Dir dir)
+        const noexcept -> bool;
 
     LMDB() = delete;
     LMDB(const LMDB&) = delete;

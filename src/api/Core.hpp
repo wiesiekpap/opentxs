@@ -53,6 +53,11 @@ class Legacy;
 class Settings;
 }  // namespace api
 
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
+
 namespace network
 {
 namespace zeromq

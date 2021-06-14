@@ -66,6 +66,7 @@ struct SyncClient::Imp {
         , api_(api)
         , chain_(chain)
         , lock_()
+        , begin_sync_()
         , activity_()
         , processing_(false)
         , dealer_([&] {
@@ -149,6 +150,7 @@ private:
     const api::Core& api_;
     const Type chain_;
     mutable std::mutex lock_;
+    Time begin_sync_;
     Time activity_;
     bool processing_;
     Socket dealer_;
@@ -357,6 +359,7 @@ private:
 
                     if (State::Init == state_.load()) {
                         timer_.reset();
+                        begin_sync_ = Clock::now();
                         state_.store(State::Sync);
                     }
                 } break;
@@ -412,7 +415,15 @@ private:
             case State::Sync: {
                 do_sync();
 
-                if (is_idle()) { state_.store(State::Run); }
+                if (is_idle()) {
+                    const auto time =
+                        std::chrono::duration_cast<std::chrono::seconds>(
+                            Clock::now() - begin_sync_);
+                    LogOutput(DisplayString(chain_))(" sync completed in ")(
+                        time.count())(" seconds.")
+                        .Flush();
+                    state_.store(State::Run);
+                }
             } break;
             case State::Run:
             default: {

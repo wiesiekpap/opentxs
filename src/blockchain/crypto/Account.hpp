@@ -29,6 +29,7 @@
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
+#include "opentxs/blockchain/crypto/Wallet.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -132,7 +133,11 @@ public:
     {
         return payment_code_.at(account);
     }
-    auto Parent() const noexcept -> const internal::Wallet& final
+    auto Parent() const noexcept -> const crypto::Wallet& final
+    {
+        return parent_;
+    }
+    auto ParentInternal() const noexcept -> const internal::Wallet& final
     {
         return parent_;
     }

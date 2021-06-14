@@ -24,6 +24,17 @@
 
 namespace opentxs
 {
+namespace blockchain
+{
+namespace database
+{
+namespace common
+{
+class Bulk;
+}  // namespace common
+}  // namespace database
+}  // namespace blockchain
+
 namespace storage
 {
 namespace lmdb
@@ -35,7 +46,7 @@ class LMDB;
 
 namespace opentxs::blockchain::database::common
 {
-class Blocks final : private util::MappedFileStorage
+class Blocks
 {
 public:
     using Hash = opentxs::blockchain::block::Hash;
@@ -46,11 +57,11 @@ public:
     auto Store(const Hash& block, const std::size_t bytes) const noexcept
         -> BlockWriter;
 
-    Blocks(
-        opentxs::storage::lmdb::LMDB& lmdb,
-        const std::string& path) noexcept(false);
+    Blocks(storage::lmdb::LMDB& lmdb, Bulk& bulk) noexcept;
 
 private:
+    storage::lmdb::LMDB& lmdb_;
+    Bulk& bulk_;
     const int table_;
     mutable std::mutex lock_;
     mutable std::map<pHash, std::shared_mutex> block_locks_;

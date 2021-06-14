@@ -66,14 +66,6 @@ class Database;
 }  // namespace common
 }  // namespace database
 
-namespace network
-{
-namespace zeromq
-{
-class Context;
-}  // namespace zeromq
-}  // namespace network
-
 namespace node
 {
 namespace internal
@@ -83,6 +75,14 @@ struct Network;
 }  // namespace internal
 }  // namespace node
 }  // namespace blockchain
+
+namespace network
+{
+namespace zeromq
+{
+class Context;
+}  // namespace zeromq
+}  // namespace network
 }  // namespace opentxs
 
 namespace zmq = opentxs::network::zeromq;

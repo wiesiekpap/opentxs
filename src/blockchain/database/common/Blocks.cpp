@@ -8,16 +8,17 @@
 #include "blockchain/database/common/Blocks.hpp"  // IWYU pragma: associated
 
 #include <cstring>
-#include <memory>
 #include <type_traits>
 #include <utility>
 
-#include "blockchain/database/common/Database.hpp"
+#include "blockchain/database/common/Bulk.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "util/LMDB.hpp"
+#include "util/MappedFileStorage.hpp"
 
 #define OT_METHOD "opentxs::blockchain::database::common::Blocks::"
 
@@ -29,15 +30,11 @@ auto tsv(const Input& in) noexcept -> ReadView
     return {reinterpret_cast<const char*>(&in), sizeof(in)};
 }
 
-Blocks::Blocks(
-    opentxs::storage::lmdb::LMDB& lmdb,
-    const std::string& path) noexcept(false)
-    : MappedFileStorage(
-          lmdb,
-          path,
-          "blk",
-          Table::Config,
-          static_cast<std::size_t>(Database::Key::NextBlockAddress))
+using IndexData = util::IndexData;
+
+Blocks::Blocks(opentxs::storage::lmdb::LMDB& lmdb, Bulk& bulk) noexcept
+    : lmdb_(lmdb)
+    , bulk_(bulk)
     , table_(Table::BlockIndex)
     , lock_()
     , block_locks_()
@@ -68,7 +65,7 @@ auto Blocks::Load(const Hash& block) const noexcept -> BlockReader
         return {};
     }
 
-    return BlockReader{get_read_view(index), block_locks_[block]};
+    return BlockReader{bulk_.ReadView(index), block_locks_[block]};
 }
 
 auto Blocks::Store(const Hash& block, const std::size_t bytes) const noexcept
@@ -108,7 +105,7 @@ auto Blocks::Store(const Hash& block, const std::size_t bytes) const noexcept
 
         return true;
     };
-    auto view = get_write_view(index, std::move(cb), bytes);
+    auto view = bulk_.WriteView(index, std::move(cb), bytes);
 
     if (false == view.valid()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(
