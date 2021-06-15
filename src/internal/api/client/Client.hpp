@@ -33,10 +33,10 @@
 #include "opentxs/api/client/Pair.hpp"
 #include "opentxs/api/client/Types.hpp"
 #include "opentxs/api/client/UI.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -44,7 +44,6 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/network/blockchain/sync/State.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
@@ -55,44 +54,8 @@ namespace api
 {
 namespace client
 {
-namespace blockchain
-{
-namespace database
-{
-namespace implementation
-{
-class Database;
-}  // namespace implementation
-}  // namespace database
-
 namespace internal
 {
-struct BalanceTree;
-}  // namespace internal
-}  // namespace blockchain
-
-namespace internal
-{
-using PaymentWorkflowStateMap =
-    std::map<api::client::PaymentWorkflowState, proto::PaymentWorkflowState>;
-using PaymentWorkflowStateReverseMap =
-    std::map<proto::PaymentWorkflowState, api::client::PaymentWorkflowState>;
-using PaymentWorkflowTypeMap =
-    std::map<api::client::PaymentWorkflowType, proto::PaymentWorkflowType>;
-using PaymentWorkflowTypeReverseMap =
-    std::map<proto::PaymentWorkflowType, api::client::PaymentWorkflowType>;
-
-auto paymentworkflowstate_map() noexcept -> const PaymentWorkflowStateMap&;
-auto paymentworkflowtype_map() noexcept -> const PaymentWorkflowTypeMap&;
-auto translate(const api::client::PaymentWorkflowState in) noexcept
-    -> proto::PaymentWorkflowState;
-auto translate(const api::client::PaymentWorkflowType in) noexcept
-    -> proto::PaymentWorkflowType;
-auto translate(const proto::PaymentWorkflowState in) noexcept
-    -> api::client::PaymentWorkflowState;
-auto translate(const proto::PaymentWorkflowType in) noexcept
-    -> api::client::PaymentWorkflowType;
-
 struct Blockchain;
 struct UI;
 }  // namespace internal
@@ -110,17 +73,18 @@ class Wallet;
 
 namespace blockchain
 {
-namespace client
+namespace crypto
 {
 namespace internal
 {
-struct ThreadPool;
+struct Account;
 }  // namespace internal
-}  // namespace client
+}  // namespace crypto
 }  // namespace blockchain
 
 namespace identifier
 {
+class Nym;
 class Server;
 class UnitDefinition;
 }  // namespace identifier
@@ -170,28 +134,39 @@ auto Translate(const contact::ContactItemType type) noexcept
 
 namespace opentxs::api::client::internal
 {
+using PaymentWorkflowStateMap =
+    std::map<api::client::PaymentWorkflowState, proto::PaymentWorkflowState>;
+using PaymentWorkflowStateReverseMap =
+    std::map<proto::PaymentWorkflowState, api::client::PaymentWorkflowState>;
+using PaymentWorkflowTypeMap =
+    std::map<api::client::PaymentWorkflowType, proto::PaymentWorkflowType>;
+using PaymentWorkflowTypeReverseMap =
+    std::map<proto::PaymentWorkflowType, api::client::PaymentWorkflowType>;
+
+auto paymentworkflowstate_map() noexcept -> const PaymentWorkflowStateMap&;
+auto paymentworkflowtype_map() noexcept -> const PaymentWorkflowTypeMap&;
+auto translate(const api::client::PaymentWorkflowState in) noexcept
+    -> proto::PaymentWorkflowState;
+auto translate(const api::client::PaymentWorkflowType in) noexcept
+    -> proto::PaymentWorkflowType;
+auto translate(const proto::PaymentWorkflowState in) noexcept
+    -> api::client::PaymentWorkflowState;
+auto translate(const proto::PaymentWorkflowType in) noexcept
+    -> api::client::PaymentWorkflowType;
+
 struct Activity : virtual public api::client::Activity {
     ~Activity() override = default;
 };
 struct Blockchain : virtual public api::client::Blockchain {
     /// Throws std::runtime_error if type is invalid
-    virtual auto BalanceTree(const identifier::Nym& nymID, const Chain chain)
-        const noexcept(false) -> const blockchain::internal::BalanceTree& = 0;
-    virtual auto BlockchainDB() const noexcept
-        -> const blockchain::database::implementation::Database& = 0;
-    virtual auto BlockQueueUpdate() const noexcept
-        -> const opentxs::network::zeromq::socket::Publish& = 0;
+    virtual auto AccountInternal(
+        const identifier::Nym& nymID,
+        const Chain chain) const noexcept(false)
+        -> const opentxs::blockchain::crypto::internal::Account& = 0;
     virtual auto Contacts() const noexcept -> const api::client::Contacts& = 0;
-    virtual auto FilterUpdate() const noexcept
-        -> const opentxs::network::zeromq::socket::Publish& = 0;
-    using SyncData = std::vector<opentxs::network::blockchain::sync::State>;
-    virtual auto Hello() const noexcept -> SyncData = 0;
-    virtual auto IsEnabled(const opentxs::blockchain::Type chain) const noexcept
-        -> bool = 0;
     virtual auto KeyEndpoint() const noexcept -> const std::string& = 0;
     virtual auto KeyGenerated(const Chain chain) const noexcept -> void = 0;
-    virtual auto PeerUpdate() const noexcept
-        -> const opentxs::network::zeromq::socket::Publish& = 0;
+    virtual auto NewNym(const identifier::Nym& id) const noexcept -> void = 0;
     virtual bool ProcessContact(const Contact& contact) const noexcept = 0;
     virtual bool ProcessMergedContact(
         const Contact& parent,
@@ -199,22 +174,13 @@ struct Blockchain : virtual public api::client::Blockchain {
     virtual auto PubkeyHash(
         const opentxs::blockchain::Type chain,
         const Data& pubkey) const noexcept(false) -> OTData = 0;
-    virtual auto Reorg() const noexcept
-        -> const opentxs::network::zeromq::socket::Publish& = 0;
-    virtual auto ReportProgress(
-        const Chain chain,
-        const opentxs::blockchain::block::Height current,
-        const opentxs::blockchain::block::Height target) const noexcept
-        -> void = 0;
     virtual auto ReportScan(
         const Chain chain,
         const identifier::Nym& owner,
         const Identifier& account,
-        const blockchain::Subchain subchain,
+        const opentxs::blockchain::crypto::Subchain subchain,
         const opentxs::blockchain::block::Position& progress) const noexcept
         -> void = 0;
-    virtual auto RestoreNetworks() const noexcept -> void = 0;
-    virtual auto SyncEndpoint() const noexcept -> const std::string& = 0;
     virtual auto UpdateBalance(
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::Balance balance) const noexcept -> void = 0;
@@ -224,12 +190,8 @@ struct Blockchain : virtual public api::client::Blockchain {
         const opentxs::blockchain::Balance balance) const noexcept -> void = 0;
     virtual auto UpdateElement(
         std::vector<ReadView>& pubkeyHashes) const noexcept -> void = 0;
-    virtual auto UpdatePeer(
-        const opentxs::blockchain::Type chain,
-        const std::string& address) const noexcept -> void = 0;
 
     virtual auto Init() noexcept -> void = 0;
-    virtual auto Shutdown() noexcept -> void = 0;
 
     ~Blockchain() override = default;
 };

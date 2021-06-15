@@ -21,7 +21,7 @@
 #include <vector>
 
 #include "IncomingConnectionManager.hpp"
-#include "internal/api/client/Client.hpp"
+#include "internal/api/network/Network.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
@@ -31,6 +31,7 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/network/Asio.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -46,15 +47,15 @@ namespace opentxs::blockchain::node::implementation
 {
 PeerManager::Peers::Peers(
     const api::Core& api,
-    const api::client::internal::Blockchain& blockchain,
+    const api::network::internal::Blockchain& network,
     const internal::Config& config,
-    const internal::Network& network,
+    const internal::Network& node,
     const internal::HeaderOracle& headers,
     const internal::FilterOracle& filter,
     const internal::BlockOracle& block,
     const internal::PeerDatabase& database,
     const internal::PeerManager& parent,
-    const api::client::blockchain::BlockStorage policy,
+    const database::BlockStorage policy,
     const Flag& running,
     const std::string& shutdown,
     const Type chain,
@@ -63,13 +64,13 @@ PeerManager::Peers::Peers(
     : chain_(chain)
     , api_(api)
     , config_(config)
-    , network_(network)
+    , node_(node)
     , headers_(headers)
     , filter_(filter)
     , block_(block)
     , database_(database)
     , parent_(parent)
-    , connected_peers_(blockchain.PeerUpdate())
+    , connected_peers_(network.PeerUpdate())
     , policy_(policy)
     , running_(running)
     , shutdown_endpoint_(shutdown)
@@ -152,7 +153,8 @@ auto PeerManager::Peers::adjust_count(int adjustment) noexcept -> void
         count_.store(0);
     }
 
-    auto out = api_.ZeroMQ().TaggedMessage(WorkType::BlockchainPeerConnected);
+    auto out = api_.Network().ZeroMQ().TaggedMessage(
+        WorkType::BlockchainPeerConnected);
     out->AddFrame(chain_);
     out->AddFrame(count_.load());
     connected_peers_.Send(out);
@@ -302,7 +304,7 @@ auto PeerManager::Peers::get_dns_peer() const noexcept -> Endpoint
         const auto port = data.default_port_;
         LogVerbose(OT_METHOD)(__FUNCTION__)(": Using DNS seed: ")(seed).Flush();
 
-        for (const auto& endpoint : api_.Asio().Resolve(seed, port)) {
+        for (const auto& endpoint : api_.Network().Asio().Resolve(seed, port)) {
             LogVerbose(OT_METHOD)(__FUNCTION__)(": Found address: ")(
                 endpoint.GetAddress())
                 .Flush();
@@ -483,7 +485,7 @@ auto PeerManager::Peers::peer_factory(Endpoint endpoint, const int id) noexcept
             return factory::BitcoinP2PPeerLegacy(
                 api_,
                 config_,
-                network_,
+                node_,
                 headers_,
                 filter_,
                 block_,

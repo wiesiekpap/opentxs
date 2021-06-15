@@ -12,7 +12,8 @@
 
 #include "blockchain/node/blockoracle/BlockDownloader.hpp"
 #include "core/Worker.hpp"
-#include "internal/api/client/Client.hpp"
+#include "internal/api/network/Network.hpp"
+#include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -32,8 +33,8 @@ namespace opentxs::factory
 {
 auto BlockOracle(
     const api::Core& api,
-    const api::client::internal::Blockchain& blockchain,
-    const blockchain::node::internal::Network& network,
+    const api::network::internal::Blockchain& network,
+    const blockchain::node::internal::Network& node,
     const blockchain::node::internal::HeaderOracle& header,
     const blockchain::node::internal::BlockDatabase& db,
     const blockchain::Type chain,
@@ -43,7 +44,7 @@ auto BlockOracle(
     using ReturnType = blockchain::node::implementation::BlockOracle;
 
     return std::make_unique<ReturnType>(
-        api, blockchain, network, header, db, chain, shutdown);
+        api, network, node, header, db, chain, shutdown);
 }
 }  // namespace opentxs::factory
 
@@ -51,24 +52,24 @@ namespace opentxs::blockchain::node::implementation
 {
 BlockOracle::BlockOracle(
     const api::Core& api,
-    const api::client::internal::Blockchain& blockchain,
-    const internal::Network& network,
+    const api::network::internal::Blockchain& network,
+    const internal::Network& node,
     const internal::HeaderOracle& header,
     const internal::BlockDatabase& db,
     const blockchain::Type chain,
     const std::string& shutdown) noexcept
     : Worker(api, std::chrono::milliseconds{500})
-    , network_(network)
+    , node_(node)
     , db_(db)
     , lock_()
-    , cache_(api, network, db, blockchain.BlockQueueUpdate(), chain)
+    , cache_(api, node, db, network.BlockQueueUpdate(), chain)
     , block_downloader_([&]() -> std::unique_ptr<BlockDownloader> {
-        using Policy = api::client::blockchain::BlockStorage;
+        using Policy = database::BlockStorage;
 
         if (Policy::All != db.BlockPolicy()) { return nullptr; }
 
         return std::make_unique<BlockDownloader>(
-            api_, db, header, network, chain, shutdown);
+            api_, db, header, node_, chain, shutdown);
     }())
     , validator_(get_validator(chain, header))
 {

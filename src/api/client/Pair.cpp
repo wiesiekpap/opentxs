@@ -31,6 +31,7 @@
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Issuer.hpp"
 #include "opentxs/api/client/Pair.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
@@ -110,13 +111,13 @@ Pair::Pair(const Flag& running, const api::client::internal::Manager& client)
           [this](const auto& in) -> void { callback_peer_reply(in); }))
     , peer_request_callback_(zmq::ListenCallback::Factory(
           [this](const auto& in) -> void { callback_peer_request(in); }))
-    , pair_event_(client.ZeroMQ().PublishSocket())
-    , pending_bailment_(client.ZeroMQ().PublishSocket())
-    , nym_subscriber_(client.ZeroMQ().SubscribeSocket(nym_callback_))
+    , pair_event_(client_.Network().ZeroMQ().PublishSocket())
+    , pending_bailment_(client_.Network().ZeroMQ().PublishSocket())
+    , nym_subscriber_(client_.Network().ZeroMQ().SubscribeSocket(nym_callback_))
     , peer_reply_subscriber_(
-          client.ZeroMQ().SubscribeSocket(peer_reply_callback_))
+          client_.Network().ZeroMQ().SubscribeSocket(peer_reply_callback_))
     , peer_request_subscriber_(
-          client.ZeroMQ().SubscribeSocket(peer_request_callback_))
+          client_.Network().ZeroMQ().SubscribeSocket(peer_request_callback_))
 {
     // WARNING: do not access client_.Wallet() during construction
     pair_event_->Start(client_.Endpoints().PairEvent());

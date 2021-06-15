@@ -17,13 +17,16 @@
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/UI.hpp"
-#include "opentxs/api/client/blockchain/BalanceTree.hpp"
-#include "opentxs/api/client/blockchain/HD.hpp"
-#include "opentxs/api/client/blockchain/Subchain.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/server/Manager.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
+#include "opentxs/blockchain/crypto/Element.hpp"
+#include "opentxs/blockchain/crypto/HD.hpp"
+#include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Account.hpp"
@@ -43,14 +46,14 @@ namespace ottest
 class RPC_BC : public Regtest_fixture_normal, public RPC_fixture
 {
 protected:
-    using Subchain = ot::api::client::blockchain::Subchain;
+    using Subchain = ot::blockchain::crypto::Subchain;
 
     static ot::Nym_p alex_p_;
     static std::deque<ot::blockchain::block::pTxid> transactions_;
     static std::unique_ptr<ScanListener> listener_p_;
 
     const ot::identity::Nym& alex_;
-    const ot::api::client::blockchain::HD& account_;
+    const ot::blockchain::crypto::HD& account_;
     const Generator mine_to_alex_;
     ScanListener& listener_;
 
@@ -100,8 +103,7 @@ protected:
                     auto output = std::vector<OutputBuilder>{};
                     const auto reason =
                         client_1_.Factory().PasswordPrompt(__FUNCTION__);
-                    const auto keys =
-                        std::set<ot::api::client::blockchain::Key>{};
+                    const auto keys = std::set<ot::blockchain::crypto::Key>{};
                     const auto index =
                         account_.Reserve(Subchain::External, reason);
 
@@ -215,7 +217,8 @@ TEST_F(RPC_BC, blockchain_payment)
 
 TEST_F(RPC_BC, postconditions)
 {
-    const auto& network = client_1_.Blockchain().GetChain(test_chain_);
+    const auto& network =
+        client_1_.Network().Blockchain().GetChain(test_chain_);
     const auto [confirmed, unconfirmed] = network.GetBalance(alex_.ID());
 
     EXPECT_EQ(confirmed, 10000000000);

@@ -66,6 +66,11 @@ auto print(Code code) noexcept -> std::string
         return "unspecified error";
     }
 }
+
+auto print(blockchain::Type type) noexcept -> std::string
+{
+    return blockchain::DisplayString(type);
+}
 }  // namespace opentxs
 
 namespace opentxs::blockchain
@@ -91,7 +96,7 @@ auto BlockHash(
         case Type::UnitTest:
         default: {
             return api.Crypto().Hash().Digest(
-                crypto::HashType::Sha256D, input, output);
+                opentxs::crypto::HashType::Sha256D, input, output);
         }
     }
 }
@@ -202,7 +207,7 @@ auto P2PMessageHash(
         case Type::UnitTest:
         default: {
             return api.Crypto().Hash().Digest(
-                crypto::HashType::Sha256DC, input, output);
+                opentxs::crypto::HashType::Sha256DC, input, output);
         }
     }
 }
@@ -256,7 +261,7 @@ auto PubkeyHash(
         case Type::UnitTest:
         default: {
             return api.Crypto().Hash().Digest(
-                crypto::HashType::Bitcoin, input, output);
+                opentxs::crypto::HashType::Bitcoin, input, output);
         }
     }
 }
@@ -282,7 +287,7 @@ auto ScriptHash(
         case Type::UnitTest:
         default: {
             return api.Crypto().Hash().Digest(
-                crypto::HashType::Bitcoin, input, output);
+                opentxs::crypto::HashType::Bitcoin, input, output);
         }
     }
 }

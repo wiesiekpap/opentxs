@@ -5,9 +5,6 @@
 
 #pragma once
 
-// IWYU pragma: private
-// IWYU pragma: friend ".*src/network/zeromq/socket/Publish.cpp"
-
 #include "network/zeromq/curve/Server.hpp"
 #include "network/zeromq/socket/Sender.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"

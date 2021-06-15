@@ -5,13 +5,14 @@
 
 #include <gtest/gtest.h>
 #include <chrono>
+#include <cstddef>
 #include <memory>
 #include <utility>
 
 #include "2_Factory.hpp"
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "internal/api/client/Client.hpp"
-#include "internal/blind/Blind.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -21,6 +22,7 @@
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/server/Manager.hpp"
+#include "opentxs/blind/CashType.hpp"
 #include "opentxs/blind/Mint.hpp"
 #include "opentxs/blind/Purse.hpp"
 #include "opentxs/blind/PurseType.hpp"
@@ -34,6 +36,7 @@
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/iterator/Bidirectional.hpp"
 
 #define MINT_EXPIRE_MONTHS 6
 #define MINT_VALID_MONTHS 12

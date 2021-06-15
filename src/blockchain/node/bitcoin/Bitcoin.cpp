@@ -11,6 +11,10 @@
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/Factory.hpp"
+#include "internal/blockchain/node/Node.hpp"
+#include "opentxs/api/Core.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep
 
@@ -20,7 +24,8 @@ namespace opentxs::factory
 {
 auto BlockchainNetworkBitcoin(
     const api::Core& api,
-    const api::client::internal::Blockchain& blockchain,
+    const api::client::internal::Blockchain& crypto,
+    const api::network::internal::Blockchain& network,
     const blockchain::Type type,
     const blockchain::node::internal::Config& config,
     const std::string& seednode,
@@ -30,7 +35,26 @@ auto BlockchainNetworkBitcoin(
     using ReturnType = blockchain::node::base::Bitcoin;
 
     return std::make_unique<ReturnType>(
-        api, blockchain, type, config, seednode, syncEndpoint);
+        api, crypto, network, type, config, seednode, syncEndpoint);
+}
+
+auto BlockchainNetworkBitcoin(
+    const api::Core& api,
+    const api::client::internal::Blockchain& crypto,
+    const blockchain::Type type,
+    const blockchain::node::internal::Config& config,
+    const std::string& seednode,
+    const std::string& syncEndpoint) noexcept
+    -> std::unique_ptr<blockchain::node::internal::Network>
+{
+    return BlockchainNetworkBitcoin(
+        api,
+        crypto,
+        api.Network().Blockchain().Internal(),
+        type,
+        config,
+        seednode,
+        syncEndpoint);
 }
 }  // namespace opentxs::factory
 
@@ -38,12 +62,13 @@ namespace opentxs::blockchain::node::base
 {
 Bitcoin::Bitcoin(
     const api::Core& api,
-    const api::client::internal::Blockchain& blockchain,
+    const api::client::internal::Blockchain& crypto,
+    const api::network::internal::Blockchain& network,
     const Type type,
     const internal::Config& config,
     const std::string& seednode,
     const std::string& syncEndpoint)
-    : ot_super(api, blockchain, type, config, seednode, syncEndpoint)
+    : ot_super(api, crypto, network, type, config, seednode, syncEndpoint)
 {
     init();
 }

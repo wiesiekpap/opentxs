@@ -27,6 +27,7 @@
 #include "opentxs/api/client/PaymentWorkflowState.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
 #include "opentxs/api/client/Workflow.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #if OT_CASH
 #include "opentxs/blind/Purse.hpp"
@@ -445,9 +446,9 @@ Workflow::Workflow(
     : api_(api)
     , activity_(activity)
     , contact_(contact)
-    , account_publisher_(api_.ZeroMQ().PublishSocket())
-    , rpc_publisher_(
-          api_.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Connect))
+    , account_publisher_(api_.Network().ZeroMQ().PublishSocket())
+    , rpc_publisher_(api_.Network().ZeroMQ().PushSocket(
+          zmq::socket::Socket::Direction::Connect))
     , workflow_locks_()
 {
     // WARNING: do not access api_.Wallet() during construction
@@ -458,7 +459,7 @@ Workflow::Workflow(
     OT_ASSERT(bound)
 
     bound = rpc_publisher_->Start(
-        api_.ZeroMQ().BuildEndpoint("rpc/push/internal", -1, 1));
+        api_.Network().ZeroMQ().BuildEndpoint("rpc/push/internal", -1, 1));
 
     OT_ASSERT(bound)
 }
@@ -2672,8 +2673,8 @@ auto Workflow::save_workflow(
     OT_ASSERT(saved)
 
     if (false == accountID.empty()) {
-        auto work =
-            api_.ZeroMQ().TaggedMessage(WorkType::WorkflowAccountUpdate);
+        auto work = api_.Network().ZeroMQ().TaggedMessage(
+            WorkType::WorkflowAccountUpdate);
         work->AddFrame(accountID);
         account_publisher_->Send(work);
     }

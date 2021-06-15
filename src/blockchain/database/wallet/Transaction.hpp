@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "api/client/blockchain/database/Database.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -19,17 +18,6 @@ namespace api
 {
 namespace client
 {
-namespace blockchain
-{
-namespace database
-{
-namespace implementation
-{
-class Database;
-}  // namespace implementation
-}  // namespace database
-}  // namespace blockchain
-
 namespace internal
 {
 struct Blockchain;
@@ -48,6 +36,14 @@ namespace bitcoin
 class Transaction;
 }  // namespace bitcoin
 }  // namespace block
+
+namespace database
+{
+namespace common
+{
+class Database;
+}  // namespace common
+}  // namespace database
 }  // namespace blockchain
 
 class PasswordPrompt;
@@ -58,8 +54,6 @@ namespace opentxs::blockchain::database::wallet
 class Transaction
 {
 public:
-    using Common = api::client::blockchain::database::implementation::Database;
-
     auto TransactionLoadBitcoin(const ReadView txid) const noexcept
         -> std::unique_ptr<block::bitcoin::Transaction>;
 
@@ -74,7 +68,7 @@ public:
     Transaction(
         const api::Core& api,
         const api::client::internal::Blockchain& blockchain,
-        const Common& common) noexcept;
+        const database::common::Database& common) noexcept;
 
     ~Transaction();
 

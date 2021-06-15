@@ -19,6 +19,7 @@
 #include <utility>
 
 #include "Proto.tpp"
+#include "blockchain/database/common/Database.hpp"
 #include "blockchain/node/UpdateTransaction.hpp"
 #include "core/Worker.hpp"
 #include "internal/blockchain/block/Block.hpp"
@@ -54,7 +55,7 @@ auto tsv(const Input& in) noexcept -> ReadView
 Headers::Headers(
     const api::Core& api,
     const node::internal::Network& network,
-    const Common& common,
+    const common::Database& common,
     const opentxs::storage::lmdb::LMDB& lmdb,
     const blockchain::Type type) noexcept
     : api_(api)

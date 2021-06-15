@@ -3,13 +3,20 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+add_subdirectory(blockchain)
+
 add_library(
   opentxs-api-network OBJECT
+  "${opentxs_SOURCE_DIR}/src/internal/api/network/Factory.hpp"
   "${opentxs_SOURCE_DIR}/src/internal/api/network/Network.hpp"
   "Asio.cpp"
   "Asio.hpp"
+  "Blockchain.cpp"
+  "Blockchain.hpp"
   "Dht.cpp"
   "Dht.hpp"
+  "Network.cpp"
+  "Network.hpp"
   "ZAP.cpp"
   "ZAP.hpp"
   "ZMQ.cpp"
@@ -17,7 +24,9 @@ add_library(
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/network/Asio.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/api/network/Blockchain.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/network/Dht.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/api/network/Network.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/network/ZAP.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/network/ZMQ.hpp"
 )

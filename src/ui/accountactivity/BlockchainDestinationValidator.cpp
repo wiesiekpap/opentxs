@@ -20,9 +20,9 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Manager.hpp"
-#include "opentxs/api/client/blockchain/AddressStyle.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
@@ -79,7 +79,7 @@ struct BlockchainDestinationValidator final : public Super {
         const auto type = *chains.begin();
         const auto chain = blockchain::DisplayString(type);
         const auto validChain = (0u < chains.count(chain_));
-        using Style = api::client::blockchain::AddressStyle;
+        using Style = blockchain::crypto::AddressStyle;
 
         switch (style) {
             case Style::P2PKH: {

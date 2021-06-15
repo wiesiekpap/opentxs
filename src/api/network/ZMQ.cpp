@@ -18,6 +18,7 @@
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/core/AddressType.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -63,7 +64,7 @@ ZMQ::ZMQ(const api::internal::Core& api, const Flag& running)
     , lock_()
     , socks_proxy_()
     , server_connections_()
-    , status_publisher_(api_.ZeroMQ().PublishSocket())
+    , status_publisher_(api_.Network().ZeroMQ().PublishSocket())
 {
     // WARNING: do not access api_.Wallet() during construction
     status_publisher_->Start(api_.Endpoints().ConnectionStatus());
@@ -75,7 +76,7 @@ ZMQ::ZMQ(const api::internal::Core& api, const Flag& running)
 
 auto ZMQ::Context() const -> const opentxs::network::zeromq::Context&
 {
-    return api_.ZeroMQ();
+    return api_.Network().ZeroMQ();
 }
 
 auto ZMQ::DefaultAddressType() const -> core::AddressType

@@ -13,6 +13,7 @@
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -26,7 +27,7 @@ namespace opentxs
 template <typename Enum>
 auto MakeWork(const api::Core& api, const Enum type) noexcept -> OTZMQMessage
 {
-    return api.ZeroMQ().TaggedMessage(type);
+    return api.Network().ZeroMQ().TaggedMessage(type);
 }
 
 template <typename Child, typename API = api::client::Manager>

@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <utility>
 
+#include "blockchain/database/common/Database.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -26,7 +27,7 @@ namespace opentxs::blockchain::database
 Wallet::Wallet(
     const api::Core& api,
     const api::client::internal::Blockchain& blockchain,
-    const Common& common,
+    const common::Database& common,
     const blockchain::Type chain) noexcept
     : common_(common)
     , subchains_(api)
@@ -160,6 +161,12 @@ auto Wallet::LoadProposals() const noexcept
     -> std::vector<proto::BlockchainTransactionProposal>
 {
     return proposals_.LoadProposals();
+}
+
+auto Wallet::LookupContact(const Data& pubkeyHash) const noexcept
+    -> std::set<OTIdentifier>
+{
+    return common_.LookupContact(pubkeyHash);
 }
 
 auto Wallet::ReorgTo(

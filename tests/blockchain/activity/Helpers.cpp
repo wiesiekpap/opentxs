@@ -22,11 +22,11 @@
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/crypto/Element.hpp"  // IWYU pragma: keep
 #include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/identity/Nym.hpp"
 
 namespace ottest

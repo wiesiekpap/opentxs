@@ -25,7 +25,8 @@
 #include "opentxs/api/Wallet.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/blockchain/BalanceTree.hpp"
+#include "opentxs/api/network/Network.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/core/Account.hpp"
@@ -113,7 +114,7 @@ AccountList::AccountList(
 #if OT_BLOCKCHAIN
     , blockchain_balance_cb_(zmq::ListenCallback::Factory(
           [this](const auto& in) { pipeline_->Push(in); }))
-    , blockchain_balance_(Widget::api_.ZeroMQ().DealerSocket(
+    , blockchain_balance_(Widget::api_.Network().ZeroMQ().DealerSocket(
           blockchain_balance_cb_,
           zmq::socket::Socket::Direction::Connect))
 #endif  // OT_BLOCKCHAIN
@@ -330,7 +331,8 @@ auto AccountList::startup() noexcept -> void
 #if OT_BLOCKCHAIN
 auto AccountList::subscribe(const blockchain::Type chain) const noexcept -> void
 {
-    auto out = Widget::api_.ZeroMQ().TaggedMessage(WorkType::BlockchainBalance);
+    auto out = Widget::api_.Network().ZeroMQ().TaggedMessage(
+        WorkType::BlockchainBalance);
     out->AddFrame(chain);
     out->AddFrame(primary_id_);
     blockchain_balance_->Send(out);

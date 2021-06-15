@@ -17,13 +17,13 @@
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/blockchain/BalanceNode.hpp"
-#include "opentxs/api/client/blockchain/HD.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
+#include "opentxs/blockchain/crypto/HD.hpp"
+#include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/core/Data.hpp"
@@ -106,8 +106,8 @@ public:
 
     NotificationStateData(
         const api::Core& api,
-        const api::client::internal::Blockchain& blockchain,
-        const node::internal::Network& network,
+        const api::client::internal::Blockchain& crypto,
+        const node::internal::Network& node,
         const WalletDatabase& db,
         const SimpleCallback& taskFinished,
         Outstanding& jobCounter,

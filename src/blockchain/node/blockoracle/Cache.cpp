@@ -13,11 +13,13 @@
 #include <memory>
 #include <vector>
 
+#include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/core/Log.hpp"
@@ -38,12 +40,12 @@ const std::chrono::seconds BlockOracle::Cache::download_timeout_{15};
 
 BlockOracle::Cache::Cache(
     const api::Core& api,
-    const internal::Network& network,
+    const internal::Network& node,
     const internal::BlockDatabase& db,
     const network::zeromq::socket::Publish& socket,
     const blockchain::Type chain) noexcept
     : api_(api)
-    , network_(network)
+    , node_(node)
     , db_(db)
     , cache_size_publisher_(socket)
     , chain_(chain)
@@ -57,7 +59,7 @@ BlockOracle::Cache::Cache(
 auto BlockOracle::Cache::download(const block::Hash& block) const noexcept
     -> bool
 {
-    return network_.RequestBlock(block);
+    return node_.RequestBlock(block);
 }
 
 auto BlockOracle::Cache::DownloadQueue() const noexcept -> std::size_t
@@ -69,8 +71,8 @@ auto BlockOracle::Cache::DownloadQueue() const noexcept -> std::size_t
 
 auto BlockOracle::Cache::publish(std::size_t size) const noexcept -> void
 {
-    auto work =
-        api_.ZeroMQ().TaggedMessage(WorkType::BlockchainBlockDownloadQueue);
+    auto work = api_.Network().ZeroMQ().TaggedMessage(
+        WorkType::BlockchainBlockDownloadQueue);
     work->AddFrame(chain_);
     work->AddFrame(size);
     cache_size_publisher_.Send(work);
@@ -93,7 +95,7 @@ auto BlockOracle::Cache::ReceiveBlock(BitcoinBlock_p in) const noexcept -> void
     auto lock = Lock{lock_};
     auto& block = *in;
 
-    if (api::client::blockchain::BlockStorage::None != db_.BlockPolicy()) {
+    if (database::BlockStorage::None != db_.BlockPolicy()) {
         db_.BlockStore(block);
     }
 
@@ -198,7 +200,7 @@ auto BlockOracle::Cache::Request(const BlockHashes& hashes) const noexcept
 
                 return key->Bytes();
             });
-        const auto messageSent = network_.RequestBlocks(blockList);
+        const auto messageSent = node_.RequestBlocks(blockList);
 
         for (auto& [hash, futureOut] : download) {
             auto& [time, promise, future, queued] = pending_[hash];

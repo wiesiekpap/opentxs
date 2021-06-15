@@ -40,6 +40,15 @@ namespace opentxs::api::implementation
 class Scheduler : virtual public api::Periodic, public Lockable
 {
 public:
+    const api::internal::Context& parent_;
+    std::int64_t nym_publish_interval_{0};
+    std::int64_t nym_refresh_interval_{0};
+    std::int64_t server_publish_interval_{0};
+    std::int64_t server_refresh_interval_{0};
+    std::int64_t unit_publish_interval_{0};
+    std::int64_t unit_refresh_interval_{0};
+    Flag& running_;
+
     auto Cancel(const int task) const -> bool final
     {
         return parent_.Cancel(task);
@@ -60,18 +69,9 @@ public:
     ~Scheduler() override;
 
 protected:
-    const api::internal::Context& parent_;
-    std::int64_t nym_publish_interval_{0};
-    std::int64_t nym_refresh_interval_{0};
-    std::int64_t server_publish_interval_{0};
-    std::int64_t server_refresh_interval_{0};
-    std::int64_t unit_publish_interval_{0};
-    std::int64_t unit_refresh_interval_{0};
-    Flag& running_;
-
     void Start(
         const api::storage::Storage* const storage,
-        const api::network::Dht* const dht);
+        const api::network::Dht& dht);
 
     Scheduler(const api::internal::Context& parent, Flag& running);
 

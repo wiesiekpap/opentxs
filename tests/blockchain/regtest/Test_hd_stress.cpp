@@ -23,17 +23,19 @@
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/UI.hpp"
-#include "opentxs/api/client/blockchain/AddressStyle.hpp"
-#include "opentxs/api/client/blockchain/BalanceNode.hpp"
-#include "opentxs/api/client/blockchain/BalanceTree.hpp"
-#include "opentxs/api/client/blockchain/HD.hpp"
-#include "opentxs/api/client/blockchain/Subchain.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"   // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
+#include "opentxs/blockchain/crypto/AddressStyle.hpp"
+#include "opentxs/blockchain/crypto/Element.hpp"
+#include "opentxs/blockchain/crypto/HD.hpp"
+#include "opentxs/blockchain/crypto/Subchain.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Log.hpp"
@@ -56,7 +58,7 @@ Counter account_activity_{};
 class Regtest_stress : public Regtest_fixture_normal
 {
 protected:
-    using Subchain = ot::api::client::blockchain::Subchain;
+    using Subchain = ot::blockchain::crypto::Subchain;
     using Transactions = std::deque<ot::blockchain::block::pTxid>;
 
     static ot::Nym_p alice_p_;
@@ -67,8 +69,8 @@ protected:
 
     const ot::identity::Nym& alice_;
     const ot::identity::Nym& bob_;
-    const ot::api::client::blockchain::HD& alice_account_;
-    const ot::api::client::blockchain::HD& bob_account_;
+    const ot::blockchain::crypto::HD& alice_account_;
+    const ot::blockchain::crypto::HD& bob_account_;
     const ot::Identifier& expected_account_alice_;
     const ot::Identifier& expected_account_bob_;
     const ot::identifier::Server& expected_notary_;
@@ -99,7 +101,7 @@ protected:
 
         for (const auto index : indices) {
             const auto& element = bob.BalanceElement(Subchain::External, index);
-            using Style = ot::api::client::blockchain::AddressStyle;
+            using Style = ot::blockchain::crypto::AddressStyle;
             const auto& address =
                 output.emplace_back(element.Address(Style::P2PKH));
 
@@ -217,8 +219,7 @@ protected:
                     auto output = std::vector<OutputBuilder>{};
                     const auto reason =
                         client_1_.Factory().PasswordPrompt(__FUNCTION__);
-                    const auto keys =
-                        std::set<ot::api::client::blockchain::Key>{};
+                    const auto keys = std::set<ot::blockchain::crypto::Key>{};
                     const auto target = [] {
                         if (first_block_) {
                             first_block_ = false;
@@ -308,7 +309,8 @@ TEST_F(Regtest_stress, mine_initial_balance)
 
 TEST_F(Regtest_stress, alice_after_receive_wallet)
 {
-    const auto& network = client_1_.Blockchain().GetChain(test_chain_);
+    const auto& network =
+        client_1_.Network().Blockchain().GetChain(test_chain_);
     const auto& wallet = network.Wallet();
     const auto& nym = alice_.ID();
     const auto& account = alice_account_.ID();
@@ -406,7 +408,7 @@ TEST_F(Regtest_stress, alice_after_receive_wallet)
 TEST_F(Regtest_stress, generate_transactions)
 {
     namespace c = std::chrono;
-    const auto& alice = client_1_.Blockchain().GetChain(test_chain_);
+    const auto& alice = client_1_.Network().Blockchain().GetChain(test_chain_);
     const auto previous{1u};
     const auto stop = previous + blocks_;
     auto future1 =

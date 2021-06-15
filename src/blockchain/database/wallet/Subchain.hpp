@@ -9,6 +9,7 @@
 #include <mutex>
 #include <optional>
 
+#include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"

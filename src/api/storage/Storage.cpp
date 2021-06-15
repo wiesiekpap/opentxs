@@ -22,7 +22,7 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "core/OTStorage.hpp"
-#include "internal/api/client/blockchain/Blockchain.hpp"
+#include "internal/blockchain/crypto/Crypto.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Editor.hpp"
 #include "opentxs/api/Legacy.hpp"

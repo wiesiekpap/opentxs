@@ -21,10 +21,10 @@
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Manager.hpp"
-#include "opentxs/api/client/blockchain/BalanceNode.hpp"
-#include "opentxs/api/client/blockchain/PaymentCode.hpp"
-#include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/crypto/Element.hpp"
+#include "opentxs/blockchain/crypto/PaymentCode.hpp"
+#include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
@@ -103,7 +103,7 @@ TEST_F(Test_PaymentCodeAPI, alice)
         alice_.Blockchain().PaymentCodeSubaccount(nym.ID(), id1);
     const auto& account2 =
         alice_.Blockchain().PaymentCodeSubaccount(nym.ID(), id2);
-    using Subchain = ot::api::client::blockchain::Subchain;
+    using Subchain = ot::blockchain::crypto::Subchain;
     const auto populate = [&](const auto& account, const auto& target) {
         const auto generate = [&](const auto subchain) {
             auto index = account.LastGenerated(subchain);
@@ -205,7 +205,7 @@ TEST_F(Test_PaymentCodeAPI, bob)
         bob_.Blockchain().PaymentCodeSubaccount(nym.ID(), id1);
     const auto& account2 =
         bob_.Blockchain().PaymentCodeSubaccount(nym.ID(), id2);
-    using Subchain = ot::api::client::blockchain::Subchain;
+    using Subchain = ot::blockchain::crypto::Subchain;
     const auto populate = [&](const auto& account, const auto& target) {
         const auto generate = [&](const auto subchain) {
             auto index = account.LastGenerated(subchain);

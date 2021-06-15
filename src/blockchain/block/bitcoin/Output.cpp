@@ -27,10 +27,11 @@
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/blockchain/Subchain.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
+#include "opentxs/blockchain/crypto/Element.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/crypto/Subchain.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -52,7 +53,7 @@ auto BitcoinTransactionOutput(
     const std::uint32_t index,
     const std::uint64_t value,
     std::unique_ptr<const blockchain::block::bitcoin::internal::Script> script,
-    const std::set<api::client::blockchain::Key>& keys) noexcept
+    const std::set<blockchain::crypto::Key>& keys) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Output>
 {
     try {
@@ -118,7 +119,7 @@ auto BitcoinTransactionOutput(
         for (const auto& key : in.key()) {
             keys.emplace(
                 key.subaccount(),
-                static_cast<api::client::blockchain::Subchain>(
+                static_cast<blockchain::crypto::Subchain>(
                     static_cast<std::uint8_t>(key.subchain())),
                 key.index());
         }
@@ -349,7 +350,7 @@ auto Output::MergeMetadata(const SerializeType& rhs) noexcept -> void
         std::begin(rhs.key()), std::end(rhs.key()), [this](const auto& key) {
             cache_.add(
                 {key.subaccount(),
-                 static_cast<api::client::blockchain::Subchain>(
+                 static_cast<blockchain::crypto::Subchain>(
                      static_cast<std::uint8_t>(key.subchain())),
                  key.index()});
         });

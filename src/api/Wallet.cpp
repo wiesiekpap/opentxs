@@ -33,6 +33,7 @@
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Issuer.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #if OT_CASH
 #include "opentxs/blind/Purse.hpp"
@@ -131,18 +132,18 @@ Wallet::Wallet(const api::internal::Core& core)
     , purse_lock_()
     , purse_id_lock_()
 #endif
-    , account_publisher_(api_.ZeroMQ().PublishSocket())
-    , issuer_publisher_(api_.ZeroMQ().PublishSocket())
-    , nym_publisher_(api_.ZeroMQ().PublishSocket())
-    , nym_created_publisher_(api_.ZeroMQ().PublishSocket())
-    , server_publisher_(api_.ZeroMQ().PublishSocket())
-    , unit_publisher_(api_.ZeroMQ().PublishSocket())
-    , peer_reply_publisher_(api_.ZeroMQ().PublishSocket())
-    , peer_request_publisher_(api_.ZeroMQ().PublishSocket())
-    , dht_nym_requester_{api_.ZeroMQ().RequestSocket()}
-    , dht_server_requester_{api_.ZeroMQ().RequestSocket()}
-    , dht_unit_requester_{api_.ZeroMQ().RequestSocket()}
-    , find_nym_(api_.ZeroMQ().PushSocket(
+    , account_publisher_(api_.Network().ZeroMQ().PublishSocket())
+    , issuer_publisher_(api_.Network().ZeroMQ().PublishSocket())
+    , nym_publisher_(api_.Network().ZeroMQ().PublishSocket())
+    , nym_created_publisher_(api_.Network().ZeroMQ().PublishSocket())
+    , server_publisher_(api_.Network().ZeroMQ().PublishSocket())
+    , unit_publisher_(api_.Network().ZeroMQ().PublishSocket())
+    , peer_reply_publisher_(api_.Network().ZeroMQ().PublishSocket())
+    , peer_request_publisher_(api_.Network().ZeroMQ().PublishSocket())
+    , dht_nym_requester_{api_.Network().ZeroMQ().RequestSocket()}
+    , dht_server_requester_{api_.Network().ZeroMQ().RequestSocket()}
+    , dht_unit_requester_{api_.Network().ZeroMQ().RequestSocket()}
+    , find_nym_(api_.Network().ZeroMQ().PushSocket(
           opentxs::network::zeromq::socket::Socket::Direction::Connect))
 {
     account_publisher_->Start(api_.Endpoints().AccountUpdate());
@@ -683,7 +684,8 @@ auto Wallet::UpdateAccount(
         const auto balance = pAccount->GetBalance();
 
         {
-            auto work = api_.ZeroMQ().TaggedMessage(WorkType::AccountUpdated);
+            auto work =
+                api_.Network().ZeroMQ().TaggedMessage(WorkType::AccountUpdated);
             work->AddFrame(accountID);
             work->AddFrame(balance);
             account_publisher_->Send(work);
@@ -1068,8 +1070,8 @@ auto Wallet::Nym(
             }
         } else {
             {
-                auto work =
-                    api_.ZeroMQ().TaggedMessage(WorkType::DHTRequestNym);
+                auto work = api_.Network().ZeroMQ().TaggedMessage(
+                    WorkType::DHTRequestNym);
                 work->AddFrame(id);
                 dht_nym_requester_->Send(work);
             }
@@ -1141,12 +1143,7 @@ auto Wallet::Nym(const proto::Nym& serialized) const -> Nym_p
             auto& mapNym = nym_map_[id].second;
             // TODO update existing nym rather than destroying it
             mapNym.reset(pCandidate.release());
-
-            {
-                auto work = api_.ZeroMQ().TaggedMessage(WorkType::NymUpdated);
-                work->AddFrame(id);
-                nym_publisher_->Send(work);
-            }
+            notify(nymID);
 
             return mapNym;
         } else {
@@ -1202,7 +1199,8 @@ auto Wallet::Nym(
             pMapNym = pNym;
 
             {
-                auto work = api_.ZeroMQ().TaggedMessage(WorkType::NymCreated);
+                auto work =
+                    api_.Network().ZeroMQ().TaggedMessage(WorkType::NymCreated);
                 work->AddFrame(pNym->ID());
                 nym_created_publisher_->Send(work);
             }
@@ -1308,6 +1306,14 @@ auto Wallet::mutable_nymfile(
     };
 
     return EditorType(nymfile_lock(id), nymfile.release(), callback, deleter);
+}
+
+auto Wallet::notify(const identifier::Nym& id) const noexcept -> void
+{
+    api_.NewNym(id);
+    auto work = api_.Network().ZeroMQ().TaggedMessage(WorkType::NymUpdated);
+    work->AddFrame(id);
+    nym_publisher_->Send(work);
 }
 
 auto Wallet::nymfile_lock(const identifier::Nym& nymID) const -> std::mutex&
@@ -2251,8 +2257,8 @@ auto Wallet::Server(
             }
         } else {
             {
-                auto work =
-                    api_.ZeroMQ().TaggedMessage(WorkType::DHTRequestServer);
+                auto work = api_.Network().ZeroMQ().TaggedMessage(
+                    WorkType::DHTRequestServer);
                 work->AddFrame(id);
                 dht_server_requester_->Send(work);
             }
@@ -2567,8 +2573,8 @@ auto Wallet::UnitDefinition(
             }
         } else {
             {
-                auto work =
-                    api_.ZeroMQ().TaggedMessage(WorkType::DHTRequestUnit);
+                auto work = api_.Network().ZeroMQ().TaggedMessage(
+                    WorkType::DHTRequestUnit);
                 work->AddFrame(id);
                 dht_unit_requester_->Send(work);
             }
@@ -2651,7 +2657,8 @@ auto Wallet::UnitDefinition(const proto::UnitDefinition& contract) const
     const auto nymID = api_.Factory().NymID(contract.nymid());
 
     {
-        auto work = api_.ZeroMQ().TaggedMessage(WorkType::OTXSearchNym);
+        auto work =
+            api_.Network().ZeroMQ().TaggedMessage(WorkType::OTXSearchNym);
         work->AddFrame(nymID);
         find_nym_->Send(work);
     }

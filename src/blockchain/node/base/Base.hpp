@@ -6,6 +6,7 @@
 #pragma once
 
 #include <atomic>
+#include <cstddef>
 #include <future>
 #include <iosfwd>
 #include <map>
@@ -48,12 +49,19 @@ namespace api
 {
 namespace client
 {
-namespace blockchain
+namespace internal
 {
-class BalanceTree;
-class PaymentCode;
-}  // namespace blockchain
+struct Blockchain;
+}  // namespace internal
 }  // namespace client
+
+namespace network
+{
+namespace internal
+{
+struct Blockchain;
+}  // namespace internal
+}  // namespace network
 
 class Core;
 }  // namespace api
@@ -70,6 +78,14 @@ class Transaction;
 
 class Header;
 }  // namespace block
+
+namespace database
+{
+namespace common
+{
+class Database;
+}  // namespace common
+}  // namespace database
 
 namespace node
 {
@@ -130,11 +146,6 @@ public:
     {
         return *block_p_;
     }
-    auto Blockchain() const noexcept
-        -> const api::client::internal::Blockchain& final
-    {
-        return blockchain_;
-    }
     auto BroadcastTransaction(
         const block::bitcoin::Transaction& tx) const noexcept -> bool final;
     auto Chain() const noexcept -> Type final { return chain_; }
@@ -178,10 +189,8 @@ public:
     auto JobReady(const node::internal::PeerManager::Task type) const noexcept
         -> void final;
     auto Listen(const p2p::Address& address) const noexcept -> bool final;
-    auto Reorg() const noexcept -> const network::zeromq::socket::Publish& final
-    {
-        return parent_.Reorg();
-    }
+    auto Reorg() const noexcept
+        -> const network::zeromq::socket::Publish& final;
     auto RequestBlock(const block::Hash& block) const noexcept -> bool final;
     auto RequestBlocks(const std::vector<ReadView>& hashes) const noexcept
         -> bool final;
@@ -239,7 +248,8 @@ private:
     std::unique_ptr<node::internal::Wallet> wallet_p_;
 
 protected:
-    const api::client::internal::Blockchain& blockchain_;
+    const api::client::internal::Blockchain& crypto_;
+    const api::network::internal::Blockchain& network_;
     const Type chain_;
     blockchain::internal::Database& database_;
     node::internal::FilterOracle& filters_;
@@ -253,7 +263,8 @@ protected:
 
     Base(
         const api::Core& api,
-        const api::client::internal::Blockchain& blockchain,
+        const api::client::internal::Blockchain& crypto,
+        const api::network::internal::Blockchain& network,
         const Type type,
         const node::internal::Config& config,
         const std::string& seednode,
@@ -323,7 +334,6 @@ private:
         std::map<int, std::promise<SendOutcome>> map_{};
     };
 
-    const api::client::internal::Blockchain& parent_;
     const Time start_;
     const std::string sync_endpoint_;
     std::unique_ptr<base::SyncServer> sync_server_;

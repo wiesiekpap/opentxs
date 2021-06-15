@@ -28,6 +28,8 @@
 #include "blockchain/p2p/bitcoin/message/Sendcmpct.hpp"
 #include "blockchain/p2p/bitcoin/message/Tx.hpp"
 #include "internal/blockchain/Blockchain.hpp"
+#include "internal/blockchain/database/Database.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/blockchain/p2p/bitcoin/Factory.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
@@ -70,7 +72,7 @@ auto BitcoinP2PPeerLegacy(
     const blockchain::node::internal::FilterOracle& filter,
     const blockchain::node::internal::BlockOracle& block,
     const blockchain::node::internal::PeerManager& manager,
-    const api::client::blockchain::BlockStorage policy,
+    const blockchain::database::BlockStorage policy,
     const int id,
     std::unique_ptr<blockchain::p2p::internal::Address> address,
     const std::string& shutdown)
@@ -163,7 +165,7 @@ Peer::Peer(
     const node::internal::FilterOracle& filter,
     const node::internal::BlockOracle& block,
     const node::internal::PeerManager& manager,
-    const api::client::blockchain::BlockStorage policy,
+    const database::BlockStorage policy,
     const std::string& shutdown,
     const int id,
     std::unique_ptr<internal::Address> address,
@@ -269,7 +271,7 @@ auto Peer::get_body_size(const zmq::Frame& header) const noexcept -> std::size_t
 auto Peer::get_local_services(
     const ProtocolVersion version,
     const blockchain::Type network,
-    const api::client::blockchain::BlockStorage policy,
+    const database::BlockStorage policy,
     const std::set<p2p::Service>& input) noexcept -> std::set<p2p::Service>
 {
     auto output{input};
@@ -296,11 +298,11 @@ auto Peer::get_local_services(
     }
 
     switch (policy) {
-        case api::client::blockchain::BlockStorage::All: {
+        case database::BlockStorage::All: {
             output.emplace(p2p::Service::Network);
             output.emplace(p2p::Service::CompactFilters);
         } break;
-        case api::client::blockchain::BlockStorage::Cache: {
+        case database::BlockStorage::Cache: {
             output.emplace(p2p::Service::Limited);
             output.emplace(p2p::Service::CompactFilters);
         } break;

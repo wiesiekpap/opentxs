@@ -8,8 +8,9 @@
 #include <gtest/gtest.h>
 #include <chrono>
 
-#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Log.hpp"
 
@@ -23,11 +24,11 @@ TEST_F(Regtest_fixture_single, connect_peers) { EXPECT_TRUE(Connect()); }
 
 TEST_F(Regtest_fixture_single, client_disconnection_timeout)
 {
-    EXPECT_TRUE(client_1_.Blockchain().Stop(test_chain_));
+    EXPECT_TRUE(client_1_.Network().Blockchain().Stop(test_chain_));
 
     const auto start = ot::Clock::now();
     const auto limit = std::chrono::minutes{1};
-    const auto& chain = miner_.Blockchain().GetChain(test_chain_);
+    const auto& chain = miner_.Network().Blockchain().GetChain(test_chain_);
     auto count = std::size_t{1};
 
     while ((ot::Clock::now() - start) < limit) {

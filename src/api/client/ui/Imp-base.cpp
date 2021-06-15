@@ -15,6 +15,8 @@
 #include "internal/core/Core.hpp"
 #include "internal/ui/UI.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -278,7 +280,10 @@ auto UI::Imp::blockchain_selection(
                      std::forward_as_tuple(key),
                      std::forward_as_tuple(
                          opentxs::factory::BlockchainSelectionModel(
-                             api_, blockchain_, key, cb)))
+                             api_,
+                             api_.Network().Blockchain().Internal(),
+                             key,
+                             cb)))
                  .first;
 
         OT_ASSERT(it->second);
@@ -302,7 +307,7 @@ auto UI::Imp::blockchain_statistics(const Lock& lock, const SimpleCallback cb)
 {
     if (false == bool(blockchain_statistics_)) {
         blockchain_statistics_ =
-            opentxs::factory::BlockchainStatisticsModel(api_, blockchain_, cb);
+            opentxs::factory::BlockchainStatisticsModel(api_, cb);
     }
 
     OT_ASSERT(blockchain_statistics_);

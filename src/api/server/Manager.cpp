@@ -27,6 +27,7 @@
 #include "core/OTStorage.hpp"
 #include "core/Shutdown.hpp"
 #include "internal/api/Api.hpp"
+#include "internal/api/network/Factory.hpp"
 #include "internal/api/storage/Storage.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -34,6 +35,7 @@
 #include "opentxs/api/Legacy.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/server/Manager.hpp"
 #if OT_CASH
 #include "opentxs/blind/Mint.hpp"
@@ -131,7 +133,16 @@ Manager::Manager(
           context,
           dataFolder,
           instance,
-          true,
+          [&](const auto& zmq, const auto& endpoints, auto& config) {
+              return factory::NetworkAPI(
+                  *this,
+                  parent.Asio(),
+                  zmq,
+                  endpoints,
+                  factory::BlockchainNetworkAPINull(),
+                  config,
+                  true);
+          },
           std::unique_ptr<api::internal::Factory>{
               opentxs::Factory::FactoryAPIServer(*this)})
     , reason_(factory_.PasswordPrompt("Notary operation"))
@@ -395,7 +406,6 @@ auto Manager::ID() const -> const identifier::Server&
 
 void Manager::Init()
 {
-    OT_ASSERT(dht_);
 #if OT_CRYPTO_WITH_BIP32
     OT_ASSERT(seeds_);
 #endif  // OT_CRYPTO_WITH_BIP32
@@ -404,7 +414,7 @@ void Manager::Init()
     mint_thread_ = std::thread(&Manager::mint, this);
 #endif  // OT_CASH
 
-    Scheduler::Start(storage_.get(), dht_.get());
+    Scheduler::Start(storage_.get(), network_.DHT());
     StorageParent::init(
         factory_
 #if OT_CRYPTO_WITH_BIP32

@@ -37,17 +37,17 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/blockchain/BalanceNode.hpp"
-#include "opentxs/api/client/blockchain/BalanceTree.hpp"
-#include "opentxs/api/client/blockchain/PaymentCode.hpp"
-#include "opentxs/api/client/blockchain/Subchain.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
+#include "opentxs/blockchain/crypto/Element.hpp"
+#include "opentxs/blockchain/crypto/PaymentCode.hpp"
+#include "opentxs/blockchain/crypto/Subchain.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -85,7 +85,7 @@ struct BitcoinTransactionBuilder::Imp {
     {
         try {
             const auto reason = api_.Factory().PasswordPrompt(__FUNCTION__);
-            const auto& account = blockchain_.Account(sender_->ID(), chain_);
+            const auto& account = crypto_.Account(sender_->ID(), chain_);
             const auto& element = account.GetNextChangeKey(reason);
             const auto keyID = element.KeyID();
             change_keys_.emplace(keyID);
@@ -172,7 +172,7 @@ struct BitcoinTransactionBuilder::Imp {
 
                 return factory::BitcoinTransactionOutput(
                     api_,
-                    blockchain_,
+                    crypto_,
                     chain_,
                     static_cast<std::uint32_t>(outputs_.size()),
                     0,
@@ -205,7 +205,7 @@ struct BitcoinTransactionBuilder::Imp {
     auto AddInput(const UTXO& utxo) noexcept -> bool
     {
         auto pInput =
-            factory::BitcoinTransactionInput(api_, blockchain_, chain_, utxo);
+            factory::BitcoinTransactionInput(api_, crypto_, chain_, utxo);
 
         if (false == bool(pInput)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct input")
@@ -311,7 +311,7 @@ struct BitcoinTransactionBuilder::Imp {
 
             auto pOutput = factory::BitcoinTransactionOutput(
                 api_,
-                blockchain_,
+                crypto_,
                 chain_,
                 static_cast<std::uint32_t>(++index),
                 static_cast<std::int64_t>(output.amount()),
@@ -330,10 +330,10 @@ struct BitcoinTransactionBuilder::Imp {
                 try {
                     const auto accountID =
                         api_.Factory().Identifier(output.paymentcodechannel());
-                    const auto& account = blockchain_.PaymentCodeSubaccount(
-                        blockchain_.Owner(accountID), accountID);
+                    const auto& account = crypto_.PaymentCodeSubaccount(
+                        crypto_.Owner(accountID), accountID);
                     static constexpr auto subchain{
-                        api::client::blockchain::Subchain::Outgoing};
+                        blockchain::crypto::Subchain::Outgoing};
                     const auto& element = account.BalanceElement(subchain, 0);
                     pOutput->SetPayee(element.Contact());
                 } catch (const std::exception& e) {
@@ -358,7 +358,7 @@ struct BitcoinTransactionBuilder::Imp {
             input_value_ - (output_value_ + required_fee());
 
         if (excessValue <= dust()) {
-            for (const auto& key : change_keys_) { blockchain_.Release(key); }
+            for (const auto& key : change_keys_) { crypto_.Release(key); }
         } else {
             OT_ASSERT(1 == change_.size());  // TODO
 
@@ -403,7 +403,7 @@ struct BitcoinTransactionBuilder::Imp {
 
         return factory::BitcoinTransaction(
             api_,
-            blockchain_,
+            crypto_,
             chain_,
             Clock::now(),
             version_,
@@ -413,9 +413,9 @@ struct BitcoinTransactionBuilder::Imp {
     }
     auto ReleaseKeys() noexcept -> void
     {
-        for (const auto& key : outgoing_keys_) { blockchain_.Release(key); }
+        for (const auto& key : outgoing_keys_) { crypto_.Release(key); }
 
-        for (const auto& key : change_keys_) { blockchain_.Release(key); }
+        for (const auto& key : change_keys_) { crypto_.Release(key); }
     }
     auto SignInputs() noexcept -> bool
     {
@@ -437,14 +437,14 @@ struct BitcoinTransactionBuilder::Imp {
     }
 
     Imp(const api::Core& api,
-        const api::client::Blockchain& blockchain,
+        const api::client::Blockchain& crypto,
         const node::internal::WalletDatabase& db,
         const Identifier& id,
         const Proposal& proposal,
         const Type chain,
         const Amount feeRate) noexcept
         : api_(api)
-        , blockchain_(blockchain)
+        , crypto_(crypto)
         , sender_([&] {
             const auto id = [&] {
                 auto out = api_.Factory().NymID();
@@ -479,7 +479,7 @@ struct BitcoinTransactionBuilder::Imp {
             for (const auto& output : proposal.output()) {
                 if (false == output.has_paymentcodechannel()) { continue; }
 
-                using Subchain = api::client::blockchain::Subchain;
+                using Subchain = blockchain::crypto::Subchain;
                 out.emplace(
                     output.paymentcodechannel(),
                     Subchain::Outgoing,
@@ -501,7 +501,7 @@ private:
     static constexpr auto p2pkh_output_bytes_ = std::size_t{34};
 
     const api::Core& api_;
-    const api::client::Blockchain& blockchain_;
+    const api::client::Blockchain& crypto_;
     const Nym_p sender_;
     const Type chain_;
     const Amount fee_rate_;
@@ -583,7 +583,7 @@ private:
                 opentxs::print(id))(" to sign previous output ")(
                 input.PreviousOutput().str())
                 .Flush();
-            const auto& node = blockchain_.GetKey(id);
+            const auto& node = crypto_.GetKey(id);
 
             if (const auto got = node.KeyID(); got != id) {
                 LogOutput(OT_METHOD)(__FUNCTION__)(
@@ -665,7 +665,7 @@ private:
                 opentxs::print(id))(" to sign previous output ")(
                 input.PreviousOutput().str())
                 .Flush();
-            const auto& node = blockchain_.GetKey(id);
+            const auto& node = crypto_.GetKey(id);
 
             if (const auto got = node.KeyID(); got != id) {
                 LogOutput(OT_METHOD)(__FUNCTION__)(
@@ -746,7 +746,7 @@ private:
                 opentxs::print(id))(" to sign previous output ")(
                 input.PreviousOutput().str())
                 .Flush();
-            const auto& node = blockchain_.GetKey(id);
+            const auto& node = crypto_.GetKey(id);
 
             if (const auto got = node.KeyID(); got != id) {
                 LogOutput(OT_METHOD)(__FUNCTION__)(
@@ -842,10 +842,9 @@ private:
         return nullptr;
     }
     auto get_private_key(
-        const crypto::key::EllipticCurve& pubkey,
-        const api::client::blockchain::BalanceNode::Element& element,
-        const PasswordPrompt& reason) const noexcept
-        -> api::client::blockchain::ECKey
+        const opentxs::crypto::key::EllipticCurve& pubkey,
+        const blockchain::crypto::Element& element,
+        const PasswordPrompt& reason) const noexcept -> crypto::ECKey
     {
         auto pKey = element.PrivateKey(reason);
 
@@ -876,9 +875,9 @@ private:
 
         return pKey;
     }
-    auto hash_type() const noexcept -> crypto::HashType
+    auto hash_type() const noexcept -> opentxs::crypto::HashType
     {
-        return crypto::HashType::Sha256D;
+        return opentxs::crypto::HashType::Sha256D;
     }
     auto init_bip143(Bip143& bip143) const noexcept -> bool
     {
@@ -895,7 +894,7 @@ private:
         auto& output = bip143.value();
         auto cb = [&](const auto& preimage, auto& output) -> bool {
             return api_.Crypto().Hash().Digest(
-                crypto::HashType::Sha256D,
+                opentxs::crypto::HashType::Sha256D,
                 reader(preimage),
                 preallocated(output.size(), output.data()));
         };
@@ -1006,7 +1005,7 @@ private:
 
         txcopy = factory::BitcoinTransaction(
             api_,
-            blockchain_,
+            crypto_,
             chain_,
             Clock::now(),
             version_,
@@ -1197,10 +1196,10 @@ private:
     enum class Match : bool { ByValue, ByHash };
     auto validate(
         const Match match,
-        const api::client::blockchain::BalanceNode::Element& element,
+        const blockchain::crypto::Element& element,
         const block::Outpoint& outpoint,
         const block::bitcoin::internal::Output& output) const noexcept
-        -> api::client::blockchain::ECKey
+        -> crypto::ECKey
     {
         const auto [account, subchain, index] = element.KeyID();
         LogTrace(OT_METHOD)(__FUNCTION__)(": considering spend key ")(index)(
@@ -1292,14 +1291,13 @@ private:
 
 BitcoinTransactionBuilder::BitcoinTransactionBuilder(
     const api::Core& api,
-    const api::client::Blockchain& blockchain,
+    const api::client::Blockchain& crypto,
     const node::internal::WalletDatabase& db,
     const Identifier& id,
     const Proposal& proposal,
     const Type chain,
     const Amount feeRate) noexcept
-    : imp_(std::make_unique<
-           Imp>(api, blockchain, db, id, proposal, chain, feeRate))
+    : imp_(std::make_unique<Imp>(api, crypto, db, id, proposal, chain, feeRate))
 {
     OT_ASSERT(imp_);
 }

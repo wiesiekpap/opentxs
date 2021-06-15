@@ -29,11 +29,11 @@
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/UI.hpp"
-#include "opentxs/api/client/blockchain/HD.hpp"
-#include "opentxs/api/client/blockchain/Subchain.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/crypto/HD.hpp"
+#include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -59,7 +59,7 @@
 #endif  // OT_BLOCKCHAIN
 #endif  // OT_QT
 
-using Subchain = ot::api::client::blockchain::Subchain;
+using Subchain = ot::blockchain::crypto::Subchain;
 
 const auto time_1_ = ot::Clock::from_time_t(1592661306);
 const auto time_2_ = ot::Clock::from_time_t(1592663862);

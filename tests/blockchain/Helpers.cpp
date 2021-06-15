@@ -18,6 +18,7 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
@@ -47,7 +48,7 @@ struct Listener::Imp {
         , counter_(-1)
         , cb_(zmq::ListenCallback::Factory([this](auto& in) { cb(in); }))
         , socket_([&] {
-            auto out = api.ZeroMQ().SubscribeSocket(cb_);
+            auto out = api.Network().ZeroMQ().SubscribeSocket(cb_);
 
             if (false == out->Start(endpoint)) {
                 throw std::runtime_error{"failed to connect to endpoint"};

@@ -23,16 +23,16 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/blockchain/BalanceNode.hpp"
-#include "opentxs/api/client/blockchain/BalanceTree.hpp"
-#include "opentxs/api/client/blockchain/Deterministic.hpp"
-#include "opentxs/api/client/blockchain/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
+#include "opentxs/blockchain/crypto/Deterministic.hpp"
+#include "opentxs/blockchain/crypto/Element.hpp"
+#include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -50,10 +50,10 @@ namespace opentxs::blockchain::node::wallet
 {
 DeterministicStateData::DeterministicStateData(
     const api::Core& api,
-    const api::client::internal::Blockchain& blockchain,
-    const node::internal::Network& network,
+    const api::client::internal::Blockchain& crypto,
+    const node::internal::Network& node,
     const WalletDatabase& db,
-    const api::client::blockchain::Deterministic& node,
+    const crypto::Deterministic& subaccount,
     const SimpleCallback& taskFinished,
     Outstanding& jobCounter,
     const zmq::socket::Push& threadPool,
@@ -61,17 +61,17 @@ DeterministicStateData::DeterministicStateData(
     const Subchain subchain) noexcept
     : SubchainStateData(
           api,
-          blockchain,
-          network,
+          crypto,
+          node,
           db,
-          OTNymID{node.Parent().NymID()},
-          OTIdentifier{node.ID()},
+          OTNymID{subaccount.Parent().NymID()},
+          OTIdentifier{subaccount.ID()},
           taskFinished,
           jobCounter,
           threadPool,
           filter,
           subchain)
-    , node_(node)
+    , subaccount_(subaccount)
 {
     init();
 }
@@ -79,7 +79,7 @@ DeterministicStateData::DeterministicStateData(
 auto DeterministicStateData::check_index() noexcept -> bool
 {
     last_indexed_ = db_.SubchainLastIndexed(index_);
-    const auto generated = node_.LastGenerated(subchain_);
+    const auto generated = subaccount_.LastGenerated(subchain_);
 
     if (generated.has_value()) {
         if ((false == last_indexed_.has_value()) ||
@@ -121,7 +121,7 @@ auto DeterministicStateData::handle_confirmed_matches(
         const auto& [txid, elementID] = match;
         const auto& [index, subchainID] = elementID;
         const auto& [subchain, accountID] = subchainID;
-        const auto& element = node_.BalanceElement(subchain, index);
+        const auto& element = subaccount_.BalanceElement(subchain, index);
         const auto& pTransaction = block.at(txid->Bytes());
 
         OT_ASSERT(pTransaction);
@@ -154,12 +154,12 @@ auto DeterministicStateData::handle_confirmed_matches(
                     if (key.PublicKey() == script.Pubkey().value()) {
                         LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
                             " element ")(index)(": P2PK match found for ")(
-                            DisplayString(network_.Chain()))(" transaction ")(
+                            DisplayString(node_.Chain()))(" transaction ")(
                             txid->asHex())(" output ")(i)(" via ")(
                             api_.Factory().Data(key.PublicKey())->asHex())
                             .Flush();
                         outputs.emplace_back(i);
-                        blockchain_.Confirm(element.KeyID(), txid);
+                        crypto_.Confirm(element.KeyID(), txid);
 
                         if (nullptr == pTX) { pTX = pTransaction.get(); }
                     }
@@ -172,12 +172,12 @@ auto DeterministicStateData::handle_confirmed_matches(
                     if (hash->Bytes() == script.PubkeyHash().value()) {
                         LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
                             " element ")(index)(": P2PKH match found for ")(
-                            DisplayString(network_.Chain()))(" transaction ")(
+                            DisplayString(node_.Chain()))(" transaction ")(
                             txid->asHex())(" output ")(i)(" via ")(
                             hash->asHex())
                             .Flush();
                         outputs.emplace_back(i);
-                        blockchain_.Confirm(element.KeyID(), txid);
+                        crypto_.Confirm(element.KeyID(), txid);
 
                         if (nullptr == pTX) { pTX = pTransaction.get(); }
                     }
@@ -205,12 +205,12 @@ auto DeterministicStateData::handle_confirmed_matches(
                         LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
                             " element ")(index)(": ")(m.value())(" of ")(
                             n.value())(" P2MS match found for ")(
-                            DisplayString(network_.Chain()))(" transaction ")(
+                            DisplayString(node_.Chain()))(" transaction ")(
                             txid->asHex())(" output ")(i)(" via ")(
                             api_.Factory().Data(key.PublicKey())->asHex())
                             .Flush();
                         outputs.emplace_back(i);
-                        blockchain_.Confirm(element.KeyID(), txid);
+                        crypto_.Confirm(element.KeyID(), txid);
 
                         if (nullptr == pTX) { pTX = pTransaction.get(); }
                     }
@@ -249,7 +249,7 @@ auto DeterministicStateData::index() noexcept -> void
 {
     const auto first =
         last_indexed_.has_value() ? last_indexed_.value() + 1u : Bip32Index{0u};
-    const auto last = node_.LastGenerated(subchain_).value_or(0u);
+    const auto last = subaccount_.LastGenerated(subchain_).value_or(0u);
     auto elements = WalletDatabase::ElementMap{};
 
     if (last > first) {
@@ -263,7 +263,7 @@ auto DeterministicStateData::index() noexcept -> void
     }
 
     for (auto i{first}; i <= last; ++i) {
-        const auto& element = node_.BalanceElement(subchain_, i);
+        const auto& element = subaccount_.BalanceElement(subchain_, i);
         index_element(filter_type_, element, i, elements);
     }
 

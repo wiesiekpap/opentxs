@@ -8,8 +8,8 @@
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <array>
+#include <cstddef>
 #include <functional>
-#include <iosfwd>
 #include <iterator>
 #include <map>
 #include <memory>
@@ -30,8 +30,9 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
@@ -81,13 +82,13 @@ struct Test_BitcoinBlock : public ::testing::Test {
         const ot::blockchain::filter::Header& header) const -> bool
     {
         constexpr auto seednode{"do not init peers"};
-        const auto started = api_.Blockchain().Start(chain, seednode);
+        const auto started = api_.Network().Blockchain().Start(chain, seednode);
 
         EXPECT_TRUE(started);
 
         if (false == started) { return false; }
 
-        const auto& network = api_.Blockchain().GetChain(chain);
+        const auto& network = api_.Network().Blockchain().GetChain(chain);
         const auto& hOracle = network.HeaderOracle();
         const auto& fOracle = network.FilterOracle();
         const auto genesisFilter =

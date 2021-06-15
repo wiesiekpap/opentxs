@@ -17,7 +17,6 @@
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
@@ -25,6 +24,7 @@
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 
@@ -131,7 +131,7 @@ public:
     }
     auto ForTestingOnlyAddKey(
         const std::size_t index,
-        const api::client::blockchain::Key& key) noexcept -> bool final
+        const blockchain::crypto::Key& key) noexcept -> bool final
     {
         return outputs_->ForTestingOnlyAddKey(index, key);
     }

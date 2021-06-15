@@ -30,13 +30,13 @@
 #include "internal/contact/Contact.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -240,7 +240,7 @@ auto BitcoinTransactionInput(
             for (const auto& key : in.key()) {
                 keys.emplace(
                     key.subaccount(),
-                    static_cast<api::client::blockchain::Subchain>(
+                    static_cast<blockchain::crypto::Subchain>(
                         static_cast<std::uint8_t>(key.subchain())),
                     key.index());
             }

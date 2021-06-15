@@ -19,9 +19,8 @@
 #include <vector>
 
 #include "Proto.hpp"
-#include "api/client/blockchain/database/Database.hpp"
-#include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Blockchain.hpp"
+#include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
@@ -45,6 +44,14 @@ class Core;
 
 namespace blockchain
 {
+namespace database
+{
+namespace common
+{
+class Database;
+}  // namespace common
+}  // namespace database
+
 namespace node
 {
 struct GCS;
@@ -65,7 +72,6 @@ namespace opentxs::blockchain::database
 class Filters
 {
 public:
-    using Common = api::client::blockchain::database::implementation::Database;
     using Parent = node::internal::FilterDatabase;
     using Hash = Parent::Hash;
     using Header = Parent::Header;
@@ -75,20 +81,11 @@ public:
         -> block::Position;
     auto CurrentTip(const filter::Type type) const noexcept -> block::Position;
     auto HaveFilter(const filter::Type type, const block::Hash& block)
-        const noexcept -> bool
-    {
-        return common_.HaveFilter(type, block.Bytes());
-    }
+        const noexcept -> bool;
     auto HaveFilterHeader(const filter::Type type, const block::Hash& block)
-        const noexcept -> bool
-    {
-        return common_.HaveFilterHeader(type, block.Bytes());
-    }
+        const noexcept -> bool;
     auto LoadFilter(const filter::Type type, const ReadView block)
-        const noexcept -> std::unique_ptr<const blockchain::node::GCS>
-    {
-        return common_.LoadFilter(type, block);
-    }
+        const noexcept -> std::unique_ptr<const blockchain::node::GCS>;
     auto LoadFilterHash(const filter::Type type, const ReadView block)
         const noexcept -> Hash;
     auto LoadFilterHeader(const filter::Type type, const ReadView block)
@@ -97,33 +94,27 @@ public:
         const noexcept -> bool;
     auto SetTip(const filter::Type type, const block::Position& position)
         const noexcept -> bool;
-    auto StoreHeaders(
-        const filter::Type type,
-        const ReadView previous,
-        const std::vector<Header> headers) const noexcept -> bool
-    {
-        return common_.StoreFilterHeaders(type, headers);
-    }
     auto StoreFilters(
         const filter::Type type,
         const std::vector<Header>& headers,
         const std::vector<Filter>& filters,
         const block::Position& tip) const noexcept -> bool;
     auto StoreFilters(const filter::Type type, std::vector<Filter> filters)
-        const noexcept -> bool
-    {
-        return common_.StoreFilters(type, filters);
-    }
+        const noexcept -> bool;
+    auto StoreHeaders(
+        const filter::Type type,
+        const ReadView previous,
+        const std::vector<Header> headers) const noexcept -> bool;
 
     Filters(
         const api::Core& api,
-        const Common& common,
+        const common::Database& common,
         const opentxs::storage::lmdb::LMDB& lmdb,
         const blockchain::Type chain) noexcept;
 
 private:
     const api::Core& api_;
-    const Common& common_;
+    const common::Database& common_;
     const opentxs::storage::lmdb::LMDB& lmdb_;
     const block::Position blank_position_;
     mutable std::mutex lock_;

@@ -22,7 +22,6 @@
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
@@ -32,6 +31,7 @@
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -197,7 +197,7 @@ struct Outputs : virtual public bitcoin::Outputs {
 
     virtual auto ForTestingOnlyAddKey(
         const std::size_t index,
-        const api::client::blockchain::Key& key) noexcept -> bool = 0;
+        const blockchain::crypto::Key& key) noexcept -> bool = 0;
     virtual auto MergeMetadata(const Output::SerializeType& rhs) noexcept(false)
         -> void = 0;
 
@@ -232,7 +232,7 @@ struct OPENTXS_EXPORT Transaction : virtual public bitcoin::Transaction {
         const proto::BlockchainTransactionOutput& output) noexcept -> bool = 0;
     virtual auto ForTestingOnlyAddKey(
         const std::size_t index,
-        const api::client::blockchain::Key& key) noexcept -> bool = 0;
+        const blockchain::crypto::Key& key) noexcept -> bool = 0;
     virtual auto MergeMetadata(
         const api::client::Blockchain& api,
         const blockchain::Type chain,
@@ -364,7 +364,7 @@ auto BitcoinTransactionOutput(
     const std::uint32_t index,
     const std::uint64_t value,
     std::unique_ptr<const blockchain::block::bitcoin::internal::Script> script,
-    const std::set<api::client::blockchain::Key>& keys) noexcept
+    const std::set<blockchain::crypto::Key>& keys) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Output>;
 auto BitcoinTransactionOutput(
     const api::Core& api,

@@ -7,8 +7,9 @@
 #include <memory>
 
 #include "Helpers.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 
 namespace
@@ -17,7 +18,8 @@ TEST_F(Test_StartStop, init_opentxs) {}
 
 TEST_F(Test_StartStop, bch)
 {
-    EXPECT_TRUE(api_.Blockchain().Start(b::Type::BitcoinCash, "127.0.0.2"));
-    EXPECT_TRUE(api_.Blockchain().Stop(b::Type::BitcoinCash));
+    EXPECT_TRUE(
+        api_.Network().Blockchain().Start(b::Type::BitcoinCash, "127.0.0.2"));
+    EXPECT_TRUE(api_.Network().Blockchain().Stop(b::Type::BitcoinCash));
 }
 }  // namespace

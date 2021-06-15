@@ -21,17 +21,19 @@
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/UI.hpp"
-#include "opentxs/api/client/blockchain/BalanceNode.hpp"
-#include "opentxs/api/client/blockchain/BalanceTree.hpp"
-#include "opentxs/api/client/blockchain/HD.hpp"
-#include "opentxs/api/client/blockchain/Subchain.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
+#include "opentxs/blockchain/crypto/Element.hpp"
+#include "opentxs/blockchain/crypto/HD.hpp"
+#include "opentxs/blockchain/crypto/Subchain.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
@@ -72,7 +74,7 @@ Counter account_activity_{};
 class Regtest_fixture_hd : public Regtest_fixture_normal
 {
 protected:
-    using Subchain = ot::api::client::blockchain::Subchain;
+    using Subchain = ot::blockchain::crypto::Subchain;
     using UTXO = ot::blockchain::node::Wallet::UTXO;
 
     static ot::Nym_p alex_p_;
@@ -81,7 +83,7 @@ protected:
     static Expected expected_;
 
     const ot::identity::Nym& alex_;
-    const ot::api::client::blockchain::HD& account_;
+    const ot::blockchain::crypto::HD& account_;
     const ot::Identifier& expected_account_;
     const ot::identifier::Server& expected_notary_;
     const ot::identifier::UnitDefinition& expected_unit_;
@@ -152,8 +154,7 @@ protected:
                     auto output = std::vector<OutputBuilder>{};
                     const auto reason =
                         client_1_.Factory().PasswordPrompt(__FUNCTION__);
-                    const auto keys =
-                        std::set<ot::api::client::blockchain::Key>{};
+                    const auto keys = std::set<ot::blockchain::crypto::Key>{};
 
                     for (auto i = Index{0}; i < Index{count}; ++i) {
                         const auto index = account_.Reserve(
@@ -327,7 +328,8 @@ TEST_F(Regtest_fixture_hd, mine)
 
 TEST_F(Regtest_fixture_hd, first_block)
 {
-    const auto& blockchain = client_1_.Blockchain().GetChain(test_chain_);
+    const auto& blockchain =
+        client_1_.Network().Blockchain().GetChain(test_chain_);
     const auto blockHash = blockchain.HeaderOracle().BestHash(1);
 
     ASSERT_FALSE(blockHash->empty());
@@ -353,7 +355,8 @@ TEST_F(Regtest_fixture_hd, first_block)
 
 TEST_F(Regtest_fixture_hd, wallet_after_receive)
 {
-    const auto& network = client_1_.Blockchain().GetChain(test_chain_);
+    const auto& network =
+        client_1_.Network().Blockchain().GetChain(test_chain_);
     const auto& wallet = network.Wallet();
     const auto& nym = alex_.ID();
     const auto& account = account_.ID();
@@ -625,7 +628,8 @@ TEST_F(Regtest_fixture_hd, spend)
 {
     account_list_.expected_ += 1;
     account_activity_.expected_ += 2;
-    const auto& network = client_1_.Blockchain().GetChain(test_chain_);
+    const auto& network =
+        client_1_.Network().Blockchain().GetChain(test_chain_);
     const auto& widget =
         client_1_.UI().AccountActivity(alex_.ID(), expected_account_);
     constexpr auto sendAmount{u8"14 units"};
@@ -651,7 +655,8 @@ TEST_F(Regtest_fixture_hd, spend)
 
 TEST_F(Regtest_fixture_hd, wallet_after_unconfirmed_spend)
 {
-    const auto& network = client_1_.Blockchain().GetChain(test_chain_);
+    const auto& network =
+        client_1_.Network().Blockchain().GetChain(test_chain_);
     const auto& wallet = network.Wallet();
     const auto& nym = alex_.ID();
     const auto& account = account_.ID();
@@ -862,7 +867,8 @@ TEST_F(Regtest_fixture_hd, confirm)
 
 TEST_F(Regtest_fixture_hd, wallet_after_confirmed_spend)
 {
-    const auto& network = client_1_.Blockchain().GetChain(test_chain_);
+    const auto& network =
+        client_1_.Network().Blockchain().GetChain(test_chain_);
     const auto& wallet = network.Wallet();
     const auto& nym = alex_.ID();
     const auto& account = account_.ID();
@@ -1169,16 +1175,6 @@ TEST_F(Regtest_fixture_hd, account_list_after_confirmed_spend)
     EXPECT_EQ(row->Type(), expected_account_type_);
     EXPECT_EQ(row->Unit(), expected_unit_type_);
     EXPECT_TRUE(row->Last());
-}
-
-TEST_F(Regtest_fixture_hd, reorg)
-{
-    auto future1 = listener_.get_future(account_, Subchain::External, 3);
-    auto future2 = listener_.get_future(account_, Subchain::Internal, 3);
-
-    EXPECT_TRUE(Mine(1, 2, default_));
-    EXPECT_TRUE(listener_.wait(future1));
-    EXPECT_TRUE(listener_.wait(future2));
 }
 
 TEST_F(Regtest_fixture_hd, shutdown) { Shutdown(); }

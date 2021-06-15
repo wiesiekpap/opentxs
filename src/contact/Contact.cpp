@@ -22,10 +22,10 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/blockchain/AddressStyle.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
@@ -537,7 +537,7 @@ auto Contact::AddBlockchainAddress(
 }
 
 auto Contact::AddBlockchainAddress(
-    const api::client::blockchain::AddressStyle& style,
+    const blockchain::crypto::AddressStyle& style,
     const blockchain::Type chain,
     const opentxs::Data& bytes) -> bool
 {

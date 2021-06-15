@@ -19,15 +19,16 @@
 #include <utility>
 #include <vector>
 
-#include "api/client/blockchain/SyncClient.hpp"
+#include "api/network/blockchain/SyncClient.hpp"
 #include "core/Worker.hpp"
-#include "internal/api/client/Client.hpp"
+#include "internal/api/network/Network.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Data.hpp"
@@ -58,7 +59,7 @@ struct SyncClient::Imp {
     std::atomic<State> state_;
 
     Imp(const api::Core& api,
-        const api::client::internal::Blockchain& blockchain,
+        const api::network::internal::Blockchain& network,
         const Type chain) noexcept
         : endpoint_(OTSocket::random_inproc_endpoint())
         , state_(State::Init)
@@ -68,14 +69,14 @@ struct SyncClient::Imp {
         , activity_()
         , processing_(false)
         , dealer_([&] {
-            auto out =
-                Socket{::zmq_socket(api_.ZeroMQ(), ZMQ_DEALER), ::zmq_close};
+            auto out = Socket{
+                ::zmq_socket(api_.Network().ZeroMQ(), ZMQ_DEALER), ::zmq_close};
             auto rc = ::zmq_setsockopt(
                 out.get(), ZMQ_LINGER, &linger_, sizeof(linger_));
 
             OT_ASSERT(0 == rc);
 
-            const auto& endpoint = blockchain.SyncEndpoint();
+            const auto& endpoint = network.SyncEndpoint();
             rc = ::zmq_connect(out.get(), endpoint.c_str());
 
             OT_ASSERT(0 == rc);
@@ -87,8 +88,8 @@ struct SyncClient::Imp {
             return out;
         }())
         , subscribe_([&] {
-            auto out =
-                Socket{::zmq_socket(api_.ZeroMQ(), ZMQ_SUB), ::zmq_close};
+            auto out = Socket{
+                ::zmq_socket(api_.Network().ZeroMQ(), ZMQ_SUB), ::zmq_close};
             auto rc = ::zmq_setsockopt(
                 out.get(), ZMQ_LINGER, &linger_, sizeof(linger_));
 
@@ -105,8 +106,8 @@ struct SyncClient::Imp {
             return out;
         }())
         , pair_([&] {
-            auto out =
-                Socket{::zmq_socket(api_.ZeroMQ(), ZMQ_PAIR), ::zmq_close};
+            auto out = Socket{
+                ::zmq_socket(api_.Network().ZeroMQ(), ZMQ_PAIR), ::zmq_close};
             auto rc = ::zmq_setsockopt(
                 out.get(), ZMQ_LINGER, &linger_, sizeof(linger_));
 
@@ -139,7 +140,7 @@ struct SyncClient::Imp {
 private:
     using Socket = std::unique_ptr<void, decltype(&::zmq_close)>;
     using OTSocket = opentxs::network::zeromq::socket::implementation::Socket;
-    using Task = api::client::blockchain::SyncClient::Task;
+    using Task = api::network::blockchain::SyncClient::Task;
 
     static constexpr int linger_{0};
     static constexpr std::size_t limit_{32_MiB};
@@ -315,7 +316,7 @@ private:
     auto process(void* socket) noexcept -> void
     {
         auto msg = [&] {
-            auto output = api_.ZeroMQ().Message();
+            auto output = api_.Network().ZeroMQ().Message();
             auto lock = Lock{lock_};
             OTSocket::receive_message(lock, socket, output);
 
@@ -502,9 +503,9 @@ private:
 
 SyncClient::SyncClient(
     const api::Core& api,
-    const api::client::internal::Blockchain& blockchain,
+    const api::network::internal::Blockchain& network,
     const Type chain) noexcept
-    : imp_(std::make_unique<Imp>(api, blockchain, chain))
+    : imp_(std::make_unique<Imp>(api, network, chain))
 {
 }
 

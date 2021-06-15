@@ -3,9 +3,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: private
-// IWYU pragma: friend ".*src/blockchain/Database.cpp"
-
 #pragma once
 
 #include <boost/container/flat_set.hpp>
@@ -23,15 +20,16 @@
 #include <vector>
 
 #include "Proto.hpp"
-#include "api/client/blockchain/database/Database.hpp"
 #include "blockchain/database/Blocks.hpp"
 #include "blockchain/database/Filters.hpp"
 #include "blockchain/database/Headers.hpp"
 #include "blockchain/database/Sync.hpp"
 #include "blockchain/database/Wallet.hpp"
-#include "internal/api/client/blockchain/Blockchain.hpp"
+#include "blockchain/database/common/Database.hpp"
 #include "internal/blockchain/Blockchain.hpp"
+#include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/Database.hpp"
+#include "internal/blockchain/database/common/Common.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -55,17 +53,6 @@ namespace api
 {
 namespace client
 {
-namespace blockchain
-{
-namespace database
-{
-namespace implementation
-{
-class Database;
-}  // namespace implementation
-}  // namespace database
-}  // namespace blockchain
-
 namespace internal
 {
 struct Blockchain;
@@ -89,6 +76,14 @@ class Transaction;
 class Block;
 class Header;
 }  // namespace block
+
+namespace database
+{
+namespace common
+{
+class Database;
+}  // namespace common
+}  // namespace database
 
 namespace node
 {
@@ -190,8 +185,7 @@ public:
     {
         return blocks_.LoadBitcoin(block);
     }
-    auto BlockPolicy() const noexcept
-        -> api::client::blockchain::BlockStorage final
+    auto BlockPolicy() const noexcept -> database::BlockStorage final
     {
         return common_.BlockPolicy();
     }
@@ -506,7 +500,7 @@ public:
         const api::Core& api,
         const api::client::internal::Blockchain& blockchain,
         const node::internal::Network& network,
-        const database::Common& common,
+        const database::common::Database& common,
         const blockchain::Type type) noexcept;
 
     ~Database() final = default;
@@ -518,7 +512,7 @@ private:
     static const opentxs::storage::lmdb::TableNames table_names_;
 
     const blockchain::Type chain_;
-    const database::Common& common_;
+    const database::common::Database& common_;
     opentxs::storage::lmdb::LMDB lmdb_;
     mutable database::Blocks blocks_;
     mutable database::Filters filters_;

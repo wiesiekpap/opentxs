@@ -26,6 +26,7 @@
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
@@ -91,8 +92,8 @@ Server::Server(
     , m_strServerNymID()
     , m_nymServer(nullptr)
     , m_Cron(manager.Factory().Cron())
-    , notification_socket_(
-          manager_.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Connect))
+    , notification_socket_(manager_.Network().ZeroMQ().PushSocket(
+          zmq::socket::Socket::Direction::Connect))
 {
     const auto bound = notification_socket_->Start(
         manager_.Endpoints().InternalPushNotification());

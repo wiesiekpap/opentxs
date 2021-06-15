@@ -3,9 +3,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: private
-// IWYU pragma: friend ".*src/ui/BlockchainSelection.cpp"
-
 #pragma once
 
 #if OT_QT
@@ -48,10 +45,17 @@ namespace client
 {
 namespace internal
 {
-struct Blockchain;
 struct Manager;
 }  // namespace internal
 }  // namespace client
+
+namespace network
+{
+namespace internal
+{
+struct Blockchain;
+}  // namespace internal
+}  // namespace network
 }  // namespace api
 
 namespace identifier
@@ -101,7 +105,7 @@ public:
 
     BlockchainSelection(
         const api::client::internal::Manager& api,
-        const api::client::internal::Blockchain& blockchain,
+        const api::network::internal::Blockchain& blockchain,
         const ui::Blockchains type,
         const SimpleCallback& cb) noexcept;
 
@@ -138,7 +142,7 @@ private:
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
-    const api::client::internal::Blockchain& blockchain_;
+    const api::network::internal::Blockchain& blockchain_;
     const std::set<blockchain::Type> filter_;
     mutable std::map<blockchain::Type, bool> chain_state_;
     mutable std::atomic<std::size_t> enabled_count_;

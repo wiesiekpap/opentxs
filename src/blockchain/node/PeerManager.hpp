@@ -23,6 +23,7 @@
 
 #include "1_Internal.hpp"
 #include "core/Worker.hpp"
+#include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "opentxs/Bytes.hpp"
@@ -45,13 +46,13 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace network
 {
 namespace internal
 {
 struct Blockchain;
 }  // namespace internal
-}  // namespace client
+}  // namespace network
 
 class Core;
 }  // namespace api
@@ -131,15 +132,15 @@ public:
 
         Peers(
             const api::Core& api,
-            const api::client::internal::Blockchain& blockchain,
+            const api::network::internal::Blockchain& network,
             const node::internal::Config& config,
-            const node::internal::Network& network,
+            const node::internal::Network& node,
             const node::internal::HeaderOracle& headers,
             const node::internal::FilterOracle& filter,
             const node::internal::BlockOracle& block,
             const node::internal::PeerDatabase& database,
             const node::internal::PeerManager& parent,
-            const api::client::blockchain::BlockStorage policy,
+            const database::BlockStorage policy,
             const Flag& running,
             const std::string& shutdown,
             const Type chain,
@@ -155,14 +156,14 @@ public:
 
         const api::Core& api_;
         const node::internal::Config& config_;
-        const node::internal::Network& network_;
+        const node::internal::Network& node_;
         const node::internal::HeaderOracle& headers_;
         const node::internal::FilterOracle& filter_;
         const node::internal::BlockOracle& block_;
         const node::internal::PeerDatabase& database_;
         const node::internal::PeerManager& parent_;
         const network::zeromq::socket::Publish& connected_peers_;
-        const api::client::blockchain::BlockStorage policy_;
+        const database::BlockStorage policy_;
         const Flag& running_;
         const std::string& shutdown_endpoint_;
         const bool invalid_peer_;
@@ -257,15 +258,15 @@ public:
 
     PeerManager(
         const api::Core& api,
-        const api::client::internal::Blockchain& blockchain,
+        const api::network::internal::Blockchain& network,
         const node::internal::Config& config,
-        const node::internal::Network& network,
+        const node::internal::Network& node,
         const node::internal::HeaderOracle& headers,
         const node::internal::FilterOracle& filter,
         const node::internal::BlockOracle& block,
         const node::internal::PeerDatabase& database,
         const Type chain,
-        const api::client::blockchain::BlockStorage policy,
+        const database::BlockStorage policy,
         const std::string& seednode,
         const std::string& shutdown) noexcept;
 
@@ -309,7 +310,8 @@ private:
         Jobs() = delete;
     };
 
-    const node::internal::Network& network_;
+    const api::network::internal::Blockchain& network_;
+    const node::internal::Network& node_;
     const node::internal::PeerDatabase& database_;
     const Type chain_;
     mutable Jobs jobs_;
@@ -321,8 +323,7 @@ private:
 
     static auto peer_target(
         const Type chain,
-        const api::client::blockchain::BlockStorage policy) noexcept
-        -> std::size_t;
+        const database::BlockStorage policy) noexcept -> std::size_t;
 
     auto pipeline(zmq::Message& message) noexcept -> void;
     auto shutdown(std::promise<void>& promise) noexcept -> void;

@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <algorithm>
-#include <iostream>
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>
@@ -17,8 +17,9 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
@@ -70,16 +71,16 @@ TEST_F(SyncServerDB, init_library) {}
 
 TEST_F(SyncServerDB, empty_db)
 {
-    const auto endpoints = api_.Blockchain().GetSyncServers();
+    const auto endpoints = api_.Network().Blockchain().GetSyncServers();
 
     EXPECT_EQ(endpoints.size(), 0);
 }
 
 TEST_F(SyncServerDB, import_first_server)
 {
-    EXPECT_TRUE(api_.Blockchain().AddSyncServer(first_server_));
+    EXPECT_TRUE(api_.Network().Blockchain().AddSyncServer(first_server_));
 
-    const auto endpoints = api_.Blockchain().GetSyncServers();
+    const auto endpoints = api_.Network().Blockchain().GetSyncServers();
 
     EXPECT_EQ(endpoints.size(), 1);
     EXPECT_EQ(count(endpoints, first_server_), 1);
@@ -97,9 +98,9 @@ TEST_F(SyncServerDB, import_first_server)
 
 TEST_F(SyncServerDB, import_second_server)
 {
-    EXPECT_TRUE(api_.Blockchain().AddSyncServer(second_server_));
+    EXPECT_TRUE(api_.Network().Blockchain().AddSyncServer(second_server_));
 
-    const auto endpoints = api_.Blockchain().GetSyncServers();
+    const auto endpoints = api_.Network().Blockchain().GetSyncServers();
 
     EXPECT_EQ(endpoints.size(), 2);
     EXPECT_EQ(count(endpoints, first_server_), 1);
@@ -117,9 +118,9 @@ TEST_F(SyncServerDB, import_second_server)
 
 TEST_F(SyncServerDB, import_existing_server)
 {
-    EXPECT_TRUE(api_.Blockchain().AddSyncServer(second_server_));
+    EXPECT_TRUE(api_.Network().Blockchain().AddSyncServer(second_server_));
 
-    const auto endpoints = api_.Blockchain().GetSyncServers();
+    const auto endpoints = api_.Network().Blockchain().GetSyncServers();
 
     EXPECT_EQ(endpoints.size(), 2);
     EXPECT_EQ(count(endpoints, first_server_), 1);
@@ -129,9 +130,9 @@ TEST_F(SyncServerDB, import_existing_server)
 
 TEST_F(SyncServerDB, import_empty_string)
 {
-    EXPECT_FALSE(api_.Blockchain().AddSyncServer(""));
+    EXPECT_FALSE(api_.Network().Blockchain().AddSyncServer(""));
 
-    const auto endpoints = api_.Blockchain().GetSyncServers();
+    const auto endpoints = api_.Network().Blockchain().GetSyncServers();
 
     EXPECT_EQ(endpoints.size(), 2);
     EXPECT_EQ(count(endpoints, first_server_), 1);
@@ -141,9 +142,9 @@ TEST_F(SyncServerDB, import_empty_string)
 
 TEST_F(SyncServerDB, delete_non_existing)
 {
-    EXPECT_TRUE(api_.Blockchain().DeleteSyncServer(other_server_));
+    EXPECT_TRUE(api_.Network().Blockchain().DeleteSyncServer(other_server_));
 
-    const auto endpoints = api_.Blockchain().GetSyncServers();
+    const auto endpoints = api_.Network().Blockchain().GetSyncServers();
 
     EXPECT_EQ(endpoints.size(), 2);
     EXPECT_EQ(count(endpoints, first_server_), 1);
@@ -153,9 +154,9 @@ TEST_F(SyncServerDB, delete_non_existing)
 
 TEST_F(SyncServerDB, delete_existing)
 {
-    EXPECT_TRUE(api_.Blockchain().DeleteSyncServer(first_server_));
+    EXPECT_TRUE(api_.Network().Blockchain().DeleteSyncServer(first_server_));
 
-    const auto endpoints = api_.Blockchain().GetSyncServers();
+    const auto endpoints = api_.Network().Blockchain().GetSyncServers();
 
     EXPECT_EQ(endpoints.size(), 1);
     EXPECT_EQ(count(endpoints, first_server_), 0);
@@ -173,9 +174,9 @@ TEST_F(SyncServerDB, delete_existing)
 
 TEST_F(SyncServerDB, delete_empty_string)
 {
-    EXPECT_FALSE(api_.Blockchain().DeleteSyncServer(""));
+    EXPECT_FALSE(api_.Network().Blockchain().DeleteSyncServer(""));
 
-    const auto endpoints = api_.Blockchain().GetSyncServers();
+    const auto endpoints = api_.Network().Blockchain().GetSyncServers();
 
     EXPECT_EQ(endpoints.size(), 1);
     EXPECT_EQ(count(endpoints, first_server_), 0);

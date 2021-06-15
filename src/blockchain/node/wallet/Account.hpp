@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "internal/api/client/blockchain/Blockchain.hpp"
+#include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -19,14 +19,6 @@ namespace api
 {
 namespace client
 {
-namespace blockchain
-{
-namespace internal
-{
-struct BalanceTree;
-}  // namespace internal
-}  // namespace blockchain
-
 namespace internal
 {
 struct Blockchain;
@@ -38,6 +30,14 @@ class Core;
 
 namespace blockchain
 {
+namespace crypto
+{
+namespace internal
+{
+struct Account;
+}  // namespace internal
+}  // namespace crypto
+
 namespace node
 {
 namespace internal
@@ -72,7 +72,7 @@ namespace opentxs::blockchain::node::wallet
 class Account
 {
 public:
-    using BalanceTree = api::client::blockchain::internal::BalanceTree;
+    using BalanceTree = crypto::internal::Account;
 
     auto reorg(const block::Position& parent) noexcept -> bool;
     auto shutdown() noexcept -> void;
@@ -80,9 +80,9 @@ public:
 
     Account(
         const api::Core& api,
-        const api::client::internal::Blockchain& blockchain,
+        const api::client::internal::Blockchain& crypto,
         const BalanceTree& ref,
-        const node::internal::Network& network,
+        const node::internal::Network& node,
         const node::internal::WalletDatabase& db,
         const network::zeromq::socket::Push& threadPool,
         const filter::Type filter,

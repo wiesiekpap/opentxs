@@ -18,6 +18,7 @@
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Contacts.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -47,8 +48,8 @@ namespace opentxs::api::client::implementation
 Wallet::Wallet(const api::client::internal::Manager& client)
     : ot_super(client)
     , client_(client)
-    , request_sent_(client.ZeroMQ().PublishSocket())
-    , reply_received_(client.ZeroMQ().PublishSocket())
+    , request_sent_(client_.Network().ZeroMQ().PublishSocket())
+    , reply_received_(client_.Network().ZeroMQ().PublishSocket())
 {
     auto bound = request_sent_->Start(api_.Endpoints().ServerRequestSent());
     bound &= reply_received_->Start(api_.Endpoints().ServerReplyReceived());

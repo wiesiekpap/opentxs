@@ -46,9 +46,9 @@ struct Accounts::Imp {
         auto [it, added] = map_.try_emplace(
             nym,
             api_,
-            blockchain_api_,
-            blockchain_api_.BalanceTree(nym, chain_),
-            network_,
+            crypto_,
+            crypto_.AccountInternal(nym, chain_),
+            node_,
             db_,
             thread_pool_,
             filter_type_,
@@ -115,20 +115,20 @@ struct Accounts::Imp {
     }
 
     Imp(const api::Core& api,
-        const api::client::internal::Blockchain& blockchain,
-        const node::internal::Network& network,
+        const api::client::internal::Blockchain& crypto,
+        const node::internal::Network& node,
         const node::internal::WalletDatabase& db,
         const network::zeromq::socket::Push& socket,
         const Type chain,
         const SimpleCallback& taskFinished) noexcept
         : api_(api)
-        , blockchain_api_(blockchain)
-        , network_(network)
+        , crypto_(crypto)
+        , node_(node)
         , db_(db)
         , thread_pool_(socket)
         , task_finished_(taskFinished)
         , chain_(chain)
-        , filter_type_(network_.FilterOracleInternal().DefaultType())
+        , filter_type_(node_.FilterOracleInternal().DefaultType())
         , job_counter_()
         , map_()
         , pc_counter_(job_counter_.Allocate())
@@ -145,8 +145,8 @@ private:
     using PCMap = std::map<OTIdentifier, NotificationStateData>;
 
     const api::Core& api_;
-    const api::client::internal::Blockchain& blockchain_api_;
-    const node::internal::Network& network_;
+    const api::client::internal::Blockchain& crypto_;
+    const node::internal::Network& node_;
     const node::internal::WalletDatabase& db_;
     const network::zeromq::socket::Push& thread_pool_;
     const SimpleCallback& task_finished_;
@@ -177,8 +177,8 @@ private:
         payment_codes_.try_emplace(
             std::move(accountID),
             api_,
-            blockchain_api_,
-            network_,
+            crypto_,
+            node_,
             db_,
             task_finished_,
             pc_counter_,
@@ -198,14 +198,14 @@ private:
 
 Accounts::Accounts(
     const api::Core& api,
-    const api::client::internal::Blockchain& blockchain,
-    const node::internal::Network& network,
+    const api::client::internal::Blockchain& crypto,
+    const node::internal::Network& node,
     const node::internal::WalletDatabase& db,
     const network::zeromq::socket::Push& socket,
     const Type chain,
     const SimpleCallback& taskFinished) noexcept
     : imp_(std::make_unique<
-           Imp>(api, blockchain, network, db, socket, chain, taskFinished))
+           Imp>(api, crypto, node, db, socket, chain, taskFinished))
 {
 }
 

@@ -37,6 +37,7 @@
 #include "opentxs/api/client/PaymentWorkflowState.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
 #include "opentxs/api/client/Workflow.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/client/OT_API.hpp"
@@ -230,37 +231,37 @@ OTX::OTX(
           [this](const zmq::Message& message) -> void {
               this->process_account(message);
           }))
-    , account_subscriber_(
-          client_.ZeroMQ().SubscribeSocket(account_subscriber_callback_.get()))
+    , account_subscriber_(client_.Network().ZeroMQ().SubscribeSocket(
+          account_subscriber_callback_.get()))
     , notification_listener_callback_(zmq::ListenCallback::Factory(
           [this](const zmq::Message& message) -> void {
               this->process_notification(message);
           }))
-    , notification_listener_(client_.ZeroMQ().PullSocket(
+    , notification_listener_(client_.Network().ZeroMQ().PullSocket(
           notification_listener_callback_,
           zmq::socket::Socket::Direction::Bind))
     , find_nym_callback_(zmq::ListenCallback::Factory(
           [this](const zmq::Message& message) -> void {
               this->find_nym(message);
           }))
-    , find_nym_listener_(client_.ZeroMQ().PullSocket(
+    , find_nym_listener_(client_.Network().ZeroMQ().PullSocket(
           find_nym_callback_,
           zmq::socket::Socket::Direction::Bind))
     , find_server_callback_(zmq::ListenCallback::Factory(
           [this](const zmq::Message& message) -> void {
               this->find_server(message);
           }))
-    , find_server_listener_(client_.ZeroMQ().PullSocket(
+    , find_server_listener_(client_.Network().ZeroMQ().PullSocket(
           find_server_callback_,
           zmq::socket::Socket::Direction::Bind))
     , find_unit_callback_(zmq::ListenCallback::Factory(
           [this](const zmq::Message& message) -> void {
               this->find_unit(message);
           }))
-    , find_unit_listener_(client_.ZeroMQ().PullSocket(
+    , find_unit_listener_(client_.Network().ZeroMQ().PullSocket(
           find_unit_callback_,
           zmq::socket::Socket::Direction::Bind))
-    , task_finished_(client_.ZeroMQ().PublishSocket())
+    , task_finished_(client_.Network().ZeroMQ().PublishSocket())
     , auto_process_inbox_(Flag::Factory(true))
     , next_task_id_(0)
     , shutdown_(false)

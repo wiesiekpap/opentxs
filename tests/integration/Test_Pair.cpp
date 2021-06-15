@@ -28,6 +28,7 @@
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/client/Pair.hpp"
 #include "opentxs/api/client/UI.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
@@ -111,9 +112,11 @@ public:
         , chris_rename_notary_cb_(ot::network::zeromq::ListenCallback::Factory(
               [this](const auto& in) { chris_rename_notary(in); }))
         , issuer_peer_request_listener_(
-              api_issuer_.ZeroMQ().SubscribeSocket(issuer_peer_request_cb_))
+              api_issuer_.Network().ZeroMQ().SubscribeSocket(
+                  issuer_peer_request_cb_))
         , chris_rename_notary_listener_(
-              api_chris_.ZeroMQ().SubscribeSocket(chris_rename_notary_cb_))
+              api_chris_.Network().ZeroMQ().SubscribeSocket(
+                  chris_rename_notary_cb_))
     {
         subscribe_sockets();
 

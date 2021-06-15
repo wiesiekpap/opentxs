@@ -27,6 +27,7 @@ namespace network
 {
 class Asio;
 class Dht;
+class Network;
 }  // namespace network
 
 namespace storage
@@ -51,23 +52,23 @@ namespace api
 class OPENTXS_EXPORT Core : virtual public Periodic
 {
 public:
-    virtual const network::Asio& Asio() const noexcept = 0;
-    virtual const crypto::Asymmetric& Asymmetric() const = 0;
-    virtual const api::Settings& Config() const = 0;
-    virtual const api::Crypto& Crypto() const = 0;
-    virtual const std::string& DataFolder() const = 0;
-    virtual const api::Endpoints& Endpoints() const = 0;
-    virtual const network::Dht& DHT() const = 0;
-    virtual const api::Factory& Factory() const = 0;
-    virtual int Instance() const = 0;
-    virtual const api::HDSeed& Seeds() const = 0;
-    virtual void SetMasterKeyTimeout(
-        const std::chrono::seconds& timeout) const = 0;
-    OPENTXS_NO_EXPORT virtual const storage::Storage& Storage() const = 0;
-    virtual const crypto::Symmetric& Symmetric() const = 0;
-    virtual const api::ThreadPool& ThreadPool() const noexcept = 0;
-    virtual const api::Wallet& Wallet() const = 0;
-    virtual const opentxs::network::zeromq::Context& ZeroMQ() const = 0;
+    virtual auto Asymmetric() const noexcept -> const crypto::Asymmetric& = 0;
+    virtual auto Config() const noexcept -> const api::Settings& = 0;
+    virtual auto Crypto() const noexcept -> const api::Crypto& = 0;
+    virtual auto DataFolder() const noexcept -> const std::string& = 0;
+    virtual auto Endpoints() const noexcept -> const api::Endpoints& = 0;
+    virtual auto Factory() const noexcept -> const api::Factory& = 0;
+    virtual auto Instance() const noexcept -> int = 0;
+    virtual auto Network() const noexcept -> const network::Network& = 0;
+    virtual auto Seeds() const noexcept -> const api::HDSeed& = 0;
+    virtual auto SetMasterKeyTimeout(
+        const std::chrono::seconds& timeout) const noexcept -> void = 0;
+    OPENTXS_NO_EXPORT virtual auto Storage() const noexcept
+        -> const storage::Storage& = 0;
+    virtual auto Symmetric() const noexcept
+        -> const api::crypto::Symmetric& = 0;
+    virtual auto ThreadPool() const noexcept -> const api::ThreadPool& = 0;
+    virtual auto Wallet() const noexcept -> const api::Wallet& = 0;
 
     ~Core() override = default;
 

@@ -3,9 +3,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: private
-// IWYU pragma: friend ".*src/api/network/Dht.cpp"
-
 #pragma once
 
 #include <memory>
@@ -29,7 +26,17 @@ namespace internal
 {
 struct Core;
 }  // namespace internal
+
+class Endpoints;
 }  // namespace api
+
+namespace network
+{
+namespace zeromq
+{
+class Context;
+}  // namespace zeromq
+}  // namespace network
 
 namespace proto
 {
@@ -37,8 +44,6 @@ class Nym;
 class ServerContract;
 class UnitDefinition;
 }  // namespace proto
-
-class Factory;
 }  // namespace opentxs
 
 namespace opentxs::api::network::implementation
@@ -56,11 +61,14 @@ public:
     auto OpenDHT() const -> const opentxs::network::OpenDHT& final;
     void RegisterCallbacks(const CallbackMap& callbacks) const final;
 
+    Dht(const api::internal::Core& api,
+        const opentxs::network::zeromq::Context& zeromq,
+        const api::Endpoints& endpoints,
+        opentxs::network::DhtConfig& config) noexcept;
+
     ~Dht() final = default;
 
 private:
-    friend opentxs::Factory;
-
     const api::internal::Core& api_;
     mutable CallbackMap callback_map_;
     const opentxs::network::DhtConfig config_;
@@ -92,7 +100,6 @@ private:
         const opentxs::network::zeromq::Message& incoming,
         void (Dht::*get)(const std::string&) const) const -> OTZMQMessage;
 
-    Dht(opentxs::network::DhtConfig& config, const api::internal::Core& api);
     Dht() = delete;
     Dht(const Dht&) = delete;
     Dht(Dht&&) = delete;

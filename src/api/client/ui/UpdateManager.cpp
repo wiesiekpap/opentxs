@@ -18,6 +18,7 @@
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -57,9 +58,10 @@ struct UpdateManager::Imp {
         : api_(api)
         , lock_()
         , map_()
-        , publisher_(api.ZeroMQ().PublishSocket())
-        , pipeline_(
-              api.ZeroMQ().Pipeline(api, [this](auto& in) { pipeline(in); }))
+        , publisher_(api.Network().ZeroMQ().PublishSocket())
+        , pipeline_(api.Network().ZeroMQ().Pipeline(api, [this](auto& in) {
+            pipeline(in);
+        }))
     {
         publisher_->Start(api_.Endpoints().WidgetUpdate());
     }

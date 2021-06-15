@@ -23,6 +23,8 @@
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/client/Factory.hpp"
+#include "internal/api/network/Factory.hpp"
+#include "internal/api/network/Network.hpp"
 #include "internal/api/storage/Storage.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Activity.hpp"
@@ -33,6 +35,8 @@
 #include "opentxs/api/client/ServerAction.hpp"
 #include "opentxs/api/client/UI.hpp"
 #include "opentxs/api/client/Workflow.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
@@ -83,7 +87,16 @@ Manager::Manager(
           context,
           dataFolder,
           instance,
-          false,
+          [&](const auto& zmq, const auto& endpoints, auto& config) {
+              return factory::NetworkAPI(
+                  *this,
+                  parent.Asio(),
+                  zmq,
+                  endpoints,
+                  factory::BlockchainNetworkAPI(*this, endpoints, zmq),
+                  config,
+                  false);
+          },
           std::unique_ptr<api::internal::Factory>{
               factory::FactoryAPIClient(*this)})
     , zeromq_(opentxs::Factory::ZMQ(*this, running_))
@@ -138,6 +151,9 @@ Manager::Manager(
     OT_ASSERT(otx_);
     OT_ASSERT(ui_);
     OT_ASSERT(pair_);
+
+    network_.Blockchain().Internal().Init(
+        *blockchain_, parent_.Legacy(), dataFolder, args);
 }
 
 auto Manager::Activity() const -> const api::client::Activity&
@@ -167,8 +183,8 @@ void Manager::Cleanup()
     otapi_exec_.reset();
     ot_api_.reset();
     workflow_.reset();
-    blockchain_->Shutdown();
 #if OT_BLOCKCHAIN
+    network_.Blockchain().Internal().Shutdown();
     contacts_->prepare_shutdown();
 #endif  // OT_BLOCKCHAIN
     blockchain_.reset();
@@ -199,32 +215,7 @@ auto Manager::Exec(const std::string&) const -> const OTAPI_Exec&
     return *otapi_exec_;
 }
 
-auto Manager::init(
-    const api::Legacy& legacy,
-    const internal::Manager& parent,
-    const std::string& dataFolder,
-    const ArgList& args,
-    std::shared_ptr<internal::Blockchain>& blockchain,
-    std::unique_ptr<internal::Contacts>& contacts) noexcept
-    -> std::unique_ptr<internal::Activity>
-{
-    contacts = factory::ContactAPI(parent);
-
-    OT_ASSERT(contacts);
-
-    auto activity = factory::Activity(parent, *contacts);
-
-    OT_ASSERT(activity);
-
-    blockchain = factory::BlockchainAPI(
-        parent, *activity, *contacts, legacy, dataFolder, args);
-
-    OT_ASSERT(blockchain);
-
-    return activity;
-}
-
-void Manager::Init()
+auto Manager::Init() -> void
 {
 #if OT_BLOCKCHAIN
     contacts_->init(blockchain_);
@@ -258,6 +249,12 @@ auto Manager::Lock(
     return get_lock({nymID.str(), serverID.str()});
 }
 
+auto Manager::NewNym(const identifier::Nym& id) const noexcept -> void
+{
+    Core::NewNym(id);
+    blockchain_->NewNym(id);
+}
+
 auto Manager::OTAPI(const std::string&) const -> const OT_API&
 {
     OT_ASSERT(ot_api_);
@@ -288,9 +285,7 @@ auto Manager::ServerAction() const -> const api::client::ServerAction&
 
 void Manager::StartActivity()
 {
-    OT_ASSERT(dht_)
-
-    Scheduler::Start(storage_.get(), dht_.get());
+    Scheduler::Start(storage_.get(), network_.DHT());
 }
 
 #if OT_BLOCKCHAIN
@@ -301,7 +296,7 @@ auto Manager::StartBlockchain() noexcept -> void
             try {
                 const auto chain = static_cast<opentxs::blockchain::Type>(
                     static_cast<std::uint32_t>(std::stoul(s)));
-                blockchain_->Disable(chain);
+                network_.Blockchain().Disable(chain);
             } catch (...) {
                 continue;
             }
@@ -309,7 +304,7 @@ auto Manager::StartBlockchain() noexcept -> void
     } catch (...) {
     }
 
-    blockchain_->RestoreNetworks();
+    network_.Blockchain().Internal().RestoreNetworks();
 }
 #endif  // OT_BLOCKCHAIN
 

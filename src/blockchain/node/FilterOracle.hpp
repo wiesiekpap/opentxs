@@ -46,13 +46,13 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace network
 {
 namespace internal
 {
 struct Blockchain;
 }  // namespace internal
-}  // namespace client
+}  // namespace network
 
 class Core;
 }  // namespace api
@@ -172,9 +172,9 @@ public:
 
     FilterOracle(
         const api::Core& api,
-        const api::client::internal::Blockchain& blockchain,
+        const api::network::internal::Blockchain& crypto,
         const internal::Config& config,
-        const internal::Network& network,
+        const internal::Network& node,
         const internal::HeaderOracle& header,
         const internal::BlockOracle& block,
         const internal::FilterDatabase& database,
@@ -196,7 +196,7 @@ private:
     static const CheckpointMap filter_checkpoints_;
 
     const api::Core& api_;
-    const internal::Network& network_;
+    const internal::Network& node_;
     const internal::HeaderOracle& header_;
     const internal::FilterDatabase& database_;
     const network::zeromq::socket::Publish& filter_notifier_;

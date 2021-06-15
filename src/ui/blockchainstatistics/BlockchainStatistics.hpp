@@ -44,10 +44,14 @@ namespace client
 {
 namespace internal
 {
-struct Blockchain;
 struct Manager;
 }  // namespace internal
 }  // namespace client
+
+namespace network
+{
+class Blockchain;
+}  // namespace network
 }  // namespace api
 
 namespace identifier
@@ -89,7 +93,6 @@ class BlockchainStatistics final : public BlockchainStatisticsList,
 public:
     BlockchainStatistics(
         const api::client::internal::Manager& api,
-        const api::client::internal::Blockchain& blockchain,
         const SimpleCallback& cb) noexcept;
 
     ~BlockchainStatistics() final;
@@ -111,7 +114,7 @@ private:
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
-    const api::client::internal::Blockchain& blockchain_;
+    const api::network::Blockchain& blockchain_;
 
     auto construct_row(
         const BlockchainStatisticsRowID& id,

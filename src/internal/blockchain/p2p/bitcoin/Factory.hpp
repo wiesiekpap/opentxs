@@ -10,6 +10,7 @@
 
 #include "blockchain/bitcoin/CompactSize.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "opentxs/Types.hpp"
@@ -80,7 +81,7 @@ auto BitcoinP2PPeerLegacy(
     const blockchain::node::internal::FilterOracle& filter,
     const blockchain::node::internal::BlockOracle& block,
     const blockchain::node::internal::PeerManager& manager,
-    const api::client::blockchain::BlockStorage policy,
+    const blockchain::database::BlockStorage policy,
     const int id,
     std::unique_ptr<blockchain::p2p::internal::Address> address,
     const std::string& shutdown)

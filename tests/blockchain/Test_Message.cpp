@@ -20,6 +20,7 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
@@ -124,7 +125,7 @@ TEST_F(Test_Message, getblocks)
     auto serialized_header = pMessage->header().Encode();
     auto payload = pMessage->payload();
 
-    auto frame = api_.ZeroMQ().Message(serialized_header);
+    auto frame = api_.Network().ZeroMQ().Message(serialized_header);
 
     std::unique_ptr<bitcoin::Header> pHeader{
         ot::factory::BitcoinP2PHeader(api_, frame->at(0))};

@@ -25,7 +25,7 @@
 #include "blockchain/node/filteroracle/FilterDownloader.hpp"
 #include "blockchain/node/filteroracle/HeaderDownloader.hpp"
 #include "internal/api/Api.hpp"
-#include "internal/api/client/Client.hpp"
+#include "internal/api/network/Network.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -36,6 +36,7 @@
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/ThreadPool.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
@@ -60,9 +61,9 @@ namespace opentxs::factory
 {
 auto BlockchainFilterOracle(
     const api::Core& api,
-    const api::client::internal::Blockchain& blockchain,
+    const api::network::internal::Blockchain& network,
     const blockchain::node::internal::Config& config,
-    const blockchain::node::internal::Network& network,
+    const blockchain::node::internal::Network& node,
     const blockchain::node::internal::HeaderOracle& header,
     const blockchain::node::internal::BlockOracle& block,
     const blockchain::node::internal::FilterDatabase& database,
@@ -71,15 +72,7 @@ auto BlockchainFilterOracle(
     -> std::unique_ptr<blockchain::node::internal::FilterOracle>
 {
     return std::make_unique<ReturnType>(
-        api,
-        blockchain,
-        config,
-        network,
-        header,
-        block,
-        database,
-        type,
-        shutdown);
+        api, network, config, node, header, block, database, type, shutdown);
 }
 }  // namespace opentxs::factory
 
@@ -120,9 +113,9 @@ struct FilterOracle::SyncClientFilterData {
 
 FilterOracle::FilterOracle(
     const api::Core& api,
-    const api::client::internal::Blockchain& blockchain,
+    const api::network::internal::Blockchain& network,
     const internal::Config& config,
-    const internal::Network& network,
+    const internal::Network& node,
     const internal::HeaderOracle& header,
     const internal::BlockOracle& block,
     const internal::FilterDatabase& database,
@@ -130,10 +123,10 @@ FilterOracle::FilterOracle(
     const std::string& shutdown) noexcept
     : internal::FilterOracle()
     , api_(api)
-    , network_(network)
+    , node_(node)
     , header_(header)
     , database_(database)
-    , filter_notifier_(blockchain.FilterUpdate())
+    , filter_notifier_(network.FilterUpdate())
     , chain_(chain)
     , default_type_([&] {
         if (config.generate_cfilters_ || config.use_sync_server_) {
@@ -145,7 +138,7 @@ FilterOracle::FilterOracle(
     }())
     , lock_()
     , new_filters_([&] {
-        auto socket = api_.ZeroMQ().PublishSocket();
+        auto socket = api_.Network().ZeroMQ().PublishSocket();
         auto started = socket->Start(
             api_.Endpoints().InternalBlockchainFilterUpdated(chain_));
 
@@ -158,8 +151,8 @@ FilterOracle::FilterOracle(
         new_tip(lock, type, pos);
     })
     , thread_pool_([&] {
-        auto socket =
-            api_.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Connect);
+        auto socket = api_.Network().ZeroMQ().PushSocket(
+            zmq::socket::Socket::Direction::Connect);
         const auto started = socket->Start(api_.ThreadPool().Endpoint());
 
         OT_ASSERT(started);
@@ -170,9 +163,9 @@ FilterOracle::FilterOracle(
         if (config.download_cfilters_) {
             return std::make_unique<FilterDownloader>(
                 api,
-                database,
-                header,
-                network,
+                database_,
+                header_,
+                node_,
                 chain,
                 default_type_,
                 shutdown,
@@ -185,9 +178,9 @@ FilterOracle::FilterOracle(
         if (config.download_cfilters_) {
             return std::make_unique<HeaderDownloader>(
                 api,
-                database,
-                header,
-                network,
+                database_,
+                header_,
+                node_,
                 *filter_downloader_,
                 chain,
                 default_type_,
@@ -203,10 +196,10 @@ FilterOracle::FilterOracle(
         if (config.generate_cfilters_) {
             return std::make_unique<BlockIndexer>(
                 api,
-                database,
-                header,
+                database_,
+                header_,
                 block,
-                network,
+                node_,
                 *this,
                 chain,
                 default_type_,
@@ -623,7 +616,8 @@ auto FilterOracle::ProcessSyncData(
 
             using Pool = api::internal::ThreadPool;
             auto work = Pool::MakeWork(
-                api_.ZeroMQ(), value(Pool::Work::SyncDataFiltersIncoming));
+                api_.Network().ZeroMQ(),
+                value(Pool::Work::SyncDataFiltersIncoming));
             work->AddFrame(reinterpret_cast<std::uintptr_t>(this));
             work->AddFrame(reinterpret_cast<std::uintptr_t>(&job));
             thread_pool_->Send(work);

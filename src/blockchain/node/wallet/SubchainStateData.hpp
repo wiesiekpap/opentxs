@@ -19,11 +19,11 @@
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/blockchain/BalanceNode.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
+#include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/core/Data.hpp"
@@ -56,6 +56,11 @@ class Block;
 class Transaction;
 }  // namespace bitcoin
 }  // namespace block
+
+namespace crypto
+{
+class Element;
+}  // namespace crypto
 
 namespace node
 {
@@ -135,8 +140,8 @@ protected:
     using Tested = WalletDatabase::MatchingIndices;
 
     const api::Core& api_;
-    const api::client::internal::Blockchain& blockchain_;
-    const node::internal::Network& network_;
+    const api::client::internal::Blockchain& crypto_;
+    const node::internal::Network& node_;
     const WalletDatabase& db_;
     const std::string name_;
     const block::Position null_position_;
@@ -153,7 +158,7 @@ protected:
 
     auto index_element(
         const filter::Type type,
-        const api::client::blockchain::BalanceNode::Element& input,
+        const blockchain::crypto::Element& input,
         const Bip32Index index,
         WalletDatabase::ElementMap& output) noexcept -> void;
     // NOTE call from all and only final constructor bodies
@@ -162,8 +167,8 @@ protected:
 
     SubchainStateData(
         const api::Core& api,
-        const api::client::internal::Blockchain& blockchain,
-        const node::internal::Network& network,
+        const api::client::internal::Blockchain& crypto,
+        const node::internal::Network& node,
         const WalletDatabase& db,
         OTNymID&& owner,
         OTIdentifier&& id,

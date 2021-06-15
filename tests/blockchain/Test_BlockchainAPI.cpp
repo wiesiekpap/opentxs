@@ -32,15 +32,15 @@
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/Manager.hpp"
-#include "opentxs/api/client/blockchain/AddressStyle.hpp"
-#include "opentxs/api/client/blockchain/BalanceNode.hpp"
-#include "opentxs/api/client/blockchain/BalanceTree.hpp"
-#include "opentxs/api/client/blockchain/Deterministic.hpp"
-#include "opentxs/api/client/blockchain/HD.hpp"
-#include "opentxs/api/client/blockchain/PaymentCode.hpp"
-#include "opentxs/api/client/blockchain/Subchain.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
+#include "opentxs/blockchain/crypto/AddressStyle.hpp"
+#include "opentxs/blockchain/crypto/Deterministic.hpp"
+#include "opentxs/blockchain/crypto/Element.hpp"
+#include "opentxs/blockchain/crypto/HD.hpp"
+#include "opentxs/blockchain/crypto/PaymentCode.hpp"
+#include "opentxs/blockchain/crypto/Subchain.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Data.hpp"
@@ -182,8 +182,8 @@ const std::vector<std::string> chris_ltc_internal_{
 class Test_BlockchainAPI : public ::testing::Test
 {
 public:
-    using AddressStyle = ot::api::client::blockchain::AddressStyle;
-    using Subchain = ot::api::client::blockchain::Subchain;
+    using AddressStyle = ot::blockchain::crypto::AddressStyle;
+    using Subchain = ot::blockchain::crypto::Subchain;
     using ThreadData = std::tuple<std::string, std::uint64_t, std::string>;
     using ThreadVectors = std::map<int, std::vector<ThreadData>>;
 
@@ -362,7 +362,7 @@ public:
         const ot::Identifier& accountID,
         const ot::Identifier& contactID,
         const std::vector<std::string>& expected,
-        const ot::api::client::blockchain::HD& account,
+        const ot::blockchain::crypto::HD& account,
         const Subchain subchain,
         const ot::Bip32Index i,
         const std::string& label) const noexcept -> bool
@@ -398,7 +398,7 @@ public:
 
         output &= (target == encoded);
         const auto locator =
-            ot::api::client::blockchain::Key{accountID.str(), subchain, i};
+            ot::blockchain::crypto::Key{accountID.str(), subchain, i};
         const auto& element = account.BalanceElement(subchain, i);
 
         EXPECT_EQ(element.Address(AddressStyle::P2PKH), target);
@@ -434,7 +434,7 @@ public:
         return output;
     }
     auto check_initial_state(
-        const ot::api::client::blockchain::Deterministic& account,
+        const ot::blockchain::crypto::Deterministic& account,
         const Subchain subchain) const noexcept -> bool
     {
         auto output = true;

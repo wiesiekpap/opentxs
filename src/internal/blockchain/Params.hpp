@@ -25,12 +25,12 @@
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/client/blockchain/AddressStyle.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/crypto/AddressStyle.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
@@ -49,7 +49,7 @@ struct Data {
     using ServiceBits = std::
         map<blockchain::Type, std::map<p2p::bitcoin::Service, p2p::Service>>;
 #endif  // OT_BLOCKCHAIN
-    using Style = api::client::blockchain::AddressStyle;
+    using Style = blockchain::crypto::AddressStyle;
     using ScriptMap = boost::container::flat_map<Style, bool>;
     using StylePref = std::vector<std::pair<Style, std::string>>;
 

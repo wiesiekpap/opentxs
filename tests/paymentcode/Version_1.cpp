@@ -16,8 +16,8 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Manager.hpp"
-#include "opentxs/api/client/blockchain/AddressStyle.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
@@ -37,7 +37,7 @@ public:
 
     auto KeyToAddress(const ot::crypto::key::EllipticCurve& key) const noexcept
     {
-        constexpr auto style = ot::api::client::blockchain::AddressStyle::P2PKH;
+        constexpr auto style = ot::blockchain::crypto::AddressStyle::P2PKH;
 
         return api_.Blockchain().CalculateAddress(
             chain_, style, api_.Factory().Data(key.PublicKey()));

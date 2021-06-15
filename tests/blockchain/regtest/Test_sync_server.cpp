@@ -9,8 +9,9 @@
 #include <utility>
 
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
@@ -33,7 +34,7 @@ TEST_F(Regtest_fixture_sync, connect_peers) { EXPECT_TRUE(Connect()); }
 TEST_F(Regtest_fixture_sync, sync_genesis)
 {
     sync_req_.expected_ += 2;
-    const auto& chain = client_1_.Blockchain().GetChain(test_chain_);
+    const auto& chain = client_1_.Network().Blockchain().GetChain(test_chain_);
     const auto pos = chain.HeaderOracle().BestChain();
 
     EXPECT_TRUE(sync_req_.request(pos));
@@ -77,7 +78,7 @@ TEST_F(Regtest_fixture_sync, mine)
     EXPECT_TRUE(Mine(0, count));
     EXPECT_TRUE(sync_sub_.wait());
 
-    const auto& chain = client_1_.Blockchain().GetChain(test_chain_);
+    const auto& chain = client_1_.Network().Blockchain().GetChain(test_chain_);
     const auto best = chain.HeaderOracle().BestChain();
 
     EXPECT_EQ(best.first, 10);
@@ -87,7 +88,7 @@ TEST_F(Regtest_fixture_sync, mine)
 TEST_F(Regtest_fixture_sync, sync_full)
 {
     sync_req_.expected_ += 2;
-    const auto& chain = client_1_.Blockchain().GetChain(test_chain_);
+    const auto& chain = client_1_.Network().Blockchain().GetChain(test_chain_);
     const auto genesis = Position{0, chain.HeaderOracle().BestHash(0)};
 
     EXPECT_TRUE(sync_req_.request(genesis));
@@ -183,7 +184,7 @@ TEST_F(Regtest_fixture_sync, reorg)
     EXPECT_TRUE(Mine(8, count));
     EXPECT_TRUE(sync_sub_.wait());
 
-    const auto& chain = client_1_.Blockchain().GetChain(test_chain_);
+    const auto& chain = client_1_.Network().Blockchain().GetChain(test_chain_);
     const auto best = chain.HeaderOracle().BestChain();
 
     EXPECT_EQ(best.first, 12);
@@ -241,7 +242,7 @@ TEST_F(Regtest_fixture_sync, query)
 
     {
         const auto serialized = [&] {
-            auto out = client_1_.ZeroMQ().Message();
+            auto out = client_1_.Network().ZeroMQ().Message();
 
             EXPECT_TRUE(original.Serialize(out));
 
@@ -271,7 +272,7 @@ TEST_F(Regtest_fixture_sync, query)
 
     {
         const auto serialized = [&] {
-            auto out = client_1_.ZeroMQ().Message();
+            auto out = client_1_.Network().ZeroMQ().Message();
             out->AddFrame("Header frame 1");
             out->AddFrame("Header frame 2");
             out->AddFrame();

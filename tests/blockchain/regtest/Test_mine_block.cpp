@@ -13,9 +13,9 @@
 
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Manager.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
@@ -23,6 +23,7 @@
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 
@@ -34,7 +35,7 @@ TEST_F(Regtest_fixture_single, start_chains) { EXPECT_TRUE(Start()); }
 
 TEST_F(Regtest_fixture_single, generate_block)
 {
-    const auto& network = miner_.Blockchain().GetChain(test_chain_);
+    const auto& network = miner_.Network().Blockchain().GetChain(test_chain_);
     const auto& headerOracle = network.HeaderOracle();
     auto previousHeader = [&] {
         const auto genesis = headerOracle.LoadHeader(
@@ -52,7 +53,7 @@ TEST_F(Regtest_fixture_single, generate_block)
         [&] {
             auto output = std::vector<OutputBuilder>{};
             const auto text = std::string{"null"};
-            const auto keys = std::set<ot::api::client::blockchain::Key>{};
+            const auto keys = std::set<ot::blockchain::crypto::Key>{};
             output.emplace_back(
                 5000000000,
                 miner_.Factory().BitcoinScriptNullData(test_chain_, {text}),

@@ -33,17 +33,17 @@
 #include "blockchain/node/wallet/DeterministicStateData.hpp"
 #include "blockchain/node/wallet/SubchainStateData.hpp"
 #include "core/Worker.hpp"
-#include "internal/api/client/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -94,8 +94,8 @@ public:
 
     Proposals(
         const api::Core& api,
-        const api::client::Blockchain& blockchain,
-        const node::internal::Network& network,
+        const api::client::Blockchain& crypto,
+        const node::internal::Network& node,
         const node::internal::WalletDatabase& db,
         const Type chain) noexcept;
     ~Proposals();

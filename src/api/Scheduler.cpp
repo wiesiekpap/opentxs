@@ -39,19 +39,18 @@ Scheduler::Scheduler(const api::internal::Context& parent, Flag& running)
 
 void Scheduler::Start(
     const api::storage::Storage* const storage,
-    const api::network::Dht* const dht)
+    const api::network::Dht& dht)
 {
     OT_ASSERT(nullptr != storage);
-    OT_ASSERT(nullptr != dht);
 
     const auto now = std::chrono::seconds(std::time(nullptr));
 
     Schedule(
         std::chrono::seconds(nym_publish_interval_),
-        [=]() -> void {
+        [=, &dht]() -> void {
             NymLambda nymLambda(
-                [=](const identity::Nym::Serialized& nym) -> void {
-                    dht->Insert(nym);
+                [=, &dht](const identity::Nym::Serialized& nym) -> void {
+                    dht.Insert(nym);
                 });
             storage->MapPublicNyms(nymLambda);
         },
@@ -59,10 +58,10 @@ void Scheduler::Start(
 
     Schedule(
         std::chrono::seconds(nym_refresh_interval_),
-        [=]() -> void {
+        [=, &dht]() -> void {
             NymLambda nymLambda(
-                [=](const identity::Nym::Serialized& nym) -> void {
-                    dht->GetPublicNym(nym.nymid());
+                [=, &dht](const identity::Nym::Serialized& nym) -> void {
+                    dht.GetPublicNym(nym.nymid());
                 });
             storage->MapPublicNyms(nymLambda);
         },
@@ -70,10 +69,10 @@ void Scheduler::Start(
 
     Schedule(
         std::chrono::seconds(server_publish_interval_),
-        [=]() -> void {
+        [=, &dht]() -> void {
             ServerLambda serverLambda(
-                [=](const proto::ServerContract& server) -> void {
-                    dht->Insert(server);
+                [=, &dht](const proto::ServerContract& server) -> void {
+                    dht.Insert(server);
                 });
             storage->MapServers(serverLambda);
         },
@@ -81,10 +80,10 @@ void Scheduler::Start(
 
     Schedule(
         std::chrono::seconds(server_refresh_interval_),
-        [=]() -> void {
+        [=, &dht]() -> void {
             ServerLambda serverLambda(
-                [=](const proto::ServerContract& server) -> void {
-                    dht->GetServerContract(server.id());
+                [=, &dht](const proto::ServerContract& server) -> void {
+                    dht.GetServerContract(server.id());
                 });
             storage->MapServers(serverLambda);
         },
@@ -92,10 +91,10 @@ void Scheduler::Start(
 
     Schedule(
         std::chrono::seconds(unit_publish_interval_),
-        [=]() -> void {
+        [=, &dht]() -> void {
             UnitLambda unitLambda(
-                [=](const proto::UnitDefinition& unit) -> void {
-                    dht->Insert(unit);
+                [=, &dht](const proto::UnitDefinition& unit) -> void {
+                    dht.Insert(unit);
                 });
             storage->MapUnitDefinitions(unitLambda);
         },
@@ -103,10 +102,10 @@ void Scheduler::Start(
 
     Schedule(
         std::chrono::seconds(unit_refresh_interval_),
-        [=]() -> void {
+        [=, &dht]() -> void {
             UnitLambda unitLambda(
-                [=](const proto::UnitDefinition& unit) -> void {
-                    dht->GetUnitDefinition(unit.id());
+                [=, &dht](const proto::UnitDefinition& unit) -> void {
+                    dht.GetUnitDefinition(unit.id());
                 });
             storage->MapUnitDefinitions(unitLambda);
         },

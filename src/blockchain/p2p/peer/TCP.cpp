@@ -14,6 +14,7 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/network/Asio.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
@@ -81,7 +82,7 @@ struct TCPConnectionManager final : public Peer::ConnectionManager {
     auto init(const int id) noexcept -> bool final
     {
         auto future = connection_id_promise_.get_future();
-        auto zmq = dealer_->Start(api_.Asio().NotificationEndpoint());
+        auto zmq = dealer_->Start(api_.Network().Asio().NotificationEndpoint());
 
         OT_ASSERT(zmq);
 
@@ -226,7 +227,7 @@ struct TCPConnectionManager final : public Peer::ConnectionManager {
         , connection_id_()
         , header_bytes_(headerSize)
         , connection_id_promise_()
-        , socket_(api_.Asio().MakeSocket(endpoint_))
+        , socket_(api_.Network().Asio().MakeSocket(endpoint_))
         , header_([&] {
             auto out = api_.Factory().Data();
             out->SetSize(headerSize);
@@ -235,7 +236,7 @@ struct TCPConnectionManager final : public Peer::ConnectionManager {
         }())
         , cb_(zmq::ListenCallback::Factory(
               [&](auto& in) { this->pipeline(in); }))
-        , dealer_(api.ZeroMQ().DealerSocket(
+        , dealer_(api_.Network().ZeroMQ().DealerSocket(
               cb_,
               zmq::socket::Socket::Direction::Connect))
     {

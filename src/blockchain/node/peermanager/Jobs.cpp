@@ -15,6 +15,7 @@
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -32,16 +33,16 @@
 namespace opentxs::blockchain::node::implementation
 {
 PeerManager::Jobs::Jobs(const api::Core& api) noexcept
-    : zmq_(api.ZeroMQ())
-    , getheaders_(api.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Bind))
-    , getcfheaders_(api.ZeroMQ().PublishSocket())
-    , getcfilters_(api.ZeroMQ().PublishSocket())
-    , getblocks_(api.ZeroMQ().PublishSocket())
-    , heartbeat_(api.ZeroMQ().PublishSocket())
-    , getblock_(api.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Bind))
+    : zmq_(api.Network().ZeroMQ())
+    , getheaders_(zmq_.PushSocket(zmq::socket::Socket::Direction::Bind))
+    , getcfheaders_(zmq_.PublishSocket())
+    , getcfilters_(zmq_.PublishSocket())
+    , getblocks_(zmq_.PublishSocket())
+    , heartbeat_(zmq_.PublishSocket())
+    , getblock_(zmq_.PushSocket(zmq::socket::Socket::Direction::Bind))
     , broadcast_transaction_(
-          api.ZeroMQ().PushSocket(zmq::socket::Socket::Direction::Bind))
-    , broadcast_block_(api.ZeroMQ().PublishSocket())
+          zmq_.PushSocket(zmq::socket::Socket::Direction::Bind))
+    , broadcast_block_(zmq_.PublishSocket())
     , endpoint_map_([&] {
         auto map = EndpointMap{};
         listen(map, Task::Getheaders, getheaders_);

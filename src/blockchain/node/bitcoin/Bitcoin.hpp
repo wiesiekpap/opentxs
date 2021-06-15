@@ -26,6 +26,14 @@ struct Blockchain;
 }  // namespace internal
 }  // namespace client
 
+namespace network
+{
+namespace internal
+{
+struct Blockchain;
+}  // namespace internal
+}  // namespace network
+
 class Core;
 }  // namespace api
 
@@ -35,6 +43,14 @@ namespace block
 {
 class Header;
 }  // namespace block
+
+namespace database
+{
+namespace common
+{
+class Database;
+}  // namespace common
+}  // namespace database
 
 namespace node
 {
@@ -57,7 +73,8 @@ public:
 
     Bitcoin(
         const api::Core& api,
-        const api::client::internal::Blockchain& blockchain,
+        const api::client::internal::Blockchain& crypto,
+        const api::network::internal::Blockchain& network,
         const Type type,
         const internal::Config& config,
         const std::string& seednode,

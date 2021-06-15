@@ -23,6 +23,8 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Account.hpp"
@@ -92,8 +94,8 @@ auto RPC::get_account_balance_blockchain(
         const auto& api = client_session(base);
         const auto& blockchain = api.Blockchain();
         const auto [chain, owner] = blockchain.LookupAccount(accountID);
-        blockchain.Start(chain);
-        const auto& client = blockchain.GetChain(chain);
+        api.Network().Blockchain().Start(chain);
+        const auto& client = api.Network().Blockchain().GetChain(chain);
         const auto [confirmed, unconfirmed] = client.GetBalance(owner);
         const auto& display =
             blockchain::params::Data::Chains().at(chain).scales_;

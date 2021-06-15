@@ -23,6 +23,7 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
@@ -45,7 +46,7 @@ FilterOracle::BlockIndexer::BlockIndexer(
     const internal::FilterDatabase& db,
     const internal::HeaderOracle& header,
     const internal::BlockOracle& block,
-    const internal::Network& network,
+    const internal::Network& node,
     FilterOracle& parent,
     const blockchain::Type chain,
     const filter::Type type,
@@ -68,7 +69,7 @@ FilterOracle::BlockIndexer::BlockIndexer(
     , db_(db)
     , header_(header)
     , block_(block)
-    , network_(network)
+    , node_(node)
     , parent_(parent)
     , chain_(chain)
     , type_(type)
@@ -333,8 +334,8 @@ auto FilterOracle::BlockIndexer::send_to_thread_pool(
     if (false == running_.get()) { return; }
 
     using Pool = api::internal::ThreadPool;
-    auto work =
-        Pool::MakeWork(api_.ZeroMQ(), value(Pool::Work::CalculateBlockFilters));
+    auto work = Pool::MakeWork(
+        api_.Network().ZeroMQ(), value(Pool::Work::CalculateBlockFilters));
     work->AddFrame(reinterpret_cast<std::uintptr_t>(&parent_));
     work->AddFrame(reinterpret_cast<std::uintptr_t>(&job));
     thread_pool_.Send(work);

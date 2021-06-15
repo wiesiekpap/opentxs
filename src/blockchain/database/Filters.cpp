@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "blockchain/database/common/Database.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/block/Block.hpp"
@@ -37,7 +38,7 @@ namespace opentxs::blockchain::database
 {
 Filters::Filters(
     const api::Core& api,
-    const Common& common,
+    const common::Database& common,
     const opentxs::storage::lmdb::LMDB& lmdb,
     const blockchain::Type chain) noexcept
     : api_(api)
@@ -72,6 +73,19 @@ auto Filters::CurrentTip(const filter::Type type) const noexcept
     lmdb_.Load(Table::BlockFilterBest, static_cast<std::size_t>(type), cb);
 
     return output;
+}
+
+auto Filters::HaveFilter(const filter::Type type, const block::Hash& block)
+    const noexcept -> bool
+{
+    return common_.HaveFilter(type, block.Bytes());
+}
+
+auto Filters::HaveFilterHeader(
+    const filter::Type type,
+    const block::Hash& block) const noexcept -> bool
+{
+    return common_.HaveFilterHeader(type, block.Bytes());
 }
 
 auto Filters::import_genesis(const blockchain::Type chain) const noexcept
@@ -131,6 +145,12 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
             OT_ASSERT(success);
         }
     }
+}
+
+auto Filters::LoadFilter(const filter::Type type, const ReadView block)
+    const noexcept -> std::unique_ptr<const blockchain::node::GCS>
+{
+    return common_.LoadFilter(type, block);
 }
 
 auto Filters::LoadFilterHash(const filter::Type type, const ReadView block)
@@ -230,5 +250,19 @@ auto Filters::StoreFilters(
     }
 
     return parentTxn.Finalize(true);
+}
+
+auto Filters::StoreFilters(const filter::Type type, std::vector<Filter> filters)
+    const noexcept -> bool
+{
+    return common_.StoreFilters(type, filters);
+}
+
+auto Filters::StoreHeaders(
+    const filter::Type type,
+    const ReadView previous,
+    const std::vector<Header> headers) const noexcept -> bool
+{
+    return common_.StoreFilterHeaders(type, headers);
 }
 }  // namespace opentxs::blockchain::database

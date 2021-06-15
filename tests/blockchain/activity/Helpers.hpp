@@ -3,6 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/crypto/Element.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+
 #pragma once
 
 #include <gtest/gtest.h>
@@ -12,25 +15,9 @@
 #include <string>
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
-#include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
-#include "opentxs/api/client/blockchain/BalanceNode.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
-#include "opentxs/client/OTAPI_Exec.hpp"
-#include "opentxs/contact/Contact.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
-#include "opentxs/core/crypto/NymParameters.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/identity/Nym.hpp"
 
 namespace opentxs
 {
@@ -41,6 +28,22 @@ namespace client
 class Manager;
 }  // namespace client
 }  // namespace api
+
+namespace blockchain
+{
+namespace block
+{
+namespace bitcoin
+{
+class Transaction;
+}  // namespace bitcoin
+}  // namespace block
+
+namespace crypto
+{
+class Element;
+}  // namespace crypto
+}  // namespace blockchain
 
 namespace identifier
 {
@@ -53,12 +56,13 @@ class BlockchainTransactionOutput;
 }  // namespace proto
 
 class Identifier;
+class PasswordPrompt;
 }  // namespace opentxs
 
 namespace ottest
 {
 struct Test_BlockchainActivity : public ::testing::Test {
-    using Element = ot::api::client::blockchain::BalanceNode::Element;
+    using Element = ot::blockchain::crypto::Element;
     using Transaction = ot::blockchain::block::bitcoin::Transaction;
 
     static const std::string test_transaction_hex_;

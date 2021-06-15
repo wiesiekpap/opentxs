@@ -22,9 +22,9 @@
 #include <vector>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/blockchain/AddressStyle.hpp"
-#include "opentxs/api/client/blockchain/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/crypto/AddressStyle.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/contact/Types.hpp"
@@ -68,7 +68,7 @@ namespace opentxs
 class OPENTXS_EXPORT Contact
 {
 public:
-    using AddressStyle = api::client::blockchain::AddressStyle;
+    using AddressStyle = blockchain::crypto::AddressStyle;
     using BlockchainType = blockchain::Type;
     using BlockchainAddress = std::tuple<OTData, AddressStyle, BlockchainType>;
 
@@ -118,7 +118,7 @@ public:
         const std::string& address,
         const BlockchainType currency);
     bool AddBlockchainAddress(
-        const api::client::blockchain::AddressStyle& style,
+        const blockchain::crypto::AddressStyle& style,
         const blockchain::Type chain,
         const opentxs::Data& bytes);
     bool AddEmail(
