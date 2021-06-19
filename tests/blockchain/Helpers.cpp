@@ -150,9 +150,9 @@ const boost::container::flat_map<ot::blockchain::Type, ChainVector>
                 "2b5adc66021d5c775f630efd91518cf6ce3e9f525bbf54d9f0d709451e305e"
                 "48"}},
               {ot::blockchain::filter::Type::ES,
-               {"042547f6de198130360443dfcdc0",
-                "18e0f10a66d223e36d0333dfe3e2546135f632f53e1e44ba016022f0a40462"
-                "8a"}},
+               {"042547f61f786604db036044c4f7f36fe0",
+                "5e0aa302450f931bc2e4fab27632231a06964277ea8dfcdd93c19149a24fe7"
+                "88"}},
           }}},
         {ot::blockchain::Type::Bitcoin,
          {"01000000000000000000000000000000000000000000000000000000000000000000"
@@ -170,9 +170,9 @@ const boost::container::flat_map<ot::blockchain::Type, ChainVector>
                 "9f3c30f0c37fb977cf3e1a3173c631e8ff119ad3088b6f5b2bced0802139c2"
                 "02"}},
               {ot::blockchain::filter::Type::ES,
-               {"049dc75e0d584a300293ef3d3980",
-                "0354578634dd178058ad5f3addf0d97c45911f483c99a1022ce51502e142e9"
-                "9f"}},
+               {"049dc75e903561289b0029337bcf4e6720",
+                "fad52acc389a391c1d6d94e8984fe77323fbda24fb31299b88635d7bee0278"
+                "e8"}},
           }}},
         {ot::blockchain::Type::Bitcoin_testnet3,
          {"01000000000000000000000000000000000000000000000000000000000000000000"
@@ -190,9 +190,9 @@ const boost::container::flat_map<ot::blockchain::Type, ChainVector>
                 "50b781aed7b7129012a6d20e2d040027937f3affaee573779908ebb7794558"
                 "21"}},
               {ot::blockchain::filter::Type::ES,
-               {"04e2f587e146bf6c662d35278a40",
-                "a1310188d76ce653283a3086aa6f1ba30b6934990a093e1789a78a43b92613"
-                "15"}},
+               {"04e2f5880d851afd74c662d38d49e29130",
+                "995cfe5d055c9158c5a388b71fb2ddbe292c9ca2d30dca91359d8cbbe4603e"
+                "02"}},
           }}},
         {ot::blockchain::Type::BitcoinCash,
          {"01000000000000000000000000000000000000000000000000000000000000000000"
@@ -210,9 +210,9 @@ const boost::container::flat_map<ot::blockchain::Type, ChainVector>
                 "9f3c30f0c37fb977cf3e1a3173c631e8ff119ad3088b6f5b2bced0802139c2"
                 "02"}},
               {ot::blockchain::filter::Type::ES,
-               {"049dc75e0d584a300293ef3d3980",
-                "0354578634dd178058ad5f3addf0d97c45911f483c99a1022ce51502e142e9"
-                "9f"}},
+               {"049dc75e903561289b0029337bcf4e6720",
+                "fad52acc389a391c1d6d94e8984fe77323fbda24fb31299b88635d7bee0278"
+                "e8"}},
           }}},
         {ot::blockchain::Type::BitcoinCash_testnet3,
          {"01000000000000000000000000000000000000000000000000000000000000000000"
@@ -230,9 +230,9 @@ const boost::container::flat_map<ot::blockchain::Type, ChainVector>
                 "50b781aed7b7129012a6d20e2d040027937f3affaee573779908ebb7794558"
                 "21"}},
               {ot::blockchain::filter::Type::ES,
-               {"04e2f587e146bf6c662d35278a40",
-                "a1310188d76ce653283a3086aa6f1ba30b6934990a093e1789a78a43b92613"
-                "15"}},
+               {"04e2f5880d851afd74c662d38d49e29130",
+                "995cfe5d055c9158c5a388b71fb2ddbe292c9ca2d30dca91359d8cbbe4603e"
+                "02"}},
           }}},
         {ot::blockchain::Type::Litecoin,
          {"01000000000000000000000000000000000000000000000000000000000000000000"
@@ -250,9 +250,9 @@ const boost::container::flat_map<ot::blockchain::Type, ChainVector>
                 "8aa75530308cf8247a151c37c24e7aaa281ae3b5cecedb581aacb3a0d07c24"
                 "51"}},
               {ot::blockchain::filter::Type::ES,
-               {"049de8963322099e81f3bf7c4600",
-                "5a71cc36ad0b35d4c99b335ff69c3ed89e667b9772dbbf40396a1b4f2b2c30"
-                "80"}},
+               {"049de896b2cc882671e81f336fdf119b00",
+                "23b8dae37cf04c8a278bd50bcbcf23a03051ea902f67c4760eb35be96d4283"
+                "20"}},
           }}},
         {ot::blockchain::Type::Litecoin_testnet4,
          {"01000000000000000000000000000000000000000000000000000000000000000000"
@@ -270,9 +270,9 @@ const boost::container::flat_map<ot::blockchain::Type, ChainVector>
                 "02d023da9d271b849f717089aad7e03a515dac982c9fb2cfd952e2ce1c6187"
                 "92"}},
               {ot::blockchain::filter::Type::ES,
-               {"048b3d6095a4b01eb30ce44017c0",
-                "042bce138093a271d8d7f730f7f9f9ab8c7240f297b47aea4440dceec623ac"
-                "a3"}},
+               {"048b3d60cc5692c061eb30ca191005f1c0",
+                "ad242bb97aaf6a8f973dc2054d5356a4fcc87f575b29bbb3e0d953cfaedff8"
+                "c6"}},
           }}},
         {ot::blockchain::Type::PKT,
          {"00000000000000000000000000000000000000000000000000000000000000000000"
@@ -454,9 +454,9 @@ const boost::container::flat_map<ot::blockchain::Type, ChainVector>
                 "526b0656def40fcb65ef87a75337001fae57a1d17dc17e103fb536cfddedd3"
                 "6c"}},
               {ot::blockchain::filter::Type::ES,
-               {"02649a429ba06300",
-                "d8a96cd0b19de626e7d84c964cf1da0e09b90c589bd3e23bcf1c931779a475"
-                "12"}},
+               {"02649a42b26e818d40",
+                "155e1700eff3f9019ba1716316295a8753ec44d2a7730eee1c1c73e2b511e1"
+                "34"}},
           }}},
     };
 }  // namespace ottest

@@ -1157,8 +1157,8 @@ auto Data::Chains() noexcept -> const ChainData&
               "f",
               "000000000000000000000000000000000000000000000000000000000000000"
               "0",
-              "18e0f10a66d223e36d0333dfe3e2546135f632f53e1e44ba016022f0a404628"
-              "a"},
+              "5e0aa302450f931bc2e4fab27632231a06964277ea8dfcdd93c19149a24fe78"
+              "8"},
              filter::Type::ES,
              p2p::Protocol::bitcoin,
              3669344250,
@@ -1196,9 +1196,9 @@ auto Data::Filters() noexcept -> const FilterData&
                "2",
                "017fa880"}},
              {filter::Type::ES,
-              {"0354578634dd178058ad5f3addf0d97c45911f483c99a1022ce51502e142e99"
-               "f",
-               "049dc75e0d584a300293ef3d3980"}},
+              {"fad52acc389a391c1d6d94e8984fe77323fbda24fb31299b88635d7bee0278e"
+               "8",
+               "049dc75e903561289b0029337bcf4e6720"}},
          }},
         {blockchain::Type::BitcoinCash,
          {
@@ -1207,9 +1207,9 @@ auto Data::Filters() noexcept -> const FilterData&
                "2",
                "017fa880"}},
              {filter::Type::ES,
-              {"0354578634dd178058ad5f3addf0d97c45911f483c99a1022ce51502e142e99"
-               "f",
-               "049dc75e0d584a300293ef3d3980"}},
+              {"fad52acc389a391c1d6d94e8984fe77323fbda24fb31299b88635d7bee0278e"
+               "8",
+               "049dc75e903561289b0029337bcf4e6720"}},
          }},
         {blockchain::Type::Litecoin,
          {
@@ -1218,9 +1218,9 @@ auto Data::Filters() noexcept -> const FilterData&
                "1",
                "019e8738"}},
              {filter::Type::ES,
-              {"5a71cc36ad0b35d4c99b335ff69c3ed89e667b9772dbbf40396a1b4f2b2c308"
+              {"23b8dae37cf04c8a278bd50bcbcf23a03051ea902f67c4760eb35be96d42832"
                "0",
-               "049de8963322099e81f3bf7c4600"}},
+               "049de896b2cc882671e81f336fdf119b00"}},
          }},
         {blockchain::Type::Bitcoin_testnet3,
          {
@@ -1229,9 +1229,9 @@ auto Data::Filters() noexcept -> const FilterData&
                "1",
                "019dfca8"}},
              {filter::Type::ES,
-              {"a1310188d76ce653283a3086aa6f1ba30b6934990a093e1789a78a43b926131"
-               "5",
-               "04e2f587e146bf6c662d35278a40"}},
+              {"995cfe5d055c9158c5a388b71fb2ddbe292c9ca2d30dca91359d8cbbe4603e0"
+               "2",
+               "04e2f5880d851afd74c662d38d49e29130"}},
          }},
         {blockchain::Type::BitcoinCash_testnet3,
          {
@@ -1240,9 +1240,9 @@ auto Data::Filters() noexcept -> const FilterData&
                "1",
                "019dfca8"}},
              {filter::Type::ES,
-              {"a1310188d76ce653283a3086aa6f1ba30b6934990a093e1789a78a43b926131"
-               "5",
-               "04e2f587e146bf6c662d35278a40"}},
+              {"995cfe5d055c9158c5a388b71fb2ddbe292c9ca2d30dca91359d8cbbe4603e0"
+               "2",
+               "04e2f5880d851afd74c662d38d49e29130"}},
          }},
         {blockchain::Type::Litecoin_testnet4,
          {
@@ -1251,9 +1251,9 @@ auto Data::Filters() noexcept -> const FilterData&
                "2",
                "014c8c60"}},
              {filter::Type::ES,
-              {"042bce138093a271d8d7f730f7f9f9ab8c7240f297b47aea4440dceec623aca"
-               "3",
-               "048b3d6095a4b01eb30ce44017c0"}},
+              {"ad242bb97aaf6a8f973dc2054d5356a4fcc87f575b29bbb3e0d953cfaedff8c"
+               "6",
+               "048b3d60cc5692c061eb30ca191005f1c0"}},
          }},
         {blockchain::Type::PKT,
          {
@@ -1262,9 +1262,9 @@ auto Data::Filters() noexcept -> const FilterData&
                "c",
                "01902168"}},
              {filter::Type::ES,
-              {"d8a96cd0b19de626e7d84c964cf1da0e09b90c589bd3e23bcf1c931779a4751"
-               "2",
-               "02649a429ba06300"}},
+              {"155e1700eff3f9019ba1716316295a8753ec44d2a7730eee1c1c73e2b511e13"
+               "4",
+               "02649a42b26e818d40"}},
          }},
         {blockchain::Type::PKT_testnet,
          {
@@ -1273,9 +1273,9 @@ auto Data::Filters() noexcept -> const FilterData&
                "c",
                "01902168"}},
              {filter::Type::ES,
-              {"d8a96cd0b19de626e7d84c964cf1da0e09b90c589bd3e23bcf1c931779a4751"
-               "2",
-               "02649a429ba06300"}},
+              {"155e1700eff3f9019ba1716316295a8753ec44d2a7730eee1c1c73e2b511e13"
+               "4",
+               "02649a42b26e818d40"}},
          }},
         {blockchain::Type::UnitTest,
          {
@@ -1288,9 +1288,9 @@ auto Data::Filters() noexcept -> const FilterData&
                "8",
                "014756c0"}},
              {filter::Type::ES,
-              {"18e0f10a66d223e36d0333dfe3e2546135f632f53e1e44ba016022f0a404628"
-               "a",
-               "042547f6de198130360443dfcdc0"}},
+              {"5e0aa302450f931bc2e4fab27632231a06964277ea8dfcdd93c19149a24fe78"
+               "8",
+               "042547f61f786604db036044c4f7f36fe0"}},
          }},
     };
 
