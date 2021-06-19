@@ -275,7 +275,7 @@ auto FilterOracle::compare_tips_to_checkpoint() noexcept -> void
         try {
             const auto& cpHeader = i->second.at(default_type_);
             const auto cpBytes =
-                api_.Factory().Data(ReadView{cpHeader.data(), cpHeader.size()});
+                api_.Factory().Data(cpHeader, StringStyle::Hex);
 
             if (existingHeader == cpBytes) { break; }
 
