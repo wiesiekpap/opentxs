@@ -41,7 +41,7 @@ public:
     using Txid = opentxs::blockchain::block::Txid;
 
     /// Throws std::out_of_range for invalid index
-    virtual const Element& BalanceElement(
+    virtual const crypto::Element& BalanceElement(
         const Subchain type,
         const Bip32Index index) const noexcept(false) = 0;
     virtual const Identifier& ID() const noexcept = 0;

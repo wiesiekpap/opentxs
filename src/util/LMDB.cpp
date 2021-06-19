@@ -25,7 +25,7 @@ extern "C" {
 #if OS_SUPPORTS_LARGE_SPARSE_FILES
 #define OT_LMDB_SIZE 1_TiB
 #elif OS_HAS_MEDIOCRE_SPARSE_FILE_SUPPORT
-#define OT_LMDB_SIZE 16_GiB
+#define OT_LMDB_SIZE 4_GiB
 #else
 #define OT_LMDB_SIZE 512_MiB
 #endif
@@ -414,6 +414,12 @@ struct LMDB::Imp {
     auto Read(const Table table, const ReadCallback cb, const Dir dir)
         const noexcept -> bool
     {
+        return read(db_.at(table), cb, dir);
+    }
+
+    auto read(const MDB_dbi dbi, const ReadCallback cb, const Dir dir)
+        const noexcept -> bool
+    {
         struct Cleanup {
             bool success_;
 
@@ -455,9 +461,8 @@ struct LMDB::Imp {
 
         MDB_cursor* cursor{nullptr};
         auto cleanup = Cleanup{transaction, cursor};
-        const auto database = db_.at(table);
 
-        if (0 != ::mdb_cursor_open(transaction, database, &cursor)) {
+        if (0 != ::mdb_cursor_open(transaction, dbi, &cursor)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to get cursor")
                 .Flush();
 
@@ -505,6 +510,34 @@ struct LMDB::Imp {
         }
 
         return cleanup.success_;
+    }
+    auto ReadAndDelete(
+        const Table table,
+        const ReadCallback cb,
+        MDB_txn& tx,
+        const std::string& message) const noexcept -> bool
+    {
+        auto dbi = MDB_dbi{};
+
+        if (0 != ::mdb_dbi_open(&tx, names_.at(table).c_str(), 0, &dbi)) {
+            LogTrace(OT_METHOD)(__FUNCTION__)(": table does not exist").Flush();
+
+            return false;
+        }
+
+        LogNormal("Beginning database upgrade for ")(message).Flush();
+        read(dbi, cb, Dir::Forward);
+
+        if (0 != ::mdb_drop(&tx, dbi, 1)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to delete table")
+                .Flush();
+
+            return false;
+        }
+
+        LogNormal("Finished database upgrade for ")(message).Flush();
+
+        return true;
     }
     auto ReadFrom(
         const Table table,
@@ -765,14 +798,15 @@ struct LMDB::Imp {
     Imp(const TableNames& names,
         const std::string& folder,
         const TablesToInit init,
-        const Flags flags) noexcept
+        const Flags flags,
+        const std::size_t extraTables) noexcept
         : names_(names)
         , env_(nullptr)
         , db_()
         , pending_()
         , lock_()
     {
-        init_environment(folder, init.size(), flags);
+        init_environment(folder, init.size() + extraTables, flags);
         init_tables(init);
     }
     Imp(const Imp&) = delete;
@@ -862,8 +896,9 @@ LMDB::LMDB(
     const TableNames& names,
     const std::string& folder,
     const TablesToInit init,
-    const Flags flags) noexcept
-    : imp_(std::make_unique<Imp>(names, folder, init, flags))
+    const Flags flags,
+    const std::size_t extraTables) noexcept
+    : imp_(std::make_unique<Imp>(names, folder, init, flags, extraTables))
 {
 }
 
@@ -1003,6 +1038,15 @@ auto LMDB::Read(const Table table, const ReadCallback cb, const Dir dir)
     const noexcept -> bool
 {
     return imp_->Read(table, cb, dir);
+}
+
+auto LMDB::ReadAndDelete(
+    const Table table,
+    const ReadCallback cb,
+    MDB_txn& tx,
+    const std::string& message) const noexcept -> bool
+{
+    return imp_->ReadAndDelete(table, cb, tx, message);
 }
 
 auto LMDB::ReadFrom(

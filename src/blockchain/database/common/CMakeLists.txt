@@ -10,6 +10,8 @@ add_library(
   "BlockFilter.hpp"
   "BlockHeaders.cpp"
   "BlockHeaders.hpp"
+  "Bulk.cpp"
+  "Bulk.hpp"
   "Common.cpp"
   "Config.cpp"
   "Config.hpp"
@@ -52,6 +54,7 @@ target_link_libraries(
   PUBLIC
     unofficial-sodium::sodium
     Boost::thread
+    Boost::filesystem
     lmdb
 )
 target_compile_definitions(

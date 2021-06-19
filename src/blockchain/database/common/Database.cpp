@@ -12,9 +12,11 @@ extern "C" {
 #include <sodium.h>
 }
 
+#include <boost/filesystem.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
+#include <iosfwd>
 #include <iterator>
 #include <map>
 #include <stdexcept>
@@ -25,6 +27,7 @@ extern "C" {
 #if OPENTXS_BLOCK_STORAGE_ENABLED
 #include "blockchain/database/common/Blocks.hpp"
 #endif  // OPENTXS_BLOCK_STORAGE_ENABLED
+#include "blockchain/database/common/Bulk.hpp"
 #include "blockchain/database/common/Config.hpp"
 #include "blockchain/database/common/Peers.hpp"
 #if OPENTXS_BLOCK_STORAGE_ENABLED
@@ -34,6 +37,7 @@ extern "C" {
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Legacy.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
 #include "opentxs/protobuf/BlockchainTransaction.pb.h"
@@ -62,10 +66,9 @@ struct Database::Imp {
     const api::Legacy& legacy_;
     const OTString blockchain_path_;
     const OTString common_path_;
-#if OPENTXS_BLOCK_STORAGE_ENABLED
     const OTString blocks_path_;
-#endif  // OPENTXS_BLOCK_STORAGE_ENABLED
     opentxs::storage::lmdb::LMDB lmdb_;
+    Bulk bulk_;
     const BlockStorage block_policy_;
     const SiphashKey siphash_key_;
     BlockHeader headers_;
@@ -182,8 +185,61 @@ struct Database::Imp {
         const api::Legacy& legacy,
         const std::string& dataFolder) noexcept(false) -> OTString
     {
-        return init_folder(
-            legacy, String::Factory(dataFolder), String::Factory("blockchain"));
+        auto output = String::Factory();
+
+        if (false == legacy.AppendFolder(
+                         output,
+                         String::Factory(dataFolder),
+                         String::Factory("blockchain"))) {
+            throw std::runtime_error("Failed to calculate path");
+        }
+
+        namespace fs = boost::filesystem;
+
+        constexpr auto version1{"version.1"};
+        const auto base = fs::path{output->Get()};
+        const auto v1 = base / fs::path{version1};
+        const auto haveBase = [&] {
+            try {
+
+                return fs::exists(base);
+            } catch (...) {
+
+                return false;
+            }
+        }();
+        const auto haveV1 = [&] {
+            try {
+
+                return fs::exists(v1);
+            } catch (...) {
+
+                return false;
+            }
+        }();
+
+        if (haveBase) {
+            if (haveV1) {
+                LogVerbose(
+                    "Existing blockchain data directory already updated to v1")
+                    .Flush();
+            } else {
+                LogOutput("Existing blockchain data directory is v0 and must "
+                          "be purged")
+                    .Flush();
+                fs::remove_all(base);
+            }
+        } else {
+            LogOutput("Initializing new blockchain data directory").Flush();
+        }
+
+        if (false == legacy.BuildFolderPath(output)) {
+            throw std::runtime_error("Failed to construct path");
+        }
+
+        std::ofstream{v1.string()};
+
+        return output;
     }
     static auto siphash_key(opentxs::storage::lmdb::LMDB& db) noexcept
         -> SiphashKey
@@ -240,25 +296,19 @@ struct Database::Imp {
         , blockchain_path_(init_storage_path(legacy, dataFolder))
         , common_path_(
               init_folder(legacy, blockchain_path_, String::Factory("common")))
-#if OPENTXS_BLOCK_STORAGE_ENABLED
         , blocks_path_(
               init_folder(legacy, common_path_, String::Factory("blocks")))
-#endif  // OPENTXS_BLOCK_STORAGE_ENABLED
         , lmdb_(
               table_names_,
               common_path_->Get(),
               [] {
                   auto output = opentxs::storage::lmdb::TablesToInit{
-                      {Table::BlockHeaders, 0},
                       {Table::PeerDetails, 0},
                       {Table::PeerChainIndex, MDB_DUPSORT | MDB_INTEGERKEY},
                       {Table::PeerProtocolIndex, MDB_DUPSORT | MDB_INTEGERKEY},
                       {Table::PeerServiceIndex, MDB_DUPSORT | MDB_INTEGERKEY},
                       {Table::PeerNetworkIndex, MDB_DUPSORT | MDB_INTEGERKEY},
                       {Table::PeerConnectedIndex, MDB_DUPSORT | MDB_INTEGERKEY},
-                      {Table::FiltersBasic, 0},
-                      {Table::FiltersBCH, 0},
-                      {Table::FiltersOpentxs, 0},
                       {Table::FilterHeadersBasic, 0},
                       {Table::FilterHeadersBCH, 0},
                       {Table::FilterHeadersOpentxs, 0},
@@ -267,6 +317,10 @@ struct Database::Imp {
                       {Table::Enabled, MDB_INTEGERKEY},
                       {Table::SyncTips, MDB_INTEGERKEY},
                       {Table::ConfigMulti, MDB_DUPSORT | MDB_INTEGERKEY},
+                      {Table::HeaderIndex, 0},
+                      {Table::FilterIndexBasic, 0},
+                      {Table::FilterIndexBCH, 0},
+                      {Table::FilterIndexES, 0},
                   };
 
                   for (const auto& [table, name] : SyncTables()) {
@@ -274,14 +328,25 @@ struct Database::Imp {
                   }
 
                   return output;
+              }(),
+              0,
+              [&] {
+                  auto deleted = std::vector<Table>{};
+                  deleted.emplace_back(Table::BlockHeadersDeleted);
+                  deleted.emplace_back(Table::FiltersBasicDeleted);
+                  deleted.emplace_back(Table::FiltersBCHDeleted);
+                  deleted.emplace_back(Table::FiltersOpentxsDeleted);
+
+                  return deleted.size();
               }())
+        , bulk_(lmdb_, blocks_path_->Get())
         , block_policy_(block_storage_level(args, lmdb_))
         , siphash_key_(siphash_key(lmdb_))
-        , headers_(api_, lmdb_)
+        , headers_(lmdb_, bulk_)
         , peers_(api_, lmdb_)
-        , filters_(api_, lmdb_)
+        , filters_(api_, lmdb_, bulk_)
 #if OPENTXS_BLOCK_STORAGE_ENABLED
-        , blocks_(lmdb_, blocks_path_->Get())
+        , blocks_(lmdb_, bulk_)
         , sync_(api_, lmdb_, blocks_path_->Get())
 #endif  // OPENTXS_BLOCK_STORAGE_ENABLED
         , wallet_(blockchain, lmdb_)
@@ -296,16 +361,16 @@ struct Database::Imp {
 
 const opentxs::storage::lmdb::TableNames Database::Imp::table_names_ = [] {
     auto output = opentxs::storage::lmdb::TableNames{
-        {Table::BlockHeaders, "block_headers"},
+        {Table::BlockHeadersDeleted, "block_headers"},
         {Table::PeerDetails, "peers"},
         {Table::PeerChainIndex, "peer_chain_index"},
         {Table::PeerProtocolIndex, "peer_protocol_index"},
         {Table::PeerServiceIndex, "peer_service_index"},
         {Table::PeerNetworkIndex, "peer_network_index"},
         {Table::PeerConnectedIndex, "peer_connected_index"},
-        {Table::FiltersBasic, "block_filters_basic"},
-        {Table::FiltersBCH, "block_filters_bch"},
-        {Table::FiltersOpentxs, "block_filters_opentxs"},
+        {Table::FiltersBasicDeleted, "block_filters_basic"},
+        {Table::FiltersBCHDeleted, "block_filters_bch"},
+        {Table::FiltersOpentxsDeleted, "block_filters_opentxs"},
         {Table::FilterHeadersBasic, "block_filter_headers_basic"},
         {Table::FilterHeadersBCH, "block_filter_headers_bch"},
         {Table::FilterHeadersOpentxs, "block_filter_headers_opentxs"},
@@ -314,6 +379,10 @@ const opentxs::storage::lmdb::TableNames Database::Imp::table_names_ = [] {
         {Table::Enabled, "enabled_chains_2"},
         {Table::SyncTips, "sync_tips"},
         {Table::ConfigMulti, "config_multiple_values"},
+        {Table::HeaderIndex, "block_headers_2"},
+        {Table::FilterIndexBasic, "block_filters_basic_2"},
+        {Table::FilterIndexBCH, "block_filters_bch_2"},
+        {Table::FilterIndexES, "block_filters_opentxs_2"},
     };
 
     for (const auto& [table, name] : SyncTables()) {
@@ -360,7 +429,7 @@ auto Database::AddSyncServer(const std::string& endpoint) const noexcept -> bool
 
 auto Database::BlockHeaderExists(const BlockHash& hash) const noexcept -> bool
 {
-    return imp_.headers_.BlockHeaderExists(hash);
+    return imp_.headers_.Exists(hash);
 }
 
 auto Database::BlockExists(const BlockHash& block) const noexcept -> bool
@@ -467,7 +536,7 @@ auto Database::Import(std::vector<Address_p> peers) const noexcept -> bool
 auto Database::LoadBlockHeader(const BlockHash& hash) const noexcept(false)
     -> proto::BlockchainBlockHeader
 {
-    return imp_.headers_.LoadBlockHeader(hash);
+    return imp_.headers_.Load(hash);
 }
 
 auto Database::LoadFilter(const FilterType type, const ReadView blockHash)
@@ -567,13 +636,13 @@ auto Database::ReorgSync(const Chain chain, const Height height) const noexcept
 auto Database::StoreBlockHeader(
     const opentxs::blockchain::block::Header& header) const noexcept -> bool
 {
-    return imp_.headers_.StoreBlockHeader(header);
+    return imp_.headers_.Store(header);
 }
 
 auto Database::StoreBlockHeaders(const UpdatedHeader& headers) const noexcept
     -> bool
 {
-    return imp_.headers_.StoreBlockHeaders(headers);
+    return imp_.headers_.Store(headers);
 }
 
 auto Database::StoreFilterHeaders(

@@ -24,6 +24,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/crypto/Deterministic.hpp"
+#include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -58,7 +59,7 @@ public:
     auto Floor(const Subchain type) const noexcept
         -> std::optional<Bip32Index> final;
     auto BalanceElement(const Subchain type, const Bip32Index index) const
-        noexcept(false) -> const internal::Element& final;
+        noexcept(false) -> const crypto::Element& final;
     auto GenerateNext(const Subchain type, const PasswordPrompt& reason)
         const noexcept -> std::optional<Bip32Index> final;
     auto Key(const Subchain type, const Bip32Index index) const noexcept

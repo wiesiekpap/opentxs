@@ -51,16 +51,16 @@ using UpdatedHeader = opentxs::blockchain::node::UpdatedHeader;
 using SyncTableData = std::pair<int, std::string>;
 
 enum Table {
-    BlockHeaders = 0,
+    BlockHeadersDeleted = 0,
     PeerDetails = 1,
     PeerChainIndex = 2,
     PeerProtocolIndex = 3,
     PeerServiceIndex = 4,
     PeerNetworkIndex = 5,
     PeerConnectedIndex = 6,
-    FiltersBasic = 7,
-    FiltersBCH = 8,
-    FiltersOpentxs = 9,
+    FiltersBasicDeleted = 7,
+    FiltersBCHDeleted = 8,
+    FiltersOpentxsDeleted = 9,
     FilterHeadersBasic = 10,
     FilterHeadersBCH = 11,
     FilterHeadersOpentxs = 12,
@@ -69,6 +69,10 @@ enum Table {
     Enabled = 15,
     SyncTips = 16,
     ConfigMulti = 17,
+    HeaderIndex = 18,
+    FilterIndexBasic = 19,
+    FilterIndexBCH = 20,
+    FilterIndexES = 21,
 };
 
 auto ChainToSyncTable(const opentxs::blockchain::Type chain) noexcept(false)

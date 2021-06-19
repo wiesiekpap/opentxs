@@ -17,18 +17,19 @@
 namespace opentxs::util
 {
 // Stores items in a memory mapped, sparse backing file.
+struct IndexData {
+    using MemoryPosition = std::size_t;
+    using ItemSize = std::size_t;
+
+    MemoryPosition position_{};
+    ItemSize size_{};
+};
+
 class MappedFileStorage
 {
 protected:
     using LMDB = opentxs::storage::lmdb::LMDB;
-    using MemoryPosition = std::size_t;
-    using ItemSize = std::size_t;
     using UpdateCallback = std::function<bool(LMDB::Transaction&)>;
-
-    struct IndexData {
-        MemoryPosition position_{};
-        ItemSize size_{};
-    };
 
     LMDB& lmdb_;
 
@@ -48,6 +49,11 @@ protected:
     //
     // Storing a zero byte object is not allowed.
     auto get_write_view(
+        IndexData& index,
+        UpdateCallback&& cb,  // will be called if index is changed
+        std::size_t size) const noexcept -> WritableView;
+    auto get_write_view(
+        LMDB::Transaction& tx,
         IndexData& index,
         UpdateCallback&& cb,  // will be called if index is changed
         std::size_t size) const noexcept -> WritableView;

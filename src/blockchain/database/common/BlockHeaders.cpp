@@ -7,112 +7,165 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/database/common/BlockHeaders.hpp"  // IWYU pragma: associated
 
-extern "C" {
-#include <lmdb.h>
-}
-
+#include <cstring>
 #include <map>
-#include <optional>
 #include <stdexcept>
-#include <string>
+#include <type_traits>
 #include <utility>
 
+#include "Proto.hpp"
 #include "Proto.tpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/crypto/Crypto.hpp"
-#include "opentxs/api/crypto/Encode.hpp"
+#include "blockchain/database/common/Bulk.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
+#include "opentxs/core/Data.hpp"
+#include "opentxs/core/Log.hpp"
+#include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
 #include "util/LMDB.hpp"
+#include "util/MappedFileStorage.hpp"
 
-// #define OT_METHOD
-// "opentxs::blockchain::database::common::BlockHeader::"
+#define OT_METHOD "opentxs::blockchain::database::common::BlockHeader::"
 
 namespace opentxs::blockchain::database::common
 {
+template <typename Input>
+auto tsv(const Input& in) noexcept -> ReadView
+{
+    return {reinterpret_cast<const char*>(&in), sizeof(in)};
+}
+
 BlockHeader::BlockHeader(
-    const api::Core& api,
-    opentxs::storage::lmdb::LMDB& lmdb) noexcept(false)
-    : api_(api)
-    , lmdb_(lmdb)
+    opentxs::storage::lmdb::LMDB& lmdb,
+    Bulk& bulk) noexcept(false)
+    : lmdb_(lmdb)
+    , bulk_(bulk)
+    , table_(Table::HeaderIndex)
 {
 }
 
-auto BlockHeader::BlockHeaderExists(
+auto BlockHeader::Exists(
     const opentxs::blockchain::block::Hash& hash) const noexcept -> bool
 {
-    return lmdb_.Exists(
-        Table::BlockHeaders, api_.Crypto().Encode().IdentifierEncode(hash));
+    return lmdb_.Exists(table_, hash.Bytes());
 }
 
-auto BlockHeader::LoadBlockHeader(const opentxs::blockchain::block::Hash& hash)
-    const noexcept(false) -> proto::BlockchainBlockHeader
+auto BlockHeader::Load(const opentxs::blockchain::block::Hash& hash) const
+    noexcept(false) -> proto::BlockchainBlockHeader
 {
-    auto output = std::optional<proto::BlockchainBlockHeader>{};
-    lmdb_.Load(
-        Table::BlockHeaders,
-        api_.Crypto().Encode().IdentifierEncode(hash),
-        [&](const auto data) -> void {
-            output = proto::Factory<proto::BlockchainBlockHeader>(
-                data.data(), data.size());
-        });
+    const auto index = [&] {
+        auto out = util::IndexData{};
+        auto cb = [&out](const auto in) {
+            if (sizeof(out) != in.size()) { return; }
 
-    if (false == output.has_value()) {
-        throw std::out_of_range("Block header not found");
-    }
+            std::memcpy(static_cast<void*>(&out), in.data(), in.size());
+        };
+        lmdb_.Load(table_, hash.Bytes(), cb);
 
-    return output.value();
+        if (0 == out.size_) {
+            throw std::out_of_range("Block header not found");
+        }
+
+        return out;
+    }();
+
+    return proto::Factory<proto::BlockchainBlockHeader>(bulk_.ReadView(index));
 }
 
-auto BlockHeader::StoreBlockHeader(
+auto BlockHeader::Store(
     const opentxs::blockchain::block::Header& header) const noexcept -> bool
 {
-    auto proto = opentxs::blockchain::block::Header::SerializedType{};
+    auto tx = lmdb_.TransactionRW();
+    auto lock = Lock{bulk_.Mutex()};
 
-    if (false == header.Serialize(proto)) { return false; }
+    if (false == store(lock, false, tx, header)) { return false; }
 
-    // TODO proto.clear_local();
-    const auto result = lmdb_.Store(
-        Table::BlockHeaders,
-        api_.Crypto().Encode().IdentifierEncode(header.Hash()),
-        proto::ToString(proto),
-        nullptr,
-        MDB_NOOVERWRITE);
+    if (tx.Finalize(true)) { return true; }
 
-    if (false == result.first) {
-        if (MDB_KEYEXIST != result.second) { return false; }
-    }
+    LogOutput(OT_METHOD)(__FUNCTION__)(": Database update error").Flush();
 
-    return true;
+    return false;
 }
 
-auto BlockHeader::StoreBlockHeaders(const UpdatedHeader& headers) const noexcept
-    -> bool
+auto BlockHeader::Store(const UpdatedHeader& headers) const noexcept -> bool
 {
-    auto parentTxn = lmdb_.TransactionRW();
+    auto tx = lmdb_.TransactionRW();
+    auto lock = Lock{bulk_.Mutex()};
 
     for (const auto& [hash, pair] : headers) {
         const auto& [header, newBlock] = pair;
 
         if (newBlock) {
-            auto proto = opentxs::blockchain::block::Header::SerializedType{};
 
-            if (false == header->Serialize(proto)) { return false; }
-
-            proto.clear_local();
-            const auto stored = lmdb_.Store(
-                Table::BlockHeaders,
-                api_.Crypto().Encode().IdentifierEncode(header->Hash()),
-                proto::ToString(proto),
-                parentTxn,
-                MDB_NOOVERWRITE);
-
-            if (false == stored.first) {
-                if (MDB_KEYEXIST != stored.second) { return false; }
-            }
+            if (false == store(lock, true, tx, *header)) { return false; }
         }
     }
 
-    return parentTxn.Finalize(true);
+    if (tx.Finalize(true)) { return true; }
+
+    LogOutput(OT_METHOD)(__FUNCTION__)(": Database update error").Flush();
+
+    return false;
+}
+
+auto BlockHeader::store(
+    const Lock& lock,
+    bool clearLocal,
+    storage::lmdb::LMDB::Transaction& pTx,
+    const opentxs::blockchain::block::Header& header) const noexcept -> bool
+{
+    const auto& hash = header.Hash();
+
+    try {
+        const auto proto = [&] {
+            auto out = opentxs::blockchain::block::Header::SerializedType{};
+
+            if (false == header.Serialize(out)) {
+                throw std::runtime_error{"Failed to serialized header"};
+            }
+
+            if (clearLocal) { out.clear_local(); }
+
+            return out;
+        }();
+        const auto bytes = proto.ByteSizeLong();
+        auto index = [&] {
+            auto output = util::IndexData{};
+            auto cb = [&output](const auto in) {
+                if (sizeof(output) != in.size()) { return; }
+
+                std::memcpy(static_cast<void*>(&output), in.data(), in.size());
+            };
+            lmdb_.Load(table_, hash.Bytes(), cb);
+
+            return output;
+        }();
+        auto cb = [&](auto& tx) -> bool {
+            const auto result =
+                lmdb_.Store(table_, hash.Bytes(), tsv(index), tx);
+
+            if (false == result.first) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ": Failed to update index for block header ")(hash.asHex())
+                    .Flush();
+
+                return false;
+            }
+
+            return true;
+        };
+        auto view = bulk_.WriteView(lock, pTx, index, std::move(cb), bytes);
+
+        if (false == view.valid(bytes)) {
+            throw std::runtime_error{
+                "Failed to get write position for block header"};
+        }
+
+        return proto::write(proto, preallocated(bytes, view.data()));
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+        return false;
+    }
 }
 }  // namespace opentxs::blockchain::database::common

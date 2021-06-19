@@ -180,7 +180,7 @@ PaymentCode::PaymentCode(
                       std::forward_as_tuple(
                           std::make_unique<implementation::Element>(
                               api,
-                              parent.Parent().Parent(),
+                              parent.ParentInternal().Parent(),
                               *this,
                               parent.Chain(),
                               internalType,
@@ -194,7 +194,7 @@ PaymentCode::PaymentCode(
                       std::forward_as_tuple(
                           std::make_unique<implementation::Element>(
                               api,
-                              parent.Parent().Parent(),
+                              parent.ParentInternal().Parent(),
                               *this,
                               parent.Chain(),
                               externalType,
@@ -256,7 +256,7 @@ auto PaymentCode::get_contact() const noexcept -> OTIdentifier
     // TODO works for now but the Contacts api needs a better way to
     // map payment codes to contacts since contacts might have supplemental
     // payment codes
-    return parent_.Parent().Parent().Contacts().NymToContact(
+    return parent_.ParentInternal().Parent().Contacts().NymToContact(
         remote_.get().ID());
 }
 

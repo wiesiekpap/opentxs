@@ -99,7 +99,7 @@ public:
     auto ID() const noexcept -> const Identifier& final { return id_; }
     auto IncomingTransactions(const Key& key) const noexcept
         -> std::set<std::string> final;
-    auto Parent() const noexcept -> const internal::Account& final
+    auto Parent() const noexcept -> const crypto::Account& final
     {
         return parent_;
     }

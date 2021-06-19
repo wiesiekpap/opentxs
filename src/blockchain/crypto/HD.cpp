@@ -127,7 +127,7 @@ HD::HD(
                       std::forward_as_tuple(
                           std::make_unique<implementation::Element>(
                               api,
-                              parent.Parent().Parent(),
+                              parent.ParentInternal().Parent(),
                               *this,
                               parent.Chain(),
                               internalType,
@@ -141,7 +141,7 @@ HD::HD(
                       std::forward_as_tuple(
                           std::make_unique<implementation::Element>(
                               api,
-                              parent.Parent().Parent(),
+                              parent.ParentInternal().Parent(),
                               *this,
                               parent.Chain(),
                               externalType,

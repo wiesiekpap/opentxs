@@ -13,7 +13,9 @@
 #include <type_traits>
 #include <utility>
 
+#include "Proto.hpp"
 #include "Proto.tpp"
+#include "blockchain/database/common/Bulk.hpp"
 #include "internal/api/Api.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/node/FilterOracle.hpp"
@@ -23,16 +25,25 @@
 #include "opentxs/protobuf/BlockchainFilterHeader.pb.h"
 #include "opentxs/protobuf/GCS.pb.h"
 #include "util/LMDB.hpp"
+#include "util/MappedFileStorage.hpp"
 
 #define OT_METHOD "opentxs::blockchain::database::common::BlockFilter::"
 
 namespace opentxs::blockchain::database::common
 {
+template <typename Input>
+auto tsv(const Input& in) noexcept -> ReadView
+{
+    return {reinterpret_cast<const char*>(&in), sizeof(in)};
+}
+
 BlockFilter::BlockFilter(
     const api::Core& api,
-    opentxs::storage::lmdb::LMDB& lmdb) noexcept(false)
+    opentxs::storage::lmdb::LMDB& lmdb,
+    Bulk& bulk) noexcept
     : api_(api)
     , lmdb_(lmdb)
+    , bulk_(bulk)
 {
 }
 
@@ -65,14 +76,25 @@ auto BlockFilter::LoadFilter(const FilterType type, const ReadView blockHash)
     const noexcept -> std::unique_ptr<const opentxs::blockchain::node::GCS>
 {
     auto output = std::unique_ptr<const opentxs::blockchain::node::GCS>{};
-    auto cb = [this, &output](const auto in) {
-        if ((nullptr == in.data()) || (0 == in.size())) { return; }
-
-        output = factory::GCS(api_, proto::Factory<proto::GCS>(in));
-    };
 
     try {
-        lmdb_.Load(translate_filter(type), blockHash, cb);
+        const auto index = [&] {
+            auto out = util::IndexData{};
+            auto cb = [&out](const auto in) {
+                if (sizeof(out) != in.size()) { return; }
+
+                std::memcpy(static_cast<void*>(&out), in.data(), in.size());
+            };
+            lmdb_.Load(translate_filter(type), blockHash, cb);
+
+            if (0 == out.size_) {
+                throw std::out_of_range("Cfilter not found");
+            }
+
+            return out;
+        }();
+        output = factory::GCS(
+            api_, proto::Factory<proto::GCS>(bulk_.ReadView(index)));
     } catch (const std::exception& e) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
     }
@@ -142,6 +164,64 @@ auto BlockFilter::LoadFilterHeader(
     return output;
 }
 
+auto BlockFilter::store(
+    const Lock& lock,
+    storage::lmdb::LMDB::Transaction& tx,
+    const ReadView blockHash,
+    const FilterType type,
+    const node::GCS& filter) const noexcept -> bool
+{
+    try {
+        const auto proto = [&] {
+            auto out = proto::GCS{};
+
+            if (false == filter.Serialize(out)) {
+                throw std::runtime_error{"Failed to serialize gcs"};
+            }
+
+            return out;
+        }();
+        const auto bytes = proto.ByteSizeLong();
+        const auto table = translate_filter(type);
+        auto index = [&] {
+            auto output = util::IndexData{};
+            auto cb = [&output](const auto in) {
+                if (sizeof(output) != in.size()) { return; }
+
+                std::memcpy(static_cast<void*>(&output), in.data(), in.size());
+            };
+            lmdb_.Load(table, blockHash, cb);
+
+            return output;
+        }();
+        auto cb = [&](auto& tx) -> bool {
+            const auto result = lmdb_.Store(table, blockHash, tsv(index), tx);
+
+            if (false == result.first) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ": Failed to update index for cfilter header")
+                    .Flush();
+
+                return false;
+            }
+
+            return true;
+        };
+        auto view = bulk_.WriteView(lock, tx, index, std::move(cb), bytes);
+
+        if (false == view.valid(bytes)) {
+            throw std::runtime_error{
+                "Failed to get write position for cfilter"};
+        }
+
+        return proto::write(proto, preallocated(bytes, view.data()));
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+        return false;
+    }
+}
+
 auto BlockFilter::StoreFilterHeaders(
     const FilterType type,
     const std::vector<FilterHeader>& headers) const noexcept -> bool
@@ -161,7 +241,8 @@ auto BlockFilter::StoreFilters(
     const std::vector<FilterHeader>& headers,
     const std::vector<FilterData>& filters) const noexcept -> bool
 {
-    auto parentTxn = lmdb_.TransactionRW();
+    auto tx = lmdb_.TransactionRW();
+    auto lock = Lock{bulk_.Mutex()};
 
     for (const auto& [block, header, hash] : headers) {
         auto proto = proto::BlockchainFilterHeader();
@@ -174,14 +255,13 @@ auto BlockFilter::StoreFilters(
 
         try {
             const auto stored = lmdb_.Store(
-                translate_header(type),
-                block->Bytes(),
-                reader(bytes),
-                parentTxn);
+                translate_header(type), block->Bytes(), reader(bytes), tx);
 
             if (false == stored.first) { return false; }
         } catch (const std::exception& e) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+            return false;
         }
     }
 
@@ -190,29 +270,10 @@ auto BlockFilter::StoreFilters(
 
         const auto& filter = *pFilter;
 
-        try {
-            const auto proto = [&] {
-                auto out = proto::GCS{};
-
-                if (false == filter.Serialize(out)) {
-                    throw std::runtime_error{"Failed to serialize gcs"};
-                }
-
-                return out;
-            }();
-            auto bytes = space(proto.ByteSize());
-            proto.SerializeWithCachedSizesToArray(
-                reinterpret_cast<std::uint8_t*>(bytes.data()));
-            const auto stored = lmdb_.Store(
-                translate_filter(type), block, reader(bytes), parentTxn);
-
-            if (false == stored.first) { return false; }
-        } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
-        }
+        if (false == store(lock, tx, block, type, filter)) { return false; }
     }
 
-    return parentTxn.Finalize(true);
+    return tx.Finalize(true);
 }
 
 auto BlockFilter::translate_filter(const FilterType type) noexcept(false)
@@ -220,13 +281,13 @@ auto BlockFilter::translate_filter(const FilterType type) noexcept(false)
 {
     switch (type) {
         case FilterType::Basic_BIP158: {
-            return FiltersBasic;
+            return FilterIndexBasic;
         }
         case FilterType::Basic_BCHVariant: {
-            return FiltersBCH;
+            return FilterIndexBCH;
         }
         case FilterType::ES: {
-            return FiltersOpentxs;
+            return FilterIndexES;
         }
         default: {
             throw std::runtime_error("Unsupported filter type");

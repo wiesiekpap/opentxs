@@ -5,9 +5,12 @@
 
 #pragma once
 
+#include <mutex>
+
 #include "Proto.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
@@ -26,6 +29,14 @@ namespace block
 {
 class Header;
 }  // namespace block
+
+namespace database
+{
+namespace common
+{
+class Bulk;
+}  // namespace common
+}  // namespace database
 }  // namespace blockchain
 
 namespace storage
@@ -42,20 +53,26 @@ namespace opentxs::blockchain::database::common
 class BlockHeader
 {
 public:
-    auto BlockHeaderExists(
-        const opentxs::blockchain::block::Hash& hash) const noexcept -> bool;
-    auto LoadBlockHeader(const opentxs::blockchain::block::Hash& hash) const
+    auto Exists(const opentxs::blockchain::block::Hash& hash) const noexcept
+        -> bool;
+    auto Load(const opentxs::blockchain::block::Hash& hash) const
         noexcept(false) -> proto::BlockchainBlockHeader;
-    auto StoreBlockHeader(const opentxs::blockchain::block::Header& header)
-        const noexcept -> bool;
-    auto StoreBlockHeaders(const UpdatedHeader& headers) const noexcept -> bool;
+    auto Store(const opentxs::blockchain::block::Header& header) const noexcept
+        -> bool;
+    auto Store(const UpdatedHeader& headers) const noexcept -> bool;
 
-    BlockHeader(
-        const api::Core& api,
-        opentxs::storage::lmdb::LMDB& lmdb) noexcept(false);
+    BlockHeader(opentxs::storage::lmdb::LMDB& lmdb, Bulk& bulk) noexcept(false);
 
 private:
-    const api::Core& api_;
-    opentxs::storage::lmdb::LMDB& lmdb_;
+    storage::lmdb::LMDB& lmdb_;
+    Bulk& bulk_;
+    const int table_;
+
+    auto store(
+        const Lock& lock,
+        bool clearLocal,
+        storage::lmdb::LMDB::Transaction& tx,
+        const opentxs::blockchain::block::Header& header) const noexcept
+        -> bool;
 };
 }  // namespace opentxs::blockchain::database::common

@@ -84,7 +84,7 @@ Subaccount::Subaccount(
 auto Subaccount::UpdateElement(
     std::vector<ReadView>& pubkeyHashes) const noexcept -> void
 {
-    parent_.Parent().Parent().UpdateElement(pubkeyHashes);
+    parent_.ParentInternal().Parent().UpdateElement(pubkeyHashes);
 }
 
 auto Subaccount::AssociateTransaction(
