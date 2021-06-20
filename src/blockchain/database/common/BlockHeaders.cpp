@@ -55,7 +55,7 @@ auto BlockHeader::Load(const opentxs::blockchain::block::Hash& hash) const
 {
     const auto index = [&] {
         auto out = util::IndexData{};
-        auto cb = [&out](const auto in) {
+        auto cb = [&out](const ReadView in) {
             if (sizeof(out) != in.size()) { return; }
 
             std::memcpy(static_cast<void*>(&out), in.data(), in.size());
@@ -131,7 +131,7 @@ auto BlockHeader::store(
         const auto bytes = proto.ByteSizeLong();
         auto index = [&] {
             auto output = util::IndexData{};
-            auto cb = [&output](const auto in) {
+            auto cb = [&output](const ReadView in) {
                 if (sizeof(output) != in.size()) { return; }
 
                 std::memcpy(static_cast<void*>(&output), in.data(), in.size());

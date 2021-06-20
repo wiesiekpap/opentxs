@@ -57,6 +57,14 @@ if(NOT ANDROID)
   add_opentx_test(
     unittests-opentxs-blockchain-headeroracle-random Test_random.cpp
   )
+
+  if(WIN32)
+    set_target_properties(
+      unittests-opentxs-blockchain-headeroracle-random
+      PROPERTIES
+      LINK_OPTIONS /STACK:2097152
+    )
+  endif()
 endif()
 
 add_opentx_test(
