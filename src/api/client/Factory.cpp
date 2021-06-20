@@ -159,6 +159,7 @@ auto Factory::BitcoinGenerationTransaction(
         Clock::now(),
         serializedVersion,
         locktime,
+        false,  // TODO segwit
         factory::BitcoinTransactionInputs(std::move(inputs)),
         factory::BitcoinTransactionOutputs(std::move(outputs)));
 }

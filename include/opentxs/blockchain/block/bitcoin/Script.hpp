@@ -59,6 +59,7 @@ public:
         PayToWitnessPubkeyHash,
         PayToWitnessScriptHash,
         PayToTaproot,
+        None = 252,
         Input = 253,
         Empty = 254,
         Malformed = 255,

@@ -264,6 +264,16 @@ public:
         const opentxs::blockchain::block::bitcoin::Script& script)
         const noexcept -> std::unique_ptr<
             const opentxs::blockchain::block::bitcoin::Script> = 0;
+    virtual auto BitcoinScriptP2WPKH(
+        const opentxs::blockchain::Type chain,
+        const opentxs::crypto::key::EllipticCurve& publicKey) const noexcept
+        -> std::unique_ptr<
+            const opentxs::blockchain::block::bitcoin::Script> = 0;
+    virtual auto BitcoinScriptP2WSH(
+        const opentxs::blockchain::Type chain,
+        const opentxs::blockchain::block::bitcoin::Script& script)
+        const noexcept -> std::unique_ptr<
+            const opentxs::blockchain::block::bitcoin::Script> = 0;
     virtual auto BitcoinTransaction(
         const opentxs::blockchain::Type chain,
         const ReadView bytes,

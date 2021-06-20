@@ -593,9 +593,8 @@ auto FilterOracle::ProcessSyncData(
                     if (first) {
                         first = false;
                         auto promise = std::promise<filter::pHeader>{};
-                        auto post = ScopeGuard{[&] {
-                            promise.set_value(std::move(previous));
-                        }};
+                        auto post = ScopeGuard{
+                            [&] { promise.set_value(std::move(previous)); }};
 
                         return promise.get_future();
                     } else {

@@ -350,6 +350,8 @@ protected:
         const noexcept -> std::string;
     auto p2sh(const opentxs::blockchain::Type chain, const Data& scriptHash)
         const noexcept -> std::string;
+    auto p2wpkh(const opentxs::blockchain::Type chain, const Data& pubkeyHash)
+        const noexcept -> std::string;
     auto nym_mutex(const identifier::Nym& nym) const noexcept -> std::mutex&;
     auto validate_nym(const identifier::Nym& nymID) const noexcept -> bool;
 

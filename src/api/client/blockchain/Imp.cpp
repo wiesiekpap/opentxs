@@ -11,6 +11,7 @@
 #include <boost/container/flat_map.hpp>
 #include <segwit_addr.h>
 #include <algorithm>
+#include <cstddef>
 #include <iterator>
 #include <stdexcept>
 #include <tuple>
@@ -366,6 +367,7 @@ auto Blockchain::Imp::CalculateAddress(
     auto data = api_.Factory().Data();
 
     switch (format) {
+        case Style::P2WPKH:
         case Style::P2PKH: {
             try {
                 data = PubkeyHash(chain, pubkey);
@@ -574,6 +576,10 @@ auto Blockchain::Imp::EncodeAddress(
     const Data& data) const noexcept -> std::string
 {
     switch (style) {
+        case Style::P2WPKH: {
+
+            return p2wpkh(chain, data);
+        }
         case Style::P2PKH: {
 
             return p2pkh(chain, data);
@@ -968,7 +974,7 @@ auto Blockchain::Imp::p2pkh(
         return api_.Crypto().Encode().IdentifierEncode(preimage);
     } catch (...) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported chain (")(
-            static_cast<std::uint32_t>(chain))(")")
+            opentxs::print(chain))(")")
             .Flush();
 
         return "";
@@ -991,7 +997,36 @@ auto Blockchain::Imp::p2sh(
         return api_.Crypto().Encode().IdentifierEncode(preimage);
     } catch (...) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported chain (")(
-            static_cast<std::uint32_t>(chain))(")")
+            opentxs::print(chain))(")")
+            .Flush();
+
+        return "";
+    }
+}
+
+auto Blockchain::Imp::p2wpkh(
+    const opentxs::blockchain::Type chain,
+    const Data& hash) const noexcept -> std::string
+{
+    try {
+        const auto& hrp = hrp_map_.at(chain);
+        const auto prog = [&] {
+            auto out = std::vector<std::uint8_t>{};
+            std::transform(
+                hash.begin(),
+                hash.end(),
+                std::back_inserter(out),
+                [](const auto& byte) {
+                    return std::to_integer<std::uint8_t>(byte);
+                });
+
+            return out;
+        }();
+
+        return segwit_addr::encode(hrp, 0, prog);
+    } catch (...) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported chain (")(
+            opentxs::print(chain))(")")
             .Flush();
 
         return "";

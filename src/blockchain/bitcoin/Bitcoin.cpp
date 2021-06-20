@@ -7,24 +7,19 @@
 #include "1_Internal.hpp"                           // IWYU pragma: associated
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"  // IWYU pragma: associated
 
+#include <boost/endian/buffers.hpp>
 #include <cstdint>
 #include <cstring>
 #include <iterator>
 #include <numeric>
 #include <stdexcept>
 
+#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-
-namespace opentxs
-{
-namespace api
-{
-class Core;
-}  // namespace api
-}  // namespace opentxs
 
 namespace bb = opentxs::blockchain::bitcoin;
 
@@ -83,6 +78,20 @@ auto Bip143Hashes::blank() noexcept -> const Hash&
     return output;
 }
 
+auto Bip143Hashes::get_single(
+    const std::size_t index,
+    const std::size_t total,
+    const SigHash& sigHash) noexcept -> std::unique_ptr<Hash>
+{
+    if (bitcoin::SigOption::Single != sigHash.Type()) { return nullptr; }
+
+    if (index >= total) { return nullptr; }
+
+    // TODO not implemented yet
+
+    return nullptr;
+}
+
 auto Bip143Hashes::Outpoints(const SigHash sig) const noexcept -> const Hash&
 {
     if (sig.AnyoneCanPay()) { return blank(); }
@@ -103,6 +112,77 @@ auto Bip143Hashes::Outputs(const SigHash sig, const Hash* single) const noexcept
 
         return blank();
     }
+}
+
+auto Bip143Hashes::Preimage(
+    const std::size_t index,
+    const std::size_t total,
+    const be::little_int32_buf_t& version,
+    const be::little_uint32_buf_t& locktime,
+    const SigHash& sigHash,
+    const block::bitcoin::internal::Input& input) const noexcept(false) -> Space
+{
+    const auto& outpoints = Outpoints(sigHash);
+    const auto& sequences = Sequences(sigHash);
+    const auto& outpoint = input.PreviousOutput();
+    const auto pScript = input.Spends().SigningSubscript();
+
+    OT_ASSERT(pScript);
+
+    const auto& script = *pScript;
+    const auto scriptBytes = script.CalculateSize();
+    const auto cs = blockchain::bitcoin::CompactSize{scriptBytes};
+    const auto& output = input.Spends();
+    const auto value = be::little_int64_buf_t{output.Value()};
+    const auto sequence = be::little_uint32_buf_t{input.Sequence()};
+    const auto single = get_single(index, total, sigHash);
+    const auto& outputs = Outputs(sigHash, single.get());
+    // clang-format off
+    auto preimage = space(
+        sizeof(version) +
+        sizeof(outpoints) +
+        sizeof(sequences) +
+        sizeof(outpoint) +
+        cs.Total() +
+        sizeof(value) +
+        sizeof(sequence) +
+        sizeof(outputs) +
+        sizeof(locktime) +
+        sizeof(sigHash)
+    );
+    // clang-format on
+    auto it = preimage.data();
+    std::memcpy(it, &version, sizeof(version));
+    std::advance(it, sizeof(version));
+    std::memcpy(it, outpoints.data(), outpoints.size());
+    std::advance(it, outpoints.size());
+    std::memcpy(it, sequences.data(), sequences.size());
+    std::advance(it, sequences.size());
+    std::memcpy(it, &outpoint, sizeof(outpoint));
+    std::advance(it, sizeof(outpoint));
+
+    if (false == cs.Encode(preallocated(cs.Size(), it))) {
+        throw std::runtime_error{"CompactSize encoding failure"};
+    }
+
+    std::advance(it, cs.Size());
+
+    if (false == script.Serialize(preallocated(scriptBytes, it))) {
+        throw std::runtime_error{"Script encoding failure"};
+    }
+
+    std::advance(it, scriptBytes);
+    std::memcpy(it, &value, sizeof(value));
+    std::advance(it, sizeof(value));
+    std::memcpy(it, &sequence, sizeof(sequence));
+    std::advance(it, sizeof(sequence));
+    std::memcpy(it, outputs.data(), outputs.size());
+    std::advance(it, outputs.size());
+    std::memcpy(it, &locktime, sizeof(locktime));
+    std::advance(it, sizeof(locktime));
+    std::memcpy(it, &sigHash, sizeof(sigHash));
+
+    return preimage;
 }
 
 auto Bip143Hashes::Sequences(const SigHash sig) const noexcept -> const Hash&

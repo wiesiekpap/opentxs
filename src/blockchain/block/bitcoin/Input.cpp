@@ -26,6 +26,7 @@
 
 #include "blockchain/bitcoin/CompactSize.hpp"
 #include "internal/api/client/Client.hpp"
+#include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/contact/Contact.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -35,7 +36,6 @@
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
@@ -92,10 +92,14 @@ auto BitcoinTransactionInput(
 
     // TODO if this is input spends a segwit script then make a dummy witness
     auto elements = bb::ScriptElements{};
+    auto witness = std::vector<Space>{};
 
     switch (prevOut.Script().Type()) {
+        case bb::Script::Pattern::PayToWitnessPubkeyHash: {
+            witness.emplace_back(bi::Script::blank_signature(chain));
+            witness.emplace_back(bi::Script::blank_pubkey(chain));
+        } break;
         case bb::Script::Pattern::PayToPubkeyHash: {
-            // TODO verify the hash is the hash of the uncompressed key
             elements.emplace_back(bb::internal::PushData(
                 reader(bi::Script::blank_signature(chain))));
             elements.emplace_back(bb::internal::PushData(
@@ -136,7 +140,7 @@ auto BitcoinTransactionInput(
         chain,
         sequence.value_or(0xffffffff),
         blockchain::block::Outpoint{spends.first},
-        std::vector<Space>{},
+        std::move(witness),
         BitcoinScript(chain, std::move(elements), Position::Input),
         ReturnType::default_version_,
         std::move(pPrevOut),
@@ -466,25 +470,41 @@ auto Input::AddMultisigSignatures(const Signatures& signatures) noexcept -> bool
 
 auto Input::AddSignatures(const Signatures& signatures) noexcept -> bool
 {
-    // TODO add to witness if segwit
+    if (0 == witness_.size()) {
+        auto elements = ScriptElements{};
 
-    auto elements = ScriptElements{};
+        for (const auto& [sig, key] : signatures) {
+            if (false == valid(sig)) { return false; }
 
-    for (const auto& [sig, key] : signatures) {
-        if (false == valid(sig)) { return false; }
+            elements.emplace_back(internal::PushData(sig));
 
-        elements.emplace_back(internal::PushData(sig));
+            if (valid(key)) { elements.emplace_back(internal::PushData(key)); }
+        }
 
-        if (valid(key)) { elements.emplace_back(internal::PushData(key)); }
+        auto& script =
+            const_cast<std::unique_ptr<const internal::Script>&>(script_);
+        script = factory::BitcoinScript(
+            chain_, std::move(elements), Script::Position::Input);
+        cache_.reset_size();
+
+        return bool(script);
+    } else {
+        // TODO this only works for P2WPKH
+        auto& witness = const_cast<std::vector<Space>&>(witness_);
+        witness.clear();
+
+        for (const auto& [sig, key] : signatures) {
+            if (false == valid(sig)) { return false; }
+            if (false == valid(key)) { return false; }
+
+            witness.emplace_back(space(sig));
+            witness.emplace_back(space(key));
+        }
+
+        cache_.reset_size();
+
+        return true;
     }
-
-    auto& script =
-        const_cast<std::unique_ptr<const internal::Script>&>(script_);
-    script = factory::BitcoinScript(
-        chain_, std::move(elements), Script::Position::Input);
-    cache_.reset_size();
-
-    return bool(script);
 }
 
 auto Input::AssociatedLocalNyms(

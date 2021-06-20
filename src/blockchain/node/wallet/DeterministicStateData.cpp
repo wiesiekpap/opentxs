@@ -182,6 +182,24 @@ auto DeterministicStateData::handle_confirmed_matches(
                         if (nullptr == pTX) { pTX = pTransaction.get(); }
                     }
                 } break;
+                case block::bitcoin::Script::Pattern::PayToWitnessPubkeyHash: {
+                    const auto hash = element.PubkeyHash();
+
+                    OT_ASSERT(script.PubkeyHash().has_value());
+
+                    if (hash->Bytes() == script.PubkeyHash().value()) {
+                        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
+                            " element ")(index)(": P2WPKH match found for ")(
+                            DisplayString(node_.Chain()))(" transaction ")(
+                            txid->asHex())(" output ")(i)(" via ")(
+                            hash->asHex())
+                            .Flush();
+                        outputs.emplace_back(i);
+                        crypto_.Confirm(element.KeyID(), txid);
+
+                        if (nullptr == pTX) { pTX = pTransaction.get(); }
+                    }
+                } break;
                 case block::bitcoin::Script::Pattern::PayToMultisig: {
                     const auto m = script.M();
                     const auto n = script.N();
