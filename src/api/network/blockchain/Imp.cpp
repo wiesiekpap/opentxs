@@ -363,11 +363,27 @@ auto BlockchainImp::Init(
         return {};
     }();
     init_promise_.set_value();
+    static const auto defaultSyncServer =
+        std::string{"tcp://54.39.129.45:8814"};
+    const auto existing = [&] {
+        auto out = std::set<std::string>{};
+        auto v = GetSyncServers();
+        std::move(v.begin(), v.end(), std::inserter(out, out.end()));
+
+        if (0 == out.count(defaultSyncServer)) {
+            AddSyncServer(defaultSyncServer);
+            out.emplace(defaultSyncServer);
+        }
+
+        return out;
+    }();
 
     try {
         const auto& endpoints = args.at(OPENTXS_ARG_BLOCKCHAIN_SYNC);
 
-        for (const auto& endpoint : endpoints) { AddSyncServer(endpoint); }
+        for (const auto& endpoint : endpoints) {
+            if (0 == existing.count(endpoint)) { AddSyncServer(endpoint); }
+        }
     } catch (...) {
     }
 }
