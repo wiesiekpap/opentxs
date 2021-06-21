@@ -45,11 +45,7 @@ public:
     auto ReadView(const Lock& lock, const util::IndexData& index) const noexcept
         -> opentxs::ReadView;
     auto WriteView(
-        util::IndexData& index,
-        UpdateCallback&& cb,
-        std::size_t size) const noexcept -> WritableView;
-    auto WriteView(
-        const Lock& lock,
+        storage::lmdb::LMDB::Transaction& tx,
         util::IndexData& index,
         UpdateCallback&& cb,
         std::size_t size) const noexcept -> WritableView;

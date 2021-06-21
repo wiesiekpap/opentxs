@@ -49,10 +49,6 @@ protected:
     //
     // Storing a zero byte object is not allowed.
     auto get_write_view(
-        IndexData& index,
-        UpdateCallback&& cb,  // will be called if index is changed
-        std::size_t size) const noexcept -> WritableView;
-    auto get_write_view(
         LMDB::Transaction& tx,
         IndexData& index,
         UpdateCallback&& cb,  // will be called if index is changed

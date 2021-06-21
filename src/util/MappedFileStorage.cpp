@@ -142,26 +142,6 @@ struct MappedFileStorage::Imp {
         return ReadView{files_.at(file).const_data() + offset, index.size_};
     }
     auto get_write_view(
-        IndexData& index,
-        UpdateCallback&& cb,
-        std::size_t bytes) noexcept -> WritableView
-    {
-        auto tx = lmdb_.TransactionRW();
-        auto output = get_write_view(tx, index, std::move(cb), bytes);
-
-        if ((nullptr == output.data()) || (0u == output.size())) {
-            tx.Finalize(false);
-
-            return {};
-        }
-
-        if (tx.Finalize(true)) { return output; }
-
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Database update error").Flush();
-
-        return {};
-    }
-    auto get_write_view(
         LMDB::Transaction& tx,
         IndexData& index,
         UpdateCallback&& cb,
@@ -332,14 +312,6 @@ auto MappedFileStorage::get_read_view(const IndexData& index) const noexcept
     -> ReadView
 {
     return imp_.get_read_view(index);
-}
-
-auto MappedFileStorage::get_write_view(
-    IndexData& existing,
-    UpdateCallback&& cb,
-    std::size_t size) const noexcept -> WritableView
-{
-    return imp_.get_write_view(existing, std::move(cb), size);
 }
 
 auto MappedFileStorage::get_write_view(
