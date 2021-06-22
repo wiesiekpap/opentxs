@@ -25,14 +25,6 @@ struct Bulk::Imp final : private util::MappedFileStorage {
     }
     auto WriteView(
         const Lock&,
-        util::IndexData& index,
-        UpdateCallback&& cb,
-        std::size_t size) const noexcept -> WritableView
-    {
-        return get_write_view(index, std::move(cb), size);
-    }
-    auto WriteView(
-        const Lock&,
         storage::lmdb::LMDB::Transaction& tx,
         util::IndexData& index,
         UpdateCallback&& cb,
@@ -78,22 +70,14 @@ auto Bulk::ReadView(const Lock& lock, const util::IndexData& index)
 }
 
 auto Bulk::WriteView(
+    storage::lmdb::LMDB::Transaction& tx,
     util::IndexData& index,
     UpdateCallback&& cb,
     std::size_t size) const noexcept -> WritableView
 {
     auto lock = Lock{imp_->Mutex()};
 
-    return WriteView(lock, index, std::move(cb), size);
-}
-
-auto Bulk::WriteView(
-    const Lock& lock,
-    util::IndexData& index,
-    UpdateCallback&& cb,
-    std::size_t size) const noexcept -> WritableView
-{
-    return imp_->WriteView(lock, index, std::move(cb), size);
+    return imp_->WriteView(lock, tx, index, std::move(cb), size);
 }
 
 auto Bulk::WriteView(

@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "opentxs/Bytes.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 
 extern "C" {
@@ -52,10 +53,15 @@ public:
 
         auto Finalize(const std::optional<bool> success = {}) noexcept -> bool;
 
-        Transaction(MDB_env* env, const bool rw) noexcept(false);
+        Transaction(
+            MDB_env* env,
+            const bool rw,
+            std::unique_ptr<Lock> lock,
+            MDB_txn* parent = nullptr) noexcept(false);
         ~Transaction();
 
     private:
+        std::unique_ptr<Lock> lock_;
         MDB_txn* ptr_;
 
         Transaction(const Transaction&) = delete;
@@ -137,7 +143,8 @@ public:
         MDB_txn* parent = nullptr,
         const Flags flags = 0) const noexcept -> Result;
     auto TransactionRO() const noexcept(false) -> Transaction;
-    auto TransactionRW() const noexcept(false) -> Transaction;
+    auto TransactionRW(MDB_txn* parent = nullptr) const noexcept(false)
+        -> Transaction;
 
     LMDB(
         const TableNames& names,
