@@ -48,6 +48,7 @@ auto Blocks::Exists(const Hash& block) const noexcept -> bool
 
 auto Blocks::Load(const Hash& block) const noexcept -> BlockReader
 {
+    auto lock = Lock{lock_};
     auto index = IndexData{};
     auto cb = [&index](const auto in) {
         if (sizeof(index) != in.size()) { return; }
@@ -64,20 +65,14 @@ auto Blocks::Load(const Hash& block) const noexcept -> BlockReader
         return {};
     }
 
-    auto& mutex = [&]() -> auto&
-    {
-        auto lock = Lock{lock_};
-
-        return block_locks_[block];
-    }
-    ();
-
-    return BlockReader{bulk_.ReadView(index), mutex};
+    return BlockReader{bulk_.ReadView(index), block_locks_[block]};
 }
 
 auto Blocks::Store(const Hash& block, const std::size_t bytes) const noexcept
     -> BlockWriter
 {
+    auto lock = Lock{lock_};
+
     if (0 == bytes) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Block ")(block.asHex())(
             " invalid block size")
@@ -121,14 +116,6 @@ auto Blocks::Store(const Hash& block, const std::size_t bytes) const noexcept
         return {};
     }
 
-    auto& mutex = [&]() -> auto&
-    {
-        auto lock = Lock{lock_};
-
-        return block_locks_[block];
-    }
-    ();
-
-    return BlockWriter{std::move(view), mutex};
+    return BlockWriter{std::move(view), block_locks_[block]};
 }
 }  // namespace opentxs::blockchain::database::common
