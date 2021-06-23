@@ -12,11 +12,6 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 
-constexpr char operator"" _B(const unsigned long long int in)
-{
-    return static_cast<const char&>(in);
-}
-
 namespace opentxs::blockchain::node::implementation
 {
 const FilterOracle::CheckpointMap FilterOracle::filter_checkpoints_{
