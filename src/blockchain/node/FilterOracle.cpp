@@ -577,7 +577,6 @@ auto FilterOracle::ProcessSyncData(
         }();
         static const auto blank = api_.Factory().Data();
         static const auto blankView = ReadView{};
-        auto before{cache.begin()};
         auto first{true};
 
         for (auto i = std::size_t{0u}; i < count; ++i) {
@@ -595,16 +594,12 @@ auto FilterOracle::ProcessSyncData(
                         first = false;
                         auto promise = std::promise<filter::pHeader>{};
                         auto post = ScopeGuard{[&] {
-                            before = cache.begin();
                             promise.set_value(std::move(previous));
                         }};
 
                         return promise.get_future();
                     } else {
-                        auto post =
-                            ScopeGuard{[&] { std::advance(before, 1); }};
-
-                        return before->calculated_header_.get_future();
+                        return cache.at(i - 1).calculated_header_.get_future();
                     }
                 }());
 

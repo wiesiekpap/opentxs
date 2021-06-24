@@ -53,8 +53,7 @@ public:
         return QAbstractItemModel::createIndex(
             this->parent_.FindRow(this->row_id_),
             0,
-            static_cast<typename ListTemplate::QtPointerType*>(
-                const_cast<Combined*>(this)));
+            static_cast<RowTemplate*>(const_cast<Combined*>(this)));
     }
     int qt_column_count() const noexcept final { return this->column_count_; }
     QModelIndex qt_index(const int row, const int column) const noexcept final
