@@ -22,9 +22,20 @@ else()
 endif()
 
 target_link_libraries(
-  opentxs-api-network-blockchain PRIVATE opentxs::messages Boost::headers
+  opentxs-api-network-blockchain
+  PRIVATE
+    opentxs::messages
+    "${OT_ZMQ_TARGET}"
+    Boost::headers
 )
-target_link_libraries(opentxs PUBLIC Boost::system Boost::thread)
+target_link_libraries(
+  opentxs
+  PUBLIC
+    "${OT_ZMQ_TARGET}"
+    Boost::system
+    Boost::thread
+ )
+
 target_include_directories(
   opentxs-api-network-blockchain SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )

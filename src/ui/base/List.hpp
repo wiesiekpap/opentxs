@@ -42,7 +42,7 @@ class List : virtual public ExternalInterface,
 {
 #if OT_QT
 public:
-    using QtPointerType = ui::internal::Row;
+    using QtPointerType = RowInternal;
 
     auto columnCount(const QModelIndex& parent) const noexcept -> int override
     {
