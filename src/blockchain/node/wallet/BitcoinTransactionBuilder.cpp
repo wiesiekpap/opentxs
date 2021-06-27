@@ -42,7 +42,6 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
@@ -408,6 +407,7 @@ struct BitcoinTransactionBuilder::Imp {
             Clock::now(),
             version_,
             lock_time_,
+            segwit_,
             std::move(inputs),
             std::move(outputs));
     }
@@ -462,6 +462,7 @@ struct BitcoinTransactionBuilder::Imp {
         , fee_rate_(feeRate)
         , version_(1)
         , lock_time_(0)
+        , segwit_(false)
         , outputs_()
         , change_()
         , inputs_()
@@ -507,6 +508,7 @@ private:
     const Amount fee_rate_;
     const be::little_int32_buf_t version_;
     const be::little_uint32_buf_t lock_time_;
+    mutable bool segwit_;
     std::vector<Output> outputs_;
     std::vector<Output> change_;
     std::vector<std::pair<Input, Amount>> inputs_;
@@ -523,9 +525,20 @@ private:
     static auto is_segwit(const block::bitcoin::internal::Input& input) noexcept
         -> bool
     {
-        // TODO
+        using Type = block::bitcoin::Script::Pattern;
 
-        return false;
+        switch (input.Spends().Script().Type()) {
+            case Type::PayToWitnessPubkeyHash:
+            case Type::PayToWitnessScriptHash:
+            case Type::PayToTaproot: {
+
+                return true;
+            }
+            default: {
+
+                return false;
+            }
+        }
     }
 
     auto add_signatures(
@@ -538,6 +551,7 @@ private:
         using Pattern = block::bitcoin::Script::Pattern;
 
         switch (output.Script().Type()) {
+            case Pattern::PayToWitnessPubkeyHash:
             case Pattern::PayToPubkeyHash: {
                 return add_signatures_p2pkh(
                     preimage, sigHash, reason, output, input);
@@ -828,19 +842,6 @@ private:
 
         return std::size_t{148} * fee_rate_ / 1000;
     }
-    auto get_single(
-        const std::size_t index,
-        const blockchain::bitcoin::SigHash& sigHash) const noexcept
-        -> std::unique_ptr<Hash>
-    {
-        if (bitcoin::SigOption::Single != sigHash.Type()) { return nullptr; }
-
-        if (index >= outputs_.size()) { return nullptr; }
-
-        // TODO not implemented yet
-
-        return nullptr;
-    }
     auto get_private_key(
         const opentxs::crypto::key::EllipticCurve& pubkey,
         const blockchain::crypto::Element& element,
@@ -1010,6 +1011,7 @@ private:
             Clock::now(),
             version_,
             lock_time_,
+            false,
             std::move(inputs),
             std::move(outputs));
 
@@ -1067,9 +1069,8 @@ private:
             case Type::PKT_testnet:
             case Type::UnitTest: {
                 if (is_segwit(input)) {
-                    // TODO not implemented yet
 
-                    return false;
+                    return sign_input_segwit(index, input, bip143);
                 }
 
                 return sign_input_btc(index, input, txcopy);
@@ -1091,78 +1092,15 @@ private:
         Bip143& bip143) const noexcept -> bool
     {
         if (false == init_bip143(bip143)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error instantiating txcopy")
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Error instantiating bip143")
                 .Flush();
 
             return false;
         }
 
         const auto sigHash = blockchain::bitcoin::SigHash{chain_};
-        const auto& outpoints = bip143->Outpoints(sigHash);
-        const auto& sequences = bip143->Sequences(sigHash);
-        const auto& outpoint = input.PreviousOutput();
-        const auto pScript = input.Spends().SigningSubscript();
-
-        OT_ASSERT(pScript);
-
-        const auto& script = *pScript;
-        const auto scriptBytes = script.CalculateSize();
-        const auto cs = blockchain::bitcoin::CompactSize{scriptBytes};
-        const auto& output = input.Spends();
-        const auto value = output.Value();
-        const auto sequence = input.Sequence();
-        const auto single = get_single(index, sigHash);
-        const auto& outputs = bip143->Outputs(sigHash, single.get());
-        // clang-format off
-    auto preimage = space(
-        sizeof(version_) +
-        sizeof(outpoints) +
-        sizeof(sequences) +
-        sizeof(outpoint) +
-        cs.Total() +
-        sizeof(value) +
-        sizeof(sequence) +
-        sizeof(outputs) +
-        sizeof(lock_time_) +
-        sizeof(sigHash));
-        // clang-format on
-        auto it = preimage.data();
-        std::memcpy(it, &version_, sizeof(version_));
-        std::advance(it, sizeof(version_));
-        std::memcpy(it, outpoints.data(), outpoints.size());
-        std::advance(it, outpoints.size());
-        std::memcpy(it, sequences.data(), sequences.size());
-        std::advance(it, sequences.size());
-        std::memcpy(it, &outpoint, sizeof(outpoint));
-        std::advance(it, sizeof(outpoint));
-
-        if (false == cs.Encode(preallocated(cs.Size(), it))) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": CompactSize encoding failure")
-                .Flush();
-
-            return false;
-        }
-
-        std::advance(it, cs.Size());
-
-        if (false == script.Serialize(preallocated(scriptBytes, it))) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Script encoding failure")
-                .Flush();
-
-            return false;
-        }
-
-        std::advance(it, scriptBytes);
-        std::memcpy(it, &value, sizeof(value));
-        std::advance(it, sizeof(value));
-        std::memcpy(it, &sequence, sizeof(sequence));
-        std::advance(it, sizeof(sequence));
-        std::memcpy(it, outputs.data(), outputs.size());
-        std::advance(it, outputs.size());
-        std::memcpy(it, &lock_time_, sizeof(lock_time_));
-        std::advance(it, sizeof(lock_time_));
-        std::memcpy(it, &sigHash, sizeof(sigHash));
-        std::advance(it, sizeof(sigHash));
+        const auto preimage = bip143->Preimage(
+            index, outputs_.size(), version_, lock_time_, sigHash, input);
 
         return add_signatures(reader(preimage), sigHash, input);
     }
@@ -1190,6 +1128,25 @@ private:
         }
 
         std::copy(sigHash.begin(), sigHash.end(), std::back_inserter(preimage));
+
+        return add_signatures(reader(preimage), sigHash, input);
+    }
+    auto sign_input_segwit(
+        const int index,
+        block::bitcoin::internal::Input& input,
+        Bip143& bip143) const noexcept -> bool
+    {
+        if (false == init_bip143(bip143)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Error instantiating bip143")
+                .Flush();
+
+            return false;
+        }
+
+        segwit_ = true;
+        const auto sigHash = blockchain::bitcoin::SigHash{chain_};
+        const auto preimage = bip143->Preimage(
+            index, outputs_.size(), version_, lock_time_, sigHash, input);
 
         return add_signatures(reader(preimage), sigHash, input);
     }

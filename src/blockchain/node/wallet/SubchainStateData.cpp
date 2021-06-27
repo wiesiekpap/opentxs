@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "blockchain/node/wallet/ScriptForm.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
@@ -27,12 +28,9 @@
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
-#include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
-#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
@@ -421,38 +419,20 @@ auto SubchainStateData::index_element(
         " extracting filter matching patterns")
         .Flush();
     auto& list = output[index];
-    auto scripts = std::vector<std::unique_ptr<const block::bitcoin::Script>>{};
-    scripts.reserve(2);  // WARNING keep this number up to date if new scripts
-                         // are added
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(" element ")(index)(
-        ": using public key ")(
-        api_.Factory().Data(input.Key()->PublicKey())->asHex())(
-        " for P2PK pattern")
-        .Flush();
-    const auto& p2pk = scripts.emplace_back(
-        api_.Factory().BitcoinScriptP2PK(node_.Chain(), *input.Key()));
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(" element ")(index)(
-        ": using pubkey hash ")(input.PubkeyHash()->asHex())(
-        " for P2PKH pattern")
-        .Flush();
-    const auto& p2pkh = scripts.emplace_back(
-        api_.Factory().BitcoinScriptP2PKH(node_.Chain(), *input.Key()));
-
-    OT_ASSERT(p2pk);
-    OT_ASSERT(p2pkh);
+    const auto scripts = supported_scripts(input);
 
     switch (type) {
         case filter::Type::ES: {
-            OT_ASSERT(p2pk->Pubkey().has_value());
-            OT_ASSERT(p2pkh->PubkeyHash().has_value());
-
-            list.emplace_back(space(p2pk->Pubkey().value()));
-            list.emplace_back(space(p2pkh->PubkeyHash().value()));
+            for (const auto& [sw, p, s, e, script] : scripts) {
+                for (const auto& element : e) {
+                    list.emplace_back(space(element));
+                }
+            }
         } break;
         case filter::Type::Basic_BIP158:
         case filter::Type::Basic_BCHVariant:
         default: {
-            for (const auto& script : scripts) {
+            for (const auto& [sw, p, s, e, script] : scripts) {
                 script->Serialize(writer(list.emplace_back()));
             }
         }
@@ -716,6 +696,19 @@ auto SubchainStateData::state_machine() noexcept -> bool
     if (check_process()) { return false; }
 
     return false;
+}
+
+auto SubchainStateData::supported_scripts(
+    const crypto::Element& element) const noexcept -> std::vector<ScriptForm>
+{
+    auto out = std::vector<ScriptForm>{};
+    const auto chain = node_.Chain();
+    using Type = ScriptForm::Type;
+    out.emplace_back(api_, element, chain, Type::PayToPubkey);
+    out.emplace_back(api_, element, chain, Type::PayToPubkeyHash);
+    out.emplace_back(api_, element, chain, Type::PayToWitnessPubkeyHash);
+
+    return out;
 }
 
 SubchainStateData::~SubchainStateData()

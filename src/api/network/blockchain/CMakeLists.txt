@@ -34,8 +34,7 @@ target_link_libraries(
     "${OT_ZMQ_TARGET}"
     Boost::system
     Boost::thread
- )
-
+)
 target_include_directories(
   opentxs-api-network-blockchain SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )

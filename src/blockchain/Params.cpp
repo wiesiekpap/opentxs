@@ -292,6 +292,32 @@ auto ScriptHash(
     }
 }
 
+auto ScriptHashSegwit(
+    const api::Core& api,
+    const Type chain,
+    const ReadView input,
+    const AllocateOutput output) noexcept -> bool
+{
+    switch (chain) {
+        case Type::Unknown:
+        case Type::Bitcoin:
+        case Type::Bitcoin_testnet3:
+        case Type::BitcoinCash:
+        case Type::BitcoinCash_testnet3:
+        case Type::Ethereum_frontier:
+        case Type::Ethereum_ropsten:
+        case Type::Litecoin:
+        case Type::Litecoin_testnet4:
+        case Type::PKT:
+        case Type::PKT_testnet:
+        case Type::UnitTest:
+        default: {
+            return api.Crypto().Hash().Digest(
+                opentxs::crypto::HashType::Sha256, input, output);
+        }
+    }
+}
+
 auto SupportedChains() noexcept -> const std::set<Type>&
 {
     static const auto output = [] {
@@ -491,6 +517,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2TR, false},
              },
              {
+                 {Style::P2WPKH, "P2WPKH"},
                  {Style::P2PKH, "P2PKH"},
              },
          }},
@@ -551,6 +578,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2TR, false},
              },
              {
+                 {Style::P2WPKH, "P2WPKH"},
                  {Style::P2PKH, "P2PKH"},
              },
          }},
@@ -791,6 +819,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2TR, false},
              },
              {
+                 {Style::P2WPKH, "P2WPKH"},
                  {Style::P2PKH, "P2PKH"},
              },
          }},
@@ -848,6 +877,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2TR, false},
              },
              {
+                 {Style::P2WPKH, "P2WPKH"},
                  {Style::P2PKH, "P2PKH"},
              },
          }},
@@ -1078,6 +1108,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2TR, false},
              },
              {
+                 {Style::P2WPKH, "P2WPKH"},
                  {Style::P2PKH, "P2PKH"},
              },
          }},
@@ -1127,6 +1158,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2TR, false},
              },
              {
+                 {Style::P2WPKH, "P2WPKH"},
                  {Style::P2PKH, "P2PKH"},
              },
          }},
@@ -1177,6 +1209,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2TR, true},
              },
              {
+                 {Style::P2WPKH, "P2WPKH"},
                  {Style::P2PKH, "P2PKH"},
              },
          }},

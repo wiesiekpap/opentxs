@@ -10,6 +10,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <optional>
 #include <tuple>
 #include <vector>
@@ -26,6 +27,20 @@ namespace api
 {
 class Core;
 }  // namespace api
+
+namespace blockchain
+{
+namespace block
+{
+namespace bitcoin
+{
+namespace internal
+{
+struct Input;
+}  // namespace internal
+}  // namespace bitcoin
+}  // namespace block
+}  // namespace blockchain
 }  // namespace opentxs
 
 namespace be = boost::endian;
@@ -182,9 +197,21 @@ struct Bip143Hashes {
     auto Outpoints(const SigHash type) const noexcept -> const Hash&;
     auto Outputs(const SigHash type, const Hash* single) const noexcept
         -> const Hash&;
+    auto Preimage(
+        const std::size_t index,
+        const std::size_t total,
+        const be::little_int32_buf_t& version,
+        const be::little_uint32_buf_t& locktime,
+        const SigHash& sigHash,
+        const block::bitcoin::internal::Input& input) const noexcept(false)
+        -> Space;
     auto Sequences(const SigHash type) const noexcept -> const Hash&;
 
 private:
     static auto blank() noexcept -> const Hash&;
+    static auto get_single(
+        const std::size_t index,
+        const std::size_t total,
+        const SigHash& sigHash) noexcept -> std::unique_ptr<Hash>;
 };
 }  // namespace opentxs::blockchain::bitcoin

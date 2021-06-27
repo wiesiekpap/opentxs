@@ -20,6 +20,7 @@
 #include <utility>
 #include <vector>
 
+#include "internal/blockchain/block/Block.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -1170,9 +1171,28 @@ auto Script::Serialize(const AllocateOutput destination) const noexcept -> bool
 auto Script::SigningSubscript(const blockchain::Type chain) const noexcept
     -> std::unique_ptr<internal::Script>
 {
-    // TODO handle OP_CODESEPERATOR shit
+    switch (type_) {
+        case Pattern::PayToWitnessPubkeyHash: {
+            auto elements = [&] {
+                auto out = ScriptElements{};
+                out.emplace_back(internal::Opcode(OP::DUP));
+                out.emplace_back(internal::Opcode(OP::HASH160));
+                out.emplace_back(internal::PushData(PubkeyHash().value()));
+                out.emplace_back(internal::Opcode(OP::EQUALVERIFY));
+                out.emplace_back(internal::Opcode(OP::CHECKSIG));
 
-    return clone();
+                return out;
+            }();
+
+            return std::make_unique<Script>(
+                chain_, Position::Output, std::move(elements));
+        }
+        default: {
+            // TODO handle OP_CODESEPERATOR shit
+
+            return clone();
+        }
+    }
 }
 
 auto Script::to_number(const OP opcode) noexcept -> std::uint8_t

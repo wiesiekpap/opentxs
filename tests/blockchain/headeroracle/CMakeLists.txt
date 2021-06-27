@@ -61,8 +61,7 @@ if(NOT ANDROID)
   if(WIN32)
     set_target_properties(
       unittests-opentxs-blockchain-headeroracle-random
-      PROPERTIES
-      LINK_OPTIONS /STACK:2097152
+      PROPERTIES LINK_OPTIONS /STACK:2097152
     )
   endif()
 endif()

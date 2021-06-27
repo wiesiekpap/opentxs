@@ -62,6 +62,7 @@ auto BitcoinTransaction(
     const Time& time,
     const boost::endian::little_int32_buf_t& version,
     const boost::endian::little_uint32_buf_t lockTime,
+    bool segwit,
     std::unique_ptr<blockchain::block::bitcoin::internal::Inputs> inputs,
     std::unique_ptr<blockchain::block::bitcoin::internal::Outputs>
         outputs) noexcept
@@ -74,7 +75,7 @@ auto BitcoinTransaction(
 
     auto raw = Encoded{};
     raw.version_ = version;
-    raw.segwit_flag_ = std::nullopt;  // TODO segwit
+    raw.segwit_flag_ = segwit ? std::byte{0x01} : std::byte{0x00};
     raw.input_count_ = inputs->size();
 
     for (const auto& input : *inputs) {
@@ -118,7 +119,7 @@ auto BitcoinTransaction(
             ReturnType::default_version_,
             false,
             raw.version_.value(),
-            raw.segwit_flag_.value_or(std::byte{0x0}),
+            raw.segwit_flag_.value(),
             raw.lock_time_.value(),
             api.Factory().Data(reader(raw.txid_)),
             api.Factory().Data(reader(raw.wtxid_)),

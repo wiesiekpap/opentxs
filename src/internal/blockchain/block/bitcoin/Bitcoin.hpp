@@ -310,6 +310,7 @@ auto BitcoinTransaction(
     const Time& time,
     const boost::endian::little_int32_buf_t& version,
     const boost::endian::little_uint32_buf_t lockTime,
+    bool segwit,
     std::unique_ptr<blockchain::block::bitcoin::internal::Inputs> inputs,
     std::unique_ptr<blockchain::block::bitcoin::internal::Outputs>
         outputs) noexcept

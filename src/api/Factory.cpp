@@ -514,6 +514,65 @@ auto Factory::BitcoinScriptP2SH(
     return factory::BitcoinScript(chain, std::move(elements), Position::Output);
 }
 
+auto Factory::BitcoinScriptP2WPKH(
+    const opentxs::blockchain::Type chain,
+    const opentxs::crypto::key::EllipticCurve& key) const noexcept
+    -> std::unique_ptr<const opentxs::blockchain::block::bitcoin::Script>
+{
+    namespace b = opentxs::blockchain;
+    namespace bb = opentxs::blockchain::block::bitcoin;
+
+    auto hash = Space{};
+
+    if (false == b::PubkeyHash(api_, chain, key.PublicKey(), writer(hash))) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to calculate pubkey hash")
+            .Flush();
+
+        return {};
+    }
+
+    auto elements = bb::ScriptElements{};
+    elements.emplace_back(bb::internal::Opcode(bb::OP::ZERO));
+    elements.emplace_back(bb::internal::PushData(reader(hash)));
+    using Position = opentxs::blockchain::block::bitcoin::Script::Position;
+
+    return factory::BitcoinScript(chain, std::move(elements), Position::Output);
+}
+
+auto Factory::BitcoinScriptP2WSH(
+    const opentxs::blockchain::Type chain,
+    const opentxs::blockchain::block::bitcoin::Script& script) const noexcept
+    -> std::unique_ptr<const opentxs::blockchain::block::bitcoin::Script>
+{
+    namespace b = opentxs::blockchain;
+    namespace bb = opentxs::blockchain::block::bitcoin;
+
+    auto bytes = Space{};
+    auto hash = Space{};
+
+    if (false == script.Serialize(writer(bytes))) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize script")
+            .Flush();
+
+        return {};
+    }
+
+    if (false ==
+        b::ScriptHashSegwit(api_, chain, reader(bytes), writer(hash))) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to calculate script hash")
+            .Flush();
+
+        return {};
+    }
+
+    auto elements = bb::ScriptElements{};
+    elements.emplace_back(bb::internal::Opcode(bb::OP::ZERO));
+    elements.emplace_back(bb::internal::PushData(reader(hash)));
+    using Position = opentxs::blockchain::block::bitcoin::Script::Position;
+
+    return factory::BitcoinScript(chain, std::move(elements), Position::Output);
+}
+
 auto Factory::BlockchainAddress(
     const opentxs::blockchain::p2p::Protocol protocol,
     const opentxs::blockchain::p2p::Network network,

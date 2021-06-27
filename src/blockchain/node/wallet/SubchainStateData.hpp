@@ -18,11 +18,13 @@
 
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/node/Node.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
+#include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/node/FilterOracle.hpp"
@@ -68,6 +70,11 @@ namespace internal
 {
 struct WalletDatabase;
 }  // namespace internal
+
+namespace wallet
+{
+class ScriptForm;
+}  // namespace wallet
 }  // namespace node
 }  // namespace blockchain
 
@@ -155,6 +162,8 @@ protected:
         -> std::tuple<Patterns, UTXOs, Targets, Patterns>;
     virtual auto type() const noexcept -> std::stringstream = 0;
     auto set_key_data(block::bitcoin::Transaction& tx) const noexcept -> void;
+    auto supported_scripts(const crypto::Element& element) const noexcept
+        -> std::vector<ScriptForm>;
 
     auto index_element(
         const filter::Type type,
