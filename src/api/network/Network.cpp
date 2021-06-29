@@ -73,5 +73,11 @@ auto Network::ZeroMQ() const noexcept
     return imp_->zmq_;
 }
 
-Network::~Network() { std::unique_ptr<Imp>(imp_).release(); }
+Network::~Network()
+{
+    if (nullptr != imp_) {
+        delete imp_;
+        imp_ = nullptr;
+    }
+}
 }  // namespace opentxs::api::network

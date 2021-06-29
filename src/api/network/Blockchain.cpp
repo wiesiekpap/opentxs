@@ -99,5 +99,11 @@ auto Blockchain::Stop(const Chain type) const noexcept -> bool
     return imp_->Stop(type);
 }
 
-Blockchain::~Blockchain() { std::unique_ptr<Imp>(imp_).release(); }
+Blockchain::~Blockchain()
+{
+    if (nullptr != imp_) {
+        delete imp_;
+        imp_ = nullptr;
+    }
+}
 }  // namespace opentxs::api::network
