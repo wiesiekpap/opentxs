@@ -533,13 +533,6 @@ auto EncodedTransaction::wtxid_preimage() const noexcept -> Space
     }
 
     if (segwit_flag_.has_value()) {
-        {
-            const auto cs = CompactSize{witnesses_.size()};
-            const auto bytes = cs.Encode();
-            std::memcpy(it, bytes.data(), bytes.size());
-            std::advance(it, bytes.size());
-        }
-
         for (const auto& input : witnesses_) {
             {
                 const auto bytes = input.cs_.Encode();
