@@ -103,6 +103,14 @@ BlockchainImp::BlockchainImp(
 
         return out;
     }())
+    , mempool_([&] {
+        auto out = zmq.PublishSocket();
+        const auto listen = out->Start(endpoints.BlockchainMempool());
+
+        OT_ASSERT(listen);
+
+        return out;
+    }())
     , base_config_(nullptr)
     , lock_()
     , config_()

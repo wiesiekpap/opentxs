@@ -11,6 +11,7 @@
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -38,10 +39,11 @@ class Header;
 
 namespace opentxs::blockchain::p2p::bitcoin::message
 {
-class Tx final : virtual public implementation::Message
+class Tx final : public internal::Tx, public implementation::Message
 {
 public:
-    auto getRawTx() const noexcept -> OTData { return Data::Factory(raw_tx_); }
+    auto Transaction() const noexcept
+        -> std::unique_ptr<const block::bitcoin::Transaction> final;
 
     Tx(const api::Core& api,
        const blockchain::Type network,
@@ -53,9 +55,9 @@ public:
     ~Tx() final = default;
 
 private:
-    const OTData raw_tx_;
+    const OTData payload_;
 
-    auto payload() const noexcept -> OTData final;
+    auto payload() const noexcept -> OTData final { return payload_; }
 
     Tx(const Tx&) = delete;
     Tx(Tx&&) = delete;

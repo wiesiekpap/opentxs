@@ -49,6 +49,7 @@ PeerManager::Peers::Peers(
     const api::Core& api,
     const api::network::internal::Blockchain& network,
     const internal::Config& config,
+    const node::internal::Mempool& mempool,
     const internal::Network& node,
     const internal::HeaderOracle& headers,
     const internal::FilterOracle& filter,
@@ -64,6 +65,7 @@ PeerManager::Peers::Peers(
     : chain_(chain)
     , api_(api)
     , config_(config)
+    , mempool_(mempool)
     , node_(node)
     , headers_(headers)
     , filter_(filter)
@@ -485,6 +487,7 @@ auto PeerManager::Peers::peer_factory(Endpoint endpoint, const int id) noexcept
             return factory::BitcoinP2PPeerLegacy(
                 api_,
                 config_,
+                mempool_,
                 node_,
                 headers_,
                 filter_,

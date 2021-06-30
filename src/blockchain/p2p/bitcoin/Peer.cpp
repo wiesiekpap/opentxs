@@ -17,6 +17,7 @@
 
 #include "blockchain/DownloadTask.hpp"
 #include "blockchain/bitcoin/Inventory.hpp"
+#include "blockchain/node/Mempool.hpp"
 #include "blockchain/p2p/Peer.hpp"
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/message/Cmpctblock.hpp"
@@ -26,8 +27,8 @@
 #include "blockchain/p2p/bitcoin/message/Merkleblock.hpp"
 #include "blockchain/p2p/bitcoin/message/Reject.hpp"
 #include "blockchain/p2p/bitcoin/message/Sendcmpct.hpp"
-#include "blockchain/p2p/bitcoin/message/Tx.hpp"
 #include "internal/blockchain/Blockchain.hpp"
+#include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
@@ -45,6 +46,7 @@
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
+#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
@@ -67,6 +69,7 @@ namespace opentxs::factory
 auto BitcoinP2PPeerLegacy(
     const api::Core& api,
     const blockchain::node::internal::Config& config,
+    const blockchain::node::internal::Mempool& mempool,
     const blockchain::node::internal::Network& network,
     const blockchain::node::internal::HeaderOracle& header,
     const blockchain::node::internal::FilterOracle& filter,
@@ -106,6 +109,7 @@ auto BitcoinP2PPeerLegacy(
     return std::make_unique<ReturnType>(
         api,
         config,
+        mempool,
         network,
         header,
         filter,
@@ -160,6 +164,7 @@ const std::string Peer::user_agent_{"/opentxs:" OPENTXS_VERSION_STRING "/"};
 Peer::Peer(
     const api::Core& api,
     const node::internal::Config& config,
+    const node::internal::Mempool& mempool,
     const node::internal::Network& network,
     const node::internal::HeaderOracle& header,
     const node::internal::FilterOracle& filter,
@@ -175,6 +180,7 @@ Peer::Peer(
     : p2p::implementation::Peer(
           api,
           config,
+          mempool,
           network,
           filter,
           block,
@@ -229,6 +235,42 @@ auto Peer::broadcast_block(zmq::Message& in) noexcept -> void
 
     const auto& msg = *pMsg;
     send(msg.Encode());
+}
+
+auto Peer::broadcast_inv(
+    std::vector<blockchain::bitcoin::Inventory>&& inv) noexcept -> void
+{
+    auto pMsg = std::unique_ptr<Message>{
+        factory::BitcoinP2PInv(api_, chain_, std::move(inv))};
+
+    if (false == bool(pMsg)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct inv").Flush();
+
+        return;
+    }
+
+    const auto& msg = *pMsg;
+    send(msg.Encode());
+}
+
+auto Peer::broadcast_inv_transaction(ReadView txid) noexcept -> void
+{
+    using Inventory = blockchain::bitcoin::Inventory;
+    using Type = Inventory::Type;
+    const auto type = [&] {
+        const auto& segwit = params::Data::Chains().at(chain_).segwit_;
+
+        if (segwit) {
+
+            return Type::MsgWitnessTx;
+        } else {
+
+            return Type::MsgTx;
+        }
+    }();
+    auto inv = std::vector<Inventory>{};
+    inv.emplace_back(type, api_.Factory().Data(txid));
+    broadcast_inv(std::move(inv));
 }
 
 auto Peer::broadcast_transaction(zmq::Message& in) noexcept -> void
@@ -1037,7 +1079,26 @@ auto Peer::process_getdata(
     for (const auto& inv : message) {
         switch (inv.type_) {
             case Type::MsgTx: {
-                // TODO
+                auto tx = mempool_.Query(inv.hash_->Bytes());
+
+                if (tx) {
+                    known_transactions_.emplace(inv.hash_->Bytes());
+                    const auto bytes = [&] {
+                        auto out = Space{};
+                        tx->Serialize(writer(out));
+
+                        return out;
+                    }();
+                    const auto pMsg = std::unique_ptr<Message>{
+                        factory::BitcoinP2PTx(api_, chain_, reader(bytes))};
+
+                    OT_ASSERT(pMsg);
+
+                    const auto& msg = *pMsg;
+                    send(msg.Encode());
+                } else {
+                    notFound.emplace_back(inv);
+                }
             } break;
             case Type::MsgBlock: {
                 const auto& oracle = network_.BlockOracle();
@@ -1075,7 +1136,7 @@ auto Peer::process_getdata(
             case Type::MsgWitnessBlock:
             case Type::MsgFilteredWitnessBlock:
             default: {
-                // Unsupported
+                notFound.emplace_back(inv);
             }
         }
     }
@@ -1224,6 +1285,9 @@ auto Peer::process_inv(
     std::unique_ptr<HeaderType> header,
     const zmq::Frame& payload) -> void
 {
+    if (false == running_.get()) { return; }
+    if (State::Run != state_.value_.load()) { return; }
+
     const std::unique_ptr<message::internal::Inv> pMessage{
         factory::BitcoinP2PInv(
             api_,
@@ -1240,25 +1304,56 @@ auto Peer::process_inv(
     }
 
     const auto& message = *pMessage;
+    using Inventory = blockchain::bitcoin::Inventory;
+    using Type = Inventory::Type;
+    auto txReceived = std::vector<Inventory>{};
+    auto txToDownload = std::vector<Inventory>{};
 
     for (const auto& inv : message) {
-        if (false == running_.get()) { return; }
-
+        const auto& hash = inv.hash_.get();
         LogVerbose("Received ")(DisplayString(chain_))(" ")(inv.DisplayType())(
-            " (")(inv.hash_->asHex())(")")
+            " hash ")(hash.asHex())
             .Flush();
-        using Inventory = blockchain::bitcoin::Inventory;
 
         switch (inv.type_) {
-            case Inventory::Type::MsgBlock:
-            case Inventory::Type::MsgWitnessBlock: {
-                if (State::Run == state_.value_.load()) {
-                    request_headers(inv.hash_);
-                }
+            case Type::MsgBlock:
+            case Type::MsgWitnessBlock: {
+                request_headers(hash);
+            } break;
+            case Type::MsgTx:
+            case Type::MsgWitnessTx: {
+                known_transactions_.emplace(hash.Bytes());
+                txReceived.emplace_back(inv);
             } break;
             default: {
             }
         }
+    }
+
+    if (0 < txReceived.size()) {
+        const auto hashes = [&] {
+            auto out = std::vector<ReadView>{};
+            std::transform(
+                txReceived.begin(),
+                txReceived.end(),
+                std::back_inserter(out),
+                [&](const auto& in) { return in.hash_->Bytes(); });
+
+            return out;
+        }();
+        const auto result = mempool_.Submit(hashes);
+
+        OT_ASSERT(txReceived.size() == result.size());
+
+        for (auto i{0u}; i < result.size(); ++i) {
+            const auto& download = result.at(i);
+
+            if (download) { txToDownload.emplace_back(txReceived.at(i)); }
+        }
+    }
+
+    if (0 < txToDownload.size()) {
+        request_transactions(std::move(txToDownload));
     }
 }
 
@@ -1276,7 +1371,7 @@ auto Peer::process_mempool(
         return;
     }
 
-    // TODO
+    reconcile_mempool();
 }
 
 auto Peer::process_merkleblock(
@@ -1502,12 +1597,12 @@ auto Peer::process_tx(
     std::unique_ptr<HeaderType> header,
     const zmq::Frame& payload) -> void
 {
-    const std::unique_ptr<message::Tx> pMessage{factory::BitcoinP2PTx(
+    const auto pMessage = factory::BitcoinP2PTx(
         api_,
         std::move(header),
         protocol_.load(),
         payload.data(),
-        payload.size())};
+        payload.size());
 
     if (false == bool(pMessage)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
@@ -1516,7 +1611,12 @@ auto Peer::process_tx(
         return;
     }
 
-    // TODO
+    const auto& message = *pMessage;
+
+    if (auto tx = message.Transaction(); tx) {
+        known_transactions_.emplace(tx->ID().Bytes());
+        mempool_.Submit(message.Transaction());
+    }
 }
 
 auto Peer::process_verack(
@@ -1577,6 +1677,52 @@ auto Peer::process_version(
     if (address_.Incoming()) { start_handshake(); }
 
     check_handshake();
+}
+
+auto Peer::reconcile_mempool() noexcept -> void
+{
+    const auto local = mempool_.Dump();
+    const auto remote = [&] {
+        auto out = std::set<std::string>{};
+        std::copy(
+            known_transactions_.begin(),
+            known_transactions_.end(),
+            std::inserter(out, out.end()));
+
+        return out;
+    }();
+    const auto missing = [&] {
+        auto out = std::vector<std::string>{};
+        out.reserve(local.size());
+        std::set_difference(
+            local.begin(),
+            local.end(),
+            remote.begin(),
+            remote.end(),
+            std::back_inserter(out));
+
+        return out;
+    }();
+    using Inventory = blockchain::bitcoin::Inventory;
+    using Type = Inventory::Type;
+    const auto type = [&] {
+        const auto& segwit = params::Data::Chains().at(chain_).segwit_;
+
+        if (segwit) {
+
+            return Type::MsgWitnessTx;
+        } else {
+
+            return Type::MsgTx;
+        }
+    }();
+    auto inv = std::vector<Inventory>{};
+
+    for (const auto& hash : missing) {
+        inv.emplace_back(type, api_.Factory().Data(hash));
+    }
+
+    broadcast_inv(std::move(inv));
 }
 
 auto Peer::request_addresses() noexcept -> void
@@ -1832,6 +1978,39 @@ auto Peer::request_headers(const block::Hash& hash) noexcept -> void
     const auto& message = *pMessage;
     send(message.Encode());
     get_headers_.Start();
+}
+
+auto Peer::request_mempool() noexcept -> void
+{
+    auto pMessage =
+        std::unique_ptr<Message>{factory::BitcoinP2PMempool(api_, chain_)};
+
+    if (false == bool(pMessage)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct mempool")
+            .Flush();
+
+        return;
+    }
+
+    const auto& message = *pMessage;
+    send(message.Encode());
+}
+
+auto Peer::request_transactions(
+    std::vector<blockchain::bitcoin::Inventory>&& inv) noexcept -> void
+{
+    auto pMessage = std::unique_ptr<Message>{
+        factory::BitcoinP2PGetdata(api_, chain_, std::move(inv))};
+
+    if (false == bool(pMessage)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct getdata")
+            .Flush();
+
+        return;
+    }
+
+    const auto& message = *pMessage;
+    send(message.Encode());
 }
 
 auto Peer::start_handshake() noexcept -> void

@@ -129,6 +129,10 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
     {
         return {};
     }
+    auto Mempool() const noexcept -> const zmq::socket::Publish& override
+    {
+        OT_FAIL;
+    }
     auto PeerUpdate() const noexcept -> const zmq::socket::Publish& override
     {
         OT_FAIL;

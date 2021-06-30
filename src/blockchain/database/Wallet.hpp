@@ -123,6 +123,11 @@ public:
         const std::size_t blockIndex,
         const std::vector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction) const noexcept -> bool;
+    auto AddMempoolTransaction(
+        const NodeID& balanceNode,
+        const Subchain subchain,
+        const std::vector<std::uint32_t> outputIndices,
+        const block::bitcoin::Transaction& transaction) const noexcept -> bool;
     auto AddOutgoingTransaction(
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,

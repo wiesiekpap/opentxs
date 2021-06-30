@@ -16,6 +16,7 @@
 #include <utility>
 #include <vector>
 
+#include "blockchain/node/Mempool.hpp"
 #include "core/Shutdown.hpp"
 #include "core/Worker.hpp"
 #include "internal/api/Api.hpp"
@@ -241,6 +242,7 @@ private:
     opentxs::internal::ShutdownSender shutdown_sender_;
     std::unique_ptr<blockchain::internal::Database> database_p_;
     const node::internal::Config& config_;
+    node::Mempool mempool_;
     std::unique_ptr<node::internal::HeaderOracle> header_p_;
     std::unique_ptr<node::internal::BlockOracle> block_p_;
     std::unique_ptr<node::internal::FilterOracle> filter_p_;

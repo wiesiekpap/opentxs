@@ -89,6 +89,11 @@ namespace block
 {
 namespace bitcoin
 {
+namespace internal
+{
+struct Transaction;
+}  // namespace internal
+
 class Block;
 class Header;
 class Transaction;
@@ -386,6 +391,21 @@ struct HeaderDatabase {
     virtual ~HeaderDatabase() = default;
 };
 
+struct Mempool {
+    virtual auto Dump() const noexcept -> std::set<std::string> = 0;
+    virtual auto Query(ReadView txid) const noexcept
+        -> std::shared_ptr<const block::bitcoin::Transaction> = 0;
+    virtual auto Submit(ReadView txid) const noexcept -> bool = 0;
+    virtual auto Submit(const std::vector<ReadView>& txids) const noexcept
+        -> std::vector<bool> = 0;
+    virtual auto Submit(std::unique_ptr<const block::bitcoin::Transaction> tx)
+        const noexcept -> void = 0;
+
+    virtual auto Heartbeat() noexcept -> void = 0;
+
+    virtual ~Mempool() = default;
+};
+
 struct PeerDatabase {
     using Address = std::unique_ptr<p2p::internal::Address>;
     using Protocol = p2p::Protocol;
@@ -405,6 +425,7 @@ struct PeerDatabase {
 struct PeerManager {
     enum class Task : OTZMQWorkType {
         Shutdown = value(WorkType::Shutdown),
+        Mempool = value(WorkType::BlockchainMempoolUpdated),
         Register = value(WorkType::AsioRegister),
         Connect = value(WorkType::AsioConnect),
         Disconnect = value(WorkType::AsioDisconnect),
@@ -576,6 +597,12 @@ struct WalletDatabase {
         const Subchain subchain,
         const block::Position& block,
         const std::size_t blockIndex,
+        const std::vector<std::uint32_t> outputIndices,
+        const block::bitcoin::Transaction& transaction) const noexcept
+        -> bool = 0;
+    virtual auto AddMempoolTransaction(
+        const NodeID& balanceNode,
+        const Subchain subchain,
         const std::vector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction) const noexcept
         -> bool = 0;

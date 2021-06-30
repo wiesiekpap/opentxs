@@ -79,6 +79,17 @@ public:
     OPENTXS_EXPORT virtual std::string BlockchainBlockDownloadQueue()
         const noexcept = 0;
 
+    /** Blockchain mempool updates
+     *
+     *  A subscribe socket can connect to this endpoint to receive
+     *  BlockchainMempoolUpdated tagged messages
+     *
+     *  See opentxs/util/WorkTypes.hpp for message format documentation
+     *
+     *  This endpoint is active for client sessions only.
+     */
+    OPENTXS_EXPORT virtual std::string BlockchainMempool() const noexcept = 0;
+
     /** Blockchain filter oracle notifications
      *
      *  A subscribe socket can connect to this endpoint to receive

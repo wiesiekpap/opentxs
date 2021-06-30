@@ -72,6 +72,14 @@ struct Blockchain;
 class Core;
 }  // namespace api
 
+namespace blockchain
+{
+namespace node
+{
+struct Mempool;
+}  // namespace node
+}  // namespace blockchain
+
 namespace identifier
 {
 class Nym;
@@ -126,6 +134,7 @@ public:
         const api::client::internal::Blockchain& crypto,
         const node::internal::Network& parent,
         const node::internal::WalletDatabase& db,
+        const node::internal::Mempool& mempool,
         const Type chain,
         const std::string& shutdown) noexcept;
 
@@ -135,19 +144,21 @@ private:
     friend Worker<Wallet, api::Core>;
 
     enum class Work : OTZMQWorkType {
-        key = OT_ZMQ_NEW_BLOCKCHAIN_WALLET_KEY_SIGNAL,
-        block = value(WorkType::BlockchainNewHeader),
-        filter = OT_ZMQ_NEW_FILTER_SIGNAL,
-        nym = value(WorkType::NymCreated),
-        reorg = value(WorkType::BlockchainReorg),
-        statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
         shutdown = value(WorkType::Shutdown),
+        nym = value(WorkType::NymCreated),
+        block = value(WorkType::BlockchainNewHeader),
+        reorg = value(WorkType::BlockchainReorg),
+        mempool = value(WorkType::BlockchainMempoolUpdated),
+        key = OT_ZMQ_NEW_BLOCKCHAIN_WALLET_KEY_SIGNAL,
+        filter = OT_ZMQ_NEW_FILTER_SIGNAL,
+        statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
     using DBUTXOs = std::vector<node::internal::WalletDatabase::UTXO>;
 
     const node::internal::Network& parent_;
     const node::internal::WalletDatabase& db_;
+    const node::internal::Mempool& mempool_;
     const api::client::internal::Blockchain& crypto_;
     const Type chain_;
     const SimpleCallback task_finished_;
@@ -158,6 +169,7 @@ private:
 
     auto convert(const DBUTXOs& in) const noexcept -> std::vector<UTXO>;
     auto pipeline(const zmq::Message& in) noexcept -> void;
+    auto process_mempool(const zmq::Message& in) noexcept -> void;
     auto process_reorg(const zmq::Message& in) noexcept -> void;
     auto shutdown(std::promise<void>& promise) noexcept -> void;
     auto state_machine() noexcept -> bool;

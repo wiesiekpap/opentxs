@@ -33,6 +33,19 @@ namespace opentxs::blockchain::node::wallet
 using Subchain = node::internal::WalletDatabase::Subchain;
 
 struct Account::Imp {
+    auto mempool(std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept
+        -> void
+    {
+        for (const auto& account : ref_.GetHD()) {
+            get(account, Subchain::Internal, internal_).mempool_.Queue(tx);
+            get(account, Subchain::External, external_).mempool_.Queue(tx);
+        }
+
+        for (const auto& account : ref_.GetPaymentCode()) {
+            get(account, Subchain::Outgoing, outgoing_).mempool_.Queue(tx);
+            get(account, Subchain::Incoming, incoming_).mempool_.Queue(tx);
+        }
+    }
     auto reorg(const block::Position& parent) noexcept -> bool
     {
         auto ticket = gatekeeper_.get();
@@ -221,6 +234,12 @@ Account::Account(Account&& rhs) noexcept
     : imp_(std::move(rhs.imp_))
 {
     OT_ASSERT(imp_);
+}
+
+auto Account::mempool(
+    std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept -> void
+{
+    imp_->mempool(tx);
 }
 
 auto Account::reorg(const block::Position& parent) noexcept -> bool

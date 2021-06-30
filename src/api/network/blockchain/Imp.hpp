@@ -117,6 +117,10 @@ struct BlockchainImp final : public Blockchain::Imp {
     auto GetChain(const Imp::Chain type) const noexcept(false)
         -> const opentxs::blockchain::node::Manager& final;
     auto GetSyncServers() const noexcept -> Imp::Endpoints final;
+    auto Mempool() const noexcept -> const zmq::socket::Publish& final
+    {
+        return mempool_;
+    }
     auto PeerUpdate() const noexcept -> const zmq::socket::Publish& final
     {
         return connected_peer_updates_;
@@ -173,6 +177,7 @@ private:
     OTZMQPublishSocket new_filters_;
     OTZMQPublishSocket reorg_;
     OTZMQPublishSocket sync_updates_;
+    OTZMQPublishSocket mempool_;
     const std::unique_ptr<Config> base_config_;
     mutable std::mutex lock_;
     mutable std::map<Chain, Config> config_;

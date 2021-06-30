@@ -145,6 +145,16 @@ public:
             outputIndices,
             transaction);
     }
+    auto AddMempoolTransaction(
+        const NodeID& balanceNode,
+        const Subchain subchain,
+        const std::vector<std::uint32_t> outputIndices,
+        const block::bitcoin::Transaction& transaction) const noexcept
+        -> bool final
+    {
+        return wallet_.AddMempoolTransaction(
+            balanceNode, subchain, outputIndices, transaction);
+    }
     auto AddOutgoingTransaction(
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,

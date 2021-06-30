@@ -105,6 +105,9 @@ public:
     ~DeterministicStateData() final = default;
 
 private:
+    using MatchedTransaction =
+        std::pair<std::vector<Bip32Index>, const block::bitcoin::Transaction*>;
+
     auto type() const noexcept -> std::stringstream final;
 
     auto check_index() noexcept -> bool final;
@@ -112,6 +115,15 @@ private:
         const block::bitcoin::Block& block,
         const block::Position& position,
         const block::Block::Matches& confirmed) noexcept -> void final;
+    auto handle_mempool_matches(
+        const block::Block::Matches& matches,
+        std::unique_ptr<const block::bitcoin::Transaction> tx) noexcept
+        -> void final;
+    using SubchainStateData::process;
+    auto process(
+        const block::Block::Match match,
+        const block::bitcoin::Transaction& tx,
+        MatchedTransaction& output) noexcept -> void;
 
     DeterministicStateData() = delete;
     DeterministicStateData(const DeterministicStateData&) = delete;

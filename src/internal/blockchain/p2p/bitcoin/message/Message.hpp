@@ -55,6 +55,7 @@ namespace block
 namespace bitcoin
 {
 class Header;
+class Transaction;
 }  // namespace bitcoin
 }  // namespace block
 
@@ -177,12 +178,18 @@ struct Addr : virtual public bitcoin::Message {
     virtual auto begin() const noexcept -> const_iterator = 0;
     virtual auto end() const noexcept -> const_iterator = 0;
     virtual auto size() const noexcept -> std::size_t = 0;
+
+    ~Addr() override = default;
 };
 struct Block : virtual public bitcoin::Message {
     virtual auto GetBlock() const noexcept -> OTData = 0;
+
+    ~Block() override = default;
 };
 struct Blocktxn : virtual public bitcoin::Message {
     virtual auto BlockTransactions() const noexcept -> OTData = 0;
+
+    ~Blocktxn() override = default;
 };
 struct Cfcheckpt : virtual public bitcoin::Message {
     using value_type = filter::Hash;
@@ -196,6 +203,8 @@ struct Cfcheckpt : virtual public bitcoin::Message {
     virtual auto size() const noexcept -> std::size_t = 0;
     virtual auto Stop() const noexcept -> const value_type& = 0;
     virtual auto Type() const noexcept -> filter::Type = 0;
+
+    ~Cfcheckpt() override = default;
 };
 struct Cfheaders : virtual public bitcoin::Message {
     using value_type = filter::Hash;
@@ -210,6 +219,8 @@ struct Cfheaders : virtual public bitcoin::Message {
     virtual auto size() const noexcept -> std::size_t = 0;
     virtual auto Stop() const noexcept -> const block::Hash& = 0;
     virtual auto Type() const noexcept -> filter::Type = 0;
+
+    ~Cfheaders() override = default;
 };
 struct Cfilter : virtual public bitcoin::Message {
     virtual auto Bits() const noexcept -> std::uint8_t = 0;
@@ -218,30 +229,46 @@ struct Cfilter : virtual public bitcoin::Message {
     virtual auto Filter() const noexcept -> ReadView = 0;
     virtual auto Hash() const noexcept -> const block::Hash& = 0;
     virtual auto Type() const noexcept -> filter::Type = 0;
+
+    ~Cfilter() override = default;
 };
 struct Filteradd : virtual public bitcoin::Message {
     virtual auto Element() const noexcept -> OTData = 0;
+
+    ~Filteradd() override = default;
 };
 struct Filterclear : virtual public bitcoin::Message {
+
+    ~Filterclear() override = default;
 };
 struct Filterload : virtual public bitcoin::Message {
     virtual auto Filter() const noexcept -> OTBloomFilter = 0;
+
+    ~Filterload() override = default;
 };
 struct Getaddr : virtual public bitcoin::Message {
+
+    ~Getaddr() override = default;
 };
 struct Getcfcheckpt : virtual public bitcoin::Message {
     virtual auto Stop() const noexcept -> const filter::Hash& = 0;
     virtual auto Type() const noexcept -> filter::Type = 0;
+
+    ~Getcfcheckpt() override = default;
 };
 struct Getcfheaders : virtual public bitcoin::Message {
     virtual auto Start() const noexcept -> block::Height = 0;
     virtual auto Stop() const noexcept -> const filter::Hash& = 0;
     virtual auto Type() const noexcept -> filter::Type = 0;
+
+    ~Getcfheaders() override = default;
 };
 struct Getcfilters : virtual public bitcoin::Message {
     virtual auto Start() const noexcept -> block::Height = 0;
     virtual auto Stop() const noexcept -> const block::Hash& = 0;
     virtual auto Type() const noexcept -> filter::Type = 0;
+
+    ~Getcfilters() override = default;
 };
 struct Getdata : virtual public bitcoin::Message {
     using value_type = blockchain::bitcoin::Inventory;
@@ -253,6 +280,8 @@ struct Getdata : virtual public bitcoin::Message {
     virtual auto begin() const noexcept -> const_iterator = 0;
     virtual auto end() const noexcept -> const_iterator = 0;
     virtual auto size() const noexcept -> std::size_t = 0;
+
+    ~Getdata() override = default;
 };
 struct Getheaders : virtual public bitcoin::Message {
     using value_type = block::Hash;
@@ -266,6 +295,8 @@ struct Getheaders : virtual public bitcoin::Message {
     virtual auto size() const noexcept -> std::size_t = 0;
     virtual auto StopHash() const noexcept -> block::pHash = 0;
     virtual auto Version() const noexcept -> ProtocolVersionUnsigned = 0;
+
+    ~Getheaders() override = default;
 };
 struct Headers : virtual public bitcoin::Message {
     using value_type = block::bitcoin::Header;
@@ -277,6 +308,8 @@ struct Headers : virtual public bitcoin::Message {
     virtual auto begin() const noexcept -> const_iterator = 0;
     virtual auto end() const noexcept -> const_iterator = 0;
     virtual auto size() const noexcept -> std::size_t = 0;
+
+    ~Headers() override = default;
 };
 struct Inv : virtual public bitcoin::Message {
     using value_type = blockchain::bitcoin::Inventory;
@@ -287,8 +320,12 @@ struct Inv : virtual public bitcoin::Message {
     virtual auto begin() const noexcept -> const_iterator = 0;
     virtual auto end() const noexcept -> const_iterator = 0;
     virtual auto size() const noexcept -> std::size_t = 0;
+
+    ~Inv() override = default;
 };
 struct Mempool : virtual public bitcoin::Message {
+
+    ~Mempool() override = default;
 };
 struct Notfound : virtual public bitcoin::Message {
     using value_type = blockchain::bitcoin::Inventory;
@@ -300,16 +337,32 @@ struct Notfound : virtual public bitcoin::Message {
     virtual auto begin() const noexcept -> const_iterator = 0;
     virtual auto end() const noexcept -> const_iterator = 0;
     virtual auto size() const noexcept -> std::size_t = 0;
+
+    ~Notfound() override = default;
 };
 struct Ping : virtual public bitcoin::Message {
     virtual auto Nonce() const noexcept -> bitcoin::Nonce = 0;
+
+    ~Ping() override = default;
 };
 struct Pong : virtual public bitcoin::Message {
     virtual auto Nonce() const noexcept -> bitcoin::Nonce = 0;
+
+    ~Pong() override = default;
 };
 struct Sendheaders : virtual public bitcoin::Message {
+
+    ~Sendheaders() override = default;
+};
+struct Tx : virtual public bitcoin::Message {
+    virtual auto Transaction() const noexcept
+        -> std::unique_ptr<const block::bitcoin::Transaction> = 0;
+
+    ~Tx() override = default;
 };
 struct Verack : virtual public bitcoin::Message {
+
+    ~Verack() override = default;
 };
 struct Version : virtual public bitcoin::Message {
     virtual auto Height() const noexcept -> block::Height = 0;
@@ -324,6 +377,8 @@ struct Version : virtual public bitcoin::Message {
     virtual auto RemoteServices() const noexcept
         -> std::set<blockchain::p2p::Service> = 0;
     virtual auto UserAgent() const noexcept -> const std::string& = 0;
+
+    ~Version() override = default;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::internal
 
@@ -675,11 +730,13 @@ auto BitcoinP2PTx(
     std::unique_ptr<blockchain::p2p::bitcoin::Header> header,
     const blockchain::p2p::bitcoin::ProtocolVersion version,
     const void* payload,
-    const std::size_t size) -> blockchain::p2p::bitcoin::message::Tx*;
+    const std::size_t size) noexcept
+    -> std::unique_ptr<blockchain::p2p::bitcoin::message::internal::Tx>;
 auto BitcoinP2PTx(
     const api::Core& api,
     const blockchain::Type network,
-    const ReadView transaction) -> blockchain::p2p::bitcoin::message::Tx*;
+    const ReadView transaction) noexcept
+    -> std::unique_ptr<blockchain::p2p::bitcoin::message::internal::Tx>;
 auto BitcoinP2PVerack(
     const api::Core& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> header)

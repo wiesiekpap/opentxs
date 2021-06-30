@@ -28,6 +28,7 @@
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -131,6 +132,16 @@ private:
         const block::bitcoin::Block& block,
         const block::Position& position,
         const block::Block::Matches& confirmed) noexcept -> void final;
+    auto handle_mempool_matches(
+        const block::Block::Matches& matches,
+        std::unique_ptr<const block::bitcoin::Transaction> tx) noexcept
+        -> void final;
+    auto init_keys() noexcept -> OTPasswordPrompt;
+    using SubchainStateData::process;
+    auto process(
+        const block::Block::Match match,
+        const block::bitcoin::Transaction& tx,
+        const PasswordPrompt& reason) noexcept -> void;
 
     NotificationStateData() = delete;
     NotificationStateData(const NotificationStateData&) = delete;

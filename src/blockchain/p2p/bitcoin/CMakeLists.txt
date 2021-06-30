@@ -20,5 +20,9 @@ add_library(
 target_link_libraries(
   opentxs-blockchain-p2p-bitcoin PRIVATE Boost::headers opentxs::messages
 )
+target_include_directories(
+  opentxs-blockchain-p2p-bitcoin SYSTEM
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+)
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-blockchain-p2p-bitcoin>)
 add_dependencies(opentxs-blockchain-p2p-bitcoin generated_code)

@@ -51,6 +51,18 @@ auto Wallet::AddConfirmedTransaction(
         balanceNode, id, block, blockIndex, outputIndices, original);
 }
 
+auto Wallet::AddMempoolTransaction(
+    const NodeID& balanceNode,
+    const Subchain subchain,
+    const std::vector<std::uint32_t> outputIndices,
+    const block::bitcoin::Transaction& original) const noexcept -> bool
+{
+    const auto id = subchains_.GetSubchainID(balanceNode, subchain);
+
+    return outputs_.AddMempoolTransaction(
+        balanceNode, id, outputIndices, original);
+}
+
 auto Wallet::AddOutgoingTransaction(
     const Identifier& proposalID,
     const proto::BlockchainTransactionProposal& proposal,

@@ -12,6 +12,7 @@
 #include <string_view>
 
 #include "blockchain/DownloadTask.hpp"
+#include "blockchain/node/Mempool.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -37,6 +38,7 @@ namespace opentxs::blockchain::p2p::implementation
 Peer::Peer(
     const api::Core& api,
     const node::internal::Config& config,
+    const node::internal::Mempool& mempool,
     const node::internal::Network& network,
     const node::internal::FilterOracle& filter,
     const node::internal::BlockOracle& block,
@@ -51,6 +53,7 @@ Peer::Peer(
     , filter_(filter)
     , block_(block)
     , manager_(manager)
+    , mempool_(mempool)
     , chain_(address->Chain())
     , header_probe_(false)
     , cfilter_probe_(false)
@@ -60,6 +63,7 @@ Peer::Peer(
     , cfheader_job_()
     , cfilter_job_()
     , block_job_()
+    , known_transactions_()
     , verify_filter_checkpoint_(config.download_cfilters_)
     , id_(id)
     , shutdown_endpoint_(shutdown)
@@ -282,8 +286,26 @@ auto Peer::pipeline(zmq::Message& message) noexcept -> void
     }();
 
     switch (task) {
+        case Task::Shutdown: {
+            shutdown(shutdown_promise_);
+        } break;
+        case Task::Mempool: {
+            process_mempool(message);
+        } break;
+        case Task::Disconnect: {
+            disconnect();
+        } break;
         case Task::Getheaders: {
             if (State::Run == state_.value_.load()) { request_headers(); }
+        } break;
+        case Task::Getblock: {
+            request_block(message);
+        } break;
+        case Task::BroadcastTransaction: {
+            broadcast_transaction(message);
+        } break;
+        case Task::BroadcastBlock: {
+            broadcast_block(message);
         } break;
         case Task::JobAvailableCfheaders: {
             if (State::Run == state_.value_.load()) {
@@ -306,39 +328,37 @@ auto Peer::pipeline(zmq::Message& message) noexcept -> void
                 reset_block_job();
             }
         } break;
-        case Task::Getblock: {
-            request_block(message);
-        } break;
-        case Task::BroadcastTransaction: {
-            broadcast_transaction(message);
-        } break;
-        case Task::BroadcastBlock: {
-            broadcast_block(message);
-        } break;
-        case Task::SendMessage: {
-            transmit(message);
+        case Task::Header: {
+            activity_.Bump();
         } break;
         case Task::ReceiveMessage: {
             activity_.Bump();
             process_message(message);
         } break;
+        case Task::SendMessage: {
+            transmit(message);
+        } break;
         case Task::Heartbeat:
         case Task::StateMachine: {
             do_work();
-        } break;
-        case Task::Header: {
-            activity_.Bump();
-        } break;
-        case Task::Disconnect: {
-            disconnect();
-        } break;
-        case Task::Shutdown: {
-            shutdown(shutdown_promise_);
         } break;
         default: {
             OT_FAIL;
         }
     }
+}
+
+auto Peer::process_mempool(const zmq::Message& message) noexcept -> void
+{
+    const auto body = message.Body();
+
+    if (body.at(1).as<Type>() != chain_) { return; }
+
+    const auto hash = std::string{body.at(2).Bytes()};
+
+    if (0 < known_transactions_.count(hash)) { return; }
+
+    broadcast_inv_transaction(hash);
 }
 
 auto Peer::process_state_machine() noexcept -> void
@@ -559,8 +579,10 @@ auto Peer::subscribe() noexcept -> void
     }
 
     pipeline_->Start(manager_.Endpoint(Task::BroadcastBlock));
+    pipeline_->Start(api_.Endpoints().BlockchainMempool());
     request_headers();
     request_addresses();
+    request_mempool();
 }
 
 auto Peer::transmit(zmq::Message& message) noexcept -> void

@@ -22,7 +22,6 @@
 #include "blockchain/p2p/bitcoin/message/Merkleblock.hpp"
 #include "blockchain/p2p/bitcoin/message/Reject.hpp"
 #include "blockchain/p2p/bitcoin/message/Sendcmpct.hpp"
-#include "blockchain/p2p/bitcoin/message/Tx.hpp"
 #include "internal/blockchain/p2p/bitcoin/Factory.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -145,7 +144,8 @@ auto BitcoinP2PMessage(
         } break;
         case bitcoin::Command::tx: {
             pMessage =
-                BitcoinP2PTx(api, std::move(pHeader), version, payload, size);
+                BitcoinP2PTx(api, std::move(pHeader), version, payload, size)
+                    .release();
         } break;
         case bitcoin::Command::verack: {
             pMessage = BitcoinP2PVerack(api, std::move(pHeader));

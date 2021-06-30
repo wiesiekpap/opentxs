@@ -18,6 +18,8 @@
 #include "blockchain/node/wallet/ScriptForm.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
+#include "internal/blockchain/block/Block.hpp"
+#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
@@ -120,6 +122,7 @@ SubchainStateData::SubchainStateData(
     , job_counter_(jobCounter)
     , task_finished_(taskFinished)
     , running_(false)
+    , mempool_()
     , reorg_()
     , last_indexed_(db.SubchainLastIndexed(index_))
     , last_scanned_(db.SubchainLastScanned(index_))
@@ -140,9 +143,37 @@ SubchainStateData::SubchainStateData(
     OT_ASSERT(false == id_->empty());
 }
 
+auto SubchainStateData::MempoolQueue::Empty() const noexcept -> bool
+{
+    auto lock = Lock{lock_};
+
+    return 0 == tx_.size();
+}
+
+auto SubchainStateData::MempoolQueue::Queue(
+    std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept -> bool
+{
+    auto lock = Lock{lock_};
+    tx_.push(tx);
+
+    return true;
+}
+
+auto SubchainStateData::MempoolQueue::Next() noexcept
+    -> std::shared_ptr<const block::bitcoin::Transaction>
+{
+    OT_ASSERT(false == Empty());
+
+    auto lock = Lock{lock_};
+    auto output{tx_.front()};
+    tx_.pop();
+
+    return output;
+}
+
 auto SubchainStateData::ReorgQueue::Empty() const noexcept -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return 0 == parents_.size();
 }
@@ -150,7 +181,7 @@ auto SubchainStateData::ReorgQueue::Empty() const noexcept -> bool
 auto SubchainStateData::ReorgQueue::Queue(
     const block::Position& parent) noexcept -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
     parents_.push(parent);
 
     return true;
@@ -160,7 +191,7 @@ auto SubchainStateData::ReorgQueue::Next() noexcept -> block::Position
 {
     OT_ASSERT(false == Empty());
 
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
     auto output{parents_.front()};
     parents_.pop();
 
@@ -187,6 +218,32 @@ auto SubchainStateData::check_blocks() noexcept -> bool
     blocks_to_request_.clear();
 
     return false;
+}
+
+auto SubchainStateData::check_mempool() noexcept -> void
+{
+    const auto targets = get_account_targets();
+    const auto [elements, utxos, patterns] = targets;
+    const auto parsed = block::Block::ParsedPatterns{elements};
+    const auto outpoints = [&] {
+        auto out = Patterns{};
+        translate(std::get<1>(targets), out);
+
+        return out;
+    }();
+
+    while (false == mempool_.Empty()) {
+        const auto tx = mempool_.Next();
+
+        OT_ASSERT(tx);
+
+        auto copy = tx->clone();
+
+        OT_ASSERT(copy);
+
+        const auto matches = copy->FindMatches(filter_type_, outpoints, parsed);
+        handle_mempool_matches(matches, std::move(copy));
+    }
 }
 
 auto SubchainStateData::check_process() noexcept -> bool
@@ -385,28 +442,7 @@ auto SubchainStateData::get_targets(
         tested.emplace_back(index);
     }
 
-    for (const auto& [outpoint, proto] : utxos) {
-        OT_ASSERT(0 < proto.key().size());
-        // TODO the assertion below will not always be true in the future but
-        // for now it will catch some bugs
-        OT_ASSERT(1 == proto.key().size());
-
-        for (const auto& key : proto.key()) {
-            auto account = api_.Factory().Identifier(key.subaccount());
-
-            OT_ASSERT(false == account->empty());
-            // TODO the assertion below will not always be true in the future
-            // but for now it will catch some bugs
-            OT_ASSERT(account == id_);
-
-            outpoints.emplace_back(
-                WalletDatabase::ElementID{
-                    static_cast<Bip32Index>(key.index()),
-                    {static_cast<Subchain>(key.subchain()),
-                     std::move(account)}},
-                space(outpoint.Bytes()));
-        }
-    }
+    translate(utxos, outpoints);
 }
 
 auto SubchainStateData::index_element(
@@ -692,6 +728,9 @@ auto SubchainStateData::state_machine() noexcept -> bool
     if (check_reorg()) { return false; }
     if (check_blocks()) { return false; }
     if (check_index()) { return false; }
+
+    check_mempool();
+
     if (check_scan()) { return false; }
     if (check_process()) { return false; }
 
@@ -709,6 +748,34 @@ auto SubchainStateData::supported_scripts(
     out.emplace_back(api_, element, chain, Type::PayToWitnessPubkeyHash);
 
     return out;
+}
+
+auto SubchainStateData::translate(
+    const std::vector<WalletDatabase::UTXO>& utxos,
+    Patterns& outpoints) const noexcept -> void
+{
+    for (const auto& [outpoint, proto] : utxos) {
+        OT_ASSERT(0 < proto.key().size());
+        // TODO the assertion below will not always be true in the future but
+        // for now it will catch some bugs
+        OT_ASSERT(1 == proto.key().size());
+
+        for (const auto& key : proto.key()) {
+            auto account = api_.Factory().Identifier(key.subaccount());
+
+            OT_ASSERT(false == account->empty());
+            // TODO the assertion below will not always be true in the future
+            // but for now it will catch some bugs
+            OT_ASSERT(account == id_);
+
+            outpoints.emplace_back(
+                WalletDatabase::ElementID{
+                    static_cast<Bip32Index>(key.index()),
+                    {static_cast<Subchain>(key.subchain()),
+                     std::move(account)}},
+                space(outpoint.Bytes()));
+        }
+    }
 }
 
 SubchainStateData::~SubchainStateData()

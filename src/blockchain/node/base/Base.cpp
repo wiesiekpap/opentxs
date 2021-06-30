@@ -24,6 +24,7 @@
 #include "internal/api/client/Client.hpp"
 #include "internal/api/network/Network.hpp"
 #include "internal/blockchain/Params.hpp"
+#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -144,6 +145,7 @@ Base::Base(
           network.Database(),
           type))
     , config_(config)
+    , mempool_(api, network.Mempool(), type)
     , header_p_(factory::HeaderOracle(api, *database_p_, type))
     , block_p_(factory::BlockOracle(
           api,
@@ -167,6 +169,7 @@ Base::Base(
           api,
           network,
           config_,
+          mempool_,
           *this,
           *header_p_,
           *filter_p_,
@@ -186,6 +189,7 @@ Base::Base(
                 crypto,
                 *this,
                 *database_p_,
+                mempool_,
                 type,
                 shutdown_sender_.endpoint_);
         }
@@ -341,7 +345,11 @@ auto Base::AddPeer(const p2p::Address& address) const noexcept -> bool
 auto Base::BroadcastTransaction(
     const block::bitcoin::Transaction& tx) const noexcept -> bool
 {
+    mempool_.Submit(tx.clone());
+
     if (false == running_.get()) { return false; }
+
+    // TODO upgrade mempool logic so this becomes unnecessary
 
     return peer_.BroadcastTransaction(tx);
 }
@@ -506,6 +514,7 @@ auto Base::pipeline(zmq::Message& in) noexcept -> void
             process_block(in);
         } break;
         case Task::Heartbeat: {
+            mempool_.Heartbeat();
             block_.Heartbeat();
             filters_.Heartbeat();
             peer_.Heartbeat();
