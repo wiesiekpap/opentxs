@@ -460,6 +460,7 @@ struct List : virtual public ui::List {
     virtual auto me() const noexcept -> QModelIndex = 0;
     virtual auto register_child(const void* child) const noexcept -> void = 0;
     virtual auto unregister_child(const void* child) const noexcept -> void = 0;
+    virtual auto WaitForStartup() const noexcept -> void = 0;
 #endif
 
     ~List() override = default;
@@ -829,6 +830,7 @@ struct List : virtual public ListType, public Row {
     auto unregister_child(const void* child) const noexcept -> void final {}
 #endif
     auto Next() const noexcept -> RowType final { return RowType{nullptr}; }
+    virtual auto WaitForStartup() const noexcept -> void final { return; }
     auto WidgetID() const noexcept -> OTIdentifier final
     {
         return blank::Widget::WidgetID();
