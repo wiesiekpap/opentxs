@@ -154,6 +154,11 @@ public:
     }
     auto state_machine() noexcept -> bool { return false; }
 
+    virtual auto WaitForStartup() const noexcept -> void final
+    {
+        return wait_for_startup();
+    }
+
     ~List() override
     {
         if (startup_ && startup_->joinable()) {
