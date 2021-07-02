@@ -30,6 +30,14 @@ class Core;
 
 namespace blockchain
 {
+namespace block
+{
+namespace bitcoin
+{
+class Transaction;
+}  // namespace bitcoin
+}  // namespace block
+
 namespace crypto
 {
 namespace internal
@@ -74,6 +82,8 @@ class Account
 public:
     using BalanceTree = crypto::internal::Account;
 
+    auto mempool(std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept
+        -> void;
     auto reorg(const block::Position& parent) noexcept -> bool;
     auto shutdown() noexcept -> void;
     auto state_machine() noexcept -> bool;

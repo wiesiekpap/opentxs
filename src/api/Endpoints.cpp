@@ -24,6 +24,7 @@
 #define BLOCKCHAIN_BLOCK_QUEUE_UPDATED "blockchain/block/queue"
 #define BLOCKCHAIN_FILTER_ENDPOINT "blockchain/filter"
 #define BLOCKCHAIN_FILTER_INTERNAL "blockchain/filter/internal"
+#define BLOCKCHAIN_MEMPOOL "blockchain/mempool"
 #define BLOCKCHAIN_PEER_ACTIVE_ENDPOINT "blockchain/peer/active"
 #define BLOCKCHAIN_PEER_CONNECTED_ENDPOINT "blockchain/peer/connected"
 #define BLOCKCHAIN_REORG_ENDPOINT "blockchain/reorg"
@@ -116,6 +117,11 @@ auto Endpoints::BlockchainBlockDownloadQueue() const noexcept -> std::string
 {
     return build_inproc_path(
         BLOCKCHAIN_BLOCK_QUEUE_UPDATED, ENDPOINT_VERSION_1);
+}
+
+auto Endpoints::BlockchainMempool() const noexcept -> std::string
+{
+    return build_inproc_path(BLOCKCHAIN_MEMPOOL, ENDPOINT_VERSION_1);
 }
 
 auto Endpoints::BlockchainNewFilter() const noexcept -> std::string

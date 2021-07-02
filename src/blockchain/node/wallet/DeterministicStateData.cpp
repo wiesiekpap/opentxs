@@ -119,125 +119,16 @@ auto DeterministicStateData::handle_confirmed_matches(
 
     for (const auto& match : general) {
         const auto& [txid, elementID] = match;
-        const auto& [index, subchainID] = elementID;
-        const auto& [subchain, accountID] = subchainID;
-        const auto& element = subaccount_.BalanceElement(subchain, index);
         const auto& pTransaction = block.at(txid->Bytes());
 
         OT_ASSERT(pTransaction);
 
         auto& arg = transactions[txid];
-        auto& [outputs, pTX] = arg;
         auto postcondition = ScopeGuard{[&] {
             if (nullptr == arg.second) { transactions.erase(match.first); }
         }};
         const auto& transaction = *pTransaction;
-        // TODO
-        // set_key_data(const_cast<block::bitcoin::Transaction&>(transaction));
-        auto i = Bip32Index{0};
-
-        for (const auto& output : transaction.Outputs()) {
-            if (Subchain::Outgoing == subchain_) { break; }
-
-            auto post = ScopeGuard{[&] { ++i; }};
-            const auto& script = output.Script();
-
-            switch (script.Type()) {
-                case block::bitcoin::Script::Pattern::PayToPubkey: {
-                    const auto pKey = element.Key();
-
-                    OT_ASSERT(pKey);
-                    OT_ASSERT(script.Pubkey().has_value());
-
-                    const auto& key = *pKey;
-
-                    if (key.PublicKey() == script.Pubkey().value()) {
-                        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
-                            " element ")(index)(": P2PK match found for ")(
-                            DisplayString(node_.Chain()))(" transaction ")(
-                            txid->asHex())(" output ")(i)(" via ")(
-                            api_.Factory().Data(key.PublicKey())->asHex())
-                            .Flush();
-                        outputs.emplace_back(i);
-                        crypto_.Confirm(element.KeyID(), txid);
-
-                        if (nullptr == pTX) { pTX = pTransaction.get(); }
-                    }
-                } break;
-                case block::bitcoin::Script::Pattern::PayToPubkeyHash: {
-                    const auto hash = element.PubkeyHash();
-
-                    OT_ASSERT(script.PubkeyHash().has_value());
-
-                    if (hash->Bytes() == script.PubkeyHash().value()) {
-                        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
-                            " element ")(index)(": P2PKH match found for ")(
-                            DisplayString(node_.Chain()))(" transaction ")(
-                            txid->asHex())(" output ")(i)(" via ")(
-                            hash->asHex())
-                            .Flush();
-                        outputs.emplace_back(i);
-                        crypto_.Confirm(element.KeyID(), txid);
-
-                        if (nullptr == pTX) { pTX = pTransaction.get(); }
-                    }
-                } break;
-                case block::bitcoin::Script::Pattern::PayToWitnessPubkeyHash: {
-                    const auto hash = element.PubkeyHash();
-
-                    OT_ASSERT(script.PubkeyHash().has_value());
-
-                    if (hash->Bytes() == script.PubkeyHash().value()) {
-                        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
-                            " element ")(index)(": P2WPKH match found for ")(
-                            DisplayString(node_.Chain()))(" transaction ")(
-                            txid->asHex())(" output ")(i)(" via ")(
-                            hash->asHex())
-                            .Flush();
-                        outputs.emplace_back(i);
-                        crypto_.Confirm(element.KeyID(), txid);
-
-                        if (nullptr == pTX) { pTX = pTransaction.get(); }
-                    }
-                } break;
-                case block::bitcoin::Script::Pattern::PayToMultisig: {
-                    const auto m = script.M();
-                    const auto n = script.N();
-
-                    OT_ASSERT(m.has_value());
-                    OT_ASSERT(n.has_value());
-
-                    if (1u != m.value() || (3u != n.value())) {
-                        // TODO handle non-payment code multisig eventually
-
-                        continue;
-                    }
-
-                    const auto pKey = element.Key();
-
-                    OT_ASSERT(pKey);
-
-                    const auto& key = *pKey;
-
-                    if (key.PublicKey() == script.MultisigPubkey(0).value()) {
-                        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
-                            " element ")(index)(": ")(m.value())(" of ")(
-                            n.value())(" P2MS match found for ")(
-                            DisplayString(node_.Chain()))(" transaction ")(
-                            txid->asHex())(" output ")(i)(" via ")(
-                            api_.Factory().Data(key.PublicKey())->asHex())
-                            .Flush();
-                        outputs.emplace_back(i);
-                        crypto_.Confirm(element.KeyID(), txid);
-
-                        if (nullptr == pTX) { pTX = pTransaction.get(); }
-                    }
-                } break;
-                case block::bitcoin::Script::Pattern::PayToScriptHash:
-                default: {
-                }
-            };
-        }
+        process(match, transaction, arg);
     }
 
     for (const auto& [tx, outpoint, element] : utxo) {
@@ -263,6 +154,26 @@ auto DeterministicStateData::handle_confirmed_matches(
     }
 }
 
+auto DeterministicStateData::handle_mempool_matches(
+    const block::Block::Matches& matches,
+    std::unique_ptr<const block::bitcoin::Transaction> tx) noexcept -> void
+{
+    const auto& [utxo, general] = matches;
+
+    if (0u == general.size()) { return; }
+
+    auto data = MatchedTransaction{};
+    auto& [outputs, pTX] = data;
+
+    for (const auto& match : general) { process(match, *tx, data); }
+
+    if (nullptr == pTX) { return; }
+
+    auto updated = db_.AddMempoolTransaction(id_, subchain_, outputs, *pTX);
+
+    OT_ASSERT(updated);  // TODO handle database errors
+}
+
 auto DeterministicStateData::index() noexcept -> void
 {
     const auto first =
@@ -286,6 +197,121 @@ auto DeterministicStateData::index() noexcept -> void
     }
 
     db_.SubchainAddElements(index_, elements);
+}
+
+auto DeterministicStateData::process(
+    const block::Block::Match match,
+    const block::bitcoin::Transaction& transaction,
+    MatchedTransaction& output) noexcept -> void
+{
+    auto& [outputs, pTX] = output;
+    const auto& [txid, elementID] = match;
+    const auto& [index, subchainID] = elementID;
+    const auto& [subchain, accountID] = subchainID;
+    const auto& element = subaccount_.BalanceElement(subchain, index);
+    // TODO
+    // set_key_data(const_cast<block::bitcoin::Transaction&>(transaction));
+    auto i = Bip32Index{0};
+
+    for (const auto& output : transaction.Outputs()) {
+        if (Subchain::Outgoing == subchain_) { break; }
+
+        auto post = ScopeGuard{[&] { ++i; }};
+        const auto& script = output.Script();
+
+        switch (script.Type()) {
+            case block::bitcoin::Script::Pattern::PayToPubkey: {
+                const auto pKey = element.Key();
+
+                OT_ASSERT(pKey);
+                OT_ASSERT(script.Pubkey().has_value());
+
+                const auto& key = *pKey;
+
+                if (key.PublicKey() == script.Pubkey().value()) {
+                    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
+                        " element ")(index)(": P2PK match found for ")(
+                        DisplayString(node_.Chain()))(" transaction ")(
+                        txid->asHex())(" output ")(i)(" via ")(
+                        api_.Factory().Data(key.PublicKey())->asHex())
+                        .Flush();
+                    outputs.emplace_back(i);
+                    crypto_.Confirm(element.KeyID(), txid);
+
+                    if (nullptr == pTX) { pTX = &transaction; }
+                }
+            } break;
+            case block::bitcoin::Script::Pattern::PayToPubkeyHash: {
+                const auto hash = element.PubkeyHash();
+
+                OT_ASSERT(script.PubkeyHash().has_value());
+
+                if (hash->Bytes() == script.PubkeyHash().value()) {
+                    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
+                        " element ")(index)(": P2PKH match found for ")(
+                        DisplayString(node_.Chain()))(" transaction ")(
+                        txid->asHex())(" output ")(i)(" via ")(hash->asHex())
+                        .Flush();
+                    outputs.emplace_back(i);
+                    crypto_.Confirm(element.KeyID(), txid);
+
+                    if (nullptr == pTX) { pTX = &transaction; }
+                }
+            } break;
+            case block::bitcoin::Script::Pattern::PayToWitnessPubkeyHash: {
+                const auto hash = element.PubkeyHash();
+
+                OT_ASSERT(script.PubkeyHash().has_value());
+
+                if (hash->Bytes() == script.PubkeyHash().value()) {
+                    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
+                        " element ")(index)(": P2WPKH match found for ")(
+                        DisplayString(node_.Chain()))(" transaction ")(
+                        txid->asHex())(" output ")(i)(" via ")(hash->asHex())
+                        .Flush();
+                    outputs.emplace_back(i);
+                    crypto_.Confirm(element.KeyID(), txid);
+
+                    if (nullptr == pTX) { pTX = &transaction; }
+                }
+            } break;
+            case block::bitcoin::Script::Pattern::PayToMultisig: {
+                const auto m = script.M();
+                const auto n = script.N();
+
+                OT_ASSERT(m.has_value());
+                OT_ASSERT(n.has_value());
+
+                if (1u != m.value() || (3u != n.value())) {
+                    // TODO handle non-payment code multisig eventually
+
+                    continue;
+                }
+
+                const auto pKey = element.Key();
+
+                OT_ASSERT(pKey);
+
+                const auto& key = *pKey;
+
+                if (key.PublicKey() == script.MultisigPubkey(0).value()) {
+                    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
+                        " element ")(index)(": ")(m.value())(" of ")(n.value())(
+                        " P2MS match found for ")(DisplayString(node_.Chain()))(
+                        " transaction ")(txid->asHex())(" output ")(i)(" via ")(
+                        api_.Factory().Data(key.PublicKey())->asHex())
+                        .Flush();
+                    outputs.emplace_back(i);
+                    crypto_.Confirm(element.KeyID(), txid);
+
+                    if (nullptr == pTX) { pTX = &transaction; }
+                }
+            } break;
+            case block::bitcoin::Script::Pattern::PayToScriptHash:
+            default: {
+            }
+        };
+    }
 }
 
 auto DeterministicStateData::type() const noexcept -> std::stringstream

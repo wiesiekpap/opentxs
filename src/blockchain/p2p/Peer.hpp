@@ -6,6 +6,7 @@
 #pragma once
 
 #include <boost/system/error_code.hpp>
+#include <robin_hood.h>
 #include <atomic>
 #include <chrono>
 #include <cstddef>
@@ -57,6 +58,17 @@ namespace api
 {
 class Core;
 }  // namespace api
+
+namespace blockchain
+{
+namespace node
+{
+namespace internal
+{
+struct Mempool;
+}  // namespace internal
+}  // namespace node
+}  // namespace blockchain
 
 namespace network
 {
@@ -175,6 +187,7 @@ public:
 
 protected:
     using SendFuture = std::future<SendResult>;
+    using KnownHashes = robin_hood::unordered_flat_set<std::string>;
 
     enum class State : std::uint8_t {
         Connect,
@@ -288,6 +301,7 @@ protected:
     const node::internal::FilterOracle& filter_;
     const node::internal::BlockOracle& block_;
     const node::internal::PeerManager& manager_;
+    const node::internal::Mempool& mempool_;
     const blockchain::Type chain_;
     std::atomic_bool header_probe_;
     std::atomic_bool cfilter_probe_;
@@ -297,6 +311,7 @@ protected:
     node::CfheaderJob cfheader_job_;
     node::CfilterJob cfilter_job_;
     node::BlockJob block_job_;
+    KnownHashes known_transactions_;
 
     auto connection() const noexcept -> const ConnectionManager&
     {
@@ -304,6 +319,7 @@ protected:
     }
 
     virtual auto broadcast_block(zmq::Message& message) noexcept -> void = 0;
+    virtual auto broadcast_inv_transaction(ReadView txid) noexcept -> void = 0;
     virtual auto broadcast_transaction(zmq::Message& message) noexcept
         -> void = 0;
     auto check_handshake() noexcept -> void;
@@ -317,6 +333,7 @@ protected:
     virtual auto request_block(zmq::Message& message) noexcept -> void = 0;
     virtual auto request_blocks() noexcept -> void = 0;
     virtual auto request_headers() noexcept -> void = 0;
+    virtual auto request_mempool() noexcept -> void = 0;
     auto reset_block_job() noexcept -> void;
     auto reset_cfheader_job() noexcept -> void;
     auto reset_cfilter_job() noexcept -> void;
@@ -331,6 +348,7 @@ protected:
     Peer(
         const api::Core& api,
         const node::internal::Config& config,
+        const node::internal::Mempool& mempool,
         const node::internal::Network& network,
         const node::internal::FilterOracle& filter,
         const node::internal::BlockOracle& block,
@@ -394,6 +412,7 @@ private:
     auto check_jobs() noexcept -> void;
     auto connect() noexcept -> void;
     auto pipeline(zmq::Message& message) noexcept -> void;
+    auto process_mempool(const zmq::Message& message) noexcept -> void;
     virtual auto process_message(const zmq::Message& message) noexcept
         -> void = 0;
     auto process_state_machine() noexcept -> void;

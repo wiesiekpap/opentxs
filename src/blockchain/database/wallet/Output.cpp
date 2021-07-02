@@ -185,13 +185,14 @@ struct Output::Imp {
         return get_unspent_outputs(lock, id);
     }
 
-    auto AddConfirmedTransaction(
+    auto AddTransaction(
         const AccountID& account,
         const SubchainID& subchain,
         const block::Position& block,
-        const std::size_t blockIndex,
         const std::vector<std::uint32_t> outputIndices,
-        const block::bitcoin::Transaction& original) noexcept -> bool
+        const block::bitcoin::Transaction& original,
+        const node::Wallet::TxoState consumed,
+        const node::Wallet::TxoState created) noexcept -> bool
     {
         auto lock = eLock{lock_};
         auto pCopy = original.clone();
@@ -199,7 +200,7 @@ struct Output::Imp {
         OT_ASSERT(pCopy);
 
         auto& copy = *pCopy;
-        auto inputIndex = int{-1};
+        auto inputIndex = std::ptrdiff_t{-1};
 
         for (const auto& input : copy.Inputs()) {
             const auto& outpoint = input.PreviousOutput();
@@ -225,12 +226,8 @@ struct Output::Imp {
                     return false;
                 }
 
-                if (false == change_state(
-                                 lock,
-                                 outpoint,
-                                 serialized,
-                                 TxoState::ConfirmedSpend,
-                                 block)) {
+                if (false ==
+                    change_state(lock, outpoint, serialized, consumed, block)) {
                     LogOutput(OT_METHOD)(__FUNCTION__)(
                         ": Error updating consumed output state")
                         .Flush();
@@ -262,12 +259,8 @@ struct Output::Imp {
             try {
                 auto& serialized = find_output(lock, outpoint);
 
-                if (false == change_state(
-                                 lock,
-                                 outpoint,
-                                 serialized,
-                                 TxoState::ConfirmedNew,
-                                 block)) {
+                if (false ==
+                    change_state(lock, outpoint, serialized, created, block)) {
                     LogOutput(OT_METHOD)(__FUNCTION__)(
                         ": Error updating created output state")
                         .Flush();
@@ -275,12 +268,8 @@ struct Output::Imp {
                     return false;
                 }
             } catch (...) {
-                if (false == create_state(
-                                 lock,
-                                 outpoint,
-                                 TxoState::ConfirmedNew,
-                                 block,
-                                 output)) {
+                if (false ==
+                    create_state(lock, outpoint, created, block, output)) {
                     LogOutput(OT_METHOD)(__FUNCTION__)(
                         ": Error created new output state")
                         .Flush();
@@ -329,6 +318,39 @@ struct Output::Imp {
         }
 
         return true;
+    }
+    auto AddConfirmedTransaction(
+        const AccountID& account,
+        const SubchainID& subchain,
+        const block::Position& block,
+        const std::vector<std::uint32_t> outputIndices,
+        const block::bitcoin::Transaction& original) noexcept -> bool
+    {
+        return AddTransaction(
+            account,
+            subchain,
+            block,
+            outputIndices,
+            original,
+            TxoState::ConfirmedSpend,
+            TxoState::ConfirmedNew);
+    }
+    auto AddMempoolTransaction(
+        const AccountID& account,
+        const SubchainID& subchain,
+        const std::vector<std::uint32_t> outputIndices,
+        const block::bitcoin::Transaction& original) noexcept -> bool
+    {
+        static const auto block = make_blank<block::Position>::value(api_);
+
+        return AddTransaction(
+            account,
+            subchain,
+            block,
+            outputIndices,
+            original,
+            TxoState::UnconfirmedSpend,
+            TxoState::UnconfirmedNew);
     }
     auto AddOutgoingTransaction(
         const Identifier& proposalID,
@@ -1168,6 +1190,8 @@ private:
         const block::Txid& txid) noexcept -> bool
 
     {
+        if (-1 == block.first) { return true; }
+
         if (0 == proposal_reverse_index_.count(outpoint)) { return true; }
 
         auto proposalID{proposal_reverse_index_.at(outpoint)};
@@ -1276,7 +1300,17 @@ auto Output::AddConfirmedTransaction(
     const block::bitcoin::Transaction& transaction) noexcept -> bool
 {
     return imp_->AddConfirmedTransaction(
-        account, subchain, block, blockIndex, outputIndices, transaction);
+        account, subchain, block, outputIndices, transaction);
+}
+
+auto Output::AddMempoolTransaction(
+    const AccountID& account,
+    const SubchainID& subchain,
+    const std::vector<std::uint32_t> outputIndices,
+    const block::bitcoin::Transaction& transaction) const noexcept -> bool
+{
+    return imp_->AddMempoolTransaction(
+        account, subchain, outputIndices, transaction);
 }
 
 auto Output::AddOutgoingTransaction(

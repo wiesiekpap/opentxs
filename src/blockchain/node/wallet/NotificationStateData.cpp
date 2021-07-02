@@ -112,6 +112,57 @@ auto NotificationStateData::check_index() noexcept -> bool
     return false;
 }
 
+auto NotificationStateData::handle_confirmed_matches(
+    const block::bitcoin::Block& block,
+    const block::Position& position,
+    const block::Block::Matches& confirmed) noexcept -> void
+{
+    const auto& [utxo, general] = confirmed;
+    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(general.size())(
+        " confirmed matches for ")(code_->asBase58())(" on ")(
+        DisplayString(node_.Chain()))
+        .Flush();
+
+    if (0u == general.size()) { return; }
+
+    const auto reason = init_keys();
+
+    for (const auto& match : general) {
+        const auto& [txid, elementID] = match;
+        const auto& [version, subchainID] = elementID;
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(DisplayString(node_.Chain()))(
+            " transaction ")(txid->asHex())(" contains a version ")(version)(
+            " notification for ")(code_->asBase58())
+            .Flush();
+        const auto tx = block.at(txid->Bytes());
+
+        OT_ASSERT(tx);
+
+        process(match, *tx, reason);
+    }
+}
+
+auto NotificationStateData::handle_mempool_matches(
+    const block::Block::Matches& matches,
+    std::unique_ptr<const block::bitcoin::Transaction> tx) noexcept -> void
+{
+    const auto& [utxo, general] = matches;
+
+    if (0u == general.size()) { return; }
+
+    const auto reason = init_keys();
+
+    for (const auto& match : general) {
+        const auto& [txid, elementID] = match;
+        const auto& [version, subchainID] = elementID;
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(DisplayString(node_.Chain()))(
+            " mempool transaction ")(txid->asHex())(" contains a version ")(
+            version)(" notification for ")(code_->asBase58())
+            .Flush();
+        process(match, *tx, reason);
+    }
+}
+
 auto NotificationStateData::index() noexcept -> void
 {
     auto elements = WalletDatabase::ElementMap{};
@@ -146,19 +197,8 @@ auto NotificationStateData::index() noexcept -> void
         .Flush();
 }
 
-auto NotificationStateData::handle_confirmed_matches(
-    const block::bitcoin::Block& block,
-    const block::Position& position,
-    const block::Block::Matches& confirmed) noexcept -> void
+auto NotificationStateData::init_keys() noexcept -> OTPasswordPrompt
 {
-    const auto& [utxo, general] = confirmed;
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(general.size())(
-        " confirmed matches for ")(code_->asBase58())(" on ")(
-        DisplayString(node_.Chain()))
-        .Flush();
-
-    if (0u == general.size()) { return; }
-
     const auto reason = api_.Factory().PasswordPrompt(
         "Decoding payment code notification transaction");
 
@@ -174,55 +214,55 @@ auto NotificationStateData::handle_confirmed_matches(
         OT_FAIL;
     }
 
-    for (const auto& [txid, elementID] : general) {
-        const auto& [version, subchainID] = elementID;
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(DisplayString(node_.Chain()))(
-            " transaction ")(txid->asHex())(" contains a version ")(version)(
-            " notification for ")(code_->asBase58())
-            .Flush();
-        const auto tx = block.at(txid->Bytes());
+    return reason;
+}
 
-        OT_ASSERT(tx);
+auto NotificationStateData::process(
+    const block::Block::Match match,
+    const block::bitcoin::Transaction& tx,
+    const PasswordPrompt& reason) noexcept -> void
+{
+    const auto& [txid, elementID] = match;
+    const auto& [version, subchainID] = elementID;
 
-        for (const auto& output : tx->Outputs()) {
-            const auto& script = output.Script();
+    for (const auto& output : tx.Outputs()) {
+        const auto& script = output.Script();
 
-            if (script.IsNotification(version, code_)) {
-                const auto elements = [&] {
-                    auto out = PaymentCode::Elements{};
+        if (script.IsNotification(version, code_)) {
+            const auto elements = [&] {
+                auto out = PaymentCode::Elements{};
 
-                    for (auto i{0u}; i < 3u; ++i) {
-                        const auto view = script.MultisigPubkey(i);
+                for (auto i{0u}; i < 3u; ++i) {
+                    const auto view = script.MultisigPubkey(i);
 
-                        OT_ASSERT(view.has_value());
+                    OT_ASSERT(view.has_value());
 
-                        const auto& value = view.value();
-                        auto* start =
-                            reinterpret_cast<const std::byte*>(value.data());
-                        auto* stop = std::next(start, value.size());
-                        out.emplace_back(start, stop);
-                    }
+                    const auto& value = view.value();
+                    auto* start =
+                        reinterpret_cast<const std::byte*>(value.data());
+                    auto* stop = std::next(start, value.size());
+                    out.emplace_back(start, stop);
+                }
 
-                    return out;
-                }();
+                return out;
+            }();
 
-                auto pSender = code_->DecodeNotificationElements(
-                    version, elements, reason);
+            auto pSender =
+                code_->DecodeNotificationElements(version, elements, reason);
 
-                if (!pSender) { continue; }
+            if (!pSender) { continue; }
 
-                const auto& sender = *pSender;
-                LogVerbose(OT_METHOD)(__FUNCTION__)(
-                    ": decoded incoming notification from ")(sender.asBase58())(
-                    " on ")(DisplayString(node_.Chain()))(" for ")(
-                    code_->asBase58())
-                    .Flush();
-                const auto& account = crypto_.PaymentCodeSubaccount(
-                    owner_, code_, sender, path_, node_.Chain(), reason);
-                LogVerbose(OT_METHOD)(__FUNCTION__)(": Created new account ")(
-                    account.ID())
-                    .Flush();
-            }
+            const auto& sender = *pSender;
+            LogVerbose(OT_METHOD)(__FUNCTION__)(
+                ": decoded incoming notification from ")(sender.asBase58())(
+                " on ")(DisplayString(node_.Chain()))(" for ")(
+                code_->asBase58())
+                .Flush();
+            const auto& account = crypto_.PaymentCodeSubaccount(
+                owner_, code_, sender, path_, node_.Chain(), reason);
+            LogVerbose(OT_METHOD)(__FUNCTION__)(": Created new account ")(
+                account.ID())
+                .Flush();
         }
     }
 }

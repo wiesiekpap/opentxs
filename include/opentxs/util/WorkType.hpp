@@ -39,6 +39,7 @@ enum class WorkType : OTZMQWorkType {
     BlockchainPeerConnected = 139,
     BlockchainWalletUpdated = 140,
     SyncServerUpdated = 141,
+    BlockchainMempoolUpdated = 142,
     OTXConnectionStatus = 256,
     OTXTaskComplete = 257,
     OTXSearchNym = 258,
@@ -216,6 +217,12 @@ constexpr auto value(const WorkType in) noexcept
  *                      added or removed from the database
  *          1: endpoint as a string
  *          2: operation as bool (added = true, removed = false)
+ *
+ *   BlockchainMempoolUpdated: reports a new blockchain transaction has entered
+ *                             the mempool
+ *       * Additional frames:
+ *          1: chain type as blockchain::Type
+ *          2: txid as blockchain::block::Hash (encoded as byte sequence)
  *
  *   OTXConnectionStatus: reports state changes to notary connections
  *       * Additional frames:

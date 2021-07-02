@@ -69,6 +69,14 @@ class Transaction;
 class Block;
 }  // namespace block
 
+namespace node
+{
+namespace internal
+{
+struct Mempool;
+}  // namespace internal
+}  // namespace node
+
 namespace p2p
 {
 namespace internal
@@ -134,6 +142,7 @@ public:
             const api::Core& api,
             const api::network::internal::Blockchain& network,
             const node::internal::Config& config,
+            const node::internal::Mempool& mempool,
             const node::internal::Network& node,
             const node::internal::HeaderOracle& headers,
             const node::internal::FilterOracle& filter,
@@ -156,6 +165,7 @@ public:
 
         const api::Core& api_;
         const node::internal::Config& config_;
+        const node::internal::Mempool& mempool_;
         const node::internal::Network& node_;
         const node::internal::HeaderOracle& headers_;
         const node::internal::FilterOracle& filter_;
@@ -260,6 +270,7 @@ public:
         const api::Core& api,
         const api::network::internal::Blockchain& network,
         const node::internal::Config& config,
+        const node::internal::Mempool& mempool,
         const node::internal::Network& node,
         const node::internal::HeaderOracle& headers,
         const node::internal::FilterOracle& filter,

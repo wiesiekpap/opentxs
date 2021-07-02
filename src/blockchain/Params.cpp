@@ -461,6 +461,7 @@ auto Data::Chains() noexcept -> const ChainData&
          {
              true,
              false,
+             true,
              opentxs::contact::ContactItemType::BTC,
              Bip44Type::BITCOIN,
              "Bitcoin",
@@ -525,6 +526,7 @@ auto Data::Chains() noexcept -> const ChainData&
          {
              true,
              true,
+             true,
              opentxs::contact::ContactItemType::TNBTC,
              Bip44Type::TESTNET,
              "Bitcoin (testnet3)",
@@ -585,6 +587,7 @@ auto Data::Chains() noexcept -> const ChainData&
         {blockchain::Type::BitcoinCash,
          {
              true,
+             false,
              false,
              opentxs::contact::ContactItemType::BCH,
              Bip44Type::BITCOINCASH,
@@ -647,6 +650,7 @@ auto Data::Chains() noexcept -> const ChainData&
          {
              true,
              true,
+             false,
              opentxs::contact::ContactItemType::TNBCH,
              Bip44Type::TESTNET,
              "Bitcoin Cash (testnet3)",
@@ -707,6 +711,7 @@ auto Data::Chains() noexcept -> const ChainData&
          {
              false,
              false,
+             false,
              opentxs::contact::ContactItemType::ETH,
              Bip44Type::ETHER,
              "Ethereum (frontier)",
@@ -737,6 +742,7 @@ auto Data::Chains() noexcept -> const ChainData&
          {
              false,
              true,
+             false,
              opentxs::contact::ContactItemType::Ethereum_Ropsten,
              Bip44Type::TESTNET,
              "Ethereum (ropsten testnet)",
@@ -767,6 +773,7 @@ auto Data::Chains() noexcept -> const ChainData&
          {
              true,
              false,
+             true,
              opentxs::contact::ContactItemType::LTC,
              Bip44Type::LITECOIN,
              "Litecoin",
@@ -827,6 +834,7 @@ auto Data::Chains() noexcept -> const ChainData&
          {
              true,
              true,
+             true,
              opentxs::contact::ContactItemType::TNLTX,
              Bip44Type::TESTNET,
              "Litecoin (testnet4)",
@@ -885,6 +893,7 @@ auto Data::Chains() noexcept -> const ChainData&
          {
              true,
              false,
+             true,
              opentxs::contact::ContactItemType::PKT,
              Bip44Type::PKT,
              "PKT",
@@ -1116,6 +1125,7 @@ auto Data::Chains() noexcept -> const ChainData&
          {
              false,
              true,
+             true,
              opentxs::contact::ContactItemType::TNPKT,
              Bip44Type::TESTNET,
              "PKT (testnet)",
@@ -1166,6 +1176,7 @@ auto Data::Chains() noexcept -> const ChainData&
          {
              false,
              true,
+             false,
              opentxs::contact::ContactItemType::Regtest,
              Bip44Type::TESTNET,
              "Unit Test Simulation",

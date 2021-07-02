@@ -28,6 +28,8 @@ add_library(
   "FilterOracle.hpp"
   "HeaderOracle.cpp"
   "HeaderOracle.hpp"
+  "Mempool.cpp"
+  "Mempool.hpp"
   "Node.cpp"
   "PeerManager.cpp"
   "PeerManager.hpp"
@@ -51,7 +53,9 @@ target_link_libraries(
 )
 target_link_libraries(opentxs PUBLIC "${OT_ZMQ_TARGET}")
 target_include_directories(
-  opentxs-blockchain-node SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+  opentxs-blockchain-node SYSTEM
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+          "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
 )
 
 if(PACKETCRYPT_EXPORT)

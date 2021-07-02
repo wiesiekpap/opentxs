@@ -28,12 +28,16 @@ class Core;
 
 namespace blockchain
 {
+namespace block
+{
+namespace bitcoin
+{
+class Transaction;
+}  // namespace bitcoin
+}  // namespace block
+
 namespace node
 {
-namespace implementation
-{
-}  // namespace implementation
-
 namespace internal
 {
 struct Network;
@@ -68,6 +72,9 @@ class Accounts
 public:
     auto Add(const identifier::Nym& nym) noexcept -> bool;
     auto Add(const network::zeromq::Frame& message) noexcept -> bool;
+    auto Mempool(
+        std::shared_ptr<const block::bitcoin::Transaction>&& tx) noexcept
+        -> void;
     auto Reorg(const block::Position& parent) noexcept -> bool;
 
     auto shutdown() noexcept -> void;

@@ -104,6 +104,20 @@ public:
     using ProcessQueue = std::queue<OutstandingMap::iterator>;
     using SubchainIndex = WalletDatabase::pSubchainIndex;
 
+    struct MempoolQueue {
+        auto Empty() const noexcept -> bool;
+
+        auto Queue(
+            std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept
+            -> bool;
+        auto Next() noexcept
+            -> std::shared_ptr<const block::bitcoin::Transaction>;
+
+    private:
+        mutable std::mutex lock_{};
+        std::queue<std::shared_ptr<const block::bitcoin::Transaction>> tx_{};
+    };
+
     struct ReorgQueue {
         auto Empty() const noexcept -> bool;
 
@@ -123,6 +137,7 @@ public:
     Outstanding& job_counter_;
     const SimpleCallback& task_finished_;
     std::atomic<bool> running_;
+    MempoolQueue mempool_;
     ReorgQueue reorg_;
     std::optional<Bip32Index> last_indexed_;
     std::optional<block::Position> last_scanned_;
@@ -164,6 +179,9 @@ protected:
     auto set_key_data(block::bitcoin::Transaction& tx) const noexcept -> void;
     auto supported_scripts(const crypto::Element& element) const noexcept
         -> std::vector<ScriptForm>;
+    auto translate(
+        const std::vector<WalletDatabase::UTXO>& utxos,
+        Patterns& outpoints) const noexcept -> void;
 
     auto index_element(
         const filter::Type type,
@@ -204,6 +222,7 @@ private:
 
     auto check_blocks() noexcept -> bool;
     virtual auto check_index() noexcept -> bool = 0;
+    auto check_mempool() noexcept -> void;
     auto check_process() noexcept -> bool;
     auto check_reorg() noexcept -> bool;
     auto check_scan() noexcept -> bool;
@@ -211,6 +230,10 @@ private:
         const block::bitcoin::Block& block,
         const block::Position& position,
         const block::Block::Matches& confirmed) noexcept -> void = 0;
+    virtual auto handle_mempool_matches(
+        const block::Block::Matches& matches,
+        std::unique_ptr<const block::bitcoin::Transaction> tx) noexcept
+        -> void = 0;
     auto report_scan() noexcept -> void;
 
     SubchainStateData() = delete;

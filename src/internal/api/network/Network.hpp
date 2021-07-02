@@ -111,6 +111,8 @@ struct Blockchain {
     virtual auto Hello() const noexcept -> SyncData = 0;
     virtual auto IsEnabled(const opentxs::blockchain::Type chain) const noexcept
         -> bool = 0;
+    virtual auto Mempool() const noexcept
+        -> const opentxs::network::zeromq::socket::Publish& = 0;
     virtual auto PeerUpdate() const noexcept
         -> const opentxs::network::zeromq::socket::Publish& = 0;
     virtual auto Reorg() const noexcept

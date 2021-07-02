@@ -44,6 +44,7 @@ auto BlockchainWallet(
     const api::client::internal::Blockchain& crypto,
     const blockchain::node::internal::Network& parent,
     const blockchain::node::internal::WalletDatabase& db,
+    const blockchain::node::internal::Mempool& mempool,
     const blockchain::Type chain,
     const std::string& shutdown)
     -> std::unique_ptr<blockchain::node::internal::Wallet>
@@ -51,7 +52,7 @@ auto BlockchainWallet(
     using ReturnType = blockchain::node::implementation::Wallet;
 
     return std::make_unique<ReturnType>(
-        api, crypto, parent, db, chain, shutdown);
+        api, crypto, parent, db, mempool, chain, shutdown);
 }
 }  // namespace opentxs::factory
 
@@ -62,11 +63,13 @@ Wallet::Wallet(
     const api::client::internal::Blockchain& crypto,
     const node::internal::Network& parent,
     const node::internal::WalletDatabase& db,
+    const node::internal::Mempool& mempool,
     const Type chain,
     const std::string& shutdown) noexcept
     : Worker(api, std::chrono::milliseconds(10))
     , parent_(parent)
     , db_(db)
+    , mempool_(mempool)
     , crypto_(crypto)
     , chain_(chain)
     , task_finished_([this]() { trigger(); })
@@ -86,6 +89,7 @@ Wallet::Wallet(
         api.Endpoints().NymCreated(),
         api.Endpoints().InternalBlockchainFilterUpdated(chain),
         crypto_.KeyEndpoint(),
+        api.Endpoints().BlockchainMempool(),
     });
 }
 
@@ -181,6 +185,9 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
     }();
 
     switch (work) {
+        case Work::shutdown: {
+            shutdown(shutdown_promise_);
+        } break;
         case Work::block: {
             // nothing to do until the filter is downloaded
         } break;
@@ -188,6 +195,12 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
             process_reorg(in);
 
             if (enabled_) { do_work(); }
+        } break;
+        case Work::mempool: {
+            if (enabled_) {
+                process_mempool(in);
+                do_work();
+            }
         } break;
         case Work::nym: {
             OT_ASSERT(1 < body.size());
@@ -200,14 +213,23 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
         case Work::statemachine: {
             if (enabled_) { do_work(); }
         } break;
-        case Work::shutdown: {
-            shutdown(shutdown_promise_);
-        } break;
         default: {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Unhandled type").Flush();
 
             OT_FAIL;
         }
+    }
+}
+
+auto Wallet::process_mempool(const zmq::Message& in) noexcept -> void
+{
+    const auto body = in.Body();
+    const auto chain = body.at(1).as<blockchain::Type>();
+
+    if (chain_ != chain) { return; }
+
+    if (auto tx = mempool_.Query(body.at(2).Bytes()); tx) {
+        accounts_.Mempool(std::move(tx));
     }
 }
 

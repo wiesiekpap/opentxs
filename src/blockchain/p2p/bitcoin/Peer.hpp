@@ -46,6 +46,7 @@ struct BlockOracle;
 struct Config;
 struct FilterOracle;
 struct HeaderOracle;
+struct Mempool;
 struct Network;
 struct PeerManager;
 }  // namespace internal
@@ -81,6 +82,7 @@ public:
     Peer(
         const api::Core& api,
         const node::internal::Config& config,
+        const node::internal::Mempool& mempool,
         const node::internal::Network& network,
         const node::internal::HeaderOracle& header,
         const node::internal::FilterOracle& filter,
@@ -152,14 +154,18 @@ private:
         const std::set<p2p::Service>& input) noexcept -> std::set<p2p::Service>;
     static auto nonce(const api::Core& api) noexcept -> Nonce;
 
+    auto broadcast_inv(
+        std::vector<blockchain::bitcoin::Inventory>&& inv) noexcept -> void;
     auto get_body_size(const zmq::Frame& header) const noexcept
         -> std::size_t final;
 
     auto broadcast_block(zmq::Message& message) noexcept -> void final;
+    auto broadcast_inv_transaction(ReadView txid) noexcept -> void final;
     auto broadcast_transaction(zmq::Message& message) noexcept -> void final;
     auto ping() noexcept -> void final;
     auto pong() noexcept -> void final;
     auto process_message(const zmq::Message& message) noexcept -> void final;
+    auto reconcile_mempool() noexcept -> void;
     auto request_addresses() noexcept -> void final;
     auto request_block(zmq::Message& message) noexcept -> void final;
     auto request_blocks() noexcept -> void final;
@@ -170,6 +176,9 @@ private:
     using p2p::implementation::Peer::request_headers;
     auto request_headers() noexcept -> void final;
     auto request_headers(const block::Hash& hash) noexcept -> void;
+    auto request_mempool() noexcept -> void final;
+    auto request_transactions(
+        std::vector<blockchain::bitcoin::Inventory>&&) noexcept -> void;
     auto start_handshake() noexcept -> void final;
 
     auto process_addr(

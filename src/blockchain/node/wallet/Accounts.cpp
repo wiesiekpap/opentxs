@@ -74,6 +74,16 @@ struct Accounts::Imp {
 
         return Add(id);
     }
+    auto Mempool(
+        std::shared_ptr<const block::bitcoin::Transaction>&& tx) noexcept
+        -> void
+    {
+        for (auto& [code, account] : payment_codes_) {
+            account.mempool_.Queue(tx);
+        }
+
+        for (auto& [nym, account] : map_) { account.mempool(tx); }
+    }
     auto Reorg(const block::Position& parent) noexcept -> bool
     {
         auto ticket = gatekeeper_.get();
@@ -217,6 +227,12 @@ auto Accounts::Add(const identifier::Nym& nym) noexcept -> bool
 auto Accounts::Add(const zmq::Frame& message) noexcept -> bool
 {
     return imp_->Add(message);
+}
+
+auto Accounts::Mempool(
+    std::shared_ptr<const block::bitcoin::Transaction>&& tx) noexcept -> void
+{
+    imp_->Mempool(std::move(tx));
 }
 
 auto Accounts::Reorg(const block::Position& parent) noexcept -> bool

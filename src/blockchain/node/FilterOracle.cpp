@@ -547,7 +547,7 @@ auto FilterOracle::ProcessSyncData(
     const auto filterType = blocks.front().FilterType();
     const auto count{std::min<std::size_t>(hashes.size(), blocks.size())};
 
-    {
+    try {
         auto jobCounter = outstanding_jobs_.Allocate();
 
         OT_ASSERT(0 < count);
@@ -569,7 +569,8 @@ auto FilterOracle::ProcessSyncData(
                         " not found")
                         .Flush();
 
-                    throw std::runtime_error("Non-contiguous filters");
+                    throw std::runtime_error(
+                        "Failed to load previous cfheader");
                 }
 
                 return output;
@@ -617,6 +618,10 @@ auto FilterOracle::ProcessSyncData(
             thread_pool_->Send(work);
             ++jobCounter;
         }
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+        return;
     }
 
     try {
