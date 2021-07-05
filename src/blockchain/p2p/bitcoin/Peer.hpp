@@ -15,6 +15,7 @@
 #include <set>
 #include <string>
 #include <type_traits>
+#include <vector>
 
 #include "blockchain/p2p/Peer.hpp"
 #include "blockchain/p2p/bitcoin/Header.hpp"
@@ -23,6 +24,7 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -38,6 +40,11 @@ class Core;
 
 namespace blockchain
 {
+namespace bitcoin
+{
+class Inventory;
+}  // namespace bitcoin
+
 namespace node
 {
 namespace internal

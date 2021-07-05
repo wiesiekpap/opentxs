@@ -14,12 +14,12 @@
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
-#include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 
 //#define OT_METHOD " opentxs::blockchain::p2p::bitcoin::message::Reject::"
 
@@ -57,7 +57,7 @@ auto BitcoinP2PReject(
     auto* it{static_cast<const std::byte*>(payload)};
     // -----------------------------------------------
     auto messageSize = std::size_t{0};
-    const bool decodedSize = blockchain::bitcoin::DecodeCompactSizeFromPayload(
+    const bool decodedSize = network::blockchain::bitcoin::DecodeSize(
         it, expectedSize, size, messageSize);
 
     if (!decodedSize) {
@@ -104,9 +104,8 @@ auto BitcoinP2PReject(
     }
     // -----------------------------------------------
     std::size_t reasonSize{0};
-    const bool decodedReasonSize =
-        blockchain::bitcoin::DecodeCompactSizeFromPayload(
-            it, expectedSize, size, reasonSize);
+    const bool decodedReasonSize = network::blockchain::bitcoin::DecodeSize(
+        it, expectedSize, size, reasonSize);
 
     if (!decodedReasonSize) {
         LogOutput(__FUNCTION__)(": CompactSize incomplete for reason field")

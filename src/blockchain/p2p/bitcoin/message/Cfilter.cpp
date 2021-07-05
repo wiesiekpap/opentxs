@@ -18,7 +18,6 @@
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/Blockchain.hpp"
-#include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -27,6 +26,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 
 // #define OT_METHOD "opentxs::blockchain::p2p::bitcoin::message::Cfilter::"
 
@@ -76,7 +76,7 @@ auto BitcoinP2PCfilter(
     }
 
     auto filterSize = std::size_t{0};
-    const auto haveSize = blockchain::bitcoin::DecodeCompactSizeFromPayload(
+    const auto haveSize = network::blockchain::bitcoin::DecodeSize(
         it, expectedSize, size, filterSize);
 
     if (false == haveSize) {

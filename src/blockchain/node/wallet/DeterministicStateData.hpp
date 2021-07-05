@@ -8,9 +8,11 @@
 #include <atomic>
 #include <iosfwd>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <optional>
 #include <queue>
+#include <utility>
 #include <vector>
 
 #include "blockchain/node/wallet/SubchainStateData.hpp"
@@ -50,6 +52,7 @@ namespace block
 namespace bitcoin
 {
 class Block;
+class Transaction;
 }  // namespace bitcoin
 }  // namespace block
 

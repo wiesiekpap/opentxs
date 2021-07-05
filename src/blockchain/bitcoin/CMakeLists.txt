@@ -7,8 +7,6 @@ add_library(
   opentxs-blockchain-bitcoin OBJECT
   "${opentxs_SOURCE_DIR}/src/internal/blockchain/bitcoin/Bitcoin.hpp"
   "Bitcoin.cpp"
-  "CompactSize.cpp"
-  "CompactSize.hpp"
   "Inventory.cpp"
   "Inventory.hpp"
 )

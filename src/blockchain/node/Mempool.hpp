@@ -8,6 +8,8 @@
 #pragma once
 
 #include <memory>
+#include <set>
+#include <string>
 #include <vector>
 
 #include "internal/blockchain/node/Node.hpp"
@@ -31,6 +33,8 @@ namespace internal
 {
 struct Transaction;
 }  // namespace internal
+
+class Transaction;
 }  // namespace bitcoin
 }  // namespace block
 }  // namespace blockchain

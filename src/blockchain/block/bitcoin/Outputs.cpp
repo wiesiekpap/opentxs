@@ -18,12 +18,13 @@
 #include <utility>
 #include <vector>
 
-#include "blockchain/bitcoin/CompactSize.hpp"
+#include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/protobuf/BlockchainTransaction.pb.h"
 #include "util/Container.hpp"
 

@@ -10,13 +10,10 @@
 #include <vector>
 
 #include "OTTestEnvironment.hpp"  // IWYU pragma: keep
-#include "blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
-
-namespace b = ot::blockchain;
-namespace bb = b::bitcoin;
+#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 
 namespace
 {
@@ -61,9 +58,11 @@ const std::map<std::string, std::uint64_t> vector_5_{
 };
 // clang-format on
 
-bb::CompactSize::Bytes decode_hex(const std::string& hex)
+using CompactSize = opentxs::network::blockchain::bitcoin::CompactSize;
+
+CompactSize::Bytes decode_hex(const std::string& hex)
 {
-    bb::CompactSize::Bytes output{};
+    CompactSize::Bytes output{};
     auto bytes = ot::Data::Factory(hex, ot::Data::Mode::Hex);
 
     for (const auto& byte : bytes.get()) { output.emplace_back(byte); }
@@ -74,7 +73,7 @@ bb::CompactSize::Bytes decode_hex(const std::string& hex)
 TEST(Test_CompactSize, encode)
 {
     for (const auto& [number, hex] : vector_1_) {
-        bb::CompactSize encoded(number);
+        CompactSize encoded(number);
         const auto expectedRaw = ot::Data::Factory(hex, ot::Data::Mode::Hex);
         const auto calculatedRaw = ot::Data::Factory(encoded.Encode());
 
@@ -88,9 +87,9 @@ TEST(Test_CompactSize, decode_one_byte)
         auto raw = decode_hex(hex);
         const auto first = raw.at(0);
 
-        EXPECT_EQ(bb::CompactSize::CalculateSize(first), 0);
+        EXPECT_EQ(CompactSize::CalculateSize(first), 0);
 
-        bb::CompactSize decoded;
+        CompactSize decoded;
 
         EXPECT_TRUE(decoded.Decode(raw));
         EXPECT_EQ(decoded.Value(), expected);
@@ -103,9 +102,9 @@ TEST(Test_CompactSize, decode_three_bytes)
         auto raw = decode_hex(hex);
         const auto first = raw.at(0);
 
-        EXPECT_EQ(2, bb::CompactSize::CalculateSize(first));
+        EXPECT_EQ(2, CompactSize::CalculateSize(first));
 
-        bb::CompactSize decoded;
+        CompactSize decoded;
         raw.erase(raw.begin());
 
         EXPECT_TRUE(decoded.Decode(raw));
@@ -119,9 +118,9 @@ TEST(Test_CompactSize, decode_five_bytes)
         auto raw = decode_hex(hex);
         const auto first = raw.at(0);
 
-        EXPECT_EQ(4, bb::CompactSize::CalculateSize(first));
+        EXPECT_EQ(4, CompactSize::CalculateSize(first));
 
-        bb::CompactSize decoded;
+        CompactSize decoded;
         raw.erase(raw.begin());
 
         EXPECT_TRUE(decoded.Decode(raw));
@@ -135,9 +134,9 @@ TEST(Test_CompactSize, decode_nine_bytes)
         auto raw = decode_hex(hex);
         const auto first = raw.at(0);
 
-        EXPECT_EQ(8, bb::CompactSize::CalculateSize(first));
+        EXPECT_EQ(8, CompactSize::CalculateSize(first));
 
-        bb::CompactSize decoded;
+        CompactSize decoded;
         raw.erase(raw.begin());
 
         EXPECT_TRUE(decoded.Decode(raw));

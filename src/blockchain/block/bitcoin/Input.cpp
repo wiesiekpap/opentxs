@@ -24,7 +24,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "blockchain/bitcoin/CompactSize.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
@@ -33,6 +32,7 @@
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
@@ -41,6 +41,7 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/protobuf/BlockchainInputWitness.pb.h"
 #include "opentxs/protobuf/BlockchainPreviousOutput.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionInput.pb.h"

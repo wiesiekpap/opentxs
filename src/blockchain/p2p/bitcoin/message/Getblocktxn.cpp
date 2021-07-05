@@ -11,13 +11,13 @@
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
-#include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 
 //#define OT_METHOD " opentxs::blockchain::p2p::bitcoin::message::Getblocktxn::"
 
@@ -69,7 +69,7 @@ auto BitcoinP2PGetblocktxn(
     }
 
     std::size_t indicesCount{0};
-    const bool decodedSize = blockchain::bitcoin::DecodeCompactSizeFromPayload(
+    const bool decodedSize = network::blockchain::bitcoin::DecodeSize(
         it, expectedSize, size, indicesCount);
 
     if (!decodedSize) {
@@ -93,9 +93,8 @@ auto BitcoinP2PGetblocktxn(
             }
 
             std::size_t txnIndex{0};
-            const bool decodedSize =
-                blockchain::bitcoin::DecodeCompactSizeFromPayload(
-                    it, expectedSize, size, txnIndex);
+            const bool decodedSize = network::blockchain::bitcoin::DecodeSize(
+                it, expectedSize, size, txnIndex);
 
             if (!decodedSize) {
                 LogOutput(__FUNCTION__)(": CompactSize incomplete").Flush();

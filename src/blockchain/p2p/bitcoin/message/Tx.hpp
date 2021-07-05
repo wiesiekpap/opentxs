@@ -27,6 +27,14 @@ class Core;
 
 namespace blockchain
 {
+namespace block
+{
+namespace bitcoin
+{
+class Transaction;
+}  // namespace bitcoin
+}  // namespace block
+
 namespace p2p
 {
 namespace bitcoin

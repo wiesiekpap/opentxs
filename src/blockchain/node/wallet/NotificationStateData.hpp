@@ -8,6 +8,7 @@
 #include <atomic>
 #include <iosfwd>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <optional>
 #include <queue>
@@ -61,6 +62,7 @@ namespace block
 namespace bitcoin
 {
 class Block;
+class Transaction;
 }  // namespace bitcoin
 }  // namespace block
 

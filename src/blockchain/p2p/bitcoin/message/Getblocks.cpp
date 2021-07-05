@@ -13,10 +13,10 @@
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
-#include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 
 //#define OT_METHOD " opentxs::blockchain::p2p::bitcoin::message::Getblocks::"
 
@@ -69,7 +69,7 @@ auto BitcoinP2PGetblocks(
     std::vector<OTData> header_hashes;
 
     std::size_t hashCount{0};
-    const bool decodedSize = blockchain::bitcoin::DecodeCompactSizeFromPayload(
+    const bool decodedSize = network::blockchain::bitcoin::DecodeSize(
         it, expectedSize, size, hashCount);
 
     if (!decodedSize) {

@@ -52,7 +52,6 @@ namespace blockchain
 {
 namespace bitcoin
 {
-class CompactSize;
 class Inventory;
 struct EncodedInput;
 struct EncodedOutpoint;
@@ -86,6 +85,17 @@ class Transaction;
 struct Outpoint;
 }  // namespace block
 }  // namespace blockchain
+
+namespace network
+{
+namespace blockchain
+{
+namespace bitcoin
+{
+class CompactSize;
+}  // namespace bitcoin
+}  // namespace blockchain
+}  // namespace network
 
 namespace proto
 {

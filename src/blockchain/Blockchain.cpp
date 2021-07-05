@@ -22,7 +22,6 @@
 #include <utility>
 
 #include "internal/blockchain/Params.hpp"
-#include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -32,6 +31,7 @@
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 
 constexpr auto BITMASK(std::uint64_t n) noexcept -> std::uint64_t
 {
@@ -308,7 +308,7 @@ auto DecodeSerializedCfilter(const ReadView bytes) noexcept(false)
 
     auto elementCount = std::size_t{0u};
     auto csBytes = std::size_t{0u};
-    const auto haveElementCount = bitcoin::DecodeCompactSizeFromPayload(
+    const auto haveElementCount = network::blockchain::bitcoin::DecodeSize(
         it, expectedSize, bytes.size(), elementCount, csBytes);
 
     if (false == haveElementCount) {

@@ -12,9 +12,9 @@
 #include <string_view>
 
 #include "blockchain/DownloadTask.hpp"
-#include "blockchain/node/Mempool.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
+#include "opentxs/api/Endpoints.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"

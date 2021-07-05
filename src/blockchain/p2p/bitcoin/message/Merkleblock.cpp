@@ -12,12 +12,12 @@
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
-#include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 
 //#define OT_METHOD " opentxs::blockchain::p2p::bitcoin::message::Merkleblock::"
 
@@ -72,7 +72,7 @@ auto BitcoinP2PMerkleblock(
     }
 
     std::size_t hashCount{0};
-    const bool decodedSize = blockchain::bitcoin::DecodeCompactSizeFromPayload(
+    const bool decodedSize = network::blockchain::bitcoin::DecodeSize(
         it, expectedSize, size, hashCount);
 
     if (!decodedSize) {
@@ -112,9 +112,8 @@ auto BitcoinP2PMerkleblock(
     }
 
     std::size_t flagByteCount{0};
-    const bool decodedFlagSize =
-        blockchain::bitcoin::DecodeCompactSizeFromPayload(
-            it, expectedSize, size, flagByteCount);
+    const bool decodedFlagSize = network::blockchain::bitcoin::DecodeSize(
+        it, expectedSize, size, flagByteCount);
 
     if (!decodedFlagSize) {
         LogOutput(__FUNCTION__)(": CompactSize incomplete").Flush();

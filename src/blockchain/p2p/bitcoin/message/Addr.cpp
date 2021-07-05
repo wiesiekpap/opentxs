@@ -14,12 +14,12 @@
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
-#include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 
 //#define OT_METHOD "
 // opentxs::blockchain::p2p::bitcoin::message::implementation::Addr::"
@@ -58,8 +58,8 @@ auto BitcoinP2PAddr(
 
     auto* it{static_cast<const std::byte*>(payload)};
     std::size_t count{0};
-    const bool haveCount = blockchain::bitcoin::DecodeCompactSizeFromPayload(
-        it, expectedSize, size, count);
+    const bool haveCount =
+        network::blockchain::bitcoin::DecodeSize(it, expectedSize, size, count);
 
     if (false == haveCount) {
         LogOutput(__FUNCTION__)(": Invalid CompactSizee").Flush();

@@ -17,7 +17,6 @@
 #include <set>
 #include <string>
 
-#include "blockchain/bitcoin/CompactSize.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "opentxs/Types.hpp"
@@ -25,6 +24,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 
 namespace opentxs
 {
