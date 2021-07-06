@@ -363,7 +363,11 @@ auto Peers::insert(const Lock& lock, std::vector<Address_p> peers) noexcept
         }
     }
 
-    parentTxn.Finalize(true);
+    if (false == parentTxn.Finalize(true)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Database error").Flush();
+
+        return false;
+    }
 
     return true;
 }

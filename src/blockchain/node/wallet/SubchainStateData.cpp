@@ -200,14 +200,18 @@ auto SubchainStateData::ReorgQueue::Next() noexcept -> block::Position
 
 auto SubchainStateData::check_blocks() noexcept -> bool
 {
-    for (const auto& hash : blocks_to_request_) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(" requesting block ")(
-            hash->asHex())(" queue position: ")(outstanding_blocks_.size())
-            .Flush();
+    auto h{blocks_to_request_.begin()};
+    auto futures = node_.BlockOracle().LoadBitcoin(blocks_to_request_);
+
+    OT_ASSERT(blocks_to_request_.size() == futures.size());
+
+    for (auto f{futures.begin()}; f < futures.end(); ++h, ++f) {
+        const auto& hash = *h;
+        auto& future = *f;
 
         if (0 == outstanding_blocks_.count(hash)) {
-            auto [it, added] = outstanding_blocks_.emplace(
-                hash, node_.BlockOracle().LoadBitcoin(hash));
+            auto [it, added] =
+                outstanding_blocks_.emplace(hash, std::move(future));
 
             OT_ASSERT(added);
 
@@ -716,7 +720,7 @@ auto SubchainStateData::set_key_data(
     tx.SetKeyData(data);
 }
 
-auto SubchainStateData::state_machine() noexcept -> bool
+auto SubchainStateData::state_machine(bool enabled) noexcept -> bool
 {
     if (running_) {
         LogTrace(OT_METHOD)(__FUNCTION__)(": ")(name_)(" task is running")
@@ -725,14 +729,18 @@ auto SubchainStateData::state_machine() noexcept -> bool
         return false;
     }
 
-    if (check_reorg()) { return false; }
-    if (check_blocks()) { return false; }
-    if (check_index()) { return false; }
+    if (enabled) {
+        if (check_reorg()) { return false; }
+        if (check_blocks()) { return false; }
+        if (check_index()) { return false; }
+    }
 
     check_mempool();
 
-    if (check_scan()) { return false; }
-    if (check_process()) { return false; }
+    if (enabled) {
+        if (check_scan()) { return false; }
+        if (check_process()) { return false; }
+    }
 
     return false;
 }

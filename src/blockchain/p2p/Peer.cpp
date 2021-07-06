@@ -77,8 +77,8 @@ Peer::Peer(
     OT_ASSERT(connection_);
 
     if (false == connection_->init(id_)) {
-        LogNormal("Connection to peer ")(address_.Display())(
-            " timed out during connect")
+        LogNormal("Disconnecting ")(DisplayString(chain_))(" peer ")(
+            address_.Display())(" due to connection timeout.")
             .Flush();
         disconnect();
     }
@@ -99,6 +99,9 @@ auto Peer::check_activity() noexcept -> void
         std::chrono::seconds(OT_BLOCKCHAIN_PEER_PING_SECONDS) <= interval;
 
     if (disconnect) {
+        LogNormal("Disconnecting ")(DisplayString(chain_))(" peer ")(
+            address_.Display())(" due to activity timeout.")
+            .Flush();
         this->disconnect();
     } else if (ping) {
         this->ping();
@@ -612,6 +615,8 @@ auto Peer::transmit(zmq::Message& message) noexcept -> void
     auto future = promise->get_future();
     connection_->transmit(payload, std::move(promise));
     auto result{false};
+    const auto start = Clock::now();
+    static const auto limit = std::chrono::seconds{10};
 
     try {
         while (running_.get()) {
@@ -621,13 +626,19 @@ auto Peer::transmit(zmq::Message& message) noexcept -> void
                 result = future.get();
 
                 break;
-            } else {
+            } else if (const auto time = Clock::now() - start; time >= limit) {
+                LogNormal("Disconnecting ")(DisplayString(chain_))(" peer ")(
+                    address_.Display())(" due to transmit timeout.")
+                    .Flush();
                 disconnect();
 
                 return;
             }
         }
-    } catch (...) {
+    } catch (const std::exception& e) {
+        LogNormal("Disconnecting ")(DisplayString(chain_))(" peer ")(
+            address_.Display())(" due to transmit error: ")(e.what())
+            .Flush();
         disconnect();
 
         return;
@@ -638,7 +649,9 @@ auto Peer::transmit(zmq::Message& message) noexcept -> void
             .Flush();
         success = true;
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Send error").Flush();
+        LogNormal("Disconnecting ")(DisplayString(chain_))(" peer ")(
+            address_.Display())(" due to unspecified transmit error.")
+            .Flush();
         success = false;
         disconnect();
     }

@@ -230,7 +230,12 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
         }
     }
 
-    parentTxn.Finalize(true);
+    if (false == parentTxn.Finalize(true)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Database error").Flush();
+
+        return false;
+    }
+
     const auto position = best(lock);
 
     if (update.HaveReorg()) {

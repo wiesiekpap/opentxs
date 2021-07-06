@@ -25,8 +25,6 @@ class Symmetric;
 
 namespace network
 {
-class Asio;
-class Dht;
 class Network;
 }  // namespace network
 

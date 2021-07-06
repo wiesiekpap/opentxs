@@ -85,7 +85,7 @@ struct Account::Imp {
         outgoing_.clear();
         incoming_.clear();
     }
-    auto state_machine() noexcept -> bool
+    auto state_machine(bool enabled) noexcept -> bool
     {
         auto ticket = gatekeeper_.get();
 
@@ -97,10 +97,10 @@ struct Account::Imp {
             const auto& id = account.ID();
             LogVerbose(OT_METHOD)(__FUNCTION__)(": Processing HD account ")(id)
                 .Flush();
-            output |=
-                get(account, Subchain::Internal, internal_).state_machine();
-            output |=
-                get(account, Subchain::External, external_).state_machine();
+            output |= get(account, Subchain::Internal, internal_)
+                          .state_machine(enabled);
+            output |= get(account, Subchain::External, external_)
+                          .state_machine(enabled);
         }
 
         for (const auto& account : ref_.GetPaymentCode()) {
@@ -108,10 +108,10 @@ struct Account::Imp {
             LogVerbose(OT_METHOD)(__FUNCTION__)(
                 ": Processing payment code account ")(id)
                 .Flush();
-            output |=
-                get(account, Subchain::Outgoing, outgoing_).state_machine();
-            output |=
-                get(account, Subchain::Incoming, incoming_).state_machine();
+            output |= get(account, Subchain::Outgoing, outgoing_)
+                          .state_machine(enabled);
+            output |= get(account, Subchain::Incoming, incoming_)
+                          .state_machine(enabled);
         }
 
         return output;
@@ -249,7 +249,10 @@ auto Account::reorg(const block::Position& parent) noexcept -> bool
 
 auto Account::shutdown() noexcept -> void { imp_->shutdown(); }
 
-auto Account::state_machine() noexcept -> bool { return imp_->state_machine(); }
+auto Account::state_machine(bool enabled) noexcept -> bool
+{
+    return imp_->state_machine(enabled);
+}
 
 Account::~Account() { imp_->shutdown(); }
 }  // namespace opentxs::blockchain::node::wallet

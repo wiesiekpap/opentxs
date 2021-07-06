@@ -151,7 +151,7 @@ public:
     virtual auto reorg() noexcept -> void;
     virtual auto scan() noexcept -> void;
 
-    auto state_machine() noexcept -> bool;
+    auto state_machine(bool enabled) noexcept -> bool;
 
     virtual ~SubchainStateData();
 
