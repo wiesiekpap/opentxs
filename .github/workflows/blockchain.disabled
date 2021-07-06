@@ -64,7 +64,7 @@ jobs:
     - name: Run vcpkg
       uses: lukka/run-vcpkg@v7.3
       with:
-        vcpkgArguments: '--triplet ${{ matrix.vcpkg_triplet }} --overlay-triplets=${{ github.workspace }}/vcpkg/triplets @${{ github.workspace }}/vcpkg/${{ matrix.vcpkg_pkg_list }}.txt'
+        vcpkgArguments: '--triplet ${{ matrix.vcpkg_triplet }} --overlay-ports=${{ github.workspace }}/vcpkg/ports --overlay-triplets=${{ github.workspace }}/vcpkg/triplets @${{ github.workspace }}/vcpkg/${{ matrix.vcpkg_pkg_list }}.txt'
         vcpkgDirectory: '${{ github.workspace }}/deps/vcpkg'
         doNotCache: true
       continue-on-error: ${{ matrix.experimental }}
