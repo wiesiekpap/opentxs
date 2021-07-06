@@ -107,7 +107,7 @@ struct Accounts::Imp {
 
         for (auto& [id, account] : map_) { account.shutdown(); }
     }
-    auto state_machine() noexcept -> bool
+    auto state_machine(bool enabled) noexcept -> bool
     {
         auto ticket = gatekeeper_.get();
 
@@ -116,10 +116,12 @@ struct Accounts::Imp {
         auto output{false};
 
         for (auto& [code, account] : payment_codes_) {
-            output |= account.state_machine();
+            output |= account.state_machine(enabled);
         }
 
-        for (auto& [nym, account] : map_) { output |= account.state_machine(); }
+        for (auto& [nym, account] : map_) {
+            output |= account.state_machine(enabled);
+        }
 
         return output;
     }
@@ -242,9 +244,9 @@ auto Accounts::Reorg(const block::Position& parent) noexcept -> bool
 
 auto Accounts::shutdown() noexcept -> void { imp_->shutdown(); }
 
-auto Accounts::state_machine() noexcept -> bool
+auto Accounts::state_machine(bool enabled) noexcept -> bool
 {
-    return imp_->state_machine();
+    return imp_->state_machine(enabled);
 }
 
 Accounts::~Accounts() { imp_->shutdown(); }

@@ -427,13 +427,10 @@ auto Base::is_synchronized_blocks() const noexcept -> bool
 
 auto Base::is_synchronized_filters() const noexcept -> bool
 {
-    static constexpr auto limit = std::chrono::minutes{15};
     const auto target = this->target();
     const auto progress = filters_.Tip(filters_.DefaultType()).first;
-    const auto elapsed = Clock::now() - start_;
 
-    return (progress >= target) ||
-           (config_.use_sync_server_ && (elapsed >= limit));
+    return (progress >= target);
 }
 
 auto Base::is_synchronized_headers() const noexcept -> bool

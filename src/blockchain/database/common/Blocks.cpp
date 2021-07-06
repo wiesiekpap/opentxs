@@ -116,6 +116,12 @@ auto Blocks::Store(const Hash& block, const std::size_t bytes) const noexcept
         return {};
     }
 
+    if (false == tx.Finalize(true)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Database error").Flush();
+
+        return {};
+    }
+
     return BlockWriter{std::move(view), block_locks_[block]};
 }
 }  // namespace opentxs::blockchain::database::common

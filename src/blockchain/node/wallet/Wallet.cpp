@@ -193,14 +193,11 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
         } break;
         case Work::reorg: {
             process_reorg(in);
-
-            if (enabled_) { do_work(); }
+            do_work();
         } break;
         case Work::mempool: {
-            if (enabled_) {
-                process_mempool(in);
-                do_work();
-            }
+            process_mempool(in);
+            do_work();
         } break;
         case Work::nym: {
             OT_ASSERT(1 < body.size());
@@ -211,7 +208,7 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
         case Work::key:
         case Work::filter:
         case Work::statemachine: {
-            if (enabled_) { do_work(); }
+            do_work();
         } break;
         default: {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Unhandled type").Flush();
@@ -270,8 +267,9 @@ auto Wallet::state_machine() noexcept -> bool
 {
     if (false == running_.get()) { return false; }
 
-    auto repeat = accounts_.state_machine();
-    repeat |= proposals_.Run();
+    auto repeat = accounts_.state_machine(enabled_);
+
+    if (enabled_) { repeat |= proposals_.Run(); }
 
     return repeat;
 }

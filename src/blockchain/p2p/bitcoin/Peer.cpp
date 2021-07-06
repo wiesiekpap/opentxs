@@ -1413,7 +1413,8 @@ auto Peer::process_message(const zmq::Message& message) noexcept -> void
         factory::BitcoinP2PHeader(api_, headerBytes)};
 
     if (false == bool(pHeader)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message header ")
+        LogNormal("Disconnecting ")(DisplayString(chain_))(" peer ")(
+            address_.Display())(" due to invalid message header.")
             .Flush();
         disconnect();
 
@@ -1423,7 +1424,8 @@ auto Peer::process_message(const zmq::Message& message) noexcept -> void
     auto& header = *pHeader;
 
     if (header.Network() != chain_) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Wrong network on message")
+        LogNormal("Disconnecting ")(DisplayString(chain_))(" peer ")(
+            address_.Display())(" due to invalid network.")
             .Flush();
         disconnect();
 
@@ -1433,8 +1435,8 @@ auto Peer::process_message(const zmq::Message& message) noexcept -> void
     const auto command = header.Command();
 
     if (false == message::VerifyChecksum(api_, header, payloadBytes)) {
-        LogNormal("Invalid checksum on ")(DisplayString(chain_))(" ")(
-            CommandName(command))(" message")
+        LogNormal("Disconnecting ")(DisplayString(chain_))(" peer ")(
+            address_.Display())(" due to invalid message checksum.")
             .Flush();
         disconnect();
 
@@ -1504,7 +1506,8 @@ auto Peer::process_ping(
     const auto& message = *pMessage;
 
     if (message.Nonce() == nonce_) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Connection to self detected")
+        LogNormal("Disconnecting ")(DisplayString(chain_))(" peer ")(
+            address_.Display())(" which is apparently us.")
             .Flush();
         disconnect();
     }
@@ -1744,32 +1747,43 @@ auto Peer::request_block(zmq::Message& in) noexcept -> void
 {
     const auto body = in.Body();
 
-    if (2 > body.size()) {
+    if (const auto count{body.size()}; 2 > count) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid command").Flush();
 
         OT_FAIL;
+    } else {
+        LogTrace(OT_METHOD)(__FUNCTION__)(": ")(count - 1)(" blocks to request")
+            .Flush();
     }
 
     using Inventory = blockchain::bitcoin::Inventory;
     using Type = Inventory::Type;
-    auto blocks = std::vector<Inventory>{};
+    using BlockList = std::vector<Inventory>;
+    auto blocks = std::vector<BlockList>{};
+    blocks.emplace_back();
+    static constexpr auto limit = std::size_t{50000};
 
     for (auto i = std::size_t{1}; i < body.size(); ++i) {
-        blocks.emplace_back(Type::MsgBlock, api_.Factory().Data(body.at(1)));
+        auto& list = blocks.back();
+        list.emplace_back(Type::MsgBlock, api_.Factory().Data(body.at(1)));
+
+        if (limit <= list.size()) { blocks.emplace_back(); }
     }
 
-    auto pMessage = std::unique_ptr<Message>{
-        factory::BitcoinP2PGetdata(api_, chain_, std::move(blocks))};
+    for (auto& list : blocks) {
+        auto pMessage = std::unique_ptr<Message>{
+            factory::BitcoinP2PGetdata(api_, chain_, std::move(list))};
 
-    if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct getdata")
-            .Flush();
+        if (false == bool(pMessage)) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct getdata")
+                .Flush();
 
-        return;
+            return;
+        }
+
+        const auto& message = *pMessage;
+        send(message.Encode());
     }
-
-    const auto& message = *pMessage;
-    send(message.Encode());
 }
 
 auto Peer::request_blocks() noexcept -> void
@@ -1878,8 +1892,8 @@ auto Peer::request_checkpoint_block_header() noexcept -> void
                 DisplayString(chain_))(" peer ")(address_.Display())(".")
                 .Flush();
         } else {
-            LogNormal("Failed to request checkpoint block header from ")(
-                DisplayString(chain_))(" peer ")(address_.Display())(".")
+            LogNormal("Disconnecting ")(DisplayString(chain_))(" peer ")(
+                address_.Display())(" due to block checkpoint request failure.")
                 .Flush();
             disconnect();
         }
@@ -1920,8 +1934,9 @@ auto Peer::request_checkpoint_filter_header() noexcept -> void
                 DisplayString(chain_))(" peer ")(address_.Display())(".")
                 .Flush();
         } else {
-            LogNormal("Failed to request checkpoint filter header from ")(
-                DisplayString(chain_))(" peer ")(address_.Display())(".")
+            LogNormal("Disconnecting ")(DisplayString(chain_))(" peer ")(
+                address_.Display())(
+                " due to filter checkpoint request failure.")
                 .Flush();
             disconnect();
         }
@@ -2018,14 +2033,17 @@ auto Peer::start_handshake() noexcept -> void
         const auto status = Connected().wait_for(std::chrono::seconds(5));
 
         if (std::future_status::ready != status) {
-            LogNormal("Connection to peer ")(address_.Display())(
-                " timed out during handshake")
+            LogNormal("Disconnecting ")(DisplayString(chain_))(" peer ")(
+                address_.Display())(" due to handshake timeout.")
                 .Flush();
             disconnect();
 
             return;
         }
-    } catch (...) {
+    } catch (const std::exception& e) {
+        LogNormal("Disconnecting ")(DisplayString(chain_))(" peer ")(
+            address_.Display())(" due to handshake error: ")(e.what())
+            .Flush();
         disconnect();
 
         return;
@@ -2054,7 +2072,10 @@ auto Peer::start_handshake() noexcept -> void
 
         const auto& version = *pVersion;
         send(version.Encode());
-    } catch (...) {
+    } catch (const std::exception& e) {
+        LogNormal("Disconnecting ")(DisplayString(chain_))(" peer ")(
+            address_.Display())(" due to handshake error: ")(e.what())
+            .Flush();
         disconnect();
     }
 }

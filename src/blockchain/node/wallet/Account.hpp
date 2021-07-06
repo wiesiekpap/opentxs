@@ -86,7 +86,7 @@ public:
         -> void;
     auto reorg(const block::Position& parent) noexcept -> bool;
     auto shutdown() noexcept -> void;
-    auto state_machine() noexcept -> bool;
+    auto state_machine(bool enabled) noexcept -> bool;
 
     Account(
         const api::Core& api,

@@ -396,12 +396,19 @@ auto PeerManager::RequestBlocks(
     if (0 == hashes.size()) { return false; }
 
     auto work = jobs_.Work(Task::Getblock);
+    static constexpr auto limit =
+        std::size_t{1u};  // TODO peers don't respond well to larger values
 
     for (const auto& block : hashes) {
         work->AddFrame(block.data(), block.size());
+
+        if (work->Body().size() > limit) {
+            jobs_.Dispatch(work);
+            work = jobs_.Work(Task::Getblock);
+        }
     }
 
-    jobs_.Dispatch(work);
+    if (work->Body().size() > 1u) { jobs_.Dispatch(work); }
 
     return true;
 }

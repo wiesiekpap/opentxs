@@ -36,7 +36,7 @@
 namespace opentxs::blockchain::node::implementation
 {
 const std::size_t BlockOracle::Cache::cache_limit_{16};
-const std::chrono::seconds BlockOracle::Cache::download_timeout_{15};
+const std::chrono::seconds BlockOracle::Cache::download_timeout_{60};
 
 BlockOracle::Cache::Cache(
     const api::Core& api,
@@ -54,12 +54,6 @@ BlockOracle::Cache::Cache(
     , mem_(cache_limit_)
     , running_(true)
 {
-}
-
-auto BlockOracle::Cache::download(const block::Hash& block) const noexcept
-    -> bool
-{
-    return node_.RequestBlock(block);
 }
 
 auto BlockOracle::Cache::DownloadQueue() const noexcept -> std::size_t
@@ -96,7 +90,9 @@ auto BlockOracle::Cache::ReceiveBlock(BitcoinBlock_p in) const noexcept -> void
     auto& block = *in;
 
     if (database::BlockStorage::None != db_.BlockPolicy()) {
-        db_.BlockStore(block);
+        const auto saved = db_.BlockStore(block);
+
+        OT_ASSERT(saved);
     }
 
     const auto& id = block.ID();
@@ -200,6 +196,9 @@ auto BlockOracle::Cache::Request(const BlockHashes& hashes) const noexcept
 
                 return key->Bytes();
             });
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": Downloading ")(blockList.size())(
+            " blocks from peers")
+            .Flush();
         const auto messageSent = node_.RequestBlocks(blockList);
 
         for (auto& [hash, futureOut] : download) {
@@ -243,6 +242,8 @@ auto BlockOracle::Cache::StateMachine() const noexcept -> bool
     LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(DisplayString(chain_))(
         " download queue contains ")(pending_.size())(" blocks.")
         .Flush();
+    auto blockList = std::vector<ReadView>{};
+    blockList.reserve(pending_.size());
 
     for (auto& [hash, item] : pending_) {
         auto& [time, promise, future, queued] = item;
@@ -255,7 +256,8 @@ auto BlockOracle::Cache::StateMachine() const noexcept -> bool
             LogVerbose(OT_METHOD)(__FUNCTION__)(": Requesting ")(
                 DisplayString(chain_))(" block ")(hash->asHex())(" from peers")
                 .Flush();
-            queued = download(hash);
+            blockList.emplace_back(hash->Bytes());
+            queued = true;
             time = now;
         } else {
             LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(elapsed.count())(
@@ -264,6 +266,8 @@ auto BlockOracle::Cache::StateMachine() const noexcept -> bool
                 .Flush();
         }
     }
+
+    if (0 < blockList.size()) { node_.RequestBlocks(blockList); }
 
     return 0 < pending_.size();
 }
