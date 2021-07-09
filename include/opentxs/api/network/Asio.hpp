@@ -12,8 +12,11 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
+#include <future>
 #include <string_view>
 #include <vector>
+
+#include "opentxs/core/Data.hpp"
 
 namespace opentxs
 {
@@ -38,25 +41,27 @@ namespace api
 {
 namespace network
 {
-class Asio
+class OPENTXS_EXPORT Asio
 {
 public:
     using Endpoint = opentxs::network::asio::Endpoint;
     using Socket = opentxs::network::asio::Socket;
     using Resolved = std::vector<Endpoint>;
 
-    OPENTXS_EXPORT auto MakeSocket(const Endpoint& endpoint) const noexcept
-        -> Socket;
-    OPENTXS_EXPORT auto NotificationEndpoint() const noexcept -> const char*;
-    OPENTXS_EXPORT auto Resolve(std::string_view server, std::uint16_t port)
-        const noexcept -> Resolved;
+    auto GetPublicAddress4() const noexcept -> std::shared_future<OTData>;
+    auto GetPublicAddress6() const noexcept -> std::shared_future<OTData>;
+    auto MakeSocket(const Endpoint& endpoint) const noexcept -> Socket;
+    auto NotificationEndpoint() const noexcept -> const char*;
+    auto Resolve(std::string_view server, std::uint16_t port) const noexcept
+        -> Resolved;
 
-    auto Init() noexcept -> void;
-    auto Shutdown() noexcept -> void;
+    OPENTXS_NO_EXPORT auto Init() noexcept -> void;
+    OPENTXS_NO_EXPORT auto Shutdown() noexcept -> void;
 
-    Asio(const opentxs::network::zeromq::Context& zmq) noexcept;
+    OPENTXS_NO_EXPORT Asio(
+        const opentxs::network::zeromq::Context& zmq) noexcept;
 
-    ~Asio();
+    OPENTXS_NO_EXPORT ~Asio();
 
 private:
     struct Imp;

@@ -204,6 +204,7 @@ public:
         auto get_peer() const noexcept -> Endpoint;
         auto get_preferred_peer(const p2p::Protocol protocol) const noexcept
             -> Endpoint;
+        auto get_types() const noexcept -> std::set<p2p::Network>;
         auto is_not_connected(const p2p::Address& endpoint) const noexcept
             -> bool;
 

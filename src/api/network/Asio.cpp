@@ -19,6 +19,16 @@ Asio::Asio(const opentxs::network::zeromq::Context& zmq) noexcept
 {
 }
 
+auto Asio::GetPublicAddress4() const noexcept -> std::shared_future<OTData>
+{
+    return imp_->GetPublicAddress4();
+}
+
+auto Asio::GetPublicAddress6() const noexcept -> std::shared_future<OTData>
+{
+    return imp_->GetPublicAddress6();
+}
+
 auto Asio::Init() noexcept -> void { imp_->Init(); }
 
 auto Asio::MakeSocket(const opentxs::network::asio::Endpoint& endpoint)
