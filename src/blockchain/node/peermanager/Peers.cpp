@@ -307,8 +307,8 @@ auto PeerManager::Peers::get_dns_peer() const noexcept -> Endpoint
         LogVerbose(OT_METHOD)(__FUNCTION__)(": Using DNS seed: ")(seed).Flush();
 
         for (const auto& endpoint : api_.Network().Asio().Resolve(seed, port)) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": Found address: ")(
-                endpoint.GetAddress())
+            LogVerbose(OT_METHOD)(__FUNCTION__)(
+                ": Found address: ")(endpoint.GetAddress())
                 .Flush();
             auto output = Endpoint{};
             auto network = p2p::Network{};
@@ -344,9 +344,10 @@ auto PeerManager::Peers::get_dns_peer() const noexcept -> Endpoint
                 database_.AddOrUpdate(output->clone_internal());
 
                 if (previous_failure_timeout(output->ID())) {
-                    LogVerbose(OT_METHOD)(__FUNCTION__)(": Skipping ")(
-                        DisplayString(chain_))(" peer ")(output->Display())(
-                        " due to retry timeout")
+                    LogVerbose(OT_METHOD)(__FUNCTION__)(
+                        ": Skipping ")(DisplayString(
+                        chain_))(" peer ")(output->Display())(" due to retry "
+                                                              "timeout")
                         .Flush();
 
                     continue;
@@ -373,8 +374,7 @@ auto PeerManager::Peers::get_dns_peer() const noexcept -> Endpoint
 auto PeerManager::Peers::get_fallback_peer(
     const p2p::Protocol protocol) const noexcept -> Endpoint
 {
-    return database_.Get(
-        protocol, {p2p::Network::ipv4, p2p::Network::ipv6}, {});
+    return database_.Get(protocol, get_types(), {});
 }
 
 auto PeerManager::Peers::get_peer() const noexcept -> Endpoint
@@ -383,8 +383,8 @@ auto PeerManager::Peers::get_peer() const noexcept -> Endpoint
     auto pAddress = get_default_peer();
 
     if (pAddress) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Default peer is: ")(
-            pAddress->Display())
+        LogVerbose(OT_METHOD)(__FUNCTION__)(
+            ": Default peer is: ")(pAddress->Display())
             .Flush();
 
         if (is_not_connected(*pAddress)) {
@@ -395,8 +395,8 @@ auto PeerManager::Peers::get_peer() const noexcept -> Endpoint
             return pAddress;
         } else {
             LogVerbose(OT_METHOD)(__FUNCTION__)(
-                ": Already connected / connecting to default peer ")(
-                pAddress->Display())
+                ": Already connected / connecting to default "
+                "peer ")(pAddress->Display())
                 .Flush();
         }
     } else {
@@ -437,10 +437,7 @@ auto PeerManager::Peers::get_peer() const noexcept -> Endpoint
 auto PeerManager::Peers::get_preferred_peer(
     const p2p::Protocol protocol) const noexcept -> Endpoint
 {
-    auto output = database_.Get(
-        protocol,
-        {p2p::Network::ipv4, p2p::Network::ipv6},
-        preferred_services_);
+    auto output = database_.Get(protocol, get_types(), preferred_services_);
 
     if (output && (output->Bytes() == localhost_peer_)) {
         LogVerbose(OT_METHOD)(__FUNCTION__)(
@@ -471,6 +468,23 @@ auto PeerManager::Peers::get_preferred_services(
 
         return {};
     }
+}
+
+auto PeerManager::Peers::get_types() const noexcept -> std::set<p2p::Network>
+{
+    std::set<p2p::Network> networktypes{};
+
+    auto ipv4data = api_.Network().Asio().GetPublicAddress4().get();
+    if (!ipv4data->empty()) {
+        networktypes.insert(blockchain::p2p::Network::ipv4);
+    }
+
+    auto ipv6data = api_.Network().Asio().GetPublicAddress6().get();
+    if (!ipv6data->empty()) {
+        networktypes.insert(blockchain::p2p::Network::ipv6);
+    }
+
+    return networktypes;
 }
 
 auto PeerManager::Peers::is_not_connected(
@@ -546,8 +560,8 @@ auto PeerManager::Peers::Run() noexcept -> bool
     const auto target = minimum_peers_.load();
 
     if (target > peers_.size()) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Fewer peers (")(peers_.size())(
-            ") than desired (")(target)(")")
+        LogVerbose(OT_METHOD)(__FUNCTION__)(
+            ": Fewer peers (")(peers_.size())(") than desired (")(target)(")")
             .Flush();
         add_peer(get_peer());
     }
