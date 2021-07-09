@@ -92,7 +92,7 @@ class Manager;
 #define CHEQUE_AMOUNT_2 75
 #define CHEQUE_MEMO "memo"
 
-namespace
+namespace ottest
 {
 Counter account_activity_usd_alex_{};
 Counter account_list_alex_{};
@@ -122,7 +122,7 @@ Counter payable_list_bch_bob_{};
 Counter payable_list_btc_bob_{};
 Counter profile_bob_{};
 
-class Integration : public ::testing::Test
+class Integration : public IntegrationFixture
 {
 public:
     static Issuer issuer_data_;
@@ -737,7 +737,7 @@ TEST_F(Integration, activity_thread_bob_alex_0)
 TEST_F(Integration, send_message_from_Alex_to_Bob_1)
 {
     activity_summary_alex_.expected_ += 2;
-    activity_thread_bob_alex_.expected_ += 4;
+    activity_thread_bob_alex_.expected_ += 2;
     messagable_list_alex_.expected_ += 1;
     activity_summary_bob_.expected_ += 2;
     contact_list_bob_.expected_ += 2;
@@ -965,7 +965,7 @@ TEST_F(Integration, activity_thread_alex_bob_0)
 
 TEST_F(Integration, send_message_from_Bob_to_Alex_2)
 {
-    activity_summary_alex_.expected_ += 2;
+    activity_summary_alex_.expected_ += 1;
     activity_thread_bob_alex_.expected_ += 3;
     activity_summary_bob_.expected_ += 2;
     activity_thread_alex_bob_.expected_ += 5;
@@ -1851,4 +1851,4 @@ TEST_F(Integration, shutdown)
     EXPECT_EQ(payable_list_btc_bob_.expected_, payable_list_btc_bob_.updated_);
     EXPECT_EQ(profile_bob_.expected_, profile_bob_.updated_);
 }
-}  // namespace
+}  // namespace ottest

@@ -80,10 +80,12 @@ public:
         const opentxs::blockchain::Type currency) const
         -> std::shared_ptr<const opentxs::Contact> final;
     auto NymToContact(const identifier::Nym& nymID) const -> OTIdentifier final;
-    auto PaymentCodeToContact(const PaymentCode& code) const
-        -> OTIdentifier final;
-    auto PaymentCodeToContact(const std::string& code) const
-        -> OTIdentifier final;
+    auto PaymentCodeToContact(
+        const PaymentCode& code,
+        const opentxs::blockchain::Type currency) const -> OTIdentifier final;
+    auto PaymentCodeToContact(
+        const std::string& code,
+        const opentxs::blockchain::Type currency) const -> OTIdentifier final;
     auto Update(const identity::Nym& nym) const
         -> std::shared_ptr<const opentxs::Contact> final;
 

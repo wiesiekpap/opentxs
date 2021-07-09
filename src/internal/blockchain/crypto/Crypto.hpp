@@ -167,9 +167,10 @@ struct Account : virtual public crypto::Account {
         std::set<OTIdentifier>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool = 0;
     virtual auto Chain() const noexcept -> Chain = 0;
-    virtual void ClaimAccountID(
+    virtual auto ClaimAccountID(
         const std::string& id,
-        internal::Subaccount* node) const noexcept = 0;
+        internal::Subaccount* node) const noexcept -> void = 0;
+    virtual auto FindNym(const identifier::Nym& id) const noexcept -> void = 0;
     virtual auto LookupUTXO(const Coin& coin) const noexcept
         -> std::optional<std::pair<Key, Amount>> = 0;
     virtual auto HDChain(const Identifier& account) const noexcept(false)

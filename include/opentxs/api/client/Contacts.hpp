@@ -63,9 +63,11 @@ public:
     virtual OTIdentifier NymToContact(const identifier::Nym& nymID) const = 0;
     /** Returns an existing contact ID if it exists, or creates a new one */
     virtual OTIdentifier PaymentCodeToContact(
-        const PaymentCode& code) const = 0;
+        const PaymentCode& code,
+        const opentxs::blockchain::Type currency) const = 0;
     virtual OTIdentifier PaymentCodeToContact(
-        const std::string& code) const = 0;
+        const std::string& code,
+        const opentxs::blockchain::Type currency) const = 0;
     virtual std::shared_ptr<const opentxs::Contact> Update(
         const identity::Nym& nym) const = 0;
 

@@ -1408,6 +1408,13 @@ auto Nym::SetCommonName(
 }
 
 auto Nym::SetContactData(
+    const ReadView bytes,
+    const opentxs::PasswordPrompt& reason) -> bool
+{
+    return SetContactData(proto::Factory<proto::ContactData>(bytes), reason);
+}
+
+auto Nym::SetContactData(
     const proto::ContactData& data,
     const opentxs::PasswordPrompt& reason) -> bool
 {
@@ -1603,9 +1610,11 @@ auto Nym::verify_pseudonym(const eLock& lock) const -> bool
             // Verify all Credentials in the Authority, including source
             // verification for the master credential.
             if (!pCredential->VerifyInternally()) {
-                LogNormal(OT_METHOD)(__FUNCTION__)(": Credential (")(
-                    pCredential->GetMasterCredID())(
-                    ") failed its own internal verification.")
+                LogNormal(OT_METHOD)(__FUNCTION__)(
+                    ": Credential (")(pCredential
+                                          ->GetMasterCredID())(") failed its "
+                                                               "own internal "
+                                                               "verification.")
                     .Flush();
                 return false;
             }

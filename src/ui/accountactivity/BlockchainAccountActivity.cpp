@@ -105,7 +105,8 @@ BlockchainAccountActivity::BlockchainAccountActivity(
     init(
         {api.Endpoints().BlockchainTransactions(),
          api.Endpoints().BlockchainTransactions(nymID),
-         api.Endpoints().BlockchainSyncProgress()});
+         api.Endpoints().BlockchainSyncProgress(),
+         api.Endpoints().ContactUpdate()});
 
     {
         const auto& socket = balance_socket_.get();
@@ -176,6 +177,13 @@ auto BlockchainAccountActivity::pipeline(const Message& in) noexcept -> void
     }();
 
     switch (work) {
+        case Work::shutdown: {
+            running_->Off();
+            shutdown(shutdown_promise_);
+        } break;
+        case Work::contact: {
+            process_contact(in);
+        } break;
         case Work::balance: {
             process_balance(in);
         } break;
@@ -191,10 +199,6 @@ auto BlockchainAccountActivity::pipeline(const Message& in) noexcept -> void
         } break;
         case Work::statemachine: {
             do_work();
-        } break;
-        case Work::shutdown: {
-            running_->Off();
-            shutdown(shutdown_promise_);
         } break;
         default: {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Unhandled type").Flush();
@@ -234,6 +238,39 @@ auto BlockchainAccountActivity::process_balance(const Message& in) noexcept
     }
 
     load_thread();
+}
+
+auto BlockchainAccountActivity::process_contact(const Message& in) noexcept
+    -> void
+{
+    wait_for_startup();
+    const auto body = in.Body();
+
+    OT_ASSERT(1 < body.size());
+
+    const auto contactID = [&] {
+        auto id = Widget::api_.Factory().Identifier();
+        id->Assign(body.at(1).Bytes());
+
+        return id->str();
+    }();
+    const auto txids = [&] {
+        auto out = std::set<OTData>{};
+        for_each_row([&](const auto& row) {
+            for (const auto& id : row.Contacts()) {
+                if (contactID == id) {
+                    out.emplace(
+                        blockchain::NumberToHash(Widget::api_, row.UUID()));
+
+                    break;
+                }
+            }
+        });
+
+        return out;
+    }();
+
+    for (const auto& txid : txids) { process_txid(txid); }
 }
 
 auto BlockchainAccountActivity::process_sync(const Message& in) noexcept -> void

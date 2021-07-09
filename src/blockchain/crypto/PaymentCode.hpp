@@ -141,16 +141,15 @@ private:
     mutable std::set<opentxs::blockchain::block::pTxid> incoming_notifications_;
     mutable Latest local_;
     Latest remote_;
+    const OTIdentifier contact_id_;
 
     auto account_already_exists(const rLock& lock) const noexcept -> bool final;
-    auto get_contact() const noexcept -> OTIdentifier;
+    auto get_contact() const noexcept -> OTIdentifier final
+    {
+        return contact_id_;
+    }
     auto has_private(const PasswordPrompt& reason) const noexcept -> bool;
     auto save(const rLock& lock) const noexcept -> bool final;
-    auto set_deterministic_contact(internal::Element& element) const noexcept
-        -> void final
-    {
-        element.SetContact(get_contact());
-    }
     auto set_deterministic_contact(
         std::set<OTIdentifier>& contacts) const noexcept -> void final
     {

@@ -364,6 +364,14 @@ protected:
         }
     }
 #endif  // OT_QT
+    template <typename Callback>
+    auto for_each_row(const Callback& cb) const noexcept -> void
+    {
+        auto lock = rLock{recursive_lock_};
+
+        for (const auto& row : items_) { cb(*row.item_); }
+    }
+
     virtual auto first(const rLock&) const noexcept -> SharedPimpl<RowInterface>
     {
         try {

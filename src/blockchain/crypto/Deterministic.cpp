@@ -127,46 +127,46 @@ auto Deterministic::check(
     };
 
     if (is_generated(lock, type, candidate)) {
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Examining generated index ")(
-            candidate)
+        LogTrace(OT_METHOD)(__FUNCTION__)(
+            ": Examining generated index ")(candidate)
             .Flush();
         const auto& element = this->element(lock, type, candidate);
         const auto status = element.IsAvailable(contact, label);
 
         switch (status) {
             case Status::NeverUsed: {
-                LogTrace(OT_METHOD)(__FUNCTION__)(": index ")(candidate)(
-                    " was never used")
+                LogTrace(OT_METHOD)(__FUNCTION__)(
+                    ": index ")(candidate)(" was never used")
                     .Flush();
 
                 return accept(candidate);
             }
             case Status::Reissue: {
-                LogTrace(OT_METHOD)(__FUNCTION__)(": Recycling unused index ")(
-                    candidate)
+                LogTrace(OT_METHOD)(__FUNCTION__)(
+                    ": Recycling unused index ")(candidate)
                     .Flush();
 
                 return accept(candidate);
             }
             case Status::Used: {
-                LogTrace(OT_METHOD)(__FUNCTION__)(": index ")(candidate)(
-                    " has confirmed transactions")
+                LogTrace(OT_METHOD)(__FUNCTION__)(
+                    ": index ")(candidate)(" has confirmed transactions")
                     .Flush();
                 gap = 0;
 
                 throw std::runtime_error("Not acceptable");
             }
             case Status::MetadataConflict: {
-                LogTrace(OT_METHOD)(__FUNCTION__)(": index ")(candidate)(
-                    " can not be used")
+                LogTrace(OT_METHOD)(__FUNCTION__)(
+                    ": index ")(candidate)(" can not be used")
                     .Flush();
                 ++gap;
 
                 throw std::runtime_error("Not acceptable");
             }
             case Status::Reserved: {
-                LogTrace(OT_METHOD)(__FUNCTION__)(": index ")(candidate)(
-                    " is reserved")
+                LogTrace(OT_METHOD)(__FUNCTION__)(
+                    ": index ")(candidate)(" is reserved")
                     .Flush();
                 ++gap;
 
@@ -174,8 +174,8 @@ auto Deterministic::check(
             }
             case Status::StaleUnconfirmed:
             default: {
-                LogTrace(OT_METHOD)(__FUNCTION__)(": saving index ")(candidate)(
-                    " as a fallback")
+                LogTrace(OT_METHOD)(__FUNCTION__)(
+                    ": saving index ")(candidate)(" as a fallback")
                     .Flush();
                 fallback[status].emplace(candidate);
                 ++gap;
@@ -404,11 +404,9 @@ auto Deterministic::generate(
         std::piecewise_construct,
         std::forward_as_tuple(index),
         std::forward_as_tuple(std::make_unique<implementation::Element>(
-            api_, blockchain, *this, chain_, type, index, key)));
+            api_, blockchain, *this, chain_, type, index, key, get_contact())));
 
     if (false == added) { throw std::runtime_error("Failed to add key"); }
-
-    set_deterministic_contact(*(it->second));
 
     return index++;
 #else
@@ -422,6 +420,13 @@ auto Deterministic::generate_next(
     const PasswordPrompt& reason) const noexcept(false) -> Bip32Index
 {
     return generate(lock, type, generated_.at(type), reason);
+}
+
+auto Deterministic::get_contact() const noexcept -> OTIdentifier
+{
+    static const auto blank = api_.Factory().Identifier();
+
+    return blank;
 }
 
 auto Deterministic::init(const PasswordPrompt& reason) noexcept(false) -> void

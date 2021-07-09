@@ -15,6 +15,7 @@
 
 #include "internal/network/Factory.hpp"
 #include "network/DhtConfig.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -153,9 +154,12 @@ auto OpenDHT::Retrieve(
                 for (const auto& it : results) {
                     if (nullptr == it) { continue; }
 
-                    input.emplace(
-                        input.end(),
-                        new std::string(it->data.begin(), it->data.end()));
+                    auto& bytes =
+                        input.emplace_back(std::make_shared<std::string>());
+
+                    OT_ASSERT(bytes);
+
+                    copy(reader(it->data), writer(*bytes));
                 }
 
                 return vcb(input);

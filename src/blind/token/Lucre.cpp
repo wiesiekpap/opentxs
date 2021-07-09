@@ -9,7 +9,7 @@
 
 extern "C" {
 #include <openssl/bio.h>
-#include <openssl/ossl_typ.h>
+#include <openssl/bn.h>
 }
 
 #include <algorithm>
@@ -20,6 +20,7 @@ extern "C" {
 #include <vector>
 
 #include "blind/Lucre.hpp"
+#include "crypto/library/openssl/OpenSSL.hpp"
 #include "crypto/library/openssl/OpenSSL_BIO.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/blind/Blind.hpp"
@@ -277,8 +278,8 @@ auto Lucre::GenerateTokenRequest(
 
         return false;
     } else {
-        LogInsane(OT_METHOD)(__FUNCTION__)(": Begin mint series ")(
-            denomination_)
+        LogInsane(OT_METHOD)(__FUNCTION__)(
+            ": Begin mint series ")(denomination_)
             .Flush();
         LogInsane(serializedMint).Flush();
         LogInsane(OT_METHOD)(__FUNCTION__)(": End mint").Flush();
@@ -537,11 +538,12 @@ auto Lucre::Process(
 #if OT_LUCRE_DEBUG
     LucreDumper setDumper;
 #endif
-    crypto::implementation::OpenSSL_BIO bioBank = BIO_new(BIO_s_mem());
-    crypto::implementation::OpenSSL_BIO bioSignature = BIO_new(BIO_s_mem());
-    crypto::implementation::OpenSSL_BIO bioPrivateRequest =
-        BIO_new(BIO_s_mem());
-    crypto::implementation::OpenSSL_BIO bioCoin = BIO_new(BIO_s_mem());
+    using BIO = crypto::OpenSSL_BIO;
+    auto bioBank = BIO{::BIO_new(::BIO_s_mem()), ::BIO_free};
+    auto bioSignature = BIO{::BIO_new(::BIO_s_mem()), ::BIO_free};
+    auto bioPrivateRequest = BIO{::BIO_new(::BIO_s_mem()), ::BIO_free};
+    auto bioCoin =
+        crypto::implementation::OpenSSL_BIO{::BIO_new(::BIO_s_mem())};
     auto armoredMint = Armored::Factory();
     mint.GetPublic(armoredMint, denomination_);
     auto serializedMint = String::Factory(armoredMint);
@@ -553,15 +555,15 @@ auto Lucre::Process(
 
         return false;
     } else {
-        LogInsane(OT_METHOD)(__FUNCTION__)(": Begin mint series ")(
-            denomination_)
+        LogInsane(OT_METHOD)(__FUNCTION__)(
+            ": Begin mint series ")(denomination_)
             .Flush();
         LogInsane(serializedMint).Flush();
         LogInsane(OT_METHOD)(__FUNCTION__)(": End mint").Flush();
     }
 
-    BIO_puts(bioBank, serializedMint->Get());
-    BIO_puts(bioSignature, signature_->Get());
+    BIO_puts(bioBank.get(), serializedMint->Get());
+    BIO_puts(bioSignature.get(), signature_->Get());
     auto prototoken = String::Factory();
 
     try {
@@ -594,14 +596,17 @@ auto Lucre::Process(
         LogInsane(OT_METHOD)(__FUNCTION__)(": Prototoken ready:").Flush();
     }
 
-    BIO_puts(bioPrivateRequest, prototoken->Get());
-    PublicBank bank(bioBank);
-    CoinRequest req(bioPrivateRequest);
-    ReadNumber(bioSignature, "request=");
-    BIGNUM* bnSignature = ReadNumber(bioSignature, "signature=");
-    DumpNumber("signature=", bnSignature);
+    BIO_puts(bioPrivateRequest.get(), prototoken->Get());
+    PublicBank bank(bioBank.get());
+    CoinRequest req(bioPrivateRequest.get());
+    using BN = crypto::OpenSSL_BN;
+    auto bnRequest =
+        BN{::ReadNumber(bioSignature.get(), "request="), ::BN_free};
+    auto bnSignature =
+        BN{::ReadNumber(bioSignature.get(), "signature="), ::BN_free};
+    DumpNumber("signature=", bnSignature.get());
     Coin coin;
-    req.ProcessResponse(&coin, bank, bnSignature);
+    req.ProcessResponse(&coin, bank, bnSignature.get());
     coin.WriteBIO(bioCoin);
     const auto spend = bioCoin.ToString();
 

@@ -138,6 +138,10 @@ PaymentCode::PaymentCode(
     }())
     , local_(local, compare_)
     , remote_(remote, compare_)
+    , contact_id_(
+          parent_.ParentInternal().Parent().Contacts().PaymentCodeToContact(
+              remote_,
+              chain_))
 {
     const auto test_path = [&] {
         auto seed{path_.root()};
@@ -151,6 +155,7 @@ PaymentCode::PaymentCode(
     }
 
     init(reason);
+    parent_.FindNym(remote_.get().ID());
 }
 
 PaymentCode::PaymentCode(
@@ -225,8 +230,13 @@ PaymentCode::PaymentCode(
     }())
     , local_(api_.Factory().PaymentCode(serialized.local()), compare_)
     , remote_(api_.Factory().PaymentCode(serialized.remote()), compare_)
+    , contact_id_(
+          parent_.ParentInternal().Parent().Contacts().PaymentCodeToContact(
+              remote_,
+              chain_))
 {
     init();
+    parent_.FindNym(remote_.get().ID());
 }
 
 auto PaymentCode::account_already_exists(const rLock&) const noexcept -> bool
@@ -249,15 +259,6 @@ auto PaymentCode::AddNotification(const Txid& tx) const noexcept -> bool
     if (false == out) { outgoing_notifications_.erase(tx); }
 
     return out;
-}
-
-auto PaymentCode::get_contact() const noexcept -> OTIdentifier
-{
-    // TODO works for now but the Contacts api needs a better way to
-    // map payment codes to contacts since contacts might have supplemental
-    // payment codes
-    return parent_.ParentInternal().Parent().Contacts().NymToContact(
-        remote_.get().ID());
 }
 
 auto PaymentCode::has_private(const PasswordPrompt& reason) const noexcept

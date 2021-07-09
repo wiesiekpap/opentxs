@@ -84,21 +84,23 @@ auto DeterministicStateData::check_index() noexcept -> bool
     if (generated.has_value()) {
         if ((false == last_indexed_.has_value()) ||
             (last_indexed_.value() != generated.value())) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(" has ")(
-                generated.value() + 1)(" keys generated, but only ")(
-                last_indexed_.value_or(0))(" have been indexed.")
+            LogVerbose(OT_METHOD)(__FUNCTION__)(
+                ": ")(name_)(" has ")(generated.value() + 1)(
+                " keys generated, but only ")(last_indexed_.value_or(
+                0))(" have been indexed.")
                 .Flush();
             static constexpr auto job{"index"};
 
             return queue_work(Task::index, job);
         } else {
-            LogTrace(OT_METHOD)(__FUNCTION__)(": ")(name_)(" all ")(
-                generated.value() + 1)(" generated keys have been indexed.")
+            LogTrace(OT_METHOD)(__FUNCTION__)(
+                ": ")(name_)(" all ")(generated.value() + 1)(
+                " generated keys have been indexed.")
                 .Flush();
         }
     } else {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
-            " no generated keys present")
+        LogVerbose(OT_METHOD)(__FUNCTION__)(
+            ": ")(name_)(" no generated keys present")
             .Flush();
     }
 
@@ -182,12 +184,12 @@ auto DeterministicStateData::index() noexcept -> void
     auto elements = WalletDatabase::ElementMap{};
 
     if (last > first) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
-            " indexing elements from ")(first)(" to ")(last)
+        LogVerbose(OT_METHOD)(__FUNCTION__)(
+            ": ")(name_)(" indexing elements from ")(first)(" to ")(last)
             .Flush();
     } else {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
-            " subchain is fully indexed to item ")(last)
+        LogVerbose(OT_METHOD)(__FUNCTION__)(
+            ": ")(name_)(" subchain is fully indexed to item ")(last)
             .Flush();
     }
 
@@ -209,8 +211,7 @@ auto DeterministicStateData::process(
     const auto& [index, subchainID] = elementID;
     const auto& [subchain, accountID] = subchainID;
     const auto& element = subaccount_.BalanceElement(subchain, index);
-    // TODO
-    // set_key_data(const_cast<block::bitcoin::Transaction&>(transaction));
+    set_key_data(const_cast<block::bitcoin::Transaction&>(transaction));
     auto i = Bip32Index{0};
 
     for (const auto& output : transaction.Outputs()) {
@@ -229,11 +230,15 @@ auto DeterministicStateData::process(
                 const auto& key = *pKey;
 
                 if (key.PublicKey() == script.Pubkey().value()) {
-                    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
-                        " element ")(index)(": P2PK match found for ")(
-                        DisplayString(node_.Chain()))(" transaction ")(
-                        txid->asHex())(" output ")(i)(" via ")(
-                        api_.Factory().Data(key.PublicKey())->asHex())
+                    LogVerbose(OT_METHOD)(__FUNCTION__)(
+                        ": ")(name_)(" element ")(index)(": P2PK match found "
+                                                         "for ")(DisplayString(
+                        node_
+                            .Chain()))(" transaction ")(txid->asHex())(" output"
+                                                                       " ")(i)(" via ")(api_.Factory()
+                                                                                            .Data(
+                                                                                                key.PublicKey())
+                                                                                            ->asHex())
                         .Flush();
                     outputs.emplace_back(i);
                     crypto_.Confirm(element.KeyID(), txid);
@@ -247,10 +252,12 @@ auto DeterministicStateData::process(
                 OT_ASSERT(script.PubkeyHash().has_value());
 
                 if (hash->Bytes() == script.PubkeyHash().value()) {
-                    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
-                        " element ")(index)(": P2PKH match found for ")(
-                        DisplayString(node_.Chain()))(" transaction ")(
-                        txid->asHex())(" output ")(i)(" via ")(hash->asHex())
+                    LogVerbose(OT_METHOD)(__FUNCTION__)(
+                        ": ")(name_)(" element ")(index)(": P2PKH match found "
+                                                         "for ")(DisplayString(
+                        node_
+                            .Chain()))(" transaction ")(txid->asHex())(" output"
+                                                                       " ")(i)(" via ")(hash->asHex())
                         .Flush();
                     outputs.emplace_back(i);
                     crypto_.Confirm(element.KeyID(), txid);
@@ -264,10 +271,12 @@ auto DeterministicStateData::process(
                 OT_ASSERT(script.PubkeyHash().has_value());
 
                 if (hash->Bytes() == script.PubkeyHash().value()) {
-                    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
-                        " element ")(index)(": P2WPKH match found for ")(
-                        DisplayString(node_.Chain()))(" transaction ")(
-                        txid->asHex())(" output ")(i)(" via ")(hash->asHex())
+                    LogVerbose(OT_METHOD)(__FUNCTION__)(
+                        ": ")(name_)(" element ")(index)(": P2WPKH match found "
+                                                         "for ")(DisplayString(
+                        node_
+                            .Chain()))(" transaction ")(txid->asHex())(" output"
+                                                                       " ")(i)(" via ")(hash->asHex())
                         .Flush();
                     outputs.emplace_back(i);
                     crypto_.Confirm(element.KeyID(), txid);
@@ -295,11 +304,15 @@ auto DeterministicStateData::process(
                 const auto& key = *pKey;
 
                 if (key.PublicKey() == script.MultisigPubkey(0).value()) {
-                    LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(name_)(
-                        " element ")(index)(": ")(m.value())(" of ")(n.value())(
-                        " P2MS match found for ")(DisplayString(node_.Chain()))(
-                        " transaction ")(txid->asHex())(" output ")(i)(" via ")(
-                        api_.Factory().Data(key.PublicKey())->asHex())
+                    LogVerbose(OT_METHOD)(__FUNCTION__)(
+                        ": ")(name_)(" element ")(index)(": ")(m.value())(" of"
+                                                                          " ")(n.value())(" P2MS match found for ")(DisplayString(
+                        node_
+                            .Chain()))(" transaction ")(txid->asHex())(" output"
+                                                                       " ")(i)(" via ")(api_.Factory()
+                                                                                            .Data(
+                                                                                                key.PublicKey())
+                                                                                            ->asHex())
                         .Flush();
                     outputs.emplace_back(i);
                     crypto_.Confirm(element.KeyID(), txid);

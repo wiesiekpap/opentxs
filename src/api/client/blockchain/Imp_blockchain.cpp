@@ -32,6 +32,11 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/contact/Contact.hpp"
+#include "opentxs/contact/ContactData.hpp"
+#include "opentxs/contact/ContactGroup.hpp"
+#include "opentxs/contact/ContactItem.hpp"
+#include "opentxs/contact/ContactSectionName.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -111,8 +116,8 @@ auto BlockchainImp::ActivityDescription(
     auto data = proto::StorageThread{};
 
     if (false == api_.Storage().Load(nym.str(), thread.str(), data)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": thread ")(thread.str())(
-            " does not exist for nym ")(nym.str())
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": thread ")(thread.str())(" does not exist for nym ")(nym.str())
             .Flush();
 
         return {};
@@ -126,8 +131,8 @@ auto BlockchainImp::ActivityDescription(
         const auto pTx = LoadTransactionBitcoin(txid);
 
         if (false == bool(pTx)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": failed to load transaction ")(
-                txid->asHex())
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": failed to load transaction ")(txid->asHex())
                 .Flush();
 
             return {};
@@ -147,11 +152,62 @@ auto BlockchainImp::ActivityDescription(
 auto BlockchainImp::ActivityDescription(
     const identifier::Nym& nym,
     const opentxs::blockchain::Type chain,
-    const Tx& transaction) const noexcept -> std::string
+    const Tx& tx) const noexcept -> std::string
 {
     auto output = std::stringstream{};
-    const auto amount = transaction.NetBalanceChange(parent_, nym);
-    const auto memo = transaction.Memo(parent_);
+    const auto amount = tx.NetBalanceChange(parent_, nym);
+    const auto memo = tx.Memo(parent_);
+    const auto& contactAPI = Contacts();
+    const auto names = [&] {
+        auto out = std::set<std::string>{};
+        const auto contacts =
+            tx.AssociatedRemoteContacts(parent_, contactAPI, nym);
+
+        for (const auto& id : contacts) {
+            const auto contact = contactAPI.Contact(id);
+
+            OT_ASSERT(contact);
+
+            const auto& label = contact->Label();
+
+            if (false == label.empty()) {
+                out.emplace(label);
+
+                break;
+            }
+
+            const auto data = contact->Data();
+
+            OT_ASSERT(data);
+
+            const auto name = data->Name();
+
+            if (false == name.empty()) {
+                out.emplace(name);
+
+                break;
+            }
+
+            using Section = contact::ContactSectionName;
+            auto group = data->Group(Section::Procedure, Translate(chain));
+
+            if (group) {
+                const auto best = group->Best();
+
+                if (best) {
+                    out.emplace(best->Value());
+                } else {
+
+                    break;
+                }
+            } else {
+
+                break;
+            }
+        }
+
+        return out;
+    }();
 
     if (0 < amount) {
         output << "Incoming ";
@@ -161,6 +217,31 @@ auto BlockchainImp::ActivityDescription(
 
     output << opentxs::blockchain::DisplayString(chain);
     output << " transaction";
+
+    if (0 < names.size()) {
+        output << " ";
+
+        if (0 < amount) {
+            output << "from ";
+        } else {
+            output << "to ";
+        }
+
+        auto n = std::size_t{0};
+        const auto max = names.size();
+
+        for (auto i = names.begin(); i != names.end(); ++n, ++i) {
+            if (0u == n) {
+                output << *i;
+            } else if ((n + 1u) == max) {
+                output << ", and ";
+                output << *i;
+            } else {
+                output << ", ";
+                output << *i;
+            }
+        }
+    }
 
     if (false == memo.empty()) { output << ": " << memo; }
 
@@ -290,8 +371,8 @@ auto BlockchainImp::load_transaction(const Lock& lock, const Txid& txid)
             txid.Bytes());
 
     if (false == serialized.has_value()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Transaction ")(txid.asHex())(
-            " not found")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Transaction ")(txid.asHex())(" not found")
             .Flush();
 
         return {};
@@ -464,8 +545,8 @@ auto BlockchainImp::UpdateElement(std::vector<ReadView>& hashes) const noexcept
     std::for_each(std::begin(hashes), std::end(hashes), [&](const auto& bytes) {
         patterns.emplace_back(IndexItem(bytes));
     });
-    LogTrace(OT_METHOD)(__FUNCTION__)(": ")(patterns.size())(
-        " pubkey hashes have changed:")
+    LogTrace(OT_METHOD)(__FUNCTION__)(
+        ": ")(patterns.size())(" pubkey hashes have changed:")
         .Flush();
     auto transactions = std::vector<pTxid>{};
     std::for_each(

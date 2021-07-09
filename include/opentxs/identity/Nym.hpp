@@ -230,6 +230,9 @@ public:
         const std::string& name,
         const PasswordPrompt& reason) = 0;
     virtual bool SetContactData(
+        const ReadView protobuf,
+        const PasswordPrompt& reason) = 0;
+    OPENTXS_NO_EXPORT virtual bool SetContactData(
         const proto::ContactData& data,
         const PasswordPrompt& reason) = 0;
     virtual bool SetScope(

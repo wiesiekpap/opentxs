@@ -38,7 +38,7 @@ class Manager;
 }  // namespace api
 }  // namespace opentxs
 
-namespace
+namespace ottest
 {
 Counter contact_list_alex_{};
 Counter messagable_list_alex_{};
@@ -47,7 +47,7 @@ Counter messagable_list_bob_{};
 Counter contact_list_chris_{};
 Counter messagable_list_chris_{};
 
-struct Test_AddContact : public ::testing::Test {
+struct Test_AddContact : public IntegrationFixture {
     const ot::api::client::Manager& api_alex_;
     const ot::api::client::Manager& api_bob_;
     const ot::api::client::Manager& api_chris_;
@@ -615,4 +615,4 @@ TEST_F(Test_AddContact, shutdown)
     EXPECT_EQ(
         messagable_list_chris_.expected_, messagable_list_chris_.updated_);
 }
-}  // namespace
+}  // namespace ottest

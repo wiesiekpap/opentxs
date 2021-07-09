@@ -127,7 +127,7 @@ auto BitcoinTransactionOutput(
 
         for (const auto& pattern : in.pubkey_hash()) { pkh.emplace(pattern); }
 
-        return std::make_unique<ReturnType>(
+        auto out = std::make_unique<ReturnType>(
             api,
             blockchain,
             chain,
@@ -142,6 +142,30 @@ auto BitcoinTransactionOutput(
                  ? std::make_optional<blockchain::PatternID>(in.script_hash())
                  : std::nullopt),
             in.indexed());
+
+        for (const auto& payer : in.payer()) {
+            if (false == payer.empty()) {
+                out->SetPayer([&] {
+                    auto id = api.Factory().Identifier();
+                    id->Assign(payer.data(), payer.size());
+
+                    return id;
+                }());
+            }
+        }
+
+        for (const auto& payee : in.payee()) {
+            if (false == payee.empty()) {
+                out->SetPayee([&] {
+                    auto id = api.Factory().Identifier();
+                    id->Assign(payee.data(), payee.size());
+
+                    return id;
+                }());
+            }
+        }
+
+        return std::move(out);
     } catch (const std::exception& e) {
         LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
 
@@ -302,8 +326,8 @@ auto Output::FindMatches(
 {
     const auto output =
         SetIntersection(api_, txid, patterns, ExtractElements(type));
-    LogTrace(OT_METHOD)(__FUNCTION__)(": Verified ")(output.second.size())(
-        " pattern matches")
+    LogTrace(OT_METHOD)(__FUNCTION__)(
+        ": Verified ")(output.second.size())(" pattern matches")
         .Flush();
     std::for_each(
         std::begin(output.second),
@@ -329,8 +353,8 @@ auto Output::index_elements(const api::client::Blockchain& blockchain) noexcept
     auto& hashes =
         const_cast<boost::container::flat_set<PatternID>&>(pubkey_hashes_);
     const auto patterns = script_->ExtractPatterns(api_, blockchain);
-    LogTrace(OT_METHOD)(__FUNCTION__)(": ")(patterns.size())(
-        " pubkey hashes found:")
+    LogTrace(OT_METHOD)(__FUNCTION__)(
+        ": ")(patterns.size())(" pubkey hashes found:")
         .Flush();
     std::for_each(
         std::begin(patterns), std::end(patterns), [&](const auto& id) -> auto {
@@ -355,6 +379,26 @@ auto Output::MergeMetadata(const SerializeType& rhs) noexcept -> void
                      static_cast<std::uint8_t>(key.subchain())),
                  key.index()});
         });
+
+    if (cache_.payer()->empty() && false == rhs.payer().empty()) {
+        SetPayer([&] {
+            auto id = api_.Factory().Identifier();
+            auto& value = rhs.payer(0);
+            id->Assign(value.data(), value.size());
+
+            return id;
+        }());
+    }
+
+    if (cache_.payee()->empty() && false == rhs.payee().empty()) {
+        SetPayee([&] {
+            auto id = api_.Factory().Identifier();
+            auto& value = rhs.payee(0);
+            id->Assign(value.data(), value.size());
+
+            return id;
+        }());
+    }
 }
 
 auto Output::NetBalanceChange(
@@ -477,6 +521,14 @@ auto Output::Serialize(
     if (script_hash_.has_value()) { out.set_script_hash(script_hash_.value()); }
 
     out.set_indexed(true);
+
+    if (const auto payer = cache_.payer(); false == payer->empty()) {
+        out.add_payer(std::string{payer->Bytes()});
+    }
+
+    if (const auto payee = cache_.payee(); false == payee->empty()) {
+        out.add_payee(std::string{payee->Bytes()});
+    }
 
     return true;
 }

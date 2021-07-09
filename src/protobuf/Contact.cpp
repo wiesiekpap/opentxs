@@ -308,6 +308,7 @@ auto AllowedItemTypes() noexcept -> const ContactItemMap&
              CITEMTYPE_ETHEREUM_POA,
              CITEMTYPE_PKT,
              CITEMTYPE_TNPKT,
+             CITEMTYPE_REGTEST,
          }},
         {{1, CONTACTSECTION_COMMUNICATION},
          {CITEMTYPE_OPENTXS,    CITEMTYPE_PHONE,    CITEMTYPE_EMAIL,
@@ -841,6 +842,7 @@ auto AllowedItemTypes() noexcept -> const ContactItemMap&
              CITEMTYPE_ETHEREUM_POA,
              CITEMTYPE_PKT,
              CITEMTYPE_TNPKT,
+             CITEMTYPE_REGTEST,
          }},
         {{3, CONTACTSECTION_PROCEDURE},
          {CITEMTYPE_BTC,   CITEMTYPE_ETH,  CITEMTYPE_XRP,  CITEMTYPE_LTC,
@@ -954,6 +956,7 @@ auto AllowedItemTypes() noexcept -> const ContactItemMap&
              CITEMTYPE_ETHEREUM_POA,
              CITEMTYPE_PKT,
              CITEMTYPE_TNPKT,
+             CITEMTYPE_REGTEST,
          }},
     };
 
@@ -1240,6 +1243,7 @@ auto ContactItemTypes() noexcept -> const EnumTranslation&
         {{CITEMTYPE_ETHEREUM_POA, "en"}, "Ethereum POA"},
         {{CITEMTYPE_PKT, "en"}, "PKT"},
         {{CITEMTYPE_TNPKT, "en"}, "PKT (testnet)"},
+        {{CITEMTYPE_REGTEST, "en"}, "Regtest"},
     };
 
     return output;

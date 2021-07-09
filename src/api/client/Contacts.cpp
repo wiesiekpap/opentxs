@@ -263,8 +263,8 @@ void Contacts::init_nym_map(const rLock& lock)
         const auto type = contact->Type();
 
         if (contact::ContactItemType::Error == type) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid contact ")(it.first)(
-                ".")
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": Invalid contact ")(it.first)(".")
                 .Flush();
             api_.Storage().DeleteContact(it.first);
         }
@@ -314,8 +314,8 @@ auto Contacts::Merge(const Identifier& parent, const Identifier& child) const
     auto childContact = contact(lock, child);
 
     if (false == bool(childContact)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Child contact ")(child)(
-            " can not be loaded.")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Child contact ")(child)(" can not be loaded.")
             .Flush();
 
         return {};
@@ -324,8 +324,8 @@ auto Contacts::Merge(const Identifier& parent, const Identifier& child) const
     const auto& childID = childContact->ID();
 
     if (childID != child) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Child contact ")(child)(
-            " is already merged into ")(childID)(".")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Child contact ")(child)(" is already merged into ")(childID)(".")
             .Flush();
 
         return {};
@@ -334,8 +334,8 @@ auto Contacts::Merge(const Identifier& parent, const Identifier& child) const
     auto parentContact = contact(lock, parent);
 
     if (false == bool(parentContact)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Parent contact ")(parent)(
-            " can not be loaded.")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Parent contact ")(parent)(" can not be loaded.")
             .Flush();
 
         return {};
@@ -344,8 +344,8 @@ auto Contacts::Merge(const Identifier& parent, const Identifier& child) const
     const auto& parentID = parentContact->ID();
 
     if (parentID != parent) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Parent contact ")(parent)(
-            " is merged into ")(parentID)(".")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Parent contact ")(parent)(" is merged into ")(parentID)(".")
             .Flush();
 
         return {};
@@ -617,24 +617,37 @@ auto Contacts::obtain_contact(const rLock& lock, const Identifier& id) const
     return load_contact(lock, id);
 }
 
-auto Contacts::PaymentCodeToContact(const std::string& serialized) const
-    -> OTIdentifier
+auto Contacts::PaymentCodeToContact(
+    const std::string& serialized,
+    const opentxs::blockchain::Type currency) const -> OTIdentifier
 {
     static const auto blank = api_.Factory().Identifier();
     const auto code = api_.Factory().PaymentCode(serialized);
 
     if (0 == code->Version()) { return blank; }
 
-    return PaymentCodeToContact(code);
+    return PaymentCodeToContact(code, currency);
 }
 
-auto Contacts::PaymentCodeToContact(const PaymentCode& code) const
-    -> OTIdentifier
+auto Contacts::PaymentCodeToContact(
+    const PaymentCode& code,
+    const opentxs::blockchain::Type currency) const -> OTIdentifier
 {
     // NOTE for now we assume that payment codes are always nym id sources. This
     // won't always be true.
 
-    return NymToContact(code.ID());
+    const auto id = NymToContact(code.ID());
+
+    if (false == id->empty()) {
+        rLock lock(lock_);
+        auto contactE = mutable_contact(lock, id);
+        auto& contact = contactE->get();
+        const auto chain = Translate(currency);
+        const auto existing = contact.PaymentCode(chain);
+        contact.AddPaymentCode(code, existing.empty(), chain);
+    }
+
+    return id;
 }
 
 void Contacts::refresh_indices(const rLock& lock, opentxs::Contact& contact)
@@ -746,9 +759,9 @@ auto Contacts::Update(const identity::Nym& nym) const
     const auto label = Contact::ExtractLabel(nym);
 
     if (contactIdentifier.empty()) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Nym ")(nymID)(
-            " is not associated with a contact. Creating a new contact named ")(
-            label)
+        LogDetail(OT_METHOD)(__FUNCTION__)(
+            ": Nym ")(nymID)(" is not associated with a contact. Creating a "
+                             "new contact named ")(label)
             .Flush();
         auto code = api_.Factory().PaymentCode(nym.PaymentCode());
         return new_contact(lock, label, nymID, code);

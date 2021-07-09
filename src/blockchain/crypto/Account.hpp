@@ -35,6 +35,7 @@
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/network/zeromq/socket/Push.hpp"
 
 namespace opentxs
 {
@@ -91,8 +92,9 @@ public:
     {
         return chain_;
     }
-    void ClaimAccountID(const std::string& id, internal::Subaccount* node)
-        const noexcept final;
+    auto ClaimAccountID(const std::string& id, internal::Subaccount* node)
+        const noexcept -> void final;
+    auto FindNym(const identifier::Nym& id) const noexcept -> void final;
     auto GetDepositAddress(
         const blockchain::crypto::AddressStyle style,
         const PasswordPrompt& reason,
@@ -336,6 +338,7 @@ private:
     mutable std::mutex lock_;
     mutable internal::ActivityMap unspent_;
     mutable internal::ActivityMap spent_;
+    OTZMQPushSocket find_nym_;
 
     void init_hd(const Accounts& HDAccounts) noexcept;
     void init_payment_code(const Accounts& HDAccounts) noexcept;

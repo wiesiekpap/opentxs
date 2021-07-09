@@ -26,4 +26,5 @@ message BlockchainTransactionProposedOutput {
         bytes data = 10;
     }
     optional bool segwit = 11;
+    optional bytes contact = 12;
 }
