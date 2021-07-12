@@ -32,6 +32,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/SendResult.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -300,18 +301,21 @@ private:
         }
 
         const auto& transaction = *pTransaction;
-        auto proto = transaction.Serialize(crypto_);
 
-        if (false == proto.has_value()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to serialize transaction")
-                .Flush();
-            output = BuildResult::PermanentFailure;
+        {
+            const auto proto = transaction.Serialize(crypto_);
 
-            return output;
+            if (false == proto.has_value()) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ": Failed to serialize transaction")
+                    .Flush();
+                output = BuildResult::PermanentFailure;
+
+                return output;
+            }
+
+            *proposal.mutable_finished() = proto.value();
         }
-
-        *proposal.mutable_finished() = proto.value();
 
         if (!db_.AddProposal(id, proposal)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Database error (proposal)")
@@ -335,7 +339,14 @@ private:
         const auto sent = node_.BroadcastTransaction(transaction);
 
         try {
-            if (false == sent) {
+            if (sent) {
+                auto bytes = api_.Factory().Data();
+                transaction.Serialize(bytes->WriteInto());
+                LogOutput("Broadcasting ")(DisplayString(chain_))(
+                    " transaction ")(txid->asHex())
+                    .Flush();
+                LogOutput(bytes->asHex()).Flush();
+            } else {
                 throw std::runtime_error{"Failed to send tx"};
             }
 

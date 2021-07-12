@@ -206,12 +206,13 @@ private:
     };
 
     enum class Work : OTZMQWorkType {
+        shutdown = value(WorkType::Shutdown),
+        contact = value(WorkType::ContactUpdated),
         balance = value(WorkType::BlockchainBalance),
         txid = value(WorkType::BlockchainNewTransaction),
         sync = value(WorkType::BlockchainSyncProgress),
         init = OT_ZMQ_INIT_SIGNAL,
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
-        shutdown = value(WorkType::Shutdown),
     };
 
     const blockchain::Type chain_;
@@ -224,6 +225,7 @@ private:
     auto load_thread() noexcept -> void;
     auto pipeline(const Message& in) noexcept -> void final;
     auto process_balance(const Message& message) noexcept -> void;
+    auto process_contact(const Message& message) noexcept -> void;
     auto process_sync(const Message& in) noexcept -> void;
     auto process_txid(const Message& in) noexcept -> void;
     auto process_txid(const Data& txid) noexcept

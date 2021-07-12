@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "Proto.hpp"
+#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
@@ -190,6 +191,9 @@ struct BitcoinTransactionBuilder::Imp {
                 output_total_ += output.CalculateSize();
 
                 OT_ASSERT(0 < output.Keys().size());
+
+                output.SetPayee(self_contact_);
+                output.SetPayer(self_contact_);
             }
 
             change_.emplace_back(std::move(pOutput));
@@ -215,8 +219,8 @@ struct BitcoinTransactionBuilder::Imp {
         }
 
         const auto& input = *pInput;
-        LogTrace(OT_METHOD)(__FUNCTION__)(": adding previous output ")(
-            utxo.first.str())(" to transaction")
+        LogTrace(OT_METHOD)(__FUNCTION__)(
+            ": adding previous output ")(utxo.first.str())(" to transaction")
             .Flush();
         input_count_ = inputs_.size();
         input_total_ += input.CalculateSize();
@@ -326,19 +330,17 @@ struct BitcoinTransactionBuilder::Imp {
                 return false;
             }
 
-            if (output.has_paymentcodechannel()) {
-                try {
-                    const auto accountID =
-                        api_.Factory().Identifier(output.paymentcodechannel());
-                    const auto& account = crypto_.PaymentCodeSubaccount(
-                        crypto_.Owner(accountID), accountID);
-                    static constexpr auto subchain{
-                        blockchain::crypto::Subchain::Outgoing};
-                    const auto& element = account.BalanceElement(subchain, 0);
-                    pOutput->SetPayee(element.Contact());
-                } catch (const std::exception& e) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
-                }
+            pOutput->SetPayer(self_contact_);
+
+            if (output.has_contact()) {
+                const auto contactID = [&] {
+                    auto out = api_.Factory().Identifier();
+                    out->Assign(
+                        output.contact().data(), output.contact().size());
+
+                    return out;
+                }();
+                pOutput->SetPayee(contactID);
             }
 
             output_value_ += pOutput->Value();
@@ -426,8 +428,8 @@ struct BitcoinTransactionBuilder::Imp {
 
         for (const auto& [input, value] : inputs_) {
             if (false == sign_input(++index, *input, txcopy, bip143)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to sign input ")(
-                    index)
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ": Failed to sign input ")(index)
                     .Flush();
 
                 return false;
@@ -459,6 +461,7 @@ struct BitcoinTransactionBuilder::Imp {
 
             return api_.Wallet().Nym(id);
         }())
+        , self_contact_(crypto_.Internal().Contacts().ContactID(sender_->ID()))
         , chain_(chain)
         , fee_rate_(feeRate)
         , version_(1)
@@ -505,6 +508,7 @@ private:
     const api::Core& api_;
     const api::client::Blockchain& crypto_;
     const Nym_p sender_;
+    const OTIdentifier self_contact_;
     const Type chain_;
     const Amount fee_rate_;
     const be::little_int32_buf_t version_;
@@ -594,9 +598,9 @@ private:
         auto views = block::bitcoin::internal::Input::Signatures{};
 
         for (const auto& id : input.Keys()) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": Loading element ")(
-                opentxs::print(id))(" to sign previous output ")(
-                input.PreviousOutput().str())
+            LogVerbose(OT_METHOD)(__FUNCTION__)(
+                ": Loading element ")(opentxs::print(
+                id))(" to sign previous output ")(input.PreviousOutput().str())
                 .Flush();
             const auto& node = crypto_.GetKey(id);
 
@@ -604,11 +608,11 @@ private:
                 LogOutput(OT_METHOD)(__FUNCTION__)(
                     ": api::Blockchain::GetKey returned the wrong key")
                     .Flush();
-                LogOutput(OT_METHOD)(__FUNCTION__)(": requested: ")(
-                    opentxs::print(id))
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ": requested: ")(opentxs::print(id))
                     .Flush();
-                LogOutput(OT_METHOD)(__FUNCTION__)(":       got: ")(
-                    opentxs::print(got))
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ":       got: ")(opentxs::print(got))
                     .Flush();
 
                 OT_FAIL;
@@ -648,8 +652,8 @@ private:
 
         if (0 == views.size()) {
             LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": No keys available for signing ")(
-                input.PreviousOutput().str())
+                ": No keys available for signing ")(input.PreviousOutput()
+                                                        .str())
                 .Flush();
 
             return false;
@@ -676,9 +680,9 @@ private:
         auto views = block::bitcoin::internal::Input::Signatures{};
 
         for (const auto& id : input.Keys()) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": Loading element ")(
-                opentxs::print(id))(" to sign previous output ")(
-                input.PreviousOutput().str())
+            LogVerbose(OT_METHOD)(__FUNCTION__)(
+                ": Loading element ")(opentxs::print(
+                id))(" to sign previous output ")(input.PreviousOutput().str())
                 .Flush();
             const auto& node = crypto_.GetKey(id);
 
@@ -686,11 +690,11 @@ private:
                 LogOutput(OT_METHOD)(__FUNCTION__)(
                     ": api::Blockchain::GetKey returned the wrong key")
                     .Flush();
-                LogOutput(OT_METHOD)(__FUNCTION__)(": requested: ")(
-                    opentxs::print(id))
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ": requested: ")(opentxs::print(id))
                     .Flush();
-                LogOutput(OT_METHOD)(__FUNCTION__)(":       got: ")(
-                    opentxs::print(got))
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ":       got: ")(opentxs::print(got))
                     .Flush();
 
                 OT_FAIL;
@@ -729,8 +733,8 @@ private:
 
         if (0 == views.size()) {
             LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": No keys available for signing ")(
-                input.PreviousOutput().str())
+                ": No keys available for signing ")(input.PreviousOutput()
+                                                        .str())
                 .Flush();
 
             return false;
@@ -757,9 +761,9 @@ private:
         auto views = block::bitcoin::internal::Input::Signatures{};
 
         for (const auto& id : input.Keys()) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": Loading element ")(
-                opentxs::print(id))(" to sign previous output ")(
-                input.PreviousOutput().str())
+            LogVerbose(OT_METHOD)(__FUNCTION__)(
+                ": Loading element ")(opentxs::print(
+                id))(" to sign previous output ")(input.PreviousOutput().str())
                 .Flush();
             const auto& node = crypto_.GetKey(id);
 
@@ -767,11 +771,11 @@ private:
                 LogOutput(OT_METHOD)(__FUNCTION__)(
                     ": api::Blockchain::GetKey returned the wrong key")
                     .Flush();
-                LogOutput(OT_METHOD)(__FUNCTION__)(": requested: ")(
-                    opentxs::print(id))
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ": requested: ")(opentxs::print(id))
                     .Flush();
-                LogOutput(OT_METHOD)(__FUNCTION__)(":       got: ")(
-                    opentxs::print(got))
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ":       got: ")(opentxs::print(got))
                     .Flush();
 
                 OT_FAIL;
@@ -813,8 +817,8 @@ private:
 
         if (0 == views.size()) {
             LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": No keys available for signing ")(
-                input.PreviousOutput().str())
+                ": No keys available for signing ")(input.PreviousOutput()
+                                                        .str())
                 .Flush();
 
             return false;
@@ -852,8 +856,8 @@ private:
 
         if (!pKey) {
             LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": failed to obtain private key ")(
-                opentxs::print(element.KeyID()))
+                ": failed to obtain private key ")(opentxs::print(
+                                                       element.KeyID()))
                 .Flush();
 
             return {};
@@ -866,10 +870,12 @@ private:
             const auto expected = api_.Factory().Data(pubkey.PublicKey());
             const auto [account, subchain, index] = element.KeyID();
             LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Derived private key for account ")(account)(" subchain ")(
-                static_cast<std::uint32_t>(subchain))(" index ")(index)(
-                " does not correspond to the expected public key. Got ")(
-                got->asHex())(" expected ")(expected->asHex())
+                ": Derived private key for "
+                "account ")(account)(" subchain"
+                                     " ")(static_cast<std::uint32_t>(
+                subchain))(" index ")(index)(" does not correspond to the "
+                                             "expected public key. Got ")(got->asHex())(" expected ")(expected
+                                                                                                          ->asHex())
                 .Flush();
 
             OT_FAIL;
@@ -1160,9 +1166,12 @@ private:
         -> crypto::ECKey
     {
         const auto [account, subchain, index] = element.KeyID();
-        LogTrace(OT_METHOD)(__FUNCTION__)(": considering spend key ")(index)(
-            " from subchain ")(static_cast<std::uint32_t>(subchain))(
-            " of account ")(account)(" for previous output ")(outpoint.str())
+        LogTrace(OT_METHOD)(__FUNCTION__)(
+            ": considering spend key ")(index)(" from subchain ")(static_cast<
+                                                                  std::
+                                                                      uint32_t>(
+            subchain))(" of account ")(account)(" for previous "
+                                                "output ")(outpoint.str())
             .Flush();
 
         auto pKey = element.Key();

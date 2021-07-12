@@ -83,11 +83,11 @@ class Manager;
 #define UNIT_DEFINITION_FRACTIONAL_UNIT_NAME "cents"
 #define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::contact::ContactItemType::USD
 
-namespace
+namespace ottest
 {
 Counter account_summary_{};
 
-class Test_Pair : public ::testing::Test
+class Test_Pair : public IntegrationFixture
 {
 public:
     static Callbacks cb_chris_;
@@ -549,4 +549,4 @@ TEST_F(Test_Pair, shutdown)
 
     // TODO EXPECT_EQ(account_summary_.expected_, account_summary_.updated_);
 }
-}  // namespace
+}  // namespace ottest

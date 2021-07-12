@@ -119,6 +119,10 @@ public:
     {
         cache_.set_payee(contact);
     }
+    auto SetPayer(const Identifier& contact) noexcept -> void final
+    {
+        cache_.set_payer(contact);
+    }
     auto SetValue(const std::uint64_t value) noexcept -> void final
     {
         const_cast<std::uint64_t&>(value_) = value;
@@ -230,6 +234,12 @@ private:
             auto lock = Lock{lock_};
 
             payee_ = contact;
+        }
+        auto set_payer(const Identifier& contact) noexcept -> void
+        {
+            auto lock = Lock{lock_};
+
+            payer_ = contact;
         }
         template <typename F>
         auto size(F cb) noexcept -> std::size_t

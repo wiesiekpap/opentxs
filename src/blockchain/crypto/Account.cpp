@@ -22,7 +22,9 @@
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/crypto/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
@@ -32,8 +34,12 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/protobuf/Bip47Channel.pb.h"
 #include "opentxs/protobuf/HDAccount.pb.h"
+#include "opentxs/util/WorkType.hpp"
 
 #define OT_METHOD "opentxs::blockchain::crypto::implementation::BalanceTree::"
 
@@ -87,6 +93,15 @@ Account::Account(
     , lock_()
     , unspent_()
     , spent_()
+    , find_nym_([&] {
+        using Dir = network::zeromq::socket::Socket::Direction;
+        auto out = api_.Network().ZeroMQ().PushSocket(Dir::Connect);
+        const auto started = out->Start(api_.Endpoints().FindNym());
+
+        OT_ASSERT(started);
+
+        return out;
+    }())
 {
     init_hd(hd);
     init_payment_code(paymentCode);
@@ -154,8 +169,8 @@ auto Account::AssociateTransaction(
         auto* pNode = node_index_.Find(accountID);
 
         if (nullptr == pNode) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": Account ")(accountID)(
-                " not found")
+            LogVerbose(OT_METHOD)(__FUNCTION__)(
+                ": Account ")(accountID)(" not found")
                 .Flush();
 
             continue;
@@ -218,6 +233,13 @@ auto Account::find_next_element(
     }
 
     throw std::runtime_error("No available element for selected subchain");
+}
+
+auto Account::FindNym(const identifier::Nym& id) const noexcept -> void
+{
+    auto work = api_.Network().ZeroMQ().TaggedMessage(WorkType::OTXSearchNym);
+    work->AddFrame(id);
+    find_nym_->Send(work);
 }
 
 auto Account::GetNextChangeKey(const PasswordPrompt& reason) const

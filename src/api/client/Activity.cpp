@@ -112,6 +112,13 @@ auto Activity::add_blockchain_transaction(
 {
     const auto incoming =
         transaction.AssociatedRemoteContacts(blockchain, contact_, nym);
+    LogTrace(OT_METHOD)(__FUNCTION__)(
+        ": transaction ")(transaction.ID().asHex())(" is associated "
+                                                    "with ")(incoming
+                                                                 .size())(" con"
+                                                                          "tact"
+                                                                          "s")
+        .Flush();
     const auto existing =
         api_.Storage().BlockchainThreadMap(nym, transaction.ID());
     auto added = std::vector<OTIdentifier>{};
@@ -188,9 +195,15 @@ auto Activity::AddBlockchainTransaction(
     const Blockchain& api,
     const BlockchainTransaction& transaction) const noexcept -> bool
 {
-    eLock lock(shared_lock_);
+    auto lock = eLock(shared_lock_);
 
     for (const auto& nym : transaction.AssociatedLocalNyms(api)) {
+        LogTrace(OT_METHOD)(__FUNCTION__)(
+            ": blockchain transaction ")(transaction.ID()
+                                             .asHex())(" is relevant to local "
+                                                       "nym ")(nym->asHex())
+            .Flush();
+
         OT_ASSERT(false == nym->empty());
 
         if (false == add_blockchain_transaction(lock, api, nym, transaction)) {
@@ -210,7 +223,7 @@ auto Activity::AddPaymentEvent(
     const Identifier& workflowID,
     Time time) const noexcept -> bool
 {
-    eLock lock(shared_lock_);
+    auto lock = eLock(shared_lock_);
     const std::string sNymID = nymID.str();
     const std::string sthreadID = threadID.str();
 
@@ -264,8 +277,8 @@ auto Activity::Cheque(
     auto workflow = proto::PaymentWorkflow{};
 
     if (false == api_.Storage().Load(nym.str(), workflowID, workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Workflow ")(workflowID)(
-            " for nym ")(nym)(" can not be loaded.")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Workflow ")(workflowID)(" for nym ")(nym)(" can not be loaded.")
             .Flush();
 
         return output;
@@ -320,8 +333,8 @@ auto Activity::Transfer(
     auto workflow = proto::PaymentWorkflow{};
 
     if (false == api_.Storage().Load(nym.str(), workflowID, workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Workflow ")(workflowID)(
-            " for nym ")(nym)(" can not be loaded")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Workflow ")(workflowID)(" for nym ")(nym)(" can not be loaded")
             .Flush();
 
         return output;
@@ -436,8 +449,8 @@ auto Activity::Mail(
     OT_ASSERT(output);
 
     if (false == output->LoadContractFromString(String::Factory(raw.c_str()))) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to deserialize message ")(
-            id)
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Failed to deserialize message ")(id)
             .Flush();
 
         output.reset();
@@ -472,7 +485,7 @@ auto Activity::Mail(
 
     OT_ASSERT(contact);
 
-    eLock lock(shared_lock_);
+    auto lock = eLock(shared_lock_);
     std::string alias = contact->Label();
     const auto& contactID = contact->ID();
     const auto& threadID = contactID.str();
@@ -618,8 +631,8 @@ auto Activity::PaymentText(
     auto workflow = proto::PaymentWorkflow{};
 
     if (false == api_.Storage().Load(nym.str(), workflowID, workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Workflow ")(workflowID)(
-            " for nym ")(nym)(" can not be loaded.")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Workflow ")(workflowID)(" for nym ")(nym)(" can not be loaded.")
             .Flush();
 
         return std::move(output);
@@ -793,7 +806,7 @@ auto Activity::Thread(
     const Identifier& threadID,
     proto::StorageThread& output) const noexcept -> bool
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock(shared_lock_);
 
     if (false == api_.Storage().Load(nymID.str(), threadID.str(), output)) {
         return false;
@@ -807,7 +820,7 @@ auto Activity::Thread(
     const Identifier& threadID,
     AllocateOutput output) const noexcept -> bool
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock(shared_lock_);
 
     auto serialized = proto::StorageThread{};
     if (false == api_.Storage().Load(nymID.str(), threadID.str(), serialized)) {
@@ -827,8 +840,8 @@ void Activity::thread_preload_thread(
     auto thread = proto::StorageThread{};
 
     if (false == api_.Storage().Load(nymID, threadID, thread)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to load thread ")(
-            threadID)(" for nym ")(nymID)
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Unable to load thread ")(threadID)(" for nym ")(nymID)
             .Flush();
 
         return;
@@ -856,8 +869,8 @@ void Activity::thread_preload_thread(
         switch (box) {
             case StorageBox::MAILINBOX:
             case StorageBox::MAILOUTBOX: {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Preloading item ")(
-                    item.id())(" in thread ")(threadID)
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ": Preloading item ")(item.id())(" in thread ")(threadID)
                     .Flush();
                 MailText(
                     identifier::Nym::Factory(nymID),

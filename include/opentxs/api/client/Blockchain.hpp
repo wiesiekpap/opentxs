@@ -25,6 +25,17 @@
 
 namespace opentxs
 {
+namespace api
+{
+namespace client
+{
+namespace internal
+{
+struct Blockchain;
+}  // namespace internal
+}  // namespace client
+}  // namespace api
+
 namespace blockchain
 {
 namespace block
@@ -142,6 +153,8 @@ public:
         const identifier::Nym& nymID,
         const Identifier& accountID) const noexcept(false) = 0;
     virtual PatternID IndexItem(const ReadView bytes) const noexcept = 0;
+    OPENTXS_NO_EXPORT virtual const internal::Blockchain& Internal()
+        const noexcept = 0;
     virtual std::unique_ptr<const Tx> LoadTransactionBitcoin(
         const Txid& id) const noexcept = 0;
     virtual std::unique_ptr<const Tx> LoadTransactionBitcoin(

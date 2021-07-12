@@ -359,27 +359,37 @@ auto ContactData::AddPaymentCode(
     const bool primary,
     const bool active) const -> ContactData
 {
-    bool needPrimary{true};
-    const contact::ContactSectionName section{
-        contact::ContactSectionName::Procedure};
+    auto needPrimary{true};
+    static constexpr auto section{contact::ContactSectionName::Procedure};
     auto group = Group(section, currency);
 
     if (group) { needPrimary = group->Primary().empty(); }
 
-    std::set<contact::ContactItemAttribute> attrib{};
+    const auto attrib = [&] {
+        auto out = std::set<contact::ContactItemAttribute>{};
 
-    if (active || primary || needPrimary) {
-        attrib.emplace(contact::ContactItemAttribute::Active);
-    }
+        if (active || primary || needPrimary) {
+            out.emplace(contact::ContactItemAttribute::Active);
+        }
 
-    if (primary || needPrimary) {
-        attrib.emplace(contact::ContactItemAttribute::Primary);
-    }
+        if (primary || needPrimary) {
+            out.emplace(contact::ContactItemAttribute::Primary);
+        }
 
-    auto version = proto::RequiredVersion(
+        return out;
+    }();
+    const auto version = proto::RequiredVersion(
         contact::internal::translate(section),
         contact::internal::translate(currency),
         imp_->version_);
+
+    if (0 == version) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": This currency is not allowed to set a procedure")
+            .Flush();
+
+        return *this;
+    }
 
     auto item = std::make_shared<ContactItem>(
         imp_->api_,

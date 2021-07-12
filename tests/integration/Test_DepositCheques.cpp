@@ -61,7 +61,7 @@ using namespace opentxs;
 
 // #define OT_METHOD "::Test_DepositCheques::"
 
-namespace
+namespace ottest
 {
 bool init_{false};
 
@@ -453,4 +453,4 @@ TEST_F(Test_DepositCheques, shutdown)
     bob_client_.OTX().ContextIdle(bob_nym_id_, server_1_.ID()).get();
     issuer_client_.OTX().ContextIdle(issuer_nym_id_, server_1_.ID()).get();
 }
-}  // namespace
+}  // namespace ottest

@@ -143,5 +143,11 @@ auto BalanceTreeIndex::Register(
     imp_->Register(account, owner, chain);
 }
 
-BalanceTreeIndex::~BalanceTreeIndex() { std::unique_ptr<Imp>(imp_).release(); }
+BalanceTreeIndex::~BalanceTreeIndex()
+{
+    if (nullptr != imp_) {
+        delete imp_;
+        imp_ = nullptr;
+    }
+}
 }  // namespace opentxs::api::client::internal

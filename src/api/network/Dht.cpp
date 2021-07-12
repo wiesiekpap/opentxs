@@ -309,13 +309,13 @@ auto Dht::ProcessPublicNym(
     }
 
     if (!foundValid) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogVerbose(OT_METHOD)(__FUNCTION__)(
             ": Found results, but none are valid.")
             .Flush();
     }
 
     if (!foundData) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": All results are empty.").Flush();
+        LogVerbose(OT_METHOD)(__FUNCTION__)(": All results are empty.").Flush();
     }
 
     return foundData;

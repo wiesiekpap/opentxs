@@ -120,6 +120,7 @@ protected:
     {
         return const_cast<Deterministic*>(this)->element(lock, type, index);
     }
+    virtual auto get_contact() const noexcept -> OTIdentifier;
     auto is_generated(const rLock&, const Subchain type, Bip32Index index)
         const noexcept
     {
@@ -231,10 +232,6 @@ private:
         const rLock& lock,
         const Subchain type,
         const Bip32Index index) noexcept(false) -> internal::Element& final;
-    virtual auto set_deterministic_contact(internal::Element&) const noexcept
-        -> void
-    {
-    }
     virtual auto set_deterministic_contact(
         std::set<OTIdentifier>&) const noexcept -> void
     {

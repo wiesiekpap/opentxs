@@ -51,3 +51,8 @@ else()
     unittests-opentxs-blockchain-regtest-payment-code PRIVATE -DOT_WITH_RPC=0
   )
 endif()
+
+target_sources(
+  unittests-opentxs-blockchain-regtest-payment-code
+  PRIVATE "${opentxs_SOURCE_DIR}/tests/integration/Helpers.cpp"
+)

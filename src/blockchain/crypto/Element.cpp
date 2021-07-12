@@ -45,7 +45,7 @@ Element::Element(
     const crypto::Subchain subchain,
     const Bip32Index index,
     const std::string label,
-    const OTIdentifier contact,
+    OTIdentifier&& contact,
     const opentxs::crypto::key::EllipticCurve& key,
     const Time time,
     Transactions&& unconfirmed,
@@ -59,7 +59,7 @@ Element::Element(
     , subchain_(subchain)
     , index_(index)
     , label_(label)
-    , contact_(contact)
+    , contact_(std::move(contact))
     , pkey_(key.CloneEC())
     , timestamp_(time)
     , unconfirmed_(std::move(unconfirmed))
@@ -79,7 +79,8 @@ Element::Element(
     const opentxs::blockchain::Type chain,
     const crypto::Subchain subchain,
     const Bip32Index index,
-    const opentxs::crypto::key::EllipticCurve& key) noexcept(false)
+    const opentxs::crypto::key::EllipticCurve& key,
+    OTIdentifier&& contact) noexcept(false)
     : Element(
           api,
           blockchain,
@@ -89,7 +90,7 @@ Element::Element(
           subchain,
           index,
           "",
-          api.Factory().Identifier(),
+          std::move(contact),
           key,
           {},
           {},

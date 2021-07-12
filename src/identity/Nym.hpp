@@ -225,6 +225,8 @@ public:
     void SetAliasStartup(const std::string& alias) final { alias_ = alias; }
     auto SetCommonName(const std::string& name, const PasswordPrompt& reason)
         -> bool final;
+    auto SetContactData(const ReadView protobuf, const PasswordPrompt& reason)
+        -> bool final;
     auto SetContactData(
         const proto::ContactData& data,
         const PasswordPrompt& reason) -> bool final;

@@ -165,6 +165,10 @@ public:
     auto HDSubaccount(const identifier::Nym& nymID, const Identifier& accountID)
         const noexcept(false) -> const opentxs::blockchain::crypto::HD& final;
     auto IndexItem(const ReadView bytes) const noexcept -> PatternID final;
+    auto Internal() const noexcept -> const internal::Blockchain& final
+    {
+        return *this;
+    }
     auto KeyEndpoint() const noexcept -> const std::string& final;
     auto KeyGenerated(const Chain chain) const noexcept -> void final;
     auto LoadTransactionBitcoin(const TxidHex& id) const noexcept
