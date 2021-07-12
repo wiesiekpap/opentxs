@@ -295,7 +295,12 @@ auto Element::PrivateKey(const PasswordPrompt& reason) const noexcept -> ECKey
     if (false == pkey_->HasPrivate()) {
         auto key = parent_.PrivateKey(subchain_, index_, reason);
 
-        if (!key) { return {}; }
+        if (!key) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": error deriving private key")
+                .Flush();
+
+            return {};
+        }
 
         pkey_ = std::move(key);
 

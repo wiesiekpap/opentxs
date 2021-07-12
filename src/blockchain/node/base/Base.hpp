@@ -191,6 +191,10 @@ public:
     auto JobReady(const node::internal::PeerManager::Task type) const noexcept
         -> void final;
     auto Listen(const p2p::Address& address) const noexcept -> bool final;
+    auto Mempool() const noexcept -> const internal::Mempool& final
+    {
+        return mempool_;
+    }
     auto Reorg() const noexcept
         -> const network::zeromq::socket::Publish& final;
     auto RequestBlock(const block::Hash& block) const noexcept -> bool final;

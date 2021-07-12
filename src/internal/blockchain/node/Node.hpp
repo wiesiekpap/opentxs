@@ -510,6 +510,7 @@ struct OPENTXS_EXPORT Network : virtual public node::Manager {
     virtual auto IsSynchronized() const noexcept -> bool = 0;
     virtual auto JobReady(const PeerManager::Task type) const noexcept
         -> void = 0;
+    virtual auto Mempool() const noexcept -> const internal::Mempool& = 0;
     virtual auto Reorg() const noexcept
         -> const network::zeromq::socket::Publish& = 0;
     virtual auto RequestBlock(const block::Hash& block) const noexcept
