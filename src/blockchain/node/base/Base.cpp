@@ -32,6 +32,7 @@
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/SendResult.hpp"
 #include "opentxs/blockchain/block/Header.hpp"

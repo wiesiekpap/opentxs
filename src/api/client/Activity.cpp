@@ -31,6 +31,7 @@
 #include "opentxs/api/client/Workflow.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/blockchain/Blockchain.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
 #endif                                                       // OT_BLOCKCHAIN

@@ -160,51 +160,47 @@ namespace opentxs::api::client::implementation
 {
 const std::string OTX::DEFAULT_INTRODUCTION_SERVER =
     R"(-----BEGIN OT ARMORED SERVER CONTRACT-----
-Version: Open Transactions 0.99.1-113-g2b3acf5
+Version: Open Transactions 1.13.0
 Comment: http://opentransactions.org
 
-CAESI290b20xcHFmREJLTmJLR3RiN0NBa0ZodFRXVFVOTHFIRzIxGiNvdHVkd3p4cWF0UHh4
-bmh4VFV3RUo3am5HenE2RkhGYTRraiIMU3Rhc2ggQ3J5cHRvKr8NCAESI290dWR3enhxYXRQ
-eHhuaHhUVXdFSjdqbkd6cTZGSEZhNGtqGAIoATJTCAEQAiJNCAESIQI9MywLxxKfOtai26pj
-JbxKtCCPhM/DbvX08iwbW2qYqhoga6Ccvp6CABGAFj/RdWNjtg5uzIRHT5Dn+fUzdAM9SUSA
-AQCIAQA6vAwIARIjb3R1ZHd6eHFhdFB4eG5oeFRVd0VKN2puR3pxNkZIRmE0a2oaI290dXdo
-ZzNwb2kxTXRRdVkzR3hwYWpOaXp5bmo0NjJ4Z2RIIAIymgQIARIjb3R1d2hnM3BvaTFNdFF1
-WTNHeHBhak5penluajQ2MnhnZEgYAiABKAIyI290dWR3enhxYXRQeHhuaHhUVXdFSjdqbkd6
-cTZGSEZhNGtqQl0IARJTCAEQAiJNCAESIQI9MywLxxKfOtai26pjJbxKtCCPhM/DbvX08iwb
-W2qYqhoga6Ccvp6CABGAFj/RdWNjtg5uzIRHT5Dn+fUzdAM9SUSAAQCIAQAaBAgBEAJKiAEI
-ARACGioIARAEGAIgASogZ6MtTp4aTEDLxFfhnsGo+Esp5B4hkgjWEejNPt5J6C0aKggBEAQY
-AiACKiAhqJjWf2Ugqbg6z6ps59crAx9lHwTuT6Eq4x6JmkBlGBoqCAEQBBgCIAMqII2Vps1F
-C2YUMbB4kE9XsHt1jrVY6pMPV6KWc5sH3VvTem0IARIjb3R1d2hnM3BvaTFNdFF1WTNHeHBh
-ak5penluajQ2MnhnZEgYASAFKkDQLsszAol/Ih56MomuBKV8zpKaw5+ry7Kse1+5nPwJlP8f
-72OAgTegBlmv31K4JgLVs52EKJTBpjnV+v0pxzUOem0IARIjb3R1ZHd6eHFhdFB4eG5oeFRV
-d0VKN2puR3pxNkZIRmE0a2oYAyAFKkAJZ0LTVM+XBrGbRdiZsEQSbvwqg+mqGwHD5MQ+D4h0
-fPQaUrdB6Pp/HM5veox02LBKg05hVNQ64tcU+LAxK+VHQuQDCAESI290clA2dDJXY2hYMjYz
-ZVpiclRuVzZyY2FCZVNQb2VqSzJnGAIgAigCMiNvdHVkd3p4cWF0UHh4bmh4VFV3RUo3am5H
-enE2RkhGYTRrajonCAESI290dXdoZzNwb2kxTXRRdVkzR3hwYWpOaXp5bmo0NjJ4Z2RISogB
-CAEQAhoqCAEQBBgCIAEqIDpwlCrxHNWvvtFt6k8ocB5NBo7vjkGO/mRuSOQ/j/9WGioIARAE
-GAIgAiog6Dw0+AWok4dENWWc/3qhykA7NNybWecqMGs5fL8KLLYaKggBEAQYAiADKiD+s/iq
-37NrYI4/xdHOYtO/ocR0YqDVz09IaDNGVEdBtnptCAESI290clA2dDJXY2hYMjYzZVpiclRu
-VzZyY2FCZVNQb2VqSzJnGAEgBSpATbHtakma53Na35Be+rGvW+z1H6EtkHlljv9Mo8wfies3
-in9el1Ejb4BDbGCN5ABl3lQpfedZnR+VYv2X6Y1yBnptCAESI290dXdoZzNwb2kxTXRRdVkz
-R3hwYWpOaXp5bmo0NjJ4Z2RIGAEgBSpAeptEmgdqgkGUcOJCqG0MsiChEREUdDzH/hRj877u
-WDIHoRHsf/k5dCOHfDct4TDszasVhGFhRdNunpgQJcp0DULnAwgBEiNvdHd6ZWd1dTY3cENI
-RnZhYjZyS2JYaEpXelNvdlNDTGl5URgCIAIoAjIjb3R1ZHd6eHFhdFB4eG5oeFRVd0VKN2pu
-R3pxNkZIRmE0a2o6JwgBEiNvdHV3aGczcG9pMU10UXVZM0d4cGFqTml6eW5qNDYyeGdkSEqL
-AQgBEAIaKwgBEAMYAiABKiEC5p36Ivxs4Wb6CjKTnDA1MFtX3Mx2UBlrmloSt+ffXz0aKwgB
-EAMYAiACKiECtMkEo4xsefeevzrBb62ll98VYZy8PipgbrPWqGUNxQMaKwgBEAMYAiADKiED
-W1j2DzOZemB9OOZ/pPrFroKDfgILYu2IOtiRFfi0vDB6bQgBEiNvdHd6ZWd1dTY3cENIRnZh
-YjZyS2JYaEpXelNvdlNDTGl5URgBIAUqQJYd860/Ybh13GtW+grxWtWjjmzPifHE7bTlgUWl
-3bX+ZuWNeEotA4yXQvFNog4PTAOF6dbvCr++BPGepBEUEEx6bQgBEiNvdHV3aGczcG9pMU10
-UXVZM0d4cGFqTml6eW5qNDYyeGdkSBgBIAUqQH6GXnKCCDDgDvcSt8dLWuVMlr75zVkHy85t
-tccoy2oLHNevDvKrLfUk/zuICyaSIvDy0Kb2ytOuh/O17yabxQ8yHQgBEAEYASISb3Quc3Rh
-c2hjcnlwdG8ubmV0KK03MiEIARADGAEiFnQ1NGxreTJxM2w1ZGt3bnQub25pb24orTcyRwgB
-EAQYASI8b3ZpcDZrNWVycXMzYm52cjU2cmgzZm5pZ2JuZjJrZWd1cm5tNWZpYnE1NWtqenNv
-YW54YS5iMzIuaTJwKK03Op8BTWVzc2FnaW5nLW9ubHkgc2VydmVyIHByb3ZpZGVkIGZvciB0
-aGUgY29udmllbmllbmNlIG9mIFN0YXNoIENyeXB0byB1c2Vycy4gU2VydmljZSBpcyBwcm92
-aWRlZCBhcyBpcyB3aXRob3V0IHdhcnJhbnR5IG9mIGFueSBraW5kLCBlaXRoZXIgZXhwcmVz
-c2VkIG9yIGltcGxpZWQuQiCK4L5cnecfUFz/DQyvAklKC2pTmWQtxt9olQS5/0hUHUptCAES
-I290clA2dDJXY2hYMjYzZVpiclRuVzZyY2FCZVNQb2VqSzJnGAUgBSpA1/bep0NTbisZqYns
-MCL/PCUJ6FIMhej+ROPk41604x1jeswkkRmXRNjzLlVdiJ/pQMxG4tJ0UQwpxHxrr0IaBA==
+CAISJG90MjJqS3JZbUpBZGlNOHBHWTNrYmtGdXpZejlRZHlWM3ozdhojb3R2WEhoMVBnV2Jn
+ODJlUk5hYzl1MmNvU3R6ZThVV3ZORmsiM09wZW4tVHJhbnNhY3Rpb25zIGNvbXBsaW1lbnRh
+cnkgaW50cm9kdWN0aW9uIG5vdGFyeSr+DAgGEiNvdHZYSGgxUGdXYmc4MmVSTmFjOXUyY29T
+dHplOFVXdk5GaxgCKAIyUwgCEAIiTQgDEiECL87suSdgcIakhZTOrO8reVXVxNDxEObCmIZH
+/JJ1BugaIL89Ypxl8DfwjtEBUm2kxymW8qwFlCYbAiQhftVP2f8JgAEAiAEAOvsLCAYSI290
+dlhIaDFQZ1diZzgyZVJOYWM5dTJjb1N0emU4VVd2TkZrGiRvdDI3UWVycmF0aWNQSGgydDJV
+Zk52TERSWXQ0eWQ2akJIRFAgAjKxBAgGEiRvdDI3UWVycmF0aWNQSGgydDJVZk52TERSWXQ0
+eWQ2akJIRFAYAiABKAIyI290dlhIaDFQZ1diZzgyZVJOYWM5dTJjb1N0emU4VVd2TkZrQl0I
+AhJTCAIQAiJNCAMSIQIvzuy5J2BwhqSFlM6s7yt5VdXE0PEQ5sKYhkf8knUG6Bogvz1inGXw
+N/CO0QFSbaTHKZbyrAWUJhsCJCF+1U/Z/wmAAQCIAQAaBAgBEAJKnQEIAhACGjEIAhADGAIg
+ASohAmAxWV4v38GZjSftFdOANT7OHQtZTDoPCC69ScxrUrmYSLPmpKkHGjEIAhADGAIgAioh
+AolKYsYsafV72ALv99L56Tzu1JeDKfdZvPbDmkUASQVaSLPmpKkHGjEIAhADGAIgAyohA89N
+W5xpxyL8eetn/LrD9gF1tx4CQuFswqN96f/CLFZWSLPmpKkHem4IARIkb3QyN1FlcnJhdGlj
+UEhoMnQyVWZOdkxEUll0NHlkNmpCSERQGAEgBSpAM7W3LB2OSNI4D2C2jUxVz8anaAa3Krfy
+pJK+cEccPC5QVpyeNg7bMnn1H8/mn71w+v0C0+Gskuv6hUD3laKibHptCAESI290dlhIaDFQ
+Z1diZzgyZVJOYWM5dTJjb1N0emU4VVd2TkZrGAMgBSpAF1ceBRLKhG/88vVUytM1PFs5tphL
+e+PVKaHeLyRcmtB5UaWdN/FGU2N4ossqf09+VUjiUZYxrRxNS/myC/CmPEL9AwgGEiRvdDI0
+bndpQzl5NGZrSHBFdjVnRlYxM0VKN0xycFpRQTljUVcYAiACKAIyI290dlhIaDFQZ1diZzgy
+ZVJOYWM5dTJjb1N0emU4VVd2TkZrOigIARIkb3QyN1FlcnJhdGljUEhoMnQyVWZOdkxEUll0
+NHlkNmpCSERQSp0BCAIQAhoxCAIQAxgCIAEqIQNAOV5IDMqEvFmA15dPvwj6I2jZI+9TSCd3
+glL5UmSCjEjzt4+YDxoxCAIQAxgCIAIqIQKsISEszmg18jH+U0l5G5Rhxa5/hRCtN9nf2IUH
+fLcHOkjzt4+YDxoxCAIQAxgCIAMqIQMHspBMdc59O1YhEB1qCuNSwrzoiiztUVhQbPy6DBTH
+Xkjzt4+YD3puCAESJG90MjRud2lDOXk0ZmtIcEV2NWdGVjEzRUo3THJwWlFBOWNRVxgBIAUq
+QNLzwELwF8HWHMdzlupwzc0geamzBWUyHzw62h8rorxo2YW2q90QiqY9faOcgO+myzhnXhh3
+IIvshRJTYrfqQmR6bggBEiRvdDI3UWVycmF0aWNQSGgydDJVZk52TERSWXQ0eWQ2akJIRFAY
+ASAFKkBGZgdLA6Ku0++t+uS6QNZlxw79mvA74PJQ9illBDrUz7zW13MPNp66CezuPX1gY3v7
+InEZl3YAe7Cv9ttca8lVQvUCCAYSJG90MjlIazZ1N1BjTUM4eEJ3TlVONFpRZk5kb3l6eDha
+ZUhkZBgCIAMoATIjb3R2WEhoMVBnV2JnODJlUk5hYzl1MmNvU3R6ZThVV3ZORms6KAgBEiRv
+dDI3UWVycmF0aWNQSGgydDJVZk52TERSWXQ0eWQ2akJIRFBahQEIBhJHCAYQARpBCAYYBSIz
+T3Blbi1UcmFuc2FjdGlvbnMgY29tcGxpbWVudGFyeSBpbnRyb2R1Y3Rpb24gbm90YXJ5KAAw
+ADgBOAISOAgGEAIaMggGGA0iJG90MjJqS3JZbUpBZGlNOHBHWTNrYmtGdXpZejlRZHlWM3oz
+digAMAA4ATgCem4IARIkb3QyN1FlcnJhdGljUEhoMnQyVWZOdkxEUll0NHlkNmpCSERQGAEg
+BSpAtQDW61HaoLxLOEPY+uMgyDyAgsdSxVNJxEMSSsztwQhf0VJulPMgqKdQ7KWV2U64dJdM
+GV5304FoOr+652JnRjIXCAEQARgBIgw1NC4zOS4xMjkuNDUorTc6M0RlZmF1bHQgbm90YXJ5
+IHByb3ZpZGVkIGZvciBjb250cmFjdCBhbmQgbnltIGxvb2t1cEIgGj9BS8IjqWMe0fuGcc36
+/3SR+lBmOXXQbxTt2V68jAlKbggBEiRvdDI0bndpQzl5NGZrSHBFdjVnRlYxM0VKN0xycFpR
+QTljUVcYBSAFKkBISidzOdI0rhCucCkmiTCwDVZWWwh7IzBOnKi2JVd+sRaXCIuFdBsk3qT5
+zMLlSlhAXVqPevoUo40e3GdUTx1k
 -----END OT ARMORED SERVER CONTRACT-----)";
 
 OTX::OTX(
@@ -596,8 +592,9 @@ auto OTX::can_deposit(
 
     if (false == registered) {
         schedule_download_nymbox(recipient, depositServer);
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Recipient nym ")(recipient)(
-            " not registered on server ")(depositServer)(".")
+        LogDetail(OT_METHOD)(__FUNCTION__)(
+            ": Recipient nym ")(recipient)(" not registered on "
+                                           "server ")(depositServer)(".")
             .Flush();
 
         return Depositability::NOT_REGISTERED;
@@ -625,9 +622,12 @@ auto OTX::can_deposit(
         } break;
         case Depositability::NO_ACCOUNT: {
 
-            LogDetail(OT_METHOD)(__FUNCTION__)(": Recipient ")(recipient)(
-                " needs an account for ")(unitID)(" on server ")(depositServer)(
-                ".")
+            LogDetail(OT_METHOD)(__FUNCTION__)(
+                ": Recipient ")(recipient)(" needs an account "
+                                           "for ")(unitID)(" on "
+                                                           "serve"
+                                                           "r"
+                                                           " ")(depositServer)(".")
                 .Flush();
         } break;
         case Depositability::READY: {
@@ -651,8 +651,8 @@ auto OTX::can_message(
     auto senderNym = client_.Wallet().Nym(senderNymID);
 
     if (false == bool(senderNym)) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Unable to load sender nym ")(
-            senderNymID)
+        LogDetail(OT_METHOD)(__FUNCTION__)(
+            ": Unable to load sender nym ")(senderNymID)
             .Flush();
 
         return Messagability::MISSING_SENDER;
@@ -661,8 +661,9 @@ auto OTX::can_message(
     const bool canSign = senderNym->HasCapability(NymCapability::SIGN_MESSAGE);
 
     if (false == canSign) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Sender nym ")(senderNymID)(
-            " can not sign messages (no private key).")
+        LogDetail(OT_METHOD)(__FUNCTION__)(
+            ": Sender nym ")(senderNymID)(" can not sign messages (no private "
+                                          "key).")
             .Flush();
 
         return Messagability::INVALID_SENDER;
@@ -671,8 +672,8 @@ auto OTX::can_message(
     const auto contact = client_.Contacts().Contact(recipientContactID);
 
     if (false == bool(contact)) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Recipient contact ")(
-            recipientContactID)(" does not exist.")
+        LogDetail(OT_METHOD)(__FUNCTION__)(
+            ": Recipient contact ")(recipientContactID)(" does not exist.")
             .Flush();
 
         return Messagability::MISSING_CONTACT;
@@ -681,8 +682,8 @@ auto OTX::can_message(
     const auto nyms = contact->Nyms();
 
     if (0 == nyms.size()) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Recipient contact ")(
-            recipientContactID)(" does not have a nym.")
+        LogDetail(OT_METHOD)(__FUNCTION__)(
+            ": Recipient contact ")(recipientContactID)(" does not have a nym.")
             .Flush();
 
         return Messagability::CONTACT_LACKS_NYM;
@@ -704,8 +705,9 @@ auto OTX::can_message(
             outdated_nyms_.Push(next_task_id(), nymID);
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Recipient contact ")(
-            recipientContactID)(" credentials not available.")
+        LogDetail(OT_METHOD)(__FUNCTION__)(
+            ": Recipient contact ")(recipientContactID)(" credentials not "
+                                                        "available.")
             .Flush();
 
         return Messagability::MISSING_RECIPIENT;
@@ -718,9 +720,9 @@ auto OTX::can_message(
 
     // TODO maybe some of the other nyms in this contact do specify a server
     if (serverID.empty()) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Recipient contact ")(
-            recipientContactID)(", nym ")(recipientNymID)(
-            ": credentials do not specify a server.")
+        LogDetail(OT_METHOD)(__FUNCTION__)(
+            ": Recipient contact ")(recipientContactID)(", "
+                                                        "nym ")(recipientNymID)(": credentials do not specify a server.")
             .Flush();
         outdated_nyms_.Push(next_task_id(), recipientNymID);
 
@@ -732,8 +734,9 @@ auto OTX::can_message(
 
     if (false == registered) {
         schedule_download_nymbox(senderNymID, serverID);
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Sender nym ")(senderNymID)(
-            " not registered on server ")(serverID)
+        LogDetail(OT_METHOD)(__FUNCTION__)(
+            ": Sender nym ")(senderNymID)(" not registered on "
+                                          "server ")(serverID)
             .Flush();
 
         return Messagability::UNREGISTERED;
@@ -937,8 +940,9 @@ auto OTX::DepositPayment(
             }
             default: {
                 LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": Unable to queue payment for download (")(
-                    static_cast<std::int8_t>(status))(")")
+                    ": Unable to queue payment for download (")(static_cast<
+                                                                std::int8_t>(
+                    status))(")")
                     .Flush();
 
                 return error_task();
@@ -1665,8 +1669,8 @@ void OTX::process_account(const zmq::Message& message) const
     auto accountID = client_.Factory().Identifier();
     accountID->Assign(body.at(1).Bytes());
     const auto balance = body.at(2).as<Amount>();
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": Account ")(accountID->str())(
-        " balance: ")(balance)
+    LogVerbose(OT_METHOD)(__FUNCTION__)(
+        ": Account ")(accountID->str())(" balance: ")(balance)
         .Flush();
 }
 
@@ -1697,8 +1701,8 @@ void OTX::process_notification(const zmq::Message& message) const
         } break;
         default: {
             LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Unsupported server reply type: ")(
-                value(notification->Type()))(".")
+                ": Unsupported server reply type: ")(value(
+                notification->Type()))(".")
                 .Flush();
         }
     }
@@ -1816,8 +1820,12 @@ auto OTX::refresh_accounts() const -> bool
         const auto accountID = Identifier::Factory(it.first);
         const auto nymID = client_.Storage().AccountOwner(accountID);
         const auto serverID = client_.Storage().AccountServer(accountID);
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Account ")(accountID)(": ")(
-            "  * Owned by nym: ")(nymID)("  * On server: ")(serverID)
+        LogDetail(OT_METHOD)(__FUNCTION__)(
+            ": Account ")(accountID)(": ")("  * Owned by nym: ")(nymID)("  * "
+                                                                        "On "
+                                                                        "server"
+                                                                        ":"
+                                                                        " ")(serverID)
             .Flush();
         try {
             auto& queue = get_operations({nymID, serverID});
@@ -1844,8 +1852,8 @@ auto OTX::refresh_contacts() const -> bool
         SHUTDOWN()
 
         const auto& contactID = it.first;
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Considering contact: ")(
-            contactID)
+        LogVerbose(OT_METHOD)(__FUNCTION__)(
+            ": Considering contact: ")(contactID)
             .Flush();
         const auto contact =
             client_.Contacts().Contact(Identifier::Factory(contactID));
@@ -1887,8 +1895,10 @@ auto OTX::refresh_contacts() const -> bool
 
             if (interval > limit) {
                 LogVerbose(OT_METHOD)(__FUNCTION__)(
-                    ": Hours since last update (")(interval.count())(
-                    ") exceeds the limit (")(limit.count())(")")
+                    ": Hours since last update "
+                    "(")(interval.count())(") exceeds "
+                                           "the limit "
+                                           "(")(limit.count())(")")
                     .Flush();
                 // TODO add a method to Contact that returns the list of
                 // servers
@@ -1917,8 +1927,9 @@ auto OTX::refresh_contacts() const -> bool
 
                     if (serverID->empty()) { continue; }
 
-                    LogVerbose(OT_METHOD)(__FUNCTION__)(": Will download nym ")(
-                        nymID)(" from server ")(serverID)
+                    LogVerbose(OT_METHOD)(__FUNCTION__)(
+                        ": Will download nym ")(nymID)(" from "
+                                                       "server ")(serverID)
                         .Flush();
                     auto& serverQueue = get_nym_fetch(serverID);
                     const auto taskID{next_task_id()};
@@ -2400,8 +2411,8 @@ auto OTX::valid_context(
     const auto nyms = client_.Wallet().LocalNyms();
 
     if (0 == nyms.count(nymID)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Nym ")(nymID)(
-            " does not belong to this wallet.")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Nym ")(nymID)(" does not belong to this wallet.")
             .Flush();
 
         return false;

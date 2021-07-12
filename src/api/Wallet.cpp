@@ -74,6 +74,7 @@
 #include "opentxs/protobuf/UnitDefinition.pb.h"
 #include "opentxs/protobuf/verify/Nym.hpp"
 #include "opentxs/protobuf/verify/Purse.hpp"
+#include "opentxs/protobuf/verify/ServerContract.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 template class opentxs::Exclusive<opentxs::Account>;
@@ -171,8 +172,8 @@ auto Wallet::account(
     auto& [rowMutex, pAccount] = row;
 
     if (pAccount) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Account ")(account)(
-            " already exists in map.")
+        LogVerbose(OT_METHOD)(__FUNCTION__)(
+            ": Account ")(account)(" already exists in map.")
             .Flush();
 
         return row;
@@ -191,16 +192,16 @@ auto Wallet::account(
         api_.Storage().Load(account.str(), serialized, alias, true);
 
     if (loaded) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Account ")(account)(
-            " loaded from storage.")
+        LogVerbose(OT_METHOD)(__FUNCTION__)(
+            ": Account ")(account)(" loaded from storage.")
             .Flush();
         pAccount.reset(account_factory(account, alias, serialized));
 
         OT_ASSERT(pAccount);
     } else {
         if (false == create) {
-            LogDetail(OT_METHOD)(__FUNCTION__)(": Trying to load account ")(
-                account)(" via legacy method.")
+            LogDetail(OT_METHOD)(__FUNCTION__)(
+                ": Trying to load account ")(account)(" via legacy method.")
                 .Flush();
             const auto legacy = load_legacy_account(account, rowLock, row);
 
@@ -275,40 +276,52 @@ auto Wallet::account_factory(
     auto& account = *pAccount;
 
     if (account.GetNymID() != owner) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Nym id (")(account.GetNymID())(
-            ") does not match expect value (")(owner)(")")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Nym id (")(account.GetNymID())(") does not match expect value "
+                                              "(")(owner)(")")
             .Flush();
         account.SetNymID(owner);
     }
 
     if (account.GetRealAccountID() != accountID) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Account id (")(
-            account.GetRealAccountID())(") does not match expect value (")(
-            accountID)(")")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Account id (")(account.GetRealAccountID())(") does not match "
+                                                          "expect value "
+                                                          "(")(accountID)(")")
             .Flush();
         account.SetRealAccountID(accountID);
     }
 
     if (account.GetPurportedAccountID() != accountID) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Purported account id (")(
-            account.GetPurportedAccountID())(") does not match expect value (")(
-            accountID)(")")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Purported account id (")(account
+                                            .GetPurportedAccountID())(") does "
+                                                                      "not "
+                                                                      "match "
+                                                                      "expect "
+                                                                      "value "
+                                                                      "(")(accountID)(")")
             .Flush();
         account.SetPurportedAccountID(accountID);
     }
 
     if (account.GetRealNotaryID() != notary) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Notary id (")(
-            account.GetRealNotaryID())(") does not match expect value (")(
-            notary)(")")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Notary id (")(account
+                                 .GetRealNotaryID())(") does not match expect "
+                                                     "value (")(notary)(")")
             .Flush();
         account.SetRealNotaryID(notary);
     }
 
     if (account.GetPurportedNotaryID() != notary) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Purported notary id (")(
-            account.GetPurportedNotaryID())(") does not match expect value (")(
-            notary)(")")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Purported notary id (")(account
+                                           .GetPurportedNotaryID())(") does "
+                                                                    "not match "
+                                                                    "expect "
+                                                                    "value "
+                                                                    "(")(notary)(")")
             .Flush();
         account.SetPurportedNotaryID(notary);
     }
@@ -2335,12 +2348,14 @@ auto Wallet::server(std::unique_ptr<contract::Server> contract) const
 auto Wallet::Server(const proto::ServerContract& contract) const
     -> OTServerContract
 {
+    if (false == proto::Validate(contract, VERBOSE)) {
+        throw std::runtime_error("Invalid serialized server contract");
+    }
+
     const auto& server = contract.id();
     auto serverID = identifier::Server::Factory(server);
 
-    if (serverID->empty()) {
-        throw std::runtime_error("Invalid server contract");
-    }
+    if (serverID->empty()) { throw std::runtime_error("Invalid server id"); }
 
     const auto nymID = identifier::Nym::Factory(contract.nymid());
 

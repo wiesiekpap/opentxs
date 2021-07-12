@@ -8,10 +8,13 @@
 #include "api/client/blockchain/Imp_blockchain.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
+#include <cstddef>
 #include <iosfwd>
 #include <iterator>
+#include <map>
 #include <mutex>
 #include <optional>
+#include <set>
 #include <sstream>
 #include <string_view>
 
@@ -26,6 +29,7 @@
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Activity.hpp"
+#include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
