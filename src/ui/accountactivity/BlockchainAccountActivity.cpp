@@ -11,6 +11,7 @@
 #include <functional>
 #include <future>
 #include <limits>
+#include <list>
 #include <memory>
 #include <set>
 #include <string>
@@ -48,6 +49,7 @@
 #include "opentxs/protobuf/PaymentEvent.pb.h"
 #include "opentxs/protobuf/PaymentWorkflow.pb.h"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
+#include "ui/base/List.hpp"
 #include "ui/base/Widget.hpp"
 #include "util/Container.hpp"
 
