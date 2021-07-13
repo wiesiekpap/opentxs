@@ -153,6 +153,7 @@ protected:
 
     using EncryptedKey = std::unique_ptr<proto::Ciphertext>;
     using EncryptedExtractor = std::function<EncryptedKey(Data&, Secret&)>;
+    using PlaintextExtractor = std::function<OTSecret()>;
 
     const api::internal::Core& api_;
     const crypto::AsymmetricProvider& provider_;
@@ -225,19 +226,20 @@ protected:
         const bool hasPrivate,
         const VersionNumber version,
         OTData&& pubkey,
-        EncryptedExtractor) noexcept(false);
+        EncryptedExtractor get,
+        PlaintextExtractor getPlaintext = {}) noexcept(false);
     Asymmetric(
         const api::internal::Core& api,
         const crypto::AsymmetricProvider& engine,
         const crypto::key::asymmetric::Algorithm keyType,
         const crypto::key::asymmetric::Role role,
         const VersionNumber version,
-        EncryptedExtractor) noexcept(false);
+        EncryptedExtractor get) noexcept(false);
     Asymmetric(
         const api::internal::Core& api,
         const crypto::AsymmetricProvider& engine,
         const proto::AsymmetricKey& serializedKey,
-        EncryptedExtractor) noexcept(false);
+        EncryptedExtractor get) noexcept(false);
     Asymmetric(const Asymmetric& rhs) noexcept;
     Asymmetric(const Asymmetric& rhs, const ReadView newPublic) noexcept;
     Asymmetric(

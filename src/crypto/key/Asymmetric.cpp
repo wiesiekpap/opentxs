@@ -86,7 +86,8 @@ Asymmetric::Asymmetric(
     const bool hasPrivate,
     const VersionNumber version,
     OTData&& pubkey,
-    EncryptedExtractor get) noexcept(false)
+    EncryptedExtractor get,
+    PlaintextExtractor getPlaintext) noexcept(false)
     : api_(api)
     , provider_(engine)
     , version_(version)
@@ -96,7 +97,15 @@ Asymmetric::Asymmetric(
     , has_private_(hasPrivate)
     , m_pMetadata(new OTSignatureMetadata(api_))
     , key_(std::move(pubkey))
-    , plaintext_key_(api_.Factory().Secret(0))
+    , plaintext_key_([&] {
+        if (getPlaintext) {
+
+            return getPlaintext();
+        } else {
+
+            return api_.Factory().Secret(0);
+        }
+    }())
     , encrypted_key_([&] {
         if (has_private_ && get) {
 
@@ -109,6 +118,10 @@ Asymmetric::Asymmetric(
 {
     OT_ASSERT(0 < version);
     OT_ASSERT(nullptr != m_pMetadata);
+
+    if (has_private_) {
+        OT_ASSERT(encrypted_key_ || (0 < plaintext_key_->size()));
+    }
 }
 
 Asymmetric::Asymmetric(
@@ -168,7 +181,8 @@ Asymmetric::Asymmetric(const Asymmetric& rhs) noexcept
               }
 
               return {};
-          })
+          },
+          [&] { return rhs.plaintext_key_; })
 {
 }
 
@@ -204,6 +218,10 @@ Asymmetric::Asymmetric(
 {
     OT_ASSERT(0 < version_);
     OT_ASSERT(nullptr != m_pMetadata);
+
+    if (has_private_) {
+        OT_ASSERT(encrypted_key_ || (0 < plaintext_key_->size()));
+    }
 }
 
 Asymmetric::operator bool() const noexcept

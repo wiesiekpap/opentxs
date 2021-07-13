@@ -104,6 +104,8 @@ public:
         std::map<block::pHash, BlockOracle::BitcoinBlockFuture>;
     using ProcessQueue = std::queue<OutstandingMap::iterator>;
     using SubchainIndex = WalletDatabase::pSubchainIndex;
+    using Transactions =
+        std::vector<std::shared_ptr<const block::bitcoin::Transaction>>;
 
     struct MempoolQueue {
         auto Empty() const noexcept -> bool;
@@ -111,6 +113,7 @@ public:
         auto Queue(
             std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept
             -> bool;
+        auto Queue(Transactions&& transactions) noexcept -> bool;
         auto Next() noexcept
             -> std::shared_ptr<const block::bitcoin::Transaction>;
 

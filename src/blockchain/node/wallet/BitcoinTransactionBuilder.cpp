@@ -865,6 +865,8 @@ private:
 
         const auto& key = *pKey;
 
+        OT_ASSERT(key.HasPrivate());
+
         if (key.PublicKey() != pubkey.PublicKey()) {
             const auto got = api_.Factory().Data(key.PublicKey());
             const auto expected = api_.Factory().Data(pubkey.PublicKey());
