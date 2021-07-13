@@ -79,7 +79,7 @@ public:
 
     Sync(
         const api::Core& api,
-        opentxs::storage::lmdb::LMDB& lmdb,
+        storage::lmdb::LMDB& lmdb,
         const std::string& path) noexcept(false);
 
 private:

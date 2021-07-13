@@ -39,7 +39,7 @@ namespace opentxs::blockchain::database
 Filters::Filters(
     const api::Core& api,
     const common::Database& common,
-    const opentxs::storage::lmdb::LMDB& lmdb,
+    const storage::lmdb::LMDB& lmdb,
     const blockchain::Type chain) noexcept
     : api_(api)
     , common_(common)

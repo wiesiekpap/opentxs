@@ -35,9 +35,7 @@ auto tsv(const Input& in) noexcept -> ReadView
     return {reinterpret_cast<const char*>(&in), sizeof(in)};
 }
 
-BlockHeader::BlockHeader(
-    opentxs::storage::lmdb::LMDB& lmdb,
-    Bulk& bulk) noexcept(false)
+BlockHeader::BlockHeader(storage::lmdb::LMDB& lmdb, Bulk& bulk) noexcept(false)
     : lmdb_(lmdb)
     , bulk_(bulk)
     , table_(Table::HeaderIndex)

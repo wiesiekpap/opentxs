@@ -41,7 +41,7 @@ auto tsv(const Input& in) noexcept -> ReadView
 Blocks::Blocks(
     const api::Core& api,
     const common::Database& common,
-    const opentxs::storage::lmdb::LMDB& lmdb,
+    const storage::lmdb::LMDB& lmdb,
     const blockchain::Type type) noexcept
     : api_(api)
     , common_(common)
@@ -77,8 +77,8 @@ auto Blocks::LoadBitcoin(const block::Hash& block) const noexcept
         const auto bytes = common_.BlockLoad(block);
 
         if (false == bytes.valid()) {
-            LogDebug(OT_METHOD)(__FUNCTION__)(": block ")(block.asHex())(
-                " not found.")
+            LogDebug(OT_METHOD)(__FUNCTION__)(
+                ": block ")(block.asHex())(" not found.")
                 .Flush();
 
             return {};

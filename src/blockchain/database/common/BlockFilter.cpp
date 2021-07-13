@@ -39,7 +39,7 @@ auto tsv(const Input& in) noexcept -> ReadView
 
 BlockFilter::BlockFilter(
     const api::Core& api,
-    opentxs::storage::lmdb::LMDB& lmdb,
+    storage::lmdb::LMDB& lmdb,
     Bulk& bulk) noexcept
     : api_(api)
     , lmdb_(lmdb)

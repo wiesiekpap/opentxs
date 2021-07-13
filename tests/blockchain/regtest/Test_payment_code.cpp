@@ -7,7 +7,6 @@
 
 #include <gtest/gtest.h>
 #include <algorithm>
-#include <chrono>
 #include <deque>
 #include <optional>
 #include <set>
@@ -535,6 +534,7 @@ TEST_F(Regtest_payment_code, alice_after_receive_ui)
 TEST_F(Regtest_payment_code, send_to_bob)
 {
     account_activity_alice_.expected_ += 2;
+    account_activity_bob_.expected_ += 2;
     const auto& network =
         client_1_.Network().Blockchain().GetChain(test_chain_);
     auto future = network.SendToPaymentCode(
@@ -843,11 +843,17 @@ TEST_F(Regtest_payment_code, first_outgoing_transaction_alice)
     }
 }
 
+TEST_F(Regtest_payment_code, first_unconfirmed_incoming_bob)
+{
+    wait_for_counter(account_activity_bob_);
+    // TODO check wallet and ui state for bob
+}
+
 TEST_F(Regtest_payment_code, confirm_send)
 {
     auto future1 = listener_alice_.get_future(SendHD(), Subchain::External, 2);
     auto future2 = listener_alice_.get_future(SendHD(), Subchain::Internal, 2);
-    account_activity_alice_.expected_ += 2;
+    account_activity_alice_.expected_ += 3;
     account_activity_bob_.expected_ += 2;
     const auto& txid = transactions_.at(1).get();
     const auto extra = [&] {

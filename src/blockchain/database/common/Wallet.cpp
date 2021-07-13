@@ -8,9 +8,18 @@
 #include "blockchain/database/common/Wallet.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
+#include <cstring>
 #include <iterator>
+#include <stdexcept>
+#include <string>
+#include <type_traits>
 #include <utility>
 
+#include "Proto.hpp"
+#include "Proto.tpp"
+#include "blockchain/database/common/Bulk.hpp"
+#include "internal/blockchain/database/common/Common.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/contact/Contact.hpp"
@@ -18,18 +27,28 @@
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/BlockchainTransaction.pb.h"
 #include "util/Container.hpp"
+#include "util/LMDB.hpp"
+#include "util/MappedFileStorage.hpp"
 
 #define OT_METHOD "opentxs::blockchain::database::common::Wallet::"
+
+template <typename Input>
+auto tsv(const Input& in) noexcept -> opentxs::ReadView
+{
+    return {reinterpret_cast<const char*>(&in), sizeof(in)};
+}
 
 namespace opentxs::blockchain::database::common
 {
 Wallet::Wallet(
     const api::client::Blockchain& blockchain,
-    [[maybe_unused]] opentxs::storage::lmdb::LMDB& lmdb) noexcept(false)
+    storage::lmdb::LMDB& lmdb,
+    Bulk& bulk) noexcept(false)
     : blockchain_(blockchain)
-    // TODO , lmdb_(lmdb)
+    , lmdb_(lmdb)
+    , bulk_(bulk)
+    , transaction_table_(Table::TransactionIndex)
     , lock_()
-    , transaction_map_()
     , contact_to_element_()
     , element_to_contact_()
     , transaction_to_patterns_()
@@ -41,8 +60,8 @@ auto Wallet::AssociateTransaction(
     const Txid& txid,
     const std::vector<PatternID>& in) const noexcept -> bool
 {
-    LogTrace(OT_METHOD)(__FUNCTION__)(": Transaction ")(txid.asHex())(
-        " is associated with patterns:")
+    LogTrace(OT_METHOD)(__FUNCTION__)(
+        ": Transaction ")(txid.asHex())(" is associated with patterns:")
         .Flush();
     // TODO transaction data never changes so indexing should only happen
     // once.
@@ -99,12 +118,30 @@ auto Wallet::AssociateTransaction(
 auto Wallet::LoadTransaction(const ReadView txid) const noexcept
     -> std::optional<proto::BlockchainTransaction>
 {
-    Lock lock(lock_);
-    const auto it = transaction_map_.find(std::string{txid});
+    try {
+        const auto index = [&] {
+            auto out = util::IndexData{};
+            auto cb = [&out](const ReadView in) {
+                if (sizeof(out) != in.size()) { return; }
 
-    if (transaction_map_.end() == it) { return std::nullopt; }
+                std::memcpy(static_cast<void*>(&out), in.data(), in.size());
+            };
+            lmdb_.Load(transaction_table_, txid, cb);
 
-    return it->second;
+            if (0 == out.size_) {
+                throw std::out_of_range("Transaction not found");
+            }
+
+            return out;
+        }();
+
+        return proto::Factory<proto::BlockchainTransaction>(
+            bulk_.ReadView(index));
+    } catch (const std::exception& e) {
+        LogTrace(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+        return std::nullopt;
+    }
 }
 
 auto Wallet::LookupContact(const Data& pubkeyHash) const noexcept
@@ -133,12 +170,63 @@ auto Wallet::LookupTransactions(const PatternID pattern) const noexcept
 }
 
 auto Wallet::StoreTransaction(
-    const proto::BlockchainTransaction& tx) const noexcept -> bool
+    const proto::BlockchainTransaction& proto) const noexcept -> bool
 {
-    Lock lock(lock_);
-    transaction_map_[tx.txid()] = tx;
+    const auto& hash = proto.txid();
 
-    return true;
+    try {
+        const auto bytes = proto.ByteSizeLong();
+        auto index = [&] {
+            auto output = util::IndexData{};
+            auto cb = [&output](const ReadView in) {
+                if (sizeof(output) != in.size()) { return; }
+
+                std::memcpy(static_cast<void*>(&output), in.data(), in.size());
+            };
+            lmdb_.Load(transaction_table_, hash, cb);
+
+            return output;
+        }();
+        auto cb = [&](auto& tx) -> bool {
+            const auto result =
+                lmdb_.Store(transaction_table_, hash, tsv(index), tx);
+
+            if (false == result.first) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ": Failed to update index for transaction ")(hash)
+                    .Flush();
+
+                return false;
+            }
+
+            return true;
+        };
+        auto dLock = lmdb_.TransactionRW();
+        auto view = [&] {
+            auto bLock = Lock{bulk_.Mutex()};
+
+            return bulk_.WriteView(bLock, dLock, index, std::move(cb), bytes);
+        }();
+
+        if (false == view.valid(bytes)) {
+            throw std::runtime_error{
+                "Failed to get write position for transaction"};
+        }
+
+        if (false == proto::write(proto, preallocated(bytes, view.data()))) {
+            throw std::runtime_error{"Failed to write transaction to storage"};
+        }
+
+        if (false == dLock.Finalize(true)) {
+            throw std::runtime_error{"Database update error"};
+        }
+
+        return true;
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+
+        return false;
+    }
 }
 
 auto Wallet::update_contact(

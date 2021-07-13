@@ -52,7 +52,7 @@ const std::array<unsigned char, 16> Sync::checksum_key_{};
 
 Sync::Sync(
     const api::Core& api,
-    opentxs::storage::lmdb::LMDB& lmdb,
+    storage::lmdb::LMDB& lmdb,
     const std::string& path) noexcept(false)
     : MappedFileStorage(
           lmdb,
@@ -204,7 +204,7 @@ auto Sync::Load(const Chain chain, const Height height, Message& output)
     };
 
     try {
-        using Dir = opentxs::storage::lmdb::LMDB::Dir;
+        using Dir = storage::lmdb::LMDB::Dir;
         lmdb_.ReadFrom(ChainToSyncTable(chain), start, cb, Dir::Forward);
     } catch (const std::exception& e) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
@@ -287,8 +287,8 @@ auto Sync::Store(const Chain chain, const Items& items) const noexcept -> bool
         const auto height = item.Height();
 
         if (++previous != height) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": sequence error. Got ")(
-                height)(" expected ")(previous)
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": sequence error. Got ")(height)(" expected ")(previous)
                 .Flush();
 
             return false;

@@ -45,7 +45,7 @@ auto tsv(const Input& in) noexcept -> ReadView
 }
 
 const std::size_t Database::db_version_{1};
-const opentxs::storage::lmdb::TableNames Database::table_names_{
+const storage::lmdb::TableNames Database::table_names_{
     {database::Config, "config"},
     {database::BlockHeaderMetadata, "block_header_metadata"},
     {database::BlockHeaderBest, "best_header_chain"},
@@ -65,7 +65,7 @@ Database::Database(
     : chain_(type)
     , common_(common)
     , lmdb_([&] {
-        auto lmdb = opentxs::storage::lmdb::LMDB{
+        auto lmdb = storage::lmdb::LMDB{
             table_names_,
             common.AllocateStorageFolder(
                 std::to_string(static_cast<std::uint32_t>(type))),
@@ -92,7 +92,7 @@ Database::Database(
 {
 }
 
-auto Database::init_db(opentxs::storage::lmdb::LMDB& db) noexcept -> void
+auto Database::init_db(storage::lmdb::LMDB& db) noexcept -> void
 {
     if (false == db.Exists(database::Config, tsv(database::Key::Version))) {
         const auto stored = db.Store(

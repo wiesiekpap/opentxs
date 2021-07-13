@@ -67,18 +67,15 @@ public:
 private:
     friend Nym;
 
-    /** Channel ID, addresses */
-    using AddressMap = std::map<OTIdentifier, std::set<std::string>>;
-    /** Address, channel ID */
-    using AddressReverseMap = std::map<std::string, OTIdentifier>;
     /** chain */
     using ChannelData = contact::ContactItemType;
     /** channel id, channel data */
-    using ReverseIndex = std::map<OTIdentifier, ChannelData>;
+    using ChannelIndex = std::map<OTIdentifier, ChannelData>;
+    using ChainIndex = std::map<contact::ContactItemType, ChannelList>;
 
     mutable std::shared_mutex index_lock_;
-    std::map<contact::ContactItemType, ChannelList> chain_map_;
-    mutable ReverseIndex channel_data_{};
+    mutable ChannelIndex channel_data_;
+    mutable ChainIndex chain_index_;
 
     template <typename I, typename V>
     auto extract_set(const I& id, const V& index) const ->
@@ -89,7 +86,12 @@ private:
     template <typename L>
     auto _get_channel_data(const L& lock, OTIdentifier&& id) const
         -> ChannelData&;
-    void init(const std::string& hash) final;
+    auto index(
+        const eLock& lock,
+        const Identifier& id,
+        const proto::Bip47Channel& data) -> void;
+    auto init(const std::string& hash) -> void final;
+    auto repair_indices() noexcept -> void;
     auto save(const Lock& lock) const -> bool final;
     auto serialize() const -> proto::StorageBip47Contexts;
 

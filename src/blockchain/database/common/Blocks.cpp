@@ -32,7 +32,7 @@ auto tsv(const Input& in) noexcept -> ReadView
 
 using IndexData = util::IndexData;
 
-Blocks::Blocks(opentxs::storage::lmdb::LMDB& lmdb, Bulk& bulk) noexcept
+Blocks::Blocks(storage::lmdb::LMDB& lmdb, Bulk& bulk) noexcept
     : lmdb_(lmdb)
     , bulk_(bulk)
     , table_(Table::BlockIndex)
@@ -58,8 +58,8 @@ auto Blocks::Load(const Hash& block) const noexcept -> BlockReader
     lmdb_.Load(table_, block.Bytes(), cb);
 
     if (0 == index.size_) {
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Block ")(block.asHex())(
-            " not found in index")
+        LogTrace(OT_METHOD)(__FUNCTION__)(
+            ": Block ")(block.asHex())(" not found in index")
             .Flush();
 
         return {};
@@ -74,8 +74,8 @@ auto Blocks::Store(const Hash& block, const std::size_t bytes) const noexcept
     auto lock = Lock{lock_};
 
     if (0 == bytes) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Block ")(block.asHex())(
-            " invalid block size")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Block ")(block.asHex())(" invalid block size")
             .Flush();
 
         return {};
