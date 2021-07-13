@@ -31,6 +31,17 @@ class Blockchain;
 class Core;
 }  // namespace api
 
+namespace blockchain
+{
+namespace database
+{
+namespace common
+{
+class Bulk;
+}  // namespace common
+}  // namespace database
+}  // namespace blockchain
+
 namespace proto
 {
 class BlockchainTransaction;
@@ -74,7 +85,8 @@ public:
 
     Wallet(
         const api::client::Blockchain& blockchain,
-        opentxs::storage::lmdb::LMDB& lmdb) noexcept(false);
+        storage::lmdb::LMDB& lmdb,
+        Bulk& bulk) noexcept(false);
 
     ~Wallet();
 
@@ -85,9 +97,10 @@ private:
     using PatternToTransaction = std::map<PatternID, std::set<pTxid>>;
 
     const api::client::Blockchain& blockchain_;
-    // TODO opentxs::storage::lmdb::LMDB& lmdb_;
+    storage::lmdb::LMDB& lmdb_;
+    Bulk& bulk_;
+    const int transaction_table_;
     mutable std::mutex lock_;
-    mutable std::map<std::string, Transaction> transaction_map_;
     mutable ContactToElement contact_to_element_;
     mutable ElementToContact element_to_contact_;
     mutable TransactionToPattern transaction_to_patterns_;

@@ -30,8 +30,7 @@
 
 namespace opentxs::blockchain::database::common
 {
-Peers::Peers(const api::Core& api, opentxs::storage::lmdb::LMDB& lmdb) noexcept(
-    false)
+Peers::Peers(const api::Core& api, storage::lmdb::LMDB& lmdb) noexcept(false)
     : api_(api)
     , lmdb_(lmdb)
     , lock_()
@@ -41,7 +40,7 @@ Peers::Peers(const api::Core& api, opentxs::storage::lmdb::LMDB& lmdb) noexcept(
     , networks_()
     , connected_()
 {
-    using Dir = opentxs::storage::lmdb::LMDB::Dir;
+    using Dir = storage::lmdb::LMDB::Dir;
 
     auto chain = [this](const auto key, const auto value) {
         return read_index<Chain>(key, value, chains_);
@@ -142,8 +141,8 @@ auto Peers::Find(
 
             return {};
         } else {
-            LogTrace(OT_METHOD)(__FUNCTION__)(": Choosing from ")(
-                haveServices.size())(" candidates")
+            LogTrace(OT_METHOD)(__FUNCTION__)(
+                ": Choosing from ")(haveServices.size())(" candidates")
                 .Flush();
         }
 

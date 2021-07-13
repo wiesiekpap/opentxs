@@ -39,7 +39,7 @@ auto tsv(const Input& in) noexcept -> ReadView
 
 Configuration::Configuration(
     const api::Core& api,
-    opentxs::storage::lmdb::LMDB& lmdb) noexcept
+    storage::lmdb::LMDB& lmdb) noexcept
     : api_(api)
     , lmdb_(lmdb)
     , config_table_(Table::ConfigMulti)
@@ -112,7 +112,7 @@ auto Configuration::GetSyncServers() const noexcept -> Endpoints
         config_table_,
         tsv(Database::Key::SyncServerEndpoint),
         [&](const auto view) { output.emplace_back(view); },
-        opentxs::storage::lmdb::LMDB::Mode::Multiple);
+        storage::lmdb::LMDB::Mode::Multiple);
 
     return output;
 }

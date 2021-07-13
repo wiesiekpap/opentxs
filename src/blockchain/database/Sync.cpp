@@ -37,7 +37,7 @@ auto tsv(const Input& in) noexcept -> ReadView
 Sync::Sync(
     const api::Core& api,
     const common::Database& common,
-    const opentxs::storage::lmdb::LMDB& lmdb,
+    const storage::lmdb::LMDB& lmdb,
     const blockchain::Type type) noexcept
     : api_(api)
     , common_(common)

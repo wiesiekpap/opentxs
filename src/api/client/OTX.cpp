@@ -262,7 +262,7 @@ OTX::OTX(
     , next_task_id_(0)
     , shutdown_(false)
     , shutdown_lock_()
-    , reason_(client_.Factory().PasswordPrompt("Background notary operation"))
+    , reason_(client_.Factory().PasswordPrompt("Refresh OTX data with notary"))
 {
     // WARNING: do not access client_.Wallet() during construction
     const auto endpoint = client_.Endpoints().AccountUpdate();

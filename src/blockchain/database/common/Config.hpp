@@ -70,13 +70,11 @@ public:
     auto DeleteSyncServer(const std::string& endpoint) const noexcept -> bool;
     auto GetSyncServers() const noexcept -> Endpoints;
 
-    Configuration(
-        const api::Core& api,
-        opentxs::storage::lmdb::LMDB& lmdb) noexcept;
+    Configuration(const api::Core& api, storage::lmdb::LMDB& lmdb) noexcept;
 
 private:
     const api::Core& api_;
-    opentxs::storage::lmdb::LMDB& lmdb_;
+    storage::lmdb::LMDB& lmdb_;
     const int config_table_;
     const OTZMQPublishSocket socket_;
 };

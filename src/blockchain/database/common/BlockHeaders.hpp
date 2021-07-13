@@ -61,7 +61,7 @@ public:
         -> bool;
     auto Store(const UpdatedHeader& headers) const noexcept -> bool;
 
-    BlockHeader(opentxs::storage::lmdb::LMDB& lmdb, Bulk& bulk) noexcept(false);
+    BlockHeader(storage::lmdb::LMDB& lmdb, Bulk& bulk) noexcept(false);
 
 private:
     storage::lmdb::LMDB& lmdb_;

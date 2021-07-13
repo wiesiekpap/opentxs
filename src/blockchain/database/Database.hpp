@@ -519,18 +519,18 @@ private:
     friend opentxs::Factory;
 
     static const std::size_t db_version_;
-    static const opentxs::storage::lmdb::TableNames table_names_;
+    static const storage::lmdb::TableNames table_names_;
 
     const blockchain::Type chain_;
     const database::common::Database& common_;
-    opentxs::storage::lmdb::LMDB lmdb_;
+    storage::lmdb::LMDB lmdb_;
     mutable database::Blocks blocks_;
     mutable database::Filters filters_;
     mutable database::Headers headers_;
     mutable database::Wallet wallet_;
     mutable database::Sync sync_;
 
-    static auto init_db(opentxs::storage::lmdb::LMDB& db) noexcept -> void;
+    static auto init_db(storage::lmdb::LMDB& db) noexcept -> void;
 
     Database() = delete;
     Database(const Database&) = delete;

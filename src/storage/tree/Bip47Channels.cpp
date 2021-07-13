@@ -7,10 +7,10 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "storage/tree/Bip47Channels.hpp"  // IWYU pragma: associated
 
+#include <list>
 #include <mutex>
 #include <stdexcept>
 #include <tuple>
-#include <type_traits>
 #include <utility>
 
 #include "internal/contact/Contact.hpp"
@@ -27,7 +27,6 @@
 #include "opentxs/protobuf/StorageBip47Contexts.pb.h"
 #include "opentxs/protobuf/StorageItemHash.pb.h"
 #include "opentxs/protobuf/verify/Bip47Channel.hpp"
-#include "opentxs/protobuf/verify/StorageBip47ChannelList.hpp"
 #include "opentxs/protobuf/verify/StorageBip47Contexts.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
@@ -43,9 +42,9 @@ Bip47Channels::Bip47Channels(
     const opentxs::api::storage::Driver& storage,
     const std::string& hash)
     : Node(storage, hash)
-    , index_lock_{}
-    , chain_map_{}
-    , channel_data_{}
+    , index_lock_()
+    , channel_data_()
+    , chain_index_()
 {
     if (check_hash(hash)) {
         init(hash);
@@ -65,7 +64,7 @@ auto Bip47Channels::Chain(const Identifier& channelID) const
 auto Bip47Channels::ChannelsByChain(const contact::ContactItemType chain) const
     -> Bip47Channels::ChannelList
 {
-    return extract_set(chain, chain_map_);
+    return extract_set(chain, chain_index_);
 }
 
 auto Bip47Channels::Delete(const std::string& id) -> bool
@@ -101,41 +100,56 @@ auto Bip47Channels::_get_channel_data(
     OTIdentifier&& id) const -> Bip47Channels::ChannelData&
 {
     try {
+
         return channel_data_.at(id);
     } catch (const std::out_of_range&) {
-        auto blank = ChannelData{contact::ContactItemType::Error};
+        static auto blank = ChannelData{contact::ContactItemType::Error};
 
-        return channel_data_.insert({std::move(id), std::move(blank)})
-            .first->second;
+        return blank;
     }
 }
 
-void Bip47Channels::init(const std::string& hash)
+auto Bip47Channels::index(
+    const eLock& lock,
+    const Identifier& id,
+    const proto::Bip47Channel& data) -> void
 {
-    auto serialized = std::shared_ptr<proto::StorageBip47Contexts>{};
-    driver_.LoadProto(hash, serialized);
+    const auto& common = data.deterministic().common();
+    auto& chain = channel_data_[id];
+    chain = contact::internal::translate(common.chain());
+    chain_index_[chain].emplace(id);
+}
 
-    if (!serialized) {
+auto Bip47Channels::init(const std::string& hash) -> void
+{
+    auto proto = std::shared_ptr<proto::StorageBip47Contexts>{};
+    driver_.LoadProto(hash, proto);
+
+    if (!proto) {
         LogOutput(OT_METHOD)(__FUNCTION__)(
             ": Failed to load bip47 channel index file.")
             .Flush();
         OT_FAIL
     }
 
-    init_version(CHANNEL_VERSION, *serialized);
+    init_version(CHANNEL_VERSION, *proto);
 
-    for (const auto& it : serialized->context()) {
+    for (const auto& it : proto->context()) {
         item_map_.emplace(
             it.itemid(), Metadata{it.hash(), it.alias(), 0, false});
     }
 
-    eLock lock(index_lock_);
+    if (proto->context().size() != proto->index().size()) {
+        repair_indices();
+    } else {
+        eLock lock(index_lock_);
 
-    for (const auto& index : serialized->index()) {
-        auto id = Identifier::Factory(index.channelid());
-        auto& chain = get_channel_data(lock, id.get());
-        chain = contact::internal::translate(index.chain());
-        chain_map_[chain].emplace(id);
+        for (const auto& index : proto->index()) {
+            auto id = Identifier::Factory(index.channelid());
+            auto& chain = get_channel_data(lock, id.get());
+            chain = contact::internal::translate(index.chain());
+            chain_index_[chain].emplace(std::move(id));
+        }
     }
 }
 
@@ -147,6 +161,22 @@ auto Bip47Channels::Load(
     std::string alias{""};
 
     return load_proto<proto::Bip47Channel>(id.str(), output, alias, checking);
+}
+
+auto Bip47Channels::repair_indices() noexcept -> void
+{
+    eLock lock(index_lock_);
+
+    for (const auto& [strid, alias] : List()) {
+        const auto id = Identifier::Factory(strid);
+        auto data = std::shared_ptr<proto::Bip47Channel>{};
+        const auto loaded = Load(id, data, false);
+
+        OT_ASSERT(loaded);
+        OT_ASSERT(data);
+
+        index(lock, id, *data);
+    }
 }
 
 auto Bip47Channels::save(const std::unique_lock<std::mutex>& lock) const -> bool
@@ -185,12 +215,8 @@ auto Bip47Channels::serialize() const -> proto::StorageBip47Contexts
         const auto& chain = data;
         auto& index = *serialized.add_index();
         index.set_version(CHANNEL_INDEX_VERSION);
+        index.set_channelid(id->str());
         index.set_chain(contact::internal::translate(chain));
-        const auto valid = proto::Validate(index, SILENT);
-
-        // Invalid entries may appear due to queries for properties of
-        // non-existent channels.
-        if (false == valid) { serialized.mutable_index()->RemoveLast(); }
     }
 
     return serialized;
@@ -199,12 +225,9 @@ auto Bip47Channels::serialize() const -> proto::StorageBip47Contexts
 auto Bip47Channels::Store(const Identifier& id, const proto::Bip47Channel& data)
     -> bool
 {
-    const auto& common = data.deterministic().common();
-
     {
         eLock lock(index_lock_);
-        auto& chain = get_channel_data(lock, id);
-        chain = contact::internal::translate(common.chain());
+        index(lock, id, data);
     }
 
     return store_proto(data, id.str(), "");

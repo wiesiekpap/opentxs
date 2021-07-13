@@ -109,14 +109,14 @@ public:
         const api::Core& api,
         const node::internal::Network& network,
         const common::Database& common,
-        const opentxs::storage::lmdb::LMDB& lmdb,
+        const storage::lmdb::LMDB& lmdb,
         const blockchain::Type type) noexcept;
 
 private:
     const api::Core& api_;
     const node::internal::Network& network_;
     const common::Database& common_;
-    const opentxs::storage::lmdb::LMDB& lmdb_;
+    const storage::lmdb::LMDB& lmdb_;
     mutable std::mutex lock_;
 
     auto best() const noexcept -> block::Position;

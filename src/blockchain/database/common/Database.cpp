@@ -60,14 +60,14 @@ auto tsv(const Input& in) noexcept -> ReadView
 struct Database::Imp {
     using SiphashKey = Space;
 
-    static const opentxs::storage::lmdb::TableNames table_names_;
+    static const storage::lmdb::TableNames table_names_;
 
     const api::Core& api_;
     const api::Legacy& legacy_;
     const OTString blockchain_path_;
     const OTString common_path_;
     const OTString blocks_path_;
-    opentxs::storage::lmdb::LMDB lmdb_;
+    storage::lmdb::LMDB lmdb_;
     Bulk bulk_;
     const BlockStorage block_policy_;
     const SiphashKey siphash_key_;
@@ -87,7 +87,7 @@ struct Database::Imp {
     }
     static auto block_storage_level(
         const ArgList& args,
-        opentxs::storage::lmdb::LMDB& lmdb) noexcept -> BlockStorage
+        storage::lmdb::LMDB& lmdb) noexcept -> BlockStorage
     {
         if (false == block_storage_enabled()) { return BlockStorage::None; }
 
@@ -130,8 +130,7 @@ struct Database::Imp {
             return {};
         }
     }
-    static auto block_storage_level_configured(
-        opentxs::storage::lmdb::LMDB& db) noexcept
+    static auto block_storage_level_configured(storage::lmdb::LMDB& db) noexcept
         -> std::optional<BlockStorage>
     {
         if (false == db.Exists(Table::Config, tsv(Key::BlockStoragePolicy))) {
@@ -241,8 +240,7 @@ struct Database::Imp {
 
         return output;
     }
-    static auto siphash_key(opentxs::storage::lmdb::LMDB& db) noexcept
-        -> SiphashKey
+    static auto siphash_key(storage::lmdb::LMDB& db) noexcept -> SiphashKey
     {
         auto configured = siphash_key_configured(db);
 
@@ -258,8 +256,8 @@ struct Database::Imp {
 
         return output;
     }
-    static auto siphash_key_configured(
-        opentxs::storage::lmdb::LMDB& db) noexcept -> std::optional<SiphashKey>
+    static auto siphash_key_configured(storage::lmdb::LMDB& db) noexcept
+        -> std::optional<SiphashKey>
     {
         if (false == db.Exists(Table::Config, tsv(Key::SiphashKey))) {
             return std::nullopt;
@@ -302,7 +300,7 @@ struct Database::Imp {
               table_names_,
               common_path_->Get(),
               [] {
-                  auto output = opentxs::storage::lmdb::TablesToInit{
+                  auto output = storage::lmdb::TablesToInit{
                       {Table::PeerDetails, 0},
                       {Table::PeerChainIndex, MDB_DUPSORT | MDB_INTEGERKEY},
                       {Table::PeerProtocolIndex, MDB_DUPSORT | MDB_INTEGERKEY},
@@ -321,6 +319,7 @@ struct Database::Imp {
                       {Table::FilterIndexBasic, 0},
                       {Table::FilterIndexBCH, 0},
                       {Table::FilterIndexES, 0},
+                      {Table::TransactionIndex, 0},
                   };
 
                   for (const auto& [table, name] : SyncTables()) {
@@ -349,7 +348,7 @@ struct Database::Imp {
         , blocks_(lmdb_, bulk_)
         , sync_(api_, lmdb_, blocks_path_->Get())
 #endif  // OPENTXS_BLOCK_STORAGE_ENABLED
-        , wallet_(blockchain, lmdb_)
+        , wallet_(blockchain, lmdb_, bulk_)
         , config_(api_, lmdb_)
     {
         OT_ASSERT(crypto_shorthash_KEYBYTES == siphash_key_.size());
@@ -359,8 +358,8 @@ struct Database::Imp {
     }
 };
 
-const opentxs::storage::lmdb::TableNames Database::Imp::table_names_ = [] {
-    auto output = opentxs::storage::lmdb::TableNames{
+const storage::lmdb::TableNames Database::Imp::table_names_ = [] {
+    auto output = storage::lmdb::TableNames{
         {Table::BlockHeadersDeleted, "block_headers"},
         {Table::PeerDetails, "peers"},
         {Table::PeerChainIndex, "peer_chain_index"},
@@ -383,6 +382,7 @@ const opentxs::storage::lmdb::TableNames Database::Imp::table_names_ = [] {
         {Table::FilterIndexBasic, "block_filters_basic_2"},
         {Table::FilterIndexBCH, "block_filters_bch_2"},
         {Table::FilterIndexES, "block_filters_opentxs_2"},
+        {Table::TransactionIndex, "transactions"},
     };
 
     for (const auto& [table, name] : SyncTables()) {
@@ -618,7 +618,7 @@ auto Database::LoadEnabledChains() const noexcept -> std::vector<EnabledChain>
 
         return true;
     };
-    imp_.lmdb_.Read(Enabled, cb, opentxs::storage::lmdb::LMDB::Dir::Forward);
+    imp_.lmdb_.Read(Enabled, cb, storage::lmdb::LMDB::Dir::Forward);
 
     return output;
 }

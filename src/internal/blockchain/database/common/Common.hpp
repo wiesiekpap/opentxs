@@ -73,6 +73,7 @@ enum Table {
     FilterIndexBasic = 19,
     FilterIndexBCH = 20,
     FilterIndexES = 21,
+    TransactionIndex = 22,
 };
 
 auto ChainToSyncTable(const opentxs::blockchain::Type chain) noexcept(false)

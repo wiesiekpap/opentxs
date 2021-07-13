@@ -56,7 +56,7 @@ Headers::Headers(
     const api::Core& api,
     const node::internal::Network& network,
     const common::Database& common,
-    const opentxs::storage::lmdb::LMDB& lmdb,
+    const storage::lmdb::LMDB& lmdb,
     const blockchain::Type type) noexcept
     : api_(api)
     , network_(network)
@@ -373,7 +373,7 @@ auto Headers::DisconnectedHashes() const noexcept -> node::DisconnectedList
 
             return true;
         },
-        opentxs::storage::lmdb::LMDB::Dir::Forward);
+        storage::lmdb::LMDB::Dir::Forward);
 
     return output;
 }
@@ -578,7 +578,7 @@ auto Headers::recent_hashes(const Lock& lock) const noexcept
 
             return 100 > output.size();
         },
-        opentxs::storage::lmdb::LMDB::Dir::Backward);
+        storage::lmdb::LMDB::Dir::Backward);
 
     return output;
 }
@@ -594,7 +594,7 @@ auto Headers::SiblingHashes() const noexcept -> node::Hashes
 
             return true;
         },
-        opentxs::storage::lmdb::LMDB::Dir::Forward);
+        storage::lmdb::LMDB::Dir::Forward);
 
     return output;
 }

@@ -109,13 +109,13 @@ public:
     Filters(
         const api::Core& api,
         const common::Database& common,
-        const opentxs::storage::lmdb::LMDB& lmdb,
+        const storage::lmdb::LMDB& lmdb,
         const blockchain::Type chain) noexcept;
 
 private:
     const api::Core& api_;
     const common::Database& common_;
-    const opentxs::storage::lmdb::LMDB& lmdb_;
+    const storage::lmdb::LMDB& lmdb_;
     const block::Position blank_position_;
     mutable std::mutex lock_;
 
