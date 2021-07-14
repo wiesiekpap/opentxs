@@ -740,8 +740,8 @@ auto Input::ExtractElements(const filter::Type style) const noexcept
         }
     }
 
-    LogTrace(OT_METHOD)(__FUNCTION__)(": extracted ")(output.size())(
-        " elements")
+    LogTrace(OT_METHOD)(__FUNCTION__)(
+        ": extracted ")(output.size())(" elements")
         .Flush();
     std::sort(output.begin(), output.end());
 
@@ -767,8 +767,8 @@ auto Input::FindMatches(
         cache_.add({account->str(), subchain, index});
     }
 
-    LogTrace(OT_METHOD)(__FUNCTION__)(": Verified ")(inputs.size())(
-        " outpoint matches")
+    LogTrace(OT_METHOD)(__FUNCTION__)(
+        ": Verified ")(inputs.size())(" outpoint matches")
         .Flush();
 
     return matches;
@@ -785,8 +785,8 @@ auto Input::index_elements(const api::client::Blockchain& blockchain) noexcept
     auto& hashes =
         const_cast<boost::container::flat_set<PatternID>&>(pubkey_hashes_);
     const auto patterns = script_->ExtractPatterns(api_, blockchain);
-    LogTrace(OT_METHOD)(__FUNCTION__)(": ")(patterns.size())(
-        " pubkey hashes found:")
+    LogTrace(OT_METHOD)(__FUNCTION__)(
+        ": ")(patterns.size())(" pubkey hashes found:")
         .Flush();
     std::for_each(
         std::begin(patterns), std::end(patterns), [&](const auto& id) -> auto {
@@ -978,10 +978,16 @@ auto Input::SerializeNormalized(const AllocateOutput destination) const noexcept
 auto Input::SignatureVersion() const noexcept
     -> std::unique_ptr<internal::Input>
 {
-    return std::make_unique<Input>(
+    auto output = std::make_unique<Input>(
         *this,
         factory::BitcoinScript(
             chain_, ScriptElements{}, Script::Position::Input));
+
+    OT_ASSERT(output);
+
+    output->cache_.reset_size();
+
+    return std::move(output);
 }
 
 auto Input::SignatureVersion(std::unique_ptr<internal::Script> subscript)

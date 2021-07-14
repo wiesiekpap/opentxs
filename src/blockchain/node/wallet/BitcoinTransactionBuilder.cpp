@@ -375,7 +375,6 @@ struct BitcoinTransactionBuilder::Imp {
     }
     auto FinalizeTransaction() noexcept -> Transaction
     {
-        LogTrace(OT_METHOD)(__FUNCTION__)(": ")(print()).Flush();
         auto inputs = factory::BitcoinTransactionInputs([&] {
             auto output = std::vector<Input>{};
             output.reserve(inputs_.size());
