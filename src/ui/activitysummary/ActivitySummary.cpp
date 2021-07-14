@@ -117,17 +117,11 @@ auto ActivitySummary::construct_row(
 auto ActivitySummary::display_name(
     const proto::StorageThread& thread) const noexcept -> std::string
 {
-    std::set<std::string> names{};
+    auto names = std::set<std::string>{};
 
-    for (const auto& participant : thread.participant()) {
-        auto name =
-            api_.Contacts().ContactName(Identifier::Factory(participant));
-
-        if (name.empty()) {
-            names.emplace(participant);
-        } else {
-            names.emplace(std::move(name));
-        }
+    for (const auto& id : thread.participant()) {
+        names.emplace(
+            api_.Contacts().ContactName(api_.Factory().Identifier(id)));
     }
 
     if (names.empty()) { return thread.id(); }
@@ -219,8 +213,8 @@ void ActivitySummary::process_thread(const Message& message) noexcept
 void ActivitySummary::startup() noexcept
 {
     const auto threads = api_.Activity().Threads(primary_id_, false);
-    LogDetail(OT_METHOD)(__FUNCTION__)(": Loading ")(threads.size())(
-        " threads.")
+    LogDetail(OT_METHOD)(__FUNCTION__)(
+        ": Loading ")(threads.size())(" threads.")
         .Flush();
     for (const auto& [id, alias] : threads) {
         [[maybe_unused]] const auto& notUsed = alias;

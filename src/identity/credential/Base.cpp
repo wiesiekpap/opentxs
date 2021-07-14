@@ -250,8 +250,8 @@ auto Base::Save() const -> bool
 
     if (!isValid(lock, serializedProto)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Unable to save serialized credential. Type (")(value(role_))(
-            "), version ")(version_)
+            ": Unable to save serialized credential. Type (")(value(
+            role_))("), version ")(version_)
             .Flush();
 
         return false;
@@ -422,6 +422,19 @@ auto Base::Validate() const -> bool
     Lock lock(lock_);
 
     return validate(lock);
+}
+
+auto Base::Verify(
+    const proto::Credential& credential,
+    const identity::CredentialRole& role,
+    const Identifier& masterID,
+    const proto::Signature& masterSig) const -> bool
+{
+    LogOutput(OT_METHOD)(__FUNCTION__)(
+        ": Non-key credentials are not able to verify signatures")
+        .Flush();
+
+    return false;
 }
 
 /** Verifies the cryptographic integrity of a credential. Assumes the

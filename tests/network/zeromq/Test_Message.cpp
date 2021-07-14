@@ -8,7 +8,6 @@
 #include <iterator>
 #include <string>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Version.hpp"

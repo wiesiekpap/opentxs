@@ -230,9 +230,17 @@ HD::HD(const HD& rhs, OTSecret&& newSecretKey) noexcept
 
 auto HD::Chaincode(const PasswordPrompt& reason) const noexcept -> ReadView
 {
+    auto lock = Lock{lock_};
+
+    return chaincode(lock, reason);
+}
+
+auto HD::chaincode(const Lock& lock, const PasswordPrompt& reason)
+    const noexcept -> ReadView
+{
     try {
 
-        return get_chain_code(reason).Bytes();
+        return get_chain_code(lock, reason).Bytes();
     } catch (const std::exception& e) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
@@ -246,6 +254,11 @@ auto HD::ChildKey(const Bip32Index index, const PasswordPrompt& reason)
     try {
 #if OT_CRYPTO_WITH_BIP32
         static const auto blank = api_.Factory().Secret(0);
+        const auto hasPrivate = [&] {
+            auto lock = Lock{lock_};
+
+            return has_private(lock);
+        }();
         const auto serialized = [&] {
             const auto path = [&] {
                 auto out = Bip32::Path{};
@@ -260,7 +273,7 @@ auto HD::ChildKey(const Bip32Index index, const PasswordPrompt& reason)
                 return out;
             }();
 
-            if (HasPrivate()) {
+            if (hasPrivate) {
                 return api_.Crypto().BIP32().DerivePrivateKey(
                     *this, {index}, reason);
             } else {
@@ -286,7 +299,7 @@ auto HD::ChildKey(const Bip32Index index, const PasswordPrompt& reason)
                 return factory::Ed25519Key(
                     api_,
                     api_.Crypto().ED25519(),
-                    HasPrivate() ? privkey : blank,
+                    hasPrivate ? privkey : blank,
                     ccode,
                     pubkey,
                     path,
@@ -301,7 +314,7 @@ auto HD::ChildKey(const Bip32Index index, const PasswordPrompt& reason)
                 return factory::Secp256k1Key(
                     api_,
                     api_.Crypto().SECP256K1(),
-                    HasPrivate() ? privkey : blank,
+                    hasPrivate ? privkey : blank,
                     ccode,
                     pubkey,
                     path,
@@ -332,9 +345,9 @@ auto HD::Depth() const noexcept -> int
     return path_->child_size();
 }
 
-auto HD::erase_private_data() -> void
+auto HD::erase_private_data(const Lock& lock) -> void
 {
-    EllipticCurve::erase_private_data();
+    EllipticCurve::erase_private_data(lock);
     const_cast<std::shared_ptr<const proto::HDPath>&>(path_).reset();
     const_cast<std::unique_ptr<const proto::Ciphertext>&>(chain_code_).reset();
 }
@@ -344,8 +357,8 @@ auto HD::Fingerprint() const noexcept -> Bip32Fingerprint
     return CalculateFingerprint(api_.Crypto().Hash(), PublicKey());
 }
 
-auto HD::get_chain_code(const PasswordPrompt& reason) const noexcept(false)
-    -> Secret&
+auto HD::get_chain_code(const Lock& lock, const PasswordPrompt& reason) const
+    noexcept(false) -> Secret&
 {
     if (0 == plaintext_chain_code_->size()) {
         if (false == bool(encrypted_key_)) {
@@ -460,11 +473,11 @@ auto HD::Path(proto::HDPath& output) const noexcept -> bool
     return false;
 }
 
-auto HD::Serialize(Serialized& output) const noexcept -> bool
+auto HD::serialize(const Lock& lock, Serialized& output) const noexcept -> bool
 {
-    if (false == EllipticCurve::Serialize(output)) { return false; }
+    if (false == EllipticCurve::serialize(lock, output)) { return false; }
 
-    if (HasPrivate()) {
+    if (has_private(lock)) {
         if (path_) { *(output.mutable_path()) = *path_; }
 
         if (chain_code_) { *output.mutable_chaincode() = *chain_code_; }
@@ -477,11 +490,12 @@ auto HD::Serialize(Serialized& output) const noexcept -> bool
 
 auto HD::Xprv(const PasswordPrompt& reason) const noexcept -> std::string
 {
+    auto lock = Lock{lock_};
     const auto [ready, depth, child] = get_params();
 
     if (false == ready) { return {}; }
 
-    auto privateKey = api_.Factory().SecretFromBytes(PrivateKey(reason));
+    auto privateKey = api_.Factory().SecretFromBytes(private_key(lock, reason));
 
     // FIXME Bip32::SerializePrivate should accept ReadView
 
@@ -490,12 +504,13 @@ auto HD::Xprv(const PasswordPrompt& reason) const noexcept -> std::string
         depth,
         parent_,
         child,
-        api_.Factory().Data(Chaincode(reason)),
+        api_.Factory().Data(chaincode(lock, reason)),
         privateKey);
 }
 
 auto HD::Xpub(const PasswordPrompt& reason) const noexcept -> std::string
 {
+    auto lock = Lock{lock_};
     const auto [ready, depth, child] = get_params();
 
     if (false == ready) { return {}; }
@@ -507,7 +522,7 @@ auto HD::Xpub(const PasswordPrompt& reason) const noexcept -> std::string
         depth,
         parent_,
         child,
-        api_.Factory().Data(Chaincode(reason)),
+        api_.Factory().Data(chaincode(lock, reason)),
         api_.Factory().Data(PublicKey()));
 }
 }  // namespace opentxs::crypto::key::implementation

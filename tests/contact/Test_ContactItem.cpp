@@ -9,7 +9,6 @@
 #include <string>
 
 #include "1_Internal.hpp"
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "internal/api/client/Client.hpp"
 #include "internal/contact/Contact.hpp"
 #include "opentxs/Bytes.hpp"
@@ -24,9 +23,10 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/identity/credential/Contact.hpp"
 
-namespace
-{
+namespace ot = opentxs;
 
+namespace ottest
+{
 class Test_ContactItem : public ::testing::Test
 {
 public:
@@ -50,8 +50,6 @@ public:
     const ot::api::client::Manager& api_;
     const ot::ContactItem contactItem_;
 };
-
-}  // namespace
 
 TEST_F(Test_ContactItem, first_constructor)
 {
@@ -301,3 +299,4 @@ TEST_F(Test_ContactItem, Serialize)
     ASSERT_EQ(restored2.Start(), contactItem_.Start());
     ASSERT_EQ(restored2.End(), contactItem_.End());
 }
+}  // namespace ottest

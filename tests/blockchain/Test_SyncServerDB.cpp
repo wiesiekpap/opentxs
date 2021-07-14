@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "Basic.hpp"
 #include "Helpers.hpp"
-#include "OTTestEnvironment.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Version.hpp"
@@ -52,7 +52,7 @@ protected:
     auto cleanup() noexcept { listener_p_.reset(); }
 
     SyncServerDB()
-        : api_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
+        : api_(ot::Context().StartClient(Args(), 0))
         , listener_([&]() -> auto& {
             if (!listener_p_) {
                 listener_p_ = std::make_unique<Listener>(

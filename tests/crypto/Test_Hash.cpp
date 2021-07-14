@@ -12,17 +12,19 @@
 #include <utility>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/HashType.hpp"
 
-namespace
+namespace ot = opentxs;
+
+namespace ottest
 {
 struct Nist {
     std::string input_{};
@@ -499,4 +501,4 @@ TEST_F(Test_Hash, nist_gigabyte_string)
     EXPECT_EQ(calculatedSha256.get(), eSha256);
     EXPECT_EQ(calculatedSha512.get(), eSha512);
 }
-}  // namespace
+}  // namespace ottest

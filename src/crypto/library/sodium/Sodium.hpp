@@ -111,22 +111,19 @@ public:
     auto ScalarMultiplyBase(const ReadView scalar, const AllocateOutput result)
         const noexcept -> bool final;
     auto SharedSecret(
-        const key::Asymmetric& publicKey,
-        const key::Asymmetric& privateKey,
+        const ReadView publicKey,
+        const ReadView privateKey,
         const SecretStyle style,
-        const PasswordPrompt& reason,
         Secret& secret) const noexcept -> bool final;
     auto Sign(
-        const api::internal::Core& api,
         const ReadView plaintext,
-        const key::Asymmetric& key,
+        const ReadView key,
         const crypto::HashType hash,
-        const AllocateOutput signature,
-        const PasswordPrompt& reason) const -> bool final;
+        const AllocateOutput signature) const -> bool final;
     auto Verify(
-        const Data& plaintext,
-        const key::Asymmetric& theKey,
-        const Data& signature,
+        const ReadView plaintext,
+        const ReadView theKey,
+        const ReadView signature,
         const crypto::HashType hashType) const -> bool final;
 #endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 
@@ -137,6 +134,8 @@ public:
 private:
     static const opentxs::crypto::key::symmetric::Algorithm DEFAULT_MODE{
         opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305};
+
+    static auto blank_private() noexcept -> ReadView;
 
     auto Decrypt(
         const proto::Ciphertext& ciphertext,

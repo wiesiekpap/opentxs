@@ -13,6 +13,7 @@
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
@@ -38,21 +39,8 @@ auto BlockchainActivityThreadItem(
 {
     using ReturnType = ui::implementation::BlockchainActivityThreadItem;
 
-    const auto chain =
-        ui::implementation::extract_custom<blockchain::Type>(custom, 1);
-    auto txid = ui::implementation::extract_custom<OTData>(custom, 2);
-    const auto pTx = api.Blockchain().LoadTransactionBitcoin(txid->asHex());
-
-    OT_ASSERT(pTx);
-
-    const auto& tx = *pTx;
-    const auto amount = tx.NetBalanceChange(api.Blockchain(), nymID);
-    const auto memo = tx.Memo(api.Blockchain());
-    auto* text = static_cast<std::string*>(custom.at(0));
-
-    OT_ASSERT(nullptr != text);
-
-    *text = api.Blockchain().ActivityDescription(nymID, chain, tx);
+    auto [txid, amount, display, memo] =
+        ReturnType::extract(api, nymID, custom);
 
     return std::make_shared<ReturnType>(
         parent,
@@ -63,8 +51,8 @@ auto BlockchainActivityThreadItem(
         custom,
         std::move(txid),
         amount,
-        blockchain::internal::Format(chain, amount),
-        memo);
+        std::move(display),
+        std::move(memo));
 }
 }  // namespace opentxs::factory
 
@@ -78,9 +66,9 @@ BlockchainActivityThreadItem::BlockchainActivityThreadItem(
     const ActivityThreadSortKey& sortKey,
     CustomData& custom,
     OTData&& txid,
-    const opentxs::Amount amount,
+    opentxs::Amount amount,
     std::string&& displayAmount,
-    const std::string& memo) noexcept
+    std::string&& memo) noexcept
     : ActivityThreadItem(
           parent,
           api,
@@ -92,11 +80,99 @@ BlockchainActivityThreadItem::BlockchainActivityThreadItem(
           false)
     , txid_(std::move(txid))
     , display_amount_(std::move(displayAmount))
-    , memo_(memo)
+    , memo_(std::move(memo))
     , amount_(amount)
 {
+    OT_ASSERT(3 == custom.size());
     OT_ASSERT(false == nym_id_.empty())
     OT_ASSERT(false == item_id_.empty())
     OT_ASSERT(false == txid_->empty())
+}
+
+auto BlockchainActivityThreadItem::Amount() const noexcept -> opentxs::Amount
+{
+    auto lock = sLock{shared_lock_};
+
+    return amount_;
+}
+
+auto BlockchainActivityThreadItem::DisplayAmount() const noexcept -> std::string
+{
+    auto lock = sLock{shared_lock_};
+
+    return display_amount_;
+}
+
+auto BlockchainActivityThreadItem::extract(
+    const api::client::internal::Manager& api,
+    const identifier::Nym& nymID,
+    CustomData& custom) noexcept
+    -> std::tuple<OTData, opentxs::Amount, std::string, std::string>
+{
+    auto output = std::tuple<OTData, opentxs::Amount, std::string, std::string>{
+        api.Factory().Data(
+            ui::implementation::extract_custom<std::string>(custom, 2),
+            StringStyle::Raw),
+        0,
+        "",
+        ""};
+    auto& [txid, amount, display, memo] = output;
+    const auto pTx = api.Blockchain().LoadTransactionBitcoin(txid->asHex());
+    const auto chain =
+        ui::implementation::extract_custom<blockchain::Type>(custom, 1);
+    auto* pText = static_cast<std::string*>(custom.at(0));
+
+    OT_ASSERT(nullptr != pText);
+
+    auto& text = *pText;
+
+    if (pTx) {
+        const auto& tx = *pTx;
+        amount = tx.NetBalanceChange(api.Blockchain(), nymID);
+        display = blockchain::internal::Format(chain, amount);
+        memo = tx.Memo(api.Blockchain());
+        text = api.Blockchain().ActivityDescription(nymID, chain, tx);
+    } else {
+        // FIXME
+        text = "Blockchain transaction";
+    }
+
+    return output;
+}
+
+auto BlockchainActivityThreadItem::Memo() const noexcept -> std::string
+{
+    auto lock = sLock{shared_lock_};
+
+    return memo_;
+}
+
+auto BlockchainActivityThreadItem::reindex(
+    const ActivityThreadSortKey& key,
+    CustomData& custom) noexcept -> bool
+{
+    auto [txid, amount, display, memo] = extract(api_, nym_id_, custom);
+    auto output = ActivityThreadItem::reindex(key, custom);
+
+    OT_ASSERT(txid_ == txid);
+
+    auto lock = eLock{shared_lock_};
+
+    if (display_amount_ != display) {
+        display_amount_ = std::move(display);
+        output = true;
+    }
+
+    if (memo_ != memo) {
+        memo_ = std::move(memo);
+        output = true;
+    }
+
+    if (amount_ != amount) {
+        amount_ = amount;
+        output = true;
+    }
+
+    return output;
 }
 }  // namespace opentxs::ui::implementation

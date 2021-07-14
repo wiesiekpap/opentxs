@@ -46,7 +46,7 @@ namespace opentxs::factory
 {
 using ReturnType = blockchain::crypto::implementation::PaymentCode;
 
-auto BlockchainPCBalanceNode(
+auto BlockchainPCSubaccount(
     const api::internal::Core& api,
     const blockchain::crypto::internal::Account& parent,
     const opentxs::PaymentCode& local,
@@ -67,7 +67,7 @@ auto BlockchainPCBalanceNode(
     }
 }
 
-auto BlockchainPCBalanceNode(
+auto BlockchainPCSubaccount(
     const api::internal::Core& api,
     const blockchain::crypto::internal::Account& parent,
     const proto::Bip47Channel& serialized,

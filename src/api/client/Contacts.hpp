@@ -63,6 +63,9 @@ public:
     auto ContactID(const identifier::Nym& nymID) const -> OTIdentifier final;
     auto ContactList() const -> ObjectList final;
     auto ContactName(const Identifier& contactID) const -> std::string final;
+    auto ContactName(
+        const Identifier& contactID,
+        contact::ContactItemType currencyHint) const -> std::string final;
     auto Merge(const Identifier& parent, const Identifier& child) const
         -> std::shared_ptr<const opentxs::Contact> final;
     auto mutable_Contact(const Identifier& id) const

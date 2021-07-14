@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "Basic.hpp"
 #include "crypto/Bip32Vectors.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -23,7 +23,7 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 
-namespace
+namespace ottest
 {
 class Test_BIP32 : public ::testing::Test
 {
@@ -52,7 +52,7 @@ protected:
     }
 
     Test_BIP32()
-        : api_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
+        : api_(ot::Context().StartClient(Args(), 0))
         , reason_(api_.Factory().PasswordPrompt(__FUNCTION__))
     {
     }
@@ -114,4 +114,4 @@ TEST_F(Test_BIP32, stress)
         EXPECT_EQ(child.xprv_, key.Xprv(reason_));
     }
 }
-}  // namespace
+}  // namespace ottest

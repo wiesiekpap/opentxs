@@ -99,6 +99,7 @@ protected:
     static auto serialize_public(EllipticCurve* copy)
         -> std::shared_ptr<proto::AsymmetricKey>;
 
+    virtual auto blank_private() const noexcept -> ReadView = 0;
     virtual auto clone_ec() const -> EllipticCurve* = 0;
     virtual auto get_public() const
         -> std::shared_ptr<proto::AsymmetricKey> = 0;

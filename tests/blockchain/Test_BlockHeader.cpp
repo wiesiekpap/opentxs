@@ -8,8 +8,8 @@
 #include <string>
 #include <type_traits>
 
+#include "Basic.hpp"
 #include "Helpers.hpp"
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/block/Block.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
@@ -37,7 +37,7 @@ public:
     const ot::api::client::Manager& api_;
 
     Test_BlockHeader()
-        : api_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
+        : api_(ot::Context().StartClient(Args(), 0))
     {
     }
 };

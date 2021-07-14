@@ -21,7 +21,6 @@
 #include <vector>
 
 #include "Helpers.hpp"
-#include "UIHelpers.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -58,9 +57,12 @@
 #include "opentxs/ui/qt/BlockchainSelection.hpp"
 #endif  // OT_BLOCKCHAIN
 #endif  // OT_QT
+#include "ui/Helpers.hpp"
 
 using Subchain = ot::blockchain::crypto::Subchain;
 
+namespace ottest
+{
 const auto time_1_ = ot::Clock::from_time_t(1592661306);
 const auto time_2_ = ot::Clock::from_time_t(1592663862);
 const auto time_3_ = ot::Clock::from_time_t(1592664462);
@@ -83,8 +85,6 @@ Counter activity_thread_1_{};
 Counter activity_thread_2_{};
 Counter activity_thread_3_{};
 
-namespace ottest
-{
 TEST_F(Test_BlockchainActivity, init)
 {
     EXPECT_FALSE(nym_1_id().empty());

@@ -18,14 +18,12 @@ extern "C" {
 #include <functional>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 
 #include "crypto/library/EcdsaProvider.hpp"
 #include "internal/crypto/library/Factory.hpp"
-#include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/Primitives.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/crypto/Util.hpp"
@@ -34,8 +32,6 @@ extern "C" {
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
-#include "opentxs/crypto/key/Asymmetric.hpp"
-#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 
 #define OT_METHOD "opentxs::crypto::implementation::Secp256k1::"
 
@@ -82,6 +78,13 @@ Secp256k1::Secp256k1(
           SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
     , ssl_(ssl)
 {
+}
+
+auto Secp256k1::blank_private() noexcept -> ReadView
+{
+    static const auto blank = space(PrivateKeySize);
+
+    return reader(blank);
 }
 
 auto Secp256k1::PubkeyAdd(
@@ -178,25 +181,9 @@ auto Secp256k1::RandomKeypair(
         return false;
     }
 
-    auto counter{0};
-    auto valid{false};
-    auto temp = Context().Factory().Secret(0);
+    auto output = privateKey(PrivateKeySize);
 
-    while (false == valid) {
-        temp->Randomize(PrivateKeySize);
-        auto writer = temp->WriteInto(Secret::Mode::Mem)(PrivateKeySize);
-
-        OT_ASSERT(writer.valid(PrivateKeySize));
-
-        valid = 1 == ::secp256k1_ec_seckey_verify(
-                         context_, writer.as<unsigned char>());
-
-        OT_ASSERT(3 > ++counter);
-    }
-
-    auto prv = privateKey(PrivateKeySize);
-
-    if (false == prv.valid(PrivateKeySize)) {
+    if (false == output.valid(PrivateKeySize)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(
             ": Failed to allocate space for private key")
             .Flush();
@@ -204,9 +191,18 @@ auto Secp256k1::RandomKeypair(
         return false;
     }
 
-    std::memcpy(prv, temp->data(), prv);
+    auto counter{0};
+    auto valid{false};
 
-    return ScalarMultiplyBase({prv.as<const char>(), prv.size()}, publicKey);
+    while (false == valid) {
+        crypto_.Util().RandomizeMemory(output.data(), output.size());
+        valid = 1 == ::secp256k1_ec_seckey_verify(
+                         context_, output.as<unsigned char>());
+
+        OT_ASSERT(3 > ++counter);
+    }
+
+    return ScalarMultiplyBase(output, publicKey);
 }
 
 auto Secp256k1::ScalarAdd(
@@ -298,29 +294,11 @@ auto Secp256k1::ScalarMultiplyBase(
 }
 
 auto Secp256k1::SharedSecret(
-    const key::Asymmetric& publicKey,
-    const key::Asymmetric& privateKey,
+    const ReadView pub,
+    const ReadView prv,
     const SecretStyle style,
-    const PasswordPrompt& reason,
     Secret& secret) const noexcept -> bool
 {
-    if (publicKey.keyType() != crypto::key::asymmetric::Algorithm::Secp256k1) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Public key is wrong type")
-            .Flush();
-
-        return false;
-    }
-
-    if (privateKey.keyType() != crypto::key::asymmetric::Algorithm::Secp256k1) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Private key is wrong type")
-            .Flush();
-
-        return false;
-    }
-
-    const auto pub = publicKey.PublicKey();
-    const auto prv = privateKey.PrivateKey(reason);
-
     if (PrivateKeySize != prv.size()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid private key").Flush();
 
@@ -367,30 +345,13 @@ auto Secp256k1::SharedSecret(
 }
 
 auto Secp256k1::Sign(
-    const api::internal::Core& api,
     const ReadView plaintext,
-    const key::Asymmetric& key,
+    const ReadView priv,
     const crypto::HashType type,
-    const AllocateOutput signature,
-    const PasswordPrompt& reason) const -> bool
+    const AllocateOutput signature) const -> bool
 {
-    if (crypto::key::asymmetric::Algorithm::Secp256k1 != key.keyType()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid key type").Flush();
-
-        return false;
-    }
-
-    if (false == key.HasPrivate()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": A private key required when generating signatures")
-            .Flush();
-
-        return false;
-    }
-
     try {
         const auto digest = hash(type, plaintext);
-        const auto priv = key.PrivateKey(reason);
 
         if (nullptr == priv.data() || 0 == priv.size()) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Missing private key").Flush();
@@ -400,6 +361,12 @@ auto Secp256k1::Sign(
 
         if (PrivateKeySize != priv.size()) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid private key").Flush();
+
+            return false;
+        }
+
+        if (priv == blank_private()) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Blank private key").Flush();
 
             return false;
         }
@@ -447,30 +414,13 @@ auto Secp256k1::Sign(
 }
 
 auto Secp256k1::SignDER(
-    const api::internal::Core& api,
     const ReadView plaintext,
-    const key::Asymmetric& key,
+    const ReadView priv,
     const crypto::HashType type,
-    Space& output,
-    const PasswordPrompt& reason) const noexcept -> bool
+    Space& output) const noexcept -> bool
 {
-    if (crypto::key::asymmetric::Algorithm::Secp256k1 != key.keyType()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid key type").Flush();
-
-        return false;
-    }
-
-    if (false == key.HasPrivate()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": A private key required when generating signatures")
-            .Flush();
-
-        return false;
-    }
-
     try {
         const auto digest = hash(type, plaintext);
-        const auto priv = key.PrivateKey(reason);
 
         if (nullptr == priv.data() || 0 == priv.size()) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Missing private key").Flush();
@@ -480,6 +430,12 @@ auto Secp256k1::SignDER(
 
         if (PrivateKeySize != priv.size()) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid private key").Flush();
+
+            return false;
+        }
+
+        if (priv == blank_private()) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Blank private key").Flush();
 
             return false;
         }
@@ -512,7 +468,8 @@ auto Secp256k1::SignDER(
 
         if (1 != wrote) {
             LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Call to secp256k1_ecdsa_signature_serialize_der() failed.")
+                ": Call to secp256k1_ecdsa_signature_serialize_der() "
+                "failed.")
                 .Flush();
 
             return false;
@@ -529,21 +486,15 @@ auto Secp256k1::SignDER(
 }
 
 auto Secp256k1::Verify(
-    const Data& plaintext,
-    const key::Asymmetric& key,
-    const Data& signature,
+    const ReadView plaintext,
+    const ReadView key,
+    const ReadView signature,
     const crypto::HashType type) const -> bool
 {
-    if (crypto::key::asymmetric::Algorithm::Secp256k1 != key.keyType()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid key type").Flush();
-
-        return false;
-    }
-
     try {
-        const auto digest = hash(type, plaintext.Bytes());
-        const auto parsed = parsed_public_key(key.PublicKey());
-        const auto sig = parsed_signature(signature.Bytes());
+        const auto digest = hash(type, plaintext);
+        const auto parsed = parsed_public_key(key);
+        const auto sig = parsed_signature(signature);
 
         return 1 == ::secp256k1_ecdsa_verify(
                         context_,

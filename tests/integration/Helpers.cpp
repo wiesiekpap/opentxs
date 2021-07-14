@@ -215,6 +215,7 @@ User::User(
     , init_(false)
     , seed_id_()
     , index_()
+    , nym_()
     , nym_id_(ot::identifier::Nym::Factory())
     , payment_code_()
     , lock_()
@@ -243,17 +244,19 @@ auto User::init(
     const ot::api::client::Manager& api,
     const Server& server,
     const ot::contact::ContactItemType type,
-    const std::uint32_t index) noexcept -> void
+    const std::uint32_t index) noexcept -> bool
 {
-    if (init_) { return; }
+    if (init_) { return false; }
 
     api_ = &api;
     seed_id_ = api.Exec().Wallet_ImportSeed(words_, passphrase_);
     index_ = index;
-    nym_id_ =
-        api.Wallet()
-            .Nym(Reason(), name_, {seed_id_, static_cast<int>(index_)}, type)
-            ->ID();
+    nym_ = api.Wallet().Nym(
+        Reason(), name_, {seed_id_, static_cast<int>(index_)}, type);
+
+    OT_ASSERT(nym_);
+
+    nym_id_ = nym_->ID();
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
     payment_code_ =
         api.Factory()
@@ -263,6 +266,18 @@ auto User::init(
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
     set_introduction_server(api, server);
     init_ = true;
+
+    return true;
+}
+
+auto User::init_custom(
+    const ot::api::client::Manager& api,
+    const Server& server,
+    const std::function<void(User&)> custom,
+    const ot::contact::ContactItemType type,
+    const std::uint32_t index) noexcept -> void
+{
+    if (init(api, server, type, index) && custom) { custom(*this); }
 }
 
 auto User::PaymentCode() const -> ot::OTPaymentCode

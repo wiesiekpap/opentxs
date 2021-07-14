@@ -6,10 +6,12 @@
 #include <gtest/gtest.h>
 #include <string>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "opentxs/Version.hpp"
 #include "opentxs/core/Identifier.hpp"
 
-namespace
+namespace ot = opentxs;
+
+namespace ottest
 {
 struct Default_Identifier : public ::testing::Test {
     ot::OTIdentifier identifier_;
@@ -19,7 +21,6 @@ struct Default_Identifier : public ::testing::Test {
     {
     }
 };
-}  // namespace
 
 TEST_F(Default_Identifier, default_accessors)
 {
@@ -34,3 +35,4 @@ TEST_F(Default_Identifier, serialize_empty)
 
     EXPECT_EQ(identifier_, recovered);
 }
+}  // namespace ottest

@@ -11,13 +11,13 @@
 #include <string>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Manager.hpp"
@@ -34,7 +34,9 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/HashType.hpp"
 
-namespace
+namespace ot = opentxs;
+
+namespace ottest
 {
 const auto txid_hex_ = std::string{
     "b9451ab8cb828275480da016e97368fdfbfbd9e27dd9bd5d3e6d56d8cd14f301"};
@@ -437,4 +439,4 @@ TEST_F(Test_BitcoinTransaction, normalized_id)
     EXPECT_EQ(id1.get(), tx_id_.get());
     EXPECT_NE(id1.get(), id2.get());
 }
-}  // namespace
+}  // namespace ottest

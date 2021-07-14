@@ -12,7 +12,6 @@
 #include <thread>
 #include <utility>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -32,11 +31,11 @@
 
 using namespace opentxs;
 
+namespace ot = opentxs;
 namespace zmq = ot::network::zeromq;
 
-namespace
+namespace ottest
 {
-
 class Test_DealerRouter : public ::testing::Test
 {
 public:
@@ -153,7 +152,6 @@ void Test_DealerRouter::routerSocketThread(const std::string& endpoint)
     // Give the router socket time to send the message.
     Sleep(std::chrono::milliseconds(500));
 }
-}  // namespace
 
 TEST_F(Test_DealerRouter, Dealer_Router)
 {
@@ -463,3 +461,4 @@ TEST_F(Test_DealerRouter, Dealer_Router_Multipart)
 
     EXPECT_TRUE(replyProcessed);
 }
+}  // namespace ottest

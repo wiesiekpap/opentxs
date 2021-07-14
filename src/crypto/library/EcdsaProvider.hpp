@@ -38,12 +38,10 @@ class EcdsaProvider : virtual public crypto::EcdsaProvider
 {
 public:
     bool SignDER(
-        [[maybe_unused]] const api::internal::Core& api,
         [[maybe_unused]] const ReadView plaintext,
-        [[maybe_unused]] const key::Asymmetric& key,
+        [[maybe_unused]] const ReadView key,
         [[maybe_unused]] const crypto::HashType hash,
-        [[maybe_unused]] Space& signature,
-        [[maybe_unused]] const PasswordPrompt& reason) const noexcept override
+        [[maybe_unused]] Space& signature) const noexcept override
     {
         return false;
     }

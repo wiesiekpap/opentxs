@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "2_Factory.hpp"
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "Basic.hpp"
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
@@ -42,7 +42,7 @@
 #define MINT_VALID_MONTHS 12
 #define REQUEST_PURSE_VALUE 20000
 
-namespace
+namespace ottest
 {
 bool init_{false};
 
@@ -67,7 +67,7 @@ public:
 
     Test_Basic()
         : api_(dynamic_cast<const ot::api::client::internal::Manager&>(
-              ot::Context().StartClient(OTTestEnvironment::Args(), 0)))
+              ot::Context().StartClient(Args(), 0)))
         , reason_(api_.Factory().PasswordPrompt(__FUNCTION__))
         , alice_()
         , bob_()
@@ -98,7 +98,6 @@ public:
         init_ = true;
     }
 };
-}  // namespace
 
 ot::OTNymID Test_Basic::alice_nym_id_{ot::identifier::Nym::Factory()};
 ot::OTNymID Test_Basic::bob_nym_id_{ot::identifier::Nym::Factory()};
@@ -442,3 +441,4 @@ TEST_F(Test_Basic, PushPop)
     EXPECT_EQ(purse.Value(), 0);
     EXPECT_EQ(issuePurse.Value(), 0);
 }
+}  // namespace ottest

@@ -11,10 +11,16 @@ extern "C" {
 #include <sodium.h>
 }
 
+#include <cstddef>
+#include <cstring>
+#include <vector>
+
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
+#include "opentxs/api/Core.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Primitives.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
@@ -113,27 +119,25 @@ auto AsymmetricProvider::SeedToCurveKey(
 }
 
 auto AsymmetricProvider::SignContract(
-    const api::internal::Core& api,
-    const String& strContractUnsigned,
-    const key::Asymmetric& theKey,
-    Signature& theSignature,  // output
+    const api::Core& api,
+    const String& contract,
+    const ReadView theKey,
     const crypto::HashType hashType,
-    const PasswordPrompt& reason) const -> bool
+    Signature& output) const -> bool
 {
-    auto plaintext = Data::Factory(
-        strContractUnsigned.Get(),
-        strContractUnsigned.GetLength() + 1);  // include null terminator
-    auto signature = Data::Factory();
-    bool success = Sign(
-        api,
-        plaintext->Bytes(),
-        theKey,
-        hashType,
-        signature->WriteInto(),
-        reason);
-    theSignature.SetData(signature, true);  // true means, "yes, with newlines
-                                            // in the b64-encoded output,
-                                            // please."
+    const auto plaintext = [&] {
+        const auto size = std::size_t{contract.GetLength()};
+        auto out = space(size + 1u);
+        std::memcpy(out.data(), contract.Get(), size);
+        out.back() = std::byte{0x0};
+
+        return out;
+    }();
+    auto signature = api.Factory().Data();
+    bool success =
+        Sign(reader(plaintext), theKey, hashType, signature->WriteInto());
+    output.SetData(signature, true);  // true means, "yes, with newlines in the
+                                      // b64-encoded output, please."
 
     if (false == success) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to sign contract").Flush();
@@ -143,17 +147,27 @@ auto AsymmetricProvider::SignContract(
 }
 
 auto AsymmetricProvider::VerifyContractSignature(
-    const String& strContractToVerify,
-    const key::Asymmetric& theKey,
+    const api::Core& api,
+    const String& contract,
+    const ReadView key,
     const Signature& theSignature,
     const crypto::HashType hashType) const -> bool
 {
-    auto plaintext = Data::Factory(
-        strContractToVerify.Get(),
-        strContractToVerify.GetLength() + 1);  // include null terminator
-    auto signature = Data::Factory();
-    theSignature.GetData(signature);
+    const auto plaintext = [&] {
+        const auto size = std::size_t{contract.GetLength()};
+        auto out = space(size + 1);
+        std::memcpy(out.data(), contract.Get(), size);
+        out.back() = std::byte{0x0};
 
-    return Verify(plaintext, theKey, signature, hashType);
+        return out;
+    }();
+    const auto signature = [&] {
+        auto out = api.Factory().Data();
+        theSignature.GetData(out);
+
+        return out;
+    }();
+
+    return Verify(reader(plaintext), key, signature->Bytes(), hashType);
 }
 }  // namespace opentxs::crypto::implementation

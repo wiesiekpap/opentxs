@@ -53,7 +53,7 @@ ContactListItem::ContactListItem(
 
 auto ContactListItem::calculate_section() const noexcept -> std::string
 {
-    Lock lock{lock_};
+    auto lock = Lock{lock_};
 
     return calculate_section(lock);
 }
@@ -73,7 +73,7 @@ auto ContactListItem::ContactID() const noexcept -> std::string
 
 auto ContactListItem::DisplayName() const noexcept -> std::string
 {
-    Lock lock{lock_};
+    auto lock = Lock{lock_};
 
     return key_;
 }
@@ -86,27 +86,52 @@ auto ContactListItem::ImageURI() const noexcept -> std::string
 }
 
 #if OT_QT
-auto ContactListItem::qt_data([[maybe_unused]] const int column, int role)
-    const noexcept -> QVariant
+auto ContactListItem::qt_data(const int column, int role) const noexcept
+    -> QVariant
 {
     switch (role) {
         case Qt::DisplayRole: {
-            return DisplayName().c_str();
-        }
+            switch (column) {
+                case ContactListQt::NameColumn: {
+
+                    return qt_data(column, ContactListQt::NameRole);
+                }
+                default: {
+                }
+            }
+        } break;
         case Qt::DecorationRole: {
             // TODO render ImageURI into a QPixmap
+
             return {};
         }
-        case ContactListQt::ContactIDRole: {
+        case Qt::TextAlignmentRole: {
+            switch (column) {
+                case ContactListQt::NameColumn: {
+
+                    return Qt::AlignLeft;
+                }
+                default: {
+                }
+            }
+        } break;
+        case ContactListQt::IDRole: {
             return ContactID().c_str();
+        }
+        case ContactListQt::NameRole: {
+            return DisplayName().c_str();
+        }
+        case ContactListQt::ImageRole: {
+            return ImageURI().c_str();
         }
         case ContactListQt::SectionRole: {
             return Section().c_str();
         }
         default: {
-            return {};
         }
     }
+
+    return {};
 }
 #endif
 
@@ -114,7 +139,7 @@ auto ContactListItem::reindex(
     const ContactListSortKey& key,
     CustomData& custom) noexcept -> bool
 {
-    Lock lock{lock_};
+    auto lock = Lock{lock_};
 
     return reindex(lock, key, custom);
 }
@@ -138,7 +163,7 @@ auto ContactListItem::reindex(
 
 auto ContactListItem::Section() const noexcept -> std::string
 {
-    Lock lock{lock_};
+    auto lock = Lock{lock_};
 
     return section_;
 }

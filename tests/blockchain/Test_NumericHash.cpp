@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "Basic.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -32,7 +32,7 @@ class Manager;
 
 namespace be = boost::endian;
 
-namespace
+namespace ottest
 {
 class Test_NumericHash : public ::testing::Test
 {
@@ -40,7 +40,7 @@ public:
     const ot::api::client::Manager& api_;
 
     Test_NumericHash()
-        : api_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
+        : api_(ot::Context().StartClient(Args(), 0))
     {
     }
 };
@@ -168,4 +168,4 @@ TEST_F(Test_NumericHash, nBits_5)
     EXPECT_EQ(hex, number->asHex());
     EXPECT_STREQ("1", work->Decimal().c_str());
 }
-}  // namespace
+}  // namespace ottest

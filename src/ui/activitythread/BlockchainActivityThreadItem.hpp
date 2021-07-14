@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include <tuple>
 
 #include "1_Internal.hpp"
 #include "internal/ui/UI.hpp"
@@ -50,12 +51,15 @@ namespace opentxs::ui::implementation
 class BlockchainActivityThreadItem final : public ActivityThreadItem
 {
 public:
-    auto Amount() const noexcept -> opentxs::Amount final { return amount_; }
-    auto DisplayAmount() const noexcept -> std::string final
-    {
-        return display_amount_;
-    }
-    auto Memo() const noexcept -> std::string final { return memo_; }
+    static auto extract(
+        const api::client::internal::Manager& api,
+        const identifier::Nym& nymID,
+        CustomData& custom) noexcept
+        -> std::tuple<OTData, opentxs::Amount, std::string, std::string>;
+
+    auto Amount() const noexcept -> opentxs::Amount final;
+    auto DisplayAmount() const noexcept -> std::string final;
+    auto Memo() const noexcept -> std::string final;
 
     BlockchainActivityThreadItem(
         const ActivityThreadInternalInterface& parent,
@@ -65,17 +69,20 @@ public:
         const ActivityThreadSortKey& sortKey,
         CustomData& custom,
         OTData&& txid,
-        const opentxs::Amount amount,
+        opentxs::Amount amount,
         std::string&& displayAmount,
-        const std::string& memo) noexcept;
+        std::string&& memo) noexcept;
 
     ~BlockchainActivityThreadItem() final = default;
 
 private:
     const OTData txid_;
-    const std::string display_amount_;
-    const std::string memo_;
-    const opentxs::Amount amount_;
+    std::string display_amount_;
+    std::string memo_;
+    opentxs::Amount amount_;
+
+    auto reindex(const ActivityThreadSortKey& key, CustomData& custom) noexcept
+        -> bool final;
 
     BlockchainActivityThreadItem() = delete;
     BlockchainActivityThreadItem(const BlockchainActivityThreadItem&) = delete;

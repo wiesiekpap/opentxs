@@ -10,14 +10,15 @@
 #include <future>
 #include <memory>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "core/StateMachine.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Log.hpp"
 
 using namespace opentxs;
 
-namespace
+namespace ot = opentxs;
+
+namespace ottest
 {
 class Test_State_Machine : public ::testing::Test,
                            public ot::internal::StateMachine
@@ -271,4 +272,4 @@ TEST_F(Test_State_Machine, multiple_stop)
 
     EXPECT_EQ(target_.load() - 4, counter_.load());
 }
-}  // namespace
+}  // namespace ottest

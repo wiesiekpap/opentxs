@@ -59,7 +59,7 @@ TEST_F(RPC_fixture, preconditions)
         const auto instance = session.Instance();
         const auto& nyms = local_nym_map_.at(instance);
         const auto& seeds = seed_map_.at(instance);
-        const auto seed = ImportBip39(session, vectors_3_.alice_.words_);
+        const auto seed = ImportBip39(session, GetVectors3().alice_.words_);
 
         EXPECT_FALSE(seed.empty());
         EXPECT_TRUE(SetIntroductionServer(session, server));

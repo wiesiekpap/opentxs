@@ -6,6 +6,7 @@
 #pragma once
 
 #include <string>
+#include <tuple>
 
 #include "1_Internal.hpp"
 #include "internal/ui/UI.hpp"
@@ -47,13 +48,13 @@ namespace opentxs::ui::implementation
 class PendingSend final : public ActivityThreadItem
 {
 public:
-    auto Amount() const noexcept -> opentxs::Amount final { return amount_; }
+    static auto extract(CustomData& custom) noexcept
+        -> std::tuple<opentxs::Amount, std::string, std::string>;
+
+    auto Amount() const noexcept -> opentxs::Amount final;
     auto Deposit() const noexcept -> bool final { return false; }
-    auto DisplayAmount() const noexcept -> std::string final
-    {
-        return display_amount_;
-    }
-    auto Memo() const noexcept -> std::string final { return memo_; }
+    auto DisplayAmount() const noexcept -> std::string final;
+    auto Memo() const noexcept -> std::string final;
 
     PendingSend(
         const ActivityThreadInternalInterface& parent,
@@ -61,13 +62,19 @@ public:
         const identifier::Nym& nymID,
         const ActivityThreadRowID& rowID,
         const ActivityThreadSortKey& sortKey,
-        CustomData& custom) noexcept;
+        CustomData& custom,
+        opentxs::Amount amount,
+        std::string&& display,
+        std::string&& memo) noexcept;
     ~PendingSend() final = default;
 
 private:
     opentxs::Amount amount_;
     std::string display_amount_;
     std::string memo_;
+
+    auto reindex(const ActivityThreadSortKey& key, CustomData& custom) noexcept
+        -> bool final;
 
     PendingSend() = delete;
     PendingSend(const PendingSend&) = delete;

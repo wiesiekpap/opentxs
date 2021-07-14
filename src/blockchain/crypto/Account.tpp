@@ -33,7 +33,7 @@ struct Account::Factory<internal::HD, proto::HDPath, PasswordPrompt> {
         const proto::HDPath& data,
         const PasswordPrompt& reason) noexcept -> std::unique_ptr<internal::HD>
     {
-        return factory::BlockchainHDBalanceNode(api, parent, data, reason, id);
+        return factory::BlockchainHDSubaccount(api, parent, data, reason, id);
     }
 };
 template <>
@@ -44,7 +44,7 @@ struct Account::Factory<internal::HD, proto::HDAccount> {
         Identifier& id,
         const proto::HDAccount& data) noexcept -> std::unique_ptr<internal::HD>
     {
-        return factory::BlockchainHDBalanceNode(api, parent, data, id);
+        return factory::BlockchainHDSubaccount(api, parent, data, id);
     }
 };
 template <>
@@ -66,7 +66,7 @@ struct Account::Factory<
     {
         static const auto blank = api.Factory().Data();
 
-        return factory::BlockchainPCBalanceNode(
+        return factory::BlockchainPCSubaccount(
             api, parent, local, remote, path, blank, reason, id);
     }
 };
@@ -89,7 +89,7 @@ struct Account::Factory<
         const PasswordPrompt& reason) noexcept
         -> std::unique_ptr<internal::PaymentCode>
     {
-        return factory::BlockchainPCBalanceNode(
+        return factory::BlockchainPCSubaccount(
             api, parent, local, remote, path, txid, reason, id);
     }
 };
@@ -102,7 +102,7 @@ struct Account::Factory<internal::PaymentCode, proto::Bip47Channel> {
         const proto::Bip47Channel& data) noexcept
         -> std::unique_ptr<internal::PaymentCode>
     {
-        return factory::BlockchainPCBalanceNode(api, parent, data, id);
+        return factory::BlockchainPCSubaccount(api, parent, data, id);
     }
 };
 

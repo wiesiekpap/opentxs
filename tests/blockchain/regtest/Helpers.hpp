@@ -38,7 +38,7 @@
 #include <utility>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"
+#include "Basic.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Factory.hpp"

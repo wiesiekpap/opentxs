@@ -6,17 +6,20 @@
 #include <gtest/gtest.h>
 #include <memory>
 
-#include "OTLowLevelTestEnvironment.hpp"
+#include "Basic.hpp"
 #include "opentxs/OT.hpp"
 
+namespace ottest
+{
 TEST(StartupShutdown, create)
 {
-    ot::InitContext(OTLowLevelTestEnvironment::Args());
+    ot::InitContext(Args(true));
     ot::Cleanup();
 }
 
 TEST(StartupShutdown, restart)
 {
-    ot::InitContext(OTLowLevelTestEnvironment::Args());
+    ot::InitContext(Args(true));
     ot::Cleanup();
 }
+}  // namespace ottest

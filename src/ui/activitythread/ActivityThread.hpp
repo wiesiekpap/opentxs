@@ -10,8 +10,10 @@
 #endif  // OT_QT
 #include <functional>
 #include <future>
+#include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <set>
 #include <string>
 #include <thread>
@@ -21,7 +23,7 @@
 
 #include "1_Internal.hpp"
 #include "Proto.hpp"
-#include "core/StateMachine.hpp"
+#include "core/Worker.hpp"
 #include "internal/ui/UI.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/SharedPimpl.hpp"
@@ -31,9 +33,11 @@
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/ui/ActivityThread.hpp"
+#include "opentxs/util/WorkType.hpp"
 #include "ui/base/List.hpp"
 #include "ui/base/Widget.hpp"
 #include "util/Blank.hpp"
+#include "util/Work.hpp"
 
 namespace opentxs
 {
@@ -133,10 +137,20 @@ using ActivityThreadList = List<
     ActivityThreadSortKey,
     ActivityThreadPrimaryID>;
 
-class ActivityThread final : public ActivityThreadList,
-                             public opentxs::internal::StateMachine
+class ActivityThread final : public ActivityThreadList, Worker<ActivityThread>
 {
 public:
+    struct Callbacks {
+        using MCallback = std::function<void(bool)>;
+
+        SimpleCallback general_{};
+        SimpleCallback display_name_{};
+        SimpleCallback draft_{};
+        MCallback messagability_{};
+    };
+
+    auto CanMessage() const noexcept -> bool final;
+    auto ClearCallbacks() const noexcept -> void final;
     auto DisplayName() const noexcept -> std::string final;
     auto GetDraft() const noexcept -> std::string final;
     auto Participants() const noexcept -> std::string final;
@@ -156,6 +170,8 @@ public:
     auto SetDraft(const std::string& draft) const noexcept -> bool final;
     auto ThreadID() const noexcept -> std::string final;
 
+    auto SetCallbacks(Callbacks&&) noexcept -> void;
+
     ActivityThread(
         const api::client::internal::Manager& api,
         const identifier::Nym& nymID,
@@ -165,19 +181,32 @@ public:
     ~ActivityThread() final;
 
 private:
-    const ListenerDefinitions listeners_;
-    const OTIdentifier threadID_;
-    std::set<OTIdentifier> participants_;
-    mutable std::promise<void> participants_promise_;
-    mutable std::shared_future<void> participants_future_;
-    mutable std::mutex contact_lock_;
-    mutable std::string draft_;
-    mutable std::vector<DraftTask> draft_tasks_;
-    std::shared_ptr<const opentxs::Contact> contact_;
-    std::unique_ptr<std::thread> contact_thread_;
+    friend Worker<ActivityThread>;
 
+    enum class Work : OTZMQWorkType {
+        shutdown = value(WorkType::Shutdown),
+        contact = value(WorkType::ContactUpdated),
+        thread = value(WorkType::ActivityThreadUpdated),
+        otx = value(WorkType::OTXTaskComplete),
+        messagability = value(WorkType::OTXMessagability),
+        init = OT_ZMQ_INIT_SIGNAL,
+        statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
+    };
+
+    const OTIdentifier threadID_;
+    const std::set<OTIdentifier> contacts_;
+    const std::string participants_;
+    std::string display_name_;
+    std::map<contact::ContactItemType, std::string> payment_codes_;
+    std::optional<Messagability> can_message_;
+    mutable std::string draft_;
+    mutable std::map<api::client::OTX::TaskID, DraftTask> draft_tasks_;
+    mutable std::optional<Callbacks> callbacks_;
+
+    auto calculate_display_name() const noexcept -> std::string;
+    auto calculate_participants() const noexcept -> std::string;
     auto comma(const std::set<std::string>& list) const noexcept -> std::string;
-    void can_message() const noexcept;
+    auto can_message() const noexcept -> bool;
     auto construct_row(
         const ActivityThreadRowID& id,
         const ActivityThreadSortKey& index,
@@ -189,14 +218,22 @@ private:
     auto validate_account(const Identifier& sourceAccount) const noexcept
         -> bool;
 
-    void init_contact() noexcept;
-    void load_thread(const proto::StorageThread& thread) noexcept;
-    void new_thread() noexcept;
+    auto load_thread(const proto::StorageThread& thread) noexcept -> void;
+    auto new_thread() noexcept -> void;
+    auto pipeline(const Message& in) noexcept -> void;
+    auto process_contact(const Message& message) noexcept -> void;
     auto process_item(const proto::StorageThreadItem& item) noexcept
         -> ActivityThreadRowID;
-    auto process_drafts() noexcept -> bool;
-    void process_thread(const Message& message) noexcept;
-    void startup() noexcept;
+    auto process_messagability(const Message& message) noexcept -> void;
+    auto process_otx(const Message& message) noexcept -> void;
+    auto process_thread(const Message& message) noexcept -> void;
+    auto refresh_thread() noexcept -> void;
+    auto set_participants() noexcept -> void;
+    auto state_machine() noexcept -> bool final;
+    auto startup() noexcept -> void;
+    auto update_display_name() noexcept -> bool;
+    auto update_messagability(Messagability value) noexcept -> bool;
+    auto update_payment_codes() noexcept -> bool;
 
     ActivityThread() = delete;
     ActivityThread(const ActivityThread&) = delete;

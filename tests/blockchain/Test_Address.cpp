@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"

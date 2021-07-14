@@ -12,7 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "ui/base/Items.hpp"
 
 namespace
@@ -32,7 +31,7 @@ struct Data {
 
 using Vector = std::vector<Data>;
 
-Type items_{false};
+Type items_{0, false};
 const Vector vector_{
     {"a", 0, "first"},
     {"b", 1, "second"},
@@ -451,7 +450,7 @@ TEST(UI_items, delete_last)
 
 TEST(UI_items, reverse_sort)
 {
-    auto items = Type{true};
+    auto items = Type{0, true};
     {
         const auto& [key, id, value] = vector_.at(0);
         const auto [it, index] = items.find_insert_position(key, id);

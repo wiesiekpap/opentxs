@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Data.hpp"

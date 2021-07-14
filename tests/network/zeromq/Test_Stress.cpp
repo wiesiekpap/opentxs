@@ -10,9 +10,9 @@
 #include <string>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
@@ -20,8 +20,11 @@
 #include "opentxs/network/zeromq/socket/Sender.tpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 
+namespace ot = opentxs;
 namespace zmq = ot::network::zeromq;
 
+namespace ottest
+{
 TEST(Test_Stress, Pub_10000)
 {
     const auto& ot = ot::Context();
@@ -64,3 +67,4 @@ TEST(Test_Stress, PubSub_100)
 
     while (pub.size() > results.load()) { ; }
 }
+}  // namespace ottest

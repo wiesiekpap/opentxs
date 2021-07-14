@@ -11,7 +11,6 @@
 #include <string>
 #include <thread>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -30,9 +29,10 @@
 
 using namespace opentxs;
 
+namespace ot = opentxs;
 namespace zmq = ot::network::zeromq;
 
-namespace
+namespace ottest
 {
 class Test_PublishSubscribe : public ::testing::Test
 {
@@ -133,7 +133,6 @@ void Test_PublishSubscribe::publishSocketThread(
 
     ASSERT_EQ(callbackCount_, callbackFinishedCount_);
 }
-}  // namespace
 
 TEST_F(Test_PublishSubscribe, Publish_Subscribe)
 {
@@ -339,3 +338,4 @@ TEST_F(Test_PublishSubscribe, Publish_2_Subscribe_2)
     subscribeSocketThread1.join();
     subscribeSocketThread2.join();
 }
+}  // namespace ottest

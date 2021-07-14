@@ -9,7 +9,6 @@
 #include <string>
 #include <type_traits>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -30,9 +29,10 @@
 
 using namespace opentxs;
 
-namespace
-{
+namespace ot = opentxs;
 
+namespace ottest
+{
 class Test_PaymentCode : public ::testing::Test
 {
 public:
@@ -316,4 +316,4 @@ TEST_F(Test_PaymentCode, nymid)
         client_.Factory().PaymentCode(paycode_3)->ID(),
         client_.Factory().NymIDFromPaymentCode(paycode_3));
 }
-}  // namespace
+}  // namespace ottest

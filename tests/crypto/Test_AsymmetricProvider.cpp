@@ -9,7 +9,6 @@
 #include <string>
 #include <string_view>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
@@ -31,17 +30,22 @@
 #include "opentxs/crypto/SecretStyle.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/HD.hpp"
+#include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
 #include "util/HDIndex.hpp"  // IWYU pragma: keep
 
 using namespace opentxs;
 
-namespace
+namespace ot = opentxs;
+
+namespace ottest
 {
 class Test_Signatures : public ::testing::Test
 {
 public:
+    using Role = ot::crypto::key::asymmetric::Role;
+
     const ot::api::client::internal::Manager& client_;
 #if OT_CRYPTO_WITH_BIP32
     const std::string fingerprint_;
@@ -75,8 +79,8 @@ public:
     const crypto::AsymmetricProvider& secp256k1_;
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 #if OT_CRYPTO_SUPPORTED_KEY_RSA
-    OTAsymmetricKey rsa_;
-    OTAsymmetricKey rsa_2_;
+    OTAsymmetricKey rsa_sign_1_;
+    OTAsymmetricKey rsa_sign_2_;
     const crypto::AsymmetricProvider& openssl_;
 #endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 
@@ -90,28 +94,28 @@ public:
               ""))
 #endif  // OT_CRYPTO_WITH_BIP32
 #if OT_CRYPTO_SUPPORTED_KEY_ED25519
-        , ed_(get_key(client_, EcdsaCurve::ed25519))
+        , ed_(get_key(client_, EcdsaCurve::ed25519, Role::Sign))
 #if OT_CRYPTO_WITH_BIP32
         , ed_hd_(get_hd_key(client_, fingerprint_, EcdsaCurve::ed25519))
         , ed_2_(get_hd_key(client_, fingerprint_, EcdsaCurve::ed25519, 1))
 #else
-        , ed_2_(get_key(client_, EcdsaCurve::ed25519))
+        , ed_2_(get_key(client_, EcdsaCurve::ed25519, Role::Sign))
 #endif  // OT_CRYPTO_WITH_BIP32
         , ed25519_(client_.Crypto().ED25519())
 #endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-        , secp_(get_key(client_, EcdsaCurve::secp256k1))
+        , secp_(get_key(client_, EcdsaCurve::secp256k1, Role::Sign))
 #if OT_CRYPTO_WITH_BIP32
         , secp_hd_(get_hd_key(client_, fingerprint_, EcdsaCurve::secp256k1))
         , secp_2_(get_hd_key(client_, fingerprint_, EcdsaCurve::secp256k1, 1))
 #else
-        , secp_2_(get_key(client_, EcdsaCurve::secp256k1))
+        , secp_2_(get_key(client_, EcdsaCurve::secp256k1, Role::Sign))
 #endif  // OT_CRYPTO_WITH_BIP32
         , secp256k1_(client_.Crypto().SECP256K1())
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 #if OT_CRYPTO_SUPPORTED_KEY_RSA
-        , rsa_(get_key(client_, EcdsaCurve::invalid))
-        , rsa_2_(get_key(client_, EcdsaCurve::invalid))
+        , rsa_sign_1_(get_key(client_, EcdsaCurve::invalid, Role::Sign))
+        , rsa_sign_2_(get_key(client_, EcdsaCurve::invalid, Role::Sign))
         , openssl_(client_.Crypto().RSA())
 #endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
     {
@@ -146,27 +150,28 @@ public:
 #endif  // OT_CRYPTO_WITH_BIP32
     [[maybe_unused]] static OTAsymmetricKey get_key(
         const ot::api::client::Manager& api,
-        const EcdsaCurve curve)
+        const EcdsaCurve curve,
+        const Role role)
     {
         const auto reason = api.Factory().PasswordPrompt(__FUNCTION__);
+        const auto params = [&] {
+            if (EcdsaCurve::secp256k1 == curve) {
 
-        if (EcdsaCurve::secp256k1 == curve) {
-            auto params = NymParameters{NymParameterType::secp256k1};
+                return NymParameters{NymParameterType::secp256k1};
+            } else if (EcdsaCurve::ed25519 == curve) {
 
-            return api.Factory().AsymmetricKey(params, reason);
-        } else if (EcdsaCurve::ed25519 == curve) {
-            auto params = NymParameters{NymParameterType::ed25519};
-
-            return api.Factory().AsymmetricKey(params, reason);
-        } else {
+                return NymParameters{NymParameterType::ed25519};
+            } else {
 #if OT_CRYPTO_SUPPORTED_KEY_RSA
-            auto params = NymParameters{2048};
 
-            return api.Factory().AsymmetricKey(params, reason);
+                return NymParameters{1024};
 #else
-            OT_FAIL;
+                OT_FAIL;
 #endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
-        }
+            }
+        }();
+
+        return api.Factory().AsymmetricKey(params, reason, role);
     }
 
     [[maybe_unused]] bool test_dh(
@@ -179,11 +184,15 @@ public:
         auto reason = client_.Factory().PasswordPrompt(__FUNCTION__);
         auto secret1 = client_.Factory().Secret(0);
         auto secret2 = client_.Factory().Secret(0);
-        auto output = lib.SharedSecret(keyOne, keyTwo, style, reason, secret1);
+        auto output = lib.SharedSecret(
+            keyOne.PublicKey(), keyTwo.PrivateKey(reason), style, secret1);
 
         if (false == output) { return output; }
 
-        output = lib.SharedSecret(keyTwo, keyOne, style, reason, secret2);
+        output = lib.SharedSecret(
+            keyTwo.PublicKey(), keyOne.PrivateKey(reason), style, secret2);
+
+        EXPECT_TRUE(output);
 
         if (false == output) { return output; }
 
@@ -205,13 +214,21 @@ public:
         const crypto::HashType hash)
     {
         auto reason = client_.Factory().PasswordPrompt(__FUNCTION__);
-        auto sig = Data::Factory();
-        const auto haveSig = lib.Sign(
-            client_, plaintext.Bytes(), key, hash, sig->WriteInto(), reason);
+        auto sig = ot::Space{};
+        const auto pubkey = key.PublicKey();
+        const auto seckey = key.PrivateKey(reason);
 
-        if (false == haveSig) { return false; }
+        EXPECT_TRUE(key.HasPrivate());
+        EXPECT_NE(pubkey.size(), 0);
+        EXPECT_NE(seckey.size(), 0);
 
-        const auto verified = lib.Verify(plaintext, key, sig, hash);
+        if (false == key.HasPrivate()) { return false; }
+        if ((0 == pubkey.size()) || (0 == seckey.size())) { return false; }
+
+        const auto haveSig =
+            lib.Sign(plaintext.Bytes(), seckey, hash, writer(sig));
+        const auto verified =
+            lib.Verify(plaintext.Bytes(), pubkey, reader(sig), hash);
 
         return haveSig && verified;
     }
@@ -222,10 +239,28 @@ public:
         const crypto::HashType hash)
     {
         auto reason = client_.Factory().PasswordPrompt(__FUNCTION__);
-        auto sig = Data::Factory();
-        lib.Sign(
-            client_, plaintext_1->Bytes(), key, hash, sig->WriteInto(), reason);
-        const auto verified = lib.Verify(plaintext_2, key, sig, hash);
+        auto sig = ot::Space{};
+        const auto pubkey = key.PublicKey();
+        const auto seckey = key.PrivateKey(reason);
+
+        EXPECT_TRUE(key.HasPrivate());
+        EXPECT_NE(pubkey.size(), 0);
+        EXPECT_NE(seckey.size(), 0);
+
+        if (false == key.HasPrivate()) { return false; }
+        if ((0 == pubkey.size()) || (0 == seckey.size())) { return false; }
+
+        const auto haveSig = lib.Sign(
+            plaintext_1->Bytes(), key.PrivateKey(reason), hash, writer(sig));
+
+        EXPECT_TRUE(haveSig);
+
+        if (false == haveSig) { return false; }
+
+        const auto verified = lib.Verify(
+            plaintext_2->Bytes(), key.PublicKey(), reader(sig), hash);
+
+        EXPECT_FALSE(verified);
 
         return !verified;
     }
@@ -234,23 +269,23 @@ public:
 #if OT_CRYPTO_SUPPORTED_KEY_RSA
 TEST_F(Test_Signatures, RSA_unsupported_hash)
 {
-    EXPECT_FALSE(test_signature(plaintext_1, openssl_, rsa_, blake160_));
-    EXPECT_FALSE(test_signature(plaintext_1, openssl_, rsa_, blake256_));
-    EXPECT_FALSE(test_signature(plaintext_1, openssl_, rsa_, blake512_));
+    EXPECT_FALSE(test_signature(plaintext_1, openssl_, rsa_sign_1_, blake160_));
+    EXPECT_FALSE(test_signature(plaintext_1, openssl_, rsa_sign_1_, blake256_));
+    EXPECT_FALSE(test_signature(plaintext_1, openssl_, rsa_sign_1_, blake512_));
 }
 
 TEST_F(Test_Signatures, RSA_detect_invalid_signature)
 {
-    EXPECT_TRUE(bad_signature(openssl_, rsa_, sha256_));
-    EXPECT_TRUE(bad_signature(openssl_, rsa_, sha512_));
-    EXPECT_TRUE(bad_signature(openssl_, rsa_, ripemd160_));
+    EXPECT_TRUE(bad_signature(openssl_, rsa_sign_1_, sha256_));
+    EXPECT_TRUE(bad_signature(openssl_, rsa_sign_1_, sha512_));
+    EXPECT_TRUE(bad_signature(openssl_, rsa_sign_1_, ripemd160_));
 }
 
 TEST_F(Test_Signatures, RSA_supported_hashes)
 {
-    EXPECT_TRUE(test_signature(plaintext_1, openssl_, rsa_, sha256_));
-    EXPECT_TRUE(test_signature(plaintext_1, openssl_, rsa_, sha512_));
-    EXPECT_TRUE(test_signature(plaintext_1, openssl_, rsa_, ripemd160_));
+    EXPECT_TRUE(test_signature(plaintext_1, openssl_, rsa_sign_1_, sha256_));
+    EXPECT_TRUE(test_signature(plaintext_1, openssl_, rsa_sign_1_, sha512_));
+    EXPECT_TRUE(test_signature(plaintext_1, openssl_, rsa_sign_1_, ripemd160_));
 }
 
 TEST_F(Test_Signatures, RSA_DH)
@@ -259,7 +294,7 @@ TEST_F(Test_Signatures, RSA_DH)
 
     // RSA does not use the same key for encryption/signing and DH so this
     // test should fail
-    EXPECT_FALSE(test_dh(openssl_, rsa_, rsa_2_, expected));
+    EXPECT_FALSE(test_dh(openssl_, rsa_sign_1_, rsa_sign_2_, expected));
 }
 #endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 
@@ -345,18 +380,9 @@ TEST_F(Test_Signatures, Secp256k1_supported_hashes)
 
 TEST_F(Test_Signatures, Secp256k1_ECDH)
 {
-    constexpr auto hex
-    {
-#if OT_CRYPTO_WITH_BIP32
-        "a3f8385b75ab90df6f6aae81044730ec526104033f8aac662dde1f1b40453e58"
-#else
-        ""
-#endif  // OT_CRYPTO_WITH_BIP32
-    };
-
-    const auto expected = client_.Factory().Data(hex, ot::StringStyle::Hex);
+    const auto expected = client_.Factory().Data();
 
     EXPECT_TRUE(test_dh(secp256k1_, secp_, secp_2_, expected));
 }
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-}  // namespace
+}  // namespace ottest

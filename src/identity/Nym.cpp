@@ -1595,6 +1595,12 @@ auto Nym::Verify(const ProtobufType& input, proto::Signature& signature) const
         }
     }
 
+    LogOutput(OT_METHOD)(__FUNCTION__)(
+        ": all ")(active_
+                      .size())(" authorities on nym ")(id_)(" failed to verify "
+                                                            "signature")
+        .Flush();
+
     return false;
 }
 

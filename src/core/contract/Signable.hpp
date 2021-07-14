@@ -43,7 +43,7 @@ public:
     auto Validate() const -> bool override;
     auto Version() const -> VersionNumber override;
 
-    void SetAlias(const std::string& alias) override;
+    auto SetAlias(const std::string& alias) -> void override;
 
     ~Signable() override = default;
 
@@ -67,12 +67,14 @@ protected:
         const proto::Signature& signature) const -> bool;
     auto verify_write_lock(const Lock& lock) const -> bool;
 
-    virtual void first_time_init(const Lock& lock) noexcept(false);
-    virtual void init_serialized(const Lock& lock) noexcept(false);
+    auto clear_signatures(const Lock& lock) noexcept -> void;
+    virtual auto first_time_init(const Lock& lock) noexcept(false) -> void;
+    virtual auto init_serialized(const Lock& lock) noexcept(false) -> void;
     virtual auto update_signature(
         const Lock& lock,
         const PasswordPrompt& reason) -> bool;
-    void update_version(const VersionNumber version) noexcept;
+    auto update_version(const Lock& lock, const VersionNumber version) noexcept
+        -> void;
 
     virtual auto GetID(const Lock& lock) const -> OTIdentifier = 0;
 

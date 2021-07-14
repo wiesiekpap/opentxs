@@ -379,8 +379,9 @@ auto Blockchain::Imp::CalculateAddress(
             }
         } break;
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported address style (")(
-                static_cast<std::uint16_t>(format))(")")
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": Unsupported address style (")(static_cast<std::uint16_t>(
+                format))(")")
                 .Flush();
 
             return {};
@@ -589,8 +590,9 @@ auto Blockchain::Imp::EncodeAddress(
             return p2sh(chain, data);
         }
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported address style (")(
-                static_cast<std::uint16_t>(style))(")")
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": Unsupported address style (")(static_cast<std::uint16_t>(
+                style))(")")
                 .Flush();
 
             return {};
@@ -630,14 +632,18 @@ auto Blockchain::Imp::get_node(const Identifier& accountID) const
     noexcept(false) -> opentxs::blockchain::crypto::internal::Subaccount&
 {
     const auto& nymID = accounts_.Owner(accountID);
+    const auto nym = nymID.str();
+    const auto id = accountID.str();
 
     switch (accounts_.Type(accountID)) {
         case opentxs::blockchain::crypto::SubaccountType::HD: {
-            const auto type = api_.Storage().BlockchainAccountType(
-                nymID.str(), accountID.str());
+            const auto type = api_.Storage().BlockchainAccountType(nym, id);
 
             if (contact::ContactItemType::Error == type) {
-                throw std::out_of_range("Account does not exist");
+                const auto error = std::string{"HD account "} + id + " for " +
+                                   nym + " does not exist";
+
+                throw std::out_of_range(error);
             }
 
             auto& balanceList = wallets_.Get(Translate(type));
@@ -651,7 +657,10 @@ auto Blockchain::Imp::get_node(const Identifier& accountID) const
             const auto type = api_.Storage().Bip47Chain(nymID, accountID);
 
             if (contact::ContactItemType::Error == type) {
-                throw std::out_of_range("Account does not exist");
+                const auto error = std::string{"Payment code account "} + id +
+                                   " for " + nym + " does not exist";
+
+                throw std::out_of_range(error);
             }
 
             auto& balanceList = wallets_.Get(Translate(type));
@@ -673,17 +682,21 @@ auto Blockchain::Imp::HDSubaccount(
     const Identifier& accountID) const noexcept(false)
     -> const opentxs::blockchain::crypto::HD&
 {
-    const auto type =
-        api_.Storage().BlockchainAccountType(nymID.str(), accountID.str());
+    const auto id = accountID.str();
+    const auto nym = nymID.str();
+    const auto type = api_.Storage().BlockchainAccountType(nym, id);
 
     if (contact::ContactItemType::Error == type) {
-        throw std::out_of_range("Account does not exist");
+        const auto error =
+            std::string{"HD account "} + id + " for " + nym + " does not exist";
+
+        throw std::out_of_range(error);
     }
 
-    auto& balanceList = wallets_.Get(Translate(type));
-    auto& nym = balanceList.Nym(nymID);
+    auto& wallet = wallets_.Get(Translate(type));
+    auto& account = wallet.Nym(nymID);
 
-    return nym.HDChain(accountID);
+    return account.HDChain(accountID);
 }
 
 auto Blockchain::Imp::IndexItem(const ReadView bytes) const noexcept
@@ -821,9 +834,9 @@ auto Blockchain::Imp::NewHDSubaccount(
 
         OT_ASSERT(false == accountID->empty());
 
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Created new HD subaccount ")(
-            accountID)(" for ")(DisplayString(chain))(" account ")(
-            tree.AccountID())(" owned by ")(nymID.str())
+        LogVerbose(OT_METHOD)(__FUNCTION__)(
+            ": Created new HD subaccount ")(accountID)(" for ")(DisplayString(
+            chain))(" account ")(tree.AccountID())(" owned by ")(nymID.str())
             .Flush();
         accounts_.New(
             opentxs::blockchain::crypto::SubaccountType::HD,
@@ -899,8 +912,8 @@ auto Blockchain::Imp::new_payment_code(
     }
 
     if (3 > path.child().size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid path: ")(
-            opentxs::crypto::Print(path))
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Invalid path: ")(opentxs::crypto::Print(path))
             .Flush();
 
         return blank;
@@ -914,10 +927,48 @@ auto Blockchain::Imp::new_payment_code(
         OT_ASSERT(false == accountID->empty());
 
         LogVerbose(OT_METHOD)(__FUNCTION__)(
-            ": Created new payment code subaccount ")(accountID)(" for ")(
-            DisplayString(chain))(" account ")(tree.AccountID())(" owned by ")(
-            nymID.str())(" in reference to remote payment code ")(
-            remote.asBase58())
+            ": Created new payment code "
+            "subaccount ")(accountID)(" for"
+                                      " ")(DisplayString(
+            chain))(" account ")(tree.AccountID())(" owned by ")(nymID
+                                                                     .str())(" "
+                                                                             "i"
+                                                                             "n"
+                                                                             " "
+                                                                             "r"
+                                                                             "e"
+                                                                             "f"
+                                                                             "e"
+                                                                             "r"
+                                                                             "e"
+                                                                             "n"
+                                                                             "c"
+                                                                             "e"
+                                                                             " "
+                                                                             "t"
+                                                                             "o"
+                                                                             " "
+                                                                             "r"
+                                                                             "e"
+                                                                             "m"
+                                                                             "o"
+                                                                             "t"
+                                                                             "e"
+                                                                             " "
+                                                                             "p"
+                                                                             "a"
+                                                                             "y"
+                                                                             "m"
+                                                                             "e"
+                                                                             "n"
+                                                                             "t"
+                                                                             " "
+                                                                             "c"
+                                                                             "o"
+                                                                             "d"
+                                                                             "e"
+                                                                             " ")(remote
+                                                                                      .asBase58())
             .Flush();
         accounts_.New(
             opentxs::blockchain::crypto::SubaccountType::PaymentCode,
@@ -973,8 +1024,8 @@ auto Blockchain::Imp::p2pkh(
 
         return api_.Crypto().Encode().IdentifierEncode(preimage);
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported chain (")(
-            opentxs::print(chain))(")")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Unsupported chain (")(opentxs::print(chain))(")")
             .Flush();
 
         return "";
@@ -996,8 +1047,8 @@ auto Blockchain::Imp::p2sh(
 
         return api_.Crypto().Encode().IdentifierEncode(preimage);
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported chain (")(
-            opentxs::print(chain))(")")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Unsupported chain (")(opentxs::print(chain))(")")
             .Flush();
 
         return "";
@@ -1025,8 +1076,8 @@ auto Blockchain::Imp::p2wpkh(
 
         return segwit_addr::encode(hrp, 0, prog);
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported chain (")(
-            opentxs::print(chain))(")")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Unsupported chain (")(opentxs::print(chain))(")")
             .Flush();
 
         return "";
@@ -1041,13 +1092,17 @@ auto Blockchain::Imp::PaymentCodeSubaccount(
     const auto type = api_.Storage().Bip47Chain(nymID, accountID);
 
     if (contact::ContactItemType::Error == type) {
-        throw std::out_of_range("Account does not exist");
+        const auto error = std::string{"Payment code account "} +
+                           accountID.str() + " for " + nymID.str() +
+                           " does not exist";
+
+        throw std::out_of_range(error);
     }
 
-    auto& balanceList = wallets_.Get(Translate(type));
-    auto& nym = balanceList.Nym(nymID);
+    auto& wallet = wallets_.Get(Translate(type));
+    auto& account = wallet.Nym(nymID);
 
-    return nym.PaymentCode(accountID);
+    return account.PaymentCode(accountID);
 }
 
 auto Blockchain::Imp::PaymentCodeSubaccount(

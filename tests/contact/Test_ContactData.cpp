@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "1_Internal.hpp"
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "internal/api/client/Client.hpp"
 #include "internal/contact/Contact.hpp"
 #include "opentxs/Bytes.hpp"
@@ -33,7 +32,9 @@
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/identity/credential/Contact.hpp"
 
-namespace
+namespace ot = opentxs;
+
+namespace ottest
 {
 class Test_ContactData : public ::testing::Test
 {
@@ -96,11 +97,22 @@ ot::ContactData add_contract(
     const std::string& id,
     const ot::contact::ContactItemType type,
     const bool active,
+    const bool primary);
+ot::ContactData add_contract(
+    const ot::ContactData& data,
+    const std::string& id,
+    const ot::contact::ContactItemType type,
+    const bool active,
     const bool primary)
 {
     return data.AddContract(id, type, active, primary);
 }
 
+ot::ContactData add_email(
+    const ot::ContactData& data,
+    const std::string& id,
+    const bool active,
+    const bool primary);
 ot::ContactData add_email(
     const ot::ContactData& data,
     const std::string& id,
@@ -115,11 +127,22 @@ ot::ContactData add_payment_code(
     const std::string& id,
     const ot::contact::ContactItemType type,
     const bool active,
+    const bool primary);
+ot::ContactData add_payment_code(
+    const ot::ContactData& data,
+    const std::string& id,
+    const ot::contact::ContactItemType type,
+    const bool active,
     const bool primary)
 {
     return data.AddPaymentCode(id, type, active, primary);
 }
 
+ot::ContactData add_phone_number(
+    const ot::ContactData& data,
+    const std::string& id,
+    const bool active,
+    const bool primary);
 ot::ContactData add_phone_number(
     const ot::ContactData& data,
     const std::string& id,
@@ -413,7 +436,6 @@ static const std::string expectedStringOutput =
                 "\"activeContactItemValue\", start: 0, end: 0, version: "} +
     std::to_string(CONTACT_CONTACT_DATA_VERSION) +
     std::string{"\n--- Attributes: Active \n"};
-}  // namespace
 
 TEST_F(Test_ContactData, first_constructor)
 {
@@ -1850,3 +1872,4 @@ TEST_F(Test_ContactData, Version)
 {
     ASSERT_EQ(CONTACT_CONTACT_DATA_VERSION, contactData_.Version());
 }
+}  // namespace ottest

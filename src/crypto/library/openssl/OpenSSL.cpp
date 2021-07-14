@@ -21,14 +21,11 @@ extern "C" {
 
 #include "crypto/library/AsymmetricProvider.hpp"
 #include "internal/crypto/library/Factory.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
-#include "opentxs/crypto/key/Asymmetric.hpp"
-#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/library/HashingProvider.hpp"
 
 #define OT_METHOD "opentxs::OpenSSL::"
@@ -125,28 +122,34 @@ auto OpenSSL::BIO::Import(const ReadView in) noexcept -> bool
     return true;
 }
 
-auto OpenSSL::DH::init_keys(
-    const key::Asymmetric& local,
-    const key::Asymmetric& remote,
-    const PasswordPrompt& reason) noexcept -> bool
+auto OpenSSL::DH::init_keys(const ReadView prv, const ReadView pub) noexcept
+    -> bool
 {
     if (false ==
         init_key(
-            local.PrivateKey(reason),
+            prv,
             [](auto* bio) {
                 return PEM_read_bio_PrivateKey(bio, nullptr, nullptr, nullptr);
             },
             local_)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Failed initializing local private key")
+            .Flush();
+
         return false;
     }
 
     if (false ==
         init_key(
-            remote.PublicKey(),
+            pub,
             [](auto* bio) {
                 return PEM_read_bio_PUBKEY(bio, nullptr, nullptr, nullptr);
             },
             remote_)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Failed initializing remote public key")
+            .Flush();
+
         return false;
     }
 
@@ -178,19 +181,12 @@ auto OpenSSL::MD::init_digest(const crypto::HashType hash) noexcept -> bool
 
 auto OpenSSL::MD::init_sign(
     const crypto::HashType hash,
-    const key::Asymmetric& key,
-    const PasswordPrompt& reason) noexcept -> bool
+    const ReadView key) noexcept -> bool
 {
     if (false == init_digest(hash)) { return false; }
 
-    if (false == key.HasPrivate()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Not a private key.").Flush();
-
-        return false;
-    }
-
     return init_key(
-        key.PrivateKey(reason),
+        key,
         [](auto* bio) {
             return PEM_read_bio_PrivateKey(bio, nullptr, nullptr, nullptr);
         },
@@ -199,18 +195,12 @@ auto OpenSSL::MD::init_sign(
 
 auto OpenSSL::MD::init_verify(
     const crypto::HashType hash,
-    const key::Asymmetric& key) noexcept -> bool
+    const ReadView key) noexcept -> bool
 {
     if (false == init_digest(hash)) { return false; }
 
-    if (false == key.HasPublic()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing public key.").Flush();
-
-        return false;
-    }
-
     return init_key(
-        key.PublicKey(),
+        key,
         [](auto* bio) {
             return PEM_read_bio_PUBKEY(bio, nullptr, nullptr, nullptr);
         },
@@ -394,8 +384,9 @@ auto OpenSSL::PKCS5_PBKDF2_HMAC(
     const auto* algorithm = HashTypeToOpenSSLType(hashType);
 
     if (nullptr == algorithm) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: invalid hash type: ")(
-            HashingProvider::HashTypeToString(hashType))
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Error: invalid hash type: ")(HashingProvider::HashTypeToString(
+                                                hashType))
             .Flush();
 
         return false;
@@ -687,10 +678,9 @@ auto OpenSSL::RandomKeypair(
 }
 
 auto OpenSSL::SharedSecret(
-    const key::Asymmetric& publicKey,
-    const key::Asymmetric& privateKey,
+    const ReadView pub,
+    const ReadView prv,
     const SecretStyle style,
-    const PasswordPrompt& reason,
     Secret& secret) const noexcept -> bool
 {
     if (SecretStyle::Default != style) {
@@ -700,35 +690,9 @@ auto OpenSSL::SharedSecret(
         return false;
     }
 
-    if (crypto::key::asymmetric::Algorithm::Legacy != publicKey.keyType()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid public key type").Flush();
-
-        return false;
-    }
-
-    if (crypto::key::asymmetric::Role::Encrypt != publicKey.Role()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid public key role").Flush();
-
-        return false;
-    }
-
-    if (crypto::key::asymmetric::Algorithm::Legacy != privateKey.keyType()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid private key type")
-            .Flush();
-
-        return false;
-    }
-
-    if (crypto::key::asymmetric::Role::Encrypt != privateKey.Role()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid private key role")
-            .Flush();
-
-        return false;
-    }
-
     auto dh = DH{};
 
-    if (false == dh.init_keys(privateKey, publicKey, reason)) { return false; }
+    if (false == dh.init_keys(prv, pub)) { return false; }
 
     if (1 != ::EVP_PKEY_derive_init(dh)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed EVP_PKEY_derive_init")
@@ -784,19 +748,11 @@ auto OpenSSL::SharedSecret(
 }
 
 auto OpenSSL::Sign(
-    [[maybe_unused]] const api::internal::Core& api,
     const ReadView in,
-    const key::Asymmetric& key,
+    const ReadView key,
     const crypto::HashType type,
-    const AllocateOutput signature,
-    const PasswordPrompt& reason) const -> bool
+    const AllocateOutput signature) const -> bool
 {
-    if (crypto::key::asymmetric::Algorithm::Legacy != key.keyType()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid key type").Flush();
-
-        return false;
-    }
-
     switch (type) {
         case crypto::HashType::Blake2b160:
         case crypto::HashType::Blake2b256:
@@ -812,7 +768,7 @@ auto OpenSSL::Sign(
 
     auto md = MD{};
 
-    if (false == md.init_sign(type, key, reason)) { return false; }
+    if (false == md.init_sign(type, key)) { return false; }
 
     if (1 != EVP_DigestSignInit(md, nullptr, md, nullptr, md)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(
@@ -868,9 +824,9 @@ auto OpenSSL::Sign(
 }
 
 auto OpenSSL::Verify(
-    const Data& in,
-    const key::Asymmetric& key,
-    const Data& sig,
+    const ReadView in,
+    const ReadView key,
+    const ReadView sig,
     const crypto::HashType type) const -> bool
 {
     switch (type) {

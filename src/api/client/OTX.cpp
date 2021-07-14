@@ -227,37 +227,88 @@ OTX::OTX(
           [this](const zmq::Message& message) -> void {
               this->process_account(message);
           }))
-    , account_subscriber_(client_.Network().ZeroMQ().SubscribeSocket(
-          account_subscriber_callback_.get()))
+    , account_subscriber_([&] {
+        const auto endpoint = client_.Endpoints().AccountUpdate();
+        LogDetail(OT_METHOD)(__FUNCTION__)(": Connecting to ")(endpoint)
+            .Flush();
+        auto out = client_.Network().ZeroMQ().SubscribeSocket(
+            account_subscriber_callback_.get());
+        const auto start = out->Start(endpoint);
+
+        OT_ASSERT(start);
+
+        return out;
+    }())
     , notification_listener_callback_(zmq::ListenCallback::Factory(
           [this](const zmq::Message& message) -> void {
               this->process_notification(message);
           }))
-    , notification_listener_(client_.Network().ZeroMQ().PullSocket(
-          notification_listener_callback_,
-          zmq::socket::Socket::Direction::Bind))
+    , notification_listener_([&] {
+        auto out = client_.Network().ZeroMQ().PullSocket(
+            notification_listener_callback_,
+            zmq::socket::Socket::Direction::Bind);
+        const auto start =
+            out->Start(client_.Endpoints().InternalProcessPushNotification());
+
+        OT_ASSERT(start);
+
+        return out;
+    }())
     , find_nym_callback_(zmq::ListenCallback::Factory(
           [this](const zmq::Message& message) -> void {
               this->find_nym(message);
           }))
-    , find_nym_listener_(client_.Network().ZeroMQ().PullSocket(
-          find_nym_callback_,
-          zmq::socket::Socket::Direction::Bind))
+    , find_nym_listener_([&] {
+        auto out = client_.Network().ZeroMQ().PullSocket(
+            find_nym_callback_, zmq::socket::Socket::Direction::Bind);
+        const auto start = out->Start(client_.Endpoints().FindNym());
+
+        OT_ASSERT(start);
+
+        return out;
+    }())
     , find_server_callback_(zmq::ListenCallback::Factory(
           [this](const zmq::Message& message) -> void {
               this->find_server(message);
           }))
-    , find_server_listener_(client_.Network().ZeroMQ().PullSocket(
-          find_server_callback_,
-          zmq::socket::Socket::Direction::Bind))
+    , find_server_listener_([&] {
+        auto out = client_.Network().ZeroMQ().PullSocket(
+            find_server_callback_, zmq::socket::Socket::Direction::Bind);
+        const auto start = out->Start(client_.Endpoints().FindServer());
+
+        OT_ASSERT(start);
+
+        return out;
+    }())
     , find_unit_callback_(zmq::ListenCallback::Factory(
           [this](const zmq::Message& message) -> void {
               this->find_unit(message);
           }))
-    , find_unit_listener_(client_.Network().ZeroMQ().PullSocket(
-          find_unit_callback_,
-          zmq::socket::Socket::Direction::Bind))
-    , task_finished_(client_.Network().ZeroMQ().PublishSocket())
+    , find_unit_listener_([&] {
+        auto out = client_.Network().ZeroMQ().PullSocket(
+            find_unit_callback_, zmq::socket::Socket::Direction::Bind);
+        const auto start = out->Start(client_.Endpoints().FindUnitDefinition());
+
+        OT_ASSERT(start);
+
+        return out;
+    }())
+    , task_finished_([&] {
+        auto out = client_.Network().ZeroMQ().PublishSocket();
+        const auto start = out->Start(client_.Endpoints().TaskComplete());
+
+        OT_ASSERT(start);
+
+        return out;
+    }())
+    , messagability_([&] {
+        auto out = client_.Network().ZeroMQ().PublishSocket();
+        const auto start = out->Start(client_.Endpoints().Messagability());
+
+        OT_ASSERT(start);
+
+        return out;
+    }())
     , auto_process_inbox_(Flag::Factory(true))
     , next_task_id_(0)
     , shutdown_(false)
@@ -265,34 +316,6 @@ OTX::OTX(
     , reason_(client_.Factory().PasswordPrompt("Refresh OTX data with notary"))
 {
     // WARNING: do not access client_.Wallet() during construction
-    const auto endpoint = client_.Endpoints().AccountUpdate();
-    LogDetail(OT_METHOD)(__FUNCTION__)(": Connecting to ")(endpoint).Flush();
-    auto listening = account_subscriber_->Start(endpoint);
-
-    OT_ASSERT(listening)
-
-    listening = notification_listener_->Start(
-        client_.Endpoints().InternalProcessPushNotification());
-
-    OT_ASSERT(listening)
-
-    const auto publishing =
-        task_finished_->Start(client_.Endpoints().TaskComplete());
-
-    OT_ASSERT(publishing)
-
-    listening = find_nym_listener_->Start(client_.Endpoints().FindNym());
-
-    OT_ASSERT(listening)
-
-    listening = find_server_listener_->Start(client_.Endpoints().FindServer());
-
-    OT_ASSERT(listening)
-
-    listening =
-        find_unit_listener_->Start(client_.Endpoints().FindUnitDefinition());
-
-    OT_ASSERT(listening)
 }
 
 auto OTX::AcknowledgeBailment(
@@ -648,6 +671,9 @@ auto OTX::can_message(
     identifier::Nym& recipientNymID,
     identifier::Server& serverID) const -> Messagability
 {
+    const auto publish = [&](auto value) {
+        return publish_messagability(senderNymID, recipientContactID, value);
+    };
     auto senderNym = client_.Wallet().Nym(senderNymID);
 
     if (false == bool(senderNym)) {
@@ -655,7 +681,7 @@ auto OTX::can_message(
             ": Unable to load sender nym ")(senderNymID)
             .Flush();
 
-        return Messagability::MISSING_SENDER;
+        return publish(Messagability::MISSING_SENDER);
     }
 
     const bool canSign = senderNym->HasCapability(NymCapability::SIGN_MESSAGE);
@@ -666,7 +692,7 @@ auto OTX::can_message(
                                           "key).")
             .Flush();
 
-        return Messagability::INVALID_SENDER;
+        return publish(Messagability::INVALID_SENDER);
     }
 
     const auto contact = client_.Contacts().Contact(recipientContactID);
@@ -676,7 +702,7 @@ auto OTX::can_message(
             ": Recipient contact ")(recipientContactID)(" does not exist.")
             .Flush();
 
-        return Messagability::MISSING_CONTACT;
+        return publish(Messagability::MISSING_CONTACT);
     }
 
     const auto nyms = contact->Nyms();
@@ -686,7 +712,7 @@ auto OTX::can_message(
             ": Recipient contact ")(recipientContactID)(" does not have a nym.")
             .Flush();
 
-        return Messagability::CONTACT_LACKS_NYM;
+        return publish(Messagability::CONTACT_LACKS_NYM);
     }
 
     Nym_p recipientNym{nullptr};
@@ -710,7 +736,7 @@ auto OTX::can_message(
                                                         "available.")
             .Flush();
 
-        return Messagability::MISSING_RECIPIENT;
+        return publish(Messagability::MISSING_RECIPIENT);
     }
 
     OT_ASSERT(recipientNym)
@@ -726,7 +752,7 @@ auto OTX::can_message(
             .Flush();
         outdated_nyms_.Push(next_task_id(), recipientNymID);
 
-        return Messagability::NO_SERVER_CLAIM;
+        return publish(Messagability::NO_SERVER_CLAIM);
     }
 
     const bool registered =
@@ -739,10 +765,10 @@ auto OTX::can_message(
                                           "server ")(serverID)
             .Flush();
 
-        return Messagability::UNREGISTERED;
+        return publish(Messagability::UNREGISTERED);
     }
 
-    return Messagability::READY;
+    return publish(Messagability::READY);
 }
 
 auto OTX::CanDeposit(
@@ -768,28 +794,32 @@ auto OTX::CanDeposit(
 }
 
 auto OTX::CanMessage(
-    const identifier::Nym& senderNymID,
-    const Identifier& recipientContactID,
+    const identifier::Nym& sender,
+    const Identifier& contact,
     const bool startIntroductionServer) const -> Messagability
 {
-    if (startIntroductionServer) { start_introduction_server(senderNymID); }
+    const auto publish = [&](auto value) {
+        return publish_messagability(sender, contact, value);
+    };
 
-    if (senderNymID.empty()) {
+    if (startIntroductionServer) { start_introduction_server(sender); }
+
+    if (sender.empty()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid sender.").Flush();
 
-        return Messagability::INVALID_SENDER;
+        return publish(Messagability::INVALID_SENDER);
     }
 
-    if (recipientContactID.empty()) {
+    if (contact.empty()) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid recipient.").Flush();
 
-        return Messagability::MISSING_CONTACT;
+        return publish(Messagability::MISSING_CONTACT);
     }
 
     auto nymID = identifier::Nym::Factory();
     auto serverID = identifier::Server::Factory();
 
-    return can_message(senderNymID, recipientContactID, nymID, serverID);
+    return can_message(sender, contact, nymID, serverID);
 }
 
 auto OTX::CheckTransactionNumbers(
@@ -1706,6 +1736,21 @@ void OTX::process_notification(const zmq::Message& message) const
                 .Flush();
         }
     }
+}
+
+auto OTX::publish_messagability(
+    const identifier::Nym& sender,
+    const Identifier& contact,
+    Messagability value) const noexcept -> Messagability
+{
+    auto work =
+        client_.Network().ZeroMQ().TaggedMessage(WorkType::OTXMessagability);
+    work->AddFrame(sender);
+    work->AddFrame(contact);
+    work->AddFrame(value);
+    messagability_->Send(work);
+
+    return value;
 }
 
 auto OTX::publish_server_registration(

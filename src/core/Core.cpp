@@ -33,18 +33,37 @@ auto AccountName([[maybe_unused]] const blockchain::Type chain) noexcept
     return "This device";
 }
 
+auto Chain(const api::Core& api, const identifier::Nym& id) noexcept
+    -> blockchain::Type
+{
+    static const auto data = [&] {
+        auto out = std::map<OTNymID, blockchain::Type>{};
+
+        for (const auto& chain : blockchain::DefinedChains()) {
+            out.emplace(IssuerID(api, chain), chain);
+        }
+
+        return out;
+    }();
+
+    try {
+
+        return data.at(id);
+    } catch (...) {
+
+        return blockchain::Type::Unknown;
+    }
+}
+
 auto Chain(const api::Core& api, const identifier::Server& id) noexcept
     -> blockchain::Type
 {
     static const auto data = [&] {
         auto out = std::map<OTServerID, blockchain::Type>{};
 
-        for (const auto& chain : blockchain::SupportedChains()) {
+        for (const auto& chain : blockchain::DefinedChains()) {
             out.emplace(NotaryID(api, chain), chain);
         }
-
-        constexpr auto chain{blockchain::Type::UnitTest};
-        out.emplace(NotaryID(api, chain), chain);
 
         return out;
     }();
@@ -64,12 +83,9 @@ auto Chain(const api::Core& api, const identifier::UnitDefinition& id) noexcept
     static const auto data = [&] {
         auto out = std::map<OTUnitID, blockchain::Type>{};
 
-        for (const auto& chain : blockchain::SupportedChains()) {
+        for (const auto& chain : blockchain::DefinedChains()) {
             out.emplace(UnitID(api, chain), chain);
         }
-
-        constexpr auto chain{blockchain::Type::UnitTest};
-        out.emplace(UnitID(api, chain), chain);
 
         return out;
     }();

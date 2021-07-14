@@ -46,6 +46,7 @@
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
@@ -287,7 +288,24 @@ struct Output::Imp {
             }
 
             for (const auto& key : output.Keys()) {
+                const auto& [subaccount, subchain, bip32] = key;
+
+                if (Subchain::Outgoing == subchain) {
+                    // TODO make sure this output is associated with the correct
+                    // contact
+
+                    continue;
+                }
+
                 const auto& owner = blockchain_.Owner(key);
+
+                if (owner.empty()) {
+                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                        ": No owner found for key ")(opentxs::print(key))
+                        .Flush();
+
+                    OT_FAIL;
+                }
 
                 if (false == associate(lock, outpoint, owner)) {
                     LogOutput(OT_METHOD)(__FUNCTION__)(
@@ -371,8 +389,9 @@ struct Output::Imp {
                     return false;
                 }
             } catch (...) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Input spending")(
-                    outpoint.str())(" not registered with a proposal")
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ": Input spending")(outpoint.str())(" not registered with "
+                                                        "a proposal")
                     .Flush();
 
                 return false;
@@ -389,14 +408,14 @@ struct Output::Imp {
             ++index;
 
             if (0 == output.Keys().size()) {
-                LogTrace(OT_METHOD)(__FUNCTION__)(": output ")(index)(
-                    " belongs to someone else")
+                LogTrace(OT_METHOD)(__FUNCTION__)(
+                    ": output ")(index)(" belongs to someone else")
                     .Flush();
 
                 continue;
             } else {
-                LogTrace(OT_METHOD)(__FUNCTION__)(": output ")(index)(
-                    " belongs to me")
+                LogTrace(OT_METHOD)(__FUNCTION__)(
+                    ": output ")(index)(" belongs to me")
                     .Flush();
             }
 
@@ -538,8 +557,8 @@ struct Output::Imp {
 
             proposal_spent_index_[id].emplace(outpoint);
             proposal_reverse_index_.emplace(outpoint, id);
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": Reserving output ")(
-                outpoint.str())
+            LogVerbose(OT_METHOD)(__FUNCTION__)(
+                ": Reserving output ")(outpoint.str())
                 .Flush();
 
             return output;
@@ -1057,20 +1076,23 @@ private:
         const auto& confirmed = output[TxoState::ConfirmedNew];
         const auto& pending = output[TxoState::UnconfirmedSpend];
         const auto& spent = output[TxoState::ConfirmedSpend];
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Instance ")(api_.Instance())(
-            " TXO database contents:")
+        LogTrace(OT_METHOD)(__FUNCTION__)(
+            ": Instance ")(api_.Instance())(" TXO database contents:")
             .Flush();
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Unconfirmed available value: ")(
-            unconfirmed.total_)(unconfirmed.text_.str())
+        LogTrace(OT_METHOD)(__FUNCTION__)(
+            ": Unconfirmed available value: ")(unconfirmed.total_)(unconfirmed
+                                                                       .text_
+                                                                       .str())
             .Flush();
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Confirmed available value: ")(
-            confirmed.total_)(confirmed.text_.str())
+        LogTrace(OT_METHOD)(__FUNCTION__)(
+            ": Confirmed available value: ")(confirmed.total_)(confirmed.text_
+                                                                   .str())
             .Flush();
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Unconfirmed spent value: ")(
-            pending.total_)(pending.text_.str())
+        LogTrace(OT_METHOD)(__FUNCTION__)(
+            ": Unconfirmed spent value: ")(pending.total_)(pending.text_.str())
             .Flush();
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Confirmed spent value: ")(
-            spent.total_)(spent.text_.str())
+        LogTrace(OT_METHOD)(__FUNCTION__)(
+            ": Confirmed spent value: ")(spent.total_)(spent.text_.str())
             .Flush();
     }
 
@@ -1131,8 +1153,8 @@ private:
 
             return change_state(lock, id, serialized, newState, blank_);
         } catch (...) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": outpoint ")(id.str())(
-                " does not exist")
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": outpoint ")(id.str())(" does not exist")
                 .Flush();
 
             return false;
@@ -1149,8 +1171,8 @@ private:
 
             return change_state(lock, id, serialized, newState, newPosition);
         } catch (...) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": outpoint ")(id.str())(
-                " does not exist")
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": outpoint ")(id.str())(" does not exist")
                 .Flush();
 
             return false;

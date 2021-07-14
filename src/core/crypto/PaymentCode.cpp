@@ -966,7 +966,10 @@ auto PaymentCode::shared_secret_mask_v1(
 {
     auto output = api_.Factory().Secret(0);
     auto rc = local.engine().SharedSecret(
-        remote, local, crypto::SecretStyle::X_only, reason, output);
+        remote.PublicKey(),
+        local.PrivateKey(reason),
+        crypto::SecretStyle::X_only,
+        output);
 
     if (false == rc) {
         throw std::runtime_error{"Failed to calculate shared secret"};
@@ -1047,12 +1050,10 @@ auto PaymentCode::Sign(
     const auto& key = *key_;
 
     return key.engine().Sign(
-        api_,
         data.Bytes(),
-        key,
+        key.PrivateKey(reason),
         crypto::HashType::Sha256,
-        output.WriteInto(),
-        reason);
+        output.WriteInto());
 #else
 
     return false;

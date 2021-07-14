@@ -121,22 +121,19 @@ public:
         const NymParameters& options,
         const AllocateOutput params) const noexcept -> bool final;
     auto SharedSecret(
-        const key::Asymmetric& publicKey,
-        const key::Asymmetric& privateKey,
+        const ReadView publicKey,
+        const ReadView privateKey,
         const SecretStyle style,
-        const PasswordPrompt& reason,
         Secret& secret) const noexcept -> bool final;
     auto Sign(
-        const api::internal::Core& api,
         const ReadView plaintext,
-        const key::Asymmetric& key,
+        const ReadView key,
         const crypto::HashType hash,
-        const AllocateOutput signature,
-        const PasswordPrompt& reason) const -> bool final;
+        const AllocateOutput signature) const -> bool final;
     auto Verify(
-        const Data& plaintext,
-        const key::Asymmetric& theKey,
-        const Data& signature,
+        const ReadView plaintext,
+        const ReadView theKey,
+        const ReadView signature,
         const crypto::HashType hashType) const -> bool final;
 #endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 
@@ -177,10 +174,7 @@ private:
         auto Local() noexcept { return local_.get(); }
         auto Remote() noexcept { return remote_.get(); }
 
-        auto init_keys(
-            const key::Asymmetric& local,
-            const key::Asymmetric& remote,
-            const PasswordPrompt& reason) noexcept -> bool;
+        auto init_keys(const ReadView prv, const ReadView pub) noexcept -> bool;
 
         DH() noexcept;
 
@@ -205,13 +199,11 @@ private:
         operator Key() noexcept { return key_.get(); }
 
         auto init_digest(const crypto::HashType hash) noexcept -> bool;
-        auto init_sign(
-            const crypto::HashType hash,
-            const key::Asymmetric& key,
-            const PasswordPrompt& reason) noexcept -> bool;
+        auto init_sign(const crypto::HashType hash, const ReadView key) noexcept
+            -> bool;
         auto init_verify(
             const crypto::HashType hash,
-            const key::Asymmetric& key) noexcept -> bool;
+            const ReadView key) noexcept -> bool;
 
         MD() noexcept;
 

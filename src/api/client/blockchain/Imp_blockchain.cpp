@@ -36,11 +36,6 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/contact/Contact.hpp"
-#include "opentxs/contact/ContactData.hpp"
-#include "opentxs/contact/ContactGroup.hpp"
-#include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -168,46 +163,7 @@ auto BlockchainImp::ActivityDescription(
             tx.AssociatedRemoteContacts(parent_, contactAPI, nym);
 
         for (const auto& id : contacts) {
-            const auto contact = contactAPI.Contact(id);
-
-            OT_ASSERT(contact);
-
-            const auto& label = contact->Label();
-
-            if (false == label.empty()) {
-                out.emplace(label);
-
-                break;
-            }
-
-            const auto data = contact->Data();
-
-            OT_ASSERT(data);
-
-            const auto name = data->Name();
-
-            if (false == name.empty()) {
-                out.emplace(name);
-
-                break;
-            }
-
-            using Section = contact::ContactSectionName;
-            auto group = data->Group(Section::Procedure, Translate(chain));
-
-            if (group) {
-                const auto best = group->Best();
-
-                if (best) {
-                    out.emplace(best->Value());
-                } else {
-
-                    break;
-                }
-            } else {
-
-                break;
-            }
+            out.emplace(contactAPI.ContactName(id, Translate(chain)));
         }
 
         return out;

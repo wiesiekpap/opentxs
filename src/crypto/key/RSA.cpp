@@ -120,14 +120,19 @@ RSA::RSA(const RSA& rhs) noexcept
 
 auto RSA::asPublic() const noexcept -> std::unique_ptr<key::Asymmetric>
 {
+
     auto output = std::make_unique<RSA>(*this);
 
     OT_ASSERT(output);
 
     auto& copy = *output;
-    copy.erase_private_data();
 
-    OT_ASSERT(false == copy.HasPrivate());
+    {
+        auto lock = Lock{copy.lock_};
+        copy.erase_private_data(lock);
+
+        OT_ASSERT(false == copy.has_private(lock));
+    }
 
     return std::move(output);
 }
@@ -150,9 +155,9 @@ auto RSA::deserialize_key(
     return output;
 }
 
-auto RSA::Serialize(Serialized& output) const noexcept -> bool
+auto RSA::serialize(const Lock& lock, Serialized& output) const noexcept -> bool
 {
-    if (false == Asymmetric::Serialize(output)) { return false; }
+    if (false == Asymmetric::serialize(lock, output)) { return false; }
 
     if (crypto::key::asymmetric::Role::Encrypt == role_) {
         output.set_params(params_->data(), params_->size());

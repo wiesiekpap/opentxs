@@ -74,18 +74,15 @@ private:
     using ChainIndex = std::map<contact::ContactItemType, ChannelList>;
 
     mutable std::shared_mutex index_lock_;
-    mutable ChannelIndex channel_data_;
-    mutable ChainIndex chain_index_;
+    ChannelIndex channel_data_;
+    ChainIndex chain_index_;
 
     template <typename I, typename V>
     auto extract_set(const I& id, const V& index) const ->
         typename V::mapped_type;
     template <typename L>
     auto get_channel_data(const L& lock, const Identifier& id) const
-        -> ChannelData&;
-    template <typename L>
-    auto _get_channel_data(const L& lock, OTIdentifier&& id) const
-        -> ChannelData&;
+        -> const ChannelData&;
     auto index(
         const eLock& lock,
         const Identifier& id,

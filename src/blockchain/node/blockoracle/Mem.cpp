@@ -7,11 +7,12 @@
 #include "1_Internal.hpp"                   // IWYU pragma: associated
 #include "blockchain/node/BlockOracle.hpp"  // IWYU pragma: associated
 
-#include <iterator>
+#include <string_view>
 
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
+#include "opentxs/core/Log.hpp"
 
 // #define OT_METHOD
 // "opentxs::blockchain::node::implementation::BlockOracle::Cache::Mem::"

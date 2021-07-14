@@ -142,11 +142,6 @@ private:
     {
         return owner_contact_id_;
     }
-    auto effective_counter(const std::size_t value) const noexcept
-        -> std::size_t final
-    {
-        return value - 1u;
-    }
 #if OT_QT
     auto find_row(const ContactListRowID& id) const noexcept -> int final;
 #endif

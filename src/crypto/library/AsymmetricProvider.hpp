@@ -7,6 +7,7 @@
 
 #include "Proto.hpp"
 #include "opentxs/Bytes.hpp"
+#include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 
@@ -18,6 +19,8 @@ namespace internal
 {
 struct Core;
 }  // namespace internal
+
+class Core;
 }  // namespace api
 
 namespace crypto
@@ -43,15 +46,15 @@ public:
         const AllocateOutput privateKey,
         const AllocateOutput publicKey) const noexcept -> bool final;
     auto SignContract(
-        const api::internal::Core& api,
-        const String& strContractUnsigned,
-        const key::Asymmetric& theKey,
-        Signature& theSignature,  // output
+        const api::Core& api,
+        const String& contract,
+        const ReadView key,
         const crypto::HashType hashType,
-        const PasswordPrompt& reason) const -> bool override;
+        Signature& output) const -> bool override;
     auto VerifyContractSignature(
+        const api::Core& api,
         const String& strContractToVerify,
-        const key::Asymmetric& theKey,
+        const ReadView key,
         const Signature& theSignature,
         const crypto::HashType hashType) const -> bool override;
 

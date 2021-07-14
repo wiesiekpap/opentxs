@@ -32,10 +32,15 @@ signals:
     void updated() const;
 
 public:
-    // List layout
     enum Roles {
-        ContactIDRole = Qt::UserRole + 0,
-        SectionRole = Qt::UserRole + 1,
+        IDRole = Qt::UserRole + 0,       // QString
+        NameRole = Qt::UserRole + 1,     // QString
+        ImageRole = Qt::UserRole + 2,    // QPixmap
+        SectionRole = Qt::UserRole + 3,  // QString
+    };
+    // This model is designed to be used in a list view
+    enum Columns {
+        NameColumn = 0,
     };
 
     Q_INVOKABLE QString addContact(

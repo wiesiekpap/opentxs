@@ -13,8 +13,7 @@
 #include <mutex>
 #include <utility>
 
-#include "OTTestEnvironment.hpp"
-#include "UIHelpers.hpp"
+#include "Basic.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -48,6 +47,7 @@
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
+#include "ui/Helpers.hpp"
 
 namespace ottest
 {
@@ -438,7 +438,7 @@ auto RPC_fixture::SetIntroductionServer(
 auto RPC_fixture::StartClient(int index) const noexcept
     -> const ot::api::client::Manager&
 {
-    const auto& out = ot_.StartClient(OTTestEnvironment::Args(), index);
+    const auto& out = ot_.StartClient(Args(), index);
     init_maps(out.Instance());
 
     return out;
@@ -447,7 +447,7 @@ auto RPC_fixture::StartClient(int index) const noexcept
 auto RPC_fixture::StartServer(int index) const noexcept
     -> const ot::api::server::Manager&
 {
-    const auto& out = ot_.StartServer(OTTestEnvironment::Args(), index, true);
+    const auto& out = ot_.StartServer(Args(), index, true);
     const auto instance = out.Instance();
     init_maps(instance);
     auto& nyms = local_nym_map_.at(instance);

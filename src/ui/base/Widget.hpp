@@ -59,11 +59,14 @@ auto extract_custom_ptr(
     CustomData& custom,
     const std::size_t index = 0) noexcept -> std::unique_ptr<T>
 {
-    OT_ASSERT((index + 1) <= custom.size())
+    OT_ASSERT((index + 1) <= custom.size());
 
-    auto output = std::unique_ptr<T>{static_cast<T*>(custom.at(index))};
+    auto& ptr = custom.at(index);
+    auto output = std::unique_ptr<T>{static_cast<T*>(ptr)};
 
-    OT_ASSERT(output)
+    OT_ASSERT(output);
+
+    ptr = nullptr;
 
     return output;
 }
@@ -77,6 +80,8 @@ auto extract_custom(CustomData& custom, const std::size_t index = 0) noexcept
 
     return output;
 }
+
+auto verify_empty(const CustomData& custom) noexcept -> bool;
 
 class Widget : virtual public opentxs::ui::Widget
 {
@@ -134,7 +139,7 @@ public:
         auto operator=(const MessageProcessor&) -> MessageProcessor& = delete;
     };
 
-    auto ClearCallbacks() const noexcept -> void final
+    auto ClearCallbacks() const noexcept -> void override
     {
         ui_.ClearUICallbacks(widget_id_);
     }

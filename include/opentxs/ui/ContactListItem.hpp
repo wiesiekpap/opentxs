@@ -34,15 +34,15 @@ namespace opentxs
 {
 namespace ui
 {
-class ContactListItem : virtual public ListRow
+class OPENTXS_EXPORT ContactListItem : virtual public ListRow
 {
 public:
-    OPENTXS_EXPORT virtual std::string ContactID() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string DisplayName() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string ImageURI() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string Section() const noexcept = 0;
+    virtual std::string ContactID() const noexcept = 0;
+    virtual std::string DisplayName() const noexcept = 0;
+    virtual std::string ImageURI() const noexcept = 0;
+    virtual std::string Section() const noexcept = 0;
 
-    OPENTXS_EXPORT ~ContactListItem() override = default;
+    ~ContactListItem() override = default;
 
 protected:
     ContactListItem() noexcept = default;

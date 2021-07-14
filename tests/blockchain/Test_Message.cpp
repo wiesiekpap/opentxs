@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "Basic.hpp"
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/message/Getblocks.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
@@ -47,7 +47,7 @@ namespace zmq = ot::network::zeromq;
 
 using boost::asio::ip::tcp;
 
-namespace
+namespace ottest
 {
 class Test_Message : public ::testing::Test
 {
@@ -63,7 +63,7 @@ public:
     }
 
     Test_Message()
-        : api_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
+        : api_(ot::Context().StartClient(Args(), 0))
     {
     }
 };
@@ -146,4 +146,4 @@ TEST_F(Test_Message, getblocks)
         ASSERT_TRUE(pMessage->payload() == pLoadedMsg->payload());
     }
 }
-}  // namespace
+}  // namespace ottest

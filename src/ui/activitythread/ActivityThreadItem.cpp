@@ -19,6 +19,7 @@
 #include "opentxs/api/client/Activity.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/Log.hpp"
 #if OT_QT
 #include "opentxs/ui/qt/ActivityThread.hpp"
 #endif  // OT_QT
@@ -44,10 +45,11 @@ ActivityThreadItem::ActivityThreadItem(
     , item_id_(std::get<0>(row_id_))
     , box_(std::get<1>(row_id_))
     , account_id_(std::get<2>(row_id_))
-    , text_(extract_custom<std::string>(custom))
+    , text_(extract_custom<std::string>(custom, 0))
     , loading_(Flag::Factory(loading))
     , pending_(Flag::Factory(pending))
 {
+    OT_ASSERT(verify_empty(custom));
 }
 
 auto ActivityThreadItem::MarkRead() const noexcept -> bool
@@ -62,49 +64,89 @@ QVariant ActivityThreadItem::qt_data(const int column, int role) const noexcept
     switch (role) {
         case Qt::DisplayRole: {
             switch (column) {
+                case ActivityThreadQt::TimeColumn: {
+
+                    return qt_data(column, ActivityThreadQt::TimeRole);
+                }
                 case ActivityThreadQt::TextColumn: {
-                    return Text().c_str();
+
+                    return qt_data(column, ActivityThreadQt::TextRole);
                 }
                 case ActivityThreadQt::AmountColumn: {
-                    return DisplayAmount().c_str();
+
+                    return qt_data(column, ActivityThreadQt::StringAmountRole);
                 }
                 case ActivityThreadQt::MemoColumn: {
-                    return Memo().c_str();
+
+                    return qt_data(column, ActivityThreadQt::MemoRole);
                 }
-                case ActivityThreadQt::TimeColumn: {
-                    QDateTime qdatetime;
-                    qdatetime.setSecsSinceEpoch(Clock::to_time_t(Timestamp()));
-                    return qdatetime;
-                }
+                case ActivityThreadQt::LoadingColumn:
+                case ActivityThreadQt::PendingColumn:
                 default: {
-                    return {};
                 }
             }
-        }
-        case ActivityThreadQt::PolarityRole: {
-            return polarity(Amount());
-        }
-        case ActivityThreadQt::TypeRole: {
-            return static_cast<int>(Type());
-        }
+        } break;
         case Qt::CheckStateRole: {
             switch (column) {
                 case ActivityThreadQt::LoadingColumn: {
-                    return Loading();
+
+                    return qt_data(column, ActivityThreadQt::LoadingRole);
                 }
                 case ActivityThreadQt::PendingColumn: {
-                    return Pending();
+
+                    return qt_data(column, ActivityThreadQt::PendingRole);
                 }
+                case ActivityThreadQt::TextColumn:
+                case ActivityThreadQt::AmountColumn:
+                case ActivityThreadQt::MemoColumn:
+                case ActivityThreadQt::TimeColumn:
                 default: {
                 }
             }
+        } break;
+        case ActivityThreadQt::IntAmountRole: {
 
-            [[fallthrough]];
+            return static_cast<int>(Amount());
+        }
+        case ActivityThreadQt::StringAmountRole: {
+
+            return DisplayAmount().c_str();
+        }
+        case ActivityThreadQt::LoadingRole: {
+
+            return Loading();
+        }
+        case ActivityThreadQt::MemoRole: {
+
+            return Memo().c_str();
+        }
+        case ActivityThreadQt::PendingRole: {
+
+            return Pending();
+        }
+        case ActivityThreadQt::PolarityRole: {
+
+            return polarity(Amount());
+        }
+        case ActivityThreadQt::TextRole: {
+
+            return Text().c_str();
+        }
+        case ActivityThreadQt::TimeRole: {
+            auto output = QDateTime{};
+            output.setSecsSinceEpoch(Clock::to_time_t(Timestamp()));
+
+            return output;
+        }
+        case ActivityThreadQt::TypeRole: {
+
+            return static_cast<int>(Type());
         }
         default: {
-            return {};
         }
     }
+
+    return {};
 }
 #endif
 
@@ -115,7 +157,7 @@ auto ActivityThreadItem::reindex(
     const auto text = extract_custom<std::string>(custom);
 
     if (false == text.empty()) {
-        eLock lock(shared_lock_);
+        auto lock = eLock{shared_lock_};
         text_ = text;
     }
 
@@ -124,14 +166,14 @@ auto ActivityThreadItem::reindex(
 
 auto ActivityThreadItem::Text() const noexcept -> std::string
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     return text_;
 }
 
 auto ActivityThreadItem::Timestamp() const noexcept -> Time
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     return time_;
 }

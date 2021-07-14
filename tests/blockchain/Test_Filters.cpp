@@ -16,7 +16,7 @@
 #include <utility>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "Basic.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
@@ -39,7 +39,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/HashType.hpp"
 
-namespace
+namespace ottest
 {
 const auto params_ = ot::blockchain::internal::GetFilterParams(
     ot::blockchain::filter::Type::Basic_BIP158);
@@ -101,7 +101,7 @@ public:
     }
 
     Test_Filters()
-        : api_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
+        : api_(ot::Context().StartClient(Args(), 0))
     {
     }
 };
@@ -619,4 +619,4 @@ TEST_F(Test_Filters, test_set_intersection)
 
     EXPECT_EQ(matches.size(), targets.size());
 }
-}  // namespace
+}  // namespace ottest

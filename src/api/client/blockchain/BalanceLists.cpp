@@ -72,7 +72,7 @@ auto BalanceLists::get(const Lock& lock, const Chain chain) const noexcept
     if (lists_.end() != it) { return *it->second; }
 
     auto [it2, added] = lists_.emplace(
-        chain, factory::BlockchainBalanceList(api_, parent_, index_, chain));
+        chain, factory::BlockchainWalletKeys(api_, parent_, index_, chain));
 
     OT_ASSERT(added);
     OT_ASSERT(it2->second);

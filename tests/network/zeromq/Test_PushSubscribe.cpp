@@ -9,9 +9,9 @@
 #include <future>
 #include <string>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"  // IWYU pragma: keep
@@ -23,9 +23,10 @@
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 
+namespace ot = opentxs;
 namespace zmq = ot::network::zeromq;
 
-namespace
+namespace ottest
 {
 class Test_PushSubscribe : public ::testing::Test
 {
@@ -49,7 +50,6 @@ public:
     {
     }
 };
-}  // namespace
 
 TEST_F(Test_PushSubscribe, Push_Subscribe)
 {
@@ -167,3 +167,4 @@ TEST_F(Test_PushSubscribe, Push_Publish_Subscribe)
     ASSERT_EQ(result4, std::future_status::ready);
     ASSERT_EQ(4, counter_1_.load() + counter_2_.load() + counter_3_.load());
 }
+}  // namespace ottest

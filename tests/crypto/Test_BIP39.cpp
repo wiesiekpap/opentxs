@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "Basic.hpp"
 #include "crypto/Bip39.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
@@ -23,7 +23,7 @@
 #include "opentxs/crypto/SeedStrength.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 
-namespace
+namespace ottest
 {
 class Test_BIP39 : public ::testing::Test
 {
@@ -80,7 +80,7 @@ public:
     }
 
     Test_BIP39()
-        : api_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
+        : api_(ot::Context().StartClient(Args(), 0))
         , reason_(api_.Factory().PasswordPrompt(__FUNCTION__))
     {
     }
@@ -291,4 +291,4 @@ TEST_F(Test_BIP39, validate_en_list)
         EXPECT_EQ(matches.size(), 1);
     }
 }
-}  // namespace
+}  // namespace ottest

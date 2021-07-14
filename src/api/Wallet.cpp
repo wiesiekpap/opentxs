@@ -38,6 +38,7 @@
 #if OT_CASH
 #include "opentxs/blind/Purse.hpp"
 #endif
+#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Contract.hpp"
@@ -975,7 +976,6 @@ auto Wallet::Issuer(
     -> std::shared_ptr<const api::client::Issuer>
 {
     auto& [lock, pIssuer] = issuer(nymID, issuerID, false);
-    const auto& notUsed [[maybe_unused]] = lock;
 
     return pIssuer;
 }
@@ -1002,33 +1002,53 @@ auto Wallet::issuer(
     const bool create) const -> Wallet::IssuerLock&
 {
     Lock lock(issuer_map_lock_);
-    auto& output = issuer_map_[{nymID, issuerID}];
+    const auto key = IssuerID{nymID, issuerID};
+    auto& output = issuer_map_[key];
     auto& [issuerMutex, pIssuer] = output;
-    const auto& notUsed [[maybe_unused]] = issuerMutex;
 
     if (pIssuer) { return output; }
+
+    const auto isBlockchain =
+        (blockchain::Type::Unknown != blockchain::Chain(api_, issuerID));
+
+    if (isBlockchain) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": erroneously attempting to load a blockchain as an otx issuer")
+            .Flush();
+    }
 
     auto serialized = proto::Issuer{};
     const bool loaded =
         api_.Storage().Load(nymID.str(), issuerID.str(), serialized, true);
 
     if (loaded) {
-        pIssuer.reset(factory::Issuer(*this, nymID, serialized));
+        if (isBlockchain) {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": deleting invalid issuer")
+                .Flush();
+            // TODO
+        } else {
+            pIssuer.reset(factory::Issuer(*this, nymID, serialized));
 
-        OT_ASSERT(pIssuer)
+            OT_ASSERT(pIssuer)
 
-        return output;
+            return output;
+        }
     }
 
-    if (create) {
+    if (create && (!isBlockchain)) {
         pIssuer.reset(factory::Issuer(*this, nymID, issuerID));
 
         OT_ASSERT(pIssuer);
 
         save(lock, pIssuer.get());
+
+        return output;
     }
 
-    return output;
+    issuer_map_.erase(key);
+    static auto blank = IssuerLock{};
+
+    return blank;
 }
 
 auto Wallet::IsLocalNym(const std::string& id) const -> bool
@@ -1061,6 +1081,14 @@ auto Wallet::Nym(
     const identifier::Nym& id,
     const std::chrono::milliseconds& timeout) const -> Nym_p
 {
+    if (blockchain::Type::Unknown != blockchain::Chain(api_, id)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": erroneously attempting to load a blockchain as a nym")
+            .Flush();
+
+        return nullptr;
+    }
+
     const std::string nym = id.str();
     Lock mapLock(nym_map_lock_);
     bool inMap = (nym_map_.find(nym) != nym_map_.end());
@@ -2239,6 +2267,11 @@ auto Wallet::Server(
     const identifier::Server& id,
     const std::chrono::milliseconds& timeout) const -> OTServerContract
 {
+    if (blockchain::Type::Unknown != blockchain::Chain(api_, id)) {
+        throw std::runtime_error(
+            "Erroneously attempting to load a blockchain as a notary");
+    }
+
     const std::string server = id.str();
     Lock mapLock(server_map_lock_);
     bool inMap = (server_map_.find(server) != server_map_.end());
@@ -2558,6 +2591,11 @@ auto Wallet::UnitDefinition(
     const identifier::UnitDefinition& id,
     const std::chrono::milliseconds& timeout) const -> OTUnitDefinition
 {
+    if (blockchain::Type::Unknown != blockchain::Chain(api_, id)) {
+        throw std::runtime_error(
+            "Erroneously attempting to load a blockchain as a unit definition");
+    }
+
     const std::string unit = id.str();
     Lock mapLock(unit_map_lock_);
     bool inMap = (unit_map_.find(unit) != unit_map_.end());

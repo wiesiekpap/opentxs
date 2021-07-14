@@ -3,6 +3,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+target_sources(opentxs-test-helpers PRIVATE "Helpers.hpp" "Helpers.cpp")
+
 add_opentx_test(unittests-opentxs-network-zeromq-dealer Test_DealerSocket.cpp)
 add_opentx_test(
   unittests-opentxs-network-zeromq-dealerreply Test_DealerReply.cpp

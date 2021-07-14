@@ -9,7 +9,6 @@
 #include <string>
 #include <thread>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -29,9 +28,10 @@
 
 using namespace opentxs;
 
+namespace ot = opentxs;
 namespace zmq = ot::network::zeromq;
 
-namespace
+namespace ottest
 {
 class Test_DealerReply : public ::testing::Test
 {
@@ -92,7 +92,6 @@ void Test_DealerReply::dealerSocketThread(const std::string& msg)
 
     EXPECT_TRUE(replyProcessed);
 }
-}  // namespace
 
 TEST_F(Test_DealerReply, Dealer_Reply)
 {
@@ -341,3 +340,4 @@ TEST_F(Test_DealerReply, Dealer_Reply_Multipart)
 
     EXPECT_TRUE(replyProcessed);
 }
+}  // namespace ottest

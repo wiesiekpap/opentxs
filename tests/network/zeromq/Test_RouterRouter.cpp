@@ -16,7 +16,6 @@
 #include <thread>
 
 #include "Helpers.hpp"
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"

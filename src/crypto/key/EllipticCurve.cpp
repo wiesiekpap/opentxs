@@ -80,6 +80,8 @@ EllipticCurve::EllipticCurve(
     if (false == bool(encrypted_key_)) {
         throw std::runtime_error("Failed to instantiate encrypted_key_");
     }
+
+    OT_ASSERT(0 < plaintext_key_->size());
 }
 
 EllipticCurve::EllipticCurve(
@@ -106,7 +108,9 @@ EllipticCurve::EllipticCurve(
           })
     , ecdsa_(ecdsa)
 {
-    if (has_private_ && !encrypted_key_) {
+    auto lock = Lock{lock_};
+
+    if (has_private(lock) && !encrypted_key_) {
         throw std::runtime_error("Failed to instantiate encrypted_key_");
     }
 }
@@ -181,9 +185,13 @@ auto EllipticCurve::asPublicEC() const noexcept
     OT_ASSERT(output);
 
     auto& copy = *output;
-    copy.erase_private_data();
 
-    OT_ASSERT(false == copy.HasPrivate());
+    {
+        auto lock = Lock{copy.lock_};
+        copy.erase_private_data(lock);
+
+        OT_ASSERT(false == copy.has_private(lock));
+    }
 
     return std::move(output);
 }
@@ -212,7 +220,8 @@ auto EllipticCurve::IncrementPrivate(
     -> std::unique_ptr<key::EllipticCurve>
 {
     try {
-        const auto& lhs = get_private_key(reason);
+        auto lock = Lock{lock_};
+        const auto& lhs = get_private_key(lock, reason);
         auto newKey = api_.Factory().Secret(0);
         auto rc =
             ecdsa_.ScalarAdd(lhs.Bytes(), rhs.Bytes(), newKey->WriteInto());
@@ -251,14 +260,19 @@ auto EllipticCurve::IncrementPublic(const Secret& rhs) const noexcept
 auto EllipticCurve::serialize_public(EllipticCurve* in)
     -> std::shared_ptr<proto::AsymmetricKey>
 {
-    std::unique_ptr<EllipticCurve> copy{in};
+    auto copy = std::unique_ptr<EllipticCurve>{in};
 
     OT_ASSERT(copy);
 
-    copy->erase_private_data();
-
     auto serialized = proto::AsymmetricKey{};
-    if (false == copy->Serialize(serialized)) { return nullptr; }
+
+    {
+        auto lock = Lock{copy->lock_};
+        copy->erase_private_data(lock);
+
+        if (false == copy->serialize(lock, serialized)) { return nullptr; }
+    }
+
     return std::make_shared<proto::AsymmetricKey>(serialized);
 }
 
@@ -268,13 +282,16 @@ auto EllipticCurve::SignDER(
     Space& output,
     const PasswordPrompt& reason) const noexcept -> bool
 {
-    if (false == has_private_) {
+    auto lock = Lock{lock_};
+
+    if (false == has_private(lock)) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Missing private key").Flush();
 
         return false;
     }
 
-    bool success = ecdsa_.SignDER(api_, preimage, *this, hash, output, reason);
+    bool success =
+        ecdsa_.SignDER(preimage, private_key(lock, reason), hash, output);
 
     if (false == success) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to sign preimage").Flush();

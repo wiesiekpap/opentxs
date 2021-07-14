@@ -10,7 +10,6 @@
 #include <string>
 #include <thread>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -31,9 +30,10 @@ using namespace opentxs;
 
 #define TEST_ENDPOINT "inproc://opentxs/pairsocket_endpoint"
 
+namespace ot = opentxs;
 namespace zmq = ot::network::zeromq;
 
-namespace
+namespace ottest
 {
 class Test_PairSocket : public ::testing::Test
 {
@@ -108,8 +108,6 @@ void Test_PairSocket::pairSocketThread(
 
     ASSERT_TRUE(callbackFinished);
 }
-
-}  // namespace
 
 TEST_F(Test_PairSocket, PairSocket_Factory1)
 {
@@ -348,3 +346,4 @@ TEST_F(Test_PairSocket, PairSocket_Send_Separate_Thread)
 
     pairSocketThread1.join();
 }
+}  // namespace ottest

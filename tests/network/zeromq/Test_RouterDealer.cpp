@@ -12,7 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -36,11 +35,12 @@
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 
 using namespace opentxs;
-using namespace ot::network;
+using namespace opentxs::network;
 
+namespace ot = opentxs;
 namespace zmq = ot::network::zeromq;
 
-namespace
+namespace ottest
 {
 class Test_RouterDealer : public ::testing::Test
 {
@@ -146,7 +146,6 @@ void Test_RouterDealer::dealerSocketThread(
 
     ASSERT_TRUE(replyProcessed);
 }
-}  // namespace
 
 TEST_F(Test_RouterDealer, Router_Dealer)
 {
@@ -540,3 +539,4 @@ TEST_F(Test_RouterDealer, Dealer_3_Router_Dealer_Router)
     routerSocket_ = nullptr;
     dealerSocket_ = nullptr;
 }
+}  // namespace ottest

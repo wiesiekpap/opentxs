@@ -10,7 +10,7 @@
 #include <string_view>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "Basic.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -39,7 +39,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "paymentcode/VectorsV3.hpp"
 
-namespace
+namespace ottest
 {
 const ot::Nym_p nym_{};
 const std::string seed_id_{};
@@ -60,12 +60,12 @@ protected:
     const ot::blockchain::crypto::HD& account_;
 
     Test_BIP44()
-        : api_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
+        : api_(ot::Context().StartClient(Args(), 0))
         , reason_(api_.Factory().PasswordPrompt(__FUNCTION__))
         , nym_id_([&]() -> const ot::identifier::Nym& {
             if (seed_id_.empty()) {
                 const auto words =
-                    api_.Factory().SecretFromText(vectors_3_.alice_.words_);
+                    api_.Factory().SecretFromText(GetVectors3().alice_.words_);
                 const auto phrase = api_.Factory().Secret(0);
                 const_cast<std::string&>(seed_id_) = api_.Seeds().ImportSeed(
                     words,
@@ -222,4 +222,4 @@ TEST_F(Test_BIP44, balance_elements)
 }
 
 TEST_F(Test_BIP44, shutdown) { const_cast<ot::Nym_p&>(nym_).reset(); }
-}  // namespace
+}  // namespace ottest

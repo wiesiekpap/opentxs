@@ -9,7 +9,7 @@
 #include <string>
 #include <utility>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "Basic.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -99,10 +99,10 @@ public:
     const OTServerContract server_contract_;
 
     Test_DepositCheques()
-        : alice_client_(Context().StartClient(OTTestEnvironment::Args(), 0))
-        , bob_client_(Context().StartClient(OTTestEnvironment::Args(), 1))
-        , server_1_(Context().StartServer(OTTestEnvironment::Args(), 0, true))
-        , issuer_client_(Context().StartClient(OTTestEnvironment::Args(), 2))
+        : alice_client_(Context().StartClient(Args(), 0))
+        , bob_client_(Context().StartClient(Args(), 1))
+        , server_1_(Context().StartServer(Args(), 0, true))
+        , issuer_client_(Context().StartClient(Args(), 2))
         , server_contract_(server_1_.Wallet().Server(server_1_.ID()))
     {
 #if OT_CASH

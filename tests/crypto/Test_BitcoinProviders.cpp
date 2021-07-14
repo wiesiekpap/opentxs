@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -40,7 +39,9 @@
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 
-namespace
+namespace ot = opentxs;
+
+namespace ottest
 {
 class Test_Bitcoin_Providers : public ::testing::Test
 {
@@ -658,4 +659,4 @@ TEST_F(Test_Bitcoin_Providers, Common)
     EXPECT_TRUE(test_bip32_child_key(crypto_.BIP32()));
 #endif  // OT_CRYPTO_WITH_BIP32
 }
-}  // namespace
+}  // namespace ottest

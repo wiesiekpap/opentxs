@@ -79,6 +79,7 @@ MailItem::MailItem(
           pending)
     , load_(nullptr)
 {
+    OT_ASSERT(1 == custom.size());
     OT_ASSERT(false == nym_id_.empty());
     OT_ASSERT(false == item_id_.empty())
 }

@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 
+#include "Basic.hpp"
 #include "Cli.hpp"
 #include "OTLowLevelTestEnvironment.hpp"
 #include "opentxs/Types.hpp"
@@ -14,10 +15,7 @@
 int main(int argc, char** argv)
 {
     auto parser = ArgumentParser{};
-    parser.parse(
-        argc,
-        argv,
-        const_cast<ot::ArgList&>(OTLowLevelTestEnvironment::Args()));
+    parser.parse(argc, argv, const_cast<ot::ArgList&>(ottest::Args(true)));
 
     if (parser.show_help_) {
         std::cout << parser.options() << "\n";
@@ -25,7 +23,8 @@ int main(int argc, char** argv)
         return 0;
     }
 
-    ::testing::AddGlobalTestEnvironment(new OTLowLevelTestEnvironment());
+    ::testing::AddGlobalTestEnvironment(
+        new ottest::OTLowLevelTestEnvironment());
     ::testing::InitGoogleTest(&argc, argv);
 
     return RUN_ALL_TESTS();

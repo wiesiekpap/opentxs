@@ -8,21 +8,14 @@
 #include <gtest/gtest.h>
 #include <string>
 
-#include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
-
-namespace ot = opentxs;
-
+namespace ottest
+{
 class OTLowLevelTestEnvironment : public testing::Environment
 {
 public:
-    static auto Args() noexcept -> const ot::ArgList&;
-
     void SetUp() override;
     void TearDown() override;
 
     ~OTLowLevelTestEnvironment() override;
-
-private:
-    static auto home() noexcept -> const std::string&;
 };
+}  // namespace ottest

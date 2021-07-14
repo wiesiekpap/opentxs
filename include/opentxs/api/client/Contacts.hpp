@@ -4,6 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/ContactItemType.hpp"
 
 #ifndef OPENTXS_API_CLIENT_CONTACTS_HPP
 #define OPENTXS_API_CLIENT_CONTACTS_HPP
@@ -15,7 +16,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Editor.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/Types.hpp"
 
 namespace opentxs
 {
@@ -44,6 +45,9 @@ public:
     virtual OTIdentifier ContactID(const identifier::Nym& nymID) const = 0;
     virtual ObjectList ContactList() const = 0;
     virtual std::string ContactName(const Identifier& contactID) const = 0;
+    virtual std::string ContactName(
+        const Identifier& contactID,
+        contact::ContactItemType currencyHint) const = 0;
     virtual std::shared_ptr<const opentxs::Contact> Merge(
         const Identifier& parent,
         const Identifier& child) const = 0;
