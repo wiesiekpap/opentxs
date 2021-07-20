@@ -89,8 +89,8 @@ struct Scale::Imp {
 
             if (formatDecimals) {
                 if (0u == (counter % 4u)) {
-                    static constexpr auto thinSpace = u8" ";
-                    output << thinSpace;
+                    static constexpr auto narrowNonBreakingSpace = u8"\u2009";
+                    output << narrowNonBreakingSpace;
                     ++counter;
                 }
 

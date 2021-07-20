@@ -109,7 +109,7 @@ auto BlockOracle::Cache::ReceiveBlock(BitcoinBlock_p in) const noexcept -> void
     auto& [time, promise, future, queued] = pending->second;
     promise.set_value(std::move(in));
     LogVerbose(OT_METHOD)(__FUNCTION__)(": Cached block ")(id.asHex()).Flush();
-    mem_.push(std::move(id), std::move(future));
+    mem_.push(id, std::move(future));
     pending_.erase(pending);
     publish(pending_.size());
 }

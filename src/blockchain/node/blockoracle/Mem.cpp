@@ -51,8 +51,11 @@ auto BlockOracle::Cache::Mem::push(
 {
     if (0 == id->size()) { return; }
 
-    const auto& item = queue_.emplace_back(std::move(id), std::move(future));
-    index_[item.first->Bytes()] = queue_.crbegin();
+    auto i = queue_.emplace(queue_.end(), std::move(id), std::move(future));
+    const auto& item = *i;
+    const auto [j, added] = index_.try_emplace(item.first->Bytes(), &item);
+
+    OT_ASSERT(added);
 
     while (queue_.size() > limit_) {
         const auto& item = queue_.front();
