@@ -165,10 +165,9 @@ private:
             Mem(const std::size_t limit) noexcept;
 
         private:
-            using Completed =
-                std::deque<std::pair<block::pHash, BitcoinBlockFuture>>;
-            using Index = boost::container::
-                flat_map<ReadView, Completed::const_reverse_iterator>;
+            using CachedBlock = std::pair<block::pHash, BitcoinBlockFuture>;
+            using Completed = std::deque<CachedBlock>;
+            using Index = boost::container::flat_map<ReadView, const CachedBlock*>;
 
             const std::size_t limit_;
             Completed queue_;
