@@ -26,7 +26,7 @@
 #include <utility>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"
+#include "Basic.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -273,7 +273,7 @@ Regtest_fixture_base::Regtest_fixture_base(
     , client_count_(clientCount)
     , miner_(ot_.StartClient(
           [] {
-              auto args = OTTestEnvironment::Args();
+              auto args = Args();
               auto& level = args[OPENTXS_ARG_BLOCK_STORAGE_LEVEL];
               level.clear();
               level.emplace("2");
@@ -680,7 +680,7 @@ auto Regtest_fixture_base::TestUTXOs(
 
 Regtest_fixture_normal::Regtest_fixture_normal(const int clientCount)
     : Regtest_fixture_base(clientCount, [] {
-        auto args = OTTestEnvironment::Args();
+        auto args = Args();
         auto& level = args[OPENTXS_ARG_BLOCK_STORAGE_LEVEL];
         level.clear();
         level.emplace("1");
@@ -699,7 +699,7 @@ Regtest_fixture_sync::Regtest_fixture_sync()
     : Regtest_fixture_base(
           1,
           [] {
-              auto args = OTTestEnvironment::Args();
+              auto args = Args();
               auto& level = args[OPENTXS_ARG_BLOCK_STORAGE_LEVEL];
               level.clear();
               level.emplace("2");

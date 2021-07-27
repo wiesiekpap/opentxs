@@ -106,20 +106,20 @@ public:
         -> bool final;
     auto RemoveAcknowledgedNumber(const std::set<RequestNumber>& req)
         -> bool final;
-    void Reset() final;
-    void SetLocalNymboxHash(const Identifier& hash) final;
-    void SetRemoteNymboxHash(const Identifier& hash) final;
-    void SetRequest(const RequestNumber req) final;
+    auto Reset() -> void final;
+    auto SetLocalNymboxHash(const Identifier& hash) -> void final;
+    auto SetRemoteNymboxHash(const Identifier& hash) -> void final;
+    auto SetRequest(const RequestNumber req) -> void final;
 
     ~Base() override = default;
 
 protected:
     const OTServerID server_id_;
-    Nym_p remote_nym_{};
-    std::set<TransactionNumber> available_transaction_numbers_{};
-    std::set<TransactionNumber> issued_transaction_numbers_{};
-    std::atomic<RequestNumber> request_number_{0};
-    std::set<RequestNumber> acknowledged_request_numbers_{};
+    Nym_p remote_nym_;
+    std::set<TransactionNumber> available_transaction_numbers_;
+    std::set<TransactionNumber> issued_transaction_numbers_;
+    std::atomic<RequestNumber> request_number_;
+    std::set<RequestNumber> acknowledged_request_numbers_;
     OTIdentifier local_nymbox_hash_;
     OTIdentifier remote_nymbox_hash_;
 
@@ -137,9 +137,9 @@ protected:
         -> bool;
     auto consume_issued(const Lock& lock, const TransactionNumber& number)
         -> bool;
-    void finish_acknowledgements(
+    auto finish_acknowledgements(
         const Lock& lock,
-        const std::set<RequestNumber>& req);
+        const std::set<RequestNumber>& req) -> void;
     auto issue_number(const Lock& lock, const TransactionNumber& number)
         -> bool;
     auto recover_available_number(
@@ -149,8 +149,10 @@ protected:
         const Lock& lock,
         const std::set<RequestNumber>& req) -> bool;
     auto save(const Lock& lock, const PasswordPrompt& reason) -> bool;
-    void set_local_nymbox_hash(const Lock& lock, const Identifier& hash);
-    void set_remote_nymbox_hash(const Lock& lock, const Identifier& hash);
+    auto set_local_nymbox_hash(const Lock& lock, const Identifier& hash)
+        -> void;
+    auto set_remote_nymbox_hash(const Lock& lock, const Identifier& hash)
+        -> void;
     auto update_signature(const Lock& lock, const PasswordPrompt& reason)
         -> bool final;
     auto verify_available_number(const Lock& lock, const TransactionNumber& req)
@@ -177,7 +179,7 @@ protected:
 private:
     friend opentxs::Factory;
 
-    const VersionNumber target_version_{0};
+    const VersionNumber target_version_;
 
     static auto calculate_id(
         const api::Core& api,

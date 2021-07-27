@@ -21,6 +21,7 @@
 #include "core/StateMachine.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/client/Factory.hpp"
+#include "internal/core/Core.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/SharedPimpl.hpp"
@@ -32,6 +33,7 @@
 #include "opentxs/api/client/Issuer.hpp"
 #include "opentxs/api/client/Pair.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
@@ -206,8 +208,8 @@ auto Pair::State::check_state() const noexcept -> bool
 
         if (accountCount != offered) {
             LogTrace(OT_METHOD)(__FUNCTION__)(
-                ": Waiting for account registration, expected: ")(offered)(
-                ", have ")(accountCount)
+                ": Waiting for account registration, "
+                "expected: ")(offered)(", have ")(accountCount)
                 .Flush();
 
             goto repeat;
@@ -216,9 +218,12 @@ auto Pair::State::check_state() const noexcept -> bool
         for (const auto& [unit, account, bailments] : accountDetails) {
             if (bailments < MINIMUM_UNUSED_BAILMENTS) {
                 LogTrace(OT_METHOD)(__FUNCTION__)(
-                    ": Waiting for bailment instructions for account ")(
-                    account)(", expected: ")(MINIMUM_UNUSED_BAILMENTS)(
-                    ", have ")(bailments)
+                    ": Waiting for bailment instructions for "
+                    "account ")(account)(", "
+                                         "expected:"
+                                         " ")(MINIMUM_UNUSED_BAILMENTS)(", "
+                                                                        "have"
+                                                                        " ")(bailments)
                     .Flush();
 
                 goto repeat;
@@ -367,6 +372,14 @@ auto Pair::AddIssuer(
         return false;
     }
 
+    if (blockchain::Type::Unknown != blockchain::Chain(client_, issuerNymID)) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": blockchains can not be used as otx issuers.")
+            .Flush();
+
+        return false;
+    }
+
     bool trusted{false};
 
     {
@@ -508,8 +521,8 @@ void Pair::check_accounts(
             .Flush();
     } else {
         offered = State::count_currencies(*contractSection);
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Issuer advertises ")(offered)(
-            " contract")((1 == offered) ? "." : "s.")
+        LogDetail(OT_METHOD)(__FUNCTION__)(
+            ": Issuer advertises ")(offered)(" contract")((1 == offered) ? "." : "s.")
             .Flush();
     }
 
@@ -542,8 +555,9 @@ void Pair::check_accounts(
             const auto accountList = issuer.AccountList(type, unitID);
 
             if (0 == accountList.size()) {
-                LogDetail(OT_METHOD)(__FUNCTION__)(": Registering ")(unitID)(
-                    " account for ")(localNymID)(" on ")(serverID)(".")
+                LogDetail(OT_METHOD)(__FUNCTION__)(
+                    ": Registering ")(unitID)(" account for ")(localNymID)(" on"
+                                                                           " ")(serverID)(".")
                     .Flush();
                 const auto& [registered, id] =
                     register_account(localNymID, serverID, unitID);
@@ -561,9 +575,9 @@ void Pair::check_accounts(
 
                 continue;
             } else {
-                LogDetail(OT_METHOD)(__FUNCTION__)(": ")(unitID)(
-                    " account for ")(localNymID)(" on ")(serverID)(
-                    " already exists.")
+                LogDetail(OT_METHOD)(__FUNCTION__)(
+                    ": ")(unitID)(" account for ")(localNymID)(" on"
+                                                               " ")(serverID)(" already exists.")
                     .Flush();
             }
 
@@ -867,8 +881,8 @@ void Pair::process_peer_replies(const Lock& lock, const identifier::Nym& nymID)
             client_.Wallet().PeerReply(
                 nymID, replyID, StorageBox::INCOMINGPEERREPLY, reply)) {
 
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load peer reply ")(
-                it.first)(".")
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": Failed to load peer reply ")(it.first)(".")
                 .Flush();
 
             continue;
@@ -1177,8 +1191,8 @@ void Pair::queue_unit_definition(
     const auto success = (otx::LastReplyStatus::MessageSuccess == result);
 
     if (success) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Obtained unit definition ")(
-            unitID)
+        LogDetail(OT_METHOD)(__FUNCTION__)(
+            ": Obtained unit definition ")(unitID)
             .Flush();
     } else {
         LogOutput(OT_METHOD)(__FUNCTION__)(
@@ -1199,8 +1213,8 @@ auto Pair::register_account(
     try {
         client_.Wallet().UnitDefinition(unitID);
     } catch (...) {
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Waiting for unit definition ")(
-            unitID)
+        LogTrace(OT_METHOD)(__FUNCTION__)(
+            ": Waiting for unit definition ")(unitID)
             .Flush();
         queue_unit_definition(nymID, serverID, unitID);
 
@@ -1228,8 +1242,8 @@ auto Pair::register_account(
 void Pair::state_machine(const IssuerID& id) const
 {
     const auto& [localNymID, issuerNymID] = id;
-    LogDetail(OT_METHOD)(__FUNCTION__)(": Local nym: ")(localNymID)(
-        " Issuer Nym: ")(issuerNymID)
+    LogDetail(OT_METHOD)(__FUNCTION__)(
+        ": Local nym: ")(localNymID)(" Issuer Nym: ")(issuerNymID)
         .Flush();
     auto reason = client_.Factory().PasswordPrompt("Pairing state machine");
     auto it = state_.GetDetails(localNymID, issuerNymID);
@@ -1249,8 +1263,8 @@ void Pair::state_machine(const IssuerID& id) const
             const auto result = future.get();
 
             if (otx::LastReplyStatus::MessageSuccess == result.first) {
-                LogTrace(OT_METHOD)(__FUNCTION__)(": Task ")(task)(
-                    " completed successfully.")
+                LogTrace(OT_METHOD)(__FUNCTION__)(
+                    ": Task ")(task)(" completed successfully.")
                     .Flush();
             } else {
                 LogOutput(OT_METHOD)(__FUNCTION__)(": Task ")(task)(" failed.")

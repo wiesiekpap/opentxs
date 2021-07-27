@@ -6,7 +6,6 @@
 #include <gtest/gtest.h>
 #include <memory>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -19,9 +18,10 @@
 
 using namespace opentxs;
 
+namespace ot = opentxs;
 namespace zmq = ot::network::zeromq;
 
-namespace
+namespace ottest
 {
 class Test_RouterSocket : public ::testing::Test
 {
@@ -33,7 +33,6 @@ public:
     {
     }
 };
-}  // namespace
 
 TEST_F(Test_RouterSocket, RouterSocket_Factory)
 {
@@ -44,6 +43,7 @@ TEST_F(Test_RouterSocket, RouterSocket_Factory)
     ASSERT_NE(nullptr, &dealerSocket.get());
     ASSERT_EQ(SocketType::Router, dealerSocket->Type());
 }
+}  // namespace ottest
 
 // TODO: Add tests for other public member functions: SetPublicKey,
 // SetSocksProxy

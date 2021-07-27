@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 #include <memory>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "Basic.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/SharedPimpl.hpp"
@@ -27,7 +27,7 @@
 ot::OTNymID nym_id_{ot::identifier::Nym::Factory()};
 ot::OTServerID server_id_{ot::identifier::Server::Factory()};
 
-namespace
+namespace ottest
 {
 struct Ledger : public ::testing::Test {
     const ot::api::client::Manager& client_;
@@ -36,14 +36,13 @@ struct Ledger : public ::testing::Test {
     ot::OTPasswordPrompt reason_s_;
 
     Ledger()
-        : client_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
-        , server_(ot::Context().StartServer(OTTestEnvironment::Args(), 0, true))
+        : client_(ot::Context().StartClient(Args(), 0))
+        , server_(ot::Context().StartServer(Args(), 0, true))
         , reason_c_(client_.Factory().PasswordPrompt(__FUNCTION__))
         , reason_s_(server_.Factory().PasswordPrompt(__FUNCTION__))
     {
     }
 };
-}  // namespace
 
 TEST_F(Ledger, init)
 {
@@ -86,3 +85,4 @@ TEST_F(Ledger, load_nymbox)
     ASSERT_TRUE(nymbox);
     EXPECT_TRUE(nymbox->LoadNymbox());
 }
+}  // namespace ottest

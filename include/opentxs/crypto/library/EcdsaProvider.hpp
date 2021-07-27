@@ -29,12 +29,10 @@ public:
         const ReadView scalar,
         const AllocateOutput result) const noexcept = 0;
     OPENTXS_EXPORT virtual bool SignDER(
-        const api::internal::Core& api,
         const ReadView plaintext,
-        const key::Asymmetric& key,
+        const ReadView key,
         const crypto::HashType hash,
-        Space& signature,
-        const PasswordPrompt& reason) const noexcept = 0;
+        Space& signature) const noexcept = 0;
 
     ~EcdsaProvider() override = default;
 

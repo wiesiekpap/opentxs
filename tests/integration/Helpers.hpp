@@ -15,7 +15,7 @@
 #include <string>
 #include <tuple>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "Basic.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Settings.hpp"
@@ -111,6 +111,7 @@ struct User {
     bool init_;
     std::string seed_id_;
     std::uint32_t index_;
+    ot::Nym_p nym_;
     ot::OTNymID nym_id_;
     std::string payment_code_;
 
@@ -132,6 +133,13 @@ struct User {
     auto init(
         const ot::api::client::Manager& api,
         const Server& server,
+        const ot::contact::ContactItemType type =
+            ot::contact::ContactItemType::Individual,
+        const std::uint32_t index = 0) noexcept -> bool;
+    auto init_custom(
+        const ot::api::client::Manager& api,
+        const Server& server,
+        const std::function<void(User&)> custom,
         const ot::contact::ContactItemType type =
             ot::contact::ContactItemType::Individual,
         const std::uint32_t index = 0) noexcept -> void;

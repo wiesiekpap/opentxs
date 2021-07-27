@@ -79,7 +79,7 @@ public:
     auto Type() const noexcept -> StorageBox final { return box_; }
 
     auto reindex(const ActivityThreadSortKey& key, CustomData& custom) noexcept
-        -> bool final;
+        -> bool override;
 
 #if OT_QT
     QVariant qt_data(const int column, const int role) const noexcept final;

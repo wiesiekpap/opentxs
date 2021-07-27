@@ -8,7 +8,6 @@
 #include <iterator>
 #include <string>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"

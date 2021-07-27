@@ -12,7 +12,6 @@
 #include <thread>
 #include <utility>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -31,11 +30,11 @@
 
 using namespace opentxs;
 
+namespace ot = opentxs;
 namespace zmq = ot::network::zeromq;
 
-namespace
+namespace ottest
 {
-
 class Test_RequestRouter : public ::testing::Test
 {
 public:
@@ -118,8 +117,6 @@ void Test_RequestRouter::requestSocketThreadMultipart()
         ASSERT_TRUE(match);
     }
 }
-
-}  // namespace
 
 TEST_F(Test_RequestRouter, Request_Router)
 {
@@ -309,3 +306,4 @@ TEST_F(Test_RequestRouter, Request_Router_Multipart)
 
     requestSocketThread1.join();
 }
+}  // namespace ottest

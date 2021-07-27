@@ -347,6 +347,17 @@ public:
      */
     OPENTXS_EXPORT virtual std::string IssuerUpdate() const noexcept = 0;
 
+    /** Contact messagability status
+     *
+     *  A subscribe socket can connect to this endpoint to receive
+     *  OTXMessagability tagged messages
+     *
+     *  See opentxs/util/WorkTypes.hpp for message format documentation
+     *
+     *  This endpoint is active for client sessions only.
+     */
+    OPENTXS_EXPORT virtual std::string Messagability() const noexcept = 0;
+
     /** Nym created notifications
      *
      *  A subscribe socket can connect to this endpoint to receive

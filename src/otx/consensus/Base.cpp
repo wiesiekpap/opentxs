@@ -57,8 +57,8 @@ Base::Base(
     , issued_transaction_numbers_()
     , request_number_(0)
     , acknowledged_request_numbers_()
-    , local_nymbox_hash_(Identifier::Factory())
-    , remote_nymbox_hash_(Identifier::Factory())
+    , local_nymbox_hash_(api_.Factory().Identifier())
+    , remote_nymbox_hash_(api_.Factory().Identifier())
     , target_version_(targetVersion)
 {
 }
@@ -87,8 +87,10 @@ Base::Base(
     , issued_transaction_numbers_()
     , request_number_(serialized.requestnumber())
     , acknowledged_request_numbers_()
-    , local_nymbox_hash_(Identifier::Factory(serialized.localnymboxhash()))
-    , remote_nymbox_hash_(Identifier::Factory(serialized.remotenymboxhash()))
+    , local_nymbox_hash_(
+          api_.Factory().Identifier(serialized.localnymboxhash()))
+    , remote_nymbox_hash_(
+          api_.Factory().Identifier(serialized.remotenymboxhash()))
     , target_version_(targetVersion)
 {
     for (const auto& it : serialized.acknowledgedrequestnumber()) {
@@ -106,7 +108,7 @@ Base::Base(
 
 auto Base::AcknowledgedNumbers() const -> std::set<RequestNumber>
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return acknowledged_request_numbers_;
 }
@@ -116,6 +118,7 @@ auto Base::add_acknowledged_number(const Lock& lock, const RequestNumber req)
 {
     OT_ASSERT(verify_write_lock(lock));
 
+    clear_signatures(lock);
     auto output = acknowledged_request_numbers_.insert(req);
 
     while (OT_MAX_ACK_NUMS < acknowledged_request_numbers_.size()) {
@@ -128,7 +131,7 @@ auto Base::add_acknowledged_number(const Lock& lock, const RequestNumber req)
 
 auto Base::AddAcknowledgedNumber(const RequestNumber req) -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return add_acknowledged_number(lock, req);
 }
@@ -159,9 +162,10 @@ auto Base::consume_available(const Lock& lock, const TransactionNumber& number)
 {
     OT_ASSERT(verify_write_lock(lock));
 
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": (")(type())(") ")(
-        "Consuming number ")(number)
+    LogVerbose(OT_METHOD)(__FUNCTION__)(
+        ": (")(type())(") ")("Consuming number ")(number)
         .Flush();
+    clear_signatures(lock);
 
     return 1 == available_transaction_numbers_.erase(number);
 }
@@ -171,9 +175,10 @@ auto Base::consume_issued(const Lock& lock, const TransactionNumber& number)
 {
     OT_ASSERT(verify_write_lock(lock));
 
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": (")(type())(") ")(
-        "Consuming number ")(number)
+    LogVerbose(OT_METHOD)(__FUNCTION__)(
+        ": (")(type())(") ")("Consuming number ")(number)
         .Flush();
+    clear_signatures(lock);
 
     if (0 < available_transaction_numbers_.count(number)) {
         LogDetail(OT_METHOD)(__FUNCTION__)(
@@ -188,14 +193,14 @@ auto Base::consume_issued(const Lock& lock, const TransactionNumber& number)
 
 auto Base::ConsumeAvailable(const TransactionNumber& number) -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return consume_available(lock, number);
 }
 
 auto Base::ConsumeIssued(const TransactionNumber& number) -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return consume_issued(lock, number);
 }
@@ -209,6 +214,10 @@ auto Base::contract(const Lock& lock) const -> proto::Context
     if (0 < signatures_.size()) {
         auto& sigProto = *output.mutable_signature();
         sigProto.CopyFrom(*signatures_.front());
+    } else {
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": warning: no signatures on context")
+            .Flush();
     }
 
     return output;
@@ -216,13 +225,14 @@ auto Base::contract(const Lock& lock) const -> proto::Context
 
 // This method will remove entries from acknowledged_request_numbers_ if they
 // are not on the provided set
-void Base::finish_acknowledgements(
+auto Base::finish_acknowledgements(
     const Lock& lock,
-    const std::set<RequestNumber>& req)
+    const std::set<RequestNumber>& req) -> void
 {
     OT_ASSERT(verify_write_lock(lock));
 
-    std::set<RequestNumber> toErase;
+    clear_signatures(lock);
+    auto toErase = std::set<RequestNumber>{};
 
     for (const auto& number : acknowledged_request_numbers_) {
         if (0 == req.count(number)) { toErase.insert(number); }
@@ -244,12 +254,12 @@ auto Base::GetID(const Lock& lock) const -> OTIdentifier
 
 auto Base::HaveLocalNymboxHash() const -> bool
 {
-    return String::Factory(local_nymbox_hash_)->Exists();
+    return false == local_nymbox_hash_->empty();
 }
 
 auto Base::HaveRemoteNymboxHash() const -> bool
 {
-    return String::Factory(remote_nymbox_hash_)->Exists();
+    return false == remote_nymbox_hash_->empty();
 }
 
 auto Base::IDVersion(const Lock& lock) const -> proto::Context
@@ -265,20 +275,16 @@ auto Base::IDVersion(const Lock& lock) const -> proto::Context
 
             if (remote_nym_) { output.set_remotenym(remote_nym_->ID().str()); }
 
-            output.set_localnymboxhash(
-                String::Factory(local_nymbox_hash_)->Get());
-            output.set_remotenymboxhash(
-                String::Factory(remote_nymbox_hash_)->Get());
+            output.set_localnymboxhash(local_nymbox_hash_->str());
+            output.set_remotenymboxhash(remote_nymbox_hash_->str());
         } break;
         case otx::ConsensusType::Client: {
             if (nym_) { output.set_remotenym(nym_->ID().str()); }
 
             if (remote_nym_) { output.set_localnym(remote_nym_->ID().str()); }
 
-            output.set_remotenymboxhash(
-                String::Factory(local_nymbox_hash_)->Get());
-            output.set_localnymboxhash(
-                String::Factory(remote_nymbox_hash_)->Get());
+            output.set_remotenymboxhash(local_nymbox_hash_->str());
+            output.set_localnymboxhash(remote_nymbox_hash_->str());
         } break;
         default: {
             OT_FAIL;
@@ -300,14 +306,15 @@ auto Base::IDVersion(const Lock& lock) const -> proto::Context
 
 auto Base::IncrementRequest() -> RequestNumber
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
+    clear_signatures(lock);
 
     return ++request_number_;
 }
 
 auto Base::InitializeNymbox(const PasswordPrompt& reason) -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
     const auto& ownerNymID = client_nym_id(lock);
     auto nymbox{
         api_.Factory().Ledger(ownerNymID, server_nym_id(lock), server_id_)};
@@ -324,8 +331,9 @@ auto Base::InitializeNymbox(const PasswordPrompt& reason) -> bool
         ownerNymID, server_id_, ledgerType::nymbox, true);
 
     if (false == generated) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": (")(type())(") ")(
-            "Unable to generate nymbox for ")(ownerNymID)(".")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": (")(type())(") ")("Unable to generate nymbox "
+                                 "for ")(ownerNymID)(".")
             .Flush();
 
         return false;
@@ -336,24 +344,27 @@ auto Base::InitializeNymbox(const PasswordPrompt& reason) -> bool
     OT_ASSERT(nym_)
 
     if (false == nymbox->SignContract(*nym_, reason)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": (")(type())(") ")(
-            "Unable to sign nymbox for ")(ownerNymID)(".")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": (")(type())(") ")("Unable to sign nymbox for ")(ownerNymID)(".")
             .Flush();
 
         return false;
     }
 
     if (false == nymbox->SaveContract()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": (")(type())(") ")(
-            "Unable to serialize nymbox for ")(ownerNymID)(".")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": (")(type())(") ")("Unable to serialize nymbox "
+                                 "for ")(ownerNymID)(".")
             .Flush();
 
         return false;
     }
 
+    clear_signatures(lock);
+
     if (false == nymbox->SaveNymbox(local_nymbox_hash_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": (")(type())(") ")(
-            "Unable to save nymbox for ")(ownerNymID)
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": (")(type())(") ")("Unable to save nymbox for ")(ownerNymID)
             .Flush();
 
         return false;
@@ -364,14 +375,16 @@ auto Base::InitializeNymbox(const PasswordPrompt& reason) -> bool
 
 auto Base::insert_available_number(const TransactionNumber& number) -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
+    clear_signatures(lock);
 
     return available_transaction_numbers_.insert(number).second;
 }
 
 auto Base::insert_issued_number(const TransactionNumber& number) -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
+    clear_signatures(lock);
 
     return issued_transaction_numbers_.insert(number).second;
 }
@@ -381,6 +394,7 @@ auto Base::issue_number(const Lock& lock, const TransactionNumber& number)
 {
     OT_ASSERT(verify_write_lock(lock));
 
+    clear_signatures(lock);
     issued_transaction_numbers_.insert(number);
     available_transaction_numbers_.insert(number);
     const bool issued = (1 == issued_transaction_numbers_.count(number));
@@ -388,8 +402,8 @@ auto Base::issue_number(const Lock& lock, const TransactionNumber& number)
     const bool output = issued && available;
 
     if (!output) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": (")(type())(") ")(
-            "Failed to issue number ")(number)(".")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": (")(type())(") ")("Failed to issue number ")(number)(".")
             .Flush();
         issued_transaction_numbers_.erase(number);
         available_transaction_numbers_.erase(number);
@@ -400,7 +414,7 @@ auto Base::issue_number(const Lock& lock, const TransactionNumber& number)
 
 auto Base::IssuedNumbers() const -> std::set<TransactionNumber>
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return issued_transaction_numbers_;
 }
@@ -409,7 +423,7 @@ auto Base::LegacyDataFolder() const -> std::string { return api_.DataFolder(); }
 
 auto Base::LocalNymboxHash() const -> OTIdentifier
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return local_nymbox_hash_;
 }
@@ -424,14 +438,14 @@ auto Base::mutable_Nymfile(const PasswordPrompt& reason)
 
 auto Base::Name() const -> std::string
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return String::Factory(id(lock))->Get();
 }
 
 auto Base::NymboxHashMatch() const -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     if (!HaveLocalNymboxHash()) { return false; }
 
@@ -460,19 +474,21 @@ auto Base::recover_available_number(
 
     if (!issued) { return false; }
 
+    clear_signatures(lock);
+
     return available_transaction_numbers_.insert(number).second;
 }
 
 auto Base::RecoverAvailableNumber(const TransactionNumber& number) -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return recover_available_number(lock, number);
 }
 
 auto Base::Refresh(proto::Context& out, const PasswordPrompt& reason) -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
     update_signature(lock, reason);
     out = contract(lock);
 
@@ -488,7 +504,7 @@ auto Base::RemoteNym() const -> const identity::Nym&
 
 auto Base::RemoteNymboxHash() const -> OTIdentifier
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return remote_nymbox_hash_;
 }
@@ -499,7 +515,8 @@ auto Base::remove_acknowledged_number(
 {
     OT_ASSERT(verify_write_lock(lock));
 
-    std::size_t removed = 0;
+    clear_signatures(lock);
+    auto removed = std::size_t{0};
 
     for (const auto& number : req) {
         removed += acknowledged_request_numbers_.erase(number);
@@ -510,16 +527,17 @@ auto Base::remove_acknowledged_number(
 
 auto Base::RemoveAcknowledgedNumber(const std::set<RequestNumber>& req) -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return remove_acknowledged_number(lock, req);
 }
 
 auto Base::Request() const -> RequestNumber { return request_number_.load(); }
 
-void Base::Reset()
+auto Base::Reset() -> void
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
+    clear_signatures(lock);
     available_transaction_numbers_.clear();
     issued_transaction_numbers_.clear();
     request_number_.store(0);
@@ -548,8 +566,8 @@ auto Base::serialize(const Lock& lock, const otx::ConsensusType type) const
 
     if (remote_nym_) { output.set_remotenym(remote_nym_->ID().str()); }
 
-    output.set_localnymboxhash(String::Factory(local_nymbox_hash_)->Get());
-    output.set_remotenymboxhash(String::Factory(remote_nymbox_hash_)->Get());
+    output.set_localnymboxhash(local_nymbox_hash_->str());
+    output.set_remotenymboxhash(remote_nymbox_hash_->str());
     output.set_requestnumber(request_number_.load());
 
     for (const auto& it : acknowledged_request_numbers_) {
@@ -579,48 +597,54 @@ auto Base::Serialize() const -> OTData
 
 auto Base::Serialize(proto::Context& out) const -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
     out = contract(lock);
 
     return true;
 }
 
-void Base::set_local_nymbox_hash(const Lock& lock, const Identifier& hash)
+auto Base::set_local_nymbox_hash(const Lock& lock, const Identifier& hash)
+    -> void
 {
     OT_ASSERT(verify_write_lock(lock));
 
-    local_nymbox_hash_ = Identifier::Factory(hash);
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": (")(type())(") ")(
-        "Set local nymbox hash to: ")(local_nymbox_hash_->asHex())
+    clear_signatures(lock);
+    local_nymbox_hash_ = hash;
+    LogVerbose(OT_METHOD)(__FUNCTION__)(
+        ": (")(type())(") ")("Set local nymbox hash to: ")(local_nymbox_hash_
+                                                               ->asHex())
         .Flush();
 }
 
-void Base::set_remote_nymbox_hash(const Lock& lock, const Identifier& hash)
+auto Base::set_remote_nymbox_hash(const Lock& lock, const Identifier& hash)
+    -> void
 {
     OT_ASSERT(verify_write_lock(lock));
 
-    remote_nymbox_hash_ = Identifier::Factory(hash);
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": (")(type())(") ")(
-        "Set remote nymbox hash to: ")(remote_nymbox_hash_->asHex())
+    clear_signatures(lock);
+    remote_nymbox_hash_ = hash;
+    LogVerbose(OT_METHOD)(__FUNCTION__)(
+        ": (")(type())(") ")("Set remote nymbox hash to: ")(remote_nymbox_hash_
+                                                                ->asHex())
         .Flush();
 }
 
-void Base::SetLocalNymboxHash(const Identifier& hash)
+auto Base::SetLocalNymboxHash(const Identifier& hash) -> void
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
     set_local_nymbox_hash(lock, hash);
 }
 
-void Base::SetRemoteNymboxHash(const Identifier& hash)
+auto Base::SetRemoteNymboxHash(const Identifier& hash) -> void
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
     set_remote_nymbox_hash(lock, hash);
 }
 
-void Base::SetRequest(const RequestNumber req)
+auto Base::SetRequest(const RequestNumber req) -> void
 {
-    Lock lock(lock_);
-
+    auto lock = Lock{lock_};
+    clear_signatures(lock);
     request_number_.store(req);
 }
 
@@ -639,10 +663,12 @@ auto Base::update_signature(const Lock& lock, const PasswordPrompt& reason)
 {
     OT_ASSERT(verify_write_lock(lock));
 
+    clear_signatures(lock);
+    update_version(lock, target_version_);
+
     if (!Signable::update_signature(lock, reason)) { return false; }
 
-    update_version(target_version_);
-    bool success = false;
+    auto success{false};
     auto serialized = SigVersion(lock);
     auto& signature = *serialized.mutable_signature();
     success = nym_->Sign(
@@ -651,8 +677,8 @@ auto Base::update_signature(const Lock& lock, const PasswordPrompt& reason)
     if (success) {
         signatures_.emplace_front(new proto::Signature(signature));
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": (")(type())(") ")(
-            "Failed to create signature.")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": (")(type())(") ")("Failed to create signature.")
             .Flush();
     }
 
@@ -707,8 +733,8 @@ auto Base::verify_signature(const Lock& lock, const proto::Signature& signature)
     OT_ASSERT(verify_write_lock(lock));
 
     if (!Signable::verify_signature(lock, signature)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": (")(type())(") ")(
-            "Error: invalid signature.")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": (")(type())(") ")("Error: invalid signature.")
             .Flush();
 
         return false;
@@ -723,21 +749,21 @@ auto Base::verify_signature(const Lock& lock, const proto::Signature& signature)
 
 auto Base::VerifyAcknowledgedNumber(const RequestNumber& req) const -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return verify_acknowledged_number(lock, req);
 }
 
 auto Base::VerifyAvailableNumber(const TransactionNumber& number) const -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return verify_available_number(lock, number);
 }
 
 auto Base::VerifyIssuedNumber(const TransactionNumber& number) const -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return verify_issued_number(lock, number);
 }

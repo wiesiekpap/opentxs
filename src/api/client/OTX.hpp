@@ -333,6 +333,7 @@ private:
     OTZMQListenCallback find_unit_callback_;
     OTZMQPullSocket find_unit_listener_;
     OTZMQPublishSocket task_finished_;
+    OTZMQPublishSocket messagability_;
     mutable OTFlag auto_process_inbox_;
     mutable std::atomic<TaskID> next_task_id_;
     mutable std::atomic<bool> shutdown_;
@@ -347,8 +348,8 @@ private:
 
     auto add_task(const TaskID taskID, const ThreadStatus status) const
         -> BackgroundTask;
-    void associate_message_id(const Identifier& messageID, const TaskID taskID)
-        const final;
+    auto associate_message_id(const Identifier& messageID, const TaskID taskID)
+        const -> void final;
     auto can_deposit(
         const OTPayment& payment,
         const identifier::Nym& recipient,
@@ -366,9 +367,12 @@ private:
         identifier::Nym& nymID,
         identifier::Server& serverID,
         identifier::UnitDefinition& unitID) const -> bool;
-    void find_nym(const opentxs::network::zeromq::Message& message) const;
-    void find_server(const opentxs::network::zeromq::Message& message) const;
-    void find_unit(const opentxs::network::zeromq::Message& message) const;
+    auto find_nym(const opentxs::network::zeromq::Message& message) const
+        -> void;
+    auto find_server(const opentxs::network::zeromq::Message& message) const
+        -> void;
+    auto find_unit(const opentxs::network::zeromq::Message& message) const
+        -> void;
     auto finish_task(const TaskID taskID, const bool success, Result&& result)
         const -> bool final;
     auto get_introduction_server(const Lock& lock) const -> OTServerID;
@@ -380,12 +384,16 @@ private:
         -> otx::client::implementation::StateMachine&;
     auto import_default_introduction_server(const Lock& lock) const
         -> OTServerID;
-    void load_introduction_server(const Lock& lock) const;
+    auto load_introduction_server(const Lock& lock) const -> void;
     auto next_task_id() const -> TaskID { return ++next_task_id_; }
-    void process_account(
-        const opentxs::network::zeromq::Message& message) const;
-    void process_notification(
-        const opentxs::network::zeromq::Message& message) const;
+    auto process_account(const opentxs::network::zeromq::Message& message) const
+        -> void;
+    auto process_notification(
+        const opentxs::network::zeromq::Message& message) const -> void;
+    auto publish_messagability(
+        const identifier::Nym& sender,
+        const Identifier& contact,
+        Messagability value) const noexcept -> Messagability;
     auto publish_server_registration(
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
@@ -403,21 +411,21 @@ private:
         const identifier::Server& serverID,
         const identifier::UnitDefinition& unitID,
         const std::string& label) const -> BackgroundTask;
-    void set_contact(
+    auto set_contact(
         const identifier::Nym& nymID,
-        const identifier::Server& serverID) const;
+        const identifier::Server& serverID) const -> void;
     auto set_introduction_server(
         const Lock& lock,
         const contract::Server& contract) const -> OTServerID;
     auto start_task(const TaskID taskID, bool success) const
         -> BackgroundTask final;
     auto status(const Lock& lock, const TaskID taskID) const -> ThreadStatus;
-    void update_task(
+    auto update_task(
         const TaskID taskID,
         const ThreadStatus status,
-        Result&& result) const noexcept;
-    void start_introduction_server(const identifier::Nym& nymID) const;
-    void trigger_all() const;
+        Result&& result) const noexcept -> void;
+    auto start_introduction_server(const identifier::Nym& nymID) const -> void;
+    auto trigger_all() const -> void;
     auto valid_account(
         const OTPayment& payment,
         const identifier::Nym& recipient,

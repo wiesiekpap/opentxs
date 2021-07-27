@@ -118,6 +118,7 @@ public:
 private:
     using ot_super = HD;
 
+    auto blank_private() const noexcept -> ReadView final;
     auto clone() const noexcept -> Secp256k1* final
     {
         return new Secp256k1(*this);

@@ -72,6 +72,7 @@ PaymentItem::PaymentItem(
     , load_(nullptr)
     , payment_()
 {
+    OT_ASSERT(1 == custom.size());
     OT_ASSERT(false == nym_id_.empty())
     OT_ASSERT(false == item_id_.empty())
 

@@ -80,29 +80,24 @@ public:
     auto ScalarMultiplyBase(const ReadView scalar, const AllocateOutput result)
         const noexcept -> bool final;
     auto SharedSecret(
-        const key::Asymmetric& publicKey,
-        const key::Asymmetric& privateKey,
+        const ReadView publicKey,
+        const ReadView privateKey,
         const SecretStyle style,
-        const PasswordPrompt& reason,
         Secret& secret) const noexcept -> bool final;
     auto Sign(
-        const api::internal::Core& api,
         const ReadView plaintext,
-        const key::Asymmetric& key,
+        const ReadView key,
         const crypto::HashType hash,
-        const AllocateOutput signature,
-        const PasswordPrompt& reason) const -> bool final;
+        const AllocateOutput signature) const -> bool final;
     auto SignDER(
-        const api::internal::Core& api,
         const ReadView plaintext,
-        const key::Asymmetric& key,
+        const ReadView key,
         const crypto::HashType hash,
-        Space& signature,
-        const PasswordPrompt& reason) const noexcept -> bool final;
+        Space& signature) const noexcept -> bool final;
     auto Verify(
-        const Data& plaintext,
-        const key::Asymmetric& theKey,
-        const Data& signature,
+        const ReadView plaintext,
+        const ReadView theKey,
+        const ReadView signature,
         const crypto::HashType hashType) const -> bool final;
 
     void Init() final;
@@ -118,6 +113,8 @@ private:
 
     secp256k1_context* context_;
     const api::crypto::Util& ssl_;
+
+    static auto blank_private() noexcept -> ReadView;
 
     auto hash(const crypto::HashType type, const ReadView data) const
         noexcept(false) -> OTData;

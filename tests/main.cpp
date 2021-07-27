@@ -7,15 +7,15 @@
 #include <gtest/gtest.h>
 #include <iostream>
 
+#include "Basic.hpp"
 #include "Cli.hpp"
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "OTTestEnvironment.hpp"
 #include "opentxs/Types.hpp"
 
 int main(int argc, char** argv)
 {
     auto parser = ArgumentParser{};
-    parser.parse(
-        argc, argv, const_cast<ot::ArgList&>(OTTestEnvironment::Args()));
+    parser.parse(argc, argv, const_cast<ot::ArgList&>(ottest::Args(false)));
 
     if (parser.show_help_) {
         std::cout << parser.options() << "\n";
@@ -23,7 +23,7 @@ int main(int argc, char** argv)
         return 0;
     }
 
-    ::testing::AddGlobalTestEnvironment(new OTTestEnvironment());
+    ::testing::AddGlobalTestEnvironment(new ottest::OTTestEnvironment());
     ::testing::InitGoogleTest(&argc, argv);
 
     return RUN_ALL_TESTS();

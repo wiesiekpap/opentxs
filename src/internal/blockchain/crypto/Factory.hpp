@@ -62,13 +62,7 @@ class PaymentCode;
 
 namespace opentxs::factory
 {
-auto BlockchainBalanceList(
-    const api::internal::Core& api,
-    const api::client::internal::Blockchain& parent,
-    const api::client::internal::BalanceTreeIndex& index,
-    const blockchain::Type chain) noexcept
-    -> std::unique_ptr<blockchain::crypto::internal::Wallet>;
-auto BlockchainBalanceTree(
+auto BlockchainAccountKeys(
     const api::internal::Core& api,
     const blockchain::crypto::internal::Wallet& parent,
     const api::client::internal::BalanceTreeIndex& index,
@@ -77,20 +71,20 @@ auto BlockchainBalanceTree(
     const std::set<OTIdentifier>& importedAccounts,
     const std::set<OTIdentifier>& paymentCodeAccounts) noexcept
     -> std::unique_ptr<blockchain::crypto::internal::Account>;
-auto BlockchainHDBalanceNode(
+auto BlockchainHDSubaccount(
     const api::internal::Core& api,
     const blockchain::crypto::internal::Account& parent,
     const proto::HDPath& path,
     const PasswordPrompt& reason,
     Identifier& id) noexcept
     -> std::unique_ptr<blockchain::crypto::internal::HD>;
-auto BlockchainHDBalanceNode(
+auto BlockchainHDSubaccount(
     const api::internal::Core& api,
     const blockchain::crypto::internal::Account& parent,
     const proto::HDAccount& serialized,
     Identifier& id) noexcept
     -> std::unique_ptr<blockchain::crypto::internal::HD>;
-auto BlockchainPCBalanceNode(
+auto BlockchainPCSubaccount(
     const api::internal::Core& api,
     const blockchain::crypto::internal::Account& parent,
     const opentxs::PaymentCode& local,
@@ -100,10 +94,16 @@ auto BlockchainPCBalanceNode(
     const PasswordPrompt& reason,
     Identifier& id) noexcept
     -> std::unique_ptr<blockchain::crypto::internal::PaymentCode>;
-auto BlockchainPCBalanceNode(
+auto BlockchainPCSubaccount(
     const api::internal::Core& api,
     const blockchain::crypto::internal::Account& parent,
     const proto::Bip47Channel& serialized,
     Identifier& id) noexcept
     -> std::unique_ptr<blockchain::crypto::internal::PaymentCode>;
+auto BlockchainWalletKeys(
+    const api::internal::Core& api,
+    const api::client::internal::Blockchain& parent,
+    const api::client::internal::BalanceTreeIndex& index,
+    const blockchain::Type chain) noexcept
+    -> std::unique_ptr<blockchain::crypto::internal::Wallet>;
 }  // namespace opentxs::factory

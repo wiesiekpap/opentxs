@@ -9,8 +9,7 @@
 #include <string>
 #include <utility>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
-#include "UIHelpers.hpp"
+#include "Basic.hpp"
 #include "integration/Helpers.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/SharedPimpl.hpp"
@@ -26,6 +25,7 @@
 #include "opentxs/ui/ContactList.hpp"
 #include "opentxs/ui/ContactListItem.hpp"
 #include "opentxs/ui/MessagableList.hpp"
+#include "ui/Helpers.hpp"
 
 namespace opentxs
 {
@@ -54,11 +54,10 @@ struct Test_AddContact : public IntegrationFixture {
     const ot::api::server::Manager& api_server_1_;
 
     Test_AddContact()
-        : api_alex_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
-        , api_bob_(ot::Context().StartClient(OTTestEnvironment::Args(), 1))
-        , api_chris_(ot::Context().StartClient(OTTestEnvironment::Args(), 2))
-        , api_server_1_(
-              ot::Context().StartServer(OTTestEnvironment::Args(), 0, true))
+        : api_alex_(ot::Context().StartClient(Args(), 0))
+        , api_bob_(ot::Context().StartClient(Args(), 1))
+        , api_chris_(ot::Context().StartClient(Args(), 2))
+        , api_server_1_(ot::Context().StartServer(Args(), 0, true))
     {
         const_cast<Server&>(server_1_).init(api_server_1_);
         const_cast<User&>(alex_).init(api_alex_, server_1_);

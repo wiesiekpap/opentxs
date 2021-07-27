@@ -30,19 +30,19 @@ namespace opentxs
 {
 namespace ui
 {
-class ContactList : virtual public List
+class OPENTXS_EXPORT ContactList : virtual public List
 {
 public:
-    OPENTXS_EXPORT virtual std::string AddContact(
+    virtual std::string AddContact(
         const std::string& label,
         const std::string& paymentCode = "",
         const std::string& nymID = "") const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::ContactListItem>
-    First() const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::ContactListItem>
-    Next() const noexcept = 0;
+    virtual opentxs::SharedPimpl<opentxs::ui::ContactListItem> First()
+        const noexcept = 0;
+    virtual opentxs::SharedPimpl<opentxs::ui::ContactListItem> Next()
+        const noexcept = 0;
 
-    OPENTXS_EXPORT ~ContactList() override = default;
+    OPENTXS_NO_EXPORT ~ContactList() override = default;
 
 protected:
     ContactList() noexcept = default;

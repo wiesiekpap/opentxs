@@ -36,8 +36,20 @@ if(OT_WITH_QT)
   set(ot-qobject-install-headers
       "${opentxs_SOURCE_DIR}/include/opentxs/ui/qt/ActivityThread.hpp"
   )
-  qt5_wrap_cpp(MOC_SRCS ${ot-qobject-install-headers})
-  target_sources(opentxs-ui-activitythread PRIVATE ${MOC_SRCS})
+  qt5_wrap_cpp(
+    MOC_SRCS
+    ${ot-qobject-install-headers}
+    "DraftValidator.hpp"
+  )
+  target_sources(
+    opentxs-ui-activitythread
+    PRIVATE
+      "DraftValidator.cpp"
+      "Qt.cpp"
+      ${MOC_SRCS}
+  )
+  target_link_libraries(opentxs-ui-activitythread PRIVATE Qt5::Gui)
+  target_link_libraries(opentxs PUBLIC Qt5::Gui)
 
   if(OPENTXS_STANDALONE)
     install(

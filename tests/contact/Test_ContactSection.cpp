@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "1_Internal.hpp"
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
@@ -24,9 +23,10 @@
 #include "opentxs/contact/ContactSection.hpp"
 #include "opentxs/contact/ContactSectionName.hpp"
 
-namespace
-{
+namespace ot = opentxs;
 
+namespace ottest
+{
 class Test_ContactSection : public ::testing::Test
 {
 public:
@@ -64,8 +64,6 @@ public:
     const std::shared_ptr<ot::ContactGroup> contactGroup_;
     const std::shared_ptr<ot::ContactItem> activeContactItem_;
 };
-
-}  // namespace
 
 TEST_F(Test_ContactSection, first_constructor)
 {
@@ -649,3 +647,4 @@ TEST_F(Test_ContactSection, Version)
 {
     ASSERT_EQ(CONTACT_CONTACT_DATA_VERSION, contactSection_.Version());
 }
+}  // namespace ottest

@@ -8,8 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
-#include "UIHelpers.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -28,6 +26,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/ui/ContactList.hpp"
 #include "opentxs/ui/ContactListItem.hpp"
+#include "ui/Helpers.hpp"
 
 #define ALICE_NYM_ID "otysEksLyHmDZyPDTM4TYvcXEcu18bnZw5V"
 #define ALICE_NYM_NAME "Alice"
@@ -40,7 +39,7 @@
     "dG8aWh6w8KGhSfjgL8fBKuZS6aUjhV9xLV1R16CcgWhw"
 #define CHRIS_NYM_NAME "Chris"
 
-namespace
+namespace ottest
 {
 Counter contact_list_widget_{1, 0};
 
@@ -165,4 +164,4 @@ TEST_F(Test_ContactList, shutdown)
 {
     EXPECT_EQ(contact_list_widget_.expected_, contact_list_widget_.updated_);
 }
-}  // namespace
+}  // namespace ottest

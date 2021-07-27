@@ -72,6 +72,7 @@ struct NymFile : virtual public opentxs::NymFile {
 namespace opentxs::blockchain
 {
 auto AccountName(const Type chain) noexcept -> std::string;
+auto Chain(const api::Core& api, const identifier::Nym& id) noexcept -> Type;
 auto Chain(const api::Core& api, const identifier::Server& id) noexcept -> Type;
 auto Chain(const api::Core& api, const identifier::UnitDefinition& id) noexcept
     -> Type;

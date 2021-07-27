@@ -7,12 +7,13 @@
 #include <future>
 #include <string>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 
+namespace ot = opentxs;
 namespace zmq = opentxs::network::zeromq;
 
 namespace ottest

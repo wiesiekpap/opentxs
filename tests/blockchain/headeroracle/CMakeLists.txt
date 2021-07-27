@@ -3,6 +3,17 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+target_sources(opentxs-test-helpers PRIVATE "Helpers.hpp" "Helpers.cpp")
+
+if(${CMAKE_CXX_COMPILER_ID}
+   MATCHES
+   Clang
+)
+  target_compile_options(
+    opentxs-test-helpers PRIVATE -Wno-suggest-destructor-override
+  )
+endif()
+
 add_opentx_test(
   unittests-opentxs-blockchain-headeroracle-add_checkpoint_already_in_best_chain
   Test_add_checkpoint_already_in_best_chain.cpp

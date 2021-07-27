@@ -89,13 +89,9 @@ Asymmetric::Asymmetric(
     EncryptedExtractor get,
     PlaintextExtractor getPlaintext) noexcept(false)
     : api_(api)
-    , provider_(engine)
     , version_(version)
     , type_(keyType)
     , role_(role)
-    , has_public_(hasPublic)
-    , has_private_(hasPrivate)
-    , m_pMetadata(new OTSignatureMetadata(api_))
     , key_(std::move(pubkey))
     , plaintext_key_([&] {
         if (getPlaintext) {
@@ -106,8 +102,9 @@ Asymmetric::Asymmetric(
             return api_.Factory().Secret(0);
         }
     }())
+    , lock_()
     , encrypted_key_([&] {
-        if (has_private_ && get) {
+        if (hasPrivate && get) {
 
             return get(const_cast<Data&>(key_.get()), plaintext_key_);
         } else {
@@ -115,9 +112,13 @@ Asymmetric::Asymmetric(
             return EncryptedKey{};
         }
     }())
+    , provider_(engine)
+    , has_public_(hasPublic)
+    , metadata_(std::make_unique<OTSignatureMetadata>(api_))
+    , has_private_(hasPrivate)
 {
     OT_ASSERT(0 < version);
-    OT_ASSERT(nullptr != m_pMetadata);
+    OT_ASSERT(nullptr != metadata_);
 
     if (has_private_) {
         OT_ASSERT(encrypted_key_ || (0 < plaintext_key_->size()));
@@ -205,19 +206,20 @@ Asymmetric::Asymmetric(
     OTData&& newPublicKey,
     OTSecret&& newSecretKey) noexcept
     : api_(rhs.api_)
-    , provider_(rhs.provider_)
     , version_(rhs.version_)
     , type_(rhs.type_)
     , role_(rhs.role_)
-    , has_public_(false == newPublicKey->empty())
-    , has_private_(false == newSecretKey->empty())
-    , m_pMetadata(new OTSignatureMetadata(api_))
     , key_(std::move(newPublicKey))
     , plaintext_key_(std::move(newSecretKey))
+    , lock_()
     , encrypted_key_(EncryptedKey{})
+    , provider_(rhs.provider_)
+    , has_public_(false == key_->empty())
+    , metadata_(std::make_unique<OTSignatureMetadata>(api_))
+    , has_private_(false == plaintext_key_->empty())
 {
     OT_ASSERT(0 < version_);
-    OT_ASSERT(nullptr != m_pMetadata);
+    OT_ASSERT(nullptr != metadata_);
 
     if (has_private_) {
         OT_ASSERT(encrypted_key_ || (0 < plaintext_key_->size()));
@@ -233,7 +235,12 @@ auto Asymmetric::operator==(const proto::AsymmetricKey& rhs) const noexcept
     -> bool
 {
     auto lhs = proto::AsymmetricKey{};
-    if (false == Serialize(lhs)) { return false; }
+
+    {
+        auto lock = Lock{lock_};
+
+        if (false == serialize(lock, lhs)) { return false; }
+    }
 
     auto LHData = SerializeKeyToData(lhs);
     auto RHData = SerializeKeyToData(rhs);
@@ -245,10 +252,11 @@ auto Asymmetric::CalculateHash(
     const crypto::HashType hashType,
     const PasswordPrompt& reason) const noexcept -> OTData
 {
+    auto lock = Lock{lock_};
     auto output = api_.Factory().Data();
     const auto hashed = api_.Crypto().Hash().Digest(
         hashType,
-        has_private_ ? PrivateKey(reason) : PublicKey(),
+        has_private_ ? private_key(lock, reason) : PublicKey(),
         output->WriteInto());
 
     if (false == hashed) {
@@ -279,6 +287,8 @@ auto Asymmetric::CalculateTag(
     std::uint32_t& tag,
     Secret& password) const noexcept -> bool
 {
+    auto lock = Lock{lock_};
+
     if (false == has_private_) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Not a private key.").Flush();
 
@@ -292,14 +302,14 @@ auto Asymmetric::CalculateTag(
                     type, opentxs::crypto::key::asymmetric::Role::Encrypt)
                 .GetPublicKey();
 
-        if (false == get_tag(key, nym.GetMasterCredID(), reason, tag)) {
+        if (false == get_tag(lock, key, nym.GetMasterCredID(), reason, tag)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to calculate tag.")
                 .Flush();
 
             return false;
         }
 
-        if (false == get_password(key, reason, password)) {
+        if (false == get_password(lock, key, reason, password)) {
             LogOutput(OT_METHOD)(__FUNCTION__)(
                 ": Failed to calculate session password.")
                 .Flush();
@@ -321,13 +331,15 @@ auto Asymmetric::CalculateTag(
     const PasswordPrompt& reason,
     std::uint32_t& tag) const noexcept -> bool
 {
+    auto lock = Lock{lock_};
+
     if (false == has_private_) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Not a private key.").Flush();
 
         return false;
     }
 
-    return get_tag(dhKey, credential, reason, tag);
+    return get_tag(lock, dhKey, credential, reason, tag);
 }
 
 auto Asymmetric::CalculateSessionPassword(
@@ -335,13 +347,15 @@ auto Asymmetric::CalculateSessionPassword(
     const PasswordPrompt& reason,
     Secret& password) const noexcept -> bool
 {
+    auto lock = Lock{lock_};
+
     if (false == has_private_) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Not a private key.").Flush();
 
         return false;
     }
 
-    return get_password(dhKey, reason, password);
+    return get_password(lock, dhKey, reason, password);
 }
 
 auto Asymmetric::create_key(
@@ -425,7 +439,7 @@ auto Asymmetric::encrypt_key(
     return true;
 }
 
-auto Asymmetric::erase_private_data() -> void
+auto Asymmetric::erase_private_data(const Lock&) -> void
 {
     plaintext_key_->clear();
     encrypted_key_.reset();
@@ -449,16 +463,20 @@ auto Asymmetric::generate_key(
 }
 
 auto Asymmetric::get_password(
+    const Lock& lock,
     const key::Asymmetric& target,
     const PasswordPrompt& reason,
     Secret& password) const noexcept -> bool
 {
     return provider_.SharedSecret(
-        target, *this, SecretStyle::Default, reason, password);
+        target.PublicKey(),
+        private_key(lock, reason),
+        SecretStyle::Default,
+        password);
 }
 
-auto Asymmetric::get_private_key(const PasswordPrompt& reason) const
-    noexcept(false) -> Secret&
+auto Asymmetric::get_private_key(const Lock&, const PasswordPrompt& reason)
+    const noexcept(false) -> Secret&
 {
     if (0 == plaintext_key_->size()) {
         if (false == bool(encrypted_key_)) {
@@ -485,6 +503,7 @@ auto Asymmetric::get_private_key(const PasswordPrompt& reason) const
 }
 
 auto Asymmetric::get_tag(
+    const Lock& lock,
     const key::Asymmetric& target,
     const Identifier& credential,
     const PasswordPrompt& reason,
@@ -494,7 +513,10 @@ auto Asymmetric::get_tag(
     auto password = api_.Factory().Secret(0);
 
     if (false == provider_.SharedSecret(
-                     target, *this, SecretStyle::Default, reason, password)) {
+                     target.PublicKey(),
+                     private_key(lock, reason),
+                     SecretStyle::Default,
+                     password)) {
         LogVerbose(OT_METHOD)(__FUNCTION__)(
             ": Failed to calculate shared secret")
             .Flush();
@@ -534,6 +556,18 @@ auto Asymmetric::hasCapability(const NymCapability& capability) const noexcept
     }
 
     return false;
+}
+
+auto Asymmetric::HasPrivate() const noexcept -> bool
+{
+    auto lock = Lock(lock_);
+
+    return has_private(lock);
+}
+
+auto Asymmetric::has_private(const Lock&) const noexcept -> bool
+{
+    return has_private_;
 }
 
 auto Asymmetric::hashtype_map() noexcept -> const HashTypeMap&
@@ -591,9 +625,17 @@ auto Asymmetric::Path(proto::HDPath&) const noexcept -> bool
 auto Asymmetric::PrivateKey(const PasswordPrompt& reason) const noexcept
     -> ReadView
 {
+    auto lock = Lock{lock_};
+
+    return private_key(lock, reason);
+}
+
+auto Asymmetric::private_key(const Lock& lock, const PasswordPrompt& reason)
+    const noexcept -> ReadView
+{
     try {
 
-        return get_private_key(reason).Bytes();
+        return get_private_key(lock, reason).Bytes();
     } catch (const std::exception& e) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
@@ -602,6 +644,14 @@ auto Asymmetric::PrivateKey(const PasswordPrompt& reason) const noexcept
 }
 
 auto Asymmetric::Serialize(Serialized& output) const noexcept -> bool
+{
+    auto lock = Lock{lock_};
+
+    return serialize(lock, output);
+}
+
+auto Asymmetric::serialize(const Lock&, Serialized& output) const noexcept
+    -> bool
 {
     output.set_version(version_);
     output.set_role(opentxs::crypto::key::internal::translate(role_));
@@ -657,13 +707,16 @@ auto Asymmetric::Sign(
     const AllocateOutput output,
     const PasswordPrompt& reason) const noexcept -> bool
 {
+    auto lock = Lock{lock_};
+
     if (false == has_private_) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Missing private key").Flush();
 
         return false;
     }
 
-    bool success = engine().Sign(api_, preimage, *this, hash, output, reason);
+    bool success =
+        engine().Sign(preimage, private_key(lock, reason), hash, output);
 
     if (false == success) {
         LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to sign preimage").Flush();
@@ -732,10 +785,12 @@ auto Asymmetric::TransportKey(
     Secret& privateKey,
     const PasswordPrompt& reason) const noexcept -> bool
 {
-    if (false == HasPrivate()) { return false; }
+    auto lock = Lock{lock_};
+
+    if (false == has_private(lock)) { return false; }
 
     return provider_.SeedToCurveKey(
-        PrivateKey(reason),
+        private_key(lock, reason),
         privateKey.WriteInto(Secret::Mode::Mem),
         publicKey.WriteInto());
 }
@@ -749,17 +804,18 @@ auto Asymmetric::Verify(const Data& plaintext, const proto::Signature& sig)
         return false;
     }
 
-    auto signature = Data::Factory();
-    signature->Assign(sig.signature().c_str(), sig.signature().size());
+    const auto output = engine().Verify(
+        plaintext.Bytes(),
+        PublicKey(),
+        sig.signature(),
+        translate(sig.hashtype()));
 
-    return engine().Verify(
-        plaintext, *this, signature, translate(sig.hashtype()));
+    if (false == output) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid signature").Flush();
+    }
+
+    return output;
 }
 
-Asymmetric::~Asymmetric()
-{
-    if (nullptr != m_pMetadata) { delete m_pMetadata; }
-
-    m_pMetadata = nullptr;
-}
+Asymmetric::~Asymmetric() = default;
 }  // namespace opentxs::crypto::key::implementation

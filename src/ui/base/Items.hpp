@@ -11,6 +11,8 @@
 #include <map>
 #include <optional>
 
+#include "opentxs/core/Log.hpp"
+
 namespace opentxs::ui::implementation
 {
 template <typename RowID, typename SortKey, typename RowPointer>
@@ -38,16 +40,32 @@ public:
 
         return output;
     }
+    auto last(const RowID& row) const noexcept -> bool
+    {
+        if (0u == data_.size()) { return true; }
+
+        if (auto i = index_.find(row); index_.end() == i) { return true; }
+
+        const auto& [key, id, item] = data_.back();
+
+        return row == id;
+    }
     auto size() const noexcept { return data_.size(); }
 
     auto at(const std::size_t pos) -> Row&
     {
-        if ((0 == data_.size()) || ((data_.size() - 1) < pos)) {
+        if (pos < offset_) {
+            throw std::out_of_range("Invalid position (offset)");
+        }
+
+        const auto eff = pos - offset_;
+
+        if ((0 == data_.size()) || ((data_.size() - 1) < eff)) {
             throw std::out_of_range("Invalid position");
         }
 
         auto output = data_.begin();
-        std::advance(output, pos);
+        std::advance(output, eff);
 
         return *output;
     }
@@ -66,7 +84,9 @@ public:
             const auto it = index_.at(id);
 
             return Position{
-                it, static_cast<std::size_t>(std::distance(data_.begin(), it))};
+                it,
+                static_cast<std::size_t>(std::distance(data_.begin(), it)) +
+                    offset_};
 
         } catch (...) {
 
@@ -76,7 +96,7 @@ public:
     auto find_insert_position(const SortKey& key, const RowID& id) noexcept
         -> Position
     {
-        auto output = Position{data_.end(), 0};
+        auto output = Position{data_.end(), offset_};
         auto& [it, index] = output;
 
         for (auto i{data_.begin()}; i != data_.end(); ++i, ++index) {
@@ -96,14 +116,16 @@ public:
         const SortKey& newKey,
         const RowID& newID) noexcept -> std::optional<Move>
     {
-        auto output = Move{{data_.end(), 0}, {data_.end(), 0}};
+        auto output = Move{{data_.end(), 0}, {data_.end(), offset_}};
         auto& [from, to] = output;
         auto& [it, index] = to;
 
         try {
             const auto it = index_.at(oldId);
             from = Position{
-                it, static_cast<std::size_t>(std::distance(data_.begin(), it))};
+                it,
+                static_cast<std::size_t>(std::distance(data_.begin(), it)) +
+                    offset_};
         } catch (...) {
 
             return std::nullopt;
@@ -126,7 +148,8 @@ public:
         try {
 
             return static_cast<std::size_t>(
-                std::distance(data_.begin(), index_.at(id)));
+                       std::distance(data_.begin(), index_.at(id))) +
+                   offset_;
         } catch (...) {
 
             return std::nullopt;
@@ -155,14 +178,16 @@ public:
         data_.erase(oldPosition);
     }
 
-    ListItems(const bool reverse) noexcept
-        : reverse_sort_(reverse)
+    ListItems(std::size_t offset, bool reverse) noexcept
+        : offset_(offset)
+        , reverse_sort_(reverse)
         , data_()
         , index_()
     {
     }
 
 private:
+    const std::size_t offset_;
     const bool reverse_sort_;
     Data data_;
     Index index_;

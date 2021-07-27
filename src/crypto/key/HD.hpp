@@ -67,12 +67,11 @@ public:
     auto Parent() const noexcept -> Bip32Fingerprint final { return parent_; }
     auto Path() const noexcept -> const std::string final;
     auto Path(proto::HDPath& output) const noexcept -> bool final;
-    auto Serialize(Serialized& serialized) const noexcept -> bool final;
     auto Xprv(const PasswordPrompt& reason) const noexcept -> std::string final;
     auto Xpub(const PasswordPrompt& reason) const noexcept -> std::string final;
 
 protected:
-    void erase_private_data() final;
+    void erase_private_data(const Lock& lock) final;
 
     HD(const api::internal::Core& api,
        const crypto::EcdsaProvider& ecdsa,
@@ -131,10 +130,14 @@ private:
     mutable OTSecret plaintext_chain_code_;
     const Bip32Fingerprint parent_;
 
-    auto get_chain_code(const PasswordPrompt& reason) const noexcept(false)
-        -> Secret&;
+    auto chaincode(const Lock& lock, const PasswordPrompt& reason)
+        const noexcept -> ReadView;
+    auto get_chain_code(const Lock& lock, const PasswordPrompt& reason) const
+        noexcept(false) -> Secret&;
     auto get_params() const noexcept
         -> std::tuple<bool, Bip32Depth, Bip32Index>;
+    auto serialize(const Lock& lock, Serialized& serialized) const noexcept
+        -> bool final;
 
     HD() = delete;
     HD(HD&&) = delete;

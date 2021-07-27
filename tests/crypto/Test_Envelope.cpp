@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -29,7 +28,9 @@
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/identity/Nym.hpp"
 
-namespace
+namespace ot = opentxs;
+
+namespace ottest
 {
 bool init_{false};
 
@@ -244,4 +245,4 @@ TEST_F(Test_Envelope, multiple_recipients)
         }
     }
 }
-}  // namespace
+}  // namespace ottest

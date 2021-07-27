@@ -9,6 +9,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <string>
 
 #include "Proto.hpp"
@@ -94,11 +95,11 @@ public:
     }
     auto GetMetadata() const noexcept -> const OTSignatureMetadata* final
     {
-        return m_pMetadata;
+        return metadata_.get();
     }
     auto hasCapability(const NymCapability& capability) const noexcept
         -> bool override;
-    auto HasPrivate() const noexcept -> bool final { return has_private_; }
+    auto HasPrivate() const noexcept -> bool final;
     auto HasPublic() const noexcept -> bool final { return has_public_; }
     auto keyType() const noexcept -> crypto::key::asymmetric::Algorithm final
     {
@@ -118,7 +119,7 @@ public:
     {
         return role_;
     }
-    auto Serialize(Serialized& serialized) const noexcept -> bool override;
+    auto Serialize(Serialized& serialized) const noexcept -> bool final;
     auto SigHashType() const noexcept -> crypto::HashType override
     {
         return crypto::HashType::Blake2b256;
@@ -156,16 +157,13 @@ protected:
     using PlaintextExtractor = std::function<OTSecret()>;
 
     const api::internal::Core& api_;
-    const crypto::AsymmetricProvider& provider_;
     const VersionNumber version_;
     const crypto::key::asymmetric::Algorithm type_;
     const opentxs::crypto::key::asymmetric::Role role_;
-    bool has_public_;
-    bool has_private_;
-    OTSignatureMetadata* m_pMetadata;
     const OTData key_;
     mutable OTSecret plaintext_key_;
-    std::unique_ptr<proto::Ciphertext> encrypted_key_;
+    mutable std::mutex lock_;
+    std::unique_ptr<const proto::Ciphertext> encrypted_key_;
 
     static auto create_key(
         const api::internal::Core& api,
@@ -203,19 +201,15 @@ protected:
         const AllocateOutput privateKey,
         const AllocateOutput params) noexcept(false) -> void;
 
-    auto get_password(
-        const key::Asymmetric& target,
-        const PasswordPrompt& reason,
-        Secret& password) const noexcept -> bool;
-    auto get_private_key(const PasswordPrompt& reason) const noexcept(false)
-        -> Secret&;
-    auto get_tag(
-        const key::Asymmetric& target,
-        const Identifier& credential,
-        const PasswordPrompt& reason,
-        std::uint32_t& tag) const noexcept -> bool;
+    auto get_private_key(const Lock& lock, const PasswordPrompt& reason) const
+        noexcept(false) -> Secret&;
+    auto has_private(const Lock& lock) const noexcept -> bool;
+    auto private_key(const Lock& lock, const PasswordPrompt& reason)
+        const noexcept -> ReadView;
+    virtual auto serialize(const Lock& lock, Serialized& serialized)
+        const noexcept -> bool;
 
-    virtual void erase_private_data();
+    virtual void erase_private_data(const Lock& lock);
 
     Asymmetric(
         const api::internal::Core& api,
@@ -255,6 +249,11 @@ private:
 
     static const std::map<crypto::SignatureRole, VersionNumber> sig_version_;
 
+    const crypto::AsymmetricProvider& provider_;
+    const bool has_public_;
+    const std::unique_ptr<const OTSignatureMetadata> metadata_;
+    bool has_private_;
+
     auto SerializeKeyToData(const proto::AsymmetricKey& rhs) const -> OTData;
 
     static auto hashtype_map() noexcept -> const HashTypeMap&;
@@ -265,6 +264,18 @@ private:
         -> proto::HashType;
     static auto translate(const proto::HashType in) noexcept
         -> crypto::HashType;
+
+    auto get_password(
+        const Lock& lock,
+        const key::Asymmetric& target,
+        const PasswordPrompt& reason,
+        Secret& password) const noexcept -> bool;
+    auto get_tag(
+        const Lock& lock,
+        const key::Asymmetric& target,
+        const Identifier& credential,
+        const PasswordPrompt& reason,
+        std::uint32_t& tag) const noexcept -> bool;
 
     Asymmetric() = delete;
     Asymmetric(Asymmetric&&) = delete;

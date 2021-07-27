@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "2_Factory.hpp"
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "internal/api/client/Client.hpp"
 #include "internal/identity/Identity.hpp"
 #include "opentxs/Bytes.hpp"

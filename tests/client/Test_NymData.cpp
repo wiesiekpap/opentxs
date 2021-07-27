@@ -13,7 +13,6 @@
 #include <tuple>
 
 #include "1_Internal.hpp"
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "internal/api/client/Client.hpp"
 #include "internal/contact/Contact.hpp"
 #include "opentxs/Bytes.hpp"
@@ -37,7 +36,9 @@
 #include "opentxs/identity/credential/Contact.hpp"
 #include "opentxs/protobuf/Contact.hpp"
 
-namespace
+namespace ot = opentxs;
+
+namespace ottest
 {
 class Test_NymData : public ::testing::Test
 {
@@ -72,7 +73,6 @@ public:
 static const std::string paymentCode{
     "PM8TJKxypQfFUaHfSq59nn82EjdGU4SpHcp2ssa4GxPshtzoFtmnjfoRuHpvLiyASD7itH6auP"
     "C66jekGjnqToqS9ZJWWdf1c9L8x4iaFCQ2Gq5hMEFC"};
-}  // namespace
 
 TEST_F(Test_NymData, AddClaim)
 {
@@ -543,3 +543,4 @@ TEST_F(Test_NymData, Type)
 }
 
 TEST_F(Test_NymData, Valid) { EXPECT_TRUE(nymData_.Valid()); }
+}  // namespace ottest

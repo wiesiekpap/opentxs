@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
@@ -25,7 +24,9 @@
 
 using namespace opentxs;
 
-namespace
+namespace ot = opentxs;
+
+namespace ottest
 {
 #if OT_CRYPTO_WITH_BIP32
 class Test_CreateNymHD : public ::testing::Test
@@ -224,4 +225,4 @@ TEST_F(Test_CreateNymHD, TestNym_NegativeIndex)
     ASSERT_NE(nym1Index, nym2Index);
 }
 #endif  // OT_CRYPTO_WITH_BIP32
-}  // namespace
+}  // namespace ottest

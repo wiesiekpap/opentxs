@@ -45,7 +45,7 @@
 
 namespace opentxs::factory
 {
-auto BlockchainBalanceTree(
+auto BlockchainAccountKeys(
     const api::internal::Core& api,
     const blockchain::crypto::internal::Wallet& parent,
     const api::client::internal::BalanceTreeIndex& index,

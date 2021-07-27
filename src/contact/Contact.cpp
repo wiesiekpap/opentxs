@@ -349,8 +349,8 @@ struct Contact::Imp {
             nym = api_.Wallet().Nym(nymID);
 
             if (false == bool(nym)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load nym ")(
-                    nymID)(".")
+                LogVerbose(OT_METHOD)(__FUNCTION__)(
+                    ": Failed to load nym ")(nymID)(".")
                     .Flush();
             }
         }

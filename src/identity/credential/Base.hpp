@@ -112,10 +112,7 @@ public:
         const proto::Credential& credential,
         const identity::CredentialRole& role,
         const Identifier& masterID,
-        const proto::Signature& masterSig) const -> bool override
-    {
-        return false;
-    }
+        const proto::Signature& masterSig) const -> bool override;
 
     void ReleaseSignatures(const bool onlyPrivate) final;
 

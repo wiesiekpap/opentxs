@@ -103,6 +103,7 @@ public:
 private:
     using ot_super = HD;
 
+    auto blank_private() const noexcept -> ReadView final;
     auto clone() const noexcept -> Ed25519* final { return new Ed25519(*this); }
     auto clone_ec() const noexcept -> Ed25519* final { return clone(); }
     auto get_public() const -> std::shared_ptr<proto::AsymmetricKey> final

@@ -7,15 +7,37 @@
 #include "1_Internal.hpp"      // IWYU pragma: associated
 #include "ui/base/Widget.hpp"  // IWYU pragma: associated
 
+#include <iosfwd>
+
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 
 namespace opentxs::ui::implementation
 {
+auto verify_empty(const CustomData& custom) noexcept -> bool
+{
+    auto counter = std::ptrdiff_t{-1};
+
+    for (const auto& ptr : custom) {
+        ++counter;
+
+        if (nullptr != ptr) {
+            LogOutput("opentxs::ui::implementation::")(__FUNCTION__)(
+                ": unused pointer at index ")(counter)
+                .Flush();
+
+            return false;
+        }
+    }
+
+    return true;
+}
+
 Widget::Widget(
     const api::client::internal::Manager& api,
     const Identifier& id,

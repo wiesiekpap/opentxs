@@ -18,7 +18,6 @@
 #include <utility>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "crypto/Bip32Vectors.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"

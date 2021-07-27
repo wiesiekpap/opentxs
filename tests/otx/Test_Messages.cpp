@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "Basic.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/server/Server.hpp"
 #include "opentxs/Bytes.hpp"
@@ -38,7 +38,7 @@
 
 using namespace opentxs;
 
-namespace
+namespace ottest
 {
 bool init_{false};
 
@@ -58,9 +58,9 @@ public:
 
     Test_Messages()
         : client_(dynamic_cast<const ot::api::client::internal::Manager&>(
-              Context().StartClient(OTTestEnvironment::Args(), 0)))
+              Context().StartClient(Args(), 0)))
         , server_(dynamic_cast<const ot::api::server::internal::Manager&>(
-              Context().StartServer(OTTestEnvironment::Args(), 0, true)))
+              Context().StartServer(Args(), 0, true)))
         , reason_c_(client_.Factory().PasswordPrompt(__FUNCTION__))
         , reason_s_(server_.Factory().PasswordPrompt(__FUNCTION__))
         , server_id_(server_.ID())
@@ -201,4 +201,4 @@ TEST_F(Test_Messages, pushReply)
     ASSERT_TRUE(aliceCopy->Push());
     EXPECT_TRUE(aliceCopy->Validate());
 }
-}  // namespace
+}  // namespace ottest

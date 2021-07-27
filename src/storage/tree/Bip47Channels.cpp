@@ -56,7 +56,7 @@ Bip47Channels::Bip47Channels(
 auto Bip47Channels::Chain(const Identifier& channelID) const
     -> contact::ContactItemType
 {
-    sLock lock(index_lock_);
+    auto lock = sLock{index_lock_};
 
     return get_channel_data(lock, channelID);
 }
@@ -76,7 +76,7 @@ template <typename I, typename V>
 auto Bip47Channels::extract_set(const I& id, const V& index) const ->
     typename V::mapped_type
 {
-    sLock lock(index_lock_);
+    auto lock = sLock{index_lock_};
 
     try {
         return index.at(id);
@@ -88,16 +88,8 @@ auto Bip47Channels::extract_set(const I& id, const V& index) const ->
 }
 
 template <typename L>
-auto Bip47Channels::get_channel_data(const L& lock, const Identifier& channelID)
-    const -> Bip47Channels::ChannelData&
-{
-    return _get_channel_data(lock, Identifier::Factory(channelID));
-}
-
-template <typename L>
-auto Bip47Channels::_get_channel_data(
-    const L&,  // TODO switch Node to Lockable
-    OTIdentifier&& id) const -> Bip47Channels::ChannelData&
+auto Bip47Channels::get_channel_data(const L& lock, const Identifier& id) const
+    -> const Bip47Channels::ChannelData&
 {
     try {
 
@@ -142,11 +134,9 @@ auto Bip47Channels::init(const std::string& hash) -> void
     if (proto->context().size() != proto->index().size()) {
         repair_indices();
     } else {
-        eLock lock(index_lock_);
-
         for (const auto& index : proto->index()) {
             auto id = Identifier::Factory(index.channelid());
-            auto& chain = get_channel_data(lock, id.get());
+            auto& chain = channel_data_[id];
             chain = contact::internal::translate(index.chain());
             chain_index_[chain].emplace(std::move(id));
         }
@@ -165,18 +155,25 @@ auto Bip47Channels::Load(
 
 auto Bip47Channels::repair_indices() noexcept -> void
 {
-    eLock lock(index_lock_);
+    {
+        auto lock = eLock{index_lock_};
 
-    for (const auto& [strid, alias] : List()) {
-        const auto id = Identifier::Factory(strid);
-        auto data = std::shared_ptr<proto::Bip47Channel>{};
-        const auto loaded = Load(id, data, false);
+        for (const auto& [strid, alias] : List()) {
+            const auto id = Identifier::Factory(strid);
+            auto data = std::shared_ptr<proto::Bip47Channel>{};
+            const auto loaded = Load(id, data, false);
 
-        OT_ASSERT(loaded);
-        OT_ASSERT(data);
+            OT_ASSERT(loaded);
+            OT_ASSERT(data);
 
-        index(lock, id, *data);
+            index(lock, id, *data);
+        }
     }
+
+    auto lock = Lock{write_lock_};
+    const auto saved = save(lock);
+
+    OT_ASSERT(saved);
 }
 
 auto Bip47Channels::save(const std::unique_lock<std::mutex>& lock) const -> bool
@@ -209,7 +206,7 @@ auto Bip47Channels::serialize() const -> proto::StorageBip47Contexts
         }
     }
 
-    sLock lock(index_lock_);
+    auto lock = sLock{index_lock_};
 
     for (const auto& [id, data] : channel_data_) {
         const auto& chain = data;
@@ -226,7 +223,7 @@ auto Bip47Channels::Store(const Identifier& id, const proto::Bip47Channel& data)
     -> bool
 {
     {
-        eLock lock(index_lock_);
+        auto lock = eLock{index_lock_};
         index(lock, id, data);
     }
 

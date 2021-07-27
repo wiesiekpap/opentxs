@@ -20,8 +20,9 @@
 #define BLOCKCHAIN_ACCOUNT_CREATED "blockchain/account/new"
 #define BLOCKCHAIN_ASIO_ENDPOINT "blockchain/asio"
 #define BLOCKCHAIN_BALANCE_ENDPOINT "blockchain/balance/interactive"
-#define BLOCKCHAIN_BLOCK_UPDATED "blockchain/block/"
+#define BLOCKCHAIN_BALANCE_PUBLISHER_ENDPOINT "blockchain/balance"
 #define BLOCKCHAIN_BLOCK_QUEUE_UPDATED "blockchain/block/queue"
+#define BLOCKCHAIN_BLOCK_UPDATED "blockchain/block/"
 #define BLOCKCHAIN_FILTER_ENDPOINT "blockchain/filter"
 #define BLOCKCHAIN_FILTER_INTERNAL "blockchain/filter/internal"
 #define BLOCKCHAIN_MEMPOOL "blockchain/mempool"
@@ -30,10 +31,9 @@
 #define BLOCKCHAIN_REORG_ENDPOINT "blockchain/reorg"
 #define BLOCKCHAIN_SCAN_ENDPOINT "blockchain/scan"
 #define BLOCKCHAIN_STATE_ENDPOINT "blockchain/state"
-#define BLOCKCHAIN_SYNC_ENDPOINT "blockchain/sync"
 #define BLOCKCHAIN_SYNC_DB_ENDPOINT "blockchain/sync/db"
+#define BLOCKCHAIN_SYNC_ENDPOINT "blockchain/sync"
 #define BLOCKCHAIN_TRANSACTIONS_ENDPOINT "blockchain/transactions"
-#define BLOCKCHAIN_BALANCE_PUBLISHER_ENDPOINT "blockchain/balance"
 #define CONNECTION_STATUS_ENDPOINT "connectionstatus"
 #define CONTACT_UPDATE_ENDPOINT "contactupdate"
 #define DHT_NYM_REQUEST_ENDPOINT "dht/requestnym"
@@ -45,6 +45,7 @@
 #define INTERNAL_PROCESS_PUSH_NOTIFICATION_ENDPOINT "client/receivenotification"
 #define INTERNAL_PUSH_NOTIFICATION_ENDPOINT "server/sendnotification"
 #define ISSUER_UPDATE_ENDPOINT "issuerupdate"
+#define MESSAGABILITY "otx/messagability"
 #define NYM_CREATED_ENDPOINT "nymcreated"
 #define NYM_UPDATE_ENDPOINT "nymupdate"
 #define PAIR_EVENT_ENDPOINT "pairevent"
@@ -264,6 +265,11 @@ auto Endpoints::InternalPushNotification() const noexcept -> std::string
 auto Endpoints::IssuerUpdate() const noexcept -> std::string
 {
     return build_inproc_path(ISSUER_UPDATE_ENDPOINT, ENDPOINT_VERSION_1);
+}
+
+auto Endpoints::Messagability() const noexcept -> std::string
+{
+    return build_inproc_path(MESSAGABILITY, ENDPOINT_VERSION_1);
 }
 
 auto Endpoints::NymCreated() const noexcept -> std::string

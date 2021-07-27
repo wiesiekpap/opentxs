@@ -43,12 +43,13 @@ namespace ui
 class OPENTXS_EXPORT ActivityThread : virtual public List
 {
 public:
+    virtual bool CanMessage() const noexcept = 0;
     virtual std::string DisplayName() const noexcept = 0;
     virtual opentxs::SharedPimpl<opentxs::ui::ActivityThreadItem> First()
         const noexcept = 0;
+    virtual std::string GetDraft() const noexcept = 0;
     virtual opentxs::SharedPimpl<opentxs::ui::ActivityThreadItem> Next()
         const noexcept = 0;
-    virtual std::string GetDraft() const noexcept = 0;
     virtual std::string Participants() const noexcept = 0;
     virtual bool Pay(
         const std::string& amount,

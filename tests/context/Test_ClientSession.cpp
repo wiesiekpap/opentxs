@@ -10,7 +10,7 @@
 #include <string>
 #include <utility>
 
-#include "OTLowLevelTestEnvironment.hpp"
+#include "Basic.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/SharedPimpl.hpp"
@@ -25,12 +25,14 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 
+namespace ottest
+{
 std::string nym_id_{};
 std::string server_id_{};
 
 TEST(ClientSession, create)
 {
-    const auto& otx = ot::InitContext(OTLowLevelTestEnvironment::Args());
+    const auto& otx = ot::InitContext(Args(true));
     const auto& client = otx.StartClient({}, 0);
     const auto reason = client.Factory().PasswordPrompt(__FUNCTION__);
     const auto nym = client.Wallet().Nym(reason);
@@ -46,7 +48,7 @@ TEST(ClientSession, create)
 
 TEST(ClientSession, restart)
 {
-    const auto& otx = ot::InitContext(OTLowLevelTestEnvironment::Args());
+    const auto& otx = ot::InitContext(Args(true));
     const auto& client = otx.StartClient({}, 0);
     const auto reason = client.Factory().PasswordPrompt(__FUNCTION__);
     const auto nym = client.Wallet().Nym(client.Factory().NymID(nym_id_));
@@ -59,7 +61,7 @@ TEST(ClientSession, restart)
 
 TEST(ClientSession, introduction_server)
 {
-    const auto& otx = ot::InitContext(OTLowLevelTestEnvironment::Args());
+    const auto& otx = ot::InitContext(Args(true));
     const auto& server = otx.StartServer({}, 0);
     const auto& client = otx.StartClient({}, 0);
     const auto reasonS = server.Factory().PasswordPrompt(__FUNCTION__);
@@ -98,7 +100,7 @@ TEST(ClientSession, introduction_server)
 
 TEST(ClientSession, restart_after_registering)
 {
-    const auto& otx = ot::InitContext(OTLowLevelTestEnvironment::Args());
+    const auto& otx = ot::InitContext(Args(true));
     const auto& server = otx.StartServer({}, 0);
     const auto& client = otx.StartClient({}, 0);
     const auto& serverID = server.ID();
@@ -107,3 +109,4 @@ TEST(ClientSession, restart_after_registering)
     client.OTX().ContextIdle(nymID, serverID).get();
     ot::Cleanup();
 }
+}  // namespace ottest

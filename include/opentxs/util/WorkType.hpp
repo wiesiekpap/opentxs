@@ -45,6 +45,7 @@ enum class WorkType : OTZMQWorkType {
     OTXSearchNym = 258,
     OTXSearchServer = 259,
     OTXSearchUnit = 260,
+    OTXMessagability = 261,
     DHTRequestNym = 1021,
     DHTRequestServer = 1022,
     DHTRequestUnit = 1023,
@@ -253,6 +254,13 @@ constexpr auto value(const WorkType in) noexcept
  *       * Additional frames:
  *          1: target id as identifier::UnitDefinition (encoded as byte
  *             sequence)
+ *
+ *   OTXMessagability: status reports regarding the ability of a local nym to
+ *                     message a remote contact via a notary
+ *       * Additional frames:
+ *          1: local nym id as identifier::Nym (encoded as byte sequence)
+ *          1: remote contact id as Identifier (encoded as byte sequence)
+ *          2: status as opentxs::Messagability
  *
  *   DHTRequestServer: request and response messages for dht notary contract
  *                     retrieval

@@ -8,6 +8,7 @@
 #include "crypto/key/Ed25519.hpp"  // IWYU pragma: associated
 
 #include <stdexcept>
+#include <string_view>
 
 #include "internal/api/Api.hpp"
 #include "internal/crypto/key/Factory.hpp"
@@ -118,6 +119,7 @@ Ed25519::Ed25519(
           version,
           reason)
 {
+    OT_ASSERT(blank_private() != plaintext_key_->Bytes());
 }
 
 #if OT_CRYPTO_WITH_BIP32
@@ -168,16 +170,25 @@ Ed25519::Ed25519(const Ed25519& rhs, OTSecret&& newSecretKey) noexcept
 {
 }
 
+auto Ed25519::blank_private() const noexcept -> ReadView
+{
+    static const auto blank = space(64);
+
+    return reader(blank);
+}
+
 auto Ed25519::TransportKey(
     Data& publicKey,
     Secret& privateKey,
     const PasswordPrompt& reason) const noexcept -> bool
 {
+    auto lock = Lock{lock_};
+
     if (false == HasPublic()) { return false; }
-    if (false == HasPrivate()) { return false; }
+    if (false == has_private(lock)) { return false; }
 
     return sodium::ToCurveKeypair(
-        PrivateKey(reason),
+        private_key(lock, reason),
         PublicKey(),
         privateKey.WriteInto(Secret::Mode::Mem),
         publicKey.WriteInto());

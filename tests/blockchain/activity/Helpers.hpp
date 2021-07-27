@@ -14,7 +14,7 @@
 #include <regex>
 #include <string>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "Basic.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"

@@ -6,7 +6,7 @@
 #pragma once
 
 #include "1_Internal.hpp"
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "Basic.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 
@@ -23,7 +23,7 @@ class Manager;
 
 namespace b = ot::blockchain;
 
-namespace
+namespace ottest
 {
 class Test_StartStop : public ::testing::Test
 {
@@ -31,8 +31,8 @@ public:
     const ot::api::client::Manager& api_;
 
     Test_StartStop()
-        : api_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
+        : api_(ot::Context().StartClient(Args(), 0))
     {
     }
 };
-}  // namespace
+}  // namespace ottest

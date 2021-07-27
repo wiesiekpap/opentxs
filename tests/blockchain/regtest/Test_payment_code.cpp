@@ -13,15 +13,13 @@
 #include <string>
 #include <utility>
 
-#include "OTTestEnvironment.hpp"
-#include "UIHelpers.hpp"
+#include "Basic.hpp"
 #include "integration/Helpers.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/SharedPimpl.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/HDSeed.hpp"
-#include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/Manager.hpp"
@@ -54,20 +52,20 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/crypto/Language.hpp"
-#include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
-#include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
 #include "opentxs/rpc/request/ListAccounts.hpp"
 #include "opentxs/rpc/response/Base.hpp"
 #include "opentxs/rpc/response/ListAccounts.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
+#include "opentxs/ui/ActivityThread.hpp"
 #include "opentxs/ui/BalanceItem.hpp"
 #include "paymentcode/VectorsV3.hpp"
+#include "ui/Helpers.hpp"
 
 namespace opentxs
 {
@@ -86,6 +84,10 @@ bool init_{false};
 Server server_1_{};
 Counter account_activity_alice_{};
 Counter account_activity_bob_{};
+Counter contact_list_alice_{};
+Counter contact_list_bob_{};
+Counter activity_thread_alice_bob_{};
+Counter activity_thread_bob_alice_{};
 
 namespace bca = opentxs::blockchain::crypto;
 
@@ -95,16 +97,18 @@ protected:
     using Subchain = bca::Subchain;
     using Transactions = std::deque<ot::blockchain::block::pTxid>;
 
-    static ot::Nym_p alice_p_;
-    static ot::Nym_p bob_p_;
+    static constexpr auto message_text_{
+        "I have come here to chew bubblegum and kick ass...and I'm all out of "
+        "bubblegum."};
+
+    static const User alice_;
+    static const User bob_;
     static Transactions transactions_;
     static std::unique_ptr<ScanListener> listener_alice_p_;
     static std::unique_ptr<ScanListener> listener_bob_p_;
     static Expected expected_;
 
     const ot::api::server::Manager& api_server_1_;
-    const ot::identity::Nym& alice_;
-    const ot::identity::Nym& bob_;
     const ot::identifier::Server& expected_notary_;
     const ot::identifier::UnitDefinition& expected_unit_;
     const std::string expected_display_unit_;
@@ -117,31 +121,51 @@ protected:
     ScanListener& listener_alice_;
     ScanListener& listener_bob_;
 
+    auto CheckContactID(
+        const User& local,
+        const User& remote,
+        const std::string& paymentcode) const noexcept -> bool
+    {
+        const auto& api = *local.api_;
+        const auto n2c = api.Contacts().ContactID(remote.nym_id_);
+        const auto p2c = api.Contacts().PaymentCodeToContact(
+            api.Factory().PaymentCode(paymentcode), test_chain_);
+
+        EXPECT_EQ(n2c, p2c);
+        EXPECT_EQ(p2c->str(), local.Contact(remote.name_).str());
+
+        auto output{true};
+        output &= (n2c == p2c);
+        output &= (p2c->str() == local.Contact(remote.name_).str());
+
+        return output;
+    }
+
     auto ReceiveHD() const noexcept -> const bca::HD&
     {
         return client_2_.Blockchain()
-            .Account(bob_.ID(), test_chain_)
+            .Account(bob_.nym_id_, test_chain_)
             .GetHD()
             .at(0);
     }
     auto ReceivePC() const noexcept -> const bca::PaymentCode&
     {
         return client_2_.Blockchain()
-            .Account(bob_.ID(), test_chain_)
+            .Account(bob_.nym_id_, test_chain_)
             .GetPaymentCode()
             .at(0);
     }
     auto SendHD() const noexcept -> const bca::HD&
     {
         return client_1_.Blockchain()
-            .Account(alice_.ID(), test_chain_)
+            .Account(alice_.nym_id_, test_chain_)
             .GetHD()
             .at(0);
     }
     auto SendPC() const noexcept -> const bca::PaymentCode&
     {
         return client_1_.Blockchain()
-            .Account(alice_.ID(), test_chain_)
+            .Account(alice_.nym_id_, test_chain_)
             .GetPaymentCode()
             .at(0);
     }
@@ -151,82 +175,12 @@ protected:
         listener_bob_p_.reset();
         listener_alice_p_.reset();
         transactions_.clear();
-        bob_p_.reset();
-        alice_p_.reset();
         Regtest_fixture_normal::Shutdown();
     }
 
     Regtest_payment_code()
         : Regtest_fixture_normal(2)
-        , api_server_1_(
-              ot::Context().StartServer(OTTestEnvironment::Args(), 0, true))
-        , alice_([&]() -> const ot::identity::Nym& {
-            if (!alice_p_) {
-                const auto reason =
-                    client_1_.Factory().PasswordPrompt(__FUNCTION__);
-                const auto& vector = vectors_3_.alice_;
-                const auto seedID = [&] {
-                    const auto words =
-                        client_1_.Factory().SecretFromText(vector.words_);
-                    const auto phrase = client_1_.Factory().Secret(0);
-
-                    return client_1_.Seeds().ImportSeed(
-                        words,
-                        phrase,
-                        ot::crypto::SeedStyle::BIP39,
-                        ot::crypto::Language::en,
-                        reason);
-                }();
-
-                alice_p_ = client_1_.Wallet().Nym(reason, "Alice", {seedID, 0});
-
-                OT_ASSERT(alice_p_)
-                OT_ASSERT(alice_p_->PaymentCode() == vector.payment_code_)
-
-                client_1_.Blockchain().NewHDSubaccount(
-                    alice_p_->ID(),
-                    ot::BlockchainAccountType::BIP44,
-                    test_chain_,
-                    reason);
-            }
-
-            OT_ASSERT(alice_p_)
-
-            return *alice_p_;
-        }())
-        , bob_([&]() -> const ot::identity::Nym& {
-            if (!bob_p_) {
-                const auto reason =
-                    client_2_.Factory().PasswordPrompt(__FUNCTION__);
-                const auto& vector = vectors_3_.bob_;
-                const auto seedID = [&] {
-                    const auto words =
-                        client_2_.Factory().SecretFromText(vector.words_);
-                    const auto phrase = client_2_.Factory().Secret(0);
-
-                    return client_2_.Seeds().ImportSeed(
-                        words,
-                        phrase,
-                        ot::crypto::SeedStyle::BIP39,
-                        ot::crypto::Language::en,
-                        reason);
-                }();
-
-                bob_p_ = client_2_.Wallet().Nym(reason, "Bob", {seedID, 0});
-
-                OT_ASSERT(bob_p_)
-
-                client_2_.Blockchain().NewHDSubaccount(
-                    bob_p_->ID(),
-                    ot::BlockchainAccountType::BIP44,
-                    test_chain_,
-                    reason);
-            }
-
-            OT_ASSERT(bob_p_)
-
-            return *bob_p_;
-        }())
+        , api_server_1_(ot::Context().StartServer(Args(), 0, true))
         , expected_notary_(client_1_.UI().BlockchainNotaryID(test_chain_))
         , expected_unit_(client_1_.UI().BlockchainUnitID(test_chain_))
         , expected_display_unit_(u8"UNITTEST")
@@ -308,15 +262,32 @@ protected:
         if (false == init_) {
             server_1_.init(api_server_1_);
             set_introduction_server(miner_, server_1_);
-            set_introduction_server(client_1_, server_1_);
-            set_introduction_server(client_2_, server_1_);
+            auto cb = [](User& user) {
+                const auto& api = *user.api_;
+                const auto& nymID = user.nym_id_.get();
+                const auto reason = api.Factory().PasswordPrompt(__FUNCTION__);
+                api.Blockchain().NewHDSubaccount(
+                    nymID,
+                    ot::BlockchainAccountType::BIP44,
+                    test_chain_,
+                    reason);
+            };
+            auto& alice = const_cast<User&>(alice_);
+            auto& bob = const_cast<User&>(bob_);
+            alice.init_custom(client_1_, server_1_, cb);
+            bob.init_custom(client_2_, server_1_, cb);
+
+            OT_ASSERT(
+                alice_.payment_code_ == GetVectors3().alice_.payment_code_);
+            OT_ASSERT(bob_.payment_code_ == GetVectors3().bob_.payment_code_);
+
             init_ = true;
         }
     }
 };
 
-ot::Nym_p Regtest_payment_code::alice_p_{};
-ot::Nym_p Regtest_payment_code::bob_p_{};
+const User Regtest_payment_code::alice_{GetVectors3().alice_.words_, "Alice"};
+const User Regtest_payment_code::bob_{GetVectors3().bob_.words_, "Bob"};
 Regtest_payment_code::Transactions Regtest_payment_code::transactions_{};
 std::unique_ptr<ScanListener> Regtest_payment_code::listener_alice_p_{};
 std::unique_ptr<ScanListener> Regtest_payment_code::listener_bob_p_{};
@@ -328,20 +299,70 @@ TEST_F(Regtest_payment_code, start_chains) { EXPECT_TRUE(Start()); }
 
 TEST_F(Regtest_payment_code, connect_peers) { EXPECT_TRUE(Connect()); }
 
-TEST_F(Regtest_payment_code, init_account_activity)
+TEST_F(Regtest_payment_code, init_ui_models)
 {
     account_activity_alice_.expected_ += 0;
     account_activity_bob_.expected_ += 0;
+    contact_list_alice_.expected_ += 1;
+    contact_list_bob_.expected_ += 1;
     client_1_.UI().AccountActivity(
-        alice_.ID(),
+        alice_.nym_id_,
         SendHD().Parent().AccountID(),
         make_cb(account_activity_alice_, u8"account_activity_alice"));
+    client_1_.UI().ContactList(
+        alice_.nym_id_, make_cb(contact_list_alice_, u8"contact_list_alice"));
     client_2_.UI().AccountActivity(
-        bob_.ID(),
+        bob_.nym_id_,
         ReceiveHD().Parent().AccountID(),
         make_cb(account_activity_bob_, u8"account_activity_bob"));
+    client_2_.UI().ContactList(
+        bob_.nym_id_, make_cb(contact_list_bob_, u8"contact_list_bob"));
     wait_for_counter(account_activity_alice_);
     wait_for_counter(account_activity_bob_);
+    wait_for_counter(contact_list_alice_);
+    wait_for_counter(contact_list_bob_);
+}
+
+TEST_F(Regtest_payment_code, alice_contact_list_initial)
+{
+    const auto expected = std::vector<ContactListData>{
+        {false, alice_.name_, alice_.name_, "ME", ""},
+    };
+
+    ASSERT_TRUE(wait_for_counter(contact_list_alice_));
+    EXPECT_TRUE(check_contact_list(alice_, expected));
+    EXPECT_TRUE(check_contact_list_qt(alice_, expected));
+}
+
+TEST_F(Regtest_payment_code, alice_account_activity_initial)
+{
+    const auto& id = SendHD().Parent().AccountID();
+    const auto expected = AccountActivityData{};  // TODO
+
+    ASSERT_TRUE(wait_for_counter(account_activity_alice_));
+    EXPECT_TRUE(check_account_activity(alice_, id, expected));
+    EXPECT_TRUE(check_account_activity_qt(alice_, id, expected));
+}
+
+TEST_F(Regtest_payment_code, bob_contact_list_initial)
+{
+    const auto expected = std::vector<ContactListData>{
+        {false, bob_.name_, bob_.name_, "ME", ""},
+    };
+
+    ASSERT_TRUE(wait_for_counter(contact_list_bob_));
+    EXPECT_TRUE(check_contact_list(bob_, expected));
+    EXPECT_TRUE(check_contact_list_qt(bob_, expected));
+}
+
+TEST_F(Regtest_payment_code, bob_account_activity_initial)
+{
+    const auto& id = ReceiveHD().Parent().AccountID();
+    const auto expected = AccountActivityData{};  // TODO
+
+    ASSERT_TRUE(wait_for_counter(account_activity_bob_));
+    EXPECT_TRUE(check_account_activity(bob_, id, expected));
+    EXPECT_TRUE(check_account_activity_qt(bob_, id, expected));
 }
 
 TEST_F(Regtest_payment_code, mine)
@@ -381,12 +402,65 @@ TEST_F(Regtest_payment_code, first_block)
     ASSERT_EQ(tx.Outputs().size(), 1);
 }
 
-TEST_F(Regtest_payment_code, alice_after_receive_wallet)
+TEST_F(Regtest_payment_code, alice_account_activity_initial_receive)
+{
+    const auto& id = SendHD().Parent().AccountID();
+    const auto expected = AccountActivityData{};  // TODO
+
+    ASSERT_TRUE(wait_for_counter(account_activity_alice_));
+    EXPECT_TRUE(check_account_activity(alice_, id, expected));
+    EXPECT_TRUE(check_account_activity_qt(alice_, id, expected));
+
+    // TODO move to check_account_activity
+    const auto& expectedAccount = SendHD().Parent().AccountID();
+    const auto& widget =
+        client_1_.UI().AccountActivity(alice_.nym_id_, expectedAccount);
+
+    EXPECT_EQ(widget.AccountID(), expectedAccount.str());
+    EXPECT_EQ(widget.Balance(), 10000000000);
+    EXPECT_EQ(widget.BalancePolarity(), 1);
+    EXPECT_EQ(widget.ContractID(), expected_unit_.str());
+    EXPECT_FALSE(widget.DepositAddress().empty());
+    EXPECT_FALSE(widget.DepositAddress(test_chain_).empty());
+    EXPECT_TRUE(widget.DepositAddress(ot::blockchain::Type::Bitcoin).empty());
+
+    const auto deposit = widget.DepositChains();
+
+    ASSERT_EQ(deposit.size(), 1);
+    EXPECT_EQ(deposit.at(0), test_chain_);
+    EXPECT_EQ(widget.DisplayBalance(), u8"100 units");
+    EXPECT_EQ(widget.DisplayUnit(), expected_display_unit_);
+    EXPECT_EQ(widget.Name(), expected_account_name_);
+    EXPECT_EQ(widget.NotaryID(), expected_notary_.str());
+    EXPECT_EQ(widget.NotaryName(), expected_notary_name_);
+    EXPECT_EQ(widget.SyncPercentage(), 100);
+
+    constexpr auto progress = std::pair<int, int>{1, 1};
+
+    EXPECT_EQ(widget.SyncProgress(), progress);
+    EXPECT_EQ(widget.Type(), expected_account_type_);
+    EXPECT_EQ(widget.Unit(), expected_unit_type_);
+
+    auto row = widget.First();
+
+    ASSERT_TRUE(row->Valid());
+    EXPECT_EQ(row->Amount(), 10000000000);
+    EXPECT_EQ(row->Contacts().size(), 0);
+    EXPECT_EQ(row->DisplayAmount(), u8"100 units");
+    EXPECT_EQ(row->Memo(), "");
+    EXPECT_EQ(row->Workflow(), "");
+    EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
+    EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
+    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(0)));
+    EXPECT_TRUE(row->Last());
+}
+
+TEST_F(Regtest_payment_code, alice_txodb_inital_receive)
 {
     const auto& network =
         client_1_.Network().Blockchain().GetChain(test_chain_);
     const auto& wallet = network.Wallet();
-    const auto& nym = alice_.ID();
+    const auto& nym = alice_.nym_id_;
     const auto& account = SendHD().ID();
     const auto blankNym = client_1_.Factory().NymID();
     const auto blankAccount = client_1_.Factory().Identifier();
@@ -485,61 +559,17 @@ TEST_F(Regtest_payment_code, alice_after_receive_wallet)
     EXPECT_EQ(wallet.GetOutputs(blankNym, account, type).size(), 0u);
 }
 
-TEST_F(Regtest_payment_code, alice_after_receive_ui)
-{
-    wait_for_counter(account_activity_alice_);
-    const auto& expectedAccount = SendHD().Parent().AccountID();
-    const auto& widget =
-        client_1_.UI().AccountActivity(alice_.ID(), expectedAccount);
-
-    EXPECT_EQ(widget.AccountID(), expectedAccount.str());
-    EXPECT_EQ(widget.Balance(), 10000000000);
-    EXPECT_EQ(widget.BalancePolarity(), 1);
-    EXPECT_EQ(widget.ContractID(), expected_unit_.str());
-    EXPECT_FALSE(widget.DepositAddress().empty());
-    EXPECT_FALSE(widget.DepositAddress(test_chain_).empty());
-    EXPECT_TRUE(widget.DepositAddress(ot::blockchain::Type::Bitcoin).empty());
-
-    const auto deposit = widget.DepositChains();
-
-    ASSERT_EQ(deposit.size(), 1);
-    EXPECT_EQ(deposit.at(0), test_chain_);
-    EXPECT_EQ(widget.DisplayBalance(), u8"100 units");
-    EXPECT_EQ(widget.DisplayUnit(), expected_display_unit_);
-    EXPECT_EQ(widget.Name(), expected_account_name_);
-    EXPECT_EQ(widget.NotaryID(), expected_notary_.str());
-    EXPECT_EQ(widget.NotaryName(), expected_notary_name_);
-    EXPECT_EQ(widget.SyncPercentage(), 100);
-
-    constexpr auto progress = std::pair<int, int>{1, 1};
-
-    EXPECT_EQ(widget.SyncProgress(), progress);
-    EXPECT_EQ(widget.Type(), expected_account_type_);
-    EXPECT_EQ(widget.Unit(), expected_unit_type_);
-
-    auto row = widget.First();
-
-    ASSERT_TRUE(row->Valid());
-    EXPECT_EQ(row->Amount(), 10000000000);
-    EXPECT_EQ(row->Contacts().size(), 0);
-    EXPECT_EQ(row->DisplayAmount(), u8"100 units");
-    EXPECT_EQ(row->Memo(), "");
-    EXPECT_EQ(row->Workflow(), "");
-    EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
-    EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(0)));
-    EXPECT_TRUE(row->Last());
-}
-
 TEST_F(Regtest_payment_code, send_to_bob)
 {
     account_activity_alice_.expected_ += 2;
     account_activity_bob_.expected_ += 2;
+    contact_list_alice_.expected_ += 1;
+    contact_list_bob_.expected_ += 1;
     const auto& network =
         client_1_.Network().Blockchain().GetChain(test_chain_);
     auto future = network.SendToPaymentCode(
-        alice_.ID(),
-        client_1_.Factory().PaymentCode(vectors_3_.bob_.payment_code_),
+        alice_.nym_id_,
+        client_1_.Factory().PaymentCode(GetVectors3().bob_.payment_code_),
         1000000000,
         memo_outgoing_);
     const auto& txid = transactions_.emplace_back(future.get().second);
@@ -570,12 +600,205 @@ TEST_F(Regtest_payment_code, send_to_bob)
     }
 }
 
-TEST_F(Regtest_payment_code, alice_after_unconfirmed_spend_wallet)
+TEST_F(Regtest_payment_code, alice_contact_list_first_spend_unconfirmed)
+{
+    const auto expected = std::vector<ContactListData>{
+        {true, alice_.name_, alice_.name_, "ME", ""},
+        {false, bob_.name_, bob_.payment_code_, "P", ""},
+    };
+
+    ASSERT_TRUE(wait_for_counter(contact_list_alice_));
+    EXPECT_TRUE(check_contact_list(alice_, expected));
+    EXPECT_TRUE(check_contact_list_qt(alice_, expected));
+    EXPECT_TRUE(CheckContactID(alice_, bob_, GetVectors3().bob_.payment_code_));
+}
+
+TEST_F(Regtest_payment_code, alice_activity_thread_first_spend_unconfirmed)
+{
+    const auto& contact = alice_.Contact(bob_.name_);
+    activity_thread_alice_bob_.expected_ += 3;
+    client_1_.UI().ActivityThread(
+        alice_.nym_id_,
+        contact,
+        make_cb(activity_thread_alice_bob_, u8"activity_thread_alice_bob"));
+    const auto expected = ActivityThreadData{
+        false,
+        contact.str(),
+        bob_.payment_code_,
+        "",
+        contact.str(),
+        {{ot::contact::ContactItemType::Regtest, bob_.payment_code_}},
+        {
+            {
+                false,
+                false,
+                -1000000316,
+                "-10.000 003 16 units",
+                "Outgoing Unit Test Simulation transaction to "
+                "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM",
+                "",
+                ot::StorageBox::BLOCKCHAIN,
+                std::nullopt,
+            },
+        },
+    };
+
+    ASSERT_TRUE(wait_for_counter(activity_thread_alice_bob_));
+    EXPECT_TRUE(check_activity_thread(alice_, contact, expected));
+    EXPECT_TRUE(check_activity_thread_qt(alice_, contact, expected));
+}
+
+TEST_F(Regtest_payment_code, alice_account_activity_first_spend_unconfirmed)
+{
+    const auto& id = SendHD().Parent().AccountID();
+    const auto expected = AccountActivityData{};  // TODO
+
+    ASSERT_TRUE(wait_for_counter(account_activity_alice_));
+    EXPECT_TRUE(check_account_activity(alice_, id, expected));
+    EXPECT_TRUE(check_account_activity_qt(alice_, id, expected));
+
+    // TODO move to check_account_activity
+    const auto& expectedAccount = SendHD().Parent().AccountID();
+    const auto& widget =
+        client_1_.UI().AccountActivity(alice_.nym_id_, expectedAccount);
+    const auto expectedContact = client_1_.Contacts().ContactID(bob_.nym_id_);
+
+    EXPECT_EQ(widget.AccountID(), expectedAccount.str());
+    EXPECT_EQ(widget.Balance(), 8999999684);
+    EXPECT_EQ(widget.BalancePolarity(), 1);
+    EXPECT_EQ(widget.ContractID(), expected_unit_.str());
+    EXPECT_FALSE(widget.DepositAddress().empty());
+    EXPECT_FALSE(widget.DepositAddress(test_chain_).empty());
+    EXPECT_TRUE(widget.DepositAddress(ot::blockchain::Type::Bitcoin).empty());
+
+    const auto deposit = widget.DepositChains();
+
+    ASSERT_EQ(deposit.size(), 1);
+    EXPECT_EQ(deposit.at(0), test_chain_);
+    EXPECT_EQ(widget.DisplayBalance(), u8"89.999 996 84 units");
+    EXPECT_EQ(widget.DisplayUnit(), expected_display_unit_);
+    EXPECT_EQ(widget.Name(), expected_account_name_);
+    EXPECT_EQ(widget.NotaryID(), expected_notary_.str());
+    EXPECT_EQ(widget.NotaryName(), expected_notary_name_);
+    EXPECT_EQ(widget.SyncPercentage(), 100);
+
+    constexpr auto progress = std::pair<int, int>{1, 1};
+
+    EXPECT_EQ(widget.SyncProgress(), progress);
+    EXPECT_EQ(widget.Type(), expected_account_type_);
+    EXPECT_EQ(widget.Unit(), expected_unit_type_);
+
+    auto row = widget.First();
+
+    ASSERT_TRUE(row->Valid());
+    EXPECT_EQ(row->Amount(), -1000000316);
+
+    {
+        const auto contacts = row->Contacts();
+
+        EXPECT_GT(contacts.size(), 0);
+
+        if (0 < contacts.size()) {
+            EXPECT_EQ(contacts.size(), 1);
+
+            const auto& contact = contacts.front();
+
+            EXPECT_EQ(contact, expectedContact->str());
+        }
+    }
+
+    EXPECT_EQ(row->DisplayAmount(), u8"-10.000 003 16 units");
+    EXPECT_EQ(row->Memo(), "");
+    EXPECT_EQ(row->Workflow(), "");
+    EXPECT_EQ(
+        row->Text(),
+        "Outgoing Unit Test Simulation transaction to "
+        "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM");
+    EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
+    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(1)));
+    ASSERT_FALSE(row->Last());
+
+    row = widget.Next();
+
+    EXPECT_EQ(row->Amount(), 10000000000);
+    EXPECT_EQ(row->Contacts().size(), 0);
+    EXPECT_EQ(row->DisplayAmount(), u8"100 units");
+    EXPECT_EQ(row->Memo(), "");
+    EXPECT_EQ(row->Workflow(), "");
+    EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
+    EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
+    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(0)));
+    EXPECT_TRUE(row->Last());
+}
+
+TEST_F(Regtest_payment_code, alice_first_outgoing_transaction)
+{
+    const auto& api = client_1_;
+    const auto& blockchain = api.Blockchain();
+    const auto& contact = api.Contacts();
+    const auto& me = alice_.nym_id_;
+    const auto self = contact.ContactID(me);
+    const auto other = contact.ContactID(bob_.nym_id_);
+    const auto& txid = transactions_.at(1).get();
+    const auto& pTX = blockchain.LoadTransactionBitcoin(txid);
+
+    ASSERT_TRUE(pTX);
+
+    const auto& tx = *pTX;
+
+    {
+        const auto nyms = tx.AssociatedLocalNyms(blockchain);
+
+        EXPECT_GT(nyms.size(), 0);
+
+        if (0 < nyms.size()) {
+            EXPECT_EQ(nyms.size(), 1);
+            EXPECT_EQ(nyms.front(), me);
+        }
+    }
+    {
+        const auto contacts =
+            tx.AssociatedRemoteContacts(blockchain, contact, me);
+
+        EXPECT_GT(contacts.size(), 0);
+
+        if (0 < contacts.size()) {
+            EXPECT_EQ(contacts.size(), 1);
+            EXPECT_EQ(contacts.front(), other);
+        }
+    }
+    {
+        ASSERT_EQ(tx.Inputs().size(), 1u);
+
+        const auto& script = tx.Inputs().at(0u).Script();
+
+        ASSERT_EQ(script.size(), 1u);
+
+        const auto& sig = script.at(0u);
+
+        ASSERT_TRUE(sig.data_.has_value());
+        EXPECT_GE(sig.data_.value().size(), 70u);
+        EXPECT_LE(sig.data_.value().size(), 74u);
+    }
+    {
+        ASSERT_EQ(tx.Outputs().size(), 2u);
+
+        const auto& payment = tx.Outputs().at(0);
+        const auto& change = tx.Outputs().at(1);
+
+        EXPECT_EQ(payment.Payer(), self);
+        EXPECT_EQ(payment.Payee(), other);
+        EXPECT_EQ(change.Payer(), self);
+        EXPECT_EQ(change.Payee(), self);
+    }
+}
+
+TEST_F(Regtest_payment_code, alice_txodb_first_spend_unconfirmed)
 {
     const auto& network =
         client_1_.Network().Blockchain().GetChain(test_chain_);
     const auto& wallet = network.Wallet();
-    const auto& nym = alice_.ID();
+    const auto& nym = alice_.nym_id_;
     const auto& accountHD = SendHD().ID();
     const auto& accountPC = SendPC().ID();
     const auto blankNym = client_1_.Factory().NymID();
@@ -695,158 +918,68 @@ TEST_F(Regtest_payment_code, alice_after_unconfirmed_spend_wallet)
     EXPECT_EQ(wallet.GetOutputs(blankNym, accountPC, type).size(), 0u);
 }
 
-TEST_F(Regtest_payment_code, alice_contact_consistency)
+TEST_F(Regtest_payment_code, bob_contact_list_first_unconfirmed_incoming)
 {
-    const auto other = client_1_.Contacts().ContactID(bob_.ID());
-    const auto expected = client_1_.Contacts().PaymentCodeToContact(
-        client_1_.Factory().PaymentCode(vectors_3_.bob_.payment_code_),
-        test_chain_);
+    const auto expected = std::vector<ContactListData>{
+        {true, bob_.name_, bob_.name_, "ME", ""},
+        {false, alice_.name_, alice_.payment_code_, "P", ""},
+    };
 
-    EXPECT_EQ(other, expected);
+    ASSERT_TRUE(wait_for_counter(contact_list_bob_));
+    EXPECT_TRUE(check_contact_list(bob_, expected));
+    EXPECT_TRUE(check_contact_list_qt(bob_, expected));
+    EXPECT_TRUE(
+        CheckContactID(bob_, alice_, GetVectors3().alice_.payment_code_));
 }
 
-TEST_F(Regtest_payment_code, alice_after_unconfirmed_spend_ui)
+TEST_F(Regtest_payment_code, bob_activity_thread_first_unconfirmed_incoming)
 {
-    wait_for_counter(account_activity_alice_);
-    const auto& expectedAccount = SendHD().Parent().AccountID();
-    const auto& widget =
-        client_1_.UI().AccountActivity(alice_.ID(), expectedAccount);
-    const auto expectedContact = client_1_.Contacts().ContactID(bob_.ID());
+    const auto& contact = bob_.Contact(alice_.name_);
+    activity_thread_bob_alice_.expected_ += 3;
+    client_2_.UI().ActivityThread(
+        bob_.nym_id_,
+        contact,
+        make_cb(activity_thread_bob_alice_, u8"activity_thread_bob_alice"));
+    const auto expected = ActivityThreadData{
+        false,
+        contact.str(),
+        alice_.payment_code_,
+        "",
+        contact.str(),
+        {{ot::contact::ContactItemType::Regtest, alice_.payment_code_}},
+        {
+            {
+                false,
+                false,
+                1000000000,
+                "10 units",
+                "Incoming Unit Test Simulation transaction from "
+                "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu",
+                "",
+                ot::StorageBox::BLOCKCHAIN,
+                std::nullopt,
+            },
+        },
+    };
 
-    EXPECT_EQ(widget.AccountID(), expectedAccount.str());
-    EXPECT_EQ(widget.Balance(), 8999999684);
-    EXPECT_EQ(widget.BalancePolarity(), 1);
-    EXPECT_EQ(widget.ContractID(), expected_unit_.str());
-    EXPECT_FALSE(widget.DepositAddress().empty());
-    EXPECT_FALSE(widget.DepositAddress(test_chain_).empty());
-    EXPECT_TRUE(widget.DepositAddress(ot::blockchain::Type::Bitcoin).empty());
-
-    const auto deposit = widget.DepositChains();
-
-    ASSERT_EQ(deposit.size(), 1);
-    EXPECT_EQ(deposit.at(0), test_chain_);
-    EXPECT_EQ(widget.DisplayBalance(), u8"89.999 996 84 units");
-    EXPECT_EQ(widget.DisplayUnit(), expected_display_unit_);
-    EXPECT_EQ(widget.Name(), expected_account_name_);
-    EXPECT_EQ(widget.NotaryID(), expected_notary_.str());
-    EXPECT_EQ(widget.NotaryName(), expected_notary_name_);
-    EXPECT_EQ(widget.SyncPercentage(), 100);
-
-    constexpr auto progress = std::pair<int, int>{1, 1};
-
-    EXPECT_EQ(widget.SyncProgress(), progress);
-    EXPECT_EQ(widget.Type(), expected_account_type_);
-    EXPECT_EQ(widget.Unit(), expected_unit_type_);
-
-    auto row = widget.First();
-
-    ASSERT_TRUE(row->Valid());
-    EXPECT_EQ(row->Amount(), -1000000316);
-
-    {
-        const auto contacts = row->Contacts();
-
-        EXPECT_GT(contacts.size(), 0);
-
-        if (0 < contacts.size()) {
-            EXPECT_EQ(contacts.size(), 1);
-
-            const auto& contact = contacts.front();
-
-            EXPECT_EQ(contact, expectedContact->str());
-        }
-    }
-
-    EXPECT_EQ(row->DisplayAmount(), u8"-10.000 003 16 units");
-    EXPECT_EQ(row->Memo(), "");
-    EXPECT_EQ(row->Workflow(), "");
-    EXPECT_EQ(
-        row->Text(),
-        "Outgoing Unit Test Simulation transaction to "
-        "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM");
-    EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(1)));
-    ASSERT_FALSE(row->Last());
-
-    row = widget.Next();
-
-    EXPECT_EQ(row->Amount(), 10000000000);
-    EXPECT_EQ(row->Contacts().size(), 0);
-    EXPECT_EQ(row->DisplayAmount(), u8"100 units");
-    EXPECT_EQ(row->Memo(), "");
-    EXPECT_EQ(row->Workflow(), "");
-    EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
-    EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(0)));
-    EXPECT_TRUE(row->Last());
+    ASSERT_TRUE(wait_for_counter(activity_thread_bob_alice_));
+    EXPECT_TRUE(check_activity_thread(bob_, contact, expected));
+    EXPECT_TRUE(check_activity_thread_qt(bob_, contact, expected));
 }
 
-TEST_F(Regtest_payment_code, first_outgoing_transaction_alice)
+TEST_F(Regtest_payment_code, bob_account_activity_first_unconfirmed_incoming)
 {
-    const auto& api = client_1_;
-    const auto& blockchain = api.Blockchain();
-    const auto& contact = api.Contacts();
-    const auto& me = alice_.ID();
-    const auto self = contact.ContactID(me);
-    const auto other = contact.ContactID(bob_.ID());
-    const auto& txid = transactions_.at(1).get();
-    const auto& pTX = blockchain.LoadTransactionBitcoin(txid);
+    const auto& id = ReceiveHD().Parent().AccountID();
+    const auto expected = AccountActivityData{};  // TODO
 
-    ASSERT_TRUE(pTX);
-
-    const auto& tx = *pTX;
-
-    {
-        const auto nyms = tx.AssociatedLocalNyms(blockchain);
-
-        EXPECT_GT(nyms.size(), 0);
-
-        if (0 < nyms.size()) {
-            EXPECT_EQ(nyms.size(), 1);
-            EXPECT_EQ(nyms.front(), me);
-        }
-    }
-    {
-        const auto contacts =
-            tx.AssociatedRemoteContacts(blockchain, contact, me);
-
-        EXPECT_GT(contacts.size(), 0);
-
-        if (0 < contacts.size()) {
-            EXPECT_EQ(contacts.size(), 1);
-            EXPECT_EQ(contacts.front(), other);
-        }
-    }
-    {
-        ASSERT_EQ(tx.Inputs().size(), 1u);
-
-        const auto& script = tx.Inputs().at(0u).Script();
-
-        ASSERT_EQ(script.size(), 1u);
-
-        const auto& sig = script.at(0u);
-
-        ASSERT_TRUE(sig.data_.has_value());
-        EXPECT_GE(sig.data_.value().size(), 70u);
-        EXPECT_LE(sig.data_.value().size(), 74u);
-    }
-    {
-        ASSERT_EQ(tx.Outputs().size(), 2u);
-
-        const auto& payment = tx.Outputs().at(0);
-        const auto& change = tx.Outputs().at(1);
-
-        EXPECT_EQ(payment.Payer(), self);
-        EXPECT_EQ(payment.Payee(), other);
-        EXPECT_EQ(change.Payer(), self);
-        EXPECT_EQ(change.Payee(), self);
-    }
+    ASSERT_TRUE(wait_for_counter(account_activity_bob_));
+    EXPECT_TRUE(check_account_activity(bob_, id, expected));
+    EXPECT_TRUE(check_account_activity_qt(bob_, id, expected));
 }
 
-TEST_F(Regtest_payment_code, first_unconfirmed_incoming_bob)
+TEST_F(Regtest_payment_code, bob_txodb_first_unconfirmed_incoming)
 {
-    wait_for_counter(account_activity_bob_);
-    // TODO check wallet and ui state for bob
+    // TODO
 }
 
 TEST_F(Regtest_payment_code, confirm_send)
@@ -970,12 +1103,138 @@ TEST_F(Regtest_payment_code, second_block)
     }
 }
 
-TEST_F(Regtest_payment_code, alice_after_confirmed_spend_wallet)
+TEST_F(Regtest_payment_code, alice_account_activity_first_spend_confirmed)
+{
+    const auto& id = SendHD().Parent().AccountID();
+    const auto expected = AccountActivityData{};  // TODO
+
+    ASSERT_TRUE(wait_for_counter(account_activity_alice_));
+    EXPECT_TRUE(check_account_activity(alice_, id, expected));
+    EXPECT_TRUE(check_account_activity_qt(alice_, id, expected));
+
+    // TODO move to check_account_activity
+    const auto& expectedAccount = SendHD().Parent().AccountID();
+    const auto& widget =
+        client_1_.UI().AccountActivity(alice_.nym_id_, expectedAccount);
+    const auto expectedContact = client_1_.Contacts().ContactID(bob_.nym_id_);
+
+    EXPECT_EQ(widget.AccountID(), expectedAccount.str());
+    EXPECT_EQ(widget.Balance(), 8999999684);
+    EXPECT_EQ(widget.BalancePolarity(), 1);
+    EXPECT_EQ(widget.ContractID(), expected_unit_.str());
+    EXPECT_FALSE(widget.DepositAddress().empty());
+    EXPECT_FALSE(widget.DepositAddress(test_chain_).empty());
+    EXPECT_TRUE(widget.DepositAddress(ot::blockchain::Type::Bitcoin).empty());
+
+    const auto deposit = widget.DepositChains();
+
+    ASSERT_EQ(deposit.size(), 1);
+    EXPECT_EQ(deposit.at(0), test_chain_);
+    EXPECT_EQ(widget.DisplayBalance(), u8"89.999 996 84 units");
+    EXPECT_EQ(widget.DisplayUnit(), expected_display_unit_);
+    EXPECT_EQ(widget.Name(), expected_account_name_);
+    EXPECT_EQ(widget.NotaryID(), expected_notary_.str());
+    EXPECT_EQ(widget.NotaryName(), expected_notary_name_);
+    EXPECT_EQ(widget.SyncPercentage(), 100);
+
+    constexpr auto progress = std::pair<int, int>{2, 2};
+
+    EXPECT_EQ(widget.SyncProgress(), progress);
+    EXPECT_EQ(widget.Type(), expected_account_type_);
+    EXPECT_EQ(widget.Unit(), expected_unit_type_);
+
+    auto row = widget.First();
+
+    ASSERT_TRUE(row->Valid());
+    EXPECT_EQ(row->Amount(), -1000000316);
+
+    {
+        const auto contacts = row->Contacts();
+
+        EXPECT_GT(contacts.size(), 0);
+
+        if (0 < contacts.size()) {
+            EXPECT_EQ(contacts.size(), 1);
+
+            const auto& contact = contacts.front();
+
+            EXPECT_EQ(contact, expectedContact->str());
+        }
+    }
+
+    EXPECT_EQ(row->DisplayAmount(), u8"-10.000 003 16 units");
+    EXPECT_EQ(row->Memo(), "");
+    EXPECT_EQ(row->Workflow(), "");
+    EXPECT_EQ(
+        row->Text(),
+        "Outgoing Unit Test Simulation transaction to "
+        "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM");
+    EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
+    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(1)));
+    ASSERT_FALSE(row->Last());
+
+    row = widget.Next();
+
+    EXPECT_EQ(row->Amount(), 10000000000);
+    EXPECT_EQ(row->Contacts().size(), 0);
+    EXPECT_EQ(row->DisplayAmount(), u8"100 units");
+    EXPECT_EQ(row->Memo(), "");
+    EXPECT_EQ(row->Workflow(), "");
+    EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
+    EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
+    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(0)));
+    EXPECT_TRUE(row->Last());
+
+    const auto& tree =
+        client_1_.Blockchain().Account(alice_.nym_id_, test_chain_);
+    const auto& pc = tree.GetPaymentCode();
+
+    ASSERT_EQ(pc.size(), 1);
+
+    const auto& account = pc.at(0);
+    const auto lookahead = account.Lookahead() - 1;
+
+    EXPECT_EQ(account.Type(), bca::SubaccountType::PaymentCode);
+    EXPECT_TRUE(account.IsNotified());
+
+    {
+        constexpr auto subchain{Subchain::Incoming};
+
+        const auto gen = account.LastGenerated(subchain);
+
+        ASSERT_TRUE(gen.has_value());
+        EXPECT_EQ(gen.value(), lookahead);
+    }
+    {
+        constexpr auto subchain{Subchain::Outgoing};
+
+        const auto gen = account.LastGenerated(subchain);
+
+        ASSERT_TRUE(gen.has_value());
+        EXPECT_EQ(gen.value(), lookahead);
+    }
+    {
+        constexpr auto subchain{Subchain::External};
+
+        const auto gen = account.LastGenerated(subchain);
+
+        EXPECT_FALSE(gen.has_value());
+    }
+    {
+        constexpr auto subchain{Subchain::Internal};
+
+        const auto gen = account.LastGenerated(subchain);
+
+        EXPECT_FALSE(gen.has_value());
+    }
+}
+
+TEST_F(Regtest_payment_code, alice_txodb_first_spend_confirmed)
 {
     const auto& network =
         client_1_.Network().Blockchain().GetChain(test_chain_);
     const auto& wallet = network.Wallet();
-    const auto& nym = alice_.ID();
+    const auto& nym = alice_.nym_id_;
     const auto& accountHD = SendHD().ID();
     const auto& accountPC = SendPC().ID();
     const auto blankNym = client_1_.Factory().NymID();
@@ -1095,141 +1354,20 @@ TEST_F(Regtest_payment_code, alice_after_confirmed_spend_wallet)
     EXPECT_EQ(wallet.GetOutputs(blankNym, accountPC, type).size(), 0u);
 }
 
-TEST_F(Regtest_payment_code, alice_after_confirmed_spend_ui)
+TEST_F(Regtest_payment_code, bob_account_activity_first_spend_confirmed)
 {
-    wait_for_counter(account_activity_alice_, false);
-    const auto& expectedAccount = SendHD().Parent().AccountID();
-    const auto& widget =
-        client_1_.UI().AccountActivity(alice_.ID(), expectedAccount);
-    const auto expectedContact = client_1_.Contacts().ContactID(bob_.ID());
+    const auto& id = ReceiveHD().Parent().AccountID();
+    const auto expected = AccountActivityData{};  // TODO
 
-    EXPECT_EQ(widget.AccountID(), expectedAccount.str());
-    EXPECT_EQ(widget.Balance(), 8999999684);
-    EXPECT_EQ(widget.BalancePolarity(), 1);
-    EXPECT_EQ(widget.ContractID(), expected_unit_.str());
-    EXPECT_FALSE(widget.DepositAddress().empty());
-    EXPECT_FALSE(widget.DepositAddress(test_chain_).empty());
-    EXPECT_TRUE(widget.DepositAddress(ot::blockchain::Type::Bitcoin).empty());
+    ASSERT_TRUE(wait_for_counter(account_activity_bob_));
+    EXPECT_TRUE(check_account_activity(bob_, id, expected));
+    EXPECT_TRUE(check_account_activity_qt(bob_, id, expected));
 
-    const auto deposit = widget.DepositChains();
-
-    ASSERT_EQ(deposit.size(), 1);
-    EXPECT_EQ(deposit.at(0), test_chain_);
-    EXPECT_EQ(widget.DisplayBalance(), u8"89.999 996 84 units");
-    EXPECT_EQ(widget.DisplayUnit(), expected_display_unit_);
-    EXPECT_EQ(widget.Name(), expected_account_name_);
-    EXPECT_EQ(widget.NotaryID(), expected_notary_.str());
-    EXPECT_EQ(widget.NotaryName(), expected_notary_name_);
-    EXPECT_EQ(widget.SyncPercentage(), 100);
-
-    constexpr auto progress = std::pair<int, int>{2, 2};
-
-    EXPECT_EQ(widget.SyncProgress(), progress);
-    EXPECT_EQ(widget.Type(), expected_account_type_);
-    EXPECT_EQ(widget.Unit(), expected_unit_type_);
-
-    auto row = widget.First();
-
-    ASSERT_TRUE(row->Valid());
-    EXPECT_EQ(row->Amount(), -1000000316);
-
-    {
-        const auto contacts = row->Contacts();
-
-        EXPECT_GT(contacts.size(), 0);
-
-        if (0 < contacts.size()) {
-            EXPECT_EQ(contacts.size(), 1);
-
-            const auto& contact = contacts.front();
-
-            EXPECT_EQ(contact, expectedContact->str());
-        }
-    }
-
-    EXPECT_EQ(row->DisplayAmount(), u8"-10.000 003 16 units");
-    EXPECT_EQ(row->Memo(), "");
-    EXPECT_EQ(row->Workflow(), "");
-    EXPECT_EQ(
-        row->Text(),
-        "Outgoing Unit Test Simulation transaction to "
-        "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM");
-    EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(1)));
-    ASSERT_FALSE(row->Last());
-
-    row = widget.Next();
-
-    EXPECT_EQ(row->Amount(), 10000000000);
-    EXPECT_EQ(row->Contacts().size(), 0);
-    EXPECT_EQ(row->DisplayAmount(), u8"100 units");
-    EXPECT_EQ(row->Memo(), "");
-    EXPECT_EQ(row->Workflow(), "");
-    EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
-    EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(0)));
-    EXPECT_TRUE(row->Last());
-
-    const auto& tree = client_1_.Blockchain().Account(alice_.ID(), test_chain_);
-    const auto& pc = tree.GetPaymentCode();
-
-    ASSERT_EQ(pc.size(), 1);
-
-    const auto& account = pc.at(0);
-    const auto lookahead = account.Lookahead() - 1;
-
-    EXPECT_EQ(account.Type(), bca::SubaccountType::PaymentCode);
-    EXPECT_TRUE(account.IsNotified());
-
-    {
-        constexpr auto subchain{Subchain::Incoming};
-
-        const auto gen = account.LastGenerated(subchain);
-
-        ASSERT_TRUE(gen.has_value());
-        EXPECT_EQ(gen.value(), lookahead);
-    }
-    {
-        constexpr auto subchain{Subchain::Outgoing};
-
-        const auto gen = account.LastGenerated(subchain);
-
-        ASSERT_TRUE(gen.has_value());
-        EXPECT_EQ(gen.value(), lookahead);
-    }
-    {
-        constexpr auto subchain{Subchain::External};
-
-        const auto gen = account.LastGenerated(subchain);
-
-        EXPECT_FALSE(gen.has_value());
-    }
-    {
-        constexpr auto subchain{Subchain::Internal};
-
-        const auto gen = account.LastGenerated(subchain);
-
-        EXPECT_FALSE(gen.has_value());
-    }
-}
-
-TEST_F(Regtest_payment_code, bob_contact_consistency)
-{
-    const auto other = client_2_.Contacts().ContactID(alice_.ID());
-    const auto expected = client_2_.Contacts().PaymentCodeToContact(
-        client_2_.Factory().PaymentCode(vectors_3_.alice_.payment_code_),
-        test_chain_);
-
-    EXPECT_EQ(other, expected);
-}
-
-TEST_F(Regtest_payment_code, bob_after_receive_ui)
-{
-    wait_for_counter(account_activity_bob_);
+    // TODO move to check_account_activity
     const auto& expectedAccount = ReceiveHD().Parent().AccountID();
     const auto& widget =
-        client_2_.UI().AccountActivity(bob_.ID(), expectedAccount);
-    const auto expectedContact = client_2_.Contacts().ContactID(alice_.ID());
+        client_2_.UI().AccountActivity(bob_.nym_id_, expectedAccount);
+    const auto expectedContact = client_2_.Contacts().ContactID(alice_.nym_id_);
 
     EXPECT_EQ(widget.AccountID(), expectedAccount.str());
     EXPECT_EQ(widget.Balance(), 1000000000);
@@ -1286,7 +1424,8 @@ TEST_F(Regtest_payment_code, bob_after_receive_ui)
     EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(1)));
     EXPECT_TRUE(row->Last());
 
-    const auto& tree = client_2_.Blockchain().Account(bob_.ID(), test_chain_);
+    const auto& tree =
+        client_2_.Blockchain().Account(bob_.nym_id_, test_chain_);
     const auto& pc = tree.GetPaymentCode();
 
     ASSERT_EQ(pc.size(), 1);
@@ -1329,14 +1468,14 @@ TEST_F(Regtest_payment_code, bob_after_receive_ui)
     }
 }
 
-TEST_F(Regtest_payment_code, first_incoming_transaction_bob)
+TEST_F(Regtest_payment_code, bob_first_incoming_transaction)
 {
     const auto& api = client_2_;
     const auto& blockchain = api.Blockchain();
     const auto& contact = api.Contacts();
-    const auto& me = bob_.ID();
+    const auto& me = bob_.nym_id_;
     const auto self = contact.ContactID(me);
-    const auto other = contact.ContactID(alice_.ID());
+    const auto other = contact.ContactID(alice_.nym_id_);
     const auto& txid = transactions_.at(1).get();
     const auto& pTX = blockchain.LoadTransactionBitcoin(txid);
 
@@ -1391,12 +1530,12 @@ TEST_F(Regtest_payment_code, first_incoming_transaction_bob)
     }
 }
 
-TEST_F(Regtest_payment_code, bob_after_receive_wallet)
+TEST_F(Regtest_payment_code, bob_txodb_first_spend_confirmed)
 {
     const auto& network =
         client_2_.Network().Blockchain().GetChain(test_chain_);
     const auto& wallet = network.Wallet();
-    const auto& nym = bob_.ID();
+    const auto& nym = bob_.nym_id_;
     const auto& accountHD = ReceiveHD().ID();
     const auto& accountPC = ReceivePC().ID();
     const auto blankNym = client_2_.Factory().NymID();
@@ -1501,7 +1640,7 @@ TEST_F(Regtest_payment_code, bob_after_receive_wallet)
 }
 
 #if OT_WITH_RPC
-TEST_F(Regtest_payment_code, rpc_account_list_alice)
+TEST_F(Regtest_payment_code, alice_rpc_account_list)
 {
     const auto index{client_1_.Instance()};
     const auto command = ot::rpc::request::ListAccounts{index};
@@ -1511,7 +1650,7 @@ TEST_F(Regtest_payment_code, rpc_account_list_alice)
     const auto expected = [&] {
         auto out = std::set<std::string>{};
         const auto& id = client_1_.Blockchain()
-                             .Account(alice_.ID(), test_chain_)
+                             .Account(alice_.nym_id_, test_chain_)
                              .AccountID();
         out.emplace(id.str());
 
@@ -1527,7 +1666,7 @@ TEST_F(Regtest_payment_code, rpc_account_list_alice)
     for (const auto& id : ids) { EXPECT_EQ(expected.count(id), 1); }
 }
 
-TEST_F(Regtest_payment_code, rpc_account_list_bob)
+TEST_F(Regtest_payment_code, bob_rpc_account_list)
 {
     const auto index{client_2_.Instance()};
     const auto command = ot::rpc::request::ListAccounts{index};
@@ -1536,8 +1675,9 @@ TEST_F(Regtest_payment_code, rpc_account_list_bob)
     const auto& codes = response.ResponseCodes();
     const auto expected = [&] {
         auto out = std::set<std::string>{};
-        const auto& id =
-            client_2_.Blockchain().Account(bob_.ID(), test_chain_).AccountID();
+        const auto& id = client_2_.Blockchain()
+                             .Account(bob_.nym_id_, test_chain_)
+                             .AccountID();
         out.emplace(id.str());
 
         return out;
@@ -1555,15 +1695,17 @@ TEST_F(Regtest_payment_code, rpc_account_list_bob)
 // TODO more rpc tests go here
 #endif  // OT_WITH_RPC
 
-TEST_F(Regtest_payment_code, second_send_to_bob)
+TEST_F(Regtest_payment_code, send_to_bob_again)
 {
+    activity_thread_alice_bob_.expected_ += 2;
+    activity_thread_bob_alice_.expected_ += 2;
     account_activity_alice_.expected_ += 2;
     account_activity_bob_.expected_ += 2;
     const auto& network =
         client_1_.Network().Blockchain().GetChain(test_chain_);
     auto future = network.SendToPaymentCode(
-        alice_.ID(),
-        client_1_.Factory().PaymentCode(vectors_3_.bob_.payment_code_),
+        alice_.nym_id_,
+        client_1_.Factory().PaymentCode(GetVectors3().bob_.payment_code_),
         1500000000,
         memo_outgoing_);
     const auto& txid = transactions_.emplace_back(future.get().second);
@@ -1592,12 +1734,279 @@ TEST_F(Regtest_payment_code, second_send_to_bob)
     }
 }
 
-TEST_F(Regtest_payment_code, alice_after_unconfirmed_second_spend_wallet)
+TEST_F(Regtest_payment_code, alice_activity_thread_second_spend_unconfirmed)
+{
+    const auto& contact = alice_.Contact(bob_.name_);
+    const auto expected = ActivityThreadData{
+        false,
+        contact.str(),
+        bob_.payment_code_,
+        "",
+        contact.str(),
+        {{ot::contact::ContactItemType::Regtest, bob_.payment_code_}},
+        {
+            {
+                false,
+                false,
+                -1000000316,
+                "-10.000 003 16 units",
+                "Outgoing Unit Test Simulation transaction to "
+                "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM",
+                "",
+                ot::StorageBox::BLOCKCHAIN,
+                std::nullopt,
+            },
+            {
+                false,
+                false,
+                -1500000236,
+                "-15.000 002 36 units",
+                "Outgoing Unit Test Simulation transaction to "
+                "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM",
+                "",
+                ot::StorageBox::BLOCKCHAIN,
+                std::nullopt,
+            },
+        },
+    };
+
+    ASSERT_TRUE(wait_for_counter(activity_thread_alice_bob_));
+    EXPECT_TRUE(check_activity_thread(alice_, contact, expected));
+    EXPECT_TRUE(check_activity_thread_qt(alice_, contact, expected));
+}
+
+TEST_F(Regtest_payment_code, alice_account_activity_second_spend_unconfirmed)
+{
+    const auto& id = SendHD().Parent().AccountID();
+    const auto expected = AccountActivityData{};  // TODO
+
+    ASSERT_TRUE(wait_for_counter(account_activity_alice_));
+    EXPECT_TRUE(check_account_activity(alice_, id, expected));
+    EXPECT_TRUE(check_account_activity_qt(alice_, id, expected));
+
+    // TODO move to check_account_activity
+    const auto& expectedAccount = SendHD().Parent().AccountID();
+    const auto& widget =
+        client_1_.UI().AccountActivity(alice_.nym_id_, expectedAccount);
+    const auto expectedContact = client_1_.Contacts().ContactID(bob_.nym_id_);
+
+    EXPECT_EQ(widget.AccountID(), expectedAccount.str());
+    EXPECT_EQ(widget.Balance(), 7499999448);
+    EXPECT_EQ(widget.BalancePolarity(), 1);
+    EXPECT_EQ(widget.ContractID(), expected_unit_.str());
+    EXPECT_FALSE(widget.DepositAddress().empty());
+    EXPECT_FALSE(widget.DepositAddress(test_chain_).empty());
+    EXPECT_TRUE(widget.DepositAddress(ot::blockchain::Type::Bitcoin).empty());
+
+    const auto deposit = widget.DepositChains();
+
+    ASSERT_EQ(deposit.size(), 1);
+    EXPECT_EQ(deposit.at(0), test_chain_);
+    EXPECT_EQ(widget.DisplayBalance(), u8"74.999 994 48 units");
+    EXPECT_EQ(widget.DisplayUnit(), expected_display_unit_);
+    EXPECT_EQ(widget.Name(), expected_account_name_);
+    EXPECT_EQ(widget.NotaryID(), expected_notary_.str());
+    EXPECT_EQ(widget.NotaryName(), expected_notary_name_);
+    EXPECT_EQ(widget.SyncPercentage(), 100);
+
+    constexpr auto progress = std::pair<int, int>{2, 2};
+
+    EXPECT_EQ(widget.SyncProgress(), progress);
+    EXPECT_EQ(widget.Type(), expected_account_type_);
+    EXPECT_EQ(widget.Unit(), expected_unit_type_);
+
+    auto row = widget.First();
+
+    ASSERT_TRUE(row->Valid());
+    EXPECT_EQ(row->Amount(), -1500000236);
+
+    {
+        const auto contacts = row->Contacts();
+
+        EXPECT_GT(contacts.size(), 0);
+
+        if (0 < contacts.size()) {
+            EXPECT_EQ(contacts.size(), 1);
+
+            const auto& contact = contacts.front();
+
+            EXPECT_EQ(contact, expectedContact->str());
+        }
+    }
+
+    EXPECT_EQ(row->DisplayAmount(), u8"-15.000 002 36 units");
+    EXPECT_EQ(row->Memo(), "");
+    EXPECT_EQ(row->Workflow(), "");
+    EXPECT_EQ(
+        row->Text(),
+        "Outgoing Unit Test Simulation transaction to "
+        "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM");
+    EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
+
+    transactions_.emplace_back(
+        ot::blockchain::NumberToHash(client_1_, row->UUID()));
+
+    ASSERT_FALSE(row->Last());
+
+    row = widget.Next();
+
+    EXPECT_EQ(row->Amount(), -1000000316);
+
+    {
+        const auto contacts = row->Contacts();
+
+        EXPECT_GT(contacts.size(), 0);
+
+        if (0 < contacts.size()) {
+            EXPECT_EQ(contacts.size(), 1);
+
+            const auto& contact = contacts.front();
+
+            EXPECT_EQ(contact, expectedContact->str());
+        }
+    }
+
+    EXPECT_EQ(row->DisplayAmount(), u8"-10.000 003 16 units");
+    EXPECT_EQ(row->Memo(), "");
+    EXPECT_EQ(row->Workflow(), "");
+    EXPECT_EQ(
+        row->Text(),
+        "Outgoing Unit Test Simulation transaction to "
+        "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM");
+    EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
+    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(1)));
+
+    ASSERT_FALSE(row->Last());
+
+    row = widget.Next();
+
+    EXPECT_EQ(row->Amount(), 10000000000);
+    EXPECT_EQ(row->Contacts().size(), 0);
+    EXPECT_EQ(row->DisplayAmount(), u8"100 units");
+    EXPECT_EQ(row->Memo(), "");
+    EXPECT_EQ(row->Workflow(), "");
+    EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
+    EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
+    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(0)));
+    EXPECT_TRUE(row->Last());
+
+    const auto& tree =
+        client_1_.Blockchain().Account(alice_.nym_id_, test_chain_);
+    const auto& pc = tree.GetPaymentCode();
+
+    ASSERT_EQ(pc.size(), 1);
+
+    const auto& account = pc.at(0);
+    const auto lookahead = account.Lookahead() - 1u;
+
+    EXPECT_EQ(account.Type(), bca::SubaccountType::PaymentCode);
+    EXPECT_TRUE(account.IsNotified());
+
+    {
+        constexpr auto subchain{Subchain::Incoming};
+
+        const auto gen = account.LastGenerated(subchain);
+
+        ASSERT_TRUE(gen.has_value());
+        EXPECT_EQ(gen.value(), lookahead);
+    }
+    {
+        constexpr auto subchain{Subchain::Outgoing};
+
+        const auto gen = account.LastGenerated(subchain);
+
+        ASSERT_TRUE(gen.has_value());
+        EXPECT_EQ(gen.value(), lookahead);
+    }
+    {
+        constexpr auto subchain{Subchain::External};
+
+        const auto gen = account.LastGenerated(subchain);
+
+        EXPECT_FALSE(gen.has_value());
+    }
+    {
+        constexpr auto subchain{Subchain::Internal};
+
+        const auto gen = account.LastGenerated(subchain);
+
+        EXPECT_FALSE(gen.has_value());
+    }
+}
+
+TEST_F(Regtest_payment_code, alice_second_outgoing_transaction)
+{
+    const auto& api = client_1_;
+    const auto& blockchain = api.Blockchain();
+    const auto& contact = api.Contacts();
+    const auto& me = alice_.nym_id_;
+    const auto self = contact.ContactID(me);
+    const auto other = contact.ContactID(bob_.nym_id_);
+    const auto& txid = transactions_.at(2).get();
+    const auto& pTX = blockchain.LoadTransactionBitcoin(txid);
+
+    ASSERT_TRUE(pTX);
+
+    const auto& tx = *pTX;
+
+    {
+        const auto nyms = tx.AssociatedLocalNyms(blockchain);
+
+        EXPECT_GT(nyms.size(), 0);
+
+        if (0 < nyms.size()) {
+            EXPECT_EQ(nyms.size(), 1);
+            EXPECT_EQ(nyms.front(), me);
+        }
+    }
+    {
+        const auto contacts =
+            tx.AssociatedRemoteContacts(blockchain, contact, me);
+
+        EXPECT_GT(contacts.size(), 0);
+
+        if (0 < contacts.size()) {
+            EXPECT_EQ(contacts.size(), 1);
+            EXPECT_EQ(contacts.front(), other);
+        }
+    }
+    {
+        ASSERT_EQ(tx.Inputs().size(), 1u);
+
+        const auto& script = tx.Inputs().at(0u).Script();
+
+        ASSERT_EQ(script.size(), 2u);
+
+        const auto& placeholder = script.at(0u);
+        using OP = ot::blockchain::block::bitcoin::OP;
+
+        EXPECT_EQ(placeholder.opcode_, OP::ZERO);
+
+        const auto& sig = script.at(1u);
+
+        ASSERT_TRUE(sig.data_.has_value());
+        EXPECT_GE(sig.data_.value().size(), 70u);
+        EXPECT_LE(sig.data_.value().size(), 74u);
+    }
+    {
+        ASSERT_EQ(tx.Outputs().size(), 2u);
+
+        const auto& payment = tx.Outputs().at(0);
+        const auto& change = tx.Outputs().at(1);
+
+        EXPECT_EQ(payment.Payer(), self);
+        EXPECT_EQ(payment.Payee(), other);
+        EXPECT_EQ(change.Payer(), self);
+        EXPECT_EQ(change.Payee(), self);
+    }
+}
+
+TEST_F(Regtest_payment_code, alice_txodb_second_spend_unconfirmed)
 {
     const auto& network =
         client_1_.Network().Blockchain().GetChain(test_chain_);
     const auto& wallet = network.Wallet();
-    const auto& nym = alice_.ID();
+    const auto& nym = alice_.nym_id_;
     const auto& accountHD = SendHD().ID();
     const auto& accountPC = SendPC().ID();
     const auto blankNym = client_1_.Factory().NymID();
@@ -1721,231 +2130,61 @@ TEST_F(Regtest_payment_code, alice_after_unconfirmed_second_spend_wallet)
     EXPECT_EQ(wallet.GetOutputs(blankNym, accountPC, type).size(), 0u);
 }
 
-TEST_F(Regtest_payment_code, alice_after_unconfirmed_second_spend_ui)
+TEST_F(Regtest_payment_code, bob_activity_thread_second_unconfirmed_incoming)
 {
-    wait_for_counter(account_activity_alice_);
-    const auto& expectedAccount = SendHD().Parent().AccountID();
-    const auto& widget =
-        client_1_.UI().AccountActivity(alice_.ID(), expectedAccount);
-    const auto expectedContact = client_1_.Contacts().ContactID(bob_.ID());
+    const auto& contact = bob_.Contact(alice_.name_);
+    const auto expected = ActivityThreadData{
+        false,
+        contact.str(),
+        alice_.payment_code_,
+        "",
+        contact.str(),
+        {{ot::contact::ContactItemType::Regtest, alice_.payment_code_}},
+        {
+            {
+                false,
+                false,
+                1000000000,
+                "10 units",
+                "Incoming Unit Test Simulation transaction from "
+                "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu",
+                "",
+                ot::StorageBox::BLOCKCHAIN,
+                std::nullopt,
+            },
+            {
+                false,
+                false,
+                1500000000,
+                "15 units",
+                "Incoming Unit Test Simulation transaction from "
+                "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu",
+                "",
+                ot::StorageBox::BLOCKCHAIN,
+                std::nullopt,
+            },
+        },
+    };
 
-    EXPECT_EQ(widget.AccountID(), expectedAccount.str());
-    EXPECT_EQ(widget.Balance(), 7499999448);
-    EXPECT_EQ(widget.BalancePolarity(), 1);
-    EXPECT_EQ(widget.ContractID(), expected_unit_.str());
-    EXPECT_FALSE(widget.DepositAddress().empty());
-    EXPECT_FALSE(widget.DepositAddress(test_chain_).empty());
-    EXPECT_TRUE(widget.DepositAddress(ot::blockchain::Type::Bitcoin).empty());
-
-    const auto deposit = widget.DepositChains();
-
-    ASSERT_EQ(deposit.size(), 1);
-    EXPECT_EQ(deposit.at(0), test_chain_);
-    EXPECT_EQ(widget.DisplayBalance(), u8"74.999 994 48 units");
-    EXPECT_EQ(widget.DisplayUnit(), expected_display_unit_);
-    EXPECT_EQ(widget.Name(), expected_account_name_);
-    EXPECT_EQ(widget.NotaryID(), expected_notary_.str());
-    EXPECT_EQ(widget.NotaryName(), expected_notary_name_);
-    EXPECT_EQ(widget.SyncPercentage(), 100);
-
-    constexpr auto progress = std::pair<int, int>{2, 2};
-
-    EXPECT_EQ(widget.SyncProgress(), progress);
-    EXPECT_EQ(widget.Type(), expected_account_type_);
-    EXPECT_EQ(widget.Unit(), expected_unit_type_);
-
-    auto row = widget.First();
-
-    ASSERT_TRUE(row->Valid());
-    EXPECT_EQ(row->Amount(), -1500000236);
-
-    {
-        const auto contacts = row->Contacts();
-
-        EXPECT_GT(contacts.size(), 0);
-
-        if (0 < contacts.size()) {
-            EXPECT_EQ(contacts.size(), 1);
-
-            const auto& contact = contacts.front();
-
-            EXPECT_EQ(contact, expectedContact->str());
-        }
-    }
-
-    EXPECT_EQ(row->DisplayAmount(), u8"-15.000 002 36 units");
-    EXPECT_EQ(row->Memo(), "");
-    EXPECT_EQ(row->Workflow(), "");
-    EXPECT_EQ(
-        row->Text(),
-        "Outgoing Unit Test Simulation transaction to "
-        "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM");
-    EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-
-    transactions_.emplace_back(
-        ot::blockchain::NumberToHash(client_1_, row->UUID()));
-
-    ASSERT_FALSE(row->Last());
-
-    row = widget.Next();
-
-    EXPECT_EQ(row->Amount(), -1000000316);
-
-    {
-        const auto contacts = row->Contacts();
-
-        EXPECT_GT(contacts.size(), 0);
-
-        if (0 < contacts.size()) {
-            EXPECT_EQ(contacts.size(), 1);
-
-            const auto& contact = contacts.front();
-
-            EXPECT_EQ(contact, expectedContact->str());
-        }
-    }
-
-    EXPECT_EQ(row->DisplayAmount(), u8"-10.000 003 16 units");
-    EXPECT_EQ(row->Memo(), "");
-    EXPECT_EQ(row->Workflow(), "");
-    EXPECT_EQ(
-        row->Text(),
-        "Outgoing Unit Test Simulation transaction to "
-        "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM");
-    EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(1)));
-
-    ASSERT_FALSE(row->Last());
-
-    row = widget.Next();
-
-    EXPECT_EQ(row->Amount(), 10000000000);
-    EXPECT_EQ(row->Contacts().size(), 0);
-    EXPECT_EQ(row->DisplayAmount(), u8"100 units");
-    EXPECT_EQ(row->Memo(), "");
-    EXPECT_EQ(row->Workflow(), "");
-    EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
-    EXPECT_EQ(row->Type(), ot::StorageBox::BLOCKCHAIN);
-    EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(0)));
-    EXPECT_TRUE(row->Last());
-
-    const auto& tree = client_1_.Blockchain().Account(alice_.ID(), test_chain_);
-    const auto& pc = tree.GetPaymentCode();
-
-    ASSERT_EQ(pc.size(), 1);
-
-    const auto& account = pc.at(0);
-    const auto lookahead = account.Lookahead() - 1u;
-
-    EXPECT_EQ(account.Type(), bca::SubaccountType::PaymentCode);
-    EXPECT_TRUE(account.IsNotified());
-
-    {
-        constexpr auto subchain{Subchain::Incoming};
-
-        const auto gen = account.LastGenerated(subchain);
-
-        ASSERT_TRUE(gen.has_value());
-        EXPECT_EQ(gen.value(), lookahead);
-    }
-    {
-        constexpr auto subchain{Subchain::Outgoing};
-
-        const auto gen = account.LastGenerated(subchain);
-
-        ASSERT_TRUE(gen.has_value());
-        EXPECT_EQ(gen.value(), lookahead);
-    }
-    {
-        constexpr auto subchain{Subchain::External};
-
-        const auto gen = account.LastGenerated(subchain);
-
-        EXPECT_FALSE(gen.has_value());
-    }
-    {
-        constexpr auto subchain{Subchain::Internal};
-
-        const auto gen = account.LastGenerated(subchain);
-
-        EXPECT_FALSE(gen.has_value());
-    }
+    ASSERT_TRUE(wait_for_counter(activity_thread_bob_alice_));
+    EXPECT_TRUE(check_activity_thread(bob_, contact, expected));
+    EXPECT_TRUE(check_activity_thread_qt(bob_, contact, expected));
 }
 
-TEST_F(Regtest_payment_code, second_outgoing_transaction_alice)
+TEST_F(Regtest_payment_code, bob_account_activity_second_unconfirmed_incoming)
 {
-    const auto& api = client_1_;
-    const auto& blockchain = api.Blockchain();
-    const auto& contact = api.Contacts();
-    const auto& me = alice_.ID();
-    const auto self = contact.ContactID(me);
-    const auto other = contact.ContactID(bob_.ID());
-    const auto& txid = transactions_.at(2).get();
-    const auto& pTX = blockchain.LoadTransactionBitcoin(txid);
+    const auto& id = ReceiveHD().Parent().AccountID();
+    const auto expected = AccountActivityData{};  // TODO
 
-    ASSERT_TRUE(pTX);
+    ASSERT_TRUE(wait_for_counter(account_activity_bob_));
+    EXPECT_TRUE(check_account_activity(bob_, id, expected));
+    EXPECT_TRUE(check_account_activity_qt(bob_, id, expected));
 
-    const auto& tx = *pTX;
-
-    {
-        const auto nyms = tx.AssociatedLocalNyms(blockchain);
-
-        EXPECT_GT(nyms.size(), 0);
-
-        if (0 < nyms.size()) {
-            EXPECT_EQ(nyms.size(), 1);
-            EXPECT_EQ(nyms.front(), me);
-        }
-    }
-    {
-        const auto contacts =
-            tx.AssociatedRemoteContacts(blockchain, contact, me);
-
-        EXPECT_GT(contacts.size(), 0);
-
-        if (0 < contacts.size()) {
-            EXPECT_EQ(contacts.size(), 1);
-            EXPECT_EQ(contacts.front(), other);
-        }
-    }
-    {
-        ASSERT_EQ(tx.Inputs().size(), 1u);
-
-        const auto& script = tx.Inputs().at(0u).Script();
-
-        ASSERT_EQ(script.size(), 2u);
-
-        const auto& placeholder = script.at(0u);
-        using OP = ot::blockchain::block::bitcoin::OP;
-
-        EXPECT_EQ(placeholder.opcode_, OP::ZERO);
-
-        const auto& sig = script.at(1u);
-
-        ASSERT_TRUE(sig.data_.has_value());
-        EXPECT_GE(sig.data_.value().size(), 70u);
-        EXPECT_LE(sig.data_.value().size(), 74u);
-    }
-    {
-        ASSERT_EQ(tx.Outputs().size(), 2u);
-
-        const auto& payment = tx.Outputs().at(0);
-        const auto& change = tx.Outputs().at(1);
-
-        EXPECT_EQ(payment.Payer(), self);
-        EXPECT_EQ(payment.Payee(), other);
-        EXPECT_EQ(change.Payer(), self);
-        EXPECT_EQ(change.Payee(), self);
-    }
-}
-
-TEST_F(Regtest_payment_code, bob_after_second_receive_ui)
-{
-    wait_for_counter(account_activity_bob_);
+    // TODO move to check_account_activity
     const auto& expectedAccount = ReceiveHD().Parent().AccountID();
     const auto& widget =
-        client_2_.UI().AccountActivity(bob_.ID(), expectedAccount);
-    const auto expectedContact = client_2_.Contacts().ContactID(alice_.ID());
+        client_2_.UI().AccountActivity(bob_.nym_id_, expectedAccount);
+    const auto expectedContact = client_2_.Contacts().ContactID(alice_.nym_id_);
 
     EXPECT_EQ(widget.AccountID(), expectedAccount.str());
     EXPECT_EQ(widget.Balance(), 2500000000);
@@ -2031,7 +2270,8 @@ TEST_F(Regtest_payment_code, bob_after_second_receive_ui)
     EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(1)));
     EXPECT_TRUE(row->Last());
 
-    const auto& tree = client_2_.Blockchain().Account(bob_.ID(), test_chain_);
+    const auto& tree =
+        client_2_.Blockchain().Account(bob_.nym_id_, test_chain_);
     const auto& pc = tree.GetPaymentCode();
 
     ASSERT_EQ(pc.size(), 1);
@@ -2076,14 +2316,18 @@ TEST_F(Regtest_payment_code, bob_after_second_receive_ui)
 
 TEST_F(Regtest_payment_code, update_contacts)
 {
+    activity_thread_alice_bob_.expected_ += 4;
+    activity_thread_bob_alice_.expected_ += 4;
     account_activity_alice_.expected_ += 2;
     account_activity_bob_.expected_ += 2;
-    client_1_.OTX().StartIntroductionServer(alice_.ID());
-    client_2_.OTX().StartIntroductionServer(bob_.ID());
+    contact_list_alice_.expected_ += 1;
+    contact_list_bob_.expected_ += 1;
+    client_1_.OTX().StartIntroductionServer(alice_.nym_id_);
+    client_2_.OTX().StartIntroductionServer(bob_.nym_id_);
     auto task1 =
-        client_1_.OTX().RegisterNymPublic(alice_.ID(), server_1_.id_, true);
+        client_1_.OTX().RegisterNymPublic(alice_.nym_id_, server_1_.id_, true);
     auto task2 =
-        client_2_.OTX().RegisterNymPublic(bob_.ID(), server_1_.id_, true);
+        client_2_.OTX().RegisterNymPublic(bob_.nym_id_, server_1_.id_, true);
 
     ASSERT_NE(0, task1.first);
     ASSERT_NE(0, task2.first);
@@ -2092,17 +2336,126 @@ TEST_F(Regtest_payment_code, update_contacts)
     EXPECT_EQ(
         ot::otx::LastReplyStatus::MessageSuccess, task2.second.get().first);
 
-    client_1_.OTX().ContextIdle(alice_.ID(), server_1_.id_).get();
-    client_2_.OTX().ContextIdle(bob_.ID(), server_1_.id_).get();
+    client_1_.OTX().ContextIdle(alice_.nym_id_, server_1_.id_).get();
+    client_2_.OTX().ContextIdle(bob_.nym_id_, server_1_.id_).get();
+}
+
+TEST_F(Regtest_payment_code, alice_contact_list_after_otx)
+{
+    const auto expected = std::vector<ContactListData>{
+        {true, alice_.name_, alice_.name_, "ME", ""},
+        {true, bob_.name_, bob_.name_, "B", ""},
+    };
+
+    ASSERT_TRUE(wait_for_counter(contact_list_alice_));
+    EXPECT_TRUE(check_contact_list(alice_, expected));
+    EXPECT_TRUE(check_contact_list_qt(alice_, expected));
+}
+
+TEST_F(Regtest_payment_code, alice_activity_thread_after_otx)
+{
+    const auto& contact = alice_.Contact(bob_.name_);
+    const auto expected = ActivityThreadData{
+        true,
+        contact.str(),
+        bob_.name_,
+        "",
+        contact.str(),
+        {{ot::contact::ContactItemType::Regtest, bob_.payment_code_}},
+        {
+            {
+                false,
+                false,
+                -1000000316,
+                "-10.000 003 16 units",
+                "Outgoing Unit Test Simulation transaction to Bob",
+                "",
+                ot::StorageBox::BLOCKCHAIN,
+                std::nullopt,
+            },
+            {
+                false,
+                false,
+                -1500000236,
+                "-15.000 002 36 units",
+                "Outgoing Unit Test Simulation transaction to Bob",
+                "",
+                ot::StorageBox::BLOCKCHAIN,
+                std::nullopt,
+            },
+        },
+    };
+
+    ASSERT_TRUE(wait_for_counter(activity_thread_alice_bob_));
+    EXPECT_TRUE(check_activity_thread(alice_, contact, expected));
+    EXPECT_TRUE(check_activity_thread_qt(alice_, contact, expected));
+}
+
+TEST_F(Regtest_payment_code, bob_contact_list_after_otx)
+{
+    const auto expected = std::vector<ContactListData>{
+        {true, bob_.name_, bob_.name_, "ME", ""},
+        {true, alice_.name_, alice_.name_, "A", ""},
+    };
+
+    ASSERT_TRUE(wait_for_counter(contact_list_bob_));
+    EXPECT_TRUE(check_contact_list(bob_, expected));
+    EXPECT_TRUE(check_contact_list_qt(bob_, expected));
+}
+
+TEST_F(Regtest_payment_code, bob_activity_thread_after_otx)
+{
+    const auto& contact = bob_.Contact(alice_.name_);
+    const auto expected = ActivityThreadData{
+        true,
+        contact.str(),
+        alice_.name_,
+        "",
+        contact.str(),
+        {{ot::contact::ContactItemType::Regtest, alice_.payment_code_}},
+        {
+            {
+                false,
+                false,
+                1000000000,
+                "10 units",
+                "Incoming Unit Test Simulation transaction from Alice",
+                "",
+                ot::StorageBox::BLOCKCHAIN,
+                std::nullopt,
+            },
+            {
+                false,
+                false,
+                1500000000,
+                "15 units",
+                "Incoming Unit Test Simulation transaction from Alice",
+                "",
+                ot::StorageBox::BLOCKCHAIN,
+                std::nullopt,
+            },
+        },
+    };
+
+    ASSERT_TRUE(wait_for_counter(activity_thread_bob_alice_));
+    EXPECT_TRUE(check_activity_thread(bob_, contact, expected));
+    EXPECT_TRUE(check_activity_thread_qt(bob_, contact, expected));
 }
 
 TEST_F(Regtest_payment_code, alice_account_activity_after_otx)
 {
-    wait_for_counter(account_activity_alice_);
+    const auto& id = SendHD().Parent().AccountID();
+    const auto expected = AccountActivityData{};  // TODO
+
+    ASSERT_TRUE(wait_for_counter(account_activity_alice_));
+    EXPECT_TRUE(check_account_activity(alice_, id, expected));
+    EXPECT_TRUE(check_account_activity_qt(alice_, id, expected));
+
+    // TODO move to check_account_activity
     const auto& expectedAccount = SendHD().Parent().AccountID();
     const auto& widget =
-        client_1_.UI().AccountActivity(alice_.ID(), expectedAccount);
-    const auto expectedContact = client_1_.Contacts().ContactID(bob_.ID());
+        client_1_.UI().AccountActivity(alice_.nym_id_, expectedAccount);
+    const auto expectedContact = client_1_.Contacts().ContactID(bob_.nym_id_);
 
     EXPECT_EQ(widget.AccountID(), expectedAccount.str());
     EXPECT_EQ(widget.Balance(), 7499999448);
@@ -2201,11 +2554,18 @@ TEST_F(Regtest_payment_code, alice_account_activity_after_otx)
 
 TEST_F(Regtest_payment_code, bob_account_activity_after_otx)
 {
-    wait_for_counter(account_activity_bob_);
+    const auto& id = ReceiveHD().Parent().AccountID();
+    const auto expected = AccountActivityData{};  // TODO
+
+    ASSERT_TRUE(wait_for_counter(account_activity_bob_));
+    EXPECT_TRUE(check_account_activity(bob_, id, expected));
+    EXPECT_TRUE(check_account_activity_qt(bob_, id, expected));
+
+    // TODO move to check_account_activity
     const auto& expectedAccount = ReceiveHD().Parent().AccountID();
     const auto& widget =
-        client_2_.UI().AccountActivity(bob_.ID(), expectedAccount);
-    const auto expectedContact = client_2_.Contacts().ContactID(alice_.ID());
+        client_2_.UI().AccountActivity(bob_.nym_id_, expectedAccount);
+    const auto expectedContact = client_2_.Contacts().ContactID(alice_.nym_id_);
 
     EXPECT_EQ(widget.AccountID(), expectedAccount.str());
     EXPECT_EQ(widget.Balance(), 2500000000);
@@ -2287,7 +2647,8 @@ TEST_F(Regtest_payment_code, bob_account_activity_after_otx)
     EXPECT_EQ(row->UUID(), ot::blockchain::HashToNumber(transactions_.at(1)));
     EXPECT_TRUE(row->Last());
 
-    const auto& tree = client_2_.Blockchain().Account(bob_.ID(), test_chain_);
+    const auto& tree =
+        client_2_.Blockchain().Account(bob_.nym_id_, test_chain_);
     const auto& pc = tree.GetPaymentCode();
 
     ASSERT_EQ(pc.size(), 1);
@@ -2328,6 +2689,116 @@ TEST_F(Regtest_payment_code, bob_account_activity_after_otx)
 
         EXPECT_FALSE(gen.has_value());
     }
+}
+
+TEST_F(Regtest_payment_code, send_message_to_alice)
+{
+    activity_thread_alice_bob_.expected_ += 4;
+    activity_thread_bob_alice_.expected_ += 4;
+    const auto& widget =
+        client_2_.UI().ActivityThread(bob_.nym_id_, bob_.Contact(alice_.name_));
+
+    EXPECT_FALSE(widget.SendDraft());
+    EXPECT_TRUE(widget.SetDraft(message_text_));
+    EXPECT_TRUE(widget.SendDraft());
+}
+
+TEST_F(Regtest_payment_code, alice_activity_thread_after_message)
+{
+    const auto& contact = alice_.Contact(bob_.name_);
+    const auto expected = ActivityThreadData{
+        true,
+        contact.str(),
+        bob_.name_,
+        "",
+        contact.str(),
+        {{ot::contact::ContactItemType::Regtest, bob_.payment_code_}},
+        {
+            {
+                false,
+                false,
+                -1000000316,
+                "-10.000 003 16 units",
+                "Outgoing Unit Test Simulation transaction to Bob",
+                "",
+                ot::StorageBox::BLOCKCHAIN,
+                std::nullopt,
+            },
+            {
+                false,
+                false,
+                -1500000236,
+                "-15.000 002 36 units",
+                "Outgoing Unit Test Simulation transaction to Bob",
+                "",
+                ot::StorageBox::BLOCKCHAIN,
+                std::nullopt,
+            },
+            {
+                false,
+                false,
+                0,
+                "",
+                message_text_,
+                "",
+                ot::StorageBox::MAILINBOX,
+                std::nullopt,
+            },
+        },
+    };
+
+    ASSERT_TRUE(wait_for_counter(activity_thread_alice_bob_));
+    EXPECT_TRUE(check_activity_thread(alice_, contact, expected));
+    EXPECT_TRUE(check_activity_thread_qt(alice_, contact, expected));
+}
+
+TEST_F(Regtest_payment_code, bob_activity_thread_after_message)
+{
+    const auto& contact = bob_.Contact(alice_.name_);
+    const auto expected = ActivityThreadData{
+        true,
+        contact.str(),
+        alice_.name_,
+        "",
+        contact.str(),
+        {{ot::contact::ContactItemType::Regtest, alice_.payment_code_}},
+        {
+            {
+                false,
+                false,
+                1000000000,
+                "10 units",
+                "Incoming Unit Test Simulation transaction from Alice",
+                "",
+                ot::StorageBox::BLOCKCHAIN,
+                std::nullopt,
+            },
+            {
+                false,
+                false,
+                1500000000,
+                "15 units",
+                "Incoming Unit Test Simulation transaction from Alice",
+                "",
+                ot::StorageBox::BLOCKCHAIN,
+                std::nullopt,
+            },
+            {
+                false,
+                false,
+                0,
+                "",
+                message_text_,
+                "",
+                ot::StorageBox::MAILOUTBOX,
+                std::nullopt,
+            },
+        },
+    };
+
+    ASSERT_TRUE(wait_for_counter(activity_thread_bob_alice_));
+    EXPECT_TRUE(check_activity_thread(bob_, contact, expected));
+    EXPECT_TRUE(check_activity_thread_qt(bob_, contact, expected));
 }
 
 TEST_F(Regtest_payment_code, shutdown) { Shutdown(); }

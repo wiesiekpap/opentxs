@@ -13,8 +13,7 @@
 #include <utility>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
-#include "UIHelpers.hpp"
+#include "Basic.hpp"
 #include "integration/Helpers.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Shared.hpp"
@@ -67,6 +66,7 @@
 #include "opentxs/ui/PayableListItem.hpp"
 #include "opentxs/ui/Profile.hpp"
 #include "opentxs/ui/ProfileSection.hpp"
+#include "ui/Helpers.hpp"
 
 namespace opentxs
 {
@@ -143,11 +143,10 @@ public:
     }
 
     Integration()
-        : api_alex_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
-        , api_bob_(ot::Context().StartClient(OTTestEnvironment::Args(), 1))
-        , api_issuer_(ot::Context().StartClient(OTTestEnvironment::Args(), 2))
-        , api_server_1_(
-              ot::Context().StartServer(OTTestEnvironment::Args(), 0, true))
+        : api_alex_(ot::Context().StartClient(Args(), 0))
+        , api_bob_(ot::Context().StartClient(Args(), 1))
+        , api_issuer_(ot::Context().StartClient(Args(), 2))
+        , api_server_1_(ot::Context().StartServer(Args(), 0, true))
     {
         const_cast<Server&>(server_1_).init(api_server_1_);
         const_cast<User&>(alex_).init(api_alex_, server_1_);

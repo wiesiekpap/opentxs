@@ -15,7 +15,6 @@
 #include <string>
 #include <utility>
 
-#include "UIHelpers.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/api/HDSeed.hpp"
@@ -45,6 +44,7 @@
 #include "opentxs/ui/AccountActivity.hpp"
 #include "opentxs/ui/BalanceItem.hpp"
 #include "paymentcode/VectorsV3.hpp"
+#include "ui/Helpers.hpp"
 
 namespace ottest
 {
@@ -127,7 +127,7 @@ protected:
             if (!alice_p_) {
                 const auto reason =
                     client_1_.Factory().PasswordPrompt(__FUNCTION__);
-                const auto& vector = vectors_3_.alice_;
+                const auto& vector = GetVectors3().alice_;
                 const auto seedID = [&] {
                     const auto words =
                         client_1_.Factory().SecretFromText(vector.words_);
@@ -161,7 +161,7 @@ protected:
             if (!bob_p_) {
                 const auto reason =
                     client_2_.Factory().PasswordPrompt(__FUNCTION__);
-                const auto& vector = vectors_3_.bob_;
+                const auto& vector = GetVectors3().bob_;
                 const auto seedID = [&] {
                     const auto words =
                         client_2_.Factory().SecretFromText(vector.words_);

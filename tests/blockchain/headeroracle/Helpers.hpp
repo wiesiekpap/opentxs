@@ -17,7 +17,7 @@
 #include <utility>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"
+#include "Basic.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"

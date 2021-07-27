@@ -20,19 +20,8 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
-
-namespace crypto
-{
-namespace key
-{
-class Asymmetric;
-}  // namespace key
-}  // namespace crypto
 }  // namespace opentxs
 
 namespace opentxs
@@ -52,10 +41,9 @@ public:
         const AllocateOutput privateKey,
         const AllocateOutput publicKey) const noexcept = 0;
     virtual bool SharedSecret(
-        const key::Asymmetric& publicKey,
-        const key::Asymmetric& privateKey,
+        const ReadView publicKey,
+        const ReadView privateKey,
         const SecretStyle style,
-        const PasswordPrompt& reason,
         Secret& secret) const noexcept = 0;
     virtual bool RandomKeypair(
         const AllocateOutput privateKey,
@@ -65,27 +53,25 @@ public:
         const NymParameters& options = {},
         const AllocateOutput params = {}) const noexcept = 0;
     virtual bool Sign(
-        const api::internal::Core& api,
         const ReadView plaintext,
-        const key::Asymmetric& key,
+        const ReadView key,
         const crypto::HashType hash,
-        const AllocateOutput signature,
-        const PasswordPrompt& reason) const = 0;
+        const AllocateOutput signature) const = 0;
     virtual bool SignContract(
-        const api::internal::Core& api,
-        const String& strContractUnsigned,
-        const key::Asymmetric& theKey,
-        Signature& theSignature,  // output
+        const api::Core& api,
+        const String& contract,
+        const ReadView key,
         const crypto::HashType hashType,
-        const PasswordPrompt& reason) const = 0;
+        Signature& output) const = 0;
     virtual bool Verify(
-        const Data& plaintext,
-        const key::Asymmetric& theKey,
-        const Data& signature,
+        const ReadView plaintext,
+        const ReadView key,
+        const ReadView signature,
         const crypto::HashType hashType) const = 0;
     virtual bool VerifyContractSignature(
+        const api::Core& api,
         const String& strContractToVerify,
-        const key::Asymmetric& theKey,
+        const ReadView key,
         const Signature& theSignature,
         const crypto::HashType hashType) const = 0;
 

@@ -300,8 +300,9 @@ auto Key::GetPublicKeysBySignature(
                     break;  // bInclusive=false by default
                 default:
                     LogOutput(OT_METHOD)(__FUNCTION__)(
-                        ": Unexpected keytype value in signature metadata: ")(
-                        theSignature.getMetaData().GetKeyType())(" (Failure)!")
+                        ": Unexpected keytype value in signature "
+                        "metadata: ")(theSignature.getMetaData()
+                                          .GetKeyType())(" (Failure)!")
                         .Flush();
                     return 0;
             }
@@ -324,8 +325,8 @@ auto Key::GetPublicKeysBySignature(
             break;  // bInclusive=true
         default:
             LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Unexpected value for cKeyType (should be 0, A, E, or S): ")(
-                cKeyType)(".")
+                ": Unexpected value for cKeyType (should be 0, A, E, or "
+                "S): ")(cKeyType)(".")
                 .Flush();
             return 0;
     }
@@ -560,8 +561,12 @@ auto Key::Verify(
     OT_ASSERT(nullptr != keyToUse);
 
     try {
+
         return keyToUse->GetPublicKey().Verify(plaintext, sig);
     } catch (...) {
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to verify signature.")
+            .Flush();
+
         return false;
     }
 }

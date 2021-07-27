@@ -26,7 +26,7 @@
 
 namespace opentxs::factory
 {
-auto BlockchainBalanceList(
+auto BlockchainWalletKeys(
     const api::internal::Core& api,
     const api::client::internal::Blockchain& parent,
     const api::client::internal::BalanceTreeIndex& index,
@@ -110,7 +110,7 @@ auto Wallet::factory(
     const Accounts& paymentCode) const noexcept
     -> std::unique_ptr<internal::Account>
 {
-    return factory::BlockchainBalanceTree(
+    return factory::BlockchainAccountKeys(
         api_, *this, account_index_, nym, hd, {}, paymentCode);
 }
 

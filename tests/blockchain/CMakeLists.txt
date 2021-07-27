@@ -11,6 +11,8 @@ if(OT_BLOCKCHAIN_EXPORT)
   add_subdirectory(startstop)
 endif()
 
+target_sources(opentxs-test-helpers PRIVATE "Helpers.hpp" "Helpers.cpp")
+
 add_opentx_test(unittests-opentxs-blockchain-api Test_BlockchainAPI.cpp)
 add_opentx_test(unittests-opentxs-blockchain-address Test_Address.cpp)
 

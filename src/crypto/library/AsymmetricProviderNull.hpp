@@ -29,45 +29,42 @@ public:
         return false;
     }
     auto SharedSecret(
-        const key::Asymmetric&,
-        const key::Asymmetric&,
+        const ReadView,
+        const ReadView,
         const SecretStyle,
-        const PasswordPrompt&,
         Secret&) const noexcept -> bool final
     {
         return false;
     }
     auto Sign(
-        const api::internal::Core&,
         const ReadView,
-        const key::Asymmetric&,
+        const ReadView,
         const crypto::HashType,
-        const AllocateOutput,
-        const PasswordPrompt&) const -> bool final
+        const AllocateOutput) const -> bool final
     {
         return false;
     }
     auto SignContract(
-        const api::internal::Core&,
+        const api::Core&,
         const String&,
-        const key::Asymmetric&,
-        Signature&,  // output
+        const ReadView,
         const crypto::HashType,
-        const PasswordPrompt&) const -> bool final
+        Signature&) const -> bool final
     {
         return false;
     }
     auto Verify(
-        const Data&,
-        const key::Asymmetric&,
-        const Data&,
+        const ReadView,
+        const ReadView,
+        const ReadView,
         const crypto::HashType) const -> bool final
     {
         return false;
     }
     auto VerifyContractSignature(
+        const api::Core&,
         const String&,
-        const key::Asymmetric&,
+        const ReadView,
         const Signature&,
         const crypto::HashType) const -> bool final
     {

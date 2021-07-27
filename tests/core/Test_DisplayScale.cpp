@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "display/Definition.hpp"
 #include "display/Scale.hpp"
 #include "opentxs/Types.hpp"

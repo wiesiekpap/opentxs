@@ -12,8 +12,7 @@
 #include <utility>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
-#include "UIHelpers.hpp"
+#include "Basic.hpp"
 #include "integration/Helpers.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
 #include "opentxs/OT.hpp"
@@ -61,6 +60,7 @@
 #include "opentxs/ui/AccountSummary.hpp"
 #include "opentxs/ui/AccountSummaryItem.hpp"
 #include "opentxs/ui/IssuerItem.hpp"
+#include "ui/Helpers.hpp"
 
 namespace opentxs
 {
@@ -103,10 +103,9 @@ public:
     ot::OTZMQSubscribeSocket chris_rename_notary_listener_;
 
     Test_Pair()
-        : api_issuer_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
-        , api_chris_(ot::Context().StartClient(OTTestEnvironment::Args(), 1))
-        , api_server_1_(
-              ot::Context().StartServer(OTTestEnvironment::Args(), 0, true))
+        : api_issuer_(ot::Context().StartClient(Args(), 0))
+        , api_chris_(ot::Context().StartClient(Args(), 1))
+        , api_server_1_(ot::Context().StartServer(Args(), 0, true))
         , issuer_peer_request_cb_(ot::network::zeromq::ListenCallback::Factory(
               [this](const auto& in) { issuer_peer_request(in); }))
         , chris_rename_notary_cb_(ot::network::zeromq::ListenCallback::Factory(

@@ -12,7 +12,7 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 
-namespace
+namespace ottest
 {
 TEST_F(Test_StartStop, init_opentxs) {}
 
@@ -21,4 +21,4 @@ TEST_F(Test_StartStop, regtest)
     EXPECT_TRUE(api_.Network().Blockchain().Start(b::Type::UnitTest));
     EXPECT_TRUE(api_.Network().Blockchain().Stop(b::Type::UnitTest));
 }
-}  // namespace
+}  // namespace ottest

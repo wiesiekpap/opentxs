@@ -9,13 +9,15 @@
 #include <string>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 
-namespace
+namespace ot = opentxs;
+
+namespace ottest
 {
 // clang-format off
 const std::map<std::uint64_t, std::string> vector_1_{
@@ -60,6 +62,7 @@ const std::map<std::string, std::uint64_t> vector_5_{
 
 using CompactSize = opentxs::network::blockchain::bitcoin::CompactSize;
 
+CompactSize::Bytes decode_hex(const std::string& hex);
 CompactSize::Bytes decode_hex(const std::string& hex)
 {
     CompactSize::Bytes output{};
@@ -143,4 +146,4 @@ TEST(Test_CompactSize, decode_nine_bytes)
         EXPECT_EQ(decoded.Value(), expected);
     }
 }
-}  // namespace
+}  // namespace ottest

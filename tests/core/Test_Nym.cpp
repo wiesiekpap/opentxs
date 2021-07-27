@@ -8,7 +8,7 @@
 #include <optional>
 #include <string>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "Basic.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -29,7 +29,7 @@
 #define TEST_MASTER_PASSWORD "test password"
 #define TEST_PLAINTEXT "The quick brown fox jumped over the lazy dog."
 
-namespace
+namespace ottest
 {
 bool init_{false};
 
@@ -49,7 +49,7 @@ struct Test_Symmetric : public ::testing::Test {
     ot::Nym_p bob_;
 
     Test_Symmetric()
-        : api_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
+        : api_(ot::Context().StartClient(Args(), 0))
         , reason_(api_.Factory().PasswordPrompt(__FUNCTION__))
         , alice_()
         , bob_()
@@ -88,7 +88,6 @@ ot::OTSymmetricKey Test_Symmetric::second_key_{
 std::optional<ot::OTSecret> Test_Symmetric::key_password_{};
 ot::Space Test_Symmetric::ciphertext_{};
 ot::Space Test_Symmetric::second_ciphertext_{};
-}  // namespace
 
 TEST_F(Test_Symmetric, create_key)
 {
@@ -166,3 +165,4 @@ TEST_F(Test_Symmetric, create_second_key)
 
     ASSERT_TRUE(encrypted);
 }
+}  // namespace ottest

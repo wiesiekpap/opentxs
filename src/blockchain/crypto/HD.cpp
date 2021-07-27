@@ -38,7 +38,7 @@ namespace opentxs::factory
 {
 using ReturnType = blockchain::crypto::implementation::HD;
 
-auto BlockchainHDBalanceNode(
+auto BlockchainHDSubaccount(
     const api::internal::Core& api,
     const blockchain::crypto::internal::Account& parent,
     const proto::HDPath& path,
@@ -55,7 +55,7 @@ auto BlockchainHDBalanceNode(
     }
 }
 
-auto BlockchainHDBalanceNode(
+auto BlockchainHDSubaccount(
     const api::internal::Core& api,
     const blockchain::crypto::internal::Account& parent,
     const proto::HDAccount& serialized,
@@ -180,10 +180,11 @@ auto HD::PrivateKey(
             OT_FAIL;
         }
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid subchain (")(
-                opentxs::print(type))("). Only ")(opentxs::print(internalType))(
-                " and ")(opentxs::print(externalType))(
-                " are valid for this account.")
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": Invalid subchain (")(opentxs::print(
+                type))("). Only ")(opentxs::
+                                       print(internalType))(" and ")(opentxs::print(
+                externalType))(" are valid for this account.")
                 .Flush();
 
             return {};

@@ -13,8 +13,7 @@
 #include <gtest/gtest.h>
 #include <atomic>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
-#include "UIHelpers.hpp"
+#include "Basic.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/api/Context.hpp"
@@ -28,8 +27,9 @@
 #if OT_QT
 #include "opentxs/ui/qt/BlockchainSelection.hpp"
 #endif  // OT_QT
+#include "ui/Helpers.hpp"
 
-namespace
+namespace ottest
 {
 Counter counter_full_{};
 Counter counter_main_{};
@@ -44,7 +44,7 @@ public:
     const ot::ui::BlockchainSelection& test_;
 
     Test_BlockchainSelector()
-        : client_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
+        : client_(ot::Context().StartClient(Args(), 0))
         , full_([&]() -> auto& {
             static std::atomic_bool init{true};
             static auto cb =
@@ -769,4 +769,4 @@ TEST_F(Test_BlockchainSelector, shutdown)
     EXPECT_EQ(counter_main_.expected_, counter_main_.updated_);
     EXPECT_EQ(counter_test_.expected_, counter_test_.updated_);
 }
-}  // namespace
+}  // namespace ottest

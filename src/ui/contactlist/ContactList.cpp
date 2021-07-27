@@ -97,8 +97,11 @@ ContactList::ContactList(
 #if OT_QT
           ,
           Roles{
-              {ContactListQt::ContactIDRole, "id"},
-              {ContactListQt::SectionRole, "section"}},
+              {ContactListQt::IDRole, "id"},
+              {ContactListQt::NameRole, "name"},
+              {ContactListQt::ImageRole, "image"},
+              {ContactListQt::SectionRole, "section"},
+          },
           1,
           1
 #endif
@@ -228,11 +231,7 @@ auto ContactList::find_row(const ContactListRowID& id) const noexcept -> int
 {
     if (owner_contact_id_ == id) { return 0; }
 
-    const auto output = ContactListList::find_row(id);
-
-    if (-1 == output) { return output; }
-
-    return output + 1;
+    return ContactListList::find_row(id);
 }
 #endif
 
@@ -246,16 +245,12 @@ auto ContactList::first(const rLock&) const noexcept
 auto ContactList::index(int row, int column, const QModelIndex& parent)
     const noexcept -> QModelIndex
 {
-    const auto* pointer = get_pointer(parent);
+    if ((nullptr == parent.internalPointer()) && (0 == row)) {
 
-    if (nullptr == parent.internalPointer()) {
-        if (0 == row) {
-            return createIndex(row, column, owner_.get());
-        } else {
-            return get_index(row, column);
-        }
+        return createIndex(row, column, owner_.get());
     } else {
-        return pointer->qt_index(row, column);
+
+        return ContactListList::index(row, column, parent);
     }
 }
 #endif
@@ -340,6 +335,9 @@ auto ContactList::process_contact(const Message& in) noexcept -> void
     OT_ASSERT(false == contactID->empty())
 
     const auto name = Widget::api_.Contacts().ContactName(contactID);
+
+    OT_ASSERT(false == name.empty());
+
     auto custom = CustomData{};
     add_item(contactID, name, custom);
 }
@@ -357,20 +355,25 @@ auto ContactList::row_modified(const Lock&, const ContactListRowID& id) noexcept
 
         auto& row = const_cast<ContactListRowInternal&>(
             ContactListList::lookup(lock, id));
-        row_modified(index.value() + 1, &row);
+        row_modified(index.value(), &row);
     }
 }
 
 auto ContactList::startup() noexcept -> void
 {
     const auto contacts = Widget::api_.Contacts().ContactList();
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": Loading ")(contacts.size())(
-        " contacts.")
+    LogVerbose(OT_METHOD)(__FUNCTION__)(
+        ": Loading ")(contacts.size())(" contacts.")
         .Flush();
 
     for (const auto& [id, alias] : contacts) {
         auto custom = CustomData{};
-        add_item(Widget::api_.Factory().Identifier(id), alias, custom);
+        const auto contactID = Widget::api_.Factory().Identifier(id);
+        const auto name = Widget::api_.Contacts().ContactName(contactID);
+
+        OT_ASSERT(false == name.empty());
+
+        add_item(contactID, name, custom);
     }
 
     finish_startup();

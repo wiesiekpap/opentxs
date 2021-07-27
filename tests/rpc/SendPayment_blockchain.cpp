@@ -8,7 +8,6 @@
 #include <gtest/gtest.h>
 #include <array>
 
-#include "UIHelpers.hpp"
 #include "blockchain/regtest/Helpers.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -40,6 +39,7 @@
 #include "opentxs/ui/AccountListItem.hpp"
 #include "opentxs/ui/BalanceItem.hpp"
 #include "paymentcode/VectorsV3.hpp"
+#include "ui/Helpers.hpp"
 
 namespace ottest
 {

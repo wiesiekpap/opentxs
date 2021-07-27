@@ -85,46 +85,52 @@ private:
     DestructCallback cb_{};
 };
 
-class WritableView
+using ReadView = std::string_view;
+
+class OPENTXS_EXPORT WritableView
 {
 public:
-    OPENTXS_EXPORT operator void*() const noexcept { return data(); }
-    OPENTXS_EXPORT operator std::size_t() const noexcept { return size(); }
-    OPENTXS_EXPORT operator bool() const noexcept { return valid(); }
+    operator void*() const noexcept { return data(); }
+    operator std::size_t() const noexcept { return size(); }
+    operator bool() const noexcept { return valid(); }
+    operator ReadView() const noexcept
+    {
+        return {static_cast<const char*>(data_), size_};
+    }
 
     template <typename DesiredType>
-    OPENTXS_EXPORT auto as() const noexcept -> DesiredType*
+    auto as() const noexcept -> DesiredType*
     {
         return static_cast<DesiredType*>(data_);
     }
 
-    OPENTXS_EXPORT auto data() const noexcept -> void* { return data_; }
-    OPENTXS_EXPORT auto size() const noexcept -> std::size_t { return size_; }
-    OPENTXS_EXPORT auto valid() const noexcept -> bool
+    auto data() const noexcept -> void* { return data_; }
+    auto size() const noexcept -> std::size_t { return size_; }
+    auto valid() const noexcept -> bool
     {
         return (nullptr != data_) && (0 != size_);
     }
-    OPENTXS_EXPORT auto valid(const std::size_t size) const noexcept -> bool
+    auto valid(const std::size_t size) const noexcept -> bool
     {
         return (nullptr != data_) && (size == size_);
     }
 
-    OPENTXS_EXPORT WritableView(void* data, const std::size_t size) noexcept
+    WritableView(void* data, const std::size_t size) noexcept
         : data_(data)
         , size_(size)
     {
     }
-    OPENTXS_EXPORT WritableView() noexcept
+    WritableView() noexcept
         : WritableView(nullptr, 0)
     {
     }
-    OPENTXS_EXPORT WritableView(WritableView&& rhs) noexcept
+    WritableView(WritableView&& rhs) noexcept
         : data_(std::move(rhs.data_))
         , size_(std::move(rhs.size_))
     {
     }
 
-    OPENTXS_EXPORT ~WritableView() = default;
+    ~WritableView() = default;
 
 private:
     void* data_;
@@ -135,7 +141,6 @@ private:
 };
 
 using AllocateOutput = std::function<WritableView(const std::size_t)>;
-using ReadView = std::string_view;
 using Space = std::vector<std::byte>;
 using Digest = std::function<
     bool(const std::uint32_t, const ReadView, const AllocateOutput)>;

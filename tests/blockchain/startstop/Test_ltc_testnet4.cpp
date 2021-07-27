@@ -12,7 +12,7 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 
-namespace
+namespace ottest
 {
 TEST_F(Test_StartStop, init_opentxs) {}
 
@@ -22,4 +22,4 @@ TEST_F(Test_StartStop, ltc_testnet4)
         b::Type::Litecoin_testnet4, "127.0.0.2"));
     EXPECT_TRUE(api_.Network().Blockchain().Stop(b::Type::Litecoin_testnet4));
 }
-}  // namespace
+}  // namespace ottest

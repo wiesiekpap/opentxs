@@ -13,7 +13,6 @@
 #include <string>
 #include <utility>
 
-#include "UIHelpers.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/api/Context.hpp"
@@ -65,6 +64,7 @@
 #include "opentxs/ui/AccountList.hpp"
 #include "opentxs/ui/AccountListItem.hpp"
 #include "opentxs/ui/BalanceItem.hpp"
+#include "ui/Helpers.hpp"
 
 namespace ottest
 {

@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-#include "OTLowLevelTestEnvironment.hpp"
+#include "Basic.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Context.hpp"
@@ -21,6 +21,8 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 
+namespace ottest
+{
 std::string profile_id_{};
 std::string nym_id_{};
 std::string server_id_{};
@@ -67,8 +69,7 @@ TEST(PasswordCallback, create)
     callback.SetPassword(TEST_PASSWORD);
     caller.SetCallback(&callback);
 
-    const auto& otx =
-        ot::InitContext(OTLowLevelTestEnvironment::Args(), &caller);
+    const auto& otx = ot::InitContext(Args(true), &caller);
     profile_id_ = otx.ProfileId();
     const auto& client = otx.StartClient({}, 0);
     const auto reason = client.Factory().PasswordPrompt(__FUNCTION__);
@@ -88,8 +89,7 @@ TEST(PasswordCallback, load)
     callback.SetPassword(TEST_PASSWORD);
     caller.SetCallback(&callback);
 
-    const auto& otx =
-        ot::InitContext(OTLowLevelTestEnvironment::Args(), &caller);
+    const auto& otx = ot::InitContext(Args(true), &caller);
     const auto profile_id = otx.ProfileId();
     EXPECT_EQ(profile_id, profile_id_);
 
@@ -120,8 +120,7 @@ TEST(PasswordCallback, wrongpw)
     callback.SetPassword(TEST_DIFF_PASSWORD);
     caller.SetCallback(&callback);
 
-    const auto& otx =
-        ot::InitContext(OTLowLevelTestEnvironment::Args(), &caller);
+    const auto& otx = ot::InitContext(Args(true), &caller);
     const auto& client = otx.StartClient({}, 0);
     const auto nym_identifier{opentxs::identifier::Nym::Factory(nym_id_)};
     const auto nym = client.Wallet().Nym(nym_identifier);
@@ -139,3 +138,4 @@ TEST(PasswordCallback, wrongpw)
 
     ot::Cleanup();
 }
+}  // namespace ottest

@@ -8,6 +8,7 @@
 #include "crypto/key/Secp256k1.hpp"  // IWYU pragma: associated
 
 #include <stdexcept>
+#include <string_view>
 
 #include "internal/api/Api.hpp"
 #include "internal/crypto/key/Factory.hpp"
@@ -194,6 +195,7 @@ Secp256k1::Secp256k1(
           version,
           reason)
 {
+    OT_ASSERT(blank_private() != plaintext_key_->Bytes());
 }
 
 Secp256k1::Secp256k1(
@@ -288,5 +290,12 @@ Secp256k1::Secp256k1(const Secp256k1& rhs, OTSecret&& newSecretKey) noexcept
     : key::Secp256k1()
     , ot_super(rhs, std::move(newSecretKey))
 {
+}
+
+auto Secp256k1::blank_private() const noexcept -> ReadView
+{
+    static const auto blank = space(32);
+
+    return reader(blank);
 }
 }  // namespace opentxs::crypto::key::implementation

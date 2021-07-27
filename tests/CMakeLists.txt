@@ -14,13 +14,9 @@ function(
     ${GTEST_INCLUDE_DIRS}
   )
 
-  add_executable(${target_name} ${cxx-sources})
-
-  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Helpers.cpp")
-    target_sources(
-      ${target_name} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Helpers.cpp"
-    )
-  endif()
+  add_executable(
+    ${target_name} ${cxx-sources} $<TARGET_OBJECTS:opentxs-test-helpers>
+  )
 
   target_link_libraries(
     ${target_name} PRIVATE opentxs::libopentxs Boost::program_options
@@ -84,6 +80,20 @@ function(
   add_opentx_test_target("${target_name}" "${cxx-sources}")
 endfunction()
 
+add_library(
+  opentxs-test-helpers OBJECT
+  "Basic.cpp"
+  "Basic.hpp"
+  "Cli.hpp"
+)
+target_include_directories(
+  opentxs-test-helpers PUBLIC "${opentxs_SOURCE_DIR}/tests/"
+)
+target_include_directories(
+  opentxs-test-helpers SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+)
+target_link_libraries(opentxs-test-helpers PRIVATE Boost::filesystem)
+
 add_subdirectory(blockchain)
 
 if(OT_CASH_EXPORT)
@@ -99,10 +109,7 @@ add_subdirectory(identity)
 add_subdirectory(integration)
 add_subdirectory(network/zeromq)
 add_subdirectory(otx)
-
-if(SECP256K1_EXPORT AND BIP32_EXPORT)
-  add_subdirectory(paymentcode)
-endif()
+add_subdirectory(paymentcode)
 
 if(OT_ENABLE_RPC)
   add_subdirectory(rpc)

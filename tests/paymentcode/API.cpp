@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "OTTestEnvironment.hpp"  // IWYU pragma: keep
+#include "Basic.hpp"
 #include "VectorsV3.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
@@ -35,7 +35,7 @@
 
 namespace ot = opentxs;
 
-namespace
+namespace ottest
 {
 class Test_PaymentCodeAPI : public ::testing::Test
 {
@@ -44,8 +44,8 @@ public:
     const ot::api::client::Manager& bob_;
 
     Test_PaymentCodeAPI()
-        : alice_(ot::Context().StartClient(OTTestEnvironment::Args(), 0))
-        , bob_(ot::Context().StartClient(OTTestEnvironment::Args(), 1))
+        : alice_(ot::Context().StartClient(Args(), 0))
+        , bob_(ot::Context().StartClient(Args(), 1))
     {
     }
 };
@@ -54,8 +54,8 @@ TEST_F(Test_PaymentCodeAPI, init) {}
 
 TEST_F(Test_PaymentCodeAPI, alice)
 {
-    const auto& vector = vectors_3_.alice_;
-    const auto& remote = vectors_3_.bob_;
+    const auto& vector = GetVectors3().alice_;
+    const auto& remote = GetVectors3().bob_;
     constexpr auto receiveChain{ot::blockchain::Type::Bitcoin};
     constexpr auto sendChain{ot::blockchain::Type::Bitcoin_testnet3};
     const auto reason = alice_.Factory().PasswordPrompt(__FUNCTION__);
@@ -156,8 +156,8 @@ TEST_F(Test_PaymentCodeAPI, alice)
 
 TEST_F(Test_PaymentCodeAPI, bob)
 {
-    const auto& vector = vectors_3_.bob_;
-    const auto& remote = vectors_3_.alice_;
+    const auto& vector = GetVectors3().bob_;
+    const auto& remote = GetVectors3().alice_;
     constexpr auto receiveChain{ot::blockchain::Type::Bitcoin_testnet3};
     constexpr auto sendChain{ot::blockchain::Type::Bitcoin};
     const auto reason = bob_.Factory().PasswordPrompt(__FUNCTION__);
@@ -255,4 +255,4 @@ TEST_F(Test_PaymentCodeAPI, bob)
         EXPECT_EQ(element.KeyID(), element2.KeyID());
     }
 }
-}  // namespace
+}  // namespace ottest

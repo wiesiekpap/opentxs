@@ -71,9 +71,21 @@ Signable::Signable(const Signable& rhs) noexcept
 
 auto Signable::Alias() const -> std::string
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return alias_;
+}
+
+auto Signable::CheckID(const Lock& lock) const -> bool
+{
+    return (GetID(lock) == id_);
+}
+
+auto Signable::clear_signatures(const Lock& lock) noexcept -> void
+{
+    OT_ASSERT(verify_write_lock(lock));
+
+    signatures_.clear();
 }
 
 auto Signable::first_time_init(const Lock& lock) -> void
@@ -81,11 +93,6 @@ auto Signable::first_time_init(const Lock& lock) -> void
     const_cast<OTIdentifier&>(id_) = GetID(lock);
 
     if (id_->empty()) { throw std::runtime_error("Failed to calculate id"); }
-}
-
-auto Signable::CheckID(const Lock& lock) const -> bool
-{
-    return (GetID(lock) == id_);
 }
 
 auto Signable::id(const Lock& lock) const -> OTIdentifier
@@ -97,7 +104,7 @@ auto Signable::id(const Lock& lock) const -> OTIdentifier
 
 auto Signable::ID() const -> OTIdentifier
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return id(lock);
 }
@@ -113,16 +120,16 @@ auto Signable::init_serialized(const Lock& lock) noexcept(false) -> void
 
 auto Signable::Nym() const -> Nym_p { return nym_; }
 
-void Signable::SetAlias(const std::string& alias)
+auto Signable::SetAlias(const std::string& alias) -> void
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     alias_ = alias;
 }
 
 auto Signable::Terms() const -> const std::string&
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return conditions_;
 }
@@ -141,15 +148,17 @@ auto Signable::update_signature(const Lock& lock, const PasswordPrompt& reason)
     return true;
 }
 
-void Signable::update_version(const VersionNumber version) noexcept
+auto Signable::update_version(
+    const Lock& lock,
+    const VersionNumber version) noexcept -> void
 {
-    signatures_.clear();
+    clear_signatures(lock);
     const_cast<VersionNumber&>(version_) = version;
 }
 
 auto Signable::Validate() const -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     return validate(lock);
 }
