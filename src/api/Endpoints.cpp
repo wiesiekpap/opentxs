@@ -46,6 +46,7 @@
 #define INTERNAL_PUSH_NOTIFICATION_ENDPOINT "server/sendnotification"
 #define ISSUER_UPDATE_ENDPOINT "issuerupdate"
 #define MESSAGABILITY "otx/messagability"
+#define MESSAGELOADED "otx/message_loaded"
 #define NYM_CREATED_ENDPOINT "nymcreated"
 #define NYM_UPDATE_ENDPOINT "nymupdate"
 #define PAIR_EVENT_ENDPOINT "pairevent"
@@ -270,6 +271,11 @@ auto Endpoints::IssuerUpdate() const noexcept -> std::string
 auto Endpoints::Messagability() const noexcept -> std::string
 {
     return build_inproc_path(MESSAGABILITY, ENDPOINT_VERSION_1);
+}
+
+auto Endpoints::MessageLoaded() const noexcept -> std::string
+{
+    return build_inproc_path(MESSAGELOADED, ENDPOINT_VERSION_1);
 }
 
 auto Endpoints::NymCreated() const noexcept -> std::string

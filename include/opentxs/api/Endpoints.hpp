@@ -30,7 +30,7 @@ namespace opentxs
 {
 namespace api
 {
-class Endpoints
+class OPENTXS_EXPORT Endpoints
 {
 public:
     /** Account balance update notifications
@@ -42,7 +42,7 @@ public:
      *
      *  This endpoint is active for all session types.
      */
-    OPENTXS_EXPORT virtual std::string AccountUpdate() const noexcept = 0;
+    virtual auto AccountUpdate() const noexcept -> std::string = 0;
 
     /** Blockchain account creation notification
      *
@@ -53,8 +53,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string BlockchainAccountCreated()
-        const noexcept = 0;
+    virtual auto BlockchainAccountCreated() const noexcept -> std::string = 0;
 
     /** Blockchain balance notifications
      *
@@ -65,7 +64,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string BlockchainBalance() const noexcept = 0;
+    virtual auto BlockchainBalance() const noexcept -> std::string = 0;
 
     /** Blockchain block download queue notifications
      *
@@ -76,8 +75,8 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string BlockchainBlockDownloadQueue()
-        const noexcept = 0;
+    virtual auto BlockchainBlockDownloadQueue() const noexcept
+        -> std::string = 0;
 
     /** Blockchain mempool updates
      *
@@ -88,7 +87,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string BlockchainMempool() const noexcept = 0;
+    virtual auto BlockchainMempool() const noexcept -> std::string = 0;
 
     /** Blockchain filter oracle notifications
      *
@@ -99,7 +98,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string BlockchainNewFilter() const noexcept = 0;
+    virtual auto BlockchainNewFilter() const noexcept -> std::string = 0;
 
     /** Blockchain peer connection ready
      *
@@ -110,7 +109,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string BlockchainPeer() const noexcept = 0;
+    virtual auto BlockchainPeer() const noexcept -> std::string = 0;
 
     /** Blockchain peer connection initiated or lost
      *
@@ -121,8 +120,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string BlockchainPeerConnection()
-        const noexcept = 0;
+    virtual auto BlockchainPeerConnection() const noexcept -> std::string = 0;
 
     /** Blockchain reorg and update notifications
      *
@@ -133,7 +131,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string BlockchainReorg() const noexcept = 0;
+    virtual auto BlockchainReorg() const noexcept -> std::string = 0;
 
     /** Blockchain wallet scan progress
      *
@@ -144,8 +142,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string BlockchainScanProgress()
-        const noexcept = 0;
+    virtual auto BlockchainScanProgress() const noexcept -> std::string = 0;
 
     /** Blockchain enabled state change
      *
@@ -156,8 +153,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string BlockchainStateChange()
-        const noexcept = 0;
+    virtual auto BlockchainStateChange() const noexcept -> std::string = 0;
 
     /** Blockchain wallet sync progress
      *
@@ -168,8 +164,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string BlockchainSyncProgress()
-        const noexcept = 0;
+    virtual auto BlockchainSyncProgress() const noexcept -> std::string = 0;
 
     /** Blockchain sync server database changes
      *
@@ -180,8 +175,8 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string BlockchainSyncServerUpdated()
-        const noexcept = 0;
+    virtual auto BlockchainSyncServerUpdated() const noexcept
+        -> std::string = 0;
 
     /** Blockchain transaction notifications (global)
      *
@@ -192,8 +187,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string BlockchainTransactions()
-        const noexcept = 0;
+    virtual auto BlockchainTransactions() const noexcept -> std::string = 0;
 
     /** Blockchain transaction notifications (per-nym)
      *
@@ -204,8 +198,8 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string BlockchainTransactions(
-        const identifier::Nym& nym) const noexcept = 0;
+    virtual auto BlockchainTransactions(
+        const identifier::Nym& nym) const noexcept -> std::string = 0;
 
     /** Blockchain wallet balance updates
      *
@@ -216,8 +210,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string BlockchainWalletUpdated()
-        const noexcept = 0;
+    virtual auto BlockchainWalletUpdated() const noexcept -> std::string = 0;
 
     /** Connection state notifications
      *
@@ -228,7 +221,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string ConnectionStatus() const noexcept = 0;
+    virtual auto ConnectionStatus() const noexcept -> std::string = 0;
 
     /** Contact account creation notification
      *
@@ -239,7 +232,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string ContactUpdate() const noexcept = 0;
+    virtual auto ContactUpdate() const noexcept -> std::string = 0;
 
     /** Search for a nym in the DHT
      *
@@ -250,7 +243,7 @@ public:
      *
      *  This endpoint is active for all session types.
      */
-    OPENTXS_EXPORT virtual std::string DhtRequestNym() const noexcept = 0;
+    virtual auto DhtRequestNym() const noexcept -> std::string = 0;
 
     /** Search for a notary in the DHT
      *
@@ -261,7 +254,7 @@ public:
      *
      *  This endpoint is active for all session types.
      */
-    OPENTXS_EXPORT virtual std::string DhtRequestServer() const noexcept = 0;
+    virtual auto DhtRequestServer() const noexcept -> std::string = 0;
 
     /** Search for a unit definition in the DHT
      *
@@ -272,7 +265,7 @@ public:
      *
      *  This endpoint is active for all session types.
      */
-    OPENTXS_EXPORT virtual std::string DhtRequestUnit() const noexcept = 0;
+    virtual auto DhtRequestUnit() const noexcept -> std::string = 0;
 
     /** Search for a nym on known notaries
      *
@@ -283,7 +276,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string FindNym() const noexcept = 0;
+    virtual auto FindNym() const noexcept -> std::string = 0;
 
     /** Search for a notary contract on known notaries
      *
@@ -294,7 +287,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string FindServer() const noexcept = 0;
+    virtual auto FindServer() const noexcept -> std::string = 0;
 
     /** Search for a unit definition on known notaries
      *
@@ -305,36 +298,40 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string FindUnitDefinition() const noexcept = 0;
+    virtual auto FindUnitDefinition() const noexcept -> std::string = 0;
 
     /** Communication between blockchain peers and boost::asio context
      *
      */
-    virtual std::string InternalBlockchainAsioContext() const noexcept = 0;
+    virtual auto InternalBlockchainAsioContext() const noexcept
+        -> std::string = 0;
 
     /** Notification of blockchain block filter updates
      *
      */
-    virtual std::string InternalBlockchainBlockUpdated(
-        const opentxs::blockchain::Type chain) const noexcept = 0;
+    virtual auto InternalBlockchainBlockUpdated(
+        const opentxs::blockchain::Type chain) const noexcept
+        -> std::string = 0;
 
     /** Notification of blockchain block filter updates
      *
      */
-    virtual std::string InternalBlockchainFilterUpdated(
-        const opentxs::blockchain::Type chain) const noexcept = 0;
+    virtual auto InternalBlockchainFilterUpdated(
+        const opentxs::blockchain::Type chain) const noexcept
+        -> std::string = 0;
 
     /** Push notification processing
      *
      *  This socket is for use by the Sync and ServerConnection classes only
      */
-    virtual std::string InternalProcessPushNotification() const noexcept = 0;
+    virtual auto InternalProcessPushNotification() const noexcept
+        -> std::string = 0;
 
     /** Push notification initiation
      *
      *  This socket is for use by the Server and MessageProcessor classes only
      */
-    virtual std::string InternalPushNotification() const noexcept = 0;
+    virtual auto InternalPushNotification() const noexcept -> std::string = 0;
 
     /** Issuer update notifications
      *
@@ -345,7 +342,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string IssuerUpdate() const noexcept = 0;
+    virtual auto IssuerUpdate() const noexcept -> std::string = 0;
 
     /** Contact messagability status
      *
@@ -356,7 +353,18 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string Messagability() const noexcept = 0;
+    virtual auto Messagability() const noexcept -> std::string = 0;
+
+    /** Message loaded
+     *
+     *  A subscribe socket can connect to this endpoint to receive
+     *  MessageLoaded tagged messages
+     *
+     *  See opentxs/util/WorkTypes.hpp for message format documentation
+     *
+     *  This endpoint is active for client sessions only.
+     */
+    virtual auto MessageLoaded() const noexcept -> std::string = 0;
 
     /** Nym created notifications
      *
@@ -367,7 +375,7 @@ public:
      *
      *  This endpoint is active for all session types.
      */
-    OPENTXS_EXPORT virtual std::string NymCreated() const noexcept = 0;
+    virtual auto NymCreated() const noexcept -> std::string = 0;
 
     /** Nym update notifications
      *
@@ -378,7 +386,7 @@ public:
      *
      *  This endpoint is active for all session types.
      */
-    OPENTXS_EXPORT virtual std::string NymDownload() const noexcept = 0;
+    virtual auto NymDownload() const noexcept -> std::string = 0;
 
     /** Node pairing event notification
      *
@@ -390,7 +398,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string PairEvent() const noexcept = 0;
+    virtual auto PairEvent() const noexcept -> std::string = 0;
 
     /** Peer reply event notification
      *
@@ -403,7 +411,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string PeerReplyUpdate() const noexcept = 0;
+    virtual auto PeerReplyUpdate() const noexcept -> std::string = 0;
 
     /** Peer request event notification
      *
@@ -416,7 +424,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string PeerRequestUpdate() const noexcept = 0;
+    virtual auto PeerRequestUpdate() const noexcept -> std::string = 0;
 
     /** Pending bailment notification
      *
@@ -428,7 +436,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string PendingBailment() const noexcept = 0;
+    virtual auto PendingBailment() const noexcept -> std::string = 0;
 
     /** Server reply notification
      *
@@ -440,7 +448,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string ServerReplyReceived() const noexcept = 0;
+    virtual auto ServerReplyReceived() const noexcept -> std::string = 0;
 
     /** Server request notification
      *
@@ -452,7 +460,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string ServerRequestSent() const noexcept = 0;
+    virtual auto ServerRequestSent() const noexcept -> std::string = 0;
 
     /** Server contract update notifications
      *
@@ -463,7 +471,7 @@ public:
      *
      *  This endpoint is active for all session types.
      */
-    OPENTXS_EXPORT virtual std::string ServerUpdate() const noexcept = 0;
+    virtual auto ServerUpdate() const noexcept -> std::string = 0;
 
     /** Notification of context shutdown
      *
@@ -474,7 +482,7 @@ public:
      *
      *  This endpoint is active for all session types.
      */
-    OPENTXS_EXPORT virtual std::string Shutdown() const noexcept = 0;
+    virtual auto Shutdown() const noexcept -> std::string = 0;
 
     /** Background task completion notification
      *
@@ -485,7 +493,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string TaskComplete() const noexcept = 0;
+    virtual auto TaskComplete() const noexcept -> std::string = 0;
 
     /** Activity thread update notification
      *
@@ -496,8 +504,8 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string ThreadUpdate(
-        const std::string& thread) const noexcept = 0;
+    virtual auto ThreadUpdate(const std::string& thread) const noexcept
+        -> std::string = 0;
 
     /** Unit definition contract update notifications
      *
@@ -508,7 +516,7 @@ public:
      *
      *  This endpoint is active for all session types.
      */
-    OPENTXS_EXPORT virtual std::string UnitUpdate() const noexcept = 0;
+    virtual auto UnitUpdate() const noexcept -> std::string = 0;
 
     /** UI widget update notification
      *
@@ -519,7 +527,7 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string WidgetUpdate() const noexcept = 0;
+    virtual auto WidgetUpdate() const noexcept -> std::string = 0;
 
     /** Account update notification
      *
@@ -530,10 +538,9 @@ public:
      *
      *  This endpoint is active for client sessions only.
      */
-    OPENTXS_EXPORT virtual std::string WorkflowAccountUpdate()
-        const noexcept = 0;
+    virtual auto WorkflowAccountUpdate() const noexcept -> std::string = 0;
 
-    OPENTXS_EXPORT virtual ~Endpoints() = default;
+    OPENTXS_NO_EXPORT virtual ~Endpoints() = default;
 
 protected:
     Endpoints() = default;

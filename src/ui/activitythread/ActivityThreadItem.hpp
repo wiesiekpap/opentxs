@@ -103,9 +103,7 @@ protected:
         const identifier::Nym& nymID,
         const ActivityThreadRowID& rowID,
         const ActivityThreadSortKey& sortKey,
-        CustomData& custom,
-        const bool loading,
-        const bool pending) noexcept;
+        CustomData& custom) noexcept;
 
 private:
     ActivityThreadItem() = delete;

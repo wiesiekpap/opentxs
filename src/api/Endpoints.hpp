@@ -66,6 +66,7 @@ public:
     auto InternalPushNotification() const noexcept -> std::string final;
     auto IssuerUpdate() const noexcept -> std::string final;
     auto Messagability() const noexcept -> std::string final;
+    auto MessageLoaded() const noexcept -> std::string final;
     auto NymCreated() const noexcept -> std::string final;
     auto NymDownload() const noexcept -> std::string final;
     auto PairEvent() const noexcept -> std::string final;

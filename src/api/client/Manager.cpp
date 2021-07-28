@@ -101,7 +101,7 @@ Manager::Manager(
               factory::FactoryAPIClient(*this)})
     , zeromq_(opentxs::Factory::ZMQ(*this, running_))
     , contacts_(factory::ContactAPI(*this))
-    , activity_(factory::Activity(*this, *contacts_))
+    , activity_(factory::ActivityAPI(*this, *contacts_))
     , blockchain_(factory::BlockchainAPI(
           *this,
           *activity_,

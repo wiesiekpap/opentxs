@@ -7,12 +7,14 @@
 
 #include <chrono>
 #include <cstddef>
+#include <future>
 #include <iosfwd>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <string>
 
+#include "api/client/activity/MailCache.hpp"
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
@@ -54,125 +56,116 @@ class StorageThread;
 class Contact;
 }  // namespace opentxs
 
-namespace opentxs::api::client::implementation
+namespace opentxs::api::client
 {
-class Activity final : virtual public api::client::internal::Activity, Lockable
-{
+struct Activity::Imp final : Lockable {
 public:
-#if OT_BLOCKCHAIN
     auto AddBlockchainTransaction(
         const Blockchain& api,
-        const BlockchainTransaction& transaction) const noexcept -> bool final;
-#endif  // OT_BLOCKCHAIN
+        const BlockchainTransaction& transaction) const noexcept -> bool;
     auto AddPaymentEvent(
         const identifier::Nym& nymID,
         const Identifier& threadID,
         const StorageBox type,
         const Identifier& itemID,
         const Identifier& workflowID,
-        Time time) const noexcept -> bool final;
+        Time time) const noexcept -> bool;
     auto Mail(
         const identifier::Nym& nym,
         const Identifier& id,
-        const StorageBox& box) const noexcept -> std::unique_ptr<Message> final;
+        const StorageBox& box) const noexcept -> std::unique_ptr<Message>
+    {
+        return mail_.LoadMail(nym, id, box);
+    }
     auto Mail(
         const identifier::Nym& nym,
         const Message& mail,
         const StorageBox box,
-        const PasswordPrompt& reason) const noexcept -> std::string final;
+        const std::string& text) const noexcept -> std::string;
     auto Mail(const identifier::Nym& nym, const StorageBox box) const noexcept
-        -> ObjectList final;
+        -> ObjectList;
     auto MailRemove(
         const identifier::Nym& nym,
         const Identifier& id,
-        const StorageBox box) const noexcept -> bool final;
+        const StorageBox box) const noexcept -> bool;
     auto MailText(
         const identifier::Nym& nym,
         const Identifier& id,
         const StorageBox& box,
         const PasswordPrompt& reason) const noexcept
-        -> std::shared_ptr<const std::string> final;
+        -> std::shared_future<std::string>
+    {
+        return mail_.GetText(nym, id, box, reason);
+    }
     auto MarkRead(
         const identifier::Nym& nymId,
         const Identifier& threadId,
-        const Identifier& itemId) const noexcept -> bool final;
+        const Identifier& itemId) const noexcept -> bool;
     auto MarkUnread(
         const identifier::Nym& nymId,
         const Identifier& threadId,
-        const Identifier& itemId) const noexcept -> bool final;
+        const Identifier& itemId) const noexcept -> bool;
     auto Cheque(
         const identifier::Nym& nym,
         const std::string& id,
-        const std::string& workflow) const noexcept -> ChequeData final;
+        const std::string& workflow) const noexcept -> ChequeData;
     auto Transfer(
         const identifier::Nym& nym,
         const std::string& id,
-        const std::string& workflow) const noexcept -> TransferData final;
+        const std::string& workflow) const noexcept -> TransferData;
     auto PaymentText(
         const identifier::Nym& nym,
         const std::string& id,
         const std::string& workflow) const noexcept
-        -> std::shared_ptr<const std::string> final;
-    void PreloadActivity(
+        -> std::shared_ptr<const std::string>;
+    auto PreloadActivity(
         const identifier::Nym& nymID,
         const std::size_t count,
-        const PasswordPrompt& reason) const noexcept final;
-    void PreloadThread(
+        const PasswordPrompt& reason) const noexcept -> void;
+    auto PreloadThread(
         const identifier::Nym& nymID,
         const Identifier& threadID,
         const std::size_t start,
         const std::size_t count,
-        const PasswordPrompt& reason) const noexcept final;
+        const PasswordPrompt& reason) const noexcept -> void;
     auto Thread(
         const identifier::Nym& nymID,
         const Identifier& threadID,
-        proto::StorageThread& serialzied) const noexcept -> bool final;
+        proto::StorageThread& serialzied) const noexcept -> bool;
     auto Thread(
         const identifier::Nym& nymID,
         const Identifier& threadID,
-        AllocateOutput output) const noexcept -> bool final;
+        AllocateOutput output) const noexcept -> bool;
     auto Threads(const identifier::Nym& nym, const bool unreadOnly = false)
-        const noexcept -> ObjectList final;
-    auto UnreadCount(const identifier::Nym& nym) const noexcept
-        -> std::size_t final;
+        const noexcept -> ObjectList;
+    auto UnreadCount(const identifier::Nym& nym) const noexcept -> std::size_t;
     auto ThreadPublisher(const identifier::Nym& nym) const noexcept
-        -> std::string final;
+        -> std::string;
 
-    Activity(
-        const api::internal::Core& api,
+    Imp(const api::internal::Core& api,
         const client::Contacts& contact) noexcept;
 
-    ~Activity() final = default;
+    ~Imp() final;
 
 private:
-    using MailCache =
-        std::map<OTIdentifier, std::shared_ptr<const std::string>>;
-
     const api::internal::Core& api_;
     const client::Contacts& contact_;
-    mutable std::mutex mail_cache_lock_;
-    mutable MailCache mail_cache_;
+    const OTZMQPublishSocket message_loaded_;
+    mutable activity::MailCache mail_;
     mutable std::mutex publisher_lock_;
     mutable std::map<OTIdentifier, OTZMQPublishSocket> thread_publishers_;
-#if OT_BLOCKCHAIN
     mutable std::map<OTNymID, OTZMQPublishSocket> blockchain_publishers_;
-#endif  // OT_BLOCKCHAIN
 
-    void activity_preload_thread(
+    auto activity_preload_thread(
         OTPasswordPrompt reason,
         const OTIdentifier nymID,
-        const std::size_t count) const noexcept;
-    void preload(
-        OTPasswordPrompt reason,
-        const identifier::Nym& nym,
-        const Identifier& id,
-        const StorageBox box) const noexcept;
-    void thread_preload_thread(
+        const std::size_t count) const noexcept -> void;
+    auto thread_preload_thread(
         OTPasswordPrompt reason,
         const std::string nymID,
         const std::string threadID,
         const std::size_t start,
-        const std::size_t count) const noexcept;
+        const std::size_t count) const noexcept -> void;
 
 #if OT_BLOCKCHAIN
     auto add_blockchain_transaction(
@@ -191,17 +184,17 @@ private:
         -> const opentxs::network::zeromq::socket::Publish&;
     auto get_publisher(const identifier::Nym& nymID, std::string& endpoint)
         const noexcept -> const opentxs::network::zeromq::socket::Publish&;
-    void publish(const identifier::Nym& nymID, const Identifier& threadID)
-        const noexcept;
+    auto publish(const identifier::Nym& nymID, const Identifier& threadID)
+        const noexcept -> void;
     auto start_publisher(const std::string& endpoint) const noexcept
         -> OTZMQPublishSocket;
     auto verify_thread_exists(const std::string& nym, const std::string& thread)
         const noexcept -> bool;
 
-    Activity() = delete;
-    Activity(const Activity&) = delete;
-    Activity(Activity&&) = delete;
-    auto operator=(const Activity&) -> Activity& = delete;
-    auto operator=(Activity&&) -> Activity& = delete;
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 };
-}  // namespace opentxs::api::client::implementation
+}  // namespace opentxs::api::client

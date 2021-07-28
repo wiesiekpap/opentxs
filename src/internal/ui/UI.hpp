@@ -1409,16 +1409,6 @@ auto MailItem(
     const identifier::Nym& nymID,
     const ui::implementation::ActivityThreadRowID& rowID,
     const ui::implementation::ActivityThreadSortKey& sortKey,
-    ui::implementation::CustomData& custom,
-    const bool loading,
-    const bool pending) noexcept
-    -> std::shared_ptr<ui::implementation::ActivityThreadRowInternal>;
-auto MailItem(
-    const ui::implementation::ActivityThreadInternalInterface& parent,
-    const api::client::internal::Manager& api,
-    const identifier::Nym& nymID,
-    const ui::implementation::ActivityThreadRowID& rowID,
-    const ui::implementation::ActivityThreadSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
     -> std::shared_ptr<ui::implementation::ActivityThreadRowInternal>;
 auto MessagableListItem(

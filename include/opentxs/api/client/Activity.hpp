@@ -3,16 +3,23 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+// IWYU pragma: no_include "opentxs/core/Message.hpp"
+
 #ifndef OPENTXS_API_CLIENT_ACTIVITY_HPP
 #define OPENTXS_API_CLIENT_ACTIVITY_HPP
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
+#include <cstddef>
+#include <future>
 #include <memory>
 #include <string>
 #include <tuple>
+#include <utility>
 
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 
@@ -23,7 +30,13 @@ namespace api
 namespace client
 {
 class Blockchain;
+class Contacts;
 }  // namespace client
+
+namespace internal
+{
+struct Core;
+}  // namespace internal
 }  // namespace api
 
 namespace blockchain
@@ -37,10 +50,22 @@ class Transaction;
 }  // namespace block
 }  // namespace blockchain
 
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
+
 namespace proto
 {
 class StorageThread;
 }  // namespace proto
+
+class Cheque;
+class Identifier;
+class Item;
+class Message;
+class PasswordPrompt;
+class PeerObject;
 }  // namespace opentxs
 
 namespace opentxs
@@ -59,18 +84,16 @@ public:
     using BlockchainTransaction =
         opentxs::blockchain::block::bitcoin::Transaction;
 
-#if OT_BLOCKCHAIN
-    virtual bool AddBlockchainTransaction(
+    auto AddBlockchainTransaction(
         const Blockchain& api,
-        const BlockchainTransaction& transaction) const noexcept = 0;
-#endif  // OT_BLOCKCHAIN
-    virtual bool AddPaymentEvent(
+        const BlockchainTransaction& transaction) const noexcept -> bool;
+    auto AddPaymentEvent(
         const identifier::Nym& nymID,
         const Identifier& threadID,
         const StorageBox type,
         const Identifier& itemID,
         const Identifier& workflowID,
-        Time time) const noexcept = 0;
+        Time time) const noexcept -> bool;
     /**   Load a mail object
      *
      *    \param[in] nym the identifier of the nym who owns the mail box
@@ -79,10 +102,10 @@ public:
      *    \returns A smart pointer to the object. The smart pointer will not be
      *             instantiated if the object does not exist or is invalid.
      */
-    virtual std::unique_ptr<Message> Mail(
+    auto Mail(
         const identifier::Nym& nym,
         const Identifier& id,
-        const StorageBox& box) const noexcept = 0;
+        const StorageBox& box) const noexcept -> std::unique_ptr<Message>;
     /**   Store a mail object
      *
      *    \param[in] nym the identifier of the nym who owns the mail box
@@ -91,18 +114,23 @@ public:
      *    \returns The id of the stored message. The string will be empty if
      *             the mail object can not be stored.
      */
-    virtual std::string Mail(
+    auto Mail(
         const identifier::Nym& nym,
         const Message& mail,
         const StorageBox box,
-        const PasswordPrompt& reason) const noexcept = 0;
+        const PeerObject& text) const noexcept -> std::string;
+    auto Mail(
+        const identifier::Nym& nym,
+        const Message& mail,
+        const StorageBox box,
+        const std::string& text) const noexcept -> std::string;
     /**   Obtain a list of mail objects in a specified box
      *
      *    \param[in] nym the identifier of the nym who owns the mail box
      *    \param[in] box the box to be listed
      */
-    virtual ObjectList Mail(const identifier::Nym& nym, const StorageBox box)
-        const noexcept = 0;
+    auto Mail(const identifier::Nym& nym, const StorageBox box) const noexcept
+        -> ObjectList;
     /**   Delete a mail object
      *
      *    \param[in] nym the identifier of the nym who owns the mail box
@@ -111,10 +139,10 @@ public:
      *    \returns The id of the stored message. The string will be empty if
      *             the mail object can not be stored.
      */
-    virtual bool MailRemove(
+    auto MailRemove(
         const identifier::Nym& nym,
         const Identifier& id,
-        const StorageBox box) const noexcept = 0;
+        const StorageBox box) const noexcept -> bool;
     /**   Retrieve the text from a message
      *
      *    \param[in] nym the identifier of the nym who owns the mail box
@@ -123,11 +151,12 @@ public:
      *    \returns A smart pointer to the object. The smart pointer will not be
      *             instantiated if the object does not exist or is invalid.
      */
-    virtual std::shared_ptr<const std::string> MailText(
+    auto MailText(
         const identifier::Nym& nym,
         const Identifier& id,
         const StorageBox& box,
-        const PasswordPrompt& reason) const noexcept = 0;
+        const PasswordPrompt& reason) const noexcept
+        -> std::shared_future<std::string>;
     /**   Mark a thread item as read
      *
      *    \param[in] nymId the identifier of the nym who owns the thread
@@ -135,10 +164,10 @@ public:
      *    \param[in] itemId the identifier of the item to be marked read
      *    \returns False if the nym, thread, or item does not exist
      */
-    virtual bool MarkRead(
+    auto MarkRead(
         const identifier::Nym& nymId,
         const Identifier& threadId,
-        const Identifier& itemId) const noexcept = 0;
+        const Identifier& itemId) const noexcept -> bool;
     /**   Mark a thread item as unread
      *
      *    \param[in] nymId the identifier of the nym who owns the thread
@@ -146,20 +175,20 @@ public:
      *    \param[in] itemId the identifier of the item to be marked unread
      *    \returns False if the nym, thread, or item does not exist
      */
-    virtual bool MarkUnread(
+    auto MarkUnread(
         const identifier::Nym& nymId,
         const Identifier& threadId,
-        const Identifier& itemId) const noexcept = 0;
+        const Identifier& itemId) const noexcept -> bool;
 
-    virtual ChequeData Cheque(
+    auto Cheque(
         const identifier::Nym& nym,
         const std::string& id,
-        const std::string& workflow) const noexcept = 0;
+        const std::string& workflow) const noexcept -> ChequeData;
 
-    virtual TransferData Transfer(
+    auto Transfer(
         const identifier::Nym& nym,
         const std::string& id,
-        const std::string& workflow) const noexcept = 0;
+        const std::string& workflow) const noexcept -> TransferData;
 
     /**   Summarize a payment workflow event in human-friendly test form
      *
@@ -169,20 +198,21 @@ public:
      *    \returns A smart pointer to the object. The smart pointer will not be
      *             instantiated if the object does not exist or is invalid.
      */
-    virtual std::shared_ptr<const std::string> PaymentText(
+    auto PaymentText(
         const identifier::Nym& nym,
         const std::string& id,
-        const std::string& workflow) const noexcept = 0;
+        const std::string& workflow) const noexcept
+        -> std::shared_ptr<const std::string>;
 
     /**   Asynchronously cache the most recent items in each of a nym's threads
      *
      *    \param[in] nymID the identifier of the nym who owns the thread
      *    \param[in] count the number of items to preload in each thread
      */
-    virtual void PreloadActivity(
+    auto PreloadActivity(
         const identifier::Nym& nymID,
         const std::size_t count,
-        const PasswordPrompt& reason) const noexcept = 0;
+        const PasswordPrompt& reason) const noexcept -> void;
     /**   Asynchronously cache the items in an activity thread
      *
      *    \param[in] nymID the identifier of the nym who owns the thread
@@ -190,34 +220,32 @@ public:
      *    \param[in] start the first item to be cached
      *    \param[in] count the number of items to cache
      */
-    virtual void PreloadThread(
+    auto PreloadThread(
         const identifier::Nym& nymID,
         const Identifier& threadID,
         const std::size_t start,
         const std::size_t count,
-        const PasswordPrompt& reason) const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual bool Thread(
+        const PasswordPrompt& reason) const noexcept -> void;
+    OPENTXS_NO_EXPORT auto Thread(
         const identifier::Nym& nymID,
         const Identifier& threadID,
-        proto::StorageThread& serialized) const noexcept = 0;
-    virtual bool Thread(
+        proto::StorageThread& serialized) const noexcept -> bool;
+    auto Thread(
         const identifier::Nym& nymID,
         const Identifier& threadID,
-        AllocateOutput output) const noexcept = 0;
+        AllocateOutput output) const noexcept -> bool;
     /**   Obtain a list of thread ids for the specified nym
      *
      *    \param[in] nym the identifier of the nym
      *    \param[in] unreadOnly if true, only return threads with unread items
      */
-    virtual ObjectList Threads(
-        const identifier::Nym& nym,
-        const bool unreadOnly = false) const noexcept = 0;
+    auto Threads(const identifier::Nym& nym, const bool unreadOnly = false)
+        const noexcept -> ObjectList;
     /**   Return the total number of unread thread items for a nym
      *
      *    \param[in] nymId
      */
-    virtual std::size_t UnreadCount(
-        const identifier::Nym& nym) const noexcept = 0;
+    auto UnreadCount(const identifier::Nym& nym) const noexcept -> std::size_t;
 
     /** Activity thread update notification
      *
@@ -226,19 +254,25 @@ public:
      *
      *  See opentxs/util/WorkTypes.hpp for message format documentation
      */
-    virtual std::string ThreadPublisher(
-        const identifier::Nym& nym) const noexcept = 0;
+    auto ThreadPublisher(const identifier::Nym& nym) const noexcept
+        -> std::string;
 
-    OPENTXS_NO_EXPORT virtual ~Activity() = default;
+    OPENTXS_NO_EXPORT Activity(
+        const api::internal::Core& api,
+        const client::Contacts& contact) noexcept;
 
-protected:
-    Activity() = default;
+    OPENTXS_NO_EXPORT ~Activity();
 
 private:
+    struct Imp;
+
+    std::unique_ptr<Imp> imp_;
+
+    Activity() = delete;
     Activity(const Activity&) = delete;
     Activity(Activity&&) = delete;
-    Activity& operator=(const Activity&) = delete;
-    Activity& operator=(Activity&&) = delete;
+    auto operator=(const Activity&) -> Activity& = delete;
+    auto operator=(Activity&&) -> Activity& = delete;
 };
 }  // namespace client
 }  // namespace api

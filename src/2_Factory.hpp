@@ -26,7 +26,6 @@ class UI;
 
 namespace internal
 {
-struct Activity;
 struct Blockchain;
 struct Contacts;
 struct Manager;

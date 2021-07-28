@@ -3,9 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"             // IWYU pragma: associated
-#include "1_Internal.hpp"           // IWYU pragma: associated
-#include "api/client/Activity.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                 // IWYU pragma: associated
+#include "1_Internal.hpp"               // IWYU pragma: associated
+#include "api/client/activity/Imp.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
 #include <iterator>
@@ -19,7 +19,6 @@
 
 #include "Proto.hpp"
 #include "internal/api/Api.hpp"
-#include "internal/api/client/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Endpoints.hpp"
@@ -32,11 +31,8 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-#if OT_BLOCKCHAIN
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
-#endif                                                       // OT_BLOCKCHAIN
 #include "opentxs/contact/Contact.hpp"
-#include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Item.hpp"
@@ -46,7 +42,6 @@
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
-#include "opentxs/core/contract/peer/PeerObject.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -57,43 +52,35 @@
 #include "opentxs/protobuf/StorageThreadItem.pb.h"
 #include "opentxs/util/WorkType.hpp"
 
-#define OT_METHOD "opentxs::api::client::implementation::Activity::"
+#define OT_METHOD "opentxs::api::client::Activity::Imp::"
 
-namespace opentxs::factory
+namespace opentxs::api::client
 {
-auto Activity(
-    const api::internal::Core& api,
-    const api::client::Contacts& contact) noexcept
-    -> std::unique_ptr<api::client::internal::Activity>
-{
-    using ReturnType = api::client::implementation::Activity;
-
-    return std::make_unique<ReturnType>(api, contact);
-}
-}  // namespace opentxs::factory
-
-namespace opentxs::api::client::implementation
-{
-Activity::Activity(
+Activity::Imp::Imp(
     const api::internal::Core& api,
     const client::Contacts& contact) noexcept
     : api_(api)
     , contact_(contact)
-    , mail_cache_lock_()
-    , mail_cache_()
+    , message_loaded_([&] {
+        auto out = api_.Network().ZeroMQ().PublishSocket();
+        const auto rc = out->Start(api_.Endpoints().MessageLoaded());
+
+        OT_ASSERT(rc);
+
+        return out;
+    }())
+    , mail_(api_, message_loaded_)
     , publisher_lock_()
     , thread_publishers_()
-#if OT_BLOCKCHAIN
     , blockchain_publishers_()
-#endif  // OT_BLOCKCHAIN
 {
     // WARNING: do not access api_.Wallet() during construction
 }
 
-void Activity::activity_preload_thread(
+auto Activity::Imp::activity_preload_thread(
     OTPasswordPrompt reason,
     const OTIdentifier nym,
-    const std::size_t count) const noexcept
+    const std::size_t count) const noexcept -> void
 {
     const std::string nymID = nym->str();
     auto threads = api_.Storage().ThreadList(nymID, false);
@@ -105,7 +92,7 @@ void Activity::activity_preload_thread(
 }
 
 #if OT_BLOCKCHAIN
-auto Activity::add_blockchain_transaction(
+auto Activity::Imp::add_blockchain_transaction(
     const eLock& lock,
     const Blockchain& blockchain,
     const identifier::Nym& nym,
@@ -191,11 +178,13 @@ auto Activity::add_blockchain_transaction(
 
     return output;
 }
+#endif  // OT_BLOCKCHAIN
 
-auto Activity::AddBlockchainTransaction(
+auto Activity::Imp::AddBlockchainTransaction(
     const Blockchain& api,
     const BlockchainTransaction& transaction) const noexcept -> bool
 {
+#if OT_BLOCKCHAIN
     auto lock = eLock(shared_lock_);
 
     for (const auto& nym : transaction.AssociatedLocalNyms(api)) {
@@ -213,10 +202,12 @@ auto Activity::AddBlockchainTransaction(
     }
 
     return true;
-}
+#else
+    return false;
 #endif  // OT_BLOCKCHAIN
+}
 
-auto Activity::AddPaymentEvent(
+auto Activity::Imp::AddPaymentEvent(
     const identifier::Nym& nymID,
     const Identifier& threadID,
     const StorageBox type,
@@ -245,7 +236,7 @@ auto Activity::AddPaymentEvent(
     return saved;
 }
 
-auto Activity::Cheque(
+auto Activity::Imp::Cheque(
     const identifier::Nym& nym,
     [[maybe_unused]] const std::string& id,
     const std::string& workflowID) const noexcept -> Activity::ChequeData
@@ -303,7 +294,7 @@ auto Activity::Cheque(
     return output;
 }
 
-auto Activity::Transfer(
+auto Activity::Imp::Transfer(
     const identifier::Nym& nym,
     [[maybe_unused]] const std::string& id,
     const std::string& workflowID) const noexcept -> Activity::TransferData
@@ -376,7 +367,7 @@ auto Activity::Transfer(
     return output;
 }
 
-auto Activity::get_publisher(const identifier::Nym& nymID) const noexcept
+auto Activity::Imp::get_publisher(const identifier::Nym& nymID) const noexcept
     -> const opentxs::network::zeromq::socket::Publish&
 {
     std::string endpoint{};
@@ -385,7 +376,7 @@ auto Activity::get_publisher(const identifier::Nym& nymID) const noexcept
 }
 
 #if OT_BLOCKCHAIN
-auto Activity::get_blockchain(const eLock&, const identifier::Nym& nymID)
+auto Activity::Imp::get_blockchain(const eLock&, const identifier::Nym& nymID)
     const noexcept -> const opentxs::network::zeromq::socket::Publish&
 {
     auto it = blockchain_publishers_.find(nymID);
@@ -402,7 +393,7 @@ auto Activity::get_blockchain(const eLock&, const identifier::Nym& nymID)
 }
 #endif  // OT_BLOCKCHAIN
 
-auto Activity::get_publisher(
+auto Activity::Imp::get_publisher(
     const identifier::Nym& nymID,
     std::string& endpoint) const noexcept
     -> const opentxs::network::zeromq::socket::Publish&
@@ -421,111 +412,61 @@ auto Activity::get_publisher(
     return publisher->second.get();
 }
 
-auto Activity::Mail(
-    const identifier::Nym& nym,
-    const Identifier& id,
-    const StorageBox& box) const noexcept -> std::unique_ptr<Message>
-{
-    std::string raw, alias;
-    const bool loaded =
-        api_.Storage().Load(nym.str(), id.str(), box, raw, alias, true);
-
-    std::unique_ptr<Message> output;
-
-    if (false == loaded) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load message ")(id)
-            .Flush();
-
-        return output;
-    }
-
-    if (raw.empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Empty message ")(id).Flush();
-
-        return output;
-    }
-
-    output.reset(api_.Factory().Message().release());
-
-    OT_ASSERT(output);
-
-    if (false == output->LoadContractFromString(String::Factory(raw.c_str()))) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to deserialize message ")(id)
-            .Flush();
-
-        output.reset();
-    }
-
-    return output;
-}
-
-auto Activity::Mail(
+auto Activity::Imp::Mail(
     const identifier::Nym& nym,
     const Message& mail,
     const StorageBox box,
-    const PasswordPrompt& reason) const noexcept -> std::string
+    const std::string& text) const noexcept -> std::string
 {
-    const std::string nymID = nym.str();
-    auto id = Identifier::Factory();
+    const auto nymID = nym.str();
+    auto id = api_.Factory().Identifier();
     mail.CalculateContractID(id);
-    const std::string output = id->str();
-    const auto data = String::Factory(mail);
-    std::string participantNymID;
+    const auto itemID = id->str();
+    mail_.CacheText(nym, id, box, text);
+    const auto data = std::string{String::Factory(mail)->Get()};
     const auto localName = String::Factory(nym);
+    const auto participantNymID = [&]() -> std::string {
+        if (localName->Compare(mail.m_strNymID2)) {
+            // This is an incoming message. The contact id is the sender's id.
 
-    if (localName->Compare(mail.m_strNymID2)) {
-        // This is an incoming message. The contact id is the sender's id.
-        participantNymID = mail.m_strNymID->Get();
-    } else {
-        // This is an outgoing message. The contact id is the recipient's id.
-        participantNymID = mail.m_strNymID2->Get();
-    }
+            return mail.m_strNymID->Get();
+        } else {
+            // This is an outgoing message. The contact id is the recipient's
+            // id.
 
+            return mail.m_strNymID2->Get();
+        }
+    }();
     const auto contact = nym_to_contact(participantNymID);
 
     OT_ASSERT(contact);
 
     auto lock = eLock(shared_lock_);
-    std::string alias = contact->Label();
+    const auto& alias = contact->Label();
     const auto& contactID = contact->ID();
-    const auto& threadID = contactID.str();
+    const auto threadID = contactID.str();
 
     if (false == verify_thread_exists(nymID, threadID)) { return {}; }
 
     const bool saved = api_.Storage().Store(
-        localName->Get(),
-        threadID,
-        output,
-        mail.m_lTime,
-        alias,
-        data->Get(),
-        box);
+        localName->Get(), threadID, itemID, mail.m_lTime, alias, data, box);
 
     if (saved) {
-        std::thread preload(
-            &Activity::preload,
-            this,
-            OTPasswordPrompt{reason},
-            OTNymID{nym},
-            OTIdentifier{id},
-            box);
-        preload.detach();
         publish(nym, contactID);
 
-        return output;
+        return itemID;
     }
 
     return "";
 }
 
-auto Activity::Mail(const identifier::Nym& nym, const StorageBox box)
+auto Activity::Imp::Mail(const identifier::Nym& nym, const StorageBox box)
     const noexcept -> ObjectList
 {
     return api_.Storage().NymBoxList(nym.str(), box);
 }
 
-auto Activity::MailRemove(
+auto Activity::Imp::MailRemove(
     const identifier::Nym& nym,
     const Identifier& id,
     const StorageBox box) const noexcept -> bool
@@ -536,30 +477,7 @@ auto Activity::MailRemove(
     return api_.Storage().RemoveNymBoxItem(nymid, box, mail);
 }
 
-auto Activity::MailText(
-    const identifier::Nym& nymID,
-    const Identifier& id,
-    const StorageBox& box,
-    const PasswordPrompt& reason) const noexcept
-    -> std::shared_ptr<const std::string>
-{
-    Lock lock(mail_cache_lock_);
-    auto it = mail_cache_.find(id);
-    lock.unlock();
-
-    if (mail_cache_.end() != it) { return it->second; }
-
-    preload(reason, nymID, id, box);
-    lock.lock();
-    it = mail_cache_.find(id);
-    lock.unlock();
-
-    if (mail_cache_.end() == it) { return {}; }
-
-    return it->second;
-}
-
-auto Activity::MarkRead(
+auto Activity::Imp::MarkRead(
     const identifier::Nym& nymId,
     const Identifier& threadId,
     const Identifier& itemId) const noexcept -> bool
@@ -571,7 +489,7 @@ auto Activity::MarkRead(
     return api_.Storage().SetReadState(nym, thread, item, false);
 }
 
-auto Activity::MarkUnread(
+auto Activity::Imp::MarkUnread(
     const identifier::Nym& nymId,
     const Identifier& threadId,
     const Identifier& itemId) const noexcept -> bool
@@ -583,7 +501,7 @@ auto Activity::MarkUnread(
     return api_.Storage().SetReadState(nym, thread, item, true);
 }
 
-auto Activity::nym_to_contact(const std::string& id) const noexcept
+auto Activity::Imp::nym_to_contact(const std::string& id) const noexcept
     -> std::shared_ptr<const Contact>
 {
     const auto nymID = identifier::Nym::Factory(id);
@@ -592,7 +510,7 @@ auto Activity::nym_to_contact(const std::string& id) const noexcept
     return contact_.Contact(contactID);
 }
 
-auto Activity::PaymentText(
+auto Activity::Imp::PaymentText(
     const identifier::Nym& nym,
     const std::string& id,
     const std::string& workflowID) const noexcept
@@ -693,65 +611,13 @@ auto Activity::PaymentText(
     return std::move(output);
 }
 
-void Activity::preload(
-    OTPasswordPrompt reason,
-    const identifier::Nym& nymID,
-    const Identifier& id,
-    const StorageBox box) const noexcept
-{
-    const auto message = Mail(nymID, id, box);
-
-    if (!message) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to load message ")(id)
-            .Flush();
-
-        return;
-    }
-
-    auto nym = api_.Wallet().Nym(nymID);
-
-    if (false == bool(nym)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to load recipent nym.")
-            .Flush();
-
-        return;
-    }
-
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": Decrypting message ")(id).Flush();
-    auto peerObject =
-        api_.Factory().PeerObject(nym, message->m_ascPayload, reason);
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": Message ")(id)(" decrypted.")
-        .Flush();
-
-    if (!peerObject) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Unable to instantiate peer object.")
-            .Flush();
-
-        return;
-    }
-
-    if (!peerObject->Message()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Peer object does not contain a message.")
-            .Flush();
-
-        return;
-    }
-
-    Lock lock(mail_cache_lock_);
-    auto& output = mail_cache_[id];
-    lock.unlock();
-    output.reset(new std::string(*peerObject->Message()));
-}
-
-void Activity::PreloadActivity(
+auto Activity::Imp::PreloadActivity(
     const identifier::Nym& nymID,
     const std::size_t count,
-    const PasswordPrompt& reason) const noexcept
+    const PasswordPrompt& reason) const noexcept -> void
 {
     std::thread preload(
-        &Activity::activity_preload_thread,
+        &Imp::activity_preload_thread,
         this,
         OTPasswordPrompt{reason},
         Identifier::Factory(nymID),
@@ -759,17 +625,17 @@ void Activity::PreloadActivity(
     preload.detach();
 }
 
-void Activity::PreloadThread(
+auto Activity::Imp::PreloadThread(
     const identifier::Nym& nymID,
     const Identifier& threadID,
     const std::size_t start,
     const std::size_t count,
-    const PasswordPrompt& reason) const noexcept
+    const PasswordPrompt& reason) const noexcept -> void
 {
     const std::string nym = nymID.str();
     const std::string thread = threadID.str();
     std::thread preload(
-        &Activity::thread_preload_thread,
+        &Imp::thread_preload_thread,
         this,
         OTPasswordPrompt{reason},
         nym,
@@ -779,8 +645,9 @@ void Activity::PreloadThread(
     preload.detach();
 }
 
-void Activity::publish(const identifier::Nym& nymID, const Identifier& threadID)
-    const noexcept
+auto Activity::Imp::publish(
+    const identifier::Nym& nymID,
+    const Identifier& threadID) const noexcept -> void
 {
     auto& socket = get_publisher(nymID);
     auto work = socket.Context().TaggedMessage(WorkType::ActivityThreadUpdated);
@@ -788,7 +655,7 @@ void Activity::publish(const identifier::Nym& nymID, const Identifier& threadID)
     socket.Send(work);
 }
 
-auto Activity::start_publisher(const std::string& endpoint) const noexcept
+auto Activity::Imp::start_publisher(const std::string& endpoint) const noexcept
     -> OTZMQPublishSocket
 {
     auto output = api_.Network().ZeroMQ().PublishSocket();
@@ -802,7 +669,7 @@ auto Activity::start_publisher(const std::string& endpoint) const noexcept
     return output;
 }
 
-auto Activity::Thread(
+auto Activity::Imp::Thread(
     const identifier::Nym& nymID,
     const Identifier& threadID,
     proto::StorageThread& output) const noexcept -> bool
@@ -816,7 +683,7 @@ auto Activity::Thread(
     return true;
 }
 
-auto Activity::Thread(
+auto Activity::Imp::Thread(
     const identifier::Nym& nymID,
     const Identifier& threadID,
     AllocateOutput output) const noexcept -> bool
@@ -831,13 +698,14 @@ auto Activity::Thread(
     return write(serialized, output);
 }
 
-void Activity::thread_preload_thread(
+auto Activity::Imp::thread_preload_thread(
     OTPasswordPrompt reason,
     const std::string nymID,
     const std::string threadID,
     const std::size_t start,
-    const std::size_t count) const noexcept
+    const std::size_t count) const noexcept -> void
 {
+    const auto nym = api_.Factory().NymID(nymID);
     auto thread = proto::StorageThread{};
 
     if (false == api_.Storage().Load(nymID, threadID, thread)) {
@@ -870,14 +738,11 @@ void Activity::thread_preload_thread(
         switch (box) {
             case StorageBox::MAILINBOX:
             case StorageBox::MAILOUTBOX: {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogTrace(OT_METHOD)(__FUNCTION__)(
                     ": Preloading item ")(item.id())(" in thread ")(threadID)
                     .Flush();
-                MailText(
-                    identifier::Nym::Factory(nymID),
-                    Identifier::Factory(item.id()),
-                    box,
-                    reason);
+                mail_.GetText(
+                    nym, api_.Factory().Identifier(item.id()), box, reason);
                 ++cached;
             } break;
             default: {
@@ -887,7 +752,7 @@ void Activity::thread_preload_thread(
     }
 }
 
-auto Activity::ThreadPublisher(const identifier::Nym& nym) const noexcept
+auto Activity::Imp::ThreadPublisher(const identifier::Nym& nym) const noexcept
     -> std::string
 {
     std::string endpoint{};
@@ -896,7 +761,7 @@ auto Activity::ThreadPublisher(const identifier::Nym& nym) const noexcept
     return endpoint;
 }
 
-auto Activity::Threads(const identifier::Nym& nym, const bool unreadOnly)
+auto Activity::Imp::Threads(const identifier::Nym& nym, const bool unreadOnly)
     const noexcept -> ObjectList
 {
     const std::string nymID = nym.str();
@@ -923,7 +788,7 @@ auto Activity::Threads(const identifier::Nym& nym, const bool unreadOnly)
     return output;
 }
 
-auto Activity::UnreadCount(const identifier::Nym& nymId) const noexcept
+auto Activity::Imp::UnreadCount(const identifier::Nym& nymId) const noexcept
     -> std::size_t
 {
     const std::string nym = nymId.str();
@@ -939,7 +804,7 @@ auto Activity::UnreadCount(const identifier::Nym& nymId) const noexcept
     return output;
 }
 
-auto Activity::verify_thread_exists(
+auto Activity::Imp::verify_thread_exists(
     const std::string& nym,
     const std::string& thread) const noexcept -> bool
 {
@@ -953,4 +818,6 @@ auto Activity::verify_thread_exists(
 
     return api_.Storage().CreateThread(nym, thread, {thread});
 }
-}  // namespace opentxs::api::client::implementation
+
+Activity::Imp::~Imp() = default;
+}  // namespace opentxs::api::client

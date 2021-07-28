@@ -12,6 +12,7 @@
 #endif  // OT_QT
 #include <atomic>
 #include <chrono>
+#include <future>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -115,16 +116,11 @@ auto ActivitySummaryItem::find_text(
         case StorageBox::MAILOUTBOX: {
             auto text = api_.Activity().MailText(
                 nym_id_, Identifier::Factory(itemID), box, reason);
+            // TODO activity summary should subscribe for updates instead of
+            // waiting for decryption
 
-            if (text) {
-
-                return *text;
-            } else {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": Mail item does not exist.")
-                    .Flush();
-            }
-        } break;
+            return text.get();
+        }
         case StorageBox::INCOMINGCHEQUE:
         case StorageBox::OUTGOINGCHEQUE: {
             auto text = api_.Activity().PaymentText(nym_id_, itemID, accountID);

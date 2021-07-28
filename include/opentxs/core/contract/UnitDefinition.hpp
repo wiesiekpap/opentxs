@@ -29,6 +29,7 @@ class UnitDefinition;
 
 class Account;
 class AccountVisitor;
+class PasswordPrompt;
 
 using OTUnitDefinition = SharedPimpl<contract::Unit>;
 }  // namespace opentxs

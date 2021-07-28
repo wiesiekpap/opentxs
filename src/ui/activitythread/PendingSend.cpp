@@ -57,20 +57,11 @@ PendingSend::PendingSend(
     opentxs::Amount amount,
     std::string&& display,
     std::string&& memo) noexcept
-    : ActivityThreadItem(
-          parent,
-          api,
-          nymID,
-          rowID,
-          sortKey,
-          custom,
-          false,
-          true)
+    : ActivityThreadItem(parent, api, nymID, rowID, sortKey, custom)
     , amount_(amount)
     , display_amount_(std::move(display))
     , memo_(std::move(memo))
 {
-    OT_ASSERT(4 == custom.size());
     OT_ASSERT(false == nym_id_.empty())
     OT_ASSERT(false == item_id_.empty())
 }
@@ -93,9 +84,9 @@ auto PendingSend::extract(CustomData& custom) noexcept
     -> std::tuple<opentxs::Amount, std::string, std::string>
 {
     return std::make_tuple(
-        extract_custom<opentxs::Amount>(custom, 1),
-        extract_custom<std::string>(custom, 2),
-        extract_custom<std::string>(custom, 3));
+        extract_custom<opentxs::Amount>(custom, 3),
+        extract_custom<std::string>(custom, 4),
+        extract_custom<std::string>(custom, 5));
 }
 
 auto PendingSend::Memo() const noexcept -> std::string

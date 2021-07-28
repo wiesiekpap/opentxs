@@ -103,6 +103,7 @@ struct ThreadPool : virtual public api::ThreadPool {
         BlockchainWallet = OT_ZMQ_INTERNAL_SIGNAL + 0,
         SyncDataFiltersIncoming = OT_ZMQ_INTERNAL_SIGNAL + 1,
         CalculateBlockFilters = OT_ZMQ_INTERNAL_SIGNAL + 2,
+        DecryptOTXMessage = OT_ZMQ_INTERNAL_SIGNAL + 3,
     };
 
     virtual auto Shutdown() noexcept -> void = 0;
