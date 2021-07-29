@@ -69,21 +69,12 @@ BlockchainActivityThreadItem::BlockchainActivityThreadItem(
     opentxs::Amount amount,
     std::string&& displayAmount,
     std::string&& memo) noexcept
-    : ActivityThreadItem(
-          parent,
-          api,
-          nymID,
-          rowID,
-          sortKey,
-          custom,
-          false,
-          false)
+    : ActivityThreadItem(parent, api, nymID, rowID, sortKey, custom)
     , txid_(std::move(txid))
     , display_amount_(std::move(displayAmount))
     , memo_(std::move(memo))
     , amount_(amount)
 {
-    OT_ASSERT(3 == custom.size());
     OT_ASSERT(false == nym_id_.empty())
     OT_ASSERT(false == item_id_.empty())
     OT_ASSERT(false == txid_->empty())
@@ -111,20 +102,16 @@ auto BlockchainActivityThreadItem::extract(
 {
     auto output = std::tuple<OTData, opentxs::Amount, std::string, std::string>{
         api.Factory().Data(
-            ui::implementation::extract_custom<std::string>(custom, 2),
+            ui::implementation::extract_custom<std::string>(custom, 4),
             StringStyle::Raw),
         0,
         "",
         ""};
     auto& [txid, amount, display, memo] = output;
+    auto& text = *static_cast<std::string*>(custom.front());
     const auto pTx = api.Blockchain().LoadTransactionBitcoin(txid->asHex());
     const auto chain =
-        ui::implementation::extract_custom<blockchain::Type>(custom, 1);
-    auto* pText = static_cast<std::string*>(custom.at(0));
-
-    OT_ASSERT(nullptr != pText);
-
-    auto& text = *pText;
+        ui::implementation::extract_custom<blockchain::Type>(custom, 3);
 
     if (pTx) {
         const auto& tx = *pTx;

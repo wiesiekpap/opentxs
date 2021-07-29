@@ -36,9 +36,7 @@ ActivityThreadItem::ActivityThreadItem(
     const identifier::Nym& nymID,
     const ActivityThreadRowID& rowID,
     const ActivityThreadSortKey& sortKey,
-    CustomData& custom,
-    const bool loading,
-    const bool pending) noexcept
+    CustomData& custom) noexcept
     : ActivityThreadItemRow(parent, api, rowID, true)
     , nym_id_(nymID)
     , time_(std::get<0>(sortKey))
@@ -46,8 +44,8 @@ ActivityThreadItem::ActivityThreadItem(
     , box_(std::get<1>(row_id_))
     , account_id_(std::get<2>(row_id_))
     , text_(extract_custom<std::string>(custom, 0))
-    , loading_(Flag::Factory(loading))
-    , pending_(Flag::Factory(pending))
+    , loading_(Flag::Factory(extract_custom<bool>(custom, 1)))
+    , pending_(Flag::Factory(extract_custom<bool>(custom, 2)))
 {
     OT_ASSERT(verify_empty(custom));
 }
@@ -154,14 +152,26 @@ auto ActivityThreadItem::reindex(
     const ActivityThreadSortKey&,
     CustomData& custom) noexcept -> bool
 {
-    const auto text = extract_custom<std::string>(custom);
+    const auto text = extract_custom<std::string>(custom, 0);
+    auto changed{false};
 
-    if (false == text.empty()) {
-        auto lock = eLock{shared_lock_};
+    if (auto lock = eLock{shared_lock_}; text_ != text) {
         text_ = text;
+        changed = true;
     }
 
-    return true;
+    const auto loading = extract_custom<bool>(custom, 1);
+    const auto pending = extract_custom<bool>(custom, 2);
+
+    if (const auto val = loading_->Set(loading); val != loading) {
+        changed = true;
+    }
+
+    if (const auto val = pending_->Set(pending); val != pending) {
+        changed = true;
+    }
+
+    return changed;
 }
 
 auto ActivityThreadItem::Text() const noexcept -> std::string

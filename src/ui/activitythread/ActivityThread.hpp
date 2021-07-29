@@ -187,6 +187,7 @@ private:
         shutdown = value(WorkType::Shutdown),
         contact = value(WorkType::ContactUpdated),
         thread = value(WorkType::ActivityThreadUpdated),
+        message_loaded = value(WorkType::MessageLoaded),
         otx = value(WorkType::OTXTaskComplete),
         messagability = value(WorkType::OTXMessagability),
         init = OT_ZMQ_INIT_SIGNAL,
@@ -225,6 +226,7 @@ private:
     auto process_item(const proto::StorageThreadItem& item) noexcept
         -> ActivityThreadRowID;
     auto process_messagability(const Message& message) noexcept -> void;
+    auto process_message_loaded(const Message& message) noexcept -> void;
     auto process_otx(const Message& message) noexcept -> void;
     auto process_thread(const Message& message) noexcept -> void;
     auto refresh_thread() noexcept -> void;

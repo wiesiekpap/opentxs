@@ -154,9 +154,6 @@ auto translate(const proto::PaymentWorkflowState in) noexcept
 auto translate(const proto::PaymentWorkflowType in) noexcept
     -> api::client::PaymentWorkflowType;
 
-struct Activity : virtual public api::client::Activity {
-    ~Activity() override = default;
-};
 struct Blockchain : virtual public api::client::Blockchain {
     /// Throws std::runtime_error if type is invalid
     virtual auto AccountInternal(

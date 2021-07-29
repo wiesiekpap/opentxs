@@ -18,7 +18,6 @@ namespace client
 {
 namespace internal
 {
-struct Activity;
 struct Blockchain;
 struct Contacts;
 struct Manager;
@@ -71,10 +70,10 @@ class OTClient;
 
 namespace opentxs::factory
 {
-auto Activity(
+auto ActivityAPI(
     const api::internal::Core& api,
     const api::client::Contacts& contact) noexcept
-    -> std::unique_ptr<api::client::internal::Activity>;
+    -> std::unique_ptr<api::client::Activity>;
 auto BlockchainAPI(
     const api::internal::Core& api,
     const api::client::Activity& activity,

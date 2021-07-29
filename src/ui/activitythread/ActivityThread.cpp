@@ -14,6 +14,7 @@
 #include <set>
 #include <sstream>
 #include <tuple>
+#include <type_traits>
 #include <vector>
 
 #include "Proto.hpp"
@@ -115,6 +116,7 @@ ActivityThread::ActivityThread(
         api.Activity().ThreadPublisher(primary_id_),
         api.Endpoints().ContactUpdate(),
         api.Endpoints().Messagability(),
+        api.Endpoints().MessageLoaded(),
         api.Endpoints().TaskComplete(),
     });
     pipeline_->Push(MakeWork(Work::init));
@@ -194,21 +196,10 @@ auto ActivityThread::construct_row(
 
     switch (box) {
         case StorageBox::MAILINBOX:
-        case StorageBox::MAILOUTBOX: {
-            return factory::MailItem(
-                *this, Widget::api_, primary_id_, id, index, custom);
-        }
+        case StorageBox::MAILOUTBOX:
         case StorageBox::DRAFT: {
             return factory::MailItem(
-                *this,
-                Widget::api_,
-
-                primary_id_,
-                id,
-                index,
-                custom,
-                false,
-                true);
+                *this, Widget::api_, primary_id_, id, index, custom);
         }
         case StorageBox::INCOMINGCHEQUE:
         case StorageBox::OUTGOINGCHEQUE: {
@@ -403,6 +394,9 @@ auto ActivityThread::pipeline(const Message& in) noexcept -> void
         case Work::thread: {
             process_thread(in);
         } break;
+        case Work::message_loaded: {
+            process_message_loaded(in);
+        } break;
         case Work::otx: {
             process_otx(in);
         } break;
@@ -457,12 +451,32 @@ auto ActivityThread::process_item(const proto::StorageThreadItem& item) noexcept
         Widget::api_.Factory().Identifier(item.id()),
         static_cast<StorageBox>(item.box()),
         Widget::api_.Factory().Identifier(item.account())};
-    auto& [itemID, box, account] = id;
+    const auto& [itemID, box, account] = id;
     const auto key =
         ActivityThreadSortKey{std::chrono::seconds(item.time()), item.index()};
     auto custom = CustomData{new std::string};
+    auto& text = *static_cast<std::string*>(custom.front());
+    auto& loading = *static_cast<bool*>(custom.emplace_back(new bool{false}));
+    custom.emplace_back(new bool{false});
 
     switch (box) {
+        case StorageBox::MAILINBOX:
+        case StorageBox::MAILOUTBOX: {
+            auto reason =
+                Widget::api_.Factory().PasswordPrompt("Decrypting messages");
+            auto message = Widget::api_.Activity().MailText(
+                primary_id_, itemID, box, reason);
+            static constexpr auto none = std::chrono::milliseconds{0};
+            using Status = std::future_status;
+
+            if (const auto s = message.wait_for(none); Status::ready == s) {
+                text = message.get();
+                loading = false;
+            } else {
+                text = "Loading";
+                loading = true;
+            }
+        } break;
         case StorageBox::BLOCKCHAIN: {
             const auto chain = static_cast<blockchain::Type>(item.chain());
             custom.emplace_back(new blockchain::Type{chain});
@@ -507,6 +521,44 @@ auto ActivityThread::process_messagability(const Message& message) noexcept
     if (update_messagability(body.at(3).as<Messagability>())) {
         UpdateNotify();
     }
+}
+
+auto ActivityThread::process_message_loaded(const Message& message) noexcept
+    -> void
+{
+    const auto body = message.Body();
+
+    OT_ASSERT(4 < body.size());
+
+    const auto id = ActivityThreadRowID{
+        [&] {
+            auto out = Widget::api_.Factory().Identifier();
+            out->Assign(body.at(2).Bytes());
+
+            return out;
+        }(),
+        body.at(3).as<StorageBox>(),
+        [&] {
+            auto out = Widget::api_.Factory().Identifier();
+
+            return out;
+        }()};
+
+    if (const auto index = find_index(id); !index.has_value()) { return; }
+
+    const auto key = [&] {
+        auto lock = rLock{recursive_lock_};
+
+        return sort_key(lock, id);
+    }();
+    auto custom = CustomData{
+        new std::string{body.at(4).Bytes()},
+        new bool{false},
+        new bool{false},
+    };
+    add_item(id, key, custom);
+
+    OT_ASSERT(verify_empty(custom));
 }
 
 auto ActivityThread::process_otx(const Message& in) noexcept -> void
@@ -645,6 +697,8 @@ auto ActivityThread::send_cheque(
     const auto key = ActivityThreadSortKey{Clock::now(), 0};
     auto custom = CustomData{
         new std::string{"Sending cheque"},
+        new bool{false},
+        new bool{true},
         new Amount{amount},
         new std::string{displayAmount},
         new std::string{memo}};
@@ -689,7 +743,11 @@ auto ActivityThread::SendDraft() const noexcept -> bool
         id = ActivityThreadRowID{
             Identifier::Random(), StorageBox::DRAFT, Identifier::Factory()};
         const ActivityThreadSortKey key{Clock::now(), 0};
-        auto custom = CustomData{new std::string(draft_)};
+        auto custom = CustomData{
+            new std::string{draft_},
+            new bool{false},
+            new bool{true},
+        };
         const_cast<ActivityThread&>(*this).add_item(id, key, custom);
         draft_tasks_.try_emplace(taskID, std::move(task));
         draft_.clear();

@@ -3022,8 +3022,7 @@ TEST_F(Test_Basic, receive_message)
     const auto text = client_2_.Activity().MailText(
         bob_nym_id_, mailID, StorageBox::MAILINBOX, reason_c2_);
 
-    ASSERT_TRUE(text);
-    EXPECT_STREQ(MESSAGE_TEXT, text->c_str());
+    EXPECT_STREQ(MESSAGE_TEXT, text.get().c_str());
 }
 
 TEST_F(Test_Basic, request_admin_wrong_password)

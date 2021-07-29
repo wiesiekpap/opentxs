@@ -106,7 +106,7 @@ public:
 private:
     std::unique_ptr<network::ZMQ> zeromq_;
     std::unique_ptr<internal::Contacts> contacts_;
-    std::unique_ptr<internal::Activity> activity_;
+    std::unique_ptr<client::Activity> activity_;
     std::shared_ptr<internal::Blockchain> blockchain_;
     std::unique_ptr<client::Workflow> workflow_;
     std::unique_ptr<OT_API> ot_api_;

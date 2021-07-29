@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include <tuple>
 
 #include "1_Internal.hpp"
 #include "internal/ui/UI.hpp"
@@ -51,6 +52,17 @@ namespace opentxs::ui::implementation
 class PaymentItem final : public ActivityThreadItem
 {
 public:
+    static auto extract(
+        const api::client::internal::Manager& api,
+        const identifier::Nym& nym,
+        const ActivityThreadRowID& row,
+        CustomData& custom) noexcept
+        -> std::tuple<
+            opentxs::Amount,
+            std::string,
+            std::string,
+            std::shared_ptr<const OTPayment>>;
+
     auto Amount() const noexcept -> opentxs::Amount final;
     auto Deposit() const noexcept -> bool final;
     auto DisplayAmount() const noexcept -> std::string final;
@@ -62,17 +74,21 @@ public:
         const identifier::Nym& nymID,
         const ActivityThreadRowID& rowID,
         const ActivityThreadSortKey& sortKey,
-        CustomData& custom) noexcept;
+        CustomData& custom,
+        opentxs::Amount amount,
+        std::string&& display,
+        std::string&& memo,
+        std::shared_ptr<const OTPayment>&& contract) noexcept;
     ~PaymentItem() final;
 
 private:
+    opentxs::Amount amount_;
     std::string display_amount_;
     std::string memo_;
-    opentxs::Amount amount_;
-    std::unique_ptr<std::thread> load_;
     std::shared_ptr<const OTPayment> payment_;
 
-    void load() noexcept;
+    auto reindex(const ActivityThreadSortKey& key, CustomData& custom) noexcept
+        -> bool final;
 
     PaymentItem() = delete;
     PaymentItem(const PaymentItem&) = delete;

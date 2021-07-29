@@ -3,15 +3,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+add_subdirectory(activity)
 add_subdirectory(blockchain)
 add_subdirectory(ui)
 
 add_library(
   opentxs-api-client OBJECT
-  "Activity.cpp"
   "${opentxs_SOURCE_DIR}/src/internal/api/client/Client.hpp"
   "${opentxs_SOURCE_DIR}/src/internal/api/client/Factory.hpp"
-  "Activity.hpp"
   "Blockchain.cpp"
   "Blockchain.hpp"
   "Client.cpp"
@@ -35,7 +34,6 @@ add_library(
   "Workflow.hpp"
 )
 set(cxx-install-headers
-    "${opentxs_SOURCE_DIR}/include/opentxs/api/client/Activity.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/Blockchain.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/Contacts.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/Issuer.hpp"

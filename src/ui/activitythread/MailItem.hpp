@@ -53,23 +53,11 @@ public:
         const identifier::Nym& nymID,
         const ActivityThreadRowID& rowID,
         const ActivityThreadSortKey& sortKey,
-        CustomData& custom,
-        const bool loading,
-        const bool pending) noexcept;
-    MailItem(
-        const ActivityThreadInternalInterface& parent,
-        const api::client::internal::Manager& api,
-        const identifier::Nym& nymID,
-        const ActivityThreadRowID& rowID,
-        const ActivityThreadSortKey& sortKey,
         CustomData& custom) noexcept;
+
     ~MailItem() final;
 
 private:
-    std::unique_ptr<std::thread> load_;
-
-    void load() noexcept;
-
     MailItem() = delete;
     MailItem(const MailItem&) = delete;
     MailItem(MailItem&&) = delete;

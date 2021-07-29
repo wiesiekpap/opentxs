@@ -392,6 +392,16 @@ protected:
         }
     }
     auto size() const noexcept -> std::size_t { return items_.size(); }
+    auto sort_key(const rLock&, const RowID& id) const noexcept -> SortKey
+    {
+        try {
+
+            return items_.get(id).key_;
+        } catch (...) {
+
+            return {};
+        }
+    }
     auto wait_for_startup() const noexcept -> void { startup_future_.get(); }
 
     virtual auto add_item(

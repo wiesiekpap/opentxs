@@ -25,6 +25,7 @@ enum class WorkType : OTZMQWorkType {
     ActivityThreadUpdated = 8,
     UIModelUpdated = 9,
     WorkflowAccountUpdate = 10,
+    MessageLoaded = 11,
     BlockchainAccountCreated = 128,
     BlockchainBalance = 129,
     BlockchainNewHeader = 130,
@@ -117,6 +118,13 @@ constexpr auto value(const WorkType in) noexcept
  *   WorkflowAccountUpdate: reports that a workflow has been modified
  *       * Additional frames:
  *          1: account id as Identifier (encoded as byte sequence)
+ *
+ *   MessageLoaded: report that background decryption of a message is complete
+ *       * Additional frames:
+ *          1: recipient nym id as identifier::Nym (encoded as byte sequence)
+ *          2: message id as Identifier (encoded as byte sequence)
+ *          3: message type as StorageBox
+ *          4: decrypted text as string
  *
  *   BlockchainAccountCreated: reports the creation of a new blockchain account
  *       * Additional frames:

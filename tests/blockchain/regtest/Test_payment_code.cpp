@@ -18,7 +18,6 @@
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/SharedPimpl.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
@@ -1697,8 +1696,8 @@ TEST_F(Regtest_payment_code, bob_rpc_account_list)
 
 TEST_F(Regtest_payment_code, send_to_bob_again)
 {
-    activity_thread_alice_bob_.expected_ += 2;
-    activity_thread_bob_alice_.expected_ += 2;
+    activity_thread_alice_bob_.expected_ += 1;
+    activity_thread_bob_alice_.expected_ += 1;
     account_activity_alice_.expected_ += 2;
     account_activity_bob_.expected_ += 2;
     const auto& network =
@@ -2693,8 +2692,8 @@ TEST_F(Regtest_payment_code, bob_account_activity_after_otx)
 
 TEST_F(Regtest_payment_code, send_message_to_alice)
 {
-    activity_thread_alice_bob_.expected_ += 4;
-    activity_thread_bob_alice_.expected_ += 4;
+    activity_thread_alice_bob_.expected_ += 1;
+    activity_thread_bob_alice_.expected_ += 2;
     const auto& widget =
         client_2_.UI().ActivityThread(bob_.nym_id_, bob_.Contact(alice_.name_));
 

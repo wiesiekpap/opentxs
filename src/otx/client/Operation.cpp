@@ -154,8 +154,8 @@
     numbers_.insert(                                                           \
         context.NextTransactionNumber(MessageType::notarizeTransaction));      \
     auto& managedNumber = *numbers_.rbegin();                                  \
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": Allocating transaction number ")(   \
-        managedNumber->Value())                                                \
+    LogVerbose(OT_METHOD)(__FUNCTION__)(                                       \
+        ": Allocating transaction number ")(managedNumber->Value())            \
         .Flush();                                                              \
                                                                                \
     if (false == managedNumber->Valid()) {                                     \
@@ -167,8 +167,8 @@
         return {};                                                             \
     }                                                                          \
                                                                                \
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": Allocated transaction number ")(    \
-        managedNumber->Value())                                                \
+    LogVerbose(OT_METHOD)(__FUNCTION__)(                                       \
+        ": Allocated transaction number ")(managedNumber->Value())             \
         .Flush();                                                              \
     const auto transactionNum = managedNumber->Value();                        \
     auto pLedger{api_.Factory().Ledger(nymID, account_id_, serverID)};         \
@@ -705,10 +705,12 @@ auto Operation::construct_deposit_cheque() -> std::shared_ptr<Message>
         amount);
 
     if (cheque.GetNotaryID() != serverID) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": NotaryID on cheque (")(
-            cheque.GetNotaryID())(
-            ") doesn't match notaryID where it's being deposited to (")(
-            serverID)(").")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": NotaryID on cheque (")(cheque
+                                          .GetNotaryID())(") doesn't match "
+                                                          "notaryID where it's "
+                                                          "being deposited to "
+                                                          "(")(serverID)(").")
             .Flush();
 
         return {};
@@ -756,9 +758,8 @@ auto Operation::construct_deposit_cheque() -> std::shared_ptr<Message>
 
         if (pChequeReceipt) {
             LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Cannot cancel this cheque. There is already a ")(
-                cheque.HasRemitter() ? "voucherReceipt"
-                                     : "chequeReceipt")(" for it in the inbox.")
+                ": Cannot cancel this cheque. There is already "
+                "a ")(cheque.HasRemitter() ? "voucherReceipt" : "chequeReceipt")(" for it in the inbox.")
                 .Flush();
 
             return {};
@@ -896,8 +897,8 @@ auto Operation::construct_publish_nym() -> std::shared_ptr<Message>
     message.enum_ = static_cast<std::uint8_t>(ContractType::nym);
     auto publicNym = proto::Nym{};
     if (false == contract->Serialize(publicNym)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize nym: ")(
-            target_nym_id_)
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Failed to serialize nym: ")(target_nym_id_)
             .Flush();
         return {};
     }
@@ -927,8 +928,8 @@ auto Operation::construct_publish_server() -> std::shared_ptr<Message>
 
         FINISH_MESSAGE(__FUNCTION__, registerContract);
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Server not found: ")(
-            target_server_id_)
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Server not found: ")(target_server_id_)
             .Flush();
 
         return {};
@@ -956,8 +957,8 @@ auto Operation::construct_publish_unit() -> std::shared_ptr<Message>
 
         FINISH_MESSAGE(__FUNCTION__, registerContract);
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unit definition not found: ")(
-            target_unit_id_)
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Unit definition not found: ")(target_unit_id_)
             .Flush();
 
         return {};
@@ -1361,8 +1362,9 @@ auto Operation::construct_send_transfer() -> std::shared_ptr<Message>
             ": Failed to create transfer workflow")
             .Flush();
     } else {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Created transfer ")(
-            item.GetTransactionNum())(" workflow ")(workflowID)
+        LogDetail(OT_METHOD)(__FUNCTION__)(
+            ": Created transfer ")(item.GetTransactionNum())(" workflow"
+                                                             " ")(workflowID)
             .Flush();
     }
 
@@ -1391,9 +1393,9 @@ auto Operation::construct_withdraw_cash() -> std::shared_ptr<Message>
         "");
 
     if (false == exists) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": File does not exist: ")(
-            api_.Legacy().Mint())(PathSeparator())(serverID)(PathSeparator())(
-            unitID)
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": File does not exist: ")(api_.Legacy()
+                                           .Mint())(PathSeparator())(serverID)(PathSeparator())(unitID)
             .Flush();
 
         return {};
@@ -1568,12 +1570,12 @@ auto Operation::download_account(
     OT_ASSERT(ledgerType::outbox == outbox->GetType());
 
     if (get_account_data(accountID, inbox, outbox, lastResult)) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Success downloading account ")(
-            accountID)
+        LogDetail(OT_METHOD)(__FUNCTION__)(
+            ": Success downloading account ")(accountID)
             .Flush();
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed downloading account ")(
-            accountID)
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Failed downloading account ")(accountID)
             .Flush();
 
         return 0;
@@ -1582,12 +1584,12 @@ auto Operation::download_account(
     if (shutdown().load()) { return 0; }
 
     if (get_receipts(accountID, inbox, outbox)) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Success synchronizing account ")(
-            accountID)
+        LogDetail(OT_METHOD)(__FUNCTION__)(
+            ": Success synchronizing account ")(accountID)
             .Flush();
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed synchronizing account ")(
-            accountID)
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Failed synchronizing account ")(accountID)
             .Flush();
 
         return 0;
@@ -1596,14 +1598,14 @@ auto Operation::download_account(
     if (shutdown().load()) { return 0; }
 
     if (process_inbox(accountID, inbox, outbox, lastResult)) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Success processing inbox ")(
-            accountID)
+        LogDetail(OT_METHOD)(__FUNCTION__)(
+            ": Success processing inbox ")(accountID)
             .Flush();
 
         return 1;
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed processing inbox ")(
-            accountID)
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Failed processing inbox ")(accountID)
             .Flush();
 
         return 0;
@@ -1708,8 +1710,8 @@ auto Operation::evaluate_transaction_reply(
         case MessageType::processNymboxResponse:
             break;
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(reply.m_strCommand)(
-                " is not a transaction")
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": ")(reply.m_strCommand)(" is not a transaction")
                 .Flush();
 
             return false;
@@ -1753,8 +1755,8 @@ auto Operation::evaluate_transaction_reply(
 
     for (auto& [number, pTransaction] : response->GetTransactionMap()) {
         if (1 > number) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid transaction number ")(
-                number)
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": Invalid transaction number ")(number)
                 .Flush();
             continue;
         }
@@ -1768,8 +1770,8 @@ auto Operation::evaluate_transaction_reply(
         auto& transaction = *pTransaction;
 
         if (transaction.GetSuccess()) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": Successful transaction ")(
-                number)
+            LogVerbose(OT_METHOD)(__FUNCTION__)(
+                ": Successful transaction ")(number)
                 .Flush();
             ++good;
         } else {
@@ -1856,7 +1858,7 @@ void Operation::execute()
                         nym_id_,
                         *outmail_message_,
                         StorageBox::MAILOUTBOX,
-                        reason_);
+                        memo_->Get());
 
                     if (set_id_) { set_id_(Identifier::Factory(messageID)); }
 
@@ -1943,16 +1945,16 @@ auto Operation::get_receipts(
 
     for (auto [number, pItem] : box.GetTransactionMap()) {
         if (1 > number) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid transaction number ")(
-                number)
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": Invalid transaction number ")(number)
                 .Flush();
 
             continue;
         }
 
         if (false == bool(pItem)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Warning: Invalid item ")(
-                number)
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": Warning: Invalid item ")(number)
                 .Flush();
         }
 
@@ -1966,8 +1968,8 @@ auto Operation::get_receipts(
             number);
 
         if (exists) {
-            LogDetail(OT_METHOD)(__FUNCTION__)(": Receipt ")(number)(
-                " already exists.")
+            LogDetail(OT_METHOD)(__FUNCTION__)(
+                ": Receipt ")(number)(" already exists.")
                 .Flush();
             ++good;
 
@@ -1979,8 +1981,8 @@ auto Operation::get_receipts(
                 .Flush();
             ++good;
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to download receipt ")(
-                number)
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": Failed to download receipt ")(number)
                 .Flush();
         }
     }
@@ -2188,14 +2190,14 @@ auto Operation::process_inbox(
         (inbox->GetTransactionCount() > 0) ? inbox->GetTransactionCount() : 0;
 
     if (1 > count) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": No items to accept in account ")(
-            accountID)
+        LogDetail(OT_METHOD)(__FUNCTION__)(
+            ": No items to accept in account ")(accountID)
             .Flush();
 
         return true;
     } else {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": ")(count)(
-            " items to accept in account ")(accountID)
+        LogDetail(OT_METHOD)(__FUNCTION__)(
+            ": ")(count)(" items to accept in account ")(accountID)
             .Flush();
         redownload_accounts_.insert(accountID);
     }
@@ -2231,8 +2233,8 @@ auto Operation::process_inbox(
             transaction = inbox->GetTransaction(number);
 
             if (false == bool(transaction)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to load item: ")(
-                    number)(".")
+                LogOutput(OT_METHOD)(__FUNCTION__)(
+                    ": Unable to load item: ")(number)(".")
                     .Flush();
 
                 continue;
@@ -2258,8 +2260,8 @@ auto Operation::process_inbox(
             accountID, true, context, *transaction, *response);
 
         if (false == accepted) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to accept item: ")(
-                number)
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": Failed to accept item: ")(number)
                 .Flush();
 
             return false;
@@ -2301,8 +2303,8 @@ auto Operation::process_inbox(
     const auto [status, reply] = lastResult;
 
     if (otx::LastReplyStatus::MessageSuccess != status) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to deliver processInbox ")(
-            value(status))
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Failed to deliver processInbox ")(value(status))
             .Flush();
 
         return false;
@@ -2315,12 +2317,12 @@ auto Operation::process_inbox(
     const auto success = evaluate_transaction_reply(accountID, *reply);
 
     if (success) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Success processing inbox ")(
-            accountID)
+        LogDetail(OT_METHOD)(__FUNCTION__)(
+            ": Success processing inbox ")(accountID)
             .Flush();
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failure processing inbox ")(
-            accountID)
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Failure processing inbox ")(accountID)
             .Flush();
     }
 

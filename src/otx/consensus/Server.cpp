@@ -4257,7 +4257,10 @@ void Server::process_incoming_message(
         switch (peerObject.Type()) {
             case (contract::peer::PeerObjectType::Message): {
                 client.Activity().Mail(
-                    recipientNymId, *message, StorageBox::MAILINBOX, reason);
+                    recipientNymId,
+                    *message,
+                    StorageBox::MAILINBOX,
+                    peerObject);
             } break;
 #if OT_CASH
             case (contract::peer::PeerObjectType::Cash): {
