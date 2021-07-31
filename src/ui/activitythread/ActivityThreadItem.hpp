@@ -70,9 +70,11 @@ public:
     auto Amount() const noexcept -> opentxs::Amount override { return 0; }
     auto Deposit() const noexcept -> bool override { return false; }
     auto DisplayAmount() const noexcept -> std::string override { return {}; }
+    auto From() const noexcept -> std::string final;
     auto Loading() const noexcept -> bool final { return loading_.get(); }
     auto MarkRead() const noexcept -> bool final;
     auto Memo() const noexcept -> std::string override { return {}; }
+    auto Outgoing() const noexcept -> bool final { return outgoing_.get(); }
     auto Pending() const noexcept -> bool final { return pending_.get(); }
     auto Text() const noexcept -> std::string final;
     auto Timestamp() const noexcept -> Time final;
@@ -93,9 +95,11 @@ protected:
     const Identifier& item_id_;
     const StorageBox& box_;
     const Identifier& account_id_;
+    std::string from_;
     std::string text_;
     OTFlag loading_;
     OTFlag pending_;
+    OTFlag outgoing_;
 
     ActivityThreadItem(
         const ActivityThreadInternalInterface& parent,

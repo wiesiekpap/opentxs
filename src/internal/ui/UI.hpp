@@ -895,9 +895,11 @@ struct ActivityThreadItem final : public Row,
     auto Amount() const noexcept -> opentxs::Amount final { return 0; }
     auto Deposit() const noexcept -> bool final { return false; }
     auto DisplayAmount() const noexcept -> std::string final { return {}; }
+    auto From() const noexcept -> std::string final { return {}; }
     auto Loading() const noexcept -> bool final { return false; }
     auto MarkRead() const noexcept -> bool final { return false; }
     auto Memo() const noexcept -> std::string final { return {}; }
+    auto Outgoing() const noexcept -> bool final { return false; }
     auto Pending() const noexcept -> bool final { return false; }
     auto Text() const noexcept -> std::string final { return {}; }
     auto Timestamp() const noexcept -> Time final { return {}; }

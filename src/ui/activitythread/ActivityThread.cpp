@@ -13,12 +13,14 @@
 #include <memory>
 #include <set>
 #include <sstream>
+#include <stdexcept>
 #include <tuple>
 #include <type_traits>
 #include <vector>
 
 #include "Proto.hpp"
 #include "internal/api/client/Client.hpp"
+#include "internal/blockchain/Blockchain.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
@@ -26,10 +28,12 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Activity.hpp"
+#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
@@ -96,14 +100,18 @@ ActivityThread::ActivityThread(
               {ActivityThreadQt::TextRole, "text"},
               {ActivityThreadQt::TimeRole, "time"},
               {ActivityThreadQt::TypeRole, "type"},
+              {ActivityThreadQt::OutgoingRole, "outgoing"},
+              {ActivityThreadQt::FromRole, "from"},
           },
           6
 #endif
           )
     , Worker(api, std::chrono::milliseconds{100})
     , threadID_(threadID)
+    , self_contact_(api.Contacts().NymToContact(primary_id_))
     , contacts_()
     , participants_()
+    , me_(api.Contacts().ContactName(self_contact_))
     , display_name_()
     , payment_codes_()
     , can_message_(std::nullopt)
@@ -239,6 +247,11 @@ auto ActivityThread::DisplayName() const noexcept -> std::string
     return display_name_;
 }
 
+auto ActivityThread::from(bool outgoing) const noexcept -> std::string
+{
+    return outgoing ? me_ : display_name_;
+}
+
 auto ActivityThread::GetDraft() const noexcept -> std::string
 {
     auto lock = rLock{recursive_lock_};
@@ -258,7 +271,13 @@ auto ActivityThread::load_thread(const proto::StorageThread& thread) noexcept
         contacts.emplace(Widget::api_.Factory().Identifier(id));
     }
 
-    for (const auto& item : thread.item()) { process_item(item); }
+    for (const auto& item : thread.item()) {
+        try {
+            process_item(item);
+        } catch (...) {
+            continue;
+        }
+    }
 }
 
 auto ActivityThread::new_thread() noexcept -> void
@@ -429,12 +448,23 @@ auto ActivityThread::process_contact(const Message& in) noexcept -> void
 
         return out;
     }();
+    auto changed{false};
 
     OT_ASSERT(false == contactID->empty())
 
-    if (0 == contacts_.count(contactID)) { return; }
+    if (self_contact_ == contactID) {
+        auto name = Widget::api_.Contacts().ContactName(self_contact_);
 
-    const auto changed = update_display_name();
+        if (auto lock = rLock{recursive_lock_}; me_ != name) {
+            std::swap(me_, name);
+            changed = true;
+        }
+    } else if (0 < contacts_.count(contactID)) {
+        changed = update_display_name();
+    } else {
+
+        return;
+    }
 
     if (changed) {
         refresh_thread();
@@ -444,8 +474,8 @@ auto ActivityThread::process_contact(const Message& in) noexcept -> void
     trigger();
 }
 
-auto ActivityThread::process_item(const proto::StorageThreadItem& item) noexcept
-    -> ActivityThreadRowID
+auto ActivityThread::process_item(
+    const proto::StorageThreadItem& item) noexcept(false) -> ActivityThreadRowID
 {
     const auto id = ActivityThreadRowID{
         Widget::api_.Factory().Identifier(item.id()),
@@ -454,14 +484,29 @@ auto ActivityThread::process_item(const proto::StorageThreadItem& item) noexcept
     const auto& [itemID, box, account] = id;
     const auto key =
         ActivityThreadSortKey{std::chrono::seconds(item.time()), item.index()};
-    auto custom = CustomData{new std::string};
-    auto& text = *static_cast<std::string*>(custom.front());
+    auto custom = CustomData{
+        new std::string{},
+        new std::string{},
+    };
+    auto& sender = *static_cast<std::string*>(custom.at(0));
+    auto& text = *static_cast<std::string*>(custom.at(1));
     auto& loading = *static_cast<bool*>(custom.emplace_back(new bool{false}));
     custom.emplace_back(new bool{false});
+    auto& outgoing = *static_cast<bool*>(custom.emplace_back(new bool{false}));
 
     switch (box) {
-        case StorageBox::MAILINBOX:
+        case StorageBox::OUTGOINGCHEQUE:
+        case StorageBox::OUTGOINGTRANSFER:
+        case StorageBox::INTERNALTRANSFER:
+        case StorageBox::PENDING_SEND:
+        case StorageBox::DRAFT: {
+            outgoing = true;
+        } break;
         case StorageBox::MAILOUTBOX: {
+            outgoing = true;
+            [[fallthrough]];
+        }
+        case StorageBox::MAILINBOX: {
             auto reason =
                 Widget::api_.Factory().PasswordPrompt("Decrypting messages");
             auto message = Widget::api_.Activity().MailText(
@@ -478,14 +523,33 @@ auto ActivityThread::process_item(const proto::StorageThreadItem& item) noexcept
             }
         } break;
         case StorageBox::BLOCKCHAIN: {
+            const auto txid =
+                Widget::api_.Factory().Data(item.txid(), StringStyle::Raw);
+            const auto pTx =
+                Widget::api_.Blockchain().LoadTransactionBitcoin(txid->asHex());
             const auto chain = static_cast<blockchain::Type>(item.chain());
-            custom.emplace_back(new blockchain::Type{chain});
+
+            if (!pTx) { throw std::runtime_error{"transaction not found"}; }
+
+            const auto& tx = *pTx;
+            text = Widget::api_.Blockchain().ActivityDescription(
+                primary_id_, chain, tx);
+            const auto amount =
+                tx.NetBalanceChange(Widget::api_.Blockchain(), primary_id_);
             custom.emplace_back(new std::string{item.txid()});
+            custom.emplace_back(new opentxs::Amount{amount});
+            custom.emplace_back(
+                new std::string{blockchain::internal::Format(chain, amount)});
+            custom.emplace_back(
+                new std::string{tx.Memo(Widget::api_.Blockchain())});
+
+            outgoing = (0 > amount);
         } break;
         default: {
         }
     }
 
+    sender = from(outgoing);
     add_item(id, key, custom);
 
     OT_ASSERT(verify_empty(custom));
@@ -543,6 +607,7 @@ auto ActivityThread::process_message_loaded(const Message& message) noexcept
 
             return out;
         }()};
+    const auto& [itemID, box, account] = id;
 
     if (const auto index = find_index(id); !index.has_value()) { return; }
 
@@ -551,10 +616,13 @@ auto ActivityThread::process_message_loaded(const Message& message) noexcept
 
         return sort_key(lock, id);
     }();
+    const auto outgoing{box == StorageBox::MAILOUTBOX};
     auto custom = CustomData{
+        new std::string{from(outgoing)},
         new std::string{body.at(4).Bytes()},
         new bool{false},
         new bool{false},
+        new bool{outgoing},
     };
     add_item(id, key, custom);
 
@@ -631,8 +699,13 @@ auto ActivityThread::refresh_thread() noexcept -> void
     auto active = std::set<ActivityThreadRowID>{};
 
     for (const auto& item : thread.item()) {
-        const auto itemID = process_item(item);
-        active.emplace(itemID);
+        try {
+            const auto itemID = process_item(item);
+            active.emplace(itemID);
+        } catch (...) {
+
+            continue;
+        }
     }
 
     const auto drafts = [&] {
@@ -695,10 +768,13 @@ auto ActivityThread::send_cheque(
     id = ActivityThreadRowID{
         Identifier::Random(), StorageBox::PENDING_SEND, Identifier::Factory()};
     const auto key = ActivityThreadSortKey{Clock::now(), 0};
+    static constexpr auto outgoing{true};
     auto custom = CustomData{
+        new std::string{from(outgoing)},
         new std::string{"Sending cheque"},
         new bool{false},
         new bool{true},
+        new bool{outgoing},
         new Amount{amount},
         new std::string{displayAmount},
         new std::string{memo}};
@@ -743,10 +819,13 @@ auto ActivityThread::SendDraft() const noexcept -> bool
         id = ActivityThreadRowID{
             Identifier::Random(), StorageBox::DRAFT, Identifier::Factory()};
         const ActivityThreadSortKey key{Clock::now(), 0};
+        static constexpr auto outgoing{true};
         auto custom = CustomData{
+            new std::string{from(outgoing)},
             new std::string{draft_},
             new bool{false},
             new bool{true},
+            new bool{outgoing},
         };
         const_cast<ActivityThread&>(*this).add_item(id, key, custom);
         draft_tasks_.try_emplace(taskID, std::move(task));

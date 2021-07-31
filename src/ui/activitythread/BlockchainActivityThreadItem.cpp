@@ -11,12 +11,8 @@
 #include <utility>
 
 #include "internal/api/client/Client.hpp"
-#include "internal/blockchain/Blockchain.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -100,31 +96,13 @@ auto BlockchainActivityThreadItem::extract(
     CustomData& custom) noexcept
     -> std::tuple<OTData, opentxs::Amount, std::string, std::string>
 {
-    auto output = std::tuple<OTData, opentxs::Amount, std::string, std::string>{
+    return std::tuple<OTData, opentxs::Amount, std::string, std::string>{
         api.Factory().Data(
-            ui::implementation::extract_custom<std::string>(custom, 4),
+            ui::implementation::extract_custom<std::string>(custom, 5),
             StringStyle::Raw),
-        0,
-        "",
-        ""};
-    auto& [txid, amount, display, memo] = output;
-    auto& text = *static_cast<std::string*>(custom.front());
-    const auto pTx = api.Blockchain().LoadTransactionBitcoin(txid->asHex());
-    const auto chain =
-        ui::implementation::extract_custom<blockchain::Type>(custom, 3);
-
-    if (pTx) {
-        const auto& tx = *pTx;
-        amount = tx.NetBalanceChange(api.Blockchain(), nymID);
-        display = blockchain::internal::Format(chain, amount);
-        memo = tx.Memo(api.Blockchain());
-        text = api.Blockchain().ActivityDescription(nymID, chain, tx);
-    } else {
-        // FIXME
-        text = "Blockchain transaction";
-    }
-
-    return output;
+        ui::implementation::extract_custom<opentxs::Amount>(custom, 6),
+        ui::implementation::extract_custom<std::string>(custom, 7),
+        ui::implementation::extract_custom<std::string>(custom, 8)};
 }
 
 auto BlockchainActivityThreadItem::Memo() const noexcept -> std::string

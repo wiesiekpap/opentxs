@@ -195,8 +195,10 @@ private:
     };
 
     const OTIdentifier threadID_;
+    const OTIdentifier self_contact_;
     const std::set<OTIdentifier> contacts_;
     const std::string participants_;
+    std::string me_;
     std::string display_name_;
     std::map<contact::ContactItemType, std::string> payment_codes_;
     std::optional<Messagability> can_message_;
@@ -212,6 +214,7 @@ private:
         const ActivityThreadRowID& id,
         const ActivityThreadSortKey& index,
         CustomData& custom) const noexcept -> RowPointer final;
+    auto from(bool outgoing) const noexcept -> std::string;
     auto send_cheque(
         const Amount amount,
         const Identifier& sourceAccount,
@@ -223,7 +226,7 @@ private:
     auto new_thread() noexcept -> void;
     auto pipeline(const Message& in) noexcept -> void;
     auto process_contact(const Message& message) noexcept -> void;
-    auto process_item(const proto::StorageThreadItem& item) noexcept
+    auto process_item(const proto::StorageThreadItem& item) noexcept(false)
         -> ActivityThreadRowID;
     auto process_messagability(const Message& message) noexcept -> void;
     auto process_message_loaded(const Message& message) noexcept -> void;

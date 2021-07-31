@@ -91,6 +91,9 @@ auto ActivityThreadQt::headerData(int section, Qt::Orientation, int role) const
         case TimeColumn: {
             return "Time";
         }
+        case FromColumn: {
+            return "Sender";
+        }
         case TextColumn: {
             return "Event";
         }
