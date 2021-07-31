@@ -84,9 +84,9 @@ auto PendingSend::extract(CustomData& custom) noexcept
     -> std::tuple<opentxs::Amount, std::string, std::string>
 {
     return std::make_tuple(
-        extract_custom<opentxs::Amount>(custom, 3),
-        extract_custom<std::string>(custom, 4),
-        extract_custom<std::string>(custom, 5));
+        extract_custom<opentxs::Amount>(custom, 5),
+        extract_custom<std::string>(custom, 6),
+        extract_custom<std::string>(custom, 7));
 }
 
 auto PendingSend::Memo() const noexcept -> std::string

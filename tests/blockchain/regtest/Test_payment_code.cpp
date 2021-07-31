@@ -631,8 +631,10 @@ TEST_F(Regtest_payment_code, alice_activity_thread_first_spend_unconfirmed)
             {
                 false,
                 false,
+                true,
                 -1000000316,
                 "-10.000 003 16 units",
+                alice_.name_,
                 "Outgoing Unit Test Simulation transaction to "
                 "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM",
                 "",
@@ -950,8 +952,10 @@ TEST_F(Regtest_payment_code, bob_activity_thread_first_unconfirmed_incoming)
             {
                 false,
                 false,
+                false,
                 1000000000,
                 "10 units",
+                alice_.payment_code_,
                 "Incoming Unit Test Simulation transaction from "
                 "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu",
                 "",
@@ -1747,8 +1751,10 @@ TEST_F(Regtest_payment_code, alice_activity_thread_second_spend_unconfirmed)
             {
                 false,
                 false,
+                true,
                 -1000000316,
                 "-10.000 003 16 units",
+                alice_.name_,
                 "Outgoing Unit Test Simulation transaction to "
                 "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM",
                 "",
@@ -1758,8 +1764,10 @@ TEST_F(Regtest_payment_code, alice_activity_thread_second_spend_unconfirmed)
             {
                 false,
                 false,
+                true,
                 -1500000236,
                 "-15.000 002 36 units",
+                alice_.name_,
                 "Outgoing Unit Test Simulation transaction to "
                 "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM",
                 "",
@@ -2143,8 +2151,10 @@ TEST_F(Regtest_payment_code, bob_activity_thread_second_unconfirmed_incoming)
             {
                 false,
                 false,
+                false,
                 1000000000,
                 "10 units",
+                alice_.payment_code_,
                 "Incoming Unit Test Simulation transaction from "
                 "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu",
                 "",
@@ -2154,8 +2164,10 @@ TEST_F(Regtest_payment_code, bob_activity_thread_second_unconfirmed_incoming)
             {
                 false,
                 false,
+                false,
                 1500000000,
                 "15 units",
+                alice_.payment_code_,
                 "Incoming Unit Test Simulation transaction from "
                 "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu",
                 "",
@@ -2365,8 +2377,10 @@ TEST_F(Regtest_payment_code, alice_activity_thread_after_otx)
             {
                 false,
                 false,
+                true,
                 -1000000316,
                 "-10.000 003 16 units",
+                alice_.name_,
                 "Outgoing Unit Test Simulation transaction to Bob",
                 "",
                 ot::StorageBox::BLOCKCHAIN,
@@ -2375,8 +2389,10 @@ TEST_F(Regtest_payment_code, alice_activity_thread_after_otx)
             {
                 false,
                 false,
+                true,
                 -1500000236,
                 "-15.000 002 36 units",
+                alice_.name_,
                 "Outgoing Unit Test Simulation transaction to Bob",
                 "",
                 ot::StorageBox::BLOCKCHAIN,
@@ -2416,8 +2432,10 @@ TEST_F(Regtest_payment_code, bob_activity_thread_after_otx)
             {
                 false,
                 false,
+                false,
                 1000000000,
                 "10 units",
+                alice_.name_,
                 "Incoming Unit Test Simulation transaction from Alice",
                 "",
                 ot::StorageBox::BLOCKCHAIN,
@@ -2426,8 +2444,10 @@ TEST_F(Regtest_payment_code, bob_activity_thread_after_otx)
             {
                 false,
                 false,
+                false,
                 1500000000,
                 "15 units",
+                alice_.name_,
                 "Incoming Unit Test Simulation transaction from Alice",
                 "",
                 ot::StorageBox::BLOCKCHAIN,
@@ -2716,8 +2736,10 @@ TEST_F(Regtest_payment_code, alice_activity_thread_after_message)
             {
                 false,
                 false,
+                true,
                 -1000000316,
                 "-10.000 003 16 units",
+                alice_.name_,
                 "Outgoing Unit Test Simulation transaction to Bob",
                 "",
                 ot::StorageBox::BLOCKCHAIN,
@@ -2726,18 +2748,22 @@ TEST_F(Regtest_payment_code, alice_activity_thread_after_message)
             {
                 false,
                 false,
+                true,
                 -1500000236,
                 "-15.000 002 36 units",
+                alice_.name_,
                 "Outgoing Unit Test Simulation transaction to Bob",
                 "",
                 ot::StorageBox::BLOCKCHAIN,
                 std::nullopt,
             },
             {
+                false,
                 false,
                 false,
                 0,
                 "",
+                bob_.name_,
                 message_text_,
                 "",
                 ot::StorageBox::MAILINBOX,
@@ -2765,18 +2791,22 @@ TEST_F(Regtest_payment_code, bob_activity_thread_after_message)
             {
                 false,
                 false,
+                false,
                 1000000000,
                 "10 units",
+                alice_.name_,
                 "Incoming Unit Test Simulation transaction from Alice",
                 "",
                 ot::StorageBox::BLOCKCHAIN,
                 std::nullopt,
             },
             {
+                false,
                 false,
                 false,
                 1500000000,
                 "15 units",
+                alice_.name_,
                 "Incoming Unit Test Simulation transaction from Alice",
                 "",
                 ot::StorageBox::BLOCKCHAIN,
@@ -2785,8 +2815,10 @@ TEST_F(Regtest_payment_code, bob_activity_thread_after_message)
             {
                 false,
                 false,
+                true,
                 0,
                 "",
+                bob_.name_,
                 message_text_,
                 "",
                 ot::StorageBox::MAILOUTBOX,

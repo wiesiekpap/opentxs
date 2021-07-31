@@ -72,8 +72,10 @@ struct AccountActivityData {
 struct ActivityThreadRow {
     bool loading_{};
     bool pending_{};
+    bool outgoing_{};
     ot::Amount amount_{};
     std::string display_amount_{};
+    std::string from_{};
     std::string text_{};
     std::string memo_{};
     ot::StorageBox type_{};

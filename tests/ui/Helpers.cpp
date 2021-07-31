@@ -79,7 +79,9 @@ auto check_activity_thread(
         output &= (row->Pending() == it->pending_);
         output &= (row->Amount() == it->amount_);
         output &= (row->DisplayAmount() == it->display_amount_);
+        output &= (row->From() == it->from_);
         output &= (row->Memo() == it->memo_);
+        output &= (row->Outgoing() == it->outgoing_);
         output &= (row->Text() == it->text_);
         output &= (row->Type() == it->type_);
 
@@ -87,7 +89,9 @@ auto check_activity_thread(
         EXPECT_EQ(row->Pending(), it->pending_);
         EXPECT_EQ(row->Amount(), it->amount_);
         EXPECT_EQ(row->DisplayAmount(), it->display_amount_);
+        EXPECT_EQ(row->From(), it->from_);
         EXPECT_EQ(row->Memo(), it->memo_);
+        EXPECT_EQ(row->Outgoing(), it->outgoing_);
         EXPECT_EQ(row->Text(), it->text_);
         EXPECT_EQ(row->Type(), it->type_);
 

@@ -61,14 +61,17 @@ public:
         TextRole = Qt::UserRole + 6,          // QString
         TimeRole = Qt::UserRole + 7,          // QDateTime
         TypeRole = Qt::UserRole + 8,          // int, opentxs::StorageBox
+        OutgoingRole = Qt::UserRole + 9,      // bool
+        FromRole = Qt::UserRole + 10,         // QString
     };
     enum Columns {
         TimeColumn = 0,
-        TextColumn = 1,
-        AmountColumn = 2,
-        MemoColumn = 3,
-        LoadingColumn = 4,
-        PendingColumn = 5,
+        FromColumn = 1,
+        TextColumn = 2,
+        AmountColumn = 3,
+        MemoColumn = 4,
+        LoadingColumn = 5,
+        PendingColumn = 6,
     };
 
     auto canMessage() const noexcept -> bool;
@@ -81,12 +84,12 @@ public:
         int role = Qt::DisplayRole) const -> QVariant final;
     auto participants() const noexcept -> QString;
     auto threadID() const noexcept -> QString;
-    Q_INVOKABLE auto pay(
+    Q_INVOKABLE bool pay(
         const QString& amount,
         const QString& sourceAccount,
-        const QString& memo = "") const noexcept -> bool;
-    Q_INVOKABLE auto paymentCode(const int currency) const noexcept -> QString;
-    Q_INVOKABLE auto sendDraft() const noexcept -> bool;
+        const QString& memo = "") const noexcept;
+    Q_INVOKABLE QString paymentCode(const int currency) const noexcept;
+    Q_INVOKABLE bool sendDraft() const noexcept;
 
     ActivityThreadQt(implementation::ActivityThread& parent) noexcept;
 

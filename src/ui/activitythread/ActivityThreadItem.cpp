@@ -43,11 +43,20 @@ ActivityThreadItem::ActivityThreadItem(
     , item_id_(std::get<0>(row_id_))
     , box_(std::get<1>(row_id_))
     , account_id_(std::get<2>(row_id_))
-    , text_(extract_custom<std::string>(custom, 0))
-    , loading_(Flag::Factory(extract_custom<bool>(custom, 1)))
-    , pending_(Flag::Factory(extract_custom<bool>(custom, 2)))
+    , from_(extract_custom<std::string>(custom, 0))
+    , text_(extract_custom<std::string>(custom, 1))
+    , loading_(Flag::Factory(extract_custom<bool>(custom, 2)))
+    , pending_(Flag::Factory(extract_custom<bool>(custom, 3)))
+    , outgoing_(Flag::Factory(extract_custom<bool>(custom, 4)))
 {
     OT_ASSERT(verify_empty(custom));
+}
+
+auto ActivityThreadItem::From() const noexcept -> std::string
+{
+    auto lock = sLock{shared_lock_};
+
+    return from_;
 }
 
 auto ActivityThreadItem::MarkRead() const noexcept -> bool
@@ -65,6 +74,10 @@ QVariant ActivityThreadItem::qt_data(const int column, int role) const noexcept
                 case ActivityThreadQt::TimeColumn: {
 
                     return qt_data(column, ActivityThreadQt::TimeRole);
+                }
+                case ActivityThreadQt::FromColumn: {
+
+                    return qt_data(column, ActivityThreadQt::FromRole);
                 }
                 case ActivityThreadQt::TextColumn: {
 
@@ -140,6 +153,14 @@ QVariant ActivityThreadItem::qt_data(const int column, int role) const noexcept
 
             return static_cast<int>(Type());
         }
+        case ActivityThreadQt::OutgoingRole: {
+
+            return Outgoing();
+        }
+        case ActivityThreadQt::FromRole: {
+
+            return From().c_str();
+        }
         default: {
         }
     }
@@ -152,22 +173,37 @@ auto ActivityThreadItem::reindex(
     const ActivityThreadSortKey&,
     CustomData& custom) noexcept -> bool
 {
-    const auto text = extract_custom<std::string>(custom, 0);
+    const auto from = extract_custom<std::string>(custom, 0);
+    const auto text = extract_custom<std::string>(custom, 1);
     auto changed{false};
 
-    if (auto lock = eLock{shared_lock_}; text_ != text) {
-        text_ = text;
-        changed = true;
+    {
+        auto lock = eLock{shared_lock_};
+
+        if (text_ != text) {
+            text_ = text;
+            changed = true;
+        }
+
+        if (from_ != from) {
+            from_ = from;
+            changed = true;
+        }
     }
 
-    const auto loading = extract_custom<bool>(custom, 1);
-    const auto pending = extract_custom<bool>(custom, 2);
+    const auto loading = extract_custom<bool>(custom, 2);
+    const auto pending = extract_custom<bool>(custom, 3);
+    const auto outgoing = extract_custom<bool>(custom, 4);
 
     if (const auto val = loading_->Set(loading); val != loading) {
         changed = true;
     }
 
     if (const auto val = pending_->Set(pending); val != pending) {
+        changed = true;
+    }
+
+    if (const auto val = outgoing_->Set(outgoing); val != outgoing) {
         changed = true;
     }
 
