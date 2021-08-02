@@ -19,7 +19,7 @@
 
 namespace opentxs::display
 {
-class OPENTXS_EXPORT Scale
+class Scale
 {
 public:
     /// A ratio should express the quantity of smallest values (from Amount)

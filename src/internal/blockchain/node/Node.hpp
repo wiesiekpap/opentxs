@@ -255,7 +255,7 @@ struct BlockValidator {
     virtual ~BlockValidator() = default;
 };
 
-struct OPENTXS_EXPORT Config {
+struct Config {
     bool download_cfilters_{false};
     bool generate_cfilters_{false};
     bool provide_sync_server_{false};
@@ -475,7 +475,7 @@ struct PeerManager {
     virtual ~PeerManager() = default;
 };
 
-struct OPENTXS_EXPORT Network : virtual public node::Manager {
+struct Network : virtual public node::Manager {
     enum class Task : OTZMQWorkType {
         Shutdown = value(WorkType::Shutdown),
         SyncReply = value(WorkType::SyncReply),

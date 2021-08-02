@@ -47,8 +47,7 @@ public:
     Transactor(Server& server, const PasswordPrompt& reason);
     ~Transactor() = default;
 
-    OPENTXS_EXPORT auto issueNextTransactionNumber(TransactionNumber& txNumber)
-        -> bool;
+    auto issueNextTransactionNumber(TransactionNumber& txNumber) -> bool;
     auto issueNextTransactionNumberToNym(
         otx::context::Client& context,
         TransactionNumber& txNumber) -> bool;

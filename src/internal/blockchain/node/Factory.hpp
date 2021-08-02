@@ -100,7 +100,7 @@ auto BlockchainNetworkBitcoin(
     const std::string& seednode,
     const std::string& syncEndpoint) noexcept
     -> std::unique_ptr<blockchain::node::internal::Network>;
-OPENTXS_EXPORT auto BlockchainNetworkBitcoin(
+auto BlockchainNetworkBitcoin(
     const api::Core& api,
     const api::client::internal::Blockchain& crypto,
     const blockchain::Type type,

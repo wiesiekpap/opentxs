@@ -35,7 +35,7 @@ public:
     using WordList = std::vector<const char*>;
     using Words = std::map<Language, WordList>;
 
-    OPENTXS_EXPORT static const Words words_;
+    static const Words words_;
 
     auto GetSuggestions(const Language lang, const std::string_view word)
         const noexcept -> Suggestions final;

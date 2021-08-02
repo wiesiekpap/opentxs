@@ -259,17 +259,22 @@ auto ActivityThread::GetDraft() const noexcept -> std::string
     return draft_;
 }
 
+auto ActivityThread::load_contacts(const proto::StorageThread& thread) noexcept
+    -> void
+{
+    auto& contacts = const_cast<std::set<OTIdentifier>&>(contacts_);
+
+    for (const auto& id : thread.participant()) {
+        contacts.emplace(Widget::api_.Factory().Identifier(id));
+    }
+}
+
 auto ActivityThread::load_thread(const proto::StorageThread& thread) noexcept
     -> void
 {
     LogDetail(OT_METHOD)(__FUNCTION__)(
         ": Loading ")(thread.item().size())(" items.")
         .Flush();
-
-    for (const auto& id : thread.participant()) {
-        auto& contacts = const_cast<std::set<OTIdentifier>&>(contacts_);
-        contacts.emplace(Widget::api_.Factory().Identifier(id));
-    }
 
     for (const auto& item : thread.item()) {
         try {
@@ -878,7 +883,7 @@ auto ActivityThread::startup() noexcept -> void
         Widget::api_.Activity().Thread(primary_id_, threadID_, thread);
 
     if (loaded) {
-        load_thread(thread);
+        load_contacts(thread);
     } else {
         new_thread();
     }
@@ -886,6 +891,8 @@ auto ActivityThread::startup() noexcept -> void
     set_participants();
     auto changed = update_display_name();
     changed |= update_payment_codes();
+
+    if (loaded) { load_thread(thread); }
 
     if (changed) { UpdateNotify(); }
 

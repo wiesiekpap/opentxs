@@ -32,16 +32,16 @@ using ContactSectionNameReverseMap =
 auto contactitemattribute_map() noexcept -> const ContactItemAttributeMap&;
 auto contactitemtype_map() noexcept -> const ContactItemTypeMap&;
 auto contactsectionname_map() noexcept -> const ContactSectionNameMap&;
-OPENTXS_EXPORT auto translate(const contact::ContactItemAttribute in) noexcept
+auto translate(const contact::ContactItemAttribute in) noexcept
     -> proto::ContactItemAttribute;
-OPENTXS_EXPORT auto translate(const contact::ContactItemType in) noexcept
+auto translate(const contact::ContactItemType in) noexcept
     -> proto::ContactItemType;
-OPENTXS_EXPORT auto translate(const contact::ContactSectionName in) noexcept
+auto translate(const contact::ContactSectionName in) noexcept
     -> proto::ContactSectionName;
-OPENTXS_EXPORT auto translate(const proto::ContactItemAttribute in) noexcept
+auto translate(const proto::ContactItemAttribute in) noexcept
     -> contact::ContactItemAttribute;
-OPENTXS_EXPORT auto translate(const proto::ContactItemType in) noexcept
+auto translate(const proto::ContactItemType in) noexcept
     -> contact::ContactItemType;
-OPENTXS_EXPORT auto translate(const proto::ContactSectionName in) noexcept
+auto translate(const proto::ContactSectionName in) noexcept
     -> contact::ContactSectionName;
 }  // namespace opentxs::contact::internal

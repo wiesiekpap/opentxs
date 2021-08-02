@@ -235,10 +235,9 @@ using CommandReverseMap = std::map<std::string, Command>;
 auto BitcoinString(const std::string& in) noexcept -> OTData;
 auto CommandName(const Command command) noexcept -> std::string;
 auto GetCommand(const CommandField& bytes) noexcept -> Command;
-OPENTXS_EXPORT auto GetServiceBytes(
-    const std::set<bitcoin::Service>& services) noexcept -> BitVector8;
-OPENTXS_EXPORT auto GetServices(const BitVector8 data) noexcept
-    -> std::set<bitcoin::Service>;
+auto GetServiceBytes(const std::set<bitcoin::Service>& services) noexcept
+    -> BitVector8;
+auto GetServices(const BitVector8 data) noexcept -> std::set<bitcoin::Service>;
 auto SerializeCommand(const Command command) noexcept -> CommandField;
 auto TranslateServices(
     const blockchain::Type chain,

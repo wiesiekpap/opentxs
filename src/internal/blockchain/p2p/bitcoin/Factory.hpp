@@ -78,10 +78,9 @@ class Frame;
 
 namespace opentxs::factory
 {
-OPENTXS_EXPORT auto BitcoinP2PHeader(
-    const api::Core& api,
-    const network::zeromq::Frame& bytes) -> blockchain::p2p::bitcoin::Header*;
-OPENTXS_EXPORT auto BitcoinP2PMessage(
+auto BitcoinP2PHeader(const api::Core& api, const network::zeromq::Frame& bytes)
+    -> blockchain::p2p::bitcoin::Header*;
+auto BitcoinP2PMessage(
     const api::Core& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
     const blockchain::p2p::bitcoin::ProtocolVersion version,

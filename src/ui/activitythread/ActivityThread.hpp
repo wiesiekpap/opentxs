@@ -222,6 +222,7 @@ private:
     auto validate_account(const Identifier& sourceAccount) const noexcept
         -> bool;
 
+    auto load_contacts(const proto::StorageThread& thread) noexcept -> void;
     auto load_thread(const proto::StorageThread& thread) noexcept -> void;
     auto new_thread() noexcept -> void;
     auto pipeline(const Message& in) noexcept -> void;

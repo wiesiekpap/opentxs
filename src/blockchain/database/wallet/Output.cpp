@@ -56,6 +56,8 @@
 #include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
 #include "opentxs/protobuf/BlockchainWalletKey.pb.h"
+#include "opentxs/protobuf/Check.hpp"
+#include "opentxs/protobuf/verify/BlockchainTransactionOutput.hpp"
 #include "util/Container.hpp"
 
 #define OT_METHOD "opentxs::blockchain::database::Output::"
@@ -253,8 +255,12 @@ struct Output::Imp {
         for (const auto& index : outputIndices) {
             const auto outpoint = Outpoint{copy.ID().Bytes(), index};
             const auto& output = copy.Outputs().at(index);
+            const auto keys = output.Keys();
 
-            OT_ASSERT((0 < output.Keys().size()));
+            OT_ASSERT(0 < keys.size());
+            // NOTE until multisig is supported there is never a reason for an
+            // output to be associated with more than one key.
+            OT_ASSERT(1 == keys.size());
             OT_ASSERT(outpoint.Index() == index);
 
             try {
@@ -287,7 +293,7 @@ struct Output::Imp {
                 return false;
             }
 
-            for (const auto& key : output.Keys()) {
+            for (const auto& key : keys) {
                 const auto& [subaccount, subchain, bip32] = key;
 
                 if (Subchain::Outgoing == subchain) {
@@ -406,8 +412,9 @@ struct Output::Imp {
 
         for (const auto& output : transaction.Outputs()) {
             ++index;
+            const auto keys = output.Keys();
 
-            if (0 == output.Keys().size()) {
+            if (0 == keys.size()) {
                 LogTrace(OT_METHOD)(__FUNCTION__)(
                     ": output ")(index)(" belongs to someone else")
                     .Flush();
@@ -418,6 +425,8 @@ struct Output::Imp {
                     ": output ")(index)(" belongs to me")
                     .Flush();
             }
+
+            OT_ASSERT(1 == keys.size());
 
             const auto [it, added] = pending.emplace(
                 transaction.ID().Bytes(), static_cast<std::uint32_t>(index));
@@ -453,7 +462,7 @@ struct Output::Imp {
                 }
             }
 
-            for (const auto& key : output.Keys()) {
+            for (const auto& key : keys) {
                 const auto& owner = blockchain_.Owner(key);
 
                 if (false == associate(lock, outpoint, key)) {
@@ -1280,6 +1289,8 @@ private:
 
                 return false;
             }
+
+            OT_ASSERT(proto::Validate(data, VERBOSE));
 
             outputs_.emplace(
                 std::piecewise_construct,

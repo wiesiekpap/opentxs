@@ -13,8 +13,43 @@
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/beast/core.hpp>
+#include <boost/beast/core/basic_stream.hpp>
+#include <boost/beast/core/bind_handler.hpp>
+#include <boost/beast/core/detail/buffer_traits.hpp>
+#include <boost/beast/core/detail/buffers_range_adaptor.hpp>
+#include <boost/beast/core/detail/config.hpp>
+#include <boost/beast/core/error.hpp>
+#include <boost/beast/core/flat_buffer.hpp>
+#include <boost/beast/core/impl/async_base.hpp>
+#include <boost/beast/core/impl/basic_stream.hpp>
+#include <boost/beast/core/impl/buffers_cat.hpp>
+#include <boost/beast/core/impl/buffers_prefix.hpp>
+#include <boost/beast/core/impl/buffers_suffix.hpp>
+#include <boost/beast/core/impl/error.ipp>
+#include <boost/beast/core/impl/flat_buffer.hpp>
+#include <boost/beast/core/impl/read_size.hpp>
+#include <boost/beast/core/impl/string.ipp>
+#include <boost/beast/core/stream_traits.hpp>
+#include <boost/beast/core/string_type.hpp>
+#include <boost/beast/core/tcp_stream.hpp>
 #include <boost/beast/http.hpp>
+#include <boost/beast/http/detail/basic_parsed_list.hpp>
+#include <boost/beast/http/empty_body.hpp>
+#include <boost/beast/http/error.hpp>
+#include <boost/beast/http/field.hpp>
+#include <boost/beast/http/impl/basic_parser.hpp>
+#include <boost/beast/http/impl/basic_parser.ipp>
+#include <boost/beast/http/impl/fields.hpp>
+#include <boost/beast/http/impl/message.hpp>
+#include <boost/beast/http/impl/read.hpp>
+#include <boost/beast/http/impl/serializer.hpp>
+#include <boost/beast/http/impl/verb.ipp>
+#include <boost/beast/http/impl/write.hpp>
+#include <boost/beast/http/message.hpp>
+#include <boost/beast/http/string_body.hpp>
+#include <boost/beast/http/verb.hpp>
 #include <boost/beast/ssl.hpp>
+#include <boost/beast/ssl/ssl_stream.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/core/addressof.hpp>
@@ -25,13 +60,19 @@
 #include <boost/move/utility_core.hpp>
 #include <boost/mp11/detail/mp_with_index.hpp>
 #include <boost/smart_ptr/make_shared_object.hpp>
+#include <boost/system/error_code.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/type_index/type_index_facade.hpp>
 #include <boost/utility/string_view.hpp>
+#include <openssl/err.h>
+#include <openssl/ssl3.h>
 #include <algorithm>
 #include <array>
+#include <atomic>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <exception>
 #include <functional>
 #include <future>
 #include <iosfwd>
@@ -954,7 +995,7 @@ private:
 
                     if (eptr) { std::rethrow_exception(eptr); }
                 } catch (const std::exception& e) {
-                    LogOutput(IMP)(__FUNCTION__)(" ")(e.what()).Flush();
+                    LogVerbose(IMP)(__FUNCTION__)(" ")(e.what()).Flush();
                 }
             }
         }
@@ -973,7 +1014,7 @@ private:
 
                     if (eptr) { std::rethrow_exception(eptr); }
                 } catch (const std::exception& e) {
-                    LogOutput(IMP)(__FUNCTION__)(" ")(e.what()).Flush();
+                    LogVerbose(IMP)(__FUNCTION__)(" ")(e.what()).Flush();
                 }
             }
         }
