@@ -33,7 +33,7 @@ set(cxx-install-headers
 target_link_libraries(
   opentxs-api-network PRIVATE opentxs::messages Boost::headers
 )
-target_link_libraries(opentxs PUBLIC Boost::system Boost::thread)
+target_link_libraries(opentxs PUBLIC Boost::system Boost::thread OpenSSL::SSL)
 target_include_directories(
   opentxs-api-network SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )

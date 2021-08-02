@@ -11,37 +11,10 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/yes_no_type.hpp>
 #include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
 #include <boost/beast/core.hpp>
-#include <boost/beast/core/basic_stream.hpp>
-#include <boost/beast/core/detail/buffers_range_adaptor.hpp>
-#include <boost/beast/core/detail/config.hpp>
-#include <boost/beast/core/flat_buffer.hpp>
-#include <boost/beast/core/impl/basic_stream.hpp>
-#include <boost/beast/core/impl/buffers_cat.hpp>
-#include <boost/beast/core/impl/buffers_prefix.hpp>
-#include <boost/beast/core/impl/buffers_suffix.hpp>
-#include <boost/beast/core/impl/flat_buffer.hpp>
-#include <boost/beast/core/impl/multi_buffer.hpp>
-#include <boost/beast/core/impl/string.ipp>
-#include <boost/beast/core/string_type.hpp>
-#include <boost/beast/core/tcp_stream.hpp>
 #include <boost/beast/http.hpp>
-#include <boost/beast/http/detail/basic_parsed_list.hpp>
-#include <boost/beast/http/dynamic_body.hpp>
-#include <boost/beast/http/error.hpp>
-#include <boost/beast/http/field.hpp>
-#include <boost/beast/http/impl/basic_parser.hpp>
-#include <boost/beast/http/impl/basic_parser.ipp>
-#include <boost/beast/http/impl/fields.hpp>
-#include <boost/beast/http/impl/message.hpp>
-#include <boost/beast/http/impl/read.hpp>
-#include <boost/beast/http/impl/serializer.hpp>
-#include <boost/beast/http/impl/status.ipp>
-#include <boost/beast/http/impl/verb.ipp>
-#include <boost/beast/http/impl/write.hpp>
-#include <boost/beast/http/message.hpp>
-#include <boost/beast/http/string_body.hpp>
-#include <boost/beast/http/verb.hpp>
+#include <boost/beast/ssl.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/core/addressof.hpp>
@@ -101,18 +74,22 @@ namespace algo = boost::algorithm;
 namespace beast = boost::beast;
 namespace http = boost::beast::http;
 namespace ip = boost::asio::ip;
+namespace ssl = boost::asio::ssl;
 namespace zmq = opentxs::network::zeromq;
 
 #define IMP "opentxs::api::network::Asio::Imp::"
 
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 namespace opentxs::api::network
 {
 struct Asio::Imp final : public api::network::internal::Asio,
                          public opentxs::internal::StateMachine {
     using Buffer = boost::beast::flat_buffer;
-    using Request = http::request<http::string_body>;
-    using Response = http::response<http::dynamic_body>;
+    using Request = http::request<http::empty_body>;
+    using Response = http::response<http::string_body>;
     using Resolver = boost::asio::ip::tcp::resolver;
+    using SSLContext = boost::asio::ssl::context;
+    using SSLStream = boost::beast::ssl_stream<boost::beast::tcp_stream>;
     using Stream = boost::beast::tcp_stream;
     using Type = opentxs::network::asio::Endpoint::Type;
 
@@ -123,7 +100,7 @@ struct Asio::Imp final : public api::network::internal::Asio,
     {
         auto lock = sLock{lock_};
 
-        if (false == running_) { return false; }
+        if (shutdown()) { return false; }
 
         if (0 == id.size()) { return false; }
 
@@ -168,7 +145,7 @@ struct Asio::Imp final : public api::network::internal::Asio,
     {
         auto lock = eLock{lock_};
 
-        if (false == running_) { return; }
+        if (shutdown()) { return; }
 
         {
             const auto listen = socket_->Start(endpoint_);
@@ -191,7 +168,7 @@ struct Asio::Imp final : public api::network::internal::Asio,
     {
         auto lock = sLock{lock_};
 
-        if (false == running_) { return false; }
+        if (shutdown()) { return false; }
 
         boost::asio::post(context_, std::move(cb));
 
@@ -205,7 +182,7 @@ struct Asio::Imp final : public api::network::internal::Asio,
     {
         auto lock = sLock{lock_};
 
-        if (false == running_) { return false; }
+        if (shutdown()) { return false; }
 
         if (0 == id.size()) { return false; }
 
@@ -247,7 +224,7 @@ struct Asio::Imp final : public api::network::internal::Asio,
         auto output = Resolved{};
         auto lock = sLock{lock_};
 
-        if (false == running_) { return output; }
+        if (shutdown()) { return output; }
 
         try {
             auto resolver = Resolver{const_cast<Imp*>(this)->context_};
@@ -284,17 +261,17 @@ struct Asio::Imp final : public api::network::internal::Asio,
     }
     auto Shutdown() noexcept -> void
     {
-        auto lock = eLock{lock_};
+        auto future = Stop();
 
-        if (running_) {
-            running_ = false;
+        {
+            auto lock = eLock{lock_};
             context_.stop();
             thread_pool_.join_all();
             work_.reset();
             socket_->Close();
         }
 
-        Stop().get();
+        future.get();
     }
 
     Imp(const zmq::Context& zmq) noexcept
@@ -306,7 +283,6 @@ struct Asio::Imp final : public api::network::internal::Asio,
         , context_()
         , work_(std::make_unique<boost::asio::io_context::work>(context_))
         , thread_pool_()
-        , running_(true)
         , buffers_()
         , lock_()
         , ipv4_promise_()
@@ -348,6 +324,44 @@ private:
         std::map<Index, Space> buffers_{};
     };
 
+    enum class ResponseType { IPvonly, AddressOnly };
+    enum class IPversion { IPV4, IPV6 };
+
+    struct Site {
+        const std::string host;
+        const std::string service;
+        const std::string target;
+        const ResponseType response_type;
+        const IPversion protocol;
+        const unsigned http_version;
+    };
+
+    const std::vector<Site> sites{
+        {"ip4only.me",
+         "http",
+         "/api/",
+         ResponseType::IPvonly,
+         IPversion::IPV4,
+         11},
+        {"ip6only.me",
+         "http",
+         "/api/",
+         ResponseType::IPvonly,
+         IPversion::IPV6,
+         11},
+        {"ip4.seeip.org",
+         "https",
+         "/",
+         ResponseType::AddressOnly,
+         IPversion::IPV4,
+         11},
+        {"ip6.seeip.org",
+         "https",
+         "/",
+         ResponseType::AddressOnly,
+         IPversion::IPV6,
+         11}};
+
     const zmq::Context& zmq_;
     const std::string endpoint_;
     const OTZMQListenCallback cb_;
@@ -355,18 +369,12 @@ private:
     boost::asio::io_context context_;
     std::unique_ptr<boost::asio::io_context::work> work_;
     boost::thread_group thread_pool_;
-    bool running_;
     Buffers buffers_;
     mutable std::shared_mutex lock_;
     std::promise<OTData> ipv4_promise_;
     std::promise<OTData> ipv6_promise_;
     std::shared_future<OTData> ipv4_future_;
     std::shared_future<OTData> ipv6_future_;
-    const std::string ipv4_host_{"ip4only.me"};
-    const std::string ipv6_host_{"ip6only.me"};
-    const std::string service_{"http"};
-    const std::string target_{"/api/"};
-    const unsigned version_{11};  // HTTP 1.1
 
     auto callback(zmq::Message& in) noexcept -> void
     {
@@ -405,54 +413,490 @@ private:
                 }
             }
         } catch (const std::exception& e) {
-            LogOutput(IMP)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogOutput(IMP)(__FUNCTION__)(" : ")(e.what()).Flush();
         }
     }
-    auto retrieve_address(const std::string host) -> OTData
+
+    void load_root_certificates(
+        ssl::context& ctx,
+        boost::system::error_code& ec)
     {
+        // This is the root certificate for seeip.org.
+        std::string cert =
+            "# ISRG Root X1\n"
+            "-----BEGIN CERTIFICATE-----\n"
+            "MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw\n"
+            "TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh\n"
+            "cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMTUwNjA0MTEwNDM4\n"
+            "WhcNMzUwNjA0MTEwNDM4WjBPMQswCQYDVQQGEwJVUzEpMCcGA1UEChMgSW50ZXJu\n"
+            "ZXQgU2VjdXJpdHkgUmVzZWFyY2ggR3JvdXAxFTATBgNVBAMTDElTUkcgUm9vdCBY\n"
+            "MTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAK3oJHP0FDfzm54rVygc\n"
+            "h77ct984kIxuPOZXoHj3dcKi/vVqbvYATyjb3miGbESTtrFj/RQSa78f0uoxmyF+\n"
+            "0TM8ukj13Xnfs7j/EvEhmkvBioZxaUpmZmyPfjxwv60pIgbz5MDmgK7iS4+3mX6U\n"
+            "A5/TR5d8mUgjU+g4rk8Kb4Mu0UlXjIB0ttov0DiNewNwIRt18jA8+o+u3dpjq+sW\n"
+            "T8KOEUt+zwvo/7V3LvSye0rgTBIlDHCNAymg4VMk7BPZ7hm/ELNKjD+Jo2FR3qyH\n"
+            "B5T0Y3HsLuJvW5iB4YlcNHlsdu87kGJ55tukmi8mxdAQ4Q7e2RCOFvu396j3x+UC\n"
+            "B5iPNgiV5+I3lg02dZ77DnKxHZu8A/lJBdiB3QW0KtZB6awBdpUKD9jf1b0SHzUv\n"
+            "KBds0pjBqAlkd25HN7rOrFleaJ1/ctaJxQZBKT5ZPt0m9STJEadao0xAH0ahmbWn\n"
+            "OlFuhjuefXKnEgV4We0+UXgVCwOPjdAvBbI+e0ocS3MFEvzG6uBQE3xDk3SzynTn\n"
+            "jh8BCNAw1FtxNrQHusEwMFxIt4I7mKZ9YIqioymCzLq9gwQbooMDQaHWBfEbwrbw\n"
+            "qHyGO0aoSCqI3Haadr8faqU9GY/rOPNk3sgrDQoo//fb4hVC1CLQJ13hef4Y53CI\n"
+            "rU7m2Ys6xt0nUW7/vGT1M0NPAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIBBjAPBgNV\n"
+            "HRMBAf8EBTADAQH/MB0GA1UdDgQWBBR5tFnme7bl5AFzgAiIyBpY9umbbjANBgkq\n"
+            "hkiG9w0BAQsFAAOCAgEAVR9YqbyyqFDQDLHYGmkgJykIrGF1XIpu+ILlaS/V9lZL\n"
+            "ubhzEFnTIZd+50xx+7LSYK05qAvqFyFWhfFQDlnrzuBZ6brJFe+GnY+EgPbk6ZGQ\n"
+            "3BebYhtF8GaV0nxvwuo77x/Py9auJ/GpsMiu/X1+mvoiBOv/2X/qkSsisRcOj/KK\n"
+            "NFtY2PwByVS5uCbMiogziUwthDyC3+6WVwW6LLv3xLfHTjuCvjHIInNzktHCgKQ5\n"
+            "ORAzI4JMPJ+GslWYHb4phowim57iaztXOoJwTdwJx4nLCgdNbOhdjsnvzqvHu7Ur\n"
+            "TkXWStAmzOVyyghqpZXjFaH3pO3JLF+l+/+sKAIuvtd7u+Nxe5AW0wdeRlN8NwdC\n"
+            "jNPElpzVmbUq4JUagEiuTDkHzsxHpFKVK7q4+63SM1N95R1NbdWhscdCb+ZAJzVc\n"
+            "oyi3B43njTOQ5yOf+1CceWxG1bQVs5ZufpsMljq4Ui0/1lvh+wjChP4kqKOJ2qxq\n"
+            "4RgqsahDYVvTH9w7jXbyLeiNdd8XM2w9U/t7y0Ff/9yi0GE44Za4rF2LN9d11TPA\n"
+            "mRGunUHBcnWEvgJBQl9nJEiU0Zsnvgc/ubhPgXRR4Xq37Z0j4r7g1SgEEzwxA57d\n"
+            "emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=\n"
+            "-----END CERTIFICATE-----\n"
+            "\n";
+
+        ctx.add_certificate_authority(
+            boost::asio::buffer(cert.data(), cert.size()), ec);
+    }
+
+    auto retrieve_address_async(
+        const struct Site& site,
+        std::promise<OTData>&& promise) -> void
+    {
+        auto resolver_promise = std::promise<Resolver::results_type>{};
+        auto resolver_future = resolver_promise.get_future();
+
+        auto resolver = Resolver{Context()};
+        resolver.async_resolve(
+            site.host,
+            site.service,
+            [host{site.host},
+             resolver_promise{
+                 std::forward<std::promise<Resolver::results_type>&&>(
+                     resolver_promise)}](const auto& ec, auto results) mutable {
+                if (!ec) {
+                    resolver_promise.set_value(results);
+                } else {
+                    resolver_promise.set_exception(
+                        std::make_exception_ptr(std::runtime_error(
+                            "Failed to resolve host: " + host +
+                            ", Error: " + ec.message())));
+                }
+            });
+
+        auto resolver_results = Resolver::results_type{};
         try {
-            auto resolver = Resolver{Context()};
-            auto stream = Stream{Context()};
+            resolver_results = resolver_future.get();
+        } catch (...) {
+            promise.set_exception(std::current_exception());
+            return;
+        }
 
-            auto results = resolver.resolve(host, service_);
+        auto connect_promise = std::promise<void>{};
+        auto connect_future = connect_promise.get_future();
 
-            stream.connect(results);
+        auto stream = Stream{Context()};
+        stream.expires_after(std::chrono::seconds(10));
+        stream.async_connect(
+            resolver_results,
+            [host{site.host},
+             connect_promise{
+                 std::forward<std::promise<void>&&>(connect_promise)}](
+                const auto& ec, [[maybe_unused]] auto endpoint) mutable {
+                if (!ec) {
+                    connect_promise.set_value();
+                } else {
+                    if (beast::error::timeout == ec) {
+                        connect_promise.set_exception(
+                            std::make_exception_ptr(std::runtime_error(
+                                "Timed out connecting to host: " + host)));
+                    } else {
+                        connect_promise.set_exception(
+                            std::make_exception_ptr(std::runtime_error(
+                                "Failed to connect to host: " + host +
+                                ", Error: " + ec.message())));
+                    }
+                }
+            });
 
-            auto request = Request{http::verb::get, target_, version_};
-            request.set(http::field::host, host);
-            request.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+        try {
+            connect_future.get();
+        } catch (...) {
+            promise.set_exception(std::current_exception());
+            return;
+        }
 
-            http::write(stream, request);
+        auto request_promise = std::promise<void>{};
+        auto request_future = request_promise.get_future();
 
-            auto buffer = Buffer{};
-            auto response = Response{};
+        auto request = Request{http::verb::get, site.target, site.http_version};
+        request.set(http::field::host, site.host);
+        request.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+        http::async_write(
+            stream,
+            request,
+            [host{site.host},
+             request_promise{
+                 std::forward<std::promise<void>&&>(request_promise)}](
+                const auto& ec,
+                [[maybe_unused]] auto bytes_transferred) mutable {
+                if (!ec) {
+                    request_promise.set_value();
+                } else {
+                    request_promise.set_exception(
+                        std::make_exception_ptr(std::runtime_error(
+                            "Failed to send GET request to host: " + host +
+                            ", Error: " + ec.message())));
+                }
+            });
 
-            http::read(stream, buffer, response);
+        try {
+            request_future.get();
+        } catch (...) {
+            promise.set_exception(std::current_exception());
+            return;
+        }
 
-            auto response_string = std::stringstream{};
-            response_string << response;
+        auto response_promise = std::promise<void>{};
+        auto response_future = response_promise.get_future();
 
-            auto parts = std::vector<std::string>{};
-            algo::split(parts, response_string.str(), algo::is_any_of(","));
+        auto buffer = Buffer{};
+        auto response = Response{};
+        http::async_read(
+            stream,
+            buffer,
+            response,
+            [host{site.host},
+             response_promise{
+                 std::forward<std::promise<void>&&>(response_promise)}](
+                const auto& ec,
+                [[maybe_unused]] auto bytes_transferred) mutable {
+                if (!ec) {
+                    response_promise.set_value();
+                } else {
+                    response_promise.set_exception(
+                        std::make_exception_ptr(std::runtime_error(
+                            "Failed to receive GET response from host: " +
+                            host + ", Error: " + ec.message())));
+                }
+            });
 
-            if (parts.size() > 1) {
-                const auto address = ip::make_address(parts[2]);
+        try {
+            response_future.get();
+        } catch (...) {
+            promise.set_exception(std::current_exception());
+            return;
+        }
 
+        auto response_string = response.body();
+
+        std::string address_string{};
+        switch (site.response_type) {
+            case ResponseType::IPvonly: {
+                auto parts = std::vector<std::string>{};
+                algo::split(parts, response_string, algo::is_any_of(","));
+
+                if (parts.size() > 1) { address_string = parts[1]; }
+            } break;
+            case ResponseType::AddressOnly: {
+                address_string = response_string;
+            } break;
+            default: {
+                promise.set_exception(std::make_exception_ptr(
+                    std::runtime_error("Unknown response type.")));
+                return;
+            }
+        }
+
+        if (!address_string.empty()) {
+            beast::error_code address_ec;
+            const auto address = ip::make_address(address_string, address_ec);
+
+            if (!address_ec) {
+                LogVerbose(IMP)(__FUNCTION__)(
+                    " GET response: IP address: ")(address_string)
+                    .Flush();
                 if (address.is_v4()) {
                     const auto bytes = address.to_v4().to_bytes();
-                    return Data::Factory(bytes.data(), bytes.size());
+                    promise.set_value(
+                        Data::Factory(bytes.data(), bytes.size()));
                 } else if (address.is_v6()) {
                     const auto bytes = address.to_v6().to_bytes();
-                    return Data::Factory(bytes.data(), bytes.size());
+                    promise.set_value(
+                        Data::Factory(bytes.data(), bytes.size()));
                 }
+            } else {
+                promise.set_exception(
+                    std::make_exception_ptr(std::runtime_error(
+                        "GET response from host: " + site.host +
+                        ": invalid IP address: " +
+                        address_string.substr(0, 39) +
+                        ", Error: " + address_ec.message())));
+                return;
             }
-
-            return Data::Factory();
-        } catch (const std::exception& e) {
-            LogVerbose(IMP)(__FUNCTION__)(": ")(e.what()).Flush();
-            return Data::Factory();
         }
     }
+
+    auto retrieve_address_async_ssl(
+        const struct Site& site,
+        std::promise<OTData>&& promise) -> void
+    {
+        auto resolver_promise = std::promise<Resolver::results_type>{};
+        auto resolver_future = resolver_promise.get_future();
+
+        auto resolver = Resolver{Context()};
+        resolver.async_resolve(
+            site.host,
+            site.service,
+            [host{site.host},
+             resolver_promise{
+                 std::forward<std::promise<Resolver::results_type>&&>(
+                     resolver_promise)}](const auto& ec, auto results) mutable {
+                if (!ec) {
+                    resolver_promise.set_value(results);
+                } else {
+                    resolver_promise.set_exception(
+                        std::make_exception_ptr(std::runtime_error(
+                            "Failed to resolve host: " + host +
+                            ", Error: " + ec.message())));
+                }
+            });
+
+        auto resolver_results = Resolver::results_type{};
+        try {
+            resolver_results = resolver_future.get();
+        } catch (...) {
+            promise.set_exception(std::current_exception());
+            return;
+        }
+
+        ssl::context ssl_context{ssl::context::tlsv12_client};
+
+        boost::system::error_code ec;
+        load_root_certificates(ssl_context, ec);
+        if (ec) {
+            promise.set_exception(std::make_exception_ptr(std::runtime_error(
+                "Error loading root certificates, Error: " + ec.message())));
+            return;
+        }
+
+        ssl_context.set_verify_mode(ssl::verify_peer);
+
+        auto ssl_stream = SSLStream{Context(), ssl_context};
+
+        auto connect_promise = std::promise<void>{};
+        auto connect_future = connect_promise.get_future();
+
+        if (!SSL_set_tlsext_host_name(
+                ssl_stream.native_handle(), site.host.c_str())) {
+            beast::error_code ec{
+                static_cast<int>(::ERR_get_error()),
+                boost::asio::error::get_ssl_category()};
+            promise.set_exception(std::make_exception_ptr(std::runtime_error(
+                "Error calling SSL_set_tlsext_host_name for host: " +
+                site.host + ", Error: " + ec.message())));
+            return;
+        }
+
+        beast::get_lowest_layer(ssl_stream)
+            .expires_after(std::chrono::seconds(10));
+
+        beast::get_lowest_layer(ssl_stream)
+            .async_connect(
+                resolver_results,
+                [host{site.host},
+                 connect_promise{
+                     std::forward<std::promise<void>&&>(connect_promise)}](
+                    const auto& ec, [[maybe_unused]] auto endpoint) mutable {
+                    if (!ec) {
+                        connect_promise.set_value();
+                    } else {
+                        if (beast::error::timeout == ec) {
+                            connect_promise.set_exception(
+                                std::make_exception_ptr(std::runtime_error(
+                                    "Timed out connecting to host: " + host)));
+                        } else {
+                            connect_promise.set_exception(
+                                std::make_exception_ptr(std::runtime_error(
+                                    "Failed to connect to host: " + host +
+                                    ", Error: " + ec.message())));
+                        }
+                    }
+                });
+
+        try {
+            connect_future.get();
+        } catch (...) {
+            promise.set_exception(std::current_exception());
+            return;
+        }
+
+        auto handshake_promise = std::promise<void>{};
+        auto handshake_future = handshake_promise.get_future();
+
+        ssl_stream.async_handshake(
+            ssl::stream_base::client,
+            [host{site.host},
+             handshake_promise{std::forward<std::promise<void>&&>(
+                 handshake_promise)}](const auto& ec) mutable {
+                if (!ec) {
+                    handshake_promise.set_value();
+                } else {
+                    handshake_promise.set_exception(
+                        std::make_exception_ptr(std::runtime_error(
+                            "Handshake failed to host: " + host +
+                            ", Error: " + ec.message())));
+                }
+            });
+
+        try {
+            handshake_future.get();
+        } catch (...) {
+            promise.set_exception(std::current_exception());
+            return;
+        }
+
+        auto request_promise = std::promise<void>{};
+        auto request_future = request_promise.get_future();
+
+        auto request = Request{http::verb::get, site.target, site.http_version};
+        request.set(http::field::host, site.host);
+        request.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+
+        http::async_write(
+            ssl_stream,
+            request,
+            [host{site.host},
+             request_promise{
+                 std::forward<std::promise<void>&&>(request_promise)}](
+                const auto& ec,
+                [[maybe_unused]] auto bytes_transferred) mutable {
+                if (!ec) {
+                    request_promise.set_value();
+                } else {
+                    request_promise.set_exception(
+                        std::make_exception_ptr(std::runtime_error(
+                            "Failed to send GET request to host: " + host +
+                            ", Error: " + ec.message())));
+                }
+            });
+
+        try {
+            request_future.get();
+        } catch (...) {
+            promise.set_exception(std::current_exception());
+            return;
+        }
+
+        auto response_promise = std::promise<void>{};
+        auto response_future = response_promise.get_future();
+
+        auto buffer = Buffer{};
+        auto response = Response{};
+        http::async_read(
+            ssl_stream,
+            buffer,
+            response,
+            [host{site.host},
+             response_promise{
+                 std::forward<std::promise<void>&&>(response_promise)}](
+                const auto& ec,
+                [[maybe_unused]] auto bytes_transferred) mutable {
+                if (!ec) {
+                    response_promise.set_value();
+                } else {
+                    response_promise.set_exception(
+                        std::make_exception_ptr(std::runtime_error(
+                            "Failed to receive GET response from  host: " +
+                            host + ", Error: " + ec.message())));
+                }
+            });
+
+        try {
+            response_future.get();
+        } catch (...) {
+            promise.set_exception(std::current_exception());
+            return;
+        }
+
+        auto response_string = response.body();
+
+        std::string address_string{};
+        switch (site.response_type) {
+            case ResponseType::IPvonly: {
+                auto parts = std::vector<std::string>{};
+                algo::split(parts, response_string, algo::is_any_of(","));
+
+                if (parts.size() > 1) { address_string = parts[1]; }
+            } break;
+            case ResponseType::AddressOnly: {
+                address_string = response_string;
+            } break;
+            default: {
+                promise.set_exception(std::make_exception_ptr(
+                    std::runtime_error("Unknown response type.")));
+                return;
+            }
+        }
+
+        if (!address_string.empty()) {
+            beast::error_code address_ec;
+            const auto address = ip::make_address(address_string, address_ec);
+
+            if (!address_ec) {
+                LogVerbose(IMP)(__FUNCTION__)(
+                    " GET response: IP address: ")(address_string)
+                    .Flush();
+                if (address.is_v4()) {
+                    const auto bytes = address.to_v4().to_bytes();
+                    promise.set_value(
+                        Data::Factory(bytes.data(), bytes.size()));
+                } else if (address.is_v6()) {
+                    const auto bytes = address.to_v6().to_bytes();
+                    promise.set_value(
+                        Data::Factory(bytes.data(), bytes.size()));
+                }
+            } else {
+                promise.set_exception(
+                    std::make_exception_ptr(std::runtime_error(
+                        "GET response from host: " + site.host +
+                        ": invalid IP address: " +
+                        address_string.substr(0, 39) +
+                        ", Error: " + address_ec.message())));
+                return;
+            }
+        }
+
+        auto shutdown_promise = std::promise<void>{};
+        auto shutdown_future = shutdown_promise.get_future();
+
+        ssl_stream.async_shutdown(
+            [shutdown_promise{std::forward<std::promise<void>&&>(
+                shutdown_promise)}]([[maybe_unused]] const auto& ec) mutable {
+                // async_shutdown can return errors depending on the behavior of
+                // the server, so log the error but continue.
+                // https://stackoverflow.com/questions/25587403/
+                // boost-asio-ssl-async-shutdown-always-finishes-with-an-error
+                if (!ec) {
+                    shutdown_promise.set_value();
+                } else {
+                    shutdown_promise.set_exception(
+                        std::make_exception_ptr(std::runtime_error(
+                            "Problem shutting down ssl stream, Error: " +
+                            ec.message() + ", continuing execution.")));
+                }
+            });
+        try {
+            shutdown_future.get();
+        } catch (const std::exception& e) {
+            // The value of promise is already set, so log the shutdown error
+            // and continue.
+            LogVerbose(IMP)(__FUNCTION__)(" ")(e.what()).Flush();
+        }
+    }
+
     auto state_machine() noexcept -> bool
     {
         auto again{false};
@@ -465,16 +909,82 @@ private:
             ipv6_future_ = ipv6_promise_.get_future();
         }
 
-        auto v4data = retrieve_address(ipv4_host_);
-        auto v6data = retrieve_address(ipv6_host_);
+        auto promises4 = std::vector<std::promise<OTData>>{};
+        auto futures4 = std::vector<std::future<OTData>>{};
+
+        auto promises6 = std::vector<std::promise<OTData>>{};
+        auto futures6 = std::vector<std::future<OTData>>{};
+
+        for (const auto& site : sites) {
+            if (IPversion::IPV4 == site.protocol) {
+                auto& promise4 = promises4.emplace_back();
+                futures4.emplace_back(promise4.get_future());
+
+                if ("https" == site.service) {
+                    retrieve_address_async_ssl(site, std::move(promise4));
+                } else {
+                    retrieve_address_async(site, std::move(promise4));
+                }
+            } else {
+                auto& promise6 = promises6.emplace_back();
+                futures6.emplace_back(promise6.get_future());
+
+                if ("https" == site.service) {
+                    retrieve_address_async_ssl(site, std::move(promise6));
+                } else {
+                    retrieve_address_async(site, std::move(promise6));
+                }
+            }
+        }
+
+        auto result4 = Data::Factory();
+        auto result6 = Data::Factory();
+
+        for (auto& future : futures4) {
+            try {
+                auto result = future.get();
+
+                if (result->empty()) { continue; }
+
+                result4 = std::move(result);
+                break;
+            } catch (...) {
+                try {
+                    auto eptr = std::current_exception();
+
+                    if (eptr) { std::rethrow_exception(eptr); }
+                } catch (const std::exception& e) {
+                    LogOutput(IMP)(__FUNCTION__)(" ")(e.what()).Flush();
+                }
+            }
+        }
+
+        for (auto& future : futures6) {
+            try {
+                auto result = future.get();
+
+                if (result->empty()) { continue; }
+
+                result6 = std::move(result);
+                break;
+            } catch (...) {
+                try {
+                    auto eptr = std::current_exception();
+
+                    if (eptr) { std::rethrow_exception(eptr); }
+                } catch (const std::exception& e) {
+                    LogOutput(IMP)(__FUNCTION__)(" ")(e.what()).Flush();
+                }
+            }
+        }
+
+        if (result4->empty() && result6->empty()) { again = true; }
 
         {
             auto lock = eLock{lock_};
-            ipv4_promise_.set_value(v4data);
-            ipv6_promise_.set_value(v6data);
+            ipv4_promise_.set_value(std::move(result4));
+            ipv6_promise_.set_value(std::move(result6));
         }
-
-        if (v4data->empty() && v6data->empty()) { again = true; }
 
         return again;
     }
