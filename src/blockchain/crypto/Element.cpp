@@ -67,8 +67,16 @@ Element::Element(
     , cached_(std::nullopt)
 {
     if (false == bool(pkey_)) { throw std::runtime_error("No key provided"); }
+
     if (Subchain::Error == subchain_) {
         throw std::runtime_error("Invalid subchain");
+    }
+
+    const auto pc =
+        (Subchain::Incoming == subchain_) || (Subchain::Outgoing == subchain_);
+
+    if (pc && contact_->empty()) {
+        throw std::runtime_error("Missing contact");
     }
 }
 
@@ -104,7 +112,8 @@ Element::Element(
     const internal::Subaccount& parent,
     const opentxs::blockchain::Type chain,
     const crypto::Subchain subchain,
-    const SerializedType& address) noexcept(false)
+    const SerializedType& address,
+    OTIdentifier&& contact) noexcept(false)
     : Element(
           api,
           blockchain,
@@ -114,7 +123,7 @@ Element::Element(
           subchain,
           address.index(),
           address.label(),
-          api.Factory().Identifier(address.contact()),
+          std::move(contact),
           *instantiate(api, address.key()),
           Clock::from_time_t(address.modified()),
           [&] {
@@ -137,6 +146,24 @@ Element::Element(
           }())
 {
     cached_ = address;
+}
+
+Element::Element(
+    const api::internal::Core& api,
+    const api::client::internal::Blockchain& blockchain,
+    const internal::Subaccount& parent,
+    const opentxs::blockchain::Type chain,
+    const crypto::Subchain subchain,
+    const SerializedType& address) noexcept(false)
+    : Element(
+          api,
+          blockchain,
+          parent,
+          chain,
+          subchain,
+          address,
+          api.Factory().Identifier(address.contact()))
+{
 }
 
 auto Element::Address(
@@ -367,6 +394,11 @@ auto Element::Serialize() const noexcept -> Element::SerializedType
 
 void Element::SetContact(const Identifier& contact) noexcept
 {
+    const auto pc =
+        (Subchain::Incoming == subchain_) || (Subchain::Outgoing == subchain_);
+
+    if (pc) { return; }
+
     auto lock = rLock{lock_};
     contact_ = contact;
     cached_ = std::nullopt;
@@ -385,8 +417,13 @@ void Element::SetMetadata(
     const Identifier& contact,
     const std::string& label) noexcept
 {
+    const auto pc =
+        (Subchain::Incoming == subchain_) || (Subchain::Outgoing == subchain_);
+
     auto lock = rLock{lock_};
-    contact_ = contact;
+
+    if (false == pc) { contact_ = contact; }
+
     label_ = label;
     cached_ = std::nullopt;
     update_element(lock);

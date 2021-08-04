@@ -20,7 +20,7 @@
 
 namespace opentxs::display
 {
-class OPENTXS_EXPORT Definition
+class Definition
 {
 public:
     using Index = unsigned int;

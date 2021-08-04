@@ -38,7 +38,7 @@ public:
      * \returns true if the callback thread is executing, false if the state
      * machine is stopping, stopped or destructing
      */
-    OPENTXS_EXPORT auto Trigger() const noexcept -> bool;
+    auto Trigger() const noexcept -> bool;
 
     /** Terminate the state machine
      *
@@ -49,16 +49,16 @@ public:
      * \returns a future whose value will be set when the state machine is
      * in a stopped state
      */
-    OPENTXS_EXPORT auto Stop() const noexcept -> StopFuture;
+    auto Stop() const noexcept -> StopFuture;
 
     /** Detect a state machine idle condition
      *
      * \returns a future whose value will be set the next time the state machine
      * is not executing the callback function
      */
-    OPENTXS_EXPORT auto Wait() const noexcept -> WaitFuture;
+    auto Wait() const noexcept -> WaitFuture;
 
-    OPENTXS_EXPORT virtual ~StateMachine()
+    virtual ~StateMachine()
     {
         if (false == clean_.load()) { Stop(); }
 
@@ -68,19 +68,18 @@ public:
 protected:
     mutable std::mutex decision_lock_;
 
-    OPENTXS_EXPORT auto running() const noexcept -> const std::atomic<bool>&
+    auto running() const noexcept -> const std::atomic<bool>&
     {
         return running_;
     }
-    OPENTXS_EXPORT auto shutdown() const noexcept -> const std::atomic<bool>&
+    auto shutdown() const noexcept -> const std::atomic<bool>&
     {
         return shutdown_;
     }
 
-    OPENTXS_EXPORT auto trigger(const Lock& decisionLock) const noexcept
-        -> bool;
+    auto trigger(const Lock& decisionLock) const noexcept -> bool;
 
-    OPENTXS_EXPORT StateMachine(const Callback callback) noexcept;
+    StateMachine(const Callback callback) noexcept;
 
 private:
     const Callback cb_;

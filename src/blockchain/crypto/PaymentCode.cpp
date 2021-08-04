@@ -58,6 +58,7 @@ auto BlockchainPCSubaccount(
     -> std::unique_ptr<blockchain::crypto::internal::PaymentCode>
 {
     try {
+
         return std::make_unique<ReturnType>(
             api, parent, local, remote, path, txid, reason, id);
     } catch (const std::exception& e) {
@@ -74,10 +75,16 @@ auto BlockchainPCSubaccount(
     Identifier& id) noexcept
     -> std::unique_ptr<blockchain::crypto::internal::PaymentCode>
 {
-    using ReturnType = blockchain::crypto::implementation::PaymentCode;
+    auto contact =
+        parent.ParentInternal().Parent().Contacts().PaymentCodeToContact(
+            api.Factory().PaymentCode(serialized.remote()), parent.Chain());
+
+    OT_ASSERT(false == contact->empty());
 
     try {
-        return std::make_unique<ReturnType>(api, parent, serialized, id);
+
+        return std::make_unique<ReturnType>(
+            api, parent, serialized, id, std::move(contact));
     } catch (const std::exception& e) {
         LogOutput("opentxs::Factory::")(__FUNCTION__)(": ")(e.what()).Flush();
 
@@ -154,6 +161,8 @@ PaymentCode::PaymentCode(
         throw std::runtime_error("Invalid path or local payment code");
     }
 
+    if (contact_id_->empty()) { throw std::runtime_error("Missing contact"); }
+
     init(reason);
     parent_.FindNym(remote_.get().ID());
 }
@@ -162,7 +171,8 @@ PaymentCode::PaymentCode(
     const api::internal::Core& api,
     const internal::Account& parent,
     const SerializedType& serialized,
-    Identifier& id) noexcept(false)
+    Identifier& id,
+    OTIdentifier&& contact) noexcept(false)
     : Deterministic(
           api,
           parent,
@@ -170,7 +180,7 @@ PaymentCode::PaymentCode(
           serialized.deterministic(),
           serialized.incoming().address().size(),
           serialized.outgoing().address().size(),
-          [&] {
+          [&, fallback = std::move(contact)] {
               auto out = ChainData{
                   {internalType, false, {}}, {externalType, false, {}}};
               auto& internal = out.internal_.map_;
@@ -189,7 +199,8 @@ PaymentCode::PaymentCode(
                               *this,
                               parent.Chain(),
                               internalType,
-                              address)));
+                              address,
+                              OTIdentifier{fallback})));
               }
 
               for (const auto& address : serialized.incoming().address()) {
@@ -203,7 +214,8 @@ PaymentCode::PaymentCode(
                               *this,
                               parent.Chain(),
                               externalType,
-                              address)));
+                              address,
+                              OTIdentifier{fallback})));
               }
 
               return out;
@@ -235,6 +247,8 @@ PaymentCode::PaymentCode(
               remote_,
               chain_))
 {
+    if (contact_id_->empty()) { throw std::runtime_error("Missing contact"); }
+
     init();
     parent_.FindNym(remote_.get().ID());
 }
@@ -392,7 +406,6 @@ auto PaymentCode::save(const rLock& lock) const noexcept -> bool
         }
     }
 
-    // TODO serialised.set_contact();
     const bool saved = api_.Storage().Store(parent_.NymID(), id_, serialized);
 
     if (false == saved) {

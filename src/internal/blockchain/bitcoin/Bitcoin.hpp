@@ -96,7 +96,7 @@ struct EncodedInputWitness {
     auto size() const noexcept -> std::size_t;
 };
 
-struct OPENTXS_EXPORT EncodedTransaction {
+struct EncodedTransaction {
     be::little_int32_buf_t version_{};
     std::optional<std::byte> segwit_flag_{};
     CompactSize input_count_{};

@@ -64,11 +64,11 @@ namespace be = boost::endian;
 
 namespace opentxs::gcs
 {
-OPENTXS_EXPORT auto GolombDecode(
+auto GolombDecode(
     const std::uint32_t N,
     const std::uint8_t P,
     const Space& encoded) noexcept(false) -> std::vector<std::uint64_t>;
-OPENTXS_EXPORT auto GolombEncode(
+auto GolombEncode(
     const std::uint8_t P,
     const std::vector<std::uint64_t>& hashedSet) noexcept(false) -> Space;
 auto HashToRange(
@@ -91,7 +91,7 @@ namespace opentxs::blockchain::internal
 // https://github.com/rasky/gcs/blob/master/cpp/gcs.cpp
 // The license there reads:
 // "This is free and unencumbered software released into the public domain."
-class OPENTXS_EXPORT BitReader
+class BitReader
 {
 public:
     auto eof() -> bool;
@@ -118,7 +118,7 @@ private:
 // https://github.com/rasky/gcs/blob/master/cpp/gcs.cpp
 // The license there reads:
 // "This is free and unencumbered software released into the public domain."
-class OPENTXS_EXPORT BitWriter
+class BitWriter
 {
 public:
     void flush();
@@ -169,22 +169,19 @@ auto Deserialize(const Type chain, const std::uint8_t type) noexcept
     -> filter::Type;
 auto Deserialize(const api::Core& api, const ReadView bytes) noexcept
     -> block::Position;
-OPENTXS_EXPORT auto BlockHashToFilterKey(const ReadView hash) noexcept(false)
-    -> ReadView;
-OPENTXS_EXPORT auto FilterHashToHeader(
+auto BlockHashToFilterKey(const ReadView hash) noexcept(false) -> ReadView;
+auto FilterHashToHeader(
     const api::Core& api,
     const ReadView hash,
     const ReadView previous = {}) noexcept -> OTData;
-OPENTXS_EXPORT auto FilterToHash(
-    const api::Core& api,
-    const ReadView filter) noexcept -> OTData;
-OPENTXS_EXPORT auto FilterToHeader(
+auto FilterToHash(const api::Core& api, const ReadView filter) noexcept
+    -> OTData;
+auto FilterToHeader(
     const api::Core& api,
     const ReadView filter,
     const ReadView previous = {}) noexcept -> OTData;
 auto Format(const Type chain, const opentxs::Amount) noexcept -> std::string;
-OPENTXS_EXPORT auto GetFilterParams(const filter::Type type) noexcept(false)
-    -> FilterParams;
+auto GetFilterParams(const filter::Type type) noexcept(false) -> FilterParams;
 auto Grind(const std::function<void()> function) noexcept -> void;
 auto Serialize(const Type chain, const filter::Type type) noexcept(false)
     -> std::uint8_t;
@@ -199,53 +196,50 @@ namespace opentxs::blockchain::script
 namespace opentxs::factory
 {
 #if OT_BLOCKCHAIN
-OPENTXS_EXPORT auto BloomFilter(
+auto BloomFilter(
     const api::Core& api,
     const std::uint32_t tweak,
     const blockchain::BloomUpdateFlag update,
     const std::size_t targets,
     const double falsePositiveRate) -> blockchain::BloomFilter*;
-OPENTXS_EXPORT auto BloomFilter(const api::Core& api, const Data& serialized)
+auto BloomFilter(const api::Core& api, const Data& serialized)
     -> blockchain::BloomFilter*;
-OPENTXS_EXPORT auto GCS(
+auto GCS(
     const api::Core& api,
     const std::uint8_t bits,
     const std::uint32_t fpRate,
     const ReadView key,
     const std::vector<OTData>& elements) noexcept
     -> std::unique_ptr<blockchain::node::GCS>;
-OPENTXS_EXPORT auto GCS(
+auto GCS(
     const api::Core& api,
     const blockchain::filter::Type type,
     const blockchain::block::Block& block) noexcept
     -> std::unique_ptr<blockchain::node::GCS>;
 auto GCS(const api::Core& api, const proto::GCS& serialized) noexcept
     -> std::unique_ptr<blockchain::node::GCS>;
-OPENTXS_EXPORT auto GCS(
-    const api::Core& api,
-    const ReadView serialized) noexcept
+auto GCS(const api::Core& api, const ReadView serialized) noexcept
     -> std::unique_ptr<blockchain::node::GCS>;
-OPENTXS_EXPORT auto GCS(
+auto GCS(
     const api::Core& api,
     const std::uint8_t bits,
     const std::uint32_t fpRate,
     const ReadView key,
     const std::uint32_t filterElementCount,
     const ReadView filter) noexcept -> std::unique_ptr<blockchain::node::GCS>;
-OPENTXS_EXPORT auto GCS(
+auto GCS(
     const api::Core& api,
     const blockchain::filter::Type type,
     const ReadView key,
     const ReadView encoded) noexcept -> std::unique_ptr<blockchain::node::GCS>;
 #endif  // OT_BLOCKCHAIN
-OPENTXS_EXPORT auto NumericHash(const blockchain::block::Hash& hash) noexcept
+auto NumericHash(const blockchain::block::Hash& hash) noexcept
     -> std::unique_ptr<blockchain::NumericHash>;
-OPENTXS_EXPORT auto NumericHashNBits(const std::uint32_t nBits) noexcept
+auto NumericHashNBits(const std::uint32_t nBits) noexcept
     -> std::unique_ptr<blockchain::NumericHash>;
 #if OT_BLOCKCHAIN
-OPENTXS_EXPORT auto Work(const std::string& hex) -> blockchain::Work*;
-OPENTXS_EXPORT auto Work(
-    const blockchain::Type chain,
-    const blockchain::NumericHash& target) -> blockchain::Work*;
+auto Work(const std::string& hex) -> blockchain::Work*;
+auto Work(const blockchain::Type chain, const blockchain::NumericHash& target)
+    -> blockchain::Work*;
 #endif  // OT_BLOCKCHAIN
 }  // namespace opentxs::factory

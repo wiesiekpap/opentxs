@@ -120,7 +120,8 @@ public:
         const api::internal::Core& api,
         const internal::Account& parent,
         const SerializedType& serialized,
-        Identifier& id) noexcept(false);
+        Identifier& id,
+        OTIdentifier&& contact) noexcept(false);
 
     ~PaymentCode() final = default;
 

@@ -529,7 +529,7 @@ auto BitcoinP2PGetblocks(
     const blockchain::p2p::bitcoin::ProtocolVersion version,
     const void* payload,
     const std::size_t size) -> blockchain::p2p::bitcoin::message::Getblocks*;
-OPENTXS_EXPORT auto BitcoinP2PGetblocks(
+auto BitcoinP2PGetblocks(
     const api::Core& api,
     const blockchain::Type network,
     const std::uint32_t version,

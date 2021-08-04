@@ -26,6 +26,8 @@
 #include "internal/contact/Contact.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
@@ -116,13 +118,31 @@ auto BitcoinTransactionOutput(
         auto cs = blockchain::bitcoin::CompactSize(in.script().size());
         auto keys = boost::container::flat_set<ReturnType::KeyID>{};
         auto pkh = boost::container::flat_set<blockchain::PatternID>{};
+        using Payer = OTIdentifier;
+        using Payee = OTIdentifier;
+        using Correction = std::pair<Payer, Payee>;
+        auto corrections = std::vector<Correction>{};
 
         for (const auto& key : in.key()) {
-            keys.emplace(
-                key.subaccount(),
-                static_cast<blockchain::crypto::Subchain>(
-                    static_cast<std::uint8_t>(key.subchain())),
-                key.index());
+            const auto subchain = static_cast<blockchain::crypto::Subchain>(
+                static_cast<std::uint8_t>(key.subchain()));
+            auto keyid =
+                ReturnType::KeyID{key.subaccount(), subchain, key.index()};
+
+            if (blockchain::crypto::Subchain::Outgoing == subchain) {
+                LogOutput("opentxs::factory::")(__FUNCTION__)(
+                    ": invalid key detected in transaction")
+                    .Flush();
+                auto sender = blockchain.SenderContact(keyid);
+                auto recipient = blockchain.RecipientContact(keyid);
+
+                if (sender->empty() || recipient->empty()) { OT_FAIL; }
+
+                corrections.emplace_back(
+                    std::move(sender), std::move(recipient));
+            } else {
+                keys.emplace(std::move(keyid));
+            }
         }
 
         for (const auto& pattern : in.pubkey_hash()) { pkh.emplace(pattern); }
@@ -165,6 +185,11 @@ auto BitcoinTransactionOutput(
             }
         }
 
+        for (const auto& [payer, payee] : corrections) {
+            out->SetPayer(payer);
+            out->SetPayee(payee);
+        }
+
         return std::move(out);
     } catch (const std::exception& e) {
         LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
@@ -193,6 +218,7 @@ Output::Output(
     std::optional<PatternID>&& scriptHash,
     const bool indexed) noexcept(false)
     : api_(api)
+    , crypto_(blockchain)
     , chain_(chain)
     , serialize_version_(version)
     , index_(index)
@@ -206,7 +232,7 @@ Output::Output(
         throw std::runtime_error("Invalid output script");
     }
 
-    if (false == indexed) { index_elements(blockchain); }
+    if (false == indexed) { index_elements(); }
 }
 
 Output::Output(
@@ -261,6 +287,7 @@ Output::Output(
 
 Output::Output(const Output& rhs) noexcept
     : api_(rhs.api_)
+    , crypto_(rhs.crypto_)
     , chain_(rhs.chain_)
     , serialize_version_(rhs.serialize_version_)
     , index_(rhs.index_)
@@ -336,7 +363,20 @@ auto Output::FindMatches(
             const auto& [txid, element] = match;
             const auto& [index, subchainID] = element;
             const auto& [subchain, account] = subchainID;
-            cache_.add({account->str(), subchain, index});
+            auto keyid = KeyID{account->str(), subchain, index};
+
+            if (crypto::Subchain::Outgoing == subchain) {
+                auto sender = crypto_.SenderContact(keyid);
+                auto recipient = crypto_.RecipientContact(keyid);
+
+                if (sender->empty()) { OT_FAIL; }
+                if (recipient->empty()) { OT_FAIL; }
+
+                cache_.set_payer(sender);
+                cache_.set_payee(recipient);
+            } else {
+                cache_.add(std::move(keyid));
+            }
         });
 
     return output;
@@ -347,12 +387,11 @@ auto Output::GetPatterns() const noexcept -> std::vector<PatternID>
     return {std::begin(pubkey_hashes_), std::end(pubkey_hashes_)};
 }
 
-auto Output::index_elements(const api::client::Blockchain& blockchain) noexcept
-    -> void
+auto Output::index_elements() noexcept -> void
 {
     auto& hashes =
         const_cast<boost::container::flat_set<PatternID>&>(pubkey_hashes_);
-    const auto patterns = script_->ExtractPatterns(api_, blockchain);
+    const auto patterns = script_->ExtractPatterns(api_, crypto_);
     LogTrace(OT_METHOD)(__FUNCTION__)(
         ": ")(patterns.size())(" pubkey hashes found:")
         .Flush();
@@ -365,7 +404,7 @@ auto Output::index_elements(const api::client::Blockchain& blockchain) noexcept
 
     if (scriptHash.has_value()) {
         const_cast<std::optional<PatternID>&>(script_hash_) =
-            blockchain.IndexItem(scriptHash.value());
+            crypto_.IndexItem(scriptHash.value());
     }
 }
 
@@ -373,11 +412,15 @@ auto Output::MergeMetadata(const SerializeType& rhs) noexcept -> void
 {
     std::for_each(
         std::begin(rhs.key()), std::end(rhs.key()), [this](const auto& key) {
-            cache_.add(
-                {key.subaccount(),
-                 static_cast<blockchain::crypto::Subchain>(
-                     static_cast<std::uint8_t>(key.subchain())),
-                 key.index()});
+            const auto subchain = static_cast<crypto::Subchain>(
+                static_cast<std::uint8_t>(key.subchain()));
+
+            if (crypto::Subchain::Outgoing == subchain) {
+                LogOutput(OT_METHOD)(__FUNCTION__)(": discarding invalid key")
+                    .Flush();
+            } else {
+                cache_.add({key.subaccount(), subchain, key.index()});
+            }
         });
 
     if (cache_.payer()->empty() && false == rhs.payer().empty()) {

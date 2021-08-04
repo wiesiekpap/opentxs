@@ -569,17 +569,17 @@ public:
         const proto::PeerReply& serialized) noexcept
         -> std::shared_ptr<contract::peer::reply::Acknowledgement>;
     static auto NullCallback() -> OTCallback*;
-    OPENTXS_EXPORT static auto Nym(
+    static auto Nym(
         const api::internal::Core& api,
         const NymParameters& nymParameters,
         const contact::ContactItemType type,
         const std::string name,
         const opentxs::PasswordPrompt& reason) -> identity::internal::Nym*;
-    OPENTXS_EXPORT static auto Nym(
+    static auto Nym(
         const api::internal::Core& api,
         const proto::Nym& serialized,
         const std::string& alias) -> identity::internal::Nym*;
-    OPENTXS_EXPORT static auto Nym(
+    static auto Nym(
         const api::internal::Core& api,
         const ReadView& serialized,
         const std::string& alias) -> identity::internal::Nym*;
@@ -594,7 +594,7 @@ public:
     static auto NymIDSource(
         const api::internal::Core& api,
         const proto::NymIDSource& serialized) -> identity::Source*;
-    OPENTXS_EXPORT static auto Operation(
+    static auto Operation(
         const api::client::internal::Manager& api,
         const identifier::Nym& nym,
         const identifier::Server& server,
@@ -660,20 +660,20 @@ public:
         const proto::Credential& credential)
         -> identity::credential::internal::Primary*;
 #if OT_CASH
-    OPENTXS_EXPORT static auto Purse(
+    static auto Purse(
         const api::internal::Core& api,
         const proto::Purse& serialized) -> blind::Purse*;
-    OPENTXS_EXPORT static auto Purse(
+    static auto Purse(
         const api::internal::Core& api,
         const ReadView& serialized) -> blind::Purse*;
-    OPENTXS_EXPORT static auto Purse(
+    static auto Purse(
         const api::internal::Core& api,
         const otx::context::Server&,
         const blind::CashType type,
         const blind::Mint& mint,
         const Amount totalValue,
         const opentxs::PasswordPrompt& reason) -> blind::Purse*;
-    OPENTXS_EXPORT static auto Purse(
+    static auto Purse(
         const api::internal::Core& api,
         const identity::Nym& owner,
         const identifier::Server& server,
@@ -682,12 +682,12 @@ public:
         const blind::Mint& mint,
         const Amount totalValue,
         const opentxs::PasswordPrompt& reason) -> blind::Purse*;
-    OPENTXS_EXPORT static auto Purse(
+    static auto Purse(
         const api::internal::Core& api,
         const blind::Purse& request,
         const identity::Nym& requester,
         const opentxs::PasswordPrompt& reason) -> blind::Purse*;
-    OPENTXS_EXPORT static auto Purse(
+    static auto Purse(
         const api::internal::Core& api,
         const identity::Nym& owner,
         const identifier::Server& server,

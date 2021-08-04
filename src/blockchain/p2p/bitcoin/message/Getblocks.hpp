@@ -84,19 +84,19 @@ public:
         }
     };
 
-    OPENTXS_EXPORT auto getHashes() const noexcept -> const std::vector<OTData>&
+    auto getHashes() const noexcept -> const std::vector<OTData>&
     {
         return header_hashes_;
     }
-    OPENTXS_EXPORT auto getStopHash() const noexcept -> OTData
+    auto getStopHash() const noexcept -> OTData
     {
         return Data::Factory(stop_hash_);
     }
-    OPENTXS_EXPORT auto hashCount() const noexcept -> std::size_t
+    auto hashCount() const noexcept -> std::size_t
     {
         return header_hashes_.size();
     }
-    OPENTXS_EXPORT auto payload() const noexcept -> OTData final
+    auto payload() const noexcept -> OTData final
     {
         try {
             Raw raw_data(version_, header_hashes_, stop_hash_);
@@ -119,8 +119,7 @@ public:
             return Data::Factory();
         }
     }
-    OPENTXS_EXPORT auto version() const noexcept
-        -> bitcoin::ProtocolVersionUnsigned
+    auto version() const noexcept -> bitcoin::ProtocolVersionUnsigned
     {
         return version_;
     }
@@ -138,7 +137,7 @@ public:
         const std::vector<OTData>& header_hashes,
         const Data& stop_hash) noexcept(false);
 
-    OPENTXS_EXPORT ~Getblocks() final = default;
+    ~Getblocks() final = default;
 
 private:
     const bitcoin::ProtocolVersionUnsigned version_;

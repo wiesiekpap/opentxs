@@ -19,6 +19,7 @@ add_library(
   "Inputs.hpp"
   "Output.cpp"
   "Output.hpp"
+  "OutputCache.cpp"
   "Outputs.cpp"
   "Outputs.hpp"
   "Script.cpp"

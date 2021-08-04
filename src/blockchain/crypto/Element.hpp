@@ -142,6 +142,14 @@ public:
         const opentxs::blockchain::Type chain,
         const crypto::Subchain subchain,
         const SerializedType& address) noexcept(false);
+    Element(
+        const api::internal::Core& api,
+        const api::client::internal::Blockchain& blockchain,
+        const internal::Subaccount& parent,
+        const opentxs::blockchain::Type chain,
+        const crypto::Subchain subchain,
+        const SerializedType& address,
+        OTIdentifier&& contact) noexcept(false);
     ~Element() final = default;
 
 private:

@@ -73,7 +73,7 @@ public:
     static auto Size() noexcept -> std::size_t { return sizeof(BitcoinFormat); }
 
     auto Command() const noexcept -> bitcoin::Command { return command_; }
-    OPENTXS_EXPORT auto Encode() const noexcept -> OTData;
+    auto Encode() const noexcept -> OTData;
     auto Network() const noexcept -> blockchain::Type { return chain_; }
     auto PayloadSize() const noexcept -> std::size_t { return payload_size_; }
     auto Checksum() const noexcept -> const opentxs::Data& { return checksum_; }

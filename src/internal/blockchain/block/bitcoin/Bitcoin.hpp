@@ -229,7 +229,7 @@ struct Script : virtual public bitcoin::Script {
 
     ~Script() override = default;
 };
-struct OPENTXS_EXPORT Transaction : virtual public bitcoin::Transaction {
+struct Transaction : virtual public bitcoin::Transaction {
     using SigHash = blockchain::bitcoin::SigOption;
 
     virtual auto GetPreimageBTC(
@@ -302,14 +302,14 @@ auto BitcoinBlockHeader(
     const blockchain::block::Hash& parent,
     const blockchain::block::Height height) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Header>;
-OPENTXS_EXPORT auto BitcoinScript(
+auto BitcoinScript(
     const blockchain::Type chain,
     const ReadView bytes,
     const blockchain::block::bitcoin::Script::Position role,
     const bool allowInvalidOpcodes = true,
     const bool mute = false) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Script>;
-OPENTXS_EXPORT auto BitcoinScript(
+auto BitcoinScript(
     const blockchain::Type chain,
     blockchain::block::bitcoin::ScriptElements&& elements,
     const blockchain::block::bitcoin::Script::Position role) noexcept
@@ -326,7 +326,7 @@ auto BitcoinTransaction(
     std::unique_ptr<blockchain::block::bitcoin::internal::Outputs>
         outputs) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Transaction>;
-OPENTXS_EXPORT auto BitcoinTransaction(
+auto BitcoinTransaction(
     const api::Core& api,
     const api::client::Blockchain& blockchain,
     const blockchain::Type chain,

@@ -33,7 +33,7 @@ namespace ot = opentxs;
 
 namespace opentxs::blockchain::p2p::bitcoin::message::implementation
 {
-class OPENTXS_EXPORT Message : virtual public bitcoin::Message
+class Message : virtual public bitcoin::Message
 {
 public:
     auto Encode() const -> OTData final;

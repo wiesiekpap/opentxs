@@ -38,7 +38,7 @@ enum class PairEventType : std::uint8_t {
     StoreSecret = 2,
 };
 
-struct OPENTXS_EXPORT PairEvent {
+struct PairEvent {
     std::uint32_t version_;
     PairEventType type_;
     std::string issuer_;

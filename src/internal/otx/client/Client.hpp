@@ -223,7 +223,7 @@ struct make_blank<otx::client::WithdrawCashTask> {
 
 namespace opentxs::otx::client::internal
 {
-struct OPENTXS_EXPORT Operation {
+struct Operation {
     using Result = otx::context::Server::DeliveryResult;
     using Future = std::future<Result>;
 

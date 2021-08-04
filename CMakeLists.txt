@@ -298,6 +298,15 @@ else()
   set(OPENTXS_FIX_INCLUDES_ARGS "OFF")
 endif()
 
+if(OPENTXS_BUILD_TESTS
+   AND NOT
+       (CMAKE_BUILD_TYPE
+        STREQUAL
+        "Debug")
+)
+  message(FATAL_ERROR "opentxs unit tests require CMAKE_BUILD_TYPE=Debug")
+endif()
+
 # -----------------------------------------------------------------------------
 # Set compiler options
 
@@ -508,24 +517,22 @@ if(OT_STORAGE_LMDB)
   find_package(lmdb REQUIRED)
 endif()
 
-if(OT_CRYPTO_USING_OPENSSL)
-  if(OT_STATIC_DEPENDENCIES)
-    set(OPENSSL_USE_STATIC_LIBS ON)
-  endif()
-
-  if(CMAKE_MSVC_RUNTIME_LIBRARY
-     STREQUAL
-     "MultiThreaded"
-  )
-    set(OPENSSL_MSVC_STATIC_RT ON)
-  endif()
-
-  find_package(
-    OpenSSL
-    1.0.1
-    REQUIRED
-  )
+if(OT_STATIC_DEPENDENCIES)
+  set(OPENSSL_USE_STATIC_LIBS ON)
 endif()
+
+if(CMAKE_MSVC_RUNTIME_LIBRARY
+   STREQUAL
+   "MultiThreaded"
+)
+  set(OPENSSL_MSVC_STATIC_RT ON)
+endif()
+
+find_package(
+  OpenSSL
+  1.0.1
+  REQUIRED
+)
 
 if(OT_CRYPTO_USING_LIBSECP256K1 AND NOT OT_BUNDLED_SECP256K1)
   find_package(unofficial-secp256k1 REQUIRED)
@@ -552,12 +559,16 @@ endif()
 
 set_common_defines()
 
-if((CMAKE_BUILD_TYPE
-    STREQUAL
-    "Debug")
-   AND (NOT WIN32)
+if(CMAKE_BUILD_TYPE
+   STREQUAL
+   "Debug"
 )
-  set(OPENTXS_HIDDEN_SYMBOLS OFF)
+  if(WIN32)
+    set(OPENTXS_HIDDEN_SYMBOLS ON)
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS On)
+  else()
+    set(OPENTXS_HIDDEN_SYMBOLS OFF)
+  endif()
 else()
   set(OPENTXS_HIDDEN_SYMBOLS ON)
 endif()
