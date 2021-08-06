@@ -114,7 +114,6 @@ public:
         const WalletDatabase& db,
         const SimpleCallback& taskFinished,
         Outstanding& jobCounter,
-        const zmq::socket::Push& threadPool,
         const filter::Type filter,
         const Type chain,
         const identifier::Nym& nym,

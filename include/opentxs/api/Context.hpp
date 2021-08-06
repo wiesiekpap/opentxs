@@ -39,7 +39,6 @@ class Manager;
 class Crypto;
 class Primitives;
 class Settings;
-class ThreadPool;
 }  // namespace api
 
 namespace network
@@ -116,7 +115,6 @@ public:
         const ArgList& args,
         const int instance,
         const bool inproc = false) const = 0;
-    virtual const api::ThreadPool& ThreadPool() const noexcept = 0;
     /** Access ZAP configuration API */
     virtual const api::network::ZAP& ZAP() const = 0;
     virtual const opentxs::network::zeromq::Context& ZMQ() const = 0;

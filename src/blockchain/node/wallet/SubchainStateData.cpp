@@ -17,14 +17,15 @@
 #include <utility>
 
 #include "blockchain/node/wallet/ScriptForm.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
+#include "internal/api/network/Network.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
@@ -34,72 +35,12 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
-#include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"  // IWYU pragma: keep
 #include "opentxs/protobuf/BlockchainWalletKey.pb.h"
 #include "util/JobCounter.hpp"
 #include "util/ScopeGuard.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::wallet::SubchainStateData::"
-
-namespace opentxs::blockchain::node::internal
-{
-auto Wallet::ProcessThreadPool(const zmq::Message& in) noexcept -> void
-{
-    const auto body = in.Body();
-
-    if (2 > body.size()) {
-        LogOutput("opentxs::blockchain::node::internal:Wallet::")(__FUNCTION__)(
-            ": Invalid message")
-            .Flush();
-
-        OT_FAIL;
-    }
-
-    auto* pData = reinterpret_cast<node::wallet::SubchainStateData*>(
-        body.at(1).as<std::uintptr_t>());
-
-    OT_ASSERT(nullptr != pData);
-
-    auto& data = *pData;
-    auto postcondition = ScopeGuard{[&] {
-        data.running_.store(false);
-        data.task_finished_();
-        --data.job_counter_;
-    }};
-
-    const auto task = [&] {
-        try {
-
-            return body.at(0).as<Task>();
-        } catch (...) {
-
-            OT_FAIL;
-        }
-    }();
-
-    switch (task) {
-        case Task::index: {
-            data.index();
-        } break;
-        case Task::scan: {
-            data.scan();
-        } break;
-        case Task::process: {
-            data.process();
-        } break;
-        case Task::reorg: {
-            data.reorg();
-        } break;
-        default: {
-            OT_FAIL;
-        }
-    }
-}
-}  // namespace opentxs::blockchain::node::internal
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -112,7 +53,6 @@ SubchainStateData::SubchainStateData(
     OTIdentifier&& id,
     const SimpleCallback& taskFinished,
     Outstanding& jobCounter,
-    const zmq::socket::Push& threadPool,
     const filter::Type filter,
     const Subchain subchain) noexcept
     : owner_(std::move(owner))
@@ -136,7 +76,6 @@ SubchainStateData::SubchainStateData(
     , db_(db)
     , name_()
     , null_position_(make_blank<block::Position>::value(api_))
-    , thread_pool_(threadPool)
     , last_reported_(null_position_)
 {
     OT_ASSERT(task_finished_);
@@ -590,26 +529,37 @@ auto SubchainStateData::process() noexcept -> void
 auto SubchainStateData::queue_work(const Task task, const char* log) noexcept
     -> bool
 {
-    constexpr auto limit = std::chrono::minutes{1};
-    const auto start = Clock::now();
-
-    while (job_counter_.limited()) {
-        Sleep(std::chrono::microseconds(100));
-
-        if ((Clock::now() - start) > limit) { OT_FAIL; }
-    }
-
-    using Pool = api::internal::ThreadPool;
-    auto work = Pool::MakeWork(
-        api_.Network().ZeroMQ(), value(Pool::Work::BlockchainWallet));
-    work->AddFrame(task);
-    work->AddFrame(reinterpret_cast<std::uintptr_t>(this));
     running_.store(true);
+    ++job_counter_;
+    const auto queued = api_.Network().Asio().Internal().Post([this, task] {
+        auto post = ScopeGuard{[this] {
+            running_.store(false);
+            task_finished_();
+            --job_counter_;
+        }};
 
-    if (thread_pool_.Send(work)) {
+        switch (task) {
+            case Task::index: {
+                index();
+            } break;
+            case Task::scan: {
+                scan();
+            } break;
+            case Task::process: {
+                process();
+            } break;
+            case Task::reorg: {
+                reorg();
+            } break;
+            default: {
+                OT_FAIL;
+            }
+        }
+    });
+
+    if (queued) {
         LogDebug(OT_METHOD)(__FUNCTION__)(": ")(name_)(" ")(log)(" job queued")
             .Flush();
-        ++job_counter_;
     } else {
         LogDebug(OT_METHOD)(__FUNCTION__)(
             ": ")(name_)(" failed to queue ")(log)(" job")

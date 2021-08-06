@@ -163,7 +163,6 @@ private:
     const Type chain_;
     const SimpleCallback task_finished_;
     std::atomic_bool enabled_;
-    OTZMQPushSocket thread_pool;
     wallet::Accounts accounts_;
     wallet::Proposals proposals_;
 

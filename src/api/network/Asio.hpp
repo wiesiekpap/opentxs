@@ -194,8 +194,7 @@ struct Asio::Imp final : public api::network::internal::Asio,
             OT_ASSERT(listen);
         }
         {
-            const auto threads = std::min<unsigned int>(
-                2u, std::thread::hardware_concurrency() / 4u);
+            const auto threads = std::thread::hardware_concurrency();
 
             for (unsigned int i{0}; i < threads; ++i) {
                 auto* thread = thread_pool_.create_thread(
@@ -302,17 +301,15 @@ struct Asio::Imp final : public api::network::internal::Asio,
     }
     auto Shutdown() noexcept -> void
     {
-        auto future = Stop();
+        Stop().get();
 
         {
             auto lock = eLock{lock_};
-            context_.stop();
+            work_ = boost::asio::any_io_executor{};
             thread_pool_.join_all();
-            work_.reset();
+            context_.stop();
             socket_->Close();
         }
-
-        future.get();
     }
 
     Imp(const zmq::Context& zmq) noexcept
@@ -322,7 +319,9 @@ struct Asio::Imp final : public api::network::internal::Asio,
         , cb_(zmq::ListenCallback::Factory([this](auto& in) { callback(in); }))
         , socket_(zmq_.RouterSocket(cb_, zmq::socket::Socket::Direction::Bind))
         , context_()
-        , work_(std::make_unique<boost::asio::io_context::work>(context_))
+        , work_(boost::asio::require(
+              context_.get_executor(),
+              boost::asio::execution::outstanding_work.tracked))
         , thread_pool_()
         , buffers_()
         , lock_()
@@ -408,7 +407,7 @@ private:
     const OTZMQListenCallback cb_;
     OTZMQRouterSocket socket_;
     boost::asio::io_context context_;
-    std::unique_ptr<boost::asio::io_context::work> work_;
+    boost::asio::any_io_executor work_;
     boost::thread_group thread_pool_;
     Buffers buffers_;
     mutable std::shared_mutex lock_;

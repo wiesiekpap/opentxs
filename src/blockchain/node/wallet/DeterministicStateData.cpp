@@ -56,7 +56,6 @@ DeterministicStateData::DeterministicStateData(
     const crypto::Deterministic& subaccount,
     const SimpleCallback& taskFinished,
     Outstanding& jobCounter,
-    const zmq::socket::Push& threadPool,
     const filter::Type filter,
     const Subchain subchain) noexcept
     : SubchainStateData(
@@ -68,7 +67,6 @@ DeterministicStateData::DeterministicStateData(
           OTIdentifier{subaccount.ID()},
           taskFinished,
           jobCounter,
-          threadPool,
           filter,
           subchain)
     , subaccount_(subaccount)

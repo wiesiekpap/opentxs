@@ -313,8 +313,6 @@ struct FilterDatabase {
 struct FilterOracle : virtual public node::FilterOracle {
     using Header = FilterDatabase::Hash;
 
-    static auto ProcessThreadPool(const zmq::Message& task) noexcept -> void;
-
     virtual auto GetFilterJob() const noexcept -> CfilterJob = 0;
     virtual auto GetHeaderJob() const noexcept -> CfheaderJob = 0;
     virtual auto Heartbeat() const noexcept -> void = 0;
@@ -557,8 +555,6 @@ struct Wallet : virtual public node::Wallet {
         process = OT_ZMQ_INTERNAL_SIGNAL + 2,
         reorg = OT_ZMQ_INTERNAL_SIGNAL + 3,
     };
-
-    static auto ProcessThreadPool(const zmq::Message& task) noexcept -> void;
 
     virtual auto ConstructTransaction(
         const proto::BlockchainTransactionProposal& tx,

@@ -38,8 +38,6 @@ add_library(
   "Settings.hpp"
   "StorageParent.cpp"
   "StorageParent.hpp"
-  "ThreadPool.cpp"
-  "ThreadPool.hpp"
   "Wallet.cpp"
   "Wallet.hpp"
   "ZMQ.cpp"
@@ -55,7 +53,6 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/Periodic.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/Primitives.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/Settings.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/api/ThreadPool.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/Wallet.hpp"
 )
 

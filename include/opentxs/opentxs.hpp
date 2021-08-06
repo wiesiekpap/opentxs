@@ -19,7 +19,6 @@
 #include "opentxs/api/HDSeed.hpp"
 #include "opentxs/api/Periodic.hpp"
 #include "opentxs/api/Settings.hpp"
-#include "opentxs/api/ThreadPool.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Activity.hpp"
 #include "opentxs/api/client/Blockchain.hpp"

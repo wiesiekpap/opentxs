@@ -58,7 +58,6 @@ NotificationStateData::NotificationStateData(
     const WalletDatabase& db,
     const SimpleCallback& taskFinished,
     Outstanding& jobCounter,
-    const zmq::socket::Push& threadPool,
     const filter::Type filter,
     const Type chain,
     const identifier::Nym& nym,
@@ -73,7 +72,6 @@ NotificationStateData::NotificationStateData(
           calculate_id(api, chain, code),
           taskFinished,
           jobCounter,
-          threadPool,
           filter,
           Subchain::Notification)
     , path_(std::move(path))

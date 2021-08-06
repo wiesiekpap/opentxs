@@ -19,13 +19,13 @@
 #include <vector>
 
 #include "core/Worker.hpp"
-#include "internal/api/Api.hpp"
+#include "internal/api/network/Network.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/ThreadPool.hpp"
 #include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/core/Armored.hpp"
@@ -37,13 +37,8 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/peer/PeerObject.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
-#include "opentxs/network/zeromq/socket/Push.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/ByteLiterals.hpp"
 #include "util/JobCounter.hpp"
@@ -56,6 +51,50 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::api::client::activity
 {
 struct MailCache::Imp {
+    struct Task {
+        Outstanding counter_;
+        const OTPasswordPrompt reason_;
+        const OTNymID nym_;
+        const OTIdentifier item_;
+        const StorageBox box_;
+        const SimpleCallback done_;
+        std::promise<std::string> promise_;
+
+        Task(
+            const api::Core& api,
+            const identifier::Nym& nym,
+            const Identifier& id,
+            const StorageBox box,
+            const PasswordPrompt& reason,
+            SimpleCallback done,
+            JobCounter& jobs) noexcept
+            : counter_(jobs.Allocate())
+            , reason_([&] {
+                auto out =
+                    api.Factory().PasswordPrompt(reason.GetDisplayString());
+                out->SetPassword(reason.Password());
+
+                return out;
+            }())
+            , nym_(nym)
+            , item_(id)
+            , box_(box)
+            , done_(std::move(done))
+            , promise_()
+        {
+            ++counter_;
+        }
+
+        ~Task() = default;
+
+    private:
+        Task() = delete;
+        Task(const Task&) = delete;
+        Task(Task&&) = delete;
+        auto operator=(const Task&) -> Task& = delete;
+        auto operator=(Task&&) -> Task& = delete;
+    };
+
     auto Mail(
         const identifier::Nym& nym,
         const Identifier& id,
@@ -95,18 +134,8 @@ struct MailCache::Imp {
 
         return output;
     }
-    auto ProcessThreadPool(const zmq::Message& in) const noexcept -> void
+    auto ProcessThreadPool(Task* pTask) const noexcept -> void
     {
-        const auto body = in.Body();
-
-        if (1 > body.size()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message").Flush();
-
-            OT_FAIL;
-        }
-
-        auto* pTask = reinterpret_cast<Task*>(body.at(0).as<std::uintptr_t>());
-
         OT_ASSERT(nullptr != pTask);
 
         auto& task = *pTask;
@@ -213,11 +242,8 @@ struct MailCache::Imp {
 
         const auto& future = fIt->second;
         fifo_.push(std::move(key));
-        using Work = api::internal::ThreadPool::Work;
-        auto work = ThreadPool::MakeWork(
-            api_.Network().ZeroMQ(), value(Work::DecryptOTXMessage));
-        work->AddFrame(reinterpret_cast<std::uintptr_t>(&task));
-        const auto sent = thread_pool_->Send(work);
+        const auto sent = api_.Network().Asio().Internal().Post(
+            [this, pTask = &task] { ProcessThreadPool(pTask); });
 
         OT_ASSERT(sent);
 
@@ -228,15 +254,6 @@ struct MailCache::Imp {
         const opentxs::network::zeromq::socket::Publish& messageLoaded) noexcept
         : api_(api)
         , message_loaded_(messageLoaded)
-        , thread_pool_([&] {
-            using Dir = zmq::socket::Socket::Direction;
-            auto out = api_.Network().ZeroMQ().PushSocket(Dir::Connect);
-            const auto rc = out->Start(api_.ThreadPool().Endpoint());
-
-            OT_ASSERT(rc);
-
-            return out;
-        }())
         , lock_()
         , jobs_()
         , cached_bytes_(0)
@@ -244,63 +261,13 @@ struct MailCache::Imp {
         , results_()
         , fifo_()
     {
-        const auto& pool = api_.ThreadPool();
-        using Work = api::internal::ThreadPool::Work;
-        pool.Register(value(Work::DecryptOTXMessage), [=](const auto& work) {
-            ProcessThreadPool(work);
-        });
     }
 
     ~Imp() = default;
 
 private:
-    struct Task {
-        Outstanding counter_;
-        const OTPasswordPrompt reason_;
-        const OTNymID nym_;
-        const OTIdentifier item_;
-        const StorageBox box_;
-        const SimpleCallback done_;
-        std::promise<std::string> promise_;
-
-        Task(
-            const api::Core& api,
-            const identifier::Nym& nym,
-            const Identifier& id,
-            const StorageBox box,
-            const PasswordPrompt& reason,
-            SimpleCallback done,
-            JobCounter& jobs) noexcept
-            : counter_(jobs.Allocate())
-            , reason_([&] {
-                auto out =
-                    api.Factory().PasswordPrompt(reason.GetDisplayString());
-                out->SetPassword(reason.Password());
-
-                return out;
-            }())
-            , nym_(nym)
-            , item_(id)
-            , box_(box)
-            , done_(std::move(done))
-            , promise_()
-        {
-            ++counter_;
-        }
-
-        ~Task() = default;
-
-    private:
-        Task() = delete;
-        Task(const Task&) = delete;
-        Task(Task&&) = delete;
-        auto operator=(const Task&) -> Task& = delete;
-        auto operator=(Task&&) -> Task& = delete;
-    };
-
     const api::Core& api_;
     const opentxs::network::zeromq::socket::Publish& message_loaded_;
-    const OTZMQPushSocket thread_pool_;
     mutable std::mutex lock_;
     JobCounter jobs_;
     std::size_t cached_bytes_;

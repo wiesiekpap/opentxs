@@ -23,17 +23,12 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/ThreadPool.hpp"
-#include "opentxs/api/network/Network.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
-#include "opentxs/network/zeromq/socket/Push.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::implementation::Wallet::"
 
@@ -74,15 +69,9 @@ Wallet::Wallet(
     , chain_(chain)
     , task_finished_([this]() { trigger(); })
     , enabled_(false)
-    , thread_pool(api_.Network().ZeroMQ().PushSocket(
-          zmq::socket::Socket::Direction::Connect))
-    , accounts_(api, crypto_, parent_, db_, thread_pool, chain_, task_finished_)
+    , accounts_(api, crypto_, parent_, db_, chain_, task_finished_)
     , proposals_(api, crypto_, parent_, db_, chain_)
 {
-    auto zmq = thread_pool->Start(api_.ThreadPool().Endpoint());
-
-    OT_ASSERT(zmq);
-
     init_executor({
         shutdown,
         api.Endpoints().BlockchainReorg(),

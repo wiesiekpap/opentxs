@@ -94,7 +94,6 @@ public:
         const BalanceTree& ref,
         const node::internal::Network& node,
         const node::internal::WalletDatabase& db,
-        const network::zeromq::socket::Push& threadPool,
         const filter::Type filter,
         Outstanding&& jobs,
         const SimpleCallback& taskFinished) noexcept;

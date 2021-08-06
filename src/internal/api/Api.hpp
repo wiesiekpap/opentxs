@@ -8,7 +8,6 @@
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/ThreadPool.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
 #include "util/Work.hpp"
@@ -97,22 +96,4 @@ struct Factory : virtual public api::Factory {
 struct Log {
     virtual ~Log() = default;
 };
-
-struct ThreadPool : virtual public api::ThreadPool {
-    enum class Work : OTZMQWorkType {
-        BlockchainWallet = OT_ZMQ_INTERNAL_SIGNAL + 0,
-        SyncDataFiltersIncoming = OT_ZMQ_INTERNAL_SIGNAL + 1,
-        CalculateBlockFilters = OT_ZMQ_INTERNAL_SIGNAL + 2,
-        DecryptOTXMessage = OT_ZMQ_INTERNAL_SIGNAL + 3,
-    };
-
-    virtual auto Shutdown() noexcept -> void = 0;
-
-    ~ThreadPool() override = default;
-};
-
-constexpr auto value(ThreadPool::Work in) noexcept
-{
-    return static_cast<OTZMQWorkType>(in);
-}
 }  // namespace opentxs::api::internal
