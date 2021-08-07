@@ -467,7 +467,7 @@ TEST_F(Regtest_fixture_hd, account_list_after_receive)
     EXPECT_EQ(row->AccountID(), expected_account_.str());
     EXPECT_EQ(row->Balance(), 10000004950);
     EXPECT_EQ(row->ContractID(), expected_unit_.str());
-    EXPECT_EQ(row->DisplayBalance(), u8"100.000 049 5 units");
+    EXPECT_EQ(row->DisplayBalance(), u8"100.000\u202F049\u202F5 units");
     EXPECT_EQ(row->DisplayUnit(), expected_display_unit_);
     EXPECT_EQ(row->Name(), expected_account_name_);
     EXPECT_EQ(row->NotaryID(), expected_notary_.str());
@@ -495,7 +495,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_receive)
 
     ASSERT_EQ(deposit.size(), 1);
     EXPECT_EQ(deposit.at(0), test_chain_);
-    EXPECT_EQ(widget.DisplayBalance(), u8"100.000 049 5 units");
+    EXPECT_EQ(widget.DisplayBalance(), u8"100.000\u202F049\u202F5 units");
     EXPECT_EQ(widget.DisplayUnit(), expected_display_unit_);
     EXPECT_EQ(widget.Name(), expected_account_name_);
     EXPECT_EQ(widget.NotaryID(), expected_notary_.str());
@@ -513,7 +513,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_receive)
     ASSERT_TRUE(row->Valid());
     EXPECT_EQ(row->Amount(), 10000004950);
     EXPECT_EQ(row->Contacts().size(), 0);
-    EXPECT_EQ(row->DisplayAmount(), u8"100.000 049 5 units");
+    EXPECT_EQ(row->DisplayAmount(), u8"100.000\u202F049\u202F5 units");
     EXPECT_EQ(row->Memo(), "");
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
@@ -775,7 +775,7 @@ TEST_F(Regtest_fixture_hd, account_list_after_spend)
     EXPECT_EQ(row->AccountID(), expected_account_.str());
     EXPECT_EQ(row->Balance(), 8600002652);
     EXPECT_EQ(row->ContractID(), expected_unit_.str());
-    EXPECT_EQ(row->DisplayBalance(), u8"86.000 026 52 units");
+    EXPECT_EQ(row->DisplayBalance(), u8"86.000\u202F026\u202F52 units");
     EXPECT_EQ(row->DisplayUnit(), expected_display_unit_);
     EXPECT_EQ(row->Name(), expected_account_name_);
     EXPECT_EQ(row->NotaryID(), expected_notary_.str());
@@ -803,7 +803,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_unconfirmed_spend)
 
     ASSERT_EQ(deposit.size(), 1);
     EXPECT_EQ(deposit.at(0), test_chain_);
-    EXPECT_EQ(widget.DisplayBalance(), u8"86.000 026 52 units");
+    EXPECT_EQ(widget.DisplayBalance(), u8"86.000\u202F026\u202F52 units");
     EXPECT_EQ(widget.DisplayUnit(), expected_display_unit_);
     EXPECT_EQ(widget.Name(), expected_account_name_);
     EXPECT_EQ(widget.NotaryID(), expected_notary_.str());
@@ -821,7 +821,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_unconfirmed_spend)
     ASSERT_TRUE(row->Valid());
     EXPECT_EQ(row->Amount(), -1400002298);
     EXPECT_EQ(row->Contacts().size(), 0);
-    EXPECT_EQ(row->DisplayAmount(), u8"-14.000 022 98 units");
+    EXPECT_EQ(row->DisplayAmount(), u8"-14.000\u202F022\u202F98 units");
     EXPECT_EQ(row->Memo(), "");
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(row->Text(), "Outgoing Unit Test Simulation transaction");
@@ -835,7 +835,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_unconfirmed_spend)
 
     EXPECT_EQ(row->Amount(), 10000004950);
     EXPECT_EQ(row->Contacts().size(), 0);
-    EXPECT_EQ(row->DisplayAmount(), u8"100.000 049 5 units");
+    EXPECT_EQ(row->DisplayAmount(), u8"100.000\u202F049\u202F5 units");
     EXPECT_EQ(row->Memo(), "");
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
@@ -991,7 +991,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_confirmed_spend)
 
     ASSERT_EQ(deposit.size(), 1);
     EXPECT_EQ(deposit.at(0), test_chain_);
-    EXPECT_EQ(widget.DisplayBalance(), u8"86.000 026 52 units");
+    EXPECT_EQ(widget.DisplayBalance(), u8"86.000\u202F026\u202F52 units");
     EXPECT_EQ(widget.DisplayUnit(), expected_display_unit_);
     EXPECT_EQ(widget.Name(), expected_account_name_);
     EXPECT_EQ(widget.NotaryID(), expected_notary_.str());
@@ -1009,7 +1009,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_confirmed_spend)
     ASSERT_TRUE(row->Valid());
     EXPECT_EQ(row->Amount(), -1400002298);
     EXPECT_EQ(row->Contacts().size(), 0);
-    EXPECT_EQ(row->DisplayAmount(), u8"-14.000 022 98 units");
+    EXPECT_EQ(row->DisplayAmount(), u8"-14.000\u202F022\u202F98 units");
     EXPECT_EQ(row->Memo(), "");
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(row->Text(), "Outgoing Unit Test Simulation transaction");
@@ -1023,7 +1023,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_confirmed_spend)
 
     EXPECT_EQ(row->Amount(), 10000004950);
     EXPECT_EQ(row->Contacts().size(), 0);
-    EXPECT_EQ(row->DisplayAmount(), u8"100.000 049 5 units");
+    EXPECT_EQ(row->DisplayAmount(), u8"100.000\u202F049\u202F5 units");
     EXPECT_EQ(row->Memo(), "");
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(row->Text(), "Incoming Unit Test Simulation transaction");
@@ -1167,7 +1167,7 @@ TEST_F(Regtest_fixture_hd, account_list_after_confirmed_spend)
     EXPECT_EQ(row->AccountID(), expected_account_.str());
     EXPECT_EQ(row->Balance(), 8600002652);
     EXPECT_EQ(row->ContractID(), expected_unit_.str());
-    EXPECT_EQ(row->DisplayBalance(), u8"86.000 026 52 units");
+    EXPECT_EQ(row->DisplayBalance(), u8"86.000\u202F026\u202F52 units");
     EXPECT_EQ(row->DisplayUnit(), expected_display_unit_);
     EXPECT_EQ(row->Name(), expected_account_name_);
     EXPECT_EQ(row->NotaryID(), expected_notary_.str());

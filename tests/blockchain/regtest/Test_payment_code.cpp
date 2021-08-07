@@ -676,7 +676,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_first_spend_unconfirmed)
 
     ASSERT_EQ(deposit.size(), 1);
     EXPECT_EQ(deposit.at(0), test_chain_);
-    EXPECT_EQ(widget.DisplayBalance(), u8"89.999 996 84 units");
+    EXPECT_EQ(widget.DisplayBalance(), u8"89.999\u202F996\u202F84 units");
     EXPECT_EQ(widget.DisplayUnit(), expected_display_unit_);
     EXPECT_EQ(widget.Name(), expected_account_name_);
     EXPECT_EQ(widget.NotaryID(), expected_notary_.str());
@@ -708,7 +708,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_first_spend_unconfirmed)
         }
     }
 
-    EXPECT_EQ(row->DisplayAmount(), u8"-10.000 003 16 units");
+    EXPECT_EQ(row->DisplayAmount(), u8"-10.000\u202F003\u202F16 units");
     EXPECT_EQ(row->Memo(), "");
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(
@@ -1133,7 +1133,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_first_spend_confirmed)
 
     ASSERT_EQ(deposit.size(), 1);
     EXPECT_EQ(deposit.at(0), test_chain_);
-    EXPECT_EQ(widget.DisplayBalance(), u8"89.999 996 84 units");
+    EXPECT_EQ(widget.DisplayBalance(), u8"89.999\u202F996\u202F84 units");
     EXPECT_EQ(widget.DisplayUnit(), expected_display_unit_);
     EXPECT_EQ(widget.Name(), expected_account_name_);
     EXPECT_EQ(widget.NotaryID(), expected_notary_.str());
@@ -1165,7 +1165,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_first_spend_confirmed)
         }
     }
 
-    EXPECT_EQ(row->DisplayAmount(), u8"-10.000 003 16 units");
+    EXPECT_EQ(row->DisplayAmount(), u8"-10.000\u202F003\u202F16 units");
     EXPECT_EQ(row->Memo(), "");
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(
@@ -1809,7 +1809,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_second_spend_unconfirmed)
 
     ASSERT_EQ(deposit.size(), 1);
     EXPECT_EQ(deposit.at(0), test_chain_);
-    EXPECT_EQ(widget.DisplayBalance(), u8"74.999 994 48 units");
+    EXPECT_EQ(widget.DisplayBalance(), u8"74.999\u202F994\u202F48 units");
     EXPECT_EQ(widget.DisplayUnit(), expected_display_unit_);
     EXPECT_EQ(widget.Name(), expected_account_name_);
     EXPECT_EQ(widget.NotaryID(), expected_notary_.str());
@@ -1841,7 +1841,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_second_spend_unconfirmed)
         }
     }
 
-    EXPECT_EQ(row->DisplayAmount(), u8"-15.000 002 36 units");
+    EXPECT_EQ(row->DisplayAmount(), u8"-15.000\u202F002\u202F36 units");
     EXPECT_EQ(row->Memo(), "");
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(
@@ -1873,7 +1873,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_second_spend_unconfirmed)
         }
     }
 
-    EXPECT_EQ(row->DisplayAmount(), u8"-10.000 003 16 units");
+    EXPECT_EQ(row->DisplayAmount(), u8"-10.000\u202F003\u202F16 units");
     EXPECT_EQ(row->Memo(), "");
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(
@@ -2488,7 +2488,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_after_otx)
 
     ASSERT_EQ(deposit.size(), 1);
     EXPECT_EQ(deposit.at(0), test_chain_);
-    EXPECT_EQ(widget.DisplayBalance(), u8"74.999 994 48 units");
+    EXPECT_EQ(widget.DisplayBalance(), u8"74.999\u202F994\u202F48 units");
     EXPECT_EQ(widget.DisplayUnit(), expected_display_unit_);
     EXPECT_EQ(widget.Name(), expected_account_name_);
     EXPECT_EQ(widget.NotaryID(), expected_notary_.str());
@@ -2520,7 +2520,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_after_otx)
         }
     }
 
-    EXPECT_EQ(row->DisplayAmount(), u8"-15.000 002 36 units");
+    EXPECT_EQ(row->DisplayAmount(), u8"-15.000\u202F002\u202F36 units");
     EXPECT_EQ(row->Memo(), "");
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(row->Text(), "Outgoing Unit Test Simulation transaction to Bob");
@@ -2549,7 +2549,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_after_otx)
         }
     }
 
-    EXPECT_EQ(row->DisplayAmount(), u8"-10.000 003 16 units");
+    EXPECT_EQ(row->DisplayAmount(), u8"-10.000\u202F003\u202F16 units");
     EXPECT_EQ(row->Memo(), "");
     EXPECT_EQ(row->Workflow(), "");
     EXPECT_EQ(row->Text(), "Outgoing Unit Test Simulation transaction to Bob");
