@@ -162,6 +162,8 @@ public:
         const network::blockchain::sync::Data& data) const noexcept
         -> void final;
     auto ProcessSyncData(SyncClientFilterData& data) const noexcept -> void;
+    auto ProcessSyncData(
+        std::vector<SyncClientFilterData>& cache) const noexcept -> bool;
     auto Tip(const filter::Type type) const noexcept -> block::Position final
     {
         return database_.FilterTip(type);
@@ -205,7 +207,6 @@ private:
     mutable std::recursive_mutex lock_;
     OTZMQPublishSocket new_filters_;
     const NotifyCallback cb_;
-    OTZMQPushSocket thread_pool_;
     mutable std::unique_ptr<FilterDownloader> filter_downloader_;
     mutable std::unique_ptr<HeaderDownloader> header_downloader_;
     mutable std::unique_ptr<BlockIndexer> block_indexer_;

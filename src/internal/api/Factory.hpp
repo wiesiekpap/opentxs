@@ -27,7 +27,6 @@ namespace internal
 {
 struct Context;
 struct Log;
-struct ThreadPool;
 }  // namespace internal
 
 namespace storage
@@ -88,6 +87,4 @@ auto Primitives(const api::Crypto& crypto) noexcept
     -> std::unique_ptr<api::Primitives>;
 auto Settings(const api::Legacy& legacy, const String& path) noexcept
     -> std::unique_ptr<api::Settings>;
-auto ThreadPool(const opentxs::network::zeromq::Context& zmq) noexcept
-    -> std::unique_ptr<api::internal::ThreadPool>;
 }  // namespace opentxs::factory

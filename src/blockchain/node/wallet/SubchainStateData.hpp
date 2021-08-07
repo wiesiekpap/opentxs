@@ -205,12 +205,10 @@ protected:
         OTIdentifier&& id,
         const SimpleCallback& taskFinished,
         Outstanding& jobCounter,
-        const zmq::socket::Push& threadPool,
         const filter::Type filter,
         const Subchain subchain) noexcept;
 
 private:
-    const zmq::socket::Push& thread_pool_;
     block::Position last_reported_;
 
     auto get_targets(

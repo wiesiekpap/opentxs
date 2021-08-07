@@ -38,7 +38,6 @@ class Endpoints;
 class Factory;
 class HDSeed;
 class Settings;
-class ThreadPool;
 class Wallet;
 }  // namespace api
 }  // namespace opentxs
@@ -65,7 +64,6 @@ public:
         -> const storage::Storage& = 0;
     virtual auto Symmetric() const noexcept
         -> const api::crypto::Symmetric& = 0;
-    virtual auto ThreadPool() const noexcept -> const api::ThreadPool& = 0;
     virtual auto Wallet() const noexcept -> const api::Wallet& = 0;
 
     ~Core() override = default;

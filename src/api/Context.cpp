@@ -95,7 +95,6 @@ Context::Context(
     , signal_handler_(nullptr)
     , log_(factory::Log(zmq_context_, get_arg(args, OPENTXS_ARG_LOGENDPOINT)))
     , asio_()
-    , thread_pool_()
     , crypto_(nullptr)
     , factory_(nullptr)
     , legacy_(factory::Legacy(home_))
@@ -222,7 +221,6 @@ void Context::Init()
 
     Init_Log(argLevel);
     Init_Asio();
-    thread_pool_ = factory::ThreadPool(zmq_context_);
     init_pid();
     Init_Crypto();
     Init_Factory();
@@ -352,8 +350,8 @@ void Context::Init_Rlimit() noexcept
         return;
     }
 
-    LogVerbose("Current open files limit: ")(original.rlim_cur)(" / ")(
-        original.rlim_max)
+    LogVerbose("Current open files limit: ")(original.rlim_cur)(
+        " / ")(original.rlim_max)
         .Flush();
 
     if (0 != ::setrlimit(RLIMIT_NOFILE, &desired)) {
@@ -372,8 +370,8 @@ void Context::Init_Rlimit() noexcept
         return;
     }
 
-    LogVerbose("Adjusted open files limit: ")(result.rlim_cur)(" / ")(
-        result.rlim_max)
+    LogVerbose("Adjusted open files limit: ")(result.rlim_cur)(
+        " / ")(result.rlim_max)
         .Flush();
 }
 #endif  // _WIN32
@@ -590,8 +588,6 @@ Context::~Context()
 {
     client_.clear();
     server_.clear();
-    thread_pool_->Shutdown();
-    thread_pool_.reset();
     asio_->Shutdown();
     asio_.reset();
     LogSource::Shutdown();

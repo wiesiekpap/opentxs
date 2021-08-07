@@ -16,7 +16,6 @@
 #include "api/network/blockchain/SyncServer.hpp"
 #include "blockchain/database/common/Database.hpp"
 #include "core/Worker.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Factory.hpp"
@@ -24,7 +23,6 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/ThreadPool.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/node/FilterOracle.hpp"
@@ -122,22 +120,6 @@ BlockchainImp::BlockchainImp(
     , running_(true)
     , heartbeat_(&BlockchainImp::heartbeat, this)
 {
-    using Work = api::internal::ThreadPool::Work;
-    using Wallet = opentxs::blockchain::node::internal::Wallet;
-    using Filters = opentxs::blockchain::node::internal::FilterOracle;
-    constexpr auto value = [](auto work) {
-        return static_cast<OTZMQWorkType>(work);
-    };
-    const auto& pool = api_.ThreadPool();
-    pool.Register(value(Work::BlockchainWallet), [](const auto& work) {
-        Wallet::ProcessThreadPool(work);
-    });
-    pool.Register(value(Work::SyncDataFiltersIncoming), [](const auto& work) {
-        Filters::ProcessThreadPool(work);
-    });
-    pool.Register(value(Work::CalculateBlockFilters), [](const auto& work) {
-        Filters::ProcessThreadPool(work);
-    });
 }
 
 auto BlockchainImp::AddSyncServer(const std::string& endpoint) const noexcept
@@ -517,8 +499,8 @@ auto BlockchainImp::start(
                 type,
                 factory::BlockchainNetworkBitcoin(
                     api_, *crypto_, *this, type, config, seednode, endpoint));
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": started chain ")(
-                static_cast<std::uint32_t>(type))
+            LogVerbose(OT_METHOD)(__FUNCTION__)(
+                ": started chain ")(static_cast<std::uint32_t>(type))
                 .Flush();
             publish_chain_state(type, true);
 
@@ -573,8 +555,8 @@ auto BlockchainImp::stop(const Lock& lock, const Chain type) const noexcept
 
     it->second->Shutdown().get();
     networks_.erase(it);
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": stopped chain ")(
-        opentxs::print(type))
+    LogVerbose(OT_METHOD)(__FUNCTION__)(
+        ": stopped chain ")(opentxs::print(type))
         .Flush();
     publish_chain_state(type, false);
 

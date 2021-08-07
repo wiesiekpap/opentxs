@@ -101,7 +101,6 @@ public:
         const crypto::Deterministic& subaccount,
         const SimpleCallback& taskFinished,
         Outstanding& jobCounter,
-        const zmq::socket::Push& threadPool,
         const filter::Type filter,
         const Subchain subchain) noexcept;
 

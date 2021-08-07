@@ -20,6 +20,17 @@
 
 namespace opentxs
 {
+namespace api
+{
+namespace network
+{
+namespace internal
+{
+struct Asio;
+}  // namespace internal
+}  // namespace network
+}  // namespace api
+
 namespace network
 {
 namespace asio
@@ -50,6 +61,7 @@ public:
 
     auto GetPublicAddress4() const noexcept -> std::shared_future<OTData>;
     auto GetPublicAddress6() const noexcept -> std::shared_future<OTData>;
+    OPENTXS_NO_EXPORT auto Internal() const noexcept -> internal::Asio&;
     auto MakeSocket(const Endpoint& endpoint) const noexcept -> Socket;
     auto NotificationEndpoint() const noexcept -> const char*;
     auto Resolve(std::string_view server, std::uint16_t port) const noexcept

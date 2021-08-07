@@ -85,7 +85,6 @@ public:
         const api::client::internal::Blockchain& crypto,
         const node::internal::Network& node,
         const node::internal::WalletDatabase& db,
-        const network::zeromq::socket::Push& socket,
         const Type chain,
         const SimpleCallback& taskFinished) noexcept;
     ~Accounts();

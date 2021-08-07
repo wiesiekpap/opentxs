@@ -31,6 +31,11 @@ auto Asio::GetPublicAddress6() const noexcept -> std::shared_future<OTData>
 
 auto Asio::Init() noexcept -> void { imp_->Init(); }
 
+auto Asio::Internal() const noexcept -> internal::Asio&
+{
+    return const_cast<Imp&>(*imp_);
+}
+
 auto Asio::MakeSocket(const opentxs::network::asio::Endpoint& endpoint)
     const noexcept -> opentxs::network::asio::Socket
 {

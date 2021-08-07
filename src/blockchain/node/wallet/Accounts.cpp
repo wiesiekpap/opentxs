@@ -50,14 +50,13 @@ struct Accounts::Imp {
             crypto_.AccountInternal(nym, chain_),
             node_,
             db_,
-            thread_pool_,
             filter_type_,
             job_counter_.Allocate(),
             task_finished_);
 
         if (added) {
-            LogNormal("Initializing ")(DisplayString(chain_))(" wallet for ")(
-                nym)
+            LogNormal("Initializing ")(DisplayString(chain_))(
+                " wallet for ")(nym)
                 .Flush();
         }
 
@@ -130,14 +129,12 @@ struct Accounts::Imp {
         const api::client::internal::Blockchain& crypto,
         const node::internal::Network& node,
         const node::internal::WalletDatabase& db,
-        const network::zeromq::socket::Push& socket,
         const Type chain,
         const SimpleCallback& taskFinished) noexcept
         : api_(api)
         , crypto_(crypto)
         , node_(node)
         , db_(db)
-        , thread_pool_(socket)
         , task_finished_(taskFinished)
         , chain_(chain)
         , filter_type_(node_.FilterOracleInternal().DefaultType())
@@ -160,7 +157,6 @@ private:
     const api::client::internal::Blockchain& crypto_;
     const node::internal::Network& node_;
     const node::internal::WalletDatabase& db_;
-    const network::zeromq::socket::Push& thread_pool_;
     const SimpleCallback& task_finished_;
     const Type chain_;
     const filter::Type filter_type_;
@@ -181,8 +177,8 @@ private:
 
         if (3 > code->Version()) { return; }
 
-        LogNormal("Initializing payment code ")(code->asBase58())(" on ")(
-            DisplayString(chain_))
+        LogNormal("Initializing payment code ")(code->asBase58())(
+            " on ")(DisplayString(chain_))
             .Flush();
         auto accountID =
             NotificationStateData::calculate_id(api_, chain_, code);
@@ -194,7 +190,6 @@ private:
             db_,
             task_finished_,
             pc_counter_,
-            thread_pool_,
             filter_type_,
             chain_,
             id,
@@ -213,11 +208,9 @@ Accounts::Accounts(
     const api::client::internal::Blockchain& crypto,
     const node::internal::Network& node,
     const node::internal::WalletDatabase& db,
-    const network::zeromq::socket::Push& socket,
     const Type chain,
     const SimpleCallback& taskFinished) noexcept
-    : imp_(std::make_unique<
-           Imp>(api, crypto, node, db, socket, chain, taskFinished))
+    : imp_(std::make_unique<Imp>(api, crypto, node, db, chain, taskFinished))
 {
 }
 

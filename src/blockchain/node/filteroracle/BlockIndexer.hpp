@@ -12,6 +12,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "blockchain/DownloadManager.hpp"
 #include "blockchain/node/FilterOracle.hpp"
@@ -92,8 +93,7 @@ public:
         const blockchain::Type chain,
         const filter::Type type,
         const std::string& shutdown,
-        const NotifyCallback& notify,
-        zmq::socket::Push& threadPool) noexcept;
+        const NotifyCallback& notify) noexcept;
 
     ~BlockIndexer();
 
@@ -109,11 +109,12 @@ private:
     const blockchain::Type chain_;
     const filter::Type type_;
     const NotifyCallback& notify_;
-    zmq::socket::Push& thread_pool_;
     JobCounter job_counter_;
 
     auto batch_ready() const noexcept -> void { trigger(); }
     auto batch_size(const std::size_t in) const noexcept -> std::size_t;
+    auto calculate_cfheaders(
+        std::vector<BlockIndexerData>& cache) const noexcept -> bool;
     auto check_task(TaskType&) const noexcept -> void {}
     auto trigger_state_machine() const noexcept -> void { trigger(); }
     auto update_tip(const Position& position, const filter::pHeader&)
@@ -126,7 +127,6 @@ private:
     auto queue_processing(DownloadedData&& data) noexcept -> void;
     auto reset_to_genesis() noexcept -> void;
     auto shutdown(std::promise<void>& promise) noexcept -> void;
-    auto send_to_thread_pool(BlockIndexerData& job) noexcept -> void;
 };
 
 struct FilterOracle::BlockIndexerData {

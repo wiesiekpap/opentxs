@@ -122,7 +122,6 @@ struct Account::Imp {
         const BalanceTree& ref,
         const node::internal::Network& node,
         const node::internal::WalletDatabase& db,
-        const zmq::socket::Push& threadPool,
         const filter::Type filter,
         Outstanding&& jobs,
         const SimpleCallback& taskFinished) noexcept
@@ -132,7 +131,6 @@ struct Account::Imp {
         , node_(node)
         , db_(db)
         , filter_type_(node_.FilterOracleInternal().DefaultType())
-        , thread_pool_(threadPool)
         , task_finished_(taskFinished)
         , internal_()
         , external_()
@@ -162,7 +160,6 @@ private:
     const node::internal::Network& node_;
     const node::internal::WalletDatabase& db_;
     const filter::Type filter_type_;
-    const network::zeromq::socket::Push& thread_pool_;
     const SimpleCallback& task_finished_;
     Map internal_;
     Map external_;
@@ -196,7 +193,6 @@ private:
             account,
             task_finished_,
             jobs_,
-            thread_pool_,
             filter_type_,
             subchain);
 
@@ -212,7 +208,6 @@ Account::Account(
     const BalanceTree& ref,
     const node::internal::Network& node,
     const node::internal::WalletDatabase& db,
-    const zmq::socket::Push& threadPool,
     const filter::Type filter,
     Outstanding&& jobs,
     const SimpleCallback& taskFinished) noexcept
@@ -222,7 +217,6 @@ Account::Account(
           ref,
           node,
           db,
-          threadPool,
           filter,
           std::move(jobs),
           taskFinished))
