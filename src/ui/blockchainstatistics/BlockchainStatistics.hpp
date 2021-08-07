@@ -124,8 +124,7 @@ private:
         -> CustomData;
 
     auto pipeline(const Message& in) noexcept -> void;
-    auto process_chain(BlockchainStatisticsRowID chain, bool enabled) noexcept
-        -> void;
+    auto process_chain(BlockchainStatisticsRowID chain) noexcept -> void;
     auto process_state(const Message& in) noexcept -> void;
     auto process_work(const Message& in) noexcept -> void;
     auto startup() noexcept -> void;
