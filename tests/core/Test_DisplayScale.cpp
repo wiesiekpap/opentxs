@@ -69,7 +69,7 @@ TEST(DisplayScale, usd)
 
     EXPECT_EQ(usd.Format(amount2, 0), std::string{u8"$14,000,000.88"});
     EXPECT_EQ(usd.Format(amount2, 1), std::string{u8"1,400,000,088 ¢"});
-    EXPECT_EQ(usd.Format(amount2, 2), std::string{u8"$14.000 000 88 MM"});
+    EXPECT_EQ(usd.Format(amount2, 2), std::string{u8"$14.000\u202F000\u202F88 MM"});
     EXPECT_EQ(usd.Format(amount2, 2, std::nullopt, 2), std::string{u8"$14 MM"});
     EXPECT_EQ(usd.Format(amount2, 2, 0, 2), std::string{u8"$14 MM"});
     EXPECT_EQ(usd.Format(amount2, 2, 1, 2), std::string{u8"$14.0 MM"});
@@ -159,12 +159,12 @@ TEST(DisplayScale, btc)
     EXPECT_EQ(btc.Format(amount1, 2), std::string{u8"1,000,000 μBTC"});
     EXPECT_EQ(btc.Import(btc.Format(amount1, 2), 2), amount1);
 
-    EXPECT_EQ(btc.Format(amount2, 0), std::string{u8"0.000 000 01 ₿"});
-    EXPECT_EQ(btc.Format(amount2, 1), std::string{u8"0.000 01 mBTC"});
+    EXPECT_EQ(btc.Format(amount2, 0), std::string{u8"0.000\u202F000\u202F01 ₿"});
+    EXPECT_EQ(btc.Format(amount2, 1), std::string{u8"0.000\u202F01 mBTC"});
     EXPECT_EQ(btc.Format(amount2, 2), std::string{u8"0.01 μBTC"});
 
     EXPECT_EQ(
-        btc.Format(amount3, 0), std::string{u8"20,999,999.999 999 99 ₿"});
+        btc.Format(amount3, 0), std::string{u8"20,999,999.999\u202F999\u202F99 ₿"});
     EXPECT_EQ(btc.Import(btc.Format(amount3, 0), 0), amount3);
 }
 
@@ -238,9 +238,9 @@ TEST(DisplayScale, pkt)
     EXPECT_EQ(pkt.Format(amount1, 4), std::string{u8"1,073,741,824 pack"});
     EXPECT_EQ(pkt.Import(pkt.Format(amount1, 4), 4), amount1);
 
-    EXPECT_EQ(pkt.Format(amount2, 0), std::string{u8"0.000 000 000 93 PKT"});
-    EXPECT_EQ(pkt.Format(amount2, 1), std::string{u8"0.000 000 93 mPKT"});
-    EXPECT_EQ(pkt.Format(amount2, 2), std::string{u8"0.000 93 μPKT"});
+    EXPECT_EQ(pkt.Format(amount2, 0), std::string{u8"0.000\u202F000\u202F000\u202F93 PKT"});
+    EXPECT_EQ(pkt.Format(amount2, 1), std::string{u8"0.000\u202F000\u202F93 mPKT"});
+    EXPECT_EQ(pkt.Format(amount2, 2), std::string{u8"0.000\u202F93 μPKT"});
     EXPECT_EQ(pkt.Format(amount2, 3), std::string{u8"0.93 nPKT"});
     EXPECT_EQ(pkt.Format(amount2, 4), std::string{u8"1 pack"});
 }
