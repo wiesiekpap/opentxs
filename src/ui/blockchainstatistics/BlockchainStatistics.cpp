@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "internal/api/client/Client.hpp"
+#include "internal/api/network/Network.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -178,17 +179,28 @@ auto BlockchainStatistics::custom(
     //  4: block download queue
     //  5: balance
     auto out = CustomData{};
-    const auto& network = blockchain_.GetChain(chain);
-    const auto& header = network.HeaderOracle();
-    const auto& filter = network.FilterOracle();
-    const auto& block = network.BlockOracle();
-    out.emplace_back(new blockchain::block::Height{header.BestChain().first});
-    out.emplace_back(new blockchain::block::Height{
-        filter.FilterTip(filter.DefaultType()).first});
-    out.emplace_back(new std::size_t{network.GetPeerCount()});
-    out.emplace_back(new std::size_t{network.GetVerifiedPeerCount()});
-    out.emplace_back(new std::size_t{block.DownloadQueue()});
-    out.emplace_back(new blockchain::Amount{network.GetBalance().second});
+
+    try {
+        const auto& network = blockchain_.GetChain(chain);
+        const auto& header = network.HeaderOracle();
+        const auto& filter = network.FilterOracle();
+        const auto& block = network.BlockOracle();
+        out.emplace_back(
+            new blockchain::block::Height{header.BestChain().first});
+        out.emplace_back(new blockchain::block::Height{
+            filter.FilterTip(filter.DefaultType()).first});
+        out.emplace_back(new std::size_t{network.GetPeerCount()});
+        out.emplace_back(new std::size_t{network.GetVerifiedPeerCount()});
+        out.emplace_back(new std::size_t{block.DownloadQueue()});
+        out.emplace_back(new blockchain::Amount{network.GetBalance().second});
+    } catch (...) {
+        out.emplace_back(new blockchain::block::Height{-1});
+        out.emplace_back(new blockchain::block::Height{-1});
+        out.emplace_back(new std::size_t{0});
+        out.emplace_back(new std::size_t{0});
+        out.emplace_back(new std::size_t{0});
+        out.emplace_back(new blockchain::Amount{0});
+    }
 
     return out;
 }
@@ -239,8 +251,8 @@ auto BlockchainStatistics::pipeline(const Message& in) noexcept -> void
             do_work();
         } break;
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unhandled type: ")(
-                static_cast<OTZMQWorkType>(work))
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": Unhandled type: ")(static_cast<OTZMQWorkType>(work))
                 .Flush();
 
             OT_FAIL;
@@ -249,15 +261,11 @@ auto BlockchainStatistics::pipeline(const Message& in) noexcept -> void
 }
 
 auto BlockchainStatistics::process_chain(
-    BlockchainStatisticsRowID chain,
-    bool enabled) noexcept -> void
+    BlockchainStatisticsRowID chain) noexcept -> void
 {
-    if (enabled) {
-        auto data = custom(chain);
-        add_item(chain, blockchain::DisplayString(chain), data);
-    } else {
-        delete_inactive(blockchain_.EnabledChains());
-    }
+    auto data = custom(chain);
+    add_item(chain, blockchain::DisplayString(chain), data);
+    delete_inactive(blockchain_.EnabledChains());
 }
 
 auto BlockchainStatistics::process_state(const Message& in) noexcept -> void
@@ -266,7 +274,7 @@ auto BlockchainStatistics::process_state(const Message& in) noexcept -> void
 
     OT_ASSERT(2 < body.size());
 
-    process_chain(body.at(1).as<blockchain::Type>(), body.at(2).as<bool>());
+    process_chain(body.at(1).as<blockchain::Type>());
 }
 
 auto BlockchainStatistics::process_work(const Message& in) noexcept -> void
@@ -275,13 +283,13 @@ auto BlockchainStatistics::process_work(const Message& in) noexcept -> void
 
     OT_ASSERT(1 < body.size());
 
-    process_chain(body.at(1).as<blockchain::Type>(), true);
+    process_chain(body.at(1).as<blockchain::Type>());
 }
 
 auto BlockchainStatistics::startup() noexcept -> void
 {
     for (const auto& chain : blockchain_.EnabledChains()) {
-        process_chain(chain, true);
+        process_chain(chain);
     }
 
     finish_startup();

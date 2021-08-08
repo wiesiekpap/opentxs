@@ -61,7 +61,7 @@ auto BlockchainSelectionItem::qt_data(const int column, int role) const noexcept
             return Name().c_str();
         }
         case Qt::CheckStateRole: {
-            return IsEnabled();
+            return IsEnabled() ? Qt::Checked : Qt::Unchecked;
         }
         case BlockchainSelectionQt::TypeRole: {
             return static_cast<int>(static_cast<std::uint32_t>(Type()));
