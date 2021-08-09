@@ -30,7 +30,7 @@ class Test_ContactGroup : public ::testing::Test
 {
 public:
     Test_ContactGroup()
-        : api_(ot::Context().StartClient({}, 0))
+        : api_(ot::Context().StartClient(0))
         , contactGroup_(
               std::string("testContactGroupNym1"),
               ot::contact::ContactSectionName::Identifier,

@@ -19,7 +19,6 @@
 #include <utility>
 
 #include "2_Factory.hpp"
-#include "Basic.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/server/Server.hpp"
 #include "internal/otx/client/Client.hpp"
@@ -128,6 +127,8 @@ using namespace opentxs;
 #define MINT_TIME_LIMIT_MINUTES 5
 #endif
 
+namespace ot = opentxs;
+
 namespace ottest
 {
 bool init_{false};
@@ -190,13 +191,13 @@ public:
 
     Test_Basic()
         : client_1_(dynamic_cast<const ot::api::client::internal::Manager&>(
-              Context().StartClient(Args(), 0)))
+              Context().StartClient(0)))
         , client_2_(dynamic_cast<const ot::api::client::internal::Manager&>(
-              Context().StartClient(Args(), 1)))
+              Context().StartClient(1)))
         , server_1_(dynamic_cast<const ot::api::server::internal::Manager&>(
-              Context().StartServer(Args(), 0, true)))
+              Context().StartServer(0)))
         , server_2_(dynamic_cast<const ot::api::server::internal::Manager&>(
-              Context().StartServer(Args(), 1, true)))
+              Context().StartServer(1)))
         , reason_c1_(client_1_.Factory().PasswordPrompt(__FUNCTION__))
         , reason_c2_(client_2_.Factory().PasswordPrompt(__FUNCTION__))
         , reason_s1_(server_1_.Factory().PasswordPrompt(__FUNCTION__))

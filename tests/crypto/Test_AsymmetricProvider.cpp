@@ -86,7 +86,7 @@ public:
 
     [[maybe_unused]] Test_Signatures()
         : client_(dynamic_cast<const ot::api::client::internal::Manager&>(
-              ot::Context().StartClient({}, 0)))
+              ot::Context().StartClient(0)))
 #if OT_CRYPTO_WITH_BIP32
         , fingerprint_(client_.Exec().Wallet_ImportSeed(
               "response seminar brave tip suit recall often sound stick owner "

@@ -7,24 +7,18 @@
 
 #include <boost/filesystem.hpp>
 #include <cassert>
-#include <map>
-#include <set>
+
+#include "opentxs/api/Options.hpp"
 
 namespace fs = boost::filesystem;
 
 namespace ottest
 {
-auto Args(bool lowlevel) noexcept -> const ot::ArgList&
+auto Args(bool lowlevel) noexcept -> const ot::Options&
 {
-    static const auto minimal = ot::ArgList{
-        {OPENTXS_ARG_HOME, {Home()}},
-    };
-    static const auto full = [&] {
-        auto out{minimal};
-        out[OPENTXS_ARG_STORAGE_PLUGIN].emplace("mem");
-
-        return out;
-    }();
+    static const auto minimal =
+        ot::Options{}.SetHome(Home().c_str()).SetNotaryInproc(true);
+    static const auto full = ot::Options{minimal}.SetStoragePlugin("mem");
 
     if (lowlevel) {
 

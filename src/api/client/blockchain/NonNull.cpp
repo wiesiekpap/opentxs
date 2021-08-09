@@ -17,7 +17,7 @@ Blockchain::Blockchain(
     const api::client::Contacts& contacts,
     const api::Legacy& legacy,
     const std::string& dataFolder,
-    const ArgList& args) noexcept
+    const Options& args) noexcept
     : imp_(std::make_unique<BlockchainImp>(
           api,
           activity,

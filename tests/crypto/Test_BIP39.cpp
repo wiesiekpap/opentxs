@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "Basic.hpp"
 #include "crypto/Bip39.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
@@ -22,6 +21,8 @@
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStrength.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
+
+namespace ot = opentxs;
 
 namespace ottest
 {
@@ -80,7 +81,7 @@ public:
     }
 
     Test_BIP39()
-        : api_(ot::Context().StartClient(Args(), 0))
+        : api_(ot::Context().StartClient(0))
         , reason_(api_.Factory().PasswordPrompt(__FUNCTION__))
     {
     }

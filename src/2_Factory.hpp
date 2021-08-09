@@ -351,6 +351,7 @@ class Libsodium;
 class NymParameters;
 class OTCallback;
 class OpenSSL;
+class Options;
 class PasswordPrompt;
 class PaymentCode;
 class PeerObject;
@@ -747,7 +748,7 @@ public:
     static auto ServerManager(
         const api::internal::Context& parent,
         Flag& running,
-        const ArgList& args,
+        Options&& args,
         const api::Crypto& crypto,
         const api::Settings& config,
         const network::zeromq::Context& context,

@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 #include <chrono>
 
+#include "opentxs/Types.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"

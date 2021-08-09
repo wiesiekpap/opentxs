@@ -19,6 +19,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/Options.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/storage/Storage.hpp"
@@ -178,24 +179,24 @@ public:
 
     Test_Nym()
         : client_(dynamic_cast<const ot::api::client::internal::Manager&>(
-              ot::Context().StartClient({}, 0)))
+              ot::Context().StartClient(0)))
 #if OT_STORAGE_FS
         , client_fs_(dynamic_cast<const ot::api::client::internal::Manager&>(
               ot::Context().StartClient(
-                  {{OPENTXS_ARG_STORAGE_PLUGIN, {"fs"}}},
+                  ot::Options{}.SetStoragePlugin("fs"),
                   1)))
 #endif  // OT_STORAGE_FS
 #if OT_STORAGE_SQLITE
         , client_sqlite_(
               dynamic_cast<const ot::api::client::internal::Manager&>(
                   ot::Context().StartClient(
-                      {{OPENTXS_ARG_STORAGE_PLUGIN, {"sqlite"}}},
+                      ot::Options{}.SetStoragePlugin("sqlite"),
                       2)))
 #endif  // OT_STORAGE_SQLITE
 #if OT_STORAGE_LMDB
         , client_lmdb_(dynamic_cast<const ot::api::client::internal::Manager&>(
               ot::Context().StartClient(
-                  {{OPENTXS_ARG_STORAGE_PLUGIN, {"lmdb"}}},
+                  ot::Options{}.SetStoragePlugin("lmdb"),
                   3)))
 #endif  // OT_STORAGE_LMDB
         , reason_(client_.Factory().PasswordPrompt(__FUNCTION__))

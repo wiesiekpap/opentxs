@@ -8,11 +8,11 @@
 #include <optional>
 #include <string>
 
-#include "Basic.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
@@ -28,6 +28,8 @@
 
 #define TEST_MASTER_PASSWORD "test password"
 #define TEST_PLAINTEXT "The quick brown fox jumped over the lazy dog."
+
+namespace ot = opentxs;
 
 namespace ottest
 {
@@ -49,7 +51,7 @@ struct Test_Symmetric : public ::testing::Test {
     ot::Nym_p bob_;
 
     Test_Symmetric()
-        : api_(ot::Context().StartClient(Args(), 0))
+        : api_(ot::Context().StartClient(0))
         , reason_(api_.Factory().PasswordPrompt(__FUNCTION__))
         , alice_()
         , bob_()

@@ -85,6 +85,7 @@ class BlockchainTransaction;
 
 class Contact;
 class Data;
+class Options;
 }  // namespace opentxs
 
 namespace opentxs::blockchain::database::common
@@ -192,7 +193,7 @@ public:
         const api::client::Blockchain& blockchain,
         const api::Legacy& legacy,
         const std::string& dataFolder,
-        const ArgList& args) noexcept(false);
+        const Options& args) noexcept(false);
 
     ~Database();
 

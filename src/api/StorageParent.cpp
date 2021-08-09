@@ -7,8 +7,6 @@
 #include "1_Internal.hpp"         // IWYU pragma: associated
 #include "api/StorageParent.hpp"  // IWYU pragma: associated
 
-#include <map>
-#include <set>
 #include <utility>
 
 #include "2_Factory.hpp"
@@ -17,6 +15,7 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/HDSeed.hpp"
 #endif  // OT_CRYPTO_WITH_BIP32
+#include "opentxs/api/Options.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -29,19 +28,16 @@ namespace opentxs::api::implementation
 {
 StorageParent::StorageParent(
     const Flag& running,
-    const ArgList& args,
+    Options&& args,
     const api::Crypto& crypto,
     const api::Settings& config,
     const api::Legacy& legacy,
     const std::string& dataFolder)
     : crypto_(crypto)
     , config_(config)
-    , args_(args)
+    , args_(std::move(args))
     , gc_interval_(0)
     , data_folder_(dataFolder)
-#if OT_QT
-    , enable_qt_(extract_qt(args))
-#endif
     , storage_config_()
     , migrate_storage_{false}
     , migrate_from_{String::Factory()}
@@ -96,12 +92,12 @@ void StorageParent::init(
     storage_encryption_key_ = seeds.GetStorageKey(seed, reason);
 
     if (storage_encryption_key_.get()) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Obtained storage key ")(
-            storage_encryption_key_->ID(reason))
+        LogDetail(OT_METHOD)(__FUNCTION__)(
+            ": Obtained storage key ")(storage_encryption_key_->ID(reason))
             .Flush();
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load storage key ")(
-            seed)(".")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Failed to load storage key ")(seed)(".")
             .Flush();
     }
 #endif
@@ -109,50 +105,15 @@ void StorageParent::init(
     start();
 }
 
-auto StorageParent::extract_arg(const std::string& name, const ArgList& args)
-    -> OTString
-{
-    const auto it = args.find(name);
-
-    if (args.end() == it) { return String::Factory(); }
-
-    return String::Factory(*it->second.cbegin());
-}
-
-auto StorageParent::extract_archive_directory(const ArgList& args) -> OTString
-{
-    return extract_arg(OPENTXS_ARG_BACKUP_DIRECTORY, args);
-}
-
-auto StorageParent::extract_encrypted_directory(const ArgList& args) -> OTString
-{
-    return extract_arg(OPENTXS_ARG_ENCRYPTED_DIRECTORY, args);
-}
-
-auto StorageParent::extract_primary_storage_plugin(const ArgList& args)
-    -> OTString
-{
-    return extract_arg(OPENTXS_ARG_STORAGE_PLUGIN, args);
-}
-
-#if OT_QT
-bool StorageParent::extract_qt(const ArgList& args)
-{
-    const std::string qt{extract_arg("qt", args)->Get()};
-
-    return qt == "true";
-}
-#endif
-
 auto StorageParent::get_primary_storage_plugin(
     const api::Settings& config,
     const StorageConfig& storageConfig,
-    const ArgList args,
+    const Options& args,
     bool& migrate,
     String& previous) -> OTString
 {
     const auto hardcoded = String::Factory(storageConfig.primary_plugin_);
-    const auto commandLine = extract_primary_storage_plugin(args);
+    const auto commandLine = String::Factory(args.StoragePrimaryPlugin());
     auto configured = String::Factory();
     bool notUsed{false};
     config.Check_str(
@@ -167,8 +128,8 @@ auto StorageParent::get_primary_storage_plugin(
         if (haveConfigured && (false == same)) {
             migrate = true;
             previous.Set(configured);
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Migrating from ")(previous)(
-                ".")
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": Migrating from ")(previous)(".")
                 .Flush();
         }
 

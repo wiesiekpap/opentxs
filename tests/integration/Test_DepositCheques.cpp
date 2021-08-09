@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "Basic.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -61,6 +60,8 @@ using namespace opentxs;
 
 // #define OT_METHOD "::Test_DepositCheques::"
 
+namespace ot = opentxs;
+
 namespace ottest
 {
 bool init_{false};
@@ -99,10 +100,10 @@ public:
     const OTServerContract server_contract_;
 
     Test_DepositCheques()
-        : alice_client_(Context().StartClient(Args(), 0))
-        , bob_client_(Context().StartClient(Args(), 1))
-        , server_1_(Context().StartServer(Args(), 0, true))
-        , issuer_client_(Context().StartClient(Args(), 2))
+        : alice_client_(Context().StartClient(0))
+        , bob_client_(Context().StartClient(1))
+        , server_1_(Context().StartServer(0))
+        , issuer_client_(Context().StartClient(2))
         , server_contract_(server_1_.Wallet().Server(server_1_.ID()))
     {
 #if OT_CASH

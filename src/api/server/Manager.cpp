@@ -11,10 +11,11 @@
 #include <chrono>
 #include <deque>
 #include <exception>
+#include <iosfwd>
 #include <list>
 #include <map>
 #include <mutex>
-#include <set>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -33,6 +34,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Legacy.hpp"
+#include "opentxs/api/Options.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -72,7 +74,7 @@ namespace opentxs
 auto Factory::ServerManager(
     const api::internal::Context& parent,
     Flag& running,
-    const ArgList& args,
+    Options&& args,
     const api::Crypto& crypto,
     const api::Settings& config,
     const opentxs::network::zeromq::Context& context,
@@ -83,7 +85,7 @@ auto Factory::ServerManager(
         new api::server::implementation::Manager(
             parent,
             running,
-            args,
+            std::move(args),
             crypto,
             config,
             context,
@@ -118,7 +120,7 @@ namespace opentxs::api::server::implementation
 Manager::Manager(
     const api::internal::Context& parent,
     Flag& running,
-    const ArgList& args,
+    Options&& args,
     const api::Crypto& crypto,
     const api::Settings& config,
     const opentxs::network::zeromq::Context& context,
@@ -127,7 +129,7 @@ Manager::Manager(
     : Core(
           parent,
           running,
-          args,
+          std::move(args),
           crypto,
           config,
           context,
@@ -269,21 +271,6 @@ void Manager::generate_mint(
     mint->SaveMint();
 }
 #endif  // OT_CASH
-auto Manager::get_arg(const std::string& argName) const -> const std::string
-{
-    auto argIt = args_.find(argName);
-
-    if (args_.end() != argIt) {
-        const auto& argItems = argIt->second;
-
-        OT_ASSERT(2 > argItems.size());
-        OT_ASSERT(0 < argItems.size());
-
-        return *argItems.cbegin();
-    }
-
-    return {};
-}
 
 auto Manager::GetAdminNym() const -> std::string
 {
@@ -313,43 +300,6 @@ auto Manager::GetAdminPassword() const -> std::string
     if (success && exists) { return output->Get(); }
 
     return {};
-}
-
-auto Manager::GetCommandPort() const -> std::string
-{
-    return get_arg(OPENTXS_ARG_COMMANDPORT);
-}
-
-auto Manager::GetDefaultBindIP() const -> std::string
-{
-    return get_arg(OPENTXS_ARG_BINDIP);
-}
-
-auto Manager::GetEEP() const -> std::string { return get_arg(OPENTXS_ARG_EEP); }
-
-auto Manager::GetExternalIP() const -> std::string
-{
-    return get_arg(OPENTXS_ARG_EXTERNALIP);
-}
-
-auto Manager::GetInproc() const -> std::string
-{
-    return get_arg(OPENTXS_ARG_INPROC);
-}
-
-auto Manager::GetListenCommand() const -> std::string
-{
-    return get_arg(OPENTXS_ARG_LISTENCOMMAND);
-}
-
-auto Manager::GetListenNotify() const -> std::string
-{
-    return get_arg(OPENTXS_ARG_LISTENNOTIFY);
-}
-
-auto Manager::GetOnion() const -> std::string
-{
-    return get_arg(OPENTXS_ARG_ONION);
 }
 
 #if OT_CASH
@@ -389,14 +339,11 @@ auto Manager::GetPublicMint(const identifier::UnitDefinition& unitID) const
 }
 #endif  // OT_CASH
 
-auto Manager::GetUserName() const -> std::string
-{
-    return get_arg(OPENTXS_ARG_NAME);
-}
+auto Manager::GetUserName() const -> std::string { return args_.NotaryName(); }
 
 auto Manager::GetUserTerms() const -> std::string
 {
-    return get_arg(OPENTXS_ARG_TERMS);
+    return args_.NotaryTerms();
 }
 
 auto Manager::ID() const -> const identifier::Server&
@@ -481,7 +428,18 @@ auto Manager::load_public_mint(
 
     return verify_mint(lock, unitID, seriesID, mint);
 }
+#endif  // OT_CASH
 
+auto Manager::MakeInprocEndpoint() const -> std::string
+{
+    auto out = std::stringstream{};
+    out << "inproc://opentxs/notary/";
+    out << std::to_string(instance_);
+
+    return out.str();
+}
+
+#if OT_CASH
 void Manager::mint() const
 {
     opentxs::Lock updateLock(mint_update_lock_, std::defer_lock);
@@ -541,8 +499,8 @@ void Manager::mint() const
         if (generate) {
             generate_mint(serverID, unitID, next);
         } else {
-            LogDetail(OT_METHOD)(__FUNCTION__)(": Existing mint file for ")(
-                unitID)(" is still valid.")
+            LogDetail(OT_METHOD)(__FUNCTION__)(
+                ": Existing mint file for ")(unitID)(" is still valid.")
                 .Flush();
         }
     }
@@ -554,9 +512,9 @@ auto Manager::NymID() const -> const identifier::Nym&
     return server_.GetServerNym().ID();
 }
 
-#if OT_CASH
 void Manager::ScanMints() const
 {
+#if OT_CASH
     opentxs::Lock scanLock(mint_scan_lock_);
     opentxs::Lock updateLock(mint_update_lock_, std::defer_lock);
     const auto units = wallet_->UnitDefinitionList();
@@ -567,8 +525,8 @@ void Manager::ScanMints() const
         mints_to_check_.push_front(id);
         updateLock.unlock();
     }
-}
 #endif  // OT_CASH
+}
 
 void Manager::Start()
 {
@@ -591,13 +549,14 @@ void Manager::Start()
 #endif  // OT_CASH
 }
 
-#if OT_CASH
-void Manager::UpdateMint(const identifier::UnitDefinition& unitID) const
+void Manager::UpdateMint(
+    [[maybe_unused]] const identifier::UnitDefinition& unitID) const
 {
+#if OT_CASH
     opentxs::Lock updateLock(mint_update_lock_);
     mints_to_check_.push_front(unitID.str());
-}
 #endif  // OT_CASH
+}
 
 auto Manager::verify_lock(const opentxs::Lock& lock, const std::mutex& mutex)
     const -> bool

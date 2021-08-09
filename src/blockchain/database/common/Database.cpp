@@ -36,6 +36,7 @@ extern "C" {
 #include "blockchain/database/common/Wallet.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Legacy.hpp"
+#include "opentxs/api/Options.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
@@ -86,7 +87,7 @@ struct Database::Imp {
         return 1 == OPENTXS_BLOCK_STORAGE_ENABLED;
     }
     static auto block_storage_level(
-        const ArgList& args,
+        const Options& args,
         storage::lmdb::LMDB& lmdb) noexcept -> BlockStorage
     {
         if (false == block_storage_enabled()) { return BlockStorage::None; }
@@ -107,27 +108,19 @@ struct Database::Imp {
 
         return output;
     }
-    static auto block_storage_level_arg(const ArgList& args) noexcept
+    static auto block_storage_level_arg(const Options& options) noexcept
         -> std::optional<BlockStorage>
     {
-        try {
-            const auto& arg = args.at(OPENTXS_ARG_BLOCK_STORAGE_LEVEL);
-
-            if (0 == arg.size()) { return BlockStorage::None; }
-
-            switch (std::stoi(*arg.cbegin())) {
-                case 2: {
-                    return BlockStorage::All;
-                }
-                case 1: {
-                    return BlockStorage::Cache;
-                }
-                default: {
-                    return BlockStorage::None;
-                }
+        switch (options.BlockchainStorageLevel()) {
+            case 2: {
+                return BlockStorage::All;
             }
-        } catch (...) {
-            return {};
+            case 1: {
+                return BlockStorage::Cache;
+            }
+            default: {
+                return BlockStorage::None;
+            }
         }
     }
     static auto block_storage_level_configured(storage::lmdb::LMDB& db) noexcept
@@ -288,7 +281,7 @@ struct Database::Imp {
         const api::client::Blockchain& blockchain,
         const api::Legacy& legacy,
         const std::string& dataFolder,
-        const ArgList& args) noexcept(false)
+        const Options& args) noexcept(false)
         : api_(api)
         , legacy_(legacy)
         , blockchain_path_(init_storage_path(legacy, dataFolder))
@@ -397,7 +390,7 @@ Database::Database(
     const api::client::Blockchain& blockchain,
     const api::Legacy& legacy,
     const std::string& dataFolder,
-    const ArgList& args) noexcept(false)
+    const Options& args) noexcept(false)
     : imp_p_(std::make_unique<Imp>(api, blockchain, legacy, dataFolder, args))
     , imp_(*imp_p_)
 {

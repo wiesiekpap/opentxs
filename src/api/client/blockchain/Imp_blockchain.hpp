@@ -110,6 +110,7 @@ class Message;
 class Contact;
 class Data;
 class Identifier;
+class Options;
 class PasswordPrompt;
 }  // namespace opentxs
 
@@ -177,7 +178,7 @@ struct BlockchainImp final : public Blockchain::Imp {
         const api::client::Contacts& contacts,
         const api::Legacy& legacy,
         const std::string& dataFolder,
-        const ArgList& args,
+        const Options& args,
         api::client::internal::Blockchain& parent) noexcept;
 
     ~BlockchainImp() final = default;

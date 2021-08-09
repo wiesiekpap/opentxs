@@ -61,6 +61,8 @@ namespace response
 class Base;
 }  // namespace response
 }  // namespace rpc
+
+class Options;
 }  // namespace opentxs
 
 namespace opentxs
@@ -96,15 +98,15 @@ public:
      *  Otherwise the next instance will be created
      */
     virtual const api::client::Manager& StartClient(
-        const ArgList& args,
+        const Options& args,
         const int instance) const = 0;
-#if OT_CRYPTO_WITH_BIP32
     virtual const api::client::Manager& StartClient(
-        const ArgList& args,
+        const int instance) const = 0;
+    virtual const api::client::Manager& StartClient(
+        const Options& args,
         const int instance,
         const std::string& recoverWords,
         const std::string& recoverPassphrase) const = 0;
-#endif  // OT_CRYPTO_WITH_BIP32
     /** Start up a new server
      *
      *  If the specified instance exists, it will be returned.
@@ -112,9 +114,10 @@ public:
      *  Otherwise the next instance will be created
      */
     virtual const api::server::Manager& StartServer(
-        const ArgList& args,
-        const int instance,
-        const bool inproc = false) const = 0;
+        const Options& args,
+        const int instance) const = 0;
+    virtual const api::server::Manager& StartServer(
+        const int instance) const = 0;
     /** Access ZAP configuration API */
     virtual const api::network::ZAP& ZAP() const = 0;
     virtual const opentxs::network::zeromq::Context& ZMQ() const = 0;

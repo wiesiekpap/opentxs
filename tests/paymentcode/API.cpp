@@ -44,8 +44,8 @@ public:
     const ot::api::client::Manager& bob_;
 
     Test_PaymentCodeAPI()
-        : alice_(ot::Context().StartClient(Args(), 0))
-        , bob_(ot::Context().StartClient(Args(), 1))
+        : alice_(ot::Context().StartClient(0))
+        , bob_(ot::Context().StartClient(1))
     {
     }
 };

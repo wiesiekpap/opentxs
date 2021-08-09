@@ -36,8 +36,8 @@ struct Ledger : public ::testing::Test {
     ot::OTPasswordPrompt reason_s_;
 
     Ledger()
-        : client_(ot::Context().StartClient(Args(), 0))
-        , server_(ot::Context().StartServer(Args(), 0, true))
+        : client_(ot::Context().StartClient(0))
+        , server_(ot::Context().StartServer(0))
         , reason_c_(client_.Factory().PasswordPrompt(__FUNCTION__))
         , reason_s_(server_.Factory().PasswordPrompt(__FUNCTION__))
     {

@@ -39,17 +39,17 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
 namespace server
 {
 namespace implementation
 {
 class Manager;
 }  // namespace implementation
+
+namespace internal
+{
+struct Manager;
+}  // namespace internal
 }  // namespace server
 }  // namespace api
 
@@ -73,7 +73,10 @@ namespace opentxs::server
 class Server
 {
 public:
-    auto API() const -> const api::internal::Core& { return manager_; }
+    auto API() const -> const api::server::internal::Manager&
+    {
+        return manager_;
+    }
     auto GetConnectInfo(
         core::AddressType& type,
         std::string& hostname,
@@ -122,12 +125,11 @@ private:
     const std::string DEFAULT_EXTERNAL_IP = "127.0.0.1";
     const std::string DEFAULT_BIND_IP = "127.0.0.1";
     const std::string DEFAULT_NAME = "localhost";
-    const std::uint32_t DEFAULT_COMMAND_PORT = 7085;
-    const std::uint32_t DEFAULT_NOTIFY_PORT = 7086;
+    const std::uint32_t DEFAULT_PORT = 7085;
     const std::uint32_t MIN_TCP_PORT = 1024;
     const std::uint32_t MAX_TCP_PORT = 63356;
 
-    const opentxs::api::server::internal::Manager& manager_;
+    const api::server::internal::Manager& manager_;
     const PasswordPrompt& reason_;
     MainFile mainFile_;
     Notary notary_;

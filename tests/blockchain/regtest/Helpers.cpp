@@ -26,7 +26,6 @@
 #include <utility>
 #include <vector>
 
-#include "Basic.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -34,6 +33,7 @@
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
+#include "opentxs/api/Options.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -267,21 +267,13 @@ PeerListener::~PeerListener() = default;
 
 Regtest_fixture_base::Regtest_fixture_base(
     const int clientCount,
-    const ot::ArgList& clientArgs)
+    const ot::Options& clientArgs)
     : ot_(ot::Context())
     , client_args_(clientArgs)
     , client_count_(clientCount)
     , miner_(ot_.StartClient(
-          [] {
-              auto args = Args();
-              auto& level = args[OPENTXS_ARG_BLOCK_STORAGE_LEVEL];
-              level.clear();
-              level.emplace("2");
-              auto& wallet = args["disableblockchainwallet"];
-              wallet.emplace("true");
-
-              return args;
-          }(),
+          ot::Options{}.SetBlockchainStorageLevel(2).SetBlockchainWalletEnabled(
+              false),
           0))
     , client_1_(ot_.StartClient(client_args_, 1))
     , client_2_(ot_.StartClient(client_args_, 2))
@@ -679,14 +671,9 @@ auto Regtest_fixture_base::TestUTXOs(
 }
 
 Regtest_fixture_normal::Regtest_fixture_normal(const int clientCount)
-    : Regtest_fixture_base(clientCount, [] {
-        auto args = Args();
-        auto& level = args[OPENTXS_ARG_BLOCK_STORAGE_LEVEL];
-        level.clear();
-        level.emplace("1");
-
-        return args;
-    }())
+    : Regtest_fixture_base(
+          clientCount,
+          ot::Options{}.SetBlockchainStorageLevel(1))
 {
 }
 
@@ -698,17 +685,8 @@ Regtest_fixture_single::Regtest_fixture_single()
 Regtest_fixture_sync::Regtest_fixture_sync()
     : Regtest_fixture_base(
           1,
-          [] {
-              auto args = Args();
-              auto& level = args[OPENTXS_ARG_BLOCK_STORAGE_LEVEL];
-              level.clear();
-              level.emplace("2");
-              auto& sync = args[OPENTXS_ARG_BLOCKCHAIN_SYNC];
-              sync.clear();
-              sync.emplace();
-
-              return args;
-          }())
+          ot::Options{}.SetBlockchainStorageLevel(2).SetBlockchainSyncEnabled(
+              true))
     , sync_sub_(
           [&]() -> SyncSubscriber& {
               if (!sync_subscriber_) {

@@ -12,7 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "Basic.hpp"
 #include "integration/Helpers.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
 #include "opentxs/OT.hpp"
@@ -103,9 +102,9 @@ public:
     ot::OTZMQSubscribeSocket chris_rename_notary_listener_;
 
     Test_Pair()
-        : api_issuer_(ot::Context().StartClient(Args(), 0))
-        , api_chris_(ot::Context().StartClient(Args(), 1))
-        , api_server_1_(ot::Context().StartServer(Args(), 0, true))
+        : api_issuer_(ot::Context().StartClient(0))
+        , api_chris_(ot::Context().StartClient(1))
+        , api_server_1_(ot::Context().StartServer(0))
         , issuer_peer_request_cb_(ot::network::zeromq::ListenCallback::Factory(
               [this](const auto& in) { issuer_peer_request(in); }))
         , chris_rename_notary_cb_(ot::network::zeromq::ListenCallback::Factory(

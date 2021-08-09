@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "Basic.hpp"
 #include "integration/Helpers.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Shared.hpp"
@@ -143,10 +142,10 @@ public:
     }
 
     Integration()
-        : api_alex_(ot::Context().StartClient(Args(), 0))
-        , api_bob_(ot::Context().StartClient(Args(), 1))
-        , api_issuer_(ot::Context().StartClient(Args(), 2))
-        , api_server_1_(ot::Context().StartServer(Args(), 0, true))
+        : api_alex_(ot::Context().StartClient(0))
+        , api_bob_(ot::Context().StartClient(1))
+        , api_issuer_(ot::Context().StartClient(2))
+        , api_server_1_(ot::Context().StartServer(0))
     {
         const_cast<Server&>(server_1_).init(api_server_1_);
         const_cast<User&>(alex_).init(api_alex_, server_1_);

@@ -12,9 +12,14 @@
 
 namespace ot = opentxs;
 
+namespace opentxs
+{
+class Options;
+}  // namespace opentxs
+
 namespace ottest
 {
-auto Args(bool lowlevel = false) noexcept -> const ot::ArgList&;
+auto Args(bool lowlevel = false) noexcept -> const ot::Options&;
 auto Home() noexcept -> const std::string&;
 auto WipeHome() noexcept -> void;
 }  // namespace ottest

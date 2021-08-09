@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "Basic.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/server/Server.hpp"
 #include "opentxs/Bytes.hpp"
@@ -36,6 +35,8 @@
 #include "opentxs/otx/ServerReplyType.hpp"
 #include "opentxs/otx/ServerRequestType.hpp"
 
+namespace ot = opentxs;
+
 using namespace opentxs;
 
 namespace ottest
@@ -58,9 +59,9 @@ public:
 
     Test_Messages()
         : client_(dynamic_cast<const ot::api::client::internal::Manager&>(
-              Context().StartClient(Args(), 0)))
+              Context().StartClient(0)))
         , server_(dynamic_cast<const ot::api::server::internal::Manager&>(
-              Context().StartServer(Args(), 0, true)))
+              Context().StartServer(0)))
         , reason_c_(client_.Factory().PasswordPrompt(__FUNCTION__))
         , reason_s_(server_.Factory().PasswordPrompt(__FUNCTION__))
         , server_id_(server_.ID())

@@ -60,7 +60,7 @@ protected:
     const ot::blockchain::crypto::HD& account_;
 
     Test_BIP44()
-        : api_(ot::Context().StartClient(Args(), 0))
+        : api_(ot::Context().StartClient(0))
         , reason_(api_.Factory().PasswordPrompt(__FUNCTION__))
         , nym_id_([&]() -> const ot::identifier::Nym& {
             if (seed_id_.empty()) {

@@ -9,10 +9,10 @@
 #include <memory>
 #include <string>
 
-#include "Basic.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/NumericHash.hpp"
@@ -31,6 +31,7 @@ class Manager;
 }  // namespace opentxs
 
 namespace be = boost::endian;
+namespace ot = opentxs;
 
 namespace ottest
 {
@@ -40,7 +41,7 @@ public:
     const ot::api::client::Manager& api_;
 
     Test_NumericHash()
-        : api_(ot::Context().StartClient(Args(), 0))
+        : api_(ot::Context().StartClient(0))
     {
     }
 };

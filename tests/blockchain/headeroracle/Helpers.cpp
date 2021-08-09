@@ -2601,7 +2601,7 @@ const std::vector<std::string> Test_HeaderOracle_base::bitcoin_{
 // clang-format on
 
 Test_HeaderOracle_base::Test_HeaderOracle_base(const b::Type type)
-    : api_(ot::Context().StartClient({}, 0))
+    : api_(ot::Context().StartClient(0))
     , type_(type)
     , network_(init_network(api_, type_))
     , header_oracle_(const_cast<bc::HeaderOracle&>(network_->HeaderOracle()))

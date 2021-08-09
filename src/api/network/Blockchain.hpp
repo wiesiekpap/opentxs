@@ -63,6 +63,8 @@ class Publish;
 }  // namespace socket
 }  // namespace zeromq
 }  // namespace network
+
+class Options;
 }  // namespace opentxs
 
 namespace zmq = opentxs::network::zeromq;
@@ -184,7 +186,7 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
         [[maybe_unused]] const api::client::internal::Blockchain& crypto,
         [[maybe_unused]] const api::Legacy& legacy,
         [[maybe_unused]] const std::string& dataFolder,
-        [[maybe_unused]] const ArgList& args) noexcept -> void override
+        [[maybe_unused]] const Options& args) noexcept -> void override
     {
     }
     auto Shutdown() noexcept -> void override {}

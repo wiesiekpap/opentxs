@@ -52,7 +52,7 @@ auto ConfigLoader::load(
             bIsNewKey);
         walletFilename.Set(strValue);
         {
-            LogDetail(OT_METHOD)(__FUNCTION__)(":Using Wallet: ")(strValue)(".")
+            LogDetail(OT_METHOD)(__func__)(":Using Wallet: ")(strValue)(".")
                 .Flush();
         }
     }
@@ -442,7 +442,7 @@ auto ConfigLoader::load(
 
     // Done Loading... Lets save any changes...
     if (!config.Save()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Error! Unable to save updated Config!!!")
             .Flush();
         OT_FAIL;

@@ -26,6 +26,7 @@
 #include "internal/api/network/Factory.hpp"
 #include "internal/api/network/Network.hpp"
 #include "internal/api/storage/Storage.hpp"
+#include "opentxs/api/Options.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Activity.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
@@ -38,7 +39,6 @@
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/client/OT_API.hpp"
 #include "opentxs/core/Flag.hpp"
@@ -54,7 +54,7 @@ namespace opentxs::factory
 auto ClientManager(
     const api::internal::Context& parent,
     Flag& running,
-    const ArgList& args,
+    Options&& args,
     const api::Settings& config,
     const api::Crypto& crypto,
     const network::zeromq::Context& context,
@@ -62,7 +62,14 @@ auto ClientManager(
     const int instance) -> api::client::internal::Manager*
 {
     return new api::client::implementation::Manager(
-        parent, running, args, config, crypto, context, dataFolder, instance);
+        parent,
+        running,
+        std::move(args),
+        config,
+        crypto,
+        context,
+        dataFolder,
+        instance);
 }
 }  // namespace opentxs::factory
 
@@ -71,7 +78,7 @@ namespace opentxs::api::client::implementation
 Manager::Manager(
     const api::internal::Context& parent,
     Flag& running,
-    const ArgList& args,
+    Options&& args,
     const api::Settings& config,
     const api::Crypto& crypto,
     const opentxs::network::zeromq::Context& context,
@@ -81,7 +88,7 @@ Manager::Manager(
     , Core(
           parent,
           running,
-          args,
+          std::move(args),
           crypto,
           config,
           context,
@@ -153,7 +160,7 @@ Manager::Manager(
     OT_ASSERT(pair_);
 
     network_.Blockchain().Internal().Init(
-        *blockchain_, parent_.Legacy(), dataFolder, args);
+        *blockchain_, parent_.Legacy(), dataFolder, args_);
 }
 
 auto Manager::Activity() const -> const api::client::Activity&
@@ -236,9 +243,7 @@ auto Manager::Init() -> void
     StartActivity();
     pair_->init();
     blockchain_->Init();
-#if OT_BLOCKCHAIN
     StartBlockchain();
-#endif  // OT_BLOCKCHAIN
     ui_->Init();
 }
 
@@ -288,25 +293,16 @@ void Manager::StartActivity()
     Scheduler::Start(storage_.get(), network_.DHT());
 }
 
-#if OT_BLOCKCHAIN
 auto Manager::StartBlockchain() noexcept -> void
 {
-    try {
-        for (const auto& s : args_.at(OPENTXS_ARG_DISABLED_BLOCKCHAINS)) {
-            try {
-                const auto chain = static_cast<opentxs::blockchain::Type>(
-                    static_cast<std::uint32_t>(std::stoul(s)));
-                network_.Blockchain().Disable(chain);
-            } catch (...) {
-                continue;
-            }
-        }
-    } catch (...) {
+#if OT_BLOCKCHAIN
+    for (const auto chain : args_.DisabledBlockchains()) {
+        network_.Blockchain().Disable(chain);
     }
 
     network_.Blockchain().Internal().RestoreNetworks();
-}
 #endif  // OT_BLOCKCHAIN
+}
 
 void Manager::StartContacts()
 {

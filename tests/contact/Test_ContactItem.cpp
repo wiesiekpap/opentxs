@@ -31,7 +31,7 @@ class Test_ContactItem : public ::testing::Test
 {
 public:
     Test_ContactItem()
-        : api_(ot::Context().StartClient({}, 0))
+        : api_(ot::Context().StartClient(0))
         , contactItem_(
               dynamic_cast<const ot::api::client::internal::Manager&>(api_),
               std::string("testNym"),

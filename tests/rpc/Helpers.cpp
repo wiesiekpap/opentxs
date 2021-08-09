@@ -13,7 +13,6 @@
 #include <mutex>
 #include <utility>
 
-#include "Basic.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -438,7 +437,7 @@ auto RPC_fixture::SetIntroductionServer(
 auto RPC_fixture::StartClient(int index) const noexcept
     -> const ot::api::client::Manager&
 {
-    const auto& out = ot_.StartClient(Args(), index);
+    const auto& out = ot_.StartClient(index);
     init_maps(out.Instance());
 
     return out;
@@ -447,7 +446,7 @@ auto RPC_fixture::StartClient(int index) const noexcept
 auto RPC_fixture::StartServer(int index) const noexcept
     -> const ot::api::server::Manager&
 {
-    const auto& out = ot_.StartServer(Args(), index, true);
+    const auto& out = ot_.StartServer(index);
     const auto instance = out.Instance();
     init_maps(instance);
     auto& nyms = local_nym_map_.at(instance);

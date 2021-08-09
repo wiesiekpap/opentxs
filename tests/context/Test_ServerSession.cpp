@@ -19,8 +19,7 @@ std::string server_id_{};
 TEST(ServerSession, create)
 {
     const auto& otx = ot::InitContext(Args(true));
-    const auto& server = otx.StartServer({}, 0);
-
+    const auto& server = otx.StartServer(0);
     server_id_ = server.ID().str();
 
     EXPECT_FALSE(server_id_.empty());
@@ -31,7 +30,7 @@ TEST(ServerSession, create)
 TEST(ServerSession, restart)
 {
     const auto& otx = ot::InitContext(Args(true));
-    const auto& server = otx.StartServer({}, 0);
+    const auto& server = otx.StartServer(0);
 
     EXPECT_EQ(server_id_, server.ID().str());
 

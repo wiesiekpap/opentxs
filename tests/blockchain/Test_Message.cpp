@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "Basic.hpp"
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/message/Getblocks.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
@@ -63,7 +62,7 @@ public:
     }
 
     Test_Message()
-        : api_(ot::Context().StartClient(Args(), 0))
+        : api_(ot::Context().StartClient(0))
     {
     }
 };

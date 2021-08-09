@@ -71,7 +71,7 @@ TEST(PasswordCallback, create)
 
     const auto& otx = ot::InitContext(Args(true), &caller);
     profile_id_ = otx.ProfileId();
-    const auto& client = otx.StartClient({}, 0);
+    const auto& client = otx.StartClient(0);
     const auto reason = client.Factory().PasswordPrompt(__FUNCTION__);
     const auto nym = client.Wallet().Nym(reason);
 
@@ -93,7 +93,7 @@ TEST(PasswordCallback, load)
     const auto profile_id = otx.ProfileId();
     EXPECT_EQ(profile_id, profile_id_);
 
-    const auto& client = otx.StartClient({}, 0);
+    const auto& client = otx.StartClient(0);
     const auto nym_identifier{opentxs::identifier::Nym::Factory(nym_id_)};
     const auto nym = client.Wallet().Nym(nym_identifier);
 
@@ -121,7 +121,7 @@ TEST(PasswordCallback, wrongpw)
     caller.SetCallback(&callback);
 
     const auto& otx = ot::InitContext(Args(true), &caller);
-    const auto& client = otx.StartClient({}, 0);
+    const auto& client = otx.StartClient(0);
     const auto nym_identifier{opentxs::identifier::Nym::Factory(nym_id_)};
     const auto nym = client.Wallet().Nym(nym_identifier);
 

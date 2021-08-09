@@ -13,6 +13,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/Options.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/Manager.hpp"
@@ -58,7 +59,7 @@ public:
     ot::OTIdentifier chris_contact_id_;
 
     Test_ContactList()
-        : client_(ot::Context().StartClient({}, 0))
+        : client_(ot::Context().StartClient(0))
         , reason_(client_.Factory().PasswordPrompt(__FUNCTION__))
         , fingerprint_(client_.Exec().Wallet_ImportSeed(
               "response seminar brave tip suit recall often sound stick owner "

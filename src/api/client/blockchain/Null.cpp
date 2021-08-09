@@ -17,7 +17,7 @@ Blockchain::Blockchain(
     const api::client::Contacts& contacts,
     const api::Legacy&,
     const std::string&,
-    const ArgList& args) noexcept
+    const Options& args) noexcept
     : imp_(std::make_unique<Imp>(api, contacts, *this))
 {
     // WARNING: do not access api_.Wallet() during construction

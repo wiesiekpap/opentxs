@@ -106,6 +106,7 @@ class HDPath;
 }  // namespace proto
 
 class Contact;
+class Options;
 class PasswordPrompt;
 class PaymentCode;
 }  // namespace opentxs
@@ -263,7 +264,7 @@ public:
         const api::client::Contacts& contacts,
         const api::Legacy& legacy,
         const std::string& dataFolder,
-        const ArgList& args) noexcept;
+        const Options& args) noexcept;
 
     ~Blockchain() final;
 
