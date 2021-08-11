@@ -198,7 +198,7 @@ private:
             if (first != current) {
                 auto promise = std::promise<int>{};
                 promise.set_value(0);
-                prior.emplace(std::move(current), promise.get_future());
+                prior.emplace(std::move(first), promise.get_future());
             }
         }
         hashes.erase(hashes.begin());
