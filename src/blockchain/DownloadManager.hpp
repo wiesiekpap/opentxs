@@ -47,8 +47,8 @@ public:
     }
     auto Reset(const Position& position, Finished&& previous) noexcept -> void
     {
-        LogVerbose(DOWNLOAD_MANAGER)(__FUNCTION__)(": resetting ")(log_)(
-            " to height")(position.first)
+        LogVerbose(DOWNLOAD_MANAGER)(__FUNCTION__)(
+            ": resetting ")(log_)(" to height")(position.first)
             .Flush();
         auto lock = Lock{dm_lock_};
         dm_previous_ = std::move(previous);
@@ -94,8 +94,8 @@ protected:
             return std::min<std::size_t>(unallocated, batch);
         }();
 
-        LogTrace(DOWNLOAD_MANAGER)(__FUNCTION__)(": ")(size)(" ")(log_)(
-            " items to download")
+        LogTrace(DOWNLOAD_MANAGER)(__FUNCTION__)(
+            ": ")(size)(" ")(log_)(" items to download")
             .Flush();
 
         if (0 == size) { return {}; }
@@ -120,9 +120,21 @@ protected:
                         }
                     }
 
-                    LogTrace(DOWNLOAD_MANAGER)(__FUNCTION__)(": queueing ")(
-                        log_)(" item at height ")(task->position_.first)(
-                        " for download")
+                    LogTrace(DOWNLOAD_MANAGER)(__FUNCTION__)(
+                        ": queueing ")(log_)(" item at height ")(task->position_
+                                                                     .first)(" "
+                                                                             "f"
+                                                                             "o"
+                                                                             "r"
+                                                                             " "
+                                                                             "d"
+                                                                             "o"
+                                                                             "w"
+                                                                             "n"
+                                                                             "l"
+                                                                             "o"
+                                                                             "a"
+                                                                             "d")
                         .Flush();
                     output.emplace_back(task);
 
@@ -162,6 +174,8 @@ protected:
         Previous prior = std::nullopt) noexcept
     {
         if (0 == positions.size()) { return; }
+
+        if (prior) { OT_ASSERT(prior->first.first <= positions.front().first); }
 
         auto lock = Lock{dm_lock_};
         {

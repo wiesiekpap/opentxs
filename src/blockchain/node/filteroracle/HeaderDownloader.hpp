@@ -196,7 +196,7 @@ private:
                 auto promise = std::promise<filter::pHeader>{};
                 promise.set_value(
                     db_.LoadFilterHeader(type_, first.second->Bytes()));
-                prior.emplace(std::move(current), promise.get_future());
+                prior.emplace(std::move(first), promise.get_future());
             }
         }
         hashes.erase(hashes.begin());
