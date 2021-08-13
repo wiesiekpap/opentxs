@@ -196,7 +196,7 @@ struct Test_BitcoinBlock : public ::testing::Test {
     }
 
     Test_BitcoinBlock()
-        : api_(ot::Context().StartClient({}, 0))
+        : api_(ot::Context().StartClient(0))
     {
     }
 };

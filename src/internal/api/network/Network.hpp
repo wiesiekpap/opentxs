@@ -69,6 +69,7 @@ class Publish;
 }  // namespace network
 
 class Identifier;
+class Options;
 }  // namespace opentxs
 
 namespace opentxs::api::network::internal
@@ -132,7 +133,7 @@ struct Blockchain {
         const api::client::internal::Blockchain& crypto,
         const api::Legacy& legacy,
         const std::string& dataFolder,
-        const ArgList& args) noexcept -> void = 0;
+        const Options& args) noexcept -> void = 0;
     virtual auto Shutdown() noexcept -> void = 0;
 
     virtual ~Blockchain() = default;

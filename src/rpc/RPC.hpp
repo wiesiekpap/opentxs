@@ -95,6 +95,7 @@ class AccountData;
 
 class Factory;
 class Identifier;
+class Options;
 }  // namespace opentxs
 
 namespace zmq = opentxs::network::zeromq;
@@ -150,7 +151,7 @@ private:
     static auto get_account_event_type(
         StorageBox storagebox,
         Amount amount) noexcept -> rpc::AccountEventType;
-    static auto get_args(const Args& serialized) -> ArgList;
+    static auto get_args(const Args& serialized) -> Options;
     static auto get_index(std::int32_t instance) -> std::size_t;
     static auto init(const proto::RPCCommand& command) -> proto::RPCResponse;
     static auto invalid_command(const proto::RPCCommand& command)

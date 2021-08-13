@@ -28,6 +28,8 @@ add_library(
   "Legacy.hpp"
   "Log.cpp"
   "Log.hpp"
+  "Options.cpp"
+  "Options.hpp"
   "Periodic.cpp"
   "Periodic.hpp"
   "Primitives.cpp"
@@ -50,6 +52,7 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/Endpoints.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/Factory.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/HDSeed.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/api/Options.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/Periodic.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/Primitives.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/Settings.hpp"
@@ -57,7 +60,7 @@ set(cxx-install-headers
 )
 
 target_link_libraries(opentxs-api PRIVATE Boost::headers opentxs::messages)
-target_link_libraries(opentxs PUBLIC Boost::filesystem)
+target_link_libraries(opentxs PUBLIC Boost::filesystem Boost::program_options)
 target_include_directories(
   opentxs-api SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )

@@ -28,6 +28,8 @@ namespace server
 {
 class Server;
 }  // namespace server
+
+class Options;
 }  // namespace opentxs
 
 namespace opentxs
@@ -36,48 +38,37 @@ namespace api
 {
 namespace server
 {
-class Manager : virtual public api::Core
+class OPENTXS_EXPORT Manager : virtual public api::Core
 {
 public:
     /** Drop a specified number of incoming requests for testing purposes */
-    OPENTXS_EXPORT virtual void DropIncoming(const int count) const = 0;
+    virtual auto DropIncoming(const int count) const -> void = 0;
     /** Drop a specified number of outgoing replies for testing purposes */
-    OPENTXS_EXPORT virtual void DropOutgoing(const int count) const = 0;
-    OPENTXS_EXPORT virtual std::string GetAdminNym() const = 0;
-    OPENTXS_EXPORT virtual std::string GetAdminPassword() const = 0;
-    OPENTXS_EXPORT virtual std::string GetCommandPort() const = 0;
-    OPENTXS_EXPORT virtual std::string GetDefaultBindIP() const = 0;
-    OPENTXS_EXPORT virtual std::string GetEEP() const = 0;
-    OPENTXS_EXPORT virtual std::string GetExternalIP() const = 0;
-    OPENTXS_EXPORT virtual std::string GetInproc() const = 0;
-    OPENTXS_EXPORT virtual std::string GetListenCommand() const = 0;
-    OPENTXS_EXPORT virtual std::string GetListenNotify() const = 0;
-    OPENTXS_EXPORT virtual std::string GetOnion() const = 0;
+    virtual auto DropOutgoing(const int count) const -> void = 0;
+    virtual auto GetAdminNym() const -> std::string = 0;
+    virtual auto GetAdminPassword() const -> std::string = 0;
+    virtual auto GetOptions() const noexcept -> const Options& = 0;
 #if OT_CASH
-    OPENTXS_EXPORT virtual std::shared_ptr<blind::Mint> GetPrivateMint(
+    virtual auto GetPrivateMint(
         const identifier::UnitDefinition& unitid,
-        std::uint32_t series) const = 0;
-    OPENTXS_EXPORT virtual std::shared_ptr<const blind::Mint> GetPublicMint(
-        const identifier::UnitDefinition& unitID) const = 0;
+        std::uint32_t series) const -> std::shared_ptr<blind::Mint> = 0;
+    virtual auto GetPublicMint(const identifier::UnitDefinition& unitID) const
+        -> std::shared_ptr<const blind::Mint> = 0;
 #endif  // OT_CASH
-    OPENTXS_EXPORT virtual std::string GetUserName() const = 0;
-    OPENTXS_EXPORT virtual std::string GetUserTerms() const = 0;
-    OPENTXS_EXPORT virtual const identifier::Server& ID() const = 0;
-    OPENTXS_EXPORT virtual const identifier::Nym& NymID() const = 0;
-#if OT_CASH
-    OPENTXS_EXPORT virtual void ScanMints() const = 0;
-#endif  // OT_CASH
-    OPENTXS_EXPORT virtual opentxs::server::Server& Server() const = 0;
-#if OT_CASH
-    OPENTXS_EXPORT virtual void SetMintKeySize(
-        const std::size_t size) const = 0;
-    OPENTXS_EXPORT virtual void UpdateMint(
-        const identifier::UnitDefinition& unitID) const = 0;
-#endif  // OT_CASH
+    virtual auto GetUserName() const -> std::string = 0;
+    virtual auto GetUserTerms() const -> std::string = 0;
+    virtual auto ID() const -> const identifier::Server& = 0;
+    virtual auto MakeInprocEndpoint() const -> std::string = 0;
+    virtual auto NymID() const -> const identifier::Nym& = 0;
+    virtual auto ScanMints() const -> void = 0;
+    virtual auto Server() const -> opentxs::server::Server& = 0;
+    virtual auto SetMintKeySize(const std::size_t size) const -> void = 0;
+    virtual auto UpdateMint(const identifier::UnitDefinition& unitID) const
+        -> void = 0;
 
-    OPENTXS_EXPORT virtual void Start() = 0;
+    OPENTXS_NO_EXPORT virtual void Start() = 0;
 
-    OPENTXS_EXPORT ~Manager() override = default;
+    OPENTXS_NO_EXPORT ~Manager() override = default;
 
 protected:
     Manager() = default;

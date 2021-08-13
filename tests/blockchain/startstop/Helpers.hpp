@@ -31,7 +31,7 @@ public:
     const ot::api::client::Manager& api_;
 
     Test_StartStop()
-        : api_(ot::Context().StartClient(Args(), 0))
+        : api_(ot::Context().StartClient(0))
     {
     }
 };

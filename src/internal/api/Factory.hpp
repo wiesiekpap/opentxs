@@ -58,6 +58,7 @@ class Context;
 }  // namespace network
 
 class Flag;
+class Options;
 class OTCaller;
 class String;
 }  // namespace opentxs
@@ -66,7 +67,7 @@ namespace opentxs::factory
 {
 auto Context(
     Flag& running,
-    const ArgList& args,
+    const Options& args,
     OTCaller* externalPasswordCallback = nullptr) noexcept
     -> std::unique_ptr<api::internal::Context>;
 auto Endpoints(const network::zeromq::Context& zmq, const int instance) noexcept

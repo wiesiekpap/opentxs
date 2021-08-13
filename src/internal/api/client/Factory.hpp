@@ -66,6 +66,7 @@ class Issuer;
 
 class Flag;
 class OTClient;
+class Options;
 }  // namespace opentxs
 
 namespace opentxs::factory
@@ -80,12 +81,12 @@ auto BlockchainAPI(
     const api::client::Contacts& contacts,
     const api::Legacy& legacy,
     const std::string& dataFolder,
-    const ArgList& args) noexcept
+    const Options& args) noexcept
     -> std::shared_ptr<api::client::internal::Blockchain>;
 auto ClientManager(
     const api::internal::Context& parent,
     Flag& running,
-    const ArgList& args,
+    Options&& args,
     const api::Settings& config,
     const api::Crypto& crypto,
     const network::zeromq::Context& context,

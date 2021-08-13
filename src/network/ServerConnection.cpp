@@ -13,6 +13,7 @@
 #include <ctime>
 #include <map>
 #include <memory>
+#include <sstream>
 #include <thread>
 
 #include "Proto.tpp"
@@ -221,21 +222,19 @@ auto ServerConnection::form_endpoint(
     std::string hostname,
     std::uint32_t port) const -> std::string
 {
-    std::string output{};
+    auto output = std::stringstream{};
 
     if (core::AddressType::Inproc == type) {
-        output += "inproc://opentxs/notary/";
-        output += hostname;
-        output += ":";
-        output += std::to_string(port);
+        output << hostname;
     } else {
-        output += "tcp://";
-        output += hostname;
-        output += ":";
-        output += std::to_string(port);
+        output << "tcp://";
+        output << hostname;
     }
 
-    return output;
+    output << ":";
+    output << std::to_string(port);
+
+    return output.str();
 }
 
 auto ServerConnection::get_async(const Lock& lock) -> zeromq::socket::Dealer&

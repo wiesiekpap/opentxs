@@ -22,6 +22,7 @@ class Context;
 }  // namespace api
 
 class OTCaller;
+class Options;
 }  // namespace opentxs
 
 namespace opentxs
@@ -32,14 +33,14 @@ namespace opentxs
  *
  *  \throws std::runtime_error if the context is not initialized
  */
-OPENTXS_EXPORT const api::Context& Context();
+OPENTXS_EXPORT auto Context() noexcept(false) -> const api::Context&;
 
 /** Shut down context
  *
  *  Call this when the application is closing, after all OT operations
  *  are complete.
  */
-OPENTXS_EXPORT void Cleanup();
+OPENTXS_EXPORT auto Cleanup() noexcept -> void;
 
 /** Start up context
  *
@@ -50,18 +51,23 @@ OPENTXS_EXPORT void Cleanup();
  *
  *  \throws std::runtime_error if the context is already initialized
  */
-OPENTXS_EXPORT const api::Context& InitContext(
-    const ArgList& args = {},
-    OTCaller* externalPasswordCallback = nullptr);
+OPENTXS_EXPORT auto InitContext() noexcept(false) -> const api::Context&;
+OPENTXS_EXPORT auto InitContext(const Options& args) noexcept(false)
+    -> const api::Context&;
+OPENTXS_EXPORT auto InitContext(OTCaller* externalPasswordCallback) noexcept(
+    false) -> const api::Context&;
+OPENTXS_EXPORT auto InitContext(
+    const Options& args,
+    OTCaller* externalPasswordCallback) noexcept(false) -> const api::Context&;
 
 /** Wait on context shutdown
  *
  *  Blocks until the context has been shut down
  */
-OPENTXS_EXPORT void Join();
+OPENTXS_EXPORT auto Join() noexcept -> void;
 
 using LicenseMap = std::map<std::string, std::string>;
 
-OPENTXS_EXPORT const LicenseMap& LicenseData() noexcept;
+OPENTXS_EXPORT auto LicenseData() noexcept -> const LicenseMap&;
 }  // namespace opentxs
 #endif

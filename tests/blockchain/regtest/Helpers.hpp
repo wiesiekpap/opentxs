@@ -42,6 +42,7 @@
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/Options.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -293,7 +294,7 @@ protected:
     using Expected = std::map<Outpoint, OutpointMetadata>;
 
     const ot::api::Context& ot_;
-    const ot::ArgList client_args_;
+    const ot::Options client_args_;
     const int client_count_;
     const ot::api::client::Manager& miner_;
     const ot::api::client::Manager& client_1_;
@@ -320,7 +321,7 @@ protected:
     virtual auto Shutdown() noexcept -> void;
     auto Start() noexcept -> bool;
 
-    Regtest_fixture_base(const int clientCount, const ot::ArgList& clientArgs);
+    Regtest_fixture_base(const int clientCount, const ot::Options& clientArgs);
 
 private:
     using BlockListen = std::map<int, std::unique_ptr<BlockListener>>;

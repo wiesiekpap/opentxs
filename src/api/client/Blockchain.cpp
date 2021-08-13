@@ -41,7 +41,7 @@ auto BlockchainAPI(
     const api::client::Contacts& contacts,
     const api::Legacy& legacy,
     const std::string& dataFolder,
-    const ArgList& args) noexcept
+    const Options& args) noexcept
     -> std::shared_ptr<api::client::internal::Blockchain>
 {
     return std::make_shared<ReturnType>(

@@ -25,10 +25,15 @@ namespace opentxs::server
         const char* pActionNameStr = msgIn.m_strCommand->Get();                \
                                                                                \
         if (false == NYM_IS_ALLOWED(pNymAllowedIDStr, BOOL_VAR_NAME)) {        \
-            LogNormal(OT_METHOD)(__FUNCTION__)(": Nym ")(pNymAllowedIDStr)(    \
-                " attempted an action (")(pActionNameStr)(                     \
-                "), but based on server configuration,"                        \
-                " he's not allowed.")                                          \
+            LogNormal(OT_METHOD)(__func__)(                                    \
+                ": Nym ")(pNymAllowedIDStr)(" attempted an action "            \
+                                            "(")(pActionNameStr)("), but "     \
+                                                                 "based on "   \
+                                                                 "server "     \
+                                                                 "configurati" \
+                                                                 "on,"         \
+                                                                 " he's not "  \
+                                                                 "allowed.")   \
                 .Flush();                                                      \
             return false;                                                      \
         }                                                                      \

@@ -13,6 +13,7 @@
 
 #include "internal/api/Api.hpp"
 #include "internal/api/Factory.hpp"
+#include "opentxs/api/Options.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 
@@ -37,7 +38,7 @@ auto Context() -> const api::Context&
     return *instance_pointer_;
 }
 
-void Cleanup()
+auto Cleanup() noexcept -> void
 {
     if (nullptr != instance_pointer_) {
         instance_pointer_->shutdown();
@@ -46,7 +47,26 @@ void Cleanup()
     }
 }
 
-auto InitContext(const ArgList& args, OTCaller* externalPasswordCallback)
+auto InitContext() -> const api::Context&
+{
+    static const auto empty = Options{};
+
+    return InitContext(empty, nullptr);
+}
+
+auto InitContext(const Options& args) -> const api::Context&
+{
+    return InitContext(args, nullptr);
+}
+
+auto InitContext(OTCaller* cb) -> const api::Context&
+{
+    static const auto empty = Options{};
+
+    return InitContext(empty, cb);
+}
+
+auto InitContext(const Options& args, OTCaller* externalPasswordCallback)
     -> const api::Context&
 {
     if (nullptr != instance_pointer_) {
@@ -63,7 +83,7 @@ auto InitContext(const ArgList& args, OTCaller* externalPasswordCallback)
     return *instance_pointer_;
 }
 
-void Join()
+auto Join() noexcept -> void
 {
     while (nullptr != instance_pointer_) {
         Sleep(std::chrono::milliseconds(250));

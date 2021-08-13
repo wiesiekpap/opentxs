@@ -56,6 +56,7 @@ class Flag;
 class Identifier;
 class OTAPI_Exec;
 class OT_API;
+class Options;
 }  // namespace opentxs
 
 namespace opentxs::api::client::implementation
@@ -86,15 +87,13 @@ public:
 
     void Init() final;
     void StartActivity();
-#if OT_BLOCKCHAIN
     auto StartBlockchain() noexcept -> void;
-#endif  // OT_BLOCKCHAIN
     void StartContacts();
 
     Manager(
         const api::internal::Context& parent,
         Flag& running,
-        const ArgList& args,
+        Options&& args,
         const api::Settings& config,
         const api::Crypto& crypto,
         const opentxs::network::zeromq::Context& context,

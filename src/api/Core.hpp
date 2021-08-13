@@ -72,6 +72,7 @@ class Ciphertext;
 
 class Flag;
 class OTPassword;
+class Options;
 class PasswordPrompt;
 }  // namespace opentxs
 
@@ -178,7 +179,7 @@ protected:
     Core(
         const api::internal::Context& parent,
         Flag& running,
-        const ArgList& args,
+        Options&& args,
         const api::Crypto& crypto,
         const api::Settings& config,
         const opentxs::network::zeromq::Context& zmq,

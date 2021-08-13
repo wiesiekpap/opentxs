@@ -21,6 +21,7 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/HDSeed.hpp"
+#include "opentxs/api/Options.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
@@ -88,7 +89,7 @@ namespace opentxs::api::implementation
 Core::Core(
     const api::internal::Context& parent,
     Flag& running,
-    const ArgList& args,
+    Options&& args,
     const api::Crypto& crypto,
     const api::Settings& config,
     const opentxs::network::zeromq::Context& zmq,
@@ -98,7 +99,13 @@ Core::Core(
     std::unique_ptr<api::internal::Factory> factory)
     : ZMQ(zmq, instance)
     , Scheduler(parent, running)
-    , StorageParent(running, args, crypto, config, parent.Legacy(), dataFolder)
+    , StorageParent(
+          running,
+          std::move(args),
+          crypto,
+          config,
+          parent.Legacy(),
+          dataFolder)
     , network_(network(zmq_context_, endpoints_, *this))
     , factory_p_(std::move(factory))
     , factory_(*factory_p_)

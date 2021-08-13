@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 
+#include "internal/api/server/Server.hpp"
 #include "opentxs/Exclusive.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/core/Account.hpp"
@@ -58,7 +59,7 @@ auto Transactor::issueNextTransactionNumber(
 
     // Next, we save it to file.
     if (!server_.GetMainFile().SaveMainFile()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error saving main server file.")
+        LogOutput(OT_METHOD)(__func__)(": Error saving main server file.")
             .Flush();
         transactionNumber_--;
         return false;
@@ -85,7 +86,7 @@ auto Transactor::issueNextTransactionNumberToNym(
     // is also recorded in his Nym file.)  That way the server always knows
     // which numbers are valid for each Nym.
     if (!context.IssueNumber(transactionNumber_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Error adding transaction number to Nym file.")
             .Flush();
         transactionNumber_--;
@@ -114,7 +115,7 @@ auto Transactor::addBasketAccountID(
 
     if (lookupBasketAccountID(BASKET_ID, theBasketAcctID)) {
         {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": User attempted to add Basket that already exists.")
                 .Flush();
         }
@@ -241,14 +242,15 @@ auto Transactor::getVoucherAccount(
         const auto strInstrumentDefinitionID =
             String::Factory(INSTRUMENT_DEFINITION_ID);
         {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Successfully created "
-                "voucher account ID: ")(strAcctID)(
-                " Instrument Definition ID: ")(strInstrumentDefinitionID)(".")
+                "voucher account ID: ")(strAcctID)(" Instrument Definition "
+                                                   "ID:"
+                                                   " ")(strInstrumentDefinitionID)(".")
                 .Flush();
         }
         if (!server_.GetMainFile().SaveMainFile()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error saving main "
                 "server file containing new account ID!!")
                 .Flush();

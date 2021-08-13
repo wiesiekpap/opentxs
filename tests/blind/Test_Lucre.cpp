@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "2_Factory.hpp"
-#include "Basic.hpp"
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
@@ -28,6 +27,7 @@
 #include "opentxs/blind/PurseType.hpp"
 #include "opentxs/blind/Token.hpp"
 #include "opentxs/blind/TokenState.hpp"
+#include "opentxs/blind/Types.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
@@ -41,6 +41,8 @@
 #define MINT_EXPIRE_MONTHS 6
 #define MINT_VALID_MONTHS 12
 #define REQUEST_PURSE_VALUE 20000
+
+namespace ot = opentxs;
 
 namespace ottest
 {
@@ -67,7 +69,7 @@ public:
 
     Test_Basic()
         : api_(dynamic_cast<const ot::api::client::internal::Manager&>(
-              ot::Context().StartClient(Args(), 0)))
+              ot::Context().StartClient(0)))
         , reason_(api_.Factory().PasswordPrompt(__FUNCTION__))
         , alice_()
         , bob_()

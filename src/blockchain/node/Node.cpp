@@ -34,7 +34,6 @@ auto Config::print() const noexcept -> std::string
            << '\n';
     output << "  * use sync server: " << print_bool(use_sync_server_) << '\n';
     output << "  * disable wallet: " << print_bool(disable_wallet_) << '\n';
-    output << "  * sync endpoint: " << sync_endpoint_ << '\n';
 
     return output.str();
 }

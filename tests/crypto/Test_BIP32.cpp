@@ -8,11 +8,11 @@
 #include <string>
 #include <vector>
 
-#include "Basic.hpp"
 #include "crypto/Bip32Vectors.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/HDSeed.hpp"
@@ -22,6 +22,8 @@
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/HD.hpp"
+
+namespace ot = opentxs;
 
 namespace ottest
 {
@@ -52,7 +54,7 @@ protected:
     }
 
     Test_BIP32()
-        : api_(ot::Context().StartClient(Args(), 0))
+        : api_(ot::Context().StartClient(0))
         , reason_(api_.Factory().PasswordPrompt(__FUNCTION__))
     {
     }

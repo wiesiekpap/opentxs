@@ -23,6 +23,7 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
+#include "opentxs/api/Options.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/node/FilterOracle.hpp"
@@ -287,31 +288,19 @@ auto BlockchainImp::Init(
     const api::client::internal::Blockchain& crypto,
     const api::Legacy& legacy,
     const std::string& dataFolder,
-    const ArgList& args) noexcept -> void
+    const Options& options) noexcept -> void
 {
     crypto_ = &crypto;
     db_ = std::make_unique<opentxs::blockchain::database::common::Database>(
-        api_, crypto, legacy, dataFolder, args);
+        api_, crypto, legacy, dataFolder, options);
 
     OT_ASSERT(db_);
 
     const_cast<std::unique_ptr<Config>&>(base_config_) = [&] {
         auto out = std::make_unique<Config>();
         auto& output = *out;
-        const auto sync = [&] {
-            try {
-                const auto& arg = args.at(OPENTXS_ARG_BLOCKCHAIN_SYNC);
-
-                if (0 == arg.size()) { return false; }
-
-                output.sync_endpoint_ = *arg.begin();
-
-                return true;
-            } catch (...) {
-
-                return false;
-            }
-        }();
+        const auto sync = (0 < options.RemoteBlockchainSyncServers().size()) ||
+                          options.ProvideBlockchainSyncServer();
 
         using Policy = opentxs::blockchain::database::BlockStorage;
 
@@ -329,12 +318,7 @@ auto BlockchainImp::Init(
             output.download_cfilters_ = true;
         }
 
-        try {
-            const auto& arg = args.at("disableblockchainwallet");
-
-            if (0 < arg.size()) { output.disable_wallet_ = true; }
-        } catch (...) {
-        }
+        output.disable_wallet_ = !options.BlockchainWalletEnabled();
 
         return out;
     }();
@@ -369,9 +353,7 @@ auto BlockchainImp::Init(
     }();
 
     try {
-        const auto& endpoints = args.at(OPENTXS_ARG_BLOCKCHAIN_SYNC);
-
-        for (const auto& endpoint : endpoints) {
+        for (const auto& endpoint : options.RemoteBlockchainSyncServers()) {
             if (0 == existing.count(endpoint)) { AddSyncServer(endpoint); }
         }
     } catch (...) {
@@ -528,8 +510,7 @@ auto BlockchainImp::StartSyncServer(
     }
 
     LogNormal("Blockchain sync server must be enabled at library "
-              "initialization time by passing the ")(
-        OPENTXS_ARG_BLOCKCHAIN_SYNC)(" option.")
+              "initialization time by using Options::SetBlockchainSyncEnabled.")
         .Flush();
 
     return false;

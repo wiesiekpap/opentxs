@@ -83,6 +83,8 @@ namespace zeromq
 class Context;
 }  // namespace zeromq
 }  // namespace network
+
+class Options;
 }  // namespace opentxs
 
 namespace zmq = opentxs::network::zeromq;
@@ -152,7 +154,7 @@ struct BlockchainImp final : public Blockchain::Imp {
         const api::client::internal::Blockchain& crypto,
         const api::Legacy& legacy,
         const std::string& dataFolder,
-        const ArgList& args) noexcept -> void final;
+        const Options& args) noexcept -> void final;
     auto Shutdown() noexcept -> void final;
 
     BlockchainImp(

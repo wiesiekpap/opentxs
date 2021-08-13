@@ -61,7 +61,7 @@ BlockchainImp::BlockchainImp(
     const api::client::Contacts& contacts,
     const api::Legacy& legacy,
     const std::string& dataFolder,
-    const ArgList& args,
+    const Options& args,
     api::client::internal::Blockchain& parent) noexcept
     : Imp(api, contacts, parent)
     , parent_(parent)

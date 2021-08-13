@@ -11,7 +11,7 @@
 #include <cstdint>
 #include <memory>
 
-#include "internal/api/Api.hpp"
+#include "internal/api/server/Server.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Editor.hpp"
@@ -73,7 +73,7 @@ auto PayDividendVisitor::Trigger(
 
     if (lPayoutAmount <= 0) {
         {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Nothing to pay, "
                 "since this account owns no shares. (Returning "
                 "true.")
@@ -191,11 +191,15 @@ auto PayDividendVisitor::Trigger(
         } else {
             const auto strPayoutUnitTypeId = String::Factory(payoutUnitTypeId),
                        strRecipientNymID = String::Factory(RECIPIENT_ID);
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": ERROR failed issuing "
                 "voucher (to send to dividend payout recipient). WAS "
-                "TRYING TO PAY ")(lPayoutAmount)(" of instrument definition ")(
-                strPayoutUnitTypeId)(" to Nym ")(strRecipientNymID)(".")
+                "TRYING TO PAY ")(lPayoutAmount)(" of instrument "
+                                                 "definition"
+                                                 " ")(strPayoutUnitTypeId)(" to"
+                                                                           " Ny"
+                                                                           "m"
+                                                                           " ")(strRecipientNymID)(".")
                 .Flush();
         }
         // If we didn't send it, then we need to return the funds to where they
@@ -260,13 +264,18 @@ auto PayDividendVisitor::Trigger(
                 const auto strPayoutUnitTypeId =
                                String::Factory(payoutUnitTypeId),
                            strSenderNymID = String::Factory(theSenderNymID);
-                LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": ERROR! Failed issuing voucher (to return back to "
-                    "the dividend payout initiator, after a failed "
+                LogOutput(OT_METHOD)(__func__)(
+                    ": ERROR! Failed issuing voucher (to return "
+                    "back to "
+                    "the dividend payout initiator, after a "
+                    "failed "
                     "payment attempt to the originally intended "
-                    "recipient). WAS TRYING TO PAY ")(lPayoutAmount)(
-                    " of instrument definition ")(strPayoutUnitTypeId)(
-                    " to Nym ")(strSenderNymID)(".")
+                    "recipient). WAS TRYING TO "
+                    "PAY ")(lPayoutAmount)(" of instrument "
+                                           "definition"
+                                           " ")(strPayoutUnitTypeId)(" to "
+                                                                     "Nym"
+                                                                     " ")(strSenderNymID)(".")
                     .Flush();
             }
         }   // if !bSent
@@ -274,12 +283,16 @@ auto PayDividendVisitor::Trigger(
     {
         const auto strPayoutUnitTypeId = String::Factory(payoutUnitTypeId),
                    strRecipientNymID = String::Factory(RECIPIENT_ID);
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": ERROR! Failed issuing next transaction number while "
             "trying to send a voucher (while paying dividends). "
-            "WAS TRYING TO PAY ")(lPayoutAmount)(" of instrument definition ")(
-            strPayoutUnitTypeId->Get())(" to Nym ")(strRecipientNymID->Get())(
-            ".")
+            "WAS TRYING TO PAY ")(lPayoutAmount)(" of instrument "
+                                                 "definition"
+                                                 " ")(strPayoutUnitTypeId
+                                                          ->Get())(" to "
+                                                                   "Nym"
+                                                                   " ")(strRecipientNymID
+                                                                            ->Get())(".")
             .Flush();
     }
 

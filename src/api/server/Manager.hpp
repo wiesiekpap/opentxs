@@ -65,6 +65,7 @@ class MessageProcessor;
 
 class Factory;
 class Flag;
+class Options;
 }  // namespace opentxs
 
 namespace opentxs::api::server::implementation
@@ -72,18 +73,11 @@ namespace opentxs::api::server::implementation
 class Manager final : internal::Manager, api::implementation::Core
 {
 public:
-    void DropIncoming(const int count) const final;
-    void DropOutgoing(const int count) const final;
+    auto DropIncoming(const int count) const -> void final;
+    auto DropOutgoing(const int count) const -> void final;
     auto GetAdminNym() const -> std::string final;
     auto GetAdminPassword() const -> std::string final;
-    auto GetCommandPort() const -> std::string final;
-    auto GetDefaultBindIP() const -> std::string final;
-    auto GetEEP() const -> std::string final;
-    auto GetExternalIP() const -> std::string final;
-    auto GetInproc() const -> std::string final;
-    auto GetListenCommand() const -> std::string final;
-    auto GetListenNotify() const -> std::string final;
-    auto GetOnion() const -> std::string final;
+    auto GetOptions() const noexcept -> const Options& final { return args_; }
 #if OT_CASH
     auto GetPrivateMint(
         const identifier::UnitDefinition& unitID,
@@ -94,18 +88,18 @@ public:
     auto GetUserName() const -> std::string final;
     auto GetUserTerms() const -> std::string final;
     auto ID() const -> const identifier::Server& final;
+    auto MakeInprocEndpoint() const -> std::string final;
     auto NymID() const -> const identifier::Nym& final;
-#if OT_CASH
-    void ScanMints() const final;
-#endif  // OT_CASH
+    auto ScanMints() const -> void final;
     auto Server() const -> opentxs::server::Server& final { return server_; }
-#if OT_CASH
-    void SetMintKeySize(const std::size_t size) const final
+    auto SetMintKeySize(const std::size_t size) const -> void final
     {
+#if OT_CASH
         mint_key_size_.store(size);
-    }
-    void UpdateMint(const identifier::UnitDefinition& unitID) const final;
 #endif  // OT_CASH
+    }
+    auto UpdateMint(const identifier::UnitDefinition& unitID) const
+        -> void final;
 
     ~Manager() final;
 
@@ -136,9 +130,6 @@ private:
         const std::string& serverID,
         const std::string& unitID,
         const std::uint32_t series) const;
-#endif  // OT_CASH
-    auto get_arg(const std::string& argName) const -> const std::string;
-#if OT_CASH
     auto last_generated_series(
         const std::string& serverID,
         const std::string& unitID) const -> std::int32_t;
@@ -171,7 +162,7 @@ private:
     Manager(
         const api::internal::Context& parent,
         Flag& running,
-        const ArgList& args,
+        Options&& args,
         const api::Crypto& crypto,
         const api::Settings& config,
         const opentxs::network::zeromq::Context& context,

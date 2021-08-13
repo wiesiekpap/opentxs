@@ -213,7 +213,7 @@ public:
 
     static const ot::api::client::Manager& init()
     {
-        const auto& api = ot::Context().StartClient({}, 0);
+        const auto& api = ot::Context().StartClient(0);
 
         if (false == init_) {
             reason_p_.reset(new ot::OTPasswordPrompt{

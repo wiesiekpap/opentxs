@@ -16,13 +16,13 @@
 #include <utility>
 #include <vector>
 
-#include "Basic.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Manager.hpp"
@@ -38,6 +38,8 @@
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/HashType.hpp"
+
+namespace ot = opentxs;
 
 namespace ottest
 {
@@ -101,7 +103,7 @@ public:
     }
 
     Test_Filters()
-        : api_(ot::Context().StartClient(Args(), 0))
+        : api_(ot::Context().StartClient(0))
     {
     }
 };

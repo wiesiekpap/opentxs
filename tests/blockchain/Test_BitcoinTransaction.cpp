@@ -114,7 +114,7 @@ struct Test_BitcoinTransaction : public ::testing::Test {
     using Position = ot::blockchain::block::bitcoin::Script::Position;
 
     Test_BitcoinTransaction()
-        : api_(ot::Context().StartClient({}, 0))
+        : api_(ot::Context().StartClient(0))
         , tx_id_(api_.Factory().Data(txid_hex_, ot::StringStyle::Hex))
         , tx_bytes_(api_.Factory().Data(transaction_hex_, ot::StringStyle::Hex))
         , mutated_bytes_(api_.Factory().Data(

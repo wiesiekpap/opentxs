@@ -261,7 +261,6 @@ struct Config {
     bool provide_sync_server_{false};
     bool use_sync_server_{false};
     bool disable_wallet_{false};
-    std::string sync_endpoint_{};
 
     auto print() const noexcept -> std::string;
 };

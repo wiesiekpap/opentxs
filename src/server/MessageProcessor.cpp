@@ -10,13 +10,13 @@
 #include <chrono>
 #include <limits>
 #include <memory>
-#include <ostream>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
 
 #include "Proto.tpp"
-#include "internal/api/Api.hpp"
+#include "internal/api/server/Server.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Endpoints.hpp"
@@ -126,8 +126,9 @@ void MessageProcessor::associate_connection(
     const auto result = active_connections_.emplace(nymID, connection);
 
     if (std::get<1>(result)) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Nym ")(nymID)(
-            " is available via connection ")(connection.asHex())(".")
+        LogDetail(OT_METHOD)(__func__)(
+            ": Nym ")(nymID)(" is available via connection ")(connection
+                                                                  .asHex())(".")
             .Flush();
     }
 }
@@ -189,12 +190,11 @@ void MessageProcessor::init(
 
     OT_ASSERT(set);
 
-    std::stringstream endpoint{};
+    auto endpoint = std::stringstream{};
 
     if (inproc) {
-        endpoint << "inproc://opentxs/notary/";
-        endpoint << std::to_string(server_.API().Instance());
-        endpoint << ":";
+        endpoint << server_.API().MakeInprocEndpoint();
+        endpoint << ':';
     } else {
         endpoint << std::string("tcp://*:");
     }
@@ -255,8 +255,7 @@ auto MessageProcessor::process_command(
     const auto nym = server_.API().Wallet().Nym(allegedNymID);
 
     if (false == bool(nym)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Nym is not yet registered.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Nym is not yet registered.").Flush();
 
         return true;
     }
@@ -266,7 +265,7 @@ auto MessageProcessor::process_command(
     if (request->Validate()) {
         nymID.Assign(request->Initiator());
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid request.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid request.").Flush();
 
         return false;
     }
@@ -281,7 +280,7 @@ void MessageProcessor::process_frontend(const zmq::Message& incoming)
     Lock lock(counter_lock_);
 
     if (0 < drop_incoming_) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Dropping incoming message for testing.")
             .Flush();
         --drop_incoming_;
@@ -303,7 +302,7 @@ void MessageProcessor::process_internal(const zmq::Message& incoming)
     Lock lock(counter_lock_);
 
     if (0 < drop_outgoing_) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Dropping outgoing message for testing.")
             .Flush();
         --drop_outgoing_;
@@ -313,11 +312,9 @@ void MessageProcessor::process_internal(const zmq::Message& incoming)
         const auto sent = frontend_socket_->Send(reply);
 
         if (sent) {
-            LogTrace(OT_METHOD)(__FUNCTION__)(": Reply message delivered.")
-                .Flush();
+            LogTrace(OT_METHOD)(__func__)(": Reply message delivered.").Flush();
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to send reply message.")
+            LogOutput(OT_METHOD)(__func__)(": Failed to send reply message.")
                 .Flush();
         }
     }
@@ -327,7 +324,7 @@ void MessageProcessor::process_legacy(
     const Data& id,
     const network::zeromq::Message& incoming)
 {
-    LogTrace(OT_METHOD)(__FUNCTION__)(": Processing request via ")(id.asHex())
+    LogTrace(OT_METHOD)(__func__)(": Processing request via ")(id.asHex())
         .Flush();
     OTZMQMessage request{incoming};
     internal_socket_->Send(request);
@@ -351,14 +348,13 @@ auto MessageProcessor::process_message(
     auto request{server_.API().Factory().Message()};
 
     if (false == serialized->Exists()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Empty serialized request.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Empty serialized request.").Flush();
 
         return true;
     }
 
     if (false == request->LoadContractFromString(serialized)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to deserialized request.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to deserialized request.")
             .Flush();
 
         return true;
@@ -372,12 +368,12 @@ auto MessageProcessor::process_message(
         server_.CommandProcessor().ProcessUserCommand(*request, *replymsg);
 
     if (false == processed) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Failed to process user command ")(
-            request->m_strCommand)
+        LogDetail(OT_METHOD)(__func__)(
+            ": Failed to process user command ")(request->m_strCommand)
             .Flush();
-        LogVerbose(OT_METHOD)(__FUNCTION__)(String::Factory(*request)).Flush();
+        LogVerbose(OT_METHOD)(__func__)(String::Factory(*request)).Flush();
     } else {
-        LogDetail(OT_METHOD)(__FUNCTION__)(
+        LogDetail(OT_METHOD)(__func__)(
             ": Successfully processed user command ")(request->m_strCommand)
             .Flush();
     }
@@ -385,8 +381,7 @@ auto MessageProcessor::process_message(
     auto serializedReply = String::Factory(*replymsg);
 
     if (false == serializedReply->Exists()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize reply.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to serialize reply.").Flush();
 
         return true;
     }
@@ -394,7 +389,7 @@ auto MessageProcessor::process_message(
     auto armoredReply = Armored::Factory(serializedReply);
 
     if (false == armoredReply->Exists()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to armor reply.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to armor reply.").Flush();
 
         return true;
     }
@@ -407,7 +402,7 @@ auto MessageProcessor::process_message(
 void MessageProcessor::process_notification(const zmq::Message& incoming)
 {
     if (2 != incoming.Body().size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid message.").Flush();
 
         return;
     }
@@ -416,7 +411,7 @@ void MessageProcessor::process_notification(const zmq::Message& incoming)
     const auto connection = query_connection(nymID);
 
     if (connection->empty()) {
-        LogDebug(OT_METHOD)(__FUNCTION__)(
+        LogDebug(OT_METHOD)(__func__)(
             ": No notification channel available for ")(nymID)(".")
             .Flush();
 
@@ -443,8 +438,7 @@ void MessageProcessor::process_notification(const zmq::Message& incoming)
 
     auto serialized = proto::ServerReply{};
     if (false == message->Serialize(serialized)) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Failed to serialize reply.")
-            .Flush();
+        LogVerbose(OT_METHOD)(__func__)(": Failed to serialize reply.").Flush();
 
         return;
     }
@@ -457,13 +451,14 @@ void MessageProcessor::process_notification(const zmq::Message& incoming)
     const auto sent = frontend_socket_->Send(pushNotification);
 
     if (sent) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Push notification for ")(nymID)(
-            " delivered via ")(connection->asHex())
+        LogVerbose(OT_METHOD)(__func__)(
+            ": Push notification for ")(nymID)(" delivered via ")(connection
+                                                                      ->asHex())
             .Flush();
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to deliver push notifcation for ")(nymID)(" via ")(
-            connection->asHex())(".")
+        LogOutput(OT_METHOD)(__func__)(
+            ": Failed to deliver push notifcation "
+            "for ")(nymID)(" via ")(connection->asHex())(".")
             .Flush();
     }
 }
@@ -472,12 +467,12 @@ void MessageProcessor::process_proto(
     const Data& id,
     const network::zeromq::Message& incoming)
 {
-    LogTrace(OT_METHOD)(__FUNCTION__)(": Processing request via ")(id.asHex())
+    LogTrace(OT_METHOD)(__func__)(": Processing request via ")(id.asHex())
         .Flush();
     const auto command = extract_proto(incoming.Body().at(0));
 
     if (false == proto::Validate(command, VERBOSE)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid otx request.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid otx request.").Flush();
 
         return;
     }

@@ -16,6 +16,7 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/Options.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
@@ -33,7 +34,7 @@ std::string server_id_{};
 TEST(ClientSession, create)
 {
     const auto& otx = ot::InitContext(Args(true));
-    const auto& client = otx.StartClient({}, 0);
+    const auto& client = otx.StartClient(0);
     const auto reason = client.Factory().PasswordPrompt(__FUNCTION__);
     const auto nym = client.Wallet().Nym(reason);
 
@@ -49,7 +50,7 @@ TEST(ClientSession, create)
 TEST(ClientSession, restart)
 {
     const auto& otx = ot::InitContext(Args(true));
-    const auto& client = otx.StartClient({}, 0);
+    const auto& client = otx.StartClient(0);
     const auto reason = client.Factory().PasswordPrompt(__FUNCTION__);
     const auto nym = client.Wallet().Nym(client.Factory().NymID(nym_id_));
 
@@ -62,8 +63,8 @@ TEST(ClientSession, restart)
 TEST(ClientSession, introduction_server)
 {
     const auto& otx = ot::InitContext(Args(true));
-    const auto& server = otx.StartServer({}, 0);
-    const auto& client = otx.StartClient({}, 0);
+    const auto& server = otx.StartServer(0);
+    const auto& client = otx.StartClient(0);
     const auto reasonS = server.Factory().PasswordPrompt(__FUNCTION__);
     const auto reasonC = client.Factory().PasswordPrompt(__FUNCTION__);
     const auto& serverID = server.ID();
@@ -101,8 +102,8 @@ TEST(ClientSession, introduction_server)
 TEST(ClientSession, restart_after_registering)
 {
     const auto& otx = ot::InitContext(Args(true));
-    const auto& server = otx.StartServer({}, 0);
-    const auto& client = otx.StartClient({}, 0);
+    const auto& server = otx.StartServer(0);
+    const auto& client = otx.StartClient(0);
     const auto& serverID = server.ID();
     const auto nymID = client.Factory().NymID(nym_id_);
     client.OTX().DownloadNymbox(nymID, serverID);

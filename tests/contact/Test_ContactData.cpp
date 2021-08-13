@@ -40,7 +40,7 @@ class Test_ContactData : public ::testing::Test
 {
 public:
     Test_ContactData()
-        : api_(ot::Context().StartClient({}, 0))
+        : api_(ot::Context().StartClient(0))
         , contactData_(
               dynamic_cast<const ot::api::client::internal::Manager&>(api_),
               std::string("contactDataNym"),

@@ -13,11 +13,11 @@
 #include <string>
 #include <utility>
 
-#include "Basic.hpp"
 #include "integration/Helpers.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/SharedPimpl.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
@@ -179,7 +179,7 @@ protected:
 
     Regtest_payment_code()
         : Regtest_fixture_normal(2)
-        , api_server_1_(ot::Context().StartServer(Args(), 0, true))
+        , api_server_1_(ot::Context().StartServer(0))
         , expected_notary_(client_1_.UI().BlockchainNotaryID(test_chain_))
         , expected_unit_(client_1_.UI().BlockchainUnitID(test_chain_))
         , expected_display_unit_(u8"UNITTEST")

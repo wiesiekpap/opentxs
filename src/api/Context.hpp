@@ -26,6 +26,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Legacy.hpp"
+#include "opentxs/api/Options.hpp"
 #include "opentxs/api/Primitives.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
@@ -94,18 +95,20 @@ public:
         const noexcept -> bool final;
     auto Server(const int instance) const -> const api::server::Manager& final;
     auto Servers() const -> std::size_t final { return server_.size(); }
-    auto StartClient(const ArgList& args, const int instance) const
+    auto StartClient(const Options& args, const int instance) const
         -> const api::client::internal::Manager& final;
-#if OT_CRYPTO_WITH_BIP32
+    auto StartClient(const int instance) const
+        -> const api::client::internal::Manager& final;
     auto StartClient(
-        const ArgList& args,
+        const Options& args,
         const int instance,
         const std::string& recoverWords,
         const std::string& recoverPassphrase) const
         -> const api::client::internal::Manager& final;
-#endif  // OT_CRYPTO_WITH_BIP32
-    auto StartServer(const ArgList& args, const int instance, const bool inproc)
-        const -> const api::server::Manager& final;
+    auto StartServer(const Options& args, const int instance) const
+        -> const api::server::Manager& final;
+    auto StartServer(const int instance) const
+        -> const api::server::Manager& final;
     auto ZAP() const -> const api::network::ZAP& final;
     auto ZMQ() const -> const opentxs::network::zeromq::Context& final
     {
@@ -116,7 +119,7 @@ public:
 
     Context(
         Flag& running,
-        const ArgList& args,
+        const Options& args,
         OTCaller* externalPasswordCallback = nullptr);
 
     ~Context() final;
@@ -124,6 +127,7 @@ public:
 private:
     using ConfigMap = std::map<std::string, std::unique_ptr<api::Settings>>;
 
+    const Options args_;
     const std::string home_;
     mutable std::mutex config_lock_;
     mutable std::mutex task_list_lock_;
@@ -137,7 +141,6 @@ private:
     std::unique_ptr<api::Primitives> factory_;
     std::unique_ptr<api::Legacy> legacy_;
     std::unique_ptr<api::network::ZAP> zap_;
-    const ArgList args_;
     std::string profile_id_;
     mutable ShutdownCallback* shutdown_callback_;
     std::unique_ptr<OTCallback> null_callback_;
@@ -151,18 +154,15 @@ private:
 
     static auto client_instance(const int count) -> int;
     static auto server_instance(const int count) -> int;
-    static auto get_arg(const ArgList& args, const std::string& argName)
-        -> std::string;
 
     void init_pid() const;
-    auto merge_arglist(const ArgList& args) const -> const ArgList;
-    void start_client(const Lock& lock, const ArgList& args) const;
-    void start_server(const Lock& lock, const ArgList& args) const;
+    void start_client(const Lock& lock, const Options& args) const;
+    void start_server(const Lock& lock, const Options& args) const;
 
     void Init_Asio();
     void Init_Crypto();
     void Init_Factory();
-    void Init_Log(const std::int32_t argLevel);
+    void Init_Log();
 #ifndef _WIN32
     void Init_Rlimit() noexcept;
 #endif  // _WIN32

@@ -21,7 +21,6 @@ extern "C" {
 #include <limits>
 #include <map>
 #include <mutex>
-#include <set>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -40,6 +39,7 @@ extern "C" {
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/HDSeed.hpp"
+#include "opentxs/api/Options.hpp"
 #include "opentxs/api/Primitives.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/core/Flag.hpp"
@@ -58,7 +58,7 @@ namespace opentxs::factory
 {
 auto Context(
     Flag& running,
-    const ArgList& args,
+    const Options& args,
     OTCaller* externalPasswordCallback) noexcept
     -> std::unique_ptr<api::internal::Context>
 {
@@ -81,25 +81,25 @@ namespace opentxs::api::implementation
 {
 Context::Context(
     Flag& running,
-    const ArgList& args,
+    const Options& args,
     OTCaller* externalPasswordCallback)
     : api::internal::Context()
     , Lockable()
     , Periodic(running)
-    , home_(get_arg(args, OPENTXS_ARG_HOME))
+    , args_(args)
+    , home_(args_.Home())
     , config_lock_()
     , task_list_lock_()
     , signal_handler_lock_()
     , config_()
     , zmq_context_(opentxs::factory::ZMQContext())
     , signal_handler_(nullptr)
-    , log_(factory::Log(zmq_context_, get_arg(args, OPENTXS_ARG_LOGENDPOINT)))
+    , log_(factory::Log(zmq_context_, args_.RemoteLogEndpoint()))
     , asio_()
     , crypto_(nullptr)
     , factory_(nullptr)
     , legacy_(factory::Legacy(home_))
     , zap_(nullptr)
-    , args_(args)
     , profile_id_()
     , shutdown_callback_(nullptr)
     , null_callback_(nullptr)
@@ -169,23 +169,6 @@ auto Context::Factory() const -> const api::Primitives&
     return *factory_;
 }
 
-auto Context::get_arg(const ArgList& args, const std::string& argName)
-    -> std::string
-{
-    auto argIt = args.find(argName);
-
-    if (args.end() != argIt) {
-        const auto& argItems = argIt->second;
-
-        OT_ASSERT(2 > argItems.size());
-        OT_ASSERT(0 < argItems.size());
-
-        return *argItems.cbegin();
-    }
-
-    return {};
-}
-
 auto Context::GetPasswordCaller() const -> OTCaller&
 {
     OT_ASSERT(nullptr != external_password_callback_)
@@ -212,14 +195,7 @@ auto Context::ProfileId() const -> std::string { return profile_id_; }
 
 void Context::Init()
 {
-    std::int32_t argLevel{-2};
-
-    try {
-        argLevel = std::stoi(get_arg(args_, OPENTXS_ARG_LOGLEVEL));
-    } catch (...) {
-    }
-
-    Init_Log(argLevel);
+    Init_Log();
     Init_Asio();
     init_pid();
     Init_Crypto();
@@ -280,28 +256,29 @@ void Context::Init_Factory()
     crypto_->Init(*factory_);
 }
 
-void Context::Init_Log(const std::int32_t argLevel)
+void Context::Init_Log()
 {
     OT_ASSERT(legacy_)
 
     const auto& config = Config(legacy_->OpentxsConfigFilePath());
-    bool notUsed{false};
-    std::int64_t level{0};
+    auto notUsed{false};
+    auto level = std::int64_t{0};
+    const auto value = args_.LogLevel();
 
-    if (-1 > argLevel) {
+    if (-1 > value) {
         config.CheckSet_long(
             String::Factory("logging"),
-            String::Factory(OPENTXS_ARG_LOGLEVEL),
+            String::Factory("log_level"),
             0,
             level,
             notUsed);
     } else {
         config.Set_long(
             String::Factory("logging"),
-            String::Factory(OPENTXS_ARG_LOGLEVEL),
-            argLevel,
+            String::Factory("log_level"),
+            value,
             notUsed);
-        level = argLevel;
+        level = value;
     }
 
     LogSource::SetVerbosity(static_cast<int>(level));
@@ -383,15 +360,6 @@ void Context::Init_Zap()
     OT_ASSERT(zap_);
 }
 
-auto Context::merge_arglist(const ArgList& args) const -> const ArgList
-{
-    ArgList arguments{args_};
-
-    for (const auto& [arg, val] : args) { arguments[arg] = val; }
-
-    return arguments;
-}
-
 auto Context::RPC(const rpc::request::Base& command) const noexcept
     -> std::unique_ptr<rpc::response::Base>
 {
@@ -452,20 +420,19 @@ void Context::shutdown()
     config_.clear();
 }
 
-void Context::start_client(const Lock& lock, const ArgList& args) const
+void Context::start_client(const Lock& lock, const Options& args) const
 {
     OT_ASSERT(verify_lock(lock))
     OT_ASSERT(crypto_);
     OT_ASSERT(legacy_);
     OT_ASSERT(std::numeric_limits<int>::max() > client_.size());
 
-    auto merged_args = merge_arglist(args);
     const auto next = static_cast<int>(client_.size());
     const auto instance = client_instance(next);
     auto& client = client_.emplace_back(factory::ClientManager(
         *this,
         running_,
-        merged_args,
+        args_ + args,
         Config(legacy_->ClientConfigFilePath(next)),
         *crypto_,
         zmq_context_,
@@ -477,7 +444,7 @@ void Context::start_client(const Lock& lock, const ArgList& args) const
     client->Init();
 }
 
-auto Context::StartClient(const ArgList& args, const int instance) const
+auto Context::StartClient(const Options& args, const int instance) const
     -> const api::client::internal::Manager&
 {
     Lock lock(lock_);
@@ -485,10 +452,7 @@ auto Context::StartClient(const ArgList& args, const int instance) const
     const auto count = std::max<std::size_t>(0u, instance);
     const auto effective = std::min<std::size_t>(count, client_.size());
 
-    if (effective == client_.size()) {
-        ArgList arguments{args};
-        start_client(lock, arguments);
-    }
+    if (effective == client_.size()) { start_client(lock, args); }
 
     const auto& output = client_.at(effective);
 
@@ -497,14 +461,22 @@ auto Context::StartClient(const ArgList& args, const int instance) const
     return *output;
 }
 
-#if OT_CRYPTO_WITH_BIP32
+auto Context::StartClient(const int instance) const
+    -> const api::client::internal::Manager&
+{
+    static const auto blank = Options{};
+
+    return StartClient(blank, instance);
+}
+
 auto Context::StartClient(
-    const ArgList& args,
+    const Options& args,
     const int instance,
     const std::string& recoverWords,
     const std::string& recoverPassphrase) const
     -> const api::client::internal::Manager&
 {
+#if OT_CRYPTO_WITH_BIP32
     const auto& client = StartClient(args, instance);
     auto reason = client.Factory().PasswordPrompt("Recovering a BIP-39 seed");
 
@@ -522,22 +494,23 @@ auto Context::StartClient(
     }
 
     return client;
-}
+#else
+    OT_FAIL;
 #endif  // OT_CRYPTO_WITH_BIP32
+}
 
-void Context::start_server(const Lock& lock, const ArgList& args) const
+void Context::start_server(const Lock& lock, const Options& args) const
 {
     OT_ASSERT(verify_lock(lock));
     OT_ASSERT(crypto_);
     OT_ASSERT(std::numeric_limits<int>::max() > server_.size());
 
-    const auto merged_args = merge_arglist(args);
     const auto next = static_cast<int>(server_.size());
     const auto instance{server_instance(next)};
     server_.emplace_back(opentxs::Factory::ServerManager(
         *this,
         running_,
-        merged_args,
+        args_ + args,
         *crypto_,
         Config(legacy_->ServerConfigFilePath(next)),
         zmq_context_,
@@ -545,10 +518,8 @@ void Context::start_server(const Lock& lock, const ArgList& args) const
         instance));
 }
 
-auto Context::StartServer(
-    const ArgList& args,
-    const int instance,
-    const bool inproc) const -> const api::server::Manager&
+auto Context::StartServer(const Options& args, const int instance) const
+    -> const api::server::Manager&
 {
     Lock lock(lock_);
 
@@ -558,23 +529,21 @@ auto Context::StartServer(
     const auto count = std::max<int>(0, instance);
     const auto effective = std::min(count, size);
 
-    if (effective == size) {
-        ArgList arguments{args};
-
-        if (inproc) {
-            auto& inprocSet = arguments[OPENTXS_ARG_INPROC];
-            inprocSet.clear();
-            inprocSet.insert(std::to_string(server_instance(effective)));
-        }
-
-        start_server(lock, arguments);
-    }
+    if (effective == size) { start_server(lock, args); }
 
     const auto& output = server_.at(effective);
 
     OT_ASSERT(output)
 
     return *output;
+}
+
+auto Context::StartServer(const int instance) const
+    -> const api::server::Manager&
+{
+    static const auto blank = Options{};
+
+    return StartServer(blank, instance);
 }
 
 auto Context::ZAP() const -> const api::network::ZAP&

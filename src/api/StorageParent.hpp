@@ -12,6 +12,7 @@
 #include "internal/api/storage/Storage.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/Options.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "storage/StorageConfig.hpp"
@@ -28,6 +29,7 @@ class Settings;
 }  // namespace api
 
 class Flag;
+class Options;
 }  // namespace opentxs
 
 namespace opentxs::api::implementation
@@ -37,12 +39,9 @@ class StorageParent
 protected:
     const api::Crypto& crypto_;
     const api::Settings& config_;
-    const ArgList args_;
+    const Options args_;
     const std::chrono::seconds gc_interval_{0};
     const std::string data_folder_;
-#if OT_QT
-    const bool enable_qt_;
-#endif
     StorageConfig storage_config_;
     bool migrate_storage_{false};
     OTString migrate_from_;
@@ -64,7 +63,7 @@ protected:
 
     StorageParent(
         const Flag& running,
-        const ArgList& args,
+        Options&& args,
         const api::Crypto& crypto,
         const api::Settings& config,
         const api::Legacy& legacy,
@@ -73,18 +72,10 @@ protected:
     virtual ~StorageParent() = default;
 
 private:
-    static auto extract_arg(const std::string& name, const ArgList& args)
-        -> OTString;
-    static auto extract_archive_directory(const ArgList& args) -> OTString;
-    static auto extract_encrypted_directory(const ArgList& args) -> OTString;
-    static auto extract_primary_storage_plugin(const ArgList& args) -> OTString;
-#if OT_QT
-    static bool extract_qt(const ArgList& args);
-#endif
     static auto get_primary_storage_plugin(
         const api::Settings& config,
         const StorageConfig& storageConfig,
-        const ArgList args,
+        const Options& args,
         bool& migrate,
         String& previous) -> OTString;
 

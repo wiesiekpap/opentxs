@@ -34,6 +34,7 @@
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/HDSeed.hpp"
+#include "opentxs/api/Options.hpp"
 #include "opentxs/api/Primitives.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
@@ -858,14 +859,14 @@ auto RPC::evaluate_transaction_reply(
     return success;
 }
 
-auto RPC::get_args(const Args& serialized) -> ArgList
+auto RPC::get_args(const Args& serialized) -> Options
 {
-    ArgList output{};
+    auto output = Options{};
 
     for (const auto& arg : serialized) {
-        auto& row = output[arg.key()];
-
-        for (const auto& value : arg.value()) { row.emplace(value); }
+        for (const auto& value : arg.value()) {
+            output.ImportOption(arg.key().c_str(), value.c_str());
+        }
     }
 
     return output;
@@ -875,8 +876,8 @@ auto RPC::get_client(const std::int32_t instance) const
     -> const api::client::internal::Manager*
 {
     if (is_server_session(instance)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: provided instance ")(
-            instance)(" is a server session.")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Error: provided instance ")(instance)(" is a server session.")
             .Flush();
 
         return nullptr;
@@ -885,8 +886,9 @@ auto RPC::get_client(const std::int32_t instance) const
             return &dynamic_cast<const api::client::internal::Manager&>(
                 ot_.Client(static_cast<int>(get_index(instance))));
         } catch (...) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error: provided instance ")(
-                instance)(" is not a valid client session.")
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": Error: provided instance ")(instance)(" is not a valid "
+                                                         "client session.")
                 .Flush();
 
             return nullptr;
@@ -1109,8 +1111,8 @@ auto RPC::get_server(const std::int32_t instance) const
     -> const api::server::Manager*
 {
     if (is_client_session(instance)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: provided instance ")(
-            instance)(" is a client session.")
+        LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": Error: provided instance ")(instance)(" is a client session.")
             .Flush();
 
         return nullptr;
@@ -1118,8 +1120,9 @@ auto RPC::get_server(const std::int32_t instance) const
         try {
             return &ot_.Server(static_cast<int>(get_index(instance)));
         } catch (...) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error: provided instance ")(
-                instance)(" is not a valid server session.")
+            LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": Error: provided instance ")(instance)(" is not a valid "
+                                                         "server session.")
                 .Flush();
 
             return nullptr;

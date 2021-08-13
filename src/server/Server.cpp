@@ -10,18 +10,21 @@
 #include <algorithm>
 #include <cstdint>
 #include <list>
+#include <map>
 #include <regex>
-#include <stdexcept>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "Proto.tpp"
 #include "core/OTStorage.hpp"
+#include "internal/api/server/Server.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/HDSeed.hpp"
+#include "opentxs/api/Options.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
@@ -67,8 +70,7 @@
 #define SERVER_CONTRACT_FILE "NEW_SERVER_CONTRACT.otc"
 #define SERVER_CONFIG_LISTEN_SECTION "listen"
 #define SERVER_CONFIG_BIND_KEY "bindip"
-#define SERVER_CONFIG_COMMAND_KEY "command"
-#define SERVER_CONFIG_NOTIFY_KEY "notification"
+#define SERVER_CONFIG_PORT_KEY "command"
 
 #define OT_METHOD "opentxs::Server::"
 
@@ -104,10 +106,9 @@ Server::Server(
 void Server::ActivateCron()
 {
     if (m_Cron->ActivateCron()) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Activate Cron. (STARTED)")
-            .Flush();
+        LogVerbose(OT_METHOD)(__func__)(": Activate Cron. (STARTED)").Flush();
     } else {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Activate Cron. (FAILED)").Flush();
+        LogNormal(OT_METHOD)(__func__)(": Activate Cron. (FAILED)").Flush();
     }
 }
 
@@ -185,7 +186,7 @@ void Server::CreateMainFile(bool& mainFileExists)
     std::string seed{};
 
     if (false == backup.empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Seed backup found. Restoring.")
+        LogOutput(OT_METHOD)(__func__)(": Seed backup found. Restoring.")
             .Flush();
         auto parsed = parse_seed_backup(backup);
         auto phrase = manager_.Factory().SecretFromText(parsed.first);
@@ -198,10 +199,10 @@ void Server::CreateMainFile(bool& mainFileExists)
             reason_);
 
         if (seed.empty()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Seed restoration failed.")
+            LogOutput(OT_METHOD)(__func__)(": Seed restoration failed.")
                 .Flush();
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Seed ")(seed)(" restored.")
+            LogOutput(OT_METHOD)(__func__)(": Seed ")(seed)(" restored.")
                 .Flush();
         }
     }
@@ -223,8 +224,7 @@ void Server::CreateMainFile(bool& mainFileExists)
         reason_, name, nymParameters, contact::ContactItemType::Server);
 
     if (false == bool(m_nymServer)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Error: Failed to create server nym.")
+        LogOutput(OT_METHOD)(__func__)(": Error: Failed to create server nym.")
             .Flush();
         OT_FAIL;
     }
@@ -238,17 +238,11 @@ void Server::CreateMainFile(bool& mainFileExists)
 
     if (1 > userTerms.size()) { terms = defaultTerms; }
 
-    const std::string defaultExternalIP = DEFAULT_EXTERNAL_IP;
-    const std::string& userExternalIP = manager_.GetExternalIP();
-    std::string hostname = userExternalIP;
-
-    if (5 > hostname.size()) { hostname = defaultExternalIP; }
-
-    const std::string defaultBindIP = DEFAULT_BIND_IP;
-    const std::string& userBindIP = manager_.GetDefaultBindIP();
+    const auto& args = manager_.GetOptions();
+    const std::string& userBindIP = args.NotaryBindIP();
     std::string bindIP = userBindIP;
 
-    if (5 > bindIP.size()) { bindIP = defaultBindIP; }
+    if (5 > bindIP.size()) { bindIP = DEFAULT_BIND_IP; }
 
     bool notUsed = false;
     manager_.Config().Set_str(
@@ -256,131 +250,98 @@ void Server::CreateMainFile(bool& mainFileExists)
         String::Factory(SERVER_CONFIG_BIND_KEY),
         String::Factory(bindIP),
         notUsed);
+    const auto publicPort = [&] {
+        auto out = args.NotaryPublicPort();
+        out = (MAX_TCP_PORT < out) ? DEFAULT_PORT : out;
+        out = (MIN_TCP_PORT > out) ? DEFAULT_PORT : out;
 
-    const std::uint32_t defaultCommandPort = DEFAULT_COMMAND_PORT;
-    const std::string& userCommandPort = manager_.GetCommandPort();
-    std::uint32_t commandPort = 0;
-    bool needPort = true;
+        return out;
+    }();
+    const auto bindPort = [&] {
+        auto out = args.NotaryBindPort();
+        out = (MAX_TCP_PORT < out) ? DEFAULT_PORT : out;
+        out = (MIN_TCP_PORT > out) ? DEFAULT_PORT : out;
 
-    while (needPort) {
-        try {
-            commandPort = std::stoi(userCommandPort.c_str());
-        } catch (const std::invalid_argument&) {
-            commandPort = defaultCommandPort;
-            needPort = false;
-        } catch (const std::out_of_range&) {
-            commandPort = defaultCommandPort;
-            needPort = false;
-        }
-        commandPort =
-            (MAX_TCP_PORT < commandPort) ? defaultCommandPort : commandPort;
-        commandPort =
-            (MIN_TCP_PORT > commandPort) ? defaultCommandPort : commandPort;
-        needPort = false;
-    }
-
-    const std::string& userListenCommand = manager_.GetListenCommand();
-    std::uint32_t listenCommand = 0;
-    bool needListenCommand = true;
-
-    while (needListenCommand) {
-        try {
-            listenCommand = std::stoi(userListenCommand.c_str());
-        } catch (const std::invalid_argument&) {
-            listenCommand = defaultCommandPort;
-            needListenCommand = false;
-        } catch (const std::out_of_range&) {
-            listenCommand = defaultCommandPort;
-            needListenCommand = false;
-        }
-        listenCommand =
-            (MAX_TCP_PORT < listenCommand) ? defaultCommandPort : listenCommand;
-        listenCommand =
-            (MIN_TCP_PORT > listenCommand) ? defaultCommandPort : listenCommand;
-        needListenCommand = false;
-    }
-
+        return out;
+    }();
     manager_.Config().Set_str(
         String::Factory(SERVER_CONFIG_LISTEN_SECTION),
-        String::Factory(SERVER_CONFIG_COMMAND_KEY),
-        String::Factory(std::to_string(listenCommand)),
+        String::Factory(SERVER_CONFIG_PORT_KEY),
+        String::Factory(std::to_string(bindPort)),
         notUsed);
 
-    const std::uint32_t defaultNotificationPort = DEFAULT_NOTIFY_PORT;
-
-    const std::string& userListenNotification = manager_.GetListenNotify();
-    std::uint32_t listenNotification = 0;
-    bool needListenNotification = true;
-
-    while (needListenNotification) {
-        try {
-            listenNotification = std::stoi(userListenNotification.c_str());
-        } catch (const std::invalid_argument&) {
-            listenNotification = defaultNotificationPort;
-            needListenNotification = false;
-        } catch (const std::out_of_range&) {
-            listenNotification = defaultNotificationPort;
-            needListenNotification = false;
-        }
-        listenNotification = (MAX_TCP_PORT < listenNotification)
-                                 ? defaultNotificationPort
-                                 : listenNotification;
-        listenNotification = (MIN_TCP_PORT > listenNotification)
-                                 ? defaultNotificationPort
-                                 : listenNotification;
-        needListenNotification = false;
-    }
-
-    manager_.Config().Set_str(
-        String::Factory(SERVER_CONFIG_LISTEN_SECTION),
-        String::Factory(SERVER_CONFIG_NOTIFY_KEY),
-        String::Factory(std::to_string(listenNotification)),
-        notUsed);
     auto endpoints = std::list<contract::Server::Endpoint>{};
-    const bool useInproc = false == manager_.GetInproc().empty();
+    const auto inproc = args.NotaryInproc();
 
-    if (useInproc) {
-        LogNormal("Creating inproc contract for instance ")(
-            manager_.GetInproc())
+    if (inproc) {
+        LogNormal("Creating inproc contract for instance ")(manager_.Instance())
             .Flush();
-        contract::Server::Endpoint inproc{
+        endpoints.emplace_back(
             core::AddressType::Inproc,
             contract::ProtocolVersion::Legacy,
-            manager_.GetInproc(),
-            commandPort,
-            2};
-        endpoints.push_back(inproc);
+            manager_.MakeInprocEndpoint(),
+            publicPort,
+            2);
     } else {
-        LogNormal("Creating standard contract.").Flush();
-        contract::Server::Endpoint ipv4{
-            core::AddressType::IPV4,
-            contract::ProtocolVersion::Legacy,
-            hostname,
-            commandPort,
-            1};
-        endpoints.push_back(ipv4);
-        const std::string& onion = manager_.GetOnion();
+        LogNormal("Creating standard contract on port ")(publicPort).Flush();
 
-        if (0 < onion.size()) {
-            contract::Server::Endpoint tor{
-                core::AddressType::Onion,
+        for (const auto& hostname : args.NotaryPublicIPv4()) {
+            if (5 > hostname.size()) { continue; }
+
+            LogNormal("* Adding ipv4 endpoint: ")(hostname).Flush();
+            endpoints.emplace_back(
+                core::AddressType::IPV4,
                 contract::ProtocolVersion::Legacy,
-                onion,
-                commandPort,
-                1};
-            endpoints.push_back(tor);
+                hostname,
+                publicPort,
+                1);
         }
 
-        const std::string& eep = manager_.GetEEP();
+        for (const auto& hostname : args.NotaryPublicIPv6()) {
+            if (5 > hostname.size()) { continue; }
 
-        if (0 < eep.size()) {
-            contract::Server::Endpoint i2p{
+            LogNormal("* Adding ipv6 endpoint: ")(hostname).Flush();
+            endpoints.emplace_back(
+                core::AddressType::IPV6,
+                contract::ProtocolVersion::Legacy,
+                hostname,
+                publicPort,
+                1);
+        }
+
+        for (const auto& hostname : args.NotaryPublicOnion()) {
+            if (5 > hostname.size()) { continue; }
+
+            LogNormal("* Adding onion endpoint: ")(hostname).Flush();
+            endpoints.emplace_back(
+                core::AddressType::Onion,
+                contract::ProtocolVersion::Legacy,
+                hostname,
+                publicPort,
+                1);
+        }
+
+        for (const auto& hostname : args.NotaryPublicEEP()) {
+            if (5 > hostname.size()) { continue; }
+
+            LogNormal("* Adding eep endpoint: ")(hostname).Flush();
+            endpoints.emplace_back(
                 core::AddressType::EEP,
                 contract::ProtocolVersion::Legacy,
-                eep,
-                commandPort,
-                1};
-            endpoints.push_back(i2p);
+                hostname,
+                publicPort,
+                1);
+        }
+
+        if (0 == endpoints.size()) {
+            LogNormal("* Adding default endpoint: ")(DEFAULT_EXTERNAL_IP)
+                .Flush();
+            endpoints.emplace_back(
+                core::AddressType::IPV4,
+                contract::ProtocolVersion::Legacy,
+                DEFAULT_EXTERNAL_IP,
+                publicPort,
+                1);
         }
     }
 
@@ -391,8 +352,7 @@ void Server::CreateMainFile(bool& mainFileExists)
             .data());
 
     if (false == existing->empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Existing contract found. Restoring.")
+        LogOutput(OT_METHOD)(__func__)(": Existing contract found. Restoring.")
             .Flush();
     }
 
@@ -408,8 +368,8 @@ void Server::CreateMainFile(bool& mainFileExists)
                   terms,
                   endpoints,
                   reason_,
-                  (useInproc) ? std::max(2u, contract::Server::DefaultVersion)
-                              : contract::Server::DefaultVersion)
+                  (inproc) ? std::max(2u, contract::Server::DefaultVersion)
+                           : contract::Server::DefaultVersion)
             : wallet.Server(serialized);
     std::string strNotaryID{};
     std::string strHostname{};
@@ -417,8 +377,9 @@ void Server::CreateMainFile(bool& mainFileExists)
     core::AddressType type{};
 
     if (!contract->ConnectInfo(strHostname, nPort, type, type)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(__FUNCTION__)(
-            ": Unable to retrieve connection info from this contract.")
+        LogNormal(OT_METHOD)(__func__)(
+            __func__)(": Unable to retrieve connection info from this "
+                      "contract.")
             .Flush();
 
         OT_FAIL;
@@ -442,8 +403,8 @@ void Server::CreateMainFile(bool& mainFileExists)
 
     auto proto = proto::ServerContract{};
     if (false == contract->Serialize(proto, true)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(__FUNCTION__)(
-            ": Failed to serialize server contract.")
+        LogNormal(OT_METHOD)(__func__)(
+            __func__)(": Failed to serialize server contract.")
             .Flush();
 
         OT_FAIL;
@@ -495,8 +456,7 @@ void Server::Init(bool readOnly)
     m_bReadOnly = readOnly;
 
     if (!ConfigLoader::load(manager_, manager_.Config(), WalletFilename())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to Load Config File!")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Unable to Load Config File!").Flush();
         OT_FAIL;
     }
 
@@ -515,9 +475,11 @@ void Server::Init(bool readOnly)
 
     if (false == mainFileExists) {
         if (readOnly) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Error: Main file non-existent (")(WalletFilename().Get())(
-                "). Plus, unable to create, since read-only flag is set.")
+            LogOutput(OT_METHOD)(__func__)(
+                ": Error: Main file non-existent "
+                "(")(WalletFilename().Get())("). Plus, unable to "
+                                             "create, since read-only "
+                                             "flag is set.")
                 .Flush();
             OT_FAIL;
         } else {
@@ -527,7 +489,7 @@ void Server::Init(bool readOnly)
 
     if (mainFileExists) {
         if (false == mainFile_.LoadMainFile(readOnly)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error in Loading Main File, re-creating.")
                 .Flush();
             OTDB::EraseValueByKey(
@@ -566,8 +528,7 @@ auto Server::LoadServerNym(const identifier::Nym& nymID) -> bool
     auto nym = manager_.Wallet().Nym(nymID);
 
     if (false == bool(nym)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Server nym does not exist.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Server nym does not exist.").Flush();
 
         return false;
     }
@@ -600,7 +561,7 @@ auto Server::SendInstrumentToNym(
     const bool bGotPaymentContents = pPayment.GetPaymentContents(strPayment);
 
     if (!bGotPaymentContents) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error GetPaymentContents Failed!")
+        LogOutput(OT_METHOD)(__func__)(": Error GetPaymentContents Failed!")
             .Flush();
     }
 
@@ -724,7 +685,7 @@ auto Server::DropMessageToNymbox(
         transactor_.issueNextTransactionNumber(lTransNum);
 
     if (!bGotNextTransNum) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Error: Failed trying to get next transaction number.")
             .Flush();
         return false;
@@ -735,7 +696,7 @@ auto Server::DropMessageToNymbox(
         case transactionType::instrumentNotice:
             break;
         default:
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Unexpected transactionType passed here (Expected message "
                 "or instrumentNotice).")
                 .Flush();
@@ -799,7 +760,7 @@ auto Server::DropMessageToNymbox(
             theMsgAngel->SignContract(*m_nymServer, reason_);
             theMsgAngel->SaveContract();
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failed trying to seal envelope containing theMsgAngel "
                 "(or while grabbing the base64-encoded result).")
                 .Flush();
@@ -896,16 +857,16 @@ auto Server::DropMessageToNymbox(
         } else  // should never happen
         {
             const auto strRecipientNymID = String::Factory(RECIPIENT_NYM_ID);
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failed while trying to generate transaction in order to "
                 "add a message to Nymbox: ")(strRecipientNymID->Get())(".")
                 .Flush();
         }
     } else {
         const auto strRecipientNymID = String::Factory(RECIPIENT_NYM_ID);
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed while trying to load or verify Nymbox: ")(
-            strRecipientNymID->Get())(".")
+        LogOutput(OT_METHOD)(__func__)(
+            ": Failed while trying to load or verify "
+            "Nymbox: ")(strRecipientNymID->Get())(".")
             .Flush();
     }
 
@@ -935,12 +896,12 @@ auto Server::GetConnectInfo(
         notUsed);
     const bool havePort = manager_.Config().CheckSet_long(
         String::Factory(SERVER_CONFIG_LISTEN_SECTION),
-        String::Factory(SERVER_CONFIG_COMMAND_KEY),
-        DEFAULT_COMMAND_PORT,
+        String::Factory(SERVER_CONFIG_PORT_KEY),
+        DEFAULT_PORT,
         port,
         notUsed);
-    port = (MAX_TCP_PORT < port) ? DEFAULT_COMMAND_PORT : port;
-    port = (MIN_TCP_PORT > port) ? DEFAULT_COMMAND_PORT : port;
+    port = (MAX_TCP_PORT < port) ? DEFAULT_PORT : port;
+    port = (MIN_TCP_PORT > port) ? DEFAULT_PORT : port;
     nPort = static_cast<std::uint32_t>(port);
     manager_.Config().Save();
 

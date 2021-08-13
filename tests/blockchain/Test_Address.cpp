@@ -16,6 +16,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/Options.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -104,7 +105,7 @@ public:
     const ot::api::client::Manager& api_;
 
     Test_Address()
-        : api_(ot::Context().StartClient({}, 0))
+        : api_(ot::Context().StartClient(0))
     {
     }
 };
