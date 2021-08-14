@@ -158,3 +158,62 @@ if(OT_BUNDLED_SECP256K1 AND OT_CRYPTO_USING_LIBSECP256K1)
                                                        ""
   )
 endif()
+
+file(
+  READ
+  "${CMAKE_CURRENT_SOURCE_DIR}/argon2/include/argon2.h"
+  ARGON_HEADER
+)
+string(
+  REPLACE
+    "__attribute__((visibility(\"default\")))"
+    ""
+    ARGON_HEADER
+    "${ARGON_HEADER}"
+)
+string(
+  REPLACE
+    "__attribute__ ((visibility (\"hidden\")))"
+    ""
+    ARGON_HEADER
+    "${ARGON_HEADER}"
+)
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/argon2/argon2.h" "${ARGON_HEADER}")
+
+add_library(
+  opentxs-argon2 OBJECT
+  "argon2/src/blake2/blake2-impl.h"
+  "argon2/src/blake2/blake2.h"
+  "argon2/src/blake2/blake2b.c"
+  "argon2/src/argon2.c"
+  "argon2/src/core.c"
+  "argon2/src/core.h"
+  "argon2/src/encoding.c"
+  "argon2/src/encoding.h"
+  "argon2/src/thread.h"
+)
+
+if(ANDROID)
+  target_sources(
+    opentxs-argon2 PRIVATE "argon2/src/blake2/blamka-round-ref.h"
+                           "argon2/src/ref.c"
+  )
+else()
+  target_sources(
+    opentxs-argon2 PRIVATE "argon2/src/blake2/blamka-round-opt.h"
+                           "argon2/src/opt.c"
+  )
+endif()
+
+target_include_directories(
+  opentxs-argon2 SYSTEM PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/argon2"
+)
+target_compile_definitions(
+  opentxs-argon2
+  PUBLIC "A2_VISCTL"
+  PRIVATE "ARGON2_NO_THREADS"
+)
+set_target_properties(
+  opentxs-argon2 PROPERTIES C_INCLUDE_WHAT_YOU_USE "" C_STANDARD 90
+)
+target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-argon2>)

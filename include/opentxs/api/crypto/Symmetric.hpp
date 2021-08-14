@@ -53,7 +53,15 @@ public:
         const opentxs::crypto::key::symmetric::Algorithm mode =
             opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305,
         const opentxs::crypto::key::symmetric::Source type =
-            opentxs::crypto::key::symmetric::Source::Argon2) const = 0;
+            opentxs::crypto::key::symmetric::Source::Argon2i) const = 0;
+    virtual OTSymmetricKey Key(
+        const Secret& seed,
+        const ReadView salt,
+        const std::uint64_t operations,
+        const std::uint64_t difficulty,
+        const std::uint64_t parallel,
+        const std::size_t bytes,
+        const opentxs::crypto::key::symmetric::Source type) const = 0;
 
     OPENTXS_NO_EXPORT virtual ~Symmetric() = default;
 

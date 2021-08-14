@@ -173,6 +173,17 @@ auto SymmetricKey(
 auto SymmetricKey(
     const api::internal::Core& api,
     const crypto::SymmetricProvider& engine,
+    const opentxs::Secret& seed,
+    const ReadView salt,
+    const std::uint64_t operations,
+    const std::uint64_t difficulty,
+    const std::uint64_t parallel,
+    const std::size_t size,
+    const crypto::key::symmetric::Source type) noexcept
+    -> std::unique_ptr<crypto::key::Symmetric>;
+auto SymmetricKey(
+    const api::internal::Core& api,
+    const crypto::SymmetricProvider& engine,
     const opentxs::Secret& raw,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::unique_ptr<crypto::key::Symmetric>;

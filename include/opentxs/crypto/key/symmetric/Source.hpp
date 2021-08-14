@@ -23,7 +23,8 @@ enum class Source : std::uint8_t {
     Error = 0,
     Raw = 1,
     ECDH = 2,
-    Argon2 = 3,
+    Argon2i = 3,
+    Argon2id = 4,
 };
 
 constexpr auto value(const Source in) noexcept

@@ -755,6 +755,16 @@ public:
         -> OTSymmetricKey final;
     auto SymmetricKey(
         const opentxs::crypto::SymmetricProvider& engine,
+        const opentxs::Secret& seed,
+        const ReadView salt,
+        const std::uint64_t operations,
+        const std::uint64_t difficulty,
+        const std::uint64_t parallel,
+        const std::size_t size,
+        const opentxs::crypto::key::symmetric::Source type) const
+        -> OTSymmetricKey final;
+    auto SymmetricKey(
+        const opentxs::crypto::SymmetricProvider& engine,
         const opentxs::Secret& raw,
         const opentxs::PasswordPrompt& reason) const -> OTSymmetricKey final;
     auto Trade() const -> std::unique_ptr<OTTrade> final;

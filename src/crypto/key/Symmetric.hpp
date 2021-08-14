@@ -92,12 +92,13 @@ public:
         const api::internal::Core& api,
         const crypto::SymmetricProvider& engine,
         const Secret& seed,
-        const std::string& salt,
+        const ReadView salt,
         const std::size_t size,
         const std::uint64_t operations,
         const std::uint64_t difficulty,
+        const std::uint64_t parallel,
         const crypto::key::symmetric::Source type =
-            crypto::key::symmetric::Source::Argon2);
+            crypto::key::symmetric::Source::Argon2i);
 
     ~Symmetric() final = default;
 
@@ -125,17 +126,20 @@ private:
             const opentxs::PasswordPrompt&) noexcept;
     friend key::Symmetric;
 
+    static constexpr auto default_version_ = VersionNumber{1u};
+
     const api::internal::Core& api_;
     /// The library providing the underlying crypto algorithms
     const crypto::SymmetricProvider& engine_;
-    const VersionNumber version_{0};
+    const VersionNumber version_;
     const crypto::key::symmetric::Source type_{
         crypto::key::symmetric::Source::Error};
     /// Size of the plaintext key in bytes;
-    std::size_t key_size_{0};
-    std::uint64_t operations_{0};
-    std::uint64_t difficulty_{0};
-    mutable std::unique_ptr<std::string> salt_;
+    std::size_t key_size_;
+    std::uint64_t operations_;
+    std::uint64_t difficulty_;
+    std::uint64_t parallel_;
+    mutable Space salt_;
     /// The unencrypted, fully-derived version of the key which is provided to
     /// encryption functions.
     mutable std::optional<OTSecret> plaintext_key_;
@@ -150,7 +154,7 @@ private:
     static auto Allocate(
         const api::Core& api,
         const std::size_t size,
-        std::string& container,
+        Space& container,
         const bool random) -> bool;
 
     auto allocate(const Lock& lock, const std::size_t size, Secret& container)
@@ -175,7 +179,7 @@ private:
         const Secret& plaintextKey,
         const PasswordPrompt& reason,
         const crypto::key::symmetric::Source type =
-            crypto::key::symmetric::Source::Argon2) const -> bool;
+            crypto::key::symmetric::Source::Argon2i) const -> bool;
     auto get_encrypted(const Lock& lock) const
         -> std::unique_ptr<proto::Ciphertext>&;
     auto get_password(
@@ -183,7 +187,6 @@ private:
         const PasswordPrompt& keyPassword,
         Secret& password) const -> bool;
     auto get_plaintext(const Lock& lock) const -> std::optional<OTSecret>&;
-    auto get_salt(const Lock& lock) const -> std::unique_ptr<std::string>&;
     auto serialize(const Lock& lock, proto::SymmetricKey& output) const -> bool;
     auto unlock(const Lock& lock, const PasswordPrompt& reason) const -> bool;
 
@@ -193,9 +196,10 @@ private:
         const VersionNumber version,
         const crypto::key::symmetric::Source type,
         const std::size_t keySize,
-        std::string* salt,
+        const ReadView salt,
         const std::uint64_t operations,
         const std::uint64_t difficulty,
+        const std::uint64_t parallel,
         std::optional<OTSecret> plaintextKey,
         proto::Ciphertext* encryptedKey);
     Symmetric() = delete;

@@ -11,6 +11,7 @@ extern "C" {
 #include <sodium.h>
 }
 
+#include <argon2.h>
 #include <SHA1/sha1.hpp>
 #include <array>
 #include <cstring>
@@ -86,14 +87,14 @@ auto Sodium::Decrypt(
     const auto& mode = ciphertext.mode();
 
     if (KeySize(opentxs::crypto::key::internal::translate(mode)) != keySize) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect key size.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Incorrect key size.").Flush();
 
         return false;
     }
 
     if (IvSize(opentxs::crypto::key::internal::translate(mode)) !=
         nonce.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect nonce size.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Incorrect nonce size.").Flush();
 
         return false;
     }
@@ -113,7 +114,7 @@ auto Sodium::Decrypt(
                          key));
         }
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Unsupported encryption mode (")(mode)(").")
                 .Flush();
         }
@@ -129,40 +130,159 @@ auto Sodium::Derive(
     const std::size_t saltSize,
     const std::uint64_t operations,
     const std::uint64_t difficulty,
-    const crypto::key::symmetric::Source type,
+    const std::uint64_t parallel,
+    const key::symmetric::Source type,
     std::uint8_t* output,
     std::size_t outputSize) const -> bool
 {
-    const auto requiredSize = SaltSize(type);
+    try {
+        const auto minOps = [&] {
+            switch (type) {
+                case key::symmetric::Source::Argon2i: {
 
-    if (requiredSize != saltSize) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Incorrect salt size (")(saltSize)("). Required: "
-                                                 "(")(requiredSize)(").")
-            .Flush();
+                    return crypto_pwhash_argon2i_OPSLIMIT_MIN;
+                }
+                case key::symmetric::Source::Argon2id: {
+
+                    return crypto_pwhash_argon2id_OPSLIMIT_MIN;
+                }
+                default: {
+
+                    throw std::runtime_error{"unsupported algorithm"};
+                }
+            }
+        }();
+        const auto requiredSize = SaltSize(type);
+
+        if (requiredSize != saltSize) {
+            const auto error = std::string{"Incorrect salt size ("} +
+                               std::to_string(saltSize) + "). Required: (" +
+                               std::to_string(requiredSize);
+
+            throw std::runtime_error{error};
+        }
+
+        OT_ASSERT(nullptr != salt);
+
+        if (outputSize < crypto_pwhash_BYTES_MIN) {
+            throw std::runtime_error{"output too small"};
+        }
+
+        if (outputSize > crypto_pwhash_BYTES_MAX) {
+            throw std::runtime_error{"output too large"};
+        }
+
+        if (inputSize > crypto_pwhash_PASSWD_MAX) {
+            throw std::runtime_error{"input too large"};
+        }
+
+        if (operations < minOps) {
+            throw std::runtime_error{"operations too low"};
+        }
+
+        if (operations > crypto_pwhash_OPSLIMIT_MAX) {
+            throw std::runtime_error{"operations too high"};
+        }
+
+        if (difficulty < crypto_pwhash_MEMLIMIT_MIN) {
+            throw std::runtime_error{"memory too low"};
+        }
+
+        if (difficulty > crypto_pwhash_MEMLIMIT_MAX) {
+            throw std::runtime_error{"memory too high"};
+        }
+
+        if (parallel > ARGON2_MAX_THREADS) {
+            throw std::runtime_error{"too many threads"};
+        }
+
+        static const auto blank = char{};
+        const auto empty = ((nullptr == input) || (0u == inputSize));
+        const auto* ptr = empty ? &blank : reinterpret_cast<const char*>(input);
+        const auto effective = empty ? std::size_t{0u} : inputSize;
+
+        if (1u < parallel) {
+            const auto rc = [&] {
+                switch (type) {
+                    case key::symmetric::Source::Argon2i: {
+
+                        return ::argon2i_hash_raw(
+                            static_cast<std::uint32_t>(operations),
+                            static_cast<std::uint32_t>(difficulty >> 10),
+                            static_cast<std::uint32_t>(parallel),
+                            ptr,
+                            effective,
+                            salt,
+                            saltSize,
+                            output,
+                            outputSize);
+                    }
+                    case key::symmetric::Source::Argon2id: {
+
+                        return ::argon2id_hash_raw(
+                            static_cast<std::uint32_t>(operations),
+                            static_cast<std::uint32_t>(difficulty >> 10),
+                            static_cast<std::uint32_t>(parallel),
+                            ptr,
+                            effective,
+                            salt,
+                            saltSize,
+                            output,
+                            outputSize);
+                    }
+                    default: {
+
+                        throw std::runtime_error{"unsupported algorithm"};
+                    }
+                }
+            }();
+
+            if (ARGON2_OK != rc) {
+                throw std::runtime_error{::argon2_error_message(rc)};
+            }
+        } else {
+            const auto rc = [&] {
+                switch (type) {
+                    case key::symmetric::Source::Argon2i: {
+
+                        return ::crypto_pwhash(
+                            output,
+                            outputSize,
+                            ptr,
+                            effective,
+                            salt,
+                            operations,
+                            difficulty,
+                            crypto_pwhash_ALG_ARGON2I13);
+                    }
+                    case key::symmetric::Source::Argon2id: {
+
+                        return ::crypto_pwhash(
+                            output,
+                            outputSize,
+                            ptr,
+                            effective,
+                            salt,
+                            operations,
+                            difficulty,
+                            crypto_pwhash_ALG_ARGON2ID13);
+                    }
+                    default: {
+
+                        throw std::runtime_error{"unsupported algorithm"};
+                    }
+                }
+            }();
+
+            if (0 != rc) { throw std::runtime_error{"failed to derive hash"}; }
+        }
+
+        return true;
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }
-
-    static const auto blank = char{};
-    const auto empty = ((nullptr == input) || (0u == inputSize));
-    const auto* ptr = empty ? &blank : reinterpret_cast<const char*>(input);
-    const auto effective = empty ? 0u : inputSize;
-    const auto success = 0 == crypto_pwhash(
-                                  output,
-                                  outputSize,
-                                  ptr,
-                                  effective,
-                                  salt,
-                                  operations,
-                                  difficulty,
-                                  crypto_pwhash_ALG_ARGON2I13);
-
-    if (false == success) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to derive key").Flush();
-    }
-
-    return success;
 }
 
 auto Sodium::Digest(
@@ -197,7 +317,7 @@ auto Sodium::Digest(
         }
     }
 
-    LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported hash function.").Flush();
+    LogOutput(OT_METHOD)(__func__)(": Unsupported hash function.").Flush();
 
     return false;
 }
@@ -221,19 +341,19 @@ auto Sodium::Encrypt(
     bool result = false;
 
     if (mode == opentxs::crypto::key::symmetric::Algorithm::Error) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect mode.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Incorrect mode.").Flush();
 
         return result;
     }
 
     if (KeySize(mode) != keySize) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect key size.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Incorrect key size.").Flush();
 
         return result;
     }
 
     if (IvSize(mode) != nonce.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect nonce size.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Incorrect nonce size.").Flush();
 
         return result;
     }
@@ -261,7 +381,7 @@ auto Sodium::Encrypt(
                          key));
         }
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Unsupported encryption mode (")(value(mode))(").")
                 .Flush();
         }
@@ -280,13 +400,13 @@ auto Sodium::Generate(
     AllocateOutput writer) const noexcept -> bool
 {
     if (false == bool(writer)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid writer").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid writer").Flush();
 
         return false;
     }
 
     if (bytes < crypto_pwhash_scryptsalsa208sha256_BYTES_MIN) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Too few bytes requested: ")(bytes)(" vs "
                                                   "minimum:"
                                                   " ")(crypto_pwhash_scryptsalsa208sha256_BYTES_MIN)
@@ -296,7 +416,7 @@ auto Sodium::Generate(
     }
 
     if (bytes > crypto_pwhash_scryptsalsa208sha256_BYTES_MAX) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Too many bytes requested: ")(bytes)(" vs "
                                                    "maximum:"
                                                    " ")(crypto_pwhash_scryptsalsa208sha256_BYTES_MAX)
@@ -308,7 +428,7 @@ auto Sodium::Generate(
     auto output = writer(bytes);
 
     if (false == output.valid(bytes)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to allocated requested ")(bytes)(" bytes")
             .Flush();
 
@@ -354,8 +474,7 @@ auto Sodium::HMAC(
             success = (0 == crypto_auth_hmacsha256_init(&state, key, keySize));
 
             if (false == success) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": Failed to initialize hash")
+                LogOutput(OT_METHOD)(__func__)(": Failed to initialize hash")
                     .Flush();
 
                 return false;
@@ -365,7 +484,7 @@ auto Sodium::HMAC(
                 (0 == crypto_auth_hmacsha256_update(&state, input, inputSize));
 
             if (false == success) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to update hash")
+                LogOutput(OT_METHOD)(__func__)(": Failed to update hash")
                     .Flush();
 
                 return false;
@@ -379,8 +498,7 @@ auto Sodium::HMAC(
             success = (0 == crypto_auth_hmacsha512_init(&state, key, keySize));
 
             if (false == success) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": Failed to initialize hash")
+                LogOutput(OT_METHOD)(__func__)(": Failed to initialize hash")
                     .Flush();
 
                 return false;
@@ -390,7 +508,7 @@ auto Sodium::HMAC(
                 (0 == crypto_auth_hmacsha512_update(&state, input, inputSize));
 
             if (false == success) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to update hash")
+                LogOutput(OT_METHOD)(__func__)(": Failed to update hash")
                     .Flush();
 
                 return false;
@@ -400,7 +518,7 @@ auto Sodium::HMAC(
         }
         case (crypto::HashType::SipHash24): {
             if (crypto_shorthash_KEYBYTES < keySize) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Incorrect key size: ")(keySize)(" vs "
                                                        "expected"
                                                        " ")(crypto_shorthash_KEYBYTES)
@@ -419,7 +537,7 @@ auto Sodium::HMAC(
         }
     }
 
-    LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported hash function.").Flush();
+    LogOutput(OT_METHOD)(__func__)(": Unsupported hash function.").Flush();
 
     return false;
 }
@@ -432,7 +550,7 @@ auto Sodium::IvSize(const opentxs::crypto::key::symmetric::Algorithm mode) const
             return crypto_aead_chacha20poly1305_IETF_NPUBBYTES;
         }
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Unsupported encryption mode (")(value(mode))(").")
                 .Flush();
         }
@@ -448,7 +566,7 @@ auto Sodium::KeySize(
             return crypto_aead_chacha20poly1305_IETF_KEYBYTES;
         }
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Unsupported encryption mode (")(value(mode))(").")
                 .Flush();
         }
@@ -462,7 +580,7 @@ auto Sodium::PubkeyAdd(
     [[maybe_unused]] const ReadView scalar,
     [[maybe_unused]] const AllocateOutput result) const noexcept -> bool
 {
-    LogOutput(OT_METHOD)(__FUNCTION__)(": Not implemented").Flush();
+    LogOutput(OT_METHOD)(__func__)(": Not implemented").Flush();
 
     return false;
 }
@@ -493,12 +611,13 @@ auto Sodium::SaltSize(const crypto::key::symmetric::Source type) const
     -> std::size_t
 {
     switch (type) {
-        case (crypto::key::symmetric::Source::Argon2): {
+        case crypto::key::symmetric::Source::Argon2i:
+        case crypto::key::symmetric::Source::Argon2id: {
 
             return crypto_pwhash_SALTBYTES;
         }
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Unsupported key type (")(value(type))(").")
                 .Flush();
         }
@@ -514,20 +633,19 @@ auto Sodium::ScalarAdd(
     const AllocateOutput result) const noexcept -> bool
 {
     if (false == bool(result)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output allocator")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
 
     if (crypto_core_ed25519_SCALARBYTES != lhs.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid lhs scalar").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid lhs scalar").Flush();
 
         return false;
     }
 
     if (crypto_core_ed25519_SCALARBYTES != rhs.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid rhs scalar").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid rhs scalar").Flush();
 
         return false;
     }
@@ -535,8 +653,7 @@ auto Sodium::ScalarAdd(
     auto key = result(crypto_core_ed25519_SCALARBYTES);
 
     if (false == key.valid(crypto_core_ed25519_SCALARBYTES)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to allocate space for result")
+        LogOutput(OT_METHOD)(__func__)(": Failed to allocate space for result")
             .Flush();
 
         return false;
@@ -555,14 +672,13 @@ auto Sodium::ScalarMultiplyBase(
     const AllocateOutput result) const noexcept -> bool
 {
     if (false == bool(result)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output allocator")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
 
     if (crypto_scalarmult_ed25519_SCALARBYTES != scalar.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid scalar").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid scalar").Flush();
 
         return false;
     }
@@ -570,7 +686,7 @@ auto Sodium::ScalarMultiplyBase(
     auto pub = result(crypto_scalarmult_ed25519_BYTES);
 
     if (false == pub.valid(crypto_scalarmult_ed25519_BYTES)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to allocate space for public key")
             .Flush();
 
@@ -589,28 +705,27 @@ auto Sodium::SharedSecret(
     Secret& secret) const noexcept -> bool
 {
     if (SecretStyle::Default != style) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported secret style")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Unsupported secret style").Flush();
 
         return false;
     }
 
     if (crypto_sign_PUBLICKEYBYTES != pub.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid public key ").Flush();
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(": Invalid public key ").Flush();
+        LogOutput(OT_METHOD)(__func__)(
             ": Expected: ")(crypto_sign_PUBLICKEYBYTES)
             .Flush();
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Actual:   ")(pub.size()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": Actual:   ")(pub.size()).Flush();
 
         return false;
     }
 
     if (crypto_sign_SECRETKEYBYTES != prv.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid private key").Flush();
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(": Invalid private key").Flush();
+        LogOutput(OT_METHOD)(__func__)(
             ": Expected: ")(crypto_sign_SECRETKEYBYTES)
             .Flush();
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Actual:   ")(prv.size()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": Actual:   ")(prv.size()).Flush();
 
         return false;
     }
@@ -629,7 +744,7 @@ auto Sodium::SharedSecret(
     if (0 != ::crypto_sign_ed25519_pk_to_curve25519(
                  publicEd.data(),
                  reinterpret_cast<const unsigned char*>(pub.data()))) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": crypto_sign_ed25519_pk_to_curve25519 error")
             .Flush();
 
@@ -639,7 +754,7 @@ auto Sodium::SharedSecret(
     if (0 != ::crypto_sign_ed25519_sk_to_curve25519(
                  reinterpret_cast<unsigned char*>(privateBytes.data()),
                  reinterpret_cast<const unsigned char*>(prv.data()))) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": crypto_sign_ed25519_sk_to_curve25519 error")
             .Flush();
 
@@ -683,7 +798,7 @@ auto Sodium::Sign(
     const AllocateOutput signature) const -> bool
 {
     if (crypto::HashType::Blake2b256 != hash) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
+        LogVerbose(OT_METHOD)(__func__)(
             ": Unsupported hash function: ")(value(hash))
             .Flush();
 
@@ -691,30 +806,29 @@ auto Sodium::Sign(
     }
 
     if (nullptr == priv.data() || 0 == priv.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing private key").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing private key").Flush();
 
         return false;
     }
 
     if (crypto_sign_SECRETKEYBYTES != priv.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid private key").Flush();
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(": Invalid private key").Flush();
+        LogOutput(OT_METHOD)(__func__)(
             ": Expected: ")(crypto_sign_SECRETKEYBYTES)
             .Flush();
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Actual:   ")(priv.size()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": Actual:   ")(priv.size()).Flush();
 
         return false;
     }
 
     if (priv == blank_private()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Blank private key").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Blank private key").Flush();
 
         return false;
     }
 
     if (false == bool(signature)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output allocator")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
@@ -722,7 +836,7 @@ auto Sodium::Sign(
     auto output = signature(crypto_sign_BYTES);
 
     if (false == output.valid(crypto_sign_BYTES)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to allocate space for signature")
             .Flush();
 
@@ -738,8 +852,7 @@ auto Sodium::Sign(
                  reinterpret_cast<const unsigned char*>(priv.data()));
 
     if (false == success) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to sign plaintext.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to sign plaintext.").Flush();
     }
 
     return success;
@@ -754,7 +867,7 @@ auto Sodium::TagSize(
             return crypto_aead_chacha20poly1305_IETF_ABYTES;
         }
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Unsupported encryption mode (")(value(mode))(").")
                 .Flush();
         }
@@ -770,7 +883,7 @@ auto Sodium::Verify(
     const crypto::HashType type) const -> bool
 {
     if (crypto::HashType::Blake2b256 != type) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
+        LogVerbose(OT_METHOD)(__func__)(
             ": Unsupported hash function: ")(value(type))
             .Flush();
 
@@ -778,23 +891,23 @@ auto Sodium::Verify(
     }
 
     if (crypto_sign_BYTES != signature.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid signature").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid signature").Flush();
 
         return false;
     }
 
     if (nullptr == pub.data() || 0 == pub.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing public key").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing public key").Flush();
 
         return false;
     }
 
     if (crypto_sign_PUBLICKEYBYTES != pub.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid public key").Flush();
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(": Invalid public key").Flush();
+        LogOutput(OT_METHOD)(__func__)(
             ": Expected: ")(crypto_sign_PUBLICKEYBYTES)
             .Flush();
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Actual:   ")(pub.size()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": Actual:   ")(pub.size()).Flush();
 
         return false;
     }
@@ -807,8 +920,7 @@ auto Sodium::Verify(
                  reinterpret_cast<const unsigned char*>(pub.data()));
 
     if (false == success) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Failed to verify signature")
-            .Flush();
+        LogVerbose(OT_METHOD)(__func__)(": Failed to verify signature").Flush();
     }
 
     return success;

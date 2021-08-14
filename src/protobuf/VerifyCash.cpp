@@ -34,7 +34,7 @@ auto PurseAllowedEnvelope() noexcept -> const VersionMap&
 auto PurseAllowedSymmetricKey() noexcept -> const VersionMap&
 {
     static const auto output = VersionMap{
-        {1, {1, 1}},
+        {1, {1, 2}},
     };
 
     return output;

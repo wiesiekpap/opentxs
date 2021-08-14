@@ -58,6 +58,22 @@ auto Symmetric::GetEngine(const opentxs::crypto::key::symmetric::Algorithm mode)
     return engine;
 }
 
+auto Symmetric::GetEngine(const opentxs::crypto::key::symmetric::Source type)
+    const -> const opentxs::crypto::SymmetricProvider*
+{
+    switch (type) {
+        case opentxs::crypto::key::symmetric::Source::Argon2i:
+        case opentxs::crypto::key::symmetric::Source::Argon2id: {
+
+            return &api_.Crypto().Sodium();
+        }
+        default: {
+
+            return nullptr;
+        }
+    }
+}
+
 auto Symmetric::IvSize(
     const opentxs::crypto::key::symmetric::Algorithm mode) const -> std::size_t
 {
@@ -125,5 +141,22 @@ auto Symmetric::Key(
 
     return api_.Factory().SymmetricKey(
         *engine, seed, operations, difficulty, engine->KeySize(mode), type);
+}
+
+auto Symmetric::Key(
+    const Secret& seed,
+    const ReadView salt,
+    const std::uint64_t operations,
+    const std::uint64_t difficulty,
+    const std::uint64_t parallel,
+    const std::size_t bytes,
+    const opentxs::crypto::key::symmetric::Source type) const -> OTSymmetricKey
+{
+    auto engine = GetEngine(type);
+
+    OT_ASSERT(nullptr != engine);
+
+    return api_.Factory().SymmetricKey(
+        *engine, seed, salt, operations, difficulty, parallel, bytes, type);
 }
 }  // namespace opentxs::api::crypto::implementation

@@ -30,4 +30,5 @@ message SymmetricKey {
     optional uint64 operations = 5;
     optional uint64 difficulty = 6;
     optional Ciphertext key = 7;
+    optional uint64 parallel = 8;
 }

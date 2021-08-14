@@ -794,14 +794,14 @@ auto Factory::Contract(const opentxs::String& strInput) const
         //
         if (!pContract) {
             LogNormal(OT_METHOD)(__FUNCTION__)(
-                ": Object type not yet supported by class factory: ")(
-                strFirstLine)
+                ": Object type not yet supported by class "
+                "factory: ")(strFirstLine)
                 .Flush();
             // Does the contract successfully load from the string passed in?
         } else if (!pContract->LoadContractFromString(strContract)) {
             LogNormal(OT_METHOD)(__FUNCTION__)(
-                ": Failed loading contract from string (first line): ")(
-                strFirstLine)
+                ": Failed loading contract from string (first "
+                "line): ")(strFirstLine)
                 .Flush();
         } else {
             return pContract;
@@ -2348,6 +2348,28 @@ auto Factory::SymmetricKey(
 
 auto Factory::SymmetricKey(
     const opentxs::crypto::SymmetricProvider& engine,
+    const opentxs::Secret& seed,
+    const ReadView salt,
+    const std::uint64_t operations,
+    const std::uint64_t difficulty,
+    const std::uint64_t parallel,
+    const std::size_t size,
+    const opentxs::crypto::key::symmetric::Source type) const -> OTSymmetricKey
+{
+    return OTSymmetricKey{factory::SymmetricKey(
+        api_,
+        engine,
+        seed,
+        salt,
+        operations,
+        difficulty,
+        parallel,
+        size,
+        type)};
+}
+
+auto Factory::SymmetricKey(
+    const opentxs::crypto::SymmetricProvider& engine,
     const opentxs::Secret& raw,
     const opentxs::PasswordPrompt& reason) const -> OTSymmetricKey
 {
@@ -2428,8 +2450,8 @@ auto Factory::Transaction(const String& strInput) const
         // The string didn't match any of the options in the factory.
         if (nullptr == pContract) {
             LogNormal(OT_METHOD)(__FUNCTION__)(  //<< szFunc
-                ": Object type not yet supported by class factory: ")(
-                strFirstLine)
+                ": Object type not yet supported by class "
+                "factory: ")(strFirstLine)
                 .Flush();
             return nullptr;
         }
@@ -2457,8 +2479,8 @@ auto Factory::Transaction(const String& strInput) const
             return pContract;
         } else {
             LogNormal(OT_METHOD)(__FUNCTION__)(  //<< szFunc
-                ": Failed loading contract from string (first line): ")(
-                strFirstLine)
+                ": Failed loading contract from string (first "
+                "line): ")(strFirstLine)
                 .Flush();
         }
     }

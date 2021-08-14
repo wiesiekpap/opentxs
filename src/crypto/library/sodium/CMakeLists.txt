@@ -10,8 +10,11 @@ add_library(
   "Sodium.hpp"
 )
 target_link_libraries(
-  opentxs-crypto-library-sodium PRIVATE opentxs::messages
-                                        unofficial-sodium::sodium
+  opentxs-crypto-library-sodium
+  PRIVATE
+    opentxs-argon2
+    opentxs::messages
+    unofficial-sodium::sodium
 )
 target_link_libraries(opentxs PUBLIC unofficial-sodium::sodium)
 
