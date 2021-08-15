@@ -4,6 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 // IWYU pragma: no_include "opentxs/blockchain/crypto/Subchain.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/crypto/HDProtocol.hpp"
 
 #pragma once
 
@@ -153,6 +154,7 @@ struct Wallet : virtual public crypto::Wallet {
     virtual auto AddHDNode(
         const identifier::Nym& nym,
         const proto::HDPath& path,
+        const crypto::HDProtocol standard,
         const PasswordPrompt& reason,
         Identifier& id) noexcept -> bool = 0;
     virtual auto Nym(const identifier::Nym& id) noexcept -> Account& = 0;
@@ -181,6 +183,7 @@ struct Account : virtual public crypto::Account {
 
     virtual auto AddHDNode(
         const proto::HDPath& path,
+        const crypto::HDProtocol standard,
         const PasswordPrompt& reason,
         Identifier& id) noexcept -> bool = 0;
     virtual auto AddUpdatePaymentCode(

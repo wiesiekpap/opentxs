@@ -29,6 +29,7 @@ set(PROTO_SOURCES
     BlockchainEnums.proto
     BlockchainExternalAddress.proto
     BlockchainFilterHeader.proto
+    BlockchainHDAccountData.proto
     BlockchainInputWitness.proto
     BlockchainOutputMultisigDetails.proto
     BlockchainP2PChainState.proto

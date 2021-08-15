@@ -16,6 +16,11 @@
 
 namespace opentxs
 {
+namespace api
+{
+class Core;
+}  // namespace api
+
 class Secret;
 }  // namespace opentxs
 
@@ -37,7 +42,10 @@ public:
         const Secret& seed,
         Secret& words,
         const Language lang) const noexcept = 0;
-    OPENTXS_EXPORT virtual void WordsToSeed(
+    OPENTXS_EXPORT virtual bool WordsToSeed(
+        const api::Core& api,
+        const SeedStyle type,
+        const Language lang,
         const Secret& words,
         Secret& seed,
         const Secret& passphrase) const noexcept = 0;

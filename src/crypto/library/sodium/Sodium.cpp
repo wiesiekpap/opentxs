@@ -11,13 +11,14 @@ extern "C" {
 #include <sodium.h>
 }
 
-#include <argon2.h>
 #include <SHA1/sha1.hpp>
+#include <argon2.h>
 #include <array>
 #include <cstring>
 #include <functional>
 #include <limits>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 

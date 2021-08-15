@@ -119,6 +119,7 @@ enum SeedType {
     SEEDTYPE_ERROR = 0;
     SEEDTYPE_RAW = 1;
     SEEDTYPE_BIP39 = 2;
+    SEEDTYPE_PKT = 3;
 }
 
 enum SeedLang {

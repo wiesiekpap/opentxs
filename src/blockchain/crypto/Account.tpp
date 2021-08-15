@@ -25,15 +25,18 @@ class PaymentCode;
 namespace opentxs::blockchain::crypto::implementation
 {
 template <>
-struct Account::Factory<internal::HD, proto::HDPath, PasswordPrompt> {
+struct Account::
+    Factory<internal::HD, proto::HDPath, HDProtocol, PasswordPrompt> {
     static auto get(
         const api::internal::Core& api,
         const Account& parent,
         Identifier& id,
         const proto::HDPath& data,
+        const HDProtocol standard,
         const PasswordPrompt& reason) noexcept -> std::unique_ptr<internal::HD>
     {
-        return factory::BlockchainHDSubaccount(api, parent, data, reason, id);
+        return factory::BlockchainHDSubaccount(
+            api, parent, data, standard, reason, id);
     }
 };
 template <>

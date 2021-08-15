@@ -33,6 +33,7 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/crypto/Element.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/crypto/Ethereum.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/crypto/HD.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/crypto/HDProtocol.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/crypto/Imported.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/crypto/PaymentCode.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/crypto/Subaccount.hpp"

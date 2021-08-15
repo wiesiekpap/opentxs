@@ -83,7 +83,8 @@ auto CheckProto_4(const Seed& input, const bool silent) -> bool
                 FAIL_1("Invalid language for raw seed");
             }
         } break;
-        case SEEDTYPE_BIP39: {
+        case SEEDTYPE_BIP39:
+        case SEEDTYPE_PKT: {
             if (false == input.has_words()) { FAIL_1("Missing words"); }
 
             switch (input.lang()) {

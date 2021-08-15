@@ -34,6 +34,7 @@
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
+#include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
@@ -255,14 +256,13 @@ auto Blockchain::Imp::AssignContact(
 
             return node.SetContact(subchain, index, contactID);
         } catch (...) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to load balance element")
+            LogOutput(OT_METHOD)(__func__)(": Failed to load balance element")
                 .Flush();
 
             return false;
         }
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load account").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to load account").Flush();
 
         return false;
     }
@@ -294,14 +294,13 @@ auto Blockchain::Imp::AssignLabel(
 
             return node.SetLabel(subchain, index, label);
         } catch (...) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to load balance element")
+            LogOutput(OT_METHOD)(__func__)(": Failed to load balance element")
                 .Flush();
 
             return false;
         }
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load account").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to load account").Flush();
 
         return false;
     }
@@ -372,14 +371,13 @@ auto Blockchain::Imp::CalculateAddress(
             try {
                 data = PubkeyHash(chain, pubkey);
             } catch (...) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid public key.")
-                    .Flush();
+                LogOutput(OT_METHOD)(__func__)(": Invalid public key.").Flush();
 
                 return {};
             }
         } break;
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Unsupported address style (")(static_cast<std::uint16_t>(
                 format))(")")
                 .Flush();
@@ -507,12 +505,12 @@ auto Blockchain::Imp::decode_bech23(const std::string& encoded) const noexcept
 
             return std::move(output);
         } catch (const std::exception& e) {
-            LogTrace(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogTrace(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return blank_;
         }
     } catch (const std::exception& e) {
-        LogTrace(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogTrace(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return std::nullopt;
     }
@@ -560,12 +558,12 @@ auto Blockchain::Imp::decode_legacy(const std::string& encoded) const noexcept
 
             return std::move(output);
         } catch (const std::exception& e) {
-            LogTrace(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogTrace(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return blank_;
         }
     } catch (const std::exception& e) {
-        LogTrace(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogTrace(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return std::nullopt;
     }
@@ -590,7 +588,7 @@ auto Blockchain::Imp::EncodeAddress(
             return p2sh(chain, data);
         }
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Unsupported address style (")(static_cast<std::uint16_t>(
                 style))(")")
                 .Flush();
@@ -718,19 +716,31 @@ auto Blockchain::Imp::init_path(
     const std::string& root,
     const contact::ContactItemType chain,
     const Bip32Index account,
-    const BlockchainAccountType standard,
+    const opentxs::blockchain::crypto::HDProtocol standard,
     proto::HDPath& path) const noexcept -> void
 {
+    using Standard = opentxs::blockchain::crypto::HDProtocol;
     path.set_version(PATH_VERSION);
     path.set_root(root);
 
     switch (standard) {
-        case BlockchainAccountType::BIP32: {
+        case Standard::BIP_32: {
             path.add_child(HDIndex{account, Bip32Child::HARDENED});
         } break;
-        case BlockchainAccountType::BIP44: {
+        case Standard::BIP_44: {
             path.add_child(
                 HDIndex{Bip43Purpose::HDWALLET, Bip32Child::HARDENED});
+            path.add_child(HDIndex{bip44_type(chain), Bip32Child::HARDENED});
+            path.add_child(account);
+        } break;
+        case Standard::BIP_49: {
+            path.add_child(
+                HDIndex{Bip43Purpose::P2SH_P2WPKH, Bip32Child::HARDENED});
+            path.add_child(HDIndex{bip44_type(chain), Bip32Child::HARDENED});
+            path.add_child(account);
+        } break;
+        case Standard::BIP_84: {
+            path.add_child(HDIndex{Bip43Purpose::P2WPKH, Bip32Child::HARDENED});
             path.add_child(HDIndex{bip44_type(chain), Bip32Child::HARDENED});
             path.add_child(account);
         } break;
@@ -777,16 +787,23 @@ auto Blockchain::Imp::LookupContacts(const Data&) const noexcept -> ContactList
 
 auto Blockchain::Imp::NewHDSubaccount(
     const identifier::Nym& nymID,
-    const BlockchainAccountType standard,
-    const opentxs::blockchain::Type chain,
+    const opentxs::blockchain::crypto::HDProtocol standard,
+    const opentxs::blockchain::Type derivationChain,
+    const opentxs::blockchain::Type targetChain,
     const PasswordPrompt& reason) const noexcept -> OTIdentifier
 {
     static const auto blank = api_.Factory().Identifier();
 
     if (false == validate_nym(nymID)) { return blank; }
 
-    if (opentxs::blockchain::Type::Unknown == chain) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid chain").Flush();
+    if (opentxs::blockchain::Type::Unknown == derivationChain) {
+        LogOutput(OT_METHOD)(__func__)(": Invalid derivationChain").Flush();
+
+        return blank;
+    }
+
+    if (opentxs::blockchain::Type::Unknown == targetChain) {
+        LogOutput(OT_METHOD)(__func__)(": Invalid targetChain").Flush();
 
         return blank;
     }
@@ -794,7 +811,7 @@ auto Blockchain::Imp::NewHDSubaccount(
     auto nym = api_.Wallet().Nym(nymID);
 
     if (false == bool(nym)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Nym does not exist.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Nym does not exist.").Flush();
 
         return blank;
     }
@@ -802,19 +819,19 @@ auto Blockchain::Imp::NewHDSubaccount(
     auto nymPath = proto::HDPath{};
 
     if (false == nym->Path(nymPath)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": No nym path.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": No nym path.").Flush();
 
         return blank;
     }
 
     if (0 == nymPath.root().size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing root.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing root.").Flush();
 
         return blank;
     }
 
     if (2 > nymPath.child().size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid path.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid path.").Flush();
 
         return blank;
     }
@@ -822,37 +839,39 @@ auto Blockchain::Imp::NewHDSubaccount(
     auto accountPath = proto::HDPath{};
     init_path(
         nymPath.root(),
-        Translate(chain),
+        Translate(derivationChain),
         HDIndex{nymPath.child(1), Bip32Child::HARDENED},
         standard,
         accountPath);
 
     try {
         auto accountID{blank};
-        auto& tree = wallets_.Get(chain).Nym(nymID);
-        tree.AddHDNode(accountPath, reason, accountID);
+        auto& tree = wallets_.Get(targetChain).Nym(nymID);
+        tree.AddHDNode(accountPath, standard, reason, accountID);
 
         OT_ASSERT(false == accountID->empty());
 
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
+        LogVerbose(OT_METHOD)(__func__)(
             ": Created new HD subaccount ")(accountID)(" for ")(DisplayString(
-            chain))(" account ")(tree.AccountID())(" owned by ")(nymID.str())
+            targetChain))(" account ")(tree.AccountID())(" owned by ")(nymID
+                                                                           .str())(" using path ")(opentxs::crypto::
+                                                                                                       Print(
+                                                                                                           accountPath))
             .Flush();
         accounts_.New(
             opentxs::blockchain::crypto::SubaccountType::HD,
-            chain,
+            targetChain,
             accountID,
             nymID);
         notify_new_account(
             accountID,
             nymID,
-            chain,
+            targetChain,
             opentxs::blockchain::crypto::SubaccountType::HD);
 
         return accountID;
     } catch (...) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Failed to create account")
-            .Flush();
+        LogVerbose(OT_METHOD)(__func__)(": Failed to create account").Flush();
 
         return blank;
     }
@@ -892,7 +911,7 @@ auto Blockchain::Imp::new_payment_code(
     if (false == validate_nym(nymID)) { return blank; }
 
     if (opentxs::blockchain::Type::Unknown == chain) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid chain").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid chain").Flush();
 
         return blank;
     }
@@ -900,19 +919,19 @@ auto Blockchain::Imp::new_payment_code(
     auto nym = api_.Wallet().Nym(nymID);
 
     if (false == bool(nym)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Nym does not exist.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Nym does not exist.").Flush();
 
         return blank;
     }
 
     if (0 == path.root().size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing root.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing root.").Flush();
 
         return blank;
     }
 
     if (3 > path.child().size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Invalid path: ")(opentxs::crypto::Print(path))
             .Flush();
 
@@ -926,7 +945,7 @@ auto Blockchain::Imp::new_payment_code(
 
         OT_ASSERT(false == accountID->empty());
 
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
+        LogVerbose(OT_METHOD)(__func__)(
             ": Created new payment code "
             "subaccount ")(accountID)(" for"
                                       " ")(DisplayString(
@@ -983,8 +1002,7 @@ auto Blockchain::Imp::new_payment_code(
 
         return accountID;
     } catch (...) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Failed to create account")
-            .Flush();
+        LogVerbose(OT_METHOD)(__func__)(": Failed to create account").Flush();
 
         return blank;
     }
@@ -1024,7 +1042,7 @@ auto Blockchain::Imp::p2pkh(
 
         return api_.Crypto().Encode().IdentifierEncode(preimage);
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Unsupported chain (")(opentxs::print(chain))(")")
             .Flush();
 
@@ -1047,7 +1065,7 @@ auto Blockchain::Imp::p2sh(
 
         return api_.Crypto().Encode().IdentifierEncode(preimage);
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Unsupported chain (")(opentxs::print(chain))(")")
             .Flush();
 
@@ -1076,7 +1094,7 @@ auto Blockchain::Imp::p2wpkh(
 
         return segwit_addr::encode(hrp, 0, prog);
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Unsupported chain (")(opentxs::print(chain))(")")
             .Flush();
 
@@ -1212,7 +1230,7 @@ auto Blockchain::Imp::RecipientContact(const Key& key) const noexcept
             }
         }
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return blank;
     }
@@ -1276,7 +1294,7 @@ auto Blockchain::Imp::SenderContact(const Key& key) const noexcept
             }
         }
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return blank;
     }

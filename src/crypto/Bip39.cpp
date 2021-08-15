@@ -7,25 +7,41 @@
 #include "1_Internal.hpp"    // IWYU pragma: associated
 #include "crypto/Bip39.hpp"  // IWYU pragma: associated
 
+#include <boost/algorithm/string/constants.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/core/addressof.hpp>
+#include <boost/function/function_base.hpp>
+#include <boost/iterator/iterator_facade.hpp>
+#include <boost/multiprecision/cpp_int.hpp>
+#include <boost/type_index/type_index_facade.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <iterator>
 #include <memory>
+#include <stdexcept>
 #include <string_view>
 #include <utility>
 #include <vector>
 
 #include "2_Factory.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
+#include "opentxs/api/crypto/Symmetric.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"
+#include "opentxs/crypto/SeedStyle.hpp"
+#include "opentxs/crypto/key/Symmetric.hpp"
+#include "opentxs/crypto/key/symmetric/Source.hpp"
+#include "util/Allocator.hpp"
+#include "util/ByteLiterals.hpp"
 #include "util/Container.hpp"
 
 #define OT_METHOD "opentxs::crypto::implementation::Bip39::"
@@ -77,8 +93,8 @@ auto Bip39::entropy_to_words(
         case 32:
             break;
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid entropy size: ")(
-                bytes.size())
+            LogOutput(OT_METHOD)(__func__)(
+                ": Invalid entropy size: ")(bytes.size())
                 .Flush();
 
             return false;
@@ -92,7 +108,7 @@ auto Bip39::entropy_to_words(
     const auto wordCount = std::size_t{entropyPlusCheckBits / BitsPerWord};
 
     if (0 != (wordCount % ValidMnemonicWordMultiple)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": (0 != (wordCount % ValidMnemonicWordMultiple))")
             .Flush();
 
@@ -100,7 +116,7 @@ auto Bip39::entropy_to_words(
     }
 
     if (0 != (entropyPlusCheckBits % BitsPerWord)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": (0 != (entropyPlusCheckBits % BitsPerWord))")
             .Flush();
 
@@ -114,7 +130,7 @@ auto Bip39::entropy_to_words(
                      opentxs::crypto::HashType::Sha256,
                      bytes,
                      digestOutput->WriteInto())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Digest(opentxs::crypto::HashType::Sha256...) failed.")
             .Flush();
 
@@ -141,8 +157,7 @@ auto Bip39::entropy_to_words(
                 reinterpret_cast<std::uint8_t&>(indexed_byte), byteIndex);
 
             if (!bExtracted) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": (!bExtracted) -- returning")
+                LogOutput(OT_METHOD)(__func__)(": (!bExtracted) -- returning")
                     .Flush();
 
                 return false;
@@ -161,15 +176,14 @@ auto Bip39::entropy_to_words(
             const auto& theString = dictionary.at(indexDict);
             mnemonicWords.push_back(theString);
         } catch (...) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported language")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Unsupported language").Flush();
 
             return false;
         }
     }
 
     if (mnemonicWords.size() != ((bitIndex + 1) / BitsPerWord)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": (mnemonicWords.size() != ((bitIndex + 1) / BitsPerWord))")
             .Flush();
 
@@ -269,10 +283,38 @@ auto Bip39::SeedToWords(const Secret& seed, Secret& words, const Language lang)
     return entropy_to_words(seed, words, lang);
 }
 
-auto Bip39::words_to_root(
+auto Bip39::tokenize(const Language lang, const ReadView words) noexcept(false)
+    -> std::vector<std::size_t>
+{
+    auto s = std::vector<std::string>{};
+    boost::split(
+        s, words, [](char c) { return c == ' '; }, boost::token_compress_on);
+    const auto& d = [&] {
+        try {
+
+            return words_.at(lang);
+        } catch (...) {
+
+            throw std::runtime_error{"Unsupported language"};
+        }
+    }();
+    auto output = std::vector<std::size_t>{};
+    output.reserve(s.size());
+    const auto first = d.begin();
+
+    for (const auto& word : s) {
+        if (auto it = std::find(d.begin(), d.end(), word); it != d.end()) {
+            output.emplace_back(std::distance(first, it));
+        }
+    }
+
+    return output;
+}
+
+auto Bip39::words_to_root_bip39(
     const Secret& words,
     Secret& bip32RootNode,
-    const Secret& passphrase) const noexcept -> void
+    const Secret& passphrase) const noexcept -> bool
 {
     auto salt = std::string{PassphrasePrefix};
 
@@ -288,13 +330,165 @@ auto Bip39::words_to_root(
         HmacOutputSizeBytes,
         dataOutput);
     bip32RootNode.Assign(dataOutput->Bytes());
+
+    return true;
+}
+
+auto Bip39::words_to_root_pkt(
+    const api::Core& api,
+    const Language lang,
+    const Secret& words,
+    Secret& bip32RootNode,
+    const Secret& passphrase) const noexcept -> bool
+{
+    const auto indices = tokenize(lang, words.Bytes());
+
+    if (const auto size{indices.size()}; 15u != size) {
+        LogOutput(OT_METHOD)(__func__)(": incorrect number of words: ")(size)
+            .Flush();
+
+        return false;
+    }
+
+    using Allocator = SecureAllocator<std::uint8_t>;
+    using Vector = std::vector<std::uint8_t, Allocator>;
+    auto ent = [&] {
+        namespace mp = boost::multiprecision;
+        using BigInt = mp::number<mp::cpp_int_backend<
+            168,
+            168,
+            mp::unsigned_magnitude,
+            mp::unchecked,
+            void>>;
+        auto alloc = SecureAllocator<BigInt>{};
+        auto pSeed = std::allocate_shared<BigInt>(alloc);
+
+        OT_ASSERT(pSeed);
+
+        auto& seed = *pSeed;
+        auto out = Vector{};
+
+        for (auto i{indices.crbegin()}; i != indices.crend(); ++i) {
+            seed <<= 11;
+            seed |= BigInt{*i};
+        }
+
+        mp::export_bits(seed, std::back_inserter(out), 8, true);
+
+        return out;
+    }();
+    static constexpr auto reader = [](const Vector& in) {
+        return ReadView{reinterpret_cast<const char*>(in.data()), in.size()};
+    };
+
+    OT_ASSERT(21 == ent.size());
+
+    const auto version = (ent[0] >> 1) & 0x0f;
+
+    if (0 != version) {
+        LogOutput(OT_METHOD)(__func__)(": unsupported version: ")(version)
+            .Flush();
+
+        return false;
+    }
+
+    const auto encrypted = ent[0] & 0x01;
+
+    {
+        const auto checksum = ent[1];
+        ent[0] &= 0x1f;
+        ent[1] &= 0x00;
+
+        try {
+            const auto calculated = [&] {
+                auto hash = Space{};
+                crypto_.Hash().Digest(
+                    HashType::Blake2b256, reader(ent), writer(hash));
+
+                if (0 == hash.size()) {
+                    throw std::runtime_error{"failed to calculate hash"};
+                }
+
+                return std::to_integer<std::uint8_t>(hash.at(0));
+            }();
+
+            if (checksum != calculated) {
+                throw std::runtime_error{"checksum failure"};
+            }
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+
+            return false;
+        }
+    }
+
+    if (encrypted) {
+        if (0 == passphrase.size()) {
+            LogOutput(OT_METHOD)(__func__)(
+                ": passphrase required but not provided")
+                .Flush();
+
+            return false;
+        }
+
+        static const auto salt = std::string{"pktwallet seed 0"};
+        static constexpr auto keyBytes = std::size_t{19u};
+        const auto key = [&] {
+            const auto sKey = api.Symmetric().Key(
+                passphrase,
+                salt,
+                32,
+                256_MiB,
+                8,
+                keyBytes,
+                key::symmetric::Source::Argon2id);
+            auto output = api.Factory().Secret(0u);
+            const auto reason = api.Factory().PasswordPrompt(__func__);
+            sKey->RawKey(reason, output);
+
+            return output;
+        }();
+
+        OT_ASSERT(keyBytes == key->size());
+
+        auto v = key->Bytes();
+        auto k{v.data()};
+
+        for (auto b = std::next(ent.begin(), 2); b < ent.end(); ++b, ++k) {
+            (*b) ^= (*k);
+        }
+    }
+
+    const auto view = ReadView{
+        reinterpret_cast<const char*>(std::next(ent.data(), 2)),
+        ent.size() - 2u};
+    bip32RootNode.Assign(view);
+
+    return true;
 }
 
 auto Bip39::WordsToSeed(
+    const api::Core& api,
+    const SeedStyle type,
+    const Language lang,
     const Secret& words,
     Secret& seed,
-    const Secret& passphrase) const noexcept -> void
+    const Secret& passphrase) const noexcept -> bool
 {
-    words_to_root(words, seed, passphrase);
+    switch (type) {
+        case SeedStyle::BIP39: {
+
+            return words_to_root_bip39(words, seed, passphrase);
+        }
+        case SeedStyle::PKT: {
+
+            return words_to_root_pkt(api, lang, words, seed, passphrase);
+        }
+        default: {
+            LogOutput(OT_METHOD)(__func__)(": unsupported type").Flush();
+
+            return false;
+        }
+    }
 }
 }  // namespace opentxs::crypto::implementation

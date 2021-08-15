@@ -38,7 +38,14 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/SignatureRole.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/Types.hpp"
 )
-target_link_libraries(opentxs-crypto PRIVATE Boost::headers opentxs::messages)
+target_link_libraries(
+  opentxs-crypto
+  PRIVATE
+    Boost::headers
+    opentxs::messages
+    unofficial-sodium::sodium
+)
+target_link_libraries(opentxs PUBLIC unofficial-sodium::sodium)
 target_sources(opentxs-crypto PRIVATE ${cxx-install-headers})
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-crypto>)
 add_dependencies(opentxs-crypto generated_code)

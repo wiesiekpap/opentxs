@@ -632,12 +632,6 @@ enum class Depositability : std::int8_t {
     UNKNOWN = 127,
 };
 
-enum class BlockchainAccountType : std::uint8_t {
-    Invalid = 0,
-    BIP32 = 1,
-    BIP44 = 2,
-};
-
 enum class SocketType : std::uint8_t {
     Error = 0,
     Request = 1,

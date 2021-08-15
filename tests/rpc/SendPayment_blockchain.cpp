@@ -25,6 +25,7 @@
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
+#include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
@@ -79,7 +80,7 @@ protected:
 
                 client_1_.Blockchain().NewHDSubaccount(
                     alex_p_->ID(),
-                    ot::BlockchainAccountType::BIP44,
+                    ot::blockchain::crypto::HDProtocol::BIP_44,
                     test_chain_,
                     reason);
             }

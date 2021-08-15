@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/crypto/HDProtocol.hpp"
+
 #pragma once
 
 #include <algorithm>
@@ -146,10 +148,11 @@ public:
 
     auto AddHDNode(
         const proto::HDPath& path,
+        const crypto::HDProtocol standard,
         const PasswordPrompt& reason,
         Identifier& id) noexcept -> bool final
     {
-        return hd_.Construct(id, path, reason);
+        return hd_.Construct(id, path, standard, reason);
     }
     auto AddUpdatePaymentCode(
         const opentxs::PaymentCode& local,

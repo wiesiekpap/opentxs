@@ -112,6 +112,7 @@ Core::Core(
     , asymmetric_(factory_.Asymmetric())
     , symmetric_(factory_.Symmetric())
     , seeds_(factory::HDSeed(
+          *this,
           factory_,
           asymmetric_,
           symmetric_,

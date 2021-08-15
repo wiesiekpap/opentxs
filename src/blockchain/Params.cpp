@@ -152,6 +152,17 @@ auto FilterHash(
     }
 }
 
+auto HasSegwit(const Type type) noexcept -> bool
+{
+    try {
+
+        return params::Data::Chains().at(type).segwit_;
+    } catch (...) {
+
+        return false;
+    }
+}
+
 auto IsTestnet(const Type type) noexcept -> bool
 {
     try {

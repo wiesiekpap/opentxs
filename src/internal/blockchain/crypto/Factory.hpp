@@ -3,10 +3,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/crypto/HDProtocol.hpp"
+
 #pragma once
 
 #include <set>
 
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 
 namespace opentxs
@@ -75,6 +78,7 @@ auto BlockchainHDSubaccount(
     const api::internal::Core& api,
     const blockchain::crypto::internal::Account& parent,
     const proto::HDPath& path,
+    const blockchain::crypto::HDProtocol standard,
     const PasswordPrompt& reason,
     Identifier& id) noexcept
     -> std::unique_ptr<blockchain::crypto::internal::HD>;

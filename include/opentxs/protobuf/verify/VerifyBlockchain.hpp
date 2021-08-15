@@ -65,6 +65,8 @@ BlockchainTransactionProposedOutputAllowedBlockchainOutputMultisigDetails() noex
 OPENTXS_EXPORT const VersionMap& HDAccountAllowedBlockchainAddress() noexcept;
 OPENTXS_EXPORT const VersionMap&
 HDAccountAllowedBlockchainDeterministicAccountData() noexcept;
+OPENTXS_EXPORT const VersionMap&
+HDAccountAllowedBlockchainHDAccountData() noexcept;
 }  // namespace proto
 }  // namespace opentxs
 #endif  // OPENTXS_PROTOBUF_VERIFYBLOCKCHAIN_HPP

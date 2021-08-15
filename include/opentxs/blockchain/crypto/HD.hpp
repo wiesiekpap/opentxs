@@ -6,9 +6,12 @@
 #ifndef OPENTXS_BLOCKCHAIN_CRYPTO_HD_HPP
 #define OPENTXS_BLOCKCHAIN_CRYPTO_HD_HPP
 
+// IWYU pragma: no_include "opentxs/blockchain/crypto/HDProtocol.hpp"
+
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/blockchain/crypto/Deterministic.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 
 namespace opentxs
 {
@@ -19,6 +22,8 @@ namespace crypto
 class OPENTXS_EXPORT HD : virtual public Deterministic
 {
 public:
+    virtual auto Standard() const noexcept -> HDProtocol = 0;
+
     OPENTXS_NO_EXPORT ~HD() override = default;
 
 protected:

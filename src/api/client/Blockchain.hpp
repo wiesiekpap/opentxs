@@ -6,12 +6,13 @@
 // IWYU pragma: no_include "api/client/blockchain/database/Database.hpp"
 // IWYU pragma: no_include "internal/blockchain/node/Node.hpp"
 // IWYU pragma: no_include "opentxs/api/client/Contacts.hpp"
-// IWYU pragma: no_include "opentxs/blockchain/crypto/AddressStyle.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/Account.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/crypto/AddressStyle.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/HD.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/crypto/HDProtocol.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/PaymentCode.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/Subchain.hpp"
-// IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/node/Manager.hpp"
 // IWYU pragma: no_include "opentxs/core/identifier/Nym.hpp"
 // IWYU pragma: no_include "opentxs/network/zeromq/socket/Publish.hpp"
@@ -184,8 +185,14 @@ public:
         -> ContactList final;
     auto NewHDSubaccount(
         const identifier::Nym& nymID,
-        const BlockchainAccountType standard,
+        const opentxs::blockchain::crypto::HDProtocol standard,
         const Chain chain,
+        const PasswordPrompt& reason) const noexcept -> OTIdentifier final;
+    auto NewHDSubaccount(
+        const identifier::Nym& nymID,
+        const opentxs::blockchain::crypto::HDProtocol standard,
+        const Chain derivationChain,
+        const Chain targetChain,
         const PasswordPrompt& reason) const noexcept -> OTIdentifier final;
     auto NewNym(const identifier::Nym& id) const noexcept -> void final;
     auto NewPaymentCodeSubaccount(

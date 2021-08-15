@@ -5,6 +5,7 @@
 
 add_library(
   opentxs-util OBJECT
+  "Allocator.hpp"
   "AsyncValue.hpp"
   "Backoff.hpp"
   "Blank.hpp"

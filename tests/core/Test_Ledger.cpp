@@ -6,11 +6,11 @@
 #include <gtest/gtest.h>
 #include <memory>
 
-#include "Basic.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
@@ -24,11 +24,13 @@
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/identity/Nym.hpp"
 
-ot::OTNymID nym_id_{ot::identifier::Nym::Factory()};
-ot::OTServerID server_id_{ot::identifier::Server::Factory()};
+namespace ot = opentxs;
 
 namespace ottest
 {
+ot::OTNymID nym_id_{ot::identifier::Nym::Factory()};
+ot::OTServerID server_id_{ot::identifier::Server::Factory()};
+
 struct Ledger : public ::testing::Test {
     const ot::api::client::Manager& client_;
     const ot::api::server::Manager& server_;
