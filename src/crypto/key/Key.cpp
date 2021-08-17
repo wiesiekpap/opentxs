@@ -58,7 +58,8 @@ auto source_map() noexcept -> const SourceMap&
         {symmetric::Source::Error, proto::SKEYTYPE_ERROR},
         {symmetric::Source::Raw, proto::SKEYTYPE_RAW},
         {symmetric::Source::ECDH, proto::SKEYTYPE_ECDH},
-        {symmetric::Source::Argon2, proto::SKEYTYPE_ARGON2},
+        {symmetric::Source::Argon2i, proto::SKEYTYPE_ARGON2},
+        {symmetric::Source::Argon2id, proto::SKEYTYPE_ARGON2ID},
     };
 
     return map;

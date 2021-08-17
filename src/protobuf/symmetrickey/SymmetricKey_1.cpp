@@ -48,7 +48,8 @@ auto CheckProto_1(const SymmetricKey& input, const bool silent) -> bool
         case SKEYTYPE_RAW:
         case SKEYTYPE_ECDH: {
         } break;
-        case SKEYTYPE_ARGON2: {
+        case SKEYTYPE_ARGON2:
+        case SKEYTYPE_ARGON2ID: {
             if (!input.has_salt()) { FAIL_1("missing salt") }
 
             if (1 > input.operations()) { FAIL_1("missing operations") }
@@ -66,7 +67,46 @@ auto CheckProto_1(const SymmetricKey& input, const bool silent) -> bool
 
 auto CheckProto_2(const SymmetricKey& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(2)
+    try {
+        const bool validKey = Check(
+            input.key(),
+            SymmetricKeyAllowedCiphertext().at(input.version()).first,
+            SymmetricKeyAllowedCiphertext().at(input.version()).second,
+            silent,
+            true);
+
+        if (!validKey) { FAIL_1("invalid encrypted key") }
+    } catch (const std::out_of_range&) {
+        FAIL_2(
+            "allowed ciphertext version not defined for version",
+            input.version())
+    }
+
+    if (!input.has_size()) { FAIL_1("missing size") }
+
+    if (!input.has_type()) { FAIL_1("missing type") }
+
+    switch (input.type()) {
+        case SKEYTYPE_RAW:
+        case SKEYTYPE_ECDH: {
+        } break;
+        case SKEYTYPE_ARGON2:
+        case SKEYTYPE_ARGON2ID: {
+            if (!input.has_salt()) { FAIL_1("missing salt") }
+
+            if (1 > input.operations()) { FAIL_1("missing operations") }
+
+            if (1 > input.difficulty()) { FAIL_1("missing difficulty") }
+
+            if (1 > input.parallel()) { FAIL_1("missing parallel") }
+        } break;
+        case SKEYTYPE_ERROR:
+        default: {
+            FAIL_2("invalid type", input.type())
+        }
+    }
+
+    return true;
 }
 
 auto CheckProto_3(const SymmetricKey& input, const bool silent) -> bool

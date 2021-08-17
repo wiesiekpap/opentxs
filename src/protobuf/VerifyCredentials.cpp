@@ -41,7 +41,7 @@ auto AuthorityAllowedCredential() noexcept -> const VersionMap&
 auto CiphertextAllowedSymmetricKey() noexcept -> const VersionMap&
 {
     static const auto output = VersionMap{
-        {1, {1, 1}},
+        {1, {1, 2}},
     };
 
     return output;
@@ -237,6 +237,7 @@ auto SymmetricKeyAllowedCiphertext() noexcept -> const VersionMap&
 {
     static const auto output = VersionMap{
         {1, {1, 1}},
+        {2, {1, 1}},
     };
 
     return output;
@@ -244,7 +245,7 @@ auto SymmetricKeyAllowedCiphertext() noexcept -> const VersionMap&
 auto TaggedKeyAllowedSymmetricKey() noexcept -> const VersionMap&
 {
     static const auto output = VersionMap{
-        {1, {1, 1}},
+        {1, {1, 2}},
     };
 
     return output;

@@ -68,7 +68,16 @@ public:
         const opentxs::crypto::key::symmetric::Algorithm mode =
             opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305,
         const opentxs::crypto::key::symmetric::Source type =
-            opentxs::crypto::key::symmetric::Source::Argon2) const
+            opentxs::crypto::key::symmetric::Source::Argon2i) const
+        -> OTSymmetricKey final;
+    auto Key(
+        const Secret& seed,
+        const ReadView salt,
+        const std::uint64_t operations,
+        const std::uint64_t difficulty,
+        const std::uint64_t parallel,
+        const std::size_t bytes,
+        const opentxs::crypto::key::symmetric::Source type) const
         -> OTSymmetricKey final;
 
     Symmetric(const api::internal::Core& api) noexcept;
@@ -79,6 +88,8 @@ private:
     const api::internal::Core& api_;
 
     auto GetEngine(const opentxs::crypto::key::symmetric::Algorithm mode) const
+        -> const opentxs::crypto::SymmetricProvider*;
+    auto GetEngine(const opentxs::crypto::key::symmetric::Source type) const
         -> const opentxs::crypto::SymmetricProvider*;
 
     Symmetric() = delete;

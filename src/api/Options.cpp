@@ -61,9 +61,8 @@ struct Options::Imp::Parser {
 
     auto Args() const noexcept -> const po::options_description&
     {
-
         static const auto out = [] {
-            auto out = po::options_description{};
+            auto out = po::options_description{"libopentxs options"};
 
             out.add_options()(
                 blockchain_disable_,
@@ -158,7 +157,6 @@ struct Options::Imp::Parser {
     auto Help() const noexcept -> std::string
     {
         auto out = std::stringstream{};
-        out << "libopentxs options:\n";
         out << Args();
 
         return out.str();
@@ -282,6 +280,10 @@ auto Options::Imp::import_value(const char* key, const char* value) noexcept
             blockchain_storage_level_ = std::stoi(value);
         } else if (0 == std::strcmp(key, Parser::blockchain_sync_provide_)) {
             blockchain_sync_server_enabled_ = to_bool(value);
+
+            if (blockchain_sync_server_enabled_) {
+                blockchain_wallet_enabled_ = false;
+            }
         } else if (0 == std::strcmp(key, Parser::blockchain_sync_connect_)) {
             blockchain_sync_servers_.emplace(value);
         } else if (0 == std::strcmp(key, Parser::blockchain_wallet_enable_)) {
@@ -366,6 +368,10 @@ auto Options::Imp::parse(int argc, char** argv) noexcept(false) -> void
         } else if (name == Parser::blockchain_sync_provide_) {
             try {
                 blockchain_sync_server_enabled_ = value.as<bool>();
+
+                if (blockchain_sync_server_enabled_) {
+                    blockchain_wallet_enabled_ = false;
+                }
             } catch (...) {
             }
         } else if (name == Parser::blockchain_sync_connect_) {
@@ -783,6 +789,7 @@ auto Options::SetBlockchainStorageLevel(int value) noexcept -> Options&
 auto Options::SetBlockchainSyncEnabled(bool enabled) noexcept -> Options&
 {
     imp_->blockchain_sync_server_enabled_ = enabled;
+    imp_->blockchain_wallet_enabled_ = false;
 
     return *this;
 }

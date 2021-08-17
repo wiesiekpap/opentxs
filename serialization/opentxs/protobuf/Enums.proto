@@ -53,6 +53,7 @@ enum SymmetricKeyType {
     SKEYTYPE_RAW = 1;
     SKEYTYPE_ECDH = 2;
     SKEYTYPE_ARGON2 = 3;
+    SKEYTYPE_ARGON2ID = 4;
 }
 
 enum SymmetricMode {

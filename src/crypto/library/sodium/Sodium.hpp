@@ -153,6 +153,7 @@ private:
         const std::size_t saltSize,
         const std::uint64_t operations,
         const std::uint64_t difficulty,
+        const std::uint64_t parallel,
         const crypto::key::symmetric::Source type,
         std::uint8_t* output,
         std::size_t outputSize) const -> bool final;

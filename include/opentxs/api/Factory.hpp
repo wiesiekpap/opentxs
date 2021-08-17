@@ -669,6 +669,7 @@ public:
     /** Derive a symmetric key from a seed
      *
      *  \param[in] seed A binary or text seed to be expanded into a secret key
+     *  \param[in] salt
      *  \param[in] operations The number of iterations/operations the KDF should
      *                        perform
      *  \param[in] difficulty A type-specific difficulty parameter used by the
@@ -682,6 +683,15 @@ public:
         const opentxs::Secret& seed,
         const std::uint64_t operations,
         const std::uint64_t difficulty,
+        const std::size_t size,
+        const opentxs::crypto::key::symmetric::Source type) const = 0;
+    virtual OTSymmetricKey SymmetricKey(
+        const opentxs::crypto::SymmetricProvider& engine,
+        const opentxs::Secret& seed,
+        const ReadView salt,
+        const std::uint64_t operations,
+        const std::uint64_t difficulty,
+        const std::uint64_t parallel,
         const std::size_t size,
         const opentxs::crypto::key::symmetric::Source type) const = 0;
     /** Construct a symmetric key from an existing Secret

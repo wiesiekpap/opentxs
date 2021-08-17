@@ -17,10 +17,17 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
+#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/Primitives.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
+#include "opentxs/api/crypto/Symmetric.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"
+#include "opentxs/crypto/key/Symmetric.hpp"
+#include "opentxs/crypto/key/symmetric/Source.hpp"
 
 namespace ot = opentxs;
 
@@ -53,6 +60,14 @@ public:
         std::uint32_t,
         std::size_t,
         std::string>;
+    // iterations, memory, threads, input, salt, result hex
+    using ArgonVector = std::tuple<
+        std::uint32_t,
+        std::uint32_t,
+        std::uint32_t,
+        std::string,
+        std::string,
+        std::string>;
 
     static const std::vector<HMACVector> hmac_sha2_;
     static const std::vector<MurmurVector> murmur_;
@@ -66,6 +81,8 @@ public:
     static const std::vector<Nist> nist_hashes_;
     static const Nist nist_one_million_;
     static const Nist nist_one_gigabyte_;
+    static const std::vector<ArgonVector> argon_2i_;
+    static const std::vector<ArgonVector> argon_2id_;
 
     const ot::api::Crypto& crypto_;
 
@@ -293,6 +310,100 @@ const Nist Test_Hash::nist_one_gigabyte_{
     "50e72a0e26442fe2552dc3938ac58658228c0cbfb1d2ca872ae435266fcd055e",
     "b47c933421ea2db149ad6e10fce6c7f93d0752380180ffd7f4629a712134831d77be6091b8"
     "19ed352c2967a2e2d4fa5050723c9630691f1a05a7281dbe6c1086"};
+// https://github.com/P-H-C/phc-winner-argon2/blob/master/src/test.c
+// Modified salt length and iteration count to correspond to libsodium
+// requirements Checked against https://argon2.online/
+const std::vector<Test_Hash::ArgonVector> Test_Hash::argon_2i_{
+    {4,
+     (1 << 16) << 10,  // 65536 KiB
+     1,
+     "password",
+     "somesaltsomesalt",
+     "eba00eb46e3219304995c15da7a4d5b90a79b2712c4776c1038413dd07b2f33a"},
+    {4,
+     (1 << 8) << 10,  // 256 KiB
+     1,
+     "password",
+     "somesaltsomesalt",
+     "797ebc52b990ebdde9adc36a11330f48f292c770ad4fb4e77e5883964d1f7ebb"},
+    {4,
+     (1 << 8) << 10,  // 256 KiB
+     2,
+     "password",
+     "somesaltsomesalt",
+     "26e3e3e4e1d020f2d3bac77177b498752ed847a606da04b5594dc4e4e4a003ca"},
+    {3,
+     (1 << 16) << 10,  // 65536 KiB
+     1,
+     "password",
+     "somesaltsomesalt",
+     "7d1b1163d3c0b791fea802ae5d1ccbd3fe896c54a1b0277ad96e5a1f311293f7"},
+    {6,
+     (1 << 16) << 10,  // 65536 KiB
+     1,
+     "password",
+     "somesaltsomesalt",
+     "bc4b50127a30b18377f81d26754a8ad3652554da170df1f5ff9576bcb76a6cca"},
+    {4,
+     (1 << 16) << 10,  // 65536 KiB
+     1,
+     "differentpassword",
+     "somesaltsomesalt",
+     "58267b9e980abacb368cc1512cc959607ee18de7dce74c0e8bb991c1ead63f41"},
+    {4,
+     (1 << 16) << 10,  // 65536 KiB
+     1,
+     "password",
+     "diffsaltdiffsalt",
+     "3c71a874e9b82570c3d584e4379c06bf5e7f4af5357b62889b0915a0601ef2bd"},
+};
+// https://github.com/P-H-C/phc-winner-argon2/blob/master/src/test.c
+// Modified salt length to correspond to libsodium requirements
+// Checked against https://argon2.online/
+const std::vector<Test_Hash::ArgonVector> Test_Hash::argon_2id_{
+    {2,
+     (1 << 16) << 10,  // 65536 KiB
+     1,
+     "password",
+     "somesaltsomesalt",
+     "fc33b78139231d34b71626bd6245c1d72efa190ad605c3d8166a72adcedfa2c2"},
+    {2,
+     (1 << 8) << 10,  // 256 KiB
+     1,
+     "password",
+     "somesaltsomesalt",
+     "cab746b4621993fdc91ec50787980b414a90a692f0bc68dfe19f9c25b3cba9ec"},
+    {2,
+     (1 << 8) << 10,  // 256 KiB
+     2,
+     "password",
+     "somesaltsomesalt",
+     "c112d2ee6b9d514413f806243187952186e8f19cacab80f20a823d549f111d2c"},
+    {1,
+     (1 << 16) << 10,  // 65536 KiB
+     1,
+     "password",
+     "somesaltsomesalt",
+     "ec2b46acb6f8aec6804bf8df88feeca36a4412df3bea8d2cc99c08a9e8977a72"},
+    {4,
+     (1 << 16) << 10,  // 65536 KiB
+     1,
+     "password",
+     "somesaltsomesalt",
+     "34a6f651a0ab14f3b15f86115f0ae5532e1029365d8c218f47d24f66dab2688f"},
+    {2,
+     (1 << 16) << 10,  // 65536 KiB
+     1,
+     "differentpassword",
+     "somesaltsomesalt",
+     "b2a645d33be125cd75f64b157793464041c0fd196b848a9f78508e1a0e5ce4c0"},
+    {2,
+     (1 << 16) << 10,  // 65536 KiB
+     1,
+     "password",
+     "diffsaltdiffsalt",
+     "c22e7f0935f83ed7a0163bfd4f09a2014b94c9aa19dc681e7e781170dcfd1659"},
+};
 
 TEST_F(Test_Hash, MurmurHash3)
 {
@@ -500,5 +611,61 @@ TEST_F(Test_Hash, nist_gigabyte_string)
     EXPECT_EQ(calculatedSha1.get(), eSha1);
     EXPECT_EQ(calculatedSha256.get(), eSha256);
     EXPECT_EQ(calculatedSha512.get(), eSha512);
+}
+
+TEST_F(Test_Hash, argon2i)
+{
+    static constexpr auto bytes{32u};
+    const auto& ot = ot::Context();
+    const auto& api = ot.StartClient(0);
+    const auto reason = api.Factory().PasswordPrompt(__func__);
+
+    for (const auto& [iterations, memory, threads, input, salt, hex] :
+         argon_2i_) {
+        const auto key = api.Symmetric().Key(
+            ot.Factory().SecretFromText(input),
+            salt,
+            iterations,
+            memory,
+            threads,
+            bytes,
+            opentxs::crypto::key::symmetric::Source::Argon2i);
+        const auto hash = [&] {
+            auto secret = api.Factory().Secret(bytes);
+            key->RawKey(reason, secret);
+
+            return api.Factory().Data(secret->Bytes());
+        }();
+
+        EXPECT_EQ(hash->asHex(), hex);
+    }
+}
+
+TEST_F(Test_Hash, argon2id)
+{
+    static constexpr auto bytes{32u};
+    const auto& ot = ot::Context();
+    const auto& api = ot.StartClient(0);
+    const auto reason = api.Factory().PasswordPrompt(__func__);
+
+    for (const auto& [iterations, memory, threads, input, salt, hex] :
+         argon_2id_) {
+        const auto key = api.Symmetric().Key(
+            ot.Factory().SecretFromText(input),
+            salt,
+            iterations,
+            memory,
+            threads,
+            bytes,
+            opentxs::crypto::key::symmetric::Source::Argon2id);
+        const auto hash = [&] {
+            auto secret = api.Factory().Secret(bytes);
+            key->RawKey(reason, secret);
+
+            return api.Factory().Data(secret->Bytes());
+        }();
+
+        EXPECT_EQ(hash->asHex(), hex);
+    }
 }
 }  // namespace ottest
