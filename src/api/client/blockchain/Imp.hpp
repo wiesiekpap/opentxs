@@ -25,6 +25,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
@@ -235,8 +236,9 @@ struct Blockchain::Imp {
         -> ContactList;
     auto NewHDSubaccount(
         const identifier::Nym& nymID,
-        const BlockchainAccountType standard,
-        const opentxs::blockchain::Type chain,
+        const opentxs::blockchain::crypto::HDProtocol standard,
+        const opentxs::blockchain::Type derivationChain,
+        const opentxs::blockchain::Type targetChain,
         const PasswordPrompt& reason) const noexcept -> OTIdentifier;
     auto NewNym(const identifier::Nym& id) const noexcept -> void;
     auto NewPaymentCodeSubaccount(
@@ -336,7 +338,7 @@ protected:
         const std::string& root,
         const contact::ContactItemType chain,
         const Bip32Index account,
-        const BlockchainAccountType standard,
+        const opentxs::blockchain::crypto::HDProtocol standard,
         proto::HDPath& path) const noexcept -> void;
     auto new_payment_code(
         const Lock& lock,

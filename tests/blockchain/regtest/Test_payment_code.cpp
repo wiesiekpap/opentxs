@@ -38,6 +38,7 @@
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
+#include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
@@ -267,7 +268,7 @@ protected:
                 const auto reason = api.Factory().PasswordPrompt(__FUNCTION__);
                 api.Blockchain().NewHDSubaccount(
                     nymID,
-                    ot::BlockchainAccountType::BIP44,
+                    ot::blockchain::crypto::HDProtocol::BIP_44,
                     test_chain_,
                     reason);
             };

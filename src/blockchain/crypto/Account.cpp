@@ -29,6 +29,7 @@
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
+#include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -223,6 +224,19 @@ auto Account::find_next_element(
     // one is present. Also handle cases where only an imported subaccount
     // exists
 
+    // Look for a BIP-44 account first
+    for (const auto& account : hd_) {
+        if (HDProtocol::BIP_44 != account.Standard()) { continue; }
+
+        const auto index = account.Reserve(subchain, reason, contact, label);
+
+        if (index.has_value()) {
+
+            return account.BalanceElement(subchain, index.value());
+        }
+    }
+
+    // If no BIP-44 account exists, then use whatever else may exist
     for (const auto& account : hd_) {
         const auto index = account.Reserve(subchain, reason, contact, label);
 

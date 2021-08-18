@@ -11,10 +11,12 @@
 namespace opentxs
 {
 enum class Bip43Purpose : Bip32Index {
-    HDWALLET = 44,    // BIP-44
-    PAYCODE = 47,     // BIP-47
-    FS = 0x4f544653,  // OTFS
-    NYM = 0x4f544e4d  // OTNM
+    HDWALLET = 44,     // BIP-44
+    PAYCODE = 47,      // BIP-47
+    P2SH_P2WPKH = 49,  // BIP-49
+    P2WPKH = 84,       // BIP-84
+    FS = 0x4f544653,   // OTFS
+    NYM = 0x4f544e4d   // OTNM
 };
 }  // namespace opentxs
 #endif

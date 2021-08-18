@@ -25,6 +25,7 @@
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/crypto/HD.hpp"
+#include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -85,7 +86,7 @@ protected:
 
                 api_.Blockchain().NewHDSubaccount(
                     nym_->ID(),
-                    ot::BlockchainAccountType::BIP44,
+                    ot::blockchain::crypto::HDProtocol::BIP_44,
                     ot::blockchain::Type::UnitTest,
                     reason_);
             }
@@ -107,6 +108,7 @@ TEST_F(Test_BIP44, init)
     EXPECT_FALSE(seed_id_.empty());
     EXPECT_FALSE(nym_id_.empty());
     EXPECT_EQ(account_.ID().str(), account_id_);
+    EXPECT_EQ(account_.Standard(), ot::blockchain::crypto::HDProtocol::BIP_44);
 }
 
 TEST_F(Test_BIP44, generate_expected_keys)

@@ -76,12 +76,13 @@ auto Wallet::add(
 auto Wallet::AddHDNode(
     const identifier::Nym& nym,
     const proto::HDPath& path,
+    const crypto::HDProtocol standard,
     const PasswordPrompt& reason,
     Identifier& id) noexcept -> bool
 {
     Lock lock(lock_);
 
-    return get_or_create(lock, nym).AddHDNode(path, reason, id);
+    return get_or_create(lock, nym).AddHDNode(path, standard, reason, id);
 }
 
 auto Wallet::at(const std::size_t position) const noexcept(false)

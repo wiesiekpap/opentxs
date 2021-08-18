@@ -55,6 +55,7 @@
 namespace opentxs::factory
 {
 auto HDSeed(
+    const api::Core& api,
     const api::Factory& factory,
     const api::crypto::internal::Asymmetric& asymmetric,
     const api::crypto::Symmetric& symmetric,
@@ -65,20 +66,22 @@ auto HDSeed(
     using ReturnType = api::implementation::HDSeed;
 
     return std::make_unique<ReturnType>(
-        factory, asymmetric, symmetric, storage, bip32, bip39);
+        api, factory, asymmetric, symmetric, storage, bip32, bip39);
 }
 }  // namespace opentxs::factory
 
 namespace opentxs::api::implementation
 {
 HDSeed::HDSeed(
+    const api::Core& api,
     const api::Factory& factory,
     [[maybe_unused]] const api::crypto::internal::Asymmetric& asymmetric,
     const api::crypto::Symmetric& symmetric,
     const api::storage::Storage& storage,
     const opentxs::crypto::Bip32& bip32,
     const opentxs::crypto::Bip39& bip39)
-    : factory_(factory)
+    : api_(api)  // WARNING do not access during construction
+    , factory_(factory)
     , symmetric_(symmetric)
 #if OT_CRYPTO_WITH_BIP32
     , asymmetric_(asymmetric)
@@ -148,6 +151,7 @@ auto HDSeed::AllowedSeedTypes() const noexcept -> const SupportedSeeds&
 {
     static const auto map = SupportedSeeds{
         {Style::BIP39, "BIP-39"},
+        {Style::PKT, "Legacy pktwallet"},
     };
 
     return map;
@@ -159,6 +163,10 @@ auto HDSeed::AllowedLanguages(const Style type) const noexcept
     static const auto null = SupportedLanguages{};
     static const auto map = std::map<Style, SupportedLanguages>{
         {Style::BIP39,
+         {
+             {Language::en, "English"},
+         }},
+        {Style::PKT,
          {
              {Language::en, "English"},
          }},
@@ -184,6 +192,10 @@ auto HDSeed::AllowedSeedStrength(const Style type) const noexcept
              {Strength::Eighteen, "18"},
              {Strength::TwentyOne, "21"},
              {Strength::TwentyFour, "24"},
+         }},
+        {Style::PKT,
+         {
+             {Strength::Fifteen, "15"},
          }},
     };
 
@@ -385,7 +397,7 @@ auto HDSeed::get_seed(
     }
 
     auto seed = opentxs::crypto::Seed{
-        bip39_, symmetric_, factory_, storage_, proto, reason};
+        api_, bip39_, symmetric_, factory_, storage_, proto, reason};
     auto id = seed.ID().str();
 
     OT_ASSERT(id == seedID);
@@ -426,7 +438,8 @@ auto HDSeed::ImportSeed(
     const PasswordPrompt& reason) const -> std::string
 {
     switch (type) {
-        case Style::BIP39: {
+        case Style::BIP39:
+        case Style::PKT: {
         } break;
         default: {
             LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported seed type")
@@ -440,6 +453,7 @@ auto HDSeed::ImportSeed(
 
     try {
         auto seed = opentxs::crypto::Seed{
+            api_,
             bip32_,
             bip39_,
             symmetric_,
@@ -465,7 +479,8 @@ auto HDSeed::LongestWord(const Style type, const Language lang) const noexcept
     -> std::size_t
 {
     switch (type) {
-        case Style::BIP39: {
+        case Style::BIP39:
+        case Style::PKT: {
 
             return bip39_.LongestWord(lang);
         }
@@ -588,15 +603,33 @@ auto HDSeed::ValidateWord(
     const Language lang,
     const std::string_view word) const noexcept -> Matches
 {
-    if (Style::BIP39 != type) { return {}; }
+    switch (type) {
+        case Style::BIP39:
+        case Style::PKT: {
 
-    return bip39_.GetSuggestions(lang, word);
+            return bip39_.GetSuggestions(lang, word);
+        }
+        default: {
+
+            return {};
+        }
+    }
 }
 
 auto HDSeed::WordCount(const Style type, const Strength strength) const noexcept
     -> std::size_t
 {
-    if (Style::BIP39 != type) { return {}; }
+    switch (type) {
+        case Style::BIP39:
+        case Style::PKT: {
+        } break;
+        default: {
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported seed type")
+                .Flush();
+
+            return {};
+        }
+    }
 
     static const auto map = std::map<Strength, std::size_t>{
         {Strength::Twelve, 12},

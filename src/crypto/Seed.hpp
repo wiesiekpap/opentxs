@@ -27,6 +27,7 @@ namespace storage
 class Storage;
 }  // namespace storage
 
+class Core;
 class Factory;
 }  // namespace api
 
@@ -69,6 +70,7 @@ public:
         const SeedStrength strength,
         const PasswordPrompt& reason) noexcept(false);
     Seed(
+        const api::Core& api,
         const opentxs::crypto::Bip32& bip32,
         const opentxs::crypto::Bip39& bip39,
         const api::crypto::Symmetric& symmetric,
@@ -88,6 +90,7 @@ public:
         const Secret& entropy,
         const PasswordPrompt& reason) noexcept(false);
     Seed(
+        const api::Core& api,
         const opentxs::crypto::Bip39& bip39,
         const api::crypto::Symmetric& symmetric,
         const api::Factory& factory,

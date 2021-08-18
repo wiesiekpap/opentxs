@@ -145,7 +145,8 @@ struct Seed::Imp {
             throw std::runtime_error{"Failed to save seed"};
         }
     }
-    Imp(const opentxs::crypto::Bip32& bip32,
+    Imp(const api::Core& api,
+        const opentxs::crypto::Bip32& bip32,
         const opentxs::crypto::Bip39& bip39,
         const api::crypto::Symmetric& symmetric,
         const api::Factory& factory,
@@ -155,11 +156,15 @@ struct Seed::Imp {
         const Secret& words,
         const Secret& passphrase,
         const PasswordPrompt& reason) noexcept(false)
-        : type_(SeedStyle::BIP39)
+        : type_(type)
         , lang_(lang)
         , entropy_([&] {
             auto out = factory.Secret(0);
-            bip39.WordsToSeed(words, out, passphrase);
+
+            if (false ==
+                bip39.WordsToSeed(api, type, lang_, words, out, passphrase)) {
+                throw std::runtime_error{"Failed to calculate entropy"};
+            }
 
             return out;
         }())
@@ -239,7 +244,8 @@ struct Seed::Imp {
             throw std::runtime_error{"Failed to save seed"};
         }
     }
-    Imp(const opentxs::crypto::Bip39& bip39,
+    Imp(const api::Core& api,
+        const opentxs::crypto::Bip39& bip39,
         const api::crypto::Symmetric& symmetric,
         const api::Factory& factory,
         const api::storage::Storage& storage,
@@ -308,7 +314,12 @@ struct Seed::Imp {
             OT_ASSERT(proto.has_words());
 
             auto& entropy = const_cast<Secret&>(entropy_.get());
-            bip39.WordsToSeed(words_, entropy, phrase_);
+
+            if (false == bip39.WordsToSeed(
+                             api, type_, lang_, words_, entropy, phrase_)) {
+                throw std::runtime_error{"Failed to calculate entropy"};
+            }
+
             auto ctext = const_cast<proto::Ciphertext&>(encrypted_entropy_);
             auto cwords = const_cast<proto::Ciphertext&>(encrypted_words_);
 
@@ -443,6 +454,7 @@ private:
         static const auto map = TypeMap{
             {SeedStyle::BIP32, proto::SEEDTYPE_RAW},
             {SeedStyle::BIP39, proto::SEEDTYPE_BIP39},
+            {SeedStyle::PKT, proto::SEEDTYPE_PKT},
         };
 
         return map;
@@ -500,6 +512,7 @@ Seed::Seed(
 }
 
 Seed::Seed(
+    const api::Core& api,
     const opentxs::crypto::Bip32& bip32,
     const opentxs::crypto::Bip39& bip39,
     const api::crypto::Symmetric& symmetric,
@@ -511,6 +524,7 @@ Seed::Seed(
     const Secret& passphrase,
     const PasswordPrompt& reason) noexcept(false)
     : imp_(std::make_unique<Imp>(
+          api,
           bip32,
           bip39,
           symmetric,
@@ -540,6 +554,7 @@ Seed::Seed(
 }
 
 Seed::Seed(
+    const api::Core& api,
     const opentxs::crypto::Bip39& bip39,
     const api::crypto::Symmetric& symmetric,
     const api::Factory& factory,
@@ -547,7 +562,7 @@ Seed::Seed(
     const proto::Seed& proto,
     const PasswordPrompt& reason) noexcept(false)
     : imp_(std::make_unique<
-           Imp>(bip39, symmetric, factory, storage, proto, reason))
+           Imp>(api, bip39, symmetric, factory, storage, proto, reason))
 {
     OT_ASSERT(imp_);
 }

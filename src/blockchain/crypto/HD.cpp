@@ -8,6 +8,7 @@
 #include "blockchain/crypto/HD.hpp"  // IWYU pragma: associated
 
 #include <robin_hood.h>
+#include <map>
 #include <memory>
 #include <set>
 #include <stdexcept>
@@ -23,14 +24,20 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/api/HDSeed.hpp"
 #include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/crypto/Bip32Child.hpp"
+#include "opentxs/crypto/Bip43Purpose.hpp"
 #include "opentxs/protobuf/BlockchainAddress.pb.h"
+#include "opentxs/protobuf/BlockchainHDAccountData.pb.h"
 #include "opentxs/protobuf/HDAccount.pb.h"
+#include "opentxs/protobuf/HDPath.pb.h"
+#include "util/HDIndex.hpp"
 
 #define OT_METHOD "opentxs::blockchain::crypto::implementation::HD::"
 
@@ -42,12 +49,14 @@ auto BlockchainHDSubaccount(
     const api::internal::Core& api,
     const blockchain::crypto::internal::Account& parent,
     const proto::HDPath& path,
+    const blockchain::crypto::HDProtocol standard,
     const PasswordPrompt& reason,
     Identifier& id) noexcept
     -> std::unique_ptr<blockchain::crypto::internal::HD>
 {
     try {
-        return std::make_unique<ReturnType>(api, parent, path, reason, id);
+        return std::make_unique<ReturnType>(
+            api, parent, path, standard, reason, id);
     } catch (const std::exception& e) {
         LogVerbose("opentxs::Factory::")(__FUNCTION__)(": ")(e.what()).Flush();
 
@@ -83,6 +92,7 @@ HD::HD(
     const api::internal::Core& api,
     const internal::Account& parent,
     const proto::HDPath& path,
+    const HDProtocol standard,
     const PasswordPrompt& reason,
     Identifier& id) noexcept(false)
     : Deterministic(
@@ -93,6 +103,7 @@ HD::HD(
           path,
           {{internalType, false, {}}, {externalType, true, {}}},
           id)
+    , standard_(standard)
     , version_(DefaultVersion)
     , cached_internal_()
     , cached_external_()
@@ -151,6 +162,33 @@ HD::HD(
               return out;
           }(),
           id)
+    , standard_([&] {
+        if (serialized.has_hd() && (0 != serialized.hd().standard())) {
+
+            return static_cast<HDProtocol>(serialized.hd().standard());
+        }
+
+        if (0 < path_.child().size()) {
+            using Index = opentxs::HDIndex<Bip43Purpose>;
+
+            static const auto map = std::map<Bip32Index, HDProtocol>{
+                {Index{Bip43Purpose::HDWALLET, Bip32Child::HARDENED},
+                 HDProtocol::BIP_44},
+                {Index{Bip43Purpose::P2SH_P2WPKH, Bip32Child::HARDENED},
+                 HDProtocol::BIP_49},
+                {Index{Bip43Purpose::P2WPKH, Bip32Child::HARDENED},
+                 HDProtocol::BIP_84},
+            };
+
+            try {
+
+                return map.at(path_.child(0));
+            } catch (...) {
+            }
+        }
+
+        return HDProtocol::BIP_32;
+    }())
     , version_(serialized.version())
     , cached_internal_()
     , cached_external_()
@@ -232,6 +270,12 @@ auto HD::save(const rLock& lock) const noexcept -> bool
 
     for (const auto& [index, address] : data_.external_.map_) {
         *serialized.add_externaladdress() = address->Serialize();
+    }
+
+    {
+        auto& hd = *serialized.mutable_hd();
+        hd.set_version(proto_hd_version_);
+        hd.set_standard(static_cast<std::uint16_t>(standard_));
     }
 
     const bool saved =

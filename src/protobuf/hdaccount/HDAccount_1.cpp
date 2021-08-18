@@ -9,6 +9,7 @@
 #include "opentxs/protobuf/HDAccount.pb.h"
 #include "opentxs/protobuf/verify/BlockchainAddress.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/BlockchainDeterministicAccountData.hpp"
+#include "opentxs/protobuf/verify/BlockchainHDAccountData.hpp"
 #include "opentxs/protobuf/verify/VerifyBlockchain.hpp"
 #include "protobuf/Check.hpp"
 
@@ -18,10 +19,11 @@ namespace opentxs::proto
 {
 auto CheckProto_1(const HDAccount& input, const bool silent) -> bool
 {
-    CHECK_SUBOBJECT(
+    OPTIONAL_SUBOBJECT(
         deterministic, HDAccountAllowedBlockchainDeterministicAccountData())
     CHECK_SUBOBJECTS(internaladdress, HDAccountAllowedBlockchainAddress())
     CHECK_SUBOBJECTS(externaladdress, HDAccountAllowedBlockchainAddress())
+    OPTIONAL_SUBOBJECT(hd, HDAccountAllowedBlockchainHDAccountData())
 
     return true;
 }

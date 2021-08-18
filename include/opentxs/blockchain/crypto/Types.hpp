@@ -36,6 +36,7 @@ namespace blockchain
 namespace crypto
 {
 enum class AddressStyle : std::uint16_t;
+enum class HDProtocol : std::uint16_t;
 enum class SubaccountType : std::uint16_t;
 enum class Subchain : std::uint8_t;
 

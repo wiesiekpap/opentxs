@@ -34,6 +34,7 @@ namespace storage
 class Storage;
 }  // namespace storage
 
+class Core;
 class Crypto;
 class Endpoints;
 class Factory;
@@ -73,6 +74,7 @@ auto Context(
 auto Endpoints(const network::zeromq::Context& zmq, const int instance) noexcept
     -> std::unique_ptr<api::Endpoints>;
 auto HDSeed(
+    const api::Core& api,
     const api::Factory& factory,
     const api::crypto::internal::Asymmetric& asymmetric,
     const api::crypto::Symmetric& symmetric,

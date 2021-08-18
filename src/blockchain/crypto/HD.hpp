@@ -22,6 +22,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
@@ -70,10 +71,12 @@ public:
         const Subchain type,
         const Bip32Index index,
         const PasswordPrompt& reason) const noexcept -> ECKey final;
+    auto Standard() const noexcept -> HDProtocol final { return standard_; }
 
     HD(const api::internal::Core& api,
        const internal::Account& parent,
        const proto::HDPath& path,
+       const HDProtocol standard,
        const PasswordPrompt& reason,
        Identifier& id)
     noexcept(false);
@@ -87,7 +90,9 @@ public:
 
 private:
     static const VersionNumber DefaultVersion{1};
+    static constexpr auto proto_hd_version_ = VersionNumber{1};
 
+    const HDProtocol standard_;
     VersionNumber version_;
     mutable std::unique_ptr<opentxs::crypto::key::HD> cached_internal_;
     mutable std::unique_ptr<opentxs::crypto::key::HD> cached_external_;

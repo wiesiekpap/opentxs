@@ -259,4 +259,12 @@ auto HDAccountAllowedBlockchainDeterministicAccountData() noexcept
 
     return output;
 }
+auto HDAccountAllowedBlockchainHDAccountData() noexcept -> const VersionMap&
+{
+    static const auto output = VersionMap{
+        {1, {1, 1}},
+    };
+
+    return output;
+}
 }  // namespace opentxs::proto

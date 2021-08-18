@@ -33,6 +33,7 @@
 #include "opentxs/crypto/Bip39.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/Language.hpp"
+#include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/crypto/key/HD.hpp"
@@ -638,7 +639,12 @@ public:
                 entropy, calculatedWords, ot::crypto::Language::en));
 
             crypto_.BIP39().WordsToSeed(
-                calculatedWords, calculatedRoot, passphrase);
+                client_,
+                ot::crypto::SeedStyle::BIP39,
+                ot::crypto::Language::en,
+                calculatedWords,
+                calculatedRoot,
+                passphrase);
 
             EXPECT_EQ(targetWords, calculatedWords);
             EXPECT_EQ(targetRoot, calculatedRoot);

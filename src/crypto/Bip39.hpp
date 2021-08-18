@@ -12,14 +12,17 @@
 #include <string_view>
 #include <vector>
 
+#include "opentxs/Bytes.hpp"
 #include "opentxs/crypto/Bip39.hpp"
 #include "opentxs/crypto/Language.hpp"
+#include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/Types.hpp"
 
 namespace opentxs
 {
 namespace api
 {
+class Core;
 class Crypto;
 }  // namespace api
 
@@ -43,9 +46,12 @@ public:
     auto SeedToWords(const Secret& seed, Secret& words, const Language lang)
         const noexcept -> bool final;
     auto WordsToSeed(
+        const api::Core& api,
+        const SeedStyle type,
+        const Language lang,
         const Secret& words,
         Secret& seed,
-        const Secret& passphrase) const noexcept -> void final;
+        const Secret& passphrase) const noexcept -> bool final;
 
     Bip39(const api::Crypto& crypto) noexcept;
     ~Bip39() final = default;
@@ -68,15 +74,23 @@ private:
 
     static auto bitShift(std::size_t theBit) noexcept -> std::byte;
     static auto find_longest_words(const Words& words) noexcept -> LongestWords;
+    static auto tokenize(const Language lang, const ReadView words) noexcept(
+        false) -> std::vector<std::size_t>;
 
     auto entropy_to_words(
         const Secret& entropy,
         Secret& words,
         const Language lang) const noexcept -> bool;
-    void words_to_root(
+    auto words_to_root_bip39(
         const Secret& words,
         Secret& bip32RootNode,
-        const Secret& passphrase) const noexcept;
+        const Secret& passphrase) const noexcept -> bool;
+    auto words_to_root_pkt(
+        const api::Core& api,
+        const Language lang,
+        const Secret& words,
+        Secret& bip32RootNode,
+        const Secret& passphrase) const noexcept -> bool;
 
     Bip39() = delete;
     Bip39(const Bip39&) = delete;

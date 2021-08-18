@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/crypto/HDProtocol.hpp"
+
 #pragma once
 
 #include <cstddef>
@@ -19,6 +21,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -91,6 +94,7 @@ public:
     auto AddHDNode(
         const identifier::Nym& nym,
         const proto::HDPath& path,
+        const crypto::HDProtocol standard,
         const PasswordPrompt& reason,
         Identifier& id) noexcept -> bool final;
     auto Nym(const identifier::Nym& id) noexcept -> internal::Account& final;

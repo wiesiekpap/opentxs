@@ -255,11 +255,22 @@ auto Blockchain::LookupContacts(const Data& pubkeyHash) const noexcept
 
 auto Blockchain::NewHDSubaccount(
     const identifier::Nym& nymID,
-    const BlockchainAccountType standard,
+    const opentxs::blockchain::crypto::HDProtocol standard,
     const Chain chain,
     const PasswordPrompt& reason) const noexcept -> OTIdentifier
 {
-    return imp_->NewHDSubaccount(nymID, standard, chain, reason);
+    return imp_->NewHDSubaccount(nymID, standard, chain, chain, reason);
+}
+
+auto Blockchain::NewHDSubaccount(
+    const identifier::Nym& nymID,
+    const opentxs::blockchain::crypto::HDProtocol standard,
+    const Chain derivationChain,
+    const Chain targetChain,
+    const PasswordPrompt& reason) const noexcept -> OTIdentifier
+{
+    return imp_->NewHDSubaccount(
+        nymID, standard, derivationChain, targetChain, reason);
 }
 
 auto Blockchain::NewNym(const identifier::Nym& id) const noexcept -> void

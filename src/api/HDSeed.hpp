@@ -46,6 +46,7 @@ namespace storage
 class Storage;
 }  // namespace storage
 
+class Core;
 class Factory;
 }  // namespace api
 
@@ -160,6 +161,7 @@ public:
         -> std::string final;
 
     HDSeed(
+        const api::Core& api,
         const api::Factory& factory,
         const api::crypto::internal::Asymmetric& asymmetric,
         const api::crypto::Symmetric& symmetric,
@@ -172,6 +174,7 @@ public:
 private:
     using SeedMap = std::map<std::string, opentxs::crypto::Seed>;
 
+    const api::Core& api_;  // WARNING do not access during construction
     const api::Factory& factory_;
     const api::crypto::Symmetric& symmetric_;
 #if OT_CRYPTO_WITH_BIP32

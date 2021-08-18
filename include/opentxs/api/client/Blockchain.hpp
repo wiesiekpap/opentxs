@@ -6,6 +6,8 @@
 #ifndef OPENTXS_API_CLIENT_BLOCKCHAIN_HPP
 #define OPENTXS_API_CLIENT_BLOCKCHAIN_HPP
 
+// IWYU pragma: no_include "opentxs/blockchain/crypto/HDProtocol.hpp"
+
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
@@ -166,8 +168,14 @@ public:
         const Data& pubkeyHash) const noexcept = 0;
     virtual OTIdentifier NewHDSubaccount(
         const identifier::Nym& nymID,
-        const BlockchainAccountType standard,
+        const opentxs::blockchain::crypto::HDProtocol standard,
         const Chain chain,
+        const PasswordPrompt& reason) const noexcept = 0;
+    virtual OTIdentifier NewHDSubaccount(
+        const identifier::Nym& nymID,
+        const opentxs::blockchain::crypto::HDProtocol standard,
+        const Chain derivationChain,
+        const Chain targetChain,
         const PasswordPrompt& reason) const noexcept = 0;
     OPENTXS_NO_EXPORT virtual OTIdentifier NewPaymentCodeSubaccount(
         const identifier::Nym& nymID,

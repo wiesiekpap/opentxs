@@ -23,6 +23,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/core/Data.hpp"
@@ -72,7 +73,7 @@ auto Test_BlockchainActivity::account_1_id() const noexcept
 {
     static const auto output = api_.Blockchain().NewHDSubaccount(
         nym_1_id(),
-        ot::BlockchainAccountType::BIP44,
+        ot::blockchain::crypto::HDProtocol::BIP_44,
         ot::blockchain::Type::Bitcoin,
         reason_);
 
@@ -84,7 +85,7 @@ auto Test_BlockchainActivity::account_2_id() const noexcept
 {
     static const auto output = api_.Blockchain().NewHDSubaccount(
         nym_2_id(),
-        ot::BlockchainAccountType::BIP44,
+        ot::blockchain::crypto::HDProtocol::BIP_44,
         ot::blockchain::Type::Bitcoin,
         reason_);
 

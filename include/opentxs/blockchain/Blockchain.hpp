@@ -51,6 +51,7 @@ OPENTXS_EXPORT auto FilterHash(
 OPENTXS_EXPORT auto HashToNumber(const api::Core& api, ReadView hex) noexcept
     -> std::string;
 OPENTXS_EXPORT auto HashToNumber(const Hash& hash) noexcept -> std::string;
+OPENTXS_EXPORT auto HasSegwit(const Type type) noexcept -> bool;
 OPENTXS_EXPORT auto IsTestnet(const Type type) noexcept -> bool;
 OPENTXS_EXPORT auto MerkleHash(
     const api::Core& api,
