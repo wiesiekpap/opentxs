@@ -207,7 +207,7 @@ auto Sodium::Derive(
                 switch (type) {
                     case key::symmetric::Source::Argon2i: {
 
-                        return ::argon2i_hash_raw(
+                        return ::argon2i_hash_raw_fucklibsodium(
                             static_cast<std::uint32_t>(operations),
                             static_cast<std::uint32_t>(difficulty >> 10),
                             static_cast<std::uint32_t>(parallel),
@@ -220,7 +220,7 @@ auto Sodium::Derive(
                     }
                     case key::symmetric::Source::Argon2id: {
 
-                        return ::argon2id_hash_raw(
+                        return ::argon2id_hash_raw_fucklibsodium(
                             static_cast<std::uint32_t>(operations),
                             static_cast<std::uint32_t>(difficulty >> 10),
                             static_cast<std::uint32_t>(parallel),
@@ -239,7 +239,8 @@ auto Sodium::Derive(
             }();
 
             if (ARGON2_OK != rc) {
-                throw std::runtime_error{::argon2_error_message(rc)};
+                throw std::runtime_error{
+                    ::argon2_error_message_fucklibsodium(rc)};
             }
         } else {
             const auto rc = [&] {
