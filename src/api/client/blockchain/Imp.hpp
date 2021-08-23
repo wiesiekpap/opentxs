@@ -281,6 +281,7 @@ struct Blockchain::Imp {
     virtual auto ReportScan(
         const opentxs::blockchain::Type chain,
         const identifier::Nym& owner,
+        const opentxs::blockchain::crypto::SubaccountType type,
         const Identifier& account,
         const Subchain subchain,
         const opentxs::blockchain::block::Position& progress) const noexcept

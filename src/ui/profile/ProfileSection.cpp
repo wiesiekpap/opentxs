@@ -160,7 +160,6 @@ ProfileSection::ProfileSection(
     CustomData& custom) noexcept
     : Combined(api, parent.NymID(), parent.WidgetID(), parent, rowID, key)
 {
-    init();
     startup_.reset(new std::thread(
         &ProfileSection::startup,
         this,

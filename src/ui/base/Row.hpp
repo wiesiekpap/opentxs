@@ -16,6 +16,11 @@ class Row : public RowType<InterfaceType, ParentType, IdentifierType>,
             public Widget,
             public Lockable
 {
+public:
+    auto AddChildren(implementation::CustomData&& data) noexcept -> void final
+    {
+    }
+
 protected:
     Row(const ParentType& parent,
         const api::client::internal::Manager& api,

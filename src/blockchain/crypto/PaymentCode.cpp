@@ -132,7 +132,7 @@ PaymentCode::PaymentCode(
           SubaccountType::PaymentCode,
           internal::PaymentCode::GetID(api, parent.Chain(), local, remote),
           path,
-          {{internalType, false, {}}, {externalType, false, {}}},
+          {api, internalType, false, externalType, false},
           id)
     , version_(DefaultVersion)
     , outgoing_notifications_()
@@ -181,8 +181,8 @@ PaymentCode::PaymentCode(
           serialized.incoming().address().size(),
           serialized.outgoing().address().size(),
           [&, fallback = std::move(contact)] {
-              auto out = ChainData{
-                  {internalType, false, {}}, {externalType, false, {}}};
+              auto out =
+                  ChainData{api, internalType, false, externalType, false};
               auto& internal = out.internal_.map_;
               auto& external = out.external_.map_;
               internal.reserve(serialized.outgoing().address().size());

@@ -7,9 +7,6 @@
 #include "1_Internal.hpp"                    // IWYU pragma: associated
 #include "ui/accountsummary/IssuerItem.hpp"  // IWYU pragma: associated
 
-#if OT_QT
-#include <QObject>
-#endif  // OT_QT
 #include <algorithm>
 #include <atomic>
 #include <iterator>
@@ -37,9 +34,6 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
-#if OT_QT
-#include "opentxs/ui/qt/AccountSummary.hpp"
-#endif  // OT_QT
 #include "ui/base/Combined.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::IssuerItem::"
@@ -78,13 +72,7 @@ IssuerItem::IssuerItem(
           parent,
           rowID,
           key,
-          false
-#if OT_QT
-          ,
-          Roles{},
-          3
-#endif
-          )
+          false)
     , listeners_({
           {api_.Endpoints().AccountUpdate(),
            new MessageProcessor<IssuerItem>(&IssuerItem::process_account)},
@@ -96,7 +84,6 @@ IssuerItem::IssuerItem(
 {
     OT_ASSERT(issuer_)
 
-    init();
     setup_listeners(listeners_);
     startup_.reset(new std::thread(&IssuerItem::startup, this));
 
@@ -157,50 +144,11 @@ void IssuerItem::process_account(const Message& message) noexcept
     if (issuerID == issuer_->IssuerID()) { process_account(accountID); }
 }
 
-#if OT_QT
-QVariant IssuerItem::qt_data(const int column, int role) const noexcept
-{
-    switch (role) {
-        case Qt::DisplayRole: {
-            switch (column) {
-                case AccountSummaryQt::IssuerNameColumn: {
-                    return Name().c_str();
-                }
-                default: {
-                    return {};
-                }
-            }
-        }
-        case Qt::ToolTipRole: {
-            return Debug().c_str();
-        }
-        case Qt::CheckStateRole: {
-            switch (column) {
-                case AccountSummaryQt::ConnectionStateColumn: {
-                    return ConnectionState();
-                }
-                case AccountSummaryQt::TrustedColumn: {
-                    return Trusted();
-                }
-                default: {
-                }
-            }
-
-            [[fallthrough]];
-        }
-        default: {
-            return {};
-        }
-    }
-}
-#endif
-
 void IssuerItem::refresh_accounts() noexcept
 {
     const auto blank = identifier::UnitDefinition::Factory();
     const auto accounts = issuer_->AccountList(currency_, blank);
-    LogDetail(OT_METHOD)(__FUNCTION__)(": Loading ")(accounts.size())(
-        " accounts.")
+    LogDetail(OT_METHOD)(__func__)(": Loading ")(accounts.size())(" accounts.")
         .Flush();
 
     for (const auto& id : accounts) { process_account(id); }

@@ -5,9 +5,6 @@
 
 #pragma once
 
-#if OT_QT
-#include <QVariant>
-#endif  // OT_QT
 #include <atomic>
 #include <iosfwd>
 #include <memory>
@@ -28,6 +25,8 @@
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/ui/BlockchainSelectionItem.hpp"
 #include "ui/base/Row.hpp"
+
+class QVariant;
 
 namespace opentxs
 {
@@ -79,11 +78,6 @@ public:
     auto IsTestnet() const noexcept -> bool final { return testnet_; }
     auto Type() const noexcept -> blockchain::Type final { return row_id_; }
 
-#if OT_QT
-    auto qt_data(const int column, const int role) const noexcept
-        -> QVariant final;
-#endif
-
     BlockchainSelectionItem(
         const BlockchainSelectionInternalInterface& parent,
         const api::client::internal::Manager& api,
@@ -97,6 +91,9 @@ private:
     const bool testnet_;
     const std::string name_;
     std::atomic_bool enabled_;
+
+    auto qt_data(const int column, const int role, QVariant& out) const noexcept
+        -> void final;
 
     auto reindex(const BlockchainSelectionSortKey&, CustomData&) noexcept
         -> bool final;

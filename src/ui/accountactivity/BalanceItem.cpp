@@ -7,11 +7,6 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "ui/accountactivity/BalanceItem.hpp"  // IWYU pragma: associated
 
-#if OT_QT
-#include <QDateTime>
-#include <QObject>
-#include <QStringList>
-#endif  // OT_QT
 #include <algorithm>
 #include <chrono>
 #include <memory>
@@ -32,18 +27,12 @@
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/protobuf/PaymentWorkflow.pb.h"
-#if OT_QT
-#include "opentxs/ui/qt/AccountActivity.hpp"
-#endif  // OT_QT
 #if OT_BLOCKCHAIN
 #include "ui/accountactivity/BlockchainBalanceItem.hpp"
-#endif  // OT_QT
+#endif  // OT_BLOCKCHAIN
 #include "ui/accountactivity/ChequeBalanceItem.hpp"
 #include "ui/accountactivity/TransferBalanceItem.hpp"
 #include "ui/base/Widget.hpp"
-#if OT_QT
-#include "util/Polarity.hpp"  // IWYU pragma: keep
-#endif                        // OT_QT
 
 #define OT_METHOD "opentxs::ui::implementation::BalanceItem::"
 
@@ -105,7 +94,7 @@ auto BalanceItem(
         }
         case api::client::PaymentWorkflowType::Error:
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unhandled workflow type (")(
+            LogOutput(OT_METHOD)(__func__)(": Unhandled workflow type (")(
                 type)(")")
                 .Flush();
         }
@@ -213,93 +202,6 @@ auto BalanceItem::get_contact_name(const identifier::Nym& nymID) const noexcept
 
     return output;
 }
-
-#if OT_QT
-QVariant BalanceItem::qt_data(const int column, int role) const noexcept
-{
-    switch (role) {
-        case Qt::TextAlignmentRole: {
-            switch (column) {
-                case AccountActivityQt::TextColumn:
-                case AccountActivityQt::MemoColumn: {
-
-                    return Qt::AlignLeft;
-                }
-                default: {
-
-                    return Qt::AlignHCenter;
-                }
-            }
-        }
-        case Qt::DisplayRole: {
-            switch (column) {
-                case AccountActivityQt::AmountColumn: {
-
-                    return qt_data(column, AccountActivityQt::AmountRole);
-                }
-                case AccountActivityQt::TextColumn: {
-
-                    return qt_data(column, AccountActivityQt::TextRole);
-                }
-                case AccountActivityQt::MemoColumn: {
-
-                    return qt_data(column, AccountActivityQt::MemoRole);
-                }
-                case AccountActivityQt::TimeColumn: {
-
-                    return qt_data(column, AccountActivityQt::TimeRole);
-                }
-                case AccountActivityQt::UUIDColumn: {
-
-                    return qt_data(column, AccountActivityQt::UUIDRole);
-                }
-                default: {
-                }
-            }
-        } break;
-        case AccountActivityQt::AmountRole: {
-            return DisplayAmount().c_str();
-        }
-        case AccountActivityQt::TextRole: {
-            return Text().c_str();
-        }
-        case AccountActivityQt::MemoRole: {
-            return Memo().c_str();
-        }
-        case AccountActivityQt::TimeRole: {
-            auto qdatetime = QDateTime{};
-            qdatetime.setSecsSinceEpoch(Clock::to_time_t(Timestamp()));
-
-            return qdatetime;
-        }
-        case AccountActivityQt::UUIDRole: {
-            return UUID().c_str();
-        }
-        case AccountActivityQt::PolarityRole: {
-            return polarity(Amount());
-        }
-        case AccountActivityQt::ContactsRole: {
-            auto output = QStringList{};
-
-            for (const auto& contact : Contacts()) {
-                output << contact.c_str();
-            }
-
-            return output;
-        }
-        case AccountActivityQt::WorkflowRole: {
-            return Workflow().c_str();
-        }
-        case AccountActivityQt::TypeRole: {
-            return static_cast<int>(Type());
-        }
-        default: {
-        }
-    };
-
-    return {};
-}
-#endif
 
 auto BalanceItem::recover_workflow(CustomData& custom) noexcept
     -> const proto::PaymentWorkflow&

@@ -9,14 +9,27 @@ function(
   cxx-sources
 )
   include_directories(
-    ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/tests
+    ${opentxs_SOURCE_DIR}/include
+    ${opentxs_SOURCE_DIR}/tests
     ${GTEST_INCLUDE_DIRS}
   )
 
   add_executable(
     ${target_name} ${cxx-sources} $<TARGET_OBJECTS:opentxs-test-helpers>
   )
+
+  target_sources(
+    ${target_name} PRIVATE "${opentxs_SOURCE_DIR}/tests/OTTestEnvironment.cpp"
+  )
+
+  if(OT_QT_EXPORT)
+    target_sources(${target_name} PRIVATE "${opentxs_SOURCE_DIR}/tests/Qt.cpp")
+    target_link_libraries(${target_name} PRIVATE Qt5::Core)
+  else()
+    target_sources(
+      ${target_name} PRIVATE "${opentxs_SOURCE_DIR}/tests/no-Qt.cpp"
+    )
+  endif()
 
   target_link_libraries(
     ${target_name} PRIVATE opentxs::libopentxs Boost::program_options
@@ -58,9 +71,8 @@ function(
   file_name
 )
   set(cxx-sources
-      "${PROJECT_SOURCE_DIR}/tests/main.cpp"
+      "${opentxs_SOURCE_DIR}/tests/main.cpp"
       "${file_name}"
-      "${PROJECT_SOURCE_DIR}/tests/OTTestEnvironment.cpp"
   )
 
   add_opentx_test_target("${target_name}" "${cxx-sources}")
@@ -72,9 +84,9 @@ function(
   file_name
 )
   set(cxx-sources
-      "${PROJECT_SOURCE_DIR}/tests/lowlevel.cpp"
+      "${opentxs_SOURCE_DIR}/tests/lowlevel.cpp"
       "${file_name}"
-      "${PROJECT_SOURCE_DIR}/tests/OTLowLevelTestEnvironment.cpp"
+      "${opentxs_SOURCE_DIR}/tests/OTLowLevelTestEnvironment.cpp"
   )
 
   add_opentx_test_target("${target_name}" "${cxx-sources}")

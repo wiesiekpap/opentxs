@@ -7,14 +7,7 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "ui/unitlist/UnitListItem.hpp"  // IWYU pragma: associated
 
-#if OT_QT
-#include <QObject>
-#endif  // OT_QT
 #include <memory>
-
-#if OT_QT
-#include "opentxs/ui/qt/UnitList.hpp"
-#endif  // OT_QT
 
 // #define OT_METHOD "opentxs::ui::implementation::UnitListItem::"
 
@@ -46,22 +39,4 @@ UnitListItem::UnitListItem(
     , name_(sortKey)
 {
 }
-
-#if OT_QT
-auto UnitListItem::qt_data(const int column, int role) const noexcept
-    -> QVariant
-{
-    switch (role) {
-        case UnitListQt::UnitIDRole: {
-            return static_cast<unsigned int>(Unit());
-        }
-        case Qt::DisplayRole: {
-            return Name().c_str();
-        }
-        default: {
-        }
-    }
-    return {};
-}
-#endif
 }  // namespace opentxs::ui::implementation

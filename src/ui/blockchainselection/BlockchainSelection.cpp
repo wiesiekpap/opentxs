@@ -7,17 +7,11 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "ui/blockchainselection/BlockchainSelection.hpp"  // IWYU pragma: associated
 
-#if OT_QT
-#include <QAbstractItemModel>
-#include <QDebug>
-#include <QObject>
-#include <QVariant>
-#endif  // OT_QT
-#include <algorithm>
 #include <future>
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "internal/api/client/Client.hpp"
@@ -39,9 +33,6 @@
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/ui/Blockchains.hpp"
-#if OT_QT
-#include "opentxs/ui/qt/BlockchainSelection.hpp"
-#endif  // OT_QT
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::BlockchainSelection::"
@@ -55,93 +46,13 @@ auto BlockchainSelectionModel(
     const api::network::internal::Blockchain& blockchain,
     const ui::Blockchains type,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::BlockchainSelection>
+    -> std::unique_ptr<ui::internal::BlockchainSelection>
 {
     using ReturnType = ui::implementation::BlockchainSelection;
 
     return std::make_unique<ReturnType>(api, blockchain, type, cb);
 }
-
-#if OT_QT
-auto BlockchainSelectionQtModel(
-    ui::implementation::BlockchainSelection& parent) noexcept
-    -> std::unique_ptr<ui::BlockchainSelectionQt>
-{
-    using ReturnType = ui::BlockchainSelectionQt;
-
-    return std::make_unique<ReturnType>(parent);
-}
-#endif  // OT_QT
 }  // namespace opentxs::factory
-
-#if OT_QT
-namespace opentxs::ui
-{
-QT_PROXY_MODEL_WRAPPER_EXTRA(
-    BlockchainSelectionQt,
-    implementation::BlockchainSelection)
-
-auto BlockchainSelectionQt::disableChain(const int chain) noexcept -> bool
-{
-    return parent_.Disable(static_cast<blockchain::Type>(chain));
-}
-
-auto BlockchainSelectionQt::enableChain(const int chain) noexcept -> bool
-{
-    return parent_.Enable(static_cast<blockchain::Type>(chain));
-}
-
-auto BlockchainSelectionQt::enabledCount() const noexcept -> int
-{
-    return static_cast<int>(parent_.EnabledCount());
-}
-
-auto BlockchainSelectionQt::flags(const QModelIndex& index) const
-    -> Qt::ItemFlags
-{
-    return parent_.flags(index) | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable;
-}
-
-auto BlockchainSelectionQt::init() noexcept -> void
-{
-    parent_.Set([this](auto chain, auto enabled, auto total) -> void {
-        const auto type = static_cast<int>(static_cast<std::uint32_t>(chain));
-
-        if (enabled) {
-            emit chainEnabled(type);
-        } else {
-            emit chainDisabled(type);
-        }
-
-        emit enabledChanged(static_cast<int>(total));
-    });
-}
-
-auto BlockchainSelectionQt::setData(
-    const QModelIndex& index,
-    const QVariant& value,
-    int role) -> bool
-{
-    if (false == index.isValid()) { return false; }
-
-    if (role == Qt::CheckStateRole) {
-        const auto chain = data(index, TypeRole).toInt();
-
-        if (static_cast<Qt::CheckState>(value.toInt()) == Qt::Checked) {
-
-            return enableChain(chain);
-        } else {
-
-            return disableChain(chain);
-        }
-    }
-
-    return false;
-}
-
-BlockchainSelectionQt::~BlockchainSelectionQt() { parent_.Set({}); }
-}  // namespace opentxs::ui
-#endif
 
 namespace opentxs::ui::implementation
 {
@@ -150,20 +61,7 @@ BlockchainSelection::BlockchainSelection(
     const api::network::internal::Blockchain& blockchain,
     const ui::Blockchains type,
     const SimpleCallback& cb) noexcept
-    : BlockchainSelectionList(
-          api,
-          Identifier::Factory(),
-          cb,
-          false
-#if OT_QT
-          ,
-          Roles{
-              {BlockchainSelectionQt::TypeRole, "type"},
-              {BlockchainSelectionQt::IsTestnet, "testnet"},
-          },
-          1
-#endif
-          )
+    : BlockchainSelectionList(api, Identifier::Factory(), cb, false)
     , Worker(api, {})
     , blockchain_(blockchain)
     , filter_(filter(type))
@@ -286,7 +184,7 @@ auto BlockchainSelection::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -322,7 +220,7 @@ auto BlockchainSelection::pipeline(const Message& in) noexcept -> void
             do_work();
         } break;
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unhandled type: ")(
+            LogOutput(OT_METHOD)(__func__)(": Unhandled type: ")(
                 static_cast<OTZMQWorkType>(work))
                 .Flush();
 
@@ -374,9 +272,9 @@ auto BlockchainSelection::process_state(
         custom);
 }
 
-auto BlockchainSelection::Set(const EnabledCallback& cb) const noexcept -> void
+auto BlockchainSelection::Set(EnabledCallback&& cb) const noexcept -> void
 {
-    enabled_callback_.set(cb);
+    enabled_callback_.set(std::move(cb));
 }
 
 auto BlockchainSelection::startup() noexcept -> void

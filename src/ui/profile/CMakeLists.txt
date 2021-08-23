@@ -24,24 +24,6 @@ target_link_libraries(opentxs-ui-profile PRIVATE opentxs::messages)
 target_include_directories(
   opentxs-ui-profile SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
-
-if(OT_WITH_QT)
-  set(ot-qobject-install-headers
-      "${opentxs_SOURCE_DIR}/include/opentxs/ui/qt/Profile.hpp"
-  )
-  qt5_wrap_cpp(MOC_SRCS ${ot-qobject-install-headers})
-  target_sources(opentxs-ui-profile PRIVATE ${MOC_SRCS})
-
-  if(OPENTXS_STANDALONE)
-    install(
-      FILES ${ot-qobject-install-headers}
-      DESTINATION include/opentxs/ui/qt
-      COMPONENT dev
-    )
-  endif()
-endif()
-
-opentxs_set_qt(opentxs-ui-profile)
 target_sources(opentxs-ui-profile PRIVATE ${cxx-install-headers})
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-profile>)
 add_dependencies(opentxs-ui-profile generated_code)

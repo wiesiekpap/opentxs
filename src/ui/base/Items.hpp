@@ -13,6 +13,17 @@
 
 #include "opentxs/core/Log.hpp"
 
+namespace opentxs
+{
+namespace ui
+{
+namespace internal
+{
+struct Row;
+}  // namespace internal
+}  // namespace ui
+}  // namespace opentxs
+
 namespace opentxs::ui::implementation
 {
 template <typename RowID, typename SortKey, typename RowPointer>
@@ -27,8 +38,9 @@ public:
     using Data = std::list<Row>;
     using Iterator = typename Data::iterator;
     using Index = std::map<RowID, Iterator>;
+    using Insert = std::pair<Iterator, internal::Row*>;
     using Position = std::pair<Iterator, std::size_t>;
-    using Move = std::pair<Position, Position>;
+    using Move = std::pair<Insert, Insert>;
 
     auto active() const noexcept -> std::vector<RowID>
     {
@@ -94,19 +106,27 @@ public:
         }
     }
     auto find_insert_position(const SortKey& key, const RowID& id) noexcept
-        -> Position
+        -> Insert
     {
-        auto output = Position{data_.end(), offset_};
-        auto& [it, index] = output;
+        auto output = Insert{data_.end(), nullptr};
+        auto& [it, before] = output;
 
-        for (auto i{data_.begin()}; i != data_.end(); ++i, ++index) {
+        for (auto i{data_.begin()}; i != data_.end(); ++i) {
             const auto& [rKey, rId, item] = *i;
 
-            if (sort(key, id, rKey, rId)) { continue; }
+            if (sort(key, id, rKey, rId)) {
 
-            it = i;
+                continue;
+            } else {
+                it = i;
 
-            break;
+                break;
+            }
+        }
+
+        if (data_.begin() != it) {
+            const auto& [rKey, rId, item] = *std::prev(it);
+            before = item.get();
         }
 
         return output;
@@ -116,25 +136,34 @@ public:
         const SortKey& newKey,
         const RowID& newID) noexcept -> std::optional<Move>
     {
-        auto output = Move{{data_.end(), 0}, {data_.end(), offset_}};
+        auto output = Move{{data_.end(), nullptr}, {data_.end(), nullptr}};
         auto& [from, to] = output;
-        auto& [it, index] = to;
+        auto& [it, before] = to;
 
         try {
             const auto it = index_.at(oldId);
-            from = Position{
-                it,
-                static_cast<std::size_t>(std::distance(data_.begin(), it)) +
-                    offset_};
+            from = Insert{it, [&]() -> internal::Row* {
+                              if (data_.begin() == it) {
+
+                                  return nullptr;
+                              } else {
+
+                                  return std::prev(it)->item_.get();
+                              }
+                          }()};
         } catch (...) {
 
             return std::nullopt;
         }
 
-        for (auto i{data_.begin()}; i != data_.end(); ++i, ++index) {
+        for (auto i{data_.begin()}; i != data_.end(); ++i) {
             const auto& [rKey, rId, item] = *i;
 
-            if (sort(newKey, newID, rKey, rId)) { continue; }
+            if (sort(newKey, newID, rKey, rId)) {
+                before = item.get();
+
+                continue;
+            }
 
             it = i;
 
@@ -159,10 +188,12 @@ public:
         const Iterator& position,
         const SortKey& key,
         const RowID& id,
-        const RowPointer& item) noexcept
+        const RowPointer& item) noexcept -> RowPointer
     {
         auto& index = index_[id];
         index = data_.emplace(position, Row{key, id, item});
+
+        return index->item_;
     }
     auto move_before(
         const RowID& oldId,

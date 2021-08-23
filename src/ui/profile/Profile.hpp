@@ -5,10 +5,9 @@
 
 #pragma once
 
-#if OT_QT
-#include <QHash>
-#endif  // OT_QT
+#include <list>
 #include <map>
+#include <mutex>
 #include <set>
 #include <string>
 #include <utility>
@@ -20,6 +19,7 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/contact/ContactSectionName.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -87,15 +87,10 @@ public:
         const std::string& lang) const noexcept -> ItemTypeList final;
     auto AllowedSections(const std::string& lang) const noexcept
         -> SectionTypeList final;
+    auto ClearCallbacks() const noexcept -> void final;
     auto Delete(const int section, const int type, const std::string& claimID)
         const noexcept -> bool final;
     auto DisplayName() const noexcept -> std::string final;
-#if OT_QT
-    int FindRow(const ProfileRowID& id) const noexcept final
-    {
-        return find_row(id);
-    }
-#endif
     auto NymID() const noexcept -> const identifier::Nym& final
     {
         return primary_id_;
@@ -118,6 +113,8 @@ public:
         const std::string& claimID,
         const std::string& value) const noexcept -> bool final;
 
+    auto SetCallbacks(Callbacks&& cb) noexcept -> void final;
+
     Profile(
         const api::client::internal::Manager& api,
         const identifier::Nym& nymID,
@@ -125,7 +122,13 @@ public:
     ~Profile() final;
 
 private:
+    struct CallbackHolder {
+        mutable std::mutex lock_{};
+        Callbacks cb_{};
+    };
+
     const ListenerDefinitions listeners_;
+    mutable CallbackHolder callbacks_;
     std::string name_;
     std::string payment_code_;
 
@@ -150,9 +153,9 @@ private:
         return ProfileList::last(id);
     }
 
-    void process_nym(const identity::Nym& nym) noexcept;
-    void process_nym(const Message& message) noexcept;
-    void startup() noexcept;
+    auto process_nym(const identity::Nym& nym) noexcept -> void;
+    auto process_nym(const Message& message) noexcept -> void;
+    auto startup() noexcept -> void;
 
     Profile() = delete;
     Profile(const Profile&) = delete;

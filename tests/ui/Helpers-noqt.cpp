@@ -23,6 +23,14 @@ auto check_activity_thread_qt(
     return true;
 }
 
+auto check_blockchain_account_status_qt(
+    const User&,
+    const ot::blockchain::Type,
+    const BlockchainAccountStatusData&) noexcept -> bool
+{
+    return true;
+}
+
 auto check_contact_list_qt(
     const User&,
     const std::vector<ContactListData>&) noexcept -> bool

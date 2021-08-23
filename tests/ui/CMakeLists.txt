@@ -12,6 +12,11 @@ else()
   target_sources(opentxs-test-helpers PRIVATE "Helpers-noqt.cpp")
 endif()
 
+add_opentx_test(
+  unittests-opentxs-ui-blockchain-account-status
+  Test_BlockchainAccountStatus.cpp
+)
+
 if(SECP256K1_EXPORT AND BIP32_EXPORT)
   add_opentx_test(unittests-opentxs-ui-contactlist Test_ContactList.cpp)
 endif()

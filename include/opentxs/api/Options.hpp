@@ -16,6 +16,8 @@
 
 #include "opentxs/blockchain/Types.hpp"
 
+class QObject;
+
 namespace opentxs
 {
 class OPENTXS_EXPORT Options final
@@ -31,6 +33,7 @@ public:
     auto BlockchainBindIpv6() const noexcept -> const std::set<std::string>&;
     auto BlockchainStorageLevel() const noexcept -> int;
     auto BlockchainWalletEnabled() const noexcept -> bool;
+    auto DefaultMintKeyBytes() const noexcept -> std::size_t;
     auto DisabledBlockchains() const noexcept -> std::set<blockchain::Type>;
     auto HelpText() const noexcept -> const std::string&;
     auto Home() const noexcept -> const char*;
@@ -48,6 +51,7 @@ public:
     auto NotaryPublicPort() const noexcept -> std::uint16_t;
     auto NotaryTerms() const noexcept -> const char*;
     auto ProvideBlockchainSyncServer() const noexcept -> bool;
+    auto QtRootObject() const noexcept -> QObject*;
     auto RemoteBlockchainSyncServers() const noexcept
         -> const std::set<std::string>&;
     auto RemoteLogEndpoint() const noexcept -> const char*;
@@ -68,6 +72,7 @@ public:
     auto SetBlockchainStorageLevel(int value) noexcept -> Options&;
     auto SetBlockchainSyncEnabled(bool enabled) noexcept -> Options&;
     auto SetBlockchainWalletEnabled(bool enabled) noexcept -> Options&;
+    auto SetDefaultMintKeyBytes(std::size_t bytes) noexcept -> Options&;
     auto SetHome(const char* path) noexcept -> Options&;
     auto SetIpv4ConnectionMode(ConnectionMode mode) noexcept -> Options&;
     auto SetIpv6ConnectionMode(ConnectionMode mode) noexcept -> Options&;
@@ -79,6 +84,7 @@ public:
     auto SetNotaryName(const char* value) noexcept -> Options&;
     auto SetNotaryPublicPort(std::uint16_t port) noexcept -> Options&;
     auto SetNotaryTerms(const char* value) noexcept -> Options&;
+    auto SetQtRootObject(QObject*) noexcept -> Options&;
     auto SetStoragePlugin(const char* name) noexcept -> Options&;
 
     Options() noexcept;

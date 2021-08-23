@@ -31,5 +31,7 @@ using Bip32Index = std::uint32_t;
 enum class Bip43Purpose : Bip32Index;
 enum class Bip44Type : Bip32Index;
 enum class Bip32Child : Bip32Index;
+
+auto print(crypto::SeedStyle) noexcept -> std::string;
 }  // namespace opentxs
 #endif

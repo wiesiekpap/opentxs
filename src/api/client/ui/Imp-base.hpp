@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
+
 #pragma once
 
 #include <cstddef>
@@ -21,7 +23,6 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/UI.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -77,6 +78,24 @@ class Message;
 
 namespace ui
 {
+namespace internal
+{
+struct AccountActivity;
+struct AccountList;
+struct AccountSummary;
+struct ActivitySummary;
+struct ActivityThread;
+struct BlockchainAccountStatus;
+struct BlockchainSelection;
+struct BlockchainStatistics;
+struct Contact;
+struct ContactList;
+struct MessagableList;
+struct PayableList;
+struct Profile;
+struct UnitList;
+}  // namespace internal
+
 class AccountActivity;
 class AccountActivityQt;
 class AccountList;
@@ -87,6 +106,8 @@ class ActivitySummary;
 class ActivitySummaryQt;
 class ActivityThread;
 class ActivityThreadQt;
+class BlockchainAccountStatus;
+class BlockchainAccountStatusQt;
 class BlockchainSelection;
 class BlockchainSelectionQt;
 class BlockchainStatistics;
@@ -104,23 +125,6 @@ class ProfileQt;
 class SeedValidator;
 class UnitList;
 class UnitListQt;
-
-namespace implementation
-{
-class AccountActivity;
-class AccountList;
-class AccountSummary;
-class ActivitySummary;
-class ActivityThread;
-class BlockchainSelection;
-class BlockchainStatistics;
-class Contact;
-class ContactList;
-class MessagableList;
-class PayableList;
-class Profile;
-class UnitList;
-}  // namespace implementation
 }  // namespace ui
 
 class Flag;
@@ -189,6 +193,19 @@ public:
     }
     virtual auto BlankModel(const std::size_t columns) const noexcept
         -> QAbstractItemModel*
+    {
+        return nullptr;
+    }
+    auto BlockchainAccountStatus(
+        const identifier::Nym& nymID,
+        const opentxs::blockchain::Type chain,
+        const SimpleCallback cb) const noexcept
+        -> const opentxs::ui::BlockchainAccountStatus&;
+    virtual auto BlockchainAccountStatusQt(
+        const identifier::Nym& nymID,
+        const opentxs::blockchain::Type chain,
+        const SimpleCallback cb) const noexcept
+        -> opentxs::ui::BlockchainAccountStatusQt*
     {
         return nullptr;
     }
@@ -295,6 +312,7 @@ protected:
     using AccountSummaryKey = std::pair<OTNymID, contact::ContactItemType>;
     using ActivitySummaryKey = OTNymID;
     using ActivityThreadKey = std::pair<OTNymID, OTIdentifier>;
+    using BlockchainAccountStatusKey = std::pair<OTNymID, blockchain::Type>;
     using ContactKey = OTIdentifier;
     using ContactListKey = OTNymID;
     using MessagableListKey = OTNymID;
@@ -303,45 +321,52 @@ protected:
     using ProfileKey = OTNymID;
     using UnitListKey = OTNymID;
 
-    using AccountActivityValue =
-        std::unique_ptr<opentxs::ui::implementation::AccountActivity>;
-    using AccountListValue =
-        std::unique_ptr<opentxs::ui::implementation::AccountList>;
-    using AccountSummaryValue =
-        std::unique_ptr<opentxs::ui::implementation::AccountSummary>;
-    using ActivitySummaryValue =
-        std::unique_ptr<opentxs::ui::implementation::ActivitySummary>;
-    using ActivityThreadValue =
-        std::unique_ptr<opentxs::ui::implementation::ActivityThread>;
-    using ContactValue = std::unique_ptr<opentxs::ui::implementation::Contact>;
-    using ContactListValue =
-        std::unique_ptr<opentxs::ui::implementation::ContactList>;
-    using MessagableListValue =
-        std::unique_ptr<opentxs::ui::implementation::MessagableList>;
-    using PayableListValue =
-        std::unique_ptr<opentxs::ui::implementation::PayableList>;
-    using ProfileValue = std::unique_ptr<opentxs::ui::implementation::Profile>;
-    using AccountActivityMap =
-        std::map<AccountActivityKey, AccountActivityValue>;
-    using AccountListMap = std::map<AccountListKey, AccountListValue>;
-    using AccountSummaryMap = std::map<AccountSummaryKey, AccountSummaryValue>;
-    using ActivitySummaryMap =
-        std::map<ActivitySummaryKey, ActivitySummaryValue>;
-    using ActivityThreadMap = std::map<ActivityThreadKey, ActivityThreadValue>;
-    using ContactMap = std::map<ContactKey, ContactValue>;
-    using ContactListMap = std::map<ContactListKey, ContactListValue>;
-    using MessagableListMap = std::map<MessagableListKey, MessagableListValue>;
-    using PayableListMap = std::map<PayableListKey, PayableListValue>;
-    using ProfileMap = std::map<ProfileKey, ProfileValue>;
-    using UnitListValue =
-        std::unique_ptr<opentxs::ui::implementation::UnitList>;
-    using UnitListMap = std::map<UnitListKey, UnitListValue>;
+    using AccountActivityPointer =
+        std::unique_ptr<opentxs::ui::internal::AccountActivity>;
+    using AccountListPointer =
+        std::unique_ptr<opentxs::ui::internal::AccountList>;
+    using AccountSummaryPointer =
+        std::unique_ptr<opentxs::ui::internal::AccountSummary>;
+    using ActivitySummaryPointer =
+        std::unique_ptr<opentxs::ui::internal::ActivitySummary>;
+    using ActivityThreadPointer =
+        std::unique_ptr<opentxs::ui::internal::ActivityThread>;
+    using BlockchainAccountStatusPointer =
+        std::unique_ptr<opentxs::ui::internal::BlockchainAccountStatus>;
     using BlockchainSelectionPointer =
-        std::unique_ptr<opentxs::ui::implementation::BlockchainSelection>;
+        std::unique_ptr<opentxs::ui::internal::BlockchainSelection>;
+    using BlockchainStatisticsPointer =
+        std::unique_ptr<opentxs::ui::internal::BlockchainStatistics>;
+    using ContactListPointer =
+        std::unique_ptr<opentxs::ui::internal::ContactList>;
+    using ContactPointer = std::unique_ptr<opentxs::ui::internal::Contact>;
+    using MessagableListPointer =
+        std::unique_ptr<opentxs::ui::internal::MessagableList>;
+    using PayableListPointer =
+        std::unique_ptr<opentxs::ui::internal::PayableList>;
+    using ProfilePointer = std::unique_ptr<opentxs::ui::internal::Profile>;
+    using UnitListPointer = std::unique_ptr<opentxs::ui::internal::UnitList>;
+
+    using AccountActivityMap =
+        std::map<AccountActivityKey, AccountActivityPointer>;
+    using AccountListMap = std::map<AccountListKey, AccountListPointer>;
+    using AccountSummaryMap =
+        std::map<AccountSummaryKey, AccountSummaryPointer>;
+    using ActivitySummaryMap =
+        std::map<ActivitySummaryKey, ActivitySummaryPointer>;
+    using ActivityThreadMap =
+        std::map<ActivityThreadKey, ActivityThreadPointer>;
+    using BlockchainAccountStatusMap =
+        std::map<BlockchainAccountStatusKey, BlockchainAccountStatusPointer>;
     using BlockchainSelectionMap =
         std::map<opentxs::ui::Blockchains, BlockchainSelectionPointer>;
-    using BlockchainStatisticsPointer =
-        std::unique_ptr<opentxs::ui::implementation::BlockchainStatistics>;
+    using ContactListMap = std::map<ContactListKey, ContactListPointer>;
+    using ContactMap = std::map<ContactKey, ContactPointer>;
+    using MessagableListMap =
+        std::map<MessagableListKey, MessagableListPointer>;
+    using PayableListMap = std::map<PayableListKey, PayableListPointer>;
+    using ProfileMap = std::map<ProfileKey, ProfilePointer>;
+    using UnitListMap = std::map<UnitListKey, UnitListPointer>;
 
     const api::client::internal::Manager& api_;
     const api::client::internal::Blockchain& blockchain_;
@@ -350,15 +375,16 @@ protected:
     mutable AccountListMap account_lists_;
     mutable AccountSummaryMap account_summaries_;
     mutable ActivitySummaryMap activity_summaries_;
-    mutable ContactMap contacts_;
-    mutable ContactListMap contact_lists_;
-    mutable MessagableListMap messagable_lists_;
-    mutable PayableListMap payable_lists_;
     mutable ActivityThreadMap activity_threads_;
-    mutable ProfileMap profiles_;
-    mutable UnitListMap unit_lists_;
+    mutable BlockchainAccountStatusMap blockchain_account_status_;
     mutable BlockchainSelectionMap blockchain_selection_;
     mutable BlockchainStatisticsPointer blockchain_statistics_;
+    mutable ContactListMap contact_lists_;
+    mutable ContactMap contacts_;
+    mutable MessagableListMap messagable_lists_;
+    mutable PayableListMap payable_lists_;
+    mutable ProfileMap profiles_;
+    mutable UnitListMap unit_lists_;
     ui::UpdateManager update_manager_;
 
     auto account_activity(
@@ -389,6 +415,11 @@ protected:
         const Identifier& threadID,
         const SimpleCallback& cb) const noexcept
         -> ActivityThreadMap::mapped_type&;
+    auto contact_list(
+        const Lock& lock,
+        const identifier::Nym& nymID,
+        const SimpleCallback& cb) const noexcept
+        -> ContactListMap::mapped_type&;
     auto blockchain_selection(
         const Lock& lock,
         const opentxs::ui::Blockchains type,
@@ -400,11 +431,12 @@ protected:
         const Lock& lock,
         const Identifier& contactID,
         const SimpleCallback& cb) const noexcept -> ContactMap::mapped_type&;
-    auto contact_list(
+    auto blockchain_account_status(
         const Lock& lock,
         const identifier::Nym& nymID,
+        const opentxs::blockchain::Type chain,
         const SimpleCallback& cb) const noexcept
-        -> ContactListMap::mapped_type&;
+        -> BlockchainAccountStatusMap::mapped_type&;
     auto is_blockchain_account(const Identifier& id) const noexcept
         -> std::optional<opentxs::blockchain::Type>;
     auto messagable_list(

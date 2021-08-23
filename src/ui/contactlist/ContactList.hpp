@@ -5,12 +5,10 @@
 
 #pragma once
 
-#if OT_QT
-#include <QAbstractItemModel>
-#include <QHash>
-#endif  // OT_QT
 #include <cstddef>
+#include <functional>
 #include <iosfwd>
+#include <list>
 #include <map>
 #include <memory>
 #include <string>
@@ -22,6 +20,7 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -65,6 +64,29 @@ class Message;
 class Identifier;
 }  // namespace opentxs
 
+namespace std
+{
+using CONTACTLISTID = std::pair<bool, std::string>;
+
+template <>
+struct less<CONTACTLISTID> {
+    auto operator()(const CONTACTLISTID& lhs, const CONTACTLISTID& rhs) const
+        -> bool
+    {
+        const auto& [lSelf, lText] = lhs;
+        const auto& [rSelf, rText] = rhs;
+
+        if (lSelf && (!rSelf)) { return true; }
+
+        if (rSelf && (!lSelf)) { return false; }
+
+        if (lText < rText) { return true; }
+
+        return false;
+    }
+};
+}  // namespace std
+
 namespace opentxs::ui::implementation
 {
 using ContactListList = List<
@@ -77,7 +99,9 @@ using ContactListList = List<
     ContactListSortKey,
     ContactListPrimaryID>;
 
-class ContactList final : public ContactListList, Worker<ContactList>
+class ContactList final : virtual public internal::ContactList,
+                          public ContactListList,
+                          Worker<ContactList>
 {
 public:
     auto AddContact(
@@ -88,12 +112,6 @@ public:
     {
         return owner_contact_id_;
     }
-#if OT_QT
-    QModelIndex index(
-        int row,
-        int column,
-        const QModelIndex& parent = QModelIndex()) const noexcept final;
-#endif
 
     ContactList(
         const api::client::internal::Manager& api,
@@ -132,7 +150,6 @@ private:
     };
 
     const ContactListRowID owner_contact_id_;
-    std::shared_ptr<ContactListRowInternal> owner_;
 
     auto construct_row(
         const ContactListRowID& id,
@@ -142,24 +159,10 @@ private:
     {
         return owner_contact_id_;
     }
-#if OT_QT
-    auto find_row(const ContactListRowID& id) const noexcept -> int final;
-#endif
-    auto first(const rLock&) const noexcept
-        -> SharedPimpl<ContactListRowInterface> final;
-    auto last(const ContactListRowID& id) const noexcept -> bool final;
-    auto lookup(const rLock&, const ContactListRowID& id) const noexcept
-        -> const ContactListRowInternal& final;
 
-    auto add_item(
-        const ContactListRowID& id,
-        const ContactListSortKey& index,
-        CustomData& custom) noexcept -> void final;
     auto pipeline(const Message& in) noexcept -> void;
     auto process_contact(const Message& message) noexcept -> void;
-    using ContactListList::row_modified;
-    auto row_modified(const Lock&, const ContactListRowID& id) noexcept
-        -> void final;
+    auto process_contact(const Identifier& contactID) noexcept -> void;
     auto startup() noexcept -> void;
 
     ContactList() = delete;

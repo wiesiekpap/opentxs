@@ -8,7 +8,7 @@
 #include "opentxs/ui/qt/AmountValidator.hpp"  // IWYU pragma: associated
 
 #include "opentxs/core/Log.hpp"
-#include "ui/accountactivity/AmountValidator.hpp"
+#include "ui/qt/AmountValidator.hpp"
 
 // #define OT_METHOD "opentxs::ui::AmountValidator::"
 

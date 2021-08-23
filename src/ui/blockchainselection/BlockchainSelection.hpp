@@ -5,13 +5,11 @@
 
 #pragma once
 
-#if OT_QT
-#include <QHash>
-#endif  // OT_QT
 #include <atomic>
 #include <cstddef>
 #include <functional>
 #include <iosfwd>
+#include <list>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -25,6 +23,7 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -95,13 +94,10 @@ class BlockchainSelection final : public BlockchainSelectionList,
                                   Worker<BlockchainSelection>
 {
 public:
-    using EnabledCallback =
-        std::function<void(blockchain::Type, bool, std::size_t)>;
-
     auto Disable(const blockchain::Type type) const noexcept -> bool final;
     auto Enable(const blockchain::Type type) const noexcept -> bool final;
-    auto EnabledCount() const noexcept -> std::size_t;
-    auto Set(const EnabledCallback& cb) const noexcept -> void;
+    auto EnabledCount() const noexcept -> std::size_t final;
+    auto Set(EnabledCallback&& cb) const noexcept -> void final;
 
     BlockchainSelection(
         const api::client::internal::Manager& api,

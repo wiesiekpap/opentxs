@@ -6,30 +6,30 @@
 #ifndef OPENTXS_UI_UNITLISTQT_HPP
 #define OPENTXS_UI_UNITLISTQT_HPP
 
-#include <QIdentityProxyModel>
+#include <QObject>
+#include <QString>
 
 #include "opentxs/opentxs_export.hpp"  // IWYU pragma: keep
+#include "opentxs/ui/qt/Model.hpp"
+
+class QObject;
 
 namespace opentxs
 {
 namespace ui
 {
-namespace implementation
+namespace internal
 {
-class UnitList;
-}  // namespace implementation
+struct UnitList;
+}  // namespace internal
 
 class UnitListQt;
 }  // namespace ui
 }  // namespace opentxs
 
-class OPENTXS_EXPORT opentxs::ui::UnitListQt final : public QIdentityProxyModel
+class OPENTXS_EXPORT opentxs::ui::UnitListQt final : public qt::Model
 {
     Q_OBJECT
-
-signals:
-    void updated() const;
-
 public:
     enum Columns {
         UnitNameColumn = 0,
@@ -38,14 +38,14 @@ public:
         UnitIDRole = Qt::UserRole,
     };
 
-    UnitListQt(implementation::UnitList& parent) noexcept;
+    UnitListQt(internal::UnitList& parent) noexcept;
 
-    ~UnitListQt() final = default;
+    ~UnitListQt() final;
 
 private:
-    implementation::UnitList& parent_;
+    struct Imp;
 
-    void notify() const noexcept;
+    Imp* imp_;
 
     UnitListQt(const UnitListQt&) = delete;
     UnitListQt(UnitListQt&&) = delete;

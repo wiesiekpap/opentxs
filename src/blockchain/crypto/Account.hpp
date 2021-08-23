@@ -29,6 +29,7 @@
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
+#include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
@@ -203,15 +204,24 @@ private:
         using const_iterator = typename InterfaceType::const_iterator;
         using value_type = typename InterfaceType::value_type;
 
+        auto all() const noexcept -> std::set<OTIdentifier> final
+        {
+            auto out = std::set<OTIdentifier>{};
+            auto lock = Lock{lock_};
+
+            for (const auto& [id, count] : index_) { out.emplace(id); }
+
+            return out;
+        }
         auto at(const std::size_t position) const -> const value_type& final
         {
-            Lock lock(lock_);
+            auto lock = Lock{lock_};
 
             return *nodes_.at(position);
         }
         auto at(const Identifier& id) const -> const PayloadType& final
         {
-            Lock lock(lock_);
+            auto lock = Lock{lock_};
 
             return *nodes_.at(index_.at(id));
         }
@@ -235,29 +245,34 @@ private:
         {
             return nodes_.size();
         }
+        auto Type() const noexcept -> SubaccountType final { return type_; }
 
         auto at(const std::size_t position) -> value_type&
         {
-            Lock lock(lock_);
+            auto lock = Lock{lock_};
 
             return *nodes_.at(position);
         }
         auto at(const Identifier& id) -> PayloadType&
         {
-            Lock lock(lock_);
+            auto lock = Lock{lock_};
 
             return *nodes_.at(index_.at(id));
         }
         template <typename... Args>
         auto Construct(Identifier& out, const Args&... args) noexcept -> bool
         {
-            Lock lock(lock_);
+            auto lock = Lock{lock_};
 
             return construct(lock, out, args...);
         }
 
-        NodeGroup(const api::internal::Core& api, Account& parent) noexcept
+        NodeGroup(
+            const api::internal::Core& api,
+            const SubaccountType type,
+            Account& parent) noexcept
             : api_(api)
+            , type_(type)
             , parent_(parent)
             , lock_()
             , nodes_()
@@ -267,6 +282,7 @@ private:
 
     private:
         const api::internal::Core& api_;
+        const SubaccountType type_;
         Account& parent_;
         mutable std::mutex lock_;
         std::vector<std::unique_ptr<PayloadType>> nodes_;

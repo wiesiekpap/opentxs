@@ -30,8 +30,10 @@ constexpr auto ipv6_connection_mode_1_{opentxs::Options::ConnectionMode::on};
 constexpr auto ipv6_connection_mode_2_{opentxs::Options::ConnectionMode::off};
 constexpr auto log_endpoint_1_{"inproc://send_logs_here_plz"};
 constexpr auto log_endpoint_2_{"inproc://actually_send_them_here"};
-constexpr auto log_leve_1_{2};
-constexpr auto log_leve_2_{4};
+constexpr auto log_level_1_{2};
+constexpr auto log_level_2_{4};
+constexpr auto mint_key_bytes_1_{288};
+constexpr auto mint_key_bytes_2_{512};
 constexpr auto notary_bind_inproc_1_{true};
 constexpr auto notary_bind_inproc_2_{false};
 constexpr auto notary_bind_ip_1_{"127.0.0.1"};
@@ -76,6 +78,7 @@ TEST(Options, default_values)
         opentxs::Options::ConnectionMode::automatic,
         "",
         0,
+        1536,
         false,
         "",
         0,
@@ -106,11 +109,12 @@ TEST(Options, setters)
             .SetBlockchainStorageLevel(blockchain_storage_level_1_)
             .SetBlockchainSyncEnabled(blockchain_sync_enabled_1_)
             .SetBlockchainWalletEnabled(blockchain_wallet_enabled_1_)
+            .SetDefaultMintKeyBytes(mint_key_bytes_1_)
             .SetHome(home_1_)
             .SetIpv4ConnectionMode(ipv4_connection_mode_1_)
             .SetIpv6ConnectionMode(ipv6_connection_mode_1_)
             .SetLogEndpoint(log_endpoint_1_)
-            .SetLogLevel(log_leve_1_)
+            .SetLogLevel(log_level_1_)
             .SetNotaryBindIP(notary_bind_ip_1_)
             .SetNotaryBindPort(notary_bind_port_1_)
             .SetNotaryInproc(notary_bind_inproc_1_)
@@ -132,11 +136,12 @@ TEST(Options, setters)
             .SetBlockchainStorageLevel(blockchain_storage_level_2_)
             .SetBlockchainSyncEnabled(blockchain_sync_enabled_2_)
             .SetBlockchainWalletEnabled(blockchain_wallet_enabled_2_)
+            .SetDefaultMintKeyBytes(mint_key_bytes_2_)
             .SetHome(home_2_)
             .SetIpv4ConnectionMode(ipv4_connection_mode_2_)
             .SetIpv6ConnectionMode(ipv6_connection_mode_2_)
             .SetLogEndpoint(log_endpoint_2_)
-            .SetLogLevel(log_leve_2_)
+            .SetLogLevel(log_level_2_)
             .SetNotaryBindIP(notary_bind_ip_2_)
             .SetNotaryBindPort(notary_bind_port_2_)
             .SetNotaryInproc(notary_bind_inproc_2_)
@@ -157,7 +162,8 @@ TEST(Options, setters)
         ipv4_connection_mode_1_,
         ipv6_connection_mode_1_,
         log_endpoint_1_,
-        log_leve_1_,
+        log_level_1_,
+        mint_key_bytes_1_,
         notary_bind_inproc_1_,
         notary_bind_ip_1_,
         notary_bind_port_1_,
@@ -181,7 +187,8 @@ TEST(Options, setters)
         ipv4_connection_mode_2_,
         ipv6_connection_mode_2_,
         log_endpoint_2_,
-        log_leve_2_,
+        log_level_2_,
+        mint_key_bytes_2_,
         notary_bind_inproc_2_,
         notary_bind_ip_2_,
         notary_bind_port_2_,
@@ -213,11 +220,12 @@ TEST(Options, merge)
             .SetBlockchainStorageLevel(blockchain_storage_level_1_)
             .SetBlockchainSyncEnabled(blockchain_sync_enabled_1_)
             .SetBlockchainWalletEnabled(blockchain_wallet_enabled_1_)
+            .SetDefaultMintKeyBytes(mint_key_bytes_1_)
             .SetHome(home_1_)
             .SetIpv4ConnectionMode(ipv4_connection_mode_1_)
             .SetIpv6ConnectionMode(ipv6_connection_mode_1_)
             .SetLogEndpoint(log_endpoint_1_)
-            .SetLogLevel(log_leve_1_)
+            .SetLogLevel(log_level_1_)
             .SetNotaryBindIP(notary_bind_ip_1_)
             .SetNotaryBindPort(notary_bind_port_1_)
             .SetNotaryInproc(notary_bind_inproc_1_)
@@ -238,11 +246,12 @@ TEST(Options, merge)
             .SetBlockchainStorageLevel(blockchain_storage_level_2_)
             .SetBlockchainSyncEnabled(blockchain_sync_enabled_2_)
             .SetBlockchainWalletEnabled(blockchain_wallet_enabled_2_)
+            .SetDefaultMintKeyBytes(mint_key_bytes_2_)
             .SetHome(home_2_)
             .SetIpv4ConnectionMode(ipv4_connection_mode_2_)
             .SetIpv6ConnectionMode(ipv6_connection_mode_2_)
             .SetLogEndpoint(log_endpoint_2_)
-            .SetLogLevel(log_leve_2_)
+            .SetLogLevel(log_level_2_)
             .SetNotaryBindIP(notary_bind_ip_2_)
             .SetNotaryBindPort(notary_bind_port_2_)
             .SetNotaryInproc(notary_bind_inproc_2_)
@@ -264,7 +273,8 @@ TEST(Options, merge)
         ipv4_connection_mode_1_,
         ipv6_connection_mode_1_,
         log_endpoint_1_,
-        log_leve_1_,
+        log_level_1_,
+        mint_key_bytes_1_,
         notary_bind_inproc_1_,
         notary_bind_ip_1_,
         notary_bind_port_1_,
@@ -288,7 +298,8 @@ TEST(Options, merge)
         ipv4_connection_mode_2_,
         ipv6_connection_mode_2_,
         log_endpoint_2_,
-        log_leve_2_,
+        log_level_2_,
+        mint_key_bytes_2_,
         notary_bind_inproc_2_,
         notary_bind_ip_2_,
         notary_bind_port_2_,
@@ -312,7 +323,8 @@ TEST(Options, merge)
         ipv4_connection_mode_2_,
         ipv6_connection_mode_2_,
         log_endpoint_2_,
-        log_leve_2_,
+        log_level_2_,
+        mint_key_bytes_2_,
         notary_bind_inproc_2_,
         notary_bind_ip_2_,
         notary_bind_port_2_,

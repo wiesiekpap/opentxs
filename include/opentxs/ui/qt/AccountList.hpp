@@ -6,30 +6,30 @@
 #ifndef OPENTXS_UI_ACCOUNTLISTQT_HPP
 #define OPENTXS_UI_ACCOUNTLISTQT_HPP
 
-#include <QIdentityProxyModel>
+#include <QObject>
+#include <QString>
 
 #include "opentxs/opentxs_export.hpp"  // IWYU pragma: keep
+#include "opentxs/ui/qt/Model.hpp"
+
+class QObject;
 
 namespace opentxs
 {
 namespace ui
 {
-namespace implementation
+namespace internal
 {
-class AccountList;
-}  // namespace implementation
+struct AccountList;
+}  // namespace internal
 
 class AccountListQt;
 }  // namespace ui
 }  // namespace opentxs
 
-class OPENTXS_EXPORT opentxs::ui::AccountListQt final
-    : public QIdentityProxyModel
+class OPENTXS_EXPORT opentxs::ui::AccountListQt final : public qt::Model
 {
     Q_OBJECT
-
-signals:
-    void updated() const;
 
 public:
     // User roles return the same data for all columns
@@ -63,14 +63,14 @@ public:
         ContractIdRole = Qt::UserRole + 6,
     };
 
-    AccountListQt(implementation::AccountList& parent) noexcept;
+    AccountListQt(internal::AccountList& parent) noexcept;
 
-    ~AccountListQt() final = default;
+    ~AccountListQt() final;
 
 private:
-    implementation::AccountList& parent_;
+    struct Imp;
 
-    void notify() const noexcept;
+    Imp* imp_;
 
     AccountListQt(const AccountListQt&) = delete;
     AccountListQt(AccountListQt&&) = delete;

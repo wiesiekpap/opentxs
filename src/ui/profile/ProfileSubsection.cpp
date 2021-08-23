@@ -52,7 +52,6 @@ ProfileSubsection::ProfileSubsection(
     : Combined(api, parent.NymID(), parent.WidgetID(), parent, rowID, key)
     , sequence_(-1)
 {
-    init();
     startup_.reset(new std::thread(
         &ProfileSubsection::startup,
         this,

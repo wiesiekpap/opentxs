@@ -6,7 +6,6 @@
 #ifndef OPENTXS_UI_ACCOUNTACTIVITYQT_HPP
 #define OPENTXS_UI_ACCOUNTACTIVITYQT_HPP
 
-#include <QIdentityProxyModel>
 #include <QObject>
 #include <QString>
 #include <QVariant>
@@ -15,6 +14,7 @@
 #include "opentxs/ui/qt/AmountValidator.hpp"       // IWYU pragma: keep
 #include "opentxs/ui/qt/DestinationValidator.hpp"  // IWYU pragma: keep
 #include "opentxs/ui/qt/DisplayScale.hpp"          // IWYU pragma: keep
+#include "opentxs/ui/qt/Model.hpp"
 
 class QObject;
 
@@ -22,34 +22,35 @@ namespace opentxs
 {
 namespace ui
 {
-namespace implementation
+namespace internal
 {
-class AccountActivity;
-}  // namespace implementation
+struct AccountActivity;
+}  // namespace internal
 
 class AccountActivityQt;
 class DisplayScaleQt;
 }  // namespace ui
 }  // namespace opentxs
 
-class OPENTXS_EXPORT opentxs::ui::AccountActivityQt final
-    : public QIdentityProxyModel
+class OPENTXS_EXPORT opentxs::ui::AccountActivityQt final : public qt::Model
 {
     Q_OBJECT
     Q_PROPERTY(QObject* amountValidator READ getAmountValidator CONSTANT)
     Q_PROPERTY(QObject* destValidator READ getDestValidator CONSTANT)
     Q_PROPERTY(QObject* scaleModel READ getScaleModel CONSTANT)
-    Q_PROPERTY(QString accountID READ accountID NOTIFY updated)
-    Q_PROPERTY(int balancePolarity READ balancePolarity NOTIFY updated)
-    Q_PROPERTY(QVariantList depositChains READ depositChains NOTIFY updated)
-    Q_PROPERTY(QString displayBalance READ displayBalance NOTIFY updated)
+    Q_PROPERTY(QString accountID READ accountID CONSTANT)
+    Q_PROPERTY(
+        int balancePolarity READ balancePolarity NOTIFY balancePolarityChanged)
+    Q_PROPERTY(QVariantList depositChains READ depositChains CONSTANT)
+    Q_PROPERTY(QString displayBalance READ displayBalance NOTIFY balanceChanged)
     Q_PROPERTY(
         double syncPercentage READ syncPercentage NOTIFY syncPercentageUpdated)
     Q_PROPERTY(
         QVariantList syncProgress READ syncProgress NOTIFY syncProgressUpdated)
 
 signals:
-    void updated() const;
+    void balanceChanged(QString) const;
+    void balancePolarityChanged(int) const;
     void transactionSendResult(int, int, QString) const;
     void syncPercentageUpdated(double) const;
     void syncProgressUpdated(int, int) const;
@@ -89,7 +90,7 @@ public:
     auto headerData(
         int section,
         Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const -> QVariant final;
+        int role = Qt::DisplayRole) const noexcept -> QVariant final;
     Q_INVOKABLE int sendToAddress(
         const QString& address,
         const QString& amount,
@@ -106,16 +107,14 @@ public:
     Q_INVOKABLE bool validateAddress(const QString& address) const noexcept;
     Q_INVOKABLE QString validateAmount(const QString& amount) const noexcept;
 
-    AccountActivityQt(implementation::AccountActivity& parent) noexcept;
+    AccountActivityQt(internal::AccountActivity& parent) noexcept;
 
     ~AccountActivityQt() final;
 
 private:
-    implementation::AccountActivity& parent_;
+    struct Imp;
 
-    void notify() const noexcept;
-
-    void init() noexcept;
+    Imp* imp_;
 
     AccountActivityQt() = delete;
     AccountActivityQt(const AccountActivityQt&) = delete;

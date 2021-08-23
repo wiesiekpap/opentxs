@@ -12,6 +12,7 @@
 // IWYU pragma: no_include "opentxs/blockchain/crypto/HD.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/HDProtocol.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/PaymentCode.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/crypto/SubaccountType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/Subchain.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/node/Manager.hpp"
 // IWYU pragma: no_include "opentxs/core/identifier/Nym.hpp"
@@ -238,6 +239,7 @@ public:
     auto ReportScan(
         const Chain chain,
         const identifier::Nym& owner,
+        const opentxs::blockchain::crypto::SubaccountType type,
         const Identifier& account,
         const Subchain subchain,
         const opentxs::blockchain::block::Position& progress) const noexcept

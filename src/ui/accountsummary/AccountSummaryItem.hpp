@@ -5,9 +5,6 @@
 
 #pragma once
 
-#if OT_QT
-#include <QVariant>
-#endif  // OT_QT
 #include <atomic>
 #include <string>
 
@@ -22,6 +19,8 @@
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/ui/AccountSummaryItem.hpp"
 #include "ui/base/Row.hpp"
+
+class QVariant;
 
 namespace opentxs
 {
@@ -71,13 +70,6 @@ public:
     auto DisplayBalance() const noexcept -> std::string final;
     auto Name() const noexcept -> std::string final;
 
-#if OT_QT
-    QVariant qt_data(const int column, const int role) const noexcept override;
-#endif
-
-    auto reindex(const IssuerItemSortKey& key, CustomData& custom) noexcept
-        -> bool final;
-
     AccountSummaryItem(
         const IssuerItemInternalInterface& parent,
         const api::client::internal::Manager& api,
@@ -96,6 +88,12 @@ private:
 
     static auto load_unit(const api::Core& api, const Identifier& id)
         -> OTUnitDefinition;
+
+    auto qt_data(const int column, const int role, QVariant& out) const noexcept
+        -> void final;
+
+    auto reindex(const IssuerItemSortKey& key, CustomData& custom) noexcept
+        -> bool final;
 
     AccountSummaryItem() = delete;
     AccountSummaryItem(const AccountSummaryItem&) = delete;

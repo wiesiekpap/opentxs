@@ -14,9 +14,6 @@
 
 #include "opentxs/api/Core.hpp"
 
-#define OT_MINT_KEY_SIZE_DEFAULT 1536
-#define OT_MINT_KEY_SIZE_TEST 288
-
 namespace opentxs
 {
 namespace blind
@@ -41,6 +38,8 @@ namespace server
 class OPENTXS_EXPORT Manager : virtual public api::Core
 {
 public:
+    static auto DefaultMintKeyBytes() noexcept -> std::size_t;
+
     /** Drop a specified number of incoming requests for testing purposes */
     virtual auto DropIncoming(const int count) const -> void = 0;
     /** Drop a specified number of outgoing replies for testing purposes */

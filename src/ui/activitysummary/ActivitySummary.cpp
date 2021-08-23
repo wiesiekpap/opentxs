@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                          // IWYU pragma: associated
 #include "ui/activitysummary/ActivitySummary.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <chrono>
 #include <list>
 #include <map>
@@ -22,7 +21,6 @@
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Activity.hpp"
 #include "opentxs/api/client/Contacts.hpp"
@@ -33,9 +31,6 @@
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/protobuf/StorageThread.pb.h"
 #include "opentxs/protobuf/StorageThreadItem.pb.h"
-#if OT_QT
-#include "opentxs/ui/qt/ActivitySummary.hpp"
-#endif  // OT_QT
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::ActivitySummary::"
@@ -47,58 +42,28 @@ auto ActivitySummaryModel(
     const Flag& running,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::ActivitySummary>
+    -> std::unique_ptr<ui::internal::ActivitySummary>
 {
     using ReturnType = ui::implementation::ActivitySummary;
 
     return std::make_unique<ReturnType>(api, running, nymID, cb);
 }
-
-#if OT_QT
-auto ActivitySummaryQtModel(
-    ui::implementation::ActivitySummary& parent) noexcept
-    -> std::unique_ptr<ui::ActivitySummaryQt>
-{
-    using ReturnType = ui::ActivitySummaryQt;
-
-    return std::make_unique<ReturnType>(parent);
-}
-#endif  // OT_QT
 }  // namespace opentxs::factory
-
-#if OT_QT
-namespace opentxs::ui
-{
-QT_PROXY_MODEL_WRAPPER(ActivitySummaryQt, implementation::ActivitySummary)
-}  // namespace opentxs::ui
-#endif
 
 namespace opentxs::ui::implementation
 {
-
 ActivitySummary::ActivitySummary(
     const api::client::internal::Manager& api,
     const Flag& running,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
-    : ActivitySummaryList(
-          api,
-          nymID,
-          cb,
-          true
-#if OT_QT
-          ,
-          Roles{},
-          6
-#endif
-          )
+    : ActivitySummaryList(api, nymID, cb, true)
     , listeners_(
           {{api_.Activity().ThreadPublisher(nymID),
             new MessageProcessor<ActivitySummary>(
                 &ActivitySummary::process_thread)}})
     , running_(running)
 {
-    init();
     setup_listeners(listeners_);
     startup_.reset(new std::thread(&ActivitySummary::startup, this));
 
@@ -213,8 +178,7 @@ void ActivitySummary::process_thread(const Message& message) noexcept
 void ActivitySummary::startup() noexcept
 {
     const auto threads = api_.Activity().Threads(primary_id_, false);
-    LogDetail(OT_METHOD)(__FUNCTION__)(
-        ": Loading ")(threads.size())(" threads.")
+    LogDetail(OT_METHOD)(__func__)(": Loading ")(threads.size())(" threads.")
         .Flush();
     for (const auto& [id, alias] : threads) {
         [[maybe_unused]] const auto& notUsed = alias;

@@ -5,9 +5,6 @@
 
 #pragma once
 
-#if OT_QT
-#include <QVariant>
-#endif  // OT_QT
 #include <chrono>
 #include <string>
 
@@ -19,6 +16,8 @@
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/ui/ActivityThreadItem.hpp"
 #include "ui/base/Row.hpp"
+
+class QVariant;
 
 namespace opentxs
 {
@@ -80,13 +79,6 @@ public:
     auto Timestamp() const noexcept -> Time final;
     auto Type() const noexcept -> StorageBox final { return box_; }
 
-    auto reindex(const ActivityThreadSortKey& key, CustomData& custom) noexcept
-        -> bool override;
-
-#if OT_QT
-    QVariant qt_data(const int column, const int role) const noexcept final;
-#endif
-
     ~ActivityThreadItem() override = default;
 
 protected:
@@ -101,6 +93,9 @@ protected:
     OTFlag pending_;
     OTFlag outgoing_;
 
+    auto reindex(const ActivityThreadSortKey& key, CustomData& custom) noexcept
+        -> bool override;
+
     ActivityThreadItem(
         const ActivityThreadInternalInterface& parent,
         const api::client::internal::Manager& api,
@@ -110,6 +105,9 @@ protected:
         CustomData& custom) noexcept;
 
 private:
+    auto qt_data(const int column, const int role, QVariant& out) const noexcept
+        -> void final;
+
     ActivityThreadItem() = delete;
     ActivityThreadItem(const ActivityThreadItem&) = delete;
     ActivityThreadItem(ActivityThreadItem&&) = delete;

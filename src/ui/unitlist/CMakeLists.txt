@@ -15,24 +15,6 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/UnitListItem.hpp"
 )
 target_link_libraries(opentxs-ui-unitlist PRIVATE opentxs::messages)
-
-if(OT_WITH_QT)
-  set(ot-qobject-install-headers
-      "${opentxs_SOURCE_DIR}/include/opentxs/ui/qt/UnitList.hpp"
-  )
-  qt5_wrap_cpp(MOC_SRCS ${ot-qobject-install-headers})
-  target_sources(opentxs-ui-unitlist PRIVATE ${MOC_SRCS})
-
-  if(OPENTXS_STANDALONE)
-    install(
-      FILES ${ot-qobject-install-headers}
-      DESTINATION include/opentxs/ui/qt
-      COMPONENT dev
-    )
-  endif()
-endif()
-
-opentxs_set_qt(opentxs-ui-unitlist)
 target_sources(opentxs-ui-unitlist PRIVATE ${cxx-install-headers})
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-unitlist>)
 add_dependencies(opentxs-ui-unitlist generated_code)

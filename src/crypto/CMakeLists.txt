@@ -15,6 +15,7 @@ target_sources(
     "${opentxs_SOURCE_DIR}/src/internal/crypto/Crypto.hpp"
     "Bip39.cpp"
     "Bip39.hpp"
+    "Crypto.cpp"
     "Envelope.cpp"
     "Envelope.hpp"
     "HDNode.cpp"

@@ -16,6 +16,7 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
+#include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Log.hpp"
@@ -69,6 +70,26 @@ auto operator!=(
     if (lSubchain != rSubchain) { return true; }
 
     return lIndex != rIndex;
+}
+
+auto print(blockchain::crypto::HDProtocol value) noexcept -> std::string
+{
+    using Proto = blockchain::crypto::HDProtocol;
+    static const auto map = boost::container::flat_map<Proto, std::string>{
+        {Proto::BIP_32, "BIP-32"},
+        {Proto::BIP_44, "BIP-44"},
+        {Proto::BIP_49, "BIP-49"},
+        {Proto::BIP_84, "BIP-84"},
+        {Proto::Error, "invalid"},
+    };
+
+    try {
+
+        return map.at(value);
+    } catch (...) {
+
+        return map.at(Proto::Error);
+    }
 }
 
 auto print(blockchain::crypto::Subchain value) noexcept -> std::string

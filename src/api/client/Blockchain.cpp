@@ -375,11 +375,12 @@ auto Blockchain::Release(const Key key) const noexcept -> bool
 auto Blockchain::ReportScan(
     const Chain chain,
     const identifier::Nym& owner,
+    const opentxs::blockchain::crypto::SubaccountType type,
     const Identifier& account,
     const Subchain subchain,
     const opentxs::blockchain::block::Position& progress) const noexcept -> void
 {
-    imp_->ReportScan(chain, owner, account, subchain, progress);
+    imp_->ReportScan(chain, owner, type, account, subchain, progress);
 }
 
 auto Blockchain::SenderContact(const Key& key) const noexcept -> OTIdentifier

@@ -50,12 +50,14 @@ SubchainStateData::SubchainStateData(
     const node::internal::Network& node,
     const WalletDatabase& db,
     OTNymID&& owner,
+    crypto::SubaccountType accountType,
     OTIdentifier&& id,
     const SimpleCallback& taskFinished,
     Outstanding& jobCounter,
     const filter::Type filter,
     const Subchain subchain) noexcept
     : owner_(std::move(owner))
+    , account_type_(accountType)
     , id_(std::move(id))
     , subchain_(subchain)
     , filter_type_(filter)
@@ -205,15 +207,14 @@ auto SubchainStateData::check_process() noexcept -> bool
 
     if (std::future_status::ready ==
         future.wait_for(std::chrono::milliseconds(1))) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
-            ": ")(name_)(" ready to process block")
+        LogVerbose(OT_METHOD)(__func__)(": ")(name_)(" ready to process block")
             .Flush();
         static constexpr auto job{"process"};
 
         return queue_work(Task::process, job);
     } else {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
-            ": ")(name_)(" waiting for block ")(id->asHex())(" to download")
+        LogVerbose(OT_METHOD)(__func__)(": ")(name_)(" waiting for block ")(
+            id->asHex())(" to download")
             .Flush();
     }
 
@@ -238,12 +239,9 @@ auto SubchainStateData::check_scan() noexcept -> bool
             node_.FilterOracleInternal().FilterTip(filter_type_);
 
         if (last_scanned_ == bestFilter) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
-                ": ")(name_)(" has been scanned to the newest downloaded "
-                             "filter ")(bestFilter.second
-                                            ->asHex())(" at "
-                                                       "height"
-                                                       " ")(bestFilter.first)
+            LogVerbose(OT_METHOD)(__func__)(": ")(
+                name_)(" has been scanned to the newest downloaded filter ")(
+                bestFilter.second->asHex())(" at height ")(bestFilter.first)
                 .Flush();
         } else {
             const auto [ancestor, best] =
@@ -252,23 +250,20 @@ auto SubchainStateData::check_scan() noexcept -> bool
             last_scanned_ = ancestor;
 
             if (last_scanned_ == best) {
-                LogVerbose(OT_METHOD)(__FUNCTION__)(
-                    ": ")(name_)(" has been scanned to current best "
-                                 "block ")(best.second
-                                               ->asHex())(" at height ")(best.first)
+                LogVerbose(OT_METHOD)(__func__)(": ")(
+                    name_)(" has been scanned to current best block ")(
+                    best.second->asHex())(" at height ")(best.first)
                     .Flush();
             } else {
                 needScan = true;
-                LogVerbose(OT_METHOD)(__FUNCTION__)(
-                    ": ")(name_)(" scanning progress: ")(last_scanned_.value()
-                                                             .first)
+                LogVerbose(OT_METHOD)(__func__)(": ")(
+                    name_)(" scanning progress: ")(last_scanned_.value().first)
                     .Flush();
             }
         }
     } else {
         needScan = true;
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
-            ": ")(name_)(" scanning progress: ")(0)
+        LogVerbose(OT_METHOD)(__func__)(": ")(name_)(" scanning progress: ")(0)
             .Flush();
     }
 
@@ -406,8 +401,8 @@ auto SubchainStateData::index_element(
     const Bip32Index index,
     WalletDatabase::ElementMap& output) noexcept -> void
 {
-    LogVerbose(OT_METHOD)(__FUNCTION__)(
-        ": ")(name_)(" element ")(index)(" extracting filter matching patterns")
+    LogVerbose(OT_METHOD)(__func__)(": ")(name_)(" element ")(
+        index)(" extracting filter matching patterns")
         .Flush();
     auto& list = output[index];
     const auto scripts = supported_scripts(input);
@@ -460,8 +455,8 @@ auto SubchainStateData::process() noexcept -> void
     const auto pBlock = it->second.get();
 
     if (false == bool(pBlock)) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
-            ": ")(name_)(" invalid block ")(blockHash.asHex())
+        LogVerbose(OT_METHOD)(__func__)(": ")(name_)(" invalid block ")(
+            blockHash.asHex())
             .Flush();
         auto& vector = blocks_to_request_;
         vector.emplace(vector.begin(), blockHash);
@@ -499,23 +494,13 @@ auto SubchainStateData::process() noexcept -> void
     const auto position = header.Position();
     handle_confirmed_matches(block, position, confirmed);
     const auto [balance, unconfirmed] = db_.GetBalance();
-    LogVerbose(OT_METHOD)(__FUNCTION__)(
-        ": ")(name_)(" block ")(block.ID()
-                                    .asHex())(" processed in ")(std::chrono::duration_cast<
-                                                                    std::chrono::
-                                                                        milliseconds>(
-                                                                    Clock::
-                                                                        now() -
-                                                                    start)
-                                                                    .count())(
-        " milliseconds. ")(general
-                               .size())(" of ")(potential
-                                                    .size())(" potential "
-                                                             "matches "
-                                                             "confirmed. "
-                                                             "Wallet balance "
-                                                             "is:"
-                                                             " ")(unconfirmed)(" (")(balance)(" confirmed)")
+    LogVerbose(OT_METHOD)(__func__)(": ")(name_)(" block ")(block.ID().asHex())(
+        " processed in ")(std::chrono::duration_cast<std::chrono::milliseconds>(
+                              Clock::now() - start)
+                              .count())(" milliseconds. ")(general.size())(
+        " of ")(potential.size())(
+        " potential matches confirmed. Wallet balance is:  ")(
+        unconfirmed)(" (")(balance)(" confirmed)")
         .Flush();
     db_.SubchainMatchBlock(index_, tested, blockHash.Bytes());
 
@@ -558,11 +543,11 @@ auto SubchainStateData::queue_work(const Task task, const char* log) noexcept
     });
 
     if (queued) {
-        LogDebug(OT_METHOD)(__FUNCTION__)(": ")(name_)(" ")(log)(" job queued")
+        LogDebug(OT_METHOD)(__func__)(": ")(name_)(" ")(log)(" job queued")
             .Flush();
     } else {
-        LogDebug(OT_METHOD)(__FUNCTION__)(
-            ": ")(name_)(" failed to queue ")(log)(" job")
+        LogDebug(OT_METHOD)(__func__)(": ")(name_)(" failed to queue ")(
+            log)(" job")
             .Flush();
 
         running_.store(false);
@@ -602,7 +587,9 @@ auto SubchainStateData::report_scan() noexcept -> void
     if (pos == last_reported_) { return; }
 
     if (blocks_to_request_.empty() && process_block_queue_.empty()) {
-        crypto_.ReportScan(node_.Chain(), owner_, id_, subchain_, pos);
+        update_scan(pos);
+        crypto_.ReportScan(
+            node_.Chain(), owner_, account_type_, id_, subchain_, pos);
         last_reported_ = pos;
         db_.SubchainSetLastScanned(index_, pos);
     }
@@ -624,8 +611,8 @@ auto SubchainStateData::scan() noexcept -> void
     const auto stopHeight = std::min(
         std::min(startHeight + 9999, best.first),
         filters.FilterTip(filter_type_).first);
-    LogVerbose(OT_METHOD)(__FUNCTION__)(
-        ": ")(name_)(" scanning filters from ")(startHeight)(" to ")(stopHeight)
+    LogVerbose(OT_METHOD)(__func__)(": ")(name_)(" scanning filters from ")(
+        startHeight)(" to ")(stopHeight)
         .Flush();
     const auto [elements, utxos, patterns] = get_account_targets();
     auto highestTested = last_scanned_.value_or(null_position_);
@@ -639,8 +626,8 @@ auto SubchainStateData::scan() noexcept -> void
             filter_type_, block::Position{i, blockHash});
 
         if (false == bool(pFilter)) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
-                ": ")(name_)(" filter at height ")(i)(" not found ")
+            LogVerbose(OT_METHOD)(__func__)(": ")(name_)(" filter at height ")(
+                i)(" not found ")
                 .Flush();
 
             break;
@@ -654,32 +641,15 @@ auto SubchainStateData::scan() noexcept -> void
         const auto size{matches.size()};
 
         if (0 < matches.size()) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
-                ": ")(name_)(" GCS for block ")(blockHash
-                                                    ->asHex())(" at "
-                                                               "height"
-                                                               " ")(i)(" m"
-                                                                       "at"
-                                                                       "ch"
-                                                                       "es"
-                                                                       " a"
-                                                                       "t "
-                                                                       "le"
-                                                                       "as"
-                                                                       "t "
-                                                                       "on"
-                                                                       "e "
-                                                                       "of"
-                                                                       " t"
-                                                                       "he"
-                                                                       " ")(patterns
-                                                                                .size())(" target elements for ")(id_)
+            LogVerbose(OT_METHOD)(__func__)(": ")(name_)(" GCS for block ")(
+                blockHash->asHex())(" at height ")(
+                i)(" matches at least one of the ")(patterns.size())(
+                " target elements for ")(id_)
                 .Flush();
             const auto [untested, retest] = get_block_targets(blockHash, utxos);
             matches = filter.Match(retest);
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
-                ": ")(name_)(" ")(matches
-                                      .size())(" of ")(size)(" matches are new")
+            LogVerbose(OT_METHOD)(__func__)(": ")(name_)(" ")(matches.size())(
+                " of ")(size)(" matches are new")
                 .Flush();
 
             if (0 < matches.size()) {
@@ -690,25 +660,20 @@ auto SubchainStateData::scan() noexcept -> void
 
     if (atLeastOnce) {
         const auto count = cache.size();
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
-            ": ")(name_)(" found ")(count)(" potential matches between "
-                                           "blocks ")(startHeight)(" and"
-                                                                   " ")(highestTested
-                                                                            .first)(" in ")(std::chrono::duration_cast<
-                                                                                                std::chrono::
-                                                                                                    milliseconds>(
-                                                                                                Clock::
-                                                                                                    now() -
-                                                                                                start)
-                                                                                                .count())(
-            " milliseconds")
+        LogVerbose(OT_METHOD)(__func__)(": ")(name_)(" found ")(
+            count)(" potential matches between blocks ")(startHeight)(" and"
+                                                                      " ")(
+            highestTested.first)(" in ")(
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                Clock::now() - start)
+                .count())(" milliseconds")
             .Flush();
         std::move(
             cache.begin(), cache.end(), std::back_inserter(blocks_to_request_));
         last_scanned_ = std::move(highestTested);
     } else {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
-            ": ")(name_)(" scan interrupted due to missing filter")
+        LogVerbose(OT_METHOD)(__func__)(": ")(
+            name_)(" scan interrupted due to missing filter")
             .Flush();
     }
 }
@@ -730,8 +695,7 @@ auto SubchainStateData::set_key_data(
 auto SubchainStateData::state_machine(bool enabled) noexcept -> bool
 {
     if (running_) {
-        LogTrace(OT_METHOD)(__FUNCTION__)(": ")(name_)(" task is running")
-            .Flush();
+        LogTrace(OT_METHOD)(__func__)(": ")(name_)(" task is running").Flush();
 
         return false;
     }

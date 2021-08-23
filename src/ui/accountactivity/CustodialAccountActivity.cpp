@@ -52,7 +52,7 @@ auto CustodialAccountActivityModel(
     const identifier::Nym& nymID,
     const Identifier& accountID,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::AccountActivity>
+    -> std::unique_ptr<ui::internal::AccountActivity>
 {
     using ReturnType = ui::implementation::CustodialAccountActivity;
 
@@ -91,11 +91,10 @@ auto CustodialAccountActivity::ContractID() const noexcept -> std::string
     return contract_->ID()->str();
 }
 
-auto CustodialAccountActivity::DisplayBalance() const noexcept -> std::string
+auto CustodialAccountActivity::display_balance(
+    opentxs::Amount amount) const noexcept -> std::string
 {
     sLock lock(shared_lock_);
-
-    const auto amount = balance_.load();
     std::string output{};
     const auto formatted =
         contract_->FormatAmountLocale(amount, output, ",", ".");
@@ -153,8 +152,8 @@ auto CustodialAccountActivity::extract_event(
     }
 
     if (false == found) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Workflow ")(workflow.id())(
-            ", type ")(workflow.type())(", state ")(workflow.state())(
+        LogOutput(OT_METHOD)(__func__)(": Workflow ")(workflow.id())(", type ")(
+            workflow.type())(", state ")(workflow.state())(
             " does not contain an event of type ")(eventType)
             .Flush();
 
@@ -205,7 +204,7 @@ auto CustodialAccountActivity::extract_rows(
                 case api::client::PaymentWorkflowState::Error:
                 case api::client::PaymentWorkflowState::Initiated:
                 default: {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Invalid workflow state (")(workflow.state())(")")
                         .Flush();
                 }
@@ -228,7 +227,7 @@ auto CustodialAccountActivity::extract_rows(
                 case api::client::PaymentWorkflowState::Accepted:
                 case api::client::PaymentWorkflowState::Initiated:
                 default: {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Invalid workflow state (")(workflow.state())(")")
                         .Flush();
                 }
@@ -263,7 +262,7 @@ auto CustodialAccountActivity::extract_rows(
                 case api::client::PaymentWorkflowState::Cancelled:
                 case api::client::PaymentWorkflowState::Expired:
                 default: {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Invalid workflow state (")(workflow.state())(")")
                         .Flush();
                 }
@@ -297,7 +296,7 @@ auto CustodialAccountActivity::extract_rows(
                 case api::client::PaymentWorkflowState::Aborted:
                 case api::client::PaymentWorkflowState::Acknowledged:
                 default: {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Invalid workflow state (")(workflow.state())(")")
                         .Flush();
                 }
@@ -332,7 +331,7 @@ auto CustodialAccountActivity::extract_rows(
                 case api::client::PaymentWorkflowState::Cancelled:
                 case api::client::PaymentWorkflowState::Expired:
                 default: {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Invalid workflow state (")(workflow.state())(")")
                         .Flush();
                 }
@@ -342,7 +341,7 @@ auto CustodialAccountActivity::extract_rows(
         case api::client::PaymentWorkflowType::OutgoingInvoice:
         case api::client::PaymentWorkflowType::IncomingInvoice:
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported workflow type (")(
+            LogOutput(OT_METHOD)(__func__)(": Unsupported workflow type (")(
                 workflow.type())(")")
                 .Flush();
         }
@@ -379,7 +378,7 @@ auto CustodialAccountActivity::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -422,7 +421,7 @@ auto CustodialAccountActivity::pipeline(const Message& in) noexcept -> void
             shutdown(shutdown_promise_);
         } break;
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unhandled type").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -464,11 +463,9 @@ auto CustodialAccountActivity::process_balance(const Message& message) noexcept
         return false;
     }();
 
-    if (balanceChanged || aliasChanged) {
-        // TODO Qt widgets need to know that balance or alias properties have
-        // changed
-        UpdateNotify();
-    }
+    if (balanceChanged) { notify_balance(balance); }
+
+    if (aliasChanged) { UpdateNotify(); }
 }
 
 auto CustodialAccountActivity::process_contact(const Message& message) noexcept

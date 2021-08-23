@@ -5,6 +5,8 @@
 
 // IWYU pragma: no_include "opentxs/api/client/PaymentWorkflowState.hpp"
 // IWYU pragma: no_include "opentxs/api/client/PaymentWorkflowType.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/crypto/SubaccountType.hpp"
 // IWYU pragma: no_include "opentxs/contact/ContactItemType.hpp"
 
 #pragma once
@@ -34,7 +36,6 @@
 #include "opentxs/api/client/Types.hpp"
 #include "opentxs/api/client/UI.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/contact/Types.hpp"
@@ -174,6 +175,7 @@ struct Blockchain : virtual public api::client::Blockchain {
     virtual auto ReportScan(
         const Chain chain,
         const identifier::Nym& owner,
+        const opentxs::blockchain::crypto::SubaccountType type,
         const Identifier& account,
         const opentxs::blockchain::crypto::Subchain subchain,
         const opentxs::blockchain::block::Position& progress) const noexcept

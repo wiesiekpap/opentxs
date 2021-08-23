@@ -6,13 +6,13 @@
 #ifndef OPENTXS_UI_ACTIVITYTHREADQT_HPP
 #define OPENTXS_UI_ACTIVITYTHREADQT_HPP
 
-#include <QIdentityProxyModel>
 #include <QObject>
 #include <QString>
 #include <QValidator>
 #include <QVariant>
 
 #include "opentxs/opentxs_export.hpp"  // IWYU pragma: keep
+#include "opentxs/ui/qt/Model.hpp"
 
 class QObject;
 class QValidator;
@@ -21,17 +21,16 @@ namespace opentxs
 {
 namespace ui
 {
-namespace implementation
+namespace internal
 {
-class ActivityThread;
-}  // namespace implementation
+struct ActivityThread;
+}  // namespace internal
 
 class ActivityThreadQt;
 }  // namespace ui
 }  // namespace opentxs
 
-class OPENTXS_EXPORT opentxs::ui::ActivityThreadQt final
-    : public QIdentityProxyModel
+class OPENTXS_EXPORT opentxs::ui::ActivityThreadQt final : public qt::Model
 {
     Q_OBJECT
     Q_PROPERTY(bool canMessage READ canMessage NOTIFY canMessageUpdate)
@@ -42,7 +41,6 @@ class OPENTXS_EXPORT opentxs::ui::ActivityThreadQt final
     Q_PROPERTY(QString threadID READ threadID CONSTANT)
 
 signals:
-    void updated() const;
     void canMessageUpdate(bool) const;
     void displayNameUpdate() const;
     void draftUpdate() const;
@@ -81,7 +79,7 @@ public:
     auto headerData(
         int section,
         Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const -> QVariant final;
+        int role = Qt::DisplayRole) const noexcept -> QVariant final;
     auto participants() const noexcept -> QString;
     auto threadID() const noexcept -> QString;
     Q_INVOKABLE bool pay(
@@ -91,7 +89,7 @@ public:
     Q_INVOKABLE QString paymentCode(const int currency) const noexcept;
     Q_INVOKABLE bool sendDraft() const noexcept;
 
-    ActivityThreadQt(implementation::ActivityThread& parent) noexcept;
+    ActivityThreadQt(internal::ActivityThread& parent) noexcept;
 
     ~ActivityThreadQt() final;
 

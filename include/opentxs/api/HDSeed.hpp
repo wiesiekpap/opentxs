@@ -116,6 +116,8 @@ public:
         const std::string& seedID,
         Bip32Index& index,
         const PasswordPrompt& reason) const = 0;
+    virtual auto SeedDescription(std::string seedID) const noexcept
+        -> std::string = 0;
     virtual bool UpdateIndex(
         const std::string& seedID,
         const Bip32Index index,

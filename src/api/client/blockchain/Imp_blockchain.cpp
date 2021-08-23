@@ -36,6 +36,7 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -115,8 +116,8 @@ auto BlockchainImp::ActivityDescription(
     auto data = proto::StorageThread{};
 
     if (false == api_.Storage().Load(nym.str(), thread.str(), data)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": thread ")(thread.str())(" does not exist for nym ")(nym.str())
+        LogOutput(OT_METHOD)(__func__)(": thread ")(thread.str())(
+            " does not exist for nym ")(nym.str())
             .Flush();
 
         return {};
@@ -130,8 +131,8 @@ auto BlockchainImp::ActivityDescription(
         const auto pTx = LoadTransactionBitcoin(txid);
 
         if (false == bool(pTx)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": failed to load transaction ")(txid->asHex())
+            LogOutput(OT_METHOD)(__func__)(": failed to load transaction ")(
+                txid->asHex())
                 .Flush();
 
             return {};
@@ -142,8 +143,7 @@ auto BlockchainImp::ActivityDescription(
         return this->ActivityDescription(nym, chain, tx);
     }
 
-    LogOutput(OT_METHOD)(__FUNCTION__)(": item ")(itemID)(" not found ")
-        .Flush();
+    LogOutput(OT_METHOD)(__func__)(": item ")(itemID)(" not found ").Flush();
 
     return {};
 }
@@ -331,8 +331,8 @@ auto BlockchainImp::load_transaction(const Lock& lock, const Txid& txid)
             txid.Bytes());
 
     if (false == serialized.has_value()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Transaction ")(txid.asHex())(" not found")
+        LogOutput(OT_METHOD)(__func__)(": Transaction ")(txid.asHex())(
+            " not found")
             .Flush();
 
         return {};
@@ -463,20 +463,22 @@ auto BlockchainImp::reconcile_activity_threads(
 auto BlockchainImp::ReportScan(
     const opentxs::blockchain::Type chain,
     const identifier::Nym& owner,
-    const Identifier& account,
+    const opentxs::blockchain::crypto::SubaccountType type,
+    const Identifier& id,
     const Blockchain::Subchain subchain,
     const opentxs::blockchain::block::Position& progress) const noexcept -> void
 {
     OT_ASSERT(false == owner.empty());
-    OT_ASSERT(false == account.empty());
+    OT_ASSERT(false == id.empty());
 
-    const auto id = account.Bytes();
+    const auto bytes = id.Bytes();
     const auto hash = progress.second->Bytes();
     auto work = api_.Network().ZeroMQ().TaggedMessage(
         WorkType::BlockchainWalletScanProgress);
     work->AddFrame(chain);
     work->AddFrame(owner.data(), owner.size());
-    work->AddFrame(id.data(), id.size());
+    work->AddFrame(type);
+    work->AddFrame(bytes.data(), bytes.size());
     work->AddFrame(subchain);
     work->AddFrame(progress.first);
     work->AddFrame(hash.data(), hash.size());
@@ -505,8 +507,8 @@ auto BlockchainImp::UpdateElement(std::vector<ReadView>& hashes) const noexcept
     std::for_each(std::begin(hashes), std::end(hashes), [&](const auto& bytes) {
         patterns.emplace_back(IndexItem(bytes));
     });
-    LogTrace(OT_METHOD)(__FUNCTION__)(
-        ": ")(patterns.size())(" pubkey hashes have changed:")
+    LogTrace(OT_METHOD)(__func__)(": ")(patterns.size())(
+        " pubkey hashes have changed:")
         .Flush();
     auto transactions = std::vector<pTxid>{};
     std::for_each(

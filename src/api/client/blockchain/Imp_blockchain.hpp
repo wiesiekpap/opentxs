@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/crypto/SubaccountType.hpp"
+
 #pragma once
 
 #include <atomic>
@@ -156,6 +158,7 @@ struct BlockchainImp final : public Blockchain::Imp {
     auto ReportScan(
         const opentxs::blockchain::Type chain,
         const identifier::Nym& owner,
+        const opentxs::blockchain::crypto::SubaccountType type,
         const Identifier& account,
         const Blockchain::Subchain subchain,
         const opentxs::blockchain::block::Position& progress) const noexcept

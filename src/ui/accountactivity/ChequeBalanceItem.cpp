@@ -139,8 +139,8 @@ auto ChequeBalanceItem::startup(
                 case proto::PAYMENTEVENTTYPE_CANCEL:
                 case proto::PAYMENTEVENTTYPE_COMPLETE:
                 default: {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
-                        ": Invalid event state (")(event.type())(")")
+                    LogOutput(OT_METHOD)(__func__)(": Invalid event state (")(
+                        event.type())(")")
                         .Flush();
                 }
             }
@@ -164,8 +164,8 @@ auto ChequeBalanceItem::startup(
                 case proto::PAYMENTEVENTTYPE_CANCEL:
                 case proto::PAYMENTEVENTTYPE_COMPLETE:
                 default: {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
-                        ": Invalid event state (")(event.type())(")")
+                    LogOutput(OT_METHOD)(__func__)(": Invalid event state (")(
+                        event.type())(")")
                         .Flush();
                 }
             }
@@ -187,7 +187,7 @@ auto ChequeBalanceItem::startup(
         case StorageBox::DRAFT:
         case StorageBox::UNKNOWN:
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid item type (")(
+            LogOutput(OT_METHOD)(__func__)(": Invalid item type (")(
                 static_cast<std::uint8_t>(type_))(")")
                 .Flush();
         }

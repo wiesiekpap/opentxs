@@ -28,6 +28,17 @@
 
 namespace opentxs::blockchain::crypto::implementation
 {
+Subaccount::AddressData::AddressData(
+    const api::Core& api,
+    Subchain type,
+    bool contact) noexcept
+    : type_(type)
+    , set_contact_(contact)
+    , progress_(-1, block::BlankHash())
+    , map_()
+{
+}
+
 Subaccount::Subaccount(
     const api::internal::Core& api,
     const internal::Account& parent,
@@ -79,12 +90,6 @@ Subaccount::Subaccount(
     if (Translate(contact::internal::translate(serialized.chain())) != chain_) {
         throw std::runtime_error("Wrong account type");
     }
-}
-
-auto Subaccount::UpdateElement(
-    std::vector<ReadView>& pubkeyHashes) const noexcept -> void
-{
-    parent_.ParentInternal().Parent().UpdateElement(pubkeyHashes);
 }
 
 auto Subaccount::AssociateTransaction(
@@ -258,6 +263,13 @@ void Subaccount::process_unspent(
     }
 }
 
+auto Subaccount::ScanProgress(Subchain type) const noexcept -> block::Position
+{
+    static const auto blank = block::Position{-1, api_.Factory().Data()};
+
+    return blank;
+}
+
 auto Subaccount::serialize_common(
     const rLock&,
     proto::BlockchainAccountData& out) const noexcept -> void
@@ -354,5 +366,11 @@ auto Subaccount::Unreserve(const Subchain type, const Bip32Index index) noexcept
     } catch (...) {
         return false;
     }
+}
+
+auto Subaccount::UpdateElement(
+    std::vector<ReadView>& pubkeyHashes) const noexcept -> void
+{
+    parent_.ParentInternal().Parent().UpdateElement(pubkeyHashes);
 }
 }  // namespace opentxs::blockchain::crypto::implementation

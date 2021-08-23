@@ -33,6 +33,7 @@
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 
@@ -132,17 +133,28 @@ struct User {
 
     auto init(
         const ot::api::client::Manager& api,
+        const ot::contact::ContactItemType type =
+            ot::contact::ContactItemType::Individual,
+        const std::uint32_t index = 0,
+        const ot::crypto::SeedStyle seed =
+            ot::crypto::SeedStyle::BIP39) noexcept -> bool;
+    auto init(
+        const ot::api::client::Manager& api,
         const Server& server,
         const ot::contact::ContactItemType type =
             ot::contact::ContactItemType::Individual,
-        const std::uint32_t index = 0) noexcept -> bool;
+        const std::uint32_t index = 0,
+        const ot::crypto::SeedStyle seed =
+            ot::crypto::SeedStyle::BIP39) noexcept -> bool;
     auto init_custom(
         const ot::api::client::Manager& api,
         const Server& server,
         const std::function<void(User&)> custom,
         const ot::contact::ContactItemType type =
             ot::contact::ContactItemType::Individual,
-        const std::uint32_t index = 0) noexcept -> void;
+        const std::uint32_t index = 0,
+        const ot::crypto::SeedStyle seed =
+            ot::crypto::SeedStyle::BIP39) noexcept -> void;
 
     User(
         const std::string words,
@@ -153,6 +165,12 @@ private:
     mutable std::mutex lock_;
     mutable std::map<std::string, ot::OTIdentifier> contacts_;
     mutable std::map<std::string, ot::OTIdentifier> accounts_;
+
+    auto init_basic(
+        const ot::api::client::Manager& api,
+        const ot::contact::ContactItemType type,
+        const std::uint32_t index,
+        const ot::crypto::SeedStyle seed) noexcept -> bool;
 
     User(const User&) = delete;
     User(User&&) = delete;

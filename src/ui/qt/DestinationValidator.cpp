@@ -13,7 +13,7 @@
 
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Log.hpp"
-#include "ui/accountactivity/DestinationValidator.hpp"
+#include "ui/qt/DestinationValidator.hpp"
 
 // #define OT_METHOD "opentxs::ui::DestinationValidator::"
 

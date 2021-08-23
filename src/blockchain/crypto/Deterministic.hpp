@@ -23,6 +23,7 @@
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/crypto/Deterministic.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
@@ -41,6 +42,8 @@ namespace internal
 {
 struct Core;
 }  // namespace internal
+
+class Core;
 }  // namespace api
 
 namespace proto
@@ -56,6 +59,7 @@ namespace opentxs::blockchain::crypto::implementation
 class Deterministic : virtual public internal::Deterministic, public Subaccount
 {
 public:
+    auto AllowedSubchains() const noexcept -> std::set<Subchain> final;
     auto Floor(const Subchain type) const noexcept
         -> std::optional<Bip32Index> final;
     auto BalanceElement(const Subchain type, const Bip32Index index) const
@@ -87,6 +91,10 @@ public:
         const Time time) const noexcept -> Batch override;
     auto RootNode(const PasswordPrompt& reason) const noexcept
         -> blockchain::crypto::HDKey override;
+    auto ScanProgress(Subchain type) const noexcept -> block::Position final;
+    auto SetScanProgress(
+        const block::Position& progress,
+        Subchain type) noexcept -> void final;
 
     ~Deterministic() override = default;
 
@@ -95,8 +103,22 @@ protected:
     using SerializedType = proto::BlockchainDeterministicAccountData;
 
     struct ChainData {
-        AddressData internal_{};
-        AddressData external_{};
+        AddressData internal_;
+        AddressData external_;
+
+        auto Get(Subchain type) const noexcept(false) -> const AddressData&
+        {
+            return const_cast<ChainData&>(*this).Get(type);
+        }
+
+        auto Get(Subchain type) noexcept(false) -> AddressData&;
+
+        ChainData(
+            const api::Core& api,
+            Subchain internalType,
+            bool internalContact,
+            Subchain externalType,
+            bool externalContact) noexcept;
     };
 
     static constexpr Bip32Index window_{20u};

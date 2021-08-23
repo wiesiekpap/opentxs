@@ -22,6 +22,7 @@ namespace crypto
 class OPENTXS_EXPORT HD : virtual public Deterministic
 {
 public:
+    virtual auto Name() const noexcept -> std::string = 0;
     virtual auto Standard() const noexcept -> HDProtocol = 0;
 
     OPENTXS_NO_EXPORT ~HD() override = default;

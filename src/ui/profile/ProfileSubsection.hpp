@@ -5,9 +5,8 @@
 
 #pragma once
 
-#if OT_QT
-#include <QHash>
-#endif  // OT_QT
+#include <iosfwd>
+#include <list>
 #include <set>
 #include <string>
 #include <utility>
@@ -18,6 +17,7 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -110,9 +110,6 @@ public:
         return row_id_.second;
     }
 
-    auto reindex(const ProfileSectionSortKey& key, CustomData& custom) noexcept
-        -> bool final;
-
     ProfileSubsection(
         const ProfileSectionInternalInterface& parent,
         const api::client::internal::Manager& api,
@@ -137,7 +134,9 @@ private:
     }
     auto process_group(const opentxs::ContactGroup& group) noexcept
         -> std::set<ProfileSubsectionRowID>;
-    void startup(const opentxs::ContactGroup group) noexcept;
+    auto reindex(const ProfileSectionSortKey& key, CustomData& custom) noexcept
+        -> bool final;
+    auto startup(const opentxs::ContactGroup group) noexcept -> void;
 
     ProfileSubsection() = delete;
     ProfileSubsection(const ProfileSubsection&) = delete;

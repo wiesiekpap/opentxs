@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <map>
 #include <optional>
@@ -14,6 +15,8 @@
 #include "opentxs/api/Options.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+
+class QObject;
 
 namespace opentxs
 {
@@ -25,6 +28,7 @@ struct Options::Imp final {
     std::optional<bool> blockchain_sync_server_enabled_;
     std::set<std::string> blockchain_sync_servers_;
     std::optional<bool> blockchain_wallet_enabled_;
+    std::optional<std::size_t> default_mint_key_bytes_;
     std::optional<std::string> home_;
     std::optional<std::string> log_endpoint_;
     std::optional<ConnectionMode> ipv4_connection_mode_;
@@ -40,6 +44,7 @@ struct Options::Imp final {
     std::set<std::string> notary_public_onion_;
     std::optional<std::uint16_t> notary_public_port_;
     std::optional<std::string> notary_terms_;
+    std::optional<QObject*> qt_root_object_;
     std::optional<std::string> storage_primary_plugin_;
 
     template <typename T>

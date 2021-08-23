@@ -304,10 +304,6 @@ public:
         import_server_contract(server_contract_, client_1_);
         import_server_contract(server_contract_, client_2_);
 
-#if OT_CASH
-        server_1_.SetMintKeySize(OT_MINT_KEY_SIZE_TEST);
-        server_2_.SetMintKeySize(OT_MINT_KEY_SIZE_TEST);
-#endif
         alice_state_machine_.reset(ot::Factory::Operation(
             client_1_, alice_nym_id_, server_1_id_, reason_c1_));
 

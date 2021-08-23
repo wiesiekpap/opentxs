@@ -6,31 +6,30 @@
 #ifndef OPENTXS_UI_MESSAGABLELISTQT_HPP
 #define OPENTXS_UI_MESSAGABLELISTQT_HPP
 
-#include <QIdentityProxyModel>
+#include <QObject>
+#include <QString>
 
 #include "opentxs/opentxs_export.hpp"  // IWYU pragma: keep
+#include "opentxs/ui/qt/Model.hpp"
+
+class QObject;
 
 namespace opentxs
 {
 namespace ui
 {
-namespace implementation
+namespace internal
 {
-class MessagableList;
-}  // namespace implementation
+struct MessagableList;
+}  // namespace internal
 
 class MessagableListQt;
 }  // namespace ui
 }  // namespace opentxs
 
-class OPENTXS_EXPORT opentxs::ui::MessagableListQt final
-    : public QIdentityProxyModel
+class OPENTXS_EXPORT opentxs::ui::MessagableListQt final : public qt::Model
 {
     Q_OBJECT
-
-signals:
-    void updated() const;
-
 public:
     // List layout
     enum Roles {
@@ -38,14 +37,14 @@ public:
         SectionRole = Qt::UserRole + 1,
     };
 
-    MessagableListQt(implementation::MessagableList& parent) noexcept;
+    MessagableListQt(internal::MessagableList& parent) noexcept;
 
-    ~MessagableListQt() final = default;
+    ~MessagableListQt() final;
 
 private:
-    implementation::MessagableList& parent_;
+    struct Imp;
 
-    void notify() const noexcept;
+    Imp* imp_;
 
     MessagableListQt() = delete;
     MessagableListQt(const MessagableListQt&) = delete;

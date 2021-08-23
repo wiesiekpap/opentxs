@@ -18,9 +18,13 @@ namespace ui
 {
 namespace implementation
 {
-class ActivityThread;
 class DraftValidator;
 }  // namespace implementation
+
+namespace internal
+{
+struct ActivityThread;
+}  // namespace internal
 }  // namespace ui
 }  // namespace opentxs
 
@@ -34,12 +38,12 @@ public:
     void fixup(QString& input) const final;
     State validate(QString& input, int& pos) const final;
 
-    DraftValidator(implementation::ActivityThread& parent) noexcept;
+    DraftValidator(internal::ActivityThread& parent) noexcept;
 
     ~DraftValidator() final = default;
 
 private:
-    implementation::ActivityThread& parent_;
+    internal::ActivityThread& parent_;
 
     DraftValidator() = delete;
     DraftValidator(const DraftValidator&) = delete;

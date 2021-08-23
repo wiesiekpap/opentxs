@@ -7,11 +7,6 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "ui/blockchainstatistics/BlockchainStatistics.hpp"  // IWYU pragma: associated
 
-#if OT_QT
-#include <QObject>
-#include <QVariant>
-#endif  // OT_QT
-#include <algorithm>
 #include <cstddef>
 #include <future>
 #include <map>
@@ -40,9 +35,6 @@
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
-#if OT_QT
-#include "opentxs/ui/qt/BlockchainStatistics.hpp"
-#endif  // OT_QT
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::BlockchainStatistics::"
@@ -54,95 +46,20 @@ namespace opentxs::factory
 auto BlockchainStatisticsModel(
     const api::client::internal::Manager& api,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::BlockchainStatistics>
+    -> std::unique_ptr<ui::internal::BlockchainStatistics>
 {
     using ReturnType = ui::implementation::BlockchainStatistics;
 
     return std::make_unique<ReturnType>(api, cb);
 }
-
-#if OT_QT
-auto BlockchainStatisticsQtModel(
-    ui::implementation::BlockchainStatistics& parent) noexcept
-    -> std::unique_ptr<ui::BlockchainStatisticsQt>
-{
-    using ReturnType = ui::BlockchainStatisticsQt;
-
-    return std::make_unique<ReturnType>(parent);
-}
-#endif  // OT_QT
 }  // namespace opentxs::factory
-
-#if OT_QT
-namespace opentxs::ui
-{
-QT_PROXY_MODEL_WRAPPER(
-    BlockchainStatisticsQt,
-    implementation::BlockchainStatistics)
-
-auto BlockchainStatisticsQt::headerData(int section, Qt::Orientation, int role)
-    const -> QVariant
-{
-    if (Qt::DisplayRole != role) { return {}; }
-
-    switch (section) {
-        case NameColumn: {
-            return "Blockchain";
-        }
-        case BalanceColumn: {
-            return "Balance";
-        }
-        case HeaderColumn: {
-            return "Block header height";
-        }
-        case FilterColumn: {
-            return "Block filter height";
-        }
-        case ConnectedPeerColumn: {
-            return "Connected peers";
-        }
-        case ActivePeerColumn: {
-            return "Active peers";
-        }
-        case BlockQueueColumn: {
-            return "Block download queue";
-        }
-        default: {
-
-            return {};
-        }
-    }
-}
-
-BlockchainStatisticsQt::~BlockchainStatisticsQt() = default;
-}  // namespace opentxs::ui
-#endif
 
 namespace opentxs::ui::implementation
 {
 BlockchainStatistics::BlockchainStatistics(
     const api::client::internal::Manager& api,
     const SimpleCallback& cb) noexcept
-    : BlockchainStatisticsList(
-          api,
-          api.Factory().Identifier(),
-          cb,
-          false
-#if OT_QT
-          ,
-          Roles{
-              {BlockchainStatisticsQt::Balance, "balance"},
-              {BlockchainStatisticsQt::BlockQueue, "blockqueue"},
-              {BlockchainStatisticsQt::Chain, "chain"},
-              {BlockchainStatisticsQt::FilterHeight, "filterheight"},
-              {BlockchainStatisticsQt::HeaderHeight, "headerheight"},
-              {BlockchainStatisticsQt::Name, "name"},
-              {BlockchainStatisticsQt::ActivePeerCount, "activepeers"},
-              {BlockchainStatisticsQt::ConnectedPeerCount, "totalpeers"},
-          },
-          7
-#endif
-          )
+    : BlockchainStatisticsList(api, api.Factory().Identifier(), cb, false)
     , Worker(api, {})
     , blockchain_(api.Network().Blockchain())
 {
@@ -211,7 +128,7 @@ auto BlockchainStatistics::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -250,8 +167,8 @@ auto BlockchainStatistics::pipeline(const Message& in) noexcept -> void
             do_work();
         } break;
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Unhandled type: ")(static_cast<OTZMQWorkType>(work))
+            LogOutput(OT_METHOD)(__func__)(": Unhandled type: ")(
+                static_cast<OTZMQWorkType>(work))
                 .Flush();
 
             OT_FAIL;

@@ -5,10 +5,8 @@
 
 #pragma once
 
-#if OT_QT
 #include <QString>
 #include <QValidator>
-#endif  // OT_QT
 #include <memory>
 
 #include "1_Internal.hpp"

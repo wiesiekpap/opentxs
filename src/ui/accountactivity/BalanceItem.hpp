@@ -5,9 +5,6 @@
 
 #pragma once
 
-#if OT_QT
-#include <QVariant>
-#endif  // OT_QT
 #include <algorithm>
 #include <chrono>
 #include <memory>
@@ -25,6 +22,8 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/ui/BalanceItem.hpp"
 #include "ui/base/Row.hpp"
+
+class QVariant;
 
 namespace opentxs
 {
@@ -84,14 +83,6 @@ public:
     auto Timestamp() const noexcept -> Time final;
     auto Type() const noexcept -> StorageBox override { return type_; }
 
-    auto reindex(
-        const implementation::AccountActivitySortKey& key,
-        implementation::CustomData& custom) noexcept -> bool override;
-
-#if OT_QT
-    QVariant qt_data(const int column, const int role) const noexcept final;
-#endif
-
     ~BalanceItem() override;
 
 protected:
@@ -106,6 +97,10 @@ protected:
 
     auto get_contact_name(const identifier::Nym& nymID) const noexcept
         -> std::string;
+
+    auto reindex(
+        const implementation::AccountActivitySortKey& key,
+        implementation::CustomData& custom) noexcept -> bool override;
 
     BalanceItem(
         const AccountActivityInternalInterface& parent,
@@ -127,6 +122,8 @@ private:
         -> std::vector<std::string>;
 
     virtual auto effective_amount() const noexcept -> opentxs::Amount = 0;
+    auto qt_data(const int column, const int role, QVariant& out) const noexcept
+        -> void final;
 
     BalanceItem(const BalanceItem&) = delete;
     BalanceItem(BalanceItem&&) = delete;

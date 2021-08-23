@@ -14,7 +14,6 @@
 
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Contacts.hpp"
@@ -27,19 +26,9 @@
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
-#if OT_QT
-#include "opentxs/ui/qt/PayableList.hpp"
-#endif  // OT_QT
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::PayableList::"
-
-#if OT_QT
-namespace opentxs::ui
-{
-QT_PROXY_MODEL_WRAPPER(PayableListQt, implementation::PayableList)
-}  // namespace opentxs::ui
-#endif
 
 namespace opentxs::factory
 {
@@ -48,22 +37,12 @@ auto PayableListModel(
     const identifier::Nym& nymID,
     const contact::ContactItemType& currency,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::PayableList>
+    -> std::unique_ptr<ui::internal::PayableList>
 {
     using ReturnType = ui::implementation::PayableList;
 
     return std::make_unique<ReturnType>(api, nymID, currency, cb);
 }
-
-#if OT_QT
-auto PayableListQtModel(ui::implementation::PayableList& parent) noexcept
-    -> std::unique_ptr<ui::PayableListQt>
-{
-    using ReturnType = ui::PayableListQt;
-
-    return std::make_unique<ReturnType>(parent);
-}
-#endif  // OT_QT
 }  // namespace opentxs::factory
 
 namespace opentxs::ui::implementation
@@ -73,24 +52,11 @@ PayableList::PayableList(
     const identifier::Nym& nymID,
     const contact::ContactItemType& currency,
     const SimpleCallback& cb) noexcept
-    : PayableListList(
-          api,
-          nymID,
-          cb,
-          false
-#if OT_QT
-          ,
-          Roles{
-              {PayableListQt::ContactIDRole, "id"},
-              {PayableListQt::SectionRole, "section"}},
-          2
-#endif
-          )
+    : PayableListList(api, nymID, cb, false)
     , Worker(api, {})
     , owner_contact_id_(Widget::api_.Factory().Identifier())  // FIXME wtf
     , currency_(currency)
 {
-    init();
     init_executor(
         {api.Endpoints().ContactUpdate(), api.Endpoints().NymDownload()});
     pipeline_->Push(MakeWork(Work::init));
@@ -117,7 +83,7 @@ auto PayableList::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -150,7 +116,7 @@ auto PayableList::pipeline(const Message& in) noexcept -> void
             shutdown(shutdown_promise_);
         } break;
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unhandled type").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -166,8 +132,8 @@ auto PayableList::process_contact(
     const auto contact = Widget::api_.Contacts().Contact(id);
 
     if (false == bool(contact)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Contact ")(id)(
-            " can not be loaded.")
+        LogOutput(OT_METHOD)(__func__)(": Error: Contact ")(
+            id)(" can not be loaded.")
             .Flush();
 
         return;
@@ -184,7 +150,7 @@ auto PayableList::process_contact(
         auto custom = CustomData{paymentCode.release()};
         add_item(id, key, custom);
     } else {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Skipping unpayable contact ")(id)
+        LogDetail(OT_METHOD)(__func__)(": Skipping unpayable contact ")(id)
             .Flush();
     }
 }
@@ -202,7 +168,7 @@ auto PayableList::process_contact(const Message& message) noexcept -> void
     OT_ASSERT(false == contactID->empty())
 
     const auto name = Widget::api_.Contacts().ContactName(contactID);
-    process_contact(contactID, name);
+    process_contact(contactID, {false, name});
 }
 
 auto PayableList::process_nym(const Message& message) noexcept -> void
@@ -219,18 +185,17 @@ auto PayableList::process_nym(const Message& message) noexcept -> void
 
     const auto contactID = Widget::api_.Contacts().ContactID(nymID);
     const auto name = Widget::api_.Contacts().ContactName(contactID);
-    process_contact(contactID, name);
+    process_contact(contactID, {false, name});
 }
 
 auto PayableList::startup() noexcept -> void
 {
     const auto contacts = Widget::api_.Contacts().ContactList();
-    LogDetail(OT_METHOD)(__FUNCTION__)(": Loading ")(contacts.size())(
-        " contacts.")
+    LogDetail(OT_METHOD)(__func__)(": Loading ")(contacts.size())(" contacts.")
         .Flush();
 
     for (const auto& [id, alias] : contacts) {
-        process_contact(Identifier::Factory(id), alias);
+        process_contact(Identifier::Factory(id), {false, alias});
     }
 
     finish_startup();

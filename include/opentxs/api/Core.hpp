@@ -44,6 +44,8 @@ class Wallet;
 class Options;
 }  // namespace opentxs
 
+class QObject;
+
 namespace opentxs
 {
 namespace api
@@ -60,6 +62,7 @@ public:
     virtual auto GetOptions() const noexcept -> const Options& = 0;
     virtual auto Instance() const noexcept -> int = 0;
     virtual auto Network() const noexcept -> const network::Network& = 0;
+    virtual auto QtRootObject() const noexcept -> QObject* = 0;
     virtual auto Seeds() const noexcept -> const api::HDSeed& = 0;
     virtual auto SetMasterKeyTimeout(
         const std::chrono::seconds& timeout) const noexcept -> void = 0;

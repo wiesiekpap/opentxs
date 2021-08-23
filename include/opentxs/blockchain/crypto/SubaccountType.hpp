@@ -8,6 +8,8 @@
 
 #include "opentxs/blockchain/crypto/Types.hpp"  // IWYU pragma: associated
 
+#include <limits>
+
 namespace opentxs
 {
 namespace blockchain
@@ -19,6 +21,7 @@ enum class SubaccountType : std::uint16_t {
     HD = 1,
     PaymentCode = 2,
     Imported = 3,
+    Notification = std::numeric_limits<std::uint16_t>::max(),
 };
 }  // namespace crypto
 }  // namespace blockchain

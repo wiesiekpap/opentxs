@@ -35,9 +35,6 @@
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
-#if OT_QT
-#include "opentxs/ui/qt/UnitList.hpp"
-#endif  // OT_QT
 #include "opentxs/util/WorkType.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::UnitList::"
@@ -50,30 +47,13 @@ auto UnitListModel(
     const api::client::internal::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::UnitList>
+    -> std::unique_ptr<ui::internal::UnitList>
 {
     using ReturnType = ui::implementation::UnitList;
 
     return std::make_unique<ReturnType>(api, nymID, cb);
 }
-
-#if OT_QT
-auto UnitListQtModel(ui::implementation::UnitList& parent) noexcept
-    -> std::unique_ptr<ui::UnitListQt>
-{
-    using ReturnType = ui::UnitListQt;
-
-    return std::make_unique<ReturnType>(parent);
-}
-#endif  // OT_QT
 }  // namespace opentxs::factory
-
-#if OT_QT
-namespace opentxs::ui
-{
-QT_PROXY_MODEL_WRAPPER(UnitListQt, implementation::UnitList)
-}  // namespace opentxs::ui
-#endif
 
 namespace opentxs::ui::implementation
 {
@@ -81,19 +61,7 @@ UnitList::UnitList(
     const api::client::internal::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
-    : UnitListList(
-          api,
-          nymID,
-          cb,
-          false
-#if OT_QT
-          ,
-          Roles{
-              {UnitListQt::UnitIDRole, "unit"},
-          },
-          1
-#endif
-          )
+    : UnitListList(api, nymID, cb, false)
 #if OT_BLOCKCHAIN
     , blockchain_balance_cb_(zmq::ListenCallback::Factory(
           [this](const auto& in) { process_blockchain_balance(in); }))
@@ -105,7 +73,6 @@ UnitList::UnitList(
           {api_.Endpoints().AccountUpdate(),
            new MessageProcessor<UnitList>(&UnitList::process_account)}}
 {
-    init();
     setup_listeners(listeners_);
     startup_.reset(new std::thread(&UnitList::startup, this));
 
@@ -154,7 +121,7 @@ auto UnitList::process_blockchain_balance(const Message& message) noexcept
     try {
         process_unit(Translate(chainFrame.as<blockchain::Type>()));
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid chain").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid chain").Flush();
 
         return;
     }
@@ -183,8 +150,7 @@ auto UnitList::setup_listeners(const ListenerDefinitions& definitions) noexcept
 auto UnitList::startup() noexcept -> void
 {
     const auto accounts = api_.Storage().AccountsByOwner(primary_id_);
-    LogDetail(OT_METHOD)(__FUNCTION__)(": Loading ")(accounts.size())(
-        " accounts.")
+    LogDetail(OT_METHOD)(__func__)(": Loading ")(accounts.size())(" accounts.")
         .Flush();
 
     for (const auto& id : accounts) { process_account(id); }

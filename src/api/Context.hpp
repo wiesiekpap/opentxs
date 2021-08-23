@@ -40,6 +40,8 @@
 #include "opentxs/rpc/request/Base.hpp"
 #include "opentxs/rpc/response/Base.hpp"
 
+class QObject;
+
 namespace opentxs
 {
 namespace proto
@@ -83,12 +85,13 @@ public:
     auto Config(const std::string& path) const -> const api::Settings& final;
     auto Crypto() const -> const api::Crypto& final;
     auto Factory() const -> const api::Primitives& final;
-    void HandleSignals(ShutdownCallback* shutdown) const final;
+    auto HandleSignals(ShutdownCallback* shutdown) const -> void final;
     auto Legacy() const noexcept -> const api::Legacy& final
     {
         return *legacy_;
     }
     auto ProfileId() const -> std::string final;
+    auto QtRootObject() const noexcept -> QObject* final;
     auto RPC(const rpc::request::Base& command) const noexcept
         -> std::unique_ptr<rpc::response::Base> final;
     auto RPC(const ReadView command, const AllocateOutput response)
@@ -155,22 +158,24 @@ private:
     static auto client_instance(const int count) -> int;
     static auto server_instance(const int count) -> int;
 
-    void init_pid() const;
-    void start_client(const Lock& lock, const Options& args) const;
-    void start_server(const Lock& lock, const Options& args) const;
+    auto init_pid() const -> void;
+    auto start_client(const Lock& lock, const Options& args) const -> void;
+    auto start_server(const Lock& lock, const Options& args) const -> void;
 
-    void Init_Asio();
-    void Init_Crypto();
-    void Init_Factory();
-    void Init_Log();
+    auto get_qt() const noexcept -> std::unique_ptr<QObject>&;
+    auto Init_Asio() -> void;
+    auto Init_Crypto() -> void;
+    auto Init_Factory() -> void;
+    auto Init_Log() -> void;
 #ifndef _WIN32
-    void Init_Rlimit() noexcept;
+    auto Init_Rlimit() noexcept -> void;
 #endif  // _WIN32
-    void Init_Profile();
-    void Init_Zap();
-    void Init() final;
-    void setup_default_external_password_callback();
-    void shutdown() final;
+    auto Init_Profile() -> void;
+    auto Init_Zap() -> void;
+    auto Init() -> void final;
+    auto setup_default_external_password_callback() -> void;
+    auto shutdown() -> void final;
+    auto shutdown_qt() noexcept -> void;
 
     Context() = delete;
     Context(const Context&) = delete;

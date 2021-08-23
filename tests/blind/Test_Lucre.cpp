@@ -20,7 +20,6 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Manager.hpp"
-#include "opentxs/api/server/Manager.hpp"
 #include "opentxs/blind/CashType.hpp"
 #include "opentxs/blind/Mint.hpp"
 #include "opentxs/blind/Purse.hpp"
@@ -152,7 +151,7 @@ TEST_F(Test_Basic, generateMint)
         10000000,
         100000000,
         1000000000,
-        OT_MINT_KEY_SIZE_TEST,
+        288,
         reason_);
 }
 

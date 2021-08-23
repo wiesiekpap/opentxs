@@ -65,6 +65,8 @@ class Base;
 class Options;
 }  // namespace opentxs
 
+class QObject;
+
 namespace opentxs
 {
 namespace api
@@ -84,6 +86,7 @@ public:
     virtual const api::Primitives& Factory() const = 0;
     virtual void HandleSignals(ShutdownCallback* callback = nullptr) const = 0;
     virtual std::string ProfileId() const = 0;
+    OPENTXS_NO_EXPORT virtual QObject* QtRootObject() const noexcept = 0;
     virtual std::unique_ptr<rpc::response::Base> RPC(
         const rpc::request::Base& command) const noexcept = 0;
     virtual bool RPC(const ReadView command, const AllocateOutput response)

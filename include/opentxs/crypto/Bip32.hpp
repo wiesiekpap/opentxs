@@ -48,7 +48,8 @@ namespace opentxs
 {
 namespace crypto
 {
-std::string Print(const proto::HDPath& node);
+auto Print(const proto::HDPath& node) noexcept -> std::string;
+auto Print(const proto::HDPath& node, bool showSeedID) noexcept -> std::string;
 
 class OPENTXS_EXPORT Bip32
 {

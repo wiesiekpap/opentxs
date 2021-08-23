@@ -5,9 +5,6 @@
 
 #pragma once
 
-#if OT_QT
-#include <QVariant>
-#endif  // OT_QT
 #include <string>
 
 #include "1_Internal.hpp"
@@ -18,6 +15,8 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "ui/contactlist/ContactListItem.hpp"
+
+class QVariant;
 
 namespace opentxs
 {
@@ -57,11 +56,6 @@ class PayableListItem final : public PayableListRowInternal,
 public:
     auto PaymentCode() const noexcept -> std::string final;
 
-#if OT_QT
-    auto qt_data(const int column, const int role) const noexcept
-        -> QVariant final;
-#endif
-
     PayableListItem(
         const PayableInternalInterface& parent,
         const api::client::internal::Manager& api,
@@ -81,6 +75,8 @@ private:
     {
         return translate_section(lock);
     }
+    auto qt_data(const int column, const int role, QVariant& out) const noexcept
+        -> void final;
 
     auto reindex(const PayableListSortKey&, CustomData&) noexcept -> bool final;
     auto reindex(

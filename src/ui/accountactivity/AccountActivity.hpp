@@ -5,11 +5,10 @@
 
 #pragma once
 
-#if OT_QT
-#include <QHash>
-#endif  // OT_QT
 #include <atomic>
 #include <functional>
+#include <list>
+#include <mutex>
 #include <set>
 #include <string>
 #include <utility>
@@ -23,6 +22,8 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/Core.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -30,17 +31,10 @@
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/ui/AccountActivity.hpp"
-#if OT_QT
-#include "opentxs/ui/qt/AmountValidator.hpp"
-#include "opentxs/ui/qt/DestinationValidator.hpp"
-#include "opentxs/ui/qt/DisplayScale.hpp"
-#endif  // OT_QT
 #include "opentxs/util/WorkType.hpp"
-#if OT_QT
-#include "ui/accountactivity/SendMonitor.hpp"
-#endif  // OT_QT
 #include "ui/base/List.hpp"
 #include "ui/base/Widget.hpp"
+#include "ui/qt/SendMonitor.hpp"
 #include "util/Polarity.hpp"
 #include "util/Work.hpp"
 
@@ -80,6 +74,28 @@ namespace proto
 class PaymentEvent;
 class PaymentWorkflow;
 }  // namespace proto
+
+namespace ui
+{
+class AmountValidator;
+class DestinationValidator;
+class DisplayScaleQt;
+}  // namespace ui
+}  // namespace opentxs
+
+namespace opentxs
+{
+template <typename T>
+struct make_blank;
+
+template <>
+struct make_blank<ui::implementation::AccountActivityRowID> {
+    static auto value(const api::Core& api)
+        -> ui::implementation::AccountActivityRowID
+    {
+        return {api.Factory().Identifier(), proto::PAYMENTEVENTTYPE_ERROR};
+    }
+};
 }  // namespace opentxs
 
 namespace opentxs::ui::implementation
@@ -107,12 +123,6 @@ class AccountActivity : public AccountActivityList,
 {
 public:
     const display::Definition scales_;
-#if OT_QT
-    DisplayScaleQt scales_qt_;
-    AmountValidator amount_validator_;
-    DestinationValidator destination_validator_;
-    mutable SendMonitor send_monitor_;
-#endif  // OT_QT
 
     auto AccountID() const noexcept -> std::string final
     {
@@ -123,6 +133,7 @@ public:
     {
         return polarity(balance_.load());
     }
+    auto ClearCallbacks() const noexcept -> void final;
     auto Contract() const noexcept -> const contract::Unit& final
     {
         return contract_.get();
@@ -140,6 +151,10 @@ public:
         -> std::vector<blockchain::Type> override
     {
         return {};
+    }
+    auto DisplayBalance() const noexcept -> std::string final
+    {
+        return display_balance(balance_.load());
     }
     auto Notary() const noexcept -> const contract::Server& final
     {
@@ -162,17 +177,16 @@ public:
     {
         return false;
     }
-#if OT_QT
-    virtual auto Send(
+    auto Send(
         [[maybe_unused]] const Identifier& contact,
         [[maybe_unused]] const std::string& amount,
         [[maybe_unused]] const std::string& memo,
         [[maybe_unused]] Scale scale,
-        [[maybe_unused]] SendMonitor::Callback cb) const noexcept -> int
+        [[maybe_unused]] SendMonitor::Callback cb) const noexcept
+        -> int override
     {
         return false;
     }
-#endif  // OT_QT
     auto Send(
         [[maybe_unused]] const std::string& address,
         [[maybe_unused]] const Amount amount,
@@ -189,17 +203,17 @@ public:
     {
         return false;
     }
-#if OT_QT
-    virtual auto Send(
+    auto Send(
         [[maybe_unused]] const std::string& address,
         [[maybe_unused]] const std::string& amount,
         [[maybe_unused]] const std::string& memo,
         [[maybe_unused]] Scale scale,
-        [[maybe_unused]] SendMonitor::Callback cb) const noexcept -> int
+        [[maybe_unused]] SendMonitor::Callback cb) const noexcept
+        -> int override
     {
         return false;
     }
-#endif  // OT_QT
+    auto SendMonitor() const noexcept -> implementation::SendMonitor& final;
     auto SyncPercentage() const noexcept -> double override { return 100; }
     auto SyncProgress() const noexcept -> std::pair<int, int> override
     {
@@ -217,20 +231,31 @@ public:
         return {};
     }
 
-    using SyncCallback = std::function<void(int, int, double)>;
-
-    virtual auto SetSyncCallback(const SyncCallback) noexcept -> void {}
+    auto AmountValidator() noexcept -> ui::AmountValidator& final;
+    auto DestinationValidator() noexcept -> ui::DestinationValidator& final;
+    auto DisplayScaleQt() noexcept -> ui::DisplayScaleQt& final;
+    auto SendMonitor() noexcept -> implementation::SendMonitor& final;
+    auto SetCallbacks(Callbacks&& cb) noexcept -> void final;
 
     ~AccountActivity() override;
 
 protected:
+    struct CallbackHolder {
+        mutable std::mutex lock_{};
+        Callbacks cb_{};
+    };
+
+    mutable CallbackHolder callbacks_;
     mutable std::atomic<Amount> balance_;
     const OTIdentifier account_id_;
     const AccountType type_;
     OTUnitDefinition contract_;
     OTServerContract notary_;
 
-    using AccountActivityList::init;
+    virtual auto display_balance(opentxs::Amount value) const noexcept
+        -> std::string = 0;
+    auto notify_balance(opentxs::Amount balance) const noexcept -> void;
+
     // NOTE only call in final class constructor bodies
     auto init(Endpoints endpoints) noexcept -> void;
 
@@ -245,6 +270,10 @@ protected:
 private:
     friend Worker<AccountActivity>;
 
+    struct QT;
+
+    QT* qt_;
+
     virtual auto startup() noexcept -> void = 0;
 
     auto construct_row(
@@ -252,7 +281,9 @@ private:
         const AccountActivitySortKey& index,
         CustomData& custom) const noexcept -> RowPointer final;
 
+    auto init_qt() noexcept -> void;
     virtual auto pipeline(const Message& in) noexcept -> void = 0;
+    auto shutdown_qt() noexcept -> void;
 
     AccountActivity() = delete;
     AccountActivity(const AccountActivity&) = delete;

@@ -30,6 +30,7 @@
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
 #include "opentxs/blockchain/crypto/HDProtocol.hpp"
+#include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -87,9 +88,9 @@ Account::Account(
 
         return out;
     }())
-    , hd_(api_, *this)
-    , imported_(api_, *this)
-    , payment_code_(api_, *this)
+    , hd_(api_, SubaccountType::HD, *this)
+    , imported_(api_, SubaccountType::Imported, *this)
+    , payment_code_(api_, SubaccountType::PaymentCode, *this)
     , node_index_()
     , lock_()
     , unspent_()
@@ -170,8 +171,8 @@ auto Account::AssociateTransaction(
         auto* pNode = node_index_.Find(accountID);
 
         if (nullptr == pNode) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
-                ": Account ")(accountID)(" not found")
+            LogVerbose(OT_METHOD)(__func__)(": Account ")(
+                accountID)(" not found")
                 .Flush();
 
             continue;
@@ -196,8 +197,7 @@ auto Account::AssociateTransaction(
                     std::forward_as_tuple(key, amount));
             }
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed processing transaction")
+            LogOutput(OT_METHOD)(__func__)(": Failed processing transaction")
                 .Flush();
 
             return false;

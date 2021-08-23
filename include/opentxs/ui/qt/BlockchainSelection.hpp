@@ -6,28 +6,30 @@
 #ifndef OPENTXS_UI_BLOCKCHAINSELECTIONQT_HPP
 #define OPENTXS_UI_BLOCKCHAINSELECTIONQT_HPP
 
-#include <QIdentityProxyModel>
+#include <QObject>
+#include <QString>
 #include <QVariant>
 
 #include "opentxs/opentxs_export.hpp"  // IWYU pragma: keep
+#include "opentxs/ui/qt/Model.hpp"
 
 class QModelIndex;
+class QObject;
 
 namespace opentxs
 {
 namespace ui
 {
-namespace implementation
+namespace internal
 {
-class BlockchainSelection;
-}  // namespace implementation
+struct BlockchainSelection;
+}  // namespace internal
 
 class BlockchainSelectionQt;
 }  // namespace ui
 }  // namespace opentxs
 
-class OPENTXS_EXPORT opentxs::ui::BlockchainSelectionQt final
-    : public QIdentityProxyModel
+class OPENTXS_EXPORT opentxs::ui::BlockchainSelectionQt final : public qt::Model
 {
     Q_OBJECT
     Q_PROPERTY(int enabledCount READ enabledCount NOTIFY enabledChanged)
@@ -36,7 +38,6 @@ signals:
     void chainEnabled(int chain);
     void chainDisabled(int chain);
     void enabledChanged(int enabledCount);
-    void updated() const;
 
 public:
     // One column
@@ -58,16 +59,14 @@ public:
     auto setData(const QModelIndex& index, const QVariant& value, int role)
         -> bool final;
 
-    BlockchainSelectionQt(implementation::BlockchainSelection& parent) noexcept;
+    BlockchainSelectionQt(internal::BlockchainSelection& parent) noexcept;
 
     ~BlockchainSelectionQt() final;
 
 private:
-    implementation::BlockchainSelection& parent_;
+    struct Imp;
 
-    auto notify() const noexcept -> void;
-
-    auto init() noexcept -> void;
+    Imp* imp_;
 
     BlockchainSelectionQt(const BlockchainSelectionQt&) = delete;
     BlockchainSelectionQt(BlockchainSelectionQt&&) = delete;

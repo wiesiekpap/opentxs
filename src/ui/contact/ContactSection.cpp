@@ -136,7 +136,6 @@ ContactSection::ContactSection(
           rowID,
           key)
 {
-    init();
     startup_.reset(new std::thread(
         &ContactSection::startup,
         this,

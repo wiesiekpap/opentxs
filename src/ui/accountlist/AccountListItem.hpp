@@ -5,9 +5,6 @@
 
 #pragma once
 
-#if OT_QT
-#include <QVariant>
-#endif  // OT_QT
 #include <string>
 
 #include "1_Internal.hpp"
@@ -23,6 +20,8 @@
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/ui/AccountListItem.hpp"
 #include "ui/base/Row.hpp"
+
+class QVariant;
 
 namespace opentxs
 {
@@ -93,18 +92,11 @@ public:
     {
         return notary_->EffectiveName();
     }
-    auto reindex(const AccountListSortKey& key, CustomData& custom) noexcept
-        -> bool final;
     auto Type() const noexcept -> AccountType final { return type_; }
     auto Unit() const noexcept -> contact::ContactItemType final
     {
         return unit_;
     }
-
-#if OT_QT
-    auto qt_data(const int column, const int role) const noexcept
-        -> QVariant final;
-#endif
 
     AccountListItem(
         const AccountListInternalInterface& parent,
@@ -128,6 +120,12 @@ private:
     static auto load_unit(
         const api::Core& api,
         const identifier::UnitDefinition& id) -> OTUnitDefinition;
+
+    auto qt_data(const int column, const int role, QVariant& out) const noexcept
+        -> void final;
+
+    auto reindex(const AccountListSortKey& key, CustomData& custom) noexcept
+        -> bool final;
 
     AccountListItem() = delete;
     AccountListItem(const AccountListItem&) = delete;

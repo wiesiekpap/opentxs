@@ -5,9 +5,6 @@
 
 #pragma once
 
-#if OT_QT
-#include <QVariant>
-#endif  // OT_QT
 #include <atomic>
 #include <cstddef>
 #include <iosfwd>
@@ -30,6 +27,8 @@
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/ui/BlockchainStatisticsItem.hpp"
 #include "ui/base/Row.hpp"
+
+class QVariant;
 
 namespace opentxs
 {
@@ -94,11 +93,6 @@ public:
     auto Headers() const noexcept -> Position final { return header_.load(); }
     auto Name() const noexcept -> std::string final { return name_; }
 
-#if OT_QT
-    auto qt_data(const int column, const int role) const noexcept
-        -> QVariant final;
-#endif
-
     BlockchainStatisticsItem(
         const BlockchainStatisticsInternalInterface& parent,
         const api::client::internal::Manager& api,
@@ -116,6 +110,9 @@ private:
     std::atomic<std::size_t> active_peers_;
     std::atomic<std::size_t> blocks_;
     std::atomic<blockchain::Amount> balance_;
+
+    auto qt_data(const int column, const int role, QVariant& out) const noexcept
+        -> void final;
 
     auto reindex(const BlockchainStatisticsSortKey&, CustomData& data) noexcept
         -> bool final;
