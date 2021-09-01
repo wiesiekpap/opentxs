@@ -151,7 +151,11 @@ private:
     auto hello(const Lock&, const block::Position& incoming) const noexcept
     {
         // TODO use known() and Ancestors() instead
-        const auto [parent, best] = header_.CommonParent(incoming);
+        auto [parent, best] = header_.CommonParent(incoming);
+        if ((0 == parent.first) && (1000 < incoming.first)) {
+            const auto height = std::min(incoming.first - 1000, best.first);
+            parent = {height, header_.BestHash(height)};
+        }
         const auto needSync = incoming != best;
         auto state = network::blockchain::sync::State{chain_, std::move(best)};
 
