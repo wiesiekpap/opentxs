@@ -279,8 +279,8 @@ auto Base::AddBlock(const std::shared_ptr<const block::bitcoin::Block> pBlock)
     const noexcept -> bool
 {
     if (!pBlock) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": invalid ")(DisplayString(chain_))(" block")
+        LogOutput(OT_METHOD)(__func__)(": invalid ")(DisplayString(chain_))(
+            " block")
             .Flush();
 
         return false;
@@ -300,8 +300,8 @@ auto Base::AddBlock(const std::shared_ptr<const block::bitcoin::Block> pBlock)
         }();
         block_.SubmitBlock(reader(bytes));
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": failed to serialize ")(DisplayString(chain_))(" block")
+        LogOutput(OT_METHOD)(__func__)(": failed to serialize ")(
+            DisplayString(chain_))(" block")
             .Flush();
 
         return false;
@@ -311,24 +311,24 @@ auto Base::AddBlock(const std::shared_ptr<const block::bitcoin::Block> pBlock)
 
     if (std::future_status::ready !=
         block_.LoadBitcoin(id).wait_for(std::chrono::seconds(60))) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": failed to load ")(DisplayString(chain_))(" block")
+        LogOutput(OT_METHOD)(__func__)(": failed to load ")(
+            DisplayString(chain_))(" block")
             .Flush();
 
         return false;
     }
 
     if (false == filters_.ProcessBlock(block)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": failed to index ")(DisplayString(chain_))(" block")
+        LogOutput(OT_METHOD)(__func__)(": failed to index ")(
+            DisplayString(chain_))(" block")
             .Flush();
 
         return false;
     }
 
     if (false == header_.AddHeader(block.Header().clone())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": failed to process ")(DisplayString(chain_))(" header")
+        LogOutput(OT_METHOD)(__func__)(": failed to process ")(
+            DisplayString(chain_))(" header")
             .Flush();
 
         return false;
@@ -491,7 +491,7 @@ auto Base::pipeline(zmq::Message& in) noexcept -> void
 
             return body.at(0).as<Task>();
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             OT_FAIL;
         }
@@ -547,7 +547,7 @@ auto Base::process_block(network::zeromq::Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (2 > body.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid block").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid block").Flush();
 
         return;
     }
@@ -596,7 +596,7 @@ auto Base::process_header(network::zeromq::Message& in) noexcept -> void
         const auto body = in.Body();
 
         if (2 > body.size()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
 
             return;
         }
@@ -703,7 +703,7 @@ auto Base::process_send_to_address(network::zeromq::Message& in) noexcept
 
         wallet_.ConstructTransaction(proposal, send_promises_.finish(promise));
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
         static const auto blank = api_.Factory().Data();
         send_promises_.finish(promise).set_value({rc, blank});
     }
@@ -818,12 +818,11 @@ auto Base::process_send_to_payment_code(network::zeromq::Message& in) noexcept
             txout.set_index(index.value());
             txout.set_paymentcodechannel(account.ID().str());
             const auto pubkey = api_.Factory().Data(key.PublicKey());
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
-                ": ")(" using derived public key ")(pubkey
-                                                        ->asHex())(" at "
-                                                                   "index"
-                                                                   " ")(index
-                                                                            .value())(" for outgoing transaction")
+            LogVerbose(OT_METHOD)(__func__)(": ")(" using derived public key ")(
+                pubkey->asHex())(
+                " at "
+                "index"
+                " ")(index.value())(" for outgoing transaction")
                 .Flush();
             txout.set_pubkey(pubkey->str());
             txout.set_contact(std::string{contact->Bytes()});
@@ -849,7 +848,7 @@ auto Base::process_send_to_payment_code(network::zeromq::Message& in) noexcept
 
         wallet_.ConstructTransaction(proposal, send_promises_.finish(promise));
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
         static const auto blank = api_.Factory().Data();
         send_promises_.finish(promise).set_value({rc, blank});
     }
@@ -865,7 +864,7 @@ auto Base::process_sync_data(network::zeromq::Message& in) noexcept -> void
         const auto& state = data.State();
 
         if (state.Chain() != chain_) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Wrong chain").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Wrong chain").Flush();
 
             return;
         }
@@ -882,8 +881,8 @@ auto Base::process_sync_data(network::zeromq::Message& in) noexcept -> void
 
     const auto& blocks = data.Blocks();
 
-    LogVerbose("Accepted ")(accepted)(
-        " of ")(blocks.size())(" ")(DisplayString(chain_))(" headers")
+    LogVerbose("Accepted ")(accepted)(" of ")(blocks.size())(" ")(
+        DisplayString(chain_))(" headers")
         .Flush();
     filters_.ProcessSyncData(prior, hashes, data);
     const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(
@@ -991,16 +990,16 @@ auto Base::state_machine() noexcept -> bool
 {
     if (false == running_.get()) { return false; }
 
-    LogDebug(OT_METHOD)(__FUNCTION__)(
-        ": Starting state machine for ")(DisplayString(chain_))
+    LogDebug(OT_METHOD)(__func__)(": Starting state machine for ")(
+        DisplayString(chain_))
         .Flush();
     state_machine_headers();
 
     switch (state_.load()) {
         case State::UpdatingHeaders: {
             if (is_synchronized_headers()) {
-                LogDetail(OT_METHOD)(__FUNCTION__)(": ")(DisplayString(
-                    chain_))(" header oracle is synchronized")
+                LogDetail(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
+                    " header oracle is synchronized")
                     .Flush();
                 using Policy = database::BlockStorage;
 
@@ -1010,20 +1009,20 @@ auto Base::state_machine() noexcept -> bool
                     state_transition_filters();
                 }
             } else {
-                LogDebug(OT_METHOD)(__FUNCTION__)(
-                    ": updating ")(DisplayString(chain_))(" header oracle")
+                LogDebug(OT_METHOD)(__func__)(": updating ")(
+                    DisplayString(chain_))(" header oracle")
                     .Flush();
             }
         } break;
         case State::UpdatingBlocks: {
             if (is_synchronized_blocks()) {
-                LogDetail(OT_METHOD)(__FUNCTION__)(": ")(DisplayString(
-                    chain_))(" block oracle is synchronized")
+                LogDetail(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
+                    " block oracle is synchronized")
                     .Flush();
                 state_transition_filters();
             } else {
-                LogDebug(OT_METHOD)(__FUNCTION__)(
-                    ": updating ")(DisplayString(chain_))(" block oracle")
+                LogDebug(OT_METHOD)(__func__)(": updating ")(
+                    DisplayString(chain_))(" block oracle")
                     .Flush();
 
                 break;
@@ -1031,8 +1030,8 @@ auto Base::state_machine() noexcept -> bool
         } break;
         case State::UpdatingFilters: {
             if (is_synchronized_filters()) {
-                LogDetail(OT_METHOD)(__FUNCTION__)(": ")(DisplayString(
-                    chain_))(" filter oracle is synchronized")
+                LogDetail(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
+                    " filter oracle is synchronized")
                     .Flush();
 
                 if (config_.provide_sync_server_) {
@@ -1041,8 +1040,8 @@ auto Base::state_machine() noexcept -> bool
                     state_transition_normal();
                 }
             } else {
-                LogDebug(OT_METHOD)(__FUNCTION__)(
-                    ": updating ")(DisplayString(chain_))(" filter oracle")
+                LogDebug(OT_METHOD)(__func__)(": updating ")(
+                    DisplayString(chain_))(" filter oracle")
                     .Flush();
 
                 break;
@@ -1050,13 +1049,13 @@ auto Base::state_machine() noexcept -> bool
         } break;
         case State::UpdatingSyncData: {
             if (is_synchronized_sync_server()) {
-                LogDetail(OT_METHOD)(__FUNCTION__)(
-                    ": ")(DisplayString(chain_))(" sync server is synchronized")
+                LogDetail(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
+                    " sync server is synchronized")
                     .Flush();
                 state_transition_normal();
             } else {
-                LogDebug(OT_METHOD)(__FUNCTION__)(
-                    ": updating ")(DisplayString(chain_))(" sync server")
+                LogDebug(OT_METHOD)(__func__)(": updating ")(
+                    DisplayString(chain_))(" sync server")
                     .Flush();
 
                 break;
@@ -1067,8 +1066,8 @@ auto Base::state_machine() noexcept -> bool
         }
     }
 
-    LogDebug(OT_METHOD)(__FUNCTION__)(
-        ": Completed state machine for ")(DisplayString(chain_))
+    LogDebug(OT_METHOD)(__func__)(": Completed state machine for ")(
+        DisplayString(chain_))
         .Flush();
 
     return false;
@@ -1082,9 +1081,9 @@ auto Base::state_machine_headers() noexcept -> void
     const auto requestInterval = Clock::now() - headers_requested_;
     const auto receiveInterval = Clock::now() - headers_received_;
     const auto requestHeaders = [&] {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Requesting ")(DisplayString(
-            chain_))(" block headers from all connected peers "
-                     "(instance ")(api_.Instance())(")")
+        LogVerbose(OT_METHOD)(__func__)(": Requesting ")(DisplayString(chain_))(
+            " block headers from all connected peers "
+            "(instance ")(api_.Instance())(")")
             .Flush();
         waiting_for_headers_->On();
         peer_.RequestHeaders();
@@ -1096,9 +1095,9 @@ auto Base::state_machine_headers() noexcept -> void
     if (waiting_for_headers_.get()) {
         if (requestInterval < timeout) { return; }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(
-            ": ")(DisplayString(chain_))(" headers not received before timeout "
-                                         "(instance ")(api_.Instance())(")")
+        LogDetail(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
+            " headers not received before timeout "
+            "(instance ")(api_.Instance())(")")
             .Flush();
         requestHeaders();
     } else if ((!is_synchronized_headers()) && (!config_.use_sync_server_)) {
@@ -1140,6 +1139,19 @@ auto Base::Submit(network::zeromq::Message& work) const noexcept -> void
     if (false == running_.get()) { return; }
 
     pipeline_->Push(work);
+}
+
+auto Base::SyncTip() const noexcept -> block::Position
+{
+    static const auto blank = make_blank<block::Position>::value(api_);
+
+    if (sync_server_) {
+
+        return sync_server_->Tip();
+    } else {
+
+        return blank;
+    }
 }
 
 auto Base::Track(network::zeromq::Message& work) const noexcept
