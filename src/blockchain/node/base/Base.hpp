@@ -190,6 +190,10 @@ public:
     }
     auto JobReady(const node::internal::PeerManager::Task type) const noexcept
         -> void final;
+    auto Internal() const noexcept -> const internal::Network& final
+    {
+        return *this;
+    }
     auto Listen(const p2p::Address& address) const noexcept -> bool final;
     auto Mempool() const noexcept -> const internal::Mempool& final
     {
@@ -216,6 +220,7 @@ public:
         const Amount amount,
         const std::string& memo) const noexcept -> PendingOutgoing final;
     auto Submit(network::zeromq::Message& work) const noexcept -> void final;
+    auto SyncTip() const noexcept -> block::Position final;
     auto Track(network::zeromq::Message& work) const noexcept
         -> std::future<void> final;
     auto UpdateHeight(const block::Height height) const noexcept -> void final;

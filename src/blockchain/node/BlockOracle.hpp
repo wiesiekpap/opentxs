@@ -93,6 +93,10 @@ public:
     }
     auto GetBlockJob() const noexcept -> BlockJob final;
     auto Heartbeat() const noexcept -> void final;
+    auto Internal() const noexcept -> const internal::BlockOracle& final
+    {
+        return *this;
+    }
     auto LoadBitcoin(const block::Hash& block) const noexcept
         -> BitcoinBlockFuture final;
     auto LoadBitcoin(const BlockHashes& hashes) const noexcept
@@ -167,7 +171,8 @@ private:
         private:
             using CachedBlock = std::pair<block::pHash, BitcoinBlockFuture>;
             using Completed = std::deque<CachedBlock>;
-            using Index = boost::container::flat_map<ReadView, const CachedBlock*>;
+            using Index =
+                boost::container::flat_map<ReadView, const CachedBlock*>;
 
             const std::size_t limit_;
             Completed queue_;

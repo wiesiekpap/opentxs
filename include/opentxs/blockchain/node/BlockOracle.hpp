@@ -28,6 +28,13 @@ namespace bitcoin
 class Block;
 }  // namespace bitcoin
 }  // namespace block
+namespace node
+{
+namespace internal
+{
+struct BlockOracle;
+}  // namespace internal
+}  // namespace node
 }  // namespace blockchain
 }  // namespace opentxs
 
@@ -37,7 +44,7 @@ namespace blockchain
 {
 namespace node
 {
-class BlockOracle
+class OPENTXS_EXPORT BlockOracle
 {
 public:
     using BitcoinBlock = block::bitcoin::Block;
@@ -46,16 +53,17 @@ public:
     using BlockHashes = std::vector<block::pHash>;
     using BitcoinBlockFutures = std::vector<BitcoinBlockFuture>;
 
-    OPENTXS_EXPORT virtual auto DownloadQueue() const noexcept
-        -> std::size_t = 0;
-    OPENTXS_EXPORT virtual auto LoadBitcoin(
-        const block::Hash& block) const noexcept -> BitcoinBlockFuture = 0;
-    OPENTXS_EXPORT virtual auto LoadBitcoin(
-        const BlockHashes& hashes) const noexcept -> BitcoinBlockFutures = 0;
-    OPENTXS_EXPORT virtual auto Validate(
-        const BitcoinBlock& block) const noexcept -> bool = 0;
+    virtual auto Tip() const noexcept -> block::Position = 0;
+    virtual auto DownloadQueue() const noexcept -> std::size_t = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
+        -> const internal::BlockOracle& = 0;
+    virtual auto LoadBitcoin(const block::Hash& block) const noexcept
+        -> BitcoinBlockFuture = 0;
+    virtual auto LoadBitcoin(const BlockHashes& hashes) const noexcept
+        -> BitcoinBlockFutures = 0;
+    virtual auto Validate(const BitcoinBlock& block) const noexcept -> bool = 0;
 
-    virtual ~BlockOracle() = default;
+    OPENTXS_NO_EXPORT virtual ~BlockOracle() = default;
 
 protected:
     BlockOracle() noexcept = default;
