@@ -21,6 +21,8 @@ auto check_options(
         test.BlockchainWalletEnabled() == expect.blockchain_wallet_enabled_;
     output &= test.DisabledBlockchains() == expect.blockchain_disabled_chains_;
     output &= test.Home() == expect.home_;
+    output &= test.Ipv4ConnectionMode() == expect.ipv4_connection_mode_;
+    output &= test.Ipv6ConnectionMode() == expect.ipv6_connection_mode_;
     output &= test.LogLevel() == expect.log_level_;
     output &= test.NotaryBindIP() == expect.notary_bind_ip_;
     output &= test.NotaryBindPort() == expect.notary_bind_port_;
@@ -44,6 +46,8 @@ auto check_options(
         test.BlockchainWalletEnabled(), expect.blockchain_wallet_enabled_);
     EXPECT_EQ(test.DisabledBlockchains(), expect.blockchain_disabled_chains_);
     EXPECT_EQ(test.Home(), expect.home_);
+    EXPECT_EQ(test.Ipv4ConnectionMode(), expect.ipv4_connection_mode_);
+    EXPECT_EQ(test.Ipv6ConnectionMode(), expect.ipv6_connection_mode_);
     EXPECT_EQ(test.LogLevel(), expect.log_level_);
     EXPECT_EQ(test.NotaryBindIP(), expect.notary_bind_ip_);
     EXPECT_EQ(test.NotaryBindPort(), expect.notary_bind_port_);

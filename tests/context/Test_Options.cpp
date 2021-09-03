@@ -20,6 +20,10 @@ constexpr auto blockchain_wallet_enabled_1_{false};
 constexpr auto blockchain_wallet_enabled_2_{true};
 constexpr auto home_1_{"/home/user1/.opentxs"};
 constexpr auto home_2_{"/home/user2/.opentxs"};
+constexpr auto ipv4_connection_mode_1_{opentxs::Options::ConnectionMode::off};
+constexpr auto ipv4_connection_mode_2_{opentxs::Options::ConnectionMode::on};
+constexpr auto ipv6_connection_mode_1_{opentxs::Options::ConnectionMode::on};
+constexpr auto ipv6_connection_mode_2_{opentxs::Options::ConnectionMode::off};
 constexpr auto log_endpoint_1_{"inproc://send_logs_here_plz"};
 constexpr auto log_endpoint_2_{"inproc://actually_send_them_here"};
 constexpr auto log_leve_1_{2};
@@ -62,6 +66,8 @@ TEST(Options, default_values)
         {},
         true,
         "",
+        opentxs::Options::ConnectionMode::automatic,
+        opentxs::Options::ConnectionMode::automatic,
         "",
         0,
         false,
@@ -93,6 +99,8 @@ TEST(Options, setters)
             .SetBlockchainSyncEnabled(blockchain_sync_enabled_1_)
             .SetBlockchainWalletEnabled(blockchain_wallet_enabled_1_)
             .SetHome(home_1_)
+            .SetIpv4ConnectionMode(ipv4_connection_mode_1_)
+            .SetIpv6ConnectionMode(ipv6_connection_mode_1_)
             .SetLogEndpoint(log_endpoint_1_)
             .SetLogLevel(log_leve_1_)
             .SetNotaryBindIP(notary_bind_ip_1_)
@@ -115,6 +123,8 @@ TEST(Options, setters)
             .SetBlockchainSyncEnabled(blockchain_sync_enabled_2_)
             .SetBlockchainWalletEnabled(blockchain_wallet_enabled_2_)
             .SetHome(home_2_)
+            .SetIpv4ConnectionMode(ipv4_connection_mode_2_)
+            .SetIpv6ConnectionMode(ipv6_connection_mode_2_)
             .SetLogEndpoint(log_endpoint_2_)
             .SetLogLevel(log_leve_2_)
             .SetNotaryBindIP(notary_bind_ip_2_)
@@ -132,6 +142,8 @@ TEST(Options, setters)
         {sync_server_1_},
         blockchain_wallet_enabled_1_,
         home_1_,
+        ipv4_connection_mode_1_,
+        ipv6_connection_mode_1_,
         log_endpoint_1_,
         log_leve_1_,
         notary_bind_inproc_1_,
@@ -152,6 +164,8 @@ TEST(Options, setters)
         {sync_server_1_, sync_server_2_},
         blockchain_wallet_enabled_2_,
         home_2_,
+        ipv4_connection_mode_2_,
+        ipv6_connection_mode_2_,
         log_endpoint_2_,
         log_leve_2_,
         notary_bind_inproc_2_,
@@ -184,6 +198,8 @@ TEST(Options, merge)
             .SetBlockchainSyncEnabled(blockchain_sync_enabled_1_)
             .SetBlockchainWalletEnabled(blockchain_wallet_enabled_1_)
             .SetHome(home_1_)
+            .SetIpv4ConnectionMode(ipv4_connection_mode_1_)
+            .SetIpv6ConnectionMode(ipv6_connection_mode_1_)
             .SetLogEndpoint(log_endpoint_1_)
             .SetLogLevel(log_leve_1_)
             .SetNotaryBindIP(notary_bind_ip_1_)
@@ -205,6 +221,8 @@ TEST(Options, merge)
             .SetBlockchainSyncEnabled(blockchain_sync_enabled_2_)
             .SetBlockchainWalletEnabled(blockchain_wallet_enabled_2_)
             .SetHome(home_2_)
+            .SetIpv4ConnectionMode(ipv4_connection_mode_2_)
+            .SetIpv6ConnectionMode(ipv6_connection_mode_2_)
             .SetLogEndpoint(log_endpoint_2_)
             .SetLogLevel(log_leve_2_)
             .SetNotaryBindIP(notary_bind_ip_2_)
@@ -223,6 +241,8 @@ TEST(Options, merge)
         {},
         blockchain_wallet_enabled_1_,
         home_1_,
+        ipv4_connection_mode_1_,
+        ipv6_connection_mode_1_,
         log_endpoint_1_,
         log_leve_1_,
         notary_bind_inproc_1_,
@@ -243,6 +263,8 @@ TEST(Options, merge)
         {sync_server_2_},
         blockchain_wallet_enabled_2_,
         home_2_,
+        ipv4_connection_mode_2_,
+        ipv6_connection_mode_2_,
         log_endpoint_2_,
         log_leve_2_,
         notary_bind_inproc_2_,
@@ -263,6 +285,8 @@ TEST(Options, merge)
         {sync_server_2_},
         blockchain_wallet_enabled_2_,
         home_2_,
+        ipv4_connection_mode_2_,
+        ipv6_connection_mode_2_,
         log_endpoint_2_,
         log_leve_2_,
         notary_bind_inproc_2_,

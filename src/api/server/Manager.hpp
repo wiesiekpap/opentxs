@@ -77,7 +77,6 @@ public:
     auto DropOutgoing(const int count) const -> void final;
     auto GetAdminNym() const -> std::string final;
     auto GetAdminPassword() const -> std::string final;
-    auto GetOptions() const noexcept -> const Options& final { return args_; }
 #if OT_CASH
     auto GetPrivateMint(
         const identifier::UnitDefinition& unitID,

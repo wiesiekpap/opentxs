@@ -327,8 +327,8 @@ void Context::Init_Rlimit() noexcept
         return;
     }
 
-    LogVerbose("Current open files limit: ")(original.rlim_cur)(
-        " / ")(original.rlim_max)
+    LogVerbose("Current open files limit: ")(original.rlim_cur)(" / ")(
+        original.rlim_max)
         .Flush();
 
     if (0 != ::setrlimit(RLIMIT_NOFILE, &desired)) {
@@ -347,8 +347,8 @@ void Context::Init_Rlimit() noexcept
         return;
     }
 
-    LogVerbose("Adjusted open files limit: ")(result.rlim_cur)(
-        " / ")(result.rlim_max)
+    LogVerbose("Adjusted open files limit: ")(result.rlim_cur)(" / ")(
+        result.rlim_max)
         .Flush();
 }
 #endif  // _WIN32

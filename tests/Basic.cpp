@@ -16,8 +16,12 @@ namespace ottest
 {
 auto Args(bool lowlevel) noexcept -> const ot::Options&
 {
-    static const auto minimal =
-        ot::Options{}.SetHome(Home().c_str()).SetNotaryInproc(true);
+    using Connection = opentxs::Options::ConnectionMode;
+    static const auto minimal = ot::Options{}
+                                    .SetHome(Home().c_str())
+                                    .SetNotaryInproc(true)
+                                    .SetIpv4ConnectionMode(Connection::off)
+                                    .SetIpv6ConnectionMode(Connection::off);
     static const auto full = ot::Options{minimal}.SetStoragePlugin("mem");
 
     if (lowlevel) {

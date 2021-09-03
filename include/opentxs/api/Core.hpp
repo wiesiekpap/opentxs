@@ -40,6 +40,8 @@ class HDSeed;
 class Settings;
 class Wallet;
 }  // namespace api
+
+class Options;
 }  // namespace opentxs
 
 namespace opentxs
@@ -55,6 +57,7 @@ public:
     virtual auto DataFolder() const noexcept -> const std::string& = 0;
     virtual auto Endpoints() const noexcept -> const api::Endpoints& = 0;
     virtual auto Factory() const noexcept -> const api::Factory& = 0;
+    virtual auto GetOptions() const noexcept -> const Options& = 0;
     virtual auto Instance() const noexcept -> int = 0;
     virtual auto Network() const noexcept -> const network::Network& = 0;
     virtual auto Seeds() const noexcept -> const api::HDSeed& = 0;

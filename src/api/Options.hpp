@@ -25,6 +25,8 @@ struct Options::Imp final {
     std::optional<bool> blockchain_wallet_enabled_;
     std::optional<std::string> home_;
     std::optional<std::string> log_endpoint_;
+    std::optional<ConnectionMode> ipv4_connection_mode_;
+    std::optional<ConnectionMode> ipv6_connection_mode_;
     std::optional<int> log_level_;
     std::optional<bool> notary_bind_inproc_;
     std::optional<std::string> notary_bind_ip_;

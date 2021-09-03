@@ -30,6 +30,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/Options.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
@@ -273,8 +274,7 @@ auto PeerManager::Peers::get_dns_peer() const noexcept -> Endpoint
         const auto& dns = data.dns_seeds_;
 
         if (0 == dns.size()) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": No dns seeds available")
-                .Flush();
+            LogVerbose(OT_METHOD)(__func__)(": No dns seeds available").Flush();
 
             return {};
         }
@@ -289,7 +289,7 @@ auto PeerManager::Peers::get_dns_peer() const noexcept -> Endpoint
             std::mt19937{std::random_device{}()});
 
         if (0 == seeds.size()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to select a dns seed")
+            LogOutput(OT_METHOD)(__func__)(": Failed to select a dns seed")
                 .Flush();
 
             return {};
@@ -298,17 +298,17 @@ auto PeerManager::Peers::get_dns_peer() const noexcept -> Endpoint
         const auto& seed = *seeds.cbegin();
 
         if (seed.empty()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid dns seed").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Invalid dns seed").Flush();
 
             return {};
         }
 
         const auto port = data.default_port_;
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Using DNS seed: ")(seed).Flush();
+        LogVerbose(OT_METHOD)(__func__)(": Using DNS seed: ")(seed).Flush();
 
         for (const auto& endpoint : api_.Network().Asio().Resolve(seed, port)) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
-                ": Found address: ")(endpoint.GetAddress())
+            LogVerbose(OT_METHOD)(__func__)(": Found address: ")(
+                endpoint.GetAddress())
                 .Flush();
             auto output = Endpoint{};
             auto network = p2p::Network{};
@@ -321,8 +321,7 @@ auto PeerManager::Peers::get_dns_peer() const noexcept -> Endpoint
                     network = p2p::Network::ipv6;
                 } break;
                 default: {
-                    LogVerbose(OT_METHOD)(__FUNCTION__)(
-                        ": unknown endpoint type")
+                    LogVerbose(OT_METHOD)(__func__)(": unknown endpoint type")
                         .Flush();
 
                     continue;
@@ -344,10 +343,10 @@ auto PeerManager::Peers::get_dns_peer() const noexcept -> Endpoint
                 database_.AddOrUpdate(output->clone_internal());
 
                 if (previous_failure_timeout(output->ID())) {
-                    LogVerbose(OT_METHOD)(__FUNCTION__)(
-                        ": Skipping ")(DisplayString(
-                        chain_))(" peer ")(output->Display())(" due to retry "
-                                                              "timeout")
+                    LogVerbose(OT_METHOD)(__func__)(": Skipping ")(
+                        DisplayString(chain_))(" peer ")(output->Display())(
+                        " due to retry "
+                        "timeout")
                         .Flush();
 
                     continue;
@@ -357,15 +356,15 @@ auto PeerManager::Peers::get_dns_peer() const noexcept -> Endpoint
             }
         }
 
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": No addresses found").Flush();
+        LogVerbose(OT_METHOD)(__func__)(": No addresses found").Flush();
 
         return {};
     } catch (const boost::system::system_error& e) {
-        LogDebug(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogDebug(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return {};
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": No dns seeds defined").Flush();
+        LogOutput(OT_METHOD)(__func__)(": No dns seeds defined").Flush();
 
         return {};
     }
@@ -383,30 +382,30 @@ auto PeerManager::Peers::get_peer() const noexcept -> Endpoint
     auto pAddress = get_default_peer();
 
     if (pAddress) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
-            ": Default peer is: ")(pAddress->Display())
+        LogVerbose(OT_METHOD)(__func__)(": Default peer is: ")(
+            pAddress->Display())
             .Flush();
 
         if (is_not_connected(*pAddress)) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
+            LogVerbose(OT_METHOD)(__func__)(
                 ": Attempting to connect to default peer ")(pAddress->Display())
                 .Flush();
 
             return pAddress;
         } else {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
+            LogVerbose(OT_METHOD)(__func__)(
                 ": Already connected / connecting to default "
                 "peer ")(pAddress->Display())
                 .Flush();
         }
     } else {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": No default peer").Flush();
+        LogVerbose(OT_METHOD)(__func__)(": No default peer").Flush();
     }
 
     pAddress = get_preferred_peer(protocol);
 
     if (pAddress && is_not_connected(*pAddress)) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
+        LogVerbose(OT_METHOD)(__func__)(
             ": Attempting to connect to preferred peer: ")(pAddress->Display())
             .Flush();
 
@@ -416,7 +415,7 @@ auto PeerManager::Peers::get_peer() const noexcept -> Endpoint
     pAddress = get_dns_peer();
 
     if (pAddress && is_not_connected(*pAddress)) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
+        LogVerbose(OT_METHOD)(__func__)(
             ": Attempting to connect to dns peer: ")(pAddress->Display())
             .Flush();
 
@@ -427,7 +426,7 @@ auto PeerManager::Peers::get_peer() const noexcept -> Endpoint
 
     OT_ASSERT(pAddress);
 
-    LogVerbose(OT_METHOD)(__FUNCTION__)(
+    LogVerbose(OT_METHOD)(__func__)(
         ": Attempting to connect to fallback peer: ")(pAddress->Display())
         .Flush();
 
@@ -440,7 +439,7 @@ auto PeerManager::Peers::get_preferred_peer(
     auto output = database_.Get(protocol, get_types(), preferred_services_);
 
     if (output && (output->Bytes() == localhost_peer_)) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
+        LogVerbose(OT_METHOD)(__func__)(
             ": Skipping localhost as preferred peer")
             .Flush();
 
@@ -448,8 +447,8 @@ auto PeerManager::Peers::get_preferred_peer(
     }
 
     if (output && previous_failure_timeout(output->ID())) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Skipping ")(DisplayString(
-            chain_))(" peer ")(output->Display())(" due to retry timeout")
+        LogVerbose(OT_METHOD)(__func__)(": Skipping ")(DisplayString(chain_))(
+            " peer ")(output->Display())(" due to retry timeout")
             .Flush();
 
         return {};
@@ -472,19 +471,50 @@ auto PeerManager::Peers::get_preferred_services(
 
 auto PeerManager::Peers::get_types() const noexcept -> std::set<p2p::Network>
 {
-    std::set<p2p::Network> networktypes{};
+    using Type = blockchain::p2p::Network;
+    using Mode = Options::ConnectionMode;
+    auto output = std::set<p2p::Network>{};
 
-    auto ipv4data = api_.Network().Asio().GetPublicAddress4().get();
-    if (!ipv4data->empty()) {
-        networktypes.insert(blockchain::p2p::Network::ipv4);
+    switch (api_.GetOptions().Ipv4ConnectionMode()) {
+        case Mode::off: {
+            output.erase(Type::ipv4);
+        } break;
+        case Mode::on: {
+            output.insert(Type::ipv4);
+        } break;
+        case Mode::automatic:
+        default: {
+            auto ipv4data = api_.Network().Asio().GetPublicAddress4().get();
+
+            if (!ipv4data->empty()) { output.insert(Type::ipv4); }
+        }
     }
 
-    auto ipv6data = api_.Network().Asio().GetPublicAddress6().get();
-    if (!ipv6data->empty()) {
-        networktypes.insert(blockchain::p2p::Network::ipv6);
+    switch (api_.GetOptions().Ipv6ConnectionMode()) {
+        case Mode::off: {
+            output.erase(Type::ipv6);
+        } break;
+        case Mode::on: {
+            output.insert(Type::ipv6);
+        } break;
+        case Mode::automatic:
+        default: {
+            auto ipv6data = api_.Network().Asio().GetPublicAddress6().get();
+
+            if (!ipv6data->empty()) { output.insert(Type::ipv6); }
+        }
     }
 
-    return networktypes;
+    static auto first{true};
+
+    if (first && (0u == output.size())) {
+        LogOutput(OT_METHOD)(__func__)(
+            ": No outgoing connection methods available")
+            .Flush();
+        first = false;
+    }
+
+    return output;
 }
 
 auto PeerManager::Peers::is_not_connected(
@@ -560,8 +590,8 @@ auto PeerManager::Peers::Run() noexcept -> bool
     const auto target = minimum_peers_.load();
 
     if (target > peers_.size()) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
-            ": Fewer peers (")(peers_.size())(") than desired (")(target)(")")
+        LogVerbose(OT_METHOD)(__func__)(": Fewer peers (")(peers_.size())(
+            ") than desired (")(target)(")")
             .Flush();
         add_peer(get_peer());
     }

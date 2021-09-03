@@ -11,6 +11,7 @@
 #include <set>
 #include <string>
 
+#include "opentxs/api/Options.hpp"
 #include "opentxs/blockchain/Types.hpp"
 
 namespace opentxs
@@ -27,6 +28,8 @@ struct OptionsData {
     std::set<std::string> blockchain_sync_servers_;
     bool blockchain_wallet_enabled_;
     std::string home_;
+    opentxs::Options::ConnectionMode ipv4_connection_mode_;
+    opentxs::Options::ConnectionMode ipv6_connection_mode_;
     std::string log_endpoint_;
     int log_level_;
     bool notary_bind_inproc_;

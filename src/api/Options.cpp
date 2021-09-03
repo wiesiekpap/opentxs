@@ -43,6 +43,8 @@ struct Options::Imp::Parser {
     static constexpr auto blockchain_sync_connect_{"blockchain_sync_server"};
     static constexpr auto blockchain_wallet_enable_{"blockchain_wallet"};
     static constexpr auto home_{"ot_home"};
+    static constexpr auto ipv4_connection_mode_{"ipv4_connection_mode"};
+    static constexpr auto ipv6_connection_mode_{"ipv6_connection_mode"};
     static constexpr auto log_endpoint_{"log_endpoint"};
     static constexpr auto log_level_{"log_level"};
     static constexpr auto notary_inproc_{"notary_inproc"};
@@ -91,6 +93,16 @@ struct Options::Imp::Parser {
                 home_,
                 po::value<std::string>(),
                 "Path to opentxs data directory");
+            out.add_options()(
+                ipv4_connection_mode_,
+                po::value<int>(),
+                "Connection policy for ipv4 peers. -1 = ipv4 disabled, 0 = "
+                "automatic, 1 = ipv4 enabled");
+            out.add_options()(
+                ipv6_connection_mode_,
+                po::value<int>(),
+                "Connection policy for ipv6 peers. -1 = ipv6 disabled, 0 = "
+                "automatic, 1 = ipv6 enabled");
             out.add_options()(
                 log_endpoint_,
                 po::value<std::string>(),
@@ -176,6 +188,8 @@ Options::Imp::Imp() noexcept
     , blockchain_wallet_enabled_(std::nullopt)
     , home_(std::nullopt)
     , log_endpoint_(std::nullopt)
+    , ipv4_connection_mode_(std::nullopt)
+    , ipv6_connection_mode_(std::nullopt)
     , log_level_(std::nullopt)
     , notary_bind_inproc_(std::nullopt)
     , notary_bind_ip_(std::nullopt)
@@ -199,6 +213,8 @@ Options::Imp::Imp(const Imp& rhs) noexcept
     , blockchain_wallet_enabled_(rhs.blockchain_wallet_enabled_)
     , home_(rhs.home_)
     , log_endpoint_(rhs.log_endpoint_)
+    , ipv4_connection_mode_(rhs.ipv4_connection_mode_)
+    , ipv6_connection_mode_(rhs.ipv6_connection_mode_)
     , log_level_(rhs.log_level_)
     , notary_bind_inproc_(rhs.notary_bind_inproc_)
     , notary_bind_ip_(rhs.notary_bind_ip_)
@@ -290,6 +306,12 @@ auto Options::Imp::import_value(const char* key, const char* value) noexcept
             blockchain_wallet_enabled_ = to_bool(value);
         } else if (0 == std::strcmp(key, Parser::home_)) {
             home_ = value;
+        } else if (0 == std::strcmp(key, Parser::ipv4_connection_mode_)) {
+            ipv4_connection_mode_ =
+                static_cast<ConnectionMode>(std::stoi(value));
+        } else if (0 == std::strcmp(key, Parser::ipv6_connection_mode_)) {
+            ipv6_connection_mode_ =
+                static_cast<ConnectionMode>(std::stoi(value));
         } else if (0 == std::strcmp(key, Parser::log_endpoint_)) {
             log_endpoint_ = value;
         } else if (0 == std::strcmp(key, Parser::log_level_)) {
@@ -392,6 +414,18 @@ auto Options::Imp::parse(int argc, char** argv) noexcept(false) -> void
         } else if (name == Parser::home_) {
             try {
                 home_ = value.as<std::string>();
+            } catch (...) {
+            }
+        } else if (name == Parser::ipv4_connection_mode_) {
+            try {
+                ipv4_connection_mode_ =
+                    static_cast<ConnectionMode>(value.as<int>());
+            } catch (...) {
+            }
+        } else if (name == Parser::ipv6_connection_mode_) {
+            try {
+                ipv6_connection_mode_ =
+                    static_cast<ConnectionMode>(value.as<int>());
             } catch (...) {
             }
         } else if (name == Parser::log_endpoint_) {
@@ -539,6 +573,14 @@ auto operator+(const Options& lhs, const Options& rhs) noexcept -> Options
     }
 
     if (const auto& v = r.home_; v.has_value()) { l.home_ = v.value(); }
+
+    if (const auto& v = r.ipv4_connection_mode_; v.has_value()) {
+        l.ipv4_connection_mode_ = v.value();
+    }
+
+    if (const auto& v = r.ipv6_connection_mode_; v.has_value()) {
+        l.ipv6_connection_mode_ = v.value();
+    }
 
     if (const auto& v = r.log_endpoint_; v.has_value()) {
         l.log_endpoint_ = v.value();
@@ -697,6 +739,16 @@ auto Options::Home() const noexcept -> const char*
     return Imp::get(imp_->home_);
 }
 
+auto Options::Ipv4ConnectionMode() const noexcept -> ConnectionMode
+{
+    return Imp::get(imp_->ipv4_connection_mode_, ConnectionMode::automatic);
+}
+
+auto Options::Ipv6ConnectionMode() const noexcept -> ConnectionMode
+{
+    return Imp::get(imp_->ipv6_connection_mode_, ConnectionMode::automatic);
+}
+
 auto Options::LogLevel() const noexcept -> int
 {
     return Imp::get(imp_->log_level_);
@@ -804,6 +856,20 @@ auto Options::SetBlockchainWalletEnabled(bool enabled) noexcept -> Options&
 auto Options::SetHome(const char* path) noexcept -> Options&
 {
     imp_->home_ = path;
+
+    return *this;
+}
+
+auto Options::SetIpv4ConnectionMode(ConnectionMode mode) noexcept -> Options&
+{
+    imp_->ipv4_connection_mode_ = mode;
+
+    return *this;
+}
+
+auto Options::SetIpv6ConnectionMode(ConnectionMode mode) noexcept -> Options&
+{
+    imp_->ipv6_connection_mode_ = mode;
 
     return *this;
 }
