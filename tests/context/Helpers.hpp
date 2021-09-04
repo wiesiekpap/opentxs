@@ -22,6 +22,8 @@ class Options;
 namespace ottest
 {
 struct OptionsData {
+    std::set<std::string> blockchain_bind_ipv4_;
+    std::set<std::string> blockchain_bind_ipv6_;
     std::set<opentxs::blockchain::Type> blockchain_disabled_chains_;
     int blockchain_storage_level_;
     bool blockchain_sync_server_enabled_;

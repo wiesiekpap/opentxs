@@ -27,6 +27,8 @@ public:
         on = 1,
     };
 
+    auto BlockchainBindIpv4() const noexcept -> const std::set<std::string>&;
+    auto BlockchainBindIpv6() const noexcept -> const std::set<std::string>&;
     auto BlockchainStorageLevel() const noexcept -> int;
     auto BlockchainWalletEnabled() const noexcept -> bool;
     auto DisabledBlockchains() const noexcept -> std::set<blockchain::Type>;
@@ -51,6 +53,8 @@ public:
     auto RemoteLogEndpoint() const noexcept -> const char*;
     auto StoragePrimaryPlugin() const noexcept -> const char*;
 
+    auto AddBlockchainIpv4Bind(const char* endpoint) noexcept -> Options&;
+    auto AddBlockchainIpv6Bind(const char* endpoint) noexcept -> Options&;
     auto AddBlockchainSyncServer(const char* endpoint) noexcept -> Options&;
     auto AddNotaryPublicEEP(const char* value) noexcept -> Options&;
     auto AddNotaryPublicIPv4(const char* value) noexcept -> Options&;

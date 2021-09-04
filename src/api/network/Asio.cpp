@@ -11,12 +11,24 @@
 
 #include "api/network/Asio.hpp"
 #include "opentxs/network/asio/Socket.hpp"
+#include "network/asio/Socket.hpp"
 
 namespace opentxs::api::network
 {
 Asio::Asio(const opentxs::network::zeromq::Context& zmq) noexcept
     : imp_(std::make_unique<Imp>(zmq).release())
 {
+}
+
+auto Asio::Accept(const Asio::Endpoint& endpoint, AcceptCallback cb)
+    const noexcept -> bool
+{
+    return imp_->Accept(endpoint, std::move(cb));
+}
+
+auto Asio::Close(const Endpoint& endpoint) const noexcept -> bool
+{
+    return imp_->Close(endpoint);
 }
 
 auto Asio::GetPublicAddress4() const noexcept -> std::shared_future<OTData>
@@ -39,12 +51,14 @@ auto Asio::Internal() const noexcept -> internal::Asio&
 auto Asio::MakeSocket(const opentxs::network::asio::Endpoint& endpoint)
     const noexcept -> opentxs::network::asio::Socket
 {
-    return {endpoint, *const_cast<Asio*>(this)->imp_};
+    return {std::make_unique<opentxs::network::asio::Socket::Imp>(
+                endpoint, *const_cast<Asio*>(this)->imp_)
+                .release()};
 }
 
 auto Asio::NotificationEndpoint() const noexcept -> const char*
 {
-    return imp_->Endpoint();
+    return imp_->NotificationEndpoint();
 }
 
 auto Asio::Resolve(std::string_view server, std::uint16_t port) const noexcept

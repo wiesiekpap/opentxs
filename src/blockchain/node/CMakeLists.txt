@@ -5,6 +5,7 @@
 
 add_subdirectory(base)
 add_subdirectory(bitcoin)
+add_subdirectory(peermanager)
 add_subdirectory(wallet)
 
 add_library(
@@ -18,10 +19,6 @@ add_library(
   "filteroracle/FilterCheckpoints.hpp"
   "filteroracle/FilterDownloader.hpp"
   "filteroracle/HeaderDownloader.hpp"
-  "peermanager/IncomingConnectionManager.hpp"
-  "peermanager/Jobs.cpp"
-  "peermanager/Peers.cpp"
-  "peermanager/ZMQ.cpp"
   "BlockOracle.cpp"
   "BlockOracle.hpp"
   "FilterOracle.cpp"
@@ -31,8 +28,6 @@ add_library(
   "Mempool.cpp"
   "Mempool.hpp"
   "Node.cpp"
-  "PeerManager.cpp"
-  "PeerManager.hpp"
   "UpdateTransaction.cpp"
   "UpdateTransaction.hpp"
 )
@@ -45,13 +40,9 @@ set(cxx-install-headers
 )
 
 target_link_libraries(
-  opentxs-blockchain-node
-  PRIVATE
-    Boost::headers
-    opentxs::messages
-    "${OT_ZMQ_TARGET}"
+  opentxs-blockchain-node PRIVATE Boost::headers opentxs::messages
 )
-target_link_libraries(opentxs PUBLIC "${OT_ZMQ_TARGET}")
+target_link_libraries(opentxs PUBLIC Boost::system)
 target_include_directories(
   opentxs-blockchain-node SYSTEM
   PRIVATE "${opentxs_SOURCE_DIR}/deps/"

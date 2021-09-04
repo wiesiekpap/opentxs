@@ -3,9 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                     // IWYU pragma: associated
-#include "1_Internal.hpp"                   // IWYU pragma: associated
-#include "blockchain/node/PeerManager.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"    // IWYU pragma: associated
+#include "1_Internal.hpp"  // IWYU pragma: associated
+#include "blockchain/node/peermanager/PeerManager.hpp"  // IWYU pragma: associated
 
 #include <boost/asio.hpp>
 #include <boost/system/system_error.hpp>
@@ -17,6 +17,7 @@
 #include <map>
 #include <memory>
 #include <random>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -98,6 +99,7 @@ PeerManager::Peers::Peers(
     , count_()
     , connected_()
     , incoming_zmq_()
+    , incoming_tcp_()
     , attempt_()
 {
     const auto& data = params::Data::Chains().at(chain_);
@@ -169,16 +171,28 @@ auto PeerManager::Peers::AddListener(
 {
     switch (address.Type()) {
         case p2p::Network::zmq: {
-            if (false == bool(incoming_zmq_)) {
-                incoming_zmq_ = IncomingConnectionManager::ZMQ(api_, *this);
+            auto& manager = incoming_zmq_;
+
+            if (false == bool(manager)) {
+                manager = IncomingConnectionManager::ZMQ(api_, *this);
             }
 
-            OT_ASSERT(incoming_zmq_);
+            OT_ASSERT(manager);
 
-            promise.set_value(incoming_zmq_->Listen(address));
+            promise.set_value(manager->Listen(address));
         } break;
         case p2p::Network::ipv6:
-        case p2p::Network::ipv4:
+        case p2p::Network::ipv4: {
+            auto& manager = incoming_tcp_;
+
+            if (false == bool(manager)) {
+                manager = IncomingConnectionManager::TCP(api_, *this);
+            }
+
+            OT_ASSERT(manager);
+
+            promise.set_value(manager->Listen(address));
+        } break;
         case p2p::Network::onion2:
         case p2p::Network::onion3:
         case p2p::Network::eep:
@@ -238,6 +252,8 @@ auto PeerManager::Peers::Disconnect(const int id) noexcept -> void
     if (peers_.end() == it) { return; }
 
     if (incoming_zmq_) { incoming_zmq_->Disconnect(id); }
+
+    if (incoming_tcp_) { incoming_tcp_->Disconnect(id); }
 
     auto& peer = *it->second;
     const auto address = peer.AddressID();
@@ -523,6 +539,16 @@ auto PeerManager::Peers::is_not_connected(
     return 0 == connected_.count(endpoint.ID());
 }
 
+auto PeerManager::Peers::LookupIncomingSocket(const int id) noexcept(false)
+    -> opentxs::network::asio::Socket
+{
+    if (!incoming_tcp_) {
+        throw std::runtime_error{"TCP connection manager not instantiated"};
+    }
+
+    return incoming_tcp_->LookupIncomingSocket(id);
+}
+
 auto PeerManager::Peers::peer_factory(Endpoint endpoint, const int id) noexcept
     -> std::unique_ptr<p2p::internal::Peer>
 {
@@ -602,6 +628,9 @@ auto PeerManager::Peers::Run() noexcept -> bool
 auto PeerManager::Peers::Shutdown() noexcept -> void
 {
     OT_ASSERT(false == running_);
+
+    if (incoming_zmq_) { incoming_zmq_->Shutdown(); }
+    if (incoming_tcp_) { incoming_tcp_->Shutdown(); }
 
     for (auto& [id, peer] : peers_) {
         peer->Shutdown().wait_for(std::chrono::seconds(1));

@@ -16,6 +16,8 @@ auto check_options(
     const OptionsData& expect) noexcept -> bool
 {
     auto output{true};
+    output &= test.BlockchainBindIpv4() == expect.blockchain_bind_ipv4_;
+    output &= test.BlockchainBindIpv6() == expect.blockchain_bind_ipv6_;
     output &= test.BlockchainStorageLevel() == expect.blockchain_storage_level_;
     output &=
         test.BlockchainWalletEnabled() == expect.blockchain_wallet_enabled_;
@@ -41,6 +43,8 @@ auto check_options(
     output &= test.RemoteLogEndpoint() == expect.log_endpoint_;
     output &= test.StoragePrimaryPlugin() == expect.storage_primary_plugin_;
 
+    EXPECT_EQ(test.BlockchainBindIpv4(), expect.blockchain_bind_ipv4_);
+    EXPECT_EQ(test.BlockchainBindIpv6(), expect.blockchain_bind_ipv6_);
     EXPECT_EQ(test.BlockchainStorageLevel(), expect.blockchain_storage_level_);
     EXPECT_EQ(
         test.BlockchainWalletEnabled(), expect.blockchain_wallet_enabled_);

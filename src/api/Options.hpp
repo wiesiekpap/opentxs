@@ -19,6 +19,8 @@ namespace opentxs
 {
 struct Options::Imp final {
     std::set<blockchain::Type> blockchain_disabled_chains_;
+    std::set<std::string> blockchain_ipv4_bind_;
+    std::set<std::string> blockchain_ipv6_bind_;
     std::optional<int> blockchain_storage_level_;
     std::optional<bool> blockchain_sync_server_enabled_;
     std::set<std::string> blockchain_sync_servers_;

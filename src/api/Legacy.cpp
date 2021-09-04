@@ -17,6 +17,7 @@ extern "C" {
 #include <boost/filesystem.hpp>
 #include <cstdlib>
 #include <memory>
+#include <utility>
 
 #include "internal/api/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -196,12 +197,12 @@ auto Legacy::get_home_directory() noexcept -> fs::path
 {
     auto home = std::string{getenv("HOME")};
 
-    if (false == home.empty()) { return home; }
+    if (false == home.empty()) { return std::move(home); }
 
     // Windows
     home = getenv("USERPROFILE");
 
-    if (false == home.empty()) { return home; }
+    if (false == home.empty()) { return std::move(home); }
 
     const auto drive = std::string{getenv("HOMEDRIVE")};
     const auto path = std::string{getenv("HOMEPATH")};
@@ -245,7 +246,7 @@ auto Legacy::get_suffix(const char* application) noexcept -> fs::path
     output += application;
     output += '/';
 
-    return output;
+    return std::move(output);
 }
 
 auto Legacy::get_suffix() noexcept -> fs::path

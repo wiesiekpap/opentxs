@@ -36,6 +36,7 @@
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/network/asio/Socket.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
@@ -91,6 +92,11 @@ class Address;
 
 namespace network
 {
+namespace asio
+{
+class Socket;
+}  // namespace asio
+
 namespace zeromq
 {
 namespace socket
@@ -134,6 +140,8 @@ public:
             const p2p::Address& address,
             std::promise<bool>& promise) noexcept -> void;
         auto ConstructPeer(Endpoint endpoint) noexcept -> int;
+        auto LookupIncomingSocket(const int id) noexcept(false)
+            -> opentxs::network::asio::Socket;
         auto Disconnect(const int id) noexcept -> void;
         auto Run() noexcept -> bool;
         auto Shutdown() noexcept -> void;
@@ -187,6 +195,7 @@ public:
         std::atomic<std::size_t> count_;
         Addresses connected_;
         std::unique_ptr<IncomingConnectionManager> incoming_zmq_;
+        std::unique_ptr<IncomingConnectionManager> incoming_tcp_;
         std::map<OTIdentifier, Time> attempt_;
 
         static auto get_preferred_services(
@@ -253,6 +262,8 @@ public:
     }
     auto JobReady(const Task type) const noexcept -> void final;
     auto Listen(const p2p::Address& address) const noexcept -> bool final;
+    auto LookupIncomingSocket(const int id) const noexcept(false)
+        -> opentxs::network::asio::Socket final;
     auto RequestBlock(const block::Hash& block) const noexcept -> bool final;
     auto RequestBlocks(const std::vector<ReadView>& hashes) const noexcept
         -> bool final;

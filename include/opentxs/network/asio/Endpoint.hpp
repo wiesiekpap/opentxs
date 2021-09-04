@@ -19,7 +19,7 @@ namespace network
 {
 namespace asio
 {
-class Endpoint
+class OPENTXS_EXPORT Endpoint
 {
 public:
     struct Imp;
@@ -31,25 +31,24 @@ public:
         ipv6 = 2,
     };
 
-    OPENTXS_EXPORT auto GetAddress() const noexcept -> std::string;
-    OPENTXS_EXPORT auto GetBytes() const noexcept -> ReadView;
-    auto GetInternal() const noexcept -> const Imp&;
-    OPENTXS_EXPORT auto GetMapped() const noexcept -> std::string;
-    OPENTXS_EXPORT auto GetPort() const noexcept -> Port;
-    OPENTXS_EXPORT auto GetType() const noexcept -> Type;
-    OPENTXS_EXPORT auto str() const noexcept -> std::string;
+    auto GetAddress() const noexcept -> std::string;
+    auto GetBytes() const noexcept -> ReadView;
+    OPENTXS_NO_EXPORT auto GetInternal() const noexcept -> const Imp&;
+    auto GetMapped() const noexcept -> std::string;
+    auto GetPort() const noexcept -> Port;
+    auto GetType() const noexcept -> Type;
+    auto str() const noexcept -> std::string;
 
     /// throws std::runtime_error for bad params
-    OPENTXS_EXPORT Endpoint(Type type, ReadView bytes, Port port) noexcept(
-        false);
-    OPENTXS_EXPORT Endpoint() noexcept;
-    OPENTXS_EXPORT Endpoint(const Endpoint&) noexcept;
-    OPENTXS_EXPORT Endpoint(Endpoint&&) noexcept;
+    Endpoint(Type type, ReadView bytes, Port port) noexcept(false);
+    Endpoint() noexcept;
+    Endpoint(const Endpoint&) noexcept;
+    Endpoint(Endpoint&&) noexcept;
 
-    OPENTXS_EXPORT auto operator=(const Endpoint&) noexcept -> Endpoint&;
-    OPENTXS_EXPORT auto operator=(Endpoint&&) noexcept -> Endpoint&;
+    auto operator=(const Endpoint&) noexcept -> Endpoint&;
+    auto operator=(Endpoint&&) noexcept -> Endpoint&;
 
-    OPENTXS_EXPORT ~Endpoint();
+    ~Endpoint();
 
 private:
     Imp* imp_;

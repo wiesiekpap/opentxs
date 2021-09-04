@@ -46,7 +46,7 @@ namespace network
 {
 namespace asio
 {
-class Socket
+class OPENTXS_EXPORT Socket
 {
 public:
     struct Imp;
@@ -55,20 +55,18 @@ public:
     using SendStatus = std::promise<bool>;
     using Notification = std::unique_ptr<SendStatus>;
 
-    OPENTXS_EXPORT auto Close() noexcept -> void;
-    OPENTXS_EXPORT auto Connect(const ReadView notify) noexcept -> bool;
-    OPENTXS_EXPORT auto Receive(
+    auto Close() noexcept -> void;
+    auto Connect(const ReadView notify) noexcept -> bool;
+    auto Receive(
         const ReadView notify,
         const OTZMQWorkType type,
         const std::size_t bytes) noexcept -> bool;
-    OPENTXS_EXPORT auto Transmit(
-        const ReadView data,
-        Notification notifier) noexcept -> bool;
+    auto Transmit(const ReadView data, Notification notifier) noexcept -> bool;
 
-    Socket(const Endpoint& endpoint, Asio& asio) noexcept;
-    OPENTXS_EXPORT Socket(Socket&&) noexcept;
+    OPENTXS_NO_EXPORT Socket(Imp* imp) noexcept;
+    Socket(Socket&&) noexcept;
 
-    OPENTXS_EXPORT ~Socket();
+    ~Socket();
 
 private:
     Imp* imp_;

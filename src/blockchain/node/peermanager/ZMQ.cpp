@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <map>
 #include <mutex>
+#include <stdexcept>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -31,6 +32,7 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/network/asio/Socket.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameIterator.hpp"
@@ -48,13 +50,13 @@
 
 namespace opentxs::blockchain::node::implementation
 {
-class ZMQIncomingConnectionManager
+class ZMQIncomingConnectionManager final
     : public PeerManager::IncomingConnectionManager
 {
 public:
     auto Disconnect(const int id) const noexcept -> void final
     {
-        Lock lock(lock_);
+        auto lock = Lock{lock_};
         auto it = peers_.find(id);
 
         if (peers_.end() == it) { return; }
@@ -67,7 +69,7 @@ public:
     auto Listen(const p2p::Address& address) const noexcept -> bool final
     {
         if (p2p::Network::zmq != address.Type()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid address").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Invalid address").Flush();
 
             return false;
         }
@@ -75,6 +77,13 @@ public:
         return external_->Start(
             address.Bytes()->str() + ':' + std::to_string(address.Port()));
     }
+
+    auto LookupIncomingSocket(const int id) noexcept(false)
+        -> opentxs::network::asio::Socket final
+    {
+        throw std::runtime_error{"ZMQ does not use asio sockets"};
+    }
+    auto Shutdown() noexcept -> void final {}
 
     ZMQIncomingConnectionManager(
         const api::Core& api,
@@ -126,14 +135,14 @@ private:
         const auto& header = message.Header();
 
         if (0 == header.size()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid header").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Invalid header").Flush();
 
             return;
         }
 
         const auto& idFrame = header.at(0);
         const auto id = api_.Factory().Data(idFrame);
-        Lock lock(lock_);
+        auto lock = Lock{lock_};
         auto index = external_index_.find(id);
 
         if (external_index_.end() != index) {
@@ -161,7 +170,7 @@ private:
                 true);
 
             if (false == internal_->Start(zmq)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Failed to listen to internal endpoint")
                     .Flush();
 
@@ -171,8 +180,7 @@ private:
             const auto peerID = parent_.ConstructPeer(std::move(address));
 
             if (-1 == peerID) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": Failed to instantiate peer")
+                LogOutput(OT_METHOD)(__func__)(": Failed to instantiate peer")
                     .Flush();
 
                 return;
@@ -225,7 +233,7 @@ private:
 
                 const auto peerID = body.at(1).as<int>();
 
-                Lock lock(lock_);
+                auto lock = Lock{lock_};
 
                 try {
                     auto& [externalID, internalID, cached] = peers_.at(peerID);
@@ -248,7 +256,7 @@ private:
             case OT_ZMQ_SEND_SIGNAL: {
                 OT_ASSERT(1 < body.size());
 
-                Lock lock(lock_);
+                auto lock = Lock{lock_};
 
                 try {
                     auto& [externalID, internalID, cached] =

@@ -3,9 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"             // IWYU pragma: associated
-#include "1_Internal.hpp"           // IWYU pragma: associated
-#include "blockchain/p2p/Peer.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                  // IWYU pragma: associated
+#include "1_Internal.hpp"                // IWYU pragma: associated
+#include "blockchain/p2p/peer/Peer.hpp"  // IWYU pragma: associated
 
 #include <iterator>
 #include <string_view>
@@ -21,14 +21,17 @@
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
+#include "opentxs/network/zeromq/socket/Sender.tpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/WorkType.hpp"
+#include "util/Work.hpp"
 
 #define OT_METHOD                                                              \
     "opentxs::blockchain::p2p::implementation::ZMQConnectionManager::"
 
 namespace opentxs::blockchain::p2p::implementation
 {
-struct ZMQConnectionManager final : public Peer::ConnectionManager {
+struct ZMQConnectionManager : virtual public Peer::ConnectionManager {
     const api::Core& api_;
     Peer& parent_;
     const Flag& running_;
@@ -53,14 +56,14 @@ struct ZMQConnectionManager final : public Peer::ConnectionManager {
         return p2p::Network::zmq;
     }
 
-    auto connect() noexcept -> void final
+    auto connect() noexcept -> void override
     {
         LogVerbose(OT_METHOD)(__FUNCTION__)(": Connecting to ")(zmq_).Flush();
         dealer_->Start(zmq_);
         parent_.on_connect();
     }
-    auto init(const int id) noexcept -> bool final { return true; }
-    auto pipeline(zmq::Message& message) noexcept -> void
+    auto init(const int id) noexcept -> bool override { return true; }
+    virtual auto pipeline(zmq::Message& message) noexcept -> void
     {
         if (false == running_) { return; }
 
@@ -82,19 +85,7 @@ struct ZMQConnectionManager final : public Peer::ConnectionManager {
     {
         OT_ASSERT(header_bytes_ <= payload.size());
 
-        const auto bytes = payload.Bytes();
-        auto it = bytes.data();
-        auto message = api_.Network().ZeroMQ().Message();
-        message->PrependEmptyFrame();
-        message->AddFrame(it, header_bytes_);
-        const auto body = bytes.size() - header_bytes_;
-
-        if (0 < body) {
-            std::advance(it, header_bytes_);
-            message->AddFrame(it, body);
-        }
-
-        const auto sent = dealer_->Send(message);
+        const auto sent = dealer_->Send(make_outgoing_message(payload));
 
         try {
             if (promise) { promise->set_value(sent); }
@@ -122,11 +113,125 @@ struct ZMQConnectionManager final : public Peer::ConnectionManager {
     {
     }
 
-    ~ZMQConnectionManager() final
+    ~ZMQConnectionManager() override
     {
         stop_internal();
         stop_external();
         shutdown_external();
+    }
+
+private:
+    virtual auto make_outgoing_message(const zmq::Frame& payload) const noexcept
+        -> OTZMQMessage
+    {
+        const auto bytes = payload.Bytes();
+        auto it = bytes.data();
+        auto message = api_.Network().ZeroMQ().Message();
+        message->PrependEmptyFrame();
+        message->AddFrame(it, header_bytes_);
+        const auto body = bytes.size() - header_bytes_;
+
+        if (0 < body) {
+            std::advance(it, header_bytes_);
+            message->AddFrame(it, body);
+        }
+
+        return message;
+    }
+};
+
+struct ZMQIncomingConnectionManager final : public ZMQConnectionManager {
+    std::promise<void> init_promise_;
+
+    auto connect() noexcept -> void final {}
+    auto init(const int id) noexcept -> bool final
+    {
+        auto out = ZMQConnectionManager::init(id);
+        auto future = init_promise_.get_future();
+        auto zmq = dealer_->Start(zmq_);
+
+        OT_ASSERT(zmq);
+
+        auto message = MakeWork(api_, WorkType::AsioRegister);
+        message->AddFrame(id);
+        zmq = dealer_->Send(message);
+
+        OT_ASSERT(zmq);
+
+        const auto status = future.wait_for(std::chrono::seconds(10));
+
+        return (std::future_status::ready == status) && out;
+    }
+    auto pipeline(zmq::Message& message) noexcept -> void final
+    {
+        if (false == running_) { return; }
+
+        const auto body = message.Body();
+
+        OT_ASSERT(0 < body.size());
+
+        const auto task = [&] {
+            try {
+
+                return body.at(0).as<Peer::Task>();
+            } catch (...) {
+
+                OT_FAIL;
+            }
+        }();
+
+        switch (task) {
+            case Peer::Task::Register: {
+                try {
+                    init_promise_.set_value();
+                } catch (...) {
+                }
+
+                parent_.on_connect();
+            } break;
+            case Peer::Task::Body: {
+                OT_ASSERT(1 < body.size());
+
+                parent_.on_pipeline(
+                    Peer::Task::ReceiveMessage,
+                    {body.at(1).Bytes(),
+                     (2 < body.size()) ? body.at(2).Bytes() : ReadView{}});
+            } break;
+            default: {
+                OT_FAIL;
+            }
+        }
+    }
+
+    ZMQIncomingConnectionManager(
+        const api::Core& api,
+        Peer& parent,
+        const Flag& running,
+        const Peer::Address& address,
+        const std::size_t headerSize) noexcept
+        : ZMQConnectionManager(api, parent, running, address, headerSize)
+        , init_promise_()
+    {
+    }
+
+    ~ZMQIncomingConnectionManager() final = default;
+
+private:
+    auto make_outgoing_message(const zmq::Frame& payload) const noexcept
+        -> OTZMQMessage final
+    {
+        const auto bytes = payload.Bytes();
+        auto it = bytes.data();
+        auto message = MakeWork(api_, OT_ZMQ_SEND_SIGNAL);
+        message->AddFrame(it, header_bytes_);
+        const auto body = bytes.size() - header_bytes_;
+
+        if (0 < body) {
+            std::advance(it, header_bytes_);
+            message->AddFrame(it, body);
+        }
+
+        return message;
     }
 };
 
@@ -138,6 +243,17 @@ auto Peer::ConnectionManager::ZMQ(
     const std::size_t headerSize) noexcept -> std::unique_ptr<ConnectionManager>
 {
     return std::make_unique<ZMQConnectionManager>(
+        api, parent, running, address, headerSize);
+}
+
+auto Peer::ConnectionManager::ZMQIncoming(
+    const api::Core& api,
+    Peer& parent,
+    const Flag& running,
+    const Peer::Address& address,
+    const std::size_t headerSize) noexcept -> std::unique_ptr<ConnectionManager>
+{
+    return std::make_unique<ZMQIncomingConnectionManager>(
         api, parent, running, address, headerSize);
 }
 }  // namespace opentxs::blockchain::p2p::implementation

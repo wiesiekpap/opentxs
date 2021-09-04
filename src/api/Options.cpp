@@ -38,6 +38,8 @@ struct Options::Imp::Parser {
     using Multistring = std::vector<std::string>;
 
     static constexpr auto blockchain_disable_{"disable_blockchain"};
+    static constexpr auto blockchain_ipv4_bind_{"blockchain_bind_ipv4"};
+    static constexpr auto blockchain_ipv6_bind_{"blockchain_bind_ipv6"};
     static constexpr auto blockchain_storage_{"blockchain_storage"};
     static constexpr auto blockchain_sync_provide_{"provide_sync_server"};
     static constexpr auto blockchain_sync_connect_{"blockchain_sync_server"};
@@ -71,6 +73,16 @@ struct Options::Imp::Parser {
                 po::value<Multistring>()->multitoken()->composing(),
                 "Previously enabled blockchains to remove from the automatic "
                 "startup list");
+            out.add_options()(
+                blockchain_ipv4_bind_,
+                po::value<Multistring>()->multitoken()->composing(),
+                "Local ipv4 addresses to bind for incoming blockchain "
+                "connections");
+            out.add_options()(
+                blockchain_ipv6_bind_,
+                po::value<Multistring>()->multitoken()->composing(),
+                "Local ipv6 addresses to bind for incoming blockchain "
+                "connections");
             out.add_options()(
                 blockchain_storage_,
                 po::value<int>(),
@@ -182,6 +194,8 @@ struct Options::Imp::Parser {
 
 Options::Imp::Imp() noexcept
     : blockchain_disabled_chains_()
+    , blockchain_ipv4_bind_()
+    , blockchain_ipv6_bind_()
     , blockchain_storage_level_(std::nullopt)
     , blockchain_sync_server_enabled_(std::nullopt)
     , blockchain_sync_servers_()
@@ -207,6 +221,8 @@ Options::Imp::Imp() noexcept
 
 Options::Imp::Imp(const Imp& rhs) noexcept
     : blockchain_disabled_chains_(rhs.blockchain_disabled_chains_)
+    , blockchain_ipv4_bind_(rhs.blockchain_ipv4_bind_)
+    , blockchain_ipv6_bind_(rhs.blockchain_ipv6_bind_)
     , blockchain_storage_level_(rhs.blockchain_storage_level_)
     , blockchain_sync_server_enabled_(rhs.blockchain_sync_server_enabled_)
     , blockchain_sync_servers_(rhs.blockchain_sync_servers_)
@@ -292,6 +308,10 @@ auto Options::Imp::import_value(const char* key, const char* value) noexcept
     try {
         if (0 == std::strcmp(key, Parser::blockchain_disable_)) {
             blockchain_disabled_chains_.emplace(convert(value));
+        } else if (0 == std::strcmp(key, Parser::blockchain_ipv4_bind_)) {
+            blockchain_ipv4_bind_.emplace(value);
+        } else if (0 == std::strcmp(key, Parser::blockchain_ipv6_bind_)) {
+            blockchain_ipv6_bind_.emplace(value);
         } else if (0 == std::strcmp(key, Parser::blockchain_storage_)) {
             blockchain_storage_level_ = std::stoi(value);
         } else if (0 == std::strcmp(key, Parser::blockchain_sync_provide_)) {
@@ -380,6 +400,26 @@ auto Options::Imp::parse(int argc, char** argv) noexcept(false) -> void
                     } catch (...) {
                     }
                 }
+            } catch (...) {
+            }
+        } else if (name == Parser::blockchain_ipv4_bind_) {
+            try {
+                const auto& servers = value.as<Parser::Multistring>();
+                auto& dest = blockchain_ipv4_bind_;
+                std::copy(
+                    servers.begin(),
+                    servers.end(),
+                    std::inserter(dest, dest.end()));
+            } catch (...) {
+            }
+        } else if (name == Parser::blockchain_ipv6_bind_) {
+            try {
+                const auto& servers = value.as<Parser::Multistring>();
+                auto& dest = blockchain_ipv6_bind_;
+                std::copy(
+                    servers.begin(),
+                    servers.end(),
+                    std::inserter(dest, dest.end()));
             } catch (...) {
             }
         } else if (name == Parser::blockchain_storage_) {
@@ -553,6 +593,14 @@ auto operator+(const Options& lhs, const Options& rhs) noexcept -> Options
         std::inserter(
             l.blockchain_disabled_chains_,
             l.blockchain_disabled_chains_.end()));
+    std::copy(
+        r.blockchain_ipv4_bind_.begin(),
+        r.blockchain_ipv4_bind_.end(),
+        std::inserter(l.blockchain_ipv4_bind_, l.blockchain_ipv4_bind_.end()));
+    std::copy(
+        r.blockchain_ipv6_bind_.begin(),
+        r.blockchain_ipv6_bind_.end(),
+        std::inserter(l.blockchain_ipv6_bind_, l.blockchain_ipv6_bind_.end()));
 
     if (const auto& v = r.blockchain_storage_level_; v.has_value()) {
         l.blockchain_storage_level_ = v.value();
@@ -664,6 +712,20 @@ Options::Options(Options&& rhs) noexcept
     OT_ASSERT(nullptr != imp_);
 }
 
+auto Options::AddBlockchainIpv4Bind(const char* endpoint) noexcept -> Options&
+{
+    imp_->blockchain_ipv4_bind_.emplace(endpoint);
+
+    return *this;
+}
+
+auto Options::AddBlockchainIpv6Bind(const char* endpoint) noexcept -> Options&
+{
+    imp_->blockchain_ipv6_bind_.emplace(endpoint);
+
+    return *this;
+}
+
 auto Options::AddBlockchainSyncServer(const char* endpoint) noexcept -> Options&
 {
     imp_->blockchain_sync_servers_.emplace(endpoint);
@@ -699,12 +761,16 @@ auto Options::AddNotaryPublicOnion(const char* value) noexcept -> Options&
     return *this;
 }
 
-auto Options::ImportOption(const char* key, const char* value) noexcept
-    -> Options&
+auto Options::BlockchainBindIpv4() const noexcept
+    -> const std::set<std::string>&
 {
-    imp_->import_value(key, value);
+    return imp_->blockchain_ipv4_bind_;
+}
 
-    return *this;
+auto Options::BlockchainBindIpv6() const noexcept
+    -> const std::set<std::string>&
+{
+    return imp_->blockchain_ipv6_bind_;
 }
 
 auto Options::BlockchainStorageLevel() const noexcept -> int
@@ -737,6 +803,14 @@ auto Options::HelpText() const noexcept -> const std::string&
 auto Options::Home() const noexcept -> const char*
 {
     return Imp::get(imp_->home_);
+}
+
+auto Options::ImportOption(const char* key, const char* value) noexcept
+    -> Options&
+{
+    imp_->import_value(key, value);
+
+    return *this;
 }
 
 auto Options::Ipv4ConnectionMode() const noexcept -> ConnectionMode

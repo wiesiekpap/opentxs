@@ -7,12 +7,15 @@
 #include "1_Internal.hpp"                 // IWYU pragma: associated
 #include "blockchain/node/base/Base.hpp"  // IWYU pragma: associated
 
+#include <boost/asio.hpp>
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <iomanip>
 #include <iosfwd>
 #include <iterator>
 #include <optional>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <type_traits>
@@ -27,10 +30,12 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Factory.hpp"
+#include "internal/blockchain/p2p/P2P.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/Options.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -44,6 +49,7 @@
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
+#include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -273,6 +279,78 @@ Base::Base(
     header_.Init();
     init_executor({api_.Endpoints().InternalBlockchainFilterUpdated(chain_)});
     LogVerbose(config_.print()).Flush();
+
+    for (const auto& addr : api_.GetOptions().BlockchainBindIpv4()) {
+        try {
+            const auto boost = boost::asio::ip::make_address(addr);
+
+            if (false == boost.is_v4()) {
+                throw std::runtime_error{"Wrong address type (not ipv4)"};
+            }
+
+            auto address = opentxs::factory::BlockchainAddress(
+                api_,
+                p2p::Protocol::bitcoin,
+                p2p::Network::ipv4,
+                [&] {
+                    auto out = api_.Factory().Data();
+                    const auto v4 = boost.to_v4();
+                    const auto bytes = v4.to_bytes();
+                    out->Assign(bytes.data(), bytes.size());
+
+                    return out;
+                }(),
+                params::Data::Chains().at(chain_).default_port_,
+                chain_,
+                {},
+                {},
+                false);
+
+            if (!address) { continue; }
+
+            peer_.Listen(*address);
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+
+            continue;
+        }
+    }
+
+    for (const auto& addr : api_.GetOptions().BlockchainBindIpv6()) {
+        try {
+            const auto boost = boost::asio::ip::make_address(addr);
+
+            if (false == boost.is_v6()) {
+                throw std::runtime_error{"Wrong address type (not ipv6)"};
+            }
+
+            auto address = opentxs::factory::BlockchainAddress(
+                api_,
+                p2p::Protocol::bitcoin,
+                p2p::Network::ipv6,
+                [&] {
+                    auto out = api_.Factory().Data();
+                    const auto v6 = boost.to_v6();
+                    const auto bytes = v6.to_bytes();
+                    out->Assign(bytes.data(), bytes.size());
+
+                    return out;
+                }(),
+                params::Data::Chains().at(chain_).default_port_,
+                chain_,
+                {},
+                {},
+                false);
+
+            if (!address) { continue; }
+
+            peer_.Listen(*address);
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+
+            continue;
+        }
+    }
 }
 
 auto Base::AddBlock(const std::shared_ptr<const block::bitcoin::Block> pBlock)

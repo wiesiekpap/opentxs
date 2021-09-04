@@ -3,25 +3,44 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                     // IWYU pragma: associated
-#include "1_Internal.hpp"                   // IWYU pragma: associated
-#include "blockchain/node/PeerManager.hpp"  // IWYU pragma: associated
+#pragma once
+
+#include "0_stdafx.hpp"    // IWYU pragma: associated
+#include "1_Internal.hpp"  // IWYU pragma: associated
+#include "blockchain/node/peermanager/PeerManager.hpp"  // IWYU pragma: associated
 
 #include <memory>
 
 // #define OT_METHOD
 // "opentxs::blockchain::node::implementation::PeerManager::IncomingConnectionManager::"
 
+namespace opentxs
+{
+namespace network
+{
+namespace asio
+{
+class Socket;
+}  // namespace asio
+}  // namespace network
+}  // namespace opentxs
+
 namespace opentxs::blockchain::node::implementation
 {
 class PeerManager::IncomingConnectionManager
 {
 public:
+    static auto TCP(const api::Core& api, PeerManager::Peers& parent) noexcept
+        -> std::unique_ptr<IncomingConnectionManager>;
     static auto ZMQ(const api::Core& api, PeerManager::Peers& parent) noexcept
         -> std::unique_ptr<IncomingConnectionManager>;
 
     virtual auto Disconnect(const int peer) const noexcept -> void = 0;
     virtual auto Listen(const p2p::Address& address) const noexcept -> bool = 0;
+
+    virtual auto LookupIncomingSocket(const int id) noexcept(false)
+        -> opentxs::network::asio::Socket = 0;
+    virtual auto Shutdown() noexcept -> void = 0;
 
     virtual ~IncomingConnectionManager() = default;
 

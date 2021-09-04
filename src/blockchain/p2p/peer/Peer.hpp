@@ -72,6 +72,11 @@ struct Mempool;
 
 namespace network
 {
+namespace asio
+{
+class Socket;
+}  // namespace asio
+
 namespace zeromq
 {
 class Frame;
@@ -125,6 +130,14 @@ public:
             const Flag& running,
             const Address& address,
             const std::size_t headerSize) noexcept
+            -> std::unique_ptr<ConnectionManager>;
+        static auto TCPIncoming(
+            const api::Core& api,
+            Peer& parent,
+            const Flag& running,
+            const Address& address,
+            const std::size_t headerSize,
+            opentxs::network::asio::Socket&& socket) noexcept
             -> std::unique_ptr<ConnectionManager>;
         static auto ZMQ(
             const api::Core& api,
@@ -398,6 +411,8 @@ private:
 
     static auto init_connection_manager(
         const api::Core& api,
+        const int id,
+        const node::internal::PeerManager& manager,
         Peer& parent,
         const Flag& running,
         const Address& address,
