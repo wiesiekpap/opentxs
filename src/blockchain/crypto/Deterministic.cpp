@@ -29,9 +29,7 @@
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/protobuf/HDPath.pb.h"
 
-#if OT_CRYPTO_WITH_BIP32
 #define OT_METHOD "opentxs::blockchain::crypto::implementation::Deterministic::"
-#endif  // OT_CRYPTO_WITH_BIP32
 
 namespace opentxs::blockchain::crypto::implementation
 {
