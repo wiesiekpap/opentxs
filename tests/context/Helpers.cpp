@@ -16,11 +16,15 @@ auto check_options(
     const OptionsData& expect) noexcept -> bool
 {
     auto output{true};
+    output &= test.BlockchainBindIpv4() == expect.blockchain_bind_ipv4_;
+    output &= test.BlockchainBindIpv6() == expect.blockchain_bind_ipv6_;
     output &= test.BlockchainStorageLevel() == expect.blockchain_storage_level_;
     output &=
         test.BlockchainWalletEnabled() == expect.blockchain_wallet_enabled_;
     output &= test.DisabledBlockchains() == expect.blockchain_disabled_chains_;
     output &= test.Home() == expect.home_;
+    output &= test.Ipv4ConnectionMode() == expect.ipv4_connection_mode_;
+    output &= test.Ipv6ConnectionMode() == expect.ipv6_connection_mode_;
     output &= test.LogLevel() == expect.log_level_;
     output &= test.NotaryBindIP() == expect.notary_bind_ip_;
     output &= test.NotaryBindPort() == expect.notary_bind_port_;
@@ -39,11 +43,15 @@ auto check_options(
     output &= test.RemoteLogEndpoint() == expect.log_endpoint_;
     output &= test.StoragePrimaryPlugin() == expect.storage_primary_plugin_;
 
+    EXPECT_EQ(test.BlockchainBindIpv4(), expect.blockchain_bind_ipv4_);
+    EXPECT_EQ(test.BlockchainBindIpv6(), expect.blockchain_bind_ipv6_);
     EXPECT_EQ(test.BlockchainStorageLevel(), expect.blockchain_storage_level_);
     EXPECT_EQ(
         test.BlockchainWalletEnabled(), expect.blockchain_wallet_enabled_);
     EXPECT_EQ(test.DisabledBlockchains(), expect.blockchain_disabled_chains_);
     EXPECT_EQ(test.Home(), expect.home_);
+    EXPECT_EQ(test.Ipv4ConnectionMode(), expect.ipv4_connection_mode_);
+    EXPECT_EQ(test.Ipv6ConnectionMode(), expect.ipv6_connection_mode_);
     EXPECT_EQ(test.LogLevel(), expect.log_level_);
     EXPECT_EQ(test.NotaryBindIP(), expect.notary_bind_ip_);
     EXPECT_EQ(test.NotaryBindPort(), expect.notary_bind_port_);

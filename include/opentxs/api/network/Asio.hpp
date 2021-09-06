@@ -12,6 +12,7 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
+#include <functional>
 #include <future>
 #include <string_view>
 #include <vector>
@@ -58,7 +59,12 @@ public:
     using Endpoint = opentxs::network::asio::Endpoint;
     using Socket = opentxs::network::asio::Socket;
     using Resolved = std::vector<Endpoint>;
+    using AcceptCallback = std::function<void(Socket&&)>;
 
+    // NOTE: endpoint must remain valid until Close is called
+    auto Accept(const Endpoint& endpoint, AcceptCallback cb) const noexcept
+        -> bool;
+    auto Close(const Endpoint& endpoint) const noexcept -> bool;
     auto GetPublicAddress4() const noexcept -> std::shared_future<OTData>;
     auto GetPublicAddress6() const noexcept -> std::shared_future<OTData>;
     OPENTXS_NO_EXPORT auto Internal() const noexcept -> internal::Asio&;

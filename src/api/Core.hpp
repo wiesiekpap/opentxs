@@ -108,7 +108,9 @@ public:
     {
         return factory_;
     }
-    INTERNAL_PASSWORD_CALLBACK* GetInternalPasswordCallback() const final;
+    auto GetInternalPasswordCallback() const
+        -> INTERNAL_PASSWORD_CALLBACK* final;
+    auto GetOptions() const noexcept -> const Options& final { return args_; }
     auto GetSecret(
         const opentxs::Lock& lock,
         Secret& secret,

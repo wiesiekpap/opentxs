@@ -38,11 +38,15 @@ struct Options::Imp::Parser {
     using Multistring = std::vector<std::string>;
 
     static constexpr auto blockchain_disable_{"disable_blockchain"};
+    static constexpr auto blockchain_ipv4_bind_{"blockchain_bind_ipv4"};
+    static constexpr auto blockchain_ipv6_bind_{"blockchain_bind_ipv6"};
     static constexpr auto blockchain_storage_{"blockchain_storage"};
     static constexpr auto blockchain_sync_provide_{"provide_sync_server"};
     static constexpr auto blockchain_sync_connect_{"blockchain_sync_server"};
     static constexpr auto blockchain_wallet_enable_{"blockchain_wallet"};
     static constexpr auto home_{"ot_home"};
+    static constexpr auto ipv4_connection_mode_{"ipv4_connection_mode"};
+    static constexpr auto ipv6_connection_mode_{"ipv6_connection_mode"};
     static constexpr auto log_endpoint_{"log_endpoint"};
     static constexpr auto log_level_{"log_level"};
     static constexpr auto notary_inproc_{"notary_inproc"};
@@ -70,6 +74,16 @@ struct Options::Imp::Parser {
                 "Previously enabled blockchains to remove from the automatic "
                 "startup list");
             out.add_options()(
+                blockchain_ipv4_bind_,
+                po::value<Multistring>()->multitoken()->composing(),
+                "Local ipv4 addresses to bind for incoming blockchain "
+                "connections");
+            out.add_options()(
+                blockchain_ipv6_bind_,
+                po::value<Multistring>()->multitoken()->composing(),
+                "Local ipv6 addresses to bind for incoming blockchain "
+                "connections");
+            out.add_options()(
                 blockchain_storage_,
                 po::value<int>(),
                 "Blockchain block persistence level.\n    0: do not save any "
@@ -91,6 +105,16 @@ struct Options::Imp::Parser {
                 home_,
                 po::value<std::string>(),
                 "Path to opentxs data directory");
+            out.add_options()(
+                ipv4_connection_mode_,
+                po::value<int>(),
+                "Connection policy for ipv4 peers. -1 = ipv4 disabled, 0 = "
+                "automatic, 1 = ipv4 enabled");
+            out.add_options()(
+                ipv6_connection_mode_,
+                po::value<int>(),
+                "Connection policy for ipv6 peers. -1 = ipv6 disabled, 0 = "
+                "automatic, 1 = ipv6 enabled");
             out.add_options()(
                 log_endpoint_,
                 po::value<std::string>(),
@@ -170,12 +194,16 @@ struct Options::Imp::Parser {
 
 Options::Imp::Imp() noexcept
     : blockchain_disabled_chains_()
+    , blockchain_ipv4_bind_()
+    , blockchain_ipv6_bind_()
     , blockchain_storage_level_(std::nullopt)
     , blockchain_sync_server_enabled_(std::nullopt)
     , blockchain_sync_servers_()
     , blockchain_wallet_enabled_(std::nullopt)
     , home_(std::nullopt)
     , log_endpoint_(std::nullopt)
+    , ipv4_connection_mode_(std::nullopt)
+    , ipv6_connection_mode_(std::nullopt)
     , log_level_(std::nullopt)
     , notary_bind_inproc_(std::nullopt)
     , notary_bind_ip_(std::nullopt)
@@ -193,12 +221,16 @@ Options::Imp::Imp() noexcept
 
 Options::Imp::Imp(const Imp& rhs) noexcept
     : blockchain_disabled_chains_(rhs.blockchain_disabled_chains_)
+    , blockchain_ipv4_bind_(rhs.blockchain_ipv4_bind_)
+    , blockchain_ipv6_bind_(rhs.blockchain_ipv6_bind_)
     , blockchain_storage_level_(rhs.blockchain_storage_level_)
     , blockchain_sync_server_enabled_(rhs.blockchain_sync_server_enabled_)
     , blockchain_sync_servers_(rhs.blockchain_sync_servers_)
     , blockchain_wallet_enabled_(rhs.blockchain_wallet_enabled_)
     , home_(rhs.home_)
     , log_endpoint_(rhs.log_endpoint_)
+    , ipv4_connection_mode_(rhs.ipv4_connection_mode_)
+    , ipv6_connection_mode_(rhs.ipv6_connection_mode_)
     , log_level_(rhs.log_level_)
     , notary_bind_inproc_(rhs.notary_bind_inproc_)
     , notary_bind_ip_(rhs.notary_bind_ip_)
@@ -276,6 +308,10 @@ auto Options::Imp::import_value(const char* key, const char* value) noexcept
     try {
         if (0 == std::strcmp(key, Parser::blockchain_disable_)) {
             blockchain_disabled_chains_.emplace(convert(value));
+        } else if (0 == std::strcmp(key, Parser::blockchain_ipv4_bind_)) {
+            blockchain_ipv4_bind_.emplace(value);
+        } else if (0 == std::strcmp(key, Parser::blockchain_ipv6_bind_)) {
+            blockchain_ipv6_bind_.emplace(value);
         } else if (0 == std::strcmp(key, Parser::blockchain_storage_)) {
             blockchain_storage_level_ = std::stoi(value);
         } else if (0 == std::strcmp(key, Parser::blockchain_sync_provide_)) {
@@ -290,6 +326,12 @@ auto Options::Imp::import_value(const char* key, const char* value) noexcept
             blockchain_wallet_enabled_ = to_bool(value);
         } else if (0 == std::strcmp(key, Parser::home_)) {
             home_ = value;
+        } else if (0 == std::strcmp(key, Parser::ipv4_connection_mode_)) {
+            ipv4_connection_mode_ =
+                static_cast<ConnectionMode>(std::stoi(value));
+        } else if (0 == std::strcmp(key, Parser::ipv6_connection_mode_)) {
+            ipv6_connection_mode_ =
+                static_cast<ConnectionMode>(std::stoi(value));
         } else if (0 == std::strcmp(key, Parser::log_endpoint_)) {
             log_endpoint_ = value;
         } else if (0 == std::strcmp(key, Parser::log_level_)) {
@@ -360,6 +402,26 @@ auto Options::Imp::parse(int argc, char** argv) noexcept(false) -> void
                 }
             } catch (...) {
             }
+        } else if (name == Parser::blockchain_ipv4_bind_) {
+            try {
+                const auto& servers = value.as<Parser::Multistring>();
+                auto& dest = blockchain_ipv4_bind_;
+                std::copy(
+                    servers.begin(),
+                    servers.end(),
+                    std::inserter(dest, dest.end()));
+            } catch (...) {
+            }
+        } else if (name == Parser::blockchain_ipv6_bind_) {
+            try {
+                const auto& servers = value.as<Parser::Multistring>();
+                auto& dest = blockchain_ipv6_bind_;
+                std::copy(
+                    servers.begin(),
+                    servers.end(),
+                    std::inserter(dest, dest.end()));
+            } catch (...) {
+            }
         } else if (name == Parser::blockchain_storage_) {
             try {
                 blockchain_storage_level_ = value.as<int>();
@@ -392,6 +454,18 @@ auto Options::Imp::parse(int argc, char** argv) noexcept(false) -> void
         } else if (name == Parser::home_) {
             try {
                 home_ = value.as<std::string>();
+            } catch (...) {
+            }
+        } else if (name == Parser::ipv4_connection_mode_) {
+            try {
+                ipv4_connection_mode_ =
+                    static_cast<ConnectionMode>(value.as<int>());
+            } catch (...) {
+            }
+        } else if (name == Parser::ipv6_connection_mode_) {
+            try {
+                ipv6_connection_mode_ =
+                    static_cast<ConnectionMode>(value.as<int>());
             } catch (...) {
             }
         } else if (name == Parser::log_endpoint_) {
@@ -519,6 +593,14 @@ auto operator+(const Options& lhs, const Options& rhs) noexcept -> Options
         std::inserter(
             l.blockchain_disabled_chains_,
             l.blockchain_disabled_chains_.end()));
+    std::copy(
+        r.blockchain_ipv4_bind_.begin(),
+        r.blockchain_ipv4_bind_.end(),
+        std::inserter(l.blockchain_ipv4_bind_, l.blockchain_ipv4_bind_.end()));
+    std::copy(
+        r.blockchain_ipv6_bind_.begin(),
+        r.blockchain_ipv6_bind_.end(),
+        std::inserter(l.blockchain_ipv6_bind_, l.blockchain_ipv6_bind_.end()));
 
     if (const auto& v = r.blockchain_storage_level_; v.has_value()) {
         l.blockchain_storage_level_ = v.value();
@@ -539,6 +621,14 @@ auto operator+(const Options& lhs, const Options& rhs) noexcept -> Options
     }
 
     if (const auto& v = r.home_; v.has_value()) { l.home_ = v.value(); }
+
+    if (const auto& v = r.ipv4_connection_mode_; v.has_value()) {
+        l.ipv4_connection_mode_ = v.value();
+    }
+
+    if (const auto& v = r.ipv6_connection_mode_; v.has_value()) {
+        l.ipv6_connection_mode_ = v.value();
+    }
 
     if (const auto& v = r.log_endpoint_; v.has_value()) {
         l.log_endpoint_ = v.value();
@@ -622,6 +712,20 @@ Options::Options(Options&& rhs) noexcept
     OT_ASSERT(nullptr != imp_);
 }
 
+auto Options::AddBlockchainIpv4Bind(const char* endpoint) noexcept -> Options&
+{
+    imp_->blockchain_ipv4_bind_.emplace(endpoint);
+
+    return *this;
+}
+
+auto Options::AddBlockchainIpv6Bind(const char* endpoint) noexcept -> Options&
+{
+    imp_->blockchain_ipv6_bind_.emplace(endpoint);
+
+    return *this;
+}
+
 auto Options::AddBlockchainSyncServer(const char* endpoint) noexcept -> Options&
 {
     imp_->blockchain_sync_servers_.emplace(endpoint);
@@ -657,12 +761,16 @@ auto Options::AddNotaryPublicOnion(const char* value) noexcept -> Options&
     return *this;
 }
 
-auto Options::ImportOption(const char* key, const char* value) noexcept
-    -> Options&
+auto Options::BlockchainBindIpv4() const noexcept
+    -> const std::set<std::string>&
 {
-    imp_->import_value(key, value);
+    return imp_->blockchain_ipv4_bind_;
+}
 
-    return *this;
+auto Options::BlockchainBindIpv6() const noexcept
+    -> const std::set<std::string>&
+{
+    return imp_->blockchain_ipv6_bind_;
 }
 
 auto Options::BlockchainStorageLevel() const noexcept -> int
@@ -695,6 +803,24 @@ auto Options::HelpText() const noexcept -> const std::string&
 auto Options::Home() const noexcept -> const char*
 {
     return Imp::get(imp_->home_);
+}
+
+auto Options::ImportOption(const char* key, const char* value) noexcept
+    -> Options&
+{
+    imp_->import_value(key, value);
+
+    return *this;
+}
+
+auto Options::Ipv4ConnectionMode() const noexcept -> ConnectionMode
+{
+    return Imp::get(imp_->ipv4_connection_mode_, ConnectionMode::automatic);
+}
+
+auto Options::Ipv6ConnectionMode() const noexcept -> ConnectionMode
+{
+    return Imp::get(imp_->ipv6_connection_mode_, ConnectionMode::automatic);
 }
 
 auto Options::LogLevel() const noexcept -> int
@@ -804,6 +930,20 @@ auto Options::SetBlockchainWalletEnabled(bool enabled) noexcept -> Options&
 auto Options::SetHome(const char* path) noexcept -> Options&
 {
     imp_->home_ = path;
+
+    return *this;
+}
+
+auto Options::SetIpv4ConnectionMode(ConnectionMode mode) noexcept -> Options&
+{
+    imp_->ipv4_connection_mode_ = mode;
+
+    return *this;
+}
+
+auto Options::SetIpv6ConnectionMode(ConnectionMode mode) noexcept -> Options&
+{
+    imp_->ipv6_connection_mode_ = mode;
 
     return *this;
 }

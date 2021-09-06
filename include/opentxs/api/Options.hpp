@@ -21,11 +21,21 @@ namespace opentxs
 class OPENTXS_EXPORT Options final
 {
 public:
+    enum class ConnectionMode {
+        off = -1,
+        automatic = 0,
+        on = 1,
+    };
+
+    auto BlockchainBindIpv4() const noexcept -> const std::set<std::string>&;
+    auto BlockchainBindIpv6() const noexcept -> const std::set<std::string>&;
     auto BlockchainStorageLevel() const noexcept -> int;
     auto BlockchainWalletEnabled() const noexcept -> bool;
     auto DisabledBlockchains() const noexcept -> std::set<blockchain::Type>;
     auto HelpText() const noexcept -> const std::string&;
     auto Home() const noexcept -> const char*;
+    auto Ipv4ConnectionMode() const noexcept -> ConnectionMode;
+    auto Ipv6ConnectionMode() const noexcept -> ConnectionMode;
     auto LogLevel() const noexcept -> int;
     auto NotaryBindIP() const noexcept -> const char*;
     auto NotaryBindPort() const noexcept -> std::uint16_t;
@@ -43,6 +53,8 @@ public:
     auto RemoteLogEndpoint() const noexcept -> const char*;
     auto StoragePrimaryPlugin() const noexcept -> const char*;
 
+    auto AddBlockchainIpv4Bind(const char* endpoint) noexcept -> Options&;
+    auto AddBlockchainIpv6Bind(const char* endpoint) noexcept -> Options&;
     auto AddBlockchainSyncServer(const char* endpoint) noexcept -> Options&;
     auto AddNotaryPublicEEP(const char* value) noexcept -> Options&;
     auto AddNotaryPublicIPv4(const char* value) noexcept -> Options&;
@@ -57,6 +69,8 @@ public:
     auto SetBlockchainSyncEnabled(bool enabled) noexcept -> Options&;
     auto SetBlockchainWalletEnabled(bool enabled) noexcept -> Options&;
     auto SetHome(const char* path) noexcept -> Options&;
+    auto SetIpv4ConnectionMode(ConnectionMode mode) noexcept -> Options&;
+    auto SetIpv6ConnectionMode(ConnectionMode mode) noexcept -> Options&;
     auto SetLogEndpoint(const char* endpoint) noexcept -> Options&;
     auto SetLogLevel(int level) noexcept -> Options&;
     auto SetNotaryBindIP(const char* value) noexcept -> Options&;
@@ -86,5 +100,9 @@ private:
 };
 
 auto operator+(const Options& lhs, const Options& rhs) noexcept -> Options;
+constexpr auto value(Options::ConnectionMode val) noexcept -> int
+{
+    return static_cast<int>(val);
+}
 }  // namespace opentxs
 #endif

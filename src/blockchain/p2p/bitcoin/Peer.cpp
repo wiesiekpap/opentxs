@@ -17,7 +17,6 @@
 
 #include "blockchain/DownloadTask.hpp"
 #include "blockchain/bitcoin/Inventory.hpp"
-#include "blockchain/p2p/Peer.hpp"
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/message/Cmpctblock.hpp"
 #include "blockchain/p2p/bitcoin/message/Feefilter.hpp"
@@ -26,6 +25,7 @@
 #include "blockchain/p2p/bitcoin/message/Merkleblock.hpp"
 #include "blockchain/p2p/bitcoin/message/Reject.hpp"
 #include "blockchain/p2p/bitcoin/message/Sendcmpct.hpp"
+#include "blockchain/p2p/peer/Peer.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/database/Database.hpp"
@@ -983,8 +983,8 @@ auto Peer::process_getcfilters(
 
     if (startHeight > stopHeight) {
         LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Skipping request with malformed start height (")(startHeight)(
-            ") vs stop (")(stopHeight)(")")
+            ": Skipping request with malformed start height (")(
+            startHeight)(") vs stop (")(stopHeight)(")")
             .Flush();
 
         return;
@@ -1004,8 +1004,8 @@ auto Peer::process_getcfilters(
 
     if (count > limit) {
         LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Skipping request with excessive filter requests (")(count)(
-            ") vs allowed (")(limit)(")")
+            ": Skipping request with excessive filter requests (")(
+            count)(") vs allowed (")(limit)(")")
             .Flush();
 
         return;

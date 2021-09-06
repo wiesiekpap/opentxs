@@ -15,6 +15,7 @@
 
 #include "internal/api/network/Network.hpp"
 #include "network/asio/Socket.hpp"
+#include "opentxs/network/asio/Endpoint.hpp"
 
 namespace opentxs::network::asio
 {
@@ -22,6 +23,13 @@ Socket::Imp::Imp(const Endpoint& endpoint, Asio& asio) noexcept
     : endpoint_(endpoint)
     , asio_(asio)
     , socket_(asio_.Context())
+{
+}
+
+Socket::Imp::Imp(Asio& asio, Endpoint&& endpoint, tcp::socket&& socket) noexcept
+    : endpoint_(std::move(endpoint))
+    , asio_(asio)
+    , socket_(std::move(socket))
 {
 }
 
@@ -80,8 +88,8 @@ auto Socket::Imp::Transmit(const ReadView data, Notification notifier) noexcept
 
 Socket::Imp::~Imp() { Close(); }
 
-Socket::Socket(const Endpoint& endpoint, Asio& asio) noexcept
-    : imp_(std::make_unique<Imp>(endpoint, asio).release())
+Socket::Socket(Imp* imp) noexcept
+    : imp_(imp)
 {
 }
 

@@ -3,9 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"             // IWYU pragma: associated
-#include "1_Internal.hpp"           // IWYU pragma: associated
-#include "blockchain/p2p/Peer.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                  // IWYU pragma: associated
+#include "1_Internal.hpp"                // IWYU pragma: associated
+#include "blockchain/p2p/peer/Peer.hpp"  // IWYU pragma: associated
 
 #include <boost/asio.hpp>
 #include <cstddef>
@@ -36,7 +36,7 @@ using tcp = asio::ip::tcp;
 
 namespace opentxs::blockchain::p2p::implementation
 {
-struct TCPConnectionManager final : public Peer::ConnectionManager {
+struct TCPConnectionManager : virtual public Peer::ConnectionManager {
     const api::Core& api_;
     Peer& parent_;
     const Flag& running_;
@@ -70,7 +70,7 @@ struct TCPConnectionManager final : public Peer::ConnectionManager {
         return p2p::Network::ipv6;
     }
 
-    auto connect() noexcept -> void final
+    auto connect() noexcept -> void override
     {
         if (0 < connection_id_.size()) {
             LogVerbose(OT_METHOD)(__FUNCTION__)(": Connecting to ")(
@@ -204,26 +204,7 @@ struct TCPConnectionManager final : public Peer::ConnectionManager {
         : api_(api)
         , parent_(parent)
         , running_(running)
-        , endpoint_([&]() -> network::asio::Endpoint {
-            using Type = network::asio::Endpoint::Type;
-
-            switch (address.Type()) {
-                case p2p::Network::ipv6: {
-
-                    return {
-                        Type::ipv6, address.Bytes()->Bytes(), address.Port()};
-                }
-                case p2p::Network::ipv4: {
-
-                    return {
-                        Type::ipv4, address.Bytes()->Bytes(), address.Port()};
-                }
-                default: {
-
-                    return {};
-                }
-            }
-        }())
+        , endpoint_(make_endpoint(address))
         , connection_id_()
         , header_bytes_(headerSize)
         , connection_id_promise_()
@@ -242,11 +223,85 @@ struct TCPConnectionManager final : public Peer::ConnectionManager {
     {
     }
 
-    ~TCPConnectionManager() final
+    ~TCPConnectionManager() override
     {
         stop_internal();
         socket_.Close();
     }
+
+protected:
+    static auto make_endpoint(const Peer::Address& address) noexcept
+        -> network::asio::Endpoint
+    {
+        using Type = network::asio::Endpoint::Type;
+
+        switch (address.Type()) {
+            case p2p::Network::ipv6: {
+
+                return {Type::ipv6, address.Bytes()->Bytes(), address.Port()};
+            }
+            case p2p::Network::ipv4: {
+
+                return {Type::ipv4, address.Bytes()->Bytes(), address.Port()};
+            }
+            default: {
+
+                return {};
+            }
+        }
+    }
+
+    TCPConnectionManager(
+        const api::Core& api,
+        const Flag& running,
+        const std::size_t headerSize,
+        Peer& parent,
+        network::asio::Endpoint&& endpoint,
+        network::asio::Socket&& socket) noexcept
+        : api_(api)
+        , parent_(parent)
+        , running_(running)
+        , endpoint_(std::move(endpoint))
+        , connection_id_()
+        , header_bytes_(headerSize)
+        , connection_id_promise_()
+        , socket_(std::move(socket))
+        , header_([&] {
+            auto out = api_.Factory().Data();
+            out->SetSize(headerSize);
+
+            return out;
+        }())
+        , cb_(zmq::ListenCallback::Factory(
+              [&](auto& in) { this->pipeline(in); }))
+        , dealer_(api_.Network().ZeroMQ().DealerSocket(
+              cb_,
+              zmq::socket::Socket::Direction::Connect))
+    {
+    }
+};
+
+struct TCPIncomingConnectionManager final : public TCPConnectionManager {
+    auto connect() noexcept -> void final {}
+
+    TCPIncomingConnectionManager(
+        const api::Core& api,
+        Peer& parent,
+        const Flag& running,
+        const Peer::Address& address,
+        const std::size_t headerSize,
+        network::asio::Socket&& socket) noexcept
+        : TCPConnectionManager(
+              api,
+              running,
+              headerSize,
+              parent,
+              make_endpoint(address),
+              std::move(socket))
+    {
+    }
+
+    ~TCPIncomingConnectionManager() final = default;
 };
 
 auto Peer::ConnectionManager::TCP(
@@ -258,5 +313,18 @@ auto Peer::ConnectionManager::TCP(
 {
     return std::make_unique<TCPConnectionManager>(
         api, parent, running, address, headerSize);
+}
+
+auto Peer::ConnectionManager::TCPIncoming(
+    const api::Core& api,
+    Peer& parent,
+    const Flag& running,
+    const Peer::Address& address,
+    const std::size_t headerSize,
+    opentxs::network::asio::Socket&& socket) noexcept
+    -> std::unique_ptr<ConnectionManager>
+{
+    return std::make_unique<TCPIncomingConnectionManager>(
+        api, parent, running, address, headerSize, std::move(socket));
 }
 }  // namespace opentxs::blockchain::p2p::implementation

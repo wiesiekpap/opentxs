@@ -267,13 +267,15 @@ PeerListener::~PeerListener() = default;
 
 Regtest_fixture_base::Regtest_fixture_base(
     const int clientCount,
+    const ot::Options& minerArgs,
     const ot::Options& clientArgs)
     : ot_(ot::Context())
     , client_args_(clientArgs)
     , client_count_(clientCount)
     , miner_(ot_.StartClient(
-          ot::Options{}.SetBlockchainStorageLevel(2).SetBlockchainWalletEnabled(
-              false),
+          ot::Options{minerArgs}
+              .SetBlockchainStorageLevel(2)
+              .SetBlockchainWalletEnabled(false),
           0))
     , client_1_(ot_.StartClient(client_args_, 1))
     , client_2_(ot_.StartClient(client_args_, 2))
@@ -306,11 +308,24 @@ Regtest_fixture_base::Regtest_fixture_base(
 {
 }
 
+Regtest_fixture_base::Regtest_fixture_base(
+    const int clientCount,
+    const ot::Options& clientArgs)
+    : Regtest_fixture_base(clientCount, ot::Options{}, clientArgs)
+{
+}
+
 auto Regtest_fixture_base::Connect() noexcept -> bool
+{
+    return Connect(address_);
+}
+
+auto Regtest_fixture_base::Connect(const b::p2p::Address& address) noexcept
+    -> bool
 {
     const auto miner = [&]() -> std::function<bool()> {
         const auto& miner = miner_.Network().Blockchain().GetChain(test_chain_);
-        const auto listen = miner.Listen(address_);
+        const auto listen = miner.Listen(address);
 
         EXPECT_TRUE(listen);
 
@@ -324,7 +339,7 @@ auto Regtest_fixture_base::Connect() noexcept -> bool
         if (0 < client_count_) {
             const auto& client =
                 client_1_.Network().Blockchain().GetChain(test_chain_);
-            const auto added = client.AddPeer(address_);
+            const auto added = client.AddPeer(address);
 
             EXPECT_TRUE(added);
 
@@ -342,7 +357,7 @@ auto Regtest_fixture_base::Connect() noexcept -> bool
         if (1 < client_count_) {
             const auto& client =
                 client_2_.Network().Blockchain().GetChain(test_chain_);
-            const auto added = client.AddPeer(address_);
+            const auto added = client.AddPeer(address);
 
             EXPECT_TRUE(added);
 
@@ -729,6 +744,27 @@ auto Regtest_fixture_sync::Shutdown() noexcept -> void
     sync_requestor_.reset();
     sync_subscriber_.reset();
     Regtest_fixture_base::Shutdown();
+}
+
+Regtest_fixture_tcp::Regtest_fixture_tcp()
+    : Regtest_fixture_base(
+          1,
+          ot::Options{},
+          ot::Options{}.SetBlockchainStorageLevel(1))
+    , tcp_listen_address_(miner_.Factory().BlockchainAddress(
+          b::p2p::Protocol::bitcoin,
+          b::p2p::Network::ipv4,
+          miner_.Factory().Data("0x7f000001", ot::StringStyle::Hex),
+          18444,
+          test_chain_,
+          {},
+          {}))
+{
+}
+
+auto Regtest_fixture_tcp::Connect() noexcept -> bool
+{
+    return Connect(tcp_listen_address_);
 }
 
 struct ScanListener::Imp {

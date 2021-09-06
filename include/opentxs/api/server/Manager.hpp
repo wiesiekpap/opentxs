@@ -47,7 +47,6 @@ public:
     virtual auto DropOutgoing(const int count) const -> void = 0;
     virtual auto GetAdminNym() const -> std::string = 0;
     virtual auto GetAdminPassword() const -> std::string = 0;
-    virtual auto GetOptions() const noexcept -> const Options& = 0;
 #if OT_CASH
     virtual auto GetPrivateMint(
         const identifier::UnitDefinition& unitid,

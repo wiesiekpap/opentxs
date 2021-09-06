@@ -132,6 +132,11 @@ class Nym;
 
 namespace network
 {
+namespace asio
+{
+class Socket;
+}  // namespace asio
+
 namespace blockchain
 {
 namespace sync
@@ -457,6 +462,8 @@ struct PeerManager {
     virtual auto Heartbeat() const noexcept -> void = 0;
     virtual auto JobReady(const Task type) const noexcept -> void = 0;
     virtual auto Listen(const p2p::Address& address) const noexcept -> bool = 0;
+    virtual auto LookupIncomingSocket(const int id) const noexcept(false)
+        -> opentxs::network::asio::Socket = 0;
     virtual auto RequestBlock(const block::Hash& block) const noexcept
         -> bool = 0;
     virtual auto RequestBlocks(

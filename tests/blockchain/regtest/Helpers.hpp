@@ -309,6 +309,7 @@ protected:
     WalletListener& wallet_2_;
 
     virtual auto Connect() noexcept -> bool;
+    auto Connect(const b::p2p::Address& address) noexcept -> bool;
     auto Mine(const Height ancestor, const std::size_t count) noexcept -> bool;
     auto Mine(
         const Height ancestor,
@@ -322,6 +323,10 @@ protected:
     auto Start() noexcept -> bool;
 
     Regtest_fixture_base(const int clientCount, const ot::Options& clientArgs);
+    Regtest_fixture_base(
+        const int clientCount,
+        const ot::Options& minerArgs,
+        const ot::Options& clientArgs);
 
 private:
     using BlockListen = std::map<int, std::unique_ptr<BlockListener>>;
@@ -362,12 +367,25 @@ protected:
     Regtest_fixture_single();
 };
 
+class Regtest_fixture_tcp : public Regtest_fixture_base
+{
+protected:
+    using Regtest_fixture_base::Connect;
+    auto Connect() noexcept -> bool final;
+
+    Regtest_fixture_tcp();
+
+private:
+    const ot::OTBlockchainAddress tcp_listen_address_;
+};
+
 class Regtest_fixture_sync : public Regtest_fixture_base
 {
 protected:
     SyncSubscriber& sync_sub_;
     SyncRequestor& sync_req_;
 
+    using Regtest_fixture_base::Connect;
     auto Connect() noexcept -> bool final;
 
     auto Shutdown() noexcept -> void final;

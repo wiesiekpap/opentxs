@@ -3,9 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"             // IWYU pragma: associated
-#include "1_Internal.hpp"           // IWYU pragma: associated
-#include "blockchain/p2p/Peer.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                  // IWYU pragma: associated
+#include "1_Internal.hpp"                // IWYU pragma: associated
+#include "blockchain/p2p/peer/Peer.hpp"  // IWYU pragma: associated
 
 #include <chrono>
 #include <stdexcept>
@@ -19,6 +19,7 @@
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/network/asio/Socket.hpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
@@ -67,8 +68,14 @@ Peer::Peer(
     , verify_filter_checkpoint_(config.download_cfilters_)
     , id_(id)
     , shutdown_endpoint_(shutdown)
-    , connection_(
-          init_connection_manager(api_, *this, running_, address_, headerSize))
+    , connection_(init_connection_manager(
+          api_,
+          id_,
+          manager_,
+          *this,
+          running_,
+          address_,
+          headerSize))
     , send_promises_()
     , activity_()
     , init_promise_()
@@ -205,23 +212,38 @@ auto Peer::init() noexcept -> void
 
 auto Peer::init_connection_manager(
     const api::Core& api,
+    const int id,
+    const node::internal::PeerManager& manager,
     Peer& parent,
     const Flag& running,
     const Address& address,
     const std::size_t headerSize) noexcept -> std::unique_ptr<ConnectionManager>
 {
-    if (Network::zmq != address.Type()) {
+    if (Network::zmq == address.Type()) {
+        if (address.Incoming()) {
 
-        return ConnectionManager::TCP(
-            api, parent, running, address, headerSize);
-    } else if (address.Incoming()) {
+            return ConnectionManager::ZMQIncoming(
+                api, parent, running, address, headerSize);
+        } else {
 
-        return ConnectionManager::ZMQIncoming(
-            api, parent, running, address, headerSize);
+            return ConnectionManager::ZMQ(
+                api, parent, running, address, headerSize);
+        }
     } else {
+        if (address.Incoming()) {
 
-        return ConnectionManager::ZMQ(
-            api, parent, running, address, headerSize);
+            return ConnectionManager::TCPIncoming(
+                api,
+                parent,
+                running,
+                address,
+                headerSize,
+                manager.LookupIncomingSocket(id));
+        } else {
+
+            return ConnectionManager::TCP(
+                api, parent, running, address, headerSize);
+        }
     }
 }
 

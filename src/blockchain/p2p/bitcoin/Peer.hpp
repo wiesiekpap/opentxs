@@ -17,9 +17,9 @@
 #include <type_traits>
 #include <vector>
 
-#include "blockchain/p2p/Peer.hpp"
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
+#include "blockchain/p2p/peer/Peer.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"

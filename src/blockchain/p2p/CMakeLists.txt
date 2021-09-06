@@ -4,21 +4,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_subdirectory(bitcoin)
+add_subdirectory(peer)
 
 add_library(
   opentxs-blockchain-p2p OBJECT
   "${opentxs_SOURCE_DIR}/src/internal/blockchain/p2p/P2P.hpp"
-  "peer/Activity.cpp"
-  "peer/Address.cpp"
-  "peer/DownloadPeers.cpp"
-  "peer/SendPromises.cpp"
-  "peer/TCP.cpp"
-  "peer/ZMQ.cpp"
-  "peer/ZMQIncoming.cpp"
   "Address.cpp"
   "Address.hpp"
-  "Peer.cpp"
-  "Peer.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/p2p/Address.hpp"
@@ -27,10 +19,6 @@ set(cxx-install-headers
 )
 target_link_libraries(
   opentxs-blockchain-p2p PRIVATE Boost::headers opentxs::messages
-)
-target_include_directories(
-  opentxs-blockchain-p2p SYSTEM
-  PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
 )
 target_link_libraries(opentxs PUBLIC Boost::system)
 target_sources(opentxs-blockchain-p2p PRIVATE ${cxx-install-headers})

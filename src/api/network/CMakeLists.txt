@@ -31,9 +31,19 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/network/ZMQ.hpp"
 )
 target_link_libraries(
-  opentxs-api-network PRIVATE opentxs::messages Boost::headers
+  opentxs-api-network
+  PRIVATE
+    opentxs::messages
+    Boost::headers
+    OpenSSL::SSL
 )
-target_link_libraries(opentxs PUBLIC Boost::system Boost::thread OpenSSL::SSL)
+target_link_libraries(
+  opentxs
+  PUBLIC
+    Boost::system
+    Boost::thread
+    OpenSSL::SSL
+)
 target_include_directories(
   opentxs-api-network SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )

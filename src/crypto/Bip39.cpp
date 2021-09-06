@@ -7,13 +7,8 @@
 #include "1_Internal.hpp"    // IWYU pragma: associated
 #include "crypto/Bip39.hpp"  // IWYU pragma: associated
 
-#include <boost/algorithm/string/constants.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/core/addressof.hpp>
-#include <boost/function/function_base.hpp>
-#include <boost/iterator/iterator_facade.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
-#include <boost/type_index/type_index_facade.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -93,8 +88,8 @@ auto Bip39::entropy_to_words(
         case 32:
             break;
         default: {
-            LogOutput(OT_METHOD)(__func__)(
-                ": Invalid entropy size: ")(bytes.size())
+            LogOutput(OT_METHOD)(__func__)(": Invalid entropy size: ")(
+                bytes.size())
                 .Flush();
 
             return false;

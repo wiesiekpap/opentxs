@@ -10,6 +10,10 @@
 #include "opentxs/api/Options.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 
+constexpr auto bind_ipv4_1_{"127.0.0.1"};
+constexpr auto bind_ipv4_2_{"0.0.0.0"};
+constexpr auto bind_ipv6_1_{"::1"};
+constexpr auto bind_ipv6_2_{"::"};
 constexpr auto blockchain_1_{opentxs::blockchain::Type::Bitcoin};
 constexpr auto blockchain_2_{opentxs::blockchain::Type::Litecoin};
 constexpr auto blockchain_storage_level_1_{1};
@@ -20,6 +24,10 @@ constexpr auto blockchain_wallet_enabled_1_{false};
 constexpr auto blockchain_wallet_enabled_2_{true};
 constexpr auto home_1_{"/home/user1/.opentxs"};
 constexpr auto home_2_{"/home/user2/.opentxs"};
+constexpr auto ipv4_connection_mode_1_{opentxs::Options::ConnectionMode::off};
+constexpr auto ipv4_connection_mode_2_{opentxs::Options::ConnectionMode::on};
+constexpr auto ipv6_connection_mode_1_{opentxs::Options::ConnectionMode::on};
+constexpr auto ipv6_connection_mode_2_{opentxs::Options::ConnectionMode::off};
 constexpr auto log_endpoint_1_{"inproc://send_logs_here_plz"};
 constexpr auto log_endpoint_2_{"inproc://actually_send_them_here"};
 constexpr auto log_leve_1_{2};
@@ -57,11 +65,15 @@ TEST(Options, default_values)
     const auto test = opentxs::Options{};
     const auto expected = OptionsData{
         {},
+        {},
+        {},
         0,
         false,
         {},
         true,
         "",
+        opentxs::Options::ConnectionMode::automatic,
+        opentxs::Options::ConnectionMode::automatic,
         "",
         0,
         false,
@@ -83,6 +95,8 @@ TEST(Options, setters)
 {
     const auto test1 =
         opentxs::Options{}
+            .AddBlockchainIpv4Bind(bind_ipv4_1_)
+            .AddBlockchainIpv6Bind(bind_ipv6_1_)
             .AddBlockchainSyncServer(sync_server_1_)
             .AddNotaryPublicEEP(notary_public_eep_1_)
             .AddNotaryPublicIPv4(notary_public_ipv4_1_)
@@ -93,6 +107,8 @@ TEST(Options, setters)
             .SetBlockchainSyncEnabled(blockchain_sync_enabled_1_)
             .SetBlockchainWalletEnabled(blockchain_wallet_enabled_1_)
             .SetHome(home_1_)
+            .SetIpv4ConnectionMode(ipv4_connection_mode_1_)
+            .SetIpv6ConnectionMode(ipv6_connection_mode_1_)
             .SetLogEndpoint(log_endpoint_1_)
             .SetLogLevel(log_leve_1_)
             .SetNotaryBindIP(notary_bind_ip_1_)
@@ -105,6 +121,8 @@ TEST(Options, setters)
     const auto test2{test1};
     const auto test3 =
         opentxs::Options{test2}
+            .AddBlockchainIpv4Bind(bind_ipv4_2_)
+            .AddBlockchainIpv6Bind(bind_ipv6_2_)
             .AddBlockchainSyncServer(sync_server_2_)
             .AddNotaryPublicEEP(notary_public_eep_2_)
             .AddNotaryPublicIPv4(notary_public_ipv4_2_)
@@ -115,6 +133,8 @@ TEST(Options, setters)
             .SetBlockchainSyncEnabled(blockchain_sync_enabled_2_)
             .SetBlockchainWalletEnabled(blockchain_wallet_enabled_2_)
             .SetHome(home_2_)
+            .SetIpv4ConnectionMode(ipv4_connection_mode_2_)
+            .SetIpv6ConnectionMode(ipv6_connection_mode_2_)
             .SetLogEndpoint(log_endpoint_2_)
             .SetLogLevel(log_leve_2_)
             .SetNotaryBindIP(notary_bind_ip_2_)
@@ -126,12 +146,16 @@ TEST(Options, setters)
             .SetStoragePlugin(storage_plugin_2_);
 
     const auto expected1 = OptionsData{
+        {bind_ipv4_1_},
+        {bind_ipv6_1_},
         {blockchain_1_},
         blockchain_storage_level_1_,
         blockchain_sync_enabled_1_,
         {sync_server_1_},
         blockchain_wallet_enabled_1_,
         home_1_,
+        ipv4_connection_mode_1_,
+        ipv6_connection_mode_1_,
         log_endpoint_1_,
         log_leve_1_,
         notary_bind_inproc_1_,
@@ -146,12 +170,16 @@ TEST(Options, setters)
         notary_terms_1_,
         storage_plugin_1_};
     const auto expected2 = OptionsData{
+        {bind_ipv4_1_, bind_ipv4_2_},
+        {bind_ipv6_1_, bind_ipv6_2_},
         {blockchain_1_, blockchain_2_},
         blockchain_storage_level_2_,
         blockchain_sync_enabled_2_,
         {sync_server_1_, sync_server_2_},
         blockchain_wallet_enabled_2_,
         home_2_,
+        ipv4_connection_mode_2_,
+        ipv6_connection_mode_2_,
         log_endpoint_2_,
         log_leve_2_,
         notary_bind_inproc_2_,
@@ -176,6 +204,8 @@ TEST(Options, merge)
     const auto blank = opentxs::Options{};
     const auto test1 =
         opentxs::Options{}
+            .AddBlockchainIpv4Bind(bind_ipv4_1_)
+            .AddBlockchainIpv6Bind(bind_ipv6_1_)
             .AddNotaryPublicEEP(notary_public_eep_1_)
             .AddNotaryPublicIPv4(notary_public_ipv4_1_)
             .AddNotaryPublicIPv6(notary_public_ipv6_1_)
@@ -184,6 +214,8 @@ TEST(Options, merge)
             .SetBlockchainSyncEnabled(blockchain_sync_enabled_1_)
             .SetBlockchainWalletEnabled(blockchain_wallet_enabled_1_)
             .SetHome(home_1_)
+            .SetIpv4ConnectionMode(ipv4_connection_mode_1_)
+            .SetIpv6ConnectionMode(ipv6_connection_mode_1_)
             .SetLogEndpoint(log_endpoint_1_)
             .SetLogLevel(log_leve_1_)
             .SetNotaryBindIP(notary_bind_ip_1_)
@@ -195,6 +227,8 @@ TEST(Options, merge)
             .SetStoragePlugin(storage_plugin_1_);
     const auto test2 =
         opentxs::Options{}
+            .AddBlockchainIpv4Bind(bind_ipv4_2_)
+            .AddBlockchainIpv6Bind(bind_ipv6_2_)
             .AddBlockchainSyncServer(sync_server_2_)
             .AddNotaryPublicEEP(notary_public_eep_2_)
             .AddNotaryPublicIPv4(notary_public_ipv4_2_)
@@ -205,6 +239,8 @@ TEST(Options, merge)
             .SetBlockchainSyncEnabled(blockchain_sync_enabled_2_)
             .SetBlockchainWalletEnabled(blockchain_wallet_enabled_2_)
             .SetHome(home_2_)
+            .SetIpv4ConnectionMode(ipv4_connection_mode_2_)
+            .SetIpv6ConnectionMode(ipv6_connection_mode_2_)
             .SetLogEndpoint(log_endpoint_2_)
             .SetLogLevel(log_leve_2_)
             .SetNotaryBindIP(notary_bind_ip_2_)
@@ -217,12 +253,16 @@ TEST(Options, merge)
     const auto test3 = opentxs::Options{}.SetNotaryName(notary_name_3_);
 
     const auto expected1 = OptionsData{
+        {bind_ipv4_1_},
+        {bind_ipv6_1_},
         {},
         blockchain_storage_level_1_,
         blockchain_sync_enabled_1_,
         {},
         blockchain_wallet_enabled_1_,
         home_1_,
+        ipv4_connection_mode_1_,
+        ipv6_connection_mode_1_,
         log_endpoint_1_,
         log_leve_1_,
         notary_bind_inproc_1_,
@@ -237,12 +277,16 @@ TEST(Options, merge)
         notary_terms_1_,
         storage_plugin_1_};
     const auto expected2 = OptionsData{
+        {bind_ipv4_1_, bind_ipv4_2_},
+        {bind_ipv6_1_, bind_ipv6_2_},
         {blockchain_2_},
         blockchain_storage_level_2_,
         blockchain_sync_enabled_2_,
         {sync_server_2_},
         blockchain_wallet_enabled_2_,
         home_2_,
+        ipv4_connection_mode_2_,
+        ipv6_connection_mode_2_,
         log_endpoint_2_,
         log_leve_2_,
         notary_bind_inproc_2_,
@@ -257,12 +301,16 @@ TEST(Options, merge)
         notary_terms_2_,
         storage_plugin_2_};
     const auto expected3 = OptionsData{
+        {bind_ipv4_2_},
+        {bind_ipv6_2_},
         {blockchain_2_},
         blockchain_storage_level_2_,
         blockchain_sync_enabled_2_,
         {sync_server_2_},
         blockchain_wallet_enabled_2_,
         home_2_,
+        ipv4_connection_mode_2_,
+        ipv6_connection_mode_2_,
         log_endpoint_2_,
         log_leve_2_,
         notary_bind_inproc_2_,

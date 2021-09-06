@@ -6,50 +6,11 @@
 #pragma once
 
 #include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/detail/classification.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/yes_no_type.hpp>
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/beast/core.hpp>
-#include <boost/beast/core/basic_stream.hpp>
-#include <boost/beast/core/bind_handler.hpp>
-#include <boost/beast/core/detail/buffer_traits.hpp>
-#include <boost/beast/core/detail/buffers_range_adaptor.hpp>
-#include <boost/beast/core/detail/config.hpp>
-#include <boost/beast/core/error.hpp>
-#include <boost/beast/core/flat_buffer.hpp>
-#include <boost/beast/core/impl/async_base.hpp>
-#include <boost/beast/core/impl/basic_stream.hpp>
-#include <boost/beast/core/impl/buffers_cat.hpp>
-#include <boost/beast/core/impl/buffers_prefix.hpp>
-#include <boost/beast/core/impl/buffers_suffix.hpp>
-#include <boost/beast/core/impl/error.ipp>
-#include <boost/beast/core/impl/flat_buffer.hpp>
-#include <boost/beast/core/impl/read_size.hpp>
-#include <boost/beast/core/impl/string.ipp>
-#include <boost/beast/core/stream_traits.hpp>
-#include <boost/beast/core/string_type.hpp>
-#include <boost/beast/core/tcp_stream.hpp>
 #include <boost/beast/http.hpp>
-#include <boost/beast/http/detail/basic_parsed_list.hpp>
-#include <boost/beast/http/empty_body.hpp>
-#include <boost/beast/http/error.hpp>
-#include <boost/beast/http/field.hpp>
-#include <boost/beast/http/impl/basic_parser.hpp>
-#include <boost/beast/http/impl/basic_parser.ipp>
-#include <boost/beast/http/impl/fields.hpp>
-#include <boost/beast/http/impl/message.hpp>
-#include <boost/beast/http/impl/read.hpp>
-#include <boost/beast/http/impl/serializer.hpp>
-#include <boost/beast/http/impl/verb.ipp>
-#include <boost/beast/http/impl/write.hpp>
-#include <boost/beast/http/message.hpp>
-#include <boost/beast/http/string_body.hpp>
-#include <boost/beast/http/verb.hpp>
 #include <boost/beast/ssl.hpp>
-#include <boost/beast/ssl/ssl_stream.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/core/addressof.hpp>
@@ -76,6 +37,7 @@
 #include <functional>
 #include <future>
 #include <iosfwd>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -101,6 +63,7 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
+#include "opentxs/network/asio/Socket.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
@@ -125,17 +88,60 @@ namespace opentxs::api::network
 {
 struct Asio::Imp final : public api::network::internal::Asio,
                          public opentxs::internal::StateMachine {
-    using Buffer = boost::beast::flat_buffer;
+    using Buffer = beast::flat_buffer;
     using Request = http::request<http::empty_body>;
     using Response = http::response<http::string_body>;
-    using Resolver = boost::asio::ip::tcp::resolver;
-    using SSLContext = boost::asio::ssl::context;
-    using SSLStream = boost::beast::ssl_stream<boost::beast::tcp_stream>;
-    using Stream = boost::beast::tcp_stream;
+    using Resolver = ip::tcp::resolver;
+    using SSLContext = ssl::context;
+    using SSLStream = beast::ssl_stream<beast::tcp_stream>;
+    using Stream = beast::tcp_stream;
     using Type = opentxs::network::asio::Endpoint::Type;
 
-    auto Endpoint() const noexcept -> const char* { return endpoint_.c_str(); }
+    auto NotificationEndpoint() const noexcept -> const char*
+    {
+        return notification_endpoint_.c_str();
+    }
 
+    auto Accept(
+        const opentxs::network::asio::Endpoint& endpoint,
+        AcceptCallback cb) noexcept -> bool
+    {
+        try {
+            auto lock = Lock{acceptors_.lock_};
+            const auto [it, added] = acceptors_.map_.try_emplace(
+                endpoint.str(), endpoint, *this, context_, std::move(cb));
+
+            if (added) {
+                it->second.start();
+                LogNormal("TCP socket opened for incoming connections on ")(
+                    endpoint.str())
+                    .Flush();
+            } else {
+                throw std::runtime_error{
+                    std::string{"Listen socket already open on "} +
+                    endpoint.str()};
+            }
+
+            return added;
+        } catch (const std::exception& e) {
+            LogOutput(IMP)(__func__)(": ")(e.what()).Flush();
+
+            return false;
+        }
+    }
+    auto Close(const opentxs::network::asio::Endpoint& endpoint) const noexcept
+        -> bool
+    {
+        try {
+            auto lock = Lock{acceptors_.lock_};
+            acceptors_.map_.at(endpoint.str()).stop();
+
+            return true;
+        } catch (...) {
+
+            return false;
+        }
+    }
     auto Connect(const ReadView id, internal::Asio::Socket& socket) noexcept
         -> bool final
     {
@@ -152,8 +158,8 @@ struct Asio::Imp final : public api::network::internal::Asio,
             [this, connection{space(id)}, address{endpoint.str()}](
                 const auto& e) {
                 if (e) {
-                    LogVerbose(IMP)(__FUNCTION__)(
-                        ": asio connect error: ")(e.message())
+                    LogVerbose(IMP)(__func__)(": asio connect error: ")(
+                        e.message())
                         .Flush();
                 }
 
@@ -161,7 +167,7 @@ struct Asio::Imp final : public api::network::internal::Asio,
                     reader(connection),
                     e ? WorkType::AsioDisconnect : WorkType::AsioConnect);
                 work->AddFrame(address);
-                socket_->Send(std::move(work));
+                data_socket_->Send(std::move(work));
             });
 
         return true;
@@ -189,7 +195,7 @@ struct Asio::Imp final : public api::network::internal::Asio,
         if (shutdown()) { return; }
 
         {
-            const auto listen = socket_->Start(endpoint_);
+            const auto listen = data_socket_->Start(notification_endpoint_);
 
             OT_ASSERT(listen);
         }
@@ -242,8 +248,8 @@ struct Asio::Imp final : public api::network::internal::Asio,
                     e ? value(WorkType::AsioDisconnect) : type);
 
                 if (e) {
-                    LogVerbose(IMP)(__FUNCTION__)(
-                        ": asio receive error: ")(e.message())
+                    LogVerbose(IMP)(__func__)(": asio receive error: ")(
+                        e.message())
                         .Flush();
                     work->AddFrame(address);
                 } else {
@@ -252,7 +258,7 @@ struct Asio::Imp final : public api::network::internal::Asio,
 
                 OT_ASSERT(1 < work->Body().size());
 
-                socket_->Send(std::move(work));
+                data_socket_->Send(std::move(work));
                 buffers_.clear(index);
             });
 
@@ -294,7 +300,7 @@ struct Asio::Imp final : public api::network::internal::Asio,
                 }
             }
         } catch (const std::exception& e) {
-            LogVerbose(IMP)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogVerbose(IMP)(__func__)(": ")(e.what()).Flush();
         }
 
         return output;
@@ -305,19 +311,22 @@ struct Asio::Imp final : public api::network::internal::Asio,
 
         {
             auto lock = eLock{lock_};
+            acceptors_.stop();
             work_ = boost::asio::any_io_executor{};
             thread_pool_.join_all();
             context_.stop();
-            socket_->Close();
+            data_socket_->Close();
         }
     }
 
     Imp(const zmq::Context& zmq) noexcept
         : StateMachine([&] { return state_machine(); })
         , zmq_(zmq)
-        , endpoint_(zmq_.BuildEndpoint("asio/register", -1, 1))
-        , cb_(zmq::ListenCallback::Factory([this](auto& in) { callback(in); }))
-        , socket_(zmq_.RouterSocket(cb_, zmq::socket::Socket::Direction::Bind))
+        , notification_endpoint_(zmq_.BuildEndpoint("asio/register", -1, 1))
+        , data_cb_(zmq::ListenCallback::Factory(
+              [this](auto& in) { data_callback(in); }))
+        , data_socket_(
+              zmq_.RouterSocket(data_cb_, zmq::socket::Socket::Direction::Bind))
         , context_()
         , work_(boost::asio::require(
               context_.get_executor(),
@@ -325,6 +334,7 @@ struct Asio::Imp final : public api::network::internal::Asio,
         , thread_pool_()
         , buffers_()
         , lock_()
+        , acceptors_()
         , ipv4_promise_()
         , ipv6_promise_()
         , ipv4_future_(ipv4_promise_.get_future())
@@ -336,6 +346,141 @@ struct Asio::Imp final : public api::network::internal::Asio,
     ~Imp() final { Shutdown(); }
 
 private:
+    struct Acceptor {
+        auto start() noexcept -> void
+        {
+            auto lock = Lock{lock_};
+            start(lock);
+        }
+        auto stop() noexcept -> void
+        {
+            auto lock = Lock{lock_};
+
+            if (running_) {
+                LogTrace(IMP)("Acceptor::")(__func__)(": shutting down ")(
+                    endpoint_.str())
+                    .Flush();
+                auto ec = boost::system::error_code{};
+                acceptor_.cancel(ec);
+                acceptor_.close(ec);
+                running_ = false;
+                LogTrace(IMP)("Acceptor::")(__func__)(": ")(endpoint_.str())(
+                    " closed")
+                    .Flush();
+            }
+        }
+
+        Acceptor(
+            const opentxs::network::asio::Endpoint& endpoint,
+            internal::Asio& asio,
+            boost::asio::io_context& ios,
+            network::Asio::AcceptCallback&& cb) noexcept(false)
+            : endpoint_(endpoint)
+            , cb_(std::move(cb))
+            , lock_()
+            , running_(false)
+            , asio_(asio)
+            , ios_(ios)
+            , acceptor_(ios_, endpoint_.GetInternal().data_.protocol())
+            , next_socket_(ios_)
+        {
+            if (!cb_) { throw std::runtime_error{"Invalid callback"}; }
+
+            acceptor_.bind(endpoint_.GetInternal().data_);
+            acceptor_.listen(backlog_size_);
+        }
+        ~Acceptor() { stop(); }
+
+    private:
+        static constexpr auto backlog_size_{8};
+
+        const opentxs::network::asio::Endpoint& endpoint_;
+        const network::Asio::AcceptCallback cb_;
+        mutable std::mutex lock_;
+        bool running_;
+        internal::Asio& asio_;
+        boost::asio::io_context& ios_;
+        ip::tcp::acceptor acceptor_;
+        ip::tcp::socket next_socket_;
+
+        auto handler(const boost::system::error_code& ec) noexcept -> void
+        {
+            if (ec) {
+                using Error = boost::system::errc::errc_t;
+                const auto error = ec.value();
+
+                switch (error) {
+                    case Error::operation_canceled: {
+                    } break;
+                    default: {
+                        LogOutput(IMP)("Acceptor::")(__func__)(": error ")(
+                            error)(", ")(ec.message())
+                            .Flush();
+                    }
+                }
+
+                return;
+            } else {
+                LogVerbose(IMP)("Acceptor::")(__func__)(
+                    ": incoming connection request on ")(endpoint_.str())
+                    .Flush();
+            }
+
+            auto lock = Lock{lock_};
+            const auto bytes = [&] {
+                const auto address = next_socket_.remote_endpoint().address();
+
+                if (address.is_v4()) {
+                    const auto bytes = address.to_v4().to_bytes();
+                    auto* it = reinterpret_cast<const std::byte*>(bytes.data());
+
+                    return Space{it, std::next(it, bytes.size())};
+                } else {
+                    const auto bytes = address.to_v6().to_bytes();
+                    auto* it = reinterpret_cast<const std::byte*>(bytes.data());
+
+                    return Space{it, std::next(it, bytes.size())};
+                }
+            }();
+            auto endpoint = opentxs::network::asio::Endpoint{
+                endpoint_.GetType(), reader(bytes), endpoint_.GetPort()};
+            cb_(opentxs::network::asio::Socket{
+                std::make_unique<opentxs::network::asio::Socket::Imp>(
+                    asio_, std::move(endpoint), std::move(next_socket_))
+                    .release()});
+            next_socket_ = ip::tcp::socket{ios_};
+            start(lock);
+        }
+        auto start(const Lock&) noexcept -> void
+        {
+            acceptor_.async_accept(
+                next_socket_, [this](const auto& ec) { handler(ec); });
+            running_ = true;
+        }
+
+        Acceptor() = delete;
+        Acceptor(const Acceptor&) = delete;
+        Acceptor(Acceptor&&) = delete;
+        Acceptor& operator=(const Acceptor&) = delete;
+        Acceptor& operator=(Acceptor&&) = delete;
+    };
+
+    struct Acceptors {
+        mutable std::mutex lock_{};
+        std::map<std::string, Acceptor> map_{};
+
+        auto stop() noexcept -> void
+        {
+            auto lock = Lock{lock_};
+
+            for (auto& [name, acceptor] : map_) { acceptor.stop(); }
+
+            map_.clear();
+        }
+
+        ~Acceptors() { stop(); }
+    };
+
     struct Buffers {
         using AsioBuffer = decltype(boost::asio::buffer(
             std::declval<void*>(),
@@ -403,20 +548,21 @@ private:
          11}};
 
     const zmq::Context& zmq_;
-    const std::string endpoint_;
-    const OTZMQListenCallback cb_;
-    OTZMQRouterSocket socket_;
+    const std::string notification_endpoint_;
+    const OTZMQListenCallback data_cb_;
+    OTZMQRouterSocket data_socket_;
     boost::asio::io_context context_;
     boost::asio::any_io_executor work_;
     boost::thread_group thread_pool_;
     Buffers buffers_;
     mutable std::shared_mutex lock_;
+    mutable Acceptors acceptors_;
     std::promise<OTData> ipv4_promise_;
     std::promise<OTData> ipv6_promise_;
     std::shared_future<OTData> ipv4_future_;
     std::shared_future<OTData> ipv6_future_;
 
-    auto callback(zmq::Message& in) noexcept -> void
+    auto data_callback(zmq::Message& in) noexcept -> void
     {
         const auto header = in.Header();
 
@@ -445,7 +591,7 @@ private:
                 case value(WorkType::AsioRegister): {
                     auto reply = zmq_.TaggedReply(in, WorkType::AsioRegister);
                     reply->AddFrame(connectionID);
-                    socket_->Send(reply);
+                    data_socket_->Send(reply);
                 } break;
                 default: {
                     throw std::runtime_error{
@@ -453,16 +599,16 @@ private:
                 }
             }
         } catch (const std::exception& e) {
-            LogOutput(IMP)(__FUNCTION__)(" : ")(e.what()).Flush();
+            LogOutput(IMP)(__func__)(": ")(e.what()).Flush();
         }
     }
 
-    void load_root_certificates(
+    auto load_root_certificates(
         ssl::context& ctx,
-        boost::system::error_code& ec)
+        boost::system::error_code& ec) noexcept -> void
     {
         // This is the root certificate for seeip.org.
-        std::string cert =
+        static const std::string cert =
             "# ISRG Root X1\n"
             "-----BEGIN CERTIFICATE-----\n"
             "MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw\n"
@@ -655,8 +801,8 @@ private:
             const auto address = ip::make_address(address_string, address_ec);
 
             if (!address_ec) {
-                LogVerbose(IMP)(__FUNCTION__)(
-                    " GET response: IP address: ")(address_string)
+                LogVerbose(IMP)(__func__)(" GET response: IP address: ")(
+                    address_string)
                     .Flush();
                 if (address.is_v4()) {
                     const auto bytes = address.to_v4().to_bytes();
@@ -886,8 +1032,8 @@ private:
             const auto address = ip::make_address(address_string, address_ec);
 
             if (!address_ec) {
-                LogVerbose(IMP)(__FUNCTION__)(
-                    " GET response: IP address: ")(address_string)
+                LogVerbose(IMP)(__func__)(" GET response: IP address: ")(
+                    address_string)
                     .Flush();
                 if (address.is_v4()) {
                     const auto bytes = address.to_v4().to_bytes();
@@ -933,7 +1079,7 @@ private:
         } catch (const std::exception& e) {
             // The value of promise is already set, so log the shutdown error
             // and continue.
-            LogVerbose(IMP)(__FUNCTION__)(" ")(e.what()).Flush();
+            LogVerbose(IMP)(__func__)(" ")(e.what()).Flush();
         }
     }
 
@@ -994,7 +1140,7 @@ private:
 
                     if (eptr) { std::rethrow_exception(eptr); }
                 } catch (const std::exception& e) {
-                    LogVerbose(IMP)(__FUNCTION__)(" ")(e.what()).Flush();
+                    LogVerbose(IMP)(__func__)(" ")(e.what()).Flush();
                 }
             }
         }
@@ -1013,7 +1159,7 @@ private:
 
                     if (eptr) { std::rethrow_exception(eptr); }
                 } catch (const std::exception& e) {
-                    LogVerbose(IMP)(__FUNCTION__)(" ")(e.what()).Flush();
+                    LogVerbose(IMP)(__func__)(" ")(e.what()).Flush();
                 }
             }
         }

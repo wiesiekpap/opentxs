@@ -58,6 +58,7 @@ struct Socket::Imp {
     auto Transmit(const ReadView data, Notification notifier) noexcept -> bool;
 
     Imp(const Endpoint& endpoint, Asio& asio) noexcept;
+    Imp(Asio& asio, Endpoint&& endpoint, tcp::socket&& socket) noexcept;
 
     ~Imp();
 
