@@ -242,7 +242,7 @@ struct MailCache::Imp {
 
         const auto& future = fIt->second;
         fifo_.push(std::move(key));
-        const auto sent = api_.Network().Asio().Internal().Post(
+        const auto sent = api_.Network().Asio().Internal().PostCPU(
             [this, pTask = &task] { ProcessThreadPool(pTask); });
 
         OT_ASSERT(sent);

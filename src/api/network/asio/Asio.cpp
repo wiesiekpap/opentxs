@@ -8,10 +8,11 @@
 #include "opentxs/api/network/Asio.hpp"  // IWYU pragma: associated
 
 #include <memory>
+#include <utility>
 
-#include "api/network/Asio.hpp"
-#include "opentxs/network/asio/Socket.hpp"
+#include "api/network/asio/Imp.hpp"
 #include "network/asio/Socket.hpp"
+#include "opentxs/network/asio/Socket.hpp"
 
 namespace opentxs::api::network
 {

@@ -22,7 +22,7 @@ namespace opentxs::network::asio
 Socket::Imp::Imp(const Endpoint& endpoint, Asio& asio) noexcept
     : endpoint_(endpoint)
     , asio_(asio)
-    , socket_(asio_.Context())
+    , socket_(asio_.IOContext())
 {
 }
 
@@ -83,7 +83,7 @@ auto Socket::Imp::Transmit(const ReadView data, Notification notifier) noexcept
             socket_, boost::asio::buffer(buf->data(), buf->size()), cb);
     };
 
-    return asio_.Post(std::move(work));
+    return asio_.PostIO(std::move(work));
 }
 
 Socket::Imp::~Imp() { Close(); }

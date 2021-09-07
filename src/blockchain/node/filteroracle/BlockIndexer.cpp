@@ -109,9 +109,8 @@ auto FilterOracle::BlockIndexer::calculate_cfheaders(
         const auto& [height, block] = task.position_;
 
         try {
-            LogTrace(OT_METHOD)(__FUNCTION__)(
-                ": Calculating cfheader for ")(DisplayString(
-                chain_))(" block at height ")(height)
+            LogTrace(OT_METHOD)(__FUNCTION__)(": Calculating cfheader for ")(
+                DisplayString(chain_))(" block at height ")(height)
                 .Flush();
             auto& [blockHash, filterHeader, filterHashView] = data.header_data_;
             auto& previous = task.previous_;
@@ -120,8 +119,8 @@ auto FilterOracle::BlockIndexer::calculate_cfheaders(
 
             if (auto status = previous.wait_for(zero); State::ready != status) {
                 LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": Timeout waiting for previous ")(DisplayString(
-                    chain_))(" cfheader #")(height - 1)
+                    ": Timeout waiting for previous ")(DisplayString(chain_))(
+                    " cfheader #")(height - 1)
                     .Flush();
 
                 throw std::runtime_error("timeout");
@@ -133,9 +132,8 @@ auto FilterOracle::BlockIndexer::calculate_cfheaders(
             filterHeader = gcs.Header(previous.get()->Bytes());
 
             if (filterHeader->empty()) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": failed to calculate ")(DisplayString(
-                    chain_))(" cfheader #")(height)
+                LogOutput(OT_METHOD)(__FUNCTION__)(": failed to calculate ")(
+                    DisplayString(chain_))(" cfheader #")(height)
                     .Flush();
 
                 throw std::runtime_error("Failed to calculate cfheader");
@@ -236,11 +234,11 @@ auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
 {
     const auto current = known();
     auto compare{current};
-    LogTrace(OT_METHOD)(__FUNCTION__)(
-        ":  Current position: ")(current.first)(",")(current.second->asHex())
+    LogTrace(OT_METHOD)(__FUNCTION__)(":  Current position: ")(current.first)(
+        ",")(current.second->asHex())
         .Flush();
-    LogTrace(OT_METHOD)(__FUNCTION__)(
-        ": Incoming position: ")(pos.first)(",")(pos.second->asHex())
+    LogTrace(OT_METHOD)(__FUNCTION__)(": Incoming position: ")(pos.first)(",")(
+        pos.second->asHex())
         .Flush();
     auto hashes = decltype(header_.Ancestors(current, pos)){};
     auto prior = Previous{std::nullopt};
@@ -260,8 +258,8 @@ auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
 
         auto postcondition = ScopeGuard{[&] { hashes.erase(hashes.begin()); }};
         auto& first = hashes.front();
-        LogTrace(OT_METHOD)(__FUNCTION__)(
-            ":          Ancestor: ")(first.first)(",")(first.second->asHex())
+        LogTrace(OT_METHOD)(__FUNCTION__)(":          Ancestor: ")(first.first)(
+            ",")(first.second->asHex())
             .Flush();
 
         if (first == pos) { return; }
@@ -275,17 +273,14 @@ auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
         const auto filter = db_.LoadFilter(type_, first.second->Bytes());
 
         if (header->empty()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Missing cfheader for block ")(first
-                                                     .first)(",")(first.second
-                                                                      ->asHex())
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Missing cfheader for block ")(
+                first.first)(",")(first.second->asHex())
                 .Flush();
         }
 
         if (!filter) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Missing cfilter for block ")(first.first)(",")(first.second
-                                                                      ->asHex())
+            LogOutput(OT_METHOD)(__FUNCTION__)(": Missing cfilter for block ")(
+                first.first)(",")(first.second->asHex())
                 .Flush();
         }
 
@@ -336,7 +331,7 @@ auto FilterOracle::BlockIndexer::queue_processing(
             auto& job = cache.emplace_back(
                 blank, *task, type_, filter, header, jobCounter);
             ++jobCounter;
-            const auto queued = api_.Network().Asio().Internal().Post(
+            const auto queued = api_.Network().Asio().Internal().PostCPU(
                 [&] { parent_.ProcessBlock(job); });
 
             if (false == queued) {
