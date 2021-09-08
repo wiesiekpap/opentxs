@@ -7,9 +7,6 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "ui/accountlist/AccountListItem.hpp"  // IWYU pragma: associated
 
-#if OT_QT
-#include <QObject>
-#endif  // OT_QT
 #include <memory>
 #include <string>
 
@@ -21,13 +18,7 @@
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#if OT_QT
-#include "opentxs/ui/qt/AccountList.hpp"
-#endif  // OT_QT
 #include "ui/base/Widget.hpp"
-#if OT_QT
-#include "util/Polarity.hpp"  // IWYU pragma: keep
-#endif                        // OT_QT
 
 // #define OT_METHOD "opentxs::ui::implementation::AccountListItem::"
 
@@ -115,59 +106,6 @@ auto AccountListItem::Name() const noexcept -> std::string
 
     return name_;
 }
-
-#if OT_QT
-auto AccountListItem::qt_data(const int column, int role) const noexcept
-    -> QVariant
-{
-    switch (role) {
-        case AccountListQt::NotaryIDRole: {
-            return NotaryID().c_str();
-        }
-        case AccountListQt::UnitRole: {
-            return static_cast<int>(Unit());
-        }
-        case AccountListQt::AccountIDRole: {
-            return AccountID().c_str();
-        }
-        case AccountListQt::BalanceRole: {
-            return static_cast<unsigned long long>(Balance());
-        }
-        case AccountListQt::PolarityRole: {
-            return polarity(Balance());
-        }
-        case AccountListQt::AccountTypeRole: {
-            return static_cast<int>(Type());
-        }
-        case AccountListQt::ContractIdRole: {
-            return ContractID().c_str();
-        }
-        case Qt::DisplayRole: {
-            switch (column) {
-                case AccountListQt::NotaryNameColumn: {
-                    return NotaryName().c_str();
-                }
-                case AccountListQt::DisplayUnitColumn: {
-                    return DisplayUnit().c_str();
-                }
-                case AccountListQt::AccountNameColumn: {
-                    return Name().c_str();
-                }
-                case AccountListQt::DisplayBalanceColumn: {
-                    return DisplayBalance().c_str();
-                }
-                default: {
-                }
-            }
-
-            [[fallthrough]];
-        }
-        default: {
-        }
-    }
-    return {};
-}
-#endif
 
 auto AccountListItem::reindex(
     const AccountListSortKey& key,

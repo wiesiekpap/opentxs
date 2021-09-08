@@ -28,10 +28,20 @@ class Crypto;
 
 namespace opentxs::crypto
 {
-auto Print(const proto::HDPath& node) -> std::string
+auto Print(const proto::HDPath& node) noexcept -> std::string
+{
+    return Print(node, true);
+}
+
+auto Print(const proto::HDPath& node, bool showSeedID) noexcept -> std::string
 {
     auto output = std::stringstream{};
-    output << node.root();
+
+    if (showSeedID) {
+        output << node.root();
+    } else {
+        output << 'm';
+    }
 
     for (const auto& child : node.child()) {
         output << " / ";

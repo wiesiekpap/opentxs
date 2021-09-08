@@ -5,9 +5,6 @@
 
 #pragma once
 
-#if OT_QT
-#include <QVariant>
-#endif  // OT_QT
 #include <string>
 
 #include "1_Internal.hpp"
@@ -17,6 +14,8 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/ui/ContactListItem.hpp"
 #include "ui/base/Row.hpp"
+
+class QVariant;
 
 namespace opentxs
 {
@@ -61,19 +60,6 @@ public:
     auto ImageURI() const noexcept -> std::string final;
     auto Section() const noexcept -> std::string final;
 
-#if OT_QT
-    auto qt_data(const int column, const int role) const noexcept
-        -> QVariant override;
-#endif
-
-    using ContactListItemRow::reindex;
-    auto reindex(const ContactListSortKey&, CustomData&) noexcept
-        -> bool override;
-    virtual auto reindex(
-        const Lock&,
-        const ContactListSortKey&,
-        CustomData&) noexcept -> bool;
-
     ContactListItem(
         const ContactListInternalInterface& parent,
         const api::client::internal::Manager& api,
@@ -85,6 +71,16 @@ protected:
     ContactListSortKey key_;
 
     auto translate_section(const Lock&) const noexcept -> std::string;
+
+    using ContactListItemRow::reindex;
+    auto qt_data(const int column, const int role, QVariant& out) const noexcept
+        -> void override;
+    auto reindex(const ContactListSortKey&, CustomData&) noexcept
+        -> bool override;
+    virtual auto reindex(
+        const Lock&,
+        const ContactListSortKey&,
+        CustomData&) noexcept -> bool;
 
 private:
     std::string section_;

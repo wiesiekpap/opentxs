@@ -7,19 +7,14 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "ui/contactlist/ContactListItem.hpp"  // IWYU pragma: associated
 
-#if OT_QT
-#include <QObject>
-#endif  // OT_QT
 #include <locale>
 #include <memory>
+#include <utility>
 
 #include "internal/ui/UI.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
-#if OT_QT
-#include "opentxs/ui/qt/ContactList.hpp"
-#endif  // OT_QT
 
 //#define OT_METHOD "opentxs::ui::implementation::ContactListItem::"
 
@@ -75,7 +70,7 @@ auto ContactListItem::DisplayName() const noexcept -> std::string
 {
     auto lock = Lock{lock_};
 
-    return key_;
+    return key_.second;
 }
 
 auto ContactListItem::ImageURI() const noexcept -> std::string
@@ -84,56 +79,6 @@ auto ContactListItem::ImageURI() const noexcept -> std::string
 
     return {};
 }
-
-#if OT_QT
-auto ContactListItem::qt_data(const int column, int role) const noexcept
-    -> QVariant
-{
-    switch (role) {
-        case Qt::DisplayRole: {
-            switch (column) {
-                case ContactListQt::NameColumn: {
-
-                    return qt_data(column, ContactListQt::NameRole);
-                }
-                default: {
-                }
-            }
-        } break;
-        case Qt::DecorationRole: {
-            // TODO render ImageURI into a QPixmap
-
-            return {};
-        }
-        case Qt::TextAlignmentRole: {
-            switch (column) {
-                case ContactListQt::NameColumn: {
-
-                    return Qt::AlignLeft;
-                }
-                default: {
-                }
-            }
-        } break;
-        case ContactListQt::IDRole: {
-            return ContactID().c_str();
-        }
-        case ContactListQt::NameRole: {
-            return DisplayName().c_str();
-        }
-        case ContactListQt::ImageRole: {
-            return ImageURI().c_str();
-        }
-        case ContactListQt::SectionRole: {
-            return Section().c_str();
-        }
-        default: {
-        }
-    }
-
-    return {};
-}
-#endif
 
 auto ContactListItem::reindex(
     const ContactListSortKey& key,
@@ -171,11 +116,11 @@ auto ContactListItem::Section() const noexcept -> std::string
 auto ContactListItem::translate_section(const Lock&) const noexcept
     -> std::string
 {
-    if (key_.empty()) { return {" "}; }
+    if (key_.second.empty()) { return {" "}; }
 
     std::locale locale;
     std::string output{" "};
-    output[0] = std::toupper(key_[0], locale);
+    output[0] = std::toupper(key_.second[0], locale);
 
     return output;
 }

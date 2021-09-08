@@ -25,6 +25,7 @@ namespace opentxs
 {
 namespace ui
 {
+class AccountSummaryItem;
 class IssuerItem;
 }  // namespace ui
 

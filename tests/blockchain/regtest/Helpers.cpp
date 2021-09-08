@@ -824,7 +824,7 @@ struct ScanListener::Imp {
     {
         const auto body = in.Body();
 
-        OT_ASSERT(body.size() == 7u);
+        OT_ASSERT(body.size() == 8u);
 
         const auto chain = body.at(1).as<Chain>();
         auto nymID = [&] {
@@ -837,17 +837,17 @@ struct ScanListener::Imp {
         }();
         auto accountID = [&] {
             auto out = api_.Factory().Identifier();
-            out->Assign(body.at(3).Bytes());
+            out->Assign(body.at(4).Bytes());
 
             OT_ASSERT(false == out->empty());
 
             return out;
         }();
-        const auto sub = body.at(4).as<Subchain>();
-        const auto height = body.at(5).as<Height>();
+        const auto sub = body.at(5).as<Subchain>();
+        const auto height = body.at(6).as<Height>();
         auto hash = [&] {
             auto out = api_.Factory().Data();
-            out->Assign(body.at(6).Bytes());
+            out->Assign(body.at(7).Bytes());
 
             OT_ASSERT(false == out->empty());
 

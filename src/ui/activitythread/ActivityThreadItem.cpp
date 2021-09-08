@@ -7,10 +7,6 @@
 #include "1_Internal.hpp"                            // IWYU pragma: associated
 #include "ui/activitythread/ActivityThreadItem.hpp"  // IWYU pragma: associated
 
-#if OT_QT
-#include <QDateTime>
-#include <QObject>
-#endif  // OT_QT
 #include <tuple>
 #include <utility>
 
@@ -20,13 +16,7 @@
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
-#if OT_QT
-#include "opentxs/ui/qt/ActivityThread.hpp"
-#endif  // OT_QT
 #include "ui/base/Widget.hpp"
-#if OT_QT
-#include "util/Polarity.hpp"  // IWYU pragma: keep
-#endif                        // OT_QT
 
 namespace opentxs::ui::implementation
 {
@@ -64,110 +54,6 @@ auto ActivityThreadItem::MarkRead() const noexcept -> bool
     return api_.Activity().MarkRead(
         nym_id_, Identifier::Factory(parent_.ThreadID()), item_id_);
 }
-
-#if OT_QT
-QVariant ActivityThreadItem::qt_data(const int column, int role) const noexcept
-{
-    switch (role) {
-        case Qt::DisplayRole: {
-            switch (column) {
-                case ActivityThreadQt::TimeColumn: {
-
-                    return qt_data(column, ActivityThreadQt::TimeRole);
-                }
-                case ActivityThreadQt::FromColumn: {
-
-                    return qt_data(column, ActivityThreadQt::FromRole);
-                }
-                case ActivityThreadQt::TextColumn: {
-
-                    return qt_data(column, ActivityThreadQt::TextRole);
-                }
-                case ActivityThreadQt::AmountColumn: {
-
-                    return qt_data(column, ActivityThreadQt::StringAmountRole);
-                }
-                case ActivityThreadQt::MemoColumn: {
-
-                    return qt_data(column, ActivityThreadQt::MemoRole);
-                }
-                case ActivityThreadQt::LoadingColumn:
-                case ActivityThreadQt::PendingColumn:
-                default: {
-                }
-            }
-        } break;
-        case Qt::CheckStateRole: {
-            switch (column) {
-                case ActivityThreadQt::LoadingColumn: {
-
-                    return qt_data(column, ActivityThreadQt::LoadingRole);
-                }
-                case ActivityThreadQt::PendingColumn: {
-
-                    return qt_data(column, ActivityThreadQt::PendingRole);
-                }
-                case ActivityThreadQt::TextColumn:
-                case ActivityThreadQt::AmountColumn:
-                case ActivityThreadQt::MemoColumn:
-                case ActivityThreadQt::TimeColumn:
-                default: {
-                }
-            }
-        } break;
-        case ActivityThreadQt::IntAmountRole: {
-
-            return static_cast<int>(Amount());
-        }
-        case ActivityThreadQt::StringAmountRole: {
-
-            return DisplayAmount().c_str();
-        }
-        case ActivityThreadQt::LoadingRole: {
-
-            return Loading();
-        }
-        case ActivityThreadQt::MemoRole: {
-
-            return Memo().c_str();
-        }
-        case ActivityThreadQt::PendingRole: {
-
-            return Pending();
-        }
-        case ActivityThreadQt::PolarityRole: {
-
-            return polarity(Amount());
-        }
-        case ActivityThreadQt::TextRole: {
-
-            return Text().c_str();
-        }
-        case ActivityThreadQt::TimeRole: {
-            auto output = QDateTime{};
-            output.setSecsSinceEpoch(Clock::to_time_t(Timestamp()));
-
-            return output;
-        }
-        case ActivityThreadQt::TypeRole: {
-
-            return static_cast<int>(Type());
-        }
-        case ActivityThreadQt::OutgoingRole: {
-
-            return Outgoing();
-        }
-        case ActivityThreadQt::FromRole: {
-
-            return From().c_str();
-        }
-        default: {
-        }
-    }
-
-    return {};
-}
-#endif
 
 auto ActivityThreadItem::reindex(
     const ActivityThreadSortKey&,

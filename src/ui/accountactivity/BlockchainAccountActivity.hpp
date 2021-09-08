@@ -38,11 +38,9 @@
 #include "opentxs/ui/AccountActivity.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "ui/accountactivity/AccountActivity.hpp"
-#if OT_QT
-#include "ui/accountactivity/SendMonitor.hpp"
-#endif  // OT_QT
 #include "ui/base/List.hpp"
 #include "ui/base/Widget.hpp"
+#include "ui/qt/SendMonitor.hpp"
 #include "util/Work.hpp"
 
 namespace opentxs
@@ -106,7 +104,6 @@ public:
     {
         return {chain_};
     }
-    auto DisplayBalance() const noexcept -> std::string final;
     auto DisplayUnit() const noexcept -> std::string final
     {
         return blockchain::internal::Ticker(chain_);
@@ -133,14 +130,12 @@ public:
         const std::string& amount,
         const std::string& memo,
         Scale scale) const noexcept -> bool final;
-#if OT_QT
     auto Send(
         const std::string& address,
         const std::string& amount,
         const std::string& memo,
         Scale scale,
         SendMonitor::Callback cb) const noexcept -> int final;
-#endif  // OT_QT
     auto SyncPercentage() const noexcept -> double final
     {
         return progress_.get_percentage();
@@ -157,8 +152,6 @@ public:
     auto ValidateAmount(const std::string& text) const noexcept
         -> std::string final;
 
-    auto SetSyncCallback(const SyncCallback cb) noexcept -> void final;
-
     BlockchainAccountActivity(
         const api::client::internal::Manager& api,
         const blockchain::Type chain,
@@ -169,11 +162,6 @@ public:
     ~BlockchainAccountActivity() final;
 
 private:
-    struct SyncCB {
-        std::mutex lock_{};
-        SyncCallback cb_{};
-    };
-
     struct Progress {
         auto get_percentage() const noexcept -> double
         {
@@ -220,7 +208,9 @@ private:
     OTZMQListenCallback balance_cb_;
     OTZMQDealerSocket balance_socket_;
     Progress progress_;
-    SyncCB sync_cb_;
+
+    auto display_balance(opentxs::Amount value) const noexcept
+        -> std::string final;
 
     auto load_thread() noexcept -> void;
     auto pipeline(const Message& in) noexcept -> void final;

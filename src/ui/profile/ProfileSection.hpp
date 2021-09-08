@@ -5,9 +5,8 @@
 
 #pragma once
 
-#if OT_QT
-#include <QHash>
-#endif  // OT_QT
+#include <iosfwd>
+#include <list>
 #include <set>
 #include <string>
 #include <utility>
@@ -18,6 +17,7 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/contact/ContactSectionName.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -84,12 +84,6 @@ public:
     auto Delete(const int type, const std::string& claimID) const noexcept
         -> bool final;
     auto Items(const std::string& lang) const noexcept -> ItemTypeList final;
-#if OT_QT
-    int FindRow(const ProfileSectionRowID& id) const noexcept final
-    {
-        return find_row(id);
-    }
-#endif
     auto Name(const std::string& lang) const noexcept -> std::string final;
     auto NymID() const noexcept -> const identifier::Nym& final
     {
@@ -111,9 +105,6 @@ public:
     {
         return row_id_;
     }
-
-    auto reindex(const ProfileSortKey& key, CustomData& custom) noexcept
-        -> bool final;
 
     ProfileSection(
         const ProfileInternalInterface& parent,
@@ -138,7 +129,10 @@ private:
     }
     auto process_section(const opentxs::ContactSection& section) noexcept
         -> std::set<ProfileSectionRowID>;
-    void startup(const opentxs::ContactSection section) noexcept;
+
+    auto reindex(const ProfileSortKey& key, CustomData& custom) noexcept
+        -> bool final;
+    auto startup(const opentxs::ContactSection section) noexcept -> void;
 
     ProfileSection() = delete;
     ProfileSection(const ProfileSection&) = delete;

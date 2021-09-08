@@ -39,6 +39,8 @@
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
 
+class QObject;
+
 namespace opentxs
 {
 namespace api
@@ -129,6 +131,10 @@ public:
     auto Network() const noexcept -> const network::Network& final
     {
         return network_;
+    }
+    auto QtRootObject() const noexcept -> QObject* final
+    {
+        return parent_.QtRootObject();
     }
     auto Seeds() const noexcept -> const api::HDSeed& final;
     auto SetMasterKeyTimeout(const std::chrono::seconds& timeout) const noexcept

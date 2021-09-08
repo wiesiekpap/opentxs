@@ -83,10 +83,6 @@ public:
         return item_->Value();
     }
 
-    auto reindex(
-        const ContactSubsectionSortKey& key,
-        CustomData& custom) noexcept -> bool final;
-
     ContactItem(
         const ContactSubsectionInternalInterface& parent,
         const api::client::internal::Manager& api,
@@ -97,6 +93,10 @@ public:
 
 private:
     std::unique_ptr<opentxs::ContactItem> item_;
+
+    auto reindex(
+        const ContactSubsectionSortKey& key,
+        CustomData& custom) noexcept -> bool final;
 
     ContactItem() = delete;
     ContactItem(const ContactItem&) = delete;

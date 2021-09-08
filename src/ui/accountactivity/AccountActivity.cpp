@@ -8,6 +8,7 @@
 #include "ui/accountactivity/AccountActivity.hpp"  // IWYU pragma: associated
 
 #include <future>
+#include <memory>
 #include <utility>
 
 #include "internal/api/client/Client.hpp"
@@ -18,9 +19,6 @@
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
-#if OT_QT
-#include "opentxs/ui/qt/AccountActivity.hpp"
-#endif  // OT_QT
 #include "util/Work.hpp"
 
 // #define OT_METHOD "opentxs::ui::implementation::AccountActivity::"
@@ -34,39 +32,10 @@ AccountActivity::AccountActivity(
     const AccountType type,
     const SimpleCallback& cb,
     display::Definition&& scales) noexcept
-    : AccountActivityList(
-          api,
-          nymID,
-          cb,
-          true
-#if OT_QT
-          ,
-          Roles{
-              {AccountActivityQt::AmountRole, "amount"},
-              {AccountActivityQt::TextRole, "description"},
-              {AccountActivityQt::MemoRole, "memo"},
-              {AccountActivityQt::TimeRole, "timestamp"},
-              {AccountActivityQt::UUIDRole, "uuid"},
-              {AccountActivityQt::PolarityRole, "polarity"},
-              {AccountActivityQt::ContactsRole, "contacts"},
-              {AccountActivityQt::WorkflowRole, "workflow"},
-              {AccountActivityQt::TypeRole, "type"},
-          },
-          5
-#endif  // OT_QT
-          )
+    : AccountActivityList(api, nymID, cb, true)
     , Worker(api, {})
     , scales_(std::move(scales))
-#if OT_QT
-    , scales_qt_(scales_)
-    , amount_validator_(*this)
-    , destination_validator_(
-          api,
-          static_cast<std::int8_t>(type),
-          accountID,
-          *this)
-    , send_monitor_()
-#endif  // OT_QT
+    , callbacks_()
     , balance_(0)
     , account_id_(accountID)
     , type_(type)
@@ -90,7 +59,16 @@ AccountActivity::AccountActivity(
             return api.Factory().ServerContract();
         }
     }())
+    , qt_(nullptr)
 {
+    init_qt();
+}
+
+auto AccountActivity::ClearCallbacks() const noexcept -> void
+{
+    Widget::ClearCallbacks();
+    auto lock = Lock{callbacks_.lock_};
+    callbacks_.cb_ = {};
 }
 
 auto AccountActivity::construct_row(
@@ -110,17 +88,33 @@ auto AccountActivity::construct_row(
 
 auto AccountActivity::init(Endpoints endpoints) noexcept -> void
 {
-    AccountActivityList::init();
     init_executor(std::move(endpoints));
     pipeline_->Push(MakeWork(OT_ZMQ_INIT_SIGNAL));
+}
+
+auto AccountActivity::notify_balance(opentxs::Amount balance) const noexcept
+    -> void
+{
+    const auto display = display_balance(balance);
+    auto lock = Lock{callbacks_.lock_};
+    const auto& cb = callbacks_.cb_;
+
+    if (cb.balance_) { cb.balance_(display.c_str()); }
+    if (cb.polarity_) { cb.polarity_(polarity(balance)); }
+
+    UpdateNotify();
+}
+
+auto AccountActivity::SetCallbacks(Callbacks&& cb) noexcept -> void
+{
+    auto lock = Lock{callbacks_.lock_};
+    callbacks_.cb_ = cb;
 }
 
 AccountActivity::~AccountActivity()
 {
     wait_for_startup();
     stop_worker().get();
-#if OT_QT
-    send_monitor_.shutdown();
-#endif  // OT_QT
+    shutdown_qt();
 }
 }  // namespace opentxs::ui::implementation

@@ -126,6 +126,7 @@ private:
         const block::Block::Match match,
         const block::bitcoin::Transaction& tx,
         MatchedTransaction& output) noexcept -> void;
+    auto update_scan(const block::Position& pos) noexcept -> void final;
 
     DeterministicStateData() = delete;
     DeterministicStateData(const DeterministicStateData&) = delete;

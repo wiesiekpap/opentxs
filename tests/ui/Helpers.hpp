@@ -3,7 +3,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/ContactItemType.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/crypto/Subchain.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/crypto/SubaccountType.hpp"
 
 #pragma once
 
@@ -19,6 +22,7 @@
 #include "Basic.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Log.hpp"
@@ -92,6 +96,30 @@ struct ActivityThreadData {
     std::vector<ActivityThreadRow> rows_{};
 };
 
+struct BlockchainSubchainData {
+    std::string name_;
+    ot::blockchain::crypto::Subchain type_;
+};
+
+struct BlockchainSubaccountData {
+    std::string name_;
+    std::string id_;
+    std::vector<BlockchainSubchainData> rows_;
+};
+
+struct BlockchainSubaccountSourceData {
+    std::string name_;
+    std::string id_;
+    ot::blockchain::crypto::SubaccountType type_;
+    std::vector<BlockchainSubaccountData> rows_;
+};
+
+struct BlockchainAccountStatusData {
+    std::string owner_;
+    ot::blockchain::Type chain_;
+    std::vector<BlockchainSubaccountSourceData> rows_;
+};
+
 struct ContactListData {
     bool check_contact_id_{};
     std::string contact_id_index_{};
@@ -117,6 +145,15 @@ auto check_activity_thread_qt(
     const User& user,
     const ot::Identifier& contact,
     const ActivityThreadData& expected) noexcept -> bool;
+
+auto check_blockchain_account_status(
+    const User& user,
+    const ot::blockchain::Type chain,
+    const BlockchainAccountStatusData& expected) noexcept -> bool;
+auto check_blockchain_account_status_qt(
+    const User& user,
+    const ot::blockchain::Type chain,
+    const BlockchainAccountStatusData& expected) noexcept -> bool;
 
 auto check_contact_list(
     const User& user,

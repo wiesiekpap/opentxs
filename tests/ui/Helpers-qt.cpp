@@ -6,17 +6,40 @@
 #include "Helpers.hpp"  // IWYU pragma: associated
 
 #include <gtest/gtest.h>
+#include <QAbstractItemModel>
 #include <QObject>
 #include <QString>
 #include <QVariant>
 #include <cstddef>
 
+#include "Basic.hpp"
 #include "integration/Helpers.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/UI.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/ui/qt/BlockchainAccountStatus.hpp"
 #include "opentxs/ui/qt/ContactList.hpp"
+
+namespace ottest
+{
+auto check_qt_common(const QAbstractItemModel& model) noexcept -> bool;
+auto check_row(
+    const QAbstractItemModel& model,
+    const QModelIndex& parent,
+    const BlockchainSubaccountSourceData& expected,
+    const int row) noexcept -> bool;
+auto check_row(
+    const QAbstractItemModel& model,
+    const QModelIndex& parent,
+    const BlockchainSubaccountData& expected,
+    const int row) noexcept -> bool;
+auto check_row(
+    const QAbstractItemModel& model,
+    const QModelIndex& parent,
+    const BlockchainSubchainData& expected,
+    const int row) noexcept -> bool;
+}  // namespace ottest
 
 namespace ottest
 {
@@ -36,6 +59,47 @@ auto check_activity_thread_qt(
     return true;  // TODO
 }
 
+auto check_blockchain_account_status_qt(
+    const User& user,
+    const ot::blockchain::Type chain,
+    const BlockchainAccountStatusData& expected) noexcept -> bool
+{
+    const auto* pModel =
+        user.api_->UI().BlockchainAccountStatusQt(user.nym_id_, chain);
+
+    EXPECT_NE(pModel, nullptr);
+
+    if (nullptr == pModel) { return false; }
+
+    const auto& model = *pModel;
+    auto output = check_qt_common(model);
+    auto parent = QModelIndex{};
+    const auto vCount = expected.rows_.size();
+
+    output &= (model.getNym().toStdString() == expected.owner_);
+    output &=
+        (static_cast<ot::blockchain::Type>(model.getChain()) ==
+         expected.chain_);
+    output &= (model.columnCount(parent) == 1);
+    output &= (static_cast<std::size_t>(model.rowCount(parent)) == vCount);
+
+    EXPECT_EQ(model.getNym().toStdString(), expected.owner_);
+    EXPECT_EQ(
+        static_cast<ot::blockchain::Type>(model.getChain()), expected.chain_);
+    EXPECT_EQ(model.columnCount(parent), 1);
+    EXPECT_EQ(model.rowCount(parent), vCount);
+
+    if (0u == vCount) { return output; }
+
+    auto it{expected.rows_.begin()};
+
+    for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+        output &= check_row(model, parent, *it, static_cast<int>(i));
+    }
+
+    return output;
+}
+
 auto check_contact_list_qt(
     const User& user,
     const std::vector<ContactListData>& v) noexcept -> bool
@@ -51,11 +115,14 @@ auto check_contact_list_qt(
     if (nullptr == p) { return false; }
 
     const auto& widget = *p;
+    auto output = check_qt_common(widget);
+
+    output &= (widget.columnCount() == 1);
+    output &= (widget.rowCount() == static_cast<int>(v.size()));
 
     EXPECT_EQ(widget.columnCount(), 1);
-    EXPECT_EQ(widget.rowCount(), v.size());
+    EXPECT_EQ(widget.rowCount(), static_cast<int>(v.size()));
 
-    auto output{true};
     auto it{v.begin()};
 
     for (auto i = std::size_t{}; i < v.size(); ++i, ++it) {
@@ -111,6 +178,145 @@ auto check_contact_list_qt(
 
         EXPECT_EQ(display, name);
     }
+
+    return output;
+}
+
+auto check_qt_common(const QAbstractItemModel& model) noexcept -> bool
+{
+    const auto* root = GetQT();
+
+    EXPECT_NE(root, nullptr);
+
+    if (nullptr == root) { return false; }
+
+    auto output{true};
+    output &= (model.thread() == root->thread());
+
+    EXPECT_EQ(model.thread(), root->thread());
+
+    return output;
+}
+
+auto check_row(
+    const QAbstractItemModel& model,
+    const QModelIndex& parent,
+    const BlockchainSubaccountSourceData& expected,
+    const int row) noexcept -> bool
+{
+    const auto exists = model.hasIndex(row, 0, parent);
+
+    EXPECT_TRUE(exists);
+
+    if (false == exists) { return false; }
+
+    using Model = ot::ui::BlockchainAccountStatusQt;
+    auto output{true};
+    const auto vCount = expected.rows_.size();
+    const auto index = model.index(row, 0, parent);
+    const auto name = model.data(index, Model::NameRole);
+    const auto id = model.data(index, Model::SourceIDRole);
+    const auto type = model.data(index, Model::SubaccountTypeRole);
+
+    output &= (name.toString().toStdString() == expected.name_);
+    output &= (id.toString().toStdString() == expected.id_);
+    output &=
+        (static_cast<ot::blockchain::crypto::SubaccountType>(type.toInt()) ==
+         expected.type_);
+    output &= (model.columnCount(index) == 1);
+    output &= (static_cast<std::size_t>(model.rowCount(index)) == vCount);
+
+    EXPECT_EQ(name.toString().toStdString(), expected.name_);
+    EXPECT_EQ(id.toString().toStdString(), expected.id_);
+    EXPECT_EQ(
+        static_cast<ot::blockchain::crypto::SubaccountType>(type.toInt()),
+        expected.type_);
+    EXPECT_EQ(model.columnCount(index), 1);
+    EXPECT_EQ(model.rowCount(index), vCount);
+
+    if (0u == vCount) { return output; }
+
+    auto it{expected.rows_.begin()};
+
+    for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+        output &= check_row(model, index, *it, static_cast<int>(i));
+    }
+
+    return output;
+}
+
+auto check_row(
+    const QAbstractItemModel& model,
+    const QModelIndex& parent,
+    const BlockchainSubaccountData& expected,
+    const int row) noexcept -> bool
+{
+    const auto exists = model.hasIndex(row, 0, parent);
+
+    EXPECT_TRUE(exists);
+
+    if (false == exists) { return false; }
+
+    using Model = ot::ui::BlockchainAccountStatusQt;
+    auto output{true};
+    const auto vCount = expected.rows_.size();
+    const auto index = model.index(row, 0, parent);
+    const auto name = model.data(index, Model::NameRole);
+    const auto id = model.data(index, Model::SubaccountIDRole);
+
+    output &= (name.toString().toStdString() == expected.name_);
+    output &= (id.toString().toStdString() == expected.id_);
+    output &= (model.columnCount(index) == 1);
+    output &= (static_cast<std::size_t>(model.rowCount(index)) == vCount);
+
+    EXPECT_EQ(name.toString().toStdString(), expected.name_);
+    EXPECT_EQ(id.toString().toStdString(), expected.id_);
+    EXPECT_EQ(model.columnCount(index), 1);
+    EXPECT_EQ(model.rowCount(index), vCount);
+
+    if (0u == vCount) { return output; }
+
+    auto it{expected.rows_.begin()};
+
+    for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+        output &= check_row(model, index, *it, static_cast<int>(i));
+    }
+
+    return output;
+}
+
+auto check_row(
+    const QAbstractItemModel& model,
+    const QModelIndex& parent,
+    const BlockchainSubchainData& expected,
+    const int row) noexcept -> bool
+{
+    const auto exists = model.hasIndex(row, 0, parent);
+
+    EXPECT_TRUE(exists);
+
+    if (false == exists) { return false; }
+
+    using Model = ot::ui::BlockchainAccountStatusQt;
+    auto output{true};
+    const auto vCount = 0;
+    const auto index = model.index(row, 0, parent);
+    const auto name = model.data(index, Model::NameRole);
+    const auto type = model.data(index, Model::SubchainTypeRole);
+
+    output &= (name.toString().toStdString() == expected.name_);
+    output &=
+        (static_cast<ot::blockchain::crypto::Subchain>(type.toInt()) ==
+         expected.type_);
+    output &= (model.columnCount(index) == 1);
+    output &= (static_cast<std::size_t>(model.rowCount(index)) == vCount);
+
+    EXPECT_EQ(name.toString().toStdString(), expected.name_);
+    EXPECT_EQ(
+        static_cast<ot::blockchain::crypto::Subchain>(type.toInt()),
+        expected.type_);
+    EXPECT_EQ(model.columnCount(index), 1);
+    EXPECT_EQ(model.rowCount(index), vCount);
 
     return output;
 }

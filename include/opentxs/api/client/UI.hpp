@@ -32,7 +32,7 @@
             nymID,
             static_cast<opentxs::contact::ContactItemType>(currency));
     }
-    const opentxs::opentxs::ui::PayableList& PayableList(
+    const opentxs::ui::PayableList& PayableList(
         const identifier::Nym& nymID,
         const int currency) const noexcept
     {
@@ -62,42 +62,29 @@ namespace ui
 class AccountActivity;
 class AccountActivityQt;
 class AccountList;
-class AccountListItem;
 class AccountListQt;
 class AccountSummary;
-class AccountSummaryItem;
 class AccountSummaryQt;
 class ActivitySummary;
-class ActivitySummaryItem;
 class ActivitySummaryQt;
 class ActivityThread;
-class ActivityThreadItem;
 class ActivityThreadQt;
-class BalanceItem;
+class BlockchainAccountStatus;
+class BlockchainAccountStatusQt;
 class BlockchainSelection;
 class BlockchainSelectionQt;
 class BlockchainStatistics;
 class BlockchainStatisticsQt;
 class Contact;
-class ContactItem;
 class ContactList;
-class ContactListItem;
 class ContactListQt;
 class ContactQt;
-class ContactSection;
-class ContactSubsection;
-class IssuerItem;
-class ListRow;
 class MessagableList;
 class MessagableListQt;
 class PayableList;
-class PayableListItem;
 class PayableListQt;
 class Profile;
-class ProfileItem;
 class ProfileQt;
-class ProfileSection;
-class ProfileSubsection;
 class SeedValidator;
 class UnitList;
 class UnitListQt;
@@ -160,6 +147,15 @@ public:
         const SimpleCallback updateCB = {}) const noexcept;
     /// Caller does not own this pointer
     QAbstractItemModel* BlankModel(const std::size_t columns) const noexcept;
+    const opentxs::ui::BlockchainAccountStatus& BlockchainAccountStatus(
+        const identifier::Nym& nymID,
+        const opentxs::blockchain::Type chain,
+        const SimpleCallback updateCB = {}) const noexcept;
+    /// Caller does not own this pointer
+    opentxs::ui::BlockchainAccountStatusQt* BlockchainAccountStatusQt(
+        const identifier::Nym& nymID,
+        const opentxs::blockchain::Type chain,
+        const SimpleCallback updateCB = {}) const noexcept;
     const identifier::Nym& BlockchainIssuerID(
         const opentxs::blockchain::Type chain) const noexcept;
     const identifier::Server& BlockchainNotaryID(

@@ -5,10 +5,9 @@
 
 #pragma once
 
-#if OT_QT
-#include <QHash>
-#endif  // OT_QT
+#include <list>
 #include <map>
+#include <mutex>
 #include <set>
 #include <string>
 #include <utility>
@@ -19,6 +18,7 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/contact/ContactSectionName.hpp"
 #include "ui/base/List.hpp"
 #include "ui/base/Widget.hpp"
@@ -68,15 +68,12 @@ using ContactType = List<
 class Contact final : public ContactType
 {
 public:
+    auto ClearCallbacks() const noexcept -> void final;
     auto ContactID() const noexcept -> std::string final;
     auto DisplayName() const noexcept -> std::string final;
-#if OT_QT
-    int FindRow(const ContactRowID& id) const noexcept final
-    {
-        return find_row(id);
-    }
-#endif
     auto PaymentCode() const noexcept -> std::string final;
+
+    auto SetCallbacks(Callbacks&& cb) noexcept -> void final;
 
     Contact(
         const api::client::internal::Manager& api,
@@ -85,10 +82,16 @@ public:
     ~Contact() final;
 
 private:
+    struct CallbackHolder {
+        mutable std::mutex lock_{};
+        Callbacks cb_{};
+    };
+
     static const std::set<contact::ContactSectionName> allowed_types_;
     static const std::map<contact::ContactSectionName, int> sort_keys_;
 
     const ListenerDefinitions listeners_;
+    mutable CallbackHolder callbacks_;
     std::string name_;
     std::string payment_code_;
 
@@ -106,11 +109,12 @@ private:
     {
         return ContactType::last(id);
     }
-    void update(ContactRowInterface& row, CustomData& custom) const noexcept;
+    auto update(ContactRowInterface& row, CustomData& custom) const noexcept
+        -> void;
 
-    void process_contact(const opentxs::Contact& contact) noexcept;
-    void process_contact(const Message& message) noexcept;
-    void startup() noexcept;
+    auto process_contact(const opentxs::Contact& contact) noexcept -> void;
+    auto process_contact(const Message& message) noexcept -> void;
+    auto startup() noexcept -> void;
 
     Contact() = delete;
     Contact(const Contact&) = delete;

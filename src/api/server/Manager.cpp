@@ -115,6 +115,11 @@ auto Factory::ServerManager(
 }
 }  // namespace opentxs
 
+namespace opentxs::api::server
+{
+auto Manager::DefaultMintKeyBytes() noexcept -> std::size_t { return 1536u; }
+}  // namespace opentxs::api::server
+
 namespace opentxs::api::server::implementation
 {
 Manager::Manager(
@@ -160,7 +165,7 @@ Manager::Manager(
     , mint_scan_lock_()
     , mints_()
     , mints_to_check_()
-    , mint_key_size_(OT_MINT_KEY_SIZE_DEFAULT)
+    , mint_key_size_(args_.DefaultMintKeyBytes())
 #endif  // OT_CASH
 {
     wallet_.reset(opentxs::Factory::Wallet(*this));
@@ -499,8 +504,8 @@ void Manager::mint() const
         if (generate) {
             generate_mint(serverID, unitID, next);
         } else {
-            LogDetail(OT_METHOD)(__FUNCTION__)(
-                ": Existing mint file for ")(unitID)(" is still valid.")
+            LogDetail(OT_METHOD)(__FUNCTION__)(": Existing mint file for ")(
+                unitID)(" is still valid.")
                 .Flush();
         }
     }

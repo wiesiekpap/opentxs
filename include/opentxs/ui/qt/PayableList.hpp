@@ -6,31 +6,30 @@
 #ifndef OPENTXS_UI_PAYABLELISTQT_HPP
 #define OPENTXS_UI_PAYABLELISTQT_HPP
 
-#include <QIdentityProxyModel>
+#include <QObject>
+#include <QString>
 
 #include "opentxs/opentxs_export.hpp"  // IWYU pragma: keep
+#include "opentxs/ui/qt/Model.hpp"
+
+class QObject;
 
 namespace opentxs
 {
 namespace ui
 {
-namespace implementation
+namespace internal
 {
-class PayableList;
-}  // namespace implementation
+struct PayableList;
+}  // namespace internal
 
 class PayableListQt;
 }  // namespace ui
 }  // namespace opentxs
 
-class OPENTXS_EXPORT opentxs::ui::PayableListQt final
-    : public QIdentityProxyModel
+class OPENTXS_EXPORT opentxs::ui::PayableListQt final : public qt::Model
 {
     Q_OBJECT
-
-signals:
-    void updated() const;
-
 public:
     // Table layout: name, payment code
     enum Roles {
@@ -38,14 +37,14 @@ public:
         SectionRole = Qt::UserRole + 1,
     };
 
-    PayableListQt(implementation::PayableList& parent) noexcept;
+    PayableListQt(internal::PayableList& parent) noexcept;
 
-    ~PayableListQt() final = default;
+    ~PayableListQt() final;
 
 private:
-    implementation::PayableList& parent_;
+    struct Imp;
 
-    void notify() const noexcept;
+    Imp* imp_;
 
     PayableListQt(const PayableListQt&) = delete;
     PayableListQt(PayableListQt&&) = delete;

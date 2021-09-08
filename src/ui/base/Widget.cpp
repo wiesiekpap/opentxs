@@ -27,7 +27,7 @@ auto verify_empty(const CustomData& custom) noexcept -> bool
         ++counter;
 
         if (nullptr != ptr) {
-            LogOutput("opentxs::ui::implementation::")(__FUNCTION__)(
+            LogOutput("opentxs::ui::implementation::")(__func__)(
                 ": unused pointer at index ")(counter)
                 .Flush();
 

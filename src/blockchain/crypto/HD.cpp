@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <sstream>
 #include <stdexcept>
 #include <tuple>
 #include <utility>
@@ -31,6 +32,7 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
 #include "opentxs/protobuf/BlockchainAddress.pb.h"
@@ -58,7 +60,7 @@ auto BlockchainHDSubaccount(
         return std::make_unique<ReturnType>(
             api, parent, path, standard, reason, id);
     } catch (const std::exception& e) {
-        LogVerbose("opentxs::Factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogVerbose("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
@@ -76,7 +78,7 @@ auto BlockchainHDSubaccount(
     try {
         return std::make_unique<ReturnType>(api, parent, serialized, id);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
@@ -101,12 +103,13 @@ HD::HD(
           SubaccountType::HD,
           Identifier::Factory(Translate(parent.Chain()), path),
           path,
-          {{internalType, false, {}}, {externalType, true, {}}},
+          {api, internalType, false, externalType, true},
           id)
     , standard_(standard)
     , version_(DefaultVersion)
     , cached_internal_()
     , cached_external_()
+    , name_()
 {
     init(reason);
 }
@@ -124,8 +127,8 @@ HD::HD(
           serialized.internaladdress().size(),
           serialized.externaladdress().size(),
           [&] {
-              auto out = ChainData{
-                  {internalType, false, {}}, {externalType, true, {}}};
+              auto out =
+                  ChainData{api, internalType, false, externalType, true};
               auto& internal = out.internal_.map_;
               auto& external = out.external_.map_;
               internal.reserve(serialized.internaladdress().size());
@@ -192,6 +195,7 @@ HD::HD(
     , version_(serialized.version())
     , cached_internal_()
     , cached_external_()
+    , name_()
 {
     init();
 }
@@ -202,6 +206,23 @@ auto HD::account_already_exists(const rLock&) const noexcept -> bool
         parent_.NymID().str(), Translate(chain_));
 
     return 0 < existing.count(id_->str());
+}
+
+auto HD::Name() const noexcept -> std::string
+{
+    auto lock = rLock{lock_};
+
+    if (false == name_.has_value()) {
+        auto name = std::stringstream{};
+        name << opentxs::print(standard_);
+        name << ": ";
+        name << opentxs::crypto::Print(path_, false);
+        name_ = name.str();
+    }
+
+    OT_ASSERT(name_.has_value());
+
+    return name_.value();
 }
 
 auto HD::PrivateKey(
@@ -218,11 +239,10 @@ auto HD::PrivateKey(
             OT_FAIL;
         }
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Invalid subchain (")(opentxs::print(
-                type))("). Only ")(opentxs::
-                                       print(internalType))(" and ")(opentxs::print(
-                externalType))(" are valid for this account.")
+            LogOutput(OT_METHOD)(__func__)(": Invalid subchain (")(
+                opentxs::print(type))("). Only ")(opentxs::print(internalType))(
+                " and ")(opentxs::print(externalType))(
+                " are valid for this account.")
                 .Flush();
 
             return {};
@@ -239,7 +259,7 @@ auto HD::PrivateKey(
         pKey = api_.Seeds().AccountKey(path_, change, reason);
 
         if (!pKey) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to derive account key")
+            LogOutput(OT_METHOD)(__func__)(": Failed to derive account key")
                 .Flush();
 
             return {};
@@ -282,8 +302,7 @@ auto HD::save(const rLock& lock) const noexcept -> bool
         api_.Storage().Store(parent_.NymID().str(), type, serialized);
 
     if (false == saved) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to save HD account.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to save HD account.").Flush();
 
         return false;
     }

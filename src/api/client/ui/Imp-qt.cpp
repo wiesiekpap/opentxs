@@ -22,18 +22,6 @@
 #include "opentxs/ui/qt/BlockchainSelection.hpp"
 #include "opentxs/ui/qt/BlockchainStatistics.hpp"
 #include "opentxs/ui/qt/SeedValidator.hpp"
-#include "ui/accountactivity/AccountActivity.hpp"
-#include "ui/accountlist/AccountList.hpp"
-#include "ui/accountsummary/AccountSummary.hpp"
-#include "ui/activitysummary/ActivitySummary.hpp"
-#include "ui/activitythread/ActivityThread.hpp"
-#include "ui/blockchainselection/BlockchainSelection.hpp"
-#include "ui/blockchainstatistics/BlockchainStatistics.hpp"
-#include "ui/contact/Contact.hpp"
-#include "ui/contactlist/ContactList.hpp"
-#include "ui/messagablelist/MessagableList.hpp"
-#include "ui/payablelist/PayableList.hpp"
-#include "ui/profile/Profile.hpp"
 
 //#define OT_METHOD "opentxs::api::client::UI"
 
@@ -49,21 +37,21 @@ ImpQt::ImpQt(
     , account_lists_qt_()
     , account_summaries_qt_()
     , activity_summaries_qt_()
-    , contacts_qt_()
+    , activity_threads_qt_()
+    , blockchain_account_status_qt_()
+    , blockchain_selection_qt_()
+    , blockchain_statistics_qt_()
     , contact_lists_qt_()
+    , contacts_qt_()
     , messagable_lists_qt_()
     , payable_lists_qt_()
-    , activity_threads_qt_()
     , profiles_qt_()
     , seed_validators_()
     , unit_lists_qt_()
-    , blockchain_selection_qt_()
-    , blockchain_statistics_qt_()
 {
     // WARNING: do not access api_.Wallet() during construction
 }
 
-#if OT_QT
 auto ImpQt::Blank::get(const std::size_t columns) noexcept
     -> opentxs::ui::BlankModel*
 {
@@ -81,7 +69,6 @@ auto ImpQt::Blank::get(const std::size_t columns) noexcept
                      std::forward_as_tuple(columns))
                  .first->second);
 }
-#endif  // OT_QT
 
 auto ImpQt::AccountActivityQt(
     const identifier::Nym& nymID,
@@ -94,7 +81,6 @@ auto ImpQt::AccountActivityQt(
 
     if (accounts_qt_.end() == it) {
         auto& native = account_activity(lock, nymID, accountID, cb);
-        native->WaitForStartup();
         it = accounts_qt_
                  .emplace(
                      std::move(key),
@@ -116,7 +102,6 @@ auto ImpQt::AccountListQt(const identifier::Nym& nymID, const SimpleCallback cb)
 
     if (account_lists_qt_.end() == it) {
         auto& native = account_list(lock, nymID, cb);
-        native->WaitForStartup();
         it = account_lists_qt_
                  .emplace(
                      std::move(key),
@@ -140,7 +125,6 @@ auto ImpQt::AccountSummaryQt(
 
     if (account_summaries_qt_.end() == it) {
         auto& native = account_summary(lock, nymID, currency, cb);
-        native->WaitForStartup();
         it = account_summaries_qt_
                  .emplace(
                      std::move(key),
@@ -163,7 +147,6 @@ auto ImpQt::ActivitySummaryQt(
 
     if (activity_summaries_qt_.end() == it) {
         auto& native = activity_summary(lock, nymID, cb);
-        native->WaitForStartup();
         it = activity_summaries_qt_
                  .emplace(
                      std::move(key),
@@ -187,7 +170,6 @@ auto ImpQt::ActivityThreadQt(
 
     if (activity_threads_qt_.end() == it) {
         auto& native = activity_thread(lock, nymID, threadID, cb);
-        native->WaitForStartup();
         it = activity_threads_qt_
                  .emplace(
                      std::move(key),
@@ -206,6 +188,30 @@ auto ImpQt::BlankModel(const std::size_t columns) const noexcept
     return blank_.get(columns);
 }
 
+auto ImpQt::BlockchainAccountStatusQt(
+    const identifier::Nym& nymID,
+    const opentxs::blockchain::Type chain,
+    const SimpleCallback cb) const noexcept
+    -> opentxs::ui::BlockchainAccountStatusQt*
+{
+    auto lock = Lock{lock_};
+    auto key = BlockchainAccountStatusKey{nymID, chain};
+    auto it = blockchain_account_status_qt_.find(key);
+
+    if (blockchain_account_status_qt_.end() == it) {
+        auto& native = blockchain_account_status(lock, nymID, chain, cb);
+        it = blockchain_account_status_qt_
+                 .emplace(
+                     std::move(key),
+                     opentxs::factory::BlockchainAccountStatusQtModel(*native))
+                 .first;
+
+        OT_ASSERT(it->second);
+    }
+
+    return it->second.get();
+}
+
 auto ImpQt::BlockchainSelectionQt(
     const opentxs::ui::Blockchains key,
     const SimpleCallback updateCB) const noexcept
@@ -216,7 +222,6 @@ auto ImpQt::BlockchainSelectionQt(
 
     if (blockchain_selection_qt_.end() == it) {
         auto& native = blockchain_selection(lock, key, updateCB);
-        native->WaitForStartup();
         it = blockchain_selection_qt_
                  .emplace(
                      key,
@@ -237,7 +242,6 @@ auto ImpQt::BlockchainStatisticsQt(const SimpleCallback cb) const noexcept
 
     if (false == bool(blockchain_statistics_qt_)) {
         auto& native = blockchain_statistics(lock, cb);
-        native->WaitForStartup();
         blockchain_statistics_qt_ =
             opentxs::factory::BlockchainStatisticsQtModel(*native);
     }
@@ -256,7 +260,6 @@ auto ImpQt::ContactQt(const Identifier& contactID, const SimpleCallback cb)
 
     if (contacts_qt_.end() == it) {
         auto& native = contact(lock, contactID, cb);
-        native->WaitForStartup();
         it = contacts_qt_
                  .emplace(
                      std::move(key), opentxs::factory::ContactQtModel(*native))
@@ -277,7 +280,6 @@ auto ImpQt::ContactListQt(const identifier::Nym& nymID, const SimpleCallback cb)
 
     if (contact_lists_qt_.end() == it) {
         auto& native = contact_list(lock, nymID, cb);
-        native->WaitForStartup();
         it = contact_lists_qt_
                  .emplace(
                      std::move(key),
@@ -300,7 +302,6 @@ auto ImpQt::MessagableListQt(
 
     if (messagable_lists_qt_.end() == it) {
         auto& native = messagable_list(lock, nymID, cb);
-        native->WaitForStartup();
         it = messagable_lists_qt_
                  .emplace(
                      std::move(key),
@@ -324,7 +325,6 @@ auto ImpQt::PayableListQt(
 
     if (payable_lists_qt_.end() == it) {
         auto& native = payable_list(lock, nymID, currency, cb);
-        native->WaitForStartup();
         it = payable_lists_qt_
                  .emplace(
                      std::move(key),
@@ -346,7 +346,6 @@ auto ImpQt::ProfileQt(const identifier::Nym& nymID, const SimpleCallback cb)
 
     if (profiles_qt_.end() == it) {
         auto& native = profile(lock, nymID, cb);
-        native->WaitForStartup();
         it = profiles_qt_
                  .emplace(
                      std::move(key), opentxs::factory::ProfileQtModel(*native))
@@ -378,15 +377,16 @@ auto ImpQt::SeedValidator(
 
 auto ImpQt::ShutdownModels() noexcept -> void
 {
-    blockchain_statistics_qt_.reset();
-    blockchain_selection_qt_.clear();
     unit_lists_qt_.clear();
     profiles_qt_.clear();
-    activity_threads_qt_.clear();
     payable_lists_qt_.clear();
     messagable_lists_qt_.clear();
-    contact_lists_qt_.clear();
     contacts_qt_.clear();
+    contact_lists_qt_.clear();
+    blockchain_statistics_qt_.reset();
+    blockchain_selection_qt_.clear();
+    blockchain_account_status_qt_.clear();
+    activity_threads_qt_.clear();
     activity_summaries_qt_.clear();
     account_summaries_qt_.clear();
     account_lists_qt_.clear();

@@ -4,7 +4,8 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
-#include <cstddef>
+#include <cstdlib>
+#include <iosfwd>
 #include <list>
 #include <memory>
 #include <optional>
@@ -12,16 +13,63 @@
 #include <utility>
 #include <vector>
 
+#include "internal/ui/UI.hpp"
+#include "opentxs/Types.hpp"
+#include "opentxs/core/Identifier.hpp"
 #include "ui/base/Items.hpp"
 
-namespace
+namespace ottest
 {
 using Key = std::string;
+using ValueType = std::string;
 using ID = int;
-using Value = std::string;
+using Active = std::vector<ID>;
+
+struct Value final : public opentxs::ui::internal::Row {
+    ValueType data_;
+
+    operator const ValueType&() const noexcept { return data_; }
+
+    auto ClearCallbacks() const noexcept -> void final {}
+    auto index() const noexcept -> std::ptrdiff_t final { return row_index_; }
+    auto Last() const noexcept -> bool final { return false; }
+    auto SetCallback(opentxs::SimpleCallback) const noexcept -> void final {}
+    auto Valid() const noexcept -> bool final { return false; }
+    auto WidgetID() const noexcept -> opentxs::OTIdentifier final { abort(); }
+
+    auto AddChildren(opentxs::ui::implementation::CustomData&& data) noexcept
+        -> void final
+    {
+    }
+
+    Value(const char* in) noexcept
+        : data_(in)
+        , row_index_(next_index())
+    {
+    }
+    Value(Value&& rhs) noexcept
+        : data_(std::move(rhs.data_))
+        , row_index_(rhs.row_index_)
+    {
+    }
+    Value(const Value& rhs) noexcept
+        : data_(rhs.data_)
+        , row_index_(rhs.row_index_)
+    {
+    }
+
+private:
+    const std::ptrdiff_t row_index_;
+};
+
+auto operator==(const Value& lhs, const ValueType& rhs) noexcept -> bool;
+auto operator==(const Value& lhs, const ValueType& rhs) noexcept -> bool
+{
+    return lhs.data_ == rhs;
+}
+
 using Type =
     opentxs::ui::implementation::ListItems<ID, Key, std::shared_ptr<Value>>;
-using Active = std::vector<ID>;
 
 struct Data {
     Key key_;
@@ -122,10 +170,10 @@ TEST(UI_items, empty)
 TEST(UI_items, insert_first_item)
 {
     const auto& [key, id, value] = vector_.at(2);
-    const auto [it, index] = items_.find_insert_position(key, id);
+    const auto [it, prev] = items_.find_insert_position(key, id);
 
     EXPECT_EQ(it, items_.end());
-    EXPECT_EQ(index, 0);
+    EXPECT_EQ(prev, nullptr);
 
     items_.insert_before(it, key, id, std::make_shared<Value>(value));
     const auto active = Active{vector_.at(2).id_};
@@ -156,11 +204,11 @@ TEST(UI_items, insert_before)
 {
     {
         const auto& [key, id, value] = vector_.at(0);
-        const auto [it, index] = items_.find_insert_position(key, id);
+        const auto [it, prev] = items_.find_insert_position(key, id);
 
         ASSERT_NE(it, items_.end());
         EXPECT_EQ(it->id_, vector_.at(2).id_);
-        EXPECT_EQ(index, 0);
+        EXPECT_EQ(prev, nullptr);
 
         items_.insert_before(it, key, id, std::make_shared<Value>(value));
         const auto active = Active{vector_.at(0).id_, vector_.at(2).id_};
@@ -174,11 +222,11 @@ TEST(UI_items, insert_before)
     {
 
         const auto& [key, id, value] = vector_.at(1);
-        const auto [it, index] = items_.find_insert_position(key, id);
+        const auto [it, prev] = items_.find_insert_position(key, id);
 
         ASSERT_NE(it, items_.end());
         EXPECT_EQ(it->id_, vector_.at(2).id_);
-        EXPECT_EQ(index, 1);
+        EXPECT_EQ(prev, items_.at(0).item_.get());
 
         items_.insert_before(it, key, id, std::make_shared<Value>(value));
         const auto active =
@@ -197,10 +245,10 @@ TEST(UI_items, insert_after)
 {
     {
         const auto& [key, id, value] = vector_.at(4);
-        const auto [it, index] = items_.find_insert_position(key, id);
+        const auto [it, prev] = items_.find_insert_position(key, id);
 
         EXPECT_EQ(it, items_.end());
-        EXPECT_EQ(index, 3);
+        EXPECT_EQ(prev, items_.at(2).item_.get());
 
         items_.insert_before(it, key, id, std::make_shared<Value>(value));
         const auto active = Active{
@@ -219,11 +267,11 @@ TEST(UI_items, insert_after)
     }
     {
         const auto& [key, id, value] = vector_.at(3);
-        const auto [it, index] = items_.find_insert_position(key, id);
+        const auto [it, prev] = items_.find_insert_position(key, id);
 
         ASSERT_NE(it, items_.end());
         EXPECT_EQ(it->id_, vector_.at(4).id_);
-        EXPECT_EQ(index, 3);
+        EXPECT_EQ(prev, items_.at(2).item_.get());
 
         items_.insert_before(it, key, id, std::make_shared<Value>(value));
         const auto active = Active{
@@ -244,10 +292,10 @@ TEST(UI_items, insert_after)
     }
     {
         const auto& [key, id, value] = vector_.at(5);
-        const auto [it, index] = items_.find_insert_position(key, id);
+        const auto [it, prev] = items_.find_insert_position(key, id);
 
         EXPECT_EQ(it, items_.end());
-        EXPECT_EQ(index, 5);
+        EXPECT_EQ(prev, items_.at(4).item_.get());
 
         items_.insert_before(it, key, id, std::make_shared<Value>(value));
         const auto active = Active{
@@ -282,18 +330,18 @@ TEST(UI_items, move_up)
     auto& [before, after] = move.value();
 
     {
-        const auto& [it, index] = before;
+        const auto& [it, prev] = before;
 
         ASSERT_NE(it, items_.end());
         EXPECT_EQ(it->id_, oldID);
-        EXPECT_EQ(index, 2);
+        EXPECT_EQ(prev, items_.at(1).item_.get());
     }
     {
-        const auto& [it, index] = after;
+        const auto& [it, prev] = after;
 
         ASSERT_NE(it, items_.end());
         EXPECT_EQ(it->id_, vector_.at(0).id_);
-        EXPECT_EQ(index, 0);
+        EXPECT_EQ(prev, nullptr);
     }
 
     items_.move_before(oldID, before.first, newKey, newID, after.first);
@@ -327,18 +375,18 @@ TEST(UI_items, move_down)
     auto& [before, after] = move.value();
 
     {
-        const auto& [it, index] = before;
+        const auto& [it, prev] = before;
 
         ASSERT_NE(it, items_.end());
         EXPECT_EQ(it->id_, oldID);
-        EXPECT_EQ(index, 2);
+        EXPECT_EQ(prev, items_.at(1).item_.get());
     }
     {
-        const auto& [it, index] = after;
+        const auto& [it, prev] = after;
 
         ASSERT_NE(it, items_.end());
         EXPECT_EQ(it->id_, vector_.at(4).id_);
-        EXPECT_EQ(index, 4);
+        EXPECT_EQ(prev, items_.at(3).item_.get());
     }
 
     items_.move_before(oldID, before.first, newKey, newID, after.first);
@@ -489,4 +537,4 @@ TEST(UI_items, reverse_sort)
     EXPECT_TRUE(test_row(items, 4, vector_.at(1)));
     EXPECT_TRUE(test_row(items, 5, vector_.at(0)));
 }
-}  // namespace
+}  // namespace ottest

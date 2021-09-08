@@ -188,10 +188,11 @@ constexpr auto value(const WorkType in) noexcept
  *       * Additional frames:
  *          1: chain type as blockchain::Type
  *          2: account owner as identifier::Nym (encoded as byte sequence)
- *          3: account id as Identifier (encoded as byte sequence)
- *          4: subchain type as blockchain::crypto::Subchain
- *          5: last scan height as blockchain::block::Height
- *          6: last scan hash as blockchain::block::Hash (encoded as byte
+ *          3: account type as api::client::Blockchain::AccountType
+ *          4: account id as Identifier (encoded as byte sequence)
+ *          5: subchain type as blockchain::crypto::Subchain
+ *          6: last scan height as blockchain::block::Height
+ *          7: last scan hash as blockchain::block::Hash (encoded as byte
  *             sequence)
  *
  *   BlockchainNewFilter: reports the receipt of a new cfilter

@@ -5,9 +5,7 @@
 
 #pragma once
 
-#if OT_QT
-#include <QHash>
-#endif  // OT_QT
+#include <list>
 #include <map>
 #include <set>
 #include <utility>
@@ -19,6 +17,7 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
@@ -71,12 +70,6 @@ public:
     {
         return currency_;
     }
-#if OT_QT
-    int FindRow(const AccountSummaryRowID& id) const noexcept final
-    {
-        return find_row(id);
-    }
-#endif
     auto NymID() const noexcept -> const identifier::Nym& final
     {
         return primary_id_;

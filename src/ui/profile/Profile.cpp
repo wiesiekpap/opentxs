@@ -7,10 +7,8 @@
 #include "1_Internal.hpp"          // IWYU pragma: associated
 #include "ui/profile/Profile.hpp"  // IWYU pragma: associated
 
-#if OT_QT
-#include <QString>
-#endif  // OT_QT
 #include <algorithm>
+#include <functional>
 #include <list>
 #include <map>
 #include <memory>
@@ -40,9 +38,6 @@
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/ui/Profile.hpp"
 #include "opentxs/ui/ProfileSection.hpp"
-#if OT_QT
-#include "opentxs/ui/qt/Profile.hpp"
-#endif  // OT_QT
 #include "ui/base/List.hpp"
 
 template struct std::pair<int, std::string>;
@@ -54,41 +49,13 @@ namespace opentxs::factory
 auto ProfileModel(
     const api::client::internal::Manager& api,
     const identifier::Nym& nymID,
-    const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::Profile>
+    const SimpleCallback& cb) noexcept -> std::unique_ptr<ui::internal::Profile>
 {
     using ReturnType = ui::implementation::Profile;
 
     return std::make_unique<ReturnType>(api, nymID, cb);
 }
-
-#if OT_QT
-auto ProfileQtModel(ui::implementation::Profile& parent) noexcept
-    -> std::unique_ptr<ui::ProfileQt>
-{
-    using ReturnType = ui::ProfileQt;
-
-    return std::make_unique<ReturnType>(parent);
-}
-#endif  // OT_QT
 }  // namespace opentxs::factory
-
-#if OT_QT
-namespace opentxs::ui
-{
-QT_PROXY_MODEL_WRAPPER(ProfileQt, implementation::Profile)
-
-QString ProfileQt::displayName() const noexcept
-{
-    return parent_.DisplayName().c_str();
-}
-QString ProfileQt::nymID() const noexcept { return parent_.ID().c_str(); }
-QString ProfileQt::paymentCode() const noexcept
-{
-    return parent_.PaymentCode().c_str();
-}
-}  // namespace opentxs::ui
-#endif
 
 namespace opentxs::ui::implementation
 {
@@ -104,15 +71,15 @@ Profile::Profile(
     const api::client::internal::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
-    : ProfileList(api, nymID, cb)
+    : ProfileList(api, nymID, cb, false)
     , listeners_({
           {api_.Endpoints().NymDownload(),
            new MessageProcessor<Profile>(&Profile::process_nym)},
       })
+    , callbacks_()
     , name_(nym_name(api_.Wallet(), nymID))
     , payment_code_()
 {
-    init();
     setup_listeners(listeners_);
     startup_.reset(new std::thread(&Profile::startup, this));
 
@@ -219,6 +186,13 @@ auto Profile::check_type(const contact::ContactSectionName type) noexcept
     return 1 == allowed_types_.count(type);
 }
 
+auto Profile::ClearCallbacks() const noexcept -> void
+{
+    Widget::ClearCallbacks();
+    auto lock = Lock{callbacks_.lock_};
+    callbacks_.cb_ = {};
+}
+
 auto Profile::construct_row(
     const ProfileRowID& id,
     const ContactSortKey& index,
@@ -267,12 +241,40 @@ auto Profile::PaymentCode() const noexcept -> std::string
 
 void Profile::process_nym(const identity::Nym& nym) noexcept
 {
-    rLock lock{recursive_lock_};
-    name_ = nym.Alias();
-    payment_code_ = nym.PaymentCode();
-    lock.unlock();
-    UpdateNotify();
-    std::set<ProfileRowID> active{};
+    {
+        const auto name = nym.Alias();
+        const auto code = nym.PaymentCode();
+        auto nameChanged{false};
+        auto codeChanged{false};
+
+        {
+            auto lock = rLock{recursive_lock_};
+
+            if (name_ != name) {
+                name_ = name;
+                nameChanged = true;
+            }
+
+            if (payment_code_ != code) {
+                payment_code_ = code;
+                codeChanged = true;
+            }
+        }
+
+        {
+            auto lock = Lock{callbacks_.lock_};
+            auto& cb = callbacks_.cb_;
+
+            if (nameChanged && cb.name_) { cb.name_(name.c_str()); }
+            if (codeChanged && cb.payment_code_) {
+                cb.payment_code_(code.c_str());
+            }
+        }
+
+        if (nameChanged || codeChanged) { UpdateNotify(); }
+    }
+
+    auto active = std::set<ProfileRowID>{};
 
     for (const auto& section : nym.Claims()) {
         auto& type = section.first;
@@ -321,6 +323,12 @@ auto Profile::SetActive(
     return section.SetActive(type, claimID, active);
 }
 
+auto Profile::SetCallbacks(Callbacks&& cb) noexcept -> void
+{
+    auto lock = Lock{callbacks_.lock_};
+    callbacks_.cb_ = std::move(cb);
+}
+
 auto Profile::SetPrimary(
     const int sectionType,
     const int type,
@@ -356,7 +364,7 @@ auto Profile::sort_key(const contact::ContactSectionName type) noexcept -> int
 
 void Profile::startup() noexcept
 {
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": Loading nym ")(primary_id_).Flush();
+    LogVerbose(OT_METHOD)(__func__)(": Loading nym ")(primary_id_).Flush();
     const auto nym = api_.Wallet().Nym(primary_id_);
 
     OT_ASSERT(nym)

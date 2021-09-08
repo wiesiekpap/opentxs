@@ -50,6 +50,8 @@ namespace internal
 {
 struct Core;
 }  // namespace internal
+
+class Core;
 }  // namespace api
 
 namespace blockchain
@@ -97,6 +99,10 @@ public:
         std::set<OTIdentifier>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool final;
     auto ID() const noexcept -> const Identifier& final { return id_; }
+    auto Internal() const noexcept -> internal::Subaccount& final
+    {
+        return const_cast<Subaccount&>(*this);
+    }
     auto IncomingTransactions(const Key& key) const noexcept
         -> std::set<std::string> final;
     auto Parent() const noexcept -> const crypto::Account& final
@@ -110,6 +116,7 @@ public:
     {
         return {};
     }
+    auto ScanProgress(Subchain type) const noexcept -> block::Position override;
 
     auto Confirm(
         const Subchain type,
@@ -123,6 +130,11 @@ public:
         const Subchain type,
         const Bip32Index index,
         const std::string& label) noexcept(false) -> bool final;
+    auto SetScanProgress(
+        const block::Position& progress,
+        Subchain type) noexcept -> void override
+    {
+    }
     auto Type() const noexcept -> SubaccountType final { return type_; }
     auto Unconfirm(
         const Subchain type,
@@ -142,9 +154,12 @@ protected:
     using Revision = std::uint64_t;
 
     struct AddressData {
-        const Subchain type_{};
-        const bool set_contact_{};
-        AddressMap map_{};
+        const Subchain type_;
+        const bool set_contact_;
+        block::Position progress_;
+        AddressMap map_;
+
+        AddressData(const api::Core& api, Subchain type, bool contact) noexcept;
     };
 
     const api::internal::Core& api_;

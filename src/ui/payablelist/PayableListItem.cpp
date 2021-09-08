@@ -7,9 +7,6 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "ui/payablelist/PayableListItem.hpp"  // IWYU pragma: associated
 
-#if OT_QT
-#include <QObject>
-#endif  // OT_QT
 #include <memory>
 
 #include "internal/api/client/Client.hpp"
@@ -58,23 +55,6 @@ auto PayableListItem::PaymentCode() const noexcept -> std::string
 
     return payment_code_;
 }
-
-#if OT_QT
-QVariant PayableListItem::qt_data(const int column, int role) const noexcept
-{
-    if (0 == column) { return ContactListItem::qt_data(column, role); }
-
-    switch (role) {
-        case Qt::DisplayRole: {
-
-            return PaymentCode().c_str();
-        }
-        default: {
-            return {};
-        }
-    }
-}
-#endif
 
 auto PayableListItem::reindex(
     const ContactListSortKey& key,

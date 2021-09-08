@@ -6,30 +6,30 @@
 #ifndef OPENTXS_UI_ACCOUNTSUMMARYQT_HPP
 #define OPENTXS_UI_ACCOUNTSUMMARYQT_HPP
 
-#include <QIdentityProxyModel>
+#include <QObject>
+#include <QString>
 
 #include "opentxs/opentxs_export.hpp"  // IWYU pragma: keep
+#include "opentxs/ui/qt/Model.hpp"
+
+class QObject;
 
 namespace opentxs
 {
 namespace ui
 {
-namespace implementation
+namespace internal
 {
-class AccountSummary;
-}  // namespace implementation
+struct AccountSummary;
+}  // namespace internal
 
 class AccountSummaryQt;
 }  // namespace ui
 }  // namespace opentxs
 
-class OPENTXS_EXPORT opentxs::ui::AccountSummaryQt final
-    : public QIdentityProxyModel
+class OPENTXS_EXPORT opentxs::ui::AccountSummaryQt final : public qt::Model
 {
     Q_OBJECT
-
-signals:
-    void updated() const;
 
 public:
     // Tree layout
@@ -46,14 +46,14 @@ public:
         BalanceColumn = 4,
     };
 
-    AccountSummaryQt(implementation::AccountSummary& parent) noexcept;
+    AccountSummaryQt(internal::AccountSummary& parent) noexcept;
 
-    ~AccountSummaryQt() final = default;
+    ~AccountSummaryQt() final;
 
 private:
-    implementation::AccountSummary& parent_;
+    struct Imp;
 
-    void notify() const noexcept;
+    Imp* imp_;
 
     AccountSummaryQt(const AccountSummaryQt&) = delete;
     AccountSummaryQt(AccountSummaryQt&&) = delete;

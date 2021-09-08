@@ -8,9 +8,12 @@
 #include "api/HDSeed.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
+#include <iosfwd>
 #include <memory>
+#include <sstream>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include "Proto.tpp"
@@ -577,6 +580,44 @@ auto HDSeed::Seed(
         LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
 
         return factory_.Secret(0);
+    }
+}
+
+auto HDSeed::SeedDescription(std::string seedID) const noexcept -> std::string
+{
+    auto lock = Lock{seed_lock_};
+    const auto primary = storage_.DefaultSeed();
+
+    if (seedID.empty()) { seedID = primary; }
+
+    const auto isDefault = (seedID == primary);
+
+    try {
+        const auto [type, alias] = [&] {
+            auto proto = proto::Seed{};
+            auto name = std::string{};
+
+            if (false == storage_.Load(seedID, proto, name)) {
+                throw std::runtime_error{
+                    std::string{"Failed to load seed "} + seedID};
+            }
+
+            return std::make_pair(
+                opentxs::crypto::Seed::Translate(proto.type()),
+                std::move(name));
+        }();
+        auto out = std::stringstream{};
+        out << opentxs::print(type);
+        out << " seed";
+
+        if (false == alias.empty()) { out << ": " << alias; }
+
+        if (isDefault) { out << " (default)"; }
+
+        return out.str();
+    } catch (...) {
+
+        return "Invalid seed";
     }
 }
 

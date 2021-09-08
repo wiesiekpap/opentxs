@@ -5,9 +5,6 @@
 
 #pragma once
 
-#if OT_QT
-#include <QVariant>
-#endif  // OT_QT
 #include <string>
 
 #include "1_Internal.hpp"
@@ -23,6 +20,8 @@
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/ui/UnitListItem.hpp"
 #include "ui/base/Row.hpp"
+
+class QVariant;
 
 namespace opentxs
 {
@@ -70,15 +69,6 @@ public:
         return row_id_;
     }
 
-#if OT_QT
-    QVariant qt_data(const int column, const int role) const noexcept final;
-#endif
-
-    auto reindex(const UnitListSortKey&, CustomData&) noexcept -> bool final
-    {
-        return false;
-    }
-
     UnitListItem(
         const UnitListInternalInterface& parent,
         const api::client::internal::Manager& api,
@@ -90,6 +80,14 @@ public:
 
 private:
     const UnitListSortKey name_;
+
+    auto qt_data(const int column, const int role, QVariant& out) const noexcept
+        -> void final;
+
+    auto reindex(const UnitListSortKey&, CustomData&) noexcept -> bool final
+    {
+        return false;
+    }
 
     UnitListItem() = delete;
     UnitListItem(const UnitListItem&) = delete;

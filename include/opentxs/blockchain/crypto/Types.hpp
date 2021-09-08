@@ -56,7 +56,8 @@ auto operator==(
 auto operator!=(
     const blockchain::crypto::Key& lhs,
     const blockchain::crypto::Key& rhs) noexcept -> bool;
-auto print(blockchain::crypto::Subchain value) noexcept -> std::string;
-auto print(const blockchain::crypto::Key& key) noexcept -> std::string;
+auto print(blockchain::crypto::HDProtocol) noexcept -> std::string;
+auto print(blockchain::crypto::Subchain) noexcept -> std::string;
+auto print(const blockchain::crypto::Key&) noexcept -> std::string;
 }  // namespace opentxs
 #endif

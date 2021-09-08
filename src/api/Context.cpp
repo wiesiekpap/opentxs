@@ -447,7 +447,7 @@ void Context::start_client(const Lock& lock, const Options& args) const
 auto Context::StartClient(const Options& args, const int instance) const
     -> const api::client::internal::Manager&
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     const auto count = std::max<std::size_t>(0u, instance);
     const auto effective = std::min<std::size_t>(count, client_.size());
@@ -521,7 +521,7 @@ void Context::start_server(const Lock& lock, const Options& args) const
 auto Context::StartServer(const Options& args, const int instance) const
     -> const api::server::Manager&
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     OT_ASSERT(std::numeric_limits<int>::max() > server_.size());
 
@@ -561,5 +561,6 @@ Context::~Context()
     asio_.reset();
     LogSource::Shutdown();
     log_.reset();
+    shutdown_qt();
 }
 }  // namespace opentxs::api::implementation

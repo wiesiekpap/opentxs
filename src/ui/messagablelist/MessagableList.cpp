@@ -14,7 +14,6 @@
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Contacts.hpp"
@@ -27,9 +26,6 @@
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
-#if OT_QT
-#include "opentxs/ui/qt/MessagableList.hpp"
-#endif  // OT_QT
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::MessagableList::"
@@ -40,30 +36,13 @@ auto MessagableListModel(
     const api::client::internal::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::MessagableList>
+    -> std::unique_ptr<ui::internal::MessagableList>
 {
     using ReturnType = ui::implementation::MessagableList;
 
     return std::make_unique<ReturnType>(api, nymID, cb);
 }
-
-#if OT_QT
-auto MessagableListQtModel(ui::implementation::MessagableList& parent) noexcept
-    -> std::unique_ptr<ui::MessagableListQt>
-{
-    using ReturnType = ui::MessagableListQt;
-
-    return std::make_unique<ReturnType>(parent);
-}
-#endif  // OT_QT
 }  // namespace opentxs::factory
-
-#if OT_QT
-namespace opentxs::ui
-{
-QT_PROXY_MODEL_WRAPPER(MessagableListQt, implementation::MessagableList)
-}  // namespace opentxs::ui
-#endif
 
 namespace opentxs::ui::implementation
 {
@@ -71,23 +50,10 @@ MessagableList::MessagableList(
     const api::client::internal::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
-    : MessagableListList(
-          api,
-          nymID,
-          cb,
-          false
-#if OT_QT
-          ,
-          Roles{
-              {MessagableListQt::ContactIDRole, "id"},
-              {MessagableListQt::SectionRole, "section"}},
-          1
-#endif
-          )
+    : MessagableListList(api, nymID, cb, false)
     , Worker(api, {})
     , owner_contact_id_(Widget::api_.Contacts().ContactID(nymID))
 {
-    init();
     init_executor(
         {api.Endpoints().ContactUpdate(), api.Endpoints().NymDownload()});
     pipeline_->Push(MakeWork(Work::init));
@@ -108,7 +74,7 @@ auto MessagableList::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -141,7 +107,7 @@ auto MessagableList::pipeline(const Message& in) noexcept -> void
             shutdown(shutdown_promise_);
         } break;
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unhandled type").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -153,14 +119,14 @@ auto MessagableList::process_contact(
     const MessagableListSortKey& key) noexcept -> void
 {
     if (owner_contact_id_ == id) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Skipping owner contact ")(id)(
-            " (")(key)(")")
+        LogDetail(OT_METHOD)(__func__)(": Skipping owner contact ")(id)(" (")(
+            key.second)(")")
             .Flush();
 
         return;
     } else {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Incoming contact ")(id)(" (")(
-            key)(") is not owner contact: (")(owner_contact_id_)(")")
+        LogDetail(OT_METHOD)(__func__)(": Incoming contact ")(id)(" (")(
+            key.second)(") is not owner contact: (")(owner_contact_id_)(")")
             .Flush();
     }
 
@@ -168,8 +134,8 @@ auto MessagableList::process_contact(
         case Messagability::READY:
         case Messagability::MISSING_RECIPIENT:
         case Messagability::UNREGISTERED: {
-            LogDetail(OT_METHOD)(__FUNCTION__)(": Messagable contact ")(id)(
-                " (")(key)(")")
+            LogDetail(OT_METHOD)(__func__)(": Messagable contact ")(id)(" (")(
+                key.second)(")")
                 .Flush();
             auto custom = CustomData{};
             add_item(id, key, custom);
@@ -180,8 +146,8 @@ auto MessagableList::process_contact(
         case Messagability::CONTACT_LACKS_NYM:
         case Messagability::MISSING_CONTACT:
         default: {
-            LogDetail(OT_METHOD)(__FUNCTION__)(
-                ": Skipping non-messagable contact ")(id)(" (")(key)(")")
+            LogDetail(OT_METHOD)(__func__)(
+                ": Skipping non-messagable contact ")(id)(" (")(key.second)(")")
                 .Flush();
             delete_item(id);
         }
@@ -201,7 +167,7 @@ auto MessagableList::process_contact(const Message& message) noexcept -> void
     OT_ASSERT(false == contactID->empty())
 
     const auto name = Widget::api_.Contacts().ContactName(contactID);
-    process_contact(contactID, name);
+    process_contact(contactID, {false, name});
 }
 
 auto MessagableList::process_nym(const Message& message) noexcept -> void
@@ -218,18 +184,17 @@ auto MessagableList::process_nym(const Message& message) noexcept -> void
 
     const auto contactID = Widget::api_.Contacts().ContactID(nymID);
     const auto name = Widget::api_.Contacts().ContactName(contactID);
-    process_contact(contactID, name);
+    process_contact(contactID, {false, name});
 }
 
 auto MessagableList::startup() noexcept -> void
 {
     const auto contacts = Widget::api_.Contacts().ContactList();
-    LogDetail(OT_METHOD)(__FUNCTION__)(": Loading ")(contacts.size())(
-        " contacts.")
+    LogDetail(OT_METHOD)(__func__)(": Loading ")(contacts.size())(" contacts.")
         .Flush();
 
     for (const auto& [id, alias] : contacts) {
-        process_contact(Identifier::Factory(id), alias);
+        process_contact(Identifier::Factory(id), {false, alias});
     }
 
     finish_startup();

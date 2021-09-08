@@ -3,31 +3,30 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/crypto/SubaccountType.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/crypto/Subchain.hpp"
+// IWYU pragma: no_include "opentxs/contact/ContactItemType.hpp"
+
 #pragma once
 
-#if OT_QT
-#include <QAbstractItemModel>
-#include <QModelIndex>
-#include <QObject>
-#include <QVariant>
-#endif  // OT_QT
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <iosfwd>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
 
+#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -42,10 +41,14 @@
 #include "opentxs/ui/ActivityThread.hpp"
 #include "opentxs/ui/ActivityThreadItem.hpp"
 #include "opentxs/ui/BalanceItem.hpp"
+#include "opentxs/ui/BlockchainAccountStatus.hpp"
 #include "opentxs/ui/BlockchainSelection.hpp"
 #include "opentxs/ui/BlockchainSelectionItem.hpp"
 #include "opentxs/ui/BlockchainStatistics.hpp"
 #include "opentxs/ui/BlockchainStatisticsItem.hpp"
+#include "opentxs/ui/BlockchainSubaccount.hpp"
+#include "opentxs/ui/BlockchainSubaccountSource.hpp"
+#include "opentxs/ui/BlockchainSubchain.hpp"
 #include "opentxs/ui/Contact.hpp"
 #include "opentxs/ui/ContactItem.hpp"
 #include "opentxs/ui/ContactList.hpp"
@@ -66,9 +69,8 @@
 #include "opentxs/ui/UnitList.hpp"
 #include "opentxs/ui/UnitListItem.hpp"
 #include "opentxs/ui/Widget.hpp"
+#include "ui/qt/SendMonitor.hpp"
 #include "util/Blank.hpp"
-
-class QObject;
 
 namespace opentxs
 {
@@ -89,6 +91,8 @@ namespace internal
 struct Blockchain;
 }  // namespace internal
 }  // namespace network
+
+class Core;
 }  // namespace api
 
 namespace contract
@@ -118,19 +122,7 @@ namespace ui
 {
 namespace implementation
 {
-class AccountActivity;
-class AccountList;
-class AccountSummary;
-class ActivitySummary;
-class ActivityThread;
-class BlockchainSelection;
-class BlockchainStatistics;
-class Contact;
-class ContactList;
-class MessagableList;
-class PayableList;
-class Profile;
-class UnitList;
+class SendMonitor;
 }  // namespace implementation
 
 namespace internal
@@ -144,6 +136,9 @@ struct ActivityThreadItem;
 struct BalanceItem;
 struct BlockchainSelectionItem;
 struct BlockchainStatisticsItem;
+struct BlockchainSubaccount;
+struct BlockchainSubaccountSource;
+struct BlockchainSubchain;
 struct ContactItem;
 struct ContactListItem;
 struct ContactSection;
@@ -166,14 +161,19 @@ struct ActivitySummaryItem;
 struct ActivityThread;
 struct ActivityThreadItem;
 struct BalanceItem;
+struct BlockchainAccountStatus;
 struct BlockchainSelection;
 struct BlockchainSelectionItem;
 struct BlockchainStatistics;
 struct BlockchainStatisticsItem;
+struct BlockchainSubaccount;
+struct BlockchainSubaccountSource;
+struct BlockchainSubchain;
 struct Contact;
 struct ContactItem;
 struct ContactList;
 struct ContactListItem;
+struct ContactListType;
 struct ContactSection;
 struct ContactSubsection;
 struct IssuerItem;
@@ -188,15 +188,29 @@ struct UnitList;
 struct UnitListItem;
 }  // namespace internal
 
+namespace qt
+{
+namespace internal
+{
+struct Model;
+}  // namespace internal
+
+class Model;
+}  // namespace qt
+
 class AccountActivityQt;
 class AccountListQt;
 class AccountSummaryQt;
 class ActivitySummaryQt;
 class ActivityThreadQt;
+class AmountValidator;
+class BlockchainAccountStatusQt;
 class BlockchainSelectionQt;
 class BlockchainStatisticsQt;
 class ContactListQt;
 class ContactQt;
+class DestinationValidator;
+class DisplayScaleQt;
 class MessagableListQt;
 class PayableListQt;
 class ProfileQt;
@@ -206,6 +220,9 @@ class UnitListQt;
 class Flag;
 }  // namespace opentxs
 
+class QObject;
+class QVariant;
+
 namespace opentxs::ui
 {
 auto claim_ownership(QObject* object) noexcept -> void;
@@ -214,6 +231,50 @@ auto claim_ownership(QObject* object) noexcept -> void;
 namespace opentxs::ui::implementation
 {
 using CustomData = std::vector<void*>;
+
+template <typename RowID, typename SortKey>
+struct ChildObjectData {
+    RowID id_;
+    SortKey key_;
+    CustomData custom_;
+    CustomData children_;
+
+    ChildObjectData(
+        const RowID& id,
+        const SortKey& key,
+        CustomData&& custom,
+        CustomData&& children) noexcept
+        : id_(id)
+        , key_(key)
+        , custom_(std::move(custom))
+        , children_(std::move(children))
+    {
+    }
+    ChildObjectData(
+        RowID&& id,
+        SortKey&& key,
+        CustomData&& custom,
+        CustomData&& children) noexcept
+        : id_(std::move(id))
+        , key_(std::move(key))
+        , custom_(std::move(custom))
+        , children_(std::move(children))
+    {
+    }
+    ChildObjectData(ChildObjectData&& rhs) noexcept
+        : id_(std::move(rhs.id_))
+        , key_(std::move(rhs.key_))
+        , custom_(std::move(rhs.custom_))
+        , children_(std::move(rhs.children_))
+    {
+    }
+
+private:
+    ChildObjectData() = delete;
+    ChildObjectData(const ChildObjectData&) = delete;
+    auto operator=(const ChildObjectData&) -> ChildObjectData& = delete;
+    auto operator=(ChildObjectData&&) -> ChildObjectData& = delete;
+};
 
 // Account activity
 using AccountActivityPrimaryID = OTNymID;
@@ -278,6 +339,51 @@ using ActivityThreadRowBlank = ui::internal::blank::ActivityThreadItem;
 /** timestamp, index */
 using ActivityThreadSortKey = std::pair<Time, std::uint64_t>;
 
+// Blockchain account status
+
+using BlockchainAccountStatusPrimaryID = OTNymID;
+using BlockchainAccountStatusExternalInterface = ui::BlockchainAccountStatus;
+using BlockchainAccountStatusInternalInterface =
+    ui::internal::BlockchainAccountStatus;
+// NOTE: seed id, local payment code id, or private key id
+using BlockchainAccountStatusRowID = OTIdentifier;
+using BlockchainAccountStatusRowInterface = ui::BlockchainSubaccountSource;
+using BlockchainAccountStatusRowInternal =
+    ui::internal::BlockchainSubaccountSource;
+using BlockchainAccountStatusRowBlank =
+    ui::internal::blank::BlockchainSubaccountSource;
+using BlockchainAccountStatusSortKey =
+    std::pair<blockchain::crypto::SubaccountType, std::string>;
+
+using BlockchainSubaccountSourcePrimaryID = BlockchainAccountStatusPrimaryID;
+using BlockchainSubaccountSourceExternalInterface =
+    ui::BlockchainSubaccountSource;
+using BlockchainSubaccountSourceInternalInterface =
+    ui::internal::BlockchainSubaccountSource;
+// NOTE: subaccount id
+using BlockchainSubaccountSourceRowID = OTIdentifier;
+using BlockchainSubaccountSourceRowInterface = ui::BlockchainSubaccount;
+using BlockchainSubaccountSourceRowInternal =
+    ui::internal::BlockchainSubaccount;
+using BlockchainSubaccountSourceRowBlank =
+    ui::internal::blank::BlockchainSubaccount;
+using BlockchainSubaccountSourceSortKey = std::string;
+using BlockchainSubaccountSourceRowData = ChildObjectData<
+    BlockchainSubaccountSourceRowID,
+    BlockchainSubaccountSourceSortKey>;
+
+using BlockchainSubaccountPrimaryID = BlockchainSubaccountSourcePrimaryID;
+using BlockchainSubaccountExternalInterface = ui::BlockchainSubaccount;
+using BlockchainSubaccountInternalInterface =
+    ui::internal::BlockchainSubaccount;
+using BlockchainSubaccountRowID = blockchain::crypto::Subchain;
+using BlockchainSubaccountRowInterface = ui::BlockchainSubchain;
+using BlockchainSubaccountRowInternal = ui::internal::BlockchainSubchain;
+using BlockchainSubaccountRowBlank = ui::internal::blank::BlockchainSubchain;
+using BlockchainSubaccountSortKey = std::string;
+using BlockchainSubaccountRowData =
+    ChildObjectData<BlockchainSubaccountRowID, BlockchainSubaccountSortKey>;
+
 // Blockchain selection
 using BlockchainSelectionPrimaryID = OTIdentifier;
 using BlockchainSelectionExternalInterface = ui::BlockchainSelection;
@@ -333,12 +439,13 @@ using ContactSubsectionSortKey = int;
 // Contact list
 using ContactListPrimaryID = OTNymID;
 using ContactListExternalInterface = ui::ContactList;
-using ContactListInternalInterface = ui::internal::ContactList;
+using ContactListInternalInterface = ui::internal::ContactListType;
 using ContactListRowID = OTIdentifier;
 using ContactListRowInterface = ui::ContactListItem;
 using ContactListRowInternal = ui::internal::ContactListItem;
 using ContactListRowBlank = ui::internal::blank::ContactListItem;
-using ContactListSortKey = std::string;
+// Items with the first value set to true will be sorted first
+using ContactListSortKey = std::pair<bool, std::string>;
 
 // Messagable list
 using MessagableListPrimaryID = OTNymID;
@@ -348,7 +455,7 @@ using MessagableListRowID = ContactListRowID;
 using MessagableListRowInterface = ContactListRowInterface;
 using MessagableListRowInternal = ContactListRowInternal;
 using MessagableListRowBlank = ContactListRowBlank;
-using MessagableListSortKey = std::string;
+using MessagableListSortKey = ContactListSortKey;
 
 // Payable list
 using PayablePrimaryID = OTNymID;
@@ -358,7 +465,7 @@ using PayableListRowID = ContactListRowID;
 using PayableListRowInterface = ui::PayableListItem;
 using PayableListRowInternal = ui::internal::PayableListItem;
 using PayableListRowBlank = ui::internal::blank::PayableListItem;
-using PayableListSortKey = std::string;
+using PayableListSortKey = ContactListSortKey;
 
 // Profile
 using ProfilePrimaryID = OTNymID;
@@ -400,95 +507,48 @@ using UnitListRowBlank = ui::internal::blank::UnitListItem;
 using UnitListSortKey = std::string;
 }  // namespace opentxs::ui::implementation
 
-namespace opentxs
-{
-template <typename T>
-struct make_blank;
-
-template <>
-struct make_blank<ui::implementation::AccountActivityRowID> {
-    static auto value(const api::Core& api)
-        -> ui::implementation::AccountActivityRowID
-    {
-        return {api.Factory().Identifier(), proto::PAYMENTEVENTTYPE_ERROR};
-    }
-};
-
-template <>
-struct make_blank<ui::implementation::IssuerItemRowID> {
-    static auto value(const api::Core& api)
-        -> ui::implementation::IssuerItemRowID
-    {
-        return {api.Factory().Identifier(), contact::ContactItemType::Error};
-    }
-};
-
-template <>
-struct make_blank<ui::implementation::ActivityThreadRowID> {
-    static auto value(const api::Core& api)
-        -> ui::implementation::ActivityThreadRowID
-    {
-        return {api.Factory().Identifier(), {}, api.Factory().Identifier()};
-    }
-};
-}  // namespace opentxs
-
 namespace opentxs::ui::internal
 {
 struct List : virtual public ui::List {
-#if OT_QT
-    virtual auto emit_begin_insert_rows(
-        const QModelIndex& parent,
-        int first,
-        int last) const noexcept -> void = 0;
-    virtual auto emit_begin_move_rows(
-        const QModelIndex& source,
-        int start,
-        int end,
-        const QModelIndex& destination,
-        int to) const noexcept -> void = 0;
-    virtual auto emit_begin_remove_rows(
-        const QModelIndex& parent,
-        int first,
-        int last) const noexcept -> void = 0;
-    virtual auto emit_data_changed(
-        const QModelIndex& topLeft,
-        const QModelIndex& bottomRight) noexcept -> void = 0;
-    virtual auto emit_end_insert_rows() const noexcept -> void = 0;
-    virtual auto emit_end_move_rows() const noexcept -> void = 0;
-    virtual auto emit_end_remove_rows() const noexcept -> void = 0;
-    virtual auto me() const noexcept -> QModelIndex = 0;
-    virtual auto register_child(const void* child) const noexcept -> void = 0;
-    virtual auto unregister_child(const void* child) const noexcept -> void = 0;
-    virtual auto WaitForStartup() const noexcept -> void = 0;
-#endif
+    static auto MakeQT(const api::Core& api) noexcept
+        -> ui::qt::internal::Model*;
+
+    virtual auto API() const noexcept(false) -> const api::Core& = 0;
+    virtual auto GetQt() const noexcept -> ui::qt::internal::Model* = 0;
 
     ~List() override = default;
 };
 
 struct Row : virtual public ui::ListRow {
-#if OT_QT
-    virtual int qt_column_count() const noexcept { return 0; }
-    virtual QVariant qt_data(
+    static auto next_index() noexcept -> std::ptrdiff_t;
+
+    virtual auto index() const noexcept -> std::ptrdiff_t = 0;
+    virtual auto qt_data(
         [[maybe_unused]] const int column,
-        [[maybe_unused]] const int role) const noexcept
+        [[maybe_unused]] const int role,
+        [[maybe_unused]] QVariant& out) const noexcept -> void
     {
-        return {};
     }
-    virtual QModelIndex qt_index(
-        [[maybe_unused]] const int row,
-        [[maybe_unused]] const int column) const noexcept
-    {
-        return {};
-    }
-    virtual QModelIndex qt_parent() const noexcept = 0;
-    virtual int qt_row_count() const noexcept { return 0; }
-#endif  // OT_QT
+
+    virtual auto AddChildren(implementation::CustomData&& data) noexcept
+        -> void = 0;
+    // NOTE: lock belongs to the associated qt::internal::Model object
+    virtual auto InitAfterAdd(const Lock& lock) noexcept -> void {}
 
     ~Row() override = default;
 };
 struct AccountActivity : virtual public List,
                          virtual public ui::AccountActivity {
+    struct Callbacks {
+        using SyncCallback = std::function<void(int, int, double)>;
+        using BalanceCallback = std::function<void(std::string)>;
+        using PolarityCallback = std::function<void(int)>;
+
+        SyncCallback sync_{};
+        BalanceCallback balance_{};
+        PolarityCallback polarity_{};
+    };
+
     virtual auto last(const implementation::AccountActivityRowID& id)
         const noexcept -> bool = 0;
     // WARNING potential race condition. Child rows must never call this
@@ -497,6 +557,28 @@ struct AccountActivity : virtual public List,
     // WARNING potential race condition. Child rows must never call this
     // except when directed by parent object
     virtual auto Notary() const noexcept -> const contract::Server& = 0;
+    using ui::AccountActivity::Send;
+    virtual auto Send(
+        const std::string& address,
+        const std::string& amount,
+        const std::string& memo,
+        Scale scale,
+        implementation::SendMonitor::Callback cb) const noexcept -> int = 0;
+    virtual auto Send(
+        const Identifier& contact,
+        const std::string& amount,
+        const std::string& memo,
+        Scale scale,
+        implementation::SendMonitor::Callback cb) const noexcept -> int = 0;
+    virtual auto SendMonitor() const noexcept
+        -> implementation::SendMonitor& = 0;
+
+    virtual auto AmountValidator() noexcept -> ui::AmountValidator& = 0;
+    virtual auto DestinationValidator() noexcept
+        -> ui::DestinationValidator& = 0;
+    virtual auto DisplayScaleQt() noexcept -> ui::DisplayScaleQt& = 0;
+    virtual auto SendMonitor() noexcept -> implementation::SendMonitor& = 0;
+    virtual auto SetCallbacks(Callbacks&&) noexcept -> void = 0;
 
     ~AccountActivity() override = default;
 };
@@ -516,10 +598,6 @@ struct AccountListItem : virtual public Row,
 };
 struct AccountSummary : virtual public List, virtual public ui::AccountSummary {
     virtual auto Currency() const -> contact::ContactItemType = 0;
-#if OT_QT
-    virtual int FindRow(
-        const implementation::AccountSummaryRowID& id) const noexcept = 0;
-#endif
     virtual auto last(const implementation::AccountSummaryRowID& id)
         const noexcept -> bool = 0;
     virtual auto NymID() const -> const identifier::Nym& = 0;
@@ -549,11 +627,20 @@ struct ActivitySummaryItem : virtual public Row,
 
     ~ActivitySummaryItem() override = default;
 };
-struct ActivityThread : virtual public List {
+struct ActivityThread : virtual public List, virtual public ui::ActivityThread {
+    struct Callbacks {
+        using MCallback = std::function<void(bool)>;
+
+        SimpleCallback general_{};
+        SimpleCallback display_name_{};
+        SimpleCallback draft_{};
+        MCallback messagability_{};
+    };
+
     virtual auto last(const implementation::ActivityThreadRowID& id)
         const noexcept -> bool = 0;
-    // custom
-    virtual auto ThreadID() const -> std::string = 0;
+
+    virtual auto SetCallbacks(Callbacks&&) noexcept -> void = 0;
 
     ~ActivityThread() override = default;
 };
@@ -572,10 +659,23 @@ struct BalanceItem : virtual public Row, virtual public ui::BalanceItem {
 
     ~BalanceItem() override = default;
 };
+struct BlockchainAccountStatus : virtual public List,
+                                 virtual public ui::BlockchainAccountStatus {
+    virtual auto last(const implementation::BlockchainAccountStatusRowID& id)
+        const noexcept -> bool = 0;
+
+    ~BlockchainAccountStatus() override = default;
+};
 struct BlockchainSelection : virtual public List,
                              virtual public ui::BlockchainSelection {
+    using EnabledCallback =
+        std::function<void(blockchain::Type, bool, std::size_t)>;
+
+    virtual auto EnabledCount() const noexcept -> std::size_t = 0;
     virtual auto last(const implementation::BlockchainSelectionRowID& id)
         const noexcept -> bool = 0;
+
+    virtual auto Set(EnabledCallback&& cb) const noexcept -> void = 0;
 
     ~BlockchainSelection() override = default;
 };
@@ -602,13 +702,52 @@ struct BlockchainStatisticsItem : virtual public Row,
 
     ~BlockchainStatisticsItem() override = default;
 };
+struct BlockchainSubaccount : virtual public List,
+                              virtual public Row,
+                              virtual public ui::BlockchainSubaccount {
+    virtual auto last(const implementation::BlockchainSubaccountRowID& id)
+        const noexcept -> bool = 0;
+    virtual auto NymID() const noexcept -> const identifier::Nym& = 0;
+    virtual auto reindex(
+        const implementation::BlockchainSubaccountSourceSortKey& key,
+        implementation::CustomData& custom) noexcept -> bool = 0;
+
+    ~BlockchainSubaccount() override = default;
+};
+struct BlockchainSubaccountSource
+    : virtual public List,
+      virtual public Row,
+      virtual public ui::BlockchainSubaccountSource {
+    virtual auto last(const implementation::BlockchainSubaccountSourceRowID& id)
+        const noexcept -> bool = 0;
+    virtual auto NymID() const noexcept -> const identifier::Nym& = 0;
+
+    virtual auto reindex(
+        const implementation::BlockchainAccountStatusSortKey& key,
+        implementation::CustomData& custom) noexcept -> bool = 0;
+
+    ~BlockchainSubaccountSource() override = default;
+};
+struct BlockchainSubchain : virtual public Row,
+                            virtual public ui::BlockchainSubchain {
+    virtual auto reindex(
+        const implementation::BlockchainSubaccountSortKey& key,
+        implementation::CustomData& custom) noexcept -> bool = 0;
+
+    ~BlockchainSubchain() override = default;
+};
 struct Contact : virtual public List, virtual public ui::Contact {
-#if OT_QT
-    virtual int FindRow(
-        const implementation::ContactRowID& id) const noexcept = 0;
-#endif
+    struct Callbacks {
+        using Callback = std::function<void(std::string)>;
+
+        Callback name_{};
+        Callback payment_code_{};
+    };
+
     virtual auto last(const implementation::ContactRowID& id) const noexcept
         -> bool = 0;
+
+    virtual auto SetCallbacks(Callbacks&&) noexcept -> void = 0;
 
     ~Contact() override = default;
 };
@@ -619,12 +758,15 @@ struct ContactItem : virtual public Row, virtual public ui::ContactItem {
 
     ~ContactItem() override = default;
 };
-struct ContactList : virtual public List {
+struct ContactListType : virtual public List {
+    virtual auto ID() const noexcept -> const Identifier& = 0;
     virtual auto last(const implementation::ContactListRowID& id) const noexcept
         -> bool = 0;
-    // custom
-    virtual auto ID() const -> const Identifier& = 0;
 
+    ~ContactListType() override = default;
+};
+struct ContactList : virtual public ContactListType,
+                     virtual public ui::ContactList {
     ~ContactList() override = default;
 };
 struct ContactListItem : virtual public Row,
@@ -639,10 +781,6 @@ struct ContactSection : virtual public List,
                         virtual public Row,
                         virtual public ui::ContactSection {
     virtual auto ContactID() const noexcept -> std::string = 0;
-#if OT_QT
-    virtual int FindRow(
-        const implementation::ContactSectionRowID& id) const noexcept = 0;
-#endif
     virtual auto last(const implementation::ContactSectionRowID& id)
         const noexcept -> bool = 0;
 
@@ -677,10 +815,12 @@ struct IssuerItem : virtual public List,
 
     ~IssuerItem() override = default;
 };
-struct MessagableList : virtual public ContactList {
+struct MessagableList : virtual public ContactListType,
+                        virtual public ui::MessagableList {
     ~MessagableList() override = default;
 };
-struct PayableList : virtual public ContactList {
+struct PayableList : virtual public ContactListType,
+                     virtual public ui::PayableList {
     ~PayableList() override = default;
 };
 struct PayableListItem : virtual public Row,
@@ -692,23 +832,24 @@ struct PayableListItem : virtual public Row,
     ~PayableListItem() override = default;
 };
 struct Profile : virtual public List, virtual public ui::Profile {
-#if OT_QT
-    virtual int FindRow(
-        const implementation::ProfileRowID& id) const noexcept = 0;
-#endif
+    struct Callbacks {
+        using Callback = std::function<void(std::string)>;
+
+        Callback name_{};
+        Callback payment_code_{};
+    };
+
     virtual auto last(const implementation::ProfileRowID& id) const noexcept
         -> bool = 0;
     virtual auto NymID() const -> const identifier::Nym& = 0;
+
+    virtual auto SetCallbacks(Callbacks&&) noexcept -> void = 0;
 
     ~Profile() override = default;
 };
 struct ProfileSection : virtual public List,
                         virtual public Row,
                         virtual public ui::ProfileSection {
-#if OT_QT
-    virtual int FindRow(
-        const implementation::ProfileSectionRowID& id) const noexcept = 0;
-#endif
     virtual auto last(const implementation::ProfileSectionRowID& id)
         const noexcept -> bool = 0;
     virtual auto NymID() const noexcept -> const identifier::Nym& = 0;
@@ -756,30 +897,6 @@ struct UnitListItem : virtual public Row, virtual public ui::UnitListItem {
     ~UnitListItem() override = default;
 };
 
-#if OT_QT
-#define QT_PROXY_MODEL_WRAPPER_EXTRA(WrapperType, InterfaceType)               \
-    WrapperType::WrapperType(InterfaceType& parent) noexcept                   \
-        : parent_(parent)                                                      \
-    {                                                                          \
-        claim_ownership(this);                                                 \
-        parent_.SetCallback([this]() -> void { notify(); });                   \
-        setSourceModel(&parent_);                                              \
-        init();                                                                \
-    }                                                                          \
-                                                                               \
-    void WrapperType::notify() const noexcept { emit updated(); }
-#define QT_PROXY_MODEL_WRAPPER(WrapperType, InterfaceType)                     \
-    WrapperType::WrapperType(InterfaceType& parent) noexcept                   \
-        : parent_(parent)                                                      \
-    {                                                                          \
-        claim_ownership(this);                                                 \
-        parent_.SetCallback([this]() -> void { notify(); });                   \
-        setSourceModel(&parent_);                                              \
-    }                                                                          \
-                                                                               \
-    void WrapperType::notify() const noexcept { emit updated(); }
-#endif  // OT_QT
-
 namespace blank
 {
 struct Widget : virtual public ui::Widget {
@@ -791,49 +908,32 @@ struct Widget : virtual public ui::Widget {
     }
 };
 struct Row : virtual public ui::internal::Row, public Widget {
+    auto index() const noexcept -> std::ptrdiff_t final { return -1; }
     auto Last() const noexcept -> bool final { return true; }
-#if OT_QT
-    QModelIndex qt_parent() const noexcept final { return {}; }
-#endif  // OT_QT
     auto Valid() const noexcept -> bool final { return false; }
+
+    auto AddChildren(implementation::CustomData&& data) noexcept -> void final
+    {
+    }
 };
 template <typename ListType, typename RowType, typename RowIDType>
 struct List : virtual public ListType, public Row {
+    auto API() const noexcept(false) -> const api::Core& final
+    {
+        throw std::out_of_range{"blank model"};
+    }
     auto First() const noexcept -> RowType final { return RowType{nullptr}; }
     auto last(const RowIDType&) const noexcept -> bool final { return false; }
-#if OT_QT
-    auto emit_begin_insert_rows(const QModelIndex& parent, int first, int last)
-        const noexcept -> void final
-    {
-    }
-    auto emit_begin_move_rows(
-        const QModelIndex& source,
-        int start,
-        int end,
-        const QModelIndex& destination,
-        int to) const noexcept -> void final
-    {
-    }
-    auto emit_begin_remove_rows(const QModelIndex& parent, int first, int last)
-        const noexcept -> void final
-    {
-    }
-    auto emit_data_changed(const QModelIndex&, const QModelIndex&) noexcept
-        -> void final
-    {
-    }
-    auto emit_end_insert_rows() const noexcept -> void final {}
-    auto emit_end_move_rows() const noexcept -> void final {}
-    auto emit_end_remove_rows() const noexcept -> void final {}
-    auto me() const noexcept -> QModelIndex final { return {}; }
-    auto register_child(const void* child) const noexcept -> void final {}
-    auto unregister_child(const void* child) const noexcept -> void final {}
-#endif
     auto Next() const noexcept -> RowType final { return RowType{nullptr}; }
     virtual auto WaitForStartup() const noexcept -> void final { return; }
     auto WidgetID() const noexcept -> OTIdentifier final
     {
         return blank::Widget::WidgetID();
+    }
+
+    auto GetQt() const noexcept -> ui::qt::internal::Model* final
+    {
+        return nullptr;
     }
 };
 struct AccountListItem final : virtual public Row,
@@ -975,6 +1075,52 @@ struct BlockchainStatisticsItem final
         return false;
     }
 };
+struct BlockchainSubaccount final
+    : public List<
+          internal::BlockchainSubaccount,
+          SharedPimpl<ui::BlockchainSubchain>,
+          implementation::BlockchainSubaccountRowID> {
+    auto Name() const noexcept -> std::string final { return {}; }
+    auto NymID() const noexcept -> const identifier::Nym& final;
+    auto SubaccountID() const noexcept -> const Identifier& final;
+
+    auto reindex(
+        const implementation::BlockchainSubaccountSourceSortKey&,
+        implementation::CustomData&) noexcept -> bool final
+    {
+        return false;
+    }
+};
+struct BlockchainSubaccountSource final
+    : public List<
+          internal::BlockchainSubaccountSource,
+          SharedPimpl<ui::BlockchainSubaccount>,
+          implementation::BlockchainSubaccountSourceRowID> {
+    auto Name() const noexcept -> std::string final { return {}; }
+    auto NymID() const noexcept -> const identifier::Nym& final;
+    auto SourceID() const noexcept -> const Identifier& final;
+    auto Type() const noexcept -> blockchain::crypto::SubaccountType final;
+
+    auto reindex(
+        const implementation::BlockchainAccountStatusSortKey&,
+        implementation::CustomData&) noexcept -> bool final
+    {
+        return false;
+    }
+};
+struct BlockchainSubchain final : public Row,
+                                  public internal::BlockchainSubchain {
+    auto Name() const noexcept -> std::string final { return {}; }
+    auto Progress() const noexcept -> std::string final { return {}; }
+    auto Type() const noexcept -> blockchain::crypto::Subchain final;
+
+    auto reindex(
+        const implementation::BlockchainSubaccountSortKey&,
+        implementation::CustomData&) noexcept -> bool final
+    {
+        return false;
+    }
+};
 struct ContactItem final : public Row, public internal::ContactItem {
     auto ClaimID() const noexcept -> std::string final { return {}; }
     auto IsActive() const noexcept -> bool final { return false; }
@@ -982,7 +1128,7 @@ struct ContactItem final : public Row, public internal::ContactItem {
     auto Value() const noexcept -> std::string final { return {}; }
 
     auto reindex(
-        const implementation::ContactSectionSortKey&,
+        const implementation::ContactSubsectionSortKey&,
         implementation::CustomData&) noexcept -> bool final
     {
         return false;
@@ -1007,13 +1153,6 @@ struct ContactSection final : public List<
                                   OTUIContactSubsection,
                                   implementation::ContactSectionRowID> {
     auto ContactID() const noexcept -> std::string final { return {}; }
-#if OT_QT
-    int FindRow(
-        const implementation::ContactSectionRowID& id) const noexcept final
-    {
-        return -1;
-    }
-#endif
     auto Name(const std::string& lang) const noexcept -> std::string final
     {
         return {};
@@ -1116,13 +1255,6 @@ struct ProfileSection : public List<
     {
         return false;
     }
-#if OT_QT
-    int FindRow(
-        const implementation::ProfileSectionRowID& id) const noexcept final
-    {
-        return -1;
-    }
-#endif
     auto Items(const std::string&) const noexcept -> ItemTypeList final
     {
         return {};
@@ -1230,10 +1362,80 @@ struct UnitListItem final : virtual public Row,
 }  // namespace blank
 }  // namespace opentxs::ui::internal
 
+namespace opentxs::ui::qt::internal
+{
+struct Index {
+    bool valid_{false};
+    int row_{-1};
+    int column_{-1};
+    ui::internal::Row* ptr_{nullptr};
+};
+
+struct Model {
+    using Row = ui::internal::Row;
+    using RoleData = std::vector<std::pair<int, std::string>>;
+
+    static auto GetID(const ui::internal::Row* ptr) noexcept -> std::ptrdiff_t;
+
+    auto GetChild(ui::internal::Row* parent, int index) const noexcept
+        -> ui::internal::Row*;
+    auto GetColumnCount(ui::internal::Row* row) const noexcept -> int;
+    auto GetIndex(ui::internal::Row* row) const noexcept -> Index;
+    auto GetParent(ui::internal::Row* row) const noexcept -> Index;
+    auto GetRoot() const noexcept -> QObject*;
+    auto GetRoleData() const noexcept -> RoleData;
+    auto GetRowCount(ui::internal::Row* row) const noexcept -> int;
+
+    auto ChangeRow(ui::internal::Row* parent, ui::internal::Row* row) noexcept
+        -> void;
+    auto ClearParent() noexcept -> void;
+    auto DeleteRow(ui::internal::Row* row) noexcept -> void;
+    auto InsertRow(
+        ui::internal::Row* parent,
+        ui::internal::Row* after,
+        std::shared_ptr<ui::internal::Row> row) noexcept -> void;
+    auto MoveRow(
+        ui::internal::Row* newParent,
+        ui::internal::Row* newBefore,
+        ui::internal::Row* row) noexcept -> void;
+    auto SetColumnCount(Row* parent, int count) noexcept -> void;
+    auto SetColumnCount(const Lock& lock, Row* parent, int count) noexcept
+        -> void;
+    auto SetRoleData(RoleData&& data) noexcept -> void;
+    auto SetParent(qt::Model& parent) noexcept -> void;
+
+    Model(QObject* parent) noexcept;
+
+    ~Model();
+
+private:
+    friend ui::qt::Model;
+
+    struct Imp;
+
+    Imp* imp_;
+
+    auto do_delete_row(ui::internal::Row* row) noexcept -> void;
+    auto do_insert_row(
+        ui::internal::Row* parent,
+        ui::internal::Row* after,
+        std::shared_ptr<ui::internal::Row> row) noexcept -> void;
+    auto do_move_row(
+        ui::internal::Row* newParent,
+        ui::internal::Row* newBefore,
+        ui::internal::Row* row) noexcept -> void;
+
+    Model() = delete;
+    Model(const Model&) = delete;
+    Model(Model&&) = delete;
+    Model& operator=(const Model&) = delete;
+    Model& operator=(Model&&) = delete;
+};
+}  // namespace opentxs::ui::qt::internal
+
 namespace opentxs::factory
 {
-auto AccountActivityQtModel(
-    ui::implementation::AccountActivity& parent) noexcept
+auto AccountActivityQtModel(ui::internal::AccountActivity& parent) noexcept
     -> std::unique_ptr<ui::AccountActivityQt>;
 auto AccountListItem(
     const ui::implementation::AccountListInternalInterface& parent,
@@ -1246,8 +1448,8 @@ auto AccountListModel(
     const api::client::internal::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::AccountList>;
-auto AccountListQtModel(ui::implementation::AccountList& parent) noexcept
+    -> std::unique_ptr<ui::internal::AccountList>;
+auto AccountListQtModel(ui::internal::AccountList& parent) noexcept
     -> std::unique_ptr<ui::AccountListQt>;
 auto AccountSummaryItem(
     const ui::implementation::IssuerItemInternalInterface& parent,
@@ -1261,8 +1463,8 @@ auto AccountSummaryModel(
     const identifier::Nym& nymID,
     const contact::ContactItemType currency,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::AccountSummary>;
-auto AccountSummaryQtModel(ui::implementation::AccountSummary& parent) noexcept
+    -> std::unique_ptr<ui::internal::AccountSummary>;
+auto AccountSummaryQtModel(ui::internal::AccountSummary& parent) noexcept
     -> std::unique_ptr<ui::AccountSummaryQt>;
 auto ActivitySummaryItem(
     const ui::implementation::ActivitySummaryInternalInterface& parent,
@@ -1278,24 +1480,23 @@ auto ActivitySummaryModel(
     const Flag& running,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::ActivitySummary>;
-auto ActivitySummaryQtModel(
-    ui::implementation::ActivitySummary& parent) noexcept
+    -> std::unique_ptr<ui::internal::ActivitySummary>;
+auto ActivitySummaryQtModel(ui::internal::ActivitySummary& parent) noexcept
     -> std::unique_ptr<ui::ActivitySummaryQt>;
 auto ActivityThreadModel(
     const api::client::internal::Manager& api,
     const identifier::Nym& nymID,
     const opentxs::Identifier& threadID,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::ActivityThread>;
-auto ActivityThreadQtModel(ui::implementation::ActivityThread& parent) noexcept
+    -> std::unique_ptr<ui::internal::ActivityThread>;
+auto ActivityThreadQtModel(ui::internal::ActivityThread& parent) noexcept
     -> std::unique_ptr<ui::ActivityThreadQt>;
 auto BlockchainAccountActivityModel(
     const api::client::internal::Manager& api,
     const identifier::Nym& nymID,
     const opentxs::Identifier& accountID,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::AccountActivity>;
+    -> std::unique_ptr<ui::internal::AccountActivity>;
 auto BlockchainAccountListItem(
     const ui::implementation::AccountListInternalInterface& parent,
     const api::client::internal::Manager& api,
@@ -1303,6 +1504,15 @@ auto BlockchainAccountListItem(
     const ui::implementation::AccountListSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
     -> std::shared_ptr<ui::implementation::AccountListRowInternal>;
+auto BlockchainAccountStatusModel(
+    const api::client::internal::Manager& api,
+    const ui::implementation::BlockchainAccountStatusPrimaryID& id,
+    const blockchain::Type chain,
+    const SimpleCallback& cb) noexcept
+    -> std::unique_ptr<ui::internal::BlockchainAccountStatus>;
+auto BlockchainAccountStatusQtModel(
+    ui::internal::BlockchainAccountStatus& parent) noexcept
+    -> std::unique_ptr<ui::BlockchainAccountStatusQt>;
 auto BlockchainActivityThreadItem(
     const ui::implementation::ActivityThreadInternalInterface& parent,
     const api::client::internal::Manager& api,
@@ -1316,7 +1526,7 @@ auto BlockchainSelectionModel(
     const api::network::internal::Blockchain& blockchain,
     const ui::Blockchains type,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::BlockchainSelection>;
+    -> std::unique_ptr<ui::internal::BlockchainSelection>;
 auto BlockchainSelectionItem(
     const ui::implementation::BlockchainSelectionInternalInterface& parent,
     const api::client::internal::Manager& api,
@@ -1325,12 +1535,12 @@ auto BlockchainSelectionItem(
     ui::implementation::CustomData& custom) noexcept
     -> std::shared_ptr<ui::implementation::BlockchainSelectionRowInternal>;
 auto BlockchainSelectionQtModel(
-    ui::implementation::BlockchainSelection& parent) noexcept
+    ui::internal::BlockchainSelection& parent) noexcept
     -> std::unique_ptr<ui::BlockchainSelectionQt>;
 auto BlockchainStatisticsModel(
     const api::client::internal::Manager& api,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::BlockchainStatistics>;
+    -> std::unique_ptr<ui::internal::BlockchainStatistics>;
 auto BlockchainStatisticsItem(
     const ui::implementation::BlockchainStatisticsInternalInterface& parent,
     const api::client::internal::Manager& api,
@@ -1339,8 +1549,31 @@ auto BlockchainStatisticsItem(
     ui::implementation::CustomData& custom) noexcept
     -> std::shared_ptr<ui::implementation::BlockchainStatisticsRowInternal>;
 auto BlockchainStatisticsQtModel(
-    ui::implementation::BlockchainStatistics& parent) noexcept
+    ui::internal::BlockchainStatistics& parent) noexcept
     -> std::unique_ptr<ui::BlockchainStatisticsQt>;
+auto BlockchainSubaccountSourceWidget(
+    const ui::implementation::BlockchainAccountStatusInternalInterface& parent,
+    const api::client::internal::Manager& api,
+    const ui::implementation::BlockchainAccountStatusRowID& rowID,
+    const ui::implementation::BlockchainAccountStatusSortKey& key,
+    ui::implementation::CustomData& custom) noexcept
+    -> std::shared_ptr<ui::implementation::BlockchainAccountStatusRowInternal>;
+auto BlockchainSubaccountWidget(
+    const ui::implementation::BlockchainSubaccountSourceInternalInterface&
+        parent,
+    const api::client::internal::Manager& api,
+    const ui::implementation::BlockchainSubaccountSourceRowID& rowID,
+    const ui::implementation::BlockchainSubaccountSourceSortKey& key,
+    ui::implementation::CustomData& custom) noexcept
+    -> std::shared_ptr<
+        ui::implementation::BlockchainSubaccountSourceRowInternal>;
+auto BlockchainSubchainWidget(
+    const ui::implementation::BlockchainSubaccountInternalInterface& parent,
+    const api::client::internal::Manager& api,
+    const ui::implementation::BlockchainSubaccountRowID& rowID,
+    const ui::implementation::BlockchainSubaccountSortKey& sortKey,
+    ui::implementation::CustomData& custom) noexcept
+    -> std::shared_ptr<ui::implementation::BlockchainSubaccountRowInternal>;
 auto BalanceItem(
     const ui::implementation::AccountActivityInternalInterface& parent,
     const api::client::internal::Manager& api,
@@ -1367,15 +1600,15 @@ auto ContactListModel(
     const api::client::internal::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::ContactList>;
-auto ContactListQtModel(ui::implementation::ContactList& parent) noexcept
+    -> std::unique_ptr<ui::internal::ContactList>;
+auto ContactListQtModel(ui::internal::ContactList& parent) noexcept
     -> std::unique_ptr<ui::ContactListQt>;
 auto ContactModel(
     const api::client::internal::Manager& api,
-    const opentxs::Identifier& contactID,
+    const ui::implementation::ContactPrimaryID& contactID,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::Contact>;
-auto ContactQtModel(ui::implementation::Contact& parent) noexcept
+    -> std::unique_ptr<ui::internal::Contact>;
+auto ContactQtModel(ui::internal::Contact& parent) noexcept
     -> std::unique_ptr<ui::ContactQt>;
 auto ContactSectionWidget(
     const ui::implementation::ContactInternalInterface& parent,
@@ -1396,7 +1629,7 @@ auto CustodialAccountActivityModel(
     const identifier::Nym& nymID,
     const opentxs::Identifier& accountID,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::AccountActivity>;
+    -> std::unique_ptr<ui::internal::AccountActivity>;
 auto IssuerItem(
     const ui::implementation::AccountSummaryInternalInterface& parent,
     const api::client::internal::Manager& api,
@@ -1423,8 +1656,8 @@ auto MessagableListModel(
     const api::client::internal::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::MessagableList>;
-auto MessagableListQtModel(ui::implementation::MessagableList& parent) noexcept
+    -> std::unique_ptr<ui::internal::MessagableList>;
+auto MessagableListQtModel(ui::internal::MessagableList& parent) noexcept
     -> std::unique_ptr<ui::MessagableListQt>;
 auto PayableListItem(
     const ui::implementation::PayableInternalInterface& parent,
@@ -1447,8 +1680,8 @@ auto PayableListModel(
     const identifier::Nym& nymID,
     const contact::ContactItemType& currency,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::PayableList>;
-auto PayableListQtModel(ui::implementation::PayableList& parent) noexcept
+    -> std::unique_ptr<ui::internal::PayableList>;
+auto PayableListQtModel(ui::internal::PayableList& parent) noexcept
     -> std::unique_ptr<ui::PayableListQt>;
 auto PendingSend(
     const ui::implementation::ActivityThreadInternalInterface& parent,
@@ -1462,8 +1695,8 @@ auto ProfileModel(
     const api::client::internal::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::Profile>;
-auto ProfileQtModel(ui::implementation::Profile& parent) noexcept
+    -> std::unique_ptr<ui::internal::Profile>;
+auto ProfileQtModel(ui::internal::Profile& parent) noexcept
     -> std::unique_ptr<ui::ProfileQt>;
 auto ProfileItemWidget(
     const ui::implementation::ProfileSubsectionInternalInterface& parent,
@@ -1497,7 +1730,7 @@ auto UnitListModel(
     const api::client::internal::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::UnitList>;
-auto UnitListQtModel(ui::implementation::UnitList& parent) noexcept
+    -> std::unique_ptr<ui::internal::UnitList>;
+auto UnitListQtModel(ui::internal::UnitList& parent) noexcept
     -> std::unique_ptr<ui::UnitListQt>;
 }  // namespace opentxs::factory

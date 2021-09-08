@@ -5,11 +5,9 @@
 
 #pragma once
 
-#if OT_QT
-#include <QHash>
-#include <QVariant>
-#endif  // OT_QT
 #include <atomic>
+#include <iosfwd>
+#include <list>
 #include <map>
 #include <memory>
 #include <string>
@@ -20,6 +18,8 @@
 #include "internal/ui/UI.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/Core.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Issuer.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -27,6 +27,8 @@
 #include "ui/base/List.hpp"
 #include "ui/base/RowType.hpp"
 #include "ui/base/Widget.hpp"
+
+class QVariant;
 
 namespace opentxs
 {
@@ -60,6 +62,21 @@ class IssuerItem;
 }  // namespace ui
 }  // namespace opentxs
 
+namespace opentxs
+{
+template <typename T>
+struct make_blank;
+
+template <>
+struct make_blank<ui::implementation::IssuerItemRowID> {
+    static auto value(const api::Core& api)
+        -> ui::implementation::IssuerItemRowID
+    {
+        return {api.Factory().Identifier(), contact::ContactItemType::Error};
+    }
+};
+}  // namespace opentxs
+
 namespace opentxs::ui::implementation
 {
 using IssuerItemList = List<
@@ -88,13 +105,6 @@ public:
     auto Name() const noexcept -> std::string final;
     auto Trusted() const noexcept -> bool final { return issuer_->Paired(); }
 
-#if OT_QT
-    QVariant qt_data(const int column, const int role) const noexcept final;
-#endif
-
-    auto reindex(const AccountSummarySortKey& key, CustomData& custom) noexcept
-        -> bool final;
-
     IssuerItem(
         const AccountSummaryInternalInterface& parent,
         const api::client::internal::Manager& api,
@@ -115,11 +125,15 @@ private:
         const IssuerItemRowID& id,
         const IssuerItemSortKey& index,
         CustomData& custom) const noexcept -> RowPointer final;
+    auto qt_data(const int column, const int role, QVariant& out) const noexcept
+        -> void final;
 
-    void process_account(const Identifier& accountID) noexcept;
-    void process_account(const Message& message) noexcept;
-    void refresh_accounts() noexcept;
-    void startup() noexcept;
+    auto process_account(const Identifier& accountID) noexcept -> void;
+    auto process_account(const Message& message) noexcept -> void;
+    auto refresh_accounts() noexcept -> void;
+    auto reindex(const AccountSummarySortKey& key, CustomData& custom) noexcept
+        -> bool final;
+    auto startup() noexcept -> void;
 
     IssuerItem() = delete;
     IssuerItem(const IssuerItem&) = delete;

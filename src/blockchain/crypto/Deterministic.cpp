@@ -35,6 +35,17 @@
 
 namespace opentxs::blockchain::crypto::implementation
 {
+Deterministic::ChainData::ChainData(
+    const api::Core& api,
+    Subchain internalType,
+    bool internalContact,
+    Subchain externalType,
+    bool externalContact) noexcept
+    : internal_(api, internalType, internalContact)
+    , external_(api, externalType, externalContact)
+{
+}
+
 Deterministic::Deterministic(
     const api::internal::Core& api,
     const internal::Account& parent,
@@ -78,6 +89,21 @@ Deterministic::Deterministic(
 {
 }
 
+auto Deterministic::ChainData::Get(Subchain type) noexcept(false)
+    -> AddressData&
+{
+    if (type == internal_.type_) {
+
+        return internal_;
+    } else if (type == external_.type_) {
+
+        return external_;
+    } else {
+
+        throw std::out_of_range("Invalid subchain");
+    }
+}
+
 #if OT_CRYPTO_WITH_BIP32
 auto Deterministic::accept(
     const rLock& lock,
@@ -94,11 +120,16 @@ auto Deterministic::accept(
     auto& element =
         const_cast<Deterministic&>(*this).element(lock, type, index);
     element.Reserve(time);
-    LogTrace(OT_METHOD)(__FUNCTION__)(": Accepted index ")(index).Flush();
+    LogTrace(OT_METHOD)(__func__)(": Accepted index ")(index).Flush();
 
     return index;
 }
 #endif  // OT_CRYPTO_WITH_BIP32
+
+auto Deterministic::AllowedSubchains() const noexcept -> std::set<Subchain>
+{
+    return {data_.internal_.type_, data_.external_.type_};
+}
 
 auto Deterministic::BalanceElement(const Subchain type, const Bip32Index index)
     const noexcept(false) -> const crypto::Element&
@@ -127,46 +158,45 @@ auto Deterministic::check(
     };
 
     if (is_generated(lock, type, candidate)) {
-        LogTrace(OT_METHOD)(__FUNCTION__)(
-            ": Examining generated index ")(candidate)
+        LogTrace(OT_METHOD)(__func__)(": Examining generated index ")(candidate)
             .Flush();
         const auto& element = this->element(lock, type, candidate);
         const auto status = element.IsAvailable(contact, label);
 
         switch (status) {
             case Status::NeverUsed: {
-                LogTrace(OT_METHOD)(__FUNCTION__)(
-                    ": index ")(candidate)(" was never used")
+                LogTrace(OT_METHOD)(__func__)(": index ")(
+                    candidate)(" was never used")
                     .Flush();
 
                 return accept(candidate);
             }
             case Status::Reissue: {
-                LogTrace(OT_METHOD)(__FUNCTION__)(
-                    ": Recycling unused index ")(candidate)
+                LogTrace(OT_METHOD)(__func__)(": Recycling unused index ")(
+                    candidate)
                     .Flush();
 
                 return accept(candidate);
             }
             case Status::Used: {
-                LogTrace(OT_METHOD)(__FUNCTION__)(
-                    ": index ")(candidate)(" has confirmed transactions")
+                LogTrace(OT_METHOD)(__func__)(": index ")(
+                    candidate)(" has confirmed transactions")
                     .Flush();
                 gap = 0;
 
                 throw std::runtime_error("Not acceptable");
             }
             case Status::MetadataConflict: {
-                LogTrace(OT_METHOD)(__FUNCTION__)(
-                    ": index ")(candidate)(" can not be used")
+                LogTrace(OT_METHOD)(__func__)(": index ")(
+                    candidate)(" can not be used")
                     .Flush();
                 ++gap;
 
                 throw std::runtime_error("Not acceptable");
             }
             case Status::Reserved: {
-                LogTrace(OT_METHOD)(__FUNCTION__)(
-                    ": index ")(candidate)(" is reserved")
+                LogTrace(OT_METHOD)(__func__)(": index ")(
+                    candidate)(" is reserved")
                     .Flush();
                 ++gap;
 
@@ -174,8 +204,8 @@ auto Deterministic::check(
             }
             case Status::StaleUnconfirmed:
             default: {
-                LogTrace(OT_METHOD)(__FUNCTION__)(
-                    ": saving index ")(candidate)(" as a fallback")
+                LogTrace(OT_METHOD)(__func__)(": saving index ")(
+                    candidate)(" as a fallback")
                     .Flush();
                 fallback[status].emplace(candidate);
                 ++gap;
@@ -184,8 +214,7 @@ auto Deterministic::check(
             }
         }
     } else {
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Generating index ")(candidate)
-            .Flush();
+        LogTrace(OT_METHOD)(__func__)(": Generating index ")(candidate).Flush();
         const auto newIndex = generate(lock, type, candidate, reason);
 
         OT_ASSERT(newIndex == candidate);
@@ -397,8 +426,7 @@ auto Deterministic::generate(
     }
 
     const auto& key = *pKey;
-    auto& addressMap = (data_.internal_.type_ == type) ? data_.internal_.map_
-                                                       : data_.external_.map_;
+    auto& addressMap = data_.Get(type).map_;
     const auto& blockchain = parent_.ParentInternal().Parent();
     const auto [it, added] = addressMap.emplace(
         std::piecewise_construct,
@@ -451,15 +479,8 @@ auto Deterministic::Key(const Subchain type, const Bip32Index index)
     const noexcept -> ECKey
 {
     try {
-        if (const auto& data = data_.internal_; data.type_ == type) {
 
-            return data.map_.at(index)->Key();
-        } else if (const auto& data = data_.external_; data.type_ == type) {
-
-            return data_.external_.map_.at(index)->Key();
-        } else {
-            return nullptr;
-        }
+        return data_.Get(type).map_.at(index)->Key();
     } catch (...) {
 
         return nullptr;
@@ -486,15 +507,7 @@ auto Deterministic::mutable_element(
     const Subchain type,
     const Bip32Index index) noexcept(false) -> internal::Element&
 {
-    if (auto& data = data_.internal_; data.type_ == type) {
-
-        return *data.map_.at(index);
-    } else if (auto& data = data_.external_; data.type_ == type) {
-
-        return *data.map_.at(index);
-    } else {
-        throw std::out_of_range("Invalid subchain");
-    }
+    return *data_.Get(type).map_.at(index);
 }
 
 #if OT_CRYPTO_WITH_BIP32
@@ -592,6 +605,20 @@ auto Deterministic::RootNode(const PasswordPrompt& reason) const noexcept
     return key;
 }
 
+auto Deterministic::ScanProgress(Subchain type) const noexcept
+    -> block::Position
+{
+    try {
+        auto lock = rLock{lock_};
+
+        return data_.Get(type).progress_;
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+
+        return Subaccount::ScanProgress(type);
+    }
+}
+
 auto Deterministic::serialize_deterministic(
     const rLock& lock,
     SerializedType& out) const noexcept -> void
@@ -613,15 +640,23 @@ auto Deterministic::set_metadata(
     const auto blank = api_.Factory().Identifier();
 
     try {
-        if (auto& in = data_.internal_; in.type_ == subchain) {
-            in.map_.at(index)->SetMetadata(
-                in.set_contact_ ? contact : blank.get(), label);
-        } else if (auto& ex = data_.external_; ex.type_ == subchain) {
-            ex.map_.at(index)->SetMetadata(
-                ex.set_contact_ ? contact : blank.get(), label);
-        } else {
-        }
+        auto& data = data_.Get(subchain);
+        const auto& id = data.set_contact_ ? contact : blank.get();
+        data.map_.at(index)->SetMetadata(id, label);
     } catch (...) {
+    }
+}
+
+auto Deterministic::SetScanProgress(
+    const block::Position& progress,
+    Subchain type) noexcept -> void
+{
+    try {
+        auto lock = rLock{lock_};
+
+        data_.Get(type).progress_ = progress;
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
     }
 }
 
@@ -675,7 +710,7 @@ auto Deterministic::use_next(
             }
         }
 
-        LogTrace(OT_METHOD)(__FUNCTION__)(
+        LogTrace(OT_METHOD)(__func__)(
             ": Gap limit reached. Searching for acceptable fallback")
             .Flush();
         const auto accept = [&](Bip32Index index) {
@@ -684,14 +719,14 @@ auto Deterministic::use_next(
         };
 
         if (auto& set = fallback[Status::StaleUnconfirmed]; 0 < set.size()) {
-            LogTrace(OT_METHOD)(__FUNCTION__)(
+            LogTrace(OT_METHOD)(__func__)(
                 ": Recycling index with old never-confirmed transactions")
                 .Flush();
 
             return accept(*set.cbegin());
         }
 
-        LogTrace(OT_METHOD)(__FUNCTION__)(
+        LogTrace(OT_METHOD)(__func__)(
             ": No acceptable fallback discovered. Generating past the gap "
             "limit")
             .Flush();

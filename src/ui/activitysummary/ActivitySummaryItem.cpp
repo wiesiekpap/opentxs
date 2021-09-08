@@ -7,9 +7,6 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "ui/activitysummary/ActivitySummaryItem.hpp"  // IWYU pragma: associated
 
-#if OT_QT
-#include <QDateTime>
-#endif  // OT_QT
 #include <atomic>
 #include <chrono>
 #include <future>
@@ -129,8 +126,7 @@ auto ActivitySummaryItem::find_text(
 
                 return *text;
             } else {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": Cheque item does not exist.")
+                LogOutput(OT_METHOD)(__func__)(": Cheque item does not exist.")
                     .Flush();
             }
         } break;
@@ -148,7 +144,7 @@ auto ActivitySummaryItem::find_text(
 
 void ActivitySummaryItem::get_text() noexcept
 {
-    auto reason = api_.Factory().PasswordPrompt(__FUNCTION__);
+    auto reason = api_.Factory().PasswordPrompt(__func__);
     eLock lock(shared_lock_, std::defer_lock);
     auto locator = ItemLocator{"", {}, "", api_.Factory().Identifier()};
 
@@ -191,37 +187,6 @@ auto ActivitySummaryItem::LoadItemText(
 
     return {};
 }
-
-#if OT_QT
-QVariant ActivitySummaryItem::qt_data(const int column, int role) const noexcept
-{
-    switch (column) {
-        case 0: {
-            return ThreadID().c_str();
-        }
-        case 1: {
-            return DisplayName().c_str();
-        }
-        case 2: {
-            return ImageURI().c_str();
-        }
-        case 3: {
-            return Text().c_str();
-        }
-        case 4: {
-            QDateTime qdatetime;
-            qdatetime.setSecsSinceEpoch(Clock::to_time_t(Timestamp()));
-            return qdatetime;
-        }
-        case 5: {
-            return static_cast<int>(Type());
-        }
-        default: {
-            return {};
-        }
-    }
-}
-#endif
 
 auto ActivitySummaryItem::reindex(
     const ActivitySummarySortKey& key,

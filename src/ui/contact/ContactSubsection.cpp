@@ -57,7 +57,6 @@ ContactSubsection::ContactSubsection(
           key)
     , sequence_(-1)
 {
-    init();
     startup_.reset(new std::thread(
         &ContactSubsection::startup,
         this,

@@ -35,80 +35,19 @@ template <
 class List : virtual public ExternalInterface,
              virtual public InternalInterface,
              public Widget
-#if OT_QT
-    ,
-             public QAbstractItemModel
-#endif  // OT_QT
 {
-#if OT_QT
 public:
-    using QtPointerType = RowInternal;
-
-    auto columnCount(const QModelIndex& parent) const noexcept -> int override
-    {
-        if (nullptr == get_pointer(parent)) {
-            return column_count_;
-        } else {
-            return valid_pointers_.columnCount(parent);
-        }
-    }
-    auto data(const QModelIndex& index, int role) const noexcept
-        -> QVariant final
-    {
-        const auto [valid, pRow] = check_index(index);
-
-        if (false == valid) { return {}; }
-
-        return valid_pointers_.data(index, role);
-    }
-    auto index(int row, int column, const QModelIndex& parent) const noexcept
-        -> QModelIndex override
-    {
-        if (nullptr == get_pointer(parent)) {
-
-            return get_index(row, column);
-        } else {
-
-            return valid_pointers_.index(row, column, parent);
-        }
-    }
-    auto parent(const QModelIndex& index) const noexcept -> QModelIndex override
-    {
-        if (nullptr == get_pointer(index)) {
-            return {};
-        } else {
-            return valid_pointers_.parent(index);
-        }
-    }
-    auto roleNames() const noexcept -> QHash<int, QByteArray> override
-    {
-        return qt_roles_;
-    }
-    auto rowCount(const QModelIndex& parent) const noexcept -> int override
-    {
-        if (nullptr == get_pointer(parent)) {
-
-            return row_count_.load();
-        } else {
-            return valid_pointers_.rowCount(parent);
-        }
-    }
-    auto register_child(const void* child) const noexcept -> void override
-    {
-        valid_pointers_.add(child);
-    }
-    auto unregister_child(const void* child) const noexcept -> void override
-    {
-        valid_pointers_.remove(child);
-    }
-#endif  // OT_QT
-
-public:
+    using ChildObjectDataType = ChildObjectData<RowID, SortKey>;
+    using ChildDefinitions = std::vector<ChildObjectDataType>;
     using ListPrimaryID = PrimaryID;
-#if OT_QT
-    using Roles = QHash<int, QByteArray>;
-#endif  // OT_QT
 
+    auto AddChildrenToList(CustomData&& data) noexcept -> void
+    {
+        if (0u < data.size()) {
+            add_items(extract_custom<ChildDefinitions>(data, 0));
+        }
+    }
+    auto API() const noexcept -> const api::Core& final { return api_; }
     auto First() const noexcept -> SharedPimpl<RowInterface> override
     {
         auto lock = rLock{recursive_lock_};
@@ -116,7 +55,7 @@ public:
 
         return first(lock);
     }
-    virtual auto last(const RowID& id) const noexcept -> bool override
+    auto last(const RowID& id) const noexcept -> bool override
     {
         auto lock = rLock{recursive_lock_};
 
@@ -136,6 +75,10 @@ public:
         }
     }
 
+    auto GetQt() const noexcept -> ui::qt::internal::Model* final
+    {
+        return qt_model_;
+    }
     auto shutdown(std::promise<void>& promise) noexcept -> void
     {
         wait_for_startup();
@@ -147,147 +90,32 @@ public:
     }
     virtual auto state_machine() noexcept -> bool { return false; }
 
-    virtual auto WaitForStartup() const noexcept -> void final
-    {
-        return wait_for_startup();
-    }
-
     ~List() override
     {
         if (startup_ && startup_->joinable()) {
             startup_->join();
             startup_.reset();
         }
+
+        if (nullptr != qt_model_) {
+            if (false == subnode_) { delete qt_model_; }
+
+            qt_model_ = nullptr;
+        }
     }
 
 protected:
     using RowPointer = std::shared_ptr<RowInternal>;
 
-#if OT_QT
-    struct MyPointers {
-        auto columnCount(const QModelIndex& parent) const noexcept -> int
-        {
-            auto lock = Lock{lock_};
-            const auto* pointer = get_pointer(parent);
-
-            if ((nullptr != pointer) && exists(lock, pointer)) {
-
-                return pointer->qt_column_count();
-            }
-
-            return {};
-        }
-
-        auto data(const QModelIndex& index, int role) const noexcept -> QVariant
-        {
-            auto lock = Lock{lock_};
-            const auto* pointer = get_pointer(index);
-
-            if ((nullptr != pointer) && exists(lock, pointer)) {
-
-                return pointer->qt_data(index.column(), role);
-            }
-
-            return {};
-        }
-        auto index(int row, int column, const QModelIndex& parent)
-            const noexcept -> QModelIndex
-        {
-            auto lock = Lock{lock_};
-            const auto* pointer = get_pointer(parent);
-
-            if ((nullptr != pointer) && exists(lock, pointer)) {
-
-                return pointer->qt_index(row, column);
-            }
-
-            return {};
-        }
-        auto parent(const QModelIndex& index) const noexcept -> QModelIndex
-        {
-            auto lock = Lock{lock_};
-            const auto* pointer = get_pointer(index);
-
-            if ((nullptr != pointer) && exists(lock, pointer)) {
-
-                return pointer->qt_parent();
-            }
-
-            return {};
-        }
-        auto rowCount(const QModelIndex& parent) const noexcept -> int
-        {
-            auto lock = Lock{lock_};
-            const auto* pointer = get_pointer(parent);
-
-            if ((nullptr != pointer) && exists(lock, pointer)) {
-
-                return pointer->qt_row_count();
-            }
-
-            return {};
-        }
-
-        auto add(const void* child) const noexcept -> void
-        {
-            auto lock = Lock{lock_};
-            valid_.insert(reinterpret_cast<std::uintptr_t>(child));
-        }
-        auto remove(const void* child) const noexcept -> void
-        {
-            auto lock = Lock{lock_};
-            valid_.erase(reinterpret_cast<std::uintptr_t>(child));
-        }
-
-    private:
-        mutable std::mutex lock_{};
-        mutable std::set<std::uintptr_t> valid_{};
-
-        auto exists(const Lock&, const void* p) const noexcept -> bool
-        {
-            return 0 < valid_.count(reinterpret_cast<std::uintptr_t>(p));
-        }
-    };
-#endif  // OT_QT
-
+    ui::qt::internal::Model* qt_model_;
     mutable std::recursive_mutex recursive_lock_;
     mutable std::shared_mutex shared_lock_;
-#if OT_QT
-    const int offset_;
-    mutable std::atomic<int> row_count_;
-    const int column_count_;
-    MyPointers valid_pointers_;
-#endif  // OT_QT
     const PrimaryID primary_id_;
     mutable std::size_t counter_;
     mutable OTFlag have_items_;
     mutable OTFlag start_;
-    std::unique_ptr<std::thread> startup_;
+    std::unique_ptr<std::thread> startup_;  // TODO remove
 
-#if OT_QT
-    static auto get_pointer(const QModelIndex& index) -> const QtPointerType*
-    {
-        return static_cast<const QtPointerType*>(index.internalPointer());
-    }
-
-    auto check_index(const QModelIndex& index) const noexcept
-        -> std::pair<bool, const QtPointerType*>
-    {
-        std::pair<bool, const QtPointerType*> output{false, nullptr};
-        auto& [valid, row] = output;
-
-        if (false == index.isValid()) { return output; }
-
-        if (column_count_ < index.column()) { return output; }
-
-        if (nullptr == index.internalPointer()) { return output; }
-
-        row = get_pointer(index);
-        valid = (nullptr != row);
-
-        return output;
-    }
-#endif  // OT_QT
     auto delete_inactive(const std::set<RowID>& active) const noexcept -> void
     {
         auto lock = rLock{recursive_lock_};
@@ -321,16 +149,10 @@ protected:
         if (false == position.has_value()) { return; }
 
         auto& [it, index] = position.value();
-#if OT_QT
-        const auto row = static_cast<int>(index);
-        emit_begin_remove_rows(me(), row, row);
-        unregister_child(it->item_.get());
-#endif  // OT_QT
+
+        if (nullptr != qt_model_) { qt_model_->DeleteRow(it->item_.get()); }
+
         items_.delete_row(id, it);
-#if OT_QT
-        --row_count_;
-        emit_end_remove_rows();
-#endif  // OT_QT
     }
     virtual auto default_id() const noexcept -> RowID
     {
@@ -341,18 +163,6 @@ protected:
     {
         return items_.get_index(id);
     }
-#if OT_QT
-    virtual auto find_row(const RowID& id) const noexcept -> int
-    {
-        if (const auto index{find_index(id)}; index.has_value()) {
-
-            return static_cast<int>(index.value());
-        } else {
-
-            return -1;
-        }
-    }
-#endif  // OT_QT
     template <typename Callback>
     auto for_each_row(const Callback& cb) const noexcept -> void
     {
@@ -361,7 +171,7 @@ protected:
         for (const auto& row : items_) { cb(*row.item_); }
     }
 
-    virtual auto first(const rLock&) const noexcept -> SharedPimpl<RowInterface>
+    auto first(const rLock&) const noexcept -> SharedPimpl<RowInterface>
     {
         try {
 
@@ -371,16 +181,7 @@ protected:
             return SharedPimpl<RowInterface>(blank_p_);
         }
     }
-#if OT_QT
-    auto get_index(const int row, const int column) const noexcept
-        -> QModelIndex
-    {
-        auto lock = rLock{recursive_lock_};
-
-        return get_index(lock, row, column);
-    }
-#endif  // OT_QT
-    virtual auto lookup(const rLock&, const RowID& id) const noexcept
+    auto lookup(const rLock&, const RowID& id) const noexcept
         -> const RowInternal&
     {
         try {
@@ -402,20 +203,46 @@ protected:
             return {};
         }
     }
+    auto startup_complete() const noexcept -> bool
+    {
+        static constexpr auto none = std::chrono::seconds{0};
+
+        return std::future_status::ready == startup_future_.wait_for(none);
+    }
     auto wait_for_startup() const noexcept -> void { startup_future_.get(); }
 
-    virtual auto add_item(
+    auto add_item(
         const RowID& id,
         const SortKey& index,
-        CustomData& custom) noexcept -> void
+        CustomData& custom) noexcept -> RowInternal&
     {
         auto lock = rLock{recursive_lock_};
+
+        return add_item(lock, id, index, custom);
+    }
+    auto add_item(
+        const rLock& lock,
+        const RowID& id,
+        const SortKey& index,
+        CustomData& custom) noexcept -> RowInternal&
+    {
         auto existing = find_index(id);
 
         if (existing.has_value()) {
-            move_item(lock, id, index, custom);
+
+            return move_item(lock, id, index, custom);
         } else {
-            insert_item(lock, id, index, custom);
+
+            return insert_item(lock, id, index, custom);
+        }
+    }
+    auto add_items(ChildDefinitions&& items) noexcept -> void
+    {
+        auto lock = rLock{recursive_lock_};
+
+        for (auto& [id, key, custom, children] : items) {
+            auto& item = add_item(lock, id, key, custom);
+            item.AddChildren(std::move(children));
         }
     }
     auto finish_startup() noexcept -> void
@@ -425,116 +252,70 @@ protected:
         } catch (...) {
         }
     }
-    auto init() noexcept -> void {}
-    auto row_modified(const RowID& id) noexcept -> void
+    virtual auto qt_parent() noexcept -> internal::Row* { return nullptr; }
+    auto row_modified(
+        ui::internal::Row* parent,
+        ui::internal::Row* row) noexcept -> void
     {
-        auto lock = rLock{recursive_lock_};
-        row_modified(id);
-    }
-    virtual auto row_modified(const Lock&, const RowID& id) noexcept -> void
-    {
-        const auto lookup = find_index(id);
+        if (qt_model_) { qt_model_->ChangeRow(parent, row); }
 
-        if (false == lookup.has_value()) { return; }
-
-        const auto index = lookup.value();
-        auto& row = items_.at(index);
-        row_modified(index, row.item_.get());
-    }
-    // FIXME The Combined child class must override this
-    virtual auto row_modified(
-        [[maybe_unused]] const std::size_t index,
-        [[maybe_unused]] RowInternal* pointer) noexcept -> void
-    {
-#if OT_QT
-        const auto row = static_cast<int>(index);
-        emit_data_changed(
-            createIndex(row, 0, pointer),
-            createIndex(row, column_count_, pointer));
-#endif  // OT_QT
         UpdateNotify();
     }
 
+    // NOTE lists that are also rows call this constructor
     List(
         const api::client::internal::Manager& api,
         const typename PrimaryID::interface_type& primaryID,
         const Identifier& widgetID,
-        const bool reverseSort = false,
-#if OT_QT
-        const Roles& roles = {},
-        const int columns = 0,
-        const int startRow = 0,
-#endif  // OT_QT
-        const bool subnode = true,
-        const SimpleCallback& cb = {}) noexcept
+        const bool reverseSort,
+        const bool subnode,
+        const SimpleCallback& cb,
+        qt::internal::Model* qt) noexcept
         : Widget(api, widgetID, cb)
+        , qt_model_(qt)
         , recursive_lock_()
         , shared_lock_()
-#if OT_QT
-        , offset_(startRow)
-        , row_count_(offset_)
-        , column_count_(columns)
-        , valid_pointers_()
-#endif  // OT_QT
         , primary_id_(primaryID)
         , counter_(0)
         , have_items_(Flag::Factory(false))
         , start_(Flag::Factory(true))
         , startup_(nullptr)
-#if OT_QT
-        , qt_roles_(roles)
-#endif  // OT_QT
         , blank_p_(std::make_unique<RowBlank>())
         , blank_(*blank_p_)
         , subnode_(subnode)
         , init_(false)
-        , items_(
-#if OT_QT
-              offset_
-#else
-              0
-#endif  // OT_QT
-              ,
-              reverseSort)
+        , items_(0, reverseSort)
         , startup_promise_()
         , startup_future_(startup_promise_.get_future())
     {
         OT_ASSERT(blank_p_);
-        OT_ASSERT(!(subnode && bool(cb)));
+        OT_ASSERT(!(subnode_ && bool(cb)));
     }
+    // NOTE basic lists (not subnodes) call this constructor
     List(
         const api::client::internal::Manager& api,
         const typename PrimaryID::interface_type& primaryID,
         const SimpleCallback& cb,
-        const bool reverseSort = false
-#if OT_QT
-        ,
-        const Roles& roles = {},
-        const int columns = 0,
-        const int startRow = 0
-#endif  // OT_QT
-        ) noexcept
+        const bool reverseSort) noexcept
         : List(
               api,
               primaryID,
-              Identifier::Random(),
+              [&] {
+                  auto out = api.Factory().Identifier();
+                  out->Randomize(32);
+
+                  return out;
+              }(),
               reverseSort,
-#if OT_QT
-              roles,
-              columns,
-              startRow,
-#endif  // OT_QT
               false,
-              cb)
+              cb,
+              internal::List::MakeQT(api))
     {
     }
 
 private:
     using ItemsType = ListItems<RowID, SortKey, RowPointer>;
 
-#if OT_QT
-    const Roles qt_roles_;
-#endif  // OT_QT
     const std::shared_ptr<const RowInternal> blank_p_;
     const RowInternal& blank_;
     const bool subnode_;
@@ -547,141 +328,61 @@ private:
         const RowID& id,
         const SortKey& index,
         CustomData& custom) const noexcept -> RowPointer = 0;
-#if OT_QT
-    auto emit_begin_insert_rows(const QModelIndex& parent, int first, int last)
-        const noexcept -> void override
-    {
-        const_cast<List&>(*this).beginInsertRows(parent, first, last);
-    }
-    auto emit_begin_move_rows(
-        const QModelIndex& source,
-        int start,
-        int end,
-        const QModelIndex& destination,
-        int to) const noexcept -> void override
-    {
-        const_cast<List&>(*this).beginMoveRows(
-            source, start, end, destination, to);
-    }
-    auto emit_begin_remove_rows(const QModelIndex& parent, int first, int last)
-        const noexcept -> void override
-    {
-        const_cast<List&>(*this).beginRemoveRows(parent, first, last);
-    }
-    auto emit_data_changed(
-        const QModelIndex& topLeft,
-        const QModelIndex& bottomRight) noexcept
-        -> void override  // FIXME Combined must override this
-    {
-        emit dataChanged(topLeft, bottomRight);
-    }
-    auto emit_end_insert_rows() const noexcept -> void override
-    {
-        const_cast<List&>(*this).endInsertRows();
-    }
-    auto emit_end_move_rows() const noexcept -> void override
-    {
-        const_cast<List&>(*this).endMoveRows();
-    }
-    auto emit_end_remove_rows() const noexcept -> void override
-    {
-        const_cast<List&>(*this).endRemoveRows();
-    }
-    auto get_index(const rLock&, const int row, const int column) const noexcept
-        -> QModelIndex
-    {
-        if (column_count_ <= column) { return {}; }
-        if (0 > row) { return {}; }
-
-        OT_ASSERT(row >= offset_);
-
-        try {
-            auto data = items_.at(static_cast<std::size_t>(row));
-            QtPointerType* item{data.item_.get()};
-
-            if (nullptr == item) { return {}; }
-
-            return createIndex(row, column, item);
-        } catch (...) {
-
-            return {};
-        }
-    }
-#endif  // OT_QT
     auto insert_item(
         const rLock&,
         const RowID& id,
         const SortKey& key,
-        CustomData& custom) noexcept -> void
+        CustomData& custom) noexcept -> RowInternal&
     {
         auto pointer = construct_row(id, key, custom);
 
         OT_ASSERT(pointer);
 
         const auto position = items_.find_insert_position(key, id);
-        auto& [it, index] = position;
-#if OT_QT
-        const auto row = static_cast<int>(index);
-        emit_begin_insert_rows(me(), row, row);
-#endif  // OT_QT
-        items_.insert_before(it, key, id, pointer);
-#if OT_QT
-        register_child(pointer.get());
-        ++row_count_;
-        emit_end_insert_rows();
-#endif  // OT_QT
+        auto& [it, prev] = position;
+        auto row = items_.insert_before(it, key, id, pointer);
+
+        if (nullptr != qt_model_) {
+            qt_model_->InsertRow(qt_parent(), prev, row);
+        }
+
         UpdateNotify();
+
+        return *pointer;
     }
-#if OT_QT
-    auto me() const noexcept -> QModelIndex override { return {}; }
-#endif  // OT_QT
     auto move_item(
         const rLock&,
         const RowID& id,
         const SortKey& key,
-        CustomData& custom) noexcept -> void
+        CustomData& custom) noexcept -> RowInternal&
     {
         auto move = items_.find_move_position(id, key, id);
 
         OT_ASSERT(move.has_value());
 
         auto& [from, to] = move.value();
-        auto& [source, fromRow] = from;
-        auto& [dest, toRow] = to;
-        auto item = source->item_.get();
-        const auto samePosition{(fromRow == toRow) || ((fromRow + 1) == toRow)};
+        auto& [source, oldBefore] = from;
+        auto& [dest, newBefore] = to;
+        auto* item = source->item_.get();
+        auto* parent = qt_parent();
+        const auto samePosition{
+            (oldBefore == newBefore) || (item == newBefore)};
 
-        OT_ASSERT(std::numeric_limits<int>::max() >= fromRow);
-        OT_ASSERT(std::numeric_limits<int>::max() >= toRow);
-
-#if OT_QT
         if (false == samePosition) {
-            emit_begin_move_rows(
-                me(),
-                static_cast<int>(fromRow),
-                static_cast<int>(fromRow),
-                me(),
-                static_cast<int>(toRow));
-        }
-#endif  // OT_QT
-
-        items_.move_before(id, source, key, id, dest);
-        const auto changed = item->reindex(key, custom);
-
-#if OT_QT
-        if (samePosition) {
-            if (changed) {
-                emit_data_changed(
-                    createIndex(static_cast<int>(fromRow), 0, item),
-                    createIndex(
-                        static_cast<int>(fromRow), column_count_, item));
+            if (nullptr != qt_model_) {
+                qt_model_->MoveRow(parent, newBefore, item);
             }
-        } else {
-            emit_end_move_rows();
-        }
-#endif  // OT_QT
 
-        if (changed || (!samePosition)) { UpdateNotify(); }
+            items_.move_before(id, source, key, id, dest);
+        }
+
+        if (item->reindex(key, custom)) {
+            row_modified(parent, item);
+        } else if (false == samePosition) {
+            UpdateNotify();
+        }
+
+        return *item;
     }
 
     List() = delete;

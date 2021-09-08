@@ -18,10 +18,11 @@ auto Args(bool lowlevel) noexcept -> const ot::Options&
 {
     using Connection = opentxs::Options::ConnectionMode;
     static const auto minimal = ot::Options{}
+                                    .SetDefaultMintKeyBytes(288)
                                     .SetHome(Home().c_str())
-                                    .SetNotaryInproc(true)
                                     .SetIpv4ConnectionMode(Connection::off)
-                                    .SetIpv6ConnectionMode(Connection::off);
+                                    .SetIpv6ConnectionMode(Connection::off)
+                                    .SetNotaryInproc(true);
     static const auto full = ot::Options{minimal}.SetStoragePlugin("mem");
 
     if (lowlevel) {

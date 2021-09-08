@@ -116,7 +116,7 @@ auto PaymentItem::Deposit() const noexcept -> bool
     auto lock = sLock{shared_lock_};
 
     if (false == bool(payment_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Payment not loaded.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Payment not loaded.").Flush();
 
         return false;
     }
@@ -124,8 +124,7 @@ auto PaymentItem::Deposit() const noexcept -> bool
     auto task = api_.OTX().DepositPayment(nym_id_, payment_);
 
     if (0 == task.first) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to queue deposit.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to queue deposit.").Flush();
 
         return false;
     }

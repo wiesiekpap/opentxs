@@ -7,9 +7,7 @@
 #include "1_Internal.hpp"          // IWYU pragma: associated
 #include "ui/contact/Contact.hpp"  // IWYU pragma: associated
 
-#if OT_QT
-#include <QString>
-#endif  // OT_QT
+#include <functional>
 #include <map>
 #include <memory>
 #include <set>
@@ -32,9 +30,6 @@
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
-#if OT_QT
-#include "opentxs/ui/qt/Contact.hpp"
-#endif  // OT_QT
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::Contact::"
@@ -43,45 +38,14 @@ namespace opentxs::factory
 {
 auto ContactModel(
     const api::client::internal::Manager& api,
-    const Identifier& contactID,
-    const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::Contact>
+    const ui::implementation::ContactPrimaryID& contactID,
+    const SimpleCallback& cb) noexcept -> std::unique_ptr<ui::internal::Contact>
 {
     using ReturnType = ui::implementation::Contact;
 
     return std::make_unique<ReturnType>(api, contactID, cb);
 }
-
-#if OT_QT
-auto ContactQtModel(ui::implementation::Contact& parent) noexcept
-    -> std::unique_ptr<ui::ContactQt>
-{
-    using ReturnType = ui::ContactQt;
-
-    return std::make_unique<ReturnType>(parent);
-}
-#endif  // OT_QT
 }  // namespace opentxs::factory
-
-#if OT_QT
-namespace opentxs::ui
-{
-QT_PROXY_MODEL_WRAPPER(ContactQt, implementation::Contact)
-
-QString ContactQt::displayName() const noexcept
-{
-    return parent_.DisplayName().c_str();
-}
-QString ContactQt::contactID() const noexcept
-{
-    return parent_.ContactID().c_str();
-}
-QString ContactQt::paymentCode() const noexcept
-{
-    return parent_.PaymentCode().c_str();
-}
-}  // namespace opentxs::ui
-#endif
 
 namespace opentxs::ui::implementation
 {
@@ -97,16 +61,16 @@ Contact::Contact(
     const api::client::internal::Manager& api,
     const Identifier& contactID,
     const SimpleCallback& cb) noexcept
-    : ContactType(api, contactID, cb)
+    : ContactType(api, contactID, cb, false)
     , listeners_({
           {api_.Endpoints().ContactUpdate(),
            new MessageProcessor<Contact>(&Contact::process_contact)},
       })
+    , callbacks_()
     , name_(api_.Contacts().ContactName(contactID))
     , payment_code_()
 {
     // NOTE nym_id_ is actually the contact id
-    init();
     setup_listeners(listeners_);
     startup_.reset(new std::thread(&Contact::startup, this));
 
@@ -117,6 +81,13 @@ auto Contact::check_type(const contact::ContactSectionName type) noexcept
     -> bool
 {
     return 1 == allowed_types_.count(type);
+}
+
+auto Contact::ClearCallbacks() const noexcept -> void
+{
+    Widget::ClearCallbacks();
+    auto lock = Lock{callbacks_.lock_};
+    callbacks_.cb_ = {};
 }
 
 auto Contact::construct_row(
@@ -134,27 +105,53 @@ auto Contact::ContactID() const noexcept -> std::string
 
 auto Contact::DisplayName() const noexcept -> std::string
 {
-    rLock lock{recursive_lock_};
+    auto lock = rLock{recursive_lock_};
 
     return name_;
 }
 
 auto Contact::PaymentCode() const noexcept -> std::string
 {
-    rLock lock{recursive_lock_};
+    auto lock = rLock{recursive_lock_};
 
     return payment_code_;
 }
 
-void Contact::process_contact(const opentxs::Contact& contact) noexcept
+auto Contact::process_contact(const opentxs::Contact& contact) noexcept -> void
 {
     {
-        rLock lock{recursive_lock_};
-        name_ = contact.Label();
-        payment_code_ = contact.PaymentCode();
+        const auto name = contact.Label();
+        const auto code = contact.PaymentCode();
+        auto nameChanged{false};
+        auto codeChanged{false};
+
+        {
+            auto lock = rLock{recursive_lock_};
+
+            if (name_ != name) {
+                name_ = name;
+                nameChanged = true;
+            }
+
+            if (payment_code_ != code) {
+                payment_code_ = code;
+                codeChanged = true;
+            }
+        }
+
+        {
+            auto lock = Lock{callbacks_.lock_};
+            auto& cb = callbacks_.cb_;
+
+            if (nameChanged && cb.name_) { cb.name_(name.c_str()); }
+            if (codeChanged && cb.payment_code_) {
+                cb.payment_code_(code.c_str());
+            }
+        }
+
+        if (nameChanged || codeChanged) { UpdateNotify(); }
     }
 
-    UpdateNotify();
     auto active = std::set<ContactRowID>{};
     const auto data = contact.Data();
 
@@ -174,7 +171,7 @@ void Contact::process_contact(const opentxs::Contact& contact) noexcept
     delete_inactive(active);
 }
 
-void Contact::process_contact(const Message& message) noexcept
+auto Contact::process_contact(const Message& message) noexcept -> void
 {
     wait_for_startup();
 
@@ -197,15 +194,20 @@ void Contact::process_contact(const Message& message) noexcept
     process_contact(*contact);
 }
 
+auto Contact::SetCallbacks(Callbacks&& cb) noexcept -> void
+{
+    auto lock = Lock{callbacks_.lock_};
+    callbacks_.cb_ = std::move(cb);
+}
+
 auto Contact::sort_key(const contact::ContactSectionName type) noexcept -> int
 {
     return sort_keys_.at(type);
 }
 
-void Contact::startup() noexcept
+auto Contact::startup() noexcept -> void
 {
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": Loading contact ")(primary_id_)
-        .Flush();
+    LogVerbose(OT_METHOD)(__func__)(": Loading contact ")(primary_id_).Flush();
     const auto contact = api_.Contacts().Contact(primary_id_);
 
     OT_ASSERT(contact)

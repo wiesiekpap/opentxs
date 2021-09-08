@@ -59,6 +59,14 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/Wallet.hpp"
 )
 
+if(OT_QT_EXPORT)
+  target_sources(opentxs-api PRIVATE "Qt.cpp")
+  target_link_libraries(opentxs-api PRIVATE Qt5::Core)
+  target_link_libraries(opentxs PRIVATE Qt5::Core)
+else()
+  target_sources(opentxs-api PRIVATE "no-Qt.cpp")
+endif()
+
 target_link_libraries(opentxs-api PRIVATE Boost::headers opentxs::messages)
 target_link_libraries(opentxs PUBLIC Boost::filesystem Boost::program_options)
 target_include_directories(

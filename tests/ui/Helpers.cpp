@@ -19,11 +19,22 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/ui/ActivityThread.hpp"
 #include "opentxs/ui/ActivityThreadItem.hpp"
+#include "opentxs/ui/BlockchainAccountStatus.hpp"
+#include "opentxs/ui/BlockchainSubaccount.hpp"
+#include "opentxs/ui/BlockchainSubaccountSource.hpp"
+#include "opentxs/ui/BlockchainSubchain.hpp"
 #include "opentxs/ui/ContactList.hpp"
 #include "opentxs/ui/ContactListItem.hpp"
 
 namespace ottest
 {
+auto check_blockchain_subaccounts(
+    const ot::ui::BlockchainSubaccountSource& widget,
+    const std::vector<BlockchainSubaccountData>& v) noexcept -> bool;
+auto check_blockchain_subchains(
+    const ot::ui::BlockchainSubaccount& widget,
+    const std::vector<BlockchainSubchainData>& v) noexcept -> bool;
+
 auto check_account_activity(
     const User& user,
     const ot::Identifier& account,
@@ -108,6 +119,146 @@ auto check_activity_thread(
 
             EXPECT_NE(row->Timestamp(), null);
         }
+
+        const auto lastVector = std::next(it) == v.end();
+        const auto lastRow = row->Last();
+        output &= (lastVector == lastRow);
+
+        if (lastVector) {
+            EXPECT_TRUE(lastRow);
+        } else {
+            EXPECT_FALSE(lastRow);
+
+            if (lastRow) { return output; }
+        }
+    }
+
+    return output;
+}
+
+auto check_blockchain_account_status(
+    const User& user,
+    const ot::blockchain::Type chain,
+    const BlockchainAccountStatusData& expected) noexcept -> bool
+{
+    const auto& widget =
+        user.api_->UI().BlockchainAccountStatus(user.nym_id_, chain);
+    auto output{true};
+    output &= (widget.Chain() == expected.chain_);
+    output &= (widget.Owner().str() == expected.owner_);
+
+    EXPECT_EQ(widget.Chain(), expected.chain_);
+    EXPECT_EQ(widget.Owner().str(), expected.owner_);
+
+    const auto& v = expected.rows_;
+    auto row = widget.First();
+
+    if (const auto valid = row->Valid(); 0 < v.size()) {
+        output &= valid;
+
+        EXPECT_TRUE(valid);
+
+        if (false == valid) { return output; }
+    } else {
+        output &= (false == valid);
+
+        EXPECT_FALSE(valid);
+    }
+
+    for (auto it{v.begin()}; it < v.end(); ++it, row = widget.Next()) {
+        output &= (row->Name() == it->name_);
+        output &= (row->SourceID().str() == it->id_);
+        output &= (row->Type() == it->type_);
+        output &= check_blockchain_subaccounts(row.get(), it->rows_);
+
+        EXPECT_EQ(row->Name(), it->name_);
+        EXPECT_EQ(row->SourceID().str(), it->id_);
+        EXPECT_EQ(row->Type(), it->type_);
+
+        const auto lastVector = std::next(it) == v.end();
+        const auto lastRow = row->Last();
+        output &= (lastVector == lastRow);
+
+        if (lastVector) {
+            EXPECT_TRUE(lastRow);
+        } else {
+            EXPECT_FALSE(lastRow);
+
+            if (lastRow) { return output; }
+        }
+    }
+
+    return output;
+}
+
+auto check_blockchain_subaccounts(
+    const ot::ui::BlockchainSubaccountSource& widget,
+    const std::vector<BlockchainSubaccountData>& v) noexcept -> bool
+{
+    auto output{true};
+    auto row = widget.First();
+
+    if (const auto valid = row->Valid(); 0 < v.size()) {
+        output &= valid;
+
+        EXPECT_TRUE(valid);
+
+        if (false == valid) { return output; }
+    } else {
+        output &= (false == valid);
+
+        EXPECT_FALSE(valid);
+    }
+
+    for (auto it{v.begin()}; it < v.end(); ++it, row = widget.Next()) {
+        output &= (row->Name() == it->name_);
+        output &= (row->SubaccountID().str() == it->id_);
+        output &= check_blockchain_subchains(row.get(), it->rows_);
+
+        EXPECT_EQ(row->Name(), it->name_);
+        EXPECT_EQ(row->SubaccountID().str(), it->id_);
+
+        const auto lastVector = std::next(it) == v.end();
+        const auto lastRow = row->Last();
+        output &= (lastVector == lastRow);
+
+        if (lastVector) {
+            EXPECT_TRUE(lastRow);
+        } else {
+            EXPECT_FALSE(lastRow);
+
+            if (lastRow) { return output; }
+        }
+    }
+
+    return output;
+}
+
+auto check_blockchain_subchains(
+    const ot::ui::BlockchainSubaccount& widget,
+    const std::vector<BlockchainSubchainData>& v) noexcept -> bool
+{
+    auto output{true};
+    auto row = widget.First();
+
+    if (const auto valid = row->Valid(); 0 < v.size()) {
+        output &= valid;
+
+        EXPECT_TRUE(valid);
+
+        if (false == valid) { return output; }
+    } else {
+        output &= (false == valid);
+
+        EXPECT_FALSE(valid);
+    }
+
+    for (auto it{v.begin()}; it < v.end(); ++it, row = widget.Next()) {
+        output &= (row->Name() == it->name_);
+        output &= (row->Type() == it->type_);
+
+        EXPECT_EQ(row->Name(), it->name_);
+        EXPECT_EQ(row->Type(), it->type_);
 
         const auto lastVector = std::next(it) == v.end();
         const auto lastRow = row->Last();

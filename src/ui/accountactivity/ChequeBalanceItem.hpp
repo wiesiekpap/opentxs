@@ -65,10 +65,6 @@ public:
     auto UUID() const noexcept -> std::string final;
     auto Workflow() const noexcept -> std::string final { return workflow_; }
 
-    auto reindex(
-        const implementation::AccountActivitySortKey& key,
-        implementation::CustomData& custom) noexcept -> bool final;
-
     ChequeBalanceItem(
         const AccountActivityInternalInterface& parent,
         const api::client::internal::Manager& api,
@@ -84,6 +80,9 @@ private:
 
     auto effective_amount() const noexcept -> opentxs::Amount final;
 
+    auto reindex(
+        const implementation::AccountActivitySortKey& key,
+        implementation::CustomData& custom) noexcept -> bool final;
     auto startup(
         const proto::PaymentWorkflow workflow,
         const proto::PaymentEvent event) noexcept -> bool;

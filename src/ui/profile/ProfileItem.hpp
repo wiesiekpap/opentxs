@@ -89,10 +89,6 @@ public:
         return item_->Value();
     }
 
-    auto reindex(
-        const ProfileSubsectionSortKey& key,
-        CustomData& custom) noexcept -> bool final;
-
     ProfileItem(
         const ProfileSubsectionInternalInterface& parent,
         const api::client::internal::Manager& api,
@@ -106,6 +102,10 @@ private:
 
     auto add_claim(const Claim& claim) const noexcept -> bool;
     auto as_claim() const noexcept -> Claim;
+
+    auto reindex(
+        const ProfileSubsectionSortKey& key,
+        CustomData& custom) noexcept -> bool final;
 
     ProfileItem() = delete;
     ProfileItem(const ProfileItem&) = delete;

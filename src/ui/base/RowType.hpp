@@ -15,15 +15,14 @@ public:
     using RowParentType = ParentType;
     using RowIdentifierType = IdentifierType;
 
+    auto index() const noexcept -> std::ptrdiff_t final { return row_index_; }
     auto Last() const noexcept -> bool final { return parent_.last(row_id_); }
-#if OT_QT
-    QModelIndex qt_parent() const noexcept final { return parent_.me(); }
-#endif  // OT_QT
     auto Valid() const noexcept -> bool final { return valid_; }
 
 protected:
     const ParentType& parent_;
     const IdentifierType row_id_;
+    const std::ptrdiff_t row_index_;
     const bool valid_;
 
     RowType(
@@ -32,15 +31,18 @@ protected:
         const bool valid) noexcept
         : parent_(parent)
         , row_id_(id)
+        , row_index_(internal::Row::next_index())
         , valid_(valid)
     {
     }
+
+    ~RowType() override = default;
+
+private:
     RowType() = delete;
     RowType(const RowType&) = delete;
     RowType(RowType&&) = delete;
     auto operator=(const RowType&) -> RowType& = delete;
     auto operator=(RowType&&) -> RowType& = delete;
-
-    ~RowType() override = default;
 };
 }  // namespace opentxs::ui::implementation

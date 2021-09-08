@@ -5,9 +5,8 @@
 
 #pragma once
 
-#if OT_QT
-#include <QHash>
-#endif  // OT_QT
+#include <iosfwd>
+#include <list>
 #include <map>
 #include <set>
 #include <string>
@@ -20,6 +19,7 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/contact/ContactSectionName.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/protobuf/ContactEnums.pb.h"
@@ -82,12 +82,6 @@ public:
     {
         return primary_id_->str();
     }
-#if OT_QT
-    int FindRow(const ContactSectionRowID& id) const noexcept final
-    {
-        return find_row(id);
-    }
-#endif
     auto Name(const std::string& lang) const noexcept -> std::string final
     {
         return proto::TranslateSectionName(
@@ -97,10 +91,6 @@ public:
     {
         return row_id_;
     }
-
-    auto reindex(
-        const implementation::ContactSortKey& key,
-        implementation::CustomData& custom) noexcept -> bool final;
 
     ContactSection(
         const ContactInternalInterface& parent,
@@ -132,7 +122,10 @@ private:
     }
     auto process_section(const opentxs::ContactSection& section) noexcept
         -> std::set<ContactSectionRowID>;
-    void startup(const opentxs::ContactSection section) noexcept;
+    auto reindex(
+        const implementation::ContactSortKey& key,
+        implementation::CustomData& custom) noexcept -> bool final;
+    auto startup(const opentxs::ContactSection section) noexcept -> void;
 
     ContactSection() = delete;
     ContactSection(const ContactSection&) = delete;

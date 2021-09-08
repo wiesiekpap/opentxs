@@ -15,24 +15,6 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/BlockchainSelectionItem.hpp"
 )
 target_link_libraries(opentxs-ui-blockchainselection PRIVATE opentxs::messages)
-
-if(OT_WITH_QT)
-  set(ot-qobject-install-headers
-      "${opentxs_SOURCE_DIR}/include/opentxs/ui/qt/BlockchainSelection.hpp"
-  )
-  qt5_wrap_cpp(MOC_SRCS ${ot-qobject-install-headers})
-  target_sources(opentxs-ui-blockchainselection PRIVATE ${MOC_SRCS})
-
-  if(OPENTXS_STANDALONE)
-    install(
-      FILES ${ot-qobject-install-headers}
-      DESTINATION include/opentxs/ui/qt
-      COMPONENT dev
-    )
-  endif()
-endif()
-
-opentxs_set_qt(opentxs-ui-blockchainselection)
 target_sources(opentxs-ui-blockchainselection PRIVATE ${cxx-install-headers})
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-blockchainselection>)
 add_dependencies(opentxs-ui-blockchainselection generated_code)

@@ -27,6 +27,7 @@
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/core/Data.hpp"
@@ -134,6 +135,7 @@ public:
     };
 
     const OTNymID owner_;
+    const crypto::SubaccountType account_type_;
     const OTIdentifier id_;
     const Subchain subchain_;
     const filter::Type filter_type_;
@@ -202,6 +204,7 @@ protected:
         const node::internal::Network& node,
         const WalletDatabase& db,
         OTNymID&& owner,
+        crypto::SubaccountType accountType,
         OTIdentifier&& id,
         const SimpleCallback& taskFinished,
         Outstanding& jobCounter,
@@ -237,6 +240,7 @@ private:
         std::unique_ptr<const block::bitcoin::Transaction> tx) noexcept
         -> void = 0;
     auto report_scan() noexcept -> void;
+    virtual auto update_scan(const block::Position& pos) noexcept -> void {}
 
     SubchainStateData() = delete;
     SubchainStateData(const SubchainStateData&) = delete;

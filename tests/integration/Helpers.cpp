@@ -14,15 +14,18 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/HDSeed.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/server/Manager.hpp"
-#include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/crypto/Language.hpp"
+#include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
@@ -100,13 +103,13 @@ auto Callbacks::callback(const ot::network::zeromq::Message& incoming) noexcept
             future = {};
             limit = 0;
         } else {
-            ot::LogOutput("::Callbacks::")(__FUNCTION__)(
-                ": ")(name_)(" missing callback for ")(static_cast<int>(type))
+            ot::LogOutput("::Callbacks::")(__func__)(": ")(
+                name_)(" missing callback for ")(static_cast<int>(type))
                 .Flush();
         }
     } else {
-        ot::LogVerbose("::Callbacks::")(__FUNCTION__)(
-            ": Skipping update ")(counter)(" to ")(static_cast<int>(type))
+        ot::LogVerbose("::Callbacks::")(__func__)(": Skipping update ")(
+            counter)(" to ")(static_cast<int>(type))
             .Flush();
     }
 }
@@ -125,7 +128,7 @@ auto Callbacks::RegisterWidget(
     int counter,
     WidgetCallback callback) noexcept -> std::future<bool>
 {
-    ot::LogDetail("::Callbacks::")(__FUNCTION__)(": Name: ")(name_)(" ID: ")(id)
+    ot::LogDetail("::Callbacks::")(__func__)(": Name: ")(name_)(" ID: ")(id)
         .Flush();
     WidgetData data{};
     std::get<0>(data) = type;
@@ -173,16 +176,13 @@ auto Server::Reason() const noexcept -> ot::OTPasswordPrompt
 {
     OT_ASSERT(nullptr != api_);
 
-    return api_->Factory().PasswordPrompt(__FUNCTION__);
+    return api_->Factory().PasswordPrompt(__func__);
 }
 
 auto Server::init(const ot::api::server::Manager& api) noexcept -> void
 {
     if (init_) { return; }
 
-#if OT_CASH
-    api.SetMintKeySize(OT_MINT_KEY_SIZE_TEST);
-#endif
     api_ = &api;
     const_cast<ot::OTServerID&>(id_) = api.ID();
 
@@ -240,16 +240,21 @@ auto User::Contact(const std::string& contact) const noexcept
     return contacts_.at(contact).get();
 }
 
-auto User::init(
+auto User::init_basic(
     const ot::api::client::Manager& api,
-    const Server& server,
     const ot::contact::ContactItemType type,
-    const std::uint32_t index) noexcept -> bool
+    const std::uint32_t index,
+    const ot::crypto::SeedStyle seed) noexcept -> bool
 {
     if (init_) { return false; }
 
     api_ = &api;
-    seed_id_ = api.Exec().Wallet_ImportSeed(words_, passphrase_);
+    seed_id_ = api.Seeds().ImportSeed(
+        api.Factory().SecretFromText(words_),
+        api.Factory().SecretFromText(passphrase_),
+        seed,
+        ot::crypto::Language::en,
+        Reason());
     index_ = index;
     nym_ = api.Wallet().Nym(
         Reason(), name_, {seed_id_, static_cast<int>(index_)}, type);
@@ -264,10 +269,40 @@ auto User::init(
                 seed_id_, index_, ot::PaymentCode::DefaultVersion, Reason())
             ->asBase58();
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    set_introduction_server(api, server);
-    init_ = true;
 
     return true;
+}
+
+auto User::init(
+    const ot::api::client::Manager& api,
+    const Server& server,
+    const ot::contact::ContactItemType type,
+    const std::uint32_t index,
+    const ot::crypto::SeedStyle seed) noexcept -> bool
+{
+    if (init_basic(api, type, index, seed)) {
+        set_introduction_server(api, server);
+        init_ = true;
+
+        return true;
+    }
+
+    return false;
+}
+
+auto User::init(
+    const ot::api::client::Manager& api,
+    const ot::contact::ContactItemType type,
+    const std::uint32_t index,
+    const ot::crypto::SeedStyle seed) noexcept -> bool
+{
+    if (init_basic(api, type, index, seed)) {
+        init_ = true;
+
+        return true;
+    }
+
+    return false;
 }
 
 auto User::init_custom(
@@ -275,9 +310,10 @@ auto User::init_custom(
     const Server& server,
     const std::function<void(User&)> custom,
     const ot::contact::ContactItemType type,
-    const std::uint32_t index) noexcept -> void
+    const std::uint32_t index,
+    const ot::crypto::SeedStyle seed) noexcept -> void
 {
-    if (init(api, server, type, index) && custom) { custom(*this); }
+    if (init(api, server, type, index, seed) && custom) { custom(*this); }
 }
 
 auto User::PaymentCode() const -> ot::OTPaymentCode
@@ -291,7 +327,7 @@ auto User::Reason() const noexcept -> ot::OTPasswordPrompt
 {
     OT_ASSERT(nullptr != api_);
 
-    return api_->Factory().PasswordPrompt(__FUNCTION__);
+    return api_->Factory().PasswordPrompt(__func__);
 }
 
 auto User::SetAccount(const std::string& type, const std::string& id)

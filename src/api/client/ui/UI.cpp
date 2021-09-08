@@ -104,6 +104,24 @@ auto UI::BlankModel(const std::size_t columns) const noexcept
     return imp_->BlankModel(columns);
 }
 
+auto UI::BlockchainAccountStatus(
+    const identifier::Nym& nymID,
+    const opentxs::blockchain::Type chain,
+    const SimpleCallback cb) const noexcept
+    -> const opentxs::ui::BlockchainAccountStatus&
+{
+    return imp_->BlockchainAccountStatus(nymID, chain, cb);
+}
+
+auto UI::BlockchainAccountStatusQt(
+    const identifier::Nym& nymID,
+    const opentxs::blockchain::Type chain,
+    const SimpleCallback cb) const noexcept
+    -> opentxs::ui::BlockchainAccountStatusQt*
+{
+    return imp_->BlockchainAccountStatusQt(nymID, chain, cb);
+}
+
 auto UI::BlockchainIssuerID(const opentxs::blockchain::Type chain)
     const noexcept -> const identifier::Nym&
 {

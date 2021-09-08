@@ -5,9 +5,6 @@
 
 #pragma once
 
-#if OT_QT
-#include <QVariant>
-#endif  // OT_QT
 #include <atomic>
 #include <chrono>
 #include <memory>
@@ -25,6 +22,8 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/ui/ActivitySummaryItem.hpp"
 #include "ui/base/Row.hpp"
+
+class QVariant;
 
 namespace opentxs
 {
@@ -88,13 +87,6 @@ public:
     auto Timestamp() const noexcept -> Time final;
     auto Type() const noexcept -> StorageBox final;
 
-    auto reindex(const ActivitySummarySortKey& key, CustomData& custom) noexcept
-        -> bool final;
-
-#if OT_QT
-    QVariant qt_data(const int column, const int role) const noexcept final;
-#endif
-
     ActivitySummaryItem(
         const ActivitySummaryInternalInterface& parent,
         const api::client::internal::Manager& api,
@@ -126,9 +118,13 @@ private:
 
     auto find_text(const PasswordPrompt& reason, const ItemLocator& locator)
         const noexcept -> std::string;
+    auto qt_data(const int column, const int role, QVariant& out) const noexcept
+        -> void final;
 
-    void get_text() noexcept;
-    void startup(CustomData& custom) noexcept;
+    auto get_text() noexcept -> void;
+    auto reindex(const ActivitySummarySortKey& key, CustomData& custom) noexcept
+        -> bool final;
+    auto startup(CustomData& custom) noexcept -> void;
 
     ActivitySummaryItem(const ActivitySummaryItem&) = delete;
     ActivitySummaryItem(ActivitySummaryItem&&) = delete;

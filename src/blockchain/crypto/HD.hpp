@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -67,6 +68,7 @@ public:
     using Element = implementation::Element;
     using SerializedType = proto::HDAccount;
 
+    auto Name() const noexcept -> std::string final;
     auto PrivateKey(
         const Subchain type,
         const Bip32Index index,
@@ -96,6 +98,7 @@ private:
     VersionNumber version_;
     mutable std::unique_ptr<opentxs::crypto::key::HD> cached_internal_;
     mutable std::unique_ptr<opentxs::crypto::key::HD> cached_external_;
+    mutable std::optional<std::string> name_;
 
     auto account_already_exists(const rLock& lock) const noexcept -> bool final;
     auto save(const rLock& lock) const noexcept -> bool final;

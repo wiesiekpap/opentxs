@@ -21,24 +21,6 @@ target_link_libraries(opentxs-ui-accountsummary PRIVATE opentxs::messages)
 target_include_directories(
   opentxs-ui-accountsummary SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
-
-if(OT_WITH_QT)
-  set(ot-qobject-install-headers
-      "${opentxs_SOURCE_DIR}/include/opentxs/ui/qt/AccountSummary.hpp"
-  )
-  qt5_wrap_cpp(MOC_SRCS ${ot-qobject-install-headers})
-  target_sources(opentxs-ui-accountsummary PRIVATE ${MOC_SRCS})
-
-  if(OPENTXS_STANDALONE)
-    install(
-      FILES ${ot-qobject-install-headers}
-      DESTINATION include/opentxs/ui/qt
-      COMPONENT dev
-    )
-  endif()
-endif()
-
-opentxs_set_qt(opentxs-ui-accountsummary)
 target_sources(opentxs-ui-accountsummary PRIVATE ${cxx-install-headers})
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-accountsummary>)
 add_dependencies(opentxs-ui-accountsummary generated_code)

@@ -147,6 +147,8 @@ public:
         const std::string& seedID,
         Bip32Index& index,
         const PasswordPrompt& reason) const -> OTSecret final;
+    auto SeedDescription(std::string seedID) const noexcept
+        -> std::string final;
     auto UpdateIndex(
         const std::string& seedID,
         const Bip32Index index,

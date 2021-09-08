@@ -7,16 +7,10 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "ui/blockchainselection/BlockchainSelectionItem.hpp"  // IWYU pragma: associated
 
-#if OT_QT
-#include <QObject>
-#endif  // OT_QT
 #include <memory>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Log.hpp"
-#if OT_QT
-#include "opentxs/ui/qt/BlockchainSelection.hpp"
-#endif  // OT_QT
 #include "ui/base/Widget.hpp"
 
 // #define OT_METHOD "opentxs::ui::implementation::BlockchainSelectionItem::"
@@ -51,31 +45,6 @@ BlockchainSelectionItem::BlockchainSelectionItem(
     , enabled_(extract_custom<bool>(custom, 0))
 {
 }
-
-#if OT_QT
-auto BlockchainSelectionItem::qt_data(const int column, int role) const noexcept
-    -> QVariant
-{
-    switch (role) {
-        case Qt::DisplayRole: {
-            return Name().c_str();
-        }
-        case Qt::CheckStateRole: {
-            return IsEnabled() ? Qt::Checked : Qt::Unchecked;
-        }
-        case BlockchainSelectionQt::TypeRole: {
-            return static_cast<int>(static_cast<std::uint32_t>(Type()));
-        }
-        case BlockchainSelectionQt::IsTestnet: {
-            return IsTestnet();
-        }
-        default: {
-        }
-    }
-
-    return {};
-}
-#endif
 
 auto BlockchainSelectionItem::reindex(
     const BlockchainSelectionSortKey& key,

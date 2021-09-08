@@ -24,9 +24,12 @@
 #include <vector>
 
 #include "internal/blockchain/Params.hpp"
+#include "opentxs/api/server/Manager.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+
+class QObject;
 
 #define OT_METHOD "opentxs::Options::"
 
@@ -44,6 +47,7 @@ struct Options::Imp::Parser {
     static constexpr auto blockchain_sync_provide_{"provide_sync_server"};
     static constexpr auto blockchain_sync_connect_{"blockchain_sync_server"};
     static constexpr auto blockchain_wallet_enable_{"blockchain_wallet"};
+    static constexpr auto default_mint_key_bytes_{"mint_key_default_bytes"};
     static constexpr auto home_{"ot_home"};
     static constexpr auto ipv4_connection_mode_{"ipv4_connection_mode"};
     static constexpr auto ipv6_connection_mode_{"ipv6_connection_mode"};
@@ -101,6 +105,11 @@ struct Options::Imp::Parser {
                 blockchain_wallet_enable_,
                 po::value<bool>()->implicit_value(true),
                 "Blockchain wallet support");
+            out.add_options()(
+                default_mint_key_bytes_,
+                po::value<std::size_t>()->default_value(
+                    api::server::Manager::DefaultMintKeyBytes()),
+                "Default key size for blinded mints");
             out.add_options()(
                 home_,
                 po::value<std::string>(),
@@ -200,6 +209,7 @@ Options::Imp::Imp() noexcept
     , blockchain_sync_server_enabled_(std::nullopt)
     , blockchain_sync_servers_()
     , blockchain_wallet_enabled_(std::nullopt)
+    , default_mint_key_bytes_(std::nullopt)
     , home_(std::nullopt)
     , log_endpoint_(std::nullopt)
     , ipv4_connection_mode_(std::nullopt)
@@ -215,6 +225,7 @@ Options::Imp::Imp() noexcept
     , notary_public_onion_()
     , notary_public_port_(std::nullopt)
     , notary_terms_(std::nullopt)
+    , qt_root_object_(std::nullopt)
     , storage_primary_plugin_(std::nullopt)
 {
 }
@@ -227,6 +238,7 @@ Options::Imp::Imp(const Imp& rhs) noexcept
     , blockchain_sync_server_enabled_(rhs.blockchain_sync_server_enabled_)
     , blockchain_sync_servers_(rhs.blockchain_sync_servers_)
     , blockchain_wallet_enabled_(rhs.blockchain_wallet_enabled_)
+    , default_mint_key_bytes_(rhs.default_mint_key_bytes_)
     , home_(rhs.home_)
     , log_endpoint_(rhs.log_endpoint_)
     , ipv4_connection_mode_(rhs.ipv4_connection_mode_)
@@ -242,6 +254,7 @@ Options::Imp::Imp(const Imp& rhs) noexcept
     , notary_public_onion_(rhs.notary_public_onion_)
     , notary_public_port_(rhs.notary_public_port_)
     , notary_terms_(rhs.notary_terms_)
+    , qt_root_object_(rhs.qt_root_object_)
     , storage_primary_plugin_(rhs.storage_primary_plugin_)
 {
 }
@@ -324,6 +337,8 @@ auto Options::Imp::import_value(const char* key, const char* value) noexcept
             blockchain_sync_servers_.emplace(value);
         } else if (0 == std::strcmp(key, Parser::blockchain_wallet_enable_)) {
             blockchain_wallet_enabled_ = to_bool(value);
+        } else if (0 == std::strcmp(key, Parser::default_mint_key_bytes_)) {
+            default_mint_key_bytes_ = std::stoull(value);
         } else if (0 == std::strcmp(key, Parser::home_)) {
             home_ = value;
         } else if (0 == std::strcmp(key, Parser::ipv4_connection_mode_)) {
@@ -449,6 +464,11 @@ auto Options::Imp::parse(int argc, char** argv) noexcept(false) -> void
         } else if (name == Parser::blockchain_wallet_enable_) {
             try {
                 blockchain_wallet_enabled_ = value.as<bool>();
+            } catch (...) {
+            }
+        } else if (name == Parser::default_mint_key_bytes_) {
+            try {
+                default_mint_key_bytes_ = value.as<std::size_t>();
             } catch (...) {
             }
         } else if (name == Parser::home_) {
@@ -620,6 +640,10 @@ auto operator+(const Options& lhs, const Options& rhs) noexcept -> Options
         l.blockchain_wallet_enabled_ = v.value();
     }
 
+    if (const auto& v = r.default_mint_key_bytes_; v.has_value()) {
+        l.default_mint_key_bytes_ = v.value();
+    }
+
     if (const auto& v = r.home_; v.has_value()) { l.home_ = v.value(); }
 
     if (const auto& v = r.ipv4_connection_mode_; v.has_value()) {
@@ -677,6 +701,10 @@ auto operator+(const Options& lhs, const Options& rhs) noexcept -> Options
 
     if (const auto& v = r.notary_terms_; v.has_value()) {
         l.notary_terms_ = v.value();
+    }
+
+    if (const auto& v = r.qt_root_object_; v.has_value()) {
+        l.qt_root_object_ = v.value();
     }
 
     if (const auto& v = r.storage_primary_plugin_; v.has_value()) {
@@ -781,6 +809,13 @@ auto Options::BlockchainStorageLevel() const noexcept -> int
 auto Options::BlockchainWalletEnabled() const noexcept -> bool
 {
     return Imp::get(imp_->blockchain_wallet_enabled_, true);
+}
+
+auto Options::DefaultMintKeyBytes() const noexcept -> std::size_t
+{
+    return Imp::get(
+        imp_->default_mint_key_bytes_,
+        api::server::Manager::DefaultMintKeyBytes());
 }
 
 auto Options::DisableBlockchain(blockchain::Type chain) noexcept -> Options&
@@ -894,6 +929,11 @@ auto Options::ProvideBlockchainSyncServer() const noexcept -> bool
     return Imp::get(imp_->blockchain_sync_server_enabled_);
 }
 
+auto Options::QtRootObject() const noexcept -> QObject*
+{
+    return imp_->qt_root_object_.value_or(nullptr);
+}
+
 auto Options::RemoteBlockchainSyncServers() const noexcept
     -> const std::set<std::string>&
 {
@@ -923,6 +963,13 @@ auto Options::SetBlockchainSyncEnabled(bool enabled) noexcept -> Options&
 auto Options::SetBlockchainWalletEnabled(bool enabled) noexcept -> Options&
 {
     imp_->blockchain_wallet_enabled_ = enabled;
+
+    return *this;
+}
+
+auto Options::SetDefaultMintKeyBytes(std::size_t bytes) noexcept -> Options&
+{
+    imp_->default_mint_key_bytes_ = bytes;
 
     return *this;
 }
@@ -1000,6 +1047,13 @@ auto Options::SetNotaryPublicPort(std::uint16_t port) noexcept -> Options&
 auto Options::SetNotaryTerms(const char* value) noexcept -> Options&
 {
     imp_->notary_terms_ = value;
+
+    return *this;
+}
+
+auto Options::SetQtRootObject(QObject* ptr) noexcept -> Options&
+{
+    imp_->qt_root_object_ = ptr;
 
     return *this;
 }

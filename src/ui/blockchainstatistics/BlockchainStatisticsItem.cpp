@@ -7,16 +7,10 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "ui/blockchainstatistics/BlockchainStatisticsItem.hpp"  // IWYU pragma: associated
 
-#if OT_QT
-#include <QObject>
-#endif  // OT_QT
 #include <memory>
 
 #include "internal/blockchain/Blockchain.hpp"
 #include "opentxs/core/Log.hpp"
-#if OT_QT
-#include "opentxs/ui/qt/BlockchainStatistics.hpp"
-#endif  // OT_QT
 #include "ui/base/Widget.hpp"
 
 // #define OT_METHOD "opentxs::ui::implementation::BlockchainStatisticsItem::"
@@ -60,93 +54,6 @@ auto BlockchainStatisticsItem::Balance() const noexcept -> std::string
 {
     return blockchain::internal::Format(row_id_, balance_.load());
 }
-
-#if OT_QT
-auto BlockchainStatisticsItem::qt_data(const int column, int role)
-    const noexcept -> QVariant
-{
-    switch (role) {
-        case Qt::TextAlignmentRole: {
-            switch (column) {
-                case BlockchainStatisticsQt::NameColumn: {
-
-                    return Qt::AlignLeft;
-                }
-                default: {
-
-                    return Qt::AlignHCenter;
-                }
-            }
-        }
-        case Qt::DisplayRole: {
-            switch (column) {
-                case BlockchainStatisticsQt::NameColumn: {
-
-                    return qt_data(column, BlockchainStatisticsQt::Name);
-                }
-                case BlockchainStatisticsQt::BalanceColumn: {
-
-                    return qt_data(column, BlockchainStatisticsQt::Balance);
-                }
-                case BlockchainStatisticsQt::HeaderColumn: {
-
-                    return qt_data(
-                        column, BlockchainStatisticsQt::HeaderHeight);
-                }
-                case BlockchainStatisticsQt::FilterColumn: {
-
-                    return qt_data(
-                        column, BlockchainStatisticsQt::FilterHeight);
-                }
-                case BlockchainStatisticsQt::ConnectedPeerColumn: {
-
-                    return qt_data(
-                        column, BlockchainStatisticsQt::ConnectedPeerCount);
-                }
-                case BlockchainStatisticsQt::ActivePeerColumn: {
-
-                    return qt_data(
-                        column, BlockchainStatisticsQt::ActivePeerCount);
-                }
-                case BlockchainStatisticsQt::BlockQueueColumn: {
-
-                    return qt_data(column, BlockchainStatisticsQt::BlockQueue);
-                }
-                default: {
-                }
-            }
-        } break;
-        case BlockchainStatisticsQt::Balance: {
-            return Balance().c_str();
-        }
-        case BlockchainStatisticsQt::BlockQueue: {
-            return static_cast<int>(BlockDownloadQueue());
-        }
-        case BlockchainStatisticsQt::Chain: {
-            return static_cast<int>(static_cast<std::uint32_t>(Chain()));
-        }
-        case BlockchainStatisticsQt::FilterHeight: {
-            return static_cast<int>(Filters());
-        }
-        case BlockchainStatisticsQt::HeaderHeight: {
-            return static_cast<int>(Headers());
-        }
-        case BlockchainStatisticsQt::Name: {
-            return Name().c_str();
-        }
-        case BlockchainStatisticsQt::ActivePeerCount: {
-            return static_cast<int>(ActivePeers());
-        }
-        case BlockchainStatisticsQt::ConnectedPeerCount: {
-            return static_cast<int>(ConnectedPeers());
-        }
-        default: {
-        }
-    }
-
-    return {};
-}
-#endif
 
 auto BlockchainStatisticsItem::reindex(
     const BlockchainStatisticsSortKey& key,

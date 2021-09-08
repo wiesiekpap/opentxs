@@ -6,31 +6,30 @@
 #ifndef OPENTXS_UI_CONTACTLISTQT_HPP
 #define OPENTXS_UI_CONTACTLISTQT_HPP
 
-#include <QIdentityProxyModel>
+#include <QObject>
+#include <QString>
 
 #include "opentxs/opentxs_export.hpp"  // IWYU pragma: keep
+#include "opentxs/ui/qt/Model.hpp"
+
+class QObject;
 
 namespace opentxs
 {
 namespace ui
 {
-namespace implementation
+namespace internal
 {
-class ContactList;
-}  // namespace implementation
+struct ContactList;
+}  // namespace internal
 
 class ContactListQt;
 }  // namespace ui
 }  // namespace opentxs
 
-class OPENTXS_EXPORT opentxs::ui::ContactListQt final
-    : public QIdentityProxyModel
+class OPENTXS_EXPORT opentxs::ui::ContactListQt final : public qt::Model
 {
     Q_OBJECT
-
-signals:
-    void updated() const;
-
 public:
     enum Roles {
         IDRole = Qt::UserRole + 0,       // QString
@@ -48,14 +47,14 @@ public:
         const QString& paymentCode = "",
         const QString& nymID = "") const noexcept;
 
-    ContactListQt(implementation::ContactList& parent) noexcept;
+    ContactListQt(internal::ContactList& parent) noexcept;
 
-    ~ContactListQt() final = default;
+    ~ContactListQt() final;
 
 private:
-    implementation::ContactList& parent_;
+    struct Imp;
 
-    void notify() const noexcept;
+    Imp* imp_;
 
     ContactListQt() = delete;
     ContactListQt(const ContactListQt&) = delete;

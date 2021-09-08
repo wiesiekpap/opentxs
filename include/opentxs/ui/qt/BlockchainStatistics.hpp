@@ -6,34 +6,33 @@
 #ifndef OPENTXS_UI_BLOCKCHAINSTATISTICSQT_HPP
 #define OPENTXS_UI_BLOCKCHAINSTATISTICSQT_HPP
 
-#include <QIdentityProxyModel>
+#include <QObject>
+#include <QString>
 #include <QVariant>
 
 #include "opentxs/opentxs_export.hpp"  // IWYU pragma: keep
+#include "opentxs/ui/qt/Model.hpp"
 
 class QModelIndex;
+class QObject;
 
 namespace opentxs
 {
 namespace ui
 {
-namespace implementation
+namespace internal
 {
-class BlockchainStatistics;
-}  // namespace implementation
+struct BlockchainStatistics;
+}  // namespace internal
 
 class BlockchainStatisticsQt;
 }  // namespace ui
 }  // namespace opentxs
 
 class OPENTXS_EXPORT opentxs::ui::BlockchainStatisticsQt final
-    : public QIdentityProxyModel
+    : public qt::Model
 {
     Q_OBJECT
-
-signals:
-    void updated() const;
-
 public:
     // Seven columns when used in a table view
     //
@@ -63,17 +62,16 @@ public:
     auto headerData(
         int section,
         Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const -> QVariant final;
+        int role = Qt::DisplayRole) const noexcept -> QVariant final;
 
-    BlockchainStatisticsQt(
-        implementation::BlockchainStatistics& parent) noexcept;
+    BlockchainStatisticsQt(internal::BlockchainStatistics& parent) noexcept;
 
     ~BlockchainStatisticsQt() final;
 
 private:
-    implementation::BlockchainStatistics& parent_;
+    struct Imp;
 
-    auto notify() const noexcept -> void;
+    Imp* imp_;
 
     BlockchainStatisticsQt(const BlockchainStatisticsQt&) = delete;
     BlockchainStatisticsQt(BlockchainStatisticsQt&&) = delete;

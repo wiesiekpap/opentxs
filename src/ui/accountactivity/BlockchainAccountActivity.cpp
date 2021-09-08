@@ -62,7 +62,7 @@ auto BlockchainAccountActivityModel(
     const identifier::Nym& nymID,
     const Identifier& accountID,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::AccountActivity>
+    -> std::unique_ptr<ui::internal::AccountActivity>
 {
     using ReturnType = ui::implementation::BlockchainAccountActivity;
     const auto [chain, owner] = api.Blockchain().LookupAccount(accountID);
@@ -97,7 +97,6 @@ BlockchainAccountActivity::BlockchainAccountActivity(
           balance_cb_,
           zmq::socket::Socket::Direction::Connect))
     , progress_()
-    , sync_cb_()
 {
     const auto connected =
         balance_socket_->Start(Widget::api_.Endpoints().BlockchainBalance());
@@ -136,9 +135,10 @@ auto BlockchainAccountActivity::DepositAddress(
     return wallet.GetDepositAddress(styles.front().first, reason);
 }
 
-auto BlockchainAccountActivity::DisplayBalance() const noexcept -> std::string
+auto BlockchainAccountActivity::display_balance(
+    opentxs::Amount value) const noexcept -> std::string
 {
-    return blockchain::internal::Format(chain_, balance_.load());
+    return blockchain::internal::Format(chain_, value);
 }
 
 auto BlockchainAccountActivity::load_thread() noexcept -> void
@@ -163,7 +163,7 @@ auto BlockchainAccountActivity::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -203,7 +203,7 @@ auto BlockchainAccountActivity::pipeline(const Message& in) noexcept -> void
             do_work();
         } break;
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unhandled type").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -234,10 +234,9 @@ auto BlockchainAccountActivity::process_balance(const Message& in) noexcept
     const auto oldBalance = balance_.exchange(unconfirmed);
     const auto oldConfirmed = confirmed_.exchange(confirmed);
 
-    if ((oldBalance != unconfirmed) || (oldConfirmed != confirmed)) {
-        // TODO notify Qt of property change
-        UpdateNotify();
-    }
+    if (oldBalance != unconfirmed) { notify_balance(unconfirmed); }
+
+    if (oldConfirmed != confirmed) { UpdateNotify(); }
 
     load_thread();
 }
@@ -294,8 +293,8 @@ auto BlockchainAccountActivity::process_sync(const Message& in) noexcept -> void
     const auto current = static_cast<int>(height);
     const auto max = static_cast<int>(target);
     const auto percent = progress_.set(current, max);
-    Lock lock(sync_cb_.lock_);
-    const auto& cb = sync_cb_.cb_;
+    Lock lock(callbacks_.lock_);
+    const auto& cb = callbacks_.cb_.sync_;
 
     if (cb) { cb(current, max, percent); }
 }
@@ -366,38 +365,6 @@ auto BlockchainAccountActivity::Send(
     }
 }
 
-#if OT_QT
-auto BlockchainAccountActivity::Send(
-    const std::string& address,
-    const std::string& input,
-    const std::string& memo,
-    Scale scale,
-    SendMonitor::Callback cb) const noexcept -> int
-{
-    try {
-        const auto& network =
-            Widget::api_.Network().Blockchain().GetChain(chain_);
-        const auto recipient = Widget::api_.Factory().PaymentCode(address);
-        const auto amount = scales_.Import(input, scale);
-
-        if (0 < recipient->Version()) {
-
-            return send_monitor_.watch(
-                network.SendToPaymentCode(primary_id_, recipient, amount, memo),
-                std::move(cb));
-        } else {
-
-            return send_monitor_.watch(
-                network.SendToAddress(primary_id_, address, amount, memo),
-                std::move(cb));
-        }
-    } catch (...) {
-
-        return -1;
-    }
-}
-#endif  // OT_QT
-
 auto BlockchainAccountActivity::Send(
     const std::string& address,
     const std::string& amount,
@@ -411,13 +378,6 @@ auto BlockchainAccountActivity::Send(
 
         return false;
     }
-}
-
-auto BlockchainAccountActivity::SetSyncCallback(const SyncCallback cb) noexcept
-    -> void
-{
-    Lock lock(sync_cb_.lock_);
-    sync_cb_.cb_ = cb;
 }
 
 auto BlockchainAccountActivity::startup() noexcept -> void { load_thread(); }

@@ -50,6 +50,21 @@ struct Seed::Imp {
     const OTSecret phrase_;
     const OTIdentifier id_;
 
+    static auto translate(const proto::SeedType in) noexcept -> SeedStyle
+    {
+        static const auto map =
+            reverse_arbitrary_map<SeedStyle, proto::SeedType, TypeReverseMap>(
+                type_map());
+
+        try {
+
+            return map.at(in);
+        } catch (...) {
+
+            return SeedStyle::Error;
+        }
+    }
+
     auto Index() const noexcept -> Bip32Index
     {
         auto lock = Lock{lock_};
@@ -411,20 +426,6 @@ private:
             return proto::SEEDTYPE_ERROR;
         }
     }
-    static auto translate(const proto::SeedType in) noexcept -> SeedStyle
-    {
-        static const auto map =
-            reverse_arbitrary_map<SeedStyle, proto::SeedType, TypeReverseMap>(
-                type_map());
-
-        try {
-
-            return map.at(in);
-        } catch (...) {
-
-            return SeedStyle::Error;
-        }
-    }
     static auto translate(const Language in) noexcept -> proto::SeedLang
     {
         try {
@@ -585,6 +586,13 @@ auto Seed::IncrementIndex(const Bip32Index index) noexcept -> bool
 auto Seed::Index() const noexcept -> Bip32Index { return imp_->Index(); }
 
 auto Seed::Phrase() const noexcept -> const Secret& { return imp_->phrase_; }
+
+auto Seed::Translate(int proto) noexcept -> SeedStyle
+{
+    return Imp::translate(static_cast<proto::SeedType>(proto));
+}
+
+auto Seed::Type() const noexcept -> SeedStyle { return imp_->type_; }
 
 auto Seed::Words() const noexcept -> const Secret& { return imp_->words_; }
 

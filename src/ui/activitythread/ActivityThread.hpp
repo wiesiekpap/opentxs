@@ -5,11 +5,9 @@
 
 #pragma once
 
-#if OT_QT
-#include <QHash>
-#endif  // OT_QT
 #include <functional>
 #include <future>
+#include <list>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -29,6 +27,8 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/Core.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -110,6 +110,15 @@ struct less<STORAGEID> {
 
 namespace opentxs
 {
+template <>
+struct make_blank<ui::implementation::ActivityThreadRowID> {
+    static auto value(const api::Core& api)
+        -> ui::implementation::ActivityThreadRowID
+    {
+        return {api.Factory().Identifier(), {}, api.Factory().Identifier()};
+    }
+};
+
 using DraftTask = std::pair<
     ui::implementation::ActivityThreadRowID,
     api::client::OTX::BackgroundTask>;
@@ -140,15 +149,6 @@ using ActivityThreadList = List<
 class ActivityThread final : public ActivityThreadList, Worker<ActivityThread>
 {
 public:
-    struct Callbacks {
-        using MCallback = std::function<void(bool)>;
-
-        SimpleCallback general_{};
-        SimpleCallback display_name_{};
-        SimpleCallback draft_{};
-        MCallback messagability_{};
-    };
-
     auto CanMessage() const noexcept -> bool final;
     auto ClearCallbacks() const noexcept -> void final;
     auto DisplayName() const noexcept -> std::string final;
@@ -170,7 +170,7 @@ public:
     auto SetDraft(const std::string& draft) const noexcept -> bool final;
     auto ThreadID() const noexcept -> std::string final;
 
-    auto SetCallbacks(Callbacks&&) noexcept -> void;
+    auto SetCallbacks(Callbacks&&) noexcept -> void final;
 
     ActivityThread(
         const api::client::internal::Manager& api,

@@ -36,6 +36,7 @@
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -69,6 +70,7 @@ NotificationStateData::NotificationStateData(
           node,
           db,
           OTNymID{nym},
+          crypto::SubaccountType::Notification,
           calculate_id(api, chain, code),
           taskFinished,
           jobCounter,
@@ -108,16 +110,15 @@ auto NotificationStateData::check_index() noexcept -> bool
     const auto index = db_.SubchainLastIndexed(index_);
 
     if (index.value_or(0) < code_->Version()) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
-            ": Payment code ")(code_->asBase58())(" notification elements not "
-                                                  "yet indexed")
+        LogVerbose(OT_METHOD)(__func__)(": Payment code ")(code_->asBase58())(
+            " notification elements not yet indexed")
             .Flush();
         static constexpr auto job{"index"};
 
         return queue_work(Task::index, job);
     } else {
-        LogTrace(OT_METHOD)(__FUNCTION__)(
-            ": Payment code ")(code_->asBase58())(" already indexed")
+        LogTrace(OT_METHOD)(__func__)(": Payment code ")(code_->asBase58())(
+            " already indexed")
             .Flush();
     }
 
@@ -130,13 +131,9 @@ auto NotificationStateData::handle_confirmed_matches(
     const block::Block::Matches& confirmed) noexcept -> void
 {
     const auto& [utxo, general] = confirmed;
-    LogVerbose(OT_METHOD)(__FUNCTION__)(
-        ": ")(general
-                  .size())(" confirmed matches for ")(code_
-                                                          ->asBase58())(" on"
-                                                                        " ")(DisplayString(
-                                                                                 node_
-                                                                                     .Chain()))
+    LogVerbose(OT_METHOD)(__func__)(": ")(general.size())(
+        " confirmed matches for ")(code_->asBase58())(" on ")(
+        DisplayString(node_.Chain()))
         .Flush();
 
     if (0u == general.size()) { return; }
@@ -146,17 +143,9 @@ auto NotificationStateData::handle_confirmed_matches(
     for (const auto& match : general) {
         const auto& [txid, elementID] = match;
         const auto& [version, subchainID] = elementID;
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(DisplayString(
-            node_
-                .Chain()))(" transaction ")(txid->asHex())(" contains a "
-                                                           "version"
-                                                           " ")(version)(" not"
-                                                                         "ific"
-                                                                         "atio"
-                                                                         "n "
-                                                                         "for"
-                                                                         " ")(code_
-                                                                                  ->asBase58())
+        LogVerbose(OT_METHOD)(__func__)(": ")(DisplayString(node_.Chain()))(
+            " transaction ")(txid->asHex())(" contains a version ")(
+            version)(" notification for ")(code_->asBase58())
             .Flush();
         const auto tx = block.at(txid->Bytes());
 
@@ -179,13 +168,9 @@ auto NotificationStateData::handle_mempool_matches(
     for (const auto& match : general) {
         const auto& [txid, elementID] = match;
         const auto& [version, subchainID] = elementID;
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(DisplayString(
-            node_
-                .Chain()))(" mempool transaction ")(txid->asHex())(" contains "
-                                                                   "a "
-                                                                   "version"
-                                                                   " ")(version)(" notification for ")(code_
-                                                                                                           ->asBase58())
+        LogVerbose(OT_METHOD)(__func__)(": ")(DisplayString(node_.Chain()))(
+            " mempool transaction ")(txid->asHex())(" contains a version ")(
+            version)(" notification for ")(code_->asBase58())
             .Flush();
         process(match, *tx, reason);
     }
@@ -220,8 +205,8 @@ auto NotificationStateData::index() noexcept -> void
     }
 
     db_.SubchainAddElements(index_, elements);
-    LogTrace(OT_METHOD)(__FUNCTION__)(
-        ": Payment code ")(code_->asBase58())(" indexed")
+    LogTrace(OT_METHOD)(__func__)(": Payment code ")(code_->asBase58())(
+        " indexed")
         .Flush();
 }
 
@@ -281,16 +266,14 @@ auto NotificationStateData::process(
             if (!pSender) { continue; }
 
             const auto& sender = *pSender;
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
-                ": decoded incoming notification "
-                "from ")(sender.asBase58())(" on"
-                                            " ")(DisplayString(
-                node_.Chain()))(" for ")(code_->asBase58())
+            LogVerbose(OT_METHOD)(__func__)(": decoded incoming notification "
+                                            "from ")(sender.asBase58())(" on ")(
+                DisplayString(node_.Chain()))(" for ")(code_->asBase58())
                 .Flush();
             const auto& account = crypto_.PaymentCodeSubaccount(
                 owner_, code_, sender, path_, node_.Chain(), reason);
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
-                ": Created new account ")(account.ID())
+            LogVerbose(OT_METHOD)(__func__)(": Created new account ")(
+                account.ID())
                 .Flush();
         }
     }

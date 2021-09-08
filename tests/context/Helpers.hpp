@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <set>
 #include <string>
@@ -34,6 +35,7 @@ struct OptionsData {
     opentxs::Options::ConnectionMode ipv6_connection_mode_;
     std::string log_endpoint_;
     int log_level_;
+    std::size_t mint_key_bytes_;
     bool notary_bind_inproc_;
     std::string notary_bind_ip_;
     std::uint16_t notary_bind_port_;

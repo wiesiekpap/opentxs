@@ -42,7 +42,6 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/Shared.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/SharedPimpl.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/Types.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/opentxs.hpp"
 )
 target_sources(
   opentxs

@@ -168,7 +168,6 @@ struct Account : virtual public crypto::Account {
         const std::vector<Activity>& spent,
         std::set<OTIdentifier>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool = 0;
-    virtual auto Chain() const noexcept -> Chain = 0;
     virtual auto ClaimAccountID(
         const std::string& id,
         internal::Subaccount* node) const noexcept -> void = 0;
@@ -269,6 +268,9 @@ struct Subaccount : virtual public crypto::Subaccount {
         const Subchain type,
         const Bip32Index index,
         const std::string& label) noexcept(false) -> bool = 0;
+    virtual auto SetScanProgress(
+        const block::Position& progress,
+        Subchain type) noexcept -> void = 0;
     virtual auto UpdateElement(
         std::vector<ReadView>& pubkeyHashes) const noexcept -> void = 0;
     virtual auto Unconfirm(

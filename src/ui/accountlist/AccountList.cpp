@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "ui/accountlist/AccountList.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <future>
 #include <map>
 #include <memory>
@@ -44,9 +43,6 @@
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
-#if OT_QT
-#include "opentxs/ui/qt/AccountList.hpp"
-#endif  // OT_QT
 #include "ui/base/List.hpp"
 #include "util/Blank.hpp"
 
@@ -60,30 +56,13 @@ auto AccountListModel(
     const api::client::internal::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::AccountList>
+    -> std::unique_ptr<ui::internal::AccountList>
 {
     using ReturnType = ui::implementation::AccountList;
 
     return std::make_unique<ReturnType>(api, nymID, cb);
 }
-
-#if OT_QT
-auto AccountListQtModel(ui::implementation::AccountList& parent) noexcept
-    -> std::unique_ptr<ui::AccountListQt>
-{
-    using ReturnType = ui::AccountListQt;
-
-    return std::make_unique<ReturnType>(parent);
-}
-#endif  // OT_QT
 }  // namespace opentxs::factory
-
-#if OT_QT
-namespace opentxs::ui
-{
-QT_PROXY_MODEL_WRAPPER(AccountListQt, implementation::AccountList)
-}  // namespace opentxs::ui
-#endif
 
 namespace opentxs::ui::implementation
 {
@@ -91,25 +70,7 @@ AccountList::AccountList(
     const api::client::internal::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
-    : AccountListList(
-          api,
-          nymID,
-          cb,
-          false
-#if OT_QT
-          ,
-          Roles{
-              {AccountListQt::NotaryIDRole, "notary"},
-              {AccountListQt::UnitRole, "unit"},
-              {AccountListQt::AccountIDRole, "account"},
-              {AccountListQt::BalanceRole, "balance"},
-              {AccountListQt::PolarityRole, "polarity"},
-              {AccountListQt::AccountTypeRole, "accounttype"},
-              {AccountListQt::ContractIdRole, "contractid"},
-          },
-          4
-#endif
-          )
+    : AccountListList(api, nymID, cb, false)
     , Worker(api, {})
 #if OT_BLOCKCHAIN
     , blockchain_balance_cb_(zmq::ListenCallback::Factory(
@@ -119,7 +80,6 @@ AccountList::AccountList(
           zmq::socket::Socket::Direction::Connect))
 #endif  // OT_BLOCKCHAIN
 {
-    init();
 #if OT_BLOCKCHAIN
     const auto connected = blockchain_balance_->Start(
         Widget::api_.Endpoints().BlockchainBalance());
@@ -197,7 +157,7 @@ auto AccountList::pipeline(const Message& in) noexcept -> void
             shutdown(shutdown_promise_);
         } break;
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unhandled type: ")(
+            LogOutput(OT_METHOD)(__func__)(": Unhandled type: ")(
                 static_cast<OTZMQWorkType>(work))
                 .Flush();
 
@@ -255,7 +215,7 @@ auto AccountList::process_blockchain_account(const Message& message) noexcept
     -> void
 {
     if (5 > message.Body().size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         return;
     }
@@ -265,8 +225,7 @@ auto AccountList::process_blockchain_account(const Message& message) noexcept
     nymID->Assign(nymFrame.Bytes());
 
     if (nymID != primary_id_) {
-        LogTrace(OT_METHOD)(__FUNCTION__)(
-            ": Update does not apply to this widget")
+        LogTrace(OT_METHOD)(__func__)(": Update does not apply to this widget")
             .Flush();
 
         return;
@@ -305,8 +264,7 @@ auto AccountList::process_blockchain_balance(const Message& message) noexcept
 auto AccountList::startup() noexcept -> void
 {
     const auto accounts = Widget::api_.Storage().AccountsByOwner(primary_id_);
-    LogDetail(OT_METHOD)(__FUNCTION__)(": Loading ")(accounts.size())(
-        " accounts.")
+    LogDetail(OT_METHOD)(__func__)(": Loading ")(accounts.size())(" accounts.")
         .Flush();
 
     for (const auto& id : accounts) { process_account(id); }

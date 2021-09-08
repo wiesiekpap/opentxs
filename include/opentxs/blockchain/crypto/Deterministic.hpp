@@ -37,7 +37,7 @@ public:
     virtual std::optional<Bip32Index> LastGenerated(
         const Subchain type) const noexcept = 0;
     virtual std::size_t Lookahead() const noexcept = 0;
-    virtual proto::HDPath Path() const noexcept = 0;
+    OPENTXS_NO_EXPORT virtual proto::HDPath Path() const noexcept = 0;
     virtual const std::string PathRoot() const noexcept = 0;
     virtual std::optional<Bip32Index> Reserve(
         const Subchain type,

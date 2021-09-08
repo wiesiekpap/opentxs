@@ -27,9 +27,6 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
-#if OT_QT
-#include "opentxs/ui/qt/AccountSummary.hpp"
-#endif  // OT_QT
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::AccountSummary::"
@@ -41,30 +38,13 @@ auto AccountSummaryModel(
     const identifier::Nym& nymID,
     const contact::ContactItemType currency,
     const SimpleCallback& cb) noexcept
-    -> std::unique_ptr<ui::implementation::AccountSummary>
+    -> std::unique_ptr<ui::internal::AccountSummary>
 {
     using ReturnType = ui::implementation::AccountSummary;
 
     return std::make_unique<ReturnType>(api, nymID, currency, cb);
 }
-
-#if OT_QT
-auto AccountSummaryQtModel(ui::implementation::AccountSummary& parent) noexcept
-    -> std::unique_ptr<ui::AccountSummaryQt>
-{
-    using ReturnType = ui::AccountSummaryQt;
-
-    return std::make_unique<ReturnType>(parent);
-}
-#endif  // OT_QT
 }  // namespace opentxs::factory
-
-#if OT_QT
-namespace opentxs::ui
-{
-QT_PROXY_MODEL_WRAPPER(AccountSummaryQt, implementation::AccountSummary)
-}  // namespace opentxs::ui
-#endif
 
 namespace opentxs::ui::implementation
 {
@@ -73,20 +53,7 @@ AccountSummary::AccountSummary(
     const identifier::Nym& nymID,
     const contact::ContactItemType currency,
     const SimpleCallback& cb) noexcept
-    : AccountSummaryList(
-          api,
-          nymID,
-          cb,
-          false
-#if OT_QT
-          ,
-          Roles{
-              {AccountSummaryQt::NotaryIDRole, "notary"},
-              {AccountSummaryQt::AccountIDRole, "account"},
-              {AccountSummaryQt::BalanceRole, "balance"}},
-          5
-#endif
-          )
+    : AccountSummaryList(api, nymID, cb, false)
     , listeners_({
           {api_.Endpoints().IssuerUpdate(),
            new MessageProcessor<AccountSummary>(
@@ -105,7 +72,6 @@ AccountSummary::AccountSummary(
     , server_issuer_map_{}
     , nym_server_map_{}
 {
-    init();
     setup_listeners(listeners_);
     startup_.reset(new std::thread(&AccountSummary::startup, this));
 
@@ -264,8 +230,7 @@ void AccountSummary::process_server(const identifier::Server& serverID) noexcept
 void AccountSummary::startup() noexcept
 {
     const auto issuers = api_.Wallet().IssuerList(primary_id_);
-    LogDetail(OT_METHOD)(__FUNCTION__)(": Loading ")(issuers.size())(
-        " issuers.")
+    LogDetail(OT_METHOD)(__func__)(": Loading ")(issuers.size())(" issuers.")
         .Flush();
 
     for (const auto& id : issuers) { process_issuer(id); }

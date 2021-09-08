@@ -753,23 +753,9 @@ if(WIN32)
 endif()
 
 # -----------------------------------------------------------------------------
-# Set in-source Version
-configure_file(
-  "Version.hpp.in"
-  "${opentxs_BINARY_DIR}/include/opentxs/Version.hpp"
-  @ONLY
-)
-
-if(OPENTXS_STANDALONE)
-  install(
-    FILES ${opentxs_BINARY_DIR}/include/opentxs/Version.hpp
-    DESTINATION include/opentxs/
-    COMPONENT dev
-  )
-endif()
-
-# -----------------------------------------------------------------------------
 # Build source
+
+add_subdirectory(generated)
 
 include_directories(
   "${opentxs_BINARY_DIR}/include"

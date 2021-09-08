@@ -77,7 +77,6 @@ class CustodialAccountActivity final : public AccountActivity
 {
 public:
     auto ContractID() const noexcept -> std::string final;
-    auto DisplayBalance() const noexcept -> std::string final;
     auto DisplayUnit() const noexcept -> std::string final;
     auto Name() const noexcept -> std::string final;
     auto NotaryID() const noexcept -> std::string final;
@@ -115,6 +114,9 @@ private:
         const proto::PaymentWorkflow& workflow) noexcept -> EventRow;
     static auto extract_rows(const proto::PaymentWorkflow& workflow) noexcept
         -> std::vector<RowKey>;
+
+    auto display_balance(opentxs::Amount value) const noexcept
+        -> std::string final;
 
     auto pipeline(const Message& in) noexcept -> void final;
     auto process_balance(const Message& message) noexcept -> void;

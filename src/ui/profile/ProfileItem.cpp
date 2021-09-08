@@ -54,7 +54,7 @@ ProfileItem::ProfileItem(
 
 auto ProfileItem::add_claim(const Claim& claim) const noexcept -> bool
 {
-    auto reason = api_.Factory().PasswordPrompt(__FUNCTION__);
+    auto reason = api_.Factory().PasswordPrompt(__func__);
 
     auto nym = api_.Wallet().mutable_Nym(parent_.NymID(), reason);
 
@@ -88,7 +88,7 @@ auto ProfileItem::as_claim() const noexcept -> Claim
 
 auto ProfileItem::Delete() const noexcept -> bool
 {
-    auto reason = api_.Factory().PasswordPrompt(__FUNCTION__);
+    auto reason = api_.Factory().PasswordPrompt(__func__);
 
     auto nym = api_.Wallet().mutable_Nym(parent_.NymID(), reason);
 

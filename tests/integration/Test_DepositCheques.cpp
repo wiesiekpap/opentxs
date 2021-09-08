@@ -106,10 +106,6 @@ public:
         , issuer_client_(Context().StartClient(2))
         , server_contract_(server_1_.Wallet().Server(server_1_.ID()))
     {
-#if OT_CASH
-        server_1_.SetMintKeySize(OT_MINT_KEY_SIZE_TEST);
-#endif
-
         if (false == init_) { init(); }
     }
 
