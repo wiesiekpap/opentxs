@@ -66,13 +66,15 @@ protected:
 
 std::unique_ptr<Listener> SyncServerDB::listener_p_{};
 
+static constexpr auto default_server_count_ = std::size_t{2u};
+
 TEST_F(SyncServerDB, init_library) {}
 
 TEST_F(SyncServerDB, empty_db)
 {
     const auto endpoints = api_.Network().Blockchain().GetSyncServers();
 
-    EXPECT_EQ(endpoints.size(), 1);
+    EXPECT_EQ(endpoints.size(), default_server_count_);
 }
 
 TEST_F(SyncServerDB, import_first_server)
@@ -81,7 +83,7 @@ TEST_F(SyncServerDB, import_first_server)
 
     const auto endpoints = api_.Network().Blockchain().GetSyncServers();
 
-    EXPECT_EQ(endpoints.size(), 2);
+    EXPECT_EQ(endpoints.size(), default_server_count_ + 1u);
     EXPECT_EQ(count(endpoints, first_server_), 1);
     EXPECT_EQ(count(endpoints, second_server_), 0);
     EXPECT_EQ(count(endpoints, other_server_), 0);
@@ -101,7 +103,7 @@ TEST_F(SyncServerDB, import_second_server)
 
     const auto endpoints = api_.Network().Blockchain().GetSyncServers();
 
-    EXPECT_EQ(endpoints.size(), 3);
+    EXPECT_EQ(endpoints.size(), default_server_count_ + 2u);
     EXPECT_EQ(count(endpoints, first_server_), 1);
     EXPECT_EQ(count(endpoints, second_server_), 1);
     EXPECT_EQ(count(endpoints, other_server_), 0);
@@ -121,7 +123,7 @@ TEST_F(SyncServerDB, import_existing_server)
 
     const auto endpoints = api_.Network().Blockchain().GetSyncServers();
 
-    EXPECT_EQ(endpoints.size(), 3);
+    EXPECT_EQ(endpoints.size(), default_server_count_ + 2u);
     EXPECT_EQ(count(endpoints, first_server_), 1);
     EXPECT_EQ(count(endpoints, second_server_), 1);
     EXPECT_EQ(count(endpoints, other_server_), 0);
@@ -133,7 +135,7 @@ TEST_F(SyncServerDB, import_empty_string)
 
     const auto endpoints = api_.Network().Blockchain().GetSyncServers();
 
-    EXPECT_EQ(endpoints.size(), 3);
+    EXPECT_EQ(endpoints.size(), default_server_count_ + 2u);
     EXPECT_EQ(count(endpoints, first_server_), 1);
     EXPECT_EQ(count(endpoints, second_server_), 1);
     EXPECT_EQ(count(endpoints, other_server_), 0);
@@ -145,7 +147,7 @@ TEST_F(SyncServerDB, delete_non_existing)
 
     const auto endpoints = api_.Network().Blockchain().GetSyncServers();
 
-    EXPECT_EQ(endpoints.size(), 3);
+    EXPECT_EQ(endpoints.size(), default_server_count_ + 2u);
     EXPECT_EQ(count(endpoints, first_server_), 1);
     EXPECT_EQ(count(endpoints, second_server_), 1);
     EXPECT_EQ(count(endpoints, other_server_), 0);
@@ -157,7 +159,7 @@ TEST_F(SyncServerDB, delete_existing)
 
     const auto endpoints = api_.Network().Blockchain().GetSyncServers();
 
-    EXPECT_EQ(endpoints.size(), 2);
+    EXPECT_EQ(endpoints.size(), default_server_count_ + 1u);
     EXPECT_EQ(count(endpoints, first_server_), 0);
     EXPECT_EQ(count(endpoints, second_server_), 1);
     EXPECT_EQ(count(endpoints, other_server_), 0);
@@ -177,7 +179,7 @@ TEST_F(SyncServerDB, delete_empty_string)
 
     const auto endpoints = api_.Network().Blockchain().GetSyncServers();
 
-    EXPECT_EQ(endpoints.size(), 2);
+    EXPECT_EQ(endpoints.size(), default_server_count_ + 1u);
     EXPECT_EQ(count(endpoints, first_server_), 0);
     EXPECT_EQ(count(endpoints, second_server_), 1);
     EXPECT_EQ(count(endpoints, other_server_), 0);
