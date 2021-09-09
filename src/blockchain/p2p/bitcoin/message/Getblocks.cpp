@@ -34,8 +34,7 @@ auto BitcoinP2PGetblocks(
     using ReturnType = bitcoin::message::Getblocks;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Invalid header")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -45,7 +44,7 @@ auto BitcoinP2PGetblocks(
     auto expectedSize = sizeof(raw_item.version_);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Size below minimum for Getblocks 1")
             .Flush();
 
@@ -59,7 +58,7 @@ auto BitcoinP2PGetblocks(
     expectedSize += sizeof(std::byte);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Size below minimum for Getblocks 1")
             .Flush();
 
@@ -73,7 +72,7 @@ auto BitcoinP2PGetblocks(
         it, expectedSize, size, hashCount);
 
     if (!decodedSize) {
-        LogOutput(__FUNCTION__)(": CompactSize incomplete").Flush();
+        LogOutput(__func__)(": CompactSize incomplete").Flush();
 
         return nullptr;
     }
@@ -83,7 +82,7 @@ auto BitcoinP2PGetblocks(
             expectedSize += sizeof(bitcoin::BlockHeaderHashField);
 
             if (expectedSize > size) {
-                LogOutput("opentxs::factory::")(__FUNCTION__)(
+                LogOutput("opentxs::factory::")(__func__)(
                     ": Header hash entries incomplete at entry index ")(ii)
                     .Flush();
 
@@ -99,7 +98,7 @@ auto BitcoinP2PGetblocks(
     expectedSize += sizeof(bitcoin::BlockHeaderHashField);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Stop hash entry missing or incomplete")
             .Flush();
 
@@ -117,8 +116,7 @@ auto BitcoinP2PGetblocks(
             header_hashes,
             std::move(stop_hash));
     } catch (...) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Checksum failure")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Checksum failure").Flush();
 
         return nullptr;
     }

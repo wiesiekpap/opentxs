@@ -45,8 +45,7 @@ auto BitcoinP2PMessage(
     using ReturnType = bitcoin::Message;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Invalid header")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -184,7 +183,7 @@ auto BitcoinP2PMessage(
         case bitcoin::Command::submitorder:
         case bitcoin::Command::unknown:
         default: {
-            LogOutput("opentxs::factory::")(__FUNCTION__)(
+            LogOutput("opentxs::factory::")(__func__)(
                 ": Unsupported message type")
                 .Flush();
             return nullptr;
@@ -256,7 +255,7 @@ auto Message::verify_checksum() const noexcept(false) -> void
     const auto& header = header_->Checksum();
 
     if (header != calculated) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Checksum failure").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Checksum failure").Flush();
         LogOutput("*  Calculated Payload:  ")(payload()->asHex()).Flush();
         LogOutput("*  Calculated Checksum: ")(calculated->asHex()).Flush();
         LogOutput("*  Provided Checksum:   ")(header.asHex()).Flush();

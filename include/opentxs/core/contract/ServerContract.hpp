@@ -52,22 +52,22 @@ public:
 
     static const VersionNumber DefaultVersion;
 
-    virtual bool ConnectInfo(
+    virtual auto ConnectInfo(
         std::string& strHostname,
         std::uint32_t& nPort,
         core::AddressType& actual,
-        const core::AddressType& preferred) const = 0;
-    virtual std::string EffectiveName() const = 0;
+        const core::AddressType& preferred) const -> bool = 0;
+    virtual auto EffectiveName() const -> std::string = 0;
     using Signable::Serialize;
-    virtual bool Serialize(AllocateOutput destination, bool includeNym = false)
-        const = 0;
-    OPENTXS_NO_EXPORT virtual bool Serialize(
+    virtual auto Serialize(AllocateOutput destination, bool includeNym = false)
+        const -> bool = 0;
+    OPENTXS_NO_EXPORT virtual auto Serialize(
         proto::ServerContract&,
-        bool includeNym = false) const = 0;
-    virtual bool Statistics(String& strContents) const = 0;
-    virtual const Data& TransportKey() const = 0;
-    virtual OTSecret TransportKey(Data& pubkey, const PasswordPrompt& reason)
-        const = 0;
+        bool includeNym = false) const -> bool = 0;
+    virtual auto Statistics(String& strContents) const -> bool = 0;
+    virtual auto TransportKey() const -> const Data& = 0;
+    virtual auto TransportKey(Data& pubkey, const PasswordPrompt& reason) const
+        -> OTSecret = 0;
 
     virtual void InitAlias(const std::string& alias) = 0;
 
@@ -80,13 +80,13 @@ private:
     friend OTServerContract;
 
 #ifndef _WIN32
-    Server* clone() const noexcept override = 0;
+    auto clone() const noexcept -> Server* override = 0;
 #endif
 
     Server(const Server&) = delete;
     Server(Server&&) = delete;
-    Server& operator=(const Server&) = delete;
-    Server& operator=(Server&&) = delete;
+    auto operator=(const Server&) -> Server& = delete;
+    auto operator=(Server&&) -> Server& = delete;
 };
 }  // namespace contract
 }  // namespace opentxs

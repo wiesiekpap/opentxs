@@ -14,10 +14,10 @@
 #include <set>
 #include <vector>
 
-#include "internal/api/client/Client.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -44,7 +44,7 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::factory
 {
 auto BlockchainStatisticsModel(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::BlockchainStatistics>
 {
@@ -57,7 +57,7 @@ auto BlockchainStatisticsModel(
 namespace opentxs::ui::implementation
 {
 BlockchainStatistics::BlockchainStatistics(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const SimpleCallback& cb) noexcept
     : BlockchainStatisticsList(api, api.Factory().Identifier(), cb, false)
     , Worker(api, {})

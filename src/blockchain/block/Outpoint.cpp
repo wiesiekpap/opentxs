@@ -64,7 +64,7 @@ Outpoint::Outpoint(const ReadView txid, const std::uint32_t index) noexcept(
     std::memcpy(static_cast<void*>(txid_.data()), txid.data(), txid_.size());
     std::memcpy(static_cast<void*>(index_.data()), &buf, index_.size());
 }
-Outpoint& Outpoint::operator=(const Outpoint& rhs) noexcept
+auto Outpoint::operator=(const Outpoint& rhs) noexcept -> Outpoint&
 {
     if (&rhs != this) {
         txid_ = rhs.txid_;
@@ -73,7 +73,7 @@ Outpoint& Outpoint::operator=(const Outpoint& rhs) noexcept
 
     return *this;
 }
-Outpoint& Outpoint::operator=(Outpoint&& rhs) noexcept
+auto Outpoint::operator=(Outpoint&& rhs) noexcept -> Outpoint&
 {
     return operator=(rhs);  // copy assignment, rhs is an lvalue
 }

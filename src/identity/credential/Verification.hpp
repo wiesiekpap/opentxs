@@ -17,10 +17,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identity
@@ -67,7 +64,7 @@ private:
     auto verify_internally(const Lock& lock) const -> bool final;
 
     Verification(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identity::internal::Authority& parent,
         const identity::Source& source,
         const internal::Primary& master,
@@ -75,7 +72,7 @@ private:
         const VersionNumber version,
         const PasswordPrompt& reason) noexcept(false);
     Verification(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identity::internal::Authority& parent,
         const identity::Source& source,
         const internal::Primary& master,

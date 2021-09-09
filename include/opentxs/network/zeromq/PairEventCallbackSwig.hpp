@@ -8,12 +8,6 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#ifdef SWIG
-// clang-format off
-%feature("director") PairEventCallbackSwig;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 class PairEventCallbackSwig
@@ -30,8 +24,9 @@ protected:
 private:
     PairEventCallbackSwig(const PairEventCallbackSwig&) = delete;
     PairEventCallbackSwig(PairEventCallbackSwig&&) = default;
-    PairEventCallbackSwig& operator=(const PairEventCallbackSwig&) = delete;
-    PairEventCallbackSwig& operator=(PairEventCallbackSwig&&) = default;
+    auto operator=(const PairEventCallbackSwig&)
+        -> PairEventCallbackSwig& = delete;
+    auto operator=(PairEventCallbackSwig&&) -> PairEventCallbackSwig& = default;
 };
 }  // namespace opentxs
 #endif

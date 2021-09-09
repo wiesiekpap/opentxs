@@ -28,29 +28,29 @@ namespace opentxs
 {
 namespace crypto
 {
-class Bip39
+class OPENTXS_EXPORT Bip39
 {
 public:
     using Suggestions = std::vector<std::string>;
 
-    OPENTXS_EXPORT virtual Suggestions GetSuggestions(
+    virtual auto GetSuggestions(
         const Language lang,
-        const std::string_view word) const noexcept = 0;
-    OPENTXS_EXPORT virtual std::size_t LongestWord(
-        const Language lang) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SeedToWords(
+        const std::string_view word) const noexcept -> Suggestions = 0;
+    virtual auto LongestWord(const Language lang) const noexcept
+        -> std::size_t = 0;
+    virtual auto SeedToWords(
         const Secret& seed,
         Secret& words,
-        const Language lang) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool WordsToSeed(
+        const Language lang) const noexcept -> bool = 0;
+    virtual auto WordsToSeed(
         const api::Core& api,
         const SeedStyle type,
         const Language lang,
         const Secret& words,
         Secret& seed,
-        const Secret& passphrase) const noexcept = 0;
+        const Secret& passphrase) const noexcept -> bool = 0;
 
-    OPENTXS_EXPORT virtual ~Bip39() = default;
+    virtual ~Bip39() = default;
 
 protected:
     Bip39() = default;
@@ -58,8 +58,8 @@ protected:
 private:
     Bip39(const Bip39&) = delete;
     Bip39(Bip39&&) = delete;
-    Bip39& operator=(const Bip39&) = delete;
-    Bip39& operator=(Bip39&&) = delete;
+    auto operator=(const Bip39&) -> Bip39& = delete;
+    auto operator=(Bip39&&) -> Bip39& = delete;
 };
 }  // namespace crypto
 }  // namespace opentxs

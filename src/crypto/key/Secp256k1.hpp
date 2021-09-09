@@ -24,10 +24,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace crypto
@@ -68,17 +65,17 @@ public:
     }
 
     Secp256k1(
-        const api::internal::Core& api,
+        const api::Core& api,
         const crypto::EcdsaProvider& ecdsa,
         const proto::AsymmetricKey& serializedKey) noexcept(false);
     Secp256k1(
-        const api::internal::Core& api,
+        const api::Core& api,
         const crypto::EcdsaProvider& ecdsa,
         const crypto::key::asymmetric::Role role,
         const VersionNumber version,
         const PasswordPrompt& reason) noexcept(false);
     Secp256k1(
-        const api::internal::Core& api,
+        const api::Core& api,
         const crypto::EcdsaProvider& ecdsa,
         const Secret& privateKey,
         const Data& publicKey,
@@ -88,7 +85,7 @@ public:
         const PasswordPrompt& reason) noexcept(false);
 #if OT_CRYPTO_WITH_BIP32
     Secp256k1(
-        const api::internal::Core& api,
+        const api::Core& api,
         const crypto::EcdsaProvider& ecdsa,
         const Secret& privateKey,
         const Secret& chainCode,
@@ -100,7 +97,7 @@ public:
         key::Symmetric& sessionKey,
         const PasswordPrompt& reason) noexcept(false);
     Secp256k1(
-        const api::internal::Core& api,
+        const api::Core& api,
         const crypto::EcdsaProvider& ecdsa,
         const Secret& privateKey,
         const Secret& chainCode,

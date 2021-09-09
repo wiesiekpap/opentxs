@@ -24,10 +24,10 @@
 #include <memory>
 #include <utility>
 
-#include "internal/api/Api.hpp"
 #include "opentxs/Exclusive.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Shared.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Editor.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
@@ -725,7 +725,7 @@ using OT_SM_RetBool_ThrStr =
 //                                                             std::int64_t
 //                                                             lAmount);
 
-OTSmartContract::OTSmartContract(const api::internal::Core& core)
+OTSmartContract::OTSmartContract(const api::Core& core)
     : ot_super(core)
     , m_mapStashes()
     , m_StashAccts(core, Account::stash)
@@ -739,7 +739,7 @@ OTSmartContract::OTSmartContract(const api::internal::Core& core)
 }
 
 OTSmartContract::OTSmartContract(
-    const api::internal::Core& core,
+    const api::Core& core,
     const identifier::Server& NOTARY_ID)
     : ot_super(core)
     , m_mapStashes()
@@ -864,7 +864,7 @@ void OTSmartContract::RegisterOTNativeCallsWithScript(OTScript& theScript)
     } else
 #endif  // OT_SCRIPT_CHAI
     {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed "
             "dynamic casting OTScript to OTScriptChai.")
             .Flush();
@@ -883,7 +883,7 @@ void OTSmartContract::DeactivateSmartContract()  // Called from within script.
     // time, unless your script
     // override says differently.)
 
-    LogNormal(OT_METHOD)(__FUNCTION__)(
+    LogNormal(OT_METHOD)(__func__)(
         ": deactivate_contract() "
         "was called from within the script. "
         "Flagging smartcontract for removal from Cron (")(GetTransactionNum())(
@@ -1016,8 +1016,7 @@ void OTSmartContract::SetRemainingTimer(
 {
     if (str_seconds_from_now.size() <= 0)  // string length...
     {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": Blank input (str_seconds_from_now).")
+        LogNormal(OT_METHOD)(__func__)(": Blank input (str_seconds_from_now).")
             .Flush();
     } else {
         const auto tPlus =
@@ -1048,7 +1047,7 @@ void OTSmartContract::onRemovalFromCron(const PasswordPrompt& reason)
 {
     // Not much needed here.  Done, I guess.
 
-    LogOutput(OT_METHOD)(__FUNCTION__)(
+    LogOutput(OT_METHOD)(__func__)(
         ":FYI: OTSmartContract::onRemovalFromCron was just called.")
         .Flush();
 
@@ -1066,10 +1065,9 @@ void OTSmartContract::onActivate(const PasswordPrompt& reason)
     OT_ASSERT(nullptr != GetCron());
 
     if (GetCron()->GetTransactionCount() < 1) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": Failed to process smart contract ")(GetTransactionNum())(
-            ": Out of transaction numbers for "
-            "receipts! Flagging for removal.")(".")
+        LogNormal(OT_METHOD)(__func__)(": Failed to process smart contract ")(
+            GetTransactionNum())(": Out of transaction numbers for "
+                                 "receipts! Flagging for removal.")(".")
             .Flush();
         return;
     }
@@ -1080,7 +1078,7 @@ void OTSmartContract::onActivate(const PasswordPrompt& reason)
     mapOfClauses theMatchingClauses;
 
     if (GetHooks(str_HookName, theMatchingClauses)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Cron: Processing smart contract clauses for hook: ")(
             SMARTCONTRACT_HOOK_ON_ACTIVATE)(".")
             .Flush();
@@ -1104,8 +1102,8 @@ auto OTSmartContract::GetAcctBalance(std::string from_acct_name) -> std::string
     //
 
     if (from_acct_name.size() <= 0) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: From_acct_name is "
-                                           "non-existent.")
+        LogOutput(OT_METHOD)(__func__)(": Error: From_acct_name is "
+                                       "non-existent.")
             .Flush();
         return {};
     }
@@ -1118,7 +1116,7 @@ auto OTSmartContract::GetAcctBalance(std::string from_acct_name) -> std::string
     OTPartyAccount* pFromAcct = GetPartyAccount(from_acct_name);
 
     if (nullptr == pFromAcct) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": error: from_acct (")(
+        LogNormal(OT_METHOD)(__func__)(": error: from_acct (")(
             from_acct_name)(") not found on any party")
             .Flush();
         return {};
@@ -1135,7 +1133,7 @@ auto OTSmartContract::GetAcctBalance(std::string from_acct_name) -> std::string
     // (That way it's impossible to get an agent for any other party.)
 
     if (nullptr == pFromAgent) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Error: authorized agent (")(
+        LogNormal(OT_METHOD)(__func__)(": Error: authorized agent (")(
             pFromAcct->GetAgentName())(") not found for from_acct (")(
             from_acct_name)(") on acct's party.")
             .Flush();
@@ -1143,9 +1141,9 @@ auto OTSmartContract::GetAcctBalance(std::string from_acct_name) -> std::string
     }
 
     if (!pFromAgent->IsAnIndividual()) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Error: authorized agent (")(
-            pFromAcct->GetAgentName())(") for from_acct (")(from_acct_name)(
-            ") is not an active agent.")
+        LogNormal(OT_METHOD)(__func__)(": Error: authorized agent (")(
+            pFromAcct->GetAgentName())(") for from_acct (")(
+            from_acct_name)(") is not an active agent.")
             .Flush();
         return {};
     }
@@ -1158,7 +1156,7 @@ auto OTSmartContract::GetAcctBalance(std::string from_acct_name) -> std::string
     OTParty* pFromParty = pFromAgent->GetParty();
 
     if (nullptr == pFromParty) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Error: Party pointer nullptr "
             "on authorized agent (")(pFromAcct->GetAgentName())(
             ") for from_acct (")(from_acct_name)(").")
@@ -1251,7 +1249,7 @@ auto OTSmartContract::GetAcctBalance(std::string from_acct_name) -> std::string
     const bool bFromAgentID = pFromAgent->GetSignerID(theFromAgentID);
 
     if (!bFromAgentID) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to find FromAgent's "
             "Signer ID: ")(pFromAgent->GetName())(".")
             .Flush();
@@ -1259,8 +1257,8 @@ auto OTSmartContract::GetAcctBalance(std::string from_acct_name) -> std::string
     }
 
     if (!pFromAcct->GetAcctID().Exists()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: FromAcct has empty "
-                                           "AcctID: ")(from_acct_name)(".")
+        LogOutput(OT_METHOD)(__func__)(": Error: FromAcct has empty "
+                                       "AcctID: ")(from_acct_name)(".")
             .Flush();
         return {};
     }
@@ -1280,7 +1278,7 @@ auto OTSmartContract::GetAcctBalance(std::string from_acct_name) -> std::string
     auto account = api_.Wallet().Account(PARTY_ACCT_ID);
 
     if (false == bool(account)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": ERROR loading source account.")
+        LogNormal(OT_METHOD)(__func__)(": ERROR loading source account.")
             .Flush();
         FlagForRemoval();  // Remove it from future Cron processing, please.
         return {};
@@ -1306,9 +1304,9 @@ auto OTSmartContract::GetUnitTypeIDofAcct(std::string from_acct_name)
     std::string str_return_value;
 
     if (from_acct_name.size() <= 0) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: "
-                                           "From_acct_name "
-                                           "is non-existent.")
+        LogOutput(OT_METHOD)(__func__)(": Error: "
+                                       "From_acct_name "
+                                       "is non-existent.")
             .Flush();
         return str_return_value;
     }
@@ -1321,7 +1319,7 @@ auto OTSmartContract::GetUnitTypeIDofAcct(std::string from_acct_name)
     OTPartyAccount* pFromAcct = GetPartyAccount(from_acct_name);
 
     if (nullptr == pFromAcct) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Error: from_acct (")(
+        LogNormal(OT_METHOD)(__func__)(": Error: from_acct (")(
             from_acct_name)(") not found on any party.")
             .Flush();
         return str_return_value;
@@ -1338,7 +1336,7 @@ auto OTSmartContract::GetUnitTypeIDofAcct(std::string from_acct_name)
     // (That way it's impossible to get an agent for any other party.)
 
     if (nullptr == pFromAgent) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Error: authorized agent (")(
+        LogNormal(OT_METHOD)(__func__)(": Error: authorized agent (")(
             pFromAcct->GetAgentName())(") not found for from_acct (")(
             from_acct_name)(") on acct's party.")
             .Flush();
@@ -1346,9 +1344,9 @@ auto OTSmartContract::GetUnitTypeIDofAcct(std::string from_acct_name)
     }
 
     if (!pFromAgent->IsAnIndividual()) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Error: authorized agent (")(
-            pFromAcct->GetAgentName())(") for from_acct (")(from_acct_name)(
-            ") is not an active agent.")
+        LogNormal(OT_METHOD)(__func__)(": Error: authorized agent (")(
+            pFromAcct->GetAgentName())(") for from_acct (")(
+            from_acct_name)(") is not an active agent.")
             .Flush();
         return str_return_value;
     }
@@ -1361,7 +1359,7 @@ auto OTSmartContract::GetUnitTypeIDofAcct(std::string from_acct_name)
     OTParty* pFromParty = pFromAgent->GetParty();
 
     if (nullptr == pFromParty) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Error: "
             "Party pointer "
             "nullptr on authorized agent (")(pFromAcct->GetAgentName())(
@@ -1459,7 +1457,7 @@ auto OTSmartContract::GetUnitTypeIDofAcct(std::string from_acct_name)
     const bool bFromAgentID = pFromAgent->GetSignerID(theFromAgentID);
 
     if (!bFromAgentID) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to "
             "find "
             "FromAgent's Signer ID: ")(pFromAgent->GetName())(".")
@@ -1468,10 +1466,9 @@ auto OTSmartContract::GetUnitTypeIDofAcct(std::string from_acct_name)
     }
 
     if (!pFromAcct->GetAcctID().Exists()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Error: "
-            "FromAcct has "
-            "empty AcctID: ")(from_acct_name)(".")
+        LogOutput(OT_METHOD)(__func__)(": Error: "
+                                       "FromAcct has "
+                                       "empty AcctID: ")(from_acct_name)(".")
             .Flush();
         return str_return_value;
     }
@@ -1491,7 +1488,7 @@ auto OTSmartContract::GetUnitTypeIDofAcct(std::string from_acct_name)
     auto account = api_.Wallet().Account(PARTY_ACCT_ID);
 
     if (false == bool(account)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": ERROR loading source account.")
+        LogNormal(OT_METHOD)(__func__)(": ERROR loading source account.")
             .Flush();
         FlagForRemoval();  // Remove it from future Cron processing, please.
         return str_return_value;
@@ -1516,15 +1513,15 @@ auto OTSmartContract::GetStashBalance(
     //
 
     if (from_stash_name.size() <= 0) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: From_stash_name is "
-                                           "non-existent.")
+        LogOutput(OT_METHOD)(__func__)(": Error: From_stash_name is "
+                                       "non-existent.")
             .Flush();
         return {};
     }
     if (instrument_definition_id.size() <= 0) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: "
-                                           "Instrument_definition_id is "
-                                           "non-existent.")
+        LogOutput(OT_METHOD)(__func__)(": Error: "
+                                       "Instrument_definition_id is "
+                                       "non-existent.")
             .Flush();
         return {};
     }
@@ -1572,7 +1569,7 @@ auto OTSmartContract::SendANoticeToAllParties(const PasswordPrompt& reason)
 
     //    OT_ASSERT(lNewTransactionNumber > 0); // this can be my reminder.
     if (0 == lNewTransactionNumber) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": ** ERROR: Notice not sent to parties, "
             "since no transaction numbers were "
             "available!")
@@ -1593,7 +1590,7 @@ auto OTSmartContract::SendANoticeToAllParties(const PasswordPrompt& reason)
             reason);  // pstrNote and pstrAttachment aren't used in this
                       // case.
 
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Dropping notifications into all parties' nymboxes: ")(
             bDroppedNotice ? "Success" : "Failure")(".")
             .Flush();
@@ -1619,7 +1616,7 @@ auto OTSmartContract::SendNoticeToParty(
     OTParty* pParty = GetParty(party_name);
 
     if (nullptr == pParty) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Unable to find this party: ")(
+        LogNormal(OT_METHOD)(__func__)(": Unable to find this party: ")(
             party_name)(".")
             .Flush();
         return false;
@@ -1679,7 +1676,7 @@ auto OTSmartContract::SendNoticeToParty(
 
     //    OT_ASSERT(lNewTransactionNumber > 0); // this can be my reminder.
     if (0 == lNewTransactionNumber) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": ** ERROR: Notice not sent to party since "
             "no transaction numbers were available!")
             .Flush();
@@ -1702,7 +1699,7 @@ auto OTSmartContract::SendNoticeToParty(
             strReference,
             reason);
 
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Unable to find this party: ")(
+        LogNormal(OT_METHOD)(__func__)(": Unable to find this party: ")(
             party_name)(".")
             .Flush();
     }
@@ -1734,7 +1731,7 @@ auto OTSmartContract::StashAcctFunds(
 {
     OTCron* pCron = GetCron();
     OT_ASSERT(nullptr != pCron);
-    auto reason = api_.Factory().PasswordPrompt(__FUNCTION__);
+    auto reason = api_.Factory().PasswordPrompt(__func__);
 
     Nym_p pServerNym = pCron->GetServerNym();
     OT_ASSERT(nullptr != pServerNym);
@@ -1744,15 +1741,14 @@ auto OTSmartContract::StashAcctFunds(
     //        pServerNym, pCron.
 
     if (str_Amount.size() < 1) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Error: empty amount")(".")
-            .Flush();
+        LogNormal(OT_METHOD)(__func__)(": Error: empty amount")(".").Flush();
         return false;
     }
 
     const std::int64_t lAmount = String::StringToLong(str_Amount.c_str());
 
     if (lAmount <= 0) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Error: lAmount cannot be 0 "
             "or <0. (Value passed in was ")(lAmount)(").")
             .Flush();
@@ -1760,14 +1756,14 @@ auto OTSmartContract::StashAcctFunds(
     }
 
     if (from_acct_name.size() <= 0) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: From_acct_name is "
-                                           "non-existent.")
+        LogOutput(OT_METHOD)(__func__)(": Error: From_acct_name is "
+                                       "non-existent.")
             .Flush();
         return false;
     }
     if (to_stash_name.size() <= 0) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: to_stash_name is "
-                                           "non-existent.")
+        LogOutput(OT_METHOD)(__func__)(": Error: to_stash_name is "
+                                       "non-existent.")
             .Flush();
         return false;
     }
@@ -1785,7 +1781,7 @@ auto OTSmartContract::StashAcctFunds(
                                                 // failure.)
 
     if (nullptr == pFromAcct) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Error: from_acct (")(
+        LogNormal(OT_METHOD)(__func__)(": Error: from_acct (")(
             from_acct_name)(") not found on any party.")
             .Flush();
         return false;
@@ -1804,7 +1800,7 @@ auto OTSmartContract::StashAcctFunds(
     // (That way it's impossible to get an agent for any other party.)
 
     if (nullptr == pFromAgent) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Error: authorized agent (")(
+        LogNormal(OT_METHOD)(__func__)(": Error: authorized agent (")(
             pFromAcct->GetAgentName())(") not found for from_acct (")(
             from_acct_name)(") on acct's party.")
             .Flush();
@@ -1812,9 +1808,9 @@ auto OTSmartContract::StashAcctFunds(
     }
 
     if (!pFromAgent->IsAnIndividual()) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Error: authorized agent (")(
-            pFromAcct->GetAgentName())(") for from_acct (")(from_acct_name)(
-            ") is not an active agent.")
+        LogNormal(OT_METHOD)(__func__)(": Error: authorized agent (")(
+            pFromAcct->GetAgentName())(") for from_acct (")(
+            from_acct_name)(") is not an active agent.")
             .Flush();
         return false;
     }
@@ -1828,7 +1824,7 @@ auto OTSmartContract::StashAcctFunds(
     OTParty* pFromParty = pFromAgent->GetParty();
 
     if (nullptr == pFromParty) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Error: Party pointer nullptr "
             "on authorized agent (")(pFromAcct->GetAgentName())(
             ") for from_acct (")(from_acct_name)(").")
@@ -1927,7 +1923,7 @@ auto OTSmartContract::StashAcctFunds(
     const bool bFromAgentID = pFromAgent->GetSignerID(theFromAgentID);
 
     if (!bFromAgentID) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to find FromAgent's "
             "Signer ID: ")(pFromAgent->GetName())(".")
             .Flush();
@@ -1935,8 +1931,8 @@ auto OTSmartContract::StashAcctFunds(
     }
 
     if (!pFromAcct->GetAcctID().Exists()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: FromAcct has empty "
-                                           "AcctID: ")(from_acct_name)(".")
+        LogOutput(OT_METHOD)(__func__)(": Error: FromAcct has empty "
+                                       "AcctID: ")(from_acct_name)(".")
             .Flush();
         return false;
     }
@@ -1966,7 +1962,7 @@ auto OTSmartContract::StashAcctFunds(
     bool bMoved =
         StashFunds(lAmount, theFromAcctID, theFromAgentID, *pStash, reason);
     if (!bMoved) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ":  Failed in final call. "
             "Values: from_acct: ")(from_acct_name)(", to_stash: ")(
             to_stash_name)(", lAmount: ")(lAmount)(".")
@@ -2001,7 +1997,7 @@ auto OTSmartContract::UnstashAcctFunds(
 {
     OTCron* pCron = GetCron();
     OT_ASSERT(nullptr != pCron);
-    auto reason = api_.Factory().PasswordPrompt(__FUNCTION__);
+    auto reason = api_.Factory().PasswordPrompt(__func__);
 
     Nym_p pServerNym = pCron->GetServerNym();
     OT_ASSERT(nullptr != pServerNym);
@@ -2012,14 +2008,14 @@ auto OTSmartContract::UnstashAcctFunds(
     //
 
     if (str_Amount.size() < 1) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Error: empty amount.").Flush();
+        LogNormal(OT_METHOD)(__func__)(": Error: empty amount.").Flush();
         return false;
     }
 
     const std::int64_t lAmount = String::StringToLong(str_Amount.c_str());
 
     if (lAmount <= 0) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Error: lAmount cannot be "
             "0 or <0. (Value passed in was ")(lAmount)(").")
             .Flush();
@@ -2027,14 +2023,14 @@ auto OTSmartContract::UnstashAcctFunds(
     }
 
     if (to_acct_name.size() <= 0) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: to_acct_name is "
-                                           "non-existent.")
+        LogOutput(OT_METHOD)(__func__)(": Error: to_acct_name is "
+                                       "non-existent.")
             .Flush();
         return false;
     }
     if (from_stash_name.size() <= 0) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: from_stash_name is "
-                                           "non-existent.")
+        LogOutput(OT_METHOD)(__func__)(": Error: from_stash_name is "
+                                       "non-existent.")
             .Flush();
         return false;
     }
@@ -2051,8 +2047,8 @@ auto OTSmartContract::UnstashAcctFunds(
                                                   // if failure.)
 
     if (nullptr == pToAcct) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Error: to_acct (")(to_acct_name)(
-            ") not found on any party.")
+        LogNormal(OT_METHOD)(__func__)(": Error: to_acct (")(
+            to_acct_name)(") not found on any party.")
             .Flush();
         return false;
     }
@@ -2069,7 +2065,7 @@ auto OTSmartContract::UnstashAcctFunds(
     // (That way it's impossible to get an agent for any other party.)
 
     if (nullptr == pToAgent) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Error: authorized agent (")(
+        LogNormal(OT_METHOD)(__func__)(": Error: authorized agent (")(
             pToAcct->GetAgentName().Get())(") not found for to_acct (")(
             to_acct_name)(") on acct's party.")
             .Flush();
@@ -2077,9 +2073,9 @@ auto OTSmartContract::UnstashAcctFunds(
     }
 
     if (!pToAgent->IsAnIndividual()) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(":  Error: authorized agent (")(
-            pToAcct->GetAgentName().Get())(") for to_acct (")(to_acct_name)(
-            ") is not an active agent.")
+        LogNormal(OT_METHOD)(__func__)(":  Error: authorized agent (")(
+            pToAcct->GetAgentName().Get())(") for to_acct (")(
+            to_acct_name)(") is not an active agent.")
             .Flush();
         return false;
     }
@@ -2093,9 +2089,9 @@ auto OTSmartContract::UnstashAcctFunds(
     OTParty* pToParty = pToAgent->GetParty();
 
     if (nullptr == pToParty) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Party pointer "
-                                           "nullptr "
-                                           "on authorized agent (")(
+        LogOutput(OT_METHOD)(__func__)(": Error: Party pointer "
+                                       "nullptr "
+                                       "on authorized agent (")(
             pToAcct->GetAgentName())(") for to_acct (")(to_acct_name)(").")
             .Flush();
         return false;
@@ -2170,7 +2166,7 @@ auto OTSmartContract::UnstashAcctFunds(
     const bool bToAgentID = pToAgent->GetSignerID(theToAgentID);
 
     if (!bToAgentID) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to find 'To' "
             "Agent's Signer ID: ")(pToAgent->GetName())(".")
             .Flush();
@@ -2178,8 +2174,8 @@ auto OTSmartContract::UnstashAcctFunds(
     }
 
     if (!pToAcct->GetAcctID().Exists()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: ToAcct has empty "
-                                           "AcctID: ")(to_acct_name)(".")
+        LogOutput(OT_METHOD)(__func__)(": Error: ToAcct has empty "
+                                       "AcctID: ")(to_acct_name)(".")
             .Flush();
         return false;
     }
@@ -2207,9 +2203,10 @@ auto OTSmartContract::UnstashAcctFunds(
     bool bMoved =
         StashFunds(lNegativeAmount, theToAcctID, theToAgentID, *pStash, reason);
     if (!bMoved) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(":  Failed in final call. "
-                                           "Values: to_acct: ")(to_acct_name)(
-            ", from_stash: ")(from_stash_name)(", lAmount: ")(lAmount)(".")
+        LogNormal(OT_METHOD)(__func__)(
+            ":  Failed in final call. "
+            "Values: to_acct: ")(to_acct_name)(", from_stash: ")(
+            from_stash_name)(", lAmount: ")(lAmount)(".")
             .Flush();
         return false;
     }
@@ -2238,7 +2235,7 @@ auto OTSmartContract::StashFunds(
     OT_ASSERT(nullptr != pServerNym);
 
     if (0 == lAmount) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": A zero amount is not allowed.")
+        LogNormal(OT_METHOD)(__func__)(": A zero amount is not allowed.")
             .Flush();
         return false;
     }
@@ -2251,15 +2248,14 @@ auto OTSmartContract::StashFunds(
     auto account = api_.Wallet().mutable_Account(PARTY_ACCT_ID, reason);
 
     if (false == bool(account)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": ERROR verifying existence of source account.")
             .Flush();
         FlagForRemoval();  // Remove it from future Cron processing, please.
         return false;
     } else if (!account.get().VerifyOwnerByID(PARTY_NYM_ID)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": ERROR failed to verify party user "
-            "ownership of party account.")
+        LogNormal(OT_METHOD)(__func__)(": ERROR failed to verify party user "
+                                       "ownership of party account.")
             .Flush();
         FlagForRemoval();  // Remove it from future Cron processing, please.
         return false;
@@ -2319,9 +2315,8 @@ auto OTSmartContract::StashFunds(
     // the action.
     //
     if ((lSourceAmount - lAbsoluteAmount) < 0) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": Not enough funds available in the "
-            "source to accommodate this action.")
+        LogNormal(OT_METHOD)(__func__)(": Not enough funds available in the "
+                                       "source to accommodate this action.")
             .Flush();
         return false;
     }
@@ -2347,9 +2342,9 @@ auto OTSmartContract::StashFunds(
         auto strAcctID = String::Factory();
         stashAccount.get().GetIdentifier(strAcctID);
 
-        LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": Successfully created stash account ID: ")(strAcctID)(
-            " (Stash acct has Instrument Definition ID: ")(
+        LogNormal(OT_METHOD)(__func__)(
+            ": Successfully created stash account ID: ")(
+            strAcctID)(" (Stash acct has Instrument Definition ID: ")(
             strInstrumentDefinitionID)(").")
             .Flush();
 
@@ -2382,9 +2377,8 @@ auto OTSmartContract::StashFunds(
     // the action.
     //
     if ((lSourceAmount2 - lAbsoluteAmount) < 0) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": Not enough funds avilable in the "
-            "stash acct to accomodate this action.")
+        LogNormal(OT_METHOD)(__func__)(": Not enough funds avilable in the "
+                                       "stash acct to accomodate this action.")
             .Flush();
         return false;  // THIS SHOULD NEVER HAPPEN, SINCE WE ALREADY VERIFIED
                        // THE AMOUNT BEFORE LOADING THE ACCOUNT. FYI.
@@ -2398,8 +2392,8 @@ auto OTSmartContract::StashFunds(
     const auto& STASH_ACCT_ID = stashAccount.get().GetRealAccountID();
 
     if (PARTY_ACCT_ID == STASH_ACCT_ID) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ERROR: Both account IDs were "
-                                           "identical.")
+        LogOutput(OT_METHOD)(__func__)(": ERROR: Both account IDs were "
+                                       "identical.")
             .Flush();
         FlagForRemoval();  // Remove from Cron
         return false;  // TODO: should have a "Validate Scripts" function that
@@ -2410,7 +2404,7 @@ auto OTSmartContract::StashFunds(
     // SHOULD NEVER HAPPEN
     if (account.get().GetInstrumentDefinitionID() !=
         stashAccount.get().GetInstrumentDefinitionID()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Aborted stash: Asset type ID "
             "doesn't match. THIS SHOULD NEVER HAPPEN!")
             .Flush();
@@ -2419,8 +2413,8 @@ auto OTSmartContract::StashFunds(
     }
 
     if (!stashAccount.get().VerifyOwnerByID(NOTARY_NYM_ID)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Somehow the stash "
-                                           "account isn't server-nym owned.")
+        LogOutput(OT_METHOD)(__func__)(": Error: Somehow the stash "
+                                       "account isn't server-nym owned.")
             .Flush();
         FlagForRemoval();  // Remove from Cron
         return false;
@@ -2481,7 +2475,7 @@ auto OTSmartContract::StashFunds(
     {
         pPartyNym = api_.Wallet().Nym(PARTY_NYM_ID);
         if (nullptr == pPartyNym) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failure loading or "
                 "verifying party Nym public key: ")(strPartyNymID)(".")
                 .Flush();
@@ -2494,8 +2488,8 @@ auto OTSmartContract::StashFunds(
     // In this function, pStashNym and pServerNym are always the same.
 
     if (!pOrigCronItem->VerifyNymAsAgent(*pPartyNym, *pServerNym)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed authorization for party "
-                                           "Nym: ")(strPartyNymID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Failed authorization for party "
+                                       "Nym: ")(strPartyNymID)(".")
             .Flush();
         FlagForRemoval();  // Remove it from Cron.
         return false;
@@ -2510,7 +2504,7 @@ auto OTSmartContract::StashFunds(
     // (They might fall away in favor of this, once I start building.)
     //
     if (!VerifyNymAsAgentForAccount(*pPartyNym, account)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": ERROR verifying ownership on source account.")
             .Flush();
         FlagForRemoval();  // Remove it from future Cron processing, please.
@@ -2536,8 +2530,8 @@ auto OTSmartContract::StashFunds(
             bSuccessLoadingPartyInbox =
                 thePartyInbox->VerifyAccount(*pServerNym);
         else
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed trying to load "
-                                               "party's inbox.")
+            LogOutput(OT_METHOD)(__func__)(": Failed trying to load "
+                                           "party's inbox.")
                 .Flush();
         //            OT_FAIL_MSG("ASSERT:  TRYING TO GENERATE INBOX IN STASH
         // FUNDS!!!\n");
@@ -2546,8 +2540,8 @@ auto OTSmartContract::StashFunds(
         // OTLedger::inbox, true); // bGenerateFile=true
 
         if (!bSuccessLoadingPartyInbox) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ERROR loading or generating "
-                                               "inbox ledger.")
+            LogOutput(OT_METHOD)(__func__)(": ERROR loading or generating "
+                                           "inbox ledger.")
                 .Flush();
         } else {
             // Generate new transaction numbers for these new transactions
@@ -2557,7 +2551,7 @@ auto OTSmartContract::StashFunds(
             //          OT_ASSERT(lNewTransactionNumber > 0); // this can be my
             //          reminder.
             if (0 == lNewTransactionNumber) {
-                LogNormal(OT_METHOD)(__FUNCTION__)(
+                LogNormal(OT_METHOD)(__func__)(
                     ": Aborted move: There are no more "
                     "transaction numbers available in Cron.")
                     .Flush();
@@ -2674,7 +2668,7 @@ auto OTSmartContract::StashFunds(
                             bool bErr = stashAccount.get().Credit(
                                 lAbsoluteAmount);  // put the money back
 
-                            LogOutput(OT_METHOD)(__FUNCTION__)(
+                            LogOutput(OT_METHOD)(__func__)(
                                 ": While "
                                 "succeeded debiting the stash account, "
                                 "FAILED in: "
@@ -2694,7 +2688,7 @@ auto OTSmartContract::StashFunds(
                             if (bStashSuccess)
                                 bSuccess = true;
                             else
-                                LogOutput(OT_METHOD)(__FUNCTION__)(
+                                LogOutput(OT_METHOD)(__func__)(
                                     ": ERROR: "
                                     "Debited stash account and credited "
                                     "party account, but "
@@ -2704,7 +2698,7 @@ auto OTSmartContract::StashFunds(
                                     .Flush();
                         }
                     } else {
-                        LogOutput(OT_METHOD)(__FUNCTION__)(
+                        LogOutput(OT_METHOD)(__func__)(
                             ": FAILED in:  "
                             "stashAccount.get().Debit(lAbsoluteAmount).")
                             .Flush();
@@ -2732,7 +2726,7 @@ auto OTSmartContract::StashFunds(
                             bool bErr = account.get().Credit(
                                 lAbsoluteAmount);  // put the money back
 
-                            LogOutput(OT_METHOD)(__FUNCTION__)(
+                            LogOutput(OT_METHOD)(__func__)(
                                 ": While "
                                 "succeeded debiting the asset account, "
                                 "FAILED in: "
@@ -2753,7 +2747,7 @@ auto OTSmartContract::StashFunds(
                             if (bStashSuccess)
                                 bSuccess = true;
                             else
-                                LogOutput(OT_METHOD)(__FUNCTION__)(
+                                LogOutput(OT_METHOD)(__func__)(
                                     ": ERROR: "
                                     "Debited party account and credited "
                                     "stash account, but "
@@ -2763,7 +2757,7 @@ auto OTSmartContract::StashFunds(
                                     .Flush();
                         }
                     } else {
-                        LogOutput(OT_METHOD)(__FUNCTION__)(
+                        LogOutput(OT_METHOD)(__func__)(
                             ": FAILED in: "
                             "account.get().Debit(lAbsoluteAmount).")
                             .Flush();
@@ -2780,7 +2774,7 @@ auto OTSmartContract::StashFunds(
                 // changed in the
                 // first place unless BOTH of the above bools were successful.
 
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Very strange! Funds "
                     "were available but "
                     "debit ")((bUnstashing) ? "stash" : "party")(" or credit ")(
@@ -2819,7 +2813,7 @@ auto OTSmartContract::StashFunds(
                 // This is also like market receipts, which use negative and
                 // positive amounts.
 
-                LogNormal(OT_METHOD)(__FUNCTION__)(": Move performed.").Flush();
+                LogNormal(OT_METHOD)(__func__)(": Move performed.").Flush();
 
                 // (I do NOT save m_pCron here, since that already occurs after
                 // this function is called.)
@@ -2832,7 +2826,7 @@ auto OTSmartContract::StashFunds(
                 pItemParty->SetAmount(0);  // No money changed hands. Just being
                                            // explicit.
 
-                LogNormal(OT_METHOD)(__FUNCTION__)(": Move failed.").Flush();
+                LogNormal(OT_METHOD)(__func__)(": Move failed.").Flush();
             }
 
             // Everytime a payment processes, a receipt is put in the user's
@@ -3016,7 +3010,7 @@ auto OTSmartContract::MoveAcctFundsStr(
 {
     OTCron* pCron = GetCron();
     OT_ASSERT(nullptr != pCron);
-    auto reason = api_.Factory().PasswordPrompt(__FUNCTION__);
+    auto reason = api_.Factory().PasswordPrompt(__func__);
 
     Nym_p pServerNym = pCron->GetServerNym();
     OT_ASSERT(nullptr != pServerNym);
@@ -3026,29 +3020,28 @@ auto OTSmartContract::MoveAcctFundsStr(
     //        pServerNym, pCron.
 
     if (str_Amount.size() < 1) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Error: empty amount.").Flush();
+        LogNormal(OT_METHOD)(__func__)(": Error: empty amount.").Flush();
         return false;
     }
 
     const std::int64_t lAmount = String::StringToLong(str_Amount.c_str());
 
     if (lAmount <= 0) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": Error: lAmount cannot be 0 or <0. "
-            "(Value passed in was ")(lAmount)(").")
+        LogNormal(OT_METHOD)(__func__)(": Error: lAmount cannot be 0 or <0. "
+                                       "(Value passed in was ")(lAmount)(").")
             .Flush();
         return false;
     }
 
     if (from_acct_name.size() <= 0) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: from_acct_name is "
-                                           "non-existent.")
+        LogOutput(OT_METHOD)(__func__)(": Error: from_acct_name is "
+                                       "non-existent.")
             .Flush();
         return false;
     }
     if (to_acct_name.size() <= 0) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: to_acct_name is "
-                                           "non-existent.")
+        LogOutput(OT_METHOD)(__func__)(": Error: to_acct_name is "
+                                       "non-existent.")
             .Flush();
         return false;
     }
@@ -3063,16 +3056,16 @@ auto OTSmartContract::MoveAcctFundsStr(
     OTPartyAccount* pToAcct = GetPartyAccount(to_acct_name);
 
     if (nullptr == pFromAcct) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Error: from_acct (")(
+        LogNormal(OT_METHOD)(__func__)(": Error: from_acct (")(
             from_acct_name)(") not found on any party.")(": FULL CONTRACT: ")(
             m_xmlUnsigned)(".")
             .Flush();
         return false;
     }
     if (nullptr == pToAcct) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Error: to_acct (")(to_acct_name)(
-            ") not found on any party.")(": FULL CONTRACT: ")(m_xmlUnsigned)(
-            ".")
+        LogNormal(OT_METHOD)(__func__)(": Error: to_acct (")(
+            to_acct_name)(") not found on any party.")(": FULL CONTRACT: ")(
+            m_xmlUnsigned)(".")
             .Flush();
 
         return false;
@@ -3092,31 +3085,31 @@ auto OTSmartContract::MoveAcctFundsStr(
                                         // agent for any other party.)
 
     if (nullptr == pFromAgent) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Error: authorized agent (")(
+        LogNormal(OT_METHOD)(__func__)(": Error: authorized agent (")(
             pFromAcct->GetAgentName())(") not found for from_acct (")(
             from_acct_name)(") on acct's party.")
             .Flush();
         return false;
     }
     if (nullptr == pToAgent) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Error: authorized agent (")(
-            pToAcct->GetAgentName())(") not found for to_acct (")(to_acct_name)(
-            ") on acct's party.")
+        LogNormal(OT_METHOD)(__func__)(": Error: authorized agent (")(
+            pToAcct->GetAgentName())(") not found for to_acct (")(
+            to_acct_name)(") on acct's party.")
             .Flush();
         return false;
     }
 
     if (!pFromAgent->IsAnIndividual()) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Error: authorized agent (")(
-            pFromAcct->GetAgentName())(") for from_acct (")(from_acct_name)(
-            ") is not an active agent.")
+        LogNormal(OT_METHOD)(__func__)(": Error: authorized agent (")(
+            pFromAcct->GetAgentName())(") for from_acct (")(
+            from_acct_name)(") is not an active agent.")
             .Flush();
         return false;
     }
     if (!pToAgent->IsAnIndividual()) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Error: authorized agent (")(
-            pToAcct->GetAgentName())(") for to_acct (")(to_acct_name)(
-            ") is not an active agent.")
+        LogNormal(OT_METHOD)(__func__)(": Error: authorized agent (")(
+            pToAcct->GetAgentName())(") for to_acct (")(
+            to_acct_name)(") is not an active agent.")
             .Flush();
         return false;
     }
@@ -3131,7 +3124,7 @@ auto OTSmartContract::MoveAcctFundsStr(
     OTParty* pToParty = pToAgent->GetParty();
 
     if (nullptr == pFromParty) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Error: Party pointer nullptr "
             "on "
             "authorized agent (")(pFromAcct->GetAgentName())(
@@ -3140,9 +3133,9 @@ auto OTSmartContract::MoveAcctFundsStr(
         return false;
     }
     if (nullptr == pToParty) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Party pointer nullptr "
-                                           "on "
-                                           "authorized agent (")(
+        LogOutput(OT_METHOD)(__func__)(": Error: Party pointer nullptr "
+                                       "on "
+                                       "authorized agent (")(
             pToAcct->GetAgentName())(") for to_acct (")(to_acct_name)(").")
             .Flush();
         return false;
@@ -3220,29 +3213,28 @@ auto OTSmartContract::MoveAcctFundsStr(
     const bool bToAgentID = pToAgent->GetSignerID(theToAgentID);
 
     if (!bFromAgentID) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to find FromAgent's "
             "Signer ID: ")(pFromAgent->GetName())(".")
             .Flush();
         return false;
     }
     if (!bToAgentID) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to find ToAgent's "
-            "Signer ID: ")(pToAgent->GetName())(".")
+        LogOutput(OT_METHOD)(__func__)(": Failed to find ToAgent's "
+                                       "Signer ID: ")(pToAgent->GetName())(".")
             .Flush();
         return false;
     }
 
     if (!pFromAcct->GetAcctID().Exists()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: FromAcct has empty "
-                                           "AcctID: ")(from_acct_name)(".")
+        LogOutput(OT_METHOD)(__func__)(": Error: FromAcct has empty "
+                                       "AcctID: ")(from_acct_name)(".")
             .Flush();
         return false;
     }
     if (!pToAcct->GetAcctID().Exists()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: ToAcct has empty "
-                                           "AcctID: ")(to_acct_name)(".")
+        LogOutput(OT_METHOD)(__func__)(": Error: ToAcct has empty "
+                                       "AcctID: ")(to_acct_name)(".")
             .Flush();
         return false;
     }
@@ -3279,7 +3271,7 @@ auto OTSmartContract::MoveAcctFundsStr(
         theToAgentID,
         reason);
     if (!bMoved) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed in call to MoveFunds. "
             "from_acct: ")(from_acct_name)("to_acct: ")(to_acct_name)(".")
             .Flush();
@@ -3433,7 +3425,7 @@ void OTSmartContract::onFinalReceipt(
             // receipt itself is accepted during a process inbox.
             context.get().ConsumeIssued(opening);
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failed verifying pParty->GetOpeningTransNo() > 0 && "
                 "pPartyNym->VerifyIssuedNum(pParty->GetOpeningTransNo()).")
                 .Flush();
@@ -3450,7 +3442,7 @@ void OTSmartContract::onFinalReceipt(
                 reason,
                 String::Factory(),
                 pstrAttachment))) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failure dropping final receipt into nymbox for even a "
                 "single agent.")
                 .Flush();
@@ -3471,7 +3463,7 @@ void OTSmartContract::onFinalReceipt(
                 reason,
                 String::Factory(),
                 pstrAttachment)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failure dropping final "
                 "receipt into all inboxes. (Missed at least one).")
                 .Flush();
@@ -3518,7 +3510,7 @@ auto OTSmartContract::ProcessCron(const PasswordPrompt& reason) -> bool
     // Currently it calls IsExpired().
     //
     if (!ot_super::ProcessCron(reason)) {
-        LogDebug(OT_METHOD)(__FUNCTION__)(": Cron job has expired.").Flush();
+        LogDebug(OT_METHOD)(__func__)(": Cron job has expired.").Flush();
         return false;  // It's expired or flagged for removal--remove it from
                        // Cron.
     }
@@ -3534,7 +3526,7 @@ auto OTSmartContract::ProcessCron(const PasswordPrompt& reason) -> bool
     // (Can't do anything without those....)
     //
     if (GetCron()->GetTransactionCount() < 1) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed to process smart contract: "
             "Cron is out of transaction numbers!")(".")
             .Flush();
@@ -3573,7 +3565,7 @@ auto OTSmartContract::ProcessCron(const PasswordPrompt& reason) -> bool
     mapOfClauses theMatchingClauses;
 
     if (GetHooks(str_HookName, theMatchingClauses)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Cron: Processing smart contract clauses for hook: ")(
             SMARTCONTRACT_HOOK_ON_PROCESS)(".")
             .Flush();
@@ -3582,7 +3574,7 @@ auto OTSmartContract::ProcessCron(const PasswordPrompt& reason) -> bool
     }
 
     if (IsFlaggedForRemoval()) {
-        LogDebug(OT_METHOD)(__FUNCTION__)(
+        LogDebug(OT_METHOD)(__func__)(
             ": Removing smart contract from cron processing...")
             .Flush();
         return false;  // false means "remove this cron item from cron"
@@ -3676,12 +3668,13 @@ void OTSmartContract::ExecuteClauses(
             if (nullptr != pBylaw->GetVariable(str_Name))  // disallow duplicate
                                                            // names.
             {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": While preparing to "
-                                                   "run smartcontract trans# ")(
-                    GetTransactionNum())(", clause: ")(str_clause_name)(
-                    ".  Error: Parameter variable named ")(str_Name)(
-                    " already exists. (Skipping the parameter actually "
-                    "passed in).")
+                LogOutput(OT_METHOD)(__func__)(": While preparing to "
+                                               "run smartcontract trans# ")(
+                    GetTransactionNum())(", clause: ")(
+                    str_clause_name)(".  Error: Parameter variable named ")(
+                    str_Name)(" already exists. (Skipping the parameter "
+                              "actually "
+                              "passed in).")
                     .Flush();
             } else  // The param_string variable isn't already there. (So we add
                     // it as blank, if a value wasn't passed in.)
@@ -3717,13 +3710,13 @@ void OTSmartContract::ExecuteClauses(
             // pScript->ExecuteScript((str_clause_name.compare("process_clause")
             // == 0) ? &theReturnVal : nullptr))
             {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error while running "
-                                                   "smartcontract trans# ")(
+                LogOutput(OT_METHOD)(__func__)(": Error while running "
+                                               "smartcontract trans# ")(
                     GetTransactionNum())(", clause: ")(str_clause_name)(".")
                     .Flush();
             } else
-                LogNormal(OT_METHOD)(__FUNCTION__)(": Success executing "
-                                                   "smartcontract trans# ")(
+                LogNormal(OT_METHOD)(__func__)(": Success executing "
+                                               "smartcontract trans# ")(
                     GetTransactionNum())(", clause: ")(str_clause_name)(".")
                     .Flush();
 
@@ -3737,8 +3730,8 @@ void OTSmartContract::ExecuteClauses(
             // just in case.
             //
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error instantiating "
-                                               "script!")
+            LogOutput(OT_METHOD)(__func__)(": Error instantiating "
+                                           "script!")
                 .Flush();
         }
     }
@@ -3770,7 +3763,7 @@ void OTSmartContract::ExecuteClauses(
         //        OT_ASSERT(lNewTransactionNumber > 0); // this can be my
         // reminder.
         if (0 == lNewTransactionNumber) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": ** ERROR: Notice not "
                 "sent to parties, since no "
                 "transaction numbers were available!")
@@ -3792,7 +3785,7 @@ void OTSmartContract::ExecuteClauses(
                 String::Factory(),
                 String::Factory());
 
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ":  FYI, 'Important' variables were changed during the "
                 "execution of this script.")(
                 bDroppedNotice ? "Success" : "Failure")(
@@ -3828,7 +3821,7 @@ auto OTSmartContract::CanCancelContract(std::string str_party_name) -> bool
     OTParty* pParty = GetParty(str_party_name);
 
     if (nullptr == pParty) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Unable to find this party: ")(
+        LogNormal(OT_METHOD)(__func__)(": Unable to find this party: ")(
             str_party_name)(".")
             .Flush();
         return false;
@@ -3901,7 +3894,7 @@ auto OTSmartContract::CanCancelContract(std::string str_party_name) -> bool
     if (nullptr != pCallbackClause)  // Found it! There's a clause registered
                                      // for this callback. Let's call it...
     {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Found script for: ")(
+        LogNormal(OT_METHOD)(__func__)(": Found script for: ")(
             SMARTCONTRACT_CALLBACK_PARTY_MAY_CANCEL)(". Asking...")
             .Flush();
 
@@ -3929,26 +3922,26 @@ auto OTSmartContract::CanCancelContract(std::string str_party_name) -> bool
                 theParameters,
                 theReturnVal))  // <============================================
         {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Error while running "
-                "callback script ")(SMARTCONTRACT_CALLBACK_PARTY_MAY_CANCEL)(
-                ", clause ")(pCallbackClause->GetName())(".")
+            LogOutput(OT_METHOD)(__func__)(": Error while running "
+                                           "callback script ")(
+                SMARTCONTRACT_CALLBACK_PARTY_MAY_CANCEL)(", clause ")(
+                pCallbackClause->GetName())(".")
                 .Flush();
             return false;
         } else {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
-                ": Success executing "
-                "callback script ")(SMARTCONTRACT_CALLBACK_PARTY_MAY_CANCEL)(
-                ", clause: ")(pCallbackClause->GetName())(".")
+            LogNormal(OT_METHOD)(__func__)(": Success executing "
+                                           "callback script ")(
+                SMARTCONTRACT_CALLBACK_PARTY_MAY_CANCEL)(", clause: ")(
+                pCallbackClause->GetName())(".")
                 .Flush();
 
             return theReturnVal.CopyValueBool();
         }
 
     } else {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Unable to find script for: ")(
-            SMARTCONTRACT_CALLBACK_PARTY_MAY_CANCEL)(
-            ". Therefore, default return value is: TRUE.")
+        LogNormal(OT_METHOD)(__func__)(": Unable to find script for: ")(
+            SMARTCONTRACT_CALLBACK_PARTY_MAY_CANCEL)(". Therefore, default "
+                                                     "return value is: TRUE.")
             .Flush();
     }
 
@@ -3998,7 +3991,7 @@ auto OTSmartContract::CanRemoveItemFromCron(const otx::context::Client& context)
     OTParty* pParty = FindPartyBasedOnNymAsAgent(*context.Nym(), &pAgent);
 
     if (nullptr == pParty) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Warning: theNym is "
             "not an agent for any party "
             "to this contract, yet tried to remove it.")
@@ -4048,11 +4041,11 @@ auto OTSmartContract::CanRemoveItemFromCron(const otx::context::Client& context)
         CanCancelContract(str_party_name))  // Here is where it calls the
                                             // script, inside this call.
     {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": Looks like theNym "
-            "represents a party (")(str_party_name)(
-            ") and IS allowed by this contract to cancel it whenever he "
-            "chooses.")
+        LogNormal(OT_METHOD)(__func__)(": Looks like theNym "
+                                       "represents a party (")(
+            str_party_name)(") and IS allowed by this contract to cancel it "
+                            "whenever he "
+                            "chooses.")
             .Flush();
         bReturnValue = true;
     }
@@ -4246,7 +4239,7 @@ auto OTSmartContract::VerifySmartContract(
     if (nullptr == pAuthParty) {
         auto strNymID = String::Factory();
         theNym.GetIdentifier(strNymID);
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ":  Unable to find a party in this smart contract, based "
             "on theNym (")(strNymID)(") as authorizing agent.")
             .Flush();
@@ -4382,8 +4375,8 @@ auto OTSmartContract::VerifySmartContract(
         // opening number was to still be considered valid -- or not.
         //
         if (!bIsPartyAuthorized) {
-            LogNormal(OT_METHOD)(__FUNCTION__)(": Party ")(str_party_name)(
-                " does NOT verify as authorized!")
+            LogNormal(OT_METHOD)(__func__)(": Party ")(
+                str_party_name)(" does NOT verify as authorized!")
                 .Flush();
             // We let them all go through, but we still take notice that at
             // least one failed.
@@ -4588,10 +4581,10 @@ auto OTSmartContract::VerifySmartContract(
                                                   // on the FAILED list. (So we
                                                   // can skip it here.)
         {
-            LogNormal(OT_METHOD)(__FUNCTION__)(": FYI, at least one party (")(
-                str_party_name)(
-                ") has failed, and right now I'm skipping verification of "
-                "his asset accounts.")
+            LogNormal(OT_METHOD)(__func__)(": FYI, at least one party (")(
+                str_party_name)(") has failed, and right now I'm skipping "
+                                "verification of "
+                                "his asset accounts.")
                 .Flush();
             continue;
         }
@@ -4617,7 +4610,7 @@ auto OTSmartContract::VerifySmartContract(
         map_Accts_Loaded_In_This_Function.insert(
             map_Accts_NewlyLoaded.begin(), map_Accts_NewlyLoaded.end());
         if (!bAcctsLoaded) {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Failed trying to Load and Verify Asset Accts for party: ")(
                 str_party_name)(".")
                 .Flush();
@@ -4640,7 +4633,7 @@ auto OTSmartContract::VerifySmartContract(
             bBurnTransNo);  // bBurnTransNo=false by default.
 
         if (!bAreAcctsVerified) {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Failed trying to Verify Asset Accts with their Agents, "
                 "for party: ")(str_party_name)(".")
                 .Flush();
@@ -4673,13 +4666,13 @@ auto OTSmartContract::VerifySmartContract(
                                                               // VALUE
 
     if (bAreAnyInvalidParties)
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failure: There are invalid party(s) on "
             "this smart contract.")
             .Flush();
 
     if (bAreAnyInvalidAccounts)
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failure: there are invalid account(s) or "
             "authorized agent(s) on this smart "
             "contract.")
@@ -4815,15 +4808,18 @@ void OTSmartContract::HarvestClosingNumbers(
             // found on the FAILED list.
             // (So we can skip it here.)
             {
-                LogNormal(OT_METHOD)(__FUNCTION__)(
-                    ": FYI, at least one party (")(str_party_name)(
-                    ") has failed verification, so right now I'm skipping "
-                    "harvesting of his "
-                    "closing transaction numbers. (Since he failed, we "
-                    "never verified his accounts, so we never grabbed "
-                    "those closing "
-                    "numbers in the first place, so there's no need to "
-                    "grab them back now).")
+                LogNormal(OT_METHOD)(__func__)(": FYI, at least one party (")(
+                    str_party_name)(") has failed verification, so right now "
+                                    "I'm skipping "
+                                    "harvesting of his "
+                                    "closing transaction numbers. (Since he "
+                                    "failed, we "
+                                    "never verified his accounts, so we never "
+                                    "grabbed "
+                                    "those closing "
+                                    "numbers in the first place, so there's no "
+                                    "need to "
+                                    "grab them back now).")
                     .Flush();
                 continue;
             }
@@ -4904,7 +4900,7 @@ void OTSmartContract::HarvestOpeningNumber(otx::context::Server& context)
 auto OTSmartContract::AddParty(OTParty& theParty) -> bool
 {
     if (!theParty.HasActiveAgent()) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Party doesn't have an active "
             "agent -- who will sign for this smart contract?")
             .Flush();
@@ -4915,7 +4911,7 @@ auto OTSmartContract::AddParty(OTParty& theParty) -> bool
     // first...
     //
     if (!OTScriptable::AddParty(theParty)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Failed adding party.").Flush();
+        LogNormal(OT_METHOD)(__func__)(": Failed adding party.").Flush();
         return false;
     }
 
@@ -4946,7 +4942,7 @@ auto OTSmartContract::ConfirmParty(
     const PasswordPrompt& reason) -> bool
 {
     if (!theParty.HasActiveAgent()) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Party doesn't have an active "
             "agent -- who will sign for this smart contract?")
             .Flush();
@@ -4965,7 +4961,7 @@ auto OTSmartContract::ConfirmParty(
     // back again.
     //
     if (!theParty.ReserveTransNumsForConfirm(context)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failure trying to reserve "
             "transaction numbers for the smart contract. "
             "(Nym needs more numbers than he has).")
@@ -4992,8 +4988,7 @@ auto OTSmartContract::ConfirmParty(
     // ABOVE this point.
     //
     if (!ot_super::ConfirmParty(theParty, context, reason)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Failed confirming party.")
-            .Flush();
+        LogNormal(OT_METHOD)(__func__)(": Failed confirming party.").Flush();
         SetCreationDate(OLD_TIME);
         theParty.HarvestAllTransactionNumbers(context);
         // Might as well set this back.
@@ -5109,7 +5104,7 @@ auto OTSmartContract::Compare(OTScriptable& rhs) const -> bool
     if (!OTScriptable::Compare(rhs)) return false;
 
     if (GetCountStashes() > 0) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Error: How is this function EVER "
             "being called when there are stashes present? Only the server "
             "can create stashes.")
@@ -5118,7 +5113,7 @@ auto OTSmartContract::Compare(OTScriptable& rhs) const -> bool
     }
 
     if (GetCountStashAccts() > 0) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Error: How is this function EVER "
             "being called when there are "
             "stash accounts present? Only the server can create stash "
@@ -5132,7 +5127,7 @@ auto OTSmartContract::Compare(OTScriptable& rhs) const -> bool
 
     if (nullptr != pSmartContract) {
         if (pSmartContract->GetCountStashes() > 0) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error: How is this function "
                 "EVER being called when there are stashes present on rhs? "
                 "Only the server can create stashes.")
@@ -5141,7 +5136,7 @@ auto OTSmartContract::Compare(OTScriptable& rhs) const -> bool
         }
 
         if (pSmartContract->GetCountStashAccts() > 0) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error: How is this function "
                 "EVER being called when there are stash accounts present "
                 "on rhs? Only the server can create stash accounts.")
@@ -5229,7 +5224,7 @@ void OTSmartContract::UpdateContents(const PasswordPrompt& reason)
             // I preserved the loop anyway. Call me crazy. But I'm still
             // displaying an error if there's more than one.
             if (i > 0)
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": ERROR: There's only ever "
                     "supposed to be a single closing number here (for "
                     "smart contracts).")
@@ -5416,13 +5411,14 @@ auto OTSmartContract::ProcessXMLNode(irr::io::IrrXMLReader*& xml)
         // party who RECEIVED
         // money.
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(
-            ": Smartcontract. Transaction Number: ")(m_lTransactionNum)
+        LogDetail(OT_METHOD)(__func__)(": Smartcontract. Transaction Number: ")(
+            m_lTransactionNum)
             .Flush();
 
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Creation Date: ")(tCreation)(
-            " Valid From: ")(tValidFrom)(" Valid To: ")(tValidTo)(
-            " NotaryID: ")(strNotaryID)(" activatorNymID: ")(strActivatorNymID)
+        LogVerbose(OT_METHOD)(__func__)(": Creation Date: ")(
+            tCreation)(" Valid From: ")(tValidFrom)(" Valid To: ")(
+            tValidTo)(" NotaryID: ")(strNotaryID)(" activatorNymID: ")(
+            strActivatorNymID)
             .Flush();
 
         nReturnVal = 1;
@@ -5436,8 +5432,8 @@ auto OTSmartContract::ProcessXMLNode(irr::io::IrrXMLReader*& xml)
 
         if ((-1) ==
             m_StashAccts.ReadFromXMLNode(xml, strAcctType, strAcctCount)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error loading stash "
-                                               "accountList.")
+            LogOutput(OT_METHOD)(__func__)(": Error loading stash "
+                                           "accountList.")
                 .Flush();
             nReturnVal = (-1);
         } else
@@ -5454,7 +5450,7 @@ auto OTSmartContract::ProcessXMLNode(irr::io::IrrXMLReader*& xml)
         OT_ASSERT(nullptr != pStash);
 
         if ((-1) == pStash->ReadFromXMLNode(xml, strStashName, strItemCount)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error loading stash: ")(
+            LogOutput(OT_METHOD)(__func__)(": Error loading stash: ")(
                 strStashName)(".")
                 .Flush();
             delete pStash;
@@ -5492,9 +5488,8 @@ auto OTSmartContract::MoveFunds(
     OT_ASSERT(nullptr != pServerNym);
 
     if (lAmount <= 0) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
-            ":  Error: lAmount cannot be 0 or <0. "
-            "(Value passed in was ")(lAmount)(").")
+        LogNormal(OT_METHOD)(__func__)(":  Error: lAmount cannot be 0 or <0. "
+                                       "(Value passed in was ")(lAmount)(").")
             .Flush();
         return false;
     }
@@ -5518,9 +5513,8 @@ auto OTSmartContract::MoveFunds(
     // to itself, there would be no difference in balance than disallowing it.)
     //
     if (SOURCE_ACCT_ID == RECIPIENT_ACCT_ID) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": Aborted move: both account IDs were "
-            "identical.")
+        LogNormal(OT_METHOD)(__func__)(": Aborted move: both account IDs were "
+                                       "identical.")
             .Flush();
         FlagForRemoval();  // Remove from Cron
         return false;  // TODO: should have a "Validate Scripts" function that
@@ -5593,7 +5587,7 @@ auto OTSmartContract::MoveFunds(
         pSenderNym = api_.Wallet().Nym(SENDER_NYM_ID);
         if (nullptr == pSenderNym) {
             auto strNymID = String::Factory(SENDER_NYM_ID);
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failure loading or verifying "
                 "Sender Nym public key: ")(strNymID)(".")
                 .Flush();
@@ -5617,7 +5611,7 @@ auto OTSmartContract::MoveFunds(
         pRecipientNym = api_.Wallet().Nym(RECIPIENT_NYM_ID);
         if (nullptr == pRecipientNym) {
             auto strNymID = String::Factory(RECIPIENT_NYM_ID);
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failure loading or verifying "
                 "Recipient Nym public key: ")(strNymID)(".")
                 .Flush();
@@ -5696,7 +5690,7 @@ auto OTSmartContract::MoveFunds(
     // VERIFIES on the party's signed copy.
     //
     if (!pOrigCronItem->VerifyNymAsAgent(*pSenderNym, *pServerNym)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed authorization for sender Nym: ")(strSenderNymID)(".")
             .Flush();
         FlagForRemoval();  // Remove it from Cron.
@@ -5704,9 +5698,9 @@ auto OTSmartContract::MoveFunds(
     }
 
     if (!pOrigCronItem->VerifyNymAsAgent(*pRecipientNym, *pServerNym)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed authorization for recipient Nym: ")(strRecipientNymID)(
-            ".")
+        LogOutput(OT_METHOD)(__func__)(
+            ": Failed authorization for recipient Nym: ")(
+            strRecipientNymID)(".")
             .Flush();
         FlagForRemoval();  // Remove it from Cron.
         return false;
@@ -5769,9 +5763,8 @@ auto OTSmartContract::MoveFunds(
     auto sourceAccount = api_.Wallet().mutable_Account(SOURCE_ACCT_ID, reason);
 
     if (false == bool(sourceAccount)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": ERROR verifying existence of source "
-            "account.")
+        LogNormal(OT_METHOD)(__func__)(": ERROR verifying existence of source "
+                                       "account.")
             .Flush();
         FlagForRemoval();  // Remove it from future Cron processing, please.
         return false;
@@ -5781,8 +5774,8 @@ auto OTSmartContract::MoveFunds(
         api_.Wallet().mutable_Account(RECIPIENT_ACCT_ID, reason);
 
     if (false == bool(recipientAccount)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": ERROR verifying existence of "
-                                           "recipient account.")
+        LogNormal(OT_METHOD)(__func__)(": ERROR verifying existence of "
+                                       "recipient account.")
             .Flush();
         FlagForRemoval();  // Remove it from future Cron processing, please.
         return false;
@@ -5800,10 +5793,9 @@ auto OTSmartContract::MoveFunds(
         // But only once
         // the accounts THEMSELVES have been loaded can we VERIFY this to be
         // true.
-        LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": ERROR - attempted payment between "
-            "accounts of different "
-            "instrument definitions.")
+        LogNormal(OT_METHOD)(__func__)(": ERROR - attempted payment between "
+                                       "accounts of different "
+                                       "instrument definitions.")
             .Flush();
         FlagForRemoval();  // Remove it from future Cron processing, please.
         return false;
@@ -5815,16 +5807,16 @@ auto OTSmartContract::MoveFunds(
     else if (
         !sourceAccount.get().VerifySignature(*pServerNym) ||
         !VerifyNymAsAgentForAccount(*pSenderNym, sourceAccount.get())) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": ERROR verifying signature or "
-                                           "ownership on source account.")
+        LogNormal(OT_METHOD)(__func__)(": ERROR verifying signature or "
+                                       "ownership on source account.")
             .Flush();
         FlagForRemoval();  // Remove it from future Cron processing, please.
         return false;
     } else if (
         !recipientAccount.get().VerifySignature(*pServerNym) ||
         !VerifyNymAsAgentForAccount(*pRecipientNym, recipientAccount.get())) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": ERROR verifying signature or "
-                                           "ownership on recipient account.")
+        LogNormal(OT_METHOD)(__func__)(": ERROR verifying signature or "
+                                       "ownership on recipient account.")
             .Flush();
         FlagForRemoval();  // Remove it from future Cron processing, please.
         return false;
@@ -5859,32 +5851,30 @@ auto OTSmartContract::MoveFunds(
             bSuccessLoadingSenderInbox =
                 theSenderInbox->VerifyAccount(*pServerNym);
         else
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ERROR loading sender inbox "
-                                               "ledger.")
+            LogOutput(OT_METHOD)(__func__)(": ERROR loading sender inbox "
+                                           "ledger.")
                 .Flush();
 
         if (true == bSuccessLoadingRecipientInbox) {
             bSuccessLoadingRecipientInbox =
                 theRecipientInbox->VerifyAccount(*pServerNym);
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": ERROR loading recipient inbox "
-                "ledger.")
+            LogOutput(OT_METHOD)(__func__)(": ERROR loading recipient inbox "
+                                           "ledger.")
                 .Flush();
         }
 
         if ((false == bSuccessLoadingSenderInbox) ||
             (false == bSuccessLoadingRecipientInbox)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": ERROR loading or generating one "
-                "(or both) of the inbox ledgers.")
+            LogOutput(OT_METHOD)(__func__)(": ERROR loading or generating one "
+                                           "(or both) of the inbox ledgers.")
                 .Flush();
         } else {
             // Generate new transaction numbers for these new transactions
             auto lNewTransactionNumber = GetCron()->GetNextTransactionNumber();
 
             if (0 == lNewTransactionNumber) {
-                LogNormal(OT_METHOD)(__FUNCTION__)(
+                LogNormal(OT_METHOD)(__func__)(
                     ": Aborted move: There are no "
                     "more transaction numbers available.")
                     .Flush();
@@ -6006,7 +5996,7 @@ auto OTSmartContract::MoveFunds(
 
                 // If ANY of these failed, then roll them all back and break.
                 if (!bMoveSender || !bMoveRecipient) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Very strange! Funds were "
                         "available but "
                         "debit or credit failed while performing move.")
@@ -6040,7 +6030,7 @@ auto OTSmartContract::MoveFunds(
                 // I will probably do the same for cheques, since they can be
                 // negative as well (invoices).
 
-                LogDebug(OT_METHOD)(__FUNCTION__)(": Move performed.").Flush();
+                LogDebug(OT_METHOD)(__func__)(": Move performed.").Flush();
 
                 // (I do NOT save m_pCron here, since that already occurs after
                 // this function is called.)
@@ -6059,7 +6049,7 @@ auto OTSmartContract::MoveFunds(
                 pItemRecip->SetAmount(0);  // No money changed hands. Just being
                                            // explicit.
 
-                LogDebug(OT_METHOD)(__FUNCTION__)(": Move failed.").Flush();
+                LogDebug(OT_METHOD)(__func__)(": Move failed.").Flush();
             }
 
             // Everytime a payment processes, a receipt is put in the user's

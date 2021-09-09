@@ -67,7 +67,7 @@ auto Blocks::LoadBitcoin(const block::Hash& block) const noexcept
         const auto data = api_.Factory().Data(hex, StringStyle::Hex);
 
         if (data->empty()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid genesis hex").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Invalid genesis hex").Flush();
 
             return {};
         }
@@ -77,8 +77,8 @@ auto Blocks::LoadBitcoin(const block::Hash& block) const noexcept
         const auto bytes = common_.BlockLoad(block);
 
         if (false == bytes.valid()) {
-            LogDebug(OT_METHOD)(__FUNCTION__)(
-                ": block ")(block.asHex())(" not found.")
+            LogDebug(OT_METHOD)(__func__)(": block ")(block.asHex())(
+                " not found.")
                 .Flush();
 
             return {};
@@ -104,8 +104,7 @@ auto Blocks::Store(const block::Block& block) const noexcept -> bool
     auto writer = common_.BlockStore(block.ID(), size);
 
     if (false == writer.get().valid(size)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to allocate storage for block")
+        LogOutput(OT_METHOD)(__func__)(": Failed to allocate storage for block")
             .Flush();
 
         return false;
@@ -113,8 +112,7 @@ auto Blocks::Store(const block::Block& block) const noexcept -> bool
 
     if (false ==
         block.Serialize(preallocated(writer.size(), writer.get().data()))) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize block")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to serialize block").Flush();
 
         return false;
     }

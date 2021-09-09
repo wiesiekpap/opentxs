@@ -47,7 +47,7 @@ auto Factory::Token(const blind::Token& token, blind::Purse& purse) noexcept
 }
 
 auto Factory::Token(
-    const api::internal::Core& api,
+    const api::Core& api,
     blind::Purse& purse,
     const proto::Token& serialized) noexcept(false)
     -> std::unique_ptr<blind::Token>
@@ -64,7 +64,7 @@ auto Factory::Token(
 }
 
 auto Factory::Token(
-    const api::internal::Core& api,
+    const api::Core& api,
     const identity::Nym& owner,
     const blind::Mint& mint,
     const blind::Token::Denomination value,
@@ -90,7 +90,7 @@ const opentxs::crypto::key::symmetric::Algorithm Token::mode_{
     opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305};
 
 Token::Token(
-    const api::internal::Core& api,
+    const api::Core& api,
     Purse& purse,
     const blind::TokenState state,
     const blind::CashType type,
@@ -131,10 +131,7 @@ Token::Token(const Token& rhs)
 {
 }
 
-Token::Token(
-    const api::internal::Core& api,
-    Purse& purse,
-    const proto::Token& in)
+Token::Token(const api::Core& api, Purse& purse, const proto::Token& in)
     : Token(
           api,
           purse,
@@ -151,7 +148,7 @@ Token::Token(
 }
 
 Token::Token(
-    const api::internal::Core& api,
+    const api::Core& api,
     Purse& purse,
     const VersionNumber version,
     const blind::TokenState state,
@@ -186,7 +183,7 @@ auto Token::reencrypt(
         oldKey.Decrypt(ciphertext, oldPassword, plaintext->WriteInto());
 
     if (false == output) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decrypt ciphertext.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decrypt ciphertext.")
             .Flush();
 
         return false;
@@ -200,7 +197,7 @@ auto Token::reencrypt(
         opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305);
 
     if (false == output) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to encrypt ciphertext.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to encrypt ciphertext.")
             .Flush();
 
         return false;

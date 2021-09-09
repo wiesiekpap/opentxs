@@ -23,10 +23,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace blind
@@ -95,7 +92,7 @@ public:
 protected:
     static const opentxs::crypto::key::symmetric::Algorithm mode_;
 
-    const api::internal::Core& api_;
+    const api::Core& api_;
     Purse& purse_;
     blind::TokenState state_;
     const OTServerID notary_;
@@ -114,12 +111,9 @@ protected:
 
     auto Serialize(proto::Token& out) const noexcept -> bool override;
 
+    Token(const api::Core& api, Purse& purse, const proto::Token& serialized);
     Token(
-        const api::internal::Core& api,
-        Purse& purse,
-        const proto::Token& serialized);
-    Token(
-        const api::internal::Core& api,
+        const api::Core& api,
         Purse& purse,
         const VersionNumber version,
         const blind::TokenState state,
@@ -138,7 +132,7 @@ private:
     virtual auto clone() const noexcept -> Token* override = 0;
 
     Token(
-        const api::internal::Core& api,
+        const api::Core& api,
         Purse& purse,
         const blind::TokenState state,
         const blind::CashType type,

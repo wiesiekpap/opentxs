@@ -39,8 +39,7 @@ auto Plugin::Load(
 {
     if (key.empty()) {
         if (!checking) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Error: Tried to load empty key.")
+            LogOutput(OT_METHOD)(__func__)(": Error: Tried to load empty key.")
                 .Flush();
         }
 
@@ -65,7 +64,7 @@ auto Plugin::Load(
     }
 
     if (!valid && !checking) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Specified object is not found.")(
+        LogDetail(OT_METHOD)(__func__)(": Specified object is not found.")(
             " Hash: ")(key)(".")(" Size: ")(value.size())(".")
             .Flush();
     }
@@ -92,7 +91,7 @@ auto Plugin::Migrate(
         if (to.Store(false, key, value, targetBucket)) {
             return true;
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Save failure.").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Save failure.").Flush();
 
             return false;
         }
@@ -103,7 +102,7 @@ auto Plugin::Migrate(
     const bool exists = to.LoadFromBucket(key, value, targetBucket);
 
     if (!exists) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Missing key.").Flush();
+        LogVerbose(OT_METHOD)(__func__)(": Missing key.").Flush();
 
         return false;
     }

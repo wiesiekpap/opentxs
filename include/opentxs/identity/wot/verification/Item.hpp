@@ -39,14 +39,14 @@ public:
 
     OPENTXS_NO_EXPORT virtual operator SerializedType() const noexcept = 0;
 
-    virtual Time Begin() const noexcept = 0;
-    virtual const Identifier& ClaimID() const noexcept = 0;
-    virtual Time End() const noexcept = 0;
-    virtual const Identifier& ID() const noexcept = 0;
-    virtual const proto::Signature& Signature() const noexcept = 0;
-    virtual Validity Valid() const noexcept = 0;
-    virtual Type Value() const noexcept = 0;
-    virtual VersionNumber Version() const noexcept = 0;
+    virtual auto Begin() const noexcept -> Time = 0;
+    virtual auto ClaimID() const noexcept -> const Identifier& = 0;
+    virtual auto End() const noexcept -> Time = 0;
+    virtual auto ID() const noexcept -> const Identifier& = 0;
+    virtual auto Signature() const noexcept -> const proto::Signature& = 0;
+    virtual auto Valid() const noexcept -> Validity = 0;
+    virtual auto Value() const noexcept -> Type = 0;
+    virtual auto Version() const noexcept -> VersionNumber = 0;
 
     virtual ~Item() = default;
 
@@ -56,8 +56,8 @@ protected:
 private:
     Item(const Item&) = delete;
     Item(Item&&) = delete;
-    Item& operator=(const Item&) = delete;
-    Item& operator=(Item&&) = delete;
+    auto operator=(const Item&) -> Item& = delete;
+    auto operator=(Item&&) -> Item& = delete;
 };
 }  // namespace verification
 }  // namespace wot

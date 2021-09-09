@@ -32,10 +32,7 @@ namespace implementation
 class Factory;
 }  // namespace implementation
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -82,9 +79,9 @@ public:
     // (Legacy boxes stored ALL of the receipts IN the box. No more.)
     bool m_bLoadedLegacyData;
 
-    inline ledgerType GetType() const { return m_Type; }
+    inline auto GetType() const -> ledgerType { return m_Type; }
 
-    bool LoadedLegacyData() const { return m_bLoadedLegacyData; }
+    auto LoadedLegacyData() const -> bool { return m_bLoadedLegacyData; }
 
     // This function assumes that this is an INBOX.
     // If you don't use an INBOX to call this method, then it will return
@@ -95,51 +92,56 @@ public:
     // have to keep the latest receipt, unlike systems that don't store balance
     // agreement.  We also store a list of issued transactions, the new balance,
     // and the outbox hash.
-    std::unique_ptr<Item> GenerateBalanceStatement(
+    auto GenerateBalanceStatement(
         std::int64_t lAdjustment,
         const OTTransaction& theOwner,
         const otx::context::Server& context,
         const Account& theAccount,
         Ledger& theOutbox,
-        const PasswordPrompt& reason) const;
-    std::unique_ptr<Item> GenerateBalanceStatement(
+        const PasswordPrompt& reason) const -> std::unique_ptr<Item>;
+    auto GenerateBalanceStatement(
         std::int64_t lAdjustment,
         const OTTransaction& theOwner,
         const otx::context::Server& context,
         const Account& theAccount,
         Ledger& theOutbox,
         const std::set<TransactionNumber>& without,
-        const PasswordPrompt& reason) const;
+        const PasswordPrompt& reason) const -> std::unique_ptr<Item>;
 
     void ProduceOutboxReport(
         Item& theBalanceItem,
         const PasswordPrompt& reason);
 
-    bool AddTransaction(std::shared_ptr<OTTransaction> theTransaction);
-    bool RemoveTransaction(const TransactionNumber number);  // if false,
-                                                             // transaction
-                                                             // wasn't
-                                                             // found.
+    auto AddTransaction(std::shared_ptr<OTTransaction> theTransaction) -> bool;
+    auto RemoveTransaction(const TransactionNumber number)
+        -> bool;  // if false,
+                  // transaction
+                  // wasn't
+                  // found.
 
-    std::set<std::int64_t> GetTransactionNums(
-        const std::set<std::int32_t>* pOnlyForIndices = nullptr) const;
+    auto GetTransactionNums(
+        const std::set<std::int32_t>* pOnlyForIndices = nullptr) const
+        -> std::set<std::int64_t>;
 
-    std::shared_ptr<OTTransaction> GetTransaction(transactionType theType);
-    std::shared_ptr<OTTransaction> GetTransaction(
-        const TransactionNumber number) const;
-    std::shared_ptr<OTTransaction> GetTransactionByIndex(
-        std::int32_t nIndex) const;
-    std::shared_ptr<OTTransaction> GetFinalReceipt(std::int64_t lReferenceNum);
-    std::shared_ptr<OTTransaction> GetTransferReceipt(
-        std::int64_t lNumberOfOrigin);
-    std::shared_ptr<OTTransaction> GetChequeReceipt(std::int64_t lChequeNum);
-    std::int32_t GetTransactionIndex(
-        const TransactionNumber number);  // if not
-                                          // found,
-                                          // returns
-                                          // -1
-    std::shared_ptr<OTTransaction> GetReplyNotice(
-        const std::int64_t& lRequestNum);
+    auto GetTransaction(transactionType theType)
+        -> std::shared_ptr<OTTransaction>;
+    auto GetTransaction(const TransactionNumber number) const
+        -> std::shared_ptr<OTTransaction>;
+    auto GetTransactionByIndex(std::int32_t nIndex) const
+        -> std::shared_ptr<OTTransaction>;
+    auto GetFinalReceipt(std::int64_t lReferenceNum)
+        -> std::shared_ptr<OTTransaction>;
+    auto GetTransferReceipt(std::int64_t lNumberOfOrigin)
+        -> std::shared_ptr<OTTransaction>;
+    auto GetChequeReceipt(std::int64_t lChequeNum)
+        -> std::shared_ptr<OTTransaction>;
+    auto GetTransactionIndex(const TransactionNumber number)
+        -> std::int32_t;  // if not
+                          // found,
+                          // returns
+                          // -1
+    auto GetReplyNotice(const std::int64_t& lRequestNum)
+        -> std::shared_ptr<OTTransaction>;
 
     // This calls OTTransactionType::VerifyAccount(), which calls
     // VerifyContractID() as well as VerifySignature().
@@ -151,71 +153,72 @@ public:
     // expects/uses a pubkey from inside the contract in order to verify
     // it.
     //
-    bool VerifyAccount(const identity::Nym& theNym) override;
+    auto VerifyAccount(const identity::Nym& theNym) -> bool override;
     // For ALL abbreviated transactions, load the actual box receipt for each.
-    bool LoadBoxReceipts(
-        std::set<std::int64_t>* psetUnloaded = nullptr);  // if psetUnloaded
-                                                          // passed
-                                                          // in, then use it to
-                                                          // return the #s that
-                                                          // weren't there.
-    bool SaveBoxReceipts();  // For all "full version"
-                             // transactions, save the actual box
-                             // receipt for each.
+    auto LoadBoxReceipts(std::set<std::int64_t>* psetUnloaded = nullptr)
+        -> bool;                     // if psetUnloaded
+                                     // passed
+                                     // in, then use it to
+                                     // return the #s that
+                                     // weren't there.
+    auto SaveBoxReceipts() -> bool;  // For all "full version"
+                                     // transactions, save the actual box
+                                     // receipt for each.
     // Verifies the abbreviated form exists first, and then loads the
     // full version and compares the two. Returns success / fail.
     //
-    bool LoadBoxReceipt(const std::int64_t& lTransactionNum);
+    auto LoadBoxReceipt(const std::int64_t& lTransactionNum) -> bool;
     // Saves the Box Receipt separately.
-    bool SaveBoxReceipt(const std::int64_t& lTransactionNum);
+    auto SaveBoxReceipt(const std::int64_t& lTransactionNum) -> bool;
     // "Deletes" it by adding MARKED_FOR_DELETION to the bottom of the file.
-    bool DeleteBoxReceipt(const std::int64_t& lTransactionNum);
+    auto DeleteBoxReceipt(const std::int64_t& lTransactionNum) -> bool;
 
-    bool LoadInbox();
-    bool LoadNymbox();
-    bool LoadOutbox();
+    auto LoadInbox() -> bool;
+    auto LoadNymbox() -> bool;
+    auto LoadOutbox() -> bool;
 
     // If you pass the identifier in, the hash is recorded there
-    bool SaveInbox();
-    bool SaveInbox(Identifier& pInboxHash);
-    bool SaveNymbox();
-    bool SaveNymbox(Identifier& pNymboxHash);
-    bool SaveOutbox();
-    bool SaveOutbox(Identifier& pOutboxHash);
+    auto SaveInbox() -> bool;
+    auto SaveInbox(Identifier& pInboxHash) -> bool;
+    auto SaveNymbox() -> bool;
+    auto SaveNymbox(Identifier& pNymboxHash) -> bool;
+    auto SaveOutbox() -> bool;
+    auto SaveOutbox(Identifier& pOutboxHash) -> bool;
 
-    bool CalculateHash(Identifier& theOutput) const;
-    bool CalculateInboxHash(Identifier& theOutput) const;
-    bool CalculateOutboxHash(Identifier& theOutput) const;
-    bool CalculateNymboxHash(Identifier& theOutput) const;
-    bool SavePaymentInbox();
-    bool LoadPaymentInbox();
+    auto CalculateHash(Identifier& theOutput) const -> bool;
+    auto CalculateInboxHash(Identifier& theOutput) const -> bool;
+    auto CalculateOutboxHash(Identifier& theOutput) const -> bool;
+    auto CalculateNymboxHash(Identifier& theOutput) const -> bool;
+    auto SavePaymentInbox() -> bool;
+    auto LoadPaymentInbox() -> bool;
 
-    bool SaveRecordBox();
-    bool LoadRecordBox();
+    auto SaveRecordBox() -> bool;
+    auto LoadRecordBox() -> bool;
 
-    bool SaveExpiredBox();
-    bool LoadExpiredBox();
-    bool LoadLedgerFromString(const String& theStr);  // Auto-detects
-                                                      // ledger
-                                                      // type.
-    bool LoadInboxFromString(const String& strBox);
-    bool LoadOutboxFromString(const String& strBox);
-    bool LoadNymboxFromString(const String& strBox);
-    bool LoadPaymentInboxFromString(const String& strBox);
-    bool LoadRecordBoxFromString(const String& strBox);
-    bool LoadExpiredBoxFromString(const String& strBox);
+    auto SaveExpiredBox() -> bool;
+    auto LoadExpiredBox() -> bool;
+    auto LoadLedgerFromString(const String& theStr) -> bool;  // Auto-detects
+                                                              // ledger
+                                                              // type.
+    auto LoadInboxFromString(const String& strBox) -> bool;
+    auto LoadOutboxFromString(const String& strBox) -> bool;
+    auto LoadNymboxFromString(const String& strBox) -> bool;
+    auto LoadPaymentInboxFromString(const String& strBox) -> bool;
+    auto LoadRecordBoxFromString(const String& strBox) -> bool;
+    auto LoadExpiredBoxFromString(const String& strBox) -> bool;
     // inline for the top one only.
-    inline std::int32_t GetTransactionCount() const
+    inline auto GetTransactionCount() const -> std::int32_t
     {
         return static_cast<std::int32_t>(m_mapTransactions.size());
     }
-    std::int32_t GetTransactionCountInRefTo(std::int64_t lReferenceNum) const;
-    std::int64_t GetTotalPendingValue(
-        const PasswordPrompt& reason);  // for inbox only, allows you
-                                        // to
+    auto GetTransactionCountInRefTo(std::int64_t lReferenceNum) const
+        -> std::int32_t;
+    auto GetTotalPendingValue(const PasswordPrompt& reason)
+        -> std::int64_t;  // for inbox only, allows you
+                          // to
     // lookup the total value of pending
     // transfers within.
-    const mapOfTransactions& GetTransactionMap() const;
+    auto GetTransactionMap() const -> const mapOfTransactions&;
 
     void Release() override;
     void Release_Ledger();
@@ -231,30 +234,30 @@ public:
     // it.
     void InitLedger();
 
-    [[deprecated]] bool GenerateLedger(
+    [[deprecated]] auto GenerateLedger(
         const Identifier& theAcctID,
         const identifier::Server& theNotaryID,
         ledgerType theType,
-        bool bCreateFile = false);
-    bool CreateLedger(
+        bool bCreateFile = false) -> bool;
+    auto CreateLedger(
         const identifier::Nym& theNymID,
         const Identifier& theAcctID,
         const identifier::Server& theNotaryID,
         ledgerType theType,
-        bool bCreateFile = false);
+        bool bCreateFile = false) -> bool;
 
-    static char const* _GetTypeString(ledgerType theType);
-    char const* GetTypeString() const { return _GetTypeString(m_Type); }
+    static auto _GetTypeString(ledgerType theType) -> char const*;
+    auto GetTypeString() const -> char const* { return _GetTypeString(m_Type); }
 
     ~Ledger() override;
 
 protected:
-    bool LoadGeneric(
+    auto LoadGeneric(
         ledgerType theType,
-        const String& pString = String::Factory());
+        const String& pString = String::Factory()) -> bool;
     // return -1 if error, 0 if nothing, and 1 if the node was processed.
-    std::int32_t ProcessXMLNode(irr::io::IrrXMLReader*& xml) override;
-    bool SaveGeneric(ledgerType theType);
+    auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
+    auto SaveGeneric(ledgerType theType) -> bool;
     void UpdateContents(const PasswordPrompt& reason)
         override;  // Before transmission or
                    // serialization, this is where the
@@ -268,27 +271,27 @@ private:  // Private prevents erroneous use by other classes.
     mapOfTransactions m_mapTransactions;  // a ledger contains a map of
                                           // transactions.
 
-    std::tuple<bool, std::string, std::string, std::string> make_filename(
-        const ledgerType theType);
+    auto make_filename(const ledgerType theType)
+        -> std::tuple<bool, std::string, std::string, std::string>;
 
-    bool generate_ledger(
+    auto generate_ledger(
         const identifier::Nym& theNymID,
         const Identifier& theAcctID,
         const identifier::Server& theNotaryID,
         ledgerType theType,
-        bool bCreateFile);
-    bool save_box(
+        bool bCreateFile) -> bool;
+    auto save_box(
         const ledgerType type,
         Identifier& hash,
-        bool (Ledger::*calc)(Identifier&) const);
+        bool (Ledger::*calc)(Identifier&) const) -> bool;
 
-    Ledger(const api::internal::Core& api);
+    Ledger(const api::Core& api);
     Ledger(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Identifier& theAccountID,
         const identifier::Server& theNotaryID);
     Ledger(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identifier::Nym& theNymID,
         const Identifier& theAccountID,
         const identifier::Server& theNotaryID);

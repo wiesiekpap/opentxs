@@ -91,7 +91,7 @@ protected:
     {
         auto output = std::vector<std::string>{};
         output.reserve(tx_per_block_);
-        const auto reason = client_2_.Factory().PasswordPrompt(__FUNCTION__);
+        const auto reason = client_2_.Factory().PasswordPrompt(__func__);
         const auto& bob = client_2_.Blockchain()
                               .Account(bob_.ID(), test_chain_)
                               .GetHD()
@@ -128,7 +128,7 @@ protected:
         , alice_([&]() -> const ot::identity::Nym& {
             if (!alice_p_) {
                 const auto reason =
-                    client_1_.Factory().PasswordPrompt(__FUNCTION__);
+                    client_1_.Factory().PasswordPrompt(__func__);
                 const auto& vector = GetVectors3().alice_;
                 const auto seedID = [&] {
                     const auto words =
@@ -162,7 +162,7 @@ protected:
         , bob_([&]() -> const ot::identity::Nym& {
             if (!bob_p_) {
                 const auto reason =
-                    client_2_.Factory().PasswordPrompt(__FUNCTION__);
+                    client_2_.Factory().PasswordPrompt(__func__);
                 const auto& vector = GetVectors3().bob_;
                 const auto seedID = [&] {
                     const auto words =
@@ -220,7 +220,7 @@ protected:
                     namespace c = std::chrono;
                     auto output = std::vector<OutputBuilder>{};
                     const auto reason =
-                        client_1_.Factory().PasswordPrompt(__FUNCTION__);
+                        client_1_.Factory().PasswordPrompt(__func__);
                     const auto keys = std::set<ot::blockchain::crypto::Key>{};
                     const auto target = [] {
                         if (first_block_) {

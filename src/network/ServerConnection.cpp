@@ -17,8 +17,8 @@
 #include <thread>
 
 #include "Proto.tpp"
-#include "internal/api/Api.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -65,7 +65,7 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::network
 {
 auto ServerConnection::Factory(
-    const api::internal::Core& api,
+    const api::Core& api,
     const api::network::ZMQ& zmq,
     const zeromq::socket::Publish& updates,
     const OTServerContract& contract) -> OTServerConnection
@@ -78,7 +78,7 @@ auto ServerConnection::Factory(
 namespace opentxs::network::implementation
 {
 ServerConnection::ServerConnection(
-    const api::internal::Core& api,
+    const api::Core& api,
     const api::network::ZMQ& zmq,
     const zeromq::socket::Publish& updates,
     const OTServerContract& contract)
@@ -204,7 +204,7 @@ auto ServerConnection::endpoint() const -> std::string
         remote_contract_->ConnectInfo(hostname, port, type, address_type_);
 
     if (false == have) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed retrieving connection info from server contract.")
             .Flush();
 
@@ -274,7 +274,7 @@ void ServerConnection::process_incoming(const proto::ServerReply& in)
         auto message = otx::Reply::Factory(api_, in);
 
         if (false == message->Validate()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid push notification.")
+            LogOutput(OT_METHOD)(__func__)(": Invalid push notification.")
                 .Flush();
 
             return;
@@ -282,7 +282,7 @@ void ServerConnection::process_incoming(const proto::ServerReply& in)
 
         auto serialized = proto::ServerReply{};
         if (false == message->Serialize(serialized)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize reply.")
+            LogOutput(OT_METHOD)(__func__)(": Failed to serialize reply.")
                 .Flush();
 
             return;
@@ -290,8 +290,7 @@ void ServerConnection::process_incoming(const proto::ServerReply& in)
 
         notification_socket_->Send(api_.Factory().Data(serialized));
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to instantiate reply")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Unable to instantiate reply").Flush();
     }
 }
 
@@ -304,7 +303,7 @@ void ServerConnection::process_incoming(const zeromq::Message& in)
     OT_ASSERT(false != bool(message));
 
     if (1 > in.Body().size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Received legacy reply on async socket.")
             .Flush();
 
@@ -324,7 +323,7 @@ void ServerConnection::process_incoming(const zeromq::Message& in)
             return;
         }
 
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Message should be a protobuf but isn't.")
             .Flush();
 
@@ -346,8 +345,7 @@ void ServerConnection::register_for_push(
     const PasswordPrompt& reason)
 {
     if (2 > context.Request()) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Nym is not yet registered")
-            .Flush();
+        LogVerbose(OT_METHOD)(__func__)(": Nym is not yet registered").Flush();
 
         return;
     }
@@ -370,7 +368,7 @@ void ServerConnection::register_for_push(
     message->AddFrame();
     auto serialized = proto::ServerRequest{};
     if (false == request->Serialize(serialized)) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Failed to serialize request.")
+        LogVerbose(OT_METHOD)(__func__)(": Failed to serialize request.")
             .Flush();
 
         return;
@@ -433,10 +431,10 @@ auto ServerConnection::Send(
     };
 
     if (Push::Enable == push) {
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Registering for push").Flush();
+        LogTrace(OT_METHOD)(__func__)(": Registering for push").Flush();
         register_for_push(context, reason);
     } else {
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Skipping push").Flush();
+        LogTrace(OT_METHOD)(__func__)(": Skipping push").Flush();
         disable_push(context.Nym()->ID());
     }
 
@@ -452,7 +450,7 @@ auto ServerConnection::Send(
     auto envelope = Armored::Factory(raw);
 
     if (false == envelope->Exists()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to armor message").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to armor message").Flush();
 
         return output;
     }
@@ -472,21 +470,21 @@ auto ServerConnection::Send(
     OT_ASSERT(false != bool(replymessage));
 
     if (SendResult::TIMEOUT == status) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Reply timeout.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Reply timeout.").Flush();
         cleanup.SetStatus(SendResult::TIMEOUT);
 
         return output;
     }
 
     if (1 > in->Body().size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Empty reply.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Empty reply.").Flush();
         cleanup.SetStatus(SendResult::INVALID_REPLY);
 
         return output;
     }
 
     if (1 < in->Body().size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Push notification received as a reply.")
             .Flush();
         cleanup.SetStatus(SendResult::INVALID_REPLY);
@@ -497,7 +495,7 @@ auto ServerConnection::Send(
     auto& frame = *in->Body().begin();
 
     if (0 == frame.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid reply message.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid reply message.").Flush();
         cleanup.SetStatus(SendResult::INVALID_REPLY);
 
         return output;
@@ -512,7 +510,7 @@ auto ServerConnection::Send(
     if (loaded) {
         reply.reset(replymessage.release());
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Received server reply, but unable to instantiate it as a "
             "Message.")
             .Flush();
@@ -546,8 +544,7 @@ void ServerConnection::set_proxy(
     auto proxy = zmq_.SocksProxy();
 
     if (false == proxy.empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Setting proxy to ")(proxy)
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Setting proxy to ")(proxy).Flush();
         const auto set = socket.SetSocksProxy(proxy);
 
         OT_ASSERT(set);

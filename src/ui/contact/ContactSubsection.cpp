@@ -28,7 +28,7 @@ namespace opentxs::factory
 {
 auto ContactSubsectionWidget(
     const ui::implementation::ContactSectionInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ui::implementation::ContactSectionRowID& rowID,
     const ui::implementation::ContactSectionSortKey& key,
     ui::implementation::CustomData& custom) noexcept
@@ -44,7 +44,7 @@ namespace opentxs::ui::implementation
 {
 ContactSubsection::ContactSubsection(
     const ContactSectionInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ContactSectionRowID& rowID,
     const ContactSectionSortKey& key,
     CustomData& custom) noexcept

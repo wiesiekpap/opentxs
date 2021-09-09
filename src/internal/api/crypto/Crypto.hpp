@@ -12,17 +12,14 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 }  // namespace opentxs
 
 namespace opentxs::api::crypto::internal
 {
 struct Asymmetric : virtual public api::crypto::Asymmetric {
-    virtual auto API() const noexcept -> const api::internal::Core& = 0;
+    virtual auto API() const noexcept -> const api::Core& = 0;
 
     ~Asymmetric() override = default;
 };

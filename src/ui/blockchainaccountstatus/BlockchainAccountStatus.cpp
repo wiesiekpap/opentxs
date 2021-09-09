@@ -20,11 +20,11 @@
 #include <utility>
 #include <vector>
 
-#include "internal/api/client/Client.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/HDSeed.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -52,7 +52,7 @@
 namespace opentxs::factory
 {
 auto BlockchainAccountStatusModel(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ui::implementation::BlockchainAccountStatusPrimaryID& id,
     const blockchain::Type chain,
     const SimpleCallback& cb) noexcept
@@ -67,7 +67,7 @@ auto BlockchainAccountStatusModel(
 namespace opentxs::ui::implementation
 {
 BlockchainAccountStatus::BlockchainAccountStatus(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const BlockchainAccountStatusPrimaryID& id,
     const blockchain::Type chain,
     const SimpleCallback& cb) noexcept

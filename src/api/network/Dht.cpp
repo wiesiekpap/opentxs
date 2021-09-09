@@ -15,12 +15,12 @@
 #include <vector>
 
 #include "Proto.tpp"
-#include "internal/api/Api.hpp"
 #include "internal/api/network/Factory.hpp"
 #include "internal/network/Factory.hpp"
 #include "network/DhtConfig.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Settings.hpp"
@@ -54,7 +54,7 @@ namespace opentxs::factory
 using ReturnType = api::network::implementation::Dht;
 
 auto DhtAPI(
-    const api::internal::Core& api,
+    const api::Core& api,
     const opentxs::network::zeromq::Context& zeromq,
     const api::Endpoints& endpoints,
     const bool defaultEnable,
@@ -136,7 +136,7 @@ auto DhtAPI(
 namespace opentxs::api::network::implementation
 {
 Dht::Dht(
-    const api::internal::Core& api,
+    const api::Core& api,
     const opentxs::network::zeromq::Context& zeromq,
     const api::Endpoints& endpoints,
     opentxs::network::DhtConfig& config) noexcept
@@ -268,7 +268,7 @@ auto Dht::process_request(
 }
 
 auto Dht::ProcessPublicNym(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string key,
     const DhtResults& values,
     NotifyCB notifyCB) -> bool
@@ -303,26 +303,25 @@ auto Dht::ProcessPublicNym(
 
         foundValid = true;
 
-        LogDebug(OT_METHOD)(__FUNCTION__)(": Saved nym: ")(key).Flush();
+        LogDebug(OT_METHOD)(__func__)(": Saved nym: ")(key).Flush();
 
         if (notifyCB) { notifyCB(key); }
     }
 
     if (!foundValid) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
-            ": Found results, but none are valid.")
+        LogVerbose(OT_METHOD)(__func__)(": Found results, but none are valid.")
             .Flush();
     }
 
     if (!foundData) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": All results are empty.").Flush();
+        LogVerbose(OT_METHOD)(__func__)(": All results are empty.").Flush();
     }
 
     return foundData;
 }
 
 auto Dht::ProcessServerContract(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string key,
     const DhtResults& values,
     NotifyCB notifyCB) -> bool
@@ -351,7 +350,7 @@ auto Dht::ProcessServerContract(
             continue;
         }
 
-        LogDebug(OT_METHOD)(__FUNCTION__)(": Saved contract: ")(key).Flush();
+        LogDebug(OT_METHOD)(__func__)(": Saved contract: ")(key).Flush();
         foundValid = true;
 
         if (notifyCB) { notifyCB(key); }
@@ -360,20 +359,19 @@ auto Dht::ProcessServerContract(
     }
 
     if (!foundValid) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Found results, but none are valid.")
+        LogOutput(OT_METHOD)(__func__)(": Found results, but none are valid.")
             .Flush();
     }
 
     if (!foundData) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": All results are empty.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": All results are empty.").Flush();
     }
 
     return foundData;
 }
 
 auto Dht::ProcessUnitDefinition(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string key,
     const DhtResults& values,
     NotifyCB notifyCB) -> bool
@@ -403,8 +401,7 @@ auto Dht::ProcessUnitDefinition(
             continue;
         }
 
-        LogDebug(OT_METHOD)(__FUNCTION__)(": Saved unit definition: ")(key)
-            .Flush();
+        LogDebug(OT_METHOD)(__func__)(": Saved unit definition: ")(key).Flush();
         foundValid = true;
 
         if (notifyCB) { notifyCB(key); }
@@ -413,13 +410,12 @@ auto Dht::ProcessUnitDefinition(
     }
 
     if (!foundValid) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Found results, but none are valid.")
+        LogOutput(OT_METHOD)(__func__)(": Found results, but none are valid.")
             .Flush();
     }
 
     if (!foundData) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": All results are empty.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": All results are empty.").Flush();
     }
 
     return foundData;

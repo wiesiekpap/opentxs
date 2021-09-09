@@ -14,19 +14,19 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT const VersionMap& BasketParamsAllowedBasketItem() noexcept;
-OPENTXS_EXPORT const VersionMap& IssuerAllowedPeerRequestHistory() noexcept;
-OPENTXS_EXPORT const VersionMap& IssuerAllowedUnitAccountMap() noexcept;
-OPENTXS_EXPORT const VersionMap&
-PeerRequestHistoryAllowedPeerRequestWorkflow() noexcept;
-OPENTXS_EXPORT const VersionMap& ServerContractAllowedListenAddress() noexcept;
-OPENTXS_EXPORT const VersionMap& ServerContractAllowedNym() noexcept;
-OPENTXS_EXPORT const VersionMap& ServerContractAllowedSignature() noexcept;
-OPENTXS_EXPORT const VersionMap& UnitDefinitionAllowedBasketParams() noexcept;
-OPENTXS_EXPORT const VersionMap& UnitDefinitionAllowedCurrencyParams() noexcept;
-OPENTXS_EXPORT const VersionMap& UnitDefinitionAllowedNym() noexcept;
-OPENTXS_EXPORT const VersionMap& UnitDefinitionAllowedSecurityParams() noexcept;
-OPENTXS_EXPORT const VersionMap& UnitDefinitionAllowedSignature() noexcept;
+auto BasketParamsAllowedBasketItem() noexcept -> const VersionMap&;
+auto IssuerAllowedPeerRequestHistory() noexcept -> const VersionMap&;
+auto IssuerAllowedUnitAccountMap() noexcept -> const VersionMap&;
+auto PeerRequestHistoryAllowedPeerRequestWorkflow() noexcept
+    -> const VersionMap&;
+auto ServerContractAllowedListenAddress() noexcept -> const VersionMap&;
+auto ServerContractAllowedNym() noexcept -> const VersionMap&;
+auto ServerContractAllowedSignature() noexcept -> const VersionMap&;
+auto UnitDefinitionAllowedBasketParams() noexcept -> const VersionMap&;
+auto UnitDefinitionAllowedCurrencyParams() noexcept -> const VersionMap&;
+auto UnitDefinitionAllowedNym() noexcept -> const VersionMap&;
+auto UnitDefinitionAllowedSecurityParams() noexcept -> const VersionMap&;
+auto UnitDefinitionAllowedSignature() noexcept -> const VersionMap&;
 }  // namespace proto
 }  // namespace opentxs
 #endif  // OPENTXS_PROTOBUF_VERIFYCONTRACTS_HPP

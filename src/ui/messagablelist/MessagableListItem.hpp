@@ -21,10 +21,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -52,7 +49,7 @@ class MessagableListItem final : public implementation::ContactListItem
 public:
     MessagableListItem(
         const ContactListInternalInterface& parent,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const ContactListRowID& rowID,
         const ContactListSortKey& key) noexcept;
     ~MessagableListItem() final = default;

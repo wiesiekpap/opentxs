@@ -17,21 +17,6 @@
 
 struct zmq_msg_t;
 
-#ifdef SWIG
-// clang-format off
-%ignore opentxs::network::zeromq::Frame::bytes;
-%ignore opentxs::network::zeromq::Frame::data;
-%ignore opentxs::network::zeromq::Frame::operator zmq_msg_t*;
-%ignore opentxs::Pimpl<opentxs::network::zeromq::Frame>::Pimpl(opentxs::network::zeromq::Frame const &);
-%ignore opentxs::Pimpl<opentxs::network::zeromq::Frame>::operator opentxs::network::zeromq::Frame&;
-%ignore opentxs::Pimpl<opentxs::network::zeromq::Frame>::operator const opentxs::network::zeromq::Frame &;
-%rename(string) opentxs::network::zeromq::Frame::operator std::string() const;
-%rename(assign) operator=(const opentxs::network::zeromq::Frame&);
-%rename(ZMQFrame) opentxs::network::zeromq::Frame;
-%template(OTZMQFrame) opentxs::Pimpl<opentxs::network::zeromq::Frame>;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace network
@@ -56,7 +41,6 @@ class OPENTXS_EXPORT Frame
 public:
     virtual operator std::string() const noexcept = 0;
 
-#ifndef SWIG
     template <
         typename Output,
         std::enable_if_t<std::is_trivially_copyable<Output>::value, int> = 0>
@@ -75,12 +59,9 @@ public:
 
         return output;
     }
-#endif
 
     virtual auto Bytes() const noexcept -> ReadView = 0;
-#ifndef SWIG
     virtual auto data() const noexcept -> const void* = 0;
-#endif
     virtual auto size() const noexcept -> std::size_t = 0;
 
     virtual operator zmq_msg_t*() noexcept = 0;
@@ -93,12 +74,12 @@ protected:
 private:
     friend OTZMQFrame;
 
-    virtual Frame* clone() const noexcept = 0;
+    virtual auto clone() const noexcept -> Frame* = 0;
 
     Frame(const Frame&) = delete;
     Frame(Frame&&) = delete;
-    Frame& operator=(Frame&&) = delete;
-    Frame& operator=(const Frame&) = delete;
+    auto operator=(Frame&&) -> Frame& = delete;
+    auto operator=(const Frame&) -> Frame& = delete;
 };
 }  // namespace zeromq
 }  // namespace network

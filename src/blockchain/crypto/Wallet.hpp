@@ -19,8 +19,10 @@
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -30,19 +32,17 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
-{
-namespace internal
-{
-class BalanceTreeIndex;
-}  // namespace internal
-}  // namespace client
-
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
+
+namespace blockchain
+{
+namespace crypto
+{
+class Account;
+class AccountIndex;
+}  // namespace crypto
+}  // namespace blockchain
 
 namespace proto
 {
@@ -57,6 +57,8 @@ namespace opentxs::blockchain::crypto::implementation
 class Wallet final : virtual public internal::Wallet
 {
 public:
+    auto Account(const identifier::Nym& id) const noexcept
+        -> crypto::Account& final;
     auto at(const std::size_t position) const noexcept(false)
         -> const_iterator::value_type& final;
     auto begin() const noexcept -> const_iterator final
@@ -79,13 +81,11 @@ public:
     {
         return const_iterator(this, trees_.size());
     }
-    auto Nym(const identifier::Nym& id) const noexcept
-        -> const internal::Account& final
+    auto Internal() const noexcept -> internal::Wallet& final
     {
-        return const_cast<Wallet&>(*this).Nym(id);
+        return const_cast<Wallet&>(*this);
     }
-    auto Parent() const noexcept
-        -> const api::client::internal::Blockchain& final
+    auto Parent() const noexcept -> const api::client::Blockchain& final
     {
         return parent_;
     }
@@ -97,12 +97,11 @@ public:
         const crypto::HDProtocol standard,
         const PasswordPrompt& reason,
         Identifier& id) noexcept -> bool final;
-    auto Nym(const identifier::Nym& id) noexcept -> internal::Account& final;
 
     Wallet(
-        const api::internal::Core& api,
-        const api::client::internal::Blockchain& parent,
-        const api::client::internal::BalanceTreeIndex& index,
+        const api::Core& api,
+        const api::client::Blockchain& parent,
+        const AccountIndex& index,
         const opentxs::blockchain::Type chain) noexcept;
 
     ~Wallet() final = default;
@@ -110,33 +109,33 @@ public:
 private:
     using Accounts = std::set<OTIdentifier>;
 
-    const api::client::internal::Blockchain& parent_;
-    const api::client::internal::BalanceTreeIndex& account_index_;
-    const api::internal::Core& api_;
+    const api::client::Blockchain& parent_;
+    const AccountIndex& account_index_;
+    const api::Core& api_;
     const opentxs::blockchain::Type chain_;
     mutable std::mutex lock_;
-    std::vector<std::unique_ptr<internal::Account>> trees_;
+    std::vector<std::unique_ptr<crypto::Account>> trees_;
     std::map<OTNymID, std::size_t> index_;
 
     using crypto::Wallet::at;
     auto at(const Lock& lock, const std::size_t index) const noexcept(false)
-        -> const internal::Account&;
+        -> const crypto::Account&;
     auto factory(
         const identifier::Nym& nym,
         const Accounts& hd,
         const Accounts& paymentCode) const noexcept
-        -> std::unique_ptr<internal::Account>;
+        -> std::unique_ptr<crypto::Account>;
     using crypto::Wallet::size;
     auto size(const Lock& lock) const noexcept -> std::size_t;
 
     auto add(
         const Lock& lock,
         const identifier::Nym& id,
-        std::unique_ptr<internal::Account> tree) noexcept -> bool;
+        std::unique_ptr<crypto::Account> tree) noexcept -> bool;
     auto at(const Lock& lock, const std::size_t index) noexcept(false)
-        -> internal::Account&;
+        -> crypto::Account&;
     auto get_or_create(const Lock& lock, const identifier::Nym& id) noexcept
-        -> internal::Account&;
+        -> crypto::Account&;
     void init() noexcept;
 
     Wallet(const Wallet&) = delete;

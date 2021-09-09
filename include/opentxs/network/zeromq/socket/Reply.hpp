@@ -11,17 +11,6 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/network/zeromq/curve/Server.hpp"
 
-#ifdef SWIG
-// clang-format off
-%ignore opentxs::Pimpl<opentxs::network::zeromq::socket::Reply>::Pimpl(opentxs::network::zeromq::socket::Reply const &);
-%ignore opentxs::Pimpl<opentxs::network::zeromq::socket::Reply>::operator opentxs::network::zeromq::socket::Reply&;
-%ignore opentxs::Pimpl<opentxs::network::zeromq::socket::Reply>::operator const opentxs::network::zeromq::socket::Reply &;
-%rename(assign) operator=(const opentxs::network::zeromq::socket::Reply&);
-%rename(ZMQReply) opentxs::network::zeromq::socket::Reply;
-%template(OTZMQReplySocket) opentxs::Pimpl<opentxs::network::zeromq::socket::Reply>;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace network
@@ -46,10 +35,10 @@ namespace zeromq
 {
 namespace socket
 {
-class Reply : virtual public curve::Server
+class OPENTXS_EXPORT Reply : virtual public curve::Server
 {
 public:
-    OPENTXS_EXPORT ~Reply() override = default;
+    ~Reply() override = default;
 
 protected:
     Reply() noexcept = default;
@@ -60,15 +49,15 @@ private:
 #ifdef _WIN32
 public:
 #endif
-    OPENTXS_EXPORT virtual Reply* clone() const noexcept = 0;
+    virtual auto clone() const noexcept -> Reply* = 0;
 #ifdef _WIN32
 private:
 #endif
 
     Reply(const Reply&) = delete;
     Reply(Reply&&) = delete;
-    Reply& operator=(const Reply&) = delete;
-    Reply& operator=(Reply&&) = delete;
+    auto operator=(const Reply&) -> Reply& = delete;
+    auto operator=(Reply&&) -> Reply& = delete;
 };
 }  // namespace socket
 }  // namespace zeromq

@@ -20,26 +20,26 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT bool CheckProto_1(const Faucet&, const bool);
-OPENTXS_EXPORT bool CheckProto_2(const Faucet&, const bool);
-OPENTXS_EXPORT bool CheckProto_3(const Faucet&, const bool);
-OPENTXS_EXPORT bool CheckProto_4(const Faucet& request, const bool silent);
-OPENTXS_EXPORT bool CheckProto_5(const Faucet&, const bool);
-OPENTXS_EXPORT bool CheckProto_6(const Faucet&, const bool);
-OPENTXS_EXPORT bool CheckProto_7(const Faucet&, const bool);
-OPENTXS_EXPORT bool CheckProto_8(const Faucet&, const bool);
-OPENTXS_EXPORT bool CheckProto_9(const Faucet&, const bool);
-OPENTXS_EXPORT bool CheckProto_10(const Faucet&, const bool);
-OPENTXS_EXPORT bool CheckProto_11(const Faucet&, const bool);
-OPENTXS_EXPORT bool CheckProto_12(const Faucet&, const bool);
-OPENTXS_EXPORT bool CheckProto_13(const Faucet&, const bool);
-OPENTXS_EXPORT bool CheckProto_14(const Faucet&, const bool);
-OPENTXS_EXPORT bool CheckProto_15(const Faucet&, const bool);
-OPENTXS_EXPORT bool CheckProto_16(const Faucet&, const bool);
-OPENTXS_EXPORT bool CheckProto_17(const Faucet&, const bool);
-OPENTXS_EXPORT bool CheckProto_18(const Faucet&, const bool);
-OPENTXS_EXPORT bool CheckProto_19(const Faucet&, const bool);
-OPENTXS_EXPORT bool CheckProto_20(const Faucet&, const bool);
+auto CheckProto_1(const Faucet&, const bool) -> bool;
+auto CheckProto_2(const Faucet&, const bool) -> bool;
+auto CheckProto_3(const Faucet&, const bool) -> bool;
+auto CheckProto_4(const Faucet& request, const bool silent) -> bool;
+auto CheckProto_5(const Faucet&, const bool) -> bool;
+auto CheckProto_6(const Faucet&, const bool) -> bool;
+auto CheckProto_7(const Faucet&, const bool) -> bool;
+auto CheckProto_8(const Faucet&, const bool) -> bool;
+auto CheckProto_9(const Faucet&, const bool) -> bool;
+auto CheckProto_10(const Faucet&, const bool) -> bool;
+auto CheckProto_11(const Faucet&, const bool) -> bool;
+auto CheckProto_12(const Faucet&, const bool) -> bool;
+auto CheckProto_13(const Faucet&, const bool) -> bool;
+auto CheckProto_14(const Faucet&, const bool) -> bool;
+auto CheckProto_15(const Faucet&, const bool) -> bool;
+auto CheckProto_16(const Faucet&, const bool) -> bool;
+auto CheckProto_17(const Faucet&, const bool) -> bool;
+auto CheckProto_18(const Faucet&, const bool) -> bool;
+auto CheckProto_19(const Faucet&, const bool) -> bool;
+auto CheckProto_20(const Faucet&, const bool) -> bool;
 }  // namespace proto
 }  // namespace opentxs
 

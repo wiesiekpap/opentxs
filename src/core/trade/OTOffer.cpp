@@ -14,8 +14,8 @@
 #include <memory>
 #include <string>
 
-#include "internal/api/Api.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Instrument.hpp"
@@ -37,7 +37,7 @@
 
 namespace opentxs
 {
-OTOffer::OTOffer(const api::internal::Core& core)
+OTOffer::OTOffer(const api::Core& core)
     : Instrument(core)
     , m_pTrade(nullptr)
     , m_CURRENCY_TYPE_ID(api_.Factory().Identifier())
@@ -54,7 +54,7 @@ OTOffer::OTOffer(const api::internal::Core& core)
 }
 
 OTOffer::OTOffer(
-    const api::internal::Core& core,
+    const api::Core& core,
     const identifier::Server& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
     const identifier::UnitDefinition& CURRENCY_ID,
@@ -208,7 +208,7 @@ auto OTOffer::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                               // below error to fire.
 
         if (!isPowerOfTen(lScale)) {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Failure: marketScale *must* be "
                 "1, or a power of 10. Instead I got: ")(lScale)(".")
                 .Flush();
@@ -228,9 +228,8 @@ auto OTOffer::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         if (!strPriceLimit->Exists())
         //      if (lPriceLimit < 1)
         {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
-                ": Failure: priceLimit *must* be "
-                "provided(")(lPriceLimit)(").")
+            LogNormal(OT_METHOD)(__func__)(": Failure: priceLimit *must* be "
+                                           "provided(")(lPriceLimit)(").")
                 .Flush();
             return (-1);
         } else
@@ -244,7 +243,7 @@ auto OTOffer::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                               // the 0 here causes the
                                               // below error to fire.
         if (lTotal < 1) {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Failure: totalAssetsOnOffer "
                 "*must* be larger than 0. Instead I got: ")(lTotal)(".")
                 .Flush();
@@ -259,7 +258,7 @@ auto OTOffer::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                   : 0;  // if it doesn't exist, the 0 here
                                         // causes the below error to fire.
         if (lFinished < 0) {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Failure: finishedSoFar *must* "
                 "be 0 or larger. Instead I got: ")(lFinished)(".")
                 .Flush();
@@ -277,7 +276,7 @@ auto OTOffer::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         // logically be higher than the
         // total assets on offer...
         {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Failure: minimumIncrement "
                 "*must* be 1 or larger, "
                 "and must also be less than the total assets on offer. "
@@ -307,7 +306,7 @@ auto OTOffer::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                   : Time{};
 
         if ((tValidTo < tValidFrom) && (tValidTo != Time{})) {
-            LogNormal(OT_METHOD)(__FUNCTION__)(": Failure: validTo date (")(
+            LogNormal(OT_METHOD)(__func__)(": Failure: validTo date (")(
                 tValidFrom)(") cannot be earlier than "
                             "validFrom date (")(tValidTo)(").")
                 .Flush();
@@ -317,10 +316,11 @@ auto OTOffer::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         SetValidFrom(tValidFrom);
         SetValidTo(tValidTo);
 
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Offer Transaction Number: ")(
+        LogTrace(OT_METHOD)(__func__)(": Offer Transaction Number: ")(
             m_lTransactionNum)("\n Valid From: ")(tValidFrom)("\n Valid To: ")(
-            tValidTo)("\n InstrumentDefinitionID: ")(strInstrumentDefinitionID)(
-            "\n  CurrencyTypeID: ")(strCurrencyTypeID)("\n NotaryID: ")(
+            tValidTo)("\n InstrumentDefinitionID: ")(
+            strInstrumentDefinitionID)("\n  CurrencyTypeID: ")(
+            strCurrencyTypeID)("\n NotaryID: ")(
             strNotaryID)("\n Price Limit: ")(GetPriceLimit())(
             ",  Total Assets on Offer: ")(GetTotalAssetsOnOffer())(",  ")(
             (m_bSelling ? "sold" : "bought"))(" so far: ")(GetFinishedSoFar())(

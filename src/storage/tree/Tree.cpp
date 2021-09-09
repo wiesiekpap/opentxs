@@ -152,8 +152,7 @@ auto Tree::get_child(
         pointer.reset(new T(driver_, hash, params...));
 
         if (false == bool(pointer)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to instantiate.")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Unable to instantiate.").Flush();
 
             OT_FAIL;
         }
@@ -185,7 +184,7 @@ void Tree::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (false == bool(serialized)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load root index file.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to load root index file.")
             .Flush();
 
         OT_FAIL
@@ -222,7 +221,7 @@ auto Tree::Load(std::shared_ptr<proto::Ciphertext>& output, const bool checking)
         return true;
     } else {
         if (false == checking) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Master key does not exist.")
+            LogOutput(OT_METHOD)(__func__)(": Master key does not exist.")
                 .Flush();
         }
     }
@@ -309,7 +308,7 @@ auto Tree::nyms() const -> storage::Nyms*
 auto Tree::save(const Lock& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Lock failure.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Lock failure.").Flush();
         OT_FAIL
     }
 
@@ -328,12 +327,12 @@ void Tree::save_child(
     std::string& hash) const
 {
     if (false == verify_write_lock(lock)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Lock failure.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Lock failure.").Flush();
         OT_FAIL
     }
 
     if (nullptr == input) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Null target.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Null target.").Flush();
         OT_FAIL
     }
 
@@ -342,7 +341,7 @@ void Tree::save_child(
     rootLock.unlock();
 
     if (false == save(lock)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Save error.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Save error.").Flush();
         OT_FAIL
     }
 }

@@ -13,11 +13,11 @@
 #include <utility>
 #include <vector>
 
-#include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -54,7 +54,7 @@ struct UpdateManager::Imp {
         }
     }
 
-    Imp(const api::client::internal::Manager& api) noexcept
+    Imp(const api::client::Manager& api) noexcept
         : api_(api)
         , lock_()
         , map_()
@@ -67,7 +67,7 @@ struct UpdateManager::Imp {
     }
 
 private:
-    const api::client::internal::Manager& api_;
+    const api::client::Manager& api_;
     mutable std::mutex lock_;
     mutable std::map<OTIdentifier, std::vector<SimpleCallback>> map_;
     OTZMQPublishSocket publisher_;
@@ -79,7 +79,7 @@ private:
 
         const auto& frame = in.at(0);
         const auto id = api_.Factory().Identifier(frame);
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Widget ")(id->str())(" updated.")
+        LogTrace(OT_METHOD)(__func__)(": Widget ")(id->str())(" updated.")
             .Flush();
         auto lock = Lock{lock_};
         auto it = map_.find(id);
@@ -99,7 +99,7 @@ private:
     }
 };
 
-UpdateManager::UpdateManager(const api::client::internal::Manager& api) noexcept
+UpdateManager::UpdateManager(const api::client::Manager& api) noexcept
     : imp_(std::make_unique<Imp>(api))
 {
     // WARNING: do not access api_.Wallet() during construction

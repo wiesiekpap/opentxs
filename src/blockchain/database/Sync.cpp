@@ -60,12 +60,12 @@ Sync::Sync(
         OT_ASSERT(saved);
     }
 
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": Sync tip: ")(tip.first).Flush();
+    LogVerbose(OT_METHOD)(__func__)(": Sync tip: ")(tip.first).Flush();
 
     if (const auto ctip = common_.SyncTip(chain_); tip.first == ctip) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Database is consistent").Flush();
+        LogVerbose(OT_METHOD)(__func__)(": Database is consistent").Flush();
     } else {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
+        LogVerbose(OT_METHOD)(__func__)(
             ": Database inconsistency detected. Storage tip height: ")(ctip)
             .Flush();
     }
@@ -96,8 +96,7 @@ auto Sync::Store(const block::Position& tip, const Items& items) const noexcept
     -> bool
 {
     if (false == common_.StoreSync(chain_, items)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to store sync data")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to store sync data").Flush();
 
         return false;
     }

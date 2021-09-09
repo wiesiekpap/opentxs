@@ -53,7 +53,7 @@ static auto create_group(
 }
 
 static auto extract_groups(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& nym,
     const VersionNumber parentVersion,
     const proto::ContactSection& serialized) -> ContactSection::GroupMap
@@ -90,7 +90,7 @@ static auto extract_groups(
 }
 
 struct ContactSection::Imp {
-    const api::internal::Core& api_;
+    const api::Core& api_;
     const VersionNumber version_;
     const std::string nym_;
     const contact::ContactSectionName section_;
@@ -129,7 +129,7 @@ struct ContactSection::Imp {
         return ContactSection(api_, nym_, version, version, section_, groups);
     }
 
-    Imp(const api::internal::Core& api,
+    Imp(const api::Core& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
@@ -163,7 +163,7 @@ struct ContactSection::Imp {
 };
 
 ContactSection::ContactSection(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& nym,
     const VersionNumber version,
     const VersionNumber parentVersion,
@@ -187,7 +187,7 @@ ContactSection::ContactSection(ContactSection&& rhs) noexcept
 }
 
 ContactSection::ContactSection(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& nym,
     const VersionNumber version,
     const VersionNumber parentVersion,
@@ -202,14 +202,14 @@ ContactSection::ContactSection(
           create_group(nym, section, item))
 {
     if (0 == version) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Warning: malformed version. "
-                                           "Setting to ")(parentVersion)(".")
+        LogOutput(OT_METHOD)(__func__)(": Warning: malformed version. "
+                                       "Setting to ")(parentVersion)(".")
             .Flush();
     }
 }
 
 ContactSection::ContactSection(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& nym,
     const VersionNumber parentVersion,
     const proto::ContactSection& serialized)
@@ -224,7 +224,7 @@ ContactSection::ContactSection(
 }
 
 ContactSection::ContactSection(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& nym,
     const VersionNumber parentVersion,
     const ReadView& serialized)
@@ -386,7 +386,7 @@ auto ContactSection::Serialize(AllocateOutput destination, const bool withIDs)
 {
     proto::ContactData data;
     if (false == SerializeTo(data, withIDs) || data.section_size() != 1) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to serialize the contactsection.")
             .Flush();
         return false;

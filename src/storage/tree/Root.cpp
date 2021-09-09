@@ -78,8 +78,7 @@ void Root::cleanup() const
 void Root::collect_garbage(const opentxs::api::storage::Driver* to) const
 {
     Lock lock(write_lock_);
-    LogTrace(OT_METHOD)(__FUNCTION__)(": Beginning garbage collection.")
-        .Flush();
+    LogTrace(OT_METHOD)(__func__)(": Beginning garbage collection.").Flush();
     const auto resume = gc_resume_->Set(false);
     bool oldLocation = false;
 
@@ -103,8 +102,8 @@ void Root::collect_garbage(const opentxs::api::storage::Driver* to) const
     if (success) {
         driver_.EmptyBucket(oldLocation);
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Garbage collection failed. "
-                                           "Will retry next cycle.")
+        LogOutput(OT_METHOD)(__func__)(": Garbage collection failed. "
+                                       "Will retry next cycle.")
             .Flush();
     }
 
@@ -117,7 +116,7 @@ void Root::collect_garbage(const opentxs::api::storage::Driver* to) const
     driver_.StoreRoot(true, root_);
     lock.unlock();
     gcLock.unlock();
-    LogTrace(OT_METHOD)(__FUNCTION__)(": Finished garbage collection.").Flush();
+    LogTrace(OT_METHOD)(__func__)(": Finished garbage collection.").Flush();
 }
 
 void Root::init(const std::string& hash)
@@ -125,7 +124,7 @@ void Root::init(const std::string& hash)
     std::shared_ptr<proto::StorageRoot> serialized;
 
     if (!driver_.LoadProto(hash, serialized)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load root object file.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to load root object file.")
             .Flush();
         OT_FAIL;
     }
@@ -143,7 +142,7 @@ void Root::init(const std::string& hash)
 auto Root::Migrate(const opentxs::api::storage::Driver& to) const -> bool
 {
     if (0 == gc_interval_) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Garbage collection disabled.")
+        LogOutput(OT_METHOD)(__func__)(": Garbage collection disabled.")
             .Flush();
 
         return false;

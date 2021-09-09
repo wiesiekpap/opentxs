@@ -3,6 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/SubaccountType.hpp"
 
 #pragma once
@@ -15,15 +16,15 @@
 #include <string>
 #include <vector>
 
-#include "api/client/Blockchain.hpp"
-#include "api/client/blockchain/BalanceLists.hpp"
+#include "api/client/blockchain/AccountCache.hpp"
+#include "api/client/blockchain/Blockchain.hpp"
+#include "api/client/blockchain/Wallets.hpp"
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
@@ -52,11 +53,6 @@ struct Blockchain;
 class Contacts;
 }  // namespace client
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
 class Core;
 }  // namespace api
 
@@ -66,14 +62,16 @@ namespace crypto
 {
 namespace internal
 {
-struct Account;
 struct Subaccount;
 struct Wallet;
 }  // namespace internal
 
+class Account;
 class Element;
 class HD;
 class PaymentCode;
+class Subaccount;
+class Wallet;
 }  // namespace crypto
 
 namespace node
@@ -81,6 +79,11 @@ namespace node
 class Manager;
 }  // namespace node
 }  // namespace blockchain
+
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
 
 namespace network
 {
@@ -115,59 +118,13 @@ namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::api::client::implementation
 {
-struct AccountCache {
-    auto List(
-        const identifier::Nym& nymID,
-        const opentxs::blockchain::Type chain) const noexcept
-        -> std::set<OTIdentifier>;
-    auto New(
-        const opentxs::blockchain::crypto::SubaccountType type,
-        const opentxs::blockchain::Type chain,
-        const Identifier& account,
-        const identifier::Nym& owner) const noexcept -> void;
-    auto Owner(const Identifier& accountID) const noexcept
-        -> const identifier::Nym&;
-    auto Type(const Identifier& accountID) const noexcept
-        -> opentxs::blockchain::crypto::SubaccountType;
-
-    auto Populate() noexcept -> void;
-
-    AccountCache(const api::Core& api) noexcept;
-
-private:
-    using Accounts = std::set<OTIdentifier>;
-    using NymAccountMap = std::map<OTNymID, Accounts>;
-    using ChainAccountMap =
-        std::map<opentxs::blockchain::Type, std::optional<NymAccountMap>>;
-    using AccountNymIndex = std::map<OTIdentifier, OTNymID>;
-    using AccountTypeIndex =
-        std::map<OTIdentifier, opentxs::blockchain::crypto::SubaccountType>;
-
-    const api::Core& api_;
-    mutable std::mutex lock_;
-    mutable ChainAccountMap account_map_;
-    mutable AccountNymIndex account_index_;
-    mutable AccountTypeIndex account_type_;
-
-    auto build_account_map(
-        const Lock&,
-        const opentxs::blockchain::Type chain,
-        std::optional<NymAccountMap>& map) const noexcept -> void;
-    auto get_account_map(const Lock&, const opentxs::blockchain::Type chain)
-        const noexcept -> NymAccountMap&;
-    auto load_nym(
-        const opentxs::blockchain::Type chain,
-        const identifier::Nym& nym,
-        NymAccountMap& output) const noexcept -> void;
-};
-
 struct Blockchain::Imp {
     using IDLock = std::map<OTIdentifier, std::mutex>;
 
     auto Account(
         const identifier::Nym& nymID,
         const opentxs::blockchain::Type chain) const noexcept(false)
-        -> const opentxs::blockchain::crypto::internal::Account&;
+        -> const opentxs::blockchain::crypto::Account&;
     auto AccountList(const identifier::Nym& nymID) const noexcept
         -> std::set<OTIdentifier>;
     auto AccountList(const opentxs::blockchain::Type chain) const noexcept
@@ -308,24 +265,24 @@ struct Blockchain::Imp {
     virtual auto UpdateElement(
         std::vector<ReadView>& pubkeyHashes) const noexcept -> void;
     auto Wallet(const opentxs::blockchain::Type chain) const noexcept(false)
-        -> const opentxs::blockchain::crypto::internal::Wallet&;
+        -> const opentxs::blockchain::crypto::Wallet&;
 
     virtual auto Init() noexcept -> void;
 
-    Imp(const api::internal::Core& api,
+    Imp(const api::Core& api,
         const api::client::Contacts& contacts,
         api::client::internal::Blockchain& parent) noexcept;
 
     virtual ~Imp() = default;
 
 protected:
-    const api::internal::Core& api_;
+    const api::Core& api_;
     const api::client::Contacts& contacts_;
     const DecodedAddress blank_;
     mutable std::mutex lock_;
     mutable IDLock nym_lock_;
-    mutable AccountCache accounts_;
-    mutable BalanceLists wallets_;
+    mutable blockchain::AccountCache accounts_;
+    mutable blockchain::Wallets wallets_;
 
     auto bip44_type(const contact::ContactItemType type) const noexcept
         -> Bip44Type;
@@ -334,7 +291,7 @@ protected:
     auto decode_legacy(const std::string& encoded) const noexcept
         -> std::optional<DecodedAddress>;
     auto get_node(const Identifier& accountID) const noexcept(false)
-        -> opentxs::blockchain::crypto::internal::Subaccount&;
+        -> opentxs::blockchain::crypto::Subaccount&;
     auto init_path(
         const std::string& root,
         const contact::ContactItemType chain,

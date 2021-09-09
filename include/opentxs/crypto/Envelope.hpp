@@ -40,23 +40,25 @@ public:
     using Recipients = std::set<Nym_p>;
     using SerializedType = proto::Envelope;
 
-    virtual bool Armored(opentxs::Armored& ciphertext) const noexcept = 0;
-    virtual bool Open(
+    virtual auto Armored(opentxs::Armored& ciphertext) const noexcept
+        -> bool = 0;
+    virtual auto Open(
         const identity::Nym& recipient,
         const AllocateOutput plaintext,
-        const PasswordPrompt& reason) const noexcept = 0;
-    virtual bool Serialize(AllocateOutput destination) const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual bool Serialize(
-        SerializedType& serialized) const noexcept = 0;
+        const PasswordPrompt& reason) const noexcept -> bool = 0;
+    virtual auto Serialize(AllocateOutput destination) const noexcept
+        -> bool = 0;
+    OPENTXS_NO_EXPORT virtual auto Serialize(
+        SerializedType& serialized) const noexcept -> bool = 0;
 
-    virtual bool Seal(
+    virtual auto Seal(
         const Recipients& recipients,
         const ReadView plaintext,
-        const PasswordPrompt& reason) noexcept = 0;
-    virtual bool Seal(
+        const PasswordPrompt& reason) noexcept -> bool = 0;
+    virtual auto Seal(
         const identity::Nym& theRecipient,
         const ReadView plaintext,
-        const PasswordPrompt& reason) noexcept = 0;
+        const PasswordPrompt& reason) noexcept -> bool = 0;
 
     virtual ~Envelope() = default;
 
@@ -64,12 +66,12 @@ protected:
     Envelope() = default;
 
 private:
-    virtual Envelope* clone() const noexcept = 0;
+    virtual auto clone() const noexcept -> Envelope* = 0;
 
     Envelope(const Envelope&) = delete;
     Envelope(Envelope&&) = delete;
-    Envelope& operator=(const Envelope&) = delete;
-    Envelope& operator=(Envelope&&) = delete;
+    auto operator=(const Envelope&) -> Envelope& = delete;
+    auto operator=(Envelope&&) -> Envelope& = delete;
 };
 }  // namespace crypto
 }  // namespace opentxs

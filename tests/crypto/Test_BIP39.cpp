@@ -141,7 +141,7 @@ public:
 
     Test_BIP39()
         : api_(ot::Context().StartClient(0))
-        , reason_(api_.Factory().PasswordPrompt(__FUNCTION__))
+        , reason_(api_.Factory().PasswordPrompt(__func__))
     {
     }
 };

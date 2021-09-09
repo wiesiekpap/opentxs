@@ -13,10 +13,23 @@
 
 namespace opentxs
 {
+namespace api
+{
+namespace client
+{
+class Blockchain;
+}  // namespace client
+}  // namespace api
+
 namespace blockchain
 {
 namespace crypto
 {
+namespace internal
+{
+struct Wallet;
+}  // namespace internal
+
 class Account;
 }  // namespace crypto
 }  // namespace blockchain
@@ -32,17 +45,23 @@ class OPENTXS_EXPORT Wallet
 {
 public:
     using const_iterator =
-        opentxs::iterator::Bidirectional<const Wallet, const Account>;
+        opentxs::iterator::Bidirectional<const Wallet, const crypto::Account>;
 
     /// Throws std::out_of_range for invalid position
-    virtual const_iterator::value_type& at(const std::size_t position) const
-        noexcept(false) = 0;
-    virtual const_iterator begin() const noexcept = 0;
-    virtual const_iterator cbegin() const noexcept = 0;
-    virtual const_iterator cend() const noexcept = 0;
-    virtual opentxs::blockchain::Type Chain() const noexcept = 0;
-    virtual const_iterator end() const noexcept = 0;
-    virtual std::size_t size() const noexcept = 0;
+    virtual auto at(const std::size_t position) const noexcept(false)
+        -> const_iterator::value_type& = 0;
+    virtual auto begin() const noexcept -> const_iterator = 0;
+    virtual auto cbegin() const noexcept -> const_iterator = 0;
+    virtual auto cend() const noexcept -> const_iterator = 0;
+    virtual auto Chain() const noexcept -> opentxs::blockchain::Type = 0;
+    virtual auto end() const noexcept -> const_iterator = 0;
+    virtual auto size() const noexcept -> std::size_t = 0;
+
+    virtual auto Account(const identifier::Nym& id) const noexcept
+        -> Account& = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
+        -> internal::Wallet& = 0;
+    virtual auto Parent() const noexcept -> const api::client::Blockchain& = 0;
 
     OPENTXS_NO_EXPORT virtual ~Wallet() = default;
 
@@ -52,8 +71,8 @@ protected:
 private:
     Wallet(const Wallet&) = delete;
     Wallet(Wallet&&) = delete;
-    Wallet& operator=(const Wallet&) = delete;
-    Wallet& operator=(Wallet&&) = delete;
+    auto operator=(const Wallet&) -> Wallet& = delete;
+    auto operator=(Wallet&&) -> Wallet& = delete;
 };
 }  // namespace crypto
 }  // namespace blockchain

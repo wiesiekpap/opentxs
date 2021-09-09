@@ -71,7 +71,7 @@ auto Credentials::check_existing(const bool incoming, Metadata& metadata) const
         std::shared_ptr<proto::Credential> existing;
 
         if (!driver_.LoadProto(hash, existing, false)) {
-            std::cerr << __FUNCTION__ << ": Failed to load object" << std::endl;
+            std::cerr << __func__ << ": Failed to load object" << std::endl;
             abort();
         }
 
@@ -94,7 +94,7 @@ void Credentials::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (!serialized) {
-        std::cerr << __FUNCTION__ << ": Failed to load credentials index file."
+        std::cerr << __func__ << ": Failed to load credentials index file."
                   << std::endl;
         abort();
     }
@@ -117,7 +117,7 @@ auto Credentials::Load(
 
     if (!exists) {
         if (!checking) {
-            std::cerr << __FUNCTION__ << ": Error: credential with id " << id
+            std::cerr << __func__ << ": Error: credential with id " << id
                       << " does not exist." << std::endl;
         }
 
@@ -141,7 +141,7 @@ auto Credentials::Load(
 auto Credentials::save(const std::unique_lock<std::mutex>& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
-        std::cerr << __FUNCTION__ << ": Lock failure." << std::endl;
+        std::cerr << __func__ << ": Lock failure." << std::endl;
         abort();
     }
 

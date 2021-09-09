@@ -14,23 +14,23 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT const VersionMap& PeerObjectAllowedNym() noexcept;
-OPENTXS_EXPORT const VersionMap& PeerObjectAllowedPeerReply() noexcept;
-OPENTXS_EXPORT const VersionMap& PeerObjectAllowedPeerRequest() noexcept;
-OPENTXS_EXPORT const VersionMap& PeerObjectAllowedPurse() noexcept;
-OPENTXS_EXPORT const VersionMap& PeerReplyAllowedBailment() noexcept;
-OPENTXS_EXPORT const VersionMap& PeerReplyAllowedConnectionInfo() noexcept;
-OPENTXS_EXPORT const VersionMap& PeerReplyAllowedNotice() noexcept;
-OPENTXS_EXPORT const VersionMap& PeerReplyAllowedOutBailment() noexcept;
-OPENTXS_EXPORT const VersionMap& PeerReplyAllowedSignature() noexcept;
-OPENTXS_EXPORT const VersionMap& PeerRequestAllowedBailment() noexcept;
-OPENTXS_EXPORT const VersionMap& PeerRequestAllowedConnectionInfo() noexcept;
-OPENTXS_EXPORT const VersionMap& PeerRequestAllowedFaucet() noexcept;
-OPENTXS_EXPORT const VersionMap& PeerRequestAllowedOutBailment() noexcept;
-OPENTXS_EXPORT const VersionMap& PeerRequestAllowedPendingBailment() noexcept;
-OPENTXS_EXPORT const VersionMap& PeerRequestAllowedSignature() noexcept;
-OPENTXS_EXPORT const VersionMap& PeerRequestAllowedStoreSecret() noexcept;
-OPENTXS_EXPORT const VersionMap& PeerRequestAllowedVerificationOffer() noexcept;
+auto PeerObjectAllowedNym() noexcept -> const VersionMap&;
+auto PeerObjectAllowedPeerReply() noexcept -> const VersionMap&;
+auto PeerObjectAllowedPeerRequest() noexcept -> const VersionMap&;
+auto PeerObjectAllowedPurse() noexcept -> const VersionMap&;
+auto PeerReplyAllowedBailment() noexcept -> const VersionMap&;
+auto PeerReplyAllowedConnectionInfo() noexcept -> const VersionMap&;
+auto PeerReplyAllowedNotice() noexcept -> const VersionMap&;
+auto PeerReplyAllowedOutBailment() noexcept -> const VersionMap&;
+auto PeerReplyAllowedSignature() noexcept -> const VersionMap&;
+auto PeerRequestAllowedBailment() noexcept -> const VersionMap&;
+auto PeerRequestAllowedConnectionInfo() noexcept -> const VersionMap&;
+auto PeerRequestAllowedFaucet() noexcept -> const VersionMap&;
+auto PeerRequestAllowedOutBailment() noexcept -> const VersionMap&;
+auto PeerRequestAllowedPendingBailment() noexcept -> const VersionMap&;
+auto PeerRequestAllowedSignature() noexcept -> const VersionMap&;
+auto PeerRequestAllowedStoreSecret() noexcept -> const VersionMap&;
+auto PeerRequestAllowedVerificationOffer() noexcept -> const VersionMap&;
 }  // namespace proto
 }  // namespace opentxs
 #endif  // OPENTXS_PROTOBUF_VERIFYPEER_HPP

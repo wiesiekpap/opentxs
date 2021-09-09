@@ -210,7 +210,7 @@ struct Output::Imp {
             ++inputIndex;
 
             if (false == check_proposals(lock, outpoint, block, copy.ID())) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error updating proposals")
+                LogOutput(OT_METHOD)(__func__)(": Error updating proposals")
                     .Flush();
 
                 return false;
@@ -222,7 +222,7 @@ struct Output::Imp {
 
                 if (!copy.AssociatePreviousOutput(
                         blockchain_, inputIndex, proto)) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Error associating previous output to input")
                         .Flush();
 
@@ -231,7 +231,7 @@ struct Output::Imp {
 
                 if (false ==
                     change_state(lock, outpoint, serialized, consumed, block)) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Error updating consumed output state")
                         .Flush();
 
@@ -268,7 +268,7 @@ struct Output::Imp {
 
                 if (false ==
                     change_state(lock, outpoint, serialized, created, block)) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Error updating created output state")
                         .Flush();
 
@@ -277,7 +277,7 @@ struct Output::Imp {
             } catch (...) {
                 if (false ==
                     create_state(lock, outpoint, created, block, output)) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Error created new output state")
                         .Flush();
 
@@ -286,7 +286,7 @@ struct Output::Imp {
             }
 
             if (false == associate(lock, outpoint, account, subchain)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Error associating outpoint to subchain")
                     .Flush();
 
@@ -306,15 +306,15 @@ struct Output::Imp {
                 const auto& owner = blockchain_.Owner(key);
 
                 if (owner.empty()) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
-                        ": No owner found for key ")(opentxs::print(key))
+                    LogOutput(OT_METHOD)(__func__)(": No owner found for key ")(
+                        opentxs::print(key))
                         .Flush();
 
                     OT_FAIL;
                 }
 
                 if (false == associate(lock, outpoint, owner)) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Error associating outpoint to nym")
                         .Flush();
 
@@ -327,7 +327,7 @@ struct Output::Imp {
             "Save a received blockchain transaction");
 
         if (false == transactions_.Add(chain_, block, copy, reason)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error adding transaction to database")
                 .Flush();
 
@@ -388,16 +388,15 @@ struct Output::Imp {
 
             try {
                 if (proposalID != proposal_reverse_index_.at(outpoint)) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
-                        ": Incorrect proposal ID")
+                    LogOutput(OT_METHOD)(__func__)(": Incorrect proposal ID")
                         .Flush();
 
                     return false;
                 }
             } catch (...) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": Input spending")(outpoint.str())(" not registered with "
-                                                        "a proposal")
+                LogOutput(OT_METHOD)(__func__)(": Input spending")(
+                    outpoint.str())(" not registered with "
+                                    "a proposal")
                     .Flush();
 
                 return false;
@@ -415,14 +414,14 @@ struct Output::Imp {
             const auto keys = output.Keys();
 
             if (0 == keys.size()) {
-                LogTrace(OT_METHOD)(__FUNCTION__)(
-                    ": output ")(index)(" belongs to someone else")
+                LogTrace(OT_METHOD)(__func__)(": output ")(
+                    index)(" belongs to someone else")
                     .Flush();
 
                 continue;
             } else {
-                LogTrace(OT_METHOD)(__FUNCTION__)(
-                    ": output ")(index)(" belongs to me")
+                LogTrace(OT_METHOD)(__func__)(": output ")(
+                    index)(" belongs to me")
                     .Flush();
             }
 
@@ -441,7 +440,7 @@ struct Output::Imp {
                                  serialized,
                                  TxoState::UnconfirmedNew,
                                  blank_)) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Error updating created output state")
                         .Flush();
 
@@ -454,7 +453,7 @@ struct Output::Imp {
                                  TxoState::UnconfirmedNew,
                                  blank_,
                                  output)) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Error creating new output state")
                         .Flush();
 
@@ -466,7 +465,7 @@ struct Output::Imp {
                 const auto& owner = blockchain_.Owner(key);
 
                 if (false == associate(lock, outpoint, key)) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Error associating output to subchain")
                         .Flush();
 
@@ -474,7 +473,7 @@ struct Output::Imp {
                 }
 
                 if (false == associate(lock, outpoint, owner)) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Error associating output to nym")
                         .Flush();
 
@@ -487,7 +486,7 @@ struct Output::Imp {
             "Save an outgoing blockchain transaction");
 
         if (false == transactions_.Add(chain_, blank_, transaction, reason)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error adding transaction to database")
                 .Flush();
 
@@ -515,8 +514,8 @@ struct Output::Imp {
                              id,
                              TxoState::UnconfirmedSpend,
                              TxoState::ConfirmedNew)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": failed to reclaim outpoint ")(id.str())
+                LogOutput(OT_METHOD)(__func__)(": failed to reclaim outpoint ")(
+                    id.str())
                     .Flush();
 
                 return false;
@@ -531,7 +530,7 @@ struct Output::Imp {
                              id,
                              TxoState::UnconfirmedNew,
                              TxoState::OrphanedNew)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": failed to orphan canceled outpoint ")(id.str())
                     .Flush();
 
@@ -566,8 +565,8 @@ struct Output::Imp {
 
             proposal_spent_index_[id].emplace(outpoint);
             proposal_reverse_index_.emplace(outpoint, id);
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
-                ": Reserving output ")(outpoint.str())
+            LogVerbose(OT_METHOD)(__func__)(": Reserving output ")(
+                outpoint.str())
                 .Flush();
 
             return output;
@@ -579,7 +578,7 @@ struct Output::Imp {
                 if (utxo.has_value()) { return utxo; }
             }
 
-            LogTrace(OT_METHOD)(__FUNCTION__)(
+            LogTrace(OT_METHOD)(__func__)(
                 ": No spendable outputs for this group")
                 .Flush();
 
@@ -596,7 +595,7 @@ struct Output::Imp {
             if (output.has_value()) { return output; }
         }
 
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": No spendable outputs for specified nym")
             .Flush();
 
@@ -647,7 +646,7 @@ struct Output::Imp {
             if (state.has_value() &&
                 (!change_state(
                     lock, id, serialized, state.value(), position))) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Failed to update output state")
                     .Flush();
 
@@ -667,7 +666,7 @@ struct Output::Imp {
             }
 
             if (false == transactions_.Rollback(position.first, txid)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Failed to update transaction history")
                     .Flush();
 
@@ -762,7 +761,7 @@ private:
         }
 
         if (0 == output.key_size()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": No keys").Flush();
+            LogOutput(OT_METHOD)(__func__)(": No keys").Flush();
         }
 
         return false;
@@ -1085,23 +1084,20 @@ private:
         const auto& confirmed = output[TxoState::ConfirmedNew];
         const auto& pending = output[TxoState::UnconfirmedSpend];
         const auto& spent = output[TxoState::ConfirmedSpend];
-        LogTrace(OT_METHOD)(__FUNCTION__)(
-            ": Instance ")(api_.Instance())(" TXO database contents:")
+        LogTrace(OT_METHOD)(__func__)(": Instance ")(api_.Instance())(
+            " TXO database contents:")
             .Flush();
-        LogTrace(OT_METHOD)(__FUNCTION__)(
-            ": Unconfirmed available value: ")(unconfirmed.total_)(unconfirmed
-                                                                       .text_
-                                                                       .str())
+        LogTrace(OT_METHOD)(__func__)(": Unconfirmed available value: ")(
+            unconfirmed.total_)(unconfirmed.text_.str())
             .Flush();
-        LogTrace(OT_METHOD)(__FUNCTION__)(
-            ": Confirmed available value: ")(confirmed.total_)(confirmed.text_
-                                                                   .str())
+        LogTrace(OT_METHOD)(__func__)(": Confirmed available value: ")(
+            confirmed.total_)(confirmed.text_.str())
             .Flush();
-        LogTrace(OT_METHOD)(__FUNCTION__)(
-            ": Unconfirmed spent value: ")(pending.total_)(pending.text_.str())
+        LogTrace(OT_METHOD)(__func__)(": Unconfirmed spent value: ")(
+            pending.total_)(pending.text_.str())
             .Flush();
-        LogTrace(OT_METHOD)(__FUNCTION__)(
-            ": Confirmed spent value: ")(spent.total_)(spent.text_.str())
+        LogTrace(OT_METHOD)(__func__)(": Confirmed spent value: ")(
+            spent.total_)(spent.text_.str())
             .Flush();
     }
 
@@ -1153,7 +1149,7 @@ private:
             const auto& [state, position, data] = serialized;
 
             if (state != oldState) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": incorrect state for outpoint ")(id.str())
                     .Flush();
 
@@ -1162,8 +1158,8 @@ private:
 
             return change_state(lock, id, serialized, newState, blank_);
         } catch (...) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": outpoint ")(id.str())(" does not exist")
+            LogOutput(OT_METHOD)(__func__)(": outpoint ")(id.str())(
+                " does not exist")
                 .Flush();
 
             return false;
@@ -1180,8 +1176,8 @@ private:
 
             return change_state(lock, id, serialized, newState, newPosition);
         } catch (...) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": outpoint ")(id.str())(" does not exist")
+            LogOutput(OT_METHOD)(__func__)(": outpoint ")(id.str())(
+                " does not exist")
                 .Flush();
 
             return false;
@@ -1238,7 +1234,7 @@ private:
                         lock, outpoint, TxoState::OrphanedNew, block);
 
                     if (false == changed) {
-                        LogOutput(OT_METHOD)(__FUNCTION__)(
+                        LogOutput(OT_METHOD)(__func__)(
                             ": Failed to update txo state")
                             .Flush();
 
@@ -1270,8 +1266,7 @@ private:
         const block::bitcoin::Output& output) noexcept -> bool
     {
         if (0 < outputs_.count(id)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Outpoint already exists in db")
+            LogOutput(OT_METHOD)(__func__)(": Outpoint already exists in db")
                 .Flush();
 
             return false;
@@ -1283,8 +1278,7 @@ private:
             auto data = block::bitcoin::Output::SerializeType{};
 
             if (false == output.Serialize(blockchain_, data)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": Failed to serialize output")
+                LogOutput(OT_METHOD)(__func__)(": Failed to serialize output")
                     .Flush();
 
                 return false;

@@ -60,8 +60,8 @@ auto Wallet::AssociateTransaction(
     const Txid& txid,
     const std::vector<PatternID>& in) const noexcept -> bool
 {
-    LogTrace(OT_METHOD)(__FUNCTION__)(
-        ": Transaction ")(txid.asHex())(" is associated with patterns:")
+    LogTrace(OT_METHOD)(__func__)(": Transaction ")(txid.asHex())(
+        " is associated with patterns:")
         .Flush();
     // TODO transaction data never changes so indexing should only happen
     // once.
@@ -88,7 +88,7 @@ auto Wallet::AssociateTransaction(
         std::back_inserter(removedElements));
 
     if (0 < newElements.size()) {
-        LogTrace(OT_METHOD)(__FUNCTION__)(": New patterns:").Flush();
+        LogTrace(OT_METHOD)(__func__)(": New patterns:").Flush();
     }
 
     std::for_each(
@@ -100,7 +100,7 @@ auto Wallet::AssociateTransaction(
         });
 
     if (0 < removedElements.size()) {
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Obsolete patterns:").Flush();
+        LogTrace(OT_METHOD)(__func__)(": Obsolete patterns:").Flush();
     }
 
     std::for_each(
@@ -138,7 +138,7 @@ auto Wallet::LoadTransaction(const ReadView txid) const noexcept
         return proto::Factory<proto::BlockchainTransaction>(
             bulk_.ReadView(index));
     } catch (const std::exception& e) {
-        LogTrace(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogTrace(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return std::nullopt;
     }
@@ -192,7 +192,7 @@ auto Wallet::StoreTransaction(
                 lmdb_.Store(transaction_table_, hash, tsv(index), tx);
 
             if (false == result.first) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Failed to update index for transaction ")(hash)
                     .Flush();
 
@@ -223,7 +223,7 @@ auto Wallet::StoreTransaction(
 
         return true;
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }

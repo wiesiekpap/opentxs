@@ -13,8 +13,8 @@
 namespace
 {
 
-opentxs::Account::AccountType TranslateAccountTypeStringToEnum(
-    const opentxs::String& acctTypeString)
+auto TranslateAccountTypeStringToEnum(const opentxs::String& acctTypeString)
+    -> opentxs::Account::AccountType
 {
     opentxs::Account::AccountType acctType = opentxs::Account::err_acct;
 

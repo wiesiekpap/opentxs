@@ -26,7 +26,7 @@ namespace opentxs
 using ReturnType = contract::unit::implementation::Security;
 
 auto Factory::SecurityContract(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const std::string& shortname,
     const std::string& name,
@@ -58,7 +58,7 @@ auto Factory::SecurityContract(
 }
 
 auto Factory::SecurityContract(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const proto::UnitDefinition serialized) noexcept
     -> std::shared_ptr<contract::unit::Security>
@@ -85,7 +85,7 @@ auto Factory::SecurityContract(
 namespace opentxs::contract::unit::implementation
 {
 Security::Security(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const std::string& shortname,
     const std::string& name,
@@ -100,7 +100,7 @@ Security::Security(
 }
 
 Security::Security(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const proto::UnitDefinition serialized)
     : Unit(api, nym, serialized)

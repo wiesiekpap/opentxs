@@ -13,17 +13,6 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/network/zeromq/socket/Sender.hpp"
 
-#ifdef SWIG
-// clang-format off
-%ignore opentxs::Pimpl<opentxs::network::zeromq::socket::Pair>::Pimpl(opentxs::network::zeromq::socket::Pair const &);
-%ignore opentxs::Pimpl<opentxs::network::zeromq::socket::Pair>::operator opentxs::network::zeromq::socket::Pair&;
-%ignore opentxs::Pimpl<opentxs::network::zeromq::socket::Pair>::operator const opentxs::network::zeromq::socket::Pair &;
-%rename(assign) operator=(const opentxs::network::zeromq::socket::Pair&);
-%rename(ZMQPair) opentxs::network::zeromq::socket::Pair;
-%template(OTZMQPairSocket) opentxs::Pimpl<opentxs::network::zeromq::socket::Pair>;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace network
@@ -48,12 +37,12 @@ namespace zeromq
 {
 namespace socket
 {
-class Pair : virtual public socket::Socket, virtual public Sender
+class OPENTXS_EXPORT Pair : virtual public socket::Socket, virtual public Sender
 {
 public:
-    OPENTXS_EXPORT virtual const std::string& Endpoint() const noexcept = 0;
+    virtual auto Endpoint() const noexcept -> const std::string& = 0;
 
-    OPENTXS_EXPORT ~Pair() override = default;
+    ~Pair() override = default;
 
 protected:
     Pair() noexcept = default;
@@ -61,12 +50,12 @@ protected:
 private:
     friend OTZMQPairSocket;
 
-    virtual Pair* clone() const noexcept = 0;
+    virtual auto clone() const noexcept -> Pair* = 0;
 
     Pair(const Pair&) = delete;
     Pair(Pair&&) = delete;
-    Pair& operator=(const Pair&) = delete;
-    Pair& operator=(Pair&&) = delete;
+    auto operator=(const Pair&) -> Pair& = delete;
+    auto operator=(Pair&&) -> Pair& = delete;
 };
 }  // namespace socket
 }  // namespace zeromq

@@ -16,10 +16,26 @@ namespace blockchain
 {
 namespace crypto
 {
+namespace internal
+{
+struct Imported;
+}  // namespace internal
+}  // namespace crypto
+}  // namespace blockchain
+}  // namespace opentxs
+
+namespace opentxs
+{
+namespace blockchain
+{
+namespace crypto
+{
 class OPENTXS_EXPORT Imported : virtual public Subaccount
 {
 public:
-    virtual ECKey Key() const = 0;
+    OPENTXS_NO_EXPORT virtual auto InternalImported() const noexcept
+        -> internal::Imported& = 0;
+    virtual auto Key() const -> ECKey = 0;
 
     OPENTXS_NO_EXPORT ~Imported() override = default;
 
@@ -29,8 +45,8 @@ protected:
 private:
     Imported(const Imported&) = delete;
     Imported(Imported&&) = delete;
-    Imported& operator=(const Imported&) = delete;
-    Imported& operator=(Imported&&) = delete;
+    auto operator=(const Imported&) -> Imported& = delete;
+    auto operator=(Imported&&) -> Imported& = delete;
 };
 }  // namespace crypto
 }  // namespace blockchain

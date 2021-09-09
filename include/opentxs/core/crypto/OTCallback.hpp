@@ -10,12 +10,6 @@
 
 #include <string>
 
-#ifdef SWIG
-// clang-format off
-%feature("director") OTCallback;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 class Secret;

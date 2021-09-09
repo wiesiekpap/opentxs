@@ -55,7 +55,7 @@ auto SymmetricKey() noexcept -> std::unique_ptr<crypto::key::Symmetric>
 using ReturnType = crypto::key::implementation::Symmetric;
 
 auto SymmetricKey(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::SymmetricProvider& engine,
     const opentxs::PasswordPrompt& reason,
     const opentxs::crypto::key::symmetric::Algorithm mode) noexcept
@@ -86,7 +86,7 @@ auto SymmetricKey(
 }
 
 auto SymmetricKey(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::SymmetricProvider& engine,
     const proto::SymmetricKey serialized) noexcept
     -> std::unique_ptr<crypto::key::Symmetric>
@@ -100,7 +100,7 @@ auto SymmetricKey(
 }
 
 auto SymmetricKey(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::SymmetricProvider& engine,
     const Secret& seed,
     const std::uint64_t operations,
@@ -117,7 +117,7 @@ auto SymmetricKey(
 }
 
 auto SymmetricKey(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::SymmetricProvider& engine,
     const Secret& seed,
     const ReadView salt,
@@ -140,7 +140,7 @@ auto SymmetricKey(
 }
 
 auto SymmetricKey(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::SymmetricProvider& engine,
     const Secret& raw,
     const opentxs::PasswordPrompt& reason) noexcept
@@ -169,7 +169,7 @@ auto Symmetric::Factory() -> OTSymmetricKey
 namespace opentxs::crypto::key::implementation
 {
 Symmetric::Symmetric(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::SymmetricProvider& engine,
     const VersionNumber version,
     const crypto::key::symmetric::Source type,
@@ -203,7 +203,7 @@ Symmetric::Symmetric(
 }
 
 Symmetric::Symmetric(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::SymmetricProvider& engine)
     : Symmetric(
           api,
@@ -221,7 +221,7 @@ Symmetric::Symmetric(
 }
 
 Symmetric::Symmetric(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::SymmetricProvider& engine,
     const proto::SymmetricKey serialized)
     : Symmetric(
@@ -240,7 +240,7 @@ Symmetric::Symmetric(
 }
 
 Symmetric::Symmetric(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::SymmetricProvider& engine,
     const Secret& seed,
     const ReadView salt,
@@ -640,7 +640,7 @@ auto Symmetric::get_password(
     } else {
         auto buffer = api_.Factory().Secret(0);
         buffer->Randomize(1024);
-        auto* callback = api_.GetInternalPasswordCallback();
+        auto* callback = api_.Internal().GetInternalPasswordCallback();
 
         OT_ASSERT(nullptr != callback);
 

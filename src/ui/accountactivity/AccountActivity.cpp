@@ -11,10 +11,10 @@
 #include <memory>
 #include <utility>
 
-#include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -26,7 +26,7 @@
 namespace opentxs::ui::implementation
 {
 AccountActivity::AccountActivity(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const Identifier& accountID,
     const AccountType type,

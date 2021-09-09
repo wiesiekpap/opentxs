@@ -72,7 +72,7 @@ struct Transaction::Imp {
 
             return true;
         } catch (...) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": No transaction history at block ")(block)
                 .Flush();
 

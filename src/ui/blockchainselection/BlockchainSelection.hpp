@@ -42,10 +42,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 
 namespace network
@@ -100,7 +97,7 @@ public:
     auto Set(EnabledCallback&& cb) const noexcept -> void final;
 
     BlockchainSelection(
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const api::network::internal::Blockchain& blockchain,
         const ui::Blockchains type,
         const SimpleCallback& cb) noexcept;

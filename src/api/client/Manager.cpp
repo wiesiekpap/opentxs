@@ -59,9 +59,11 @@ auto ClientManager(
     const api::Crypto& crypto,
     const network::zeromq::Context& context,
     const std::string& dataFolder,
-    const int instance) -> api::client::internal::Manager*
+    const int instance) noexcept -> std::unique_ptr<api::client::Manager>
 {
-    return new api::client::implementation::Manager(
+    using ReturnType = api::client::implementation::Manager;
+
+    return std::make_unique<ReturnType>(
         parent,
         running,
         std::move(args),
@@ -179,8 +181,7 @@ auto Manager::Blockchain() const -> const api::client::Blockchain&
 
 void Manager::Cleanup()
 {
-    LogDetail(OT_METHOD)(__FUNCTION__)(": Shutting down and cleaning up.")
-        .Flush();
+    LogDetail(OT_METHOD)(__func__)(": Shutting down and cleaning up.").Flush();
     shutdown_sender_.Activate();
     ui_->Shutdown();
     ui_.reset();

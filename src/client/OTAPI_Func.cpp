@@ -11,9 +11,9 @@
 #include <map>
 #include <string>
 
-#include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -84,7 +84,7 @@ const std::map<OTAPI_Func_Type, bool> OTAPI_Func::type_type_{
 OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     std::recursive_mutex& apiLock,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID,
     const OTAPI_Func_Type type)
@@ -148,7 +148,7 @@ OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     OTAPI_Func_Type theType,
     std::recursive_mutex& apilock,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID)
     : OTAPI_Func(reason, apilock, api, nymID, serverID, theType)
@@ -166,7 +166,7 @@ OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     OTAPI_Func_Type theType,
     std::recursive_mutex& apilock,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID,
     const proto::UnitDefinition& unitDefinition,
@@ -179,7 +179,7 @@ OTAPI_Func::OTAPI_Func(
             label_ = label;
         } break;
         default: {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
                 .Flush();
             OT_FAIL
@@ -191,7 +191,7 @@ OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     OTAPI_Func_Type theType,
     std::recursive_mutex& apilock,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID,
     const identifier::Nym& nymID2)
@@ -205,7 +205,7 @@ OTAPI_Func::OTAPI_Func(
             accountID_ = nymID2;
         } break;
         default: {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
                 .Flush();
             OT_FAIL
@@ -217,7 +217,7 @@ OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     OTAPI_Func_Type theType,
     std::recursive_mutex& apilock,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID,
     const Identifier& recipientID,
@@ -234,7 +234,7 @@ OTAPI_Func::OTAPI_Func(
             paymentPlan_.reset(paymentPlan.release());
         } break;
         default: {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
                 .Flush();
             OT_FAIL
@@ -246,7 +246,7 @@ OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     OTAPI_Func_Type theType,
     std::recursive_mutex& apilock,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID,
     const identifier::Nym& nymID2,
@@ -269,7 +269,7 @@ OTAPI_Func::OTAPI_Func(
             transactionNumber_ = int64val;
         } break;
         default: {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
                 .Flush();
             OT_FAIL
@@ -281,7 +281,7 @@ OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     OTAPI_Func_Type theType,
     std::recursive_mutex& apilock,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID,
     const TransactionNumber& transactionNumber,
@@ -293,11 +293,11 @@ OTAPI_Func::OTAPI_Func(
         "Warning: Empty std::string passed to OTAPI_Func.OTAPI_Func() as: ";
 
     if (!VerifyStringVal(clause)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": clause.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": clause.").Flush();
     }
 
     if (!VerifyStringVal(parameter)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": parameter.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": parameter.").Flush();
     }
 
     nTransNumsNeeded_ = 1;
@@ -307,7 +307,7 @@ OTAPI_Func::OTAPI_Func(
         clause_ = clause;
         parameter_ = parameter;
     } else {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func(). "
             "ERROR!!!!!!")
             .Flush();
@@ -319,7 +319,7 @@ OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     OTAPI_Func_Type theType,
     std::recursive_mutex& apilock,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID,
     const Identifier& accountID,
@@ -331,7 +331,7 @@ OTAPI_Func::OTAPI_Func(
         "Warning: Empty std::string passed to OTAPI_Func.OTAPI_Func() as: ";
 
     if (!VerifyStringVal(agentName)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": agentName.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": agentName.").Flush();
     }
 
     nTransNumsNeeded_ = 1;
@@ -349,7 +349,7 @@ OTAPI_Func::OTAPI_Func(
 
         if (nNumsNeeded > 0) { nTransNumsNeeded_ = nNumsNeeded; }
     } else {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func(). "
             "ERROR!!!!!!")
             .Flush();
@@ -361,7 +361,7 @@ OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     OTAPI_Func_Type theType,
     std::recursive_mutex& apilock,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID,
     const identifier::Nym& nymID2,
@@ -384,7 +384,7 @@ OTAPI_Func::OTAPI_Func(
             recipientID_ = nymID2;
         } break;
         default: {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func(). "
                 "ERROR!!!!!!")
                 .Flush();
@@ -397,7 +397,7 @@ OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     OTAPI_Func_Type theType,
     std::recursive_mutex& apilock,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID,
     const identifier::UnitDefinition& instrumentDefinitionID,
@@ -423,7 +423,7 @@ OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     OTAPI_Func_Type theType,
     std::recursive_mutex& apilock,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID,
     const Identifier& assetAccountID,
@@ -454,7 +454,7 @@ OTAPI_Func::OTAPI_Func(
             activationPrice_ = activationPrice;
         } break;
         default: {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
                 .Flush();
             OT_FAIL
@@ -464,7 +464,7 @@ OTAPI_Func::OTAPI_Func(
 
 auto OTAPI_Func::Run(const std::size_t) -> std::string
 {
-    LogNormal(OT_METHOD)(__FUNCTION__)(": Not implemented").Flush();
+    LogNormal(OT_METHOD)(__func__)(": Not implemented").Flush();
 
     return {};
 }
@@ -581,7 +581,7 @@ void OTAPI_Func::run()
                 if (!STOP_SIGN.empty() &&
                     ((ACTIVATION_PRICE == 0) ||
                      ((cStopSign != '<') && (cStopSign != '>')))) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": If STOP_SIGN is provided, it must be < "
                         "or >, and in that case ACTIVATION_PRICE "
                         "must be non-zero.")
@@ -602,7 +602,7 @@ void OTAPI_Func::run()
 
                 if (str_asset_notary_id.empty() ||
        str_currency_notary_id.empty() || str_asset_nym_id.empty() ||
-       str_currency_nym_id.empty()) { LogOutput(OT_METHOD)(__FUNCTION__)(
+       str_currency_nym_id.empty()) { LogOutput(OT_METHOD)(__func__)(
                         ": Failed determining server or nym ID for "
                         "either asset or currency account.")
                         .Flush();
@@ -628,7 +628,7 @@ void OTAPI_Func::run()
                     api_.OTAPI().usageCredits(context_, targetID_, adjustment_);
             } break;
             default: {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: unhandled function
+                LogOutput(OT_METHOD)(__func__)(": Error: unhandled function
        " "type: ")(type_)(".") .Flush();
 
                 OT_FAIL;

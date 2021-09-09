@@ -77,7 +77,7 @@ void OTClause::Serialize(Tag& parent) const
     if (m_strCode->GetLength() > 2)
         ascCode->SetString(m_strCode);
     else
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Empty script code in OTClause::Serialize().")
             .Flush();
 
@@ -92,14 +92,14 @@ void OTClause::Serialize(Tag& parent) const
 auto OTClause::Compare(const OTClause& rhs) const -> bool
 {
     if (!(GetName().Compare(rhs.GetName()))) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Names don't match: ")(GetName())(
+        LogNormal(OT_METHOD)(__func__)(": Names don't match: ")(GetName())(
             " / ")(rhs.GetName())(".")
             .Flush();
         return false;
     }
 
     if (!(m_strCode->Compare(rhs.GetCode()))) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Source code for interpreted script fails "
             "to match, on clause: ")(GetName())(".")
             .Flush();

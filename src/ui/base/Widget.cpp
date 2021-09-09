@@ -12,6 +12,7 @@
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -39,12 +40,12 @@ auto verify_empty(const CustomData& custom) noexcept -> bool
 }
 
 Widget::Widget(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const Identifier& id,
     const SimpleCallback& cb) noexcept
     : api_(api)
     , widget_id_(id)
-    , ui_(api_.InternalUI())
+    , ui_(api_.InternalClient().InternalUI())
     , callbacks_()
     , listeners_()
 {

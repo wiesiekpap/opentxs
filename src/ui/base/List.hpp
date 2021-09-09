@@ -264,7 +264,7 @@ protected:
 
     // NOTE lists that are also rows call this constructor
     List(
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const typename PrimaryID::interface_type& primaryID,
         const Identifier& widgetID,
         const bool reverseSort,
@@ -293,7 +293,7 @@ protected:
     }
     // NOTE basic lists (not subnodes) call this constructor
     List(
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const typename PrimaryID::interface_type& primaryID,
         const SimpleCallback& cb,
         const bool reverseSort) noexcept

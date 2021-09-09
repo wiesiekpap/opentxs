@@ -12,11 +12,11 @@
 #include <memory>
 #include <string>
 
-#include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Contacts.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -33,7 +33,7 @@
 namespace opentxs::factory
 {
 auto PayableListModel(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const contact::ContactItemType& currency,
     const SimpleCallback& cb) noexcept
@@ -48,7 +48,7 @@ auto PayableListModel(
 namespace opentxs::ui::implementation
 {
 PayableList::PayableList(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const contact::ContactItemType& currency,
     const SimpleCallback& cb) noexcept

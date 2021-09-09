@@ -25,134 +25,6 @@
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/identity/Nym.hpp"
 
-#ifdef SWIG
-// clang-format off
-%template(ProtoTypeList) std::vector<int>;
-%extend opentxs::NymData {
-    std::string BestSocialMediaProfile(const int type) const
-    {
-        return $self->BestSocialMediaProfile(
-            static_cast<opentxs::contact::ContactItemType>(type));
-    }
-    bool HaveContract(
-        const std::string& id,
-        const int currency,
-        const bool primary,
-        const bool active) const
-    {
-        return $self->HaveContract(
-            opentxs::identifier::UnitDefinition::Factory(id),
-            static_cast<opentxs::contact::ContactItemType>(currency),
-            primary,
-            active);
-    }
-    std::string PaymentCode(const int currency) const
-    {
-        return $self->PaymentCode(
-            static_cast<opentxs::contact::ContactItemType>(currency));
-    }
-    std::string SocialMediaProfiles(
-        const int type,
-        bool active = true) const
-    {
-        return $self->SocialMediaProfiles(
-            static_cast<opentxs::contact::ContactItemType>(type), active);
-    }
-    const std::vector<int> SocialMediaProfileTypes() const
-    {
-        const auto& types = $self->Nym().SocialMediaProfileTypes();
-
-        std::vector<int> output;
-        std::transform(
-            types.begin(),
-            types.end(),
-            std::inserter(output, output.end()),
-            [](opentxs::contact::ContactItemType type) -> int {
-                return static_cast<int>(type);
-            });
-
-        return output;
-    }
-    int Type() const
-    {
-        return static_cast<int>($self->Type());
-    }
-    bool AddContract(
-        const std::string& instrumentDefinitionID,
-        const int currency,
-        const bool primary,
-        const bool active,
-        const PasswordPrompt& reason)
-    {
-        return $self->AddContract(
-            instrumentDefinitionID,
-            static_cast<opentxs::contact::ContactItemType>(currency),
-            primary,
-            active,
-            reason);
-    }
-    bool AddPaymentCode(
-        const std::string& code,
-        const int currency,
-        const bool primary,
-        const bool active,
-        const PasswordPrompt& reason)
-    {
-        return $self->AddPaymentCode(
-            code,
-            static_cast<opentxs::contact::ContactItemType>(currency),
-            primary,
-            active,
-            reason);
-    }
-    bool AddSocialMediaProfile(
-        const std::string& value,
-        const int type,
-        const bool primary,
-        const bool active,
-        const PasswordPrompt& reason)
-    {
-        return $self->AddSocialMediaProfile(
-            value,
-            static_cast<opentxs::contact::ContactItemType>(type),
-            primary,
-            active, reason);
-    }
-    bool SetScope(
-        const int type,
-        const std::string& name,
-        const bool primary,
-        const PasswordPrompt& reason)
-    {
-        return $self->SetScope(
-            static_cast<opentxs::contact::ContactItemType>(type),
-            name,
-            primary,
-            reason);
-    }
-}
-
-%ignore opentxs::NymData::AddChildKeyCredential;
-%ignore opentxs::NymData::AddClaim;
-%ignore opentxs::NymData::AddContract;
-%ignore opentxs::NymData::AddPaymentCode;
-%ignore opentxs::NymData::AddSocialMediaProfile;
-%ignore opentxs::NymData::asPublicNym;
-%ignore opentxs::NymData::BestSocialMediaProfile;
-%ignore opentxs::NymData::Claims;
-%ignore opentxs::NymData::DeleteClaim;
-%ignore opentxs::NymData::HaveContract;
-%ignore opentxs::NymData::Nym;
-%ignore opentxs::NymData::PaymentCode;
-%ignore opentxs::NymData::SetContactData;
-%ignore opentxs::NymData::SetScope;
-%ignore opentxs::NymData::SocialMediaProfiles;
-%ignore opentxs::NymData::SocialMediaProfileTypes;
-%ignore opentxs::NymData::Type;
-%ignore opentxs::NymData::NymData(NymData&&);
-// clang-format on
-#endif
-
 namespace opentxs
 {
 namespace api
@@ -189,80 +61,84 @@ public:
     NymData(const NymData&);
     NymData(NymData&&);
 
-    identity::Nym::Serialized asPublicNym() const;
-    std::string BestEmail() const;
-    std::string BestPhoneNumber() const;
-    std::string BestSocialMediaProfile(
-        const contact::ContactItemType type) const;
-    const opentxs::ContactData& Claims() const;
-    bool DeleteClaim(const Identifier& id, const PasswordPrompt& reason);
-    std::string EmailAddresses(bool active = true) const;
-    bool HaveContract(
+    auto asPublicNym() const -> identity::Nym::Serialized;
+    auto BestEmail() const -> std::string;
+    auto BestPhoneNumber() const -> std::string;
+    auto BestSocialMediaProfile(const contact::ContactItemType type) const
+        -> std::string;
+    auto Claims() const -> const opentxs::ContactData&;
+    auto DeleteClaim(const Identifier& id, const PasswordPrompt& reason)
+        -> bool;
+    auto EmailAddresses(bool active = true) const -> std::string;
+    auto HaveContract(
         const identifier::UnitDefinition& id,
         const contact::ContactItemType currency,
         const bool primary,
-        const bool active) const;
-    std::string Name() const;
-    const identity::Nym& Nym() const;
-    std::string PaymentCode(const contact::ContactItemType currency) const;
-    std::string PhoneNumbers(bool active = true) const;
-    std::string PreferredOTServer() const;
-    std::string PrintContactData() const;
-    std::string SocialMediaProfiles(
+        const bool active) const -> bool;
+    auto Name() const -> std::string;
+    auto Nym() const -> const identity::Nym&;
+    auto PaymentCode(const contact::ContactItemType currency) const
+        -> std::string;
+    auto PhoneNumbers(bool active = true) const -> std::string;
+    auto PreferredOTServer() const -> std::string;
+    auto PrintContactData() const -> std::string;
+    auto SocialMediaProfiles(
         const contact::ContactItemType type,
-        bool active = true) const;
-    std::set<contact::ContactItemType> SocialMediaProfileTypes() const;
-    contact::ContactItemType Type() const;
-    bool Valid() const;
+        bool active = true) const -> std::string;
+    auto SocialMediaProfileTypes() const -> std::set<contact::ContactItemType>;
+    auto Type() const -> contact::ContactItemType;
+    auto Valid() const -> bool;
 
-    std::string AddChildKeyCredential(
+    auto AddChildKeyCredential(
         const Identifier& strMasterID,
         const NymParameters& nymParameters,
-        const PasswordPrompt& reason);
-    bool AddClaim(const Claim& claim, const PasswordPrompt& reason);
-    bool AddContract(
+        const PasswordPrompt& reason) -> std::string;
+    auto AddClaim(const Claim& claim, const PasswordPrompt& reason) -> bool;
+    auto AddContract(
         const std::string& instrumentDefinitionID,
         const contact::ContactItemType currency,
         const bool primary,
         const bool active,
-        const PasswordPrompt& reason);
-    bool AddEmail(
+        const PasswordPrompt& reason) -> bool;
+    auto AddEmail(
         const std::string& value,
         const bool primary,
         const bool active,
-        const PasswordPrompt& reason);
-    bool AddPaymentCode(
+        const PasswordPrompt& reason) -> bool;
+    auto AddPaymentCode(
         const std::string& code,
         const contact::ContactItemType currency,
         const bool primary,
         const bool active,
-        const PasswordPrompt& reason);
-    bool AddPhoneNumber(
+        const PasswordPrompt& reason) -> bool;
+    auto AddPhoneNumber(
         const std::string& value,
         const bool primary,
         const bool active,
-        const PasswordPrompt& reason);
-    bool AddPreferredOTServer(
+        const PasswordPrompt& reason) -> bool;
+    auto AddPreferredOTServer(
         const std::string& id,
         const bool primary,
-        const PasswordPrompt& reason);
-    bool AddSocialMediaProfile(
+        const PasswordPrompt& reason) -> bool;
+    auto AddSocialMediaProfile(
         const std::string& value,
         const contact::ContactItemType type,
         const bool primary,
         const bool active,
-        const PasswordPrompt& reason);
+        const PasswordPrompt& reason) -> bool;
     void Release();
-    bool SetCommonName(const std::string& name, const PasswordPrompt& reason);
-    OPENTXS_NO_EXPORT bool SetContactData(
+    auto SetCommonName(const std::string& name, const PasswordPrompt& reason)
+        -> bool;
+    OPENTXS_NO_EXPORT auto SetContactData(
         const proto::ContactData& data,
-        const PasswordPrompt& reason);
-    bool SetContactData(const ReadView& data, const PasswordPrompt& reason);
-    bool SetScope(
+        const PasswordPrompt& reason) -> bool;
+    auto SetContactData(const ReadView& data, const PasswordPrompt& reason)
+        -> bool;
+    auto SetScope(
         const contact::ContactItemType type,
         const std::string& name,
         const bool primary,
-        const PasswordPrompt& reason);
+        const PasswordPrompt& reason) -> bool;
 
     ~NymData();
 
@@ -278,10 +154,10 @@ private:
 
     std::shared_ptr<identity::Nym> nym_;
 
-    const ContactData& data() const;
+    auto data() const -> const ContactData&;
 
-    const identity::Nym& nym() const;
-    identity::Nym& nym();
+    auto nym() const -> const identity::Nym&;
+    auto nym() -> identity::Nym&;
 
     void release();
 
@@ -291,8 +167,8 @@ private:
         const std::shared_ptr<identity::Nym>& nym,
         LockedSave save);
     NymData() = delete;
-    NymData& operator=(const NymData&) = delete;
-    NymData& operator=(NymData&&) = delete;
+    auto operator=(const NymData&) -> NymData& = delete;
+    auto operator=(NymData&&) -> NymData& = delete;
 };
 }  // namespace opentxs
 #endif

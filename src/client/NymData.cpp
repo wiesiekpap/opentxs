@@ -87,8 +87,7 @@ auto NymData::AddContract(
     auto id = factory_.UnitID(instrumentDefinitionID);
 
     if (id->empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Invalid instrument definition id.")
+        LogOutput(OT_METHOD)(__func__)(": Invalid instrument definition id.")
             .Flush();
 
         return false;
@@ -116,7 +115,7 @@ auto NymData::AddPaymentCode(
     auto paymentCode = factory_.PaymentCode(code);
 
     if (false == paymentCode->Valid()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid payment code.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid payment code.").Flush();
 
         return false;
     }
@@ -139,7 +138,7 @@ auto NymData::AddPreferredOTServer(
     const PasswordPrompt& reason) -> bool
 {
     if (id.empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid server id.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid server id.").Flush();
 
         return false;
     }

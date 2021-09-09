@@ -22,52 +22,45 @@ namespace api
 class Legacy
 {
 public:
-    static std::string SuggestFolder(const std::string& app) noexcept;
+    static auto SuggestFolder(const std::string& app) noexcept -> std::string;
 
-    OPENTXS_EXPORT virtual const char* Account() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool AppendFile(
+    virtual auto Account() const noexcept -> const char* = 0;
+    virtual auto AppendFile(String& out, const String& base, const String& file)
+        const noexcept -> bool = 0;
+    virtual auto AppendFolder(
         String& out,
         const String& base,
-        const String& file) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool AppendFolder(
-        String& out,
-        const String& base,
-        const String& folder) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool BuildFolderPath(
-        const String& path) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool BuildFilePath(
-        const String& path) const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string ClientConfigFilePath(
-        const int instance) const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string ClientDataFolder(
-        const int instance) const noexcept = 0;
-    OPENTXS_EXPORT virtual const char* Common() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool ConfirmCreateFolder(
-        const String& path) const noexcept = 0;
-    OPENTXS_EXPORT virtual const char* Contract() const noexcept = 0;
-    OPENTXS_EXPORT virtual const char* Cron() const noexcept = 0;
-    OPENTXS_EXPORT virtual const char* ExpiredBox() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool FileExists(
-        const String& path,
-        std::size_t& size) const noexcept = 0;
-    OPENTXS_EXPORT virtual const char* Inbox() const noexcept = 0;
-    OPENTXS_EXPORT virtual const char* Market() const noexcept = 0;
-    OPENTXS_EXPORT virtual const char* Mint() const noexcept = 0;
-    OPENTXS_EXPORT virtual const char* Nym() const noexcept = 0;
-    OPENTXS_EXPORT virtual const char* Nymbox() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string OpentxsConfigFilePath()
-        const noexcept = 0;
-    OPENTXS_EXPORT virtual const char* Outbox() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool PathExists(
-        const String& path) const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string PIDFilePath() const noexcept = 0;
-    OPENTXS_EXPORT virtual const char* PaymentInbox() const noexcept = 0;
-    OPENTXS_EXPORT virtual const char* Receipt() const noexcept = 0;
-    OPENTXS_EXPORT virtual const char* RecordBox() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string ServerConfigFilePath(
-        const int instance) const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string ServerDataFolder(
-        const int instance) const noexcept = 0;
+        const String& folder) const noexcept -> bool = 0;
+    virtual auto BuildFolderPath(const String& path) const noexcept -> bool = 0;
+    virtual auto BuildFilePath(const String& path) const noexcept -> bool = 0;
+    virtual auto ClientConfigFilePath(const int instance) const noexcept
+        -> std::string = 0;
+    virtual auto ClientDataFolder(const int instance) const noexcept
+        -> std::string = 0;
+    virtual auto Common() const noexcept -> const char* = 0;
+    virtual auto ConfirmCreateFolder(const String& path) const noexcept
+        -> bool = 0;
+    virtual auto Contract() const noexcept -> const char* = 0;
+    virtual auto Cron() const noexcept -> const char* = 0;
+    virtual auto ExpiredBox() const noexcept -> const char* = 0;
+    virtual auto FileExists(const String& path, std::size_t& size)
+        const noexcept -> bool = 0;
+    virtual auto Inbox() const noexcept -> const char* = 0;
+    virtual auto Market() const noexcept -> const char* = 0;
+    virtual auto Mint() const noexcept -> const char* = 0;
+    virtual auto Nym() const noexcept -> const char* = 0;
+    virtual auto Nymbox() const noexcept -> const char* = 0;
+    virtual auto OpentxsConfigFilePath() const noexcept -> std::string = 0;
+    virtual auto Outbox() const noexcept -> const char* = 0;
+    virtual auto PathExists(const String& path) const noexcept -> bool = 0;
+    virtual auto PIDFilePath() const noexcept -> std::string = 0;
+    virtual auto PaymentInbox() const noexcept -> const char* = 0;
+    virtual auto Receipt() const noexcept -> const char* = 0;
+    virtual auto RecordBox() const noexcept -> const char* = 0;
+    virtual auto ServerConfigFilePath(const int instance) const noexcept
+        -> std::string = 0;
+    virtual auto ServerDataFolder(const int instance) const noexcept
+        -> std::string = 0;
 
     virtual ~Legacy() = default;
 
@@ -77,8 +70,8 @@ protected:
 private:
     Legacy(const Legacy&) = delete;
     Legacy(Legacy&&) = delete;
-    Legacy& operator=(const Legacy&) = delete;
-    Legacy& operator=(Legacy&&) = delete;
+    auto operator=(const Legacy&) -> Legacy& = delete;
+    auto operator=(Legacy&&) -> Legacy& = delete;
 };
 }  // namespace api
 }  // namespace opentxs

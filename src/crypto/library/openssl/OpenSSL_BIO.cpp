@@ -78,7 +78,7 @@ auto OpenSSL_BIO::ToBytes() -> std::vector<std::byte>
     read_bio(READ_AMOUNT, read, total, output);
 
     if (0 == read) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Read failed").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Read failed").Flush();
 
         return {};
     }
@@ -86,7 +86,7 @@ auto OpenSSL_BIO::ToBytes() -> std::vector<std::byte>
     while (READ_AMOUNT == read) { read_bio(READ_AMOUNT, read, total, output); }
 
     output.resize(total);
-    LogInsane(OT_METHOD)(__FUNCTION__)(": Read ")(total)(" bytes").Flush();
+    LogInsane(OT_METHOD)(__func__)(": Read ")(total)(" bytes").Flush();
 
     return output;
 }

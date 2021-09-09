@@ -15,11 +15,11 @@
 #include <type_traits>
 
 #include "Proto.tpp"
-#include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/client/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Activity.hpp"
@@ -71,7 +71,7 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::factory
 {
 auto Workflow(
-    const api::internal::Core& api,
+    const api::Core& api,
     const api::client::Activity& activity,
     const api::client::Contacts& contact) -> api::client::Workflow*
 {
@@ -153,13 +153,13 @@ auto Workflow::ExtractCheque(const proto::PaymentWorkflow& workflow)
     -> std::string
 {
     if (false == ContainsCheque(workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Wrong workflow type").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Wrong workflow type").Flush();
 
         return {};
     }
 
     if (1 != workflow.source().size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid workflow").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid workflow").Flush();
 
         return {};
     }
@@ -173,13 +173,13 @@ auto Workflow::ExtractPurse(
 {
 #if OT_CASH
     if (false == ContainsCash(workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Wrong workflow type").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Wrong workflow type").Flush();
 
         return false;
     }
 
     if (1 != workflow.source().size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid workflow").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid workflow").Flush();
 
         return false;
     }
@@ -198,13 +198,13 @@ auto Workflow::ExtractTransfer(const proto::PaymentWorkflow& workflow)
     -> std::string
 {
     if (false == ContainsTransfer(workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Wrong workflow type").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Wrong workflow type").Flush();
 
         return {};
     }
 
     if (1 != workflow.source().size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid workflow").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid workflow").Flush();
 
         return {};
     }
@@ -213,7 +213,7 @@ auto Workflow::ExtractTransfer(const proto::PaymentWorkflow& workflow)
 }
 
 auto Workflow::InstantiateCheque(
-    const api::internal::Core& core,
+    const api::Core& core,
     const proto::PaymentWorkflow& workflow) -> Workflow::Cheque
 {
     Cheque output{PaymentWorkflowState::Error, nullptr};
@@ -236,8 +236,7 @@ auto Workflow::InstantiateCheque(
                 String::Factory(serialized.c_str()));
 
             if (false == loaded) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": Failed to instantiate cheque")
+                LogOutput(OT_METHOD)(__func__)(": Failed to instantiate cheque")
                     .Flush();
                 cheque.reset();
 
@@ -253,8 +252,7 @@ auto Workflow::InstantiateCheque(
         case PaymentWorkflowType::OutgoingCash:
         case PaymentWorkflowType::IncomingCash:
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect workflow type")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Incorrect workflow type").Flush();
         }
     }
 
@@ -263,7 +261,7 @@ auto Workflow::InstantiateCheque(
 
 #if OT_CASH
 auto Workflow::InstantiatePurse(
-    const api::internal::Core& api,
+    const api::Core& api,
     const proto::PaymentWorkflow& workflow) -> Workflow::Purse
 {
     Purse output{PaymentWorkflowState::Error, nullptr};
@@ -291,7 +289,7 @@ auto Workflow::InstantiatePurse(
 
                 state = internal::translate(workflow.state());
             } catch (const std::exception& e) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+                LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
                 return output;
             }
@@ -305,8 +303,7 @@ auto Workflow::InstantiatePurse(
         case PaymentWorkflowType::IncomingTransfer:
         case PaymentWorkflowType::InternalTransfer:
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect workflow type")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Incorrect workflow type").Flush();
         }
     }
 
@@ -315,7 +312,7 @@ auto Workflow::InstantiatePurse(
 #endif
 
 auto Workflow::InstantiateTransfer(
-    const api::internal::Core& core,
+    const api::Core& core,
     const proto::PaymentWorkflow& workflow) -> Workflow::Transfer
 {
     Transfer output{PaymentWorkflowState::Error, nullptr};
@@ -332,7 +329,7 @@ auto Workflow::InstantiateTransfer(
             transfer.reset(core.Factory().Item(serialized).release());
 
             if (false == bool(transfer)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Failed to instantiate transfer")
                     .Flush();
                 transfer.reset();
@@ -351,8 +348,7 @@ auto Workflow::InstantiateTransfer(
         case PaymentWorkflowType::OutgoingCash:
         case PaymentWorkflowType::IncomingCash:
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect workflow type")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Incorrect workflow type").Flush();
         }
     }
 
@@ -360,7 +356,7 @@ auto Workflow::InstantiateTransfer(
 }
 
 auto Workflow::UUID(
-    const api::internal::Core& core,
+    const api::Core& core,
     const proto::PaymentWorkflow& workflow) -> OTIdentifier
 {
     auto output = Identifier::Factory();
@@ -376,7 +372,7 @@ auto Workflow::UUID(
                 InstantiateCheque(core, workflow);
 
             if (false == bool(cheque)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid cheque").Flush();
+                LogOutput(OT_METHOD)(__func__)(": Invalid cheque").Flush();
 
                 return output;
             }
@@ -391,8 +387,7 @@ auto Workflow::UUID(
                 InstantiateTransfer(core, workflow);
 
             if (false == bool(transfer)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid transfer")
-                    .Flush();
+                LogOutput(OT_METHOD)(__func__)(": Invalid transfer").Flush();
 
                 return output;
             }
@@ -405,8 +400,7 @@ auto Workflow::UUID(
             // TODO
         } break;
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unknown workflow type")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Unknown workflow type").Flush();
         }
     }
 
@@ -416,8 +410,8 @@ auto Workflow::UUID(
 auto Workflow::UUID(const Identifier& notary, const TransactionNumber& number)
     -> OTIdentifier
 {
-    LogTrace(OT_METHOD)(__FUNCTION__)(": UUID for notary ")(notary)(
-        " and transaction number ")(number)(" is ");
+    LogTrace(OT_METHOD)(__func__)(": UUID for notary ")(
+        notary)(" and transaction number ")(number)(" is ");
     OTData preimage{notary};
     preimage->Concatenate(&number, sizeof(number));
     auto output = Identifier::Factory();
@@ -440,7 +434,7 @@ const Workflow::VersionMap Workflow::versions_{
 };
 
 Workflow::Workflow(
-    const api::internal::Core& api,
+    const api::Core& api,
     const api::client::Activity& activity,
     const api::client::Contacts& contact)
     : api_(api)
@@ -453,7 +447,7 @@ Workflow::Workflow(
 {
     // WARNING: do not access api_.Wallet() during construction
     const auto endpoint = api_.Endpoints().WorkflowAccountUpdate();
-    LogDetail(OT_METHOD)(__FUNCTION__)(": Binding to ")(endpoint).Flush();
+    LogDetail(OT_METHOD)(__func__)(": Binding to ")(endpoint).Flush();
     auto bound = account_publisher_->Start(endpoint);
 
     OT_ASSERT(bound)
@@ -480,7 +474,7 @@ auto Workflow::AbortTransfer(
     const auto workflow = get_workflow(global, type, nymID.str(), transfer);
 
     if (false == bool(workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this transfer does not exist.")
             .Flush();
 
@@ -516,7 +510,7 @@ auto Workflow::AcceptTransfer(
     const auto transfer = extract_transfer_from_pending(pending);
 
     if (false == bool(transfer)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid transaction").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid transaction").Flush();
 
         return false;
     }
@@ -526,7 +520,7 @@ auto Workflow::AcceptTransfer(
     const auto& accountID = pending.GetPurportedAccountID();
 
     if (pending.GetNymID() != nymID) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid recipient").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid recipient").Flush();
 
         return false;
     }
@@ -542,7 +536,7 @@ auto Workflow::AcceptTransfer(
     const auto workflow = get_workflow(global, type, nymID.str(), *transfer);
 
     if (false == bool(workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this transfer does not exist.")
             .Flush();
 
@@ -582,7 +576,7 @@ auto Workflow::AcknowledgeTransfer(
     const auto workflow = get_workflow(global, type, nymID.str(), transfer);
 
     if (false == bool(workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this transfer does not exist.")
             .Flush();
 
@@ -652,7 +646,7 @@ auto Workflow::AllocateCash(
     const auto saved = save_workflow(id.str(), workflow);
 
     if (false == saved) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to save workflow").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to save workflow").Flush();
 
         return Identifier::Factory();
     }
@@ -865,8 +859,7 @@ auto Workflow::can_abort_transfer(const proto::PaymentWorkflow& workflow)
     }
 
     if (false == correctState) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect workflow state.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Incorrect workflow state.").Flush();
 
         return false;
     }
@@ -888,8 +881,7 @@ auto Workflow::can_accept_cheque(const proto::PaymentWorkflow& workflow) -> bool
     }
 
     if (false == correctState) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect workflow state.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Incorrect workflow state.").Flush();
 
         return false;
     }
@@ -911,8 +903,7 @@ auto Workflow::can_accept_transfer(const proto::PaymentWorkflow& workflow)
     }
 
     if (false == correctState) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect workflow state.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Incorrect workflow state.").Flush();
 
         return false;
     }
@@ -935,7 +926,7 @@ auto Workflow::can_acknowledge_transfer(const proto::PaymentWorkflow& workflow)
     }
 
     if (false == correctState) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect workflow state (")(
+        LogOutput(OT_METHOD)(__func__)(": Incorrect workflow state (")(
             workflow.state())(")")
             .Flush();
 
@@ -959,8 +950,7 @@ auto Workflow::can_cancel_cheque(const proto::PaymentWorkflow& workflow) -> bool
     }
 
     if (false == correctState) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect workflow state.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Incorrect workflow state.").Flush();
 
         return false;
     }
@@ -989,8 +979,7 @@ auto Workflow::can_clear_transfer(const proto::PaymentWorkflow& workflow)
     }
 
     if (false == correctState) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect workflow state.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Incorrect workflow state.").Flush();
 
         return false;
     }
@@ -1003,7 +992,7 @@ auto Workflow::can_complete_transfer(const proto::PaymentWorkflow& workflow)
 {
     if (PaymentWorkflowState::Accepted !=
         internal::translate(workflow.state())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect workflow state (")(
+        LogOutput(OT_METHOD)(__func__)(": Incorrect workflow state (")(
             workflow.state())(")")
             .Flush();
 
@@ -1018,8 +1007,7 @@ auto Workflow::can_convey_cash(const proto::PaymentWorkflow& workflow) -> bool
 {
     if (PaymentWorkflowState::Expired ==
         internal::translate(workflow.state())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect workflow state.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Incorrect workflow state.").Flush();
 
         return false;
     }
@@ -1031,8 +1019,7 @@ auto Workflow::can_convey_cash(const proto::PaymentWorkflow& workflow) -> bool
 auto Workflow::can_convey_cheque(const proto::PaymentWorkflow& workflow) -> bool
 {
     if (PaymentWorkflowState::Unsent != internal::translate(workflow.state())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect workflow state.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Incorrect workflow state.").Flush();
 
         return false;
     }
@@ -1052,7 +1039,7 @@ auto Workflow::can_convey_transfer(const proto::PaymentWorkflow& workflow)
             break;
         }
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect workflow state.")
+            LogOutput(OT_METHOD)(__func__)(": Incorrect workflow state.")
                 .Flush();
         }
     }
@@ -1065,8 +1052,7 @@ auto Workflow::can_deposit_cheque(const proto::PaymentWorkflow& workflow)
 {
     if (PaymentWorkflowState::Conveyed !=
         internal::translate(workflow.state())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect workflow state.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Incorrect workflow state.").Flush();
 
         return false;
     }
@@ -1106,14 +1092,13 @@ auto Workflow::can_expire_cheque(
     }
 
     if (false == correctState) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect workflow state.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Incorrect workflow state.").Flush();
 
         return false;
     }
 
     if (Clock::now() < cheque.GetValidTo()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Can not expire valid cheque.")
+        LogOutput(OT_METHOD)(__func__)(": Can not expire valid cheque.")
             .Flush();
 
         return false;
@@ -1126,8 +1111,7 @@ auto Workflow::can_finish_cheque(const proto::PaymentWorkflow& workflow) -> bool
 {
     if (PaymentWorkflowState::Accepted !=
         internal::translate(workflow.state())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect workflow state.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Incorrect workflow state.").Flush();
 
         return false;
     }
@@ -1148,7 +1132,7 @@ auto Workflow::CancelCheque(
         global, {PaymentWorkflowType::OutgoingCheque}, nymID, cheque);
 
     if (false == bool(workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this cheque does not exist.")
             .Flush();
 
@@ -1188,8 +1172,7 @@ auto Workflow::ClearCheque(
     const OTTransaction& receipt) const -> bool
 {
     if (recipientNymID.empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid cheque recipient")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid cheque recipient").Flush();
 
         return false;
     }
@@ -1197,8 +1180,7 @@ auto Workflow::ClearCheque(
     auto cheque{api_.Factory().Cheque(receipt)};
 
     if (false == bool(cheque)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to load cheque from receipt.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to load cheque from receipt.")
             .Flush();
 
         return false;
@@ -1212,7 +1194,7 @@ auto Workflow::ClearCheque(
         global, {PaymentWorkflowType::OutgoingCheque}, nymID, *cheque);
 
     if (false == bool(workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this cheque does not exist.")
             .Flush();
 
@@ -1274,13 +1256,13 @@ auto Workflow::ClearTransfer(
         extract_transfer_from_receipt(receipt, depositorNymID);
 
     if (false == bool(transfer)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid transfer").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid transfer").Flush();
 
         return false;
     }
 
     if (depositorNymID->empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing recipient").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing recipient").Flush();
 
         return false;
     }
@@ -1289,7 +1271,7 @@ auto Workflow::ClearTransfer(
     const auto& accountID = transfer->GetPurportedAccountID();
 
     if (accountID.empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Transfer does not contain source account ID")
             .Flush();
 
@@ -1299,7 +1281,7 @@ auto Workflow::ClearTransfer(
     const auto& destinationAccountID = transfer->GetDestinationAcctID();
 
     if (destinationAccountID.empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Transfer does not contain destination account ID")
             .Flush();
 
@@ -1314,7 +1296,7 @@ auto Workflow::ClearTransfer(
     const auto workflow = get_workflow(global, type, nymID.str(), *transfer);
 
     if (false == bool(workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this transfer does not exist.")
             .Flush();
 
@@ -1379,7 +1361,7 @@ auto Workflow::CompleteTransfer(
         extract_transfer_from_receipt(receipt, depositorNymID);
 
     if (false == bool(transfer)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid transfer").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid transfer").Flush();
 
         return false;
     }
@@ -1387,7 +1369,7 @@ auto Workflow::CompleteTransfer(
     const auto& accountID = transfer->GetPurportedAccountID();
 
     if (accountID.empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Transfer does not contain source account ID")
             .Flush();
 
@@ -1397,7 +1379,7 @@ auto Workflow::CompleteTransfer(
     const auto& destinationAccountID = transfer->GetDestinationAcctID();
 
     if (destinationAccountID.empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Transfer does not contain destination account ID")
             .Flush();
 
@@ -1412,7 +1394,7 @@ auto Workflow::CompleteTransfer(
     const auto workflow = get_workflow(global, type, nymID.str(), *transfer);
 
     if (false == bool(workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this transfer does not exist.")
             .Flush();
 
@@ -1458,7 +1440,7 @@ auto Workflow::convey_incoming_transfer(
         global, {PaymentWorkflowType::IncomingTransfer}, nymID.str(), transfer);
 
     if (existing) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this transfer already exist.")
             .Flush();
 
@@ -1524,7 +1506,7 @@ auto Workflow::convey_internal_transfer(
         global, {PaymentWorkflowType::InternalTransfer}, nymID.str(), transfer);
 
     if (false == bool(workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this transfer does not exist.")
             .Flush();
 
@@ -1565,7 +1547,7 @@ auto Workflow::ConveyTransfer(
     const auto transfer = extract_transfer_from_pending(pending);
 
     if (false == bool(transfer)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid transaction").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid transaction").Flush();
 
         return Identifier::Factory();
     }
@@ -1575,7 +1557,7 @@ auto Workflow::ConveyTransfer(
     const auto recipientNymID = pending.GetNymID().str();
 
     if (pending.GetNymID() != nymID) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid recipient").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid recipient").Flush();
 
         return Identifier::Factory();
     }
@@ -1698,12 +1680,12 @@ auto Workflow::create_transfer(
         Identifier::Factory(), {}};
     auto& [workflowID, workflow] = output;
     const auto transferID = Identifier::Factory(transfer);
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": Transfer ID: ")(transferID).Flush();
+    LogVerbose(OT_METHOD)(__func__)(": Transfer ID: ")(transferID).Flush();
     const std::string serialized = String::Factory(transfer)->Get();
     const auto existing = get_workflow(global, {workflowType}, nymID, transfer);
 
     if (existing) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this transfer already exists.")
             .Flush();
         workflowID = Identifier::Factory(existing->id());
@@ -1767,8 +1749,7 @@ auto Workflow::CreateTransfer(const Item& transfer, const Message& request)
     const -> OTIdentifier
 {
     if (false == isTransfer(transfer)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid item type on object")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid item type on object").Flush();
 
         return Identifier::Factory();
     }
@@ -1786,7 +1767,7 @@ auto Workflow::CreateTransfer(const Item& transfer, const Message& request)
         transfer);
 
     if (existing) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this transfer already exist.")
             .Flush();
 
@@ -1849,7 +1830,7 @@ auto Workflow::DepositCheque(
         global, {PaymentWorkflowType::IncomingCheque}, nymID, cheque);
 
     if (false == bool(workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this cheque does not exist.")
             .Flush();
 
@@ -1905,7 +1886,7 @@ auto Workflow::ExpireCheque(
         cheque);
 
     if (false == bool(workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this cheque does not exist.")
             .Flush();
 
@@ -1930,7 +1911,7 @@ auto Workflow::ExportCheque(const opentxs::Cheque& cheque) const -> bool
     const auto workflow = get_workflow(global, {}, nymID, cheque);
 
     if (false == bool(workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this cheque does not exist.")
             .Flush();
 
@@ -1968,7 +1949,7 @@ auto Workflow::extract_transfer_from_pending(const OTTransaction& receipt) const
     -> std::unique_ptr<Item>
 {
     if (transactionType::pending != receipt.GetType()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect receipt type: ")(
+        LogOutput(OT_METHOD)(__func__)(": Incorrect receipt type: ")(
             receipt.GetTypeString())
             .Flush();
 
@@ -1979,7 +1960,7 @@ auto Workflow::extract_transfer_from_pending(const OTTransaction& receipt) const
     receipt.GetReferenceString(serializedTransfer);
 
     if (serializedTransfer->empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing serialized transfer item")
+        LogOutput(OT_METHOD)(__func__)(": Missing serialized transfer item")
             .Flush();
 
         return nullptr;
@@ -1988,16 +1969,14 @@ auto Workflow::extract_transfer_from_pending(const OTTransaction& receipt) const
     auto transfer = api_.Factory().Item(serializedTransfer);
 
     if (false == bool(transfer)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Unable to instantiate transfer item")
+        LogOutput(OT_METHOD)(__func__)(": Unable to instantiate transfer item")
             .Flush();
 
         return nullptr;
     }
 
     if (itemType::transfer != transfer->GetType()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid transfer item type.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid transfer item type.").Flush();
 
         return nullptr;
     }
@@ -2013,7 +1992,7 @@ auto Workflow::extract_transfer_from_receipt(
         if (transactionType::pending == receipt.GetType()) {
             return extract_transfer_from_pending(receipt);
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect receipt type: ")(
+            LogOutput(OT_METHOD)(__func__)(": Incorrect receipt type: ")(
                 receipt.GetTypeString())
                 .Flush();
 
@@ -2025,7 +2004,7 @@ auto Workflow::extract_transfer_from_receipt(
     receipt.GetReferenceString(serializedAcceptPending);
 
     if (serializedAcceptPending->empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Missing serialized accept pending item")
             .Flush();
 
@@ -2035,7 +2014,7 @@ auto Workflow::extract_transfer_from_receipt(
     const auto acceptPending = api_.Factory().Item(serializedAcceptPending);
 
     if (false == bool(acceptPending)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Unable to instantiate accept pending item")
             .Flush();
 
@@ -2043,8 +2022,7 @@ auto Workflow::extract_transfer_from_receipt(
     }
 
     if (itemType::acceptPending != acceptPending->GetType()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Invalid accept pending item type.")
+        LogOutput(OT_METHOD)(__func__)(": Invalid accept pending item type.")
             .Flush();
 
         return nullptr;
@@ -2055,7 +2033,7 @@ auto Workflow::extract_transfer_from_receipt(
     acceptPending->GetAttachment(serializedPending);
 
     if (serializedPending->empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Missing serialized pending transaction")
             .Flush();
 
@@ -2068,7 +2046,7 @@ auto Workflow::extract_transfer_from_receipt(
         receipt.GetRealNotaryID());
 
     if (false == bool(pending)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Unable to instantiate pending transaction")
             .Flush();
 
@@ -2078,7 +2056,7 @@ auto Workflow::extract_transfer_from_receipt(
     const bool loaded = pending->LoadContractFromString(serializedPending);
 
     if (false == loaded) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Unable to deserialize pending transaction")
             .Flush();
 
@@ -2086,8 +2064,7 @@ auto Workflow::extract_transfer_from_receipt(
     }
 
     if (transactionType::pending != pending->GetType()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Invalid pending transaction type.")
+        LogOutput(OT_METHOD)(__func__)(": Invalid pending transaction type.")
             .Flush();
 
         return nullptr;
@@ -2097,7 +2074,7 @@ auto Workflow::extract_transfer_from_receipt(
     pending->GetReferenceString(serializedTransfer);
 
     if (serializedTransfer->empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing serialized transfer item")
+        LogOutput(OT_METHOD)(__func__)(": Missing serialized transfer item")
             .Flush();
 
         return nullptr;
@@ -2106,16 +2083,14 @@ auto Workflow::extract_transfer_from_receipt(
     auto transfer = api_.Factory().Item(serializedTransfer);
 
     if (false == bool(transfer)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Unable to instantiate transfer item")
+        LogOutput(OT_METHOD)(__func__)(": Unable to instantiate transfer item")
             .Flush();
 
         return nullptr;
     }
 
     if (itemType::transfer != transfer->GetType()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid transfer item type.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid transfer item type.").Flush();
 
         return nullptr;
     }
@@ -2136,7 +2111,7 @@ auto Workflow::FinishCheque(
         global, {PaymentWorkflowType::OutgoingCheque}, nymID, cheque);
 
     if (false == bool(workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this cheque does not exist.")
             .Flush();
 
@@ -2172,7 +2147,7 @@ auto Workflow::get_workflow(
     OT_ASSERT(verify_lock(global));
 
     const auto itemID = Identifier::Factory(source)->str();
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": Item ID: ")(itemID).Flush();
+    LogVerbose(OT_METHOD)(__func__)(": Item ID: ")(itemID).Flush();
 
     return get_workflow_by_source(types, nymID, itemID);
 }
@@ -2187,8 +2162,8 @@ auto Workflow::get_workflow_by_id(
     OT_ASSERT(output);
 
     if (false == api_.Storage().Load(nymID, workflowID, *output)) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Workflow ")(workflowID)(
-            " for nym ")(nymID)(" can not be loaded")
+        LogDetail(OT_METHOD)(__func__)(": Workflow ")(workflowID)(" for nym ")(
+            nymID)(" can not be loaded")
             .Flush();
 
         return {};
@@ -2206,8 +2181,8 @@ auto Workflow::get_workflow_by_id(
     auto output = get_workflow_by_id(nymID, workflowID);
 
     if (0 == types.count(internal::translate(output->type()))) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect type (")(
-            output->type())(") on workflow ")(workflowID)(" for nym ")(nymID)
+        LogOutput(OT_METHOD)(__func__)(": Incorrect type (")(output->type())(
+            ") on workflow ")(workflowID)(" for nym ")(nymID)
             .Flush();
 
         return {nullptr};
@@ -2248,8 +2223,8 @@ auto Workflow::ImportCheque(
     if (false == isCheque(cheque)) { return Identifier::Factory(); }
 
     if (false == validate_recipient(nymID, cheque)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Nym ")(nymID)(
-            " can not deposit this cheque.")
+        LogOutput(OT_METHOD)(__func__)(": Nym ")(
+            nymID)(" can not deposit this cheque.")
             .Flush();
 
         return Identifier::Factory();
@@ -2260,7 +2235,7 @@ auto Workflow::ImportCheque(
         global, {PaymentWorkflowType::IncomingCheque}, nymID.str(), cheque);
 
     if (existing) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this cheque already exist.")
             .Flush();
 
@@ -2331,7 +2306,7 @@ auto Workflow::InstantiateCheque(
 
         return client::Workflow::InstantiateCheque(api_, workflow);
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(":")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(":")(e.what()).Flush();
 
         return {};
     }
@@ -2356,7 +2331,7 @@ auto Workflow::InstantiatePurse(
 
         return client::Workflow::InstantiatePurse(api_, workflow);
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(":")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(":")(e.what()).Flush();
 
         return {};
     }
@@ -2366,22 +2341,21 @@ auto Workflow::InstantiatePurse(
 auto Workflow::isCheque(const opentxs::Cheque& cheque) -> bool
 {
     if (cheque.HasRemitter()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Provided instrument is a voucher")
+        LogOutput(OT_METHOD)(__func__)(": Provided instrument is a voucher")
             .Flush();
 
         return false;
     }
 
     if (0 > cheque.GetAmount()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Provided instrument is an invoice")
+        LogOutput(OT_METHOD)(__func__)(": Provided instrument is an invoice")
             .Flush();
 
         return false;
     }
 
     if (0 == cheque.GetAmount()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Provided instrument is a cancellation")
             .Flush();
 
@@ -2441,7 +2415,7 @@ auto Workflow::LoadCheque(
         chequeID.str());
 
     if (false == bool(workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this cheque does not exist.")
             .Flush();
 
@@ -2462,7 +2436,7 @@ auto Workflow::LoadChequeByWorkflow(
         workflowID.str());
 
     if (false == bool(workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this cheque does not exist.")
             .Flush();
 
@@ -2484,7 +2458,7 @@ auto Workflow::LoadTransfer(
         transferID.str());
 
     if (false == bool(workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this transfer does not exist.")
             .Flush();
 
@@ -2506,7 +2480,7 @@ auto Workflow::LoadTransferByWorkflow(
         workflowID.str());
 
     if (false == bool(workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this transfer does not exist.")
             .Flush();
 
@@ -2574,7 +2548,7 @@ auto Workflow::ReceiveCash(
     const auto saved = save_workflow(receiver.str(), workflow);
 
     if (false == saved) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to save workflow").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to save workflow").Flush();
 
         return Identifier::Factory();
     }
@@ -2591,8 +2565,8 @@ auto Workflow::ReceiveCheque(
     if (false == isCheque(cheque)) { return Identifier::Factory(); }
 
     if (false == validate_recipient(nymID, cheque)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Nym ")(nymID)(
-            " can not deposit this cheque.")
+        LogOutput(OT_METHOD)(__func__)(": Nym ")(
+            nymID)(" can not deposit this cheque.")
             .Flush();
 
         return Identifier::Factory();
@@ -2603,7 +2577,7 @@ auto Workflow::ReceiveCheque(
         global, {PaymentWorkflowType::IncomingCheque}, nymID.str(), cheque);
 
     if (existing) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this cheque already exist.")
             .Flush();
 
@@ -2717,8 +2691,8 @@ auto Workflow::SendCash(
     const auto pWorkflow = get_workflow_by_id(sender.str(), workflowID.str());
 
     if (false == bool(pWorkflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Workflow ")(workflowID)(
-            " does not exist.")
+        LogOutput(OT_METHOD)(__func__)(": Workflow ")(
+            workflowID)(" does not exist.")
             .Flush();
 
         return false;
@@ -2771,7 +2745,7 @@ auto Workflow::SendCheque(
         global, {PaymentWorkflowType::OutgoingCheque}, nymID, cheque);
 
     if (false == bool(workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this cheque does not exist.")
             .Flush();
 
@@ -2856,8 +2830,8 @@ auto Workflow::update_activity(
     const auto contactID = contact_.ContactID(remoteNymID);
 
     if (contactID->empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Contact for nym ")(remoteNymID)(
-            " does not exist")
+        LogOutput(OT_METHOD)(__func__)(": Contact for nym ")(
+            remoteNymID)(" does not exist")
             .Flush();
 
         return false;
@@ -2867,13 +2841,13 @@ auto Workflow::update_activity(
         localNymID, contactID, type, sourceID, workflowID, time);
 
     if (added) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(
+        LogDetail(OT_METHOD)(__func__)(
             ": Success adding payment event to thread ")(contactID->str())
             .Flush();
 
         return true;
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to add payment event to thread ")(contactID->str())
             .Flush();
 
@@ -2954,8 +2928,7 @@ auto Workflow::WorkflowsByAccount(
 auto Workflow::WriteCheque(const opentxs::Cheque& cheque) const -> OTIdentifier
 {
     if (false == isCheque(cheque)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Invalid item type on cheque object")
+        LogOutput(OT_METHOD)(__func__)(": Invalid item type on cheque object")
             .Flush();
 
         return Identifier::Factory();
@@ -2967,7 +2940,7 @@ auto Workflow::WriteCheque(const opentxs::Cheque& cheque) const -> OTIdentifier
         global, {PaymentWorkflowType::OutgoingCheque}, nymID, cheque);
 
     if (existing) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Workflow for this cheque already exist.")
             .Flush();
 
@@ -2979,7 +2952,7 @@ auto Workflow::WriteCheque(const opentxs::Cheque& cheque) const -> OTIdentifier
         const auto contactID = contact_.ContactID(recipient);
 
         if (contactID->empty()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": No contact exists for recipient nym ")(recipient)
                 .Flush();
 

@@ -34,7 +34,7 @@ auto Keypair() noexcept -> std::unique_ptr<crypto::key::Keypair>
 }
 
 auto Keypair(
-    const api::internal::Core& api,
+    const api::Core& api,
     const opentxs::crypto::key::asymmetric::Role role,
     std::unique_ptr<crypto::key::Asymmetric> publicKey,
     std::unique_ptr<crypto::key::Asymmetric> privateKey) noexcept(false)
@@ -56,7 +56,7 @@ auto Keypair(
 namespace opentxs::crypto::key::implementation
 {
 Keypair::Keypair(
-    const api::internal::Core& api,
+    const api::Core& api,
     const opentxs::crypto::key::asymmetric::Role role,
     std::unique_ptr<crypto::key::Asymmetric> publicKey,
     std::unique_ptr<crypto::key::Asymmetric> privateKey) noexcept

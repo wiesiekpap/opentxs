@@ -27,8 +27,8 @@ protected:
 private:
     Secp256k1(const Secp256k1&) = delete;
     Secp256k1(Secp256k1&&) = delete;
-    Secp256k1& operator=(const Secp256k1&) = delete;
-    Secp256k1& operator=(Secp256k1&&) = delete;
+    auto operator=(const Secp256k1&) -> Secp256k1& = delete;
+    auto operator=(Secp256k1&&) -> Secp256k1& = delete;
 };
 }  // namespace key
 }  // namespace crypto

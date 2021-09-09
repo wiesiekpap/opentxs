@@ -14,9 +14,9 @@
 #include <set>
 
 #include "opentxs/Types.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
 
@@ -26,6 +26,11 @@ namespace blockchain
 {
 namespace crypto
 {
+namespace internal
+{
+struct Account;
+}  // namespace internal
+
 class Element;
 class HD;
 class Imported;
@@ -117,28 +122,33 @@ public:
         OPENTXS_NO_EXPORT virtual ~PaymentCodeAccounts() = default;
     };
 
-    virtual const Identifier& AccountID() const noexcept = 0;
+    virtual auto AccountID() const noexcept -> const Identifier& = 0;
     virtual auto Chain() const noexcept -> blockchain::Type = 0;
-    virtual const HDAccounts& GetHD() const noexcept = 0;
+    virtual auto GetHD() const noexcept -> const HDAccounts& = 0;
     /// Throws std::out_of_range if no keys are available
-    virtual const Element& GetNextChangeKey(const PasswordPrompt& reason) const
-        noexcept(false) = 0;
+    virtual auto GetNextChangeKey(const PasswordPrompt& reason) const
+        noexcept(false) -> const Element& = 0;
     /// Throws std::out_of_range if no keys are available
-    virtual const Element& GetNextDepositKey(const PasswordPrompt& reason) const
-        noexcept(false) = 0;
-    virtual std::string GetDepositAddress(
+    virtual auto GetNextDepositKey(const PasswordPrompt& reason) const
+        noexcept(false) -> const Element& = 0;
+    virtual auto GetDepositAddress(
         const AddressStyle style,
         const PasswordPrompt& reason,
-        const std::string& memo = "") const noexcept = 0;
-    virtual std::string GetDepositAddress(
+        const std::string& memo = "") const noexcept -> std::string = 0;
+    virtual auto GetDepositAddress(
         const AddressStyle style,
         const Identifier& contact,
         const PasswordPrompt& reason,
-        const std::string& memo = "") const noexcept = 0;
-    virtual const ImportedAccounts& GetImported() const noexcept = 0;
-    virtual const PaymentCodeAccounts& GetPaymentCode() const noexcept = 0;
-    virtual const identifier::Nym& NymID() const noexcept = 0;
-    virtual const Wallet& Parent() const noexcept = 0;
+        const std::string& memo = "") const noexcept -> std::string = 0;
+    virtual auto GetImported() const noexcept -> const ImportedAccounts& = 0;
+    virtual auto GetPaymentCode() const noexcept
+        -> const PaymentCodeAccounts& = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
+        -> internal::Account& = 0;
+    virtual auto NymID() const noexcept -> const identifier::Nym& = 0;
+    virtual auto Parent() const noexcept -> const Wallet& = 0;
+    virtual auto Subaccount(const Identifier& id) const noexcept(false)
+        -> const Subaccount& = 0;
 
     OPENTXS_NO_EXPORT virtual ~Account() = default;
 
@@ -148,8 +158,8 @@ protected:
 private:
     Account(const Account&) = delete;
     Account(Account&&) = delete;
-    Account& operator=(const Account&) = delete;
-    Account& operator=(Account&&) = delete;
+    auto operator=(const Account&) -> Account& = delete;
+    auto operator=(Account&&) -> Account& = delete;
 };
 }  // namespace crypto
 }  // namespace blockchain

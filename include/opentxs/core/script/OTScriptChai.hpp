@@ -36,14 +36,14 @@ public:
 
     ~OTScriptChai() final;
 
-    bool ExecuteScript(OTVariable* pReturnVar = nullptr) final;
+    auto ExecuteScript(OTVariable* pReturnVar = nullptr) -> bool final;
     chaiscript::ChaiScript* const chai_{nullptr};
 
 private:
     OTScriptChai(const OTScriptChai&) = delete;
     OTScriptChai(OTScriptChai&&) = delete;
-    OTScriptChai& operator=(const OTScriptChai&) = delete;
-    OTScriptChai& operator=(OTScriptChai&&) = delete;
+    auto operator=(const OTScriptChai&) -> OTScriptChai& = delete;
+    auto operator=(OTScriptChai&&) -> OTScriptChai& = delete;
 };
 }  // namespace opentxs
 #endif  // OT_SCRIPT_CHAI

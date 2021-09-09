@@ -44,32 +44,33 @@ public:
     using SupportedStrengths = std::map<Strength, std::string>;
     using Matches = std::vector<std::string>;
 
-    OPENTXS_NO_EXPORT virtual std::unique_ptr<opentxs::crypto::key::HD>
-    AccountChildKey(
+    OPENTXS_NO_EXPORT virtual auto AccountChildKey(
         const proto::HDPath& path,
         const BIP44Chain internal,
         const Bip32Index index,
-        const PasswordPrompt& reason) const = 0;
-    virtual std::unique_ptr<opentxs::crypto::key::HD> AccountChildKey(
+        const PasswordPrompt& reason) const
+        -> std::unique_ptr<opentxs::crypto::key::HD> = 0;
+    virtual auto AccountChildKey(
         const ReadView& path,
         const BIP44Chain internal,
         const Bip32Index index,
-        const PasswordPrompt& reason) const = 0;
-    OPENTXS_NO_EXPORT virtual std::unique_ptr<opentxs::crypto::key::HD>
-    AccountKey(
+        const PasswordPrompt& reason) const
+        -> std::unique_ptr<opentxs::crypto::key::HD> = 0;
+    OPENTXS_NO_EXPORT virtual auto AccountKey(
         const proto::HDPath& path,
         const BIP44Chain internal,
-        const PasswordPrompt& reason) const = 0;
-    virtual const SupportedSeeds& AllowedSeedTypes() const noexcept = 0;
-    virtual const SupportedLanguages& AllowedLanguages(
-        const Style type) const noexcept = 0;
-    virtual const SupportedStrengths& AllowedSeedStrength(
-        const Style type) const noexcept = 0;
-    virtual std::string Bip32Root(
+        const PasswordPrompt& reason) const
+        -> std::unique_ptr<opentxs::crypto::key::HD> = 0;
+    virtual auto AllowedSeedTypes() const noexcept -> const SupportedSeeds& = 0;
+    virtual auto AllowedLanguages(const Style type) const noexcept
+        -> const SupportedLanguages& = 0;
+    virtual auto AllowedSeedStrength(const Style type) const noexcept
+        -> const SupportedStrengths& = 0;
+    virtual auto Bip32Root(
         const std::string& seedID,
-        const PasswordPrompt& reason) const = 0;
-    virtual std::string DefaultSeed() const = 0;
-    virtual std::unique_ptr<opentxs::crypto::key::HD> GetHDKey(
+        const PasswordPrompt& reason) const -> std::string = 0;
+    virtual auto DefaultSeed() const -> std::string = 0;
+    virtual auto GetHDKey(
         const std::string& seedID,
         const EcdsaCurve& curve,
         const Path& path,
@@ -77,60 +78,60 @@ public:
         const opentxs::crypto::key::asymmetric::Role role =
             opentxs::crypto::key::asymmetric::Role::Sign,
         const VersionNumber version =
-            opentxs::crypto::key::EllipticCurve::DefaultVersion) const = 0;
-    virtual OTSecret GetOrCreateDefaultSeed(
+            opentxs::crypto::key::EllipticCurve::DefaultVersion) const
+        -> std::unique_ptr<opentxs::crypto::key::HD> = 0;
+    virtual auto GetOrCreateDefaultSeed(
         std::string& seedID,
         Style& type,
         Language& lang,
         Bip32Index& index,
         const Strength strength,
-        const PasswordPrompt& reason) const = 0;
-    virtual std::unique_ptr<opentxs::crypto::key::Secp256k1> GetPaymentCode(
+        const PasswordPrompt& reason) const -> OTSecret = 0;
+    virtual auto GetPaymentCode(
         const std::string& seedID,
         const Bip32Index nym,
         const std::uint8_t version,
-        const PasswordPrompt& reason) const = 0;
-    virtual OTSymmetricKey GetStorageKey(
+        const PasswordPrompt& reason) const
+        -> std::unique_ptr<opentxs::crypto::key::Secp256k1> = 0;
+    virtual auto GetStorageKey(
         const std::string& seedID,
-        const PasswordPrompt& reason) const = 0;
-    virtual std::string ImportRaw(
-        const Secret& entropy,
-        const PasswordPrompt& reason) const = 0;
-    virtual std::string ImportSeed(
+        const PasswordPrompt& reason) const -> OTSymmetricKey = 0;
+    virtual auto ImportRaw(const Secret& entropy, const PasswordPrompt& reason)
+        const -> std::string = 0;
+    virtual auto ImportSeed(
         const Secret& words,
         const Secret& passphrase,
         const Style type,
         const Language lang,
-        const PasswordPrompt& reason) const = 0;
-    virtual std::size_t LongestWord(const Style type, const Language lang)
-        const noexcept = 0;
-    virtual std::string NewSeed(
+        const PasswordPrompt& reason) const -> std::string = 0;
+    virtual auto LongestWord(const Style type, const Language lang)
+        const noexcept -> std::size_t = 0;
+    virtual auto NewSeed(
         const Style type,
         const Language lang,
         const Strength strength,
-        const PasswordPrompt& reason) const = 0;
-    virtual std::string Passphrase(
+        const PasswordPrompt& reason) const -> std::string = 0;
+    virtual auto Passphrase(
         const std::string& seedID,
-        const PasswordPrompt& reason) const = 0;
-    virtual OTSecret Seed(
+        const PasswordPrompt& reason) const -> std::string = 0;
+    virtual auto Seed(
         const std::string& seedID,
         Bip32Index& index,
-        const PasswordPrompt& reason) const = 0;
+        const PasswordPrompt& reason) const -> OTSecret = 0;
     virtual auto SeedDescription(std::string seedID) const noexcept
         -> std::string = 0;
-    virtual bool UpdateIndex(
+    virtual auto UpdateIndex(
         const std::string& seedID,
         const Bip32Index index,
-        const PasswordPrompt& reason) const = 0;
-    virtual Matches ValidateWord(
+        const PasswordPrompt& reason) const -> bool = 0;
+    virtual auto ValidateWord(
         const Style type,
         const Language lang,
-        const std::string_view word) const noexcept = 0;
-    virtual std::size_t WordCount(const Style type, const Strength strength)
-        const noexcept = 0;
-    virtual std::string Words(
-        const std::string& seedID,
-        const PasswordPrompt& reason) const = 0;
+        const std::string_view word) const noexcept -> Matches = 0;
+    virtual auto WordCount(const Style type, const Strength strength)
+        const noexcept -> std::size_t = 0;
+    virtual auto Words(const std::string& seedID, const PasswordPrompt& reason)
+        const -> std::string = 0;
 
     OPENTXS_NO_EXPORT virtual ~HDSeed() = default;
 
@@ -140,8 +141,8 @@ protected:
 private:
     HDSeed(const HDSeed&) = delete;
     HDSeed(HDSeed&&) = delete;
-    HDSeed& operator=(const HDSeed&) = delete;
-    HDSeed& operator=(HDSeed&&) = delete;
+    auto operator=(const HDSeed&) -> HDSeed& = delete;
+    auto operator=(HDSeed&&) -> HDSeed& = delete;
 };
 }  // namespace api
 }  // namespace opentxs

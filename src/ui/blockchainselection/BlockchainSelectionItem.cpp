@@ -19,7 +19,7 @@ namespace opentxs::factory
 {
 auto BlockchainSelectionItem(
     const ui::implementation::BlockchainSelectionInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ui::implementation::BlockchainSelectionRowID& rowID,
     const ui::implementation::BlockchainSelectionSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
@@ -35,7 +35,7 @@ namespace opentxs::ui::implementation
 {
 BlockchainSelectionItem::BlockchainSelectionItem(
     const BlockchainSelectionInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const BlockchainSelectionRowID& rowID,
     const BlockchainSelectionSortKey& sortKey,
     CustomData& custom) noexcept

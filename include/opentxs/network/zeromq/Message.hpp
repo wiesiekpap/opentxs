@@ -12,20 +12,6 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 
-#ifdef SWIG
-// clang-format off
-%ignore opentxs::Pimpl<opentxs::network::zeromq::Message>::Pimpl(opentxs::network::zeromq::Message const &);
-%ignore opentxs::Pimpl<opentxs::network::zeromq::Message>::operator opentxs::network::zeromq::Message&;
-%ignore opentxs::Pimpl<opentxs::network::zeromq::Message>::operator const opentxs::network::zeromq::Message &;
-%ignore opentxs::network::zeromq::Message::at(const std::size_t) const;
-%ignore opentxs::network::zeromq::Message::begin() const;
-%ignore opentxs::network::zeromq::Message::end() const;
-%rename(assign) operator=(const opentxs::network::zeromq::Message&);
-%rename(ZMQMessage) opentxs::network::zeromq::Message;
-%template(OTZMQMessage) opentxs::Pimpl<opentxs::network::zeromq::Message>;
-// clang-format on
-#endif  // SWIG
-
 namespace google
 {
 namespace protobuf
@@ -58,26 +44,25 @@ namespace zeromq
 class OPENTXS_EXPORT Message
 {
 public:
-    static Pimpl<Message> Factory();
+    static auto Factory() -> Pimpl<Message>;
 
-    virtual const Frame& at(const std::size_t index) const = 0;
-    virtual FrameIterator begin() const = 0;
-    virtual const FrameSection Body() const = 0;
-    virtual const Frame& Body_at(const std::size_t index) const = 0;
-    virtual FrameIterator Body_begin() const = 0;
-    virtual FrameIterator Body_end() const = 0;
-    virtual FrameIterator end() const = 0;
-    virtual const FrameSection Header() const = 0;
-    virtual const Frame& Header_at(const std::size_t index) const = 0;
-    virtual FrameIterator Header_begin() const = 0;
-    virtual FrameIterator Header_end() const = 0;
-    virtual std::size_t size() const = 0;
-    virtual std::size_t Total() const = 0;
+    virtual auto at(const std::size_t index) const -> const Frame& = 0;
+    virtual auto begin() const -> FrameIterator = 0;
+    virtual auto Body() const -> const FrameSection = 0;
+    virtual auto Body_at(const std::size_t index) const -> const Frame& = 0;
+    virtual auto Body_begin() const -> FrameIterator = 0;
+    virtual auto Body_end() const -> FrameIterator = 0;
+    virtual auto end() const -> FrameIterator = 0;
+    virtual auto Header() const -> const FrameSection = 0;
+    virtual auto Header_at(const std::size_t index) const -> const Frame& = 0;
+    virtual auto Header_begin() const -> FrameIterator = 0;
+    virtual auto Header_end() const -> FrameIterator = 0;
+    virtual auto size() const -> std::size_t = 0;
+    virtual auto Total() const -> std::size_t = 0;
 
-    virtual Frame& AddFrame() = 0;
-#ifndef SWIG
-    OPENTXS_NO_EXPORT virtual Frame& AddFrame(
-        const ::google::protobuf::MessageLite& input) = 0;
+    virtual auto AddFrame() -> Frame& = 0;
+    OPENTXS_NO_EXPORT virtual auto AddFrame(
+        const ::google::protobuf::MessageLite& input) -> Frame& = 0;
     template <
         typename Input,
         std::enable_if_t<
@@ -104,14 +89,14 @@ public:
     }
     virtual auto AddFrame(const void* input, const std::size_t size)
         -> Frame& = 0;
-#endif
-    virtual AllocateOutput AppendBytes() noexcept = 0;
-    virtual Frame& at(const std::size_t index) = 0;
-    virtual FrameSection Body() = 0;
+    virtual auto AppendBytes() noexcept -> AllocateOutput = 0;
+    virtual auto at(const std::size_t index) -> Frame& = 0;
+    virtual auto Body() -> FrameSection = 0;
     virtual void EnsureDelimiter() = 0;
-    virtual FrameSection Header() = 0;
+    virtual auto Header() -> FrameSection = 0;
     virtual void PrependEmptyFrame() = 0;
-    virtual Frame& Replace(const std::size_t index, OTZMQFrame&& frame) = 0;
+    virtual auto Replace(const std::size_t index, OTZMQFrame&& frame)
+        -> Frame& = 0;
     virtual void StartBody() noexcept = 0;
 
     virtual ~Message() = default;
@@ -125,15 +110,15 @@ private:
 #ifdef _WIN32
 public:
 #endif
-    virtual Message* clone() const = 0;
+    virtual auto clone() const -> Message* = 0;
 #ifdef _WIN32
 private:
 #endif
 
     Message(const Message&) = delete;
     Message(Message&&) = default;
-    Message& operator=(const Message&) = delete;
-    Message& operator=(Message&&) = default;
+    auto operator=(const Message&) -> Message& = delete;
+    auto operator=(Message&&) -> Message& = default;
 };
 }  // namespace zeromq
 }  // namespace network

@@ -76,16 +76,15 @@ void Subscribe::process_incoming(const Lock& lock, Message& message) noexcept
     try {
         callback_.Process(message);
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Callback exception: ")(e.what())
+        LogOutput(OT_METHOD)(__func__)(": Callback exception: ")(e.what())
             .Flush();
 
         for (const auto& endpoint : endpoints_) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": connected endpoint: ")(
-                endpoint)
+            LogOutput(OT_METHOD)(__func__)(": connected endpoint: ")(endpoint)
                 .Flush();
         }
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Callback exception").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Callback exception").Flush();
     }
 }
 

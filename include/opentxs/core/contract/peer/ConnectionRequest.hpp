@@ -47,13 +47,13 @@ private:
     friend OTConnectionRequest;
 
 #ifndef _WIN32
-    Connection* clone() const noexcept override = 0;
+    auto clone() const noexcept -> Connection* override = 0;
 #endif
 
     Connection(const Connection&) = delete;
     Connection(Connection&&) = delete;
-    Connection& operator=(const Connection&) = delete;
-    Connection& operator=(Connection&&) = delete;
+    auto operator=(const Connection&) -> Connection& = delete;
+    auto operator=(Connection&&) -> Connection& = delete;
 };
 }  // namespace request
 }  // namespace peer

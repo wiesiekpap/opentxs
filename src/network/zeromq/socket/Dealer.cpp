@@ -68,11 +68,11 @@ void Dealer::process_incoming(
 {
     OT_ASSERT(verify_lock(lock))
 
-    LogTrace(OT_METHOD)(__FUNCTION__)(
+    LogTrace(OT_METHOD)(__func__)(
         ": Incoming messaged received. Triggering callback.")
         .Flush();
     callback_.Process(message);
-    LogTrace(OT_METHOD)(__FUNCTION__)(": Done.").Flush();
+    LogTrace(OT_METHOD)(__func__)(": Done.").Flush();
 }
 
 Dealer::~Dealer() SHUTDOWN

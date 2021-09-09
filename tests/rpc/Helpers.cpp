@@ -164,7 +164,7 @@ auto RPC_fixture::CreateNym(
     const std::string& seed,
     int index) const noexcept -> std::string
 {
-    const auto reason = api.Factory().PasswordPrompt(__FUNCTION__);
+    const auto reason = api.Factory().PasswordPrompt(__func__);
     auto nym = api.Wallet().Nym(reason, name, {seed, index});
 
     OT_ASSERT(nym);
@@ -199,7 +199,7 @@ auto RPC_fixture::ImportBip39(
     using SeedLang = ot::crypto::Language;
     using SeedStyle = ot::crypto::SeedStyle;
     auto& seeds = seed_map_[api.Instance()];
-    const auto reason = api.Factory().PasswordPrompt(__FUNCTION__);
+    const auto reason = api.Factory().PasswordPrompt(__func__);
     const auto [it, added] = seeds.emplace(api.Seeds().ImportSeed(
         ot_.Factory().SecretFromText(words),
         ot_.Factory().SecretFromText(""),
@@ -263,7 +263,7 @@ auto RPC_fixture::IssueUnit(
 {
     const auto nymID = api.Factory().NymID(issuer);
     const auto& serverID = server.ID();
-    const auto reason = api.Factory().PasswordPrompt(__FUNCTION__);
+    const auto reason = api.Factory().PasswordPrompt(__func__);
     const auto contract = api.Wallet().UnitDefinition(
         issuer,
         shortname,
@@ -450,7 +450,7 @@ auto RPC_fixture::StartServer(int index) const noexcept
     const auto instance = out.Instance();
     init_maps(instance);
     auto& nyms = local_nym_map_.at(instance);
-    const auto reason = out.Factory().PasswordPrompt(__FUNCTION__);
+    const auto reason = out.Factory().PasswordPrompt(__func__);
     const auto lNyms = out.Wallet().LocalNyms();
     std::transform(
         lNyms.begin(),

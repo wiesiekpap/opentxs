@@ -74,8 +74,7 @@ void Signals::handle()
 
             if (shouldBreak) { break; }
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": ERROR: Invalid signal received.")
+            LogOutput(OT_METHOD)(__func__)(": ERROR: Invalid signal received.")
                 .Flush();
         }
     }
@@ -87,7 +86,7 @@ auto Signals::process(const int signal) -> bool
     auto handler = handler_.find(signal);
 
     if (handler_.end() == handler) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unhandled signal ")(
+        LogOutput(OT_METHOD)(__func__)(": Unhandled signal ")(
             std::to_string(signal))(" received.")
             .Flush();
 

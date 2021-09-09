@@ -14,25 +14,25 @@ namespace opentxs
 {
 namespace crypto
 {
-class EcdsaProvider : virtual public AsymmetricProvider
+class OPENTXS_EXPORT EcdsaProvider : virtual public AsymmetricProvider
 {
 public:
-    OPENTXS_EXPORT virtual bool PubkeyAdd(
+    virtual auto PubkeyAdd(
         const ReadView pubkey,
         const ReadView scalar,
-        const AllocateOutput result) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool ScalarAdd(
+        const AllocateOutput result) const noexcept -> bool = 0;
+    virtual auto ScalarAdd(
         const ReadView lhs,
         const ReadView rhs,
-        const AllocateOutput result) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool ScalarMultiplyBase(
+        const AllocateOutput result) const noexcept -> bool = 0;
+    virtual auto ScalarMultiplyBase(
         const ReadView scalar,
-        const AllocateOutput result) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SignDER(
+        const AllocateOutput result) const noexcept -> bool = 0;
+    virtual auto SignDER(
         const ReadView plaintext,
         const ReadView key,
         const crypto::HashType hash,
-        Space& signature) const noexcept = 0;
+        Space& signature) const noexcept -> bool = 0;
 
     ~EcdsaProvider() override = default;
 
@@ -42,8 +42,8 @@ protected:
 private:
     EcdsaProvider(const EcdsaProvider&) = delete;
     EcdsaProvider(EcdsaProvider&&) = delete;
-    EcdsaProvider& operator=(const EcdsaProvider&) = delete;
-    EcdsaProvider& operator=(EcdsaProvider&&) = delete;
+    auto operator=(const EcdsaProvider&) -> EcdsaProvider& = delete;
+    auto operator=(EcdsaProvider&&) -> EcdsaProvider& = delete;
 };
 }  // namespace crypto
 }  // namespace opentxs

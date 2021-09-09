@@ -109,7 +109,7 @@ struct Scale::Imp {
 
             return output.convert_to<Amount>();
         } catch (const std::exception& e) {
-            LogTrace(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogTrace(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             throw std::current_exception();
         }

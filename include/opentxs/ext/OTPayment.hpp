@@ -31,10 +31,7 @@ namespace implementation
 class Factory;
 }  // namespace implementation
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 class NumList;
@@ -122,91 +119,92 @@ public:
     };  // If you add any types to this list, update the list of strings at the
     // top of the .CPP file.
 
-    static const char* _GetTypeString(paymentType theType);
+    static auto _GetTypeString(paymentType theType) -> const char*;
 
-    static paymentType GetTypeFromString(const String& strType);
+    static auto GetTypeFromString(const String& strType) -> paymentType;
 
-    bool GetAllTransactionNumbers(
+    auto GetAllTransactionNumbers(
         NumList& numlistOutput,
-        const PasswordPrompt& reason) const;
+        const PasswordPrompt& reason) const -> bool;
     // Once you "Instantiate" the first time, then these values are set, if
     // available, and can be queried thereafter from *this. Otherwise, these
     // functions will return false.
-    bool GetAmount(Amount& lOutput) const;
+    auto GetAmount(Amount& lOutput) const -> bool;
     // Only works for payment plans and smart contracts. Gets the opening
     // transaction number for a given Nym, if applicable. (Or closing number for
     // a given asset account.)
-    bool GetClosingNum(
+    auto GetClosingNum(
         TransactionNumber& lOutput,
         const Identifier& theAcctID,
-        const PasswordPrompt& reason) const;
-    bool GetInstrumentDefinitionID(Identifier& theOutput) const;
-    bool GetMemo(String& strOutput) const;
-    bool GetNotaryID(Identifier& theOutput) const;
+        const PasswordPrompt& reason) const -> bool;
+    auto GetInstrumentDefinitionID(Identifier& theOutput) const -> bool;
+    auto GetMemo(String& strOutput) const -> bool;
+    auto GetNotaryID(Identifier& theOutput) const -> bool;
     // Only works for payment plans and smart contracts. Gets the opening
     // transaction number for a given Nym, if applicable. (Or closing number for
     // a given asset account.)
-    bool GetOpeningNum(
+    auto GetOpeningNum(
         TransactionNumber& lOutput,
         const identifier::Nym& theNymID,
-        const PasswordPrompt& reason) const;
-    bool GetPaymentContents(String& strOutput) const
+        const PasswordPrompt& reason) const -> bool;
+    auto GetPaymentContents(String& strOutput) const -> bool
     {
         strOutput.Set(m_strPayment->Get());
         return true;
     }
-    bool GetRecipientAcctID(Identifier& theOutput) const;
-    bool GetRecipientNymID(identifier::Nym& theOutput) const;
-    bool GetRemitterAcctID(Identifier& theOutput) const;
-    bool GetRemitterNymID(identifier::Nym& theOutput) const;
-    bool GetSenderAcctID(Identifier& theOutput) const;
-    bool GetSenderAcctIDForDisplay(Identifier& theOutput) const;
-    bool GetSenderNymID(identifier::Nym& theOutput) const;
-    bool GetSenderNymIDForDisplay(identifier::Nym& theOutput) const;
-    bool GetTransactionNum(TransactionNumber& lOutput) const;
-    bool GetTransNumDisplay(TransactionNumber& lOutput) const;
-    paymentType GetType() const { return m_Type; }
-    const char* GetTypeString() const { return _GetTypeString(m_Type); }
-    bool GetValidFrom(Time& tOutput) const;
-    bool GetValidTo(Time& tOutput) const;
-    bool HasTransactionNum(
+    auto GetRecipientAcctID(Identifier& theOutput) const -> bool;
+    auto GetRecipientNymID(identifier::Nym& theOutput) const -> bool;
+    auto GetRemitterAcctID(Identifier& theOutput) const -> bool;
+    auto GetRemitterNymID(identifier::Nym& theOutput) const -> bool;
+    auto GetSenderAcctID(Identifier& theOutput) const -> bool;
+    auto GetSenderAcctIDForDisplay(Identifier& theOutput) const -> bool;
+    auto GetSenderNymID(identifier::Nym& theOutput) const -> bool;
+    auto GetSenderNymIDForDisplay(identifier::Nym& theOutput) const -> bool;
+    auto GetTransactionNum(TransactionNumber& lOutput) const -> bool;
+    auto GetTransNumDisplay(TransactionNumber& lOutput) const -> bool;
+    auto GetType() const -> paymentType { return m_Type; }
+    auto GetTypeString() const -> const char* { return _GetTypeString(m_Type); }
+    auto GetValidFrom(Time& tOutput) const -> bool;
+    auto GetValidTo(Time& tOutput) const -> bool;
+    auto HasTransactionNum(
         const TransactionNumber& lInput,
-        const PasswordPrompt& reason) const;
-    OTTrackable* Instantiate() const;
-    OTTrackable* Instantiate(const String& strPayment);
-    OTTransaction* InstantiateNotice() const;
-    bool IsCheque() const { return (CHEQUE == m_Type); }
-    bool IsVoucher() const { return (VOUCHER == m_Type); }
-    bool IsInvoice() const { return (INVOICE == m_Type); }
-    bool IsPaymentPlan() const { return (PAYMENT_PLAN == m_Type); }
-    bool IsSmartContract() const { return (SMART_CONTRACT == m_Type); }
-    bool IsNotice() const { return (NOTICE == m_Type); }
-    bool IsValid() const { return (ERROR_STATE != m_Type); }
-    const String& Payment() const { return m_strPayment; }
+        const PasswordPrompt& reason) const -> bool;
+    auto Instantiate() const -> OTTrackable*;
+    auto Instantiate(const String& strPayment) -> OTTrackable*;
+    auto InstantiateNotice() const -> OTTransaction*;
+    auto IsCheque() const -> bool { return (CHEQUE == m_Type); }
+    auto IsVoucher() const -> bool { return (VOUCHER == m_Type); }
+    auto IsInvoice() const -> bool { return (INVOICE == m_Type); }
+    auto IsPaymentPlan() const -> bool { return (PAYMENT_PLAN == m_Type); }
+    auto IsSmartContract() const -> bool { return (SMART_CONTRACT == m_Type); }
+    auto IsNotice() const -> bool { return (NOTICE == m_Type); }
+    auto IsValid() const -> bool { return (ERROR_STATE != m_Type); }
+    auto Payment() const -> const String& { return m_strPayment; }
 
-    bool IsCancelledCheque(const PasswordPrompt& reason);
+    auto IsCancelledCheque(const PasswordPrompt& reason) -> bool;
     // Verify whether the CURRENT date is AFTER the the "VALID TO" date.
-    bool IsExpired(bool& bExpired);
+    auto IsExpired(bool& bExpired) -> bool;
     void InitPayment();
-    OTTransaction* InstantiateNotice(const String& strNotice);
-    std::int32_t ProcessXMLNode(irr::io::IrrXMLReader*& xml) override;
+    auto InstantiateNotice(const String& strNotice) -> OTTransaction*;
+    auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
     void Release() override;
     void Release_Payment();
-    bool SetPayment(const String& strPayment);
-    bool SetTempRecipientNymID(const identifier::Nym& id);
+    auto SetPayment(const String& strPayment) -> bool;
+    auto SetTempRecipientNymID(const identifier::Nym& id) -> bool;
     // Since the temp values are not available until at least ONE instantiating
     // has occured, this function forces that very scenario (cleanly) so you
     // don't have to instantiate-and-then-delete a payment instrument. Instead,
     // just call this, and then the temp values will be available thereafter.
-    bool SetTempValues(const PasswordPrompt& reason);
-    bool SetTempValuesFromCheque(const Cheque& theInput);
-    bool SetTempValuesFromPaymentPlan(const OTPaymentPlan& theInput);
-    bool SetTempValuesFromSmartContract(const OTSmartContract& theInput);
-    bool SetTempValuesFromNotice(
+    auto SetTempValues(const PasswordPrompt& reason) -> bool;
+    auto SetTempValuesFromCheque(const Cheque& theInput) -> bool;
+    auto SetTempValuesFromPaymentPlan(const OTPaymentPlan& theInput) -> bool;
+    auto SetTempValuesFromSmartContract(const OTSmartContract& theInput)
+        -> bool;
+    auto SetTempValuesFromNotice(
         const OTTransaction& theInput,
-        const PasswordPrompt& reason);
+        const PasswordPrompt& reason) -> bool;
     // Verify whether the CURRENT date is WITHIN the VALID FROM / TO dates.
-    bool VerifyCurrentDate(bool& bVerified);
+    auto VerifyCurrentDate(bool& bVerified) -> bool;
 
     ~OTPayment() override;
 
@@ -268,8 +266,8 @@ private:
 
     using ot_super = Contract;
 
-    OTPayment(const api::internal::Core& api);
-    OTPayment(const api::internal::Core& api, const String& strPayment);
+    OTPayment(const api::Core& api);
+    OTPayment(const api::Core& api, const String& strPayment);
 
     OTPayment() = delete;
 };

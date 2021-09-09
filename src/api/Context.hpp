@@ -29,6 +29,7 @@
 #include "opentxs/api/Options.hpp"
 #include "opentxs/api/Primitives.hpp"
 #include "opentxs/api/Settings.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/ZAP.hpp"
@@ -79,8 +80,7 @@ class Context final : public api::internal::Context, Lockable, Periodic
 {
 public:
     auto Asio() const noexcept -> const network::Asio& final { return *asio_; }
-    auto Client(const int instance) const
-        -> const api::client::internal::Manager& final;
+    auto Client(const int instance) const -> const api::client::Manager& final;
     auto Clients() const -> std::size_t final { return client_.size(); }
     auto Config(const std::string& path) const -> const api::Settings& final;
     auto Crypto() const -> const api::Crypto& final;
@@ -99,15 +99,15 @@ public:
     auto Server(const int instance) const -> const api::server::Manager& final;
     auto Servers() const -> std::size_t final { return server_.size(); }
     auto StartClient(const Options& args, const int instance) const
-        -> const api::client::internal::Manager& final;
+        -> const api::client::Manager& final;
     auto StartClient(const int instance) const
-        -> const api::client::internal::Manager& final;
+        -> const api::client::Manager& final;
     auto StartClient(
         const Options& args,
         const int instance,
         const std::string& recoverWords,
         const std::string& recoverPassphrase) const
-        -> const api::client::internal::Manager& final;
+        -> const api::client::Manager& final;
     auto StartServer(const Options& args, const int instance) const
         -> const api::server::Manager& final;
     auto StartServer(const int instance) const
@@ -151,8 +151,7 @@ private:
     OTCaller* external_password_callback_;
     mutable boost::interprocess::file_lock file_lock_;
     mutable std::vector<std::unique_ptr<api::server::Manager>> server_;
-    mutable std::vector<std::unique_ptr<api::client::internal::Manager>>
-        client_;
+    mutable std::vector<std::unique_ptr<api::client::Manager>> client_;
     std::unique_ptr<rpc::internal::RPC> rpc_;
 
     static auto client_instance(const int count) -> int;

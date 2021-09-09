@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
+
 #pragma once
 
 #include <map>
@@ -13,7 +15,6 @@
 #include <string>
 #include <vector>
 
-#include "api/client/Blockchain.hpp"
 #include "blockchain/crypto/AccountIndex.hpp"
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
@@ -21,7 +22,6 @@
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
@@ -40,26 +40,17 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
+class Blockchain;
 }  // namespace client
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace blockchain
 {
 namespace crypto
 {
-namespace internal
-{
-struct Wallet;
-}  // namespace internal
+class Wallet;
 }  // namespace crypto
 }  // namespace blockchain
 
@@ -69,39 +60,38 @@ class Nym;
 }  // namespace identifier
 }  // namespace opentxs
 
-namespace opentxs::api::client::implementation
+namespace opentxs::api::client::blockchain
 {
-struct BalanceLists {
-    using AccountData = Blockchain::AccountData;
-    using Chain = Blockchain::Chain;
+class Wallets
+{
+public:
+    using AccountData = client::Blockchain::AccountData;
 
     auto AccountList(const identifier::Nym& nymID) const noexcept
         -> std::set<OTIdentifier>;
-    auto AccountList(const Chain chain) const noexcept
+    auto AccountList(const opentxs::blockchain::Type chain) const noexcept
         -> std::set<OTIdentifier>;
     auto AccountList() const noexcept -> std::set<OTIdentifier>;
-    auto Get(const Chain chain) noexcept
-        -> opentxs::blockchain::crypto::internal::Wallet&;
+    auto Get(const opentxs::blockchain::Type chain) noexcept
+        -> opentxs::blockchain::crypto::Wallet&;
     auto LookupAccount(const Identifier& id) const noexcept -> AccountData;
 
-    BalanceLists(
-        const api::internal::Core& api,
-        api::client::internal::Blockchain& parent) noexcept;
+    Wallets(const api::Core& api, api::client::Blockchain& parent) noexcept;
 
 private:
-    const api::internal::Core& api_;
-    api::client::internal::Blockchain& parent_;
-    internal::BalanceTreeIndex index_;
+    const api::Core& api_;
+    api::client::Blockchain& parent_;
+    opentxs::blockchain::crypto::AccountIndex index_;
     mutable std::mutex lock_;
     mutable bool populated_;
     mutable std::map<
-        Chain,
-        std::unique_ptr<opentxs::blockchain::crypto::internal::Wallet>>
+        opentxs::blockchain::Type,
+        std::unique_ptr<opentxs::blockchain::crypto::Wallet>>
         lists_;
 
-    auto get(const Lock& lock, const Chain chain) const noexcept
-        -> opentxs::blockchain::crypto::internal::Wallet&;
+    auto get(const Lock& lock, const opentxs::blockchain::Type chain)
+        const noexcept -> opentxs::blockchain::crypto::Wallet&;
     auto populate() const noexcept -> void;
     auto populate(const Lock& lock) const noexcept -> void;
 };
-}  // namespace opentxs::api::client::implementation
+}  // namespace opentxs::api::client::blockchain

@@ -23,6 +23,7 @@
 #include "opentxs/api/Endpoints.hpp"  // IWYU pragma: keep
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/PaymentWorkflowState.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
 #include "opentxs/api/client/Workflow.hpp"
@@ -48,7 +49,7 @@
 namespace opentxs::factory
 {
 auto CustodialAccountActivityModel(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const Identifier& accountID,
     const SimpleCallback& cb) noexcept
@@ -63,7 +64,7 @@ auto CustodialAccountActivityModel(
 namespace opentxs::ui::implementation
 {
 CustodialAccountActivity::CustodialAccountActivity(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const Identifier& accountID,
     const SimpleCallback& cb) noexcept

@@ -19,7 +19,7 @@ namespace opentxs::factory
 {
 auto BlockchainStatisticsItem(
     const ui::implementation::BlockchainStatisticsInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ui::implementation::BlockchainStatisticsRowID& rowID,
     const ui::implementation::BlockchainStatisticsSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
@@ -35,7 +35,7 @@ namespace opentxs::ui::implementation
 {
 BlockchainStatisticsItem::BlockchainStatisticsItem(
     const BlockchainStatisticsInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const BlockchainStatisticsRowID& rowID,
     const BlockchainStatisticsSortKey& sortKey,
     CustomData& custom) noexcept

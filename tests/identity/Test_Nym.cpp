@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "2_Factory.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/identity/Identity.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
@@ -45,15 +44,15 @@ namespace
 class Test_Nym : public ::testing::Test
 {
 public:
-    const ot::api::client::internal::Manager& client_;
+    const ot::api::client::Manager& client_;
 #if OT_STORAGE_FS
-    const ot::api::client::internal::Manager& client_fs_;
+    const ot::api::client::Manager& client_fs_;
 #endif  // OT_STORAGE_FS
 #if OT_STORAGE_SQLITE
-    const ot::api::client::internal::Manager& client_sqlite_;
+    const ot::api::client::Manager& client_sqlite_;
 #endif  // OT_STORAGE_SQLITE
 #if OT_STORAGE_LMDB
-    const ot::api::client::internal::Manager& client_lmdb_;
+    const ot::api::client::Manager& client_lmdb_;
 #endif  // OT_STORAGE_LMDB
     const ot::OTPasswordPrompt reason_;
 
@@ -117,9 +116,9 @@ public:
         return true;
     }
 
-    bool test_storage(const ot::api::client::internal::Manager& api)
+    bool test_storage(const ot::api::client::Manager& api)
     {
-        const auto reason = api.Factory().PasswordPrompt(__FUNCTION__);
+        const auto reason = api.Factory().PasswordPrompt(__func__);
         const auto alias = std::string{"alias"};
         std::unique_ptr<ot::identity::internal::Nym> pNym(ot::Factory::Nym(
             api, {}, ot::contact::ContactItemType::Individual, alias, reason));
@@ -178,28 +177,27 @@ public:
     }
 
     Test_Nym()
-        : client_(dynamic_cast<const ot::api::client::internal::Manager&>(
+        : client_(dynamic_cast<const ot::api::client::Manager&>(
               ot::Context().StartClient(0)))
 #if OT_STORAGE_FS
-        , client_fs_(dynamic_cast<const ot::api::client::internal::Manager&>(
+        , client_fs_(dynamic_cast<const ot::api::client::Manager&>(
               ot::Context().StartClient(
                   ot::Options{}.SetStoragePlugin("fs"),
                   1)))
 #endif  // OT_STORAGE_FS
 #if OT_STORAGE_SQLITE
-        , client_sqlite_(
-              dynamic_cast<const ot::api::client::internal::Manager&>(
-                  ot::Context().StartClient(
-                      ot::Options{}.SetStoragePlugin("sqlite"),
-                      2)))
+        , client_sqlite_(dynamic_cast<const ot::api::client::Manager&>(
+              ot::Context().StartClient(
+                  ot::Options{}.SetStoragePlugin("sqlite"),
+                  2)))
 #endif  // OT_STORAGE_SQLITE
 #if OT_STORAGE_LMDB
-        , client_lmdb_(dynamic_cast<const ot::api::client::internal::Manager&>(
+        , client_lmdb_(dynamic_cast<const ot::api::client::Manager&>(
               ot::Context().StartClient(
                   ot::Options{}.SetStoragePlugin("lmdb"),
                   3)))
 #endif  // OT_STORAGE_LMDB
-        , reason_(client_.Factory().PasswordPrompt(__FUNCTION__))
+        , reason_(client_.Factory().PasswordPrompt(__func__))
     {
     }
 };

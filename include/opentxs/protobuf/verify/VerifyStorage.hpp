@@ -14,52 +14,41 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT const VersionMap&
-BlindedSeriesListAllowedStorageItemHash() noexcept;
-OPENTXS_EXPORT const VersionMap&
-StorageAccountsAllowedStorageAccountIndex() noexcept;
-OPENTXS_EXPORT const VersionMap&
-StorageAccountsAllowedStorageItemHash() noexcept;
-OPENTXS_EXPORT const VersionMap& StorageAccountsAllowedStorageIDList() noexcept;
-OPENTXS_EXPORT const VersionMap&
-StorageBip47ContextsAllowedStorageItemHash() noexcept;
-OPENTXS_EXPORT const VersionMap&
-StorageBip47ContextsAllowedStorageBip47ChannelList() noexcept;
-OPENTXS_EXPORT const VersionMap& StorageContactsAllowedAddress() noexcept;
-OPENTXS_EXPORT const VersionMap& StorageContactsAllowedList() noexcept;
-OPENTXS_EXPORT const VersionMap&
-StorageContactsAllowedStorageContactNymIndex() noexcept;
-OPENTXS_EXPORT const VersionMap&
-StorageContactsAllowedStorageItemHash() noexcept;
-OPENTXS_EXPORT const VersionMap&
-StorageCredentialAllowedStorageItemHash() noexcept;
-OPENTXS_EXPORT const VersionMap& StorageIssuerAllowedStorageItemHash() noexcept;
-OPENTXS_EXPORT const VersionMap& StorageItemsAllowedSymmetricKey() noexcept;
-OPENTXS_EXPORT const VersionMap&
-StorageNotaryAllowedBlindedSeriesList() noexcept;
-OPENTXS_EXPORT const VersionMap&
-StorageNymAllowedBlockchainAccountList() noexcept;
-OPENTXS_EXPORT const VersionMap& StorageNymAllowedHDAccount() noexcept;
-OPENTXS_EXPORT const VersionMap&
-StorageNymAllowedStorageBip47AddressIndex() noexcept;
-OPENTXS_EXPORT const VersionMap& StorageNymAllowedStorageItemHash() noexcept;
-OPENTXS_EXPORT const VersionMap& StorageNymAllowedStoragePurse() noexcept;
-OPENTXS_EXPORT const VersionMap&
-StorageNymListAllowedStorageBip47NymAddressIndex() noexcept;
-OPENTXS_EXPORT const VersionMap&
-StorageNymListAllowedStorageItemHash() noexcept;
-OPENTXS_EXPORT const VersionMap&
-StoragePaymentWorkflowsAllowedStorageItemHash() noexcept;
-OPENTXS_EXPORT const VersionMap&
-StoragePaymentWorkflowsAllowedStoragePaymentWorkflowType() noexcept;
-OPENTXS_EXPORT const VersionMap&
-StoragePaymentWorkflowsAllowedStorageWorkflowIndex() noexcept;
-OPENTXS_EXPORT const VersionMap& StoragePurseAllowedStorageItemHash() noexcept;
-OPENTXS_EXPORT const VersionMap& StorageSeedsAllowedStorageItemHash() noexcept;
-OPENTXS_EXPORT const VersionMap&
-StorageServersAllowedStorageItemHash() noexcept;
-OPENTXS_EXPORT const VersionMap& StorageThreadAllowedItem() noexcept;
-OPENTXS_EXPORT const VersionMap& StorageUnitsAllowedStorageItemHash() noexcept;
+auto BlindedSeriesListAllowedStorageItemHash() noexcept -> const VersionMap&;
+auto StorageAccountsAllowedStorageAccountIndex() noexcept -> const VersionMap&;
+auto StorageAccountsAllowedStorageItemHash() noexcept -> const VersionMap&;
+auto StorageAccountsAllowedStorageIDList() noexcept -> const VersionMap&;
+auto StorageBip47ContextsAllowedStorageItemHash() noexcept -> const VersionMap&;
+auto StorageBip47ContextsAllowedStorageBip47ChannelList() noexcept
+    -> const VersionMap&;
+auto StorageContactsAllowedAddress() noexcept -> const VersionMap&;
+auto StorageContactsAllowedList() noexcept -> const VersionMap&;
+auto StorageContactsAllowedStorageContactNymIndex() noexcept
+    -> const VersionMap&;
+auto StorageContactsAllowedStorageItemHash() noexcept -> const VersionMap&;
+auto StorageCredentialAllowedStorageItemHash() noexcept -> const VersionMap&;
+auto StorageIssuerAllowedStorageItemHash() noexcept -> const VersionMap&;
+auto StorageItemsAllowedSymmetricKey() noexcept -> const VersionMap&;
+auto StorageNotaryAllowedBlindedSeriesList() noexcept -> const VersionMap&;
+auto StorageNymAllowedBlockchainAccountList() noexcept -> const VersionMap&;
+auto StorageNymAllowedHDAccount() noexcept -> const VersionMap&;
+auto StorageNymAllowedStorageBip47AddressIndex() noexcept -> const VersionMap&;
+auto StorageNymAllowedStorageItemHash() noexcept -> const VersionMap&;
+auto StorageNymAllowedStoragePurse() noexcept -> const VersionMap&;
+auto StorageNymListAllowedStorageBip47NymAddressIndex() noexcept
+    -> const VersionMap&;
+auto StorageNymListAllowedStorageItemHash() noexcept -> const VersionMap&;
+auto StoragePaymentWorkflowsAllowedStorageItemHash() noexcept
+    -> const VersionMap&;
+auto StoragePaymentWorkflowsAllowedStoragePaymentWorkflowType() noexcept
+    -> const VersionMap&;
+auto StoragePaymentWorkflowsAllowedStorageWorkflowIndex() noexcept
+    -> const VersionMap&;
+auto StoragePurseAllowedStorageItemHash() noexcept -> const VersionMap&;
+auto StorageSeedsAllowedStorageItemHash() noexcept -> const VersionMap&;
+auto StorageServersAllowedStorageItemHash() noexcept -> const VersionMap&;
+auto StorageThreadAllowedItem() noexcept -> const VersionMap&;
+auto StorageUnitsAllowedStorageItemHash() noexcept -> const VersionMap&;
 }  // namespace proto
 }  // namespace opentxs
 #endif  // OPENTXS_PROTOBUF_VERIFYSTORAGE_HPP

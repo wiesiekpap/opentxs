@@ -22,10 +22,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -66,67 +63,68 @@ using mapOfClauses = std::map<std::string, OTClause*>;
 using mapOfParties = std::map<std::string, OTParty*>;
 using mapOfVariables = std::map<std::string, OTVariable*>;
 
-std::string vectorToString(const std::vector<std::int64_t>& v);
-std::vector<std::int64_t> stringToVector(const std::string& s);
+auto vectorToString(const std::vector<std::int64_t>& v) -> std::string;
+auto stringToVector(const std::string& s) -> std::vector<std::int64_t>;
 
 class OPENTXS_EXPORT OTScriptable : public Contract
 {
 public:
-    const std::vector<std::int64_t>& openingNumsInOrderOfSigning() const
+    auto openingNumsInOrderOfSigning() const -> const std::vector<std::int64_t>&
     {
         return openingNumsInOrderOfSigning_;
     }
 
     void specifyParties(bool bNewState);
     void specifyAssetTypes(bool bNewState);
-    bool arePartiesSpecified() const;
-    bool areAssetTypesSpecified() const;
+    auto arePartiesSpecified() const -> bool;
+    auto areAssetTypesSpecified() const -> bool;
 
     virtual void SetDisplayLabel(const std::string* pstrLabel = nullptr);
-    std::int32_t GetPartyCount() const
+    auto GetPartyCount() const -> std::int32_t
     {
         return static_cast<std::int32_t>(m_mapParties.size());
     }
-    std::int32_t GetBylawCount() const
+    auto GetBylawCount() const -> std::int32_t
     {
         return static_cast<std::int32_t>(m_mapBylaws.size());
     }
-    virtual bool AddParty(OTParty& theParty);  // Takes
-                                               // ownership.
-    virtual bool AddBylaw(OTBylaw& theBylaw);  // takes
-                                               // ownership.
-    virtual bool ConfirmParty(
+    virtual auto AddParty(OTParty& theParty) -> bool;  // Takes
+                                                       // ownership.
+    virtual auto AddBylaw(OTBylaw& theBylaw) -> bool;  // takes
+                                                       // ownership.
+    virtual auto ConfirmParty(
         OTParty& theParty,  // Takes ownership.
         otx::context::Server& context,
-        const PasswordPrompt& reason);
-    bool RemoveParty(std::string str_Name);
-    bool RemoveBylaw(std::string str_Name);
-    OTParty* GetParty(std::string str_party_name) const;
-    OTBylaw* GetBylaw(std::string str_bylaw_name) const;
-    OTClause* GetClause(std::string str_clause_name) const;
-    OTParty* GetPartyByIndex(std::int32_t nIndex) const;
-    OTBylaw* GetBylawByIndex(std::int32_t nIndex) const;
-    OTParty* FindPartyBasedOnNymAsAgent(
+        const PasswordPrompt& reason) -> bool;
+    auto RemoveParty(std::string str_Name) -> bool;
+    auto RemoveBylaw(std::string str_Name) -> bool;
+    auto GetParty(std::string str_party_name) const -> OTParty*;
+    auto GetBylaw(std::string str_bylaw_name) const -> OTBylaw*;
+    auto GetClause(std::string str_clause_name) const -> OTClause*;
+    auto GetPartyByIndex(std::int32_t nIndex) const -> OTParty*;
+    auto GetBylawByIndex(std::int32_t nIndex) const -> OTBylaw*;
+    auto FindPartyBasedOnNymAsAgent(
         const identity::Nym& theNym,
-        OTAgent** ppAgent = nullptr) const;
-    OTParty* FindPartyBasedOnNymAsAuthAgent(
+        OTAgent** ppAgent = nullptr) const -> OTParty*;
+    auto FindPartyBasedOnNymAsAuthAgent(
         const identity::Nym& theNym,
-        OTAgent** ppAgent = nullptr) const;
-    OTParty* FindPartyBasedOnAccount(
+        OTAgent** ppAgent = nullptr) const -> OTParty*;
+    auto FindPartyBasedOnAccount(
         const Account& theAccount,
-        OTPartyAccount** ppPartyAccount = nullptr) const;
-    OTParty* FindPartyBasedOnNymIDAsAgent(
+        OTPartyAccount** ppPartyAccount = nullptr) const -> OTParty*;
+    auto FindPartyBasedOnNymIDAsAgent(
         const identifier::Nym& theNymID,
-        OTAgent** ppAgent = nullptr) const;
-    OTParty* FindPartyBasedOnNymIDAsAuthAgent(
+        OTAgent** ppAgent = nullptr) const -> OTParty*;
+    auto FindPartyBasedOnNymIDAsAuthAgent(
         const identifier::Nym& theNymID,
-        OTAgent** ppAgent = nullptr) const;
-    OTParty* FindPartyBasedOnAccountID(
+        OTAgent** ppAgent = nullptr) const -> OTParty*;
+    auto FindPartyBasedOnAccountID(
         const Identifier& theAcctID,
-        OTPartyAccount** ppPartyAccount = nullptr) const;
-    OTAgent* GetAgent(std::string str_agent_name) const;
-    OTPartyAccount* GetPartyAccount(std::string str_acct_name) const;
-    OTPartyAccount* GetPartyAccountByID(const Identifier& theAcctID) const;
+        OTPartyAccount** ppPartyAccount = nullptr) const -> OTParty*;
+    auto GetAgent(std::string str_agent_name) const -> OTAgent*;
+    auto GetPartyAccount(std::string str_acct_name) const -> OTPartyAccount*;
+    auto GetPartyAccountByID(const Identifier& theAcctID) const
+        -> OTPartyAccount*;
     // This function returns the count of how many trans#s a Nym needs in order
     // to confirm as
     // a specific agent for a contract. (An opening number is needed for every
@@ -135,8 +133,8 @@ public:
     // which agent is the
     // authorized agent.)
     //
-    std::int32_t GetCountTransNumsNeededForAgent(
-        std::string str_agent_name) const;
+    auto GetCountTransNumsNeededForAgent(std::string str_agent_name) const
+        -> std::int32_t;
     // Verifies that Nym is actually an agent for this agreement.
     // (Verifies that Nym has signed this agreement, if it's a trade or a
     // payment plan, OR
@@ -144,9 +142,9 @@ public:
     // and in that case, that theNym is listed as an agent for that party.)
     // Basically this means that the agreement's owner approves of theNym.
     //
-    virtual bool VerifyNymAsAgent(
+    virtual auto VerifyNymAsAgent(
         const identity::Nym& theNym,
-        const identity::Nym& theSignerNym) const;
+        const identity::Nym& theSignerNym) const -> bool;
 
     // NEED TO CALL BOTH METHODS. (above / below)
 
@@ -155,10 +153,10 @@ public:
     // Also verifies that theNym is an agent for theAccount, according to the
     // ACCOUNT.
     //
-    virtual bool VerifyNymAsAgentForAccount(
+    virtual auto VerifyNymAsAgentForAccount(
         const identity::Nym& theNym,
-        const Account& theAccount) const;
-    bool VerifyPartyAuthorization(
+        const Account& theAccount) const -> bool;
+    auto VerifyPartyAuthorization(
         OTParty& theParty,  // The party that supposedly is authorized for this
                             // supposedly executed agreement.
         const identity::Nym& theSignerNym,  // For verifying signature on the
@@ -166,29 +164,31 @@ public:
         const String& strNotaryID,  // For verifying issued num, need the
                                     // notaryID the # goes with.
         const PasswordPrompt& reason,
-        bool bBurnTransNo = false);  // In Server::VerifySmartContract(), it
-                                     // not only wants to
+        bool bBurnTransNo = false)
+        -> bool;  // In Server::VerifySmartContract(), it
+                  // not only wants to
     // verify the # is properly issued, but it additionally
     // wants to see that it hasn't been USED yet -- AND it wants
     // to burn it, so it can't be used again!  This bool allows
     // you to tell the function whether or not to do that.
 
-    bool VerifyPartyAcctAuthorization(
+    auto VerifyPartyAcctAuthorization(
         const PasswordPrompt& reason,
         OTPartyAccount& thePartyAcct,  // The party is assumed to have been
                                        // verified already via
                                        // VerifyPartyAuthorization()
         const String& strNotaryID,     // For verifying issued num, need the
                                        // notaryID the # goes with.
-        bool bBurnTransNo = false);    // In Server::VerifySmartContract(), it
-                                       // not only wants to
+        bool bBurnTransNo = false)
+        -> bool;  // In Server::VerifySmartContract(), it
+                  // not only wants to
     // verify the closing # is properly issued, but it
     // additionally wants to see that it hasn't been USED yet --
     // AND it wants to burn it, so it can't be used again!  This
     // bool allows you to tell the function whether or not to do
     // that.
-    bool VerifyThisAgainstAllPartiesSignedCopies();
-    bool AllPartiesHaveSupposedlyConfirmed();
+    auto VerifyThisAgainstAllPartiesSignedCopies() -> bool;
+    auto AllPartiesHaveSupposedlyConfirmed() -> bool;
 
     void ClearTemporaryPointers();
     // Look up all clauses matching a specific hook.
@@ -197,27 +197,29 @@ public:
     // hook name, but you can NOT have the same clause name repeated
     // multiple times in theResults. Each clause can only trigger once.
     //
-    bool GetHooks(std::string str_HookName, mapOfClauses& theResults);
-    OTClause* GetCallback(std::string str_CallbackName);  // See if a
-                                                          // scripted
-                                                          // clause was
-                                                          // provided for
-                                                          // any given
-                                                          // callback name.
-    OTVariable* GetVariable(std::string str_VarName);     // See if a variable
-                                                          // exists for a
-                                                          // given variable
-                                                          // name.
-    bool IsDirty() const;  // So you can tell if any of the persistent or
-                           // important variables have CHANGED since it was last
-                           // set clean.
-    bool IsDirtyImportant() const;  // So you can tell if ONLY the IMPORTANT
-                                    // variables have CHANGED since it was last
-                                    // set clean.
+    auto GetHooks(std::string str_HookName, mapOfClauses& theResults) -> bool;
+    auto GetCallback(std::string str_CallbackName)
+        -> OTClause*;  // See if a
+                       // scripted
+                       // clause was
+                       // provided for
+                       // any given
+                       // callback name.
+    auto GetVariable(std::string str_VarName)
+        -> OTVariable*;            // See if a variable
+                                   // exists for a
+                                   // given variable
+                                   // name.
+    auto IsDirty() const -> bool;  // So you can tell if any of the persistent
+                                   // or important variables have CHANGED since
+                                   // it was last set clean.
+    auto IsDirtyImportant() const -> bool;  // So you can tell if ONLY the
+                                            // IMPORTANT variables have CHANGED
+                                            // since it was last set clean.
     void SetAsClean();  // Sets the variables as clean, so you can check later
                         // and see if any have been changed (if it's DIRTY
                         // again.)
-    bool SendNoticeToAllParties(
+    auto SendNoticeToAllParties(
         bool bSuccessMsg,
         const identity::Nym& theServerNym,
         const identifier::Server& theNotaryID,
@@ -228,7 +230,7 @@ public:
         const PasswordPrompt& reason,
         OTString pstrNote = String::Factory(),
         OTString pstrAttachment = String::Factory(),
-        identity::Nym* pActualNym = nullptr) const;
+        identity::Nym* pActualNym = nullptr) const -> bool;
     // This is an OT Native call party_may_execute_clause
     // It returns true/false whether party is allowed to execute clause.
     // The default return value, for a legitimate party, is true.
@@ -237,10 +239,10 @@ public:
     // CanExecuteClause will call ExecuteCallback() if that script exists, so
     // the script can reply true/false.
     //
-    bool CanExecuteClause(
+    auto CanExecuteClause(
         std::string str_party_name,
-        std::string str_clause_name);  // This calls (if
-                                       // available) the
+        std::string str_clause_name) -> bool;  // This calls (if
+                                               // available) the
     // scripted clause:
     // bool party_may_execute_clause(party_name,
     // clause_name)
@@ -250,32 +252,33 @@ public:
     // param_party_name and param_clause_name, both strings.
     // Also: callback_party_may_execute_clause should return a bool.
 
-    bool ExecuteCallback(
+    auto ExecuteCallback(
         OTClause& theCallbackClause,
         mapOfVariables& theParameters,
-        OTVariable& varReturnVal);
+        OTVariable& varReturnVal) -> bool;
 
     virtual void RegisterOTNativeCallsWithScript(OTScript& theScript);
-    virtual bool Compare(OTScriptable& rhs) const;
+    virtual auto Compare(OTScriptable& rhs) const -> bool;
 
     // Make sure a string contains only alpha, numeric, or '_'
     // And make sure it's not blank. This is for script variable names, clause
     // names, party names, etc.
     //
-    static bool ValidateName(const std::string& str_name);
-    static bool ValidateBylawName(const std::string& str_name);
-    static bool ValidatePartyName(const std::string& str_name);
-    static bool ValidateAgentName(const std::string& str_name);
-    static bool ValidateAccountName(const std::string& str_name);
-    static bool ValidateVariableName(const std::string& str_name);
-    static bool ValidateClauseName(const std::string& str_name);
-    static bool ValidateHookName(const std::string& str_name);
-    static bool ValidateCallbackName(const std::string& str_name);
+    static auto ValidateName(const std::string& str_name) -> bool;
+    static auto ValidateBylawName(const std::string& str_name) -> bool;
+    static auto ValidatePartyName(const std::string& str_name) -> bool;
+    static auto ValidateAgentName(const std::string& str_name) -> bool;
+    static auto ValidateAccountName(const std::string& str_name) -> bool;
+    static auto ValidateVariableName(const std::string& str_name) -> bool;
+    static auto ValidateClauseName(const std::string& str_name) -> bool;
+    static auto ValidateHookName(const std::string& str_name) -> bool;
+    static auto ValidateCallbackName(const std::string& str_name) -> bool;
 
     // For use from inside server-side scripts.
     //
-    static std::string GetTime();  // Returns a string, containing seconds as
-                                   // std::int32_t. (Time in seconds.)
+    static auto GetTime()
+        -> std::string;  // Returns a string, containing seconds as
+                         // std::int32_t. (Time in seconds.)
 
     void UpdateContentsToTag(Tag& parent, bool bCalculatingID) const;
     void CalculateContractID(Identifier& newID) const override;
@@ -380,19 +383,19 @@ protected:
     bool m_bSpecifyParties{false};  // Serialized. See above note.
 
     // return -1 if error, 0 if nothing, and 1 if the node was processed.
-    std::int32_t ProcessXMLNode(irr::io::IrrXMLReader*& xml) override;
+    auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
 
     OTString m_strLabel;  // OTSmartContract can put its trans# here. (Allowing
                           // us to use it in the OTScriptable methods where any
                           // smart contract would normally want to log its
                           // transaction #, not just the clause name.)
 
-    OTScriptable(const api::internal::Core& api);
+    OTScriptable(const api::Core& api);
 
 private:
     using ot_super = Contract;
 
-    static bool is_ot_namechar_invalid(char c);
+    static auto is_ot_namechar_invalid(char c) -> bool;
 
     OTScriptable() = delete;
 };

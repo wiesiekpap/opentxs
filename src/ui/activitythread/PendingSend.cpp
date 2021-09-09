@@ -22,7 +22,7 @@ namespace opentxs::factory
 {
 auto PendingSend(
     const ui::implementation::ActivityThreadInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const ui::implementation::ActivityThreadRowID& rowID,
     const ui::implementation::ActivityThreadSortKey& sortKey,
@@ -49,7 +49,7 @@ namespace opentxs::ui::implementation
 {
 PendingSend::PendingSend(
     const ActivityThreadInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const ActivityThreadRowID& rowID,
     const ActivityThreadSortKey& sortKey,

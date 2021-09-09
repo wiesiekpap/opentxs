@@ -12,12 +12,6 @@
 
 #include "opentxs/blockchain/Types.hpp"
 
-#ifdef SWIG
-// clang-format off
-%rename(ZMQEndpoints) opentxs::api::Endpoints;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace identifier
@@ -548,8 +542,8 @@ protected:
 private:
     Endpoints(const Endpoints&) = delete;
     Endpoints(Endpoints&&) = delete;
-    Endpoints& operator=(const Endpoints&) = delete;
-    Endpoints& operator=(Endpoints&&) = delete;
+    auto operator=(const Endpoints&) -> Endpoints& = delete;
+    auto operator=(Endpoints&&) -> Endpoints& = delete;
 };
 }  // namespace api
 }  // namespace opentxs

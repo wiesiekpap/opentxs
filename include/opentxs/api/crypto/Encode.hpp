@@ -23,21 +23,25 @@ namespace crypto
 class Encode
 {
 public:
-    virtual std::string DataEncode(const std::string& input) const = 0;
-    virtual std::string DataEncode(const Data& input) const = 0;
-    virtual std::string DataDecode(const std::string& input) const = 0;
-    virtual std::string IdentifierEncode(const Data& input) const = 0;
-    virtual std::string IdentifierDecode(const std::string& input) const = 0;
-    virtual bool IsBase62(const std::string& str) const = 0;
-    virtual OTString Nonce(const std::uint32_t size) const = 0;
-    virtual OTString Nonce(const std::uint32_t size, Data& rawOutput) const = 0;
-    virtual std::string RandomFilename() const = 0;
-    virtual std::string SanatizeBase58(const std::string& input) const = 0;
-    virtual std::string SanatizeBase64(const std::string& input) const = 0;
-    virtual std::string Z85Encode(const Data& input) const = 0;
-    virtual std::string Z85Encode(const std::string& input) const = 0;
-    virtual OTData Z85Decode(const Data& input) const = 0;
-    virtual std::string Z85Decode(const std::string& input) const = 0;
+    virtual auto DataEncode(const std::string& input) const -> std::string = 0;
+    virtual auto DataEncode(const Data& input) const -> std::string = 0;
+    virtual auto DataDecode(const std::string& input) const -> std::string = 0;
+    virtual auto IdentifierEncode(const Data& input) const -> std::string = 0;
+    virtual auto IdentifierDecode(const std::string& input) const
+        -> std::string = 0;
+    virtual auto IsBase62(const std::string& str) const -> bool = 0;
+    virtual auto Nonce(const std::uint32_t size) const -> OTString = 0;
+    virtual auto Nonce(const std::uint32_t size, Data& rawOutput) const
+        -> OTString = 0;
+    virtual auto RandomFilename() const -> std::string = 0;
+    virtual auto SanatizeBase58(const std::string& input) const
+        -> std::string = 0;
+    virtual auto SanatizeBase64(const std::string& input) const
+        -> std::string = 0;
+    virtual auto Z85Encode(const Data& input) const -> std::string = 0;
+    virtual auto Z85Encode(const std::string& input) const -> std::string = 0;
+    virtual auto Z85Decode(const Data& input) const -> OTData = 0;
+    virtual auto Z85Decode(const std::string& input) const -> std::string = 0;
 
     virtual ~Encode() = default;
 
@@ -47,8 +51,8 @@ protected:
 private:
     Encode(const Encode&) = delete;
     Encode(Encode&&) = delete;
-    Encode& operator=(const Encode&) = delete;
-    Encode& operator=(Encode&&) = delete;
+    auto operator=(const Encode&) -> Encode& = delete;
+    auto operator=(Encode&&) -> Encode& = delete;
 };
 }  // namespace crypto
 }  // namespace api

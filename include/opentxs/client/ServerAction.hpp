@@ -20,10 +20,10 @@ namespace client
 class OPENTXS_EXPORT ServerAction
 {
 public:
-    virtual SendResult LastSendResult() const = 0;
-    virtual const std::shared_ptr<Message> Reply() const = 0;
+    virtual auto LastSendResult() const -> SendResult = 0;
+    virtual auto Reply() const -> const std::shared_ptr<Message> = 0;
 
-    virtual std::string Run(const std::size_t totalRetries = 2) = 0;
+    virtual auto Run(const std::size_t totalRetries = 2) -> std::string = 0;
 
     virtual ~ServerAction() = default;
 
@@ -33,8 +33,8 @@ protected:
 private:
     ServerAction(const ServerAction&) = delete;
     ServerAction(ServerAction&&) = delete;
-    ServerAction& operator=(const ServerAction&) = delete;
-    ServerAction& operator=(ServerAction&&) = delete;
+    auto operator=(const ServerAction&) -> ServerAction& = delete;
+    auto operator=(ServerAction&&) -> ServerAction& = delete;
 };
 }  // namespace client
 }  // namespace opentxs

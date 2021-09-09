@@ -23,10 +23,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace crypto
@@ -63,7 +60,7 @@ public:
         return crypto::HashType::Sha256;
     }
 
-    RSA(const api::internal::Core& api,
+    RSA(const api::Core& api,
         const crypto::AsymmetricProvider& engine,
         const crypto::key::asymmetric::Role role,
         const VersionNumber version,
@@ -71,7 +68,7 @@ public:
         Space& params,
         const PasswordPrompt& reason)
     noexcept(false);
-    RSA(const api::internal::Core& api,
+    RSA(const api::Core& api,
         const crypto::AsymmetricProvider& engine,
         const proto::AsymmetricKey& serialized)
     noexcept(false);
@@ -83,7 +80,7 @@ private:
     const OTData params_;
 
     static auto deserialize_key(
-        const api::internal::Core& api,
+        const api::Core& api,
         const proto::AsymmetricKey& serialized,
         Data& publicKey,
         Secret& privateKey) noexcept(false)

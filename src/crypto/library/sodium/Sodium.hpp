@@ -30,11 +30,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
+class Core;
 class Crypto;
 }  // namespace api
 

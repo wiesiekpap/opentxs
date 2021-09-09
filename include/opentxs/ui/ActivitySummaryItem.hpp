@@ -15,20 +15,6 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 
-#ifdef SWIG
-// clang-format off
-%extend opentxs::ui::ActivitySummaryItem {
-    int Timestamp() const noexcept
-    {
-        return Clock::to_time_t($self->Timestamp());
-    }
-}
-%ignore opentxs::ui::ActivitySummaryItem::Timestamp;
-%template(OTUIActivitySummaryItem) opentxs::SharedPimpl<opentxs::ui::ActivitySummaryItem>;
-%rename(UIActivitySummaryItem) opentxs::ui::ActivitySummaryItem;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -43,17 +29,17 @@ namespace opentxs
 {
 namespace ui
 {
-class ActivitySummaryItem : virtual public ListRow
+class OPENTXS_EXPORT ActivitySummaryItem : virtual public ListRow
 {
 public:
-    OPENTXS_EXPORT virtual std::string DisplayName() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string ImageURI() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string Text() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string ThreadID() const noexcept = 0;
-    OPENTXS_EXPORT virtual Time Timestamp() const noexcept = 0;
-    OPENTXS_EXPORT virtual StorageBox Type() const noexcept = 0;
+    virtual auto DisplayName() const noexcept -> std::string = 0;
+    virtual auto ImageURI() const noexcept -> std::string = 0;
+    virtual auto Text() const noexcept -> std::string = 0;
+    virtual auto ThreadID() const noexcept -> std::string = 0;
+    virtual auto Timestamp() const noexcept -> Time = 0;
+    virtual auto Type() const noexcept -> StorageBox = 0;
 
-    OPENTXS_EXPORT ~ActivitySummaryItem() override = default;
+    ~ActivitySummaryItem() override = default;
 
 protected:
     ActivitySummaryItem() noexcept = default;
@@ -61,8 +47,8 @@ protected:
 private:
     ActivitySummaryItem(const ActivitySummaryItem&) = delete;
     ActivitySummaryItem(ActivitySummaryItem&&) = delete;
-    ActivitySummaryItem& operator=(const ActivitySummaryItem&) = delete;
-    ActivitySummaryItem& operator=(ActivitySummaryItem&&) = delete;
+    auto operator=(const ActivitySummaryItem&) -> ActivitySummaryItem& = delete;
+    auto operator=(ActivitySummaryItem&&) -> ActivitySummaryItem& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

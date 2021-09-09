@@ -19,8 +19,8 @@ namespace crypto
 class Util
 {
 public:
-    virtual bool RandomizeMemory(void* destination, const std::size_t size)
-        const = 0;
+    virtual auto RandomizeMemory(void* destination, const std::size_t size)
+        const -> bool = 0;
 
     virtual ~Util() = default;
 
@@ -30,8 +30,8 @@ protected:
 private:
     Util(const Util&) = delete;
     Util(Util&&) = delete;
-    Util& operator=(const Util&) = delete;
-    Util& operator=(Util&&) = delete;
+    auto operator=(const Util&) -> Util& = delete;
+    auto operator=(Util&&) -> Util& = delete;
 };
 }  // namespace crypto
 }  // namespace api

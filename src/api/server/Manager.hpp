@@ -87,6 +87,10 @@ public:
     auto GetUserName() const -> std::string final;
     auto GetUserTerms() const -> std::string final;
     auto ID() const -> const identifier::Server& final;
+    auto InternalServer() const noexcept -> internal::Manager& final
+    {
+        return const_cast<Manager&>(*this);
+    }
     auto MakeInprocEndpoint() const -> std::string final;
     auto NymID() const -> const identifier::Nym& final;
     auto ScanMints() const -> void final;

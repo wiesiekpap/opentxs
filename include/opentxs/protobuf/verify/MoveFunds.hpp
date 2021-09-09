@@ -20,26 +20,26 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT bool CheckProto_1(const MoveFunds& input, const bool silent);
-OPENTXS_EXPORT bool CheckProto_2(const MoveFunds& input, const bool silent);
-OPENTXS_EXPORT bool CheckProto_3(const MoveFunds& input, const bool silent);
-OPENTXS_EXPORT bool CheckProto_4(const MoveFunds& input, const bool silent);
-OPENTXS_EXPORT bool CheckProto_5(const MoveFunds& input, const bool silent);
-OPENTXS_EXPORT bool CheckProto_6(const MoveFunds& input, const bool silent);
-OPENTXS_EXPORT bool CheckProto_7(const MoveFunds& input, const bool silent);
-OPENTXS_EXPORT bool CheckProto_8(const MoveFunds& input, const bool silent);
-OPENTXS_EXPORT bool CheckProto_9(const MoveFunds& input, const bool silent);
-OPENTXS_EXPORT bool CheckProto_10(const MoveFunds& input, const bool silent);
-OPENTXS_EXPORT bool CheckProto_11(const MoveFunds& input, const bool silent);
-OPENTXS_EXPORT bool CheckProto_12(const MoveFunds& input, const bool silent);
-OPENTXS_EXPORT bool CheckProto_13(const MoveFunds& input, const bool silent);
-OPENTXS_EXPORT bool CheckProto_14(const MoveFunds& input, const bool silent);
-OPENTXS_EXPORT bool CheckProto_15(const MoveFunds& input, const bool silent);
-OPENTXS_EXPORT bool CheckProto_16(const MoveFunds& input, const bool silent);
-OPENTXS_EXPORT bool CheckProto_17(const MoveFunds& input, const bool silent);
-OPENTXS_EXPORT bool CheckProto_18(const MoveFunds& input, const bool silent);
-OPENTXS_EXPORT bool CheckProto_19(const MoveFunds& input, const bool silent);
-OPENTXS_EXPORT bool CheckProto_20(const MoveFunds& input, const bool silent);
+auto CheckProto_1(const MoveFunds& input, const bool silent) -> bool;
+auto CheckProto_2(const MoveFunds& input, const bool silent) -> bool;
+auto CheckProto_3(const MoveFunds& input, const bool silent) -> bool;
+auto CheckProto_4(const MoveFunds& input, const bool silent) -> bool;
+auto CheckProto_5(const MoveFunds& input, const bool silent) -> bool;
+auto CheckProto_6(const MoveFunds& input, const bool silent) -> bool;
+auto CheckProto_7(const MoveFunds& input, const bool silent) -> bool;
+auto CheckProto_8(const MoveFunds& input, const bool silent) -> bool;
+auto CheckProto_9(const MoveFunds& input, const bool silent) -> bool;
+auto CheckProto_10(const MoveFunds& input, const bool silent) -> bool;
+auto CheckProto_11(const MoveFunds& input, const bool silent) -> bool;
+auto CheckProto_12(const MoveFunds& input, const bool silent) -> bool;
+auto CheckProto_13(const MoveFunds& input, const bool silent) -> bool;
+auto CheckProto_14(const MoveFunds& input, const bool silent) -> bool;
+auto CheckProto_15(const MoveFunds& input, const bool silent) -> bool;
+auto CheckProto_16(const MoveFunds& input, const bool silent) -> bool;
+auto CheckProto_17(const MoveFunds& input, const bool silent) -> bool;
+auto CheckProto_18(const MoveFunds& input, const bool silent) -> bool;
+auto CheckProto_19(const MoveFunds& input, const bool silent) -> bool;
+auto CheckProto_20(const MoveFunds& input, const bool silent) -> bool;
 }  // namespace proto
 }  // namespace opentxs
 #endif  // OPENTXS_PROTOBUF_MOVEFUNDS_HPP

@@ -20,66 +20,26 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT bool CheckProto_1(
-    const BlockchainP2PSync& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_2(
-    const BlockchainP2PSync& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_3(
-    const BlockchainP2PSync& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_4(
-    const BlockchainP2PSync& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_5(
-    const BlockchainP2PSync& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_6(
-    const BlockchainP2PSync& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_7(
-    const BlockchainP2PSync& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_8(
-    const BlockchainP2PSync& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_9(
-    const BlockchainP2PSync& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_10(
-    const BlockchainP2PSync& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_11(
-    const BlockchainP2PSync& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_12(
-    const BlockchainP2PSync& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_13(
-    const BlockchainP2PSync& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_14(
-    const BlockchainP2PSync& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_15(
-    const BlockchainP2PSync& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_16(
-    const BlockchainP2PSync& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_17(
-    const BlockchainP2PSync& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_18(
-    const BlockchainP2PSync& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_19(
-    const BlockchainP2PSync& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_20(
-    const BlockchainP2PSync& input,
-    const bool silent);
+auto CheckProto_1(const BlockchainP2PSync& input, const bool silent) -> bool;
+auto CheckProto_2(const BlockchainP2PSync& input, const bool silent) -> bool;
+auto CheckProto_3(const BlockchainP2PSync& input, const bool silent) -> bool;
+auto CheckProto_4(const BlockchainP2PSync& input, const bool silent) -> bool;
+auto CheckProto_5(const BlockchainP2PSync& input, const bool silent) -> bool;
+auto CheckProto_6(const BlockchainP2PSync& input, const bool silent) -> bool;
+auto CheckProto_7(const BlockchainP2PSync& input, const bool silent) -> bool;
+auto CheckProto_8(const BlockchainP2PSync& input, const bool silent) -> bool;
+auto CheckProto_9(const BlockchainP2PSync& input, const bool silent) -> bool;
+auto CheckProto_10(const BlockchainP2PSync& input, const bool silent) -> bool;
+auto CheckProto_11(const BlockchainP2PSync& input, const bool silent) -> bool;
+auto CheckProto_12(const BlockchainP2PSync& input, const bool silent) -> bool;
+auto CheckProto_13(const BlockchainP2PSync& input, const bool silent) -> bool;
+auto CheckProto_14(const BlockchainP2PSync& input, const bool silent) -> bool;
+auto CheckProto_15(const BlockchainP2PSync& input, const bool silent) -> bool;
+auto CheckProto_16(const BlockchainP2PSync& input, const bool silent) -> bool;
+auto CheckProto_17(const BlockchainP2PSync& input, const bool silent) -> bool;
+auto CheckProto_18(const BlockchainP2PSync& input, const bool silent) -> bool;
+auto CheckProto_19(const BlockchainP2PSync& input, const bool silent) -> bool;
+auto CheckProto_20(const BlockchainP2PSync& input, const bool silent) -> bool;
 }  // namespace proto
 }  // namespace opentxs
 #endif  // OPENTXS_PROTOBUF_BLOCKCHAIN_P2P_SYNC_HPP

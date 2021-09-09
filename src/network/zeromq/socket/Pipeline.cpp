@@ -9,9 +9,9 @@
 
 #include <memory>
 
-#include "internal/api/Api.hpp"
 #include "internal/network/zeromq/socket/Socket.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/core/Log.hpp"
@@ -29,7 +29,7 @@ template class opentxs::Pimpl<opentxs::network::zeromq::Pipeline>;
 namespace opentxs::factory
 {
 auto Pipeline(
-    const api::internal::Core& api,
+    const api::Core& api,
     const network::zeromq::Context& context,
     std::function<void(network::zeromq::Message&)> callback)
     -> std::unique_ptr<opentxs::network::zeromq::Pipeline>
@@ -43,7 +43,7 @@ auto Pipeline(
 namespace opentxs::network::zeromq::socket::implementation
 {
 Pipeline::Pipeline(
-    const api::internal::Core& api,
+    const api::Core& api,
     const zeromq::Context& context,
     std::function<void(zeromq::Message&)> callback) noexcept
     : sender_(context.PushSocket(Socket::Direction::Bind))

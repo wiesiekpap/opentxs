@@ -17,10 +17,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -45,10 +42,11 @@ public:
     void Release() override;
     void UpdateContents(const PasswordPrompt& reason) override;
 
-    virtual bool HasTransactionNum(const TransactionNumber& lInput) const;
+    virtual auto HasTransactionNum(const TransactionNumber& lInput) const
+        -> bool;
     virtual void GetAllTransactionNumbers(NumList& numlistOutput) const;
 
-    inline TransactionNumber GetTransactionNum() const
+    inline auto GetTransactionNum() const -> TransactionNumber
     {
         return m_lTransactionNum;
     }
@@ -58,12 +56,12 @@ public:
         m_lTransactionNum = lTransactionNum;
     }
 
-    inline const Identifier& GetSenderAcctID() const
+    inline auto GetSenderAcctID() const -> const Identifier&
     {
         return m_SENDER_ACCT_ID;
     }
 
-    inline const identifier::Nym& GetSenderNymID() const
+    inline auto GetSenderNymID() const -> const identifier::Nym&
     {
         return m_SENDER_NYM_ID;
     }
@@ -81,13 +79,13 @@ protected:
     void SetSenderAcctID(const Identifier& ACCT_ID);
     void SetSenderNymID(const identifier::Nym& NYM_ID);
 
-    OTTrackable(const api::internal::Core& api);
+    OTTrackable(const api::Core& api);
     OTTrackable(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID);
     OTTrackable(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const Identifier& ACCT_ID,

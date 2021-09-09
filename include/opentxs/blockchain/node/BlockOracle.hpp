@@ -71,8 +71,8 @@ protected:
 private:
     BlockOracle(const BlockOracle&) = delete;
     BlockOracle(BlockOracle&&) = delete;
-    BlockOracle& operator=(const BlockOracle&) = delete;
-    BlockOracle& operator=(BlockOracle&&) = delete;
+    auto operator=(const BlockOracle&) -> BlockOracle& = delete;
+    auto operator=(BlockOracle&&) -> BlockOracle& = delete;
 };
 }  // namespace node
 }  // namespace blockchain

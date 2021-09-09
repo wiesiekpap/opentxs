@@ -46,46 +46,47 @@ namespace opentxs
 class OPENTXS_EXPORT NymParameters
 {
 public:
-    crypto::key::asymmetric::Algorithm Algorithm() const noexcept;
-    NymParameters ChangeType(const NymParameterType type) const noexcept;
-    identity::CredentialType credentialType() const noexcept;
+    auto Algorithm() const noexcept -> crypto::key::asymmetric::Algorithm;
+    auto ChangeType(const NymParameterType type) const noexcept
+        -> NymParameters;
+    auto credentialType() const noexcept -> identity::CredentialType;
 #if OT_CRYPTO_WITH_BIP32
-    Bip32Index CredIndex() const noexcept;
-    Bip32Index Credset() const noexcept;
-    bool Default() const noexcept;
+    auto CredIndex() const noexcept -> Bip32Index;
+    auto Credset() const noexcept -> Bip32Index;
+    auto Default() const noexcept -> bool;
 #endif  // OT_CRYPTO_WITH_BIP32
 #if OT_CRYPTO_SUPPORTED_KEY_RSA
-    ReadView DHParams() const noexcept;
+    auto DHParams() const noexcept -> ReadView;
 #endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 #if OT_CRYPTO_WITH_BIP32
-    const Secret& Entropy() const noexcept;
+    auto Entropy() const noexcept -> const Secret&;
 #endif  // OT_CRYPTO_WITH_BIP32
-    OPENTXS_NO_EXPORT bool GetContactData(
-        proto::ContactData& serialized) const noexcept;
-    OPENTXS_NO_EXPORT bool GetVerificationSet(
-        proto::VerificationSet& serialized) const noexcept;
-    const crypto::key::Keypair& Keypair() const noexcept;
+    OPENTXS_NO_EXPORT auto GetContactData(
+        proto::ContactData& serialized) const noexcept -> bool;
+    OPENTXS_NO_EXPORT auto GetVerificationSet(
+        proto::VerificationSet& serialized) const noexcept -> bool;
+    auto Keypair() const noexcept -> const crypto::key::Keypair&;
 #if OT_CRYPTO_SUPPORTED_KEY_RSA
-    std::int32_t keySize() const noexcept;
+    auto keySize() const noexcept -> std::int32_t;
 #endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 #if OT_CRYPTO_WITH_BIP32
-    Bip32Index Nym() const noexcept;
+    auto Nym() const noexcept -> Bip32Index;
 #endif  // OT_CRYPTO_WITH_BIP32
-    NymParameterType nymParameterType() const noexcept;
-    std::uint8_t PaymentCodeVersion() const noexcept;
+    auto nymParameterType() const noexcept -> NymParameterType;
+    auto PaymentCodeVersion() const noexcept -> std::uint8_t;
 #if OT_CRYPTO_WITH_BIP32
-    std::string Seed() const noexcept;
-    crypto::Language SeedLanguage() const noexcept;
-    crypto::SeedStrength SeedStrength() const noexcept;
-    crypto::SeedStyle SeedStyle() const noexcept;
+    auto Seed() const noexcept -> std::string;
+    auto SeedLanguage() const noexcept -> crypto::Language;
+    auto SeedStrength() const noexcept -> crypto::SeedStrength;
+    auto SeedStyle() const noexcept -> crypto::SeedStyle;
 #endif  // OT_CRYPTO_WITH_BIP32
-    identity::SourceProofType SourceProofType() const noexcept;
-    identity::SourceType SourceType() const noexcept;
+    auto SourceProofType() const noexcept -> identity::SourceProofType;
+    auto SourceType() const noexcept -> identity::SourceType;
 #if OT_CRYPTO_WITH_BIP32
-    bool UseAutoIndex() const noexcept;
+    auto UseAutoIndex() const noexcept -> bool;
 #endif  // OT_CRYPTO_WITH_BIP32
 
-    OTKeypair& Keypair() noexcept;
+    auto Keypair() noexcept -> OTKeypair&;
     OPENTXS_NO_EXPORT void SetContactData(
         const proto::ContactData& contactData) noexcept;
 #if OT_CRYPTO_WITH_BIP32

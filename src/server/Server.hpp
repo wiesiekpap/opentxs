@@ -46,10 +46,7 @@ namespace implementation
 class Manager;
 }  // namespace implementation
 
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace server
 }  // namespace api
 
@@ -73,10 +70,7 @@ namespace opentxs::server
 class Server
 {
 public:
-    auto API() const -> const api::server::internal::Manager&
-    {
-        return manager_;
-    }
+    auto API() const -> const api::server::Manager& { return manager_; }
     auto GetConnectInfo(
         core::AddressType& type,
         std::string& hostname,
@@ -129,7 +123,7 @@ private:
     const std::uint32_t MIN_TCP_PORT = 1024;
     const std::uint32_t MAX_TCP_PORT = 63356;
 
-    const api::server::internal::Manager& manager_;
+    const api::server::Manager& manager_;
     const PasswordPrompt& reason_;
     MainFile mainFile_;
     Notary notary_;
@@ -182,7 +176,7 @@ private:
         const Message& msg) -> bool;
 
     Server(
-        const opentxs::api::server::internal::Manager& manager,
+        const opentxs::api::server::Manager& manager,
         const PasswordPrompt& reason);
     Server() = delete;
     Server(const Server&) = delete;

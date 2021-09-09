@@ -11,10 +11,10 @@
 #include <memory>
 #include <utility>
 
-#include "internal/api/client/Client.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -24,7 +24,7 @@ namespace opentxs::factory
 {
 auto AccountSummaryItem(
     const ui::implementation::IssuerItemInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ui::implementation::IssuerItemRowID& rowID,
     const ui::implementation::IssuerItemSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
@@ -40,7 +40,7 @@ namespace opentxs::ui::implementation
 {
 AccountSummaryItem::AccountSummaryItem(
     const IssuerItemInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const IssuerItemRowID& rowID,
     const IssuerItemSortKey& sortKey,
     CustomData& custom) noexcept

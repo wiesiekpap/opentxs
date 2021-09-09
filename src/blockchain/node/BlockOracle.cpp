@@ -133,7 +133,7 @@ auto BlockOracle::pipeline(const zmq::Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -151,7 +151,7 @@ auto BlockOracle::pipeline(const zmq::Message& in) noexcept -> void
     switch (task) {
         case Task::ProcessBlock: {
             if (2 > body.size()) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": No block").Flush();
+                LogOutput(OT_METHOD)(__func__)(": No block").Flush();
 
                 OT_FAIL;
             }
@@ -166,7 +166,7 @@ auto BlockOracle::pipeline(const zmq::Message& in) noexcept -> void
             shutdown(shutdown_promise_);
         } break;
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unhandled type").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Unhandled type").Flush();
 
             OT_FAIL;
         }

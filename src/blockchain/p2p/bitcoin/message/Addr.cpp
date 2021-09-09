@@ -39,8 +39,7 @@ auto BitcoinP2PAddr(
     using ReturnType = bitcoin::message::implementation::Addr;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Invalid header")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -49,7 +48,7 @@ auto BitcoinP2PAddr(
     auto expectedSize = sizeof(std::byte);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Payload too short (compactsize)")
             .Flush();
 
@@ -62,7 +61,7 @@ auto BitcoinP2PAddr(
         network::blockchain::bitcoin::DecodeSize(it, expectedSize, size, count);
 
     if (false == haveCount) {
-        LogOutput(__FUNCTION__)(": Invalid CompactSizee").Flush();
+        LogOutput(__func__)(": Invalid CompactSizee").Flush();
 
         return nullptr;
     }
@@ -79,7 +78,7 @@ auto BitcoinP2PAddr(
             expectedSize += addressSize;
 
             if (expectedSize > size) {
-                LogOutput("opentxs::factory::")(__FUNCTION__)(
+                LogOutput("opentxs::factory::")(__func__)(
                     ": Address entries incomplete at entry index ")(i)
                     .Flush();
 

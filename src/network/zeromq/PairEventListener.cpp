@@ -36,7 +36,7 @@ PairEventListener::PairEventListener(
 
     OT_ASSERT(started)
 
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": listening on ")(endpoint).Flush();
+    LogVerbose(OT_METHOD)(__func__)(": listening on ")(endpoint).Flush();
 }
 
 auto PairEventListener::clone() const noexcept -> PairEventListener*

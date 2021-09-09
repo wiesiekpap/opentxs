@@ -21,10 +21,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 class OPENTXS_EXPORT Instrument : public OTScriptable
@@ -33,19 +30,23 @@ public:
     void Release() override;
 
     void Release_Instrument();
-    bool VerifyCurrentDate();  // Verify whether the CURRENT date
-                               // is WITHIN the VALID FROM / TO
-                               // dates.
-    bool IsExpired();          // Verify whether the CURRENT date is
-                               // AFTER the the "VALID TO" date.
-    inline Time GetValidFrom() const { return m_VALID_FROM; }
-    inline Time GetValidTo() const { return m_VALID_TO; }
+    auto VerifyCurrentDate() -> bool;  // Verify whether the CURRENT date
+                                       // is WITHIN the VALID FROM / TO
+                                       // dates.
+    auto IsExpired() -> bool;          // Verify whether the CURRENT date is
+                                       // AFTER the the "VALID TO" date.
+    inline auto GetValidFrom() const -> Time { return m_VALID_FROM; }
+    inline auto GetValidTo() const -> Time { return m_VALID_TO; }
 
-    inline const identifier::UnitDefinition& GetInstrumentDefinitionID() const
+    inline auto GetInstrumentDefinitionID() const
+        -> const identifier::UnitDefinition&
     {
         return m_InstrumentDefinitionID;
     }
-    inline const identifier::Server& GetNotaryID() const { return m_NotaryID; }
+    inline auto GetNotaryID() const -> const identifier::Server&
+    {
+        return m_NotaryID;
+    }
     void InitInstrument();
 
     ~Instrument() override;
@@ -59,7 +60,7 @@ protected:
     // The date, in seconds, when the instrument expires.
     Time m_VALID_TO;
 
-    std::int32_t ProcessXMLNode(irr::io::IrrXMLReader*& xml) override;
+    auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
 
     inline void SetValidFrom(const Time TIME_FROM) { m_VALID_FROM = TIME_FROM; }
     inline void SetValidTo(const Time TIME_TO) { m_VALID_TO = TIME_TO; }
@@ -73,9 +74,9 @@ protected:
         m_NotaryID = NOTARY_ID;
     }
 
-    Instrument(const api::internal::Core& core);
+    Instrument(const api::Core& core);
     Instrument(
-        const api::internal::Core& core,
+        const api::Core& core,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID);
 

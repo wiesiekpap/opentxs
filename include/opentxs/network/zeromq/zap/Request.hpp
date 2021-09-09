@@ -39,31 +39,31 @@ namespace zeromq
 {
 namespace zap
 {
-class Request : virtual public zeromq::Message
+class OPENTXS_EXPORT Request : virtual public zeromq::Message
 {
 public:
-    OPENTXS_EXPORT static Pimpl<Request> Factory();
-    OPENTXS_EXPORT static Pimpl<Request> Factory(
+    static auto Factory() -> Pimpl<Request>;
+    static auto Factory(
         const std::string& address,
         const std::string& domain,
         const zap::Mechanism mechanism,
         const Data& requestID = Data::Factory(),
         const Data& identity = Data::Factory(),
-        const std::string& version = "1.0");
+        const std::string& version = "1.0") -> Pimpl<Request>;
 
-    OPENTXS_EXPORT virtual std::string Address() const = 0;
-    OPENTXS_EXPORT virtual const FrameSection Credentials() const = 0;
-    OPENTXS_EXPORT virtual std::string Debug() const = 0;
-    OPENTXS_EXPORT virtual std::string Domain() const = 0;
-    OPENTXS_EXPORT virtual OTData Identity() const = 0;
-    OPENTXS_EXPORT virtual zap::Mechanism Mechanism() const = 0;
-    OPENTXS_EXPORT virtual OTData RequestID() const = 0;
-    OPENTXS_EXPORT virtual std::pair<bool, std::string> Validate() const = 0;
-    OPENTXS_EXPORT virtual std::string Version() const = 0;
+    virtual auto Address() const -> std::string = 0;
+    virtual auto Credentials() const -> const FrameSection = 0;
+    virtual auto Debug() const -> std::string = 0;
+    virtual auto Domain() const -> std::string = 0;
+    virtual auto Identity() const -> OTData = 0;
+    virtual auto Mechanism() const -> zap::Mechanism = 0;
+    virtual auto RequestID() const -> OTData = 0;
+    virtual auto Validate() const -> std::pair<bool, std::string> = 0;
+    virtual auto Version() const -> std::string = 0;
 
-    OPENTXS_EXPORT virtual Frame& AddCredential(const Data& credential) = 0;
+    virtual auto AddCredential(const Data& credential) -> Frame& = 0;
 
-    OPENTXS_EXPORT ~Request() override = default;
+    ~Request() override = default;
 
 protected:
     Request() = default;
@@ -72,13 +72,13 @@ private:
     friend OTZMQZAPRequest;
 
 #ifndef _WIN32
-    Request* clone() const override = 0;
+    auto clone() const -> Request* override = 0;
 #endif
 
     Request(const Request&) = delete;
     Request(Request&&) = delete;
-    Request& operator=(const Request&) = delete;
-    Request& operator=(Request&&) = delete;
+    auto operator=(const Request&) -> Request& = delete;
+    auto operator=(Request&&) -> Request& = delete;
 };
 }  // namespace zap
 }  // namespace zeromq

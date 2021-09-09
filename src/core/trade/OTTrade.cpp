@@ -13,8 +13,8 @@
 #include <memory>
 #include <string>
 
-#include "internal/api/Api.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Editor.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
@@ -43,7 +43,7 @@ namespace opentxs
 {
 enum { TradeProcessIntervalSeconds = 10 };
 
-OTTrade::OTTrade(const api::internal::Core& core)
+OTTrade::OTTrade(const api::Core& core)
     : ot_super(core)
     , currencyTypeID_(api_.Factory().UnitID())
     , currencyAcctID_(api_.Factory().Identifier())
@@ -59,7 +59,7 @@ OTTrade::OTTrade(const api::internal::Core& core)
 }
 
 OTTrade::OTTrade(
-    const api::internal::Core& core,
+    const api::Core& core,
     const identifier::Server& notaryID,
     const identifier::UnitDefinition& instrumentDefinitionID,
     const Identifier& assetAcctId,
@@ -179,16 +179,17 @@ auto OTTrade::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         SetCurrencyID(CURRENCY_TYPE_ID);
         SetCurrencyAcctID(CURRENCY_ACCT_ID);
 
-        LogDebug(OT_METHOD)(__FUNCTION__)(": Trade. Transaction Number: ")(
+        LogDebug(OT_METHOD)(__func__)(": Trade. Transaction Number: ")(
             m_lTransactionNum)("Completed # of Trades: ")(tradesAlreadyDone_)
             .Flush();
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Creation Date: ")(creation)(
-            ". Valid From: ")(validFrom)(". Valid To: ")(validTo)(
-            ". assetTypeID: ")(instrumentDefinitionID)(". assetAccountID: ")(
-            assetAcctID)(". NotaryID: ")(notaryID)(". NymID: ")(nymID)(
-            ". currencyTypeID: ")(currencyTypeID)(". currencyAccountID: ")(
-            currencyAcctID)(".")
+        LogDetail(OT_METHOD)(__func__)(": Creation Date: ")(
+            creation)(". Valid From: ")(validFrom)(". Valid To: ")(
+            validTo)(". assetTypeID: ")(
+            instrumentDefinitionID)(". assetAccountID: ")(
+            assetAcctID)(". NotaryID: ")(notaryID)(". NymID: ")(
+            nymID)(". currencyTypeID: ")(
+            currencyTypeID)(". currencyAccountID: ")(currencyAcctID)(".")
             .Flush();
 
         returnVal = 1;
@@ -200,7 +201,7 @@ auto OTTrade::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         if (sign->Compare("0")) {
             stopSign_ = 0;  // Zero means it isn't a stop order. So why is the
                             // tag in the file?
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Strange: Stop order tag found in trade, but sign "
                 "character set to 0. "
                 "(Zero means: NOT a stop order).")
@@ -212,9 +213,9 @@ auto OTTrade::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             stopSign_ = '>';
         else {
             stopSign_ = 0;
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Unexpected or nonexistent value in stop order sign: ")(sign)(
-                ".")
+            LogOutput(OT_METHOD)(__func__)(
+                ": Unexpected or nonexistent value in stop order sign: ")(
+                sign)(".")
                 .Flush();
             return (-1);
         }
@@ -231,7 +232,7 @@ auto OTTrade::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         else
             stopActivated_ = false;
 
-        LogDebug(OT_METHOD)(__FUNCTION__)("Stop order --")(
+        LogDebug(OT_METHOD)(__func__)("Stop order --")(
             stopActivated_ ? "Already activated" : "Will activate")(
             " when price ")(stopActivated_ ? "was" : "reaches")(
             ('<' == stopSign_) ? "LESS THAN" : "GREATER THAN")(stopPrice_)
@@ -241,8 +242,8 @@ auto OTTrade::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
     } else if (!strcmp("offer", xml->getNodeName())) {
         if (!Contract::LoadEncodedTextField(xml, marketOffer_)) {
 
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Offer field without "
-                                               "value.")
+            LogOutput(OT_METHOD)(__func__)(": Error: Offer field without "
+                                           "value.")
                 .Flush();
             return (-1);  // error condition
         }
@@ -333,24 +334,24 @@ auto OTTrade::VerifyOffer(OTOffer& offer) const -> bool
     // Let's verify the thing.
 
     if (GetTransactionNum() != offer.GetTransactionNum()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": While verifying offer, failed matching transaction number.")
             .Flush();
         return false;
     } else if (GetNotaryID() != offer.GetNotaryID()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": While verifying offer, failed matching Notary ID.")
             .Flush();
         return false;
     } else if (
         GetInstrumentDefinitionID() != offer.GetInstrumentDefinitionID()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": While verifying offer, failed matching instrument definition "
             "ID.")
             .Flush();
         return false;
     } else if (GetCurrencyID() != offer.GetCurrencyID()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": While verifying offer, failed matching currency type ID.")
             .Flush();
         return false;
@@ -405,7 +406,7 @@ auto OTTrade::GetOffer(
             if (false != bool(pMarket))
                 *market = pMarket.get();  // <=================
             else
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Offer_ already exists, yet unable to find the "
                     "market it's supposed to be on.")
                     .Flush();
@@ -419,7 +420,7 @@ auto OTTrade::GetOffer(
     // else (BELOW) offer_ IS nullptr, and thus it didn't exist yet...
 
     if (!marketOffer_->Exists()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Error: Called with empty marketOffer_.")
             .Flush();
         return nullptr;
@@ -432,7 +433,7 @@ auto OTTrade::GetOffer(
     // (So I can use it to lookup the Market ID, so I can see the offer is
     // already there on the market.)
     if (!offer->LoadContractFromString(marketOffer_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error loading offer from string.")
+        LogOutput(OT_METHOD)(__func__)(": Error loading offer from string.")
             .Flush();
         return nullptr;
     }
@@ -462,7 +463,7 @@ auto OTTrade::GetOffer(
 
     // Couldn't find (or create) the market.
     if (false == bool(pMarket)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Unable to find or create market within requested parameters.")
             .Flush();
         return nullptr;
@@ -520,7 +521,7 @@ auto OTTrade::GetOffer(
         if (hasTradeActivated_) {
             // Error -- how has the trade already activated, yet not on the
             // market and null in my pointer?
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": How has the trade already activated, yet not on the "
                 "market and null in my pointer?")
                 .Flush();
@@ -533,7 +534,7 @@ auto OTTrade::GetOffer(
             // market.
             // bSaveFile=true.
             // Error adding the offer to the market!
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error adding the offer to the market! (Even though "
                 "supposedly the right market).")
                 .Flush();
@@ -601,7 +602,7 @@ auto OTTrade::GetOffer(
                                                   // the market (not just
             {  // loading from disk) the we actually want to save the market.
                 // Error adding the offer to the market!    // bSaveFile=true.
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Error adding the stop order to the market! (Even "
                     "though supposedly the right market).")
                     .Flush();
@@ -676,7 +677,7 @@ void OTTrade::onRemovalFromCron(const PasswordPrompt& reason)
 
     if (offer_ == nullptr) {
         if (!marketOffer_->Exists()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error: Called with nullptr offer_ and "
                 "empty marketOffer_.")
                 .Flush();
@@ -692,8 +693,7 @@ void OTTrade::onRemovalFromCron(const PasswordPrompt& reason)
         // is
         // already there on the market.)
         if (!offer->LoadContractFromString(marketOffer_)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Error loading offer from string.")
+            LogOutput(OT_METHOD)(__func__)(": Error loading offer from string.")
                 .Flush();
             return;
         }
@@ -711,7 +711,7 @@ void OTTrade::onRemovalFromCron(const PasswordPrompt& reason)
     // Couldn't find (or create) the market.
     //
     if (false == bool(market)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Unable to find market within requested parameters.")
             .Flush();
         return;
@@ -767,7 +767,7 @@ auto OTTrade::CanRemoveItemFromCron(const otx::context::Client& context) -> bool
     // you check first and make sure the Nym who requested it actually has said
     // trans# (and 2 related closing #s) signed out to him on his last receipt.
     if (!context.Nym()->CompareID(GetSenderNymID())) {
-        LogInsane(OT_METHOD)(__FUNCTION__)(
+        LogInsane(OT_METHOD)(__func__)(
             ": nym is not the originator of this CronItem. (He could be a "
             "recipient though, so this is normal).")
             .Flush();
@@ -776,7 +776,7 @@ auto OTTrade::CanRemoveItemFromCron(const otx::context::Client& context) -> bool
     }
     // By this point, that means nym is DEFINITELY the originator (sender)...
     else if (GetCountClosingNumbers() < 2) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Weird: Sender tried to remove a market "
             "trade; expected at "
             "least 2 closing numbers to be available--that weren't. (Found ")(
@@ -789,16 +789,16 @@ auto OTTrade::CanRemoveItemFromCron(const otx::context::Client& context) -> bool
     const auto notaryID = String::Factory(GetNotaryID());
 
     if (!context.VerifyIssuedNumber(GetAssetAcctClosingNum())) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Closing number didn't verify "
-                                           "for asset account.")
+        LogNormal(OT_METHOD)(__func__)(": Closing number didn't verify "
+                                       "for asset account.")
             .Flush();
 
         return false;
     }
 
     if (!context.VerifyIssuedNumber(GetCurrencyAcctClosingNum())) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Closing number didn't verify "
-                                           "for currency account.")
+        LogNormal(OT_METHOD)(__func__)(": Closing number didn't verify "
+                                       "for currency account.")
             .Flush();
 
         return false;
@@ -941,12 +941,12 @@ void OTTrade::onFinalReceipt(
                 reason,
                 note,
                 attachment)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failure dropping receipt into nymbox.")
                 .Flush();
         }
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Problem verifying Opening Number when calling "
             "VerifyIssuedNum(openingNumber).")
             .Flush();
@@ -968,7 +968,7 @@ void OTTrade::onFinalReceipt(
             note,
             attachment);
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed verifying "
             "closingAssetNumber=origCronItem. "
             "GetClosingTransactionNoAt(0)>0 &&  "
@@ -991,7 +991,7 @@ void OTTrade::onFinalReceipt(
             note,
             attachment);
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed verifying closingCurrencyNumber=origCronItem. "
             "GetClosingTransactionNoAt(1)>0  && "
             "originator. VerifyTransactionNum(closingCurrencyNumber).")
@@ -1145,7 +1145,7 @@ auto OTTrade::IssueTrade(OTOffer& offer, char stopSign, std::int64_t stopPrice)
     if ((stopSign == 0) || (stopSign == '<') || (stopSign == '>'))
         stopSign_ = stopSign;
     else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Bad data in Stop Sign while issuing trade: ")(stopSign)(".")
             .Flush();
         return false;
@@ -1155,8 +1155,7 @@ auto OTTrade::IssueTrade(OTOffer& offer, char stopSign, std::int64_t stopPrice)
     // and set.
     if ((stopSign_ == '<') || (stopSign_ == '>')) {
         if (0 >= stopPrice) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Expected Stop Price for trade.")
+            LogOutput(OT_METHOD)(__func__)(": Expected Stop Price for trade.")
                 .Flush();
             return false;
         }

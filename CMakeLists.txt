@@ -176,11 +176,6 @@ option(
   ${OT_WITH_QT}
 )
 option(
-  OT_WITH_JAVA
-  "Build with Java binding"
-  OFF
-)
-option(
   OT_OPENSSL_FLAVOR_LIBRESSL
   "Assume OpenSSL library is LibreSSL"
   OFF
@@ -375,9 +370,6 @@ message(STATUS "Chai:                     ${OT_SCRIPT_USING_CHAI}")
 message(STATUS "UI-------------------------------------------")
 message(STATUS "Qt:                       ${OT_WITH_QT}")
 message(STATUS "QML:                      ${OT_WITH_QML}")
-
-message(STATUS "Bindings ------------------------------------")
-message(STATUS "Java binding:             ${OT_WITH_JAVA}")
 
 message(STATUS "Extra ---------------------------------------")
 message(STATUS "RPC server:               ${OT_ENABLE_RPC}")
@@ -741,12 +733,6 @@ else()
   set(OT_QML_EXPORT 0)
 endif()
 
-if(OT_WITH_JAVA)
-  set(OT_SWIG ON)
-else()
-  set(OT_SWIG OFF)
-endif()
-
 if(WIN32)
   add_definitions(-DWIN32_LEAN_AND_MEAN)
   add_definitions(-D_WIN32_WINNT=0x0601)
@@ -794,10 +780,6 @@ add_library(
 add_subdirectory(deps)
 add_subdirectory(serialization)
 add_subdirectory(src)
-
-if(OT_SWIG)
-  add_subdirectory(wrappers)
-endif()
 
 if(OPENTXS_BUILD_TESTS)
   include(CTest)

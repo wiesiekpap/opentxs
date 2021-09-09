@@ -21,6 +21,11 @@ namespace blockchain
 {
 namespace crypto
 {
+namespace internal
+{
+struct Element;
+}  // namespace internal
+
 class Subaccount;
 }  // namespace crypto
 }  // namespace blockchain
@@ -39,19 +44,22 @@ class OPENTXS_EXPORT Element
 public:
     using Txids = std::vector<opentxs::blockchain::block::pTxid>;
 
-    virtual std::string Address(const AddressStyle format) const noexcept = 0;
-    virtual Txids Confirmed() const noexcept = 0;
-    virtual OTIdentifier Contact() const noexcept = 0;
-    virtual Bip32Index Index() const noexcept = 0;
-    virtual ECKey Key() const noexcept = 0;
-    virtual crypto::Key KeyID() const noexcept = 0;
-    virtual std::string Label() const noexcept = 0;
-    virtual Time LastActivity() const noexcept = 0;
-    virtual const Subaccount& Parent() const noexcept = 0;
-    virtual ECKey PrivateKey(const PasswordPrompt& reason) const noexcept = 0;
-    virtual OTData PubkeyHash() const noexcept = 0;
-    virtual crypto::Subchain Subchain() const noexcept = 0;
-    virtual Txids Unconfirmed() const noexcept = 0;
+    virtual auto Address(const AddressStyle format) const noexcept
+        -> std::string = 0;
+    virtual auto Confirmed() const noexcept -> Txids = 0;
+    virtual auto Contact() const noexcept -> OTIdentifier = 0;
+    virtual auto Index() const noexcept -> Bip32Index = 0;
+    virtual auto Internal() const noexcept -> internal::Element& = 0;
+    virtual auto Key() const noexcept -> ECKey = 0;
+    virtual auto KeyID() const noexcept -> crypto::Key = 0;
+    virtual auto Label() const noexcept -> std::string = 0;
+    virtual auto LastActivity() const noexcept -> Time = 0;
+    virtual auto Parent() const noexcept -> const Subaccount& = 0;
+    virtual auto PrivateKey(const PasswordPrompt& reason) const noexcept
+        -> ECKey = 0;
+    virtual auto PubkeyHash() const noexcept -> OTData = 0;
+    virtual auto Subchain() const noexcept -> crypto::Subchain = 0;
+    virtual auto Unconfirmed() const noexcept -> Txids = 0;
 
     OPENTXS_NO_EXPORT virtual ~Element() = default;
 
@@ -61,8 +69,8 @@ protected:
 private:
     Element(const Element&) = delete;
     Element(Element&&) = delete;
-    Element& operator=(const Element&) = delete;
-    Element& operator=(Element&&) = delete;
+    auto operator=(const Element&) -> Element& = delete;
+    auto operator=(Element&&) -> Element& = delete;
 };
 }  // namespace crypto
 }  // namespace blockchain

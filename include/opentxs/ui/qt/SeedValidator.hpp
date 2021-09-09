@@ -40,7 +40,10 @@ class OPENTXS_EXPORT opentxs::ui::SeedValidator final : public QValidator
 public:
     using Phrase = QVector<QString>;
 
+    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
     Q_INVOKABLE bool checkPhrase(const Phrase& phrase) const;
+
+public:
     void fixup(QString& input) const final;
     State validate(QString& input, int& pos) const final;
 

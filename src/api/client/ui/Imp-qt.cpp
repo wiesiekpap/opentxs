@@ -28,7 +28,7 @@
 namespace opentxs::api::client::ui
 {
 ImpQt::ImpQt(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const api::client::internal::Blockchain& blockchain,
     const Flag& running) noexcept
     : Imp(api, blockchain, running)

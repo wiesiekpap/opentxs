@@ -31,10 +31,10 @@ private:
     vector_tags tags_;
 
 public:
-    const std::string& name() const { return name_; }
-    const std::string& text() const { return text_; }
-    const map_strings& attributes() const { return attributes_; }
-    const vector_tags& tags() const { return tags_; }
+    auto name() const -> const std::string& { return name_; }
+    auto text() const -> const std::string& { return text_; }
+    auto attributes() const -> const map_strings& { return attributes_; }
+    auto tags() const -> const vector_tags& { return tags_; }
 
     void set_name(const std::string& str_name) { name_ = str_name; }
     void set_text(const std::string& str_text) { text_ = str_text; }

@@ -918,7 +918,7 @@ auto Options::ParseCommandLine(int argc, char** argv) noexcept -> Options&
     try {
         imp_->parse(argc, argv);
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
     }
 
     return *this;

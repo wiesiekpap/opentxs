@@ -25,10 +25,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 class Factory;
@@ -62,7 +59,7 @@ public:
 private:
     friend opentxs::Factory;
 
-    const api::internal::Core& api_;
+    const api::Core& api_;
     const Flag& running_;
     mutable std::atomic<std::chrono::seconds> linger_;
     mutable std::atomic<std::chrono::seconds> receive_timeout_;
@@ -77,7 +74,7 @@ private:
 
     void init(const Lock& lock) const;
 
-    ZMQ(const api::internal::Core& api, const Flag& running);
+    ZMQ(const api::Core& api, const Flag& running);
     ZMQ() = delete;
     ZMQ(const ZMQ&) = delete;
     ZMQ(ZMQ&&) = delete;

@@ -20,26 +20,26 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT bool CheckProto_1(const Issuer& input, const bool silent);
-OPENTXS_EXPORT bool CheckProto_2(const Issuer&, const bool);
-OPENTXS_EXPORT bool CheckProto_3(const Issuer&, const bool);
-OPENTXS_EXPORT bool CheckProto_4(const Issuer&, const bool);
-OPENTXS_EXPORT bool CheckProto_5(const Issuer&, const bool);
-OPENTXS_EXPORT bool CheckProto_6(const Issuer&, const bool);
-OPENTXS_EXPORT bool CheckProto_7(const Issuer&, const bool);
-OPENTXS_EXPORT bool CheckProto_8(const Issuer&, const bool);
-OPENTXS_EXPORT bool CheckProto_9(const Issuer&, const bool);
-OPENTXS_EXPORT bool CheckProto_10(const Issuer&, const bool);
-OPENTXS_EXPORT bool CheckProto_11(const Issuer&, const bool);
-OPENTXS_EXPORT bool CheckProto_12(const Issuer&, const bool);
-OPENTXS_EXPORT bool CheckProto_13(const Issuer&, const bool);
-OPENTXS_EXPORT bool CheckProto_14(const Issuer&, const bool);
-OPENTXS_EXPORT bool CheckProto_15(const Issuer&, const bool);
-OPENTXS_EXPORT bool CheckProto_16(const Issuer&, const bool);
-OPENTXS_EXPORT bool CheckProto_17(const Issuer&, const bool);
-OPENTXS_EXPORT bool CheckProto_18(const Issuer&, const bool);
-OPENTXS_EXPORT bool CheckProto_19(const Issuer&, const bool);
-OPENTXS_EXPORT bool CheckProto_20(const Issuer&, const bool);
+auto CheckProto_1(const Issuer& input, const bool silent) -> bool;
+auto CheckProto_2(const Issuer&, const bool) -> bool;
+auto CheckProto_3(const Issuer&, const bool) -> bool;
+auto CheckProto_4(const Issuer&, const bool) -> bool;
+auto CheckProto_5(const Issuer&, const bool) -> bool;
+auto CheckProto_6(const Issuer&, const bool) -> bool;
+auto CheckProto_7(const Issuer&, const bool) -> bool;
+auto CheckProto_8(const Issuer&, const bool) -> bool;
+auto CheckProto_9(const Issuer&, const bool) -> bool;
+auto CheckProto_10(const Issuer&, const bool) -> bool;
+auto CheckProto_11(const Issuer&, const bool) -> bool;
+auto CheckProto_12(const Issuer&, const bool) -> bool;
+auto CheckProto_13(const Issuer&, const bool) -> bool;
+auto CheckProto_14(const Issuer&, const bool) -> bool;
+auto CheckProto_15(const Issuer&, const bool) -> bool;
+auto CheckProto_16(const Issuer&, const bool) -> bool;
+auto CheckProto_17(const Issuer&, const bool) -> bool;
+auto CheckProto_18(const Issuer&, const bool) -> bool;
+auto CheckProto_19(const Issuer&, const bool) -> bool;
+auto CheckProto_20(const Issuer&, const bool) -> bool;
 }  // namespace proto
 }  // namespace opentxs
 

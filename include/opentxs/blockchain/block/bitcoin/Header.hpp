@@ -19,18 +19,17 @@ namespace block
 {
 namespace bitcoin
 {
-class Header : virtual public block::Header
+class OPENTXS_EXPORT Header : virtual public block::Header
 {
 public:
-    OPENTXS_EXPORT virtual auto MerkleRoot() const noexcept
-        -> const block::Hash& = 0;
-    OPENTXS_EXPORT virtual auto Encode() const noexcept -> OTData = 0;
-    OPENTXS_EXPORT virtual auto Nonce() const noexcept -> std::uint32_t = 0;
-    OPENTXS_EXPORT virtual auto nBits() const noexcept -> std::uint32_t = 0;
-    OPENTXS_EXPORT virtual auto Timestamp() const noexcept -> Time = 0;
-    OPENTXS_EXPORT virtual auto Version() const noexcept -> std::uint32_t = 0;
+    virtual auto MerkleRoot() const noexcept -> const block::Hash& = 0;
+    virtual auto Encode() const noexcept -> OTData = 0;
+    virtual auto Nonce() const noexcept -> std::uint32_t = 0;
+    virtual auto nBits() const noexcept -> std::uint32_t = 0;
+    virtual auto Timestamp() const noexcept -> Time = 0;
+    virtual auto Version() const noexcept -> std::uint32_t = 0;
 
-    OPENTXS_EXPORT ~Header() override = default;
+    ~Header() override = default;
 
 protected:
     Header() noexcept = default;
@@ -38,8 +37,8 @@ protected:
 private:
     Header(const Header&) = delete;
     Header(Header&&) = delete;
-    Header& operator=(const Header&) = delete;
-    Header& operator=(Header&&) = delete;
+    auto operator=(const Header&) -> Header& = delete;
+    auto operator=(Header&&) -> Header& = delete;
 };
 }  // namespace bitcoin
 }  // namespace block

@@ -12,8 +12,8 @@
 #include <utility>
 
 #include "crypto/key/Asymmetric.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/crypto/key/Factory.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -26,7 +26,7 @@ namespace opentxs::factory
 using ReturnType = crypto::key::implementation::RSA;
 
 auto RSAKey(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::AsymmetricProvider& engine,
     const proto::AsymmetricKey& input) noexcept
     -> std::unique_ptr<crypto::key::RSA>
@@ -34,14 +34,14 @@ auto RSAKey(
     try {
         return std::make_unique<ReturnType>(api, engine, input);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
 }
 
 auto RSAKey(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::AsymmetricProvider& engine,
     const crypto::key::asymmetric::Role role,
     const VersionNumber version,
@@ -55,7 +55,7 @@ auto RSAKey(
         return std::make_unique<ReturnType>(
             api, engine, role, version, options, params, reason);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -65,7 +65,7 @@ auto RSAKey(
 namespace opentxs::crypto::key::implementation
 {
 RSA::RSA(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::AsymmetricProvider& engine,
     const proto::AsymmetricKey& serialized) noexcept(false)
     : Asymmetric(
@@ -80,7 +80,7 @@ RSA::RSA(
 }
 
 RSA::RSA(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::AsymmetricProvider& engine,
     const crypto::key::asymmetric::Role role,
     const VersionNumber version,
@@ -138,7 +138,7 @@ auto RSA::asPublic() const noexcept -> std::unique_ptr<key::Asymmetric>
 }
 
 auto RSA::deserialize_key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const proto::AsymmetricKey& proto,
     Data& publicKey,
     Secret&) noexcept(false) -> std::unique_ptr<proto::Ciphertext>

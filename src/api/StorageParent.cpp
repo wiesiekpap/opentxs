@@ -82,9 +82,9 @@ void StorageParent::init(
     auto seed = seeds.DefaultSeed();
 
     if (seed.empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": No default seed.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": No default seed.").Flush();
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Default seed is: ")(seed)(".")
+        LogOutput(OT_METHOD)(__func__)(": Default seed is: ")(seed)(".")
             .Flush();
     }
 
@@ -92,12 +92,12 @@ void StorageParent::init(
     storage_encryption_key_ = seeds.GetStorageKey(seed, reason);
 
     if (storage_encryption_key_.get()) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(
-            ": Obtained storage key ")(storage_encryption_key_->ID(reason))
+        LogDetail(OT_METHOD)(__func__)(": Obtained storage key ")(
+            storage_encryption_key_->ID(reason))
             .Flush();
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to load storage key ")(seed)(".")
+        LogOutput(OT_METHOD)(__func__)(": Failed to load storage key ")(
+            seed)(".")
             .Flush();
     }
 #endif
@@ -128,21 +128,19 @@ auto StorageParent::get_primary_storage_plugin(
         if (haveConfigured && (false == same)) {
             migrate = true;
             previous.Set(configured);
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Migrating from ")(previous)(".")
+            LogOutput(OT_METHOD)(__func__)(": Migrating from ")(previous)(".")
                 .Flush();
         }
 
         return commandLine;
     } else {
         if (haveConfigured) {
-            LogDetail(OT_METHOD)(__FUNCTION__)(": Using config file value.")
+            LogDetail(OT_METHOD)(__func__)(": Using config file value.")
                 .Flush();
 
             return configured;
         } else {
-            LogDetail(OT_METHOD)(__FUNCTION__)(": Using default value.")
-                .Flush();
+            LogDetail(OT_METHOD)(__func__)(": Using default value.").Flush();
 
             return hardcoded;
         }

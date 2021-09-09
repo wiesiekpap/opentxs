@@ -24,8 +24,8 @@
 #include "ui/payablelist/PayableListItem.hpp"  // IWYU pragma: associated
 #include "ui/unitlist/UnitListItem.hpp"        // IWYU pragma: associated
 
-#include "ui/qt/SendMonitor.hpp"
 #include "opentxs/core/Log.hpp"
+#include "ui/qt/SendMonitor.hpp"
 
 namespace opentxs::ui::implementation
 {

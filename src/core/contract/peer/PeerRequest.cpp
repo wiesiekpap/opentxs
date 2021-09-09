@@ -10,11 +10,11 @@
 #include <list>
 #include <memory>
 
-#include "internal/api/Api.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -44,7 +44,7 @@ auto PeerRequest(const api::Core& api) noexcept
 namespace opentxs::contract::peer::implementation
 {
 Request::Request(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const VersionNumber version,
     const identifier::Nym& recipient,
@@ -61,7 +61,7 @@ Request::Request(
 }
 
 Request::Request(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const SerializedType& serialized,
     const std::string& conditions)
@@ -156,7 +156,7 @@ auto Request::Finish(Request& contract, const PasswordPrompt& reason) -> bool
 
         return true;
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to finalize contract.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to finalize contract.")
             .Flush();
 
         return false;
@@ -168,9 +168,8 @@ auto Request::GetID(const Lock& lock) const -> OTIdentifier
     return GetID(api_, IDVersion(lock));
 }
 
-auto Request::GetID(
-    const api::internal::Core& api,
-    const SerializedType& contract) -> OTIdentifier
+auto Request::GetID(const api::Core& api, const SerializedType& contract)
+    -> OTIdentifier
 {
     return api.Factory().Identifier(contract);
 }
@@ -237,8 +236,7 @@ auto Request::update_signature(const Lock& lock, const PasswordPrompt& reason)
     if (success) {
         signatures_.emplace_front(new proto::Signature(signature));
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to create signature.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to create signature.").Flush();
     }
 
     return success;
@@ -251,17 +249,17 @@ auto Request::validate(const Lock& lock) const -> bool
     if (nym_) {
         validNym = nym_->VerifyPseudonym();
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid nym.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid nym.").Flush();
     }
 
     const bool validSyntax = proto::Validate(contract(lock), VERBOSE);
 
     if (!validSyntax) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid syntax.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid syntax.").Flush();
     }
 
     if (1 > signatures_.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing signature.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing signature.").Flush();
 
         return false;
     }
@@ -272,7 +270,7 @@ auto Request::validate(const Lock& lock) const -> bool
     if (signature) { validSig = verify_signature(lock, *signature); }
 
     if (!validSig) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid signature.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid signature.").Flush();
     }
 
     return (validNym && validSyntax && validSig);

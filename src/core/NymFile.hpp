@@ -26,10 +26,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -115,7 +112,7 @@ public:
 private:
     friend opentxs::Factory;
 
-    const api::internal::Core& api_;
+    const api::Core& api_;
     const Nym_p target_nym_{nullptr};
     const Nym_p signer_nym_{nullptr};
     std::int64_t m_lUsageCredits{-1};
@@ -176,7 +173,7 @@ private:
         const std::string& str_id,
         const Identifier& theInput) -> bool;
 
-    NymFile(const api::internal::Core& core, Nym_p targetNym, Nym_p signerNym);
+    NymFile(const api::Core& core, Nym_p targetNym, Nym_p signerNym);
     NymFile() = delete;
     NymFile(const NymFile&) = delete;
     NymFile(NymFile&&) = delete;

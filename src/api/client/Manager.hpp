@@ -28,6 +28,11 @@ namespace opentxs
 {
 namespace api
 {
+namespace client
+{
+class Manager;
+}  // namespace client
+
 namespace internal
 {
 struct Context;
@@ -72,6 +77,10 @@ public:
     auto InternalUI() const noexcept -> const internal::UI& final
     {
         return *ui_;
+    }
+    auto InternalClient() const noexcept -> internal::Manager& final
+    {
+        return const_cast<Manager&>(*this);
     }
     using Core::Lock;
     auto Lock(const identifier::Nym& nymID, const identifier::Server& serverID)

@@ -23,10 +23,7 @@ namespace implementation
 class Factory;
 }  // namespace implementation
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 class PasswordPrompt;
@@ -34,16 +31,16 @@ class PasswordPrompt;
 class OPENTXS_EXPORT OTSignedFile : public Contract
 {
 public:
-    bool LoadFile();
-    bool SaveFile();
-    bool VerifyFile();  // Returns true or false, whether actual subdir/file
-                        // matches purported subdir/file.
+    auto LoadFile() -> bool;
+    auto SaveFile() -> bool;
+    auto VerifyFile() -> bool;  // Returns true or false, whether actual
+                                // subdir/file matches purported subdir/file.
     // (You should still verify the signature on it as well, if you are doing
     // this.)
     void SetFilename(const String& LOCAL_SUBDIR, const String& FILE_NAME);
-    String& GetFilePayload();
+    auto GetFilePayload() -> String&;
     void SetFilePayload(const String& strArg);
-    String& GetSignerNymID();
+    auto GetSignerNymID() -> String&;
     void SetSignerNymID(const String& strArg);
     ~OTSignedFile() override;
     void Release() override;
@@ -84,7 +81,7 @@ protected:
     // the attacker has write/erase access to the filesystem. I'd like to make
     // it impervious even to that.
 
-    std::int32_t ProcessXMLNode(irr::io::IrrXMLReader*& xml) override;
+    auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
 
 private:  // Private prevents erroneous use by other classes.
     friend api::implementation::Factory;
@@ -94,17 +91,17 @@ private:  // Private prevents erroneous use by other classes.
     // These assume SetFilename() was already called,
     // or at least one of the constructors that uses it.
     //
-    explicit OTSignedFile(const api::internal::Core& core);
+    explicit OTSignedFile(const api::Core& core);
     explicit OTSignedFile(
-        const api::internal::Core& core,
+        const api::Core& core,
         const String& LOCAL_SUBDIR,
         const String& FILE_NAME);
     explicit OTSignedFile(
-        const api::internal::Core& core,
+        const api::Core& core,
         const char* LOCAL_SUBDIR,
         const String& FILE_NAME);
     explicit OTSignedFile(
-        const api::internal::Core& core,
+        const api::Core& core,
         const char* LOCAL_SUBDIR,
         const char* FILE_NAME);
 

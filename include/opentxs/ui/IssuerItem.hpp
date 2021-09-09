@@ -14,13 +14,6 @@
 #include "opentxs/ui/List.hpp"
 #include "opentxs/ui/ListRow.hpp"
 
-#ifdef SWIG
-// clang-format off
-%template(OTUIIssuerItem) opentxs::SharedPimpl<opentxs::ui::IssuerItem>;
-%rename(UIIssuerItem) opentxs::ui::IssuerItem;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -36,19 +29,19 @@ namespace opentxs
 {
 namespace ui
 {
-class IssuerItem : virtual public List, virtual public ListRow
+class OPENTXS_EXPORT IssuerItem : virtual public List, virtual public ListRow
 {
 public:
-    OPENTXS_EXPORT virtual bool ConnectionState() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string Debug() const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::AccountSummaryItem>
-    First() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string Name() const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::AccountSummaryItem>
-    Next() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Trusted() const noexcept = 0;
+    virtual auto ConnectionState() const noexcept -> bool = 0;
+    virtual auto Debug() const noexcept -> std::string = 0;
+    virtual auto First() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::AccountSummaryItem> = 0;
+    virtual auto Name() const noexcept -> std::string = 0;
+    virtual auto Next() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::AccountSummaryItem> = 0;
+    virtual auto Trusted() const noexcept -> bool = 0;
 
-    OPENTXS_EXPORT ~IssuerItem() override = default;
+    ~IssuerItem() override = default;
 
 protected:
     IssuerItem() noexcept = default;
@@ -56,8 +49,8 @@ protected:
 private:
     IssuerItem(const IssuerItem&) = delete;
     IssuerItem(IssuerItem&&) = delete;
-    IssuerItem& operator=(const IssuerItem&) = delete;
-    IssuerItem& operator=(IssuerItem&&) = delete;
+    auto operator=(const IssuerItem&) -> IssuerItem& = delete;
+    auto operator=(IssuerItem&&) -> IssuerItem& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

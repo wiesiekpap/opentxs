@@ -33,10 +33,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 
 class Core;
@@ -101,7 +98,7 @@ public:
 
     BlockchainAccountListItem(
         const AccountListInternalInterface& parent,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const AccountListRowID& rowID,
         const AccountListSortKey& sortKey,
         CustomData& custom) noexcept;

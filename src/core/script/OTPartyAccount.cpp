@@ -109,8 +109,8 @@ auto OTPartyAccount::GetAuthorizedAgent() -> OTAgent*
     OT_ASSERT(nullptr != m_pForParty);
 
     if (!m_strAgentName->Exists()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Authorized agent "
-                                           "name (for this account) is blank!")
+        LogOutput(OT_METHOD)(__func__)(": Error: Authorized agent "
+                                       "name (for this account) is blank!")
             .Flush();
         return nullptr;
     }
@@ -137,7 +137,7 @@ auto OTPartyAccount::IsAccountByID(const Identifier& theAcctID) const -> bool
 
     const auto theMemberAcctID = Identifier::Factory(m_strAcctID);
     if (!(theAcctID == theMemberAcctID)) {
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Account IDs don't match: ")(
+        LogTrace(OT_METHOD)(__func__)(": Account IDs don't match: ")(
             m_strAcctID)(" / ")(theAcctID)
             .Flush();
 
@@ -152,14 +152,13 @@ auto OTPartyAccount::IsAccountByID(const Identifier& theAcctID) const -> bool
 auto OTPartyAccount::IsAccount(const Account& theAccount) -> bool
 {
     if (!m_strAcctID->Exists()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Empty m_strAcctID.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Error: Empty m_strAcctID.").Flush();
         return false;
     }
 
     bool bCheckAssetId = true;
     if (!m_strInstrumentDefinitionID->Exists()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": FYI, Asset ID is blank in this smart contract, for this "
             "account.")
             .Flush();
@@ -168,7 +167,7 @@ auto OTPartyAccount::IsAccount(const Account& theAccount) -> bool
 
     const auto theAcctID = Identifier::Factory(m_strAcctID);
     if (!(theAccount.GetRealAccountID() == theAcctID)) {
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Account IDs don't match: ")(
+        LogTrace(OT_METHOD)(__func__)(": Account IDs don't match: ")(
             m_strAcctID)(" / ")(theAccount.GetRealAccountID())
             .Flush();
 
@@ -183,10 +182,10 @@ auto OTPartyAccount::IsAccount(const Account& theAccount) -> bool
             auto strRHS =
                 String::Factory(theAccount.GetInstrumentDefinitionID());
             {
-                LogNormal(OT_METHOD)(__FUNCTION__)(
+                LogNormal(OT_METHOD)(__func__)(
                     ": Instrument Definition IDs don't "
-                    "match ( ")(m_strInstrumentDefinitionID)(" / ")(strRHS)(
-                    " ) for Acct ID: ")(m_strAcctID)(".")
+                    "match ( ")(m_strInstrumentDefinitionID)(" / ")(
+                    strRHS)(" ) for Acct ID: ")(m_strAcctID)(".")
                     .Flush();
             }
             return false;
@@ -201,8 +200,8 @@ auto OTPartyAccount::IsAccount(const Account& theAccount) -> bool
 auto OTPartyAccount::VerifyOwnership() const -> bool
 {
     if (nullptr == m_pForParty) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: nullptr pointer to "
-                                           "owner party.")
+        LogOutput(OT_METHOD)(__func__)(": Error: nullptr pointer to "
+                                       "owner party.")
             .Flush();
         return false;
     }
@@ -210,7 +209,7 @@ auto OTPartyAccount::VerifyOwnership() const -> bool
     auto account = get_account();
 
     if (false == bool(account)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Error: nullptr pointer to "
             "account. (This function expects account to already be "
             "loaded).")
@@ -220,7 +219,7 @@ auto OTPartyAccount::VerifyOwnership() const -> bool
 
     if (!m_pForParty->VerifyOwnershipOfAccount(account.get())) {
         {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Party %s doesn't verify as "
                 "the ACTUAL owner of account: ")(m_strName)(".")
                 .Flush();
@@ -238,7 +237,7 @@ auto OTPartyAccount::VerifyAgency() -> bool
     auto account = get_account();
 
     if (false == bool(account)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Error: nullptr pointer to "
             "account. (This function expects account to already be "
             "loaded).")
@@ -250,7 +249,7 @@ auto OTPartyAccount::VerifyAgency() -> bool
 
     if (nullptr == pAgent) {
         {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Unable to find authorized agent (")(GetAgentName())(
                 ") for this account: ")(GetName())(".")
                 .Flush();
@@ -260,7 +259,7 @@ auto OTPartyAccount::VerifyAgency() -> bool
 
     if (!pAgent->VerifyAgencyOfAccount(account.get())) {
         {
-            LogNormal(OT_METHOD)(__FUNCTION__)(": Agent ")(GetAgentName())(
+            LogNormal(OT_METHOD)(__func__)(": Agent ")(GetAgentName())(
                 " doesn't verify as ACTUALLY having rights over account ")(
                 GetName())(" with ID: ")(GetAcctID())(".")
                 .Flush();
@@ -281,13 +280,13 @@ auto OTPartyAccount::DropFinalReceiptToInbox(
     OTString pstrAttachment) -> bool
 {
     if (nullptr == m_pForParty) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": nullptr m_pForParty.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": nullptr m_pForParty.").Flush();
         return false;
     } else if (!m_strAcctID->Exists()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Empty Acct ID.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Empty Acct ID.").Flush();
         return false;
     } else if (!m_strAgentName->Exists()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": No agent named for this account.")
+        LogOutput(OT_METHOD)(__func__)(": No agent named for this account.")
             .Flush();
         return false;
     }
@@ -300,8 +299,7 @@ auto OTPartyAccount::DropFinalReceiptToInbox(
     OTAgent* pAgent = m_pForParty->GetAgent(str_agent_name);
 
     if (nullptr == pAgent)
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Named agent wasn't found on party.")
+        LogOutput(OT_METHOD)(__func__)(": Named agent wasn't found on party.")
             .Flush();
     else {
         const auto theAccountID = Identifier::Factory(m_strAcctID);
@@ -329,7 +327,7 @@ auto OTPartyAccount::LoadAccount() -> SharedAccount
 {
     if (!m_strAcctID->Exists()) {
         {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Bad: Acct ID is blank for account: ")(m_strName)(".")
                 .Flush();
         }
@@ -341,9 +339,8 @@ auto OTPartyAccount::LoadAccount() -> SharedAccount
 
     if (false == bool(account)) {
         {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
-                ": Failed trying to load account: ")(m_strName)(
-                ", with AcctID: ")(m_strAcctID)(".")
+            LogNormal(OT_METHOD)(__func__)(": Failed trying to load account: ")(
+                m_strName)(", with AcctID: ")(m_strAcctID)(".")
                 .Flush();
         }
 
@@ -394,8 +391,8 @@ auto OTPartyAccount::Compare(const OTPartyAccount& rhs) const -> bool
 {
     if (!(GetName().Compare(rhs.GetName()))) {
         {
-            LogNormal(OT_METHOD)(__FUNCTION__)(": Names don't match: ")(
-                GetName())(" / ")(rhs.GetName())(".")
+            LogNormal(OT_METHOD)(__func__)(": Names don't match: ")(GetName())(
+                " / ")(rhs.GetName())(".")
                 .Flush();
         }
         return false;
@@ -404,7 +401,7 @@ auto OTPartyAccount::Compare(const OTPartyAccount& rhs) const -> bool
     if ((GetClosingTransNo() > 0) && (rhs.GetClosingTransNo() > 0) &&
         (GetClosingTransNo() != rhs.GetClosingTransNo())) {
         {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Closing transaction numbers don't match: ")(GetName())(".")
                 .Flush();
         }
@@ -414,12 +411,12 @@ auto OTPartyAccount::Compare(const OTPartyAccount& rhs) const -> bool
     if ((GetAcctID().Exists()) && (rhs.GetAcctID().Exists()) &&
         (!GetAcctID().Compare(rhs.GetAcctID()))) {
         {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Asset account numbers don't match "
                 "for party account ")(GetName())(".")
                 .Flush();
 
-            LogNormal(OT_METHOD)(__FUNCTION__)(": ( ")(GetAcctID())("  /  ")(
+            LogNormal(OT_METHOD)(__func__)(": ( ")(GetAcctID())("  /  ")(
                 rhs.GetAcctID())(").")
                 .Flush();
         }
@@ -429,12 +426,12 @@ auto OTPartyAccount::Compare(const OTPartyAccount& rhs) const -> bool
     if ((GetAgentName().Exists()) && (rhs.GetAgentName().Exists()) &&
         (!GetAgentName().Compare(rhs.GetAgentName()))) {
         {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Agent Names don't match for party "
                 "account ")(GetName())(".")
                 .Flush();
 
-            LogNormal(OT_METHOD)(__FUNCTION__)(": ( ")(GetAgentName())("  /  ")(
+            LogNormal(OT_METHOD)(__func__)(": ( ")(GetAgentName())("  /  ")(
                 rhs.GetAgentName())(").")
                 .Flush();
         }
@@ -445,7 +442,7 @@ auto OTPartyAccount::Compare(const OTPartyAccount& rhs) const -> bool
          rhs.GetInstrumentDefinitionID().Exists()) &&
         !GetInstrumentDefinitionID().Compare(rhs.GetInstrumentDefinitionID())) {
         {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Instrument Definition IDs don't "
                 "exist, or don't match (")(GetInstrumentDefinitionID())(" / ")(
                 rhs.GetInstrumentDefinitionID())(") for party's account: ")(

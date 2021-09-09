@@ -20,11 +20,6 @@ namespace implementation
 class Scheduler;
 }  // namespace implementation
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
 namespace network
 {
 class Asio;
@@ -54,7 +49,7 @@ auto BlockchainNetworkAPI(
     -> api::network::Blockchain::Imp*;
 auto BlockchainNetworkAPINull() noexcept -> api::network::Blockchain::Imp*;
 auto DhtAPI(
-    const api::internal::Core& api,
+    const api::Core& api,
     const network::zeromq::Context& zeromq,
     const api::Endpoints& endpoints,
     const bool defaultEnable,
@@ -66,7 +61,7 @@ auto DhtAPI(
     std::int64_t& unitRefreshInterval) noexcept
     -> std::unique_ptr<api::network::Dht>;
 auto NetworkAPI(
-    const api::internal::Core& api,
+    const api::Core& api,
     const api::network::Asio& asio,
     const network::zeromq::Context& zmq,
     const api::Endpoints& endpoints,

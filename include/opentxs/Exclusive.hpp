@@ -17,46 +17,35 @@
 
 #include "opentxs/Types.hpp"
 
-#ifdef SWIG
-%ignore opentxs::Exclusive::Exclusive(Exclusive&&);
-%rename(move) opentxs::Exclusive::operator=(Exclusive&&);
-%rename(valid) opentxs::Exclusive::operator bool();
-#endif
-
 namespace opentxs
 {
 template <typename C>
-class Exclusive
+class OPENTXS_EXPORT Exclusive
 {
 public:
     using Callback = std::function<void(const C&)>;
     using Container = std::unique_ptr<C>;
     using Save = std::function<void(Container&, eLock&, bool)>;
 
-    OPENTXS_EXPORT operator bool() const;
-#ifndef SWIG
-    OPENTXS_EXPORT operator const C&() const;
-    OPENTXS_EXPORT const C& get() const;
+    operator bool() const;
+    operator const C&() const;
+    auto get() const -> const C&;
 
-    OPENTXS_EXPORT operator C&();
-#endif
+    operator C&();
+    auto Abort() -> bool;
+    auto get() -> C&;
+    auto Release() -> bool;
 
-    OPENTXS_EXPORT bool Abort();
-    OPENTXS_EXPORT C& get();
-    OPENTXS_EXPORT bool Release();
-
-    OPENTXS_EXPORT Exclusive(
+    Exclusive(
         Container* in,
         std::shared_mutex& lock,
         Save save,
         const Callback callback = nullptr) noexcept;
-    OPENTXS_EXPORT Exclusive() noexcept;
-    Exclusive(const Exclusive&) = delete;
-    OPENTXS_EXPORT Exclusive(Exclusive&&) noexcept;
-    Exclusive& operator=(const Exclusive&) noexcept = delete;
-    OPENTXS_EXPORT Exclusive& operator=(Exclusive&&) noexcept;
+    Exclusive() noexcept;
+    Exclusive(Exclusive&&) noexcept;
+    auto operator=(Exclusive&&) noexcept -> Exclusive&;
 
-    OPENTXS_EXPORT ~Exclusive();
+    ~Exclusive();
 
 private:
     Container* p_{nullptr};
@@ -64,6 +53,9 @@ private:
     Save save_{[](Container&, eLock&, bool) -> void {}};
     std::atomic<bool> success_{true};
     Callback callback_{nullptr};
+
+    Exclusive(const Exclusive&) = delete;
+    auto operator=(const Exclusive&) noexcept -> Exclusive& = delete;
 };  // class Exclusive
 }  // namespace opentxs
 #endif

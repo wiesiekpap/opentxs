@@ -21,7 +21,7 @@ namespace opentxs::storage::implementation
 auto StorageMultiplex::init_lmdb(
     std::unique_ptr<opentxs::api::storage::Plugin>& plugin) -> void
 {
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": Initializing primary LMDB plugin.")
+    LogVerbose(OT_METHOD)(__func__)(": Initializing primary LMDB plugin.")
         .Flush();
     plugin.reset(Factory::StorageLMDB(
         storage_, config_, digest_, random_, primary_bucket_));

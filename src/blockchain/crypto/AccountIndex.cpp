@@ -17,12 +17,11 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Identifier.hpp"
 
-// #define OT_METHOD
-// "opentxs::api::client::internal::BalanceTreeIndex::"
+// #define OT_METHOD "opentxs::blockchain::crypto::AccountIndex::"
 
-namespace opentxs::api::client::internal
+namespace opentxs::blockchain::crypto
 {
-struct BalanceTreeIndex::Imp {
+struct AccountIndex::Imp {
     using Accounts = std::set<OTIdentifier>;
 
     auto AccountList(const identifier::Nym& nymID) const noexcept -> Accounts
@@ -108,34 +107,34 @@ private:
     auto operator=(Imp&&) -> Imp& = delete;
 };
 
-BalanceTreeIndex::BalanceTreeIndex(const api::Core& api) noexcept
+AccountIndex::AccountIndex(const api::Core& api) noexcept
     : imp_(std::make_unique<Imp>(api).release())
 {
 }
 
-auto BalanceTreeIndex::AccountList(const identifier::Nym& nymID) const noexcept
+auto AccountIndex::AccountList(const identifier::Nym& nymID) const noexcept
     -> std::set<OTIdentifier>
 {
     return imp_->AccountList(nymID);
 }
 
-auto BalanceTreeIndex::AccountList(const Chain chain) const noexcept
+auto AccountIndex::AccountList(const Chain chain) const noexcept
     -> std::set<OTIdentifier>
 {
     return imp_->AccountList(chain);
 }
 
-auto BalanceTreeIndex::AccountList() const noexcept -> std::set<OTIdentifier>
+auto AccountIndex::AccountList() const noexcept -> std::set<OTIdentifier>
 {
     return imp_->AccountList();
 }
 
-auto BalanceTreeIndex::Query(const Identifier& account) const noexcept -> Data
+auto AccountIndex::Query(const Identifier& account) const noexcept -> Data
 {
     return imp_->Query(account);
 }
 
-auto BalanceTreeIndex::Register(
+auto AccountIndex::Register(
     const Identifier& account,
     const identifier::Nym& owner,
     Chain chain) const noexcept -> void
@@ -143,11 +142,11 @@ auto BalanceTreeIndex::Register(
     imp_->Register(account, owner, chain);
 }
 
-BalanceTreeIndex::~BalanceTreeIndex()
+AccountIndex::~AccountIndex()
 {
     if (nullptr != imp_) {
         delete imp_;
         imp_ = nullptr;
     }
 }
-}  // namespace opentxs::api::client::internal
+}  // namespace opentxs::blockchain::crypto

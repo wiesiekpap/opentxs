@@ -115,8 +115,8 @@ auto Sodium::Decrypt(
                          key));
         }
         default: {
-            LogOutput(OT_METHOD)(__func__)(
-                ": Unsupported encryption mode (")(mode)(").")
+            LogOutput(OT_METHOD)(__func__)(": Unsupported encryption mode (")(
+                mode)(").")
                 .Flush();
         }
     }
@@ -383,8 +383,8 @@ auto Sodium::Encrypt(
                          key));
         }
         default: {
-            LogOutput(OT_METHOD)(__func__)(
-                ": Unsupported encryption mode (")(value(mode))(").")
+            LogOutput(OT_METHOD)(__func__)(": Unsupported encryption mode (")(
+                value(mode))(").")
                 .Flush();
         }
     }
@@ -408,20 +408,20 @@ auto Sodium::Generate(
     }
 
     if (bytes < crypto_pwhash_scryptsalsa208sha256_BYTES_MIN) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Too few bytes requested: ")(bytes)(" vs "
-                                                  "minimum:"
-                                                  " ")(crypto_pwhash_scryptsalsa208sha256_BYTES_MIN)
+        LogOutput(OT_METHOD)(__func__)(": Too few bytes requested: ")(
+            bytes)(" vs "
+                   "minimum:"
+                   " ")(crypto_pwhash_scryptsalsa208sha256_BYTES_MIN)
             .Flush();
 
         return false;
     }
 
     if (bytes > crypto_pwhash_scryptsalsa208sha256_BYTES_MAX) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Too many bytes requested: ")(bytes)(" vs "
-                                                   "maximum:"
-                                                   " ")(crypto_pwhash_scryptsalsa208sha256_BYTES_MAX)
+        LogOutput(OT_METHOD)(__func__)(": Too many bytes requested: ")(
+            bytes)(" vs "
+                   "maximum:"
+                   " ")(crypto_pwhash_scryptsalsa208sha256_BYTES_MAX)
             .Flush();
 
         return false;
@@ -430,8 +430,8 @@ auto Sodium::Generate(
     auto output = writer(bytes);
 
     if (false == output.valid(bytes)) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Failed to allocated requested ")(bytes)(" bytes")
+        LogOutput(OT_METHOD)(__func__)(": Failed to allocated requested ")(
+            bytes)(" bytes")
             .Flush();
 
         return false;
@@ -520,10 +520,10 @@ auto Sodium::HMAC(
         }
         case (crypto::HashType::SipHash24): {
             if (crypto_shorthash_KEYBYTES < keySize) {
-                LogOutput(OT_METHOD)(__func__)(
-                    ": Incorrect key size: ")(keySize)(" vs "
-                                                       "expected"
-                                                       " ")(crypto_shorthash_KEYBYTES)
+                LogOutput(OT_METHOD)(__func__)(": Incorrect key size: ")(
+                    keySize)(" vs "
+                             "expected"
+                             " ")(crypto_shorthash_KEYBYTES)
                     .Flush();
 
                 return false;
@@ -552,8 +552,8 @@ auto Sodium::IvSize(const opentxs::crypto::key::symmetric::Algorithm mode) const
             return crypto_aead_chacha20poly1305_IETF_NPUBBYTES;
         }
         default: {
-            LogOutput(OT_METHOD)(__func__)(
-                ": Unsupported encryption mode (")(value(mode))(").")
+            LogOutput(OT_METHOD)(__func__)(": Unsupported encryption mode (")(
+                value(mode))(").")
                 .Flush();
         }
     }
@@ -568,8 +568,8 @@ auto Sodium::KeySize(
             return crypto_aead_chacha20poly1305_IETF_KEYBYTES;
         }
         default: {
-            LogOutput(OT_METHOD)(__func__)(
-                ": Unsupported encryption mode (")(value(mode))(").")
+            LogOutput(OT_METHOD)(__func__)(": Unsupported encryption mode (")(
+                value(mode))(").")
                 .Flush();
         }
     }
@@ -619,8 +619,8 @@ auto Sodium::SaltSize(const crypto::key::symmetric::Source type) const
             return crypto_pwhash_SALTBYTES;
         }
         default: {
-            LogOutput(OT_METHOD)(__func__)(
-                ": Unsupported key type (")(value(type))(").")
+            LogOutput(OT_METHOD)(__func__)(": Unsupported key type (")(
+                value(type))(").")
                 .Flush();
         }
     }
@@ -714,8 +714,8 @@ auto Sodium::SharedSecret(
 
     if (crypto_sign_PUBLICKEYBYTES != pub.size()) {
         LogOutput(OT_METHOD)(__func__)(": Invalid public key ").Flush();
-        LogOutput(OT_METHOD)(__func__)(
-            ": Expected: ")(crypto_sign_PUBLICKEYBYTES)
+        LogOutput(OT_METHOD)(__func__)(": Expected: ")(
+            crypto_sign_PUBLICKEYBYTES)
             .Flush();
         LogOutput(OT_METHOD)(__func__)(": Actual:   ")(pub.size()).Flush();
 
@@ -724,8 +724,8 @@ auto Sodium::SharedSecret(
 
     if (crypto_sign_SECRETKEYBYTES != prv.size()) {
         LogOutput(OT_METHOD)(__func__)(": Invalid private key").Flush();
-        LogOutput(OT_METHOD)(__func__)(
-            ": Expected: ")(crypto_sign_SECRETKEYBYTES)
+        LogOutput(OT_METHOD)(__func__)(": Expected: ")(
+            crypto_sign_SECRETKEYBYTES)
             .Flush();
         LogOutput(OT_METHOD)(__func__)(": Actual:   ")(prv.size()).Flush();
 
@@ -800,8 +800,8 @@ auto Sodium::Sign(
     const AllocateOutput signature) const -> bool
 {
     if (crypto::HashType::Blake2b256 != hash) {
-        LogVerbose(OT_METHOD)(__func__)(
-            ": Unsupported hash function: ")(value(hash))
+        LogVerbose(OT_METHOD)(__func__)(": Unsupported hash function: ")(
+            value(hash))
             .Flush();
 
         return false;
@@ -815,8 +815,8 @@ auto Sodium::Sign(
 
     if (crypto_sign_SECRETKEYBYTES != priv.size()) {
         LogOutput(OT_METHOD)(__func__)(": Invalid private key").Flush();
-        LogOutput(OT_METHOD)(__func__)(
-            ": Expected: ")(crypto_sign_SECRETKEYBYTES)
+        LogOutput(OT_METHOD)(__func__)(": Expected: ")(
+            crypto_sign_SECRETKEYBYTES)
             .Flush();
         LogOutput(OT_METHOD)(__func__)(": Actual:   ")(priv.size()).Flush();
 
@@ -869,8 +869,8 @@ auto Sodium::TagSize(
             return crypto_aead_chacha20poly1305_IETF_ABYTES;
         }
         default: {
-            LogOutput(OT_METHOD)(__func__)(
-                ": Unsupported encryption mode (")(value(mode))(").")
+            LogOutput(OT_METHOD)(__func__)(": Unsupported encryption mode (")(
+                value(mode))(").")
                 .Flush();
         }
     }
@@ -885,8 +885,8 @@ auto Sodium::Verify(
     const crypto::HashType type) const -> bool
 {
     if (crypto::HashType::Blake2b256 != type) {
-        LogVerbose(OT_METHOD)(__func__)(
-            ": Unsupported hash function: ")(value(type))
+        LogVerbose(OT_METHOD)(__func__)(": Unsupported hash function: ")(
+            value(type))
             .Flush();
 
         return false;
@@ -906,8 +906,8 @@ auto Sodium::Verify(
 
     if (crypto_sign_PUBLICKEYBYTES != pub.size()) {
         LogOutput(OT_METHOD)(__func__)(": Invalid public key").Flush();
-        LogOutput(OT_METHOD)(__func__)(
-            ": Expected: ")(crypto_sign_PUBLICKEYBYTES)
+        LogOutput(OT_METHOD)(__func__)(": Expected: ")(
+            crypto_sign_PUBLICKEYBYTES)
             .Flush();
         LogOutput(OT_METHOD)(__func__)(": Actual:   ")(pub.size()).Flush();
 

@@ -16,20 +16,6 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 
-#ifdef SWIG
-// clang-format off
-%extend opentxs::ui::ActivityThreadItem {
-    int Timestamp() const noexcept
-    {
-        return Clock::to_time_t($self->Timestamp());
-    }
-}
-%ignore opentxs::ui::ActivityThreadItem::Timestamp;
-%template(OTUIActivityThreadItem) opentxs::SharedPimpl<opentxs::ui::ActivityThreadItem>;
-%rename(UIActivityThreadItem) opentxs::ui::ActivityThreadItem;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -47,18 +33,18 @@ namespace ui
 class OPENTXS_EXPORT ActivityThreadItem : virtual public ListRow
 {
 public:
-    virtual opentxs::Amount Amount() const noexcept = 0;
-    virtual bool Deposit() const noexcept = 0;
-    virtual std::string DisplayAmount() const noexcept = 0;
-    virtual std::string From() const noexcept = 0;
-    virtual bool Loading() const noexcept = 0;
-    virtual bool MarkRead() const noexcept = 0;
-    virtual std::string Memo() const noexcept = 0;
-    virtual bool Outgoing() const noexcept = 0;
-    virtual bool Pending() const noexcept = 0;
-    virtual std::string Text() const noexcept = 0;
-    virtual Time Timestamp() const noexcept = 0;
-    virtual StorageBox Type() const noexcept = 0;
+    virtual auto Amount() const noexcept -> opentxs::Amount = 0;
+    virtual auto Deposit() const noexcept -> bool = 0;
+    virtual auto DisplayAmount() const noexcept -> std::string = 0;
+    virtual auto From() const noexcept -> std::string = 0;
+    virtual auto Loading() const noexcept -> bool = 0;
+    virtual auto MarkRead() const noexcept -> bool = 0;
+    virtual auto Memo() const noexcept -> std::string = 0;
+    virtual auto Outgoing() const noexcept -> bool = 0;
+    virtual auto Pending() const noexcept -> bool = 0;
+    virtual auto Text() const noexcept -> std::string = 0;
+    virtual auto Timestamp() const noexcept -> Time = 0;
+    virtual auto Type() const noexcept -> StorageBox = 0;
 
     ~ActivityThreadItem() override = default;
 
@@ -68,8 +54,8 @@ protected:
 private:
     ActivityThreadItem(const ActivityThreadItem&) = delete;
     ActivityThreadItem(ActivityThreadItem&&) = delete;
-    ActivityThreadItem& operator=(const ActivityThreadItem&) = delete;
-    ActivityThreadItem& operator=(ActivityThreadItem&&) = delete;
+    auto operator=(const ActivityThreadItem&) -> ActivityThreadItem& = delete;
+    auto operator=(ActivityThreadItem&&) -> ActivityThreadItem& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

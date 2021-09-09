@@ -18,19 +18,12 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
 namespace server
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace server
 
+class Core;
 class Wallet;
 }  // namespace api
 
@@ -98,7 +91,7 @@ private:
     {
     public:
         FinalizeResponse(
-            const api::internal::Core& core,
+            const api::Core& core,
             const identity::Nym& nym,
             ReplyMessage& reply,
             Ledger& ledger);
@@ -114,7 +107,7 @@ private:
         ~FinalizeResponse();
 
     private:
-        const api::internal::Core& api_;
+        const api::Core& api_;
         const identity::Nym& nym_;
         ReplyMessage& reply_;
         Ledger& ledger_;
@@ -123,7 +116,7 @@ private:
 
     Server& server_;
     const PasswordPrompt& reason_;
-    const api::server::internal::Manager& manager_;
+    const api::server::Manager& manager_;
 
     auto add_numbers_to_nymbox(
         const TransactionNumber transactionNumber,
@@ -223,7 +216,7 @@ private:
     UserCommandProcessor(
         Server& server,
         const PasswordPrompt& reason,
-        const opentxs::api::server::internal::Manager& manager);
+        const opentxs::api::server::Manager& manager);
     UserCommandProcessor() = delete;
     UserCommandProcessor(const UserCommandProcessor&) = delete;
     UserCommandProcessor(UserCommandProcessor&&) = delete;

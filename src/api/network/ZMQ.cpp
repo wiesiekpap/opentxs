@@ -13,8 +13,8 @@
 #include <utility>
 
 #include "2_Factory.hpp"
-#include "internal/api/Api.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/Wallet.hpp"
@@ -45,7 +45,7 @@ template class opentxs::Pimpl<opentxs::network::ServerConnection>;
 
 namespace opentxs
 {
-auto Factory::ZMQ(const api::internal::Core& api, const Flag& running)
+auto Factory::ZMQ(const api::Core& api, const Flag& running)
     -> api::network::ZMQ*
 {
     return new api::network::implementation::ZMQ(api, running);
@@ -54,7 +54,7 @@ auto Factory::ZMQ(const api::internal::Core& api, const Flag& running)
 
 namespace opentxs::api::network::implementation
 {
-ZMQ::ZMQ(const api::internal::Core& api, const Flag& running)
+ZMQ::ZMQ(const api::Core& api, const Flag& running)
     : api_(api)
     , running_(running)
     , linger_(std::chrono::seconds(CLIENT_SOCKET_LINGER_SECONDS))
@@ -213,15 +213,13 @@ auto ZMQ::SetSocksProxy(const std::string& proxy) const -> bool
         notUsed);
 
     if (false == set) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to set socks proxy.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Unable to set socks proxy.").Flush();
 
         return false;
     }
 
     if (false == api_.Config().Save()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to set save config.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Unable to set save config.").Flush();
 
         return false;
     }
@@ -240,8 +238,7 @@ auto ZMQ::SetSocksProxy(const std::string& proxy) const -> bool
     }
 
     if (false == set) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to reset connection.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Unable to reset connection.").Flush();
     }
 
     return set;
@@ -286,13 +283,13 @@ auto ZMQ::Status(const std::string& server) const -> ConnectionState
 auto ZMQ::verify_lock(const Lock& lock) const -> bool
 {
     if (lock.mutex() != &lock_) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect mutex.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Incorrect mutex.").Flush();
 
         return false;
     }
 
     if (false == lock.owns_lock()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Lock not owned.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Lock not owned.").Flush();
 
         return false;
     }

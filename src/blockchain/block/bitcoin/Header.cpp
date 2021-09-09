@@ -109,7 +109,7 @@ auto BitcoinBlockHeader(
             serialized.nonce_.value(),
             false);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -123,7 +123,7 @@ auto BitcoinBlockHeader(
     try {
         return std::make_unique<ReturnType>(api, serialized);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -136,7 +136,7 @@ auto BitcoinBlockHeader(
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Header>
 {
     if (OT_BITCOIN_BLOCK_HEADER_SIZE != raw.size()) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Invalid serialized block size. Got: ")(raw.size())(" expected ")(
             OT_BITCOIN_BLOCK_HEADER_SIZE)
             .Flush();
@@ -155,7 +155,7 @@ auto BitcoinBlockHeader(
         std::memcpy(static_cast<void*>(&serialized), raw.data(), raw.size());
 
     if (nullptr == result) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Failed to deserialize header")
             .Flush();
 
@@ -183,7 +183,7 @@ auto BitcoinBlockHeader(
             serialized.nonce_.value(),
             isGenesis);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -202,7 +202,7 @@ auto BitcoinBlockHeader(
     try {
         return std::make_unique<ReturnType>(api, chain, merkle, parent, height);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -464,7 +464,7 @@ auto Header::calculate_hash(
             static_cast<blockchain::Type>(serialized.type()),
             ReadView(reinterpret_cast<const char*>(&bytes), sizeof(bytes)));
     } catch (const std::invalid_argument& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return BlankHash();
     }
@@ -482,7 +482,7 @@ auto Header::calculate_pow(
             static_cast<blockchain::Type>(serialized.type()),
             ReadView(reinterpret_cast<const char*>(&bytes), sizeof(bytes)));
     } catch (const std::invalid_argument& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return BlankHash();
     }
@@ -600,7 +600,7 @@ auto Header::Serialize(
             nonce_};
 
         if (false == bool(destination)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output allocator")
+            LogOutput(OT_METHOD)(__func__)(": Invalid output allocator")
                 .Flush();
 
             return false;
@@ -609,7 +609,7 @@ auto Header::Serialize(
         const auto out = destination(sizeof(raw));
 
         if (false == out.valid(sizeof(raw))) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to allocate output")
+            LogOutput(OT_METHOD)(__func__)(": Failed to allocate output")
                 .Flush();
 
             return false;

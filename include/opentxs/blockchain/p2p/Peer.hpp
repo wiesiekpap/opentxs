@@ -16,7 +16,7 @@ namespace blockchain
 {
 namespace p2p
 {
-class Peer
+class OPENTXS_EXPORT Peer
 {
 public:
     using ConnectionStatus = std::shared_future<bool>;
@@ -24,10 +24,10 @@ public:
     using Verify = std::shared_future<void>;
     using Subscribe = std::shared_future<void>;
 
-    OPENTXS_EXPORT virtual ConnectionStatus Connected() const noexcept = 0;
-    OPENTXS_EXPORT virtual Handshake HandshakeComplete() const noexcept = 0;
+    virtual auto Connected() const noexcept -> ConnectionStatus = 0;
+    virtual auto HandshakeComplete() const noexcept -> Handshake = 0;
 
-    OPENTXS_EXPORT virtual ~Peer() = default;
+    virtual ~Peer() = default;
 
 protected:
     Peer() noexcept = default;
@@ -35,8 +35,8 @@ protected:
 private:
     Peer(const Peer&) = delete;
     Peer(Peer&&) = delete;
-    Peer& operator=(const Peer&) = delete;
-    Peer& operator=(Peer&&) = delete;
+    auto operator=(const Peer&) -> Peer& = delete;
+    auto operator=(Peer&&) -> Peer& = delete;
 };
 }  // namespace p2p
 }  // namespace blockchain

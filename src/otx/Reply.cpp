@@ -13,10 +13,10 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "core/contract/Signable.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/otx/OTX.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/SharedPimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/core/Log.hpp"
@@ -56,7 +56,7 @@ static auto construct_push(OTXPushType pushtype, const std::string& payload)
 }
 
 auto Reply::Factory(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p signer,
     const identifier::Nym& recipient,
     const identifier::Server& server,
@@ -89,7 +89,7 @@ auto Reply::Factory(
 }
 
 auto Reply::Factory(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p signer,
     const identifier::Nym& recipient,
     const identifier::Server& server,
@@ -112,15 +112,13 @@ auto Reply::Factory(
         construct_push(pushtype, payload));
 }
 
-auto Reply::Factory(
-    const api::internal::Core& api,
-    const proto::ServerReply serialized) -> OTXReply
+auto Reply::Factory(const api::Core& api, const proto::ServerReply serialized)
+    -> OTXReply
 {
     return OTXReply{new implementation::Reply(api, serialized)};
 }
 
-auto Reply::Factory(const api::internal::Core& api, const ReadView& view)
-    -> OTXReply
+auto Reply::Factory(const api::Core& api, const ReadView& view) -> OTXReply
 {
     return OTXReply{new implementation::Reply(
         api, proto::Factory<proto::ServerReply>(view))};
@@ -130,7 +128,7 @@ auto Reply::Factory(const api::internal::Core& api, const ReadView& view)
 namespace opentxs::otx::implementation
 {
 Reply::Reply(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p signer,
     const identifier::Nym& recipient,
     const identifier::Server& server,
@@ -150,9 +148,7 @@ Reply::Reply(
     first_time_init(lock);
 }
 
-Reply::Reply(
-    const api::internal::Core& api,
-    const proto::ServerReply serialized)
+Reply::Reply(const api::Core& api, const proto::ServerReply serialized)
     : Signable(
           api,
           extract_nym(api, serialized),
@@ -190,7 +186,7 @@ Reply::Reply(const Reply& rhs)
 }
 
 auto Reply::extract_nym(
-    const api::internal::Core& api,
+    const api::Core& api,
     const proto::ServerReply serialized) -> Nym_p
 {
     const auto serverID = identifier::Server::Factory(serialized.server());
@@ -198,7 +194,7 @@ auto Reply::extract_nym(
     try {
         return api.Wallet().Server(serverID)->Nym();
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid server id.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid server id.").Flush();
 
         return nullptr;
     }
@@ -293,8 +289,7 @@ auto Reply::update_signature(const Lock& lock, const PasswordPrompt& reason)
     if (success) {
         signatures_.emplace_front(new proto::Signature(signature));
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to create signature.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to create signature.").Flush();
     }
 
     return success;
@@ -307,7 +302,7 @@ auto Reply::validate(const Lock& lock) const -> bool
     if (nym_) { validNym = nym_->VerifyPseudonym(); }
 
     if (false == validNym) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid nym.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid nym.").Flush();
 
         return false;
     }
@@ -315,14 +310,13 @@ auto Reply::validate(const Lock& lock) const -> bool
     const bool validSyntax = proto::Validate(full_version(lock), VERBOSE);
 
     if (false == validSyntax) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid syntax.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid syntax.").Flush();
 
         return false;
     }
 
     if (1 != signatures_.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Wrong number signatures.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Wrong number signatures.").Flush();
 
         return false;
     }
@@ -333,7 +327,7 @@ auto Reply::validate(const Lock& lock) const -> bool
     if (signature) { validSig = verify_signature(lock, *signature); }
 
     if (false == validSig) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid signature.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid signature.").Flush();
 
         return false;
     }

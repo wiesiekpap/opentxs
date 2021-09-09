@@ -18,10 +18,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -162,13 +159,13 @@ public:
         const std::string& memo) const -> Action final;
 
     ServerAction(
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const ContextLockCallback& lockCallback);
 
     ~ServerAction() final = default;
 
 private:
-    const api::client::internal::Manager& api_;
+    const api::client::Manager& api_;
     ContextLockCallback lock_callback_;
 
     ServerAction() = delete;

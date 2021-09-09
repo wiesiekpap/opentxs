@@ -69,11 +69,11 @@ public:
         -> const request::StoreSecret& = 0;
 
     using Signable::Serialize;
-    OPENTXS_NO_EXPORT virtual bool Serialize(SerializedType&) const = 0;
-    virtual const identifier::Nym& Initiator() const = 0;
-    virtual const identifier::Nym& Recipient() const = 0;
-    virtual const identifier::Server& Server() const = 0;
-    virtual PeerRequestType Type() const = 0;
+    OPENTXS_NO_EXPORT virtual auto Serialize(SerializedType&) const -> bool = 0;
+    virtual auto Initiator() const -> const identifier::Nym& = 0;
+    virtual auto Recipient() const -> const identifier::Nym& = 0;
+    virtual auto Server() const -> const identifier::Server& = 0;
+    virtual auto Type() const -> PeerRequestType = 0;
 
     ~Request() override = default;
 
@@ -84,13 +84,13 @@ private:
     friend OTPeerRequest;
 
 #ifndef _WIN32
-    Request* clone() const noexcept override = 0;
+    auto clone() const noexcept -> Request* override = 0;
 #endif
 
     Request(const Request&) = delete;
     Request(Request&&) = delete;
-    Request& operator=(const Request&) = delete;
-    Request& operator=(Request&&) = delete;
+    auto operator=(const Request&) -> Request& = delete;
+    auto operator=(Request&&) -> Request& = delete;
 };
 }  // namespace peer
 }  // namespace contract

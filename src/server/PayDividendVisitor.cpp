@@ -11,12 +11,12 @@
 #include <cstdint>
 #include <memory>
 
-#include "internal/api/server/Server.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Editor.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/server/Manager.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/AccountVisitor.hpp"
 #include "opentxs/core/Cheque.hpp"
@@ -199,7 +199,8 @@ auto PayDividendVisitor::Trigger(
                                                  " ")(strPayoutUnitTypeId)(" to"
                                                                            " Ny"
                                                                            "m"
-                                                                           " ")(strRecipientNymID)(".")
+                                                                           " ")(
+                strRecipientNymID)(".")
                 .Flush();
         }
         // If we didn't send it, then we need to return the funds to where they
@@ -275,7 +276,8 @@ auto PayDividendVisitor::Trigger(
                                            "definition"
                                            " ")(strPayoutUnitTypeId)(" to "
                                                                      "Nym"
-                                                                     " ")(strSenderNymID)(".")
+                                                                     " ")(
+                    strSenderNymID)(".")
                     .Flush();
             }
         }   // if !bSent
@@ -288,11 +290,10 @@ auto PayDividendVisitor::Trigger(
             "trying to send a voucher (while paying dividends). "
             "WAS TRYING TO PAY ")(lPayoutAmount)(" of instrument "
                                                  "definition"
-                                                 " ")(strPayoutUnitTypeId
-                                                          ->Get())(" to "
-                                                                   "Nym"
-                                                                   " ")(strRecipientNymID
-                                                                            ->Get())(".")
+                                                 " ")(
+            strPayoutUnitTypeId->Get())(" to "
+                                        "Nym"
+                                        " ")(strRecipientNymID->Get())(".")
             .Flush();
     }
 

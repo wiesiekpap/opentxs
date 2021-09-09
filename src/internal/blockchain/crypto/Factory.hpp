@@ -18,30 +18,21 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-class BalanceTreeIndex;
-struct Blockchain;
-}  // namespace internal
+class Blockchain;
 }  // namespace client
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace blockchain
 {
 namespace crypto
 {
-namespace internal
-{
-struct Wallet;
-struct Account;
-struct HD;
-struct PaymentCode;
-}  // namespace internal
+class Account;
+class AccountIndex;
+class HD;
+class PaymentCode;
+class Wallet;
 }  // namespace crypto
 }  // namespace blockchain
 
@@ -66,48 +57,46 @@ class PaymentCode;
 namespace opentxs::factory
 {
 auto BlockchainAccountKeys(
-    const api::internal::Core& api,
-    const blockchain::crypto::internal::Wallet& parent,
-    const api::client::internal::BalanceTreeIndex& index,
+    const api::Core& api,
+    const blockchain::crypto::Wallet& parent,
+    const blockchain::crypto::AccountIndex& index,
     const identifier::Nym& id,
     const std::set<OTIdentifier>& hdAccounts,
     const std::set<OTIdentifier>& importedAccounts,
     const std::set<OTIdentifier>& paymentCodeAccounts) noexcept
-    -> std::unique_ptr<blockchain::crypto::internal::Account>;
+    -> std::unique_ptr<blockchain::crypto::Account>;
 auto BlockchainHDSubaccount(
-    const api::internal::Core& api,
-    const blockchain::crypto::internal::Account& parent,
+    const api::Core& api,
+    const blockchain::crypto::Account& parent,
     const proto::HDPath& path,
     const blockchain::crypto::HDProtocol standard,
     const PasswordPrompt& reason,
-    Identifier& id) noexcept
-    -> std::unique_ptr<blockchain::crypto::internal::HD>;
+    Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::HD>;
 auto BlockchainHDSubaccount(
-    const api::internal::Core& api,
-    const blockchain::crypto::internal::Account& parent,
+    const api::Core& api,
+    const blockchain::crypto::Account& parent,
     const proto::HDAccount& serialized,
-    Identifier& id) noexcept
-    -> std::unique_ptr<blockchain::crypto::internal::HD>;
+    Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::HD>;
 auto BlockchainPCSubaccount(
-    const api::internal::Core& api,
-    const blockchain::crypto::internal::Account& parent,
+    const api::Core& api,
+    const blockchain::crypto::Account& parent,
     const opentxs::PaymentCode& local,
     const opentxs::PaymentCode& remote,
     const proto::HDPath& path,
     const Data& txid,
     const PasswordPrompt& reason,
     Identifier& id) noexcept
-    -> std::unique_ptr<blockchain::crypto::internal::PaymentCode>;
+    -> std::unique_ptr<blockchain::crypto::PaymentCode>;
 auto BlockchainPCSubaccount(
-    const api::internal::Core& api,
-    const blockchain::crypto::internal::Account& parent,
+    const api::Core& api,
+    const blockchain::crypto::Account& parent,
     const proto::Bip47Channel& serialized,
     Identifier& id) noexcept
-    -> std::unique_ptr<blockchain::crypto::internal::PaymentCode>;
+    -> std::unique_ptr<blockchain::crypto::PaymentCode>;
 auto BlockchainWalletKeys(
-    const api::internal::Core& api,
-    const api::client::internal::Blockchain& parent,
-    const api::client::internal::BalanceTreeIndex& index,
+    const api::Core& api,
+    const api::client::Blockchain& parent,
+    const blockchain::crypto::AccountIndex& index,
     const blockchain::Type chain) noexcept
-    -> std::unique_ptr<blockchain::crypto::internal::Wallet>;
+    -> std::unique_ptr<blockchain::crypto::Wallet>;
 }  // namespace opentxs::factory

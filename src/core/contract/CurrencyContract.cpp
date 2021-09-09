@@ -26,7 +26,7 @@ namespace opentxs
 using ReturnType = contract::unit::implementation::Currency;
 
 auto Factory::CurrencyContract(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const std::string& shortname,
     const std::string& name,
@@ -71,7 +71,7 @@ auto Factory::CurrencyContract(
 }
 
 auto Factory::CurrencyContract(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const proto::UnitDefinition serialized) noexcept
     -> std::shared_ptr<contract::unit::Currency>
@@ -98,7 +98,7 @@ auto Factory::CurrencyContract(
 namespace opentxs::contract::unit::implementation
 {
 Currency::Currency(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const std::string& shortname,
     const std::string& name,
@@ -119,7 +119,7 @@ Currency::Currency(
 }
 
 Currency::Currency(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const proto::UnitDefinition serialized)
     : Unit(api, nym, serialized)

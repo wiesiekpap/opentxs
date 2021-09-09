@@ -315,9 +315,9 @@ using pTxid = blockchain::pHash;
 
 /// Use this to test for a chain reorg. lhs is the current position and rhs is
 /// the new position.
-bool operator>(const Position& lhs, const Position& rhs) noexcept;
+auto operator>(const Position& lhs, const Position& rhs) noexcept -> bool;
 
-OPENTXS_EXPORT pHash BlankHash() noexcept;
+OPENTXS_EXPORT auto BlankHash() noexcept -> pHash;
 }  // namespace block
 
 namespace filter

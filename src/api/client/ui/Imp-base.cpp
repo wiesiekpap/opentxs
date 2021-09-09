@@ -15,6 +15,7 @@
 #include "internal/core/Core.hpp"
 #include "internal/ui/UI.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -28,7 +29,7 @@
 namespace opentxs::api::client
 {
 UI::Imp::Imp(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const api::client::internal::Blockchain& blockchain,
     const Flag& running) noexcept
     : api_(api)

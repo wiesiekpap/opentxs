@@ -13,7 +13,7 @@
 
 #include "2_Factory.hpp"
 #include "core/contract/peer/PeerReply.hpp"
-#include "internal/api/Api.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -32,7 +32,7 @@ using ParentType = contract::peer::implementation::Reply;
 using ReturnType = contract::peer::reply::implementation::Connection;
 
 auto Factory::ConnectionReply(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const identifier::Nym& initiator,
     const Identifier& request,
@@ -71,21 +71,20 @@ auto Factory::ConnectionReply(
 
         return std::move(output);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
 }
 
 auto Factory::ConnectionReply(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const proto::PeerReply& serialized) noexcept
     -> std::shared_ptr<contract::peer::reply::Connection>
 {
     if (false == proto::Validate(serialized, VERBOSE)) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
-            ": Invalid serialized reply.")
+        LogOutput("opentxs::Factory::")(__func__)(": Invalid serialized reply.")
             .Flush();
 
         return {};
@@ -100,7 +99,7 @@ auto Factory::ConnectionReply(
         Lock lock(contract.lock_);
 
         if (false == contract.validate(lock)) {
-            LogOutput("opentxs::Factory::")(__FUNCTION__)(": Invalid reply.")
+            LogOutput("opentxs::Factory::")(__func__)(": Invalid reply.")
                 .Flush();
 
             return {};
@@ -108,7 +107,7 @@ auto Factory::ConnectionReply(
 
         return std::move(output);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -118,7 +117,7 @@ auto Factory::ConnectionReply(
 namespace opentxs::contract::peer::reply::implementation
 {
 Connection::Connection(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const identifier::Nym& initiator,
     const Identifier& request,
@@ -147,7 +146,7 @@ Connection::Connection(
 }
 
 Connection::Connection(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const SerializedType& serialized)
     : Reply(api, nym, serialized)

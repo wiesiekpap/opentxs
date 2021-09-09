@@ -15,10 +15,10 @@
 
 #include "2_Factory.hpp"
 #include "identity/credential/Base.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/contact/Contact.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -42,7 +42,7 @@ namespace opentxs
 using ReturnType = identity::credential::implementation::Contact;
 
 auto Factory::ContactCredential(
-    const api::internal::Core& api,
+    const api::Core& api,
     identity::internal::Authority& parent,
     const identity::Source& source,
     const identity::credential::internal::Primary& master,
@@ -56,7 +56,7 @@ auto Factory::ContactCredential(
         return new ReturnType(
             api, parent, source, master, parameters, version, reason);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
+        LogOutput("opentxs::Factory::")(__func__)(
             ": Failed to create credential: ")(e.what())
             .Flush();
 
@@ -65,7 +65,7 @@ auto Factory::ContactCredential(
 }
 
 auto Factory::ContactCredential(
-    const api::internal::Core& api,
+    const api::Core& api,
     identity::internal::Authority& parent,
     const identity::Source& source,
     const identity::credential::internal::Primary& master,
@@ -76,7 +76,7 @@ auto Factory::ContactCredential(
 
         return new ReturnType(api, parent, source, master, serialized);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
+        LogOutput("opentxs::Factory::")(__func__)(
             ": Failed to deserialize credential: ")(e.what())
             .Flush();
 
@@ -89,7 +89,7 @@ namespace opentxs::identity::credential
 {
 // static
 auto Contact::ClaimID(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& nymid,
     const std::uint32_t section,
     const proto::ContactItem& item) -> std::string
@@ -109,7 +109,7 @@ auto Contact::ClaimID(
 
 // static
 auto Contact::ClaimID(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& nymid,
     const contact::ContactSectionName section,
     const contact::ContactItemType type,
@@ -132,16 +132,15 @@ auto Contact::ClaimID(
 }
 
 // static
-auto Contact::ClaimID(
-    const api::internal::Core& api,
-    const proto::Claim& preimage) -> OTIdentifier
+auto Contact::ClaimID(const api::Core& api, const proto::Claim& preimage)
+    -> OTIdentifier
 {
     return api.Factory().Identifier(preimage);
 }
 
 // static
 auto Contact::asClaim(
-    const api::internal::Core& api,
+    const api::Core& api,
     const String& nymid,
     const std::uint32_t section,
     const proto::ContactItem& item) -> Claim
@@ -164,7 +163,7 @@ auto Contact::asClaim(
 namespace opentxs::identity::credential::implementation
 {
 Contact::Contact(
-    const api::internal::Core& api,
+    const api::Core& api,
     const identity::internal::Authority& parent,
     const identity::Source& source,
     const internal::Primary& master,
@@ -195,7 +194,7 @@ Contact::Contact(
 }
 
 Contact::Contact(
-    const api::internal::Core& api,
+    const api::Core& api,
     const identity::internal::Authority& parent,
     const identity::Source& source,
     const internal::Primary& master,
@@ -239,8 +238,7 @@ auto Contact::serialize(
                 serializedCredential->add_signature();
             *serializedMasterSignature = *masterSignature;
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to get master signature.")
+            LogOutput(OT_METHOD)(__func__)(": Failed to get master signature.")
                 .Flush();
         }
     }

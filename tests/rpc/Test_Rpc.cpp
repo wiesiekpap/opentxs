@@ -368,7 +368,7 @@ TEST_F(Test_Rpc, Add_Server_Session)
     EXPECT_EQ(1, response.session());
 
     auto& manager = get_session(response.session());
-    auto reason = manager.Factory().PasswordPrompt(__FUNCTION__);
+    auto reason = manager.Factory().PasswordPrompt(__func__);
 
     // Register the server on the client.
     auto& servermanager = dynamic_cast<const api::server::Manager&>(manager);

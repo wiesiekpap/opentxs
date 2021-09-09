@@ -103,8 +103,7 @@ auto OTScriptFactory(const std::string& script_type)
 #else
     // default no script interpreter
     if (script_type == "") {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": WARNING 1: script_type == noscript.")
+        LogOutput(OT_METHOD)(__func__)(": WARNING 1: script_type == noscript.")
             .Flush();
 
         std::shared_ptr<OTScript> pNoScript(new OTScript);
@@ -112,8 +111,8 @@ auto OTScriptFactory(const std::string& script_type)
     }
 #endif
 
-    LogOutput(OT_METHOD)(__FUNCTION__)(": Script language (")(script_type)(
-        ") not found.")
+    LogOutput(OT_METHOD)(__func__)(": Script language (")(
+        script_type)(") not found.")
         .Flush();
 
     std::shared_ptr<OTScript> retVal;
@@ -145,8 +144,7 @@ auto OTScriptFactory(
 #else
     // default no script interpreter
     if (script_type == "") {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": WARNING 2: script_type == noscript.")
+        LogOutput(OT_METHOD)(__func__)(": WARNING 2: script_type == noscript.")
             .Flush();
 
         std::shared_ptr<OTScript> pNoScript(new OTScript);
@@ -154,8 +152,8 @@ auto OTScriptFactory(
     }
 #endif
 
-    LogOutput(OT_METHOD)(__FUNCTION__)(": Script language (")(script_type)(
-        ") not found.")
+    LogOutput(OT_METHOD)(__func__)(": Script language (")(
+        script_type)(") not found.")
         .Flush();
 
     std::shared_ptr<OTScript> retVal;
@@ -310,8 +308,7 @@ void OTScript::RemoveVariable(OTVariable& theVar)
 
 auto OTScript::ExecuteScript(OTVariable*) -> bool
 {
-    LogOutput(OT_METHOD)(__FUNCTION__)(": Scripting has been disabled.")
-        .Flush();
+    LogOutput(OT_METHOD)(__func__)(": Scripting has been disabled.").Flush();
     return true;
 }
 

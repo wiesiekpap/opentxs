@@ -9,7 +9,6 @@
 #include <string>
 #include <string_view>
 
-#include "internal/api/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -46,7 +45,7 @@ class Test_Signatures : public ::testing::Test
 public:
     using Role = ot::crypto::key::asymmetric::Role;
 
-    const ot::api::client::internal::Manager& client_;
+    const ot::api::client::Manager& client_;
 #if OT_CRYPTO_WITH_BIP32
     const std::string fingerprint_;
 #endif  // OT_CRYPTO_WITH_BIP32
@@ -85,7 +84,7 @@ public:
 #endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 
     [[maybe_unused]] Test_Signatures()
-        : client_(dynamic_cast<const ot::api::client::internal::Manager&>(
+        : client_(dynamic_cast<const ot::api::client::Manager&>(
               ot::Context().StartClient(0)))
 #if OT_CRYPTO_WITH_BIP32
         , fingerprint_(client_.Exec().Wallet_ImportSeed(
@@ -128,7 +127,7 @@ public:
         const EcdsaCurve& curve,
         const std::uint32_t index = 0)
     {
-        auto reason = api.Factory().PasswordPrompt(__FUNCTION__);
+        auto reason = api.Factory().PasswordPrompt(__func__);
         std::string id{fingerprint};
 
         return OTAsymmetricKey{
@@ -153,7 +152,7 @@ public:
         const EcdsaCurve curve,
         const Role role)
     {
-        const auto reason = api.Factory().PasswordPrompt(__FUNCTION__);
+        const auto reason = api.Factory().PasswordPrompt(__func__);
         const auto params = [&] {
             if (EcdsaCurve::secp256k1 == curve) {
 
@@ -181,7 +180,7 @@ public:
         const ot::Data& expected)
     {
         constexpr auto style = ot::crypto::SecretStyle::Default;
-        auto reason = client_.Factory().PasswordPrompt(__FUNCTION__);
+        auto reason = client_.Factory().PasswordPrompt(__func__);
         auto secret1 = client_.Factory().Secret(0);
         auto secret2 = client_.Factory().Secret(0);
         auto output = lib.SharedSecret(
@@ -213,7 +212,7 @@ public:
         const crypto::key::Asymmetric& key,
         const crypto::HashType hash)
     {
-        auto reason = client_.Factory().PasswordPrompt(__FUNCTION__);
+        auto reason = client_.Factory().PasswordPrompt(__func__);
         auto sig = ot::Space{};
         const auto pubkey = key.PublicKey();
         const auto seckey = key.PrivateKey(reason);
@@ -238,7 +237,7 @@ public:
         const crypto::key::Asymmetric& key,
         const crypto::HashType hash)
     {
-        auto reason = client_.Factory().PasswordPrompt(__FUNCTION__);
+        auto reason = client_.Factory().PasswordPrompt(__func__);
         auto sig = ot::Space{};
         const auto pubkey = key.PublicKey();
         const auto seckey = key.PrivateKey(reason);

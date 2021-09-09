@@ -39,21 +39,22 @@ namespace network
 class OPENTXS_EXPORT ZMQ
 {
 public:
-    virtual const opentxs::network::zeromq::Context& Context() const = 0;
-    virtual core::AddressType DefaultAddressType() const = 0;
-    virtual std::chrono::seconds KeepAlive() const = 0;
+    virtual auto Context() const
+        -> const opentxs::network::zeromq::Context& = 0;
+    virtual auto DefaultAddressType() const -> core::AddressType = 0;
+    virtual auto KeepAlive() const -> std::chrono::seconds = 0;
     virtual void KeepAlive(const std::chrono::seconds duration) const = 0;
-    virtual std::chrono::seconds Linger() const = 0;
-    virtual std::chrono::seconds ReceiveTimeout() const = 0;
-    virtual const Flag& Running() const = 0;
+    virtual auto Linger() const -> std::chrono::seconds = 0;
+    virtual auto ReceiveTimeout() const -> std::chrono::seconds = 0;
+    virtual auto Running() const -> const Flag& = 0;
     virtual void RefreshConfig() const = 0;
-    virtual std::chrono::seconds SendTimeout() const = 0;
-    virtual opentxs::network::ServerConnection& Server(
-        const std::string& id) const = 0;
-    virtual bool SetSocksProxy(const std::string& proxy) const = 0;
-    virtual std::string SocksProxy() const = 0;
-    virtual bool SocksProxy(std::string& proxy) const = 0;
-    virtual ConnectionState Status(const std::string& server) const = 0;
+    virtual auto SendTimeout() const -> std::chrono::seconds = 0;
+    virtual auto Server(const std::string& id) const
+        -> opentxs::network::ServerConnection& = 0;
+    virtual auto SetSocksProxy(const std::string& proxy) const -> bool = 0;
+    virtual auto SocksProxy() const -> std::string = 0;
+    virtual auto SocksProxy(std::string& proxy) const -> bool = 0;
+    virtual auto Status(const std::string& server) const -> ConnectionState = 0;
 
     OPENTXS_NO_EXPORT virtual ~ZMQ() = default;
 
@@ -63,8 +64,8 @@ protected:
 private:
     ZMQ(const ZMQ&) = delete;
     ZMQ(ZMQ&&) = delete;
-    ZMQ& operator=(const ZMQ&) = delete;
-    ZMQ& operator=(const ZMQ&&) = delete;
+    auto operator=(const ZMQ&) -> ZMQ& = delete;
+    auto operator=(const ZMQ&&) -> ZMQ& = delete;
 };
 }  // namespace network
 }  // namespace api

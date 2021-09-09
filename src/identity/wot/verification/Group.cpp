@@ -41,7 +41,7 @@ auto Factory::VerificationGroup(
 
         return new ReturnType(parent, external, version);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
+        LogOutput("opentxs::Factory::")(__func__)(
             "Failed to construct verification nym: ")(e.what())
             .Flush();
 
@@ -61,7 +61,7 @@ auto Factory::VerificationGroup(
 
         return new ReturnType(parent, serialized, external);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
+        LogOutput("opentxs::Factory::")(__func__)(
             "Failed to construct verification nym: ")(e.what())
             .Flush();
 
@@ -127,7 +127,7 @@ auto Group::AddItem(
     const VersionNumber version) noexcept -> bool
 {
     if (external_) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid internal item").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid internal item").Flush();
 
         return false;
     }
@@ -141,13 +141,13 @@ auto Group::AddItem(
     const Item::SerializedType verification) noexcept -> bool
 {
     if (false == external_) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid external item").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid external item").Flush();
 
         return false;
     }
 
     if (verifier == parent_.NymID()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Attempting to add internal claim to external section")
             .Flush();
 
@@ -231,8 +231,8 @@ auto Group::UpgradeNymVersion(const VersionNumber nymVersion) noexcept -> bool
                 proto::VerificationGroupAllowedIdentity().at(groupVersion);
 
             if (nymVersion < min) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Version ")(nymVersion)(
-                    " too old")
+                LogOutput(OT_METHOD)(__func__)(": Version ")(
+                    nymVersion)(" too old")
                     .Flush();
 
                 return false;
@@ -249,7 +249,7 @@ auto Group::UpgradeNymVersion(const VersionNumber nymVersion) noexcept -> bool
             }
         }
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": No support for version ")(
+        LogOutput(OT_METHOD)(__func__)(": No support for version ")(
             nymVersion)(" items")
             .Flush();
 

@@ -22,7 +22,7 @@ namespace block
 {
 namespace bitcoin
 {
-class Outputs
+class OPENTXS_EXPORT Outputs
 {
 public:
     using value_type = Output;
@@ -35,29 +35,27 @@ public:
     using KeyID = Transaction::KeyID;
     using KeyData = Transaction::KeyData;
 
-    OPENTXS_EXPORT virtual auto at(const std::size_t position) const
-        noexcept(false) -> const value_type& = 0;
-    OPENTXS_EXPORT virtual auto begin() const noexcept -> const_iterator = 0;
-    OPENTXS_EXPORT virtual auto CalculateSize() const noexcept
-        -> std::size_t = 0;
-    OPENTXS_EXPORT virtual auto cbegin() const noexcept -> const_iterator = 0;
-    OPENTXS_EXPORT virtual auto cend() const noexcept -> const_iterator = 0;
-    OPENTXS_EXPORT virtual auto end() const noexcept -> const_iterator = 0;
-    OPENTXS_EXPORT virtual auto ExtractElements(
-        const filter::Type style) const noexcept -> std::vector<Space> = 0;
-    OPENTXS_EXPORT virtual auto FindMatches(
+    virtual auto at(const std::size_t position) const noexcept(false)
+        -> const value_type& = 0;
+    virtual auto begin() const noexcept -> const_iterator = 0;
+    virtual auto CalculateSize() const noexcept -> std::size_t = 0;
+    virtual auto cbegin() const noexcept -> const_iterator = 0;
+    virtual auto cend() const noexcept -> const_iterator = 0;
+    virtual auto end() const noexcept -> const_iterator = 0;
+    virtual auto ExtractElements(const filter::Type style) const noexcept
+        -> std::vector<Space> = 0;
+    virtual auto FindMatches(
         const ReadView txid,
         const FilterType type,
         const ParsedPatterns& elements) const noexcept -> Matches = 0;
-    OPENTXS_EXPORT virtual auto GetPatterns() const noexcept
-        -> std::vector<PatternID> = 0;
-    OPENTXS_EXPORT virtual auto Keys() const noexcept -> std::vector<KeyID> = 0;
-    OPENTXS_EXPORT virtual auto Serialize(const AllocateOutput destination)
-        const noexcept -> std::optional<std::size_t> = 0;
-    OPENTXS_EXPORT virtual auto Serialize(
+    virtual auto GetPatterns() const noexcept -> std::vector<PatternID> = 0;
+    virtual auto Keys() const noexcept -> std::vector<KeyID> = 0;
+    virtual auto Serialize(const AllocateOutput destination) const noexcept
+        -> std::optional<std::size_t> = 0;
+    virtual auto Serialize(
         const api::client::Blockchain& blockchain,
         proto::BlockchainTransaction& destination) const noexcept -> bool = 0;
-    OPENTXS_EXPORT virtual auto size() const noexcept -> std::size_t = 0;
+    virtual auto size() const noexcept -> std::size_t = 0;
 
     virtual auto at(const std::size_t position) noexcept(false)
         -> value_type& = 0;
@@ -71,8 +69,8 @@ protected:
 private:
     Outputs(const Outputs&) = delete;
     Outputs(Outputs&&) = delete;
-    Outputs& operator=(const Outputs&) = delete;
-    Outputs& operator=(Outputs&&) = delete;
+    auto operator=(const Outputs&) -> Outputs& = delete;
+    auto operator=(Outputs&&) -> Outputs& = delete;
 };
 }  // namespace bitcoin
 }  // namespace block

@@ -44,22 +44,14 @@ namespace implementation
 {
 class Manager;
 }  // namespace implementation
-
-namespace internal
-{
-struct Core;
-}  // namespace internal
 }  // namespace client
-
-namespace internal
-{
-struct Core;
-}  // namespace internal
 
 namespace network
 {
 class ZMQ;
 }  // namespace network
+
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -108,7 +100,7 @@ public:
     using ProcessInboxOnly =
         std::pair<std::unique_ptr<Ledger>, TransactionNumber>;
 
-    OTClient* GetClient() const { return m_pClient.get(); }
+    auto GetClient() const -> OTClient* { return m_pClient.get(); }
 
     // This works by checking to see if the Nym has a request number for the
     // given server.
@@ -117,23 +109,23 @@ public:
     // "get request number" since that's what locks in the clients ability to be
     // able to tell
     // that it's registered there.
-    bool IsNym_RegisteredAtServer(
+    auto IsNym_RegisteredAtServer(
         const identifier::Nym& NYM_ID,
-        const identifier::Server& NOTARY_ID) const;
+        const identifier::Server& NOTARY_ID) const -> bool;
 
     /// === Verify Account Receipt ===
     /// Returns bool. Verifies any asset account (intermediary files) against
     /// its own last signed receipt.
     /// Obviously this will fail for any new account that hasn't done any
     /// transactions yet, and thus has no receipts.
-    bool VerifyAccountReceipt(
+    auto VerifyAccountReceipt(
         const identifier::Server& NOTARY_ID,
         const identifier::Nym& NYM_ID,
-        const Identifier& ACCOUNT_ID) const;
+        const Identifier& ACCOUNT_ID) const -> bool;
 
     // Returns an OTCheque pointer, or nullptr.
     // (Caller responsible to delete.)
-    Cheque* WriteCheque(
+    auto WriteCheque(
         const identifier::Server& NOTARY_ID,
         const std::int64_t& CHEQUE_AMOUNT,
         const Time& VALID_FROM,
@@ -141,7 +133,7 @@ public:
         const Identifier& SENDER_accountID,
         const identifier::Nym& SENDER_NYM_ID,
         const String& CHEQUE_MEMO,
-        const identifier::Nym& pRECIPIENT_NYM_ID) const;
+        const identifier::Nym& pRECIPIENT_NYM_ID) const -> Cheque*;
 
     // PROPOSE PAYMENT PLAN (called by Merchant)
     //
@@ -153,7 +145,7 @@ public:
     //
     // Payment Plan Length, and Payment Plan Max Payments, both default to 0,
     // which means no maximum length and no maximum number of payments.
-    OTPaymentPlan* ProposePaymentPlan(
+    auto ProposePaymentPlan(
         const identifier::Server& NOTARY_ID,
         const Time& VALID_FROM,  // 0 defaults to the current time in
                                  // seconds
@@ -172,117 +164,119 @@ public:
         const std::chrono::seconds PAYMENT_PLAN_DELAY,
         const std::chrono::seconds PAYMENT_PLAN_PERIOD,
         const std::chrono::seconds PAYMENT_PLAN_LENGTH = {},
-        const std::int32_t PAYMENT_PLAN_MAX_PAYMENTS = 0) const;
+        const std::int32_t PAYMENT_PLAN_MAX_PAYMENTS = 0) const
+        -> OTPaymentPlan*;
 
     // CONFIRM PAYMENT PLAN (called by Customer)
-    bool ConfirmPaymentPlan(
+    auto ConfirmPaymentPlan(
         const identifier::Server& NOTARY_ID,
         const identifier::Nym& SENDER_NYM_ID,
         const Identifier& SENDER_ACCT_ID,
         const identifier::Nym& RECIPIENT_NYM_ID,
-        OTPaymentPlan& thePlan) const;
-    bool IsBasketCurrency(const identifier::UnitDefinition&
-                              BASKET_INSTRUMENT_DEFINITION_ID) const;
+        OTPaymentPlan& thePlan) const -> bool;
+    auto IsBasketCurrency(
+        const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID) const
+        -> bool;
 
-    std::int64_t GetBasketMinimumTransferAmount(
-        const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID)
-        const;
+    auto GetBasketMinimumTransferAmount(
+        const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID) const
+        -> std::int64_t;
 
-    std::int32_t GetBasketMemberCount(
-        const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID)
-        const;
+    auto GetBasketMemberCount(
+        const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID) const
+        -> std::int32_t;
 
-    bool GetBasketMemberType(
+    auto GetBasketMemberType(
         const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID,
         std::int32_t nIndex,
-        identifier::UnitDefinition& theOutputMemberType) const;
+        identifier::UnitDefinition& theOutputMemberType) const -> bool;
 
-    std::int64_t GetBasketMemberMinimumTransferAmount(
+    auto GetBasketMemberMinimumTransferAmount(
         const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID,
-        std::int32_t nIndex) const;
-    std::unique_ptr<Ledger> LoadNymbox(
+        std::int32_t nIndex) const -> std::int64_t;
+    auto LoadNymbox(
         const identifier::Server& NOTARY_ID,
-        const identifier::Nym& NYM_ID) const;
+        const identifier::Nym& NYM_ID) const -> std::unique_ptr<Ledger>;
 
-    ProcessInboxOnly CreateProcessInbox(
+    auto CreateProcessInbox(
         const Identifier& accountID,
         otx::context::Server& context,
-        Ledger& inbox) const;
+        Ledger& inbox) const -> ProcessInboxOnly;
 
-    bool IncludeResponse(
+    auto IncludeResponse(
         const Identifier& accountID,
         const bool accept,
         otx::context::Server& context,
         OTTransaction& source,
-        Ledger& processInbox) const;
+        Ledger& processInbox) const -> bool;
 
-    bool FinalizeProcessInbox(
+    auto FinalizeProcessInbox(
         const Identifier& accountID,
         otx::context::Server& context,
         Ledger& processInbox,
         Ledger& inbox,
         Ledger& outbox,
-        const PasswordPrompt& reason) const;
+        const PasswordPrompt& reason) const -> bool;
 
     // These commands below send messages to the server:
 
-    CommandResult unregisterNym(otx::context::Server& context) const;
+    auto unregisterNym(otx::context::Server& context) const -> CommandResult;
 
-    CommandResult usageCredits(
+    auto usageCredits(
         otx::context::Server& context,
         const identifier::Nym& NYM_ID_CHECK,
-        std::int64_t lAdjustment = 0) const;
+        std::int64_t lAdjustment = 0) const -> CommandResult;
 
-    CommandResult queryInstrumentDefinitions(
+    auto queryInstrumentDefinitions(
         otx::context::Server& context,
-        const Armored& ENCODED_MAP) const;
+        const Armored& ENCODED_MAP) const -> CommandResult;
 
-    CommandResult deleteAssetAccount(
+    auto deleteAssetAccount(
         otx::context::Server& context,
-        const Identifier& ACCOUNT_ID) const;
+        const Identifier& ACCOUNT_ID) const -> CommandResult;
 
-    bool AddBasketCreationItem(
+    auto AddBasketCreationItem(
         proto::UnitDefinition& basketTemplate,
         const String& currencyID,
-        const std::uint64_t weight) const;
+        const std::uint64_t weight) const -> bool;
 
-    CommandResult issueBasket(
+    auto issueBasket(
         otx::context::Server& context,
         const proto::UnitDefinition& basket,
-        const std::string& label) const;
+        const std::string& label) const -> CommandResult;
 
-    Basket* GenerateBasketExchange(
+    auto GenerateBasketExchange(
         const identifier::Server& NOTARY_ID,
         const identifier::Nym& NYM_ID,
         const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID,
         const Identifier& BASKET_ASSET_ACCT_ID,
-        std::int32_t TRANSFER_MULTIPLE) const;  // 1            2             3
+        std::int32_t TRANSFER_MULTIPLE) const -> Basket*;  // 1            2 3
     // 5=2,3,4  OR  10=4,6,8  OR 15=6,9,12
 
-    bool AddBasketExchangeItem(
+    auto AddBasketExchangeItem(
         const identifier::Server& NOTARY_ID,
         const identifier::Nym& NYM_ID,
         Basket& theBasket,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
-        const Identifier& ASSET_ACCT_ID) const;
+        const Identifier& ASSET_ACCT_ID) const -> bool;
 
-    CommandResult exchangeBasket(
+    auto exchangeBasket(
         otx::context::Server& context,
         const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID,
         const String& BASKET_INFO,
-        bool bExchangeInOrOut) const;
+        bool bExchangeInOrOut) const -> CommandResult;
 
-    std::unique_ptr<Message> getTransactionNumbers(
-        otx::context::Server& context) const;
+    auto getTransactionNumbers(otx::context::Server& context) const
+        -> std::unique_ptr<Message>;
 
-    CommandResult withdrawVoucher(
+    auto withdrawVoucher(
         otx::context::Server& context,
         const Identifier& ACCT_ID,
         const identifier::Nym& RECIPIENT_NYM_ID,
         const String& CHEQUE_MEMO,
-        const Amount amount) const;
+        const Amount amount) const -> CommandResult;
 
-    CommandResult payDividend(
+    auto payDividend(
         otx::context::Server& context,
         const Identifier& DIVIDEND_FROM_ACCT_ID,  // if dollars paid for pepsi
                                                   // shares, then this is the
@@ -296,18 +290,19 @@ public:
         const String& DIVIDEND_MEMO,  // user-configurable note that's added to
                                       // the
                                       // payout request message.
-        const Amount& AMOUNT_PER_SHARE) const;  // number of dollars to be paid
-                                                // out
+        const Amount& AMOUNT_PER_SHARE) const
+        -> CommandResult;  // number of dollars to be paid
+                           // out
     // PER SHARE (multiplied by total
     // number of shares issued.)
 
-    CommandResult triggerClause(
+    auto triggerClause(
         otx::context::Server& context,
         const TransactionNumber& lTransactionNum,
         const String& strClauseName,
-        const String& pStrParam = String::Factory()) const;
+        const String& pStrParam = String::Factory()) const -> CommandResult;
 
-    bool Create_SmartContract(
+    auto Create_SmartContract(
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
                                                // (The signing at this point is
                                                // only to cause a save.)
@@ -318,9 +313,9 @@ public:
                                // every named account.
         bool SPECIFY_PARTIES,  // This means Nym IDs must be provided for every
                                // party.
-        String& strOutput) const;
+        String& strOutput) const -> bool;
 
-    bool SmartContract_SetDates(
+    auto SmartContract_SetDates(
         const String& THE_CONTRACT,  // The contract, about to have the dates
                                      // changed on it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -329,13 +324,13 @@ public:
         Time VALID_FROM,                       // Default (0 or nullptr) == NOW
         Time VALID_TO,  // Default (0 or nullptr) == no expiry / cancel
                         // anytime.
-        String& strOutput) const;
+        String& strOutput) const -> bool;
 
-    bool Smart_ArePartiesSpecified(const String& THE_CONTRACT) const;
+    auto Smart_ArePartiesSpecified(const String& THE_CONTRACT) const -> bool;
 
-    bool Smart_AreAssetTypesSpecified(const String& THE_CONTRACT) const;
+    auto Smart_AreAssetTypesSpecified(const String& THE_CONTRACT) const -> bool;
 
-    bool SmartContract_AddBylaw(
+    auto SmartContract_AddBylaw(
         const String& THE_CONTRACT,  // The contract, about to have the bylaw
                                      // added to it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -343,9 +338,9 @@ public:
                                                // only to cause a save.)
         const String& BYLAW_NAME,  // The Bylaw's NAME as referenced in the
                                    // smart contract. (And the scripts...)
-        String& strOutput) const;
+        String& strOutput) const -> bool;
 
-    bool SmartContract_RemoveBylaw(
+    auto SmartContract_RemoveBylaw(
         const String& THE_CONTRACT,  // The contract, about to have the bylaw
                                      // removed from it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -353,9 +348,9 @@ public:
                                                // only to cause a save.)
         const String& BYLAW_NAME,  // The Bylaw's NAME as referenced in the
                                    // smart contract. (And the scripts...)
-        String& strOutput) const;
+        String& strOutput) const -> bool;
 
-    bool SmartContract_AddClause(
+    auto SmartContract_AddClause(
         const String& THE_CONTRACT,  // The contract, about to have the clause
                                      // added to it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -366,9 +361,9 @@ public:
         const String& CLAUSE_NAME,  // The Clause's name as referenced in the
                                     // smart contract. (And the scripts...)
         const String& SOURCE_CODE,  // The actual source code for the clause.
-        String& strOutput) const;
+        String& strOutput) const -> bool;
 
-    bool SmartContract_UpdateClause(
+    auto SmartContract_UpdateClause(
         const String& THE_CONTRACT,  // The contract, about to have the clause
                                      // updated on it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -379,9 +374,9 @@ public:
         const String& CLAUSE_NAME,  // The Clause's name as referenced in the
                                     // smart contract. (And the scripts...)
         const String& SOURCE_CODE,  // The actual source code for the clause.
-        String& strOutput) const;
+        String& strOutput) const -> bool;
 
-    bool SmartContract_RemoveClause(
+    auto SmartContract_RemoveClause(
         const String& THE_CONTRACT,  // The contract, about to have the clause
                                      // removed from it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -391,9 +386,9 @@ public:
                                     // way we can find it.)
         const String& CLAUSE_NAME,  // The Clause's name as referenced in the
                                     // smart contract. (And the scripts...)
-        String& strOutput) const;
+        String& strOutput) const -> bool;
 
-    bool SmartContract_AddVariable(
+    auto SmartContract_AddVariable(
         const String& THE_CONTRACT,  // The contract, about to have the variable
                                      // added to it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -410,9 +405,9 @@ public:
                                   // std::int64_t. If type is bool, the strings
                                   // "true" or "false" are expected here in
                                   // order to convert to a bool.
-        String& strOutput) const;
+        String& strOutput) const -> bool;
 
-    bool SmartContract_RemoveVariable(
+    auto SmartContract_RemoveVariable(
         const String& THE_CONTRACT,  // The contract, about to have the variable
                                      // removed from it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -422,9 +417,9 @@ public:
                                    // way we can find it.)
         const String& VAR_NAME,    // The Variable's name as referenced in the
                                    // smart contract. (And the scripts...)
-        String& strOutput) const;
+        String& strOutput) const -> bool;
 
-    bool SmartContract_AddCallback(
+    auto SmartContract_AddCallback(
         const String& THE_CONTRACT,  // The contract, about to have the callback
                                      // added to it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -437,9 +432,9 @@ public:
                                       // scripts...)
         const String& CLAUSE_NAME,  // The actual clause that will be triggered
                                     // by the callback. (Must exist.)
-        String& strOutput) const;
+        String& strOutput) const -> bool;
 
-    bool SmartContract_RemoveCallback(
+    auto SmartContract_RemoveCallback(
         const String& THE_CONTRACT,  // The contract, about to have the callback
                                      // removed from it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -450,9 +445,9 @@ public:
         const String& CALLBACK_NAME,  // The Callback's name as referenced in
                                       // the smart contract. (And the
                                       // scripts...)
-        String& strOutput) const;
+        String& strOutput) const -> bool;
 
-    bool SmartContract_AddHook(
+    auto SmartContract_AddHook(
         const String& THE_CONTRACT,  // The contract, about to have the hook
                                      // added to it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -466,9 +461,9 @@ public:
                                     // by the hook. (You can call this multiple
                                     // times, and have multiple clauses trigger
                                     // on the same hook.)
-        String& strOutput) const;
+        String& strOutput) const -> bool;
 
-    bool SmartContract_RemoveHook(
+    auto SmartContract_RemoveHook(
         const String& THE_CONTRACT,  // The contract, about to have the hook
                                      // removed from it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -482,9 +477,9 @@ public:
                                     // by the hook. (You can call this multiple
                                     // times, and have multiple clauses trigger
                                     // on the same hook.)
-        String& strOutput) const;
+        String& strOutput) const -> bool;
 
-    bool SmartContract_AddParty(
+    auto SmartContract_AddParty(
         const String& THE_CONTRACT,  // The contract, about to have the party
                                      // added to it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -497,9 +492,9 @@ public:
                                      // smart contract. (And the scripts...)
         const String& AGENT_NAME,    // An AGENT will be added by default for
                                      // this party. Need Agent NAME.
-        String& strOutput) const;
+        String& strOutput) const -> bool;
 
-    bool SmartContract_RemoveParty(
+    auto SmartContract_RemoveParty(
         const String& THE_CONTRACT,  // The contract, about to have the party
                                      // removed from it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -507,9 +502,9 @@ public:
                                                // only to cause a save.)
         const String& PARTY_NAME,  // The Party's NAME as referenced in the
                                    // smart contract. (And the scripts...)
-        String& strOutput) const;
+        String& strOutput) const -> bool;
 
-    bool SmartContract_AddAccount(
+    auto SmartContract_AddAccount(
         const String& THE_CONTRACT,  // The contract, about to have the account
                                      // added to it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -522,9 +517,9 @@ public:
         const String& INSTRUMENT_DEFINITION_ID,  // Instrument Definition ID for
                                                  // the
                                                  // Account.
-        String& strOutput) const;
+        String& strOutput) const -> bool;
 
-    bool SmartContract_RemoveAccount(
+    auto SmartContract_RemoveAccount(
         const String& THE_CONTRACT,  // The contract, about to have the account
                                      // removed from it.
         const identifier::Nym& SIGNER_NYM_ID,  // Use any Nym you wish here.
@@ -534,25 +529,26 @@ public:
                                    // smart contract. (And the scripts...)
         const String& ACCT_NAME,   // The Account's name as referenced in the
                                    // smart contract
-        String& strOutput) const;
+        String& strOutput) const -> bool;
 
-    std::int32_t SmartContract_CountNumsNeeded(
+    auto SmartContract_CountNumsNeeded(
         const String& THE_CONTRACT,  // The contract, about to have the bylaw
                                      // added to it.
-        const String& AGENT_NAME) const;  // An AGENT will be added by default
-                                          // for
-                                          // this party. Need Agent NAME.
+        const String& AGENT_NAME) const
+        -> std::int32_t;  // An AGENT will be added by default
+                          // for
+                          // this party. Need Agent NAME.
 
-    bool SmartContract_ConfirmAccount(
+    auto SmartContract_ConfirmAccount(
         const String& THE_CONTRACT,
         const identifier::Nym& SIGNER_NYM_ID,
         const String& PARTY_NAME,
         const String& ACCT_NAME,
         const String& AGENT_NAME,
         const String& ACCT_ID,
-        String& strOutput) const;
+        String& strOutput) const -> bool;
 
-    bool SmartContract_ConfirmParty(
+    auto SmartContract_ConfirmParty(
         const String& THE_CONTRACT,  // The smart contract, about to be changed
                                      // by this function.
         const String& PARTY_NAME,    // Should already be on the contract. This
@@ -560,17 +556,18 @@ public:
         const identifier::Nym& NYM_ID,  // Nym ID for the party, the actual
                                         // owner,
         const identifier::Server& NOTARY_ID,
-        String& strOutput) const;  // ===> AS WELL AS for the default AGENT of
-                                   // that
-                                   // party. (For now, until I code entities)
-    CommandResult activateSmartContract(
+        String& strOutput) const
+        -> bool;  // ===> AS WELL AS for the default AGENT of
+                  // that
+                  // party. (For now, until I code entities)
+    auto activateSmartContract(
         otx::context::Server& context,
-        const String& THE_SMART_CONTRACT) const;
+        const String& THE_SMART_CONTRACT) const -> CommandResult;
 
-    CommandResult depositPaymentPlan(
+    auto depositPaymentPlan(
         otx::context::Server& context,
-        const String& THE_PAYMENT_PLAN) const;
-    CommandResult issueMarketOffer(
+        const String& THE_PAYMENT_PLAN) const -> CommandResult;
+    auto issueMarketOffer(
         otx::context::Server& context,
         const Identifier& ASSET_ACCT_ID,
         const Identifier& CURRENCY_ACCT_ID,
@@ -588,31 +585,33 @@ public:
         const bool bBuyingOrSelling,  // BUYING == false, SELLING == true.
         const std::chrono::seconds tLifespanInSeconds = std::chrono::hours{24},
         const char STOP_SIGN = 0,  // For stop orders, set to '<' or '>'
-        const Amount ACTIVATION_PRICE = 0) const;  // For stop orders, set the
-                                                   // threshold price here.
-    CommandResult getMarketList(otx::context::Server& context) const;
-    CommandResult getMarketOffers(
+        const Amount ACTIVATION_PRICE = 0) const
+        -> CommandResult;  // For stop orders, set the
+                           // threshold price here.
+    auto getMarketList(otx::context::Server& context) const -> CommandResult;
+    auto getMarketOffers(
         otx::context::Server& context,
         const Identifier& MARKET_ID,
-        const std::int64_t& lDepth) const;
-    CommandResult getMarketRecentTrades(
+        const std::int64_t& lDepth) const -> CommandResult;
+    auto getMarketRecentTrades(
         otx::context::Server& context,
-        const Identifier& MARKET_ID) const;
+        const Identifier& MARKET_ID) const -> CommandResult;
 
-    CommandResult getNymMarketOffers(otx::context::Server& context) const;
+    auto getNymMarketOffers(otx::context::Server& context) const
+        -> CommandResult;
 
     // For cancelling market offers and payment plans.
-    CommandResult cancelCronItem(
+    auto cancelCronItem(
         otx::context::Server& context,
         const Identifier& ASSET_ACCT_ID,
-        const TransactionNumber& lTransactionNum) const;
+        const TransactionNumber& lTransactionNum) const -> CommandResult;
 
     OPENTXS_NO_EXPORT ~OT_API() override;  // calls Cleanup();
 
 private:
     friend api::client::implementation::Manager;
 
-    const api::internal::Core& api_;
+    const api::Core& api_;
     const api::client::Activity& activity_;
     const api::client::Contacts& contacts_;
     const api::client::Workflow& workflow_;
@@ -635,7 +634,7 @@ private:
         const Identifier& accountid,
         const PasswordPrompt& reason) const;
 
-    bool add_accept_item(
+    auto add_accept_item(
         const itemType type,
         const TransactionNumber originNumber,
         const TransactionNumber referenceNumber,
@@ -643,41 +642,41 @@ private:
         const identity::Nym& nym,
         const Amount amount,
         const String& inRefTo,
-        OTTransaction& processInbox) const;
-    bool find_cron(
+        OTTransaction& processInbox) const -> bool;
+    auto find_cron(
         const otx::context::Server& context,
         const Item& item,
         OTTransaction& processInbox,
         OTTransaction& serverTransaction,
         Ledger& inbox,
         Amount& amount,
-        std::set<TransactionNumber>& closing) const;
-    bool find_standard(
+        std::set<TransactionNumber>& closing) const -> bool;
+    auto find_standard(
         const otx::context::Server& context,
         const Item& item,
         const TransactionNumber number,
         OTTransaction& serverTransaction,
         Ledger& inbox,
         Amount& amount,
-        std::set<TransactionNumber>& closing) const;
-    OTTransaction* get_or_create_process_inbox(
+        std::set<TransactionNumber>& closing) const -> bool;
+    auto get_or_create_process_inbox(
         const Identifier& accountID,
         otx::context::Server& context,
-        Ledger& response) const;
-    TransactionNumber get_origin(
+        Ledger& response) const -> OTTransaction*;
+    auto get_origin(
         const identifier::Server& notaryID,
         const OTTransaction& source,
-        String& note) const;
-    Time GetTime() const;
-    itemType response_type(const transactionType sourceType, const bool success)
-        const;
+        String& note) const -> TransactionNumber;
+    auto GetTime() const -> Time;
+    auto response_type(const transactionType sourceType, const bool success)
+        const -> itemType;
 
-    bool Cleanup();
-    bool Init();
-    bool LoadConfigFile();
+    auto Cleanup() -> bool;
+    auto Init() -> bool;
+    auto LoadConfigFile() -> bool;
 
     OT_API(
-        const api::internal::Core& api,
+        const api::Core& api,
         const api::client::Activity& activity,
         const api::client::Contacts& contacts,
         const api::client::Workflow& workflow,
@@ -686,8 +685,8 @@ private:
     OT_API() = delete;
     OT_API(const OT_API&) = delete;
     OT_API(OT_API&&) = delete;
-    OT_API operator=(const OT_API&) = delete;
-    OT_API operator=(OT_API&&) = delete;
+    auto operator=(const OT_API&) -> OT_API = delete;
+    auto operator=(OT_API&&) -> OT_API = delete;
 };
 }  // namespace opentxs
 #endif

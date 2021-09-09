@@ -52,64 +52,69 @@ public:
     using List = std::list<std::string>;
     using Map = std::map<std::string, std::string>;
 
-    static opentxs::Pimpl<opentxs::String> Factory();
-    static opentxs::Pimpl<opentxs::String> Factory(const Armored& value);
-    static opentxs::Pimpl<opentxs::String> Factory(const Signature& value);
-    static opentxs::Pimpl<opentxs::String> Factory(const Contract& value);
-    static opentxs::Pimpl<opentxs::String> Factory(const Identifier& value);
-    static opentxs::Pimpl<opentxs::String> Factory(const NymFile& value);
-    static opentxs::Pimpl<opentxs::String> Factory(const char* value);
-    static opentxs::Pimpl<opentxs::String> Factory(const std::string& value);
-    static opentxs::Pimpl<opentxs::String> Factory(
-        const char* value,
-        std::size_t size);
+    static auto Factory() -> opentxs::Pimpl<opentxs::String>;
+    static auto Factory(const Armored& value)
+        -> opentxs::Pimpl<opentxs::String>;
+    static auto Factory(const Signature& value)
+        -> opentxs::Pimpl<opentxs::String>;
+    static auto Factory(const Contract& value)
+        -> opentxs::Pimpl<opentxs::String>;
+    static auto Factory(const Identifier& value)
+        -> opentxs::Pimpl<opentxs::String>;
+    static auto Factory(const NymFile& value)
+        -> opentxs::Pimpl<opentxs::String>;
+    static auto Factory(const char* value) -> opentxs::Pimpl<opentxs::String>;
+    static auto Factory(const std::string& value)
+        -> opentxs::Pimpl<opentxs::String>;
+    static auto Factory(const char* value, std::size_t size)
+        -> opentxs::Pimpl<opentxs::String>;
 
-    static std::string LongToString(const std::int64_t& lNumber);
-    static std::string replace_chars(
+    static auto LongToString(const std::int64_t& lNumber) -> std::string;
+    static auto replace_chars(
         const std::string& str,
         const std::string& charsFrom,
-        const char& charTo);
-    static std::size_t safe_strlen(const char* s, std::size_t max);
-    static std::int32_t StringToInt(const std::string& number);
-    static std::int64_t StringToLong(const std::string& number);
-    static std::uint32_t StringToUint(const std::string& number);
-    static std::uint64_t StringToUlong(const std::string& number);
-    static std::string& trim(std::string& str);
-    static std::string UlongToString(const std::uint64_t& uNumber);
-    static bool vformat(const char* fmt, std::va_list* pvl, std::string& s)
-        ATTR_PRINTF(1, 0);
+        const char& charTo) -> std::string;
+    static auto safe_strlen(const char* s, std::size_t max) -> std::size_t;
+    static auto StringToInt(const std::string& number) -> std::int32_t;
+    static auto StringToLong(const std::string& number) -> std::int64_t;
+    static auto StringToUint(const std::string& number) -> std::uint32_t;
+    static auto StringToUlong(const std::string& number) -> std::uint64_t;
+    static auto trim(std::string& str) -> std::string&;
+    static auto UlongToString(const std::uint64_t& uNumber) -> std::string;
+    static auto ATTR_PRINTF(1, 0)
+        vformat(const char* fmt, std::va_list* pvl, std::string& s) -> bool;
 
-    virtual bool operator>(const String& rhs) const = 0;
-    virtual bool operator<(const String& rhs) const = 0;
-    virtual bool operator<=(const String& rhs) const = 0;
-    virtual bool operator>=(const String& rhs) const = 0;
-    virtual bool operator==(const String& rhs) const = 0;
+    virtual auto operator>(const String& rhs) const -> bool = 0;
+    virtual auto operator<(const String& rhs) const -> bool = 0;
+    virtual auto operator<=(const String& rhs) const -> bool = 0;
+    virtual auto operator>=(const String& rhs) const -> bool = 0;
+    virtual auto operator==(const String& rhs) const -> bool = 0;
 
-    virtual bool At(std::uint32_t index, char& c) const = 0;
-    virtual ReadView Bytes() const noexcept = 0;
-    virtual bool Compare(const char* compare) const = 0;
-    virtual bool Compare(const String& compare) const = 0;
-    virtual bool Contains(const char* compare) const = 0;
-    virtual bool Contains(const String& compare) const = 0;
-    virtual bool empty() const = 0;
-    virtual bool Exists() const = 0;
-    virtual const char* Get() const = 0;
-    virtual std::uint32_t GetLength() const = 0;
-    virtual std::int32_t ToInt() const = 0;
-    virtual bool TokenizeIntoKeyValuePairs(Map& map) const = 0;
-    virtual std::int64_t ToLong() const = 0;
-    virtual std::uint32_t ToUint() const = 0;
-    virtual std::uint64_t ToUlong() const = 0;
+    virtual auto At(std::uint32_t index, char& c) const -> bool = 0;
+    virtual auto Bytes() const noexcept -> ReadView = 0;
+    virtual auto Compare(const char* compare) const -> bool = 0;
+    virtual auto Compare(const String& compare) const -> bool = 0;
+    virtual auto Contains(const char* compare) const -> bool = 0;
+    virtual auto Contains(const String& compare) const -> bool = 0;
+    virtual auto empty() const -> bool = 0;
+    virtual auto Exists() const -> bool = 0;
+    virtual auto Get() const -> const char* = 0;
+    virtual auto GetLength() const -> std::uint32_t = 0;
+    virtual auto ToInt() const -> std::int32_t = 0;
+    virtual auto TokenizeIntoKeyValuePairs(Map& map) const -> bool = 0;
+    virtual auto ToLong() const -> std::int64_t = 0;
+    virtual auto ToUint() const -> std::uint32_t = 0;
+    virtual auto ToUlong() const -> std::uint64_t = 0;
     virtual void WriteToFile(std::ostream& ofs) const = 0;
 
     virtual void Concatenate(const char* arg, ...) ATTR_PRINTF(2, 3) = 0;
     virtual void Concatenate(const String& data) = 0;
     virtual void ConvertToUpperCase() = 0;
-    virtual bool DecodeIfArmored(bool escapedIsAllowed = true) = 0;
+    virtual auto DecodeIfArmored(bool escapedIsAllowed = true) -> bool = 0;
     virtual void Format(const char* fmt, ...) ATTR_PRINTF(2, 3) = 0;
     /** For a straight-across, exact-size copy of bytes. Source not expected to
      * be null-terminated. */
-    virtual bool MemSet(const char* mem, std::uint32_t size) = 0;
+    virtual auto MemSet(const char* mem, std::uint32_t size) -> bool = 0;
     virtual void Release() = 0;
     /** new_string MUST be at least nEnforcedMaxLength in size if
     nEnforcedMaxLength is passed in at all.
@@ -120,11 +125,11 @@ public:
     virtual void Set(const String& data) = 0;
     /** true  == there are more lines to read.
     false == this is the last line. Like EOF. */
-    virtual bool sgets(char* buffer, std::uint32_t size) = 0;
-    virtual char sgetc() = 0;
+    virtual auto sgets(char* buffer, std::uint32_t size) -> bool = 0;
+    virtual auto sgetc() -> char = 0;
     virtual void swap(String& rhs) = 0;
     virtual void reset() = 0;
-    virtual AllocateOutput WriteInto() noexcept = 0;
+    virtual auto WriteInto() noexcept -> AllocateOutput = 0;
 
     virtual ~String() = default;
 
@@ -133,19 +138,20 @@ protected:
 
 private:
     friend OTString;
-    friend std::ostream& operator<<(std::ostream& os, const String& obj);
+    friend auto operator<<(std::ostream& os, const String& obj)
+        -> std::ostream&;
 
 #ifdef _WIN32
 public:
 #endif
-    virtual String* clone() const = 0;
+    virtual auto clone() const -> String* = 0;
 #ifdef _WIN32
 private:
 #endif
 
     String(String&& rhs) = delete;
-    String& operator=(const String& rhs) = delete;
-    String& operator=(String&& rhs) = delete;
+    auto operator=(const String& rhs) -> String& = delete;
+    auto operator=(String&& rhs) -> String& = delete;
 };
 }  // namespace opentxs
 #endif

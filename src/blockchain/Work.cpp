@@ -43,7 +43,7 @@ auto Work(const std::string& hex) -> blockchain::Work*
         bmp::import_bits(i, bytes->begin(), bytes->end(), 8, true);
         value = ValueType{i};
     } catch (...) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Failed to decode work")
+        LogOutput("opentxs::factory::")(__func__)(": Failed to decode work")
             .Flush();
 
         return new ReturnType();
@@ -76,7 +76,7 @@ auto Work(const blockchain::Type chain, const blockchain::NumericHash& input)
             value = ValueType{max} / ValueType{incoming};
         }
     } catch (...) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Failed to calculate difficulty")
             .Flush();
 
@@ -202,7 +202,7 @@ auto Work::asHex() const noexcept -> std::string
         bmp::export_bits(
             bmp::cpp_int(data_), std::back_inserter(bytes), 8, true);
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to encode number").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to encode number").Flush();
 
         return {};
     }

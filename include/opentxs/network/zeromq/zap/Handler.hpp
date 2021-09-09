@@ -37,29 +37,29 @@ namespace zeromq
 {
 namespace zap
 {
-class Handler : virtual public zeromq::socket::Reply
+class OPENTXS_EXPORT Handler : virtual public zeromq::socket::Reply
 {
 public:
-    OPENTXS_EXPORT static OTZMQZAPHandler Factory(
+    static auto Factory(
         const zeromq::Context& context,
-        const Callback& callback);
+        const Callback& callback) -> OTZMQZAPHandler;
 
-    OPENTXS_EXPORT ~Handler() override = default;
+    ~Handler() override = default;
 
 protected:
-    OPENTXS_EXPORT Handler() = default;
+    Handler() = default;
 
 private:
     friend OTZMQZAPHandler;
 
 #ifndef _WIN32
-    Handler* clone() const noexcept override = 0;
+    auto clone() const noexcept -> Handler* override = 0;
 #endif
 
     Handler(const Handler&) = delete;
     Handler(Handler&&) = delete;
-    Handler& operator=(const Handler&) = delete;
-    Handler& operator=(Handler&&) = delete;
+    auto operator=(const Handler&) -> Handler& = delete;
+    auto operator=(Handler&&) -> Handler& = delete;
 };
 }  // namespace zap
 }  // namespace zeromq

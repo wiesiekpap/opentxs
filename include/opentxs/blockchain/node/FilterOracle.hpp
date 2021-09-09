@@ -37,20 +37,23 @@ struct OPENTXS_EXPORT GCS {
     using Matches = std::vector<Targets::const_iterator>;
 
     /// Serialized filter only, no element count
-    virtual Space Compressed() const noexcept = 0;
-    virtual std::uint32_t ElementCount() const noexcept = 0;
+    virtual auto Compressed() const noexcept -> Space = 0;
+    virtual auto ElementCount() const noexcept -> std::uint32_t = 0;
     /// Element count as CompactSize followed by serialized filter
-    virtual OTData Encode() const noexcept = 0;
-    virtual filter::pHash Hash() const noexcept = 0;
-    virtual filter::pHeader Header(const ReadView previous) const noexcept = 0;
-    virtual Matches Match(const Targets&) const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual bool Serialize(
-        proto::GCS& out) const noexcept = 0;
-    virtual bool Serialize(AllocateOutput out) const noexcept = 0;
-    virtual bool Test(const Data& target) const noexcept = 0;
-    virtual bool Test(const ReadView target) const noexcept = 0;
-    virtual bool Test(const std::vector<OTData>& targets) const noexcept = 0;
-    virtual bool Test(const std::vector<Space>& targets) const noexcept = 0;
+    virtual auto Encode() const noexcept -> OTData = 0;
+    virtual auto Hash() const noexcept -> filter::pHash = 0;
+    virtual auto Header(const ReadView previous) const noexcept
+        -> filter::pHeader = 0;
+    virtual auto Match(const Targets&) const noexcept -> Matches = 0;
+    OPENTXS_NO_EXPORT virtual auto Serialize(proto::GCS& out) const noexcept
+        -> bool = 0;
+    virtual auto Serialize(AllocateOutput out) const noexcept -> bool = 0;
+    virtual auto Test(const Data& target) const noexcept -> bool = 0;
+    virtual auto Test(const ReadView target) const noexcept -> bool = 0;
+    virtual auto Test(const std::vector<OTData>& targets) const noexcept
+        -> bool = 0;
+    virtual auto Test(const std::vector<Space>& targets) const noexcept
+        -> bool = 0;
 
     virtual ~GCS() = default;
 };
@@ -58,15 +61,14 @@ struct OPENTXS_EXPORT GCS {
 class OPENTXS_EXPORT FilterOracle
 {
 public:
-    virtual filter::Type DefaultType() const noexcept = 0;
-    virtual block::Position FilterTip(
-        const filter::Type type) const noexcept = 0;
-    virtual std::unique_ptr<const GCS> LoadFilter(
+    virtual auto DefaultType() const noexcept -> filter::Type = 0;
+    virtual auto FilterTip(const filter::Type type) const noexcept
+        -> block::Position = 0;
+    virtual auto LoadFilter(const filter::Type type, const block::Hash& block)
+        const noexcept -> std::unique_ptr<const GCS> = 0;
+    virtual auto LoadFilterHeader(
         const filter::Type type,
-        const block::Hash& block) const noexcept = 0;
-    virtual filter::pHeader LoadFilterHeader(
-        const filter::Type type,
-        const block::Hash& block) const noexcept = 0;
+        const block::Hash& block) const noexcept -> filter::pHeader = 0;
 
     virtual ~FilterOracle() = default;
 
@@ -76,8 +78,8 @@ protected:
 private:
     FilterOracle(const FilterOracle&) = delete;
     FilterOracle(FilterOracle&&) = delete;
-    FilterOracle& operator=(const FilterOracle&) = delete;
-    FilterOracle& operator=(FilterOracle&&) = delete;
+    auto operator=(const FilterOracle&) -> FilterOracle& = delete;
+    auto operator=(FilterOracle&&) -> FilterOracle& = delete;
 };
 }  // namespace node
 }  // namespace blockchain

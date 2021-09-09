@@ -35,19 +35,19 @@ namespace identity
 class OPENTXS_EXPORT Source
 {
 public:
-    virtual OTString asString() const noexcept = 0;
-    virtual OTString Description() const noexcept = 0;
-    virtual identity::SourceType Type() const noexcept = 0;
-    virtual OTNymID NymID() const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual bool Serialize(
-        proto::NymIDSource& serialized) const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual bool Verify(
+    virtual auto asString() const noexcept -> OTString = 0;
+    virtual auto Description() const noexcept -> OTString = 0;
+    virtual auto Type() const noexcept -> identity::SourceType = 0;
+    virtual auto NymID() const noexcept -> OTNymID = 0;
+    OPENTXS_NO_EXPORT virtual auto Serialize(
+        proto::NymIDSource& serialized) const noexcept -> bool = 0;
+    OPENTXS_NO_EXPORT virtual auto Verify(
         const proto::Credential& master,
-        const proto::Signature& sourceSignature) const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual bool Sign(
+        const proto::Signature& sourceSignature) const noexcept -> bool = 0;
+    OPENTXS_NO_EXPORT virtual auto Sign(
         const identity::credential::Primary& credential,
         proto::Signature& sig,
-        const PasswordPrompt& reason) const noexcept = 0;
+        const PasswordPrompt& reason) const noexcept -> bool = 0;
 
     virtual ~Source() = default;
 
@@ -57,8 +57,8 @@ protected:
 private:
     Source(const Source&) = delete;
     Source(Source&&) = delete;
-    Source& operator=(const Source&);
-    Source& operator=(Source&&);
+    auto operator=(const Source&) -> Source&;
+    auto operator=(Source&&) -> Source&;
 };
 }  // namespace identity
 }  // namespace opentxs

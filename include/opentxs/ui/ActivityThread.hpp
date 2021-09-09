@@ -13,20 +13,6 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/ui/List.hpp"
 
-#ifdef SWIG
-// clang-format off
-%extend opentxs::ui::ActivityThread {
-    std::string PaymentCode(const int currency) const
-    {
-        return $self->PaymentCode(
-            static_cast<opentxs::contact::ContactItemType>(currency));
-    }
-}
-%ignore opentxs::ui::ActivityThread::PaymentCode;
-%rename(UIActivityThread) opentxs::ui::ActivityThread;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -43,29 +29,31 @@ namespace ui
 class OPENTXS_EXPORT ActivityThread : virtual public List
 {
 public:
-    virtual bool CanMessage() const noexcept = 0;
-    virtual std::string DisplayName() const noexcept = 0;
-    virtual opentxs::SharedPimpl<opentxs::ui::ActivityThreadItem> First()
-        const noexcept = 0;
-    virtual std::string GetDraft() const noexcept = 0;
-    virtual opentxs::SharedPimpl<opentxs::ui::ActivityThreadItem> Next()
-        const noexcept = 0;
-    virtual std::string Participants() const noexcept = 0;
-    virtual bool Pay(
+    virtual auto CanMessage() const noexcept -> bool = 0;
+    virtual auto DisplayName() const noexcept -> std::string = 0;
+    virtual auto First() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::ActivityThreadItem> = 0;
+    virtual auto GetDraft() const noexcept -> std::string = 0;
+    virtual auto Next() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::ActivityThreadItem> = 0;
+    virtual auto Participants() const noexcept -> std::string = 0;
+    virtual auto Pay(
         const std::string& amount,
         const Identifier& sourceAccount,
         const std::string& memo = "",
-        const PaymentType type = PaymentType::Cheque) const noexcept = 0;
-    virtual bool Pay(
+        const PaymentType type = PaymentType::Cheque) const noexcept
+        -> bool = 0;
+    virtual auto Pay(
         const Amount amount,
         const Identifier& sourceAccount,
         const std::string& memo = "",
-        const PaymentType type = PaymentType::Cheque) const noexcept = 0;
-    virtual std::string PaymentCode(
-        const contact::ContactItemType currency) const noexcept = 0;
-    virtual bool SendDraft() const noexcept = 0;
-    virtual bool SetDraft(const std::string& draft) const noexcept = 0;
-    virtual std::string ThreadID() const noexcept = 0;
+        const PaymentType type = PaymentType::Cheque) const noexcept
+        -> bool = 0;
+    virtual auto PaymentCode(const contact::ContactItemType currency)
+        const noexcept -> std::string = 0;
+    virtual auto SendDraft() const noexcept -> bool = 0;
+    virtual auto SetDraft(const std::string& draft) const noexcept -> bool = 0;
+    virtual auto ThreadID() const noexcept -> std::string = 0;
 
     ~ActivityThread() override = default;
 
@@ -75,8 +63,8 @@ protected:
 private:
     ActivityThread(const ActivityThread&) = delete;
     ActivityThread(ActivityThread&&) = delete;
-    ActivityThread& operator=(const ActivityThread&) = delete;
-    ActivityThread& operator=(ActivityThread&&) = delete;
+    auto operator=(const ActivityThread&) -> ActivityThread& = delete;
+    auto operator=(ActivityThread&&) -> ActivityThread& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

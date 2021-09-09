@@ -21,10 +21,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identity
@@ -43,10 +40,7 @@ class Set final : public internal::Set
 public:
     operator SerializedType() const noexcept final;
 
-    auto API() const noexcept -> const api::internal::Core& final
-    {
-        return api_;
-    }
+    auto API() const noexcept -> const api::Core& final { return api_; }
     auto External() const noexcept -> const Group& final { return *external_; }
     auto Internal() const noexcept -> const Group& final { return *internal_; }
     auto NymID() const noexcept -> const identifier::Nym& final
@@ -83,7 +77,7 @@ private:
     using GroupPointer = std::unique_ptr<internal::Group>;
     using ChildType = verification::Group::SerializedType;
 
-    const api::internal::Core& api_;
+    const api::Core& api_;
     const VersionNumber version_;
     const OTNymID nym_id_;
     GroupPointer internal_;
@@ -95,10 +89,10 @@ private:
         const ChildType& serialized,
         bool external) noexcept -> GroupPointer;
 
-    Set(const api::internal::Core& api,
+    Set(const api::Core& api,
         const identifier::Nym& nym,
         const VersionNumber version = DefaultVersion) noexcept(false);
-    Set(const api::internal::Core& api,
+    Set(const api::Core& api,
         const identifier::Nym& nym,
         const SerializedType& serialized) noexcept(false);
     Set() = delete;

@@ -22,10 +22,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -51,19 +48,19 @@ class Tag;
 class AccountList
 {
 public:
-    std::int32_t GetCountAccountIDs() const
+    auto GetCountAccountIDs() const -> std::int32_t
     {
         return static_cast<std::int32_t>(mapAcctIDs_.size());
     }
     void Release();
     void Release_AcctList();
     void Serialize(Tag& parent) const;
-    std::int32_t ReadFromXMLNode(
+    auto ReadFromXMLNode(
         irr::io::IrrXMLReader*& xml,
         const String& acctType,
-        const String& acctCount);
+        const String& acctCount) -> std::int32_t;
     void SetType(Account::AccountType acctType) { acctType_ = acctType; }
-    ExclusiveAccount GetOrRegisterAccount(
+    auto GetOrRegisterAccount(
         const identity::Nym& serverNym,
         const identifier::Nym& ACCOUNT_OWNER_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
@@ -71,19 +68,17 @@ public:
         bool& wasAcctCreated,  // this will be set to true if the acct is
                                // created here. Otherwise set to false;
         const PasswordPrompt& reason,
-        std::int64_t stashTransNum = 0);
+        std::int64_t stashTransNum = 0) -> ExclusiveAccount;
 
-    explicit AccountList(const api::internal::Core& core);
-    explicit AccountList(
-        const api::internal::Core& core,
-        Account::AccountType acctType);
+    explicit AccountList(const api::Core& core);
+    explicit AccountList(const api::Core& core, Account::AccountType acctType);
 
     ~AccountList();
 
 private:
     using MapOfWeakAccounts = std::map<std::string, std::weak_ptr<Account>>;
 
-    const api::internal::Core& api_;
+    const api::Core& api_;
     Account::AccountType acctType_;
 
     /** AcctIDs as second mapped by ASSET TYPE ID as first. */

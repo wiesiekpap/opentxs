@@ -23,43 +23,43 @@ class NumericHash;
 
 using OTNumericHash = Pimpl<blockchain::NumericHash>;
 
-OPENTXS_EXPORT bool operator==(
+OPENTXS_EXPORT auto operator==(
     const OTNumericHash& lhs,
-    const blockchain::NumericHash& rhs) noexcept;
-OPENTXS_EXPORT bool operator!=(
+    const blockchain::NumericHash& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator!=(
     const OTNumericHash& lhs,
-    const blockchain::NumericHash& rhs) noexcept;
-OPENTXS_EXPORT bool operator<(
+    const blockchain::NumericHash& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator<(
     const OTNumericHash& lhs,
-    const blockchain::NumericHash& rhs) noexcept;
-OPENTXS_EXPORT bool operator<=(
+    const blockchain::NumericHash& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator<=(
     const OTNumericHash& lhs,
-    const blockchain::NumericHash& rhs) noexcept;
+    const blockchain::NumericHash& rhs) noexcept -> bool;
 }  // namespace opentxs
 
 namespace opentxs
 {
 namespace blockchain
 {
-class NumericHash
+class OPENTXS_EXPORT NumericHash
 {
 public:
-    OPENTXS_EXPORT static std::int32_t MaxTarget(const Type chain) noexcept;
+    static auto MaxTarget(const Type chain) noexcept -> std::int32_t;
 
-    OPENTXS_EXPORT virtual bool operator==(
-        const blockchain::NumericHash& rhs) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool operator!=(
-        const blockchain::NumericHash& rhs) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool operator<(
-        const blockchain::NumericHash& rhs) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool operator<=(
-        const blockchain::NumericHash& rhs) const noexcept = 0;
+    virtual auto operator==(const blockchain::NumericHash& rhs) const noexcept
+        -> bool = 0;
+    virtual auto operator!=(const blockchain::NumericHash& rhs) const noexcept
+        -> bool = 0;
+    virtual auto operator<(const blockchain::NumericHash& rhs) const noexcept
+        -> bool = 0;
+    virtual auto operator<=(const blockchain::NumericHash& rhs) const noexcept
+        -> bool = 0;
 
-    OPENTXS_EXPORT virtual std::string asHex(
-        const std::size_t minimumBytes = 32) const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string Decimal() const noexcept = 0;
+    virtual auto asHex(const std::size_t minimumBytes = 32) const noexcept
+        -> std::string = 0;
+    virtual auto Decimal() const noexcept -> std::string = 0;
 
-    OPENTXS_EXPORT virtual ~NumericHash() = default;
+    virtual ~NumericHash() = default;
 
 protected:
     NumericHash() noexcept = default;
@@ -67,12 +67,12 @@ protected:
 private:
     friend OTNumericHash;
 
-    virtual NumericHash* clone() const noexcept = 0;
+    virtual auto clone() const noexcept -> NumericHash* = 0;
 
     NumericHash(const NumericHash& rhs) = delete;
     NumericHash(NumericHash&& rhs) = delete;
-    NumericHash& operator=(const NumericHash& rhs) = delete;
-    NumericHash& operator=(NumericHash&& rhs) = delete;
+    auto operator=(const NumericHash& rhs) -> NumericHash& = delete;
+    auto operator=(NumericHash&& rhs) -> NumericHash& = delete;
 };
 }  // namespace blockchain
 }  // namespace opentxs

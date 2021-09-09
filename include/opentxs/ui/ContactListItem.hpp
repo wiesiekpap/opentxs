@@ -13,13 +13,6 @@
 #include "ListRow.hpp"
 #include "opentxs/SharedPimpl.hpp"
 
-#ifdef SWIG
-// clang-format off
-%template(OTUIContactListItem) opentxs::SharedPimpl<opentxs::ui::ContactListItem>;
-%rename(UIContactListItem) opentxs::ui::ContactListItem;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -37,10 +30,10 @@ namespace ui
 class OPENTXS_EXPORT ContactListItem : virtual public ListRow
 {
 public:
-    virtual std::string ContactID() const noexcept = 0;
-    virtual std::string DisplayName() const noexcept = 0;
-    virtual std::string ImageURI() const noexcept = 0;
-    virtual std::string Section() const noexcept = 0;
+    virtual auto ContactID() const noexcept -> std::string = 0;
+    virtual auto DisplayName() const noexcept -> std::string = 0;
+    virtual auto ImageURI() const noexcept -> std::string = 0;
+    virtual auto Section() const noexcept -> std::string = 0;
 
     ~ContactListItem() override = default;
 
@@ -50,8 +43,8 @@ protected:
 private:
     ContactListItem(const ContactListItem&) = delete;
     ContactListItem(ContactListItem&&) = delete;
-    ContactListItem& operator=(const ContactListItem&) = delete;
-    ContactListItem& operator=(ContactListItem&&) = delete;
+    auto operator=(const ContactListItem&) -> ContactListItem& = delete;
+    auto operator=(ContactListItem&&) -> ContactListItem& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

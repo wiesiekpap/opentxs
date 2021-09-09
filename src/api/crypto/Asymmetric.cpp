@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "crypto/key/Null.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/api/crypto/Factory.hpp"
 #include "internal/crypto/key/Factory.hpp"
 #include "internal/crypto/key/Key.hpp"
@@ -41,7 +40,7 @@
 
 namespace opentxs::factory
 {
-auto AsymmetricAPI(const api::internal::Core& api) noexcept
+auto AsymmetricAPI(const api::Core& api) noexcept
     -> std::unique_ptr<api::crypto::internal::Asymmetric>
 {
     using ReturnType = api::crypto::implementation::Asymmetric;
@@ -61,7 +60,7 @@ const Asymmetric::TypeMap Asymmetric::curve_to_key_type_{
     {EcdsaCurve::ed25519, opentxs::crypto::key::asymmetric::Algorithm::ED25519},
 };
 
-Asymmetric::Asymmetric(const api::internal::Core& api) noexcept
+Asymmetric::Asymmetric(const api::Core& api) noexcept
     : api_(api)
 {
 }
@@ -119,7 +118,7 @@ auto Asymmetric::instantiate_hd_key(
         }
     }
 
-    LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid key type.").Flush();
+    LogOutput(OT_METHOD)(__func__)(": Invalid key type.").Flush();
 
     return std::make_unique<NullType>();
 }
@@ -154,7 +153,7 @@ auto Asymmetric::instantiate_serialized_key(
         }
     }
 
-    LogOutput(OT_METHOD)(__FUNCTION__)(
+    LogOutput(OT_METHOD)(__func__)(
         ": Open-Transactions isn't built with support for this key type.")
         .Flush();
 
@@ -173,8 +172,7 @@ auto Asymmetric::InstantiateECKey(const proto::AsymmetricKey& serialized) const
             return instantiate_serialized_key<ReturnType, NullType>(serialized);
         }
         case (proto::AKEYTYPE_LEGACY): {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Wrong key type (RSA)")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Wrong key type (RSA)").Flush();
         } break;
         default: {
         }
@@ -195,8 +193,7 @@ auto Asymmetric::InstantiateHDKey(const proto::AsymmetricKey& serialized) const
             return instantiate_serialized_key<ReturnType, NullType>(serialized);
         }
         case (proto::AKEYTYPE_LEGACY): {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Wrong key type (RSA)")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Wrong key type (RSA)").Flush();
         } break;
         default: {
         }
@@ -246,7 +243,7 @@ auto Asymmetric::InstantiateKey(const proto::AsymmetricKey& serialized) const
         }
     }
 
-    LogOutput(OT_METHOD)(__FUNCTION__)(
+    LogOutput(OT_METHOD)(__func__)(
         ": Open-Transactions isn't built with support for this key type.")
         .Flush();
 
@@ -308,7 +305,7 @@ auto Asymmetric::InstantiateSecp256k1Key(
     const auto& ecdsa = api_.Crypto().SECP256K1();
 
     if (false == ecdsa.ScalarMultiplyBase(priv.Bytes(), pub->WriteInto())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to calculate public key")
+        LogOutput(OT_METHOD)(__func__)(": Failed to calculate public key")
             .Flush();
 
         return {};
@@ -375,7 +372,7 @@ auto Asymmetric::NewKey(
         }
 #endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Open-Transactions isn't built with support for this key "
                 "type.")
                 .Flush();

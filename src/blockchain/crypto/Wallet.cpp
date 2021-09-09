@@ -13,11 +13,11 @@
 #include <utility>
 
 #include "blockchain/crypto/AccountIndex.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/crypto/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/core/Log.hpp"
@@ -27,11 +27,11 @@
 namespace opentxs::factory
 {
 auto BlockchainWalletKeys(
-    const api::internal::Core& api,
-    const api::client::internal::Blockchain& parent,
-    const api::client::internal::BalanceTreeIndex& index,
+    const api::Core& api,
+    const api::client::Blockchain& parent,
+    const blockchain::crypto::AccountIndex& index,
     const blockchain::Type chain) noexcept
-    -> std::unique_ptr<blockchain::crypto::internal::Wallet>
+    -> std::unique_ptr<blockchain::crypto::Wallet>
 {
     using ReturnType = blockchain::crypto::implementation::Wallet;
 
@@ -42,9 +42,9 @@ auto BlockchainWalletKeys(
 namespace opentxs::blockchain::crypto::implementation
 {
 Wallet::Wallet(
-    const api::internal::Core& api,
-    const api::client::internal::Blockchain& parent,
-    const api::client::internal::BalanceTreeIndex& index,
+    const api::Core& api,
+    const api::client::Blockchain& parent,
+    const AccountIndex& index,
     const opentxs::blockchain::Type chain) noexcept
     : parent_(parent)
     , account_index_(index)
@@ -57,10 +57,18 @@ Wallet::Wallet(
     init();
 }
 
+auto Wallet::Account(const identifier::Nym& id) const noexcept
+    -> crypto::Account&
+{
+    Lock lock(lock_);
+
+    return const_cast<Wallet&>(*this).get_or_create(lock, id);
+}
+
 auto Wallet::add(
     const Lock& lock,
     const identifier::Nym& id,
-    std::unique_ptr<internal::Account> tree) noexcept -> bool
+    std::unique_ptr<crypto::Account> tree) noexcept -> bool
 {
     if (false == bool(tree)) { return false; }
 
@@ -82,7 +90,8 @@ auto Wallet::AddHDNode(
 {
     Lock lock(lock_);
 
-    return get_or_create(lock, nym).AddHDNode(path, standard, reason, id);
+    return get_or_create(lock, nym).Internal().AddHDNode(
+        path, standard, reason, id);
 }
 
 auto Wallet::at(const std::size_t position) const noexcept(false)
@@ -94,13 +103,13 @@ auto Wallet::at(const std::size_t position) const noexcept(false)
 }
 
 auto Wallet::at(const Lock& lock, const std::size_t index) const noexcept(false)
-    -> const internal::Account&
+    -> const_iterator::value_type&
 {
     return *trees_.at(index);
 }
 
 auto Wallet::at(const Lock& lock, const std::size_t index) noexcept(false)
-    -> internal::Account&
+    -> crypto::Account&
 {
     return *trees_.at(index);
 }
@@ -109,14 +118,14 @@ auto Wallet::factory(
     const identifier::Nym& nym,
     const Accounts& hd,
     const Accounts& paymentCode) const noexcept
-    -> std::unique_ptr<internal::Account>
+    -> std::unique_ptr<crypto::Account>
 {
     return factory::BlockchainAccountKeys(
         api_, *this, account_index_, nym, hd, {}, paymentCode);
 }
 
 auto Wallet::get_or_create(const Lock& lock, const identifier::Nym& id) noexcept
-    -> internal::Account&
+    -> crypto::Account&
 {
     if (0 == index_.count(id)) {
         auto pTree = factory(id, {}, {});
@@ -155,12 +164,5 @@ void Wallet::init() noexcept
 
         add(lock, nymID, factory(nymID, hdAccounts, pcAccounts));
     }
-}
-
-auto Wallet::Nym(const identifier::Nym& id) noexcept -> internal::Account&
-{
-    Lock lock(lock_);
-
-    return get_or_create(lock, id);
 }
 }  // namespace opentxs::blockchain::crypto::implementation

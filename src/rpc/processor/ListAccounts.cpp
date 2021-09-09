@@ -14,11 +14,11 @@
 #include <string>
 #include <vector>
 
-#include "internal/api/client/Client.hpp"
 #include "internal/core/Core.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
 #include "opentxs/rpc/request/Base.hpp"

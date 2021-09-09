@@ -23,10 +23,7 @@ namespace api
 {
 namespace server
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace server
 }  // namespace api
 
@@ -74,47 +71,46 @@ public:
     using const_iterator =
         opentxs::iterator::Bidirectional<const Purse, const Token>;
 
-    virtual const Token& at(const std::size_t position) const = 0;
-    virtual const_iterator begin() const noexcept = 0;
-    virtual const_iterator cbegin() const noexcept = 0;
-    virtual const_iterator cend() const noexcept = 0;
-    virtual Time EarliestValidTo() const = 0;
-    virtual const_iterator end() const noexcept = 0;
-    virtual bool IsUnlocked() const = 0;
-    virtual Time LatestValidFrom() const = 0;
-    virtual const identifier::Server& Notary() const = 0;
-    OPENTXS_NO_EXPORT virtual bool Serialize(
-        proto::Purse& out) const noexcept = 0;
+    virtual auto at(const std::size_t position) const -> const Token& = 0;
+    virtual auto begin() const noexcept -> const_iterator = 0;
+    virtual auto cbegin() const noexcept -> const_iterator = 0;
+    virtual auto cend() const noexcept -> const_iterator = 0;
+    virtual auto EarliestValidTo() const -> Time = 0;
+    virtual auto end() const noexcept -> const_iterator = 0;
+    virtual auto IsUnlocked() const -> bool = 0;
+    virtual auto LatestValidFrom() const -> Time = 0;
+    virtual auto Notary() const -> const identifier::Server& = 0;
+    OPENTXS_NO_EXPORT virtual auto Serialize(proto::Purse& out) const noexcept
+        -> bool = 0;
     virtual auto Serialize(AllocateOutput destination) const noexcept
         -> bool = 0;
-    virtual std::size_t size() const noexcept = 0;
-    virtual blind::PurseType State() const = 0;
-    virtual blind::CashType Type() const = 0;
-    virtual const identifier::UnitDefinition& Unit() const = 0;
-    virtual bool Unlock(const identity::Nym& nym, const PasswordPrompt& reason)
-        const = 0;
-    virtual bool Verify(const api::server::internal::Manager& server) const = 0;
-    virtual Amount Value() const = 0;
+    virtual auto size() const noexcept -> std::size_t = 0;
+    virtual auto State() const -> blind::PurseType = 0;
+    virtual auto Type() const -> blind::CashType = 0;
+    virtual auto Unit() const -> const identifier::UnitDefinition& = 0;
+    virtual auto Unlock(const identity::Nym& nym, const PasswordPrompt& reason)
+        const -> bool = 0;
+    virtual auto Verify(const api::server::Manager& server) const -> bool = 0;
+    virtual auto Value() const -> Amount = 0;
 
-    virtual bool AddNym(
-        const identity::Nym& nym,
-        const PasswordPrompt& reason) = 0;
-    virtual Token& at(const std::size_t position) = 0;
-    virtual iterator begin() noexcept = 0;
-    virtual iterator end() noexcept = 0;
-    virtual crypto::key::Symmetric& PrimaryKey(
-        PasswordPrompt& password) noexcept(false) = 0;
-    virtual std::shared_ptr<Token> Pop() = 0;
-    virtual bool Process(
+    virtual auto AddNym(const identity::Nym& nym, const PasswordPrompt& reason)
+        -> bool = 0;
+    virtual auto at(const std::size_t position) -> Token& = 0;
+    virtual auto begin() noexcept -> iterator = 0;
+    virtual auto end() noexcept -> iterator = 0;
+    virtual auto PrimaryKey(PasswordPrompt& password) noexcept(false)
+        -> crypto::key::Symmetric& = 0;
+    virtual auto Pop() -> std::shared_ptr<Token> = 0;
+    virtual auto Process(
         const identity::Nym& owner,
         const Mint& mint,
-        const PasswordPrompt& reason) = 0;
-    virtual bool Push(
+        const PasswordPrompt& reason) -> bool = 0;
+    virtual auto Push(
         std::shared_ptr<Token> token,
-        const PasswordPrompt& reason) = 0;
-    virtual const crypto::key::Symmetric& SecondaryKey(
+        const PasswordPrompt& reason) -> bool = 0;
+    virtual auto SecondaryKey(
         const identity::Nym& owner,
-        PasswordPrompt& password) = 0;
+        PasswordPrompt& password) -> const crypto::key::Symmetric& = 0;
 
     virtual ~Purse() = default;
 
@@ -124,12 +120,12 @@ protected:
 private:
     friend OTPurse;
 
-    virtual Purse* clone() const noexcept = 0;
+    virtual auto clone() const noexcept -> Purse* = 0;
 
     Purse(const Purse&) = delete;
     Purse(Purse&&) = delete;
-    Purse& operator=(const Purse&) = delete;
-    Purse& operator=(Purse&&) = delete;
+    auto operator=(const Purse&) -> Purse& = delete;
+    auto operator=(Purse&&) -> Purse& = delete;
 };
 }  // namespace blind
 }  // namespace opentxs

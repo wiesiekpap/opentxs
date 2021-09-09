@@ -47,13 +47,13 @@ private:
     friend OTBailmentNotice;
 
 #ifndef _WIN32
-    BailmentNotice* clone() const noexcept override = 0;
+    auto clone() const noexcept -> BailmentNotice* override = 0;
 #endif
 
     BailmentNotice(const BailmentNotice&) = delete;
     BailmentNotice(BailmentNotice&&) = delete;
-    BailmentNotice& operator=(const BailmentNotice&) = delete;
-    BailmentNotice& operator=(BailmentNotice&&) = delete;
+    auto operator=(const BailmentNotice&) -> BailmentNotice& = delete;
+    auto operator=(BailmentNotice&&) -> BailmentNotice& = delete;
 };
 }  // namespace request
 }  // namespace peer

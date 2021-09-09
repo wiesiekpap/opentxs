@@ -32,10 +32,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -83,7 +80,7 @@ public:
 
     BlockchainSubaccountSource(
         const BlockchainAccountStatusInternalInterface& parent,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const BlockchainAccountStatusRowID& rowID,
         const BlockchainAccountStatusSortKey& key,
         CustomData& custom) noexcept;

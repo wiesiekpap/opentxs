@@ -20,66 +20,50 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT bool CheckProto_1(
+auto CheckProto_1(
     const NoticeAcknowledgement& acknowledgement,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_2(
+    const bool silent) -> bool;
+auto CheckProto_2(
     const NoticeAcknowledgement& acknowledgement,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_3(
+    const bool silent) -> bool;
+auto CheckProto_3(
     const NoticeAcknowledgement& acknowledgement,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_4(
+    const bool silent) -> bool;
+auto CheckProto_4(
     const NoticeAcknowledgement& acknowledgement,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_5(
-    const NoticeAcknowledgement& acknowledgement,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_6(
-    const NoticeAcknowledgement& acknowledgement,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_7(
-    const NoticeAcknowledgement& acknowledgement,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_8(
-    const NoticeAcknowledgement& acknowledgement,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_9(
-    const NoticeAcknowledgement& acknowledgement,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_10(
-    const NoticeAcknowledgement& acknowledgement,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_11(
-    const NoticeAcknowledgement& acknowledgement,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_12(
-    const NoticeAcknowledgement& acknowledgement,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_13(
-    const NoticeAcknowledgement& acknowledgement,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_14(
-    const NoticeAcknowledgement& acknowledgement,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_15(
-    const NoticeAcknowledgement& acknowledgement,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_16(
-    const NoticeAcknowledgement& acknowledgement,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_17(
-    const NoticeAcknowledgement& acknowledgement,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_18(
-    const NoticeAcknowledgement& acknowledgement,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_19(
-    const NoticeAcknowledgement& acknowledgement,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_20(
-    const NoticeAcknowledgement& acknowledgement,
-    const bool);
+    const bool silent) -> bool;
+auto CheckProto_5(const NoticeAcknowledgement& acknowledgement, const bool)
+    -> bool;
+auto CheckProto_6(const NoticeAcknowledgement& acknowledgement, const bool)
+    -> bool;
+auto CheckProto_7(const NoticeAcknowledgement& acknowledgement, const bool)
+    -> bool;
+auto CheckProto_8(const NoticeAcknowledgement& acknowledgement, const bool)
+    -> bool;
+auto CheckProto_9(const NoticeAcknowledgement& acknowledgement, const bool)
+    -> bool;
+auto CheckProto_10(const NoticeAcknowledgement& acknowledgement, const bool)
+    -> bool;
+auto CheckProto_11(const NoticeAcknowledgement& acknowledgement, const bool)
+    -> bool;
+auto CheckProto_12(const NoticeAcknowledgement& acknowledgement, const bool)
+    -> bool;
+auto CheckProto_13(const NoticeAcknowledgement& acknowledgement, const bool)
+    -> bool;
+auto CheckProto_14(const NoticeAcknowledgement& acknowledgement, const bool)
+    -> bool;
+auto CheckProto_15(const NoticeAcknowledgement& acknowledgement, const bool)
+    -> bool;
+auto CheckProto_16(const NoticeAcknowledgement& acknowledgement, const bool)
+    -> bool;
+auto CheckProto_17(const NoticeAcknowledgement& acknowledgement, const bool)
+    -> bool;
+auto CheckProto_18(const NoticeAcknowledgement& acknowledgement, const bool)
+    -> bool;
+auto CheckProto_19(const NoticeAcknowledgement& acknowledgement, const bool)
+    -> bool;
+auto CheckProto_20(const NoticeAcknowledgement& acknowledgement, const bool)
+    -> bool;
 }  // namespace proto
 }  // namespace opentxs
 

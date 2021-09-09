@@ -18,9 +18,9 @@
 
 #include "Proto.hpp"
 #include "crypto/key/EllipticCurve.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/crypto/key/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
@@ -57,7 +57,7 @@ auto HD::CalculateFingerprint(
     auto digest = Data::Factory();
 
     if (33 != key.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid public key").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid public key").Flush();
 
         return output;
     }
@@ -66,15 +66,14 @@ auto HD::CalculateFingerprint(
         hash.Digest(crypto::HashType::Bitcoin, key, digest->WriteInto());
 
     if (false == hashed) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to calculate public key hash")
+        LogOutput(OT_METHOD)(__func__)(": Failed to calculate public key hash")
             .Flush();
 
         return output;
     }
 
     if (false == digest->Extract(output)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to set output").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to set output").Flush();
 
         return {};
     }
@@ -86,7 +85,7 @@ auto HD::CalculateFingerprint(
 namespace opentxs::crypto::key::implementation
 {
 HD::HD(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const proto::AsymmetricKey& serializedKey) noexcept(false)
     : EllipticCurve(api, ecdsa, serializedKey)
@@ -104,7 +103,7 @@ HD::HD(
 }
 
 HD::HD(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const crypto::key::asymmetric::Algorithm keyType,
     const crypto::key::asymmetric::Role role,
@@ -119,7 +118,7 @@ HD::HD(
 }
 
 HD::HD(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const crypto::key::asymmetric::Algorithm keyType,
     const Secret& privateKey,
@@ -147,7 +146,7 @@ HD::HD(
 
 #if OT_CRYPTO_WITH_BIP32
 HD::HD(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const crypto::key::asymmetric::Algorithm keyType,
     const Secret& privateKey,
@@ -179,7 +178,7 @@ HD::HD(
 }
 
 HD::HD(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const crypto::key::asymmetric::Algorithm keyType,
     const Secret& privateKey,
@@ -242,7 +241,7 @@ auto HD::chaincode(const Lock& lock, const PasswordPrompt& reason)
 
         return get_chain_code(lock, reason).Bytes();
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -332,7 +331,7 @@ auto HD::ChildKey(const Bip32Index index, const PasswordPrompt& reason)
         throw std::runtime_error{"HD key support missing but required"};
 #endif
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -397,7 +396,7 @@ auto HD::get_params() const noexcept -> std::tuple<bool, Bip32Depth, Bip32Index>
     auto& [success, depth, child] = output;
 
     if (false == bool(path_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": missing path").Flush();
+        LogOutput(OT_METHOD)(__func__)(": missing path").Flush();
 
         return output;
     }
@@ -406,15 +405,13 @@ auto HD::get_params() const noexcept -> std::tuple<bool, Bip32Depth, Bip32Index>
     auto size = path.child_size();
 
     if (0 > size) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid depth (")(size)(")")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid depth (")(size)(")").Flush();
 
         return output;
     }
 
     if (std::numeric_limits<Bip32Depth>::max() < size) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid depth (")(size)(")")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid depth (")(size)(")").Flush();
 
         return output;
     }
@@ -468,7 +465,7 @@ auto HD::Path(proto::HDPath& output) const noexcept -> bool
         return true;
     }
 
-    LogOutput(OT_METHOD)(__FUNCTION__)(": HDPath not instantiated.").Flush();
+    LogOutput(OT_METHOD)(__func__)(": HDPath not instantiated.").Flush();
 
     return false;
 }

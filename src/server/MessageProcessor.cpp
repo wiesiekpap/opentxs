@@ -16,13 +16,13 @@
 #include <utility>
 
 #include "Proto.tpp"
-#include "internal/api/server/Server.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/server/Manager.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -126,9 +126,8 @@ void MessageProcessor::associate_connection(
     const auto result = active_connections_.emplace(nymID, connection);
 
     if (std::get<1>(result)) {
-        LogDetail(OT_METHOD)(__func__)(
-            ": Nym ")(nymID)(" is available via connection ")(connection
-                                                                  .asHex())(".")
+        LogDetail(OT_METHOD)(__func__)(": Nym ")(
+            nymID)(" is available via connection ")(connection.asHex())(".")
             .Flush();
     }
 }
@@ -368,8 +367,8 @@ auto MessageProcessor::process_message(
         server_.CommandProcessor().ProcessUserCommand(*request, *replymsg);
 
     if (false == processed) {
-        LogDetail(OT_METHOD)(__func__)(
-            ": Failed to process user command ")(request->m_strCommand)
+        LogDetail(OT_METHOD)(__func__)(": Failed to process user command ")(
+            request->m_strCommand)
             .Flush();
         LogVerbose(OT_METHOD)(__func__)(String::Factory(*request)).Flush();
     } else {
@@ -451,9 +450,8 @@ void MessageProcessor::process_notification(const zmq::Message& incoming)
     const auto sent = frontend_socket_->Send(pushNotification);
 
     if (sent) {
-        LogVerbose(OT_METHOD)(__func__)(
-            ": Push notification for ")(nymID)(" delivered via ")(connection
-                                                                      ->asHex())
+        LogVerbose(OT_METHOD)(__func__)(": Push notification for ")(
+            nymID)(" delivered via ")(connection->asHex())
             .Flush();
     } else {
         LogOutput(OT_METHOD)(__func__)(

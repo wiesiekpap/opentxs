@@ -91,7 +91,7 @@ auto BitcoinScript(
                                                : pushSize;
 
                 if (((read + effectiveSize) > target)) {
-                    logger("opentxs::factory::")(__FUNCTION__)(
+                    logger("opentxs::factory::")(__func__)(
                         ": Incomplete direct data push")
                         .Flush();
 
@@ -127,7 +127,7 @@ auto BitcoinScript(
                                             : sizeBytes;
 
                     if ((read + effectiveSize) > target) {
-                        logger("opentxs::factory::")(__FUNCTION__)(
+                        logger("opentxs::factory::")(__func__)(
                             ": Incomplete data push")
                             .Flush();
 
@@ -154,7 +154,7 @@ auto BitcoinScript(
                                             : pushSize;
 
                     if ((read + effectiveSize) > target) {
-                        logger("opentxs::factory::")(__FUNCTION__)(
+                        logger("opentxs::factory::")(__func__)(
                             ": Data push bytes missing")
                             .Flush();
 
@@ -174,7 +174,7 @@ auto BitcoinScript(
             }
         }
     } catch (...) {
-        logger("opentxs::factory::")(__FUNCTION__)(": Unknown opcode").Flush();
+        logger("opentxs::factory::")(__func__)(": Unknown opcode").Flush();
 
         return {};
     }
@@ -185,7 +185,7 @@ auto BitcoinScript(
         return std::make_unique<ReturnType>(
             chain, role, std::move(elements), bytes.size());
     } catch (const std::exception& e) {
-        LogVerbose("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogVerbose("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -198,14 +198,14 @@ auto BitcoinScript(
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Script>
 {
     if (false == ReturnType::validate(elements)) {
-        LogVerbose("opentxs::factory::")(__FUNCTION__)(": Invalid elements")
+        LogVerbose("opentxs::factory::")(__func__)(": Invalid elements")
             .Flush();
 
         return {};
     }
 
     if ((0 == elements.size()) && (ReturnType::Position::Output == role)) {
-        LogVerbose("opentxs::factory::")(__FUNCTION__)(": Empty input").Flush();
+        LogVerbose("opentxs::factory::")(__func__)(": Empty input").Flush();
 
         return {};
     }
@@ -287,8 +287,7 @@ auto Script::CalculateHash160(const api::Core& api, const AllocateOutput output)
     auto preimage = Space{};
 
     if (false == Serialize(writer(preimage))) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize script")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to serialize script").Flush();
 
         return false;
     }
@@ -630,7 +629,7 @@ auto Script::ExtractElements(const filter::Type style) const noexcept
     -> std::vector<Space>
 {
     if (0 == elements_.size()) {
-        LogTrace(OT_METHOD)(__FUNCTION__)(": skipping empty script").Flush();
+        LogTrace(OT_METHOD)(__func__)(": skipping empty script").Flush();
 
         return {};
     }
@@ -639,8 +638,7 @@ auto Script::ExtractElements(const filter::Type style) const noexcept
 
     switch (style) {
         case filter::Type::ES: {
-            LogTrace(OT_METHOD)(__FUNCTION__)(": processing data pushes")
-                .Flush();
+            LogTrace(OT_METHOD)(__func__)(": processing data pushes").Flush();
 
             for (const auto& element : *this) {
                 if (is_data_push(element)) {
@@ -681,21 +679,20 @@ auto Script::ExtractElements(const filter::Type style) const noexcept
         case filter::Type::Basic_BCHVariant:
         default: {
             if (OP::RETURN == elements_.at(0).opcode_) {
-                LogTrace(OT_METHOD)(__FUNCTION__)(": skipping null data script")
+                LogTrace(OT_METHOD)(__func__)(": skipping null data script")
                     .Flush();
 
                 return {};
             }
 
-            LogTrace(OT_METHOD)(__FUNCTION__)(": processing serialized script")
+            LogTrace(OT_METHOD)(__func__)(": processing serialized script")
                 .Flush();
             auto& script = output.emplace_back();
             Serialize(writer(script));
         }
     }
 
-    LogTrace(OT_METHOD)(__FUNCTION__)(": extracted ")(output.size())(
-        " elements")
+    LogTrace(OT_METHOD)(__func__)(": extracted ")(output.size())(" elements")
         .Flush();
     std::sort(output.begin(), output.end());
 
@@ -1115,8 +1112,7 @@ auto Script::ScriptHash() const noexcept -> std::optional<ReadView>
 auto Script::Serialize(const AllocateOutput destination) const noexcept -> bool
 {
     if (!destination) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output allocator")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
@@ -1128,7 +1124,7 @@ auto Script::Serialize(const AllocateOutput destination) const noexcept -> bool
     auto output = destination(size);
 
     if (false == output.valid(size)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to allocate output bytes")
+        LogOutput(OT_METHOD)(__func__)(": Failed to allocate output bytes")
             .Flush();
 
         return false;

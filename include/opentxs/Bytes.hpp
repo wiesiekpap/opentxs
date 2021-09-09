@@ -45,8 +45,8 @@ public:
     ViewWrapper() noexcept = default;
     ViewWrapper(const ViewWrapper&) = delete;
     ViewWrapper(ViewWrapper&&) = default;
-    ViewWrapper& operator=(const ViewWrapper&) = delete;
-    ViewWrapper& operator=(ViewWrapper&&) = default;
+    auto operator=(const ViewWrapper&) -> ViewWrapper& = delete;
+    auto operator=(ViewWrapper&&) -> ViewWrapper& = default;
     virtual ~ViewWrapper() = default;
 
 private:
@@ -71,8 +71,8 @@ public:
     ProtectedView() noexcept = default;
     ProtectedView(const ProtectedView&) = delete;
     ProtectedView(ProtectedView&&) = default;
-    ProtectedView& operator=(const ProtectedView&) = delete;
-    ProtectedView& operator=(ProtectedView&&) = default;
+    auto operator=(const ProtectedView&) -> ProtectedView& = delete;
+    auto operator=(ProtectedView&&) -> ProtectedView& = default;
     ~ProtectedView() override
     {
         lock_.reset();
@@ -137,7 +137,7 @@ private:
     std::size_t size_;
 
     WritableView(const WritableView&) = delete;
-    WritableView& operator=(WritableView&&) = delete;
+    auto operator=(WritableView&&) -> WritableView& = delete;
 };
 
 using AllocateOutput = std::function<WritableView(const std::size_t)>;

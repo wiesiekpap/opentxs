@@ -30,11 +30,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
+class Core;
 class Wallet;
 }  // namespace api
 
@@ -68,10 +64,10 @@ namespace opentxs
 class OPENTXS_EXPORT OTCronItem : public OTTrackable
 {
 public:
-    virtual originType GetOriginType() const = 0;
+    virtual auto GetOriginType() const -> originType = 0;
 
     // To force the Nym to close out the closing number on the receipt.
-    bool DropFinalReceiptToInbox(
+    auto DropFinalReceiptToInbox(
         const identifier::Nym& NYM_ID,
         const Identifier& ACCOUNT_ID,
         const std::int64_t& lNewTransactionNumber,
@@ -80,19 +76,20 @@ public:
         const originType theOriginType,
         const PasswordPrompt& reason,
         OTString pstrNote = String::Factory(),
-        OTString pstrAttachment = String::Factory());
+        OTString pstrAttachment = String::Factory()) -> bool;
 
     // Notify the Nym that the OPENING number is now closed, so he can remove it
     // from his issued list.
-    bool DropFinalReceiptToNymbox(
+    auto DropFinalReceiptToNymbox(
         const identifier::Nym& NYM_ID,
         const TransactionNumber& lNewTransactionNumber,
         const String& strOrigCronItem,
         const originType theOriginType,
         const PasswordPrompt& reason,
         OTString pstrNote = String::Factory(),
-        OTString pstrAttachment = String::Factory());
-    virtual bool CanRemoveItemFromCron(const otx::context::Client& context);
+        OTString pstrAttachment = String::Factory()) -> bool;
+    virtual auto CanRemoveItemFromCron(const otx::context::Client& context)
+        -> bool;
     virtual void HarvestOpeningNumber(otx::context::Server& context);
     virtual void HarvestClosingNumbers(otx::context::Server& context);
     // pActivator and pRemover are both "SOMETIMES nullptr"
@@ -115,104 +112,115 @@ public:
         std::int64_t newTransactionNo,
         const PasswordPrompt& reason);
 
-    inline bool IsFlaggedForRemoval() const { return m_bRemovalFlag; }
+    inline auto IsFlaggedForRemoval() const -> bool { return m_bRemovalFlag; }
     inline void FlagForRemoval() { m_bRemovalFlag = true; }
     inline void SetCronPointer(OTCron& theCron) { m_pCron = &theCron; }
 
-    static std::unique_ptr<OTCronItem> LoadCronReceipt(
-        const api::internal::Core& api,
-        const TransactionNumber& lTransactionNum);  // Server-side only.
-    static std::unique_ptr<OTCronItem> LoadActiveCronReceipt(
-        const api::internal::Core& api,
+    static auto LoadCronReceipt(
+        const api::Core& api,
+        const TransactionNumber& lTransactionNum)
+        -> std::unique_ptr<OTCronItem>;  // Server-side only.
+    static auto LoadActiveCronReceipt(
+        const api::Core& api,
         const TransactionNumber& lTransactionNum,
-        const identifier::Server& notaryID);  // Client-side only.
-    static bool EraseActiveCronReceipt(
-        const api::internal::Core& api,
+        const identifier::Server& notaryID)
+        -> std::unique_ptr<OTCronItem>;  // Client-side only.
+    static auto EraseActiveCronReceipt(
+        const api::Core& api,
         const std::string& dataFolder,
         const TransactionNumber& lTransactionNum,
         const identifier::Nym& nymID,
-        const identifier::Server& notaryID);  // Client-side only.
-    static bool GetActiveCronTransNums(
-        const api::internal::Core& api,
+        const identifier::Server& notaryID) -> bool;  // Client-side only.
+    static auto GetActiveCronTransNums(
+        const api::Core& api,
         NumList& output,  // Client-side
                           // only.
         const std::string& dataFolder,
         const identifier::Nym& nymID,
-        const identifier::Server& notaryID);
+        const identifier::Server& notaryID) -> bool;
     inline void SetCreationDate(const Time CREATION_DATE)
     {
         m_CREATION_DATE = CREATION_DATE;
     }
-    inline const Time GetCreationDate() const { return m_CREATION_DATE; }
+    inline auto GetCreationDate() const -> const Time
+    {
+        return m_CREATION_DATE;
+    }
 
-    bool SetDateRange(
+    auto SetDateRange(
         const Time VALID_FROM = Time{},
-        const Time VALID_TO = Time{});
+        const Time VALID_TO = Time{}) -> bool;
     inline void SetLastProcessDate(const Time THE_DATE)
     {
         m_LAST_PROCESS_DATE = THE_DATE;
     }
 
-    inline const Time GetLastProcessDate() const { return m_LAST_PROCESS_DATE; }
+    inline auto GetLastProcessDate() const -> const Time
+    {
+        return m_LAST_PROCESS_DATE;
+    }
 
     inline void SetProcessInterval(const std::chrono::seconds interval)
     {
         m_PROCESS_INTERVAL = interval;
     }
-    inline const std::chrono::seconds GetProcessInterval() const
+    inline auto GetProcessInterval() const -> const std::chrono::seconds
     {
         return m_PROCESS_INTERVAL;
     }
 
-    inline OTCron* GetCron() const { return m_pCron; }
+    inline auto GetCron() const -> OTCron* { return m_pCron; }
     void setServerNym(Nym_p serverNym) { serverNym_ = serverNym; }
     void setNotaryID(const identifier::Server& notaryID);
     // When first adding anything to Cron, a copy needs to be saved in a
     // folder somewhere.
-    bool SaveCronReceipt();  // server side only
-    bool SaveActiveCronReceipt(const identifier::Nym& theNymID);  // client
-                                                                  // side
-                                                                  // only
+    auto SaveCronReceipt() -> bool;  // server side only
+    auto SaveActiveCronReceipt(const identifier::Nym& theNymID)
+        -> bool;  // client
+                  // side
+                  // only
 
     // Return True if should stay on OTCron's list for more processing.
     // Return False if expired or otherwise should be removed.
-    virtual bool ProcessCron(
-        const PasswordPrompt& reason);  // OTCron calls this
-                                        // regularly, which is my
-                                        // chance to expire, etc.
-                                        // From OTTrackable
-                                        // (parent class of this)
+    virtual auto ProcessCron(const PasswordPrompt& reason)
+        -> bool;  // OTCron calls this
+                  // regularly, which is my
+                  // chance to expire, etc.
+                  // From OTTrackable
+                  // (parent class of this)
     ~OTCronItem() override;
 
     void InitCronItem();
 
     void Release() override;
     void Release_CronItem();
-    bool GetCancelerID(identifier::Nym& theOutput) const;
-    bool IsCanceled() const { return m_bCanceled; }
+    auto GetCancelerID(identifier::Nym& theOutput) const -> bool;
+    auto IsCanceled() const -> bool { return m_bCanceled; }
 
     // When canceling a cron item before it
     // has been activated, use this.
-    bool CancelBeforeActivation(
+    auto CancelBeforeActivation(
         const identity::Nym& theCancelerNym,
-        const PasswordPrompt& reason);
+        const PasswordPrompt& reason) -> bool;
 
     // These are for     std::deque<std::int64_t> m_dequeClosingNumbers;
     // They are numbers used for CLOSING a transaction. (finalReceipt.)
-    std::int64_t GetClosingTransactionNoAt(std::uint32_t nIndex) const;
-    std::int32_t GetCountClosingNumbers() const;
+    auto GetClosingTransactionNoAt(std::uint32_t nIndex) const -> std::int64_t;
+    auto GetCountClosingNumbers() const -> std::int32_t;
 
     void AddClosingTransactionNo(const std::int64_t& lClosingTransactionNo);
 
     // HIGHER LEVEL ABSTRACTIONS:
-    std::int64_t GetOpeningNum() const;
-    std::int64_t GetClosingNum() const;
-    virtual bool IsValidOpeningNumber(const std::int64_t& lOpeningNum) const;
+    auto GetOpeningNum() const -> std::int64_t;
+    auto GetClosingNum() const -> std::int64_t;
+    virtual auto IsValidOpeningNumber(const std::int64_t& lOpeningNum) const
+        -> bool;
 
-    virtual std::int64_t GetOpeningNumber(
-        const identifier::Nym& theNymID) const;
-    virtual std::int64_t GetClosingNumber(const Identifier& theAcctID) const;
-    std::int32_t ProcessXMLNode(irr::io::IrrXMLReader*& xml) override;
+    virtual auto GetOpeningNumber(const identifier::Nym& theNymID) const
+        -> std::int64_t;
+    virtual auto GetClosingNumber(const Identifier& theAcctID) const
+        -> std::int64_t;
+    auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
 
 protected:
     std::deque<std::int64_t> m_dequeClosingNumbers;  // Numbers used for
@@ -253,16 +261,16 @@ protected:
     void ClearClosingNumbers();
 
     OTCronItem(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID);
     OTCronItem(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const Identifier& ACCT_ID,
         const identifier::Nym& NYM_ID);
-    OTCronItem(const api::internal::Core& api);
+    OTCronItem(const api::Core& api);
 
 private:
     using ot_super = OTTrackable;
@@ -279,8 +287,8 @@ private:
     OTCronItem() = delete;
     OTCronItem(const OTCronItem&) = delete;
     OTCronItem(OTCronItem&&) = delete;
-    OTCronItem& operator=(const OTCronItem&) = delete;
-    OTCronItem& operator=(OTCronItem&&) = delete;
+    auto operator=(const OTCronItem&) -> OTCronItem& = delete;
+    auto operator=(OTCronItem&&) -> OTCronItem& = delete;
 };
 }  // namespace opentxs
 #endif

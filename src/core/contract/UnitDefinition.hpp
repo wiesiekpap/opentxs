@@ -26,11 +26,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
 class Core;
 }  // namespace api
 
@@ -54,9 +49,8 @@ public:
     static const std::map<VersionNumber, VersionNumber>
         unit_of_account_version_map_;
 
-    static auto GetID(
-        const api::internal::Core& api,
-        const SerializedType& contract) -> OTIdentifier;
+    static auto GetID(const api::Core& api, const SerializedType& contract)
+        -> OTIdentifier;
 
     auto AddAccountRecord(
         const std::string& dataFolder,
@@ -132,7 +126,7 @@ protected:
         -> bool override;
 
     Unit(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const std::string& shortname,
         const std::string& name,
@@ -141,7 +135,7 @@ protected:
         const contact::ContactItemType unitOfAccount,
         const VersionNumber version);
     Unit(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const SerializedType serialized);
     Unit(const Unit&);

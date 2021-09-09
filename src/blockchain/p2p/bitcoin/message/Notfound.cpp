@@ -40,8 +40,7 @@ auto BitcoinP2PNotfound(
     using ReturnType = bitcoin::implementation::Notfound;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Invalid header")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -49,7 +48,7 @@ auto BitcoinP2PNotfound(
     auto expectedSize = sizeof(std::byte);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Size below minimum for Notfound 1")
             .Flush();
 
@@ -62,7 +61,7 @@ auto BitcoinP2PNotfound(
         network::blockchain::bitcoin::DecodeSize(it, expectedSize, size, count);
 
     if (false == haveCount) {
-        LogOutput(__FUNCTION__)(": CompactSize incomplete").Flush();
+        LogOutput(__func__)(": CompactSize incomplete").Flush();
 
         return nullptr;
     }
@@ -74,7 +73,7 @@ auto BitcoinP2PNotfound(
             expectedSize += ReturnType::value_type::EncodedSize;
 
             if (expectedSize > size) {
-                LogOutput("opentxs::factory::")(__FUNCTION__)(
+                LogOutput("opentxs::factory::")(__func__)(
                     ": Inventory entries incomplete at entry index ")(i)
                     .Flush();
 

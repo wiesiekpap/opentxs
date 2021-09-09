@@ -129,7 +129,7 @@ auto BitcoinTransaction(
             std::move(outputs),
             std::vector<blockchain::Type>{chain});
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -244,7 +244,7 @@ auto BitcoinTransaction(
                 }
             }());
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -266,8 +266,7 @@ auto BitcoinTransaction(
         });
 
     if (0 == chains.size()) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Invalid chains")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Invalid chains").Flush();
 
         return {};
     }
@@ -337,7 +336,7 @@ auto BitcoinTransaction(
             factory::BitcoinTransactionOutputs(std::move(outputs)),
             std::move(chains));
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -499,11 +498,11 @@ auto Transaction::ExtractElements(const filter::Type style) const noexcept
     -> std::vector<Space>
 {
     auto output = inputs_->ExtractElements(style);
-    LogTrace(OT_METHOD)(__FUNCTION__)(": extracted ")(output.size())(
+    LogTrace(OT_METHOD)(__func__)(": extracted ")(output.size())(
         " input elements")
         .Flush();
     auto temp = outputs_->ExtractElements(style);
-    LogTrace(OT_METHOD)(__FUNCTION__)(": extracted ")(temp.size())(
+    LogTrace(OT_METHOD)(__func__)(": extracted ")(temp.size())(
         " output elements")
         .Flush();
     output.insert(
@@ -516,7 +515,7 @@ auto Transaction::ExtractElements(const filter::Type style) const noexcept
         output.emplace_back(data, data + txid_->size());
     }
 
-    LogTrace(OT_METHOD)(__FUNCTION__)(": extracted ")(output.size())(
+    LogTrace(OT_METHOD)(__func__)(": extracted ")(output.size())(
         " total elements")
         .Flush();
     std::sort(output.begin(), output.end());
@@ -529,13 +528,13 @@ auto Transaction::FindMatches(
     const Patterns& txos,
     const ParsedPatterns& elements) const noexcept -> Matches
 {
-    LogTrace(OT_METHOD)(__FUNCTION__)(": Verifying ")(
+    LogTrace(OT_METHOD)(__func__)(": Verifying ")(
         elements.data_.size() + txos.size())(" potential matches in ")(
         inputs_->size())(" inputs for transaction ")(txid_->asHex())
         .Flush();
     auto output = inputs_->FindMatches(txid_->Bytes(), style, txos, elements);
     auto& [inputs, outputs] = output;
-    LogTrace(OT_METHOD)(__FUNCTION__)(": Verifying ")(
+    LogTrace(OT_METHOD)(__func__)(": Verifying ")(
         elements.data_.size() + txos.size())(" potential matches in ")(
         inputs_->size())(" output for transaction ")(txid_->asHex())
         .Flush();
@@ -569,7 +568,7 @@ auto Transaction::GetPreimageBTC(
 {
     if (SigHash::All != hashType.Type()) {
         // TODO
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Mode not supported").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Mode not supported").Flush();
 
         return {};
     }
@@ -578,16 +577,14 @@ auto Transaction::GetPreimageBTC(
     copy.cache_.reset_size();
 
     if (false == copy.inputs_->ReplaceScript(index)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to initialize input script")
+        LogOutput(OT_METHOD)(__func__)(": Failed to initialize input script")
             .Flush();
 
         return {};
     }
 
     if (hashType.AnyoneCanPay() && (!copy.inputs_->AnyoneCanPay(index))) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to apply AnyoneCanPay flag")
+        LogOutput(OT_METHOD)(__func__)(": Failed to apply AnyoneCanPay flag")
             .Flush();
 
         return {};
@@ -629,19 +626,19 @@ auto Transaction::MergeMetadata(
     const SerializeType& rhs) noexcept -> void
 {
     if (txid_->str() != rhs.txid()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Wrong transaction").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Wrong transaction").Flush();
 
         return;
     }
 
     if (static_cast<std::size_t>(rhs.input().size()) != inputs_->size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Wrong number of inputs").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Wrong number of inputs").Flush();
 
         return;
     }
 
     if (static_cast<std::size_t>(rhs.output().size()) != outputs_->size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Wrong number of outputs").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Wrong number of outputs").Flush();
 
         return;
     }
@@ -654,7 +651,7 @@ auto Transaction::MergeMetadata(
         try {
             inputs_->MergeMetadata(blockchain, input);
         } catch (...) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid input").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Invalid input").Flush();
 
             return;
         }
@@ -664,7 +661,7 @@ auto Transaction::MergeMetadata(
         try {
             outputs_->MergeMetadata(output);
         } catch (...) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Invalid output").Flush();
 
             return;
         }
@@ -711,8 +708,7 @@ auto Transaction::serialize(
     const bool normalize) const noexcept -> std::optional<std::size_t>
 {
     if (!destination) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output allocator")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return std::nullopt;
     }
@@ -721,7 +717,7 @@ auto Transaction::serialize(
     auto output = destination(size);
 
     if (false == output.valid(size)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to allocate output bytes")
+        LogOutput(OT_METHOD)(__func__)(": Failed to allocate output bytes")
             .Flush();
 
         return std::nullopt;
@@ -733,7 +729,7 @@ auto Transaction::serialize(
     auto it = static_cast<std::byte*>(output.data());
 
     if (remaining < sizeof(version)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to serialize version. Need at least ")(sizeof(version))(
             " bytes but only have ")(remaining)
             .Flush();
@@ -749,7 +745,7 @@ auto Transaction::serialize(
 
     if (isSegwit) {
         if (remaining < sizeof(std::byte)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failed to serialize marker byte. Need at least ")(
                 sizeof(std::byte))(" bytes but only have ")(remaining)
                 .Flush();
@@ -762,7 +758,7 @@ auto Transaction::serialize(
         remaining -= sizeof(std::byte);
 
         if (remaining < sizeof(segwit_flag_)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failed to serialize segwit flag. Need at least ")(
                 sizeof(segwit_flag_))(" bytes but only have ")(remaining)
                 .Flush();
@@ -783,8 +779,7 @@ auto Transaction::serialize(
         std::advance(it, inputs.value());
         remaining -= inputs.value();
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize inputs")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to serialize inputs").Flush();
 
         return std::nullopt;
     }
@@ -795,8 +790,7 @@ auto Transaction::serialize(
         std::advance(it, outputs.value());
         remaining -= outputs.value();
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize outputs")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to serialize outputs").Flush();
 
         return std::nullopt;
     }
@@ -808,7 +802,7 @@ auto Transaction::serialize(
                 blockchain::bitcoin::CompactSize{witness.size()};
 
             if (false == pushCount.Encode(preallocated(remaining, it))) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Failed to serialize push count")
                     .Flush();
 
@@ -823,7 +817,7 @@ auto Transaction::serialize(
                     blockchain::bitcoin::CompactSize{push.size()};
 
                 if (false == pushSize.Encode(preallocated(remaining, it))) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Failed to serialize push size")
                         .Flush();
 
@@ -834,7 +828,7 @@ auto Transaction::serialize(
                 remaining -= pushSize.Size();
 
                 if (remaining < push.size()) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Failed to serialize witness push. Need at least ")(
                         push.size())(" bytes but only have ")(remaining)
                         .Flush();
@@ -853,7 +847,7 @@ auto Transaction::serialize(
     }
 
     if (remaining != sizeof(lockTime)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to serialize lock time. Need exactly ")(sizeof(lockTime))(
             " bytes but have ")(remaining)
             .Flush();

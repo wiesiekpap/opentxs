@@ -38,26 +38,25 @@ namespace zeromq
 {
 namespace zap
 {
-class Callback
+class OPENTXS_EXPORT Callback
 {
 public:
     using ReceiveCallback = std::function<OTZMQZAPReply(const Request&)>;
 
     enum class Policy : bool { Accept = true, Reject = false };
 
-    OPENTXS_EXPORT static OTZMQZAPCallback Factory(
+    static auto Factory(
         const std::string& domain,
-        const ReceiveCallback& callback);
-    OPENTXS_EXPORT static OTZMQZAPCallback Factory();
+        const ReceiveCallback& callback) -> OTZMQZAPCallback;
+    static auto Factory() -> OTZMQZAPCallback;
 
-    OPENTXS_EXPORT virtual OTZMQZAPReply Process(
-        const Request& request) const = 0;
-    OPENTXS_EXPORT virtual bool SetDomain(
+    virtual auto Process(const Request& request) const -> OTZMQZAPReply = 0;
+    virtual auto SetDomain(
         const std::string& domain,
-        const ReceiveCallback& callback) const = 0;
-    OPENTXS_EXPORT virtual bool SetPolicy(const Policy policy) const = 0;
+        const ReceiveCallback& callback) const -> bool = 0;
+    virtual auto SetPolicy(const Policy policy) const -> bool = 0;
 
-    OPENTXS_EXPORT virtual ~Callback() = default;
+    virtual ~Callback() = default;
 
 protected:
     Callback() = default;
@@ -65,12 +64,12 @@ protected:
 private:
     friend OTZMQZAPCallback;
 
-    virtual Callback* clone() const = 0;
+    virtual auto clone() const -> Callback* = 0;
 
     Callback(const Callback&) = delete;
     Callback(Callback&&) = default;
-    Callback& operator=(const Callback&) = delete;
-    Callback& operator=(Callback&&) = default;
+    auto operator=(const Callback&) -> Callback& = delete;
+    auto operator=(Callback&&) -> Callback& = default;
 };
 }  // namespace zap
 }  // namespace zeromq

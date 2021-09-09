@@ -15,12 +15,13 @@
 #include <utility>
 
 #include "core/OTStorage.hpp"
-#include "internal/api/server/Server.hpp"
+#include "internal/api/Api.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Legacy.hpp"
 #include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/server/Manager.hpp"
 #include "opentxs/core/AccountList.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Log.hpp"
@@ -73,8 +74,8 @@ auto MainFile::SaveMainFileToString(String& strMainFile) -> bool
 
         if (!bContractID) {
             LogOutput(OT_METHOD)(__func__)(
-                ": Error: Missing Contract ID for basket ID ")(strBasketID
-                                                                   ->Get())(".")
+                ": Error: Missing Contract ID for basket ID ")(
+                strBasketID->Get())(".")
                 .Flush();
             break;
         }
@@ -143,8 +144,8 @@ auto MainFile::SaveMainFile() -> bool
         "");
 
     if (!bSaved) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Error saving main file: ")(server_.WalletFilename().Get())(".")
+        LogOutput(OT_METHOD)(__func__)(": Error saving main file: ")(
+            server_.WalletFilename().Get())(".")
             .Flush();
     }
     return bSaved;
@@ -159,7 +160,7 @@ auto MainFile::CreateMainFile(
             server_.API(),
             strContract,
             server_.API().DataFolder(),
-            server_.API().Legacy().Contract(),
+            server_.API().Internal().Legacy().Contract(),
             strNotaryID,
             "",
             "")) {
@@ -233,8 +234,8 @@ auto MainFile::LoadMainFile(bool bReadOnly) -> bool
             server_.WalletFilename().Get(),
             "",
             "")) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Error finding file: ")(server_.WalletFilename().Get())(".")
+        LogOutput(OT_METHOD)(__func__)(": Error finding file: ")(
+            server_.WalletFilename().Get())(".")
             .Flush();
         return false;
     }
@@ -248,8 +249,8 @@ auto MainFile::LoadMainFile(bool bReadOnly) -> bool
                // DATA STORE.
 
     if (!strFileContents->Exists()) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Unable to read main file: ")(server_.WalletFilename().Get())(".")
+        LogOutput(OT_METHOD)(__func__)(": Unable to read main file: ")(
+            server_.WalletFilename().Get())(".")
             .Flush();
         return false;
     }
@@ -264,11 +265,11 @@ auto MainFile::LoadMainFile(bool bReadOnly) -> bool
         if (false == xmlFileContents->DecodeIfArmored()) {
             LogOutput(OT_METHOD)(__func__)(
                 ": Notary server file apparently was encoded and "
-                "then failed decoding. Filename: ")(server_.WalletFilename()
-                                                        .Get())(". "
-                                                                "Contents:"
-                                                                " ")(strFileContents
-                                                                         ->Get())(".")
+                "then failed decoding. Filename: ")(
+                server_.WalletFilename().Get())(
+                ". "
+                "Contents:"
+                " ")(strFileContents->Get())(".")
                 .Flush();
             return false;
         }
@@ -348,16 +349,17 @@ auto MainFile::LoadMainFile(bool bReadOnly) -> bool
                                 ": Loading basket currency info... "
                                 "Basket ID: ")(strBasketID)(" Basket Acct "
                                                             "ID:"
-                                                            " ")(strBasketAcctID)(" Basket Contract ID: ")(strBasketContractID)(".")
+                                                            " ")(
+                                strBasketAcctID)(" Basket Contract ID: ")(
+                                strBasketContractID)(".")
                                 .Flush();
                         } else {
                             LogOutput(OT_METHOD)(__func__)(
                                 ": Error adding basket currency info."
-                                " Basket ID: ")(strBasketID
-                                                    ->Get())(". Basket Acct "
-                                                             "ID:"
-                                                             " ")(strBasketAcctID
-                                                                      ->Get())(".")
+                                " Basket ID: ")(strBasketID->Get())(
+                                ". Basket Acct "
+                                "ID:"
+                                " ")(strBasketAcctID->Get())(".")
                                 .Flush();
                         }
                     } else {

@@ -40,16 +40,8 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
+class Blockchain;
 }  // namespace client
-
-namespace internal
-{
-struct Core;
-}  // namespace internal
 
 class Core;
 }  // namespace api
@@ -58,10 +50,7 @@ namespace blockchain
 {
 namespace crypto
 {
-namespace internal
-{
-struct Element;
-}  // namespace internal
+class Element;
 }  // namespace crypto
 }  // namespace blockchain
 
@@ -149,8 +138,8 @@ public:
     ~Subaccount() override = default;
 
 protected:
-    using AddressMap = robin_hood::
-        unordered_flat_map<Bip32Index, std::unique_ptr<internal::Element>>;
+    using AddressMap =
+        robin_hood::unordered_flat_map<Bip32Index, std::unique_ptr<Element>>;
     using Revision = std::uint64_t;
 
     struct AddressData {
@@ -162,8 +151,8 @@ protected:
         AddressData(const api::Core& api, Subchain type, bool contact) noexcept;
     };
 
-    const api::internal::Core& api_;
-    const internal::Account& parent_;
+    const api::Core& api_;
+    const Account& parent_;
     const opentxs::blockchain::Type chain_;
     const SubaccountType type_;
     const OTIdentifier id_;
@@ -205,17 +194,17 @@ protected:
     virtual auto mutable_element(
         const rLock& lock,
         const Subchain type,
-        const Bip32Index index) noexcept(false) -> internal::Element& = 0;
+        const Bip32Index index) noexcept(false) -> Element& = 0;
 
     Subaccount(
-        const api::internal::Core& api,
-        const internal::Account& parent,
+        const api::Core& api,
+        const Account& parent,
         const SubaccountType type,
         OTIdentifier&& id,
         Identifier& out) noexcept;
     Subaccount(
-        const api::internal::Core& api,
-        const internal::Account& parent,
+        const api::Core& api,
+        const Account& parent,
         const SubaccountType type,
         const SerializedType& serialized,
         Identifier& out) noexcept(false);
@@ -244,8 +233,8 @@ private:
     }
 
     Subaccount(
-        const api::internal::Core& api,
-        const internal::Account& parent,
+        const api::Core& api,
+        const Account& parent,
         const SubaccountType type,
         OTIdentifier&& id,
         const Revision revision,

@@ -36,10 +36,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -81,7 +78,7 @@ public:
     }
 
     BlockchainAccountStatus(
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const BlockchainAccountStatusPrimaryID& id,
         const blockchain::Type chain,
         const SimpleCallback& cb) noexcept;

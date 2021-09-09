@@ -25,11 +25,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
 class Core;
 }  // namespace api
 
@@ -74,7 +69,7 @@ public:
     void SetAlias(const std::string& alias) final;
 
     Server(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const VersionNumber version,
         const std::string& terms,
@@ -84,7 +79,7 @@ public:
         const std::string& id = {},
         Signatures&& signatures = {});
     Server(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const proto::ServerContract& serialized);
 

@@ -10,9 +10,9 @@
 #include <tuple>
 #include <utility>
 
-#include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/client/Activity.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -22,7 +22,7 @@ namespace opentxs::ui::implementation
 {
 ActivityThreadItem::ActivityThreadItem(
     const ActivityThreadInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const ActivityThreadRowID& rowID,
     const ActivityThreadSortKey& sortKey,

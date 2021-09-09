@@ -11,12 +11,6 @@
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 
-#ifdef SWIG
-// clang-format off
-%rename(ZMQSender) opentxs::network::zeromq::socket::Sender;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace network
@@ -25,33 +19,30 @@ namespace zeromq
 {
 namespace socket
 {
-class Sender : virtual public Socket
+class OPENTXS_EXPORT Sender : virtual public Socket
 {
 public:
-    OPENTXS_EXPORT bool Send(opentxs::Pimpl<opentxs::network::zeromq::Message>&
-                                 message) const noexcept
+    auto Send(opentxs::Pimpl<opentxs::network::zeromq::Message>& message)
+        const noexcept -> bool
     {
         return send(message.get());
     }
-    OPENTXS_EXPORT bool Send(Message& message) const noexcept
-    {
-        return send(message);
-    }
+    auto Send(Message& message) const noexcept -> bool { return send(message); }
     template <typename Input>
-    OPENTXS_EXPORT bool Send(const Input& data) const noexcept;
+    auto Send(const Input& data) const noexcept -> bool;
 
-    OPENTXS_EXPORT ~Sender() override = default;
+    ~Sender() override = default;
 
 protected:
     Sender() = default;
 
 private:
-    virtual bool send(Message& message) const noexcept = 0;
+    virtual auto send(Message& message) const noexcept -> bool = 0;
 
     Sender(const Sender&) = delete;
     Sender(Sender&&) = delete;
-    Sender& operator=(const Sender&) = delete;
-    Sender& operator=(Sender&&) = delete;
+    auto operator=(const Sender&) -> Sender& = delete;
+    auto operator=(Sender&&) -> Sender& = delete;
 };
 }  // namespace socket
 }  // namespace zeromq

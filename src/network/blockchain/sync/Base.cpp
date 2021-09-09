@@ -168,7 +168,7 @@ auto Base::Imp::serialize(zeromq::Message& out) const noexcept -> bool
 auto Base::Imp::serialize_type(zeromq::Message& out) const noexcept -> bool
 {
     if (MessageType::error == type_) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid type").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid type").Flush();
 
         return false;
     }
@@ -178,7 +178,7 @@ auto Base::Imp::serialize_type(zeromq::Message& out) const noexcept -> bool
     } else if (0u != out.at(out.size() - 1u).size()) {
         // NOTE supplied message should either be empty or else have header
         // frames followed by an empty delimiter frame.
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         return false;
     }

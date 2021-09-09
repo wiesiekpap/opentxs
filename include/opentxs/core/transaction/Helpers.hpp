@@ -21,10 +21,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -39,13 +36,13 @@ class NumList;
 class OTTransaction;
 class String;
 
-OPENTXS_EXPORT const char* GetTransactionTypeString(
-    int transactionTypeIndex);  // enum transactionType
-OPENTXS_EXPORT const char* GetOriginTypeToString(
-    int originTypeIndex);  // enum
-                           // originType
+OPENTXS_EXPORT auto GetTransactionTypeString(int transactionTypeIndex) -> const
+    char*;  // enum transactionType
+OPENTXS_EXPORT auto GetOriginTypeToString(int originTypeIndex) -> const
+    char*;  // enum
+            // originType
 
-OPENTXS_EXPORT std::int32_t LoadAbbreviatedRecord(
+OPENTXS_EXPORT auto LoadAbbreviatedRecord(
     irr::io::IrrXMLReader*& xml,
     std::int64_t& lNumberOfOrigin,
     originType& theOriginType,
@@ -60,50 +57,50 @@ OPENTXS_EXPORT std::int32_t LoadAbbreviatedRecord(
     std::int64_t& lClosingNum,
     std::int64_t& lRequestNum,
     bool& bReplyTransSuccess,
-    NumList* pNumList = nullptr);
+    NumList* pNumList = nullptr) -> std::int32_t;
 
-OPENTXS_EXPORT bool VerifyBoxReceiptExists(
-    const api::internal::Core& api,
+OPENTXS_EXPORT auto VerifyBoxReceiptExists(
+    const api::Core& api,
     const std::string& dataFolder,
     const identifier::Server& NOTARY_ID,
     const identifier::Nym& NYM_ID,
     const Identifier& ACCOUNT_ID,  // If for Nymbox (vs inbox/outbox) then
     // pass NYM_ID in this field also.
     std::int32_t nBoxType,  // 0/nymbox, 1/inbox, 2/outbox
-    const std::int64_t& lTransactionNum);
+    const std::int64_t& lTransactionNum) -> bool;
 
-OPENTXS_EXPORT std::unique_ptr<OTTransaction> LoadBoxReceipt(
-    const api::internal::Core& api,
+OPENTXS_EXPORT auto LoadBoxReceipt(
+    const api::Core& api,
     OTTransaction& theAbbrev,
-    Ledger& theLedger);
+    Ledger& theLedger) -> std::unique_ptr<OTTransaction>;
 
-OPENTXS_EXPORT std::unique_ptr<OTTransaction> LoadBoxReceipt(
-    const api::internal::Core& api,
+OPENTXS_EXPORT auto LoadBoxReceipt(
+    const api::Core& api,
     OTTransaction& theAbbrev,
-    std::int64_t lLedgerType);
+    std::int64_t lLedgerType) -> std::unique_ptr<OTTransaction>;
 
-OPENTXS_EXPORT bool SetupBoxReceiptFilename(
-    const api::internal::Core& api,
+OPENTXS_EXPORT auto SetupBoxReceiptFilename(
+    const api::Core& api,
     std::int64_t lLedgerType,
     OTTransaction& theTransaction,
     const char* szCaller,
     String& strFolder1name,
     String& strFolder2name,
     String& strFolder3name,
-    String& strFilename);
+    String& strFilename) -> bool;
 
-OPENTXS_EXPORT bool SetupBoxReceiptFilename(
-    const api::internal::Core& api,
+OPENTXS_EXPORT auto SetupBoxReceiptFilename(
+    const api::Core& api,
     Ledger& theLedger,
     OTTransaction& theTransaction,
     const char* szCaller,
     String& strFolder1name,
     String& strFolder2name,
     String& strFolder3name,
-    String& strFilename);
+    String& strFilename) -> bool;
 
-OPENTXS_EXPORT bool SetupBoxReceiptFilename(
-    const api::internal::Core& api,
+OPENTXS_EXPORT auto SetupBoxReceiptFilename(
+    const api::Core& api,
     std::int64_t lLedgerType,
     const String& strUserOrAcctID,
     const String& strNotaryID,
@@ -112,6 +109,6 @@ OPENTXS_EXPORT bool SetupBoxReceiptFilename(
     String& strFolder1name,
     String& strFolder2name,
     String& strFolder3name,
-    String& strFilename);
+    String& strFilename) -> bool;
 }  // namespace opentxs
 #endif

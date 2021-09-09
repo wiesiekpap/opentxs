@@ -21,54 +21,55 @@ class Work;
 
 using OTWork = Pimpl<blockchain::Work>;
 
-OPENTXS_EXPORT bool operator==(
+OPENTXS_EXPORT auto operator==(
     const OTWork& lhs,
-    const blockchain::Work& rhs) noexcept;
-OPENTXS_EXPORT bool operator!=(
+    const blockchain::Work& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator!=(
     const OTWork& lhs,
-    const blockchain::Work& rhs) noexcept;
-OPENTXS_EXPORT bool operator<(
+    const blockchain::Work& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator<(
     const OTWork& lhs,
-    const blockchain::Work& rhs) noexcept;
-OPENTXS_EXPORT bool operator<=(
+    const blockchain::Work& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator<=(
     const OTWork& lhs,
-    const blockchain::Work& rhs) noexcept;
-OPENTXS_EXPORT bool operator>(
+    const blockchain::Work& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator>(
     const OTWork& lhs,
-    const blockchain::Work& rhs) noexcept;
-OPENTXS_EXPORT bool operator>=(
+    const blockchain::Work& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator>=(
     const OTWork& lhs,
-    const blockchain::Work& rhs) noexcept;
-OPENTXS_EXPORT OTWork
-operator+(const OTWork& lhs, const blockchain::Work& rhs) noexcept;
+    const blockchain::Work& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator+(
+    const OTWork& lhs,
+    const blockchain::Work& rhs) noexcept -> OTWork;
 }  // namespace opentxs
 
 namespace opentxs
 {
 namespace blockchain
 {
-class Work
+class OPENTXS_EXPORT Work
 {
 public:
-    OPENTXS_EXPORT virtual bool operator==(
-        const blockchain::Work& rhs) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool operator!=(
-        const blockchain::Work& rhs) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool operator<(
-        const blockchain::Work& rhs) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool operator<=(
-        const blockchain::Work& rhs) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool operator>(
-        const blockchain::Work& rhs) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool operator>=(
-        const blockchain::Work& rhs) const noexcept = 0;
-    OPENTXS_EXPORT virtual OTWork operator+(
-        const blockchain::Work& rhs) const noexcept = 0;
+    virtual auto operator==(const blockchain::Work& rhs) const noexcept
+        -> bool = 0;
+    virtual auto operator!=(const blockchain::Work& rhs) const noexcept
+        -> bool = 0;
+    virtual auto operator<(const blockchain::Work& rhs) const noexcept
+        -> bool = 0;
+    virtual auto operator<=(const blockchain::Work& rhs) const noexcept
+        -> bool = 0;
+    virtual auto operator>(const blockchain::Work& rhs) const noexcept
+        -> bool = 0;
+    virtual auto operator>=(const blockchain::Work& rhs) const noexcept
+        -> bool = 0;
+    virtual auto operator+(const blockchain::Work& rhs) const noexcept
+        -> OTWork = 0;
 
-    OPENTXS_EXPORT virtual std::string asHex() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string Decimal() const noexcept = 0;
+    virtual auto asHex() const noexcept -> std::string = 0;
+    virtual auto Decimal() const noexcept -> std::string = 0;
 
-    OPENTXS_EXPORT virtual ~Work() = default;
+    virtual ~Work() = default;
 
 protected:
     Work() noexcept = default;
@@ -76,12 +77,12 @@ protected:
 private:
     friend OTWork;
 
-    virtual Work* clone() const noexcept = 0;
+    virtual auto clone() const noexcept -> Work* = 0;
 
     Work(const Work& rhs) = delete;
     Work(Work&& rhs) = delete;
-    Work& operator=(const Work& rhs) = delete;
-    Work& operator=(Work&& rhs) = delete;
+    auto operator=(const Work& rhs) -> Work& = delete;
+    auto operator=(Work&& rhs) -> Work& = delete;
 };
 }  // namespace blockchain
 }  // namespace opentxs

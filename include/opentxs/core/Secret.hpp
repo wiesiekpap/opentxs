@@ -22,57 +22,63 @@ using OTSecret = Pimpl<Secret>;
 
 namespace opentxs
 {
-OPENTXS_EXPORT bool operator==(const OTSecret& lhs, const Secret& rhs) noexcept;
-OPENTXS_EXPORT bool operator==(
+OPENTXS_EXPORT auto operator==(const OTSecret& lhs, const Secret& rhs) noexcept
+    -> bool;
+OPENTXS_EXPORT auto operator==(
     const OTSecret& lhs,
-    const ReadView& rhs) noexcept;
-OPENTXS_EXPORT bool operator!=(const OTSecret& lhs, const Secret& rhs) noexcept;
-OPENTXS_EXPORT bool operator!=(
+    const ReadView& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator!=(const OTSecret& lhs, const Secret& rhs) noexcept
+    -> bool;
+OPENTXS_EXPORT auto operator!=(
     const OTSecret& lhs,
-    const ReadView& rhs) noexcept;
-OPENTXS_EXPORT bool operator<(const OTSecret& lhs, const Secret& rhs) noexcept;
-OPENTXS_EXPORT bool operator<(
+    const ReadView& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator<(const OTSecret& lhs, const Secret& rhs) noexcept
+    -> bool;
+OPENTXS_EXPORT auto operator<(const OTSecret& lhs, const ReadView& rhs) noexcept
+    -> bool;
+OPENTXS_EXPORT auto operator>(const OTSecret& lhs, const Secret& rhs) noexcept
+    -> bool;
+OPENTXS_EXPORT auto operator>(const OTSecret& lhs, const ReadView& rhs) noexcept
+    -> bool;
+OPENTXS_EXPORT auto operator<=(const OTSecret& lhs, const Secret& rhs) noexcept
+    -> bool;
+OPENTXS_EXPORT auto operator<=(
     const OTSecret& lhs,
-    const ReadView& rhs) noexcept;
-OPENTXS_EXPORT bool operator>(const OTSecret& lhs, const Secret& rhs) noexcept;
-OPENTXS_EXPORT bool operator>(
+    const ReadView& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator>=(const OTSecret& lhs, const Secret& rhs) noexcept
+    -> bool;
+OPENTXS_EXPORT auto operator>=(
     const OTSecret& lhs,
-    const ReadView& rhs) noexcept;
-OPENTXS_EXPORT bool operator<=(const OTSecret& lhs, const Secret& rhs) noexcept;
-OPENTXS_EXPORT bool operator<=(
-    const OTSecret& lhs,
-    const ReadView& rhs) noexcept;
-OPENTXS_EXPORT bool operator>=(const OTSecret& lhs, const Secret& rhs) noexcept;
-OPENTXS_EXPORT bool operator>=(
-    const OTSecret& lhs,
-    const ReadView& rhs) noexcept;
-OPENTXS_EXPORT Secret& operator+=(OTSecret& lhs, const Secret& rhs) noexcept;
-OPENTXS_EXPORT Secret& operator+=(OTSecret& lhs, const ReadView rhs) noexcept;
+    const ReadView& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator+=(OTSecret& lhs, const Secret& rhs) noexcept
+    -> Secret&;
+OPENTXS_EXPORT auto operator+=(OTSecret& lhs, const ReadView rhs) noexcept
+    -> Secret&;
 
 class OPENTXS_EXPORT Secret
 {
 public:
     enum class Mode : bool { Mem = true, Text = false };
 
-    virtual bool operator==(const Secret& rhs) const noexcept = 0;
-    virtual bool operator==(const ReadView rhs) const noexcept = 0;
-    virtual bool operator!=(const Secret& rhs) const noexcept = 0;
-    virtual bool operator!=(const ReadView rhs) const noexcept = 0;
-    virtual bool operator<(const Secret& rhs) const noexcept = 0;
-    virtual bool operator<(const ReadView rhs) const noexcept = 0;
-    virtual bool operator>(const Secret& rhs) const noexcept = 0;
-    virtual bool operator>(const ReadView rhs) const noexcept = 0;
-    virtual bool operator<=(const Secret& rhs) const noexcept = 0;
-    virtual bool operator<=(const ReadView& rhs) const noexcept = 0;
-    virtual bool operator>=(const Secret& rhs) const noexcept = 0;
-    virtual bool operator>=(const ReadView& rhs) const noexcept = 0;
-    virtual ReadView Bytes() const noexcept = 0;
-    virtual const std::byte* data() const noexcept = 0;
-    virtual bool empty() const noexcept = 0;
-    virtual std::size_t size() const noexcept = 0;
+    virtual auto operator==(const Secret& rhs) const noexcept -> bool = 0;
+    virtual auto operator==(const ReadView rhs) const noexcept -> bool = 0;
+    virtual auto operator!=(const Secret& rhs) const noexcept -> bool = 0;
+    virtual auto operator!=(const ReadView rhs) const noexcept -> bool = 0;
+    virtual auto operator<(const Secret& rhs) const noexcept -> bool = 0;
+    virtual auto operator<(const ReadView rhs) const noexcept -> bool = 0;
+    virtual auto operator>(const Secret& rhs) const noexcept -> bool = 0;
+    virtual auto operator>(const ReadView rhs) const noexcept -> bool = 0;
+    virtual auto operator<=(const Secret& rhs) const noexcept -> bool = 0;
+    virtual auto operator<=(const ReadView& rhs) const noexcept -> bool = 0;
+    virtual auto operator>=(const Secret& rhs) const noexcept -> bool = 0;
+    virtual auto operator>=(const ReadView& rhs) const noexcept -> bool = 0;
+    virtual auto Bytes() const noexcept -> ReadView = 0;
+    virtual auto data() const noexcept -> const std::byte* = 0;
+    virtual auto empty() const noexcept -> bool = 0;
+    virtual auto size() const noexcept -> std::size_t = 0;
 
-    virtual Secret& operator+=(const Secret& rhs) noexcept = 0;
-    virtual Secret& operator+=(const ReadView rhs) noexcept = 0;
+    virtual auto operator+=(const Secret& rhs) noexcept -> Secret& = 0;
+    virtual auto operator+=(const ReadView rhs) noexcept -> Secret& = 0;
 
     virtual void Assign(const Secret& source) noexcept = 0;
     virtual void Assign(const ReadView source) noexcept = 0;
@@ -84,11 +90,11 @@ public:
     virtual void Concatenate(
         const void* data,
         const std::size_t size) noexcept = 0;
-    virtual std::byte* data() noexcept = 0;
-    virtual std::size_t Randomize(const std::size_t bytes) noexcept = 0;
-    virtual std::size_t Resize(const std::size_t size) noexcept = 0;
-    virtual AllocateOutput WriteInto(
-        const std::optional<Mode> = {}) noexcept = 0;
+    virtual auto data() noexcept -> std::byte* = 0;
+    virtual auto Randomize(const std::size_t bytes) noexcept -> std::size_t = 0;
+    virtual auto Resize(const std::size_t size) noexcept -> std::size_t = 0;
+    virtual auto WriteInto(const std::optional<Mode> = {}) noexcept
+        -> AllocateOutput = 0;
 
     virtual ~Secret() = default;
 
@@ -101,26 +107,24 @@ private:
 #ifdef _WIN32
 public:
 #endif
-    virtual Secret* clone() const noexcept = 0;
+    virtual auto clone() const noexcept -> Secret* = 0;
 #ifdef _WIN32
 private:
 #endif
 
     Secret(const Secret& rhs) = delete;
     Secret(Secret&& rhs) = delete;
-    Secret& operator=(const Secret& rhs) = delete;
-    Secret& operator=(Secret&& rhs) = delete;
+    auto operator=(const Secret& rhs) -> Secret& = delete;
+    auto operator=(Secret&& rhs) -> Secret& = delete;
 };
 }  // namespace opentxs
 
-#ifndef SWIG
 namespace std
 {
 template <>
 struct OPENTXS_EXPORT less<opentxs::OTSecret> {
-    bool operator()(const opentxs::OTSecret& lhs, const opentxs::OTSecret& rhs)
-        const;
+    auto operator()(const opentxs::OTSecret& lhs, const opentxs::OTSecret& rhs)
+        const -> bool;
 };
 }  // namespace std
-#endif
 #endif

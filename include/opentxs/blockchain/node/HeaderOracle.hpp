@@ -33,15 +33,15 @@ namespace blockchain
 {
 namespace node
 {
-class HeaderOracle
+class OPENTXS_EXPORT HeaderOracle
 {
 public:
     using Hashes = std::vector<block::pHash>;
     using Positions = std::vector<block::Position>;
 
     /// Throws std::out_of_range for invalid type
-    OPENTXS_EXPORT static const block::Hash& GenesisBlockHash(
-        const blockchain::Type type);
+    static auto GenesisBlockHash(const blockchain::Type type)
+        -> const block::Hash&;
 
     /** Query a partial set of ancestors of a target block
      *
@@ -57,11 +57,11 @@ public:
      *  \throws std::runtime_error if either of the specified positions does not
      *  exist in the database
      */
-    OPENTXS_EXPORT virtual Positions Ancestors(
+    virtual auto Ancestors(
         const block::Position& start,
         const block::Position& target,
-        const std::size_t limit = 0) const noexcept(false) = 0;
-    OPENTXS_EXPORT virtual block::Position BestChain() const noexcept = 0;
+        const std::size_t limit = 0) const noexcept(false) -> Positions = 0;
+    virtual auto BestChain() const noexcept -> block::Position = 0;
     /** Determine which blocks have updated since the provided position
      *
      *  This function always returns at least one position.
@@ -76,22 +76,22 @@ public:
      *  \throws std::runtime_error if the specified tip does not exist in the
      *  database
      */
-    OPENTXS_EXPORT virtual Positions BestChain(
+    virtual auto BestChain(
         const block::Position& tip,
-        const std::size_t limit = 0) const noexcept(false) = 0;
-    OPENTXS_EXPORT virtual block::pHash BestHash(
-        const block::Height height) const noexcept = 0;
-    OPENTXS_EXPORT virtual Hashes BestHashes(
+        const std::size_t limit = 0) const noexcept(false) -> Positions = 0;
+    virtual auto BestHash(const block::Height height) const noexcept
+        -> block::pHash = 0;
+    virtual auto BestHashes(
         const block::Height start,
-        const std::size_t limit = 0) const noexcept = 0;
-    OPENTXS_EXPORT virtual Hashes BestHashes(
+        const std::size_t limit = 0) const noexcept -> Hashes = 0;
+    virtual auto BestHashes(
         const block::Height start,
         const block::Hash& stop,
-        const std::size_t limit = 0) const noexcept = 0;
-    OPENTXS_EXPORT virtual Hashes BestHashes(
+        const std::size_t limit = 0) const noexcept -> Hashes = 0;
+    virtual auto BestHashes(
         const Hashes& previous,
         const block::Hash& stop,
-        const std::size_t limit) const noexcept = 0;
+        const std::size_t limit) const noexcept -> Hashes = 0;
     /** Determine how which ancestors of a orphaned tip must be rolled back
      *  due to a chain reorg
      *
@@ -106,8 +106,8 @@ public:
      *  \throws std::runtime_error if the provided position is not a descendant
      *  of this chain's genesis block
      */
-    OPENTXS_EXPORT virtual Positions CalculateReorg(
-        const block::Position tip) const noexcept(false) = 0;
+    virtual auto CalculateReorg(const block::Position tip) const noexcept(false)
+        -> Positions = 0;
     /** Test block position for membership in the best chain
      *
      *  returns {parent position, best position}
@@ -116,28 +116,27 @@ public:
      * best chain, otherwise it is the youngest common ancestor of the input
      * block and best chain
      */
-    OPENTXS_EXPORT virtual std::pair<block::Position, block::Position>
-    CommonParent(const block::Position& input) const noexcept = 0;
-    OPENTXS_EXPORT virtual block::Position GetCheckpoint() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool IsInBestChain(
-        const block::Hash& hash) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool IsInBestChain(
-        const block::Position& position) const noexcept = 0;
-    OPENTXS_EXPORT virtual std::unique_ptr<block::Header> LoadHeader(
-        const block::Hash& hash) const noexcept = 0;
-    OPENTXS_EXPORT virtual Hashes RecentHashes() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::set<block::pHash> Siblings() const noexcept = 0;
+    virtual auto CommonParent(const block::Position& input) const noexcept
+        -> std::pair<block::Position, block::Position> = 0;
+    virtual auto GetCheckpoint() const noexcept -> block::Position = 0;
+    virtual auto IsInBestChain(const block::Hash& hash) const noexcept
+        -> bool = 0;
+    virtual auto IsInBestChain(const block::Position& position) const noexcept
+        -> bool = 0;
+    virtual auto LoadHeader(const block::Hash& hash) const noexcept
+        -> std::unique_ptr<block::Header> = 0;
+    virtual auto RecentHashes() const noexcept -> Hashes = 0;
+    virtual auto Siblings() const noexcept -> std::set<block::pHash> = 0;
 
-    OPENTXS_EXPORT virtual bool AddCheckpoint(
+    virtual auto AddCheckpoint(
         const block::Height position,
-        const block::Hash& requiredHash) noexcept = 0;
-    OPENTXS_EXPORT virtual bool AddHeader(
-        std::unique_ptr<block::Header>) noexcept = 0;
-    OPENTXS_EXPORT virtual bool AddHeaders(
-        std::vector<std::unique_ptr<block::Header>>&) noexcept = 0;
-    OPENTXS_EXPORT virtual bool DeleteCheckpoint() noexcept = 0;
+        const block::Hash& requiredHash) noexcept -> bool = 0;
+    virtual auto AddHeader(std::unique_ptr<block::Header>) noexcept -> bool = 0;
+    virtual auto AddHeaders(
+        std::vector<std::unique_ptr<block::Header>>&) noexcept -> bool = 0;
+    virtual auto DeleteCheckpoint() noexcept -> bool = 0;
 
-    OPENTXS_EXPORT virtual ~HeaderOracle() = default;
+    virtual ~HeaderOracle() = default;
 
 protected:
     HeaderOracle() noexcept = default;
@@ -145,8 +144,8 @@ protected:
 private:
     HeaderOracle(const HeaderOracle&) = delete;
     HeaderOracle(HeaderOracle&&) = delete;
-    HeaderOracle& operator=(const HeaderOracle&) = delete;
-    HeaderOracle& operator=(HeaderOracle&&) = delete;
+    auto operator=(const HeaderOracle&) -> HeaderOracle& = delete;
+    auto operator=(HeaderOracle&&) -> HeaderOracle& = delete;
 };
 }  // namespace node
 }  // namespace blockchain

@@ -20,66 +20,47 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT bool CheckProto_1(
+auto CheckProto_1(
     const BlockchainDeterministicAccountData& account,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_2(
-    const BlockchainDeterministicAccountData&,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_3(
-    const BlockchainDeterministicAccountData&,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_4(
-    const BlockchainDeterministicAccountData&,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_5(
-    const BlockchainDeterministicAccountData&,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_6(
-    const BlockchainDeterministicAccountData&,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_7(
-    const BlockchainDeterministicAccountData&,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_8(
-    const BlockchainDeterministicAccountData&,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_9(
-    const BlockchainDeterministicAccountData&,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_10(
-    const BlockchainDeterministicAccountData&,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_11(
-    const BlockchainDeterministicAccountData&,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_12(
-    const BlockchainDeterministicAccountData&,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_13(
-    const BlockchainDeterministicAccountData&,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_14(
-    const BlockchainDeterministicAccountData&,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_15(
-    const BlockchainDeterministicAccountData&,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_16(
-    const BlockchainDeterministicAccountData&,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_17(
-    const BlockchainDeterministicAccountData&,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_18(
-    const BlockchainDeterministicAccountData&,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_19(
-    const BlockchainDeterministicAccountData&,
-    const bool);
-OPENTXS_EXPORT bool CheckProto_20(
-    const BlockchainDeterministicAccountData&,
-    const bool);
+    const bool silent) -> bool;
+auto CheckProto_2(const BlockchainDeterministicAccountData&, const bool)
+    -> bool;
+auto CheckProto_3(const BlockchainDeterministicAccountData&, const bool)
+    -> bool;
+auto CheckProto_4(const BlockchainDeterministicAccountData&, const bool)
+    -> bool;
+auto CheckProto_5(const BlockchainDeterministicAccountData&, const bool)
+    -> bool;
+auto CheckProto_6(const BlockchainDeterministicAccountData&, const bool)
+    -> bool;
+auto CheckProto_7(const BlockchainDeterministicAccountData&, const bool)
+    -> bool;
+auto CheckProto_8(const BlockchainDeterministicAccountData&, const bool)
+    -> bool;
+auto CheckProto_9(const BlockchainDeterministicAccountData&, const bool)
+    -> bool;
+auto CheckProto_10(const BlockchainDeterministicAccountData&, const bool)
+    -> bool;
+auto CheckProto_11(const BlockchainDeterministicAccountData&, const bool)
+    -> bool;
+auto CheckProto_12(const BlockchainDeterministicAccountData&, const bool)
+    -> bool;
+auto CheckProto_13(const BlockchainDeterministicAccountData&, const bool)
+    -> bool;
+auto CheckProto_14(const BlockchainDeterministicAccountData&, const bool)
+    -> bool;
+auto CheckProto_15(const BlockchainDeterministicAccountData&, const bool)
+    -> bool;
+auto CheckProto_16(const BlockchainDeterministicAccountData&, const bool)
+    -> bool;
+auto CheckProto_17(const BlockchainDeterministicAccountData&, const bool)
+    -> bool;
+auto CheckProto_18(const BlockchainDeterministicAccountData&, const bool)
+    -> bool;
+auto CheckProto_19(const BlockchainDeterministicAccountData&, const bool)
+    -> bool;
+auto CheckProto_20(const BlockchainDeterministicAccountData&, const bool)
+    -> bool;
 }  // namespace proto
 }  // namespace opentxs
 

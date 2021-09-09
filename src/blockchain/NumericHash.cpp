@@ -54,7 +54,7 @@ auto NumericHashNBits(const std::uint32_t input) noexcept
             target = MantissaType{mantissa} << (8 * (3 - exponent));
         }
     } catch (...) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Failed to calculate target")
             .Flush();
 
@@ -75,7 +75,7 @@ auto NumericHash(const blockchain::block::Hash& hash) noexcept
         // Interpret hash as little endian
         bmp::import_bits(value, hash.begin(), hash.end(), 8, false);
     } catch (...) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Failed to decode hash")
+        LogOutput("opentxs::factory::")(__func__)(": Failed to decode hash")
             .Flush();
 
         return std::make_unique<ReturnType>();
@@ -214,7 +214,7 @@ auto NumericHash::asHex(const std::size_t minimumBytes) const noexcept
         // Export as big endian
         bmp::export_bits(data_, std::back_inserter(bytes), 8, true);
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to encode number").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to encode number").Flush();
 
         return {};
     }

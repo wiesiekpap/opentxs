@@ -41,7 +41,7 @@ namespace block
 {
 namespace bitcoin
 {
-class Script
+class OPENTXS_EXPORT Script
 {
 public:
     using value_type = ScriptElement;
@@ -72,57 +72,50 @@ public:
         Redeem = 3,
     };
 
-    OPENTXS_EXPORT virtual auto at(const std::size_t position) const
-        noexcept(false) -> const value_type& = 0;
-    OPENTXS_EXPORT virtual auto begin() const noexcept -> const_iterator = 0;
-    OPENTXS_EXPORT virtual auto CalculateHash160(
+    virtual auto at(const std::size_t position) const noexcept(false)
+        -> const value_type& = 0;
+    virtual auto begin() const noexcept -> const_iterator = 0;
+    virtual auto CalculateHash160(
         const api::Core& api,
         const AllocateOutput output) const noexcept -> bool = 0;
-    OPENTXS_EXPORT virtual auto CalculateSize() const noexcept
-        -> std::size_t = 0;
-    OPENTXS_EXPORT virtual auto cbegin() const noexcept -> const_iterator = 0;
-    OPENTXS_EXPORT virtual auto cend() const noexcept -> const_iterator = 0;
-    OPENTXS_EXPORT virtual auto end() const noexcept -> const_iterator = 0;
-    OPENTXS_EXPORT virtual auto ExtractElements(
-        const filter::Type style) const noexcept -> std::vector<Space> = 0;
-    OPENTXS_EXPORT virtual auto ExtractPatterns(
+    virtual auto CalculateSize() const noexcept -> std::size_t = 0;
+    virtual auto cbegin() const noexcept -> const_iterator = 0;
+    virtual auto cend() const noexcept -> const_iterator = 0;
+    virtual auto end() const noexcept -> const_iterator = 0;
+    virtual auto ExtractElements(const filter::Type style) const noexcept
+        -> std::vector<Space> = 0;
+    virtual auto ExtractPatterns(
         const api::Core& api,
         const api::client::Blockchain& blockchain) const noexcept
         -> std::vector<PatternID> = 0;
-    OPENTXS_EXPORT virtual auto IsNotification(
+    virtual auto IsNotification(
         const std::uint8_t version,
         const PaymentCode& recipient) const noexcept -> bool = 0;
     /// Value only present for Multisig patterns
-    OPENTXS_EXPORT virtual auto M() const noexcept
-        -> std::optional<std::uint8_t> = 0;
+    virtual auto M() const noexcept -> std::optional<std::uint8_t> = 0;
     /// Value only present for Multisig patterns, 0 indexed
-    OPENTXS_EXPORT virtual auto MultisigPubkey(const std::size_t position)
-        const noexcept -> std::optional<ReadView> = 0;
-    /// Value only present for Multisig patterns
-    OPENTXS_EXPORT virtual auto N() const noexcept
-        -> std::optional<std::uint8_t> = 0;
-    OPENTXS_EXPORT virtual auto Print() const noexcept -> std::string = 0;
-    /// Value only present for PayToPubkey and PayToTaproot patterns
-    OPENTXS_EXPORT virtual auto Pubkey() const noexcept
+    virtual auto MultisigPubkey(const std::size_t position) const noexcept
         -> std::optional<ReadView> = 0;
+    /// Value only present for Multisig patterns
+    virtual auto N() const noexcept -> std::optional<std::uint8_t> = 0;
+    virtual auto Print() const noexcept -> std::string = 0;
+    /// Value only present for PayToPubkey and PayToTaproot patterns
+    virtual auto Pubkey() const noexcept -> std::optional<ReadView> = 0;
     /// Value only present for PayToPubkeyHash and PayToWitnessPubkeyHash
     /// patterns
-    OPENTXS_EXPORT virtual auto PubkeyHash() const noexcept
-        -> std::optional<ReadView> = 0;
+    virtual auto PubkeyHash() const noexcept -> std::optional<ReadView> = 0;
     /// Value only present for input scripts which spend PayToScriptHash outputs
-    OPENTXS_EXPORT virtual auto RedeemScript() const noexcept
-        -> std::unique_ptr<Script> = 0;
-    OPENTXS_EXPORT virtual auto Role() const noexcept -> Position = 0;
+    virtual auto RedeemScript() const noexcept -> std::unique_ptr<Script> = 0;
+    virtual auto Role() const noexcept -> Position = 0;
     /// Value only present for PayToScriptHash and PayToWitnessScriptHash
     /// patterns
-    OPENTXS_EXPORT virtual auto ScriptHash() const noexcept
-        -> std::optional<ReadView> = 0;
-    OPENTXS_EXPORT virtual auto Serialize(
-        const AllocateOutput destination) const noexcept -> bool = 0;
-    OPENTXS_EXPORT virtual auto size() const noexcept -> std::size_t = 0;
-    OPENTXS_EXPORT virtual auto Type() const noexcept -> Pattern = 0;
+    virtual auto ScriptHash() const noexcept -> std::optional<ReadView> = 0;
+    virtual auto Serialize(const AllocateOutput destination) const noexcept
+        -> bool = 0;
+    virtual auto size() const noexcept -> std::size_t = 0;
+    virtual auto Type() const noexcept -> Pattern = 0;
     /// Value only present for NullData patterns, 0 indexed
-    OPENTXS_EXPORT virtual auto Value(const std::size_t position) const noexcept
+    virtual auto Value(const std::size_t position) const noexcept
         -> std::optional<ReadView> = 0;
 
     virtual ~Script() = default;
@@ -133,8 +126,8 @@ protected:
 private:
     Script(const Script&) = delete;
     Script(Script&&) = delete;
-    Script& operator=(const Script&) = delete;
-    Script& operator=(Script&&) = delete;
+    auto operator=(const Script&) -> Script& = delete;
+    auto operator=(Script&&) -> Script& = delete;
 };
 }  // namespace bitcoin
 }  // namespace block

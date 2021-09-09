@@ -29,10 +29,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 class Identifier;
@@ -49,7 +46,7 @@ class OPENTXS_EXPORT ContactItem
 {
 public:
     ContactItem(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
@@ -61,19 +58,19 @@ public:
         const std::time_t end,
         const std::string subtype);
     ContactItem(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
         const Claim& claim);
     OPENTXS_NO_EXPORT ContactItem(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& nym,
         const VersionNumber parentVersion,
         const contact::ContactSectionName section,
         const proto::ContactItem& serialized);
     ContactItem(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& nym,
         const VersionNumber parentVersion,
         const contact::ContactSectionName section,
@@ -81,29 +78,30 @@ public:
     ContactItem(const ContactItem&) noexcept;
     ContactItem(ContactItem&&) noexcept;
 
-    bool operator==(const ContactItem& rhs) const;
+    auto operator==(const ContactItem& rhs) const -> bool;
 
-    const std::time_t& End() const;
-    const Identifier& ID() const;
-    bool isActive() const;
-    bool isLocal() const;
-    bool isPrimary() const;
-    const contact::ContactSectionName& Section() const;
-    bool Serialize(AllocateOutput destination, const bool withID = false) const;
-    OPENTXS_NO_EXPORT bool Serialize(
+    auto End() const -> const std::time_t&;
+    auto ID() const -> const Identifier&;
+    auto isActive() const -> bool;
+    auto isLocal() const -> bool;
+    auto isPrimary() const -> bool;
+    auto Section() const -> const contact::ContactSectionName&;
+    auto Serialize(AllocateOutput destination, const bool withID = false) const
+        -> bool;
+    OPENTXS_NO_EXPORT auto Serialize(
         proto::ContactItem& out,
-        const bool withID = false) const;
-    ContactItem SetActive(const bool active) const;
-    ContactItem SetEnd(const std::time_t end) const;
-    ContactItem SetLocal(const bool local) const;
-    ContactItem SetPrimary(const bool primary) const;
-    ContactItem SetStart(const std::time_t start) const;
-    ContactItem SetValue(const std::string& value) const;
-    const std::time_t& Start() const;
-    const std::string& Subtype() const;
-    const contact::ContactItemType& Type() const;
-    const std::string& Value() const;
-    VersionNumber Version() const;
+        const bool withID = false) const -> bool;
+    auto SetActive(const bool active) const -> ContactItem;
+    auto SetEnd(const std::time_t end) const -> ContactItem;
+    auto SetLocal(const bool local) const -> ContactItem;
+    auto SetPrimary(const bool primary) const -> ContactItem;
+    auto SetStart(const std::time_t start) const -> ContactItem;
+    auto SetValue(const std::string& value) const -> ContactItem;
+    auto Start() const -> const std::time_t&;
+    auto Subtype() const -> const std::string&;
+    auto Type() const -> const contact::ContactItemType&;
+    auto Value() const -> const std::string&;
+    auto Version() const -> VersionNumber;
 
     ~ContactItem();
 
@@ -113,8 +111,8 @@ private:
     std::unique_ptr<Imp> imp_;
 
     ContactItem() = delete;
-    ContactItem& operator=(const ContactItem&) = delete;
-    ContactItem& operator=(ContactItem&&) = delete;
+    auto operator=(const ContactItem&) -> ContactItem& = delete;
+    auto operator=(ContactItem&&) -> ContactItem& = delete;
 };
 }  // namespace opentxs
 

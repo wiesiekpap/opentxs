@@ -70,7 +70,7 @@ void Handler::init() noexcept
 
     OT_ASSERT(running);
 
-    LogDetail(OT_METHOD)(__FUNCTION__)(": Listening on ")(ZAP_ENDPOINT).Flush();
+    LogDetail(OT_METHOD)(__func__)(": Listening on ")(ZAP_ENDPOINT).Flush();
 }
 
 void Handler::process_incoming(const Lock& lock, zap::Request& message) noexcept

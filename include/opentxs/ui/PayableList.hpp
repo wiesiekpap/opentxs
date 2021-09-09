@@ -11,12 +11,6 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/ui/List.hpp"
 
-#ifdef SWIG
-// clang-format off
-%rename(UIPayableList) opentxs::ui::PayableList;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -30,15 +24,15 @@ namespace opentxs
 {
 namespace ui
 {
-class PayableList : virtual public List
+class OPENTXS_EXPORT PayableList : virtual public List
 {
 public:
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::PayableListItem>
-    First() const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::PayableListItem>
-    Next() const noexcept = 0;
+    virtual auto First() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::PayableListItem> = 0;
+    virtual auto Next() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::PayableListItem> = 0;
 
-    OPENTXS_EXPORT ~PayableList() override = default;
+    ~PayableList() override = default;
 
 protected:
     PayableList() noexcept = default;
@@ -46,8 +40,8 @@ protected:
 private:
     PayableList(const PayableList&) = delete;
     PayableList(PayableList&&) = delete;
-    PayableList& operator=(const PayableList&) = delete;
-    PayableList& operator=(PayableList&&) = delete;
+    auto operator=(const PayableList&) -> PayableList& = delete;
+    auto operator=(PayableList&&) -> PayableList& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

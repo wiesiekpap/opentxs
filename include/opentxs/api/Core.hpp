@@ -23,6 +23,11 @@ class Asymmetric;
 class Symmetric;
 }  // namespace crypto
 
+namespace internal
+{
+struct Core;
+}  // namespace internal
+
 namespace network
 {
 class Network;
@@ -61,6 +66,8 @@ public:
     virtual auto Factory() const noexcept -> const api::Factory& = 0;
     virtual auto GetOptions() const noexcept -> const Options& = 0;
     virtual auto Instance() const noexcept -> int = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
+        -> internal::Core& = 0;
     virtual auto Network() const noexcept -> const network::Network& = 0;
     virtual auto QtRootObject() const noexcept -> QObject* = 0;
     virtual auto Seeds() const noexcept -> const api::HDSeed& = 0;
@@ -80,8 +87,8 @@ protected:
 private:
     Core(const Core&) = delete;
     Core(Core&&) = delete;
-    Core& operator=(const Core&) = delete;
-    Core& operator=(Core&&) = delete;
+    auto operator=(const Core&) -> Core& = delete;
+    auto operator=(Core&&) -> Core& = delete;
 };
 }  // namespace api
 }  // namespace opentxs

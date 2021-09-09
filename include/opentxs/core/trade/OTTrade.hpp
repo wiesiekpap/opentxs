@@ -31,10 +31,7 @@ namespace implementation
 class Factory;
 }  // namespace implementation
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -96,57 +93,59 @@ namespace opentxs
 class OPENTXS_EXPORT OTTrade : public OTCronItem
 {
 public:
-    originType GetOriginType() const override
+    auto GetOriginType() const -> originType override
     {
         return originType::origin_market_offer;
     }
 
-    bool VerifyOffer(OTOffer& offer) const;
-    bool IssueTrade(
+    auto VerifyOffer(OTOffer& offer) const -> bool;
+    auto IssueTrade(
         OTOffer& offer,
         char stopSign = 0,
-        std::int64_t stopPrice = 0);
+        std::int64_t stopPrice = 0) -> bool;
 
     // The Trade always stores the original, signed version of its Offer.
     // This method allows you to grab a copy of it.
-    inline bool GetOfferString(String& offer)
+    inline auto GetOfferString(String& offer) -> bool
     {
         offer.Set(marketOffer_);
         if (marketOffer_->Exists()) { return true; }
         return false;
     }
 
-    inline bool IsStopOrder() const
+    inline auto IsStopOrder() const -> bool
     {
         if ((stopSign_ == '<') || (stopSign_ == '>')) { return true; }
         return false;
     }
 
-    inline const std::int64_t& GetStopPrice() const { return stopPrice_; }
+    inline auto GetStopPrice() const -> const std::int64_t&
+    {
+        return stopPrice_;
+    }
 
-    inline bool IsGreaterThan() const
+    inline auto IsGreaterThan() const -> bool
     {
         if (stopSign_ == '>') { return true; }
         return false;
     }
 
-    inline bool IsLessThan() const
+    inline auto IsLessThan() const -> bool
     {
         if (stopSign_ == '<') { return true; }
         return false;
     }
 
     // optionally returns the offer's market ID and a pointer to the market.
-    OTOffer* GetOffer(
-        const PasswordPrompt& reason,
-        OTMarket** market = nullptr);
+    auto GetOffer(const PasswordPrompt& reason, OTMarket** market = nullptr)
+        -> OTOffer*;
     // optionally returns the offer's market ID and a pointer to the market.
-    OTOffer* GetOffer(
+    auto GetOffer(
         Identifier& offerMarketId,
         const PasswordPrompt& reason,
-        OTMarket** market = nullptr);
+        OTMarket** market = nullptr) -> OTOffer*;
 
-    inline const identifier::UnitDefinition& GetCurrencyID() const
+    inline auto GetCurrencyID() const -> const identifier::UnitDefinition&
     {
         return currencyTypeID_;
     }
@@ -156,7 +155,7 @@ public:
         currencyTypeID_ = currencyId;
     }
 
-    inline const Identifier& GetCurrencyAcctID() const
+    inline auto GetCurrencyAcctID() const -> const Identifier&
     {
         return currencyAcctID_;
     }
@@ -168,19 +167,24 @@ public:
 
     inline void IncrementTradesAlreadyDone() { tradesAlreadyDone_++; }
 
-    inline std::int32_t GetCompletedCount() { return tradesAlreadyDone_; }
+    inline auto GetCompletedCount() -> std::int32_t
+    {
+        return tradesAlreadyDone_;
+    }
 
-    std::int64_t GetAssetAcctClosingNum() const;
-    std::int64_t GetCurrencyAcctClosingNum() const;
+    auto GetAssetAcctClosingNum() const -> std::int64_t;
+    auto GetCurrencyAcctClosingNum() const -> std::int64_t;
 
     // Return True if should stay on OTCron's list for more processing.
     // Return False if expired or otherwise should be removed.
-    bool ProcessCron(const PasswordPrompt& reason) override;  // OTCron calls
-                                                              // this regularly,
-                                                              // which is my
-                                                              // chance to
-                                                              // expire, etc.
-    bool CanRemoveItemFromCron(const otx::context::Client& context) override;
+    auto ProcessCron(const PasswordPrompt& reason)
+        -> bool override;  // OTCron calls
+                           // this regularly,
+                           // which is my
+                           // chance to
+                           // expire, etc.
+    auto CanRemoveItemFromCron(const otx::context::Client& context)
+        -> bool override;
 
     // From OTScriptable, we override this function. OTScriptable now does fancy
     // stuff like checking to see
@@ -190,20 +194,21 @@ public:
     // it the old way: they just check to
     // see if theNym has signed *this.
     //
-    bool VerifyNymAsAgent(
+    auto VerifyNymAsAgent(
         const identity::Nym& nym,
-        const identity::Nym& signerNym) const override;
+        const identity::Nym& signerNym) const -> bool override;
 
-    bool VerifyNymAsAgentForAccount(
+    auto VerifyNymAsAgentForAccount(
         const identity::Nym& nym,
-        const Account& account) const override;
+        const Account& account) const -> bool override;
     void InitTrade();
 
     void Release_Trade();
     void Release() override;
-    std::int64_t GetClosingNumber(const Identifier& acctId) const override;
+    auto GetClosingNumber(const Identifier& acctId) const
+        -> std::int64_t override;
     // return -1 if error, 0 if nothing, and 1 if the node was processed.
-    std::int32_t ProcessXMLNode(irr::io::IrrXMLReader*& xml) override;
+    auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
 
     void UpdateContents(const PasswordPrompt& reason)
         override;  // Before transmission or
@@ -251,9 +256,9 @@ private:
 
     OTString marketOffer_;  // The market offer associated with this trade.
 
-    OTTrade(const api::internal::Core& api);
+    OTTrade(const api::Core& api);
     OTTrade(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identifier::Server& notaryID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const Identifier& assetAcctId,
@@ -262,8 +267,8 @@ private:
         const Identifier& currencyAcctId);
     OTTrade(const OTTrade&) = delete;
     OTTrade(OTTrade&&) = delete;
-    OTTrade& operator=(const OTTrade&) = delete;
-    OTTrade& operator=(OTTrade&&) = delete;
+    auto operator=(const OTTrade&) -> OTTrade& = delete;
+    auto operator=(OTTrade&&) -> OTTrade& = delete;
 
     OTTrade() = delete;
 };

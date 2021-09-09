@@ -20,10 +20,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace crypto
@@ -80,12 +77,12 @@ public:
         const opentxs::crypto::key::symmetric::Source type) const
         -> OTSymmetricKey final;
 
-    Symmetric(const api::internal::Core& api) noexcept;
+    Symmetric(const api::Core& api) noexcept;
 
     ~Symmetric() final = default;
 
 private:
-    const api::internal::Core& api_;
+    const api::Core& api_;
 
     auto GetEngine(const opentxs::crypto::key::symmetric::Algorithm mode) const
         -> const opentxs::crypto::SymmetricProvider*;

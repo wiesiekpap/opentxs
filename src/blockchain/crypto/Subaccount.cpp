@@ -15,16 +15,17 @@
 #include <type_traits>
 #include <utility>
 
-#include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/contact/Contact.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/key/HD.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/BlockchainAccountData.pb.h"
 #include "opentxs/protobuf/BlockchainActivity.pb.h"
 
 // #define OT_METHOD
-// "opentxs::blockchain::crypto::implementation::BalanceNode::"
+// "opentxs::blockchain::crypto::implementation::Subaccount::"
 
 namespace opentxs::blockchain::crypto::implementation
 {
@@ -40,8 +41,8 @@ Subaccount::AddressData::AddressData(
 }
 
 Subaccount::Subaccount(
-    const api::internal::Core& api,
-    const internal::Account& parent,
+    const api::Core& api,
+    const Account& parent,
     const SubaccountType type,
     OTIdentifier&& id,
     const Revision revision,
@@ -62,8 +63,8 @@ Subaccount::Subaccount(
 }
 
 Subaccount::Subaccount(
-    const api::internal::Core& api,
-    const internal::Account& parent,
+    const api::Core& api,
+    const Account& parent,
     const SubaccountType type,
     OTIdentifier&& id,
     Identifier& out) noexcept
@@ -72,8 +73,8 @@ Subaccount::Subaccount(
 }
 
 Subaccount::Subaccount(
-    const api::internal::Core& api,
-    const internal::Account& parent,
+    const api::Core& api,
+    const Account& parent,
     const SubaccountType type,
     const SerializedType& serialized,
     Identifier& out) noexcept(false)
@@ -126,7 +127,7 @@ auto Subaccount::Confirm(
     try {
         auto& element = mutable_element(lock, type, index);
 
-        if (element.Confirm(tx)) {
+        if (element.Internal().Confirm(tx)) {
             confirm(lock, type, index);
 
             return save(lock);
@@ -219,7 +220,10 @@ auto Subaccount::IncomingTransactions(const Key& element) const noexcept
     return output;
 }
 
-void Subaccount::init() noexcept { parent_.ClaimAccountID(id_->str(), this); }
+void Subaccount::init() noexcept
+{
+    parent_.Internal().ClaimAccountID(id_->str(), this);
+}
 
 // Due to asynchronous blockchain scanning, spends may be discovered out of
 // order compared to receipts.
@@ -299,7 +303,7 @@ auto Subaccount::SetContact(
 
     try {
         auto& element = mutable_element(lock, type, index);
-        element.SetContact(id);
+        element.Internal().SetContact(id);
 
         return save(lock);
     } catch (...) {
@@ -316,7 +320,7 @@ auto Subaccount::SetLabel(
 
     try {
         auto& element = mutable_element(lock, type, index);
-        element.SetLabel(label);
+        element.Internal().SetLabel(label);
 
         return save(lock);
     } catch (...) {
@@ -335,7 +339,7 @@ auto Subaccount::Unconfirm(
     try {
         auto& element = mutable_element(lock, type, index);
 
-        if (element.Unconfirm(tx, time)) {
+        if (element.Internal().Unconfirm(tx, time)) {
             unconfirm(lock, type, index);
 
             return save(lock);
@@ -356,7 +360,7 @@ auto Subaccount::Unreserve(const Subchain type, const Bip32Index index) noexcept
     try {
         auto& element = mutable_element(lock, type, index);
 
-        if (element.Unreserve()) {
+        if (element.Internal().Unreserve()) {
 
             return save(lock);
         } else {
@@ -371,6 +375,6 @@ auto Subaccount::Unreserve(const Subchain type, const Bip32Index index) noexcept
 auto Subaccount::UpdateElement(
     std::vector<ReadView>& pubkeyHashes) const noexcept -> void
 {
-    parent_.ParentInternal().Parent().UpdateElement(pubkeyHashes);
+    parent_.Parent().Parent().Internal().UpdateElement(pubkeyHashes);
 }
 }  // namespace opentxs::blockchain::crypto::implementation

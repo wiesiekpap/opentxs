@@ -35,8 +35,7 @@ auto BitcoinP2PTx(
     -> std::unique_ptr<blockchain::p2p::bitcoin::message::internal::Tx>
 {
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Invalid header")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -47,8 +46,7 @@ auto BitcoinP2PTx(
             std::move(pHeader),
             ReadView{static_cast<const char*>(payload), size});
     } catch (...) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Checksum failure")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Checksum failure").Flush();
 
         return nullptr;
     }

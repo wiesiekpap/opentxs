@@ -25,10 +25,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace proto
@@ -74,7 +71,7 @@ private:
     const std::shared_ptr<const proto::OTXPush> payload_;
 
     static auto extract_nym(
-        const api::internal::Core& api,
+        const api::Core& api,
         const proto::ServerReply serialized) -> Nym_p;
 
     auto clone() const noexcept -> Reply* final { return new Reply(*this); }
@@ -92,7 +89,7 @@ private:
         const -> bool final;
 
     Reply(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p signer,
         const identifier::Nym& recipient,
         const identifier::Server& server,
@@ -100,7 +97,7 @@ private:
         const RequestNumber number,
         const bool success,
         std::shared_ptr<const proto::OTXPush>&& push);
-    Reply(const api::internal::Core& api, const proto::ServerReply serialized);
+    Reply(const api::Core& api, const proto::ServerReply serialized);
     Reply() = delete;
     Reply(const Reply& rhs);
     Reply(Reply&& rhs) = delete;

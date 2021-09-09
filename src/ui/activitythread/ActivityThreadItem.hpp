@@ -25,10 +25,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -98,7 +95,7 @@ protected:
 
     ActivityThreadItem(
         const ActivityThreadInternalInterface& parent,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nymID,
         const ActivityThreadRowID& rowID,
         const ActivityThreadSortKey& sortKey,

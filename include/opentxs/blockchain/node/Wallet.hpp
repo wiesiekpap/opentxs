@@ -43,7 +43,7 @@ namespace blockchain
 {
 namespace node
 {
-class Wallet
+class OPENTXS_EXPORT Wallet
 {
 public:
     enum class TxoState : std::uint8_t {
@@ -59,18 +59,18 @@ public:
     using UTXO =
         std::pair<block::Outpoint, std::unique_ptr<block::bitcoin::Output>>;
 
-    OPENTXS_EXPORT virtual auto GetBalance() const noexcept -> Balance = 0;
-    OPENTXS_EXPORT virtual auto GetBalance(
-        const identifier::Nym& owner) const noexcept -> Balance = 0;
-    OPENTXS_EXPORT virtual auto GetBalance(
+    virtual auto GetBalance() const noexcept -> Balance = 0;
+    virtual auto GetBalance(const identifier::Nym& owner) const noexcept
+        -> Balance = 0;
+    virtual auto GetBalance(
         const identifier::Nym& owner,
         const Identifier& node) const noexcept -> Balance = 0;
-    OPENTXS_EXPORT virtual auto GetOutputs(
-        TxoState type = TxoState::All) const noexcept -> std::vector<UTXO> = 0;
-    OPENTXS_EXPORT virtual auto GetOutputs(
+    virtual auto GetOutputs(TxoState type = TxoState::All) const noexcept
+        -> std::vector<UTXO> = 0;
+    virtual auto GetOutputs(
         const identifier::Nym& owner,
         TxoState type = TxoState::All) const noexcept -> std::vector<UTXO> = 0;
-    OPENTXS_EXPORT virtual auto GetOutputs(
+    virtual auto GetOutputs(
         const identifier::Nym& owner,
         const Identifier& node,
         TxoState type = TxoState::All) const noexcept -> std::vector<UTXO> = 0;
@@ -83,8 +83,8 @@ protected:
 private:
     Wallet(const Wallet&) = delete;
     Wallet(Wallet&&) = delete;
-    Wallet& operator=(const Wallet&) = delete;
-    Wallet& operator=(Wallet&&) = delete;
+    auto operator=(const Wallet&) -> Wallet& = delete;
+    auto operator=(Wallet&&) -> Wallet& = delete;
 };
 }  // namespace node
 }  // namespace blockchain

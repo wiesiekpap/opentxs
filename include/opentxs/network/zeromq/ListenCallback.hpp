@@ -12,17 +12,6 @@
 
 #include "opentxs/Pimpl.hpp"
 
-#ifdef SWIG
-// clang-format off
-%ignore opentxs::Pimpl<opentxs::network::zeromq::ListenCallback>::Pimpl(opentxs::network::zeromq::ListenCallback const &);
-%ignore opentxs::Pimpl<opentxs::network::zeromq::ListenCallback>::operator opentxs::network::zeromq::ListenCallback&;
-%ignore opentxs::Pimpl<opentxs::network::zeromq::ListenCallback>::operator const opentxs::network::zeromq::ListenCallback &;
-%rename(assign) operator=(const opentxs::network::zeromq::ListenCallback&);
-%rename(ZMQListenCallback) opentxs::network::zeromq::ListenCallback;
-%template(OTZMQListenCallback) opentxs::Pimpl<opentxs::network::zeromq::ListenCallback>;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace network
@@ -45,22 +34,19 @@ namespace network
 {
 namespace zeromq
 {
-class ListenCallback
+class OPENTXS_EXPORT ListenCallback
 {
 public:
     using ReceiveCallback = std::function<void(Message&)>;
 
-#ifndef SWIG
-    OPENTXS_EXPORT static OTZMQListenCallback Factory(ReceiveCallback callback);
-    OPENTXS_EXPORT static OTZMQListenCallback Factory();
-#endif
-    OPENTXS_EXPORT static opentxs::Pimpl<
-        opentxs::network::zeromq::ListenCallback>
-    Factory(ListenCallbackSwig* callback);
+    static auto Factory(ReceiveCallback callback) -> OTZMQListenCallback;
+    static auto Factory() -> OTZMQListenCallback;
+    static auto Factory(ListenCallbackSwig* callback)
+        -> opentxs::Pimpl<opentxs::network::zeromq::ListenCallback>;
 
-    OPENTXS_EXPORT virtual void Process(Message& message) const = 0;
+    virtual void Process(Message& message) const = 0;
 
-    OPENTXS_EXPORT virtual ~ListenCallback() = default;
+    virtual ~ListenCallback() = default;
 
 protected:
     ListenCallback() = default;
@@ -71,15 +57,15 @@ private:
 #ifdef _WIN32
 public:
 #endif
-    OPENTXS_EXPORT virtual ListenCallback* clone() const = 0;
+    virtual auto clone() const -> ListenCallback* = 0;
 #ifdef _WIN32
 private:
 #endif
 
     ListenCallback(const ListenCallback&) = delete;
     ListenCallback(ListenCallback&&) = default;
-    ListenCallback& operator=(const ListenCallback&) = delete;
-    ListenCallback& operator=(ListenCallback&&) = default;
+    auto operator=(const ListenCallback&) -> ListenCallback& = delete;
+    auto operator=(ListenCallback&&) -> ListenCallback& = default;
 };
 }  // namespace zeromq
 }  // namespace network

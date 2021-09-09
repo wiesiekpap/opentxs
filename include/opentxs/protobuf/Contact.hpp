@@ -40,14 +40,14 @@ using EnumTranslation = std::map<EnumLang, std::string>;
 // A map for storing relationship reciprocities
 using RelationshipReciprocity = std::map<ContactItemType, ContactItemType>;
 
-OPENTXS_EXPORT const ContactSectionMap& AllowedSectionNames() noexcept;
-OPENTXS_EXPORT const ContactItemMap& AllowedItemTypes() noexcept;
-OPENTXS_EXPORT const ItemAttributeMap& AllowedItemAttributes() noexcept;
-OPENTXS_EXPORT const std::set<ContactSectionName>& AllowedSubtypes() noexcept;
-OPENTXS_EXPORT const EnumTranslation& ContactSectionNames() noexcept;
-OPENTXS_EXPORT const EnumTranslation& ContactItemTypes() noexcept;
-OPENTXS_EXPORT const EnumTranslation& ContactItemAttributes() noexcept;
-OPENTXS_EXPORT const RelationshipReciprocity& RelationshipMap() noexcept;
+auto AllowedSectionNames() noexcept -> const ContactSectionMap&;
+auto AllowedItemTypes() noexcept -> const ContactItemMap&;
+auto AllowedItemAttributes() noexcept -> const ItemAttributeMap&;
+auto AllowedSubtypes() noexcept -> const std::set<ContactSectionName>&;
+auto ContactSectionNames() noexcept -> const EnumTranslation&;
+auto ContactItemTypes() noexcept -> const EnumTranslation&;
+auto ContactItemAttributes() noexcept -> const EnumTranslation&;
+auto RelationshipMap() noexcept -> const RelationshipReciprocity&;
 }  // namespace proto
 }  // namespace opentxs
 #endif  // OPENTXS_PROTOBUF_CONTACT

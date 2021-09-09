@@ -71,8 +71,7 @@ auto HeaderOracle::GenesisBlockHash(const blockchain::Type type)
 
         return it->second;
     } catch (...) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
-            ": Genesis hash not found")
+        LogOutput("opentxs::factory::")(__func__)(": Genesis hash not found")
             .Flush();
 
         throw;
@@ -180,14 +179,13 @@ auto HeaderOracle::AddCheckpoint(
     auto update = UpdateTransaction{api_, database_};
 
     if (update.EffectiveCheckpoint()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Checkpoint already exists")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Checkpoint already exists").Flush();
 
         return false;
     }
 
     if (2 > position) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid position").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid position").Flush();
 
         return false;
     }
@@ -222,7 +220,7 @@ auto HeaderOracle::AddHeaders(
 
     for (auto& header : headers) {
         if (false == bool(header)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid header").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Invalid header").Flush();
 
             return false;
         }
@@ -242,8 +240,7 @@ auto HeaderOracle::add_header(
     std::unique_ptr<block::Header> pHeader) noexcept -> bool
 {
     if (update.EffectiveHeaderExists(pHeader->Hash())) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Header already processed")
-            .Flush();
+        LogVerbose(OT_METHOD)(__func__)(": Header already processed").Flush();
 
         return true;
     }
@@ -254,8 +251,7 @@ auto HeaderOracle::add_header(
     const auto* pParent = is_disconnected(header.ParentHash(), update);
 
     if (nullptr == pParent) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Adding disconnected header")
-            .Flush();
+        LogVerbose(OT_METHOD)(__func__)(": Adding disconnected header").Flush();
         header.SetDisconnectedState();
         update.DisconnectBlock(header);
 
@@ -277,8 +273,7 @@ auto HeaderOracle::add_header(
             lock, current, parent, update, candidates, header);
         connect_children(lock, header, candidates, candidate, update);
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to connect children")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to connect children").Flush();
 
         return false;
     }
@@ -336,7 +331,7 @@ auto HeaderOracle::apply_checkpoint(
 
         return true;
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to process sibling chains")
+        LogOutput(OT_METHOD)(__func__)(": Failed to process sibling chains")
             .Flush();
 
         return false;
@@ -559,14 +554,14 @@ auto HeaderOracle::choose_candidate(
                             update.SetReorgParent(parent);
                             update.AddToBestChain(segment);
                             update.AddSibling(current.Position());
-                            LogVerbose(OT_METHOD)(__FUNCTION__)(": Block ")(
-                                hash->asHex())(" at position ")(height)(
-                                " causes a chain reorg.")
+                            LogVerbose(OT_METHOD)(__func__)(": Block ")(
+                                hash->asHex())(" at position ")(
+                                height)(" causes a chain reorg.")
                                 .Flush();
                         }
                     } else {
                         update.AddToBestChain(segment);
-                        LogVerbose(OT_METHOD)(__FUNCTION__)(": Adding block ")(
+                        LogVerbose(OT_METHOD)(__func__)(": Adding block ")(
                             hash->asHex())(" to best chain at position ")(
                             height)
                             .Flush();
@@ -576,14 +571,13 @@ auto HeaderOracle::choose_candidate(
                 const auto orphan = tip.Position();
                 update.AddSibling(orphan);
                 const auto& [height, hash] = orphan;
-                LogVerbose(OT_METHOD)(__FUNCTION__)(": Adding block ")(
+                LogVerbose(OT_METHOD)(__func__)(": Adding block ")(
                     hash->asHex())(" as an orphan at position ")(height)
                     .Flush();
             }
         }
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error evaluating candidates")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Error evaluating candidates").Flush();
 
         return output;
     }
@@ -691,7 +685,7 @@ auto HeaderOracle::DeleteCheckpoint() noexcept -> bool
     auto update = UpdateTransaction{api_, database_};
 
     if (false == update.EffectiveCheckpoint()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": No checkpoint").Flush();
+        LogOutput(OT_METHOD)(__func__)(": No checkpoint").Flush();
 
         return false;
     }
@@ -921,7 +915,7 @@ auto HeaderOracle::ProcessSyncData(
             factory::BitcoinBlockHeader(api_, block.Chain(), block.Header());
 
         if (false == bool(pHeader)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid header").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Invalid header").Flush();
 
             return false;
         }
@@ -930,7 +924,7 @@ auto HeaderOracle::ProcessSyncData(
             const auto& header = *pHeader;
 
             if (header.ParentHash() != previous) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Non-contiguous headers")
+                LogOutput(OT_METHOD)(__func__)(": Non-contiguous headers")
                     .Flush();
 
                 return false;
@@ -943,7 +937,7 @@ auto HeaderOracle::ProcessSyncData(
         }
 
         if (false == add_header(lock, update, std::move(pHeader))) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to process header")
+            LogOutput(OT_METHOD)(__func__)(": Failed to process header")
                 .Flush();
 
             return 0;

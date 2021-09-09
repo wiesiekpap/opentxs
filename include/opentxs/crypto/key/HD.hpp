@@ -41,27 +41,26 @@ namespace crypto
 {
 namespace key
 {
-class HD : virtual public EllipticCurve
+class OPENTXS_EXPORT HD : virtual public EllipticCurve
 {
 public:
-    OPENTXS_EXPORT static Bip32Fingerprint CalculateFingerprint(
+    static auto CalculateFingerprint(
         const api::crypto::Hash& hash,
-        const ReadView pubkey) noexcept;
+        const ReadView pubkey) noexcept -> Bip32Fingerprint;
 
-    OPENTXS_EXPORT virtual ReadView Chaincode(
-        const PasswordPrompt& reason) const noexcept = 0;
-    OPENTXS_EXPORT virtual std::unique_ptr<HD> ChildKey(
-        const Bip32Index index,
-        const PasswordPrompt& reason) const noexcept = 0;
-    OPENTXS_EXPORT virtual int Depth() const noexcept = 0;
-    OPENTXS_EXPORT virtual Bip32Fingerprint Fingerprint() const noexcept = 0;
-    OPENTXS_EXPORT virtual Bip32Fingerprint Parent() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string Xprv(
-        const PasswordPrompt& reason) const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string Xpub(
-        const PasswordPrompt& reason) const noexcept = 0;
+    virtual auto Chaincode(const PasswordPrompt& reason) const noexcept
+        -> ReadView = 0;
+    virtual auto ChildKey(const Bip32Index index, const PasswordPrompt& reason)
+        const noexcept -> std::unique_ptr<HD> = 0;
+    virtual auto Depth() const noexcept -> int = 0;
+    virtual auto Fingerprint() const noexcept -> Bip32Fingerprint = 0;
+    virtual auto Parent() const noexcept -> Bip32Fingerprint = 0;
+    virtual auto Xprv(const PasswordPrompt& reason) const noexcept
+        -> std::string = 0;
+    virtual auto Xpub(const PasswordPrompt& reason) const noexcept
+        -> std::string = 0;
 
-    OPENTXS_EXPORT ~HD() override = default;
+    ~HD() override = default;
 
 protected:
     HD() = default;
@@ -69,8 +68,8 @@ protected:
 private:
     HD(const HD&) = delete;
     HD(HD&&) = delete;
-    HD& operator=(const HD&) = delete;
-    HD& operator=(HD&&) = delete;
+    auto operator=(const HD&) -> HD& = delete;
+    auto operator=(HD&&) -> HD& = delete;
 };
 }  // namespace key
 }  // namespace crypto

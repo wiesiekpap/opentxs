@@ -21,10 +21,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace contract
@@ -51,7 +48,7 @@ namespace opentxs
 class OTClient
 {
 public:
-    std::int32_t ProcessUserCommand(
+    auto ProcessUserCommand(
         const MessageType requestedCommand,
         otx::context::Server& context,
         Message& theMessage,
@@ -60,12 +57,12 @@ public:
         const PasswordPrompt& reason,
         const Amount lTransactionAmount = 0,
         const Account* pAccount = nullptr,
-        const contract::Unit* pMyUnitDefinition = nullptr);
+        const contract::Unit* pMyUnitDefinition = nullptr) -> std::int32_t;
 
-    explicit OTClient(const api::internal::Core& api);
+    explicit OTClient(const api::Core& api);
 
 protected:
-    const api::internal::Core& api_;
+    const api::Core& api_;
 };
 }  // namespace opentxs
 #endif

@@ -17,7 +17,7 @@
 namespace opentxs
 {
 template <typename L, typename M>
-bool CheckLock(const L& lock, const M& mutex) noexcept
+auto CheckLock(const L& lock, const M& mutex) noexcept -> bool
 {
     if (lock.mutex() != &mutex) {
         LogOutput(": Lock is on incorrect mutex.").Flush();
@@ -49,17 +49,17 @@ protected:
     mutable std::mutex lock_;
     mutable std::shared_mutex shared_lock_;
 
-    bool verify_lock(const Lock& lock) const noexcept
+    auto verify_lock(const Lock& lock) const noexcept -> bool
     {
         return CheckLock(lock, lock_);
     }
 
-    bool verify_lock(const sLock& lock) const noexcept
+    auto verify_lock(const sLock& lock) const noexcept -> bool
     {
         return CheckLock(lock, shared_lock_);
     }
 
-    bool verify_lock(const eLock& lock) const noexcept
+    auto verify_lock(const eLock& lock) const noexcept -> bool
     {
         return CheckLock(lock, shared_lock_);
     }
@@ -67,8 +67,8 @@ protected:
 private:
     Lockable(const Lockable&) = delete;
     Lockable(Lockable&&) = delete;
-    Lockable& operator=(const Lockable&) = delete;
-    Lockable& operator=(Lockable&&) = delete;
+    auto operator=(const Lockable&) -> Lockable& = delete;
+    auto operator=(Lockable&&) -> Lockable& = delete;
 };
 }  // namespace opentxs
 

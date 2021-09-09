@@ -11,14 +11,6 @@
 #include <cassert>
 #include <memory>
 
-#ifdef SWIG
-%ignore opentxs::Pimpl::Pimpl(Pimpl&&);
-%ignore opentxs::Pimpl::operator->();
-%ignore opentxs::Pimpl::get() const;
-%rename(assign) opentxs::Pimpl::operator=(const Pimpl&);
-%rename(move) opentxs::Pimpl::operator=(Pimpl&&);
-#endif
-
 namespace opentxs
 {
 template <class C>
@@ -74,7 +66,7 @@ public:
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnull-dereference"
-    Pimpl& operator=(const Pimpl& rhs) noexcept
+    auto operator=(const Pimpl& rhs) noexcept -> Pimpl&
     {
         pimpl_.reset(
 #ifndef _WIN32
@@ -89,7 +81,7 @@ public:
     }
 #pragma GCC diagnostic pop
 
-    Pimpl& operator=(Pimpl&& rhs) noexcept
+    auto operator=(Pimpl&& rhs) noexcept -> Pimpl&
     {
         pimpl_ = std::move(rhs.pimpl_);
         assert(pimpl_);
@@ -97,7 +89,7 @@ public:
         return *this;
     }
 
-    Pimpl& operator=(const C& rhs) noexcept
+    auto operator=(const C& rhs) noexcept -> Pimpl&
     {
         pimpl_.reset(
 #ifndef _WIN32
@@ -114,22 +106,22 @@ public:
     operator C&() noexcept { return *pimpl_; }
     operator const C&() const noexcept { return *pimpl_; }
 
-    C* operator->() { return pimpl_.get(); }
-    const C* operator->() const { return pimpl_.get(); }
+    auto operator->() -> C* { return pimpl_.get(); }
+    auto operator->() const -> const C* { return pimpl_.get(); }
 
-    C& get() noexcept { return *pimpl_; }
-    const C& get() const noexcept { return *pimpl_; }
+    auto get() noexcept -> C& { return *pimpl_; }
+    auto get() const noexcept -> const C& { return *pimpl_; }
 
     ~Pimpl() = default;
 
-#if defined SWIG_VERSION || defined _WIN32
+#if defined _WIN32
     Pimpl() = default;
 #endif
 
 private:
     std::unique_ptr<C> pimpl_{nullptr};
 
-#if !defined SWIG_VERSION && !defined _WIN32
+#if !defined _WIN32
     Pimpl() = delete;
 #endif
 };  // class Pimpl

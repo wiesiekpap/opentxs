@@ -24,10 +24,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace blind
@@ -80,12 +77,9 @@ public:
         const Mint& mint,
         const PasswordPrompt& reason) -> bool final;
 
+    Lucre(const api::Core& api, Purse& purse, const proto::Token& serialized);
     Lucre(
-        const api::internal::Core& api,
-        Purse& purse,
-        const proto::Token& serialized);
-    Lucre(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identity::Nym& owner,
         const Mint& mint,
         const Denomination value,
@@ -112,7 +106,7 @@ private:
     auto clone() const noexcept -> Lucre* final { return new Lucre(*this); }
 
     Lucre(
-        const api::internal::Core& api,
+        const api::Core& api,
         Purse& purse,
         const VersionNumber version,
         const blind::TokenState state,

@@ -22,10 +22,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 class PasswordPrompt;
@@ -48,7 +45,7 @@ public:
     auto Weight() const -> std::uint64_t final { return weight_; }
 
     Basket(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const std::string& shortname,
         const std::string& name,
@@ -58,7 +55,7 @@ public:
         const contact::ContactItemType unitOfAccount,
         const VersionNumber version);
     Basket(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const proto::UnitDefinition serialized);
 

@@ -158,7 +158,7 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -200,7 +200,7 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
             do_work();
         } break;
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unhandled type").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -224,7 +224,7 @@ auto Wallet::process_reorg(const zmq::Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (4 > body.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }

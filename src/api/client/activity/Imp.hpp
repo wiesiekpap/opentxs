@@ -37,10 +37,7 @@ class Blockchain;
 class Contacts;
 }  // namespace client
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -142,13 +139,12 @@ public:
     auto ThreadPublisher(const identifier::Nym& nym) const noexcept
         -> std::string;
 
-    Imp(const api::internal::Core& api,
-        const client::Contacts& contact) noexcept;
+    Imp(const api::Core& api, const client::Contacts& contact) noexcept;
 
     ~Imp() final;
 
 private:
-    const api::internal::Core& api_;
+    const api::Core& api_;
     const client::Contacts& contact_;
     const OTZMQPublishSocket message_loaded_;
     mutable activity::MailCache mail_;

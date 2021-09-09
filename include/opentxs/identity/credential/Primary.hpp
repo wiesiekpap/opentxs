@@ -27,8 +27,9 @@ namespace credential
 class OPENTXS_EXPORT Primary : virtual public identity::credential::Key
 {
 public:
-    OPENTXS_NO_EXPORT virtual bool Path(proto::HDPath& output) const = 0;
-    virtual std::string Path() const = 0;
+    OPENTXS_NO_EXPORT virtual auto Path(proto::HDPath& output) const
+        -> bool = 0;
+    virtual auto Path() const -> std::string = 0;
 
     ~Primary() override = default;
 
@@ -38,8 +39,8 @@ protected:
 private:
     Primary(const Primary&) = delete;
     Primary(Primary&&) = delete;
-    Primary& operator=(const Primary&) = delete;
-    Primary& operator=(Primary&&) = delete;
+    auto operator=(const Primary&) -> Primary& = delete;
+    auto operator=(Primary&&) -> Primary& = delete;
 };
 }  // namespace credential
 }  // namespace identity

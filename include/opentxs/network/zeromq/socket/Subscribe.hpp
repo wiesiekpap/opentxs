@@ -11,17 +11,6 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/network/zeromq/curve/Client.hpp"
 
-#ifdef SWIG
-// clang-format off
-%ignore opentxs::Pimpl<opentxs::network::zeromq::socket::Subscribe>::Pimpl(opentxs::network::zeromq::socket::Subscribe const &);
-%ignore opentxs::Pimpl<opentxs::network::zeromq::socket::Subscribe>::operator opentxs::network::zeromq::socket::Subscribe&;
-%ignore opentxs::Pimpl<opentxs::network::zeromq::socket::Subscribe>::operator const opentxs::network::zeromq::socket::Subscribe &;
-%rename(assign) operator=(const opentxs::network::zeromq::socket::Subscribe&);
-%rename(ZMQSubscribe) opentxs::network::zeromq::socket::Subscribe;
-%template(OTZMQSubscribeSocket) opentxs::Pimpl<opentxs::network::zeromq::socket::Subscribe>;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace network
@@ -46,13 +35,13 @@ namespace zeromq
 {
 namespace socket
 {
-class Subscribe : virtual public curve::Client
+class OPENTXS_EXPORT Subscribe : virtual public curve::Client
 {
 public:
-    OPENTXS_EXPORT virtual bool SetSocksProxy(
-        const std::string& proxy) const noexcept = 0;
+    virtual auto SetSocksProxy(const std::string& proxy) const noexcept
+        -> bool = 0;
 
-    OPENTXS_EXPORT ~Subscribe() override = default;
+    ~Subscribe() override = default;
 
 protected:
     Subscribe() noexcept = default;
@@ -60,12 +49,12 @@ protected:
 private:
     friend OTZMQSubscribeSocket;
 
-    virtual Subscribe* clone() const noexcept = 0;
+    virtual auto clone() const noexcept -> Subscribe* = 0;
 
     Subscribe(const Subscribe&) = delete;
     Subscribe(Subscribe&&) = delete;
-    Subscribe& operator=(const Subscribe&) = delete;
-    Subscribe& operator=(Subscribe&&) = delete;
+    auto operator=(const Subscribe&) -> Subscribe& = delete;
+    auto operator=(Subscribe&&) -> Subscribe& = delete;
 };
 }  // namespace socket
 }  // namespace zeromq

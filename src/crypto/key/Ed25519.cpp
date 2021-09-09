@@ -10,8 +10,8 @@
 #include <stdexcept>
 #include <string_view>
 
-#include "internal/api/Api.hpp"
 #include "internal/crypto/key/Factory.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
@@ -26,7 +26,7 @@ namespace opentxs::factory
 using ReturnType = crypto::key::implementation::Ed25519;
 
 auto Ed25519Key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const proto::AsymmetricKey& input) noexcept
     -> std::unique_ptr<crypto::key::Ed25519>
@@ -35,8 +35,8 @@ auto Ed25519Key(
 
         return std::make_unique<ReturnType>(api, ecdsa, input);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
-            ": Failed to generate key: ")(e.what())
+        LogOutput("opentxs::factory::")(__func__)(": Failed to generate key: ")(
+            e.what())
             .Flush();
 
         return nullptr;
@@ -44,7 +44,7 @@ auto Ed25519Key(
 }
 
 auto Ed25519Key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const crypto::key::asymmetric::Role input,
     const VersionNumber version,
@@ -55,8 +55,8 @@ auto Ed25519Key(
 
         return std::make_unique<ReturnType>(api, ecdsa, input, version, reason);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
-            ": Failed to generate key: ")(e.what())
+        LogOutput("opentxs::factory::")(__func__)(": Failed to generate key: ")(
+            e.what())
             .Flush();
 
         return nullptr;
@@ -65,7 +65,7 @@ auto Ed25519Key(
 
 #if OT_CRYPTO_WITH_BIP32
 auto Ed25519Key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const Secret& privateKey,
     const Secret& chainCode,
@@ -98,7 +98,7 @@ auto Ed25519Key(
 namespace opentxs::crypto::key::implementation
 {
 Ed25519::Ed25519(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const proto::AsymmetricKey& serializedKey) noexcept(false)
     : ot_super(api, ecdsa, serializedKey)
@@ -106,7 +106,7 @@ Ed25519::Ed25519(
 }
 
 Ed25519::Ed25519(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const crypto::key::asymmetric::Role role,
     const VersionNumber version,
@@ -124,7 +124,7 @@ Ed25519::Ed25519(
 
 #if OT_CRYPTO_WITH_BIP32
 Ed25519::Ed25519(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const Secret& privateKey,
     const Secret& chainCode,

@@ -95,7 +95,7 @@ struct SyncServer::Imp {
 
             if (0 > events) {
                 const auto error = ::zmq_errno();
-                LogOutput(OT_METHOD)(__FUNCTION__)(": ")(::zmq_strerror(error))
+                LogOutput(OT_METHOD)(__func__)(": ")(::zmq_strerror(error))
                     .Flush();
 
                 continue;
@@ -189,7 +189,7 @@ private:
                 case sync::MessageType::sync_request: {
                 } break;
                 default: {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Unsupported message type ")(opentxs::print(type))
                         .Flush();
 
@@ -224,7 +224,7 @@ private:
                 }
             }
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
         }
     }
     auto process_internal(const Lock& lock, void* socket) noexcept -> void
@@ -237,12 +237,10 @@ private:
         if ((0u == hSize) && (0u == bSize)) { return; }
 
         if (0u < hSize) {
-            LogTrace(OT_METHOD)(__FUNCTION__)(": transmitting sync reply")
-                .Flush();
+            LogTrace(OT_METHOD)(__func__)(": transmitting sync reply").Flush();
             OTSocket::send_message(lock, sync_.get(), incoming);
         } else {
-            LogTrace(OT_METHOD)(__FUNCTION__)(
-                ": broadcasting push notification")
+            LogTrace(OT_METHOD)(__func__)(": broadcasting push notification")
                 .Flush();
             OTSocket::send_message(lock, update_.get(), incoming);
         }
@@ -291,7 +289,7 @@ auto SyncServer::Start(
     const std::string& publicUpdate) noexcept -> bool
 {
     if (sync.empty() || update.empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid endpoint").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid endpoint").Flush();
 
         return false;
     }
@@ -320,7 +318,7 @@ auto SyncServer::Start(
                 publicSync)
                 .Flush();
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": failed to set sync socket identity")
                 .Flush();
 
@@ -331,7 +329,7 @@ auto SyncServer::Start(
             LogNormal("Blockchain sync server listener bound to ")(sync)
                 .Flush();
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": failed to bind sync endpoint to ")(sync)
                 .Flush();
 
@@ -342,7 +340,7 @@ auto SyncServer::Start(
             LogNormal("Blockchain sync server publisher bound to ")(update)
                 .Flush();
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": failed to bind update endpoint to ")(update)
                 .Flush();
 

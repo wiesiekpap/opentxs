@@ -42,13 +42,13 @@ private:
     friend OTCurrencyContract;
 
 #ifndef _WIN32
-    Currency* clone() const noexcept override = 0;
+    auto clone() const noexcept -> Currency* override = 0;
 #endif
 
     Currency(const Currency&) = delete;
     Currency(Currency&&) = delete;
-    Currency& operator=(const Currency&) = delete;
-    Currency& operator=(Currency&&) = delete;
+    auto operator=(const Currency&) -> Currency& = delete;
+    auto operator=(Currency&&) -> Currency& = delete;
 };
 }  // namespace unit
 }  // namespace contract

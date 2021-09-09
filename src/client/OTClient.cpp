@@ -28,7 +28,7 @@
 
 namespace opentxs
 {
-OTClient::OTClient(const api::internal::Core& core)
+OTClient::OTClient(const api::Core& core)
     : api_(core)
 {
     // WARNING: do not access api_.Wallet() during construction
@@ -67,7 +67,7 @@ auto OTClient::ProcessUserCommand(
 
     if (nullptr != pAccount) {
         if (pAccount->GetPurportedNotaryID() != context.Notary()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": pAccount->GetPurportedNotaryID() doesn't match "
                 "NOTARY_ID. (Try adding: --server NOTARY_ID).")
                 .Flush();
@@ -142,7 +142,7 @@ auto OTClient::ProcessUserCommand(
             NYMBOX_HASH->GetString(theMessage.m_strNymboxHash);
 
             if (!String::Factory(NYMBOX_HASH)->Exists()) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Failed getting NymboxHash from Nym for server: ")(
                     context.Notary())(".")
                     .Flush();
@@ -176,7 +176,7 @@ auto OTClient::ProcessUserCommand(
             NYMBOX_HASH->GetString(theMessage.m_strNymboxHash);
 
             if (NYMBOX_HASH->IsEmpty()) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Failed getting NymboxHash from Nym for server: ")(
                     context.Notary())(".")
                     .Flush();
@@ -192,7 +192,7 @@ auto OTClient::ProcessUserCommand(
             lReturnValue = lRequestNumber;
         } break;
         default: {
-            LogNormal(OT_METHOD)(__FUNCTION__).Flush();
+            LogNormal(OT_METHOD)(__func__).Flush();
         }
     }
 

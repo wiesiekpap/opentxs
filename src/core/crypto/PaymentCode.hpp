@@ -30,10 +30,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace crypto
@@ -330,7 +327,7 @@ public:
         const PasswordPrompt& reason) noexcept -> bool final;
 
     PaymentCode(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::uint8_t version,
         const bool hasBitmessage,
         const ReadView pubkey,
@@ -350,7 +347,7 @@ private:
     using VersionType = std::uint8_t;
     using Mask = std::array<std::byte, 64>;
 
-    const api::internal::Core& api_;
+    const api::Core& api_;
     const VersionType version_;
     const bool hasBitmessage_;
     const OTData pubkey_;
@@ -365,7 +362,7 @@ private:
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 
     static auto calculate_id(
-        const api::internal::Core& api,
+        const api::Core& api,
         const ReadView pubkey,
         const ReadView chaincode) noexcept -> OTNymID;
     static auto effective_version(

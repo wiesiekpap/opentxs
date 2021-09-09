@@ -14,12 +14,6 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/ui/List.hpp"
 
-#ifdef SWIG
-// clang-format off
-%rename(UIAccountActivity) opentxs::ui::AccountActivity;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -38,48 +32,50 @@ class OPENTXS_EXPORT AccountActivity : virtual public List
 public:
     using Scale = unsigned int;
 
-    virtual std::string AccountID() const noexcept = 0;
-    virtual Amount Balance() const noexcept = 0;
-    virtual int BalancePolarity() const noexcept = 0;
-    virtual std::string ContractID() const noexcept = 0;
-    virtual std::string DepositAddress() const noexcept = 0;
-    virtual std::string DepositAddress(
-        const blockchain::Type chain) const noexcept = 0;
-    virtual std::vector<blockchain::Type> DepositChains() const noexcept = 0;
-    virtual std::string DisplayBalance() const noexcept = 0;
-    virtual std::string DisplayUnit() const noexcept = 0;
-    virtual opentxs::SharedPimpl<opentxs::ui::BalanceItem> First()
-        const noexcept = 0;
-    virtual std::string Name() const noexcept = 0;
-    virtual opentxs::SharedPimpl<opentxs::ui::BalanceItem> Next()
-        const noexcept = 0;
-    virtual std::string NotaryID() const noexcept = 0;
-    virtual std::string NotaryName() const noexcept = 0;
-    virtual bool Send(
+    virtual auto AccountID() const noexcept -> std::string = 0;
+    virtual auto Balance() const noexcept -> Amount = 0;
+    virtual auto BalancePolarity() const noexcept -> int = 0;
+    virtual auto ContractID() const noexcept -> std::string = 0;
+    virtual auto DepositAddress() const noexcept -> std::string = 0;
+    virtual auto DepositAddress(const blockchain::Type chain) const noexcept
+        -> std::string = 0;
+    virtual auto DepositChains() const noexcept
+        -> std::vector<blockchain::Type> = 0;
+    virtual auto DisplayBalance() const noexcept -> std::string = 0;
+    virtual auto DisplayUnit() const noexcept -> std::string = 0;
+    virtual auto First() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::BalanceItem> = 0;
+    virtual auto Name() const noexcept -> std::string = 0;
+    virtual auto Next() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::BalanceItem> = 0;
+    virtual auto NotaryID() const noexcept -> std::string = 0;
+    virtual auto NotaryName() const noexcept -> std::string = 0;
+    virtual auto Send(
         const Identifier& contact,
         const Amount amount,
-        const std::string& memo = {}) const noexcept = 0;
-    virtual bool Send(
+        const std::string& memo = {}) const noexcept -> bool = 0;
+    virtual auto Send(
         const Identifier& contact,
         const std::string& amount,
         const std::string& memo = {},
-        Scale scale = 0) const noexcept = 0;
-    virtual bool Send(
+        Scale scale = 0) const noexcept -> bool = 0;
+    virtual auto Send(
         const std::string& address,
         const Amount amount,
-        const std::string& memo = {}) const noexcept = 0;
-    virtual bool Send(
+        const std::string& memo = {}) const noexcept -> bool = 0;
+    virtual auto Send(
         const std::string& address,
         const std::string& amount,
         const std::string& memo = {},
-        Scale scale = 0) const noexcept = 0;
-    virtual double SyncPercentage() const noexcept = 0;
-    virtual std::pair<int, int> SyncProgress() const noexcept = 0;
-    virtual AccountType Type() const noexcept = 0;
-    virtual contact::ContactItemType Unit() const noexcept = 0;
-    virtual bool ValidateAddress(const std::string& text) const noexcept = 0;
-    virtual std::string ValidateAmount(
-        const std::string& text) const noexcept = 0;
+        Scale scale = 0) const noexcept -> bool = 0;
+    virtual auto SyncPercentage() const noexcept -> double = 0;
+    virtual auto SyncProgress() const noexcept -> std::pair<int, int> = 0;
+    virtual auto Type() const noexcept -> AccountType = 0;
+    virtual auto Unit() const noexcept -> contact::ContactItemType = 0;
+    virtual auto ValidateAddress(const std::string& text) const noexcept
+        -> bool = 0;
+    virtual auto ValidateAmount(const std::string& text) const noexcept
+        -> std::string = 0;
 
     ~AccountActivity() override = default;
 
@@ -89,8 +85,8 @@ protected:
 private:
     AccountActivity(const AccountActivity&) = delete;
     AccountActivity(AccountActivity&&) = delete;
-    AccountActivity& operator=(const AccountActivity&) = delete;
-    AccountActivity& operator=(AccountActivity&&) = delete;
+    auto operator=(const AccountActivity&) -> AccountActivity& = delete;
+    auto operator=(AccountActivity&&) -> AccountActivity& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

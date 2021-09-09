@@ -11,12 +11,6 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/ui/List.hpp"
 
-#ifdef SWIG
-// clang-format off
-%rename(UIAccountSummary) opentxs::ui::AccountSummary;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -30,15 +24,15 @@ namespace opentxs
 {
 namespace ui
 {
-class AccountSummary : virtual public List
+class OPENTXS_EXPORT AccountSummary : virtual public List
 {
 public:
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::IssuerItem> First()
-        const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::IssuerItem> Next()
-        const noexcept = 0;
+    virtual auto First() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::IssuerItem> = 0;
+    virtual auto Next() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::IssuerItem> = 0;
 
-    OPENTXS_EXPORT ~AccountSummary() override = default;
+    ~AccountSummary() override = default;
 
 protected:
     AccountSummary() noexcept = default;
@@ -46,8 +40,8 @@ protected:
 private:
     AccountSummary(const AccountSummary&) = delete;
     AccountSummary(AccountSummary&&) = delete;
-    AccountSummary& operator=(const AccountSummary&) = delete;
-    AccountSummary& operator=(AccountSummary&&) = delete;
+    auto operator=(const AccountSummary&) -> AccountSummary& = delete;
+    auto operator=(AccountSummary&&) -> AccountSummary& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

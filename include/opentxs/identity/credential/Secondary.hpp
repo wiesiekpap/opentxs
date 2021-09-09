@@ -16,10 +16,10 @@ namespace identity
 {
 namespace credential
 {
-class Secondary : virtual public Key
+class OPENTXS_EXPORT Secondary : virtual public Key
 {
 public:
-    OPENTXS_EXPORT ~Secondary() override = default;
+    ~Secondary() override = default;
 
 protected:
     Secondary() noexcept {}  // TODO Signable
@@ -27,8 +27,8 @@ protected:
 private:
     Secondary(const Secondary&) = delete;
     Secondary(Secondary&&) = delete;
-    Secondary& operator=(const Secondary&) = delete;
-    Secondary& operator=(Secondary&&) = delete;
+    auto operator=(const Secondary&) -> Secondary& = delete;
+    auto operator=(Secondary&&) -> Secondary& = delete;
 };
 }  // namespace credential
 }  // namespace identity

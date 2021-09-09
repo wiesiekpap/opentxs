@@ -25,15 +25,15 @@ namespace opentxs
 {
 namespace blockchain
 {
-class BloomFilter
+class OPENTXS_EXPORT BloomFilter
 {
 public:
-    OPENTXS_EXPORT virtual OTData Serialize() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Test(const Data& element) const noexcept = 0;
+    virtual auto Serialize() const noexcept -> OTData = 0;
+    virtual auto Test(const Data& element) const noexcept -> bool = 0;
 
-    OPENTXS_EXPORT virtual void AddElement(const Data& element) noexcept = 0;
+    virtual void AddElement(const Data& element) noexcept = 0;
 
-    OPENTXS_EXPORT virtual ~BloomFilter() = default;
+    virtual ~BloomFilter() = default;
 
 protected:
     BloomFilter() noexcept = default;
@@ -41,12 +41,12 @@ protected:
 private:
     friend OTBloomFilter;
 
-    virtual BloomFilter* clone() const noexcept = 0;
+    virtual auto clone() const noexcept -> BloomFilter* = 0;
 
     BloomFilter(const BloomFilter& rhs) = delete;
     BloomFilter(BloomFilter&& rhs) = delete;
-    BloomFilter& operator=(const BloomFilter& rhs) = delete;
-    BloomFilter& operator=(BloomFilter&& rhs) = delete;
+    auto operator=(const BloomFilter& rhs) -> BloomFilter& = delete;
+    auto operator=(BloomFilter&& rhs) -> BloomFilter& = delete;
 };
 }  // namespace blockchain
 }  // namespace opentxs

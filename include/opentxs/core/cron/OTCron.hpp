@@ -25,11 +25,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
 namespace server
 {
 namespace implementation
@@ -37,11 +32,10 @@ namespace implementation
 class Factory;
 }  // namespace implementation
 
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace server
+
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -71,7 +65,7 @@ using listOfLongNumbers = std::list<std::int64_t>;
 class OTCron final : public Contract
 {
 public:
-    static std::chrono::milliseconds GetCronMsBetweenProcess()
+    static auto GetCronMsBetweenProcess() -> std::chrono::milliseconds
     {
         return __cron_ms_between_process;
     }
@@ -80,12 +74,15 @@ public:
         __cron_ms_between_process = lMS;
     }
 
-    static std::int32_t GetCronRefillAmount() { return __trans_refill_amount; }
+    static auto GetCronRefillAmount() -> std::int32_t
+    {
+        return __trans_refill_amount;
+    }
     static void SetCronRefillAmount(std::int32_t nAmount)
     {
         __trans_refill_amount = nAmount;
     }
-    static std::int32_t GetCronMaxItemsPerNym()
+    static auto GetCronMaxItemsPerNym() -> std::int32_t
     {
         return __cron_max_items_per_nym;
     }
@@ -93,8 +90,8 @@ public:
     {
         __cron_max_items_per_nym = nMax;
     }
-    inline bool IsActivated() const { return m_bIsActivated; }
-    inline bool ActivateCron()
+    inline auto IsActivated() const -> bool { return m_bIsActivated; }
+    inline auto ActivateCron() -> bool
     {
         if (!m_bIsActivated)
             return m_bIsActivated = true;
@@ -102,39 +99,40 @@ public:
             return false;
     }
     // RECURRING TRANSACTIONS
-    bool AddCronItem(
+    auto AddCronItem(
         std::shared_ptr<OTCronItem> theItem,
         const bool bSaveReceipt,
-        const Time tDateAdded);  // Date it was FIRST added to Cron.
+        const Time tDateAdded) -> bool;  // Date it was FIRST added to Cron.
     /** if returns false, item wasn't found. */
-    bool RemoveCronItem(
+    auto RemoveCronItem(
         std::int64_t lTransactionNum,
         Nym_p theRemover,
-        const PasswordPrompt& reason);
-    std::shared_ptr<OTCronItem> GetItemByOfficialNum(
-        std::int64_t lTransactionNum);
-    std::shared_ptr<OTCronItem> GetItemByValidOpeningNum(
-        std::int64_t lOpeningNum);
-    mapOfCronItems::iterator FindItemOnMap(std::int64_t lTransactionNum);
-    multimapOfCronItems::iterator FindItemOnMultimap(
-        std::int64_t lTransactionNum);
+        const PasswordPrompt& reason) -> bool;
+    auto GetItemByOfficialNum(std::int64_t lTransactionNum)
+        -> std::shared_ptr<OTCronItem>;
+    auto GetItemByValidOpeningNum(std::int64_t lOpeningNum)
+        -> std::shared_ptr<OTCronItem>;
+    auto FindItemOnMap(std::int64_t lTransactionNum)
+        -> mapOfCronItems::iterator;
+    auto FindItemOnMultimap(std::int64_t lTransactionNum)
+        -> multimapOfCronItems::iterator;
     // MARKETS
-    bool AddMarket(
+    auto AddMarket(
         std::shared_ptr<OTMarket> theMarket,
-        bool bSaveMarketFile = true);
+        bool bSaveMarketFile = true) -> bool;
 
-    std::shared_ptr<OTMarket> GetMarket(const Identifier& MARKET_ID);
-    std::shared_ptr<OTMarket> GetOrCreateMarket(
+    auto GetMarket(const Identifier& MARKET_ID) -> std::shared_ptr<OTMarket>;
+    auto GetOrCreateMarket(
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const identifier::UnitDefinition& CURRENCY_ID,
-        const std::int64_t& lScale);
+        const std::int64_t& lScale) -> std::shared_ptr<OTMarket>;
     /** This is informational only. It returns OTStorage-type data objects,
      * packed in a string. */
-    bool GetMarketList(Armored& ascOutput, std::int32_t& nMarketCount);
-    bool GetNym_OfferList(
+    auto GetMarketList(Armored& ascOutput, std::int32_t& nMarketCount) -> bool;
+    auto GetNym_OfferList(
         Armored& ascOutput,
         const identifier::Nym& NYM_ID,
-        std::int32_t& nOfferCount);
+        std::int32_t& nOfferCount) -> bool;
     // TRANSACTION NUMBERS
     /**The server starts out putting a bunch of numbers in here so Cron can use
      * them. Then the internal trades and payment plans get numbers from here as
@@ -143,9 +141,9 @@ public:
      * as well as to call AddTransactionNumber() regularly, in order to keep
      * GetTransactionCount() at some minimum threshold. */
     void AddTransactionNumber(const std::int64_t& lTransactionNum);
-    std::int64_t GetNextTransactionNumber();
+    auto GetNextTransactionNumber() -> std::int64_t;
     /** How many numbers do I currently have on the list? */
-    std::int32_t GetTransactionCount() const;
+    auto GetTransactionCount() const -> std::int32_t;
     /** Make sure every time you call this, you check the GetTransactionCount()
      * first and replenish it to whatever your minimum supply is. (The
      * transaction numbers in there must be enough to last for the entire
@@ -154,23 +152,26 @@ public:
      * finished.) */
     void ProcessCronItems();
 
-    std::chrono::milliseconds computeTimeout();
+    auto computeTimeout() -> std::chrono::milliseconds;
 
     inline void SetNotaryID(const identifier::Server& NOTARY_ID)
     {
         m_NOTARY_ID = NOTARY_ID;
     }
-    inline const identifier::Server& GetNotaryID() const { return m_NOTARY_ID; }
+    inline auto GetNotaryID() const -> const identifier::Server&
+    {
+        return m_NOTARY_ID;
+    }
 
     inline void SetServerNym(Nym_p pServerNym)
     {
         OT_ASSERT(nullptr != pServerNym);
         m_pServerNym = pServerNym;
     }
-    inline Nym_p GetServerNym() const { return m_pServerNym; }
+    inline auto GetServerNym() const -> Nym_p { return m_pServerNym; }
 
-    bool LoadCron();
-    bool SaveCron();
+    auto LoadCron() -> bool;
+    auto SaveCron() -> bool;
 
     ~OTCron() final;
 
@@ -179,7 +180,7 @@ public:
     void Release() final;
 
     /** return -1 if error, 0 if nothing, and 1 if the node was processed. */
-    std::int32_t ProcessXMLNode(irr::io::IrrXMLReader*& xml) final;
+    auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t final;
     /** Before transmission or serialization, this is where the ledger saves its
      * contents */
     void UpdateContents(const PasswordPrompt& reason) final;
@@ -214,7 +215,7 @@ private:
     // I'll need this for later.
     Nym_p m_pServerNym{nullptr};
 
-    explicit OTCron(const api::internal::Core& server);
+    explicit OTCron(const api::Core& server);
 
     OTCron() = delete;
 };

@@ -44,8 +44,7 @@ auto BitcoinP2PCfilter(
     using ReturnType = bitcoin::message::implementation::Cfilter;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Invalid header")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -55,8 +54,7 @@ auto BitcoinP2PCfilter(
     auto expectedSize = sizeof(raw);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
-            ": Payload too short (begin)")
+        LogOutput("opentxs::factory::")(__func__)(": Payload too short (begin)")
             .Flush();
 
         return nullptr;
@@ -68,7 +66,7 @@ auto BitcoinP2PCfilter(
     expectedSize += 1;
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Payload too short (compactsize)")
             .Flush();
 
@@ -80,13 +78,13 @@ auto BitcoinP2PCfilter(
         it, expectedSize, size, filterSize);
 
     if (false == haveSize) {
-        LogOutput(__FUNCTION__)(": CompactSize incomplete").Flush();
+        LogOutput(__func__)(": CompactSize incomplete").Flush();
 
         return nullptr;
     }
 
     if ((expectedSize + filterSize) > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Payload too short (filter)")
             .Flush();
 
@@ -111,7 +109,7 @@ auto BitcoinP2PCfilter(
             elementCount,
             Space{start, end});
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return nullptr;
     }

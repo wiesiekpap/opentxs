@@ -41,16 +41,10 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
+class Blockchain;
 }  // namespace client
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace crypto
@@ -89,6 +83,10 @@ public:
     auto elements(const rLock& lock) const noexcept -> std::set<OTData>;
     auto ID() const noexcept -> const Identifier& final { return parent_.ID(); }
     auto IncomingTransactions() const noexcept -> std::set<std::string> final;
+    auto Internal() const noexcept -> internal::Element& final
+    {
+        return const_cast<Element&>(*this);
+    }
     auto IsAvailable(const Identifier& contact, const std::string& memo)
         const noexcept -> Availability final;
     auto Index() const noexcept -> Bip32Index final { return index_; }
@@ -127,25 +125,25 @@ public:
     auto Unreserve() noexcept -> bool final;
 
     Element(
-        const api::internal::Core& api,
-        const api::client::internal::Blockchain& blockchain,
-        const internal::Subaccount& parent,
+        const api::Core& api,
+        const api::client::Blockchain& blockchain,
+        const crypto::Subaccount& parent,
         const opentxs::blockchain::Type chain,
         const crypto::Subchain subchain,
         const Bip32Index index,
         const opentxs::crypto::key::EllipticCurve& key,
         OTIdentifier&& contact) noexcept(false);
     Element(
-        const api::internal::Core& api,
-        const api::client::internal::Blockchain& blockchain,
-        const internal::Subaccount& parent,
+        const api::Core& api,
+        const api::client::Blockchain& blockchain,
+        const crypto::Subaccount& parent,
         const opentxs::blockchain::Type chain,
         const crypto::Subchain subchain,
         const SerializedType& address) noexcept(false);
     Element(
-        const api::internal::Core& api,
-        const api::client::internal::Blockchain& blockchain,
-        const internal::Subaccount& parent,
+        const api::Core& api,
+        const api::client::Blockchain& blockchain,
+        const crypto::Subaccount& parent,
         const opentxs::blockchain::Type chain,
         const crypto::Subchain subchain,
         const SerializedType& address,
@@ -158,9 +156,9 @@ private:
 
     static const VersionNumber DefaultVersion{1};
 
-    const api::internal::Core& api_;
-    const api::client::internal::Blockchain& blockchain_;
-    const internal::Subaccount& parent_;
+    const api::Core& api_;
+    const api::client::Blockchain& blockchain_;
+    const crypto::Subaccount& parent_;
     const opentxs::blockchain::Type chain_;
     mutable std::recursive_mutex lock_;
     const VersionNumber version_;
@@ -175,16 +173,16 @@ private:
     mutable std::optional<SerializedType> cached_;
 
     static auto instantiate(
-        const api::internal::Core& api,
+        const api::Core& api,
         const proto::AsymmetricKey& serialized) noexcept(false)
         -> std::unique_ptr<opentxs::crypto::key::EllipticCurve>;
 
     auto update_element(rLock& lock) const noexcept -> void;
 
     Element(
-        const api::internal::Core& api,
-        const api::client::internal::Blockchain& blockchain,
-        const internal::Subaccount& parent,
+        const api::Core& api,
+        const api::client::Blockchain& blockchain,
+        const crypto::Subaccount& parent,
         const opentxs::blockchain::Type chain,
         const VersionNumber version,
         const crypto::Subchain subchain,

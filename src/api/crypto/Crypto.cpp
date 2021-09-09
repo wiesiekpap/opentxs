@@ -68,7 +68,7 @@ Crypto::Crypto(const api::Settings& settings) noexcept
     , bip39_p_(opentxs::Factory::Bip39(*this))
 #if OT_CRYPTO_USING_OPENSSL
     , ripemd160_(*ssl_)
-#else  // OT_CRYPTO_USING_OPENSSL
+#else   // OT_CRYPTO_USING_OPENSSL
     , ripemd160_(*sodium_)
 #endif  // OT_CRYPTO_USING_OPENSSL
     , bip32_(factory::Bip32(*this))
@@ -83,13 +83,13 @@ Crypto::Crypto(const api::Settings& settings) noexcept
           *encode_,
 #if OT_CRYPTO_USING_OPENSSL
           *ssl_,
-#else  // OT_CRYPTO_USING_OPENSSL
+#else   // OT_CRYPTO_USING_OPENSSL
           *sodium_,
 #endif  // OT_CRYPTO_USING_OPENSSL
           *sodium_,
 #if OT_CRYPTO_USING_OPENSSL
           *ssl_,
-#else  // OT_CRYPTO_USING_OPENSSL
+#else   // OT_CRYPTO_USING_OPENSSL
           *sodium_,
 #endif  // OT_CRYPTO_USING_OPENSSL
           ripemd160_,
@@ -153,7 +153,7 @@ auto Crypto::Hash() const -> const crypto::Hash&
 
 void Crypto::Init()
 {
-    LogDetail(OT_METHOD)(__FUNCTION__)(
+    LogDetail(OT_METHOD)(__func__)(
         ": Setting up rlimits, and crypto libraries...")
         .Flush();
 

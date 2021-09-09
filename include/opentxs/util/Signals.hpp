@@ -35,78 +35,78 @@ private:
     std::unique_ptr<std::thread> thread_{nullptr};
 
     /** SIGHUP */
-    static bool handle_1() { return ignore(); }
+    static auto handle_1() -> bool { return ignore(); }
     /** SIGINT */
-    static bool handle_2() { return shutdown(); }
+    static auto handle_2() -> bool { return shutdown(); }
     /** SIGQUIT */
-    static bool handle_3() { return shutdown(); }
+    static auto handle_3() -> bool { return shutdown(); }
     /** SIGILL */
-    static bool handle_4() { return shutdown(); }
+    static auto handle_4() -> bool { return shutdown(); }
     /** SIGTRAP */
-    static bool handle_5() { return ignore(); }
+    static auto handle_5() -> bool { return ignore(); }
     /** SIGABRT, SIGIOT */
-    static bool handle_6() { return ignore(); }
+    static auto handle_6() -> bool { return ignore(); }
     /** SIGBUS */
-    static bool handle_7() { return ignore(); }
+    static auto handle_7() -> bool { return ignore(); }
     /** SIGFPE */
-    static bool handle_8() { return ignore(); }
+    static auto handle_8() -> bool { return ignore(); }
     /** SIGKILL */
-    static bool handle_9() { return shutdown(); }
+    static auto handle_9() -> bool { return shutdown(); }
     /** SIGUSR1 */
-    static bool handle_10() { return ignore(); }
+    static auto handle_10() -> bool { return ignore(); }
     /** SIGSEGV */
-    static bool handle_11() { return ignore(); }
+    static auto handle_11() -> bool { return ignore(); }
     /** SIGUSR2 */
-    static bool handle_12() { return ignore(); }
+    static auto handle_12() -> bool { return ignore(); }
     /** SIGPIPE */
-    static bool handle_13() { return ignore(); }
+    static auto handle_13() -> bool { return ignore(); }
     /** SIGALRM */
-    static bool handle_14() { return ignore(); }
+    static auto handle_14() -> bool { return ignore(); }
     /** SIGTERM */
-    static bool handle_15() { return shutdown(); }
+    static auto handle_15() -> bool { return shutdown(); }
     /** SIGSTKFLT */
-    static bool handle_16() { return ignore(); }
+    static auto handle_16() -> bool { return ignore(); }
     /** SIGCLD, SIGCHLD */
-    static bool handle_17() { return ignore(); }
+    static auto handle_17() -> bool { return ignore(); }
     /** SIGCONT */
-    static bool handle_18() { return ignore(); }
+    static auto handle_18() -> bool { return ignore(); }
     /** SIGSTOP */
-    static bool handle_19() { return shutdown(); }
+    static auto handle_19() -> bool { return shutdown(); }
     /** SIGTSTP */
-    static bool handle_20() { return ignore(); }
+    static auto handle_20() -> bool { return ignore(); }
     /** SIGTTIN */
-    static bool handle_21() { return ignore(); }
+    static auto handle_21() -> bool { return ignore(); }
     /** SIGTTOU */
-    static bool handle_22() { return ignore(); }
+    static auto handle_22() -> bool { return ignore(); }
     /** SIGURG */
-    static bool handle_23() { return ignore(); }
+    static auto handle_23() -> bool { return ignore(); }
     /** SIGXCPU */
-    static bool handle_24() { return ignore(); }
+    static auto handle_24() -> bool { return ignore(); }
     /** SIGXFSZ */
-    static bool handle_25() { return ignore(); }
+    static auto handle_25() -> bool { return ignore(); }
     /** SIGVTALRM */
-    static bool handle_26() { return ignore(); }
+    static auto handle_26() -> bool { return ignore(); }
     /** SIGPROF */
-    static bool handle_27() { return ignore(); }
+    static auto handle_27() -> bool { return ignore(); }
     /** SIGWINCH */
-    static bool handle_28() { return ignore(); }
+    static auto handle_28() -> bool { return ignore(); }
     /** SIGPOLL, SIGIO */
-    static bool handle_29() { return ignore(); }
+    static auto handle_29() -> bool { return ignore(); }
     /** SIGPWR */
-    static bool handle_30() { return ignore(); }
+    static auto handle_30() -> bool { return ignore(); }
     /** SIGSYS, SIGUNUSED */
-    static bool handle_31() { return shutdown(); }
-    static bool ignore() { return false; }
-    static bool shutdown();
+    static auto handle_31() -> bool { return shutdown(); }
+    static auto ignore() -> bool { return false; }
+    static auto shutdown() -> bool;
 
     void handle();
-    bool process(const int signal);
+    auto process(const int signal) -> bool;
 
     Signals() = delete;
     Signals(const Signals&) = delete;
     Signals(Signals&&) = delete;
-    Signals& operator=(const Signals&) = delete;
-    Signals& operator=(Signals&&) = delete;
+    auto operator=(const Signals&) -> Signals& = delete;
+    auto operator=(Signals&&) -> Signals& = delete;
 };
 }  // namespace opentxs
 

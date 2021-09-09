@@ -48,7 +48,7 @@ static auto check_version(
 }
 
 static auto extract_sections(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& nym,
     const VersionNumber targetVersion,
     const proto::ContactData& serialized) -> ContactData::SectionMap
@@ -73,12 +73,12 @@ struct ContactData::Imp {
     using Scope = std::
         pair<contact::ContactItemType, std::shared_ptr<const ContactGroup>>;
 
-    const api::internal::Core& api_;
+    const api::Core& api_;
     const VersionNumber version_{0};
     const std::string nym_{};
     const SectionMap sections_{};
 
-    Imp(const api::internal::Core& api,
+    Imp(const api::Core& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber targetVersion,
@@ -89,9 +89,8 @@ struct ContactData::Imp {
         , sections_(sections)
     {
         if (0 == version) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Warning: malformed version. "
-                "Setting to ")(targetVersion)(".")
+            LogOutput(OT_METHOD)(__func__)(": Warning: malformed version. "
+                                           "Setting to ")(targetVersion)(".")
                 .Flush();
         }
     }
@@ -125,7 +124,7 @@ struct ContactData::Imp {
 };
 
 ContactData::ContactData(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& nym,
     const VersionNumber version,
     const VersionNumber targetVersion,
@@ -142,7 +141,7 @@ ContactData::ContactData(const ContactData& rhs)
 }
 
 ContactData::ContactData(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& nym,
     const VersionNumber targetVersion,
     const proto::ContactData& serialized)
@@ -156,7 +155,7 @@ ContactData::ContactData(
 }
 
 ContactData::ContactData(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& nym,
     const VersionNumber targetVersion,
     const ReadView& serialized)
@@ -384,7 +383,7 @@ auto ContactData::AddPaymentCode(
         imp_->version_);
 
     if (0 == version) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": This currency is not allowed to set a procedure")
             .Flush();
 
@@ -671,7 +670,7 @@ auto ContactData::AddSocialMediaProfile(
     return ContactData(imp_->api_, imp_->nym_, version, version, map);
 }
 
-ContactData::SectionMap::const_iterator ContactData::begin() const
+auto ContactData::begin() const -> ContactData::SectionMap::const_iterator
 {
     return imp_->sections_.begin();
 }
@@ -822,7 +821,7 @@ auto ContactData::EmailAddresses(bool active) const -> std::string
     return output;
 }
 
-ContactData::SectionMap::const_iterator ContactData::end() const
+auto ContactData::end() const -> ContactData::SectionMap::const_iterator
 {
     return imp_->sections_.end();
 }
@@ -1076,7 +1075,7 @@ auto ContactData::SetScope(
 
         return ContactData(imp_->api_, imp_->nym_, version, version, mapCopy);
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Scope already set.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Scope already set.").Flush();
 
         return *this;
     }

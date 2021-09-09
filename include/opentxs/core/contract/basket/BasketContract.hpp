@@ -38,18 +38,18 @@ public:
     // unit definition id, subcontract
     using Subcontracts = std::map<std::string, Subcontract>;
 
-    static OTIdentifier CalculateBasketID(
-        const api::internal::Core& api,
-        const proto::UnitDefinition& serialized);
-    static bool FinalizeTemplate(
-        const api::internal::Core& api,
+    static auto CalculateBasketID(
+        const api::Core& api,
+        const proto::UnitDefinition& serialized) -> OTIdentifier;
+    static auto FinalizeTemplate(
+        const api::Core& api,
         const Nym_p& nym,
         proto::UnitDefinition& serialized,
-        const PasswordPrompt& reason);
+        const PasswordPrompt& reason) -> bool;
 
-    virtual OTIdentifier BasketID() const = 0;
-    virtual const Subcontracts& Currencies() const = 0;
-    virtual std::uint64_t Weight() const = 0;
+    virtual auto BasketID() const -> OTIdentifier = 0;
+    virtual auto Currencies() const -> const Subcontracts& = 0;
+    virtual auto Weight() const -> std::uint64_t = 0;
 
     ~Basket() override = default;
 
@@ -60,13 +60,13 @@ private:
     friend OTBasketContract;
 
 #ifndef _WIN32
-    Basket* clone() const noexcept override = 0;
+    auto clone() const noexcept -> Basket* override = 0;
 #endif
 
     Basket(const Basket&) = delete;
     Basket(Basket&&) = delete;
-    Basket& operator=(const Basket&) = delete;
-    Basket& operator=(Basket&&) = delete;
+    auto operator=(const Basket&) -> Basket& = delete;
+    auto operator=(Basket&&) -> Basket& = delete;
 };
 }  // namespace unit
 }  // namespace contract

@@ -28,7 +28,7 @@ class OPENTXS_EXPORT NumList
     /** private for security reasons, used internally only by a function that
      * knows the string length already. if false, means the numbers were already
      * there. (At least one of them.) */
-    bool Add(const char* szfNumbers);
+    auto Add(const char* szfNumbers) -> bool;
 
 public:
     explicit NumList(const std::set<std::int64_t>& theNumbers);
@@ -39,64 +39,64 @@ public:
     NumList();
     NumList(const NumList&) = default;
     NumList(NumList&&) = default;
-    NumList& operator=(const NumList&) = default;
-    NumList& operator=(NumList&&) = default;
+    auto operator=(const NumList&) -> NumList& = default;
+    auto operator=(NumList&&) -> NumList& = default;
 
     ~NumList() = default;
 
     /** if false, means the numbers were already there. (At least one of them.)
      */
-    bool Add(const String& strNumbers);
+    auto Add(const String& strNumbers) -> bool;
 
     /** if false, means the numbers were already there. (At least one of them.)
      */
-    bool Add(const std::string& strNumbers);
+    auto Add(const std::string& strNumbers) -> bool;
 
     /** if false, means the value was already there. */
-    bool Add(const std::int64_t& theValue);
+    auto Add(const std::int64_t& theValue) -> bool;
 
     /** if false, means the value was NOT already there. */
-    bool Remove(const std::int64_t& theValue);
+    auto Remove(const std::int64_t& theValue) -> bool;
 
     /** returns true/false (whether value is already there.) */
-    bool Verify(const std::int64_t& theValue) const;
+    auto Verify(const std::int64_t& theValue) const -> bool;
 
     /** if false, means the numbers were already there. (At least one of them.)
      */
-    bool Add(const NumList& theNumList);
+    auto Add(const NumList& theNumList) -> bool;
 
     /** if false, means the numbers were already there. (At least one of them.)
      */
-    bool Add(const std::set<std::int64_t>& theNumbers);
+    auto Add(const std::set<std::int64_t>& theNumbers) -> bool;
 
     /** if false, means the numbers were NOT already there. (At least one of
      * them.) */
-    bool Remove(const std::set<std::int64_t>& theNumbers);
+    auto Remove(const std::set<std::int64_t>& theNumbers) -> bool;
 
     /** True/False, based on whether values are already there. (ALL theNumbers
      * must be present.) */
-    bool Verify(const std::set<std::int64_t>& theNumbers) const;
+    auto Verify(const std::set<std::int64_t>& theNumbers) const -> bool;
 
     /** True/False, based on whether OTNumLists MATCH in COUNT and CONTENT (NOT
      * ORDER.) */
-    bool Verify(const NumList& rhs) const;
+    auto Verify(const NumList& rhs) const -> bool;
 
     /** True/False, based on whether ANY of rhs are found in *this. */
-    bool VerifyAny(const NumList& rhs) const;
+    auto VerifyAny(const NumList& rhs) const -> bool;
 
     /** Verify whether ANY of the numbers on *this are found in setData. */
-    bool VerifyAny(const std::set<std::int64_t>& setData) const;
-    std::int32_t Count() const;
-    bool Peek(std::int64_t& lPeek) const;
-    bool Pop();
+    auto VerifyAny(const std::set<std::int64_t>& setData) const -> bool;
+    auto Count() const -> std::int32_t;
+    auto Peek(std::int64_t& lPeek) const -> bool;
+    auto Pop() -> bool;
 
     /** Outputs the numlist as set of numbers. (To iterate OTNumList, call this,
      * then iterate the output.) returns false if the numlist was empty.*/
-    bool Output(std::set<std::int64_t>& theOutput) const;
+    auto Output(std::set<std::int64_t>& theOutput) const -> bool;
 
     /** Outputs the numlist as a comma-separated string (for serialization,
      * usually.) returns false if the numlist was empty. */
-    bool Output(String& strOutput) const;
+    auto Output(String& strOutput) const -> bool;
     void Release();
 };
 }  // namespace opentxs

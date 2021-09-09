@@ -202,7 +202,7 @@ auto Wallet::ReorgTo(
             return true;
         }
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         OT_FAIL;
     }
@@ -222,7 +222,7 @@ auto Wallet::ReserveUTXO(
     const Spend policy) const noexcept -> std::optional<UTXO>
 {
     if (false == proposals_.Exists(id)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Proposal does not exist").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Proposal does not exist").Flush();
 
         return std::nullopt;
     }

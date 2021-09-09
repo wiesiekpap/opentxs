@@ -14,13 +14,6 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/core/Secret.hpp"
 
-#ifdef SWIG
-// clang-format off
-%ignore opentxs::PasswordPrompt::api;
-%ignore opentxs::PasswordPrompt::Password;
-// clang-format on
-#endif
-
 namespace opentxs
 {
 namespace api
@@ -30,10 +23,7 @@ namespace implementation
 class Core;
 }  // namespace implementation
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 class Factory;
@@ -67,11 +57,11 @@ namespace opentxs
 class OPENTXS_EXPORT PasswordPrompt
 {
 public:
-    const char* GetDisplayString() const;
-    const Secret& Password() const;
+    auto GetDisplayString() const -> const char*;
+    auto Password() const -> const Secret&;
 
-    bool ClearPassword();
-    bool SetPassword(const Secret& password);
+    auto ClearPassword() -> bool;
+    auto SetPassword(const Secret& password) -> bool;
 
     ~PasswordPrompt();
 
@@ -80,19 +70,20 @@ private:
     friend opentxs::Factory;
     friend api::implementation::Core;
 
-    PasswordPrompt* clone() const noexcept { return new PasswordPrompt(*this); }
+    auto clone() const noexcept -> PasswordPrompt*
+    {
+        return new PasswordPrompt(*this);
+    }
 
-    const api::internal::Core& api_;
+    const api::Core& api_;
     std::string display_;
     OTSecret password_;
 
-    PasswordPrompt(
-        const api::internal::Core& api,
-        const std::string& display) noexcept;
+    PasswordPrompt(const api::Core& api, const std::string& display) noexcept;
     PasswordPrompt(const PasswordPrompt&) noexcept;
     PasswordPrompt(const PasswordPrompt&&) = delete;
-    const PasswordPrompt& operator=(const PasswordPrompt&) = delete;
-    const PasswordPrompt& operator=(const PasswordPrompt&&) = delete;
+    auto operator=(const PasswordPrompt&) -> const PasswordPrompt& = delete;
+    auto operator=(const PasswordPrompt&&) -> const PasswordPrompt& = delete;
 };
 }  // namespace opentxs
 #endif

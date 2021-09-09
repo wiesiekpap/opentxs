@@ -37,11 +37,11 @@ public:
 
     OPENTXS_NO_EXPORT virtual operator SerializedType() const noexcept = 0;
 
-    virtual const Group& External() const noexcept = 0;
-    virtual const Group& Internal() const noexcept = 0;
-    virtual VersionNumber Version() const noexcept = 0;
+    virtual auto External() const noexcept -> const Group& = 0;
+    virtual auto Internal() const noexcept -> const Group& = 0;
+    virtual auto Version() const noexcept -> VersionNumber = 0;
 
-    virtual bool AddItem(
+    virtual auto AddItem(
         const identifier::Nym& claimOwner,
         const Identifier& claim,
         const identity::Nym& signer,
@@ -49,13 +49,14 @@ public:
         const Item::Type value = Item::Type::Confirm,
         const Time start = {},
         const Time end = {},
-        const VersionNumber version = Item::DefaultVersion) noexcept = 0;
-    OPENTXS_NO_EXPORT virtual bool AddItem(
+        const VersionNumber version = Item::DefaultVersion) noexcept
+        -> bool = 0;
+    OPENTXS_NO_EXPORT virtual auto AddItem(
         const identifier::Nym& verifier,
-        const Item::SerializedType verification) noexcept = 0;
-    virtual bool DeleteItem(const Identifier& item) noexcept = 0;
-    virtual Group& External() noexcept = 0;
-    virtual Group& Internal() noexcept = 0;
+        const Item::SerializedType verification) noexcept -> bool = 0;
+    virtual auto DeleteItem(const Identifier& item) noexcept -> bool = 0;
+    virtual auto External() noexcept -> Group& = 0;
+    virtual auto Internal() noexcept -> Group& = 0;
 
     virtual ~Set() = default;
 
@@ -65,8 +66,8 @@ protected:
 private:
     Set(const Set&) = delete;
     Set(Set&&) = delete;
-    Set& operator=(const Set&) = delete;
-    Set& operator=(Set&&) = delete;
+    auto operator=(const Set&) -> Set& = delete;
+    auto operator=(Set&&) -> Set& = delete;
 };
 }  // namespace verification
 }  // namespace wot

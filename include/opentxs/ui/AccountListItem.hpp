@@ -13,20 +13,6 @@
 #include "ListRow.hpp"
 #include "opentxs/SharedPimpl.hpp"
 
-#ifdef SWIG
-// clang-format off
-%extend opentxs::ui::AccountListItem {
-    int Unit() const
-    {
-        return static_cast<int>($self->Unit());
-    }
-}
-%ignore opentxs::ui::AccountListItem::Unit;
-%template(OTUIAccountListItem) opentxs::SharedPimpl<opentxs::ui::AccountListItem>;
-%rename(UIAccountListItem) opentxs::ui::AccountListItem;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -41,21 +27,21 @@ namespace opentxs
 {
 namespace ui
 {
-class AccountListItem : virtual public ListRow
+class OPENTXS_EXPORT AccountListItem : virtual public ListRow
 {
 public:
-    OPENTXS_EXPORT virtual std::string AccountID() const noexcept = 0;
-    OPENTXS_EXPORT virtual Amount Balance() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string ContractID() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string DisplayBalance() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string DisplayUnit() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string Name() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string NotaryID() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string NotaryName() const noexcept = 0;
-    OPENTXS_EXPORT virtual AccountType Type() const noexcept = 0;
-    OPENTXS_EXPORT virtual contact::ContactItemType Unit() const noexcept = 0;
+    virtual auto AccountID() const noexcept -> std::string = 0;
+    virtual auto Balance() const noexcept -> Amount = 0;
+    virtual auto ContractID() const noexcept -> std::string = 0;
+    virtual auto DisplayBalance() const noexcept -> std::string = 0;
+    virtual auto DisplayUnit() const noexcept -> std::string = 0;
+    virtual auto Name() const noexcept -> std::string = 0;
+    virtual auto NotaryID() const noexcept -> std::string = 0;
+    virtual auto NotaryName() const noexcept -> std::string = 0;
+    virtual auto Type() const noexcept -> AccountType = 0;
+    virtual auto Unit() const noexcept -> contact::ContactItemType = 0;
 
-    OPENTXS_EXPORT ~AccountListItem() override = default;
+    ~AccountListItem() override = default;
 
 protected:
     AccountListItem() noexcept = default;
@@ -63,8 +49,8 @@ protected:
 private:
     AccountListItem(const AccountListItem&) = delete;
     AccountListItem(AccountListItem&&) = delete;
-    AccountListItem& operator=(const AccountListItem&) = delete;
-    AccountListItem& operator=(AccountListItem&&) = delete;
+    auto operator=(const AccountListItem&) -> AccountListItem& = delete;
+    auto operator=(AccountListItem&&) -> AccountListItem& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

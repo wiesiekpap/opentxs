@@ -17,10 +17,7 @@ namespace api
 {
 namespace server
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace server
 
 class Wallet;
@@ -91,7 +88,7 @@ private:
 
     using ot_super = api::implementation::Wallet;
 
-    const api::server::internal::Manager& server_;
+    const api::server::Manager& server_;
 
     void instantiate_client_context(
         const proto::Context& serialized,
@@ -104,7 +101,7 @@ private:
         AccountLock& row) const -> bool final;
     auto signer_nym(const identifier::Nym& id) const -> Nym_p final;
 
-    Wallet(const api::server::internal::Manager& server);
+    Wallet(const api::server::Manager& server);
     Wallet() = delete;
     Wallet(const Wallet&) = delete;
     Wallet(Wallet&&) = delete;

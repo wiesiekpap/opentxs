@@ -3,9 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                   // IWYU pragma: associated
-#include "1_Internal.hpp"                 // IWYU pragma: associated
-#include "api/client/blockchain/Imp.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                            // IWYU pragma: associated
+#include "1_Internal.hpp"                          // IWYU pragma: associated
+#include "api/client/blockchain/AccountCache.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
 #include <iterator>
@@ -19,13 +19,15 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 
-// #define OT_METHOD "opentxs::api::client::implementation::AccountCache::"
+// #define OT_METHOD "opentxs::api::client::blockchain::AccountCache::"
 
-namespace opentxs::api::client::implementation
+namespace opentxs::api::client::blockchain
 {
 AccountCache::AccountCache(const api::Core& api) noexcept
     : api_(api)
@@ -154,4 +156,4 @@ auto AccountCache::Type(const Identifier& accountID) const noexcept
         return opentxs::blockchain::crypto::SubaccountType::Error;
     }
 }
-}  // namespace opentxs::api::client::implementation
+}  // namespace opentxs::api::client::blockchain

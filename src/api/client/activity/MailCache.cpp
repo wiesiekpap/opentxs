@@ -107,14 +107,14 @@ struct MailCache::Imp {
             api_.Storage().Load(nym.str(), id.str(), box, raw, alias, true);
 
         if (false == loaded) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load message ")(id)
+            LogOutput(OT_METHOD)(__func__)(": Failed to load message ")(id)
                 .Flush();
 
             return output;
         }
 
         if (raw.empty()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Empty message ")(id).Flush();
+            LogOutput(OT_METHOD)(__func__)(": Empty message ")(id).Flush();
 
             return output;
         }
@@ -125,8 +125,8 @@ struct MailCache::Imp {
 
         if (false ==
             output->LoadContractFromString(String::Factory(raw.c_str()))) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to deserialize message ")(id)
+            LogOutput(OT_METHOD)(__func__)(": Failed to deserialize message ")(
+                id)
                 .Flush();
 
             output.reset();

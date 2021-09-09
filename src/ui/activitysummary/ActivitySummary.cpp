@@ -18,12 +18,12 @@
 #include <utility>
 #include <vector>
 
-#include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Activity.hpp"
 #include "opentxs/api/client/Contacts.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -38,7 +38,7 @@
 namespace opentxs::factory
 {
 auto ActivitySummaryModel(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const Flag& running,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
@@ -53,7 +53,7 @@ auto ActivitySummaryModel(
 namespace opentxs::ui::implementation
 {
 ActivitySummary::ActivitySummary(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const Flag& running,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept

@@ -13,13 +13,6 @@
 #include "ContactListItem.hpp"
 #include "opentxs/SharedPimpl.hpp"
 
-#ifdef SWIG
-// clang-format off
-%template(OTUIPayableListItem) opentxs::SharedPimpl<opentxs::ui::PayableListItem>;
-%rename(UIPayableListItem) opentxs::ui::PayableListItem;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -34,12 +27,12 @@ namespace opentxs
 {
 namespace ui
 {
-class PayableListItem : virtual public ContactListItem
+class OPENTXS_EXPORT PayableListItem : virtual public ContactListItem
 {
 public:
-    OPENTXS_EXPORT virtual std::string PaymentCode() const noexcept = 0;
+    virtual auto PaymentCode() const noexcept -> std::string = 0;
 
-    OPENTXS_EXPORT ~PayableListItem() override = default;
+    ~PayableListItem() override = default;
 
 protected:
     PayableListItem() noexcept = default;
@@ -47,8 +40,8 @@ protected:
 private:
     PayableListItem(const PayableListItem&) = delete;
     PayableListItem(PayableListItem&&) = delete;
-    PayableListItem& operator=(const PayableListItem&) = delete;
-    PayableListItem& operator=(PayableListItem&&) = delete;
+    auto operator=(const PayableListItem&) -> PayableListItem& = delete;
+    auto operator=(PayableListItem&&) -> PayableListItem& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

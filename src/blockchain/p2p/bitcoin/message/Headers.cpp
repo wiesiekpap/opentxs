@@ -41,8 +41,7 @@ auto BitcoinP2PHeaders(
     using ReturnType = bitcoin::message::implementation::Headers;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Invalid header")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -51,7 +50,7 @@ auto BitcoinP2PHeaders(
     auto expectedSize = sizeof(std::byte);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Payload too short (compactsize)")
             .Flush();
 
@@ -64,7 +63,7 @@ auto BitcoinP2PHeaders(
         network::blockchain::bitcoin::DecodeSize(it, expectedSize, size, count);
 
     if (false == decodedSize) {
-        LogOutput(__FUNCTION__)(": CompactSize incomplete").Flush();
+        LogOutput(__func__)(": CompactSize incomplete").Flush();
 
         return nullptr;
     }
@@ -76,7 +75,7 @@ auto BitcoinP2PHeaders(
             expectedSize += 81;
 
             if (expectedSize > size) {
-                LogOutput("opentxs::factory::")(__FUNCTION__)(
+                LogOutput("opentxs::factory::")(__func__)(
                     ": Block Header entries incomplete at entry index ")(i)
                     .Flush();
 
@@ -93,7 +92,7 @@ auto BitcoinP2PHeaders(
 
                 it += 81;
             } else {
-                LogOutput("opentxs::factory::")(__FUNCTION__)(
+                LogOutput("opentxs::factory::")(__func__)(
                     ": Invalid header received at index ")(i)
                     .Flush();
 

@@ -13,8 +13,8 @@
 #include <string>
 
 #include "core/OTStorage.hpp"
-#include "internal/api/Api.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/Log.hpp"
@@ -27,7 +27,7 @@
 
 namespace opentxs
 {
-OTSignedFile::OTSignedFile(const api::internal::Core& core)
+OTSignedFile::OTSignedFile(const api::Core& core)
     : Contract(core)
     , m_strSignedFilePayload(String::Factory())
     , m_strLocalDir(String::Factory())
@@ -40,7 +40,7 @@ OTSignedFile::OTSignedFile(const api::internal::Core& core)
 }
 
 OTSignedFile::OTSignedFile(
-    const api::internal::Core& core,
+    const api::Core& core,
     const String& LOCAL_SUBDIR,
     const String& FILE_NAME)
     : Contract(core)
@@ -57,7 +57,7 @@ OTSignedFile::OTSignedFile(
 }
 
 OTSignedFile::OTSignedFile(
-    const api::internal::Core& core,
+    const api::Core& core,
     const char* LOCAL_SUBDIR,
     const String& FILE_NAME)
     : Contract(core)
@@ -76,7 +76,7 @@ OTSignedFile::OTSignedFile(
 }
 
 OTSignedFile::OTSignedFile(
-    const api::internal::Core& core,
+    const api::Core& core,
     const char* LOCAL_SUBDIR,
     const char* FILE_NAME)
     : Contract(core)
@@ -166,7 +166,7 @@ auto OTSignedFile::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
     } else if (!strcmp("filePayload", xml->getNodeName())) {
         if (false ==
             Contract::LoadEncodedTextField(xml, m_strSignedFilePayload)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error in OTSignedFile::ProcessXMLNode: filePayload field "
                 "without value.")
                 .Flush();
@@ -194,9 +194,10 @@ auto OTSignedFile::VerifyFile() -> bool
         m_strSignedFilename->Compare(m_strPurportedFilename))
         return true;
 
-    LogOutput(OT_METHOD)(__FUNCTION__)(": Failed verifying signed file: "
-                                       "Expected directory: ")(m_strLocalDir)(
-        ". Found: ")(m_strPurportedLocalDir)(". Expected filename: ")(
+    LogOutput(OT_METHOD)(__func__)(
+        ": Failed verifying signed file: "
+        "Expected directory: ")(m_strLocalDir)(". Found: ")(
+        m_strPurportedLocalDir)(". Expected filename: ")(
         m_strSignedFilename)(". Found: ")(m_strPurportedFilename)(".")
         .Flush();
     return false;

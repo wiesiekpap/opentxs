@@ -20,7 +20,7 @@ namespace zeromq
 namespace socket
 {
 template <typename Input>
-OPENTXS_EXPORT bool Sender::Send(const Input& data) const noexcept
+OPENTXS_EXPORT auto Sender::Send(const Input& data) const noexcept -> bool
 {
     return send(Context().Message(data));
 }

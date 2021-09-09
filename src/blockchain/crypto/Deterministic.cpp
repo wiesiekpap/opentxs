@@ -17,12 +17,15 @@
 
 #include "blockchain/crypto/Element.hpp"
 #include "blockchain/crypto/Subaccount.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/HDSeed.hpp"
+#include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
+#include "opentxs/blockchain/crypto/Wallet.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
@@ -45,8 +48,8 @@ Deterministic::ChainData::ChainData(
 }
 
 Deterministic::Deterministic(
-    const api::internal::Core& api,
-    const internal::Account& parent,
+    const api::Core& api,
+    const Account& parent,
     const SubaccountType type,
     OTIdentifier&& id,
     const proto::HDPath path,
@@ -65,8 +68,8 @@ Deterministic::Deterministic(
 }
 
 Deterministic::Deterministic(
-    const api::internal::Core& api,
-    const internal::Account& parent,
+    const api::Core& api,
+    const Account& parent,
     const SubaccountType type,
     const SerializedType& serialized,
     const Bip32Index internal,
@@ -117,7 +120,7 @@ auto Deterministic::accept(
     set_metadata(lock, type, index, contact, label);
     auto& element =
         const_cast<Deterministic&>(*this).element(lock, type, index);
-    element.Reserve(time);
+    element.Internal().Reserve(time);
     LogTrace(OT_METHOD)(__func__)(": Accepted index ")(index).Flush();
 
     return index;
@@ -159,7 +162,7 @@ auto Deterministic::check(
         LogTrace(OT_METHOD)(__func__)(": Examining generated index ")(candidate)
             .Flush();
         const auto& element = this->element(lock, type, candidate);
-        const auto status = element.IsAvailable(contact, label);
+        const auto status = element.Internal().IsAvailable(contact, label);
 
         switch (status) {
             case Status::NeverUsed: {
@@ -302,13 +305,15 @@ auto Deterministic::confirm(
         for (auto i{index}; i > used; --i) {
             const auto& element = this->element(lock, type, i - 1u);
 
-            if (Status::Used != element.IsAvailable(blank, "")) { return; }
+            if (Status::Used != element.Internal().IsAvailable(blank, "")) {
+                return;
+            }
         }
 
         for (auto i{index}; i < generated_.at(type); ++i) {
             const auto& element = this->element(lock, type, i);
 
-            if (Status::Used == element.IsAvailable(blank, "")) {
+            if (Status::Used == element.Internal().IsAvailable(blank, "")) {
                 used = std::max(used, i + 1u);
             } else {
 
@@ -322,7 +327,7 @@ auto Deterministic::confirm(
 auto Deterministic::element(
     const rLock&,
     const Subchain type,
-    const Bip32Index index) noexcept(false) -> internal::Element&
+    const Bip32Index index) noexcept(false) -> crypto::Element&
 {
     if (auto& data = data_.internal_; data.type_ == type) {
         return *data.map_.at(index);
@@ -351,7 +356,7 @@ auto Deterministic::finish_allocation(const rLock& lock, Batch& generated)
 {
 #if OT_BLOCKCHAIN
     if (0u < generated.size()) {
-        parent_.ParentInternal().Parent().KeyGenerated(chain_);
+        parent_.Parent().Parent().Internal().KeyGenerated(chain_);
     }
 #endif  // OT_BLOCKCHAIN
 
@@ -425,7 +430,7 @@ auto Deterministic::generate(
 
     const auto& key = *pKey;
     auto& addressMap = data_.Get(type).map_;
-    const auto& blockchain = parent_.ParentInternal().Parent();
+    const auto& blockchain = parent_.Parent().Parent();
     const auto [it, added] = addressMap.emplace(
         std::piecewise_construct,
         std::forward_as_tuple(index),
@@ -503,7 +508,7 @@ auto Deterministic::LastGenerated(const Subchain type) const noexcept
 auto Deterministic::mutable_element(
     const rLock& lock,
     const Subchain type,
-    const Bip32Index index) noexcept(false) -> internal::Element&
+    const Bip32Index index) noexcept(false) -> crypto::Element&
 {
     return *data_.Get(type).map_.at(index);
 }
@@ -640,7 +645,7 @@ auto Deterministic::set_metadata(
     try {
         auto& data = data_.Get(subchain);
         const auto& id = data.set_contact_ ? contact : blank.get();
-        data.map_.at(index)->SetMetadata(id, label);
+        data.map_.at(index)->Internal().SetMetadata(id, label);
     } catch (...) {
     }
 }

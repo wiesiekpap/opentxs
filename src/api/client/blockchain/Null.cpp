@@ -3,16 +3,16 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"               // IWYU pragma: associated
-#include "1_Internal.hpp"             // IWYU pragma: associated
-#include "api/client/Blockchain.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                          // IWYU pragma: associated
+#include "1_Internal.hpp"                        // IWYU pragma: associated
+#include "api/client/blockchain/Blockchain.hpp"  // IWYU pragma: associated
 
 #include "api/client/blockchain/Imp.hpp"
 
 namespace opentxs::api::client::implementation
 {
 Blockchain::Blockchain(
-    const api::internal::Core& api,
+    const api::Core& api,
     const api::client::Activity&,
     const api::client::Contacts& contacts,
     const api::Legacy&,

@@ -24,10 +24,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identity
@@ -103,14 +100,14 @@ private:
         const PasswordPrompt& reason) noexcept(false) final;
 
     Primary(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identity::internal::Authority& parent,
         const identity::Source& source,
         const NymParameters& nymParameters,
         const VersionNumber version,
         const PasswordPrompt& reason) noexcept(false);
     Primary(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identity::internal::Authority& parent,
         const identity::Source& source,
         const proto::Credential& serializedCred) noexcept(false);

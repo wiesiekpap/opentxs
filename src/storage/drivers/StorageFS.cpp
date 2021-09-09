@@ -183,8 +183,7 @@ auto StorageFS::sync(const std::string& path) const -> bool
     FileDescriptor fd(path);
 
     if (!fd) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to open ")(path)(".")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to open ")(path)(".").Flush();
 
         return false;
     }
@@ -219,14 +218,14 @@ auto StorageFS::write_file(
             file.write(data.c_str(), data.size());
 
             if (false == sync(file)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to sync file ")(
+                LogOutput(OT_METHOD)(__func__)(": Failed to sync file ")(
                     filename)(".")
                     .Flush();
             }
 
             if (false == sync(directory)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": Failed to sync directory ")(directory)(".")
+                LogOutput(OT_METHOD)(__func__)(": Failed to sync directory ")(
+                    directory)(".")
                     .Flush();
             }
 
@@ -234,11 +233,10 @@ auto StorageFS::write_file(
 
             return true;
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to write file.")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Failed to write file.").Flush();
         }
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to write empty filename.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to write empty filename.")
             .Flush();
     }
 

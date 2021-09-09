@@ -58,7 +58,7 @@ TEST_F(Test_PaymentCodeAPI, alice)
     const auto& remote = GetVectors3().bob_;
     constexpr auto receiveChain{ot::blockchain::Type::Bitcoin};
     constexpr auto sendChain{ot::blockchain::Type::Bitcoin_testnet3};
-    const auto reason = alice_.Factory().PasswordPrompt(__FUNCTION__);
+    const auto reason = alice_.Factory().PasswordPrompt(__func__);
     const auto seedID = [&] {
         const auto words = alice_.Factory().SecretFromText(vector.words_);
         const auto phrase = alice_.Factory().Secret(0);
@@ -160,7 +160,7 @@ TEST_F(Test_PaymentCodeAPI, bob)
     const auto& remote = GetVectors3().alice_;
     constexpr auto receiveChain{ot::blockchain::Type::Bitcoin_testnet3};
     constexpr auto sendChain{ot::blockchain::Type::Bitcoin};
-    const auto reason = bob_.Factory().PasswordPrompt(__FUNCTION__);
+    const auto reason = bob_.Factory().PasswordPrompt(__func__);
     const auto seedID = [&] {
         const auto words = bob_.Factory().SecretFromText(vector.words_);
         const auto phrase = bob_.Factory().Secret(0);

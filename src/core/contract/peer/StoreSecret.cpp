@@ -31,7 +31,7 @@ using ParentType = contract::peer::implementation::Request;
 using ReturnType = contract::peer::request::implementation::StoreSecret;
 
 auto Factory::StoreSecret(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const identifier::Nym& recipientID,
     const contract::peer::SecretType type,
@@ -53,20 +53,20 @@ auto Factory::StoreSecret(
 
         return std::move(output);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
 }
 
 auto Factory::StoreSecret(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const proto::PeerRequest& serialized) noexcept
     -> std::shared_ptr<contract::peer::request::StoreSecret>
 {
     if (false == proto::Validate(serialized, VERBOSE)) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
+        LogOutput("opentxs::Factory::")(__func__)(
             ": Invalid serialized request.")
             .Flush();
 
@@ -82,7 +82,7 @@ auto Factory::StoreSecret(
         Lock lock(contract.lock_);
 
         if (false == contract.validate(lock)) {
-            LogOutput("opentxs::Factory::")(__FUNCTION__)(": Invalid request.")
+            LogOutput("opentxs::Factory::")(__func__)(": Invalid request.")
                 .Flush();
 
             return {};
@@ -90,7 +90,7 @@ auto Factory::StoreSecret(
 
         return std::move(output);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -100,7 +100,7 @@ auto Factory::StoreSecret(
 namespace opentxs::contract::peer::request::implementation
 {
 StoreSecret::StoreSecret(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const identifier::Nym& recipientID,
     const SecretType type,
@@ -123,7 +123,7 @@ StoreSecret::StoreSecret(
 }
 
 StoreSecret::StoreSecret(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const SerializedType& serialized)
     : Request(api, nym, serialized)

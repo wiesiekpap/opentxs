@@ -26,10 +26,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace proto
@@ -71,7 +68,7 @@ private:
     OTFlag include_nym_;
 
     static auto extract_nym(
-        const api::internal::Core& api,
+        const api::Core& api,
         const proto::ServerRequest serialized) -> Nym_p;
 
     auto clone() const noexcept -> Request* final { return new Request(*this); }
@@ -90,15 +87,13 @@ private:
         const -> bool final;
 
     Request(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p signer,
         const identifier::Nym& initiator,
         const identifier::Server& server,
         const otx::ServerRequestType type,
         const RequestNumber number);
-    Request(
-        const api::internal::Core& api,
-        const proto::ServerRequest serialized);
+    Request(const api::Core& api, const proto::ServerRequest serialized);
     Request() = delete;
     Request(const Request& rhs);
     Request(Request&& rhs) = delete;

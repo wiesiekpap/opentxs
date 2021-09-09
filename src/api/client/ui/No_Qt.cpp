@@ -13,7 +13,7 @@
 namespace opentxs::factory
 {
 auto UI(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const api::client::internal::Blockchain& blockchain,
     const Flag& running) noexcept -> std::unique_ptr<api::client::internal::UI>
 {

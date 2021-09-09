@@ -11,10 +11,10 @@
 
 #include "2_Factory.hpp"
 #include "Proto.tpp"
-#include "internal/api/Api.hpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Contacts.hpp"
@@ -42,7 +42,7 @@
 namespace opentxs::factory
 {
 auto PeerObject(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& senderNym,
     const std::string& message) noexcept -> std::unique_ptr<opentxs::PeerObject>
 {
@@ -54,14 +54,14 @@ auto PeerObject(
 
         return output;
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
 }
 
 auto PeerObject(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& senderNym,
     const std::string& payment,
     const bool isPayment) noexcept -> std::unique_ptr<opentxs::PeerObject>
@@ -76,7 +76,7 @@ auto PeerObject(
 
         return output;
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
@@ -84,7 +84,7 @@ auto PeerObject(
 
 #if OT_CASH
 auto PeerObject(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& senderNym,
     const std::shared_ptr<blind::Purse> purse) noexcept
     -> std::unique_ptr<opentxs::PeerObject>
@@ -97,7 +97,7 @@ auto PeerObject(
 
         return output;
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
@@ -105,7 +105,7 @@ auto PeerObject(
 #endif
 
 auto PeerObject(
-    const api::internal::Core& api,
+    const api::Core& api,
     const OTPeerRequest request,
     const OTPeerReply reply,
     const VersionNumber version) noexcept
@@ -119,14 +119,14 @@ auto PeerObject(
 
         return output;
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
 }
 
 auto PeerObject(
-    const api::internal::Core& api,
+    const api::Core& api,
     const OTPeerRequest request,
     const VersionNumber version) noexcept
     -> std::unique_ptr<opentxs::PeerObject>
@@ -139,7 +139,7 @@ auto PeerObject(
 
         return output;
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
@@ -147,7 +147,7 @@ auto PeerObject(
 
 auto PeerObject(
     const api::client::Contacts& contacts,
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& signerNym,
     const proto::PeerObject& serialized) noexcept
     -> std::unique_ptr<opentxs::PeerObject>
@@ -160,15 +160,14 @@ auto PeerObject(
             output.reset(new peer::implementation::Object(
                 contacts, api, signerNym, serialized));
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid peer object.")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Invalid peer object.").Flush();
         }
 
         if (!output->Validate()) { output.reset(); }
 
         return output;
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
@@ -176,7 +175,7 @@ auto PeerObject(
 
 auto PeerObject(
     const api::client::Contacts& contacts,
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& recipientNym,
     const opentxs::Armored& encrypted,
     const opentxs::PasswordPrompt& reason) noexcept
@@ -190,7 +189,7 @@ auto PeerObject(
 
         if (false ==
             input->Open(*recipientNym, contents->WriteInto(), reason)) {
-            LogOutput("opentxs::factory::")(__FUNCTION__)(
+            LogOutput("opentxs::factory::")(__func__)(
                 ": Unable to decrypt message")
                 .Flush();
 
@@ -201,7 +200,7 @@ auto PeerObject(
 
         return factory::PeerObject(contacts, api, notUsed, serialized);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
@@ -211,7 +210,7 @@ auto PeerObject(
 namespace opentxs::peer::implementation
 {
 Object::Object(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const std::string& message,
     const std::string& payment,
@@ -238,7 +237,7 @@ Object::Object(
 
 Object::Object(
     const api::client::Contacts& contacts,
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& signerNym,
     const proto::PeerObject serialized)
     : Object(
@@ -296,13 +295,13 @@ Object::Object(
 #endif
         } break;
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect type.").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Incorrect type.").Flush();
         }
     }
 }
 
 Object::Object(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& senderNym,
     const std::string& message)
     : Object(
@@ -322,7 +321,7 @@ Object::Object(
 
 #if OT_CASH
 Object::Object(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& senderNym,
     const std::shared_ptr<blind::Purse> purse)
     : Object(
@@ -340,7 +339,7 @@ Object::Object(
 #endif
 
 Object::Object(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& payment,
     const Nym_p& senderNym)
     : Object(
@@ -359,7 +358,7 @@ Object::Object(
 }
 
 Object::Object(
-    const api::internal::Core& api,
+    const api::Core& api,
     const OTPeerRequest request,
     const OTPeerReply reply,
     const VersionNumber version)
@@ -379,7 +378,7 @@ Object::Object(
 }
 
 Object::Object(
-    const api::internal::Core& api,
+    const api::Core& api,
     const OTPeerRequest request,
     const VersionNumber version)
     : Object(
@@ -404,7 +403,7 @@ auto Object::Serialize(proto::PeerObject& output) const -> bool
     auto publicNym = [&](Nym_p nym) -> proto::Nym {
         auto publicNym = proto::Nym{};
         if (false == nym->Serialize(publicNym)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize nym.")
+            LogOutput(OT_METHOD)(__func__)(": Failed to serialize nym.")
                 .Flush();
         }
         return publicNym;
@@ -479,7 +478,7 @@ auto Object::Serialize(proto::PeerObject& output) const -> bool
         } break;
 #endif
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unknown type.").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Unknown type.").Flush();
             return false;
         }
     }
@@ -516,7 +515,7 @@ auto Object::Validate() const -> bool
         } break;
 #endif
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unknown type.").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Unknown type.").Flush();
         }
     }
 

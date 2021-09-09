@@ -16,10 +16,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -40,14 +37,14 @@ class Outbailment final : public reply::Outbailment,
 {
 public:
     Outbailment(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const identifier::Nym& initiator,
         const Identifier& request,
         const identifier::Server& server,
         const std::string& terms);
     Outbailment(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const SerializedType& serialized);
 

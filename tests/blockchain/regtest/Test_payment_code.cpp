@@ -202,7 +202,7 @@ protected:
                     auto output = std::vector<OutputBuilder>{};
                     const auto& account = SendHD();
                     const auto reason =
-                        client_1_.Factory().PasswordPrompt(__FUNCTION__);
+                        client_1_.Factory().PasswordPrompt(__func__);
                     const auto keys = std::set<bca::Key>{};
                     const auto index =
                         account.Reserve(Subchain::External, reason);
@@ -265,7 +265,7 @@ protected:
             auto cb = [](User& user) {
                 const auto& api = *user.api_;
                 const auto& nymID = user.nym_id_.get();
-                const auto reason = api.Factory().PasswordPrompt(__FUNCTION__);
+                const auto reason = api.Factory().PasswordPrompt(__func__);
                 api.Blockchain().NewHDSubaccount(
                     nymID,
                     ot::blockchain::crypto::HDProtocol::BIP_44,

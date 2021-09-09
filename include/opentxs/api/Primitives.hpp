@@ -14,15 +14,14 @@ namespace opentxs
 {
 namespace api
 {
-class Primitives
+class OPENTXS_EXPORT Primitives
 {
 public:
-    OPENTXS_EXPORT virtual OTSecret Secret(
-        const std::size_t bytes) const noexcept = 0;
-    OPENTXS_EXPORT virtual OTSecret SecretFromBytes(
-        const ReadView bytes) const noexcept = 0;
-    OPENTXS_EXPORT virtual OTSecret SecretFromText(
-        const std::string_view text) const noexcept = 0;
+    virtual auto Secret(const std::size_t bytes) const noexcept -> OTSecret = 0;
+    virtual auto SecretFromBytes(const ReadView bytes) const noexcept
+        -> OTSecret = 0;
+    virtual auto SecretFromText(const std::string_view text) const noexcept
+        -> OTSecret = 0;
 
     virtual ~Primitives() = default;
 
@@ -32,8 +31,8 @@ protected:
 private:
     Primitives(const Primitives&) = delete;
     Primitives(Primitives&&) = delete;
-    Primitives& operator=(const Primitives&) = delete;
-    Primitives& operator=(Primitives&&) = delete;
+    auto operator=(const Primitives&) -> Primitives& = delete;
+    auto operator=(Primitives&&) -> Primitives& = delete;
 };
 }  // namespace api
 }  // namespace opentxs

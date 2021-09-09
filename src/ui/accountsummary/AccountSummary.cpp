@@ -14,12 +14,12 @@
 #include <utility>
 #include <vector>
 
-#include "internal/api/client/Client.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Issuer.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -34,7 +34,7 @@
 namespace opentxs::factory
 {
 auto AccountSummaryModel(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const contact::ContactItemType currency,
     const SimpleCallback& cb) noexcept
@@ -49,7 +49,7 @@ auto AccountSummaryModel(
 namespace opentxs::ui::implementation
 {
 AccountSummary::AccountSummary(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const contact::ContactItemType currency,
     const SimpleCallback& cb) noexcept

@@ -14,13 +14,6 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 
-#ifdef SWIG
-// clang-format off
-%template(OTUIProfileItem) opentxs::SharedPimpl<opentxs::ui::ProfileItem>;
-%rename(UIProfileItem) opentxs::ui::ProfileItem;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -35,22 +28,19 @@ namespace opentxs
 {
 namespace ui
 {
-class ProfileItem : virtual public ListRow
+class OPENTXS_EXPORT ProfileItem : virtual public ListRow
 {
 public:
-    OPENTXS_EXPORT virtual std::string ClaimID() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Delete() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool IsActive() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool IsPrimary() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SetActive(
-        const bool& active) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SetPrimary(
-        const bool& primary) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SetValue(
-        const std::string& value) const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string Value() const noexcept = 0;
+    virtual auto ClaimID() const noexcept -> std::string = 0;
+    virtual auto Delete() const noexcept -> bool = 0;
+    virtual auto IsActive() const noexcept -> bool = 0;
+    virtual auto IsPrimary() const noexcept -> bool = 0;
+    virtual auto SetActive(const bool& active) const noexcept -> bool = 0;
+    virtual auto SetPrimary(const bool& primary) const noexcept -> bool = 0;
+    virtual auto SetValue(const std::string& value) const noexcept -> bool = 0;
+    virtual auto Value() const noexcept -> std::string = 0;
 
-    OPENTXS_EXPORT ~ProfileItem() override = default;
+    ~ProfileItem() override = default;
 
 protected:
     ProfileItem() noexcept = default;
@@ -58,8 +48,8 @@ protected:
 private:
     ProfileItem(const ProfileItem&) = delete;
     ProfileItem(ProfileItem&&) = delete;
-    ProfileItem& operator=(const ProfileItem&) = delete;
-    ProfileItem& operator=(ProfileItem&&) = delete;
+    auto operator=(const ProfileItem&) -> ProfileItem& = delete;
+    auto operator=(ProfileItem&&) -> ProfileItem& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

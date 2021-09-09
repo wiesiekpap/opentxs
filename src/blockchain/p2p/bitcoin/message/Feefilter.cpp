@@ -37,8 +37,7 @@ auto BitcoinP2PFeefilter(
     using ReturnType = bitcoin::message::Feefilter;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Invalid header")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -46,7 +45,7 @@ auto BitcoinP2PFeefilter(
     auto expectedSize = sizeof(FeeRateField);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Size below minimum for Feefilter 1")
             .Flush();
 
@@ -63,8 +62,7 @@ auto BitcoinP2PFeefilter(
     try {
         return new ReturnType(api, std::move(pHeader), fee_rate);
     } catch (...) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Checksum failure")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Checksum failure").Flush();
 
         return nullptr;
     }

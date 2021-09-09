@@ -88,7 +88,7 @@ public:
     void AddParty(std::string str_party_name, OTParty& theParty);
     void AddAccount(std::string str_acct_name, OTPartyAccount& theAcct);
     void AddVariable(std::string str_var_name, OTVariable& theVar);
-    OTVariable* FindVariable(std::string str_var_name);
+    auto FindVariable(std::string str_var_name) -> OTVariable*;
     void RemoveVariable(OTVariable& theVar);
 
     // Note: any relevant assets or asset accounts are listed by their owner /
@@ -98,13 +98,14 @@ public:
     // a script, since the necessary ones are already present inside their
     // respective parties.
 
-    virtual bool ExecuteScript(OTVariable* pReturnVar = nullptr);
+    virtual auto ExecuteScript(OTVariable* pReturnVar = nullptr) -> bool;
 };
 
-std::shared_ptr<OTScript> OTScriptFactory(const std::string& script_type = "");
-std::shared_ptr<OTScript> OTScriptFactory(
+auto OTScriptFactory(const std::string& script_type = "")
+    -> std::shared_ptr<OTScript>;
+auto OTScriptFactory(
     const std::string& script_type,
-    const std::string& script_contents);
+    const std::string& script_contents) -> std::shared_ptr<OTScript>;
 
 }  // namespace opentxs
 

@@ -16,14 +16,14 @@ namespace opentxs
 {
 namespace network
 {
-class OpenDHT
+class OPENTXS_EXPORT OpenDHT
 {
 public:
-    OPENTXS_EXPORT virtual void Insert(
+    virtual void Insert(
         const std::string& key,
         const std::string& value,
         DhtDoneCallback cb = {}) const noexcept = 0;
-    OPENTXS_EXPORT virtual void Retrieve(
+    virtual void Retrieve(
         const std::string& key,
         DhtResultsCallback vcb,
         DhtDoneCallback dcb = {}) const noexcept = 0;
@@ -36,8 +36,8 @@ protected:
 private:
     OpenDHT(const OpenDHT&) = delete;
     OpenDHT(OpenDHT&&) = delete;
-    OpenDHT& operator=(const OpenDHT&) = delete;
-    OpenDHT& operator=(OpenDHT&&) = delete;
+    auto operator=(const OpenDHT&) -> OpenDHT& = delete;
+    auto operator=(OpenDHT&&) -> OpenDHT& = delete;
 };
 }  // namespace network
 }  // namespace opentxs

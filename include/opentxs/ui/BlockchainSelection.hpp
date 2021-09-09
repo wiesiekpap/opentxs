@@ -13,12 +13,6 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/ui/List.hpp"
 
-#ifdef SWIG
-// clang-format off
-%rename(UIBlockchainSelection) opentxs::ui::BlockchainSelection;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -32,22 +26,19 @@ namespace opentxs
 {
 namespace ui
 {
-class BlockchainSelection : virtual public List
+class OPENTXS_EXPORT BlockchainSelection : virtual public List
 {
 public:
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<
-        opentxs::ui::BlockchainSelectionItem>
-    First() const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<
-        opentxs::ui::BlockchainSelectionItem>
-    Next() const noexcept = 0;
+    virtual auto First() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::BlockchainSelectionItem> = 0;
+    virtual auto Next() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::BlockchainSelectionItem> = 0;
 
-    OPENTXS_EXPORT virtual bool Disable(
-        const blockchain::Type type) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Enable(
-        const blockchain::Type type) const noexcept = 0;
+    virtual auto Disable(const blockchain::Type type) const noexcept
+        -> bool = 0;
+    virtual auto Enable(const blockchain::Type type) const noexcept -> bool = 0;
 
-    OPENTXS_EXPORT ~BlockchainSelection() override = default;
+    ~BlockchainSelection() override = default;
 
 protected:
     BlockchainSelection() noexcept = default;
@@ -55,8 +46,8 @@ protected:
 private:
     BlockchainSelection(const BlockchainSelection&) = delete;
     BlockchainSelection(BlockchainSelection&&) = delete;
-    BlockchainSelection& operator=(const BlockchainSelection&) = delete;
-    BlockchainSelection& operator=(BlockchainSelection&&) = delete;
+    auto operator=(const BlockchainSelection&) -> BlockchainSelection& = delete;
+    auto operator=(BlockchainSelection&&) -> BlockchainSelection& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

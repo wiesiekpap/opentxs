@@ -103,7 +103,7 @@ auto Peers::Find(
         }
 
         if (candidates.empty()) {
-            LogTrace(OT_METHOD)(__FUNCTION__)(
+            LogTrace(OT_METHOD)(__func__)(
                 ": No peers available for specified chain/protocol")
                 .Flush();
 
@@ -135,14 +135,14 @@ auto Peers::Find(
         }
 
         if (haveServices.empty()) {
-            LogTrace(OT_METHOD)(__FUNCTION__)(
+            LogTrace(OT_METHOD)(__func__)(
                 ": No peers available with specified services")
                 .Flush();
 
             return {};
         } else {
-            LogTrace(OT_METHOD)(__FUNCTION__)(
-                ": Choosing from ")(haveServices.size())(" candidates")
+            LogTrace(OT_METHOD)(__func__)(": Choosing from ")(
+                haveServices.size())(" candidates")
                 .Flush();
         }
 
@@ -179,7 +179,7 @@ auto Peers::Find(
 
         OT_ASSERT(count == output.size());
 
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Loading peer ")(output.front())
+        LogTrace(OT_METHOD)(__func__)(": Loading peer ")(output.front())
             .Flush();
 
         return load_address(output.front());
@@ -220,7 +220,7 @@ auto Peers::insert(const Lock& lock, std::vector<Address_p> peers) noexcept
 
     for (auto& pAddress : peers) {
         if (false == bool(pAddress)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid peer").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Invalid peer").Flush();
 
             return false;
         }
@@ -248,8 +248,7 @@ auto Peers::insert(const Lock& lock, std::vector<Address_p> peers) noexcept
                 parentTxn);
 
             if (false == result.first) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": Failed to save peer address")
+                LogOutput(OT_METHOD)(__func__)(": Failed to save peer address")
                     .Flush();
 
                 return false;
@@ -262,7 +261,7 @@ auto Peers::insert(const Lock& lock, std::vector<Address_p> peers) noexcept
                 parentTxn);
 
             if (false == result.first) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Failed to save peer chain index")
                     .Flush();
 
@@ -276,7 +275,7 @@ auto Peers::insert(const Lock& lock, std::vector<Address_p> peers) noexcept
                 parentTxn);
 
             if (false == result.first) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Failed to save peer protocol index")
                     .Flush();
 
@@ -291,7 +290,7 @@ auto Peers::insert(const Lock& lock, std::vector<Address_p> peers) noexcept
                     parentTxn);
 
                 if (false == result.first) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Failed to save peer service index")
                         .Flush();
 
@@ -314,7 +313,7 @@ auto Peers::insert(const Lock& lock, std::vector<Address_p> peers) noexcept
                 parentTxn);
 
             if (false == result.first) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Failed to save peer network index")
                     .Flush();
 
@@ -329,7 +328,7 @@ auto Peers::insert(const Lock& lock, std::vector<Address_p> peers) noexcept
                 parentTxn);
 
             if (false == result.first) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Failed to save peer network index")
                     .Flush();
 
@@ -363,7 +362,7 @@ auto Peers::insert(const Lock& lock, std::vector<Address_p> peers) noexcept
     }
 
     if (false == parentTxn.Finalize(true)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Database error").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Database error").Flush();
 
         return false;
     }
@@ -381,7 +380,7 @@ auto Peers::load_address(const std::string& id) const noexcept(false)
     });
 
     if (false == output.has_value()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Peer ")(id)(" not found").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Peer ")(id)(" not found").Flush();
 
         throw std::out_of_range("Address not found");
     }
@@ -389,7 +388,7 @@ auto Peers::load_address(const std::string& id) const noexcept(false)
     const auto& serialized = output.value();
 
     if (false == proto::Validate(serialized, SILENT)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Peer ")(id)(" invalid").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Peer ")(id)(" invalid").Flush();
 
         throw std::out_of_range("Invalid address");
     }

@@ -19,15 +19,12 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
 namespace network
 {
 class ZMQ;
 }  // namespace network
+
+class Core;
 }  // namespace api
 
 namespace network
@@ -68,21 +65,21 @@ public:
         Disable = false,
     };
 
-    static OTServerConnection Factory(
-        const api::internal::Core& api,
+    static auto Factory(
+        const api::Core& api,
         const api::network::ZMQ& zmq,
         const zeromq::socket::Publish& updates,
-        const OTServerContract& contract);
+        const OTServerContract& contract) -> OTServerConnection;
 
-    virtual bool ChangeAddressType(const core::AddressType type) = 0;
-    virtual bool ClearProxy() = 0;
-    virtual bool EnableProxy() = 0;
-    virtual NetworkReplyMessage Send(
+    virtual auto ChangeAddressType(const core::AddressType type) -> bool = 0;
+    virtual auto ClearProxy() -> bool = 0;
+    virtual auto EnableProxy() -> bool = 0;
+    virtual auto Send(
         const otx::context::Server& context,
         const Message& message,
         const PasswordPrompt& reason,
-        const Push push = Push::Enable) = 0;
-    virtual bool Status() const = 0;
+        const Push push = Push::Enable) -> NetworkReplyMessage = 0;
+    virtual auto Status() const -> bool = 0;
 
     virtual ~ServerConnection() = default;
 
@@ -93,12 +90,12 @@ private:
     friend OTServerConnection;
 
     /** WARNING: not implemented */
-    virtual ServerConnection* clone() const = 0;
+    virtual auto clone() const -> ServerConnection* = 0;
 
     ServerConnection(const ServerConnection&) = delete;
     ServerConnection(ServerConnection&&) = delete;
-    ServerConnection& operator=(const ServerConnection&) = delete;
-    ServerConnection& operator=(ServerConnection&&) = delete;
+    auto operator=(const ServerConnection&) -> ServerConnection& = delete;
+    auto operator=(ServerConnection&&) -> ServerConnection& = delete;
 };
 }  // namespace network
 }  // namespace opentxs

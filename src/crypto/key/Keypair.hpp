@@ -19,10 +19,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace proto
@@ -60,7 +57,7 @@ public:
         const PasswordPrompt& reason) const noexcept -> bool final;
 
     Keypair(
-        const api::internal::Core& api,
+        const api::Core& api,
         const opentxs::crypto::key::asymmetric::Role role,
         std::unique_ptr<crypto::key::Asymmetric> publicKey,
         std::unique_ptr<crypto::key::Asymmetric> privateKey) noexcept;
@@ -70,7 +67,7 @@ public:
 private:
     friend key::Keypair;
 
-    const api::internal::Core& api_;
+    const api::Core& api_;
     OTAsymmetricKey m_pkeyPrivate;
     OTAsymmetricKey m_pkeyPublic;
     const opentxs::crypto::key::asymmetric::Role role_;

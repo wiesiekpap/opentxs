@@ -30,8 +30,7 @@ ListenCallbackSwig::ListenCallbackSwig(opentxs::ListenCallbackSwig* callback)
     : callback_(callback)
 {
     if (nullptr == callback_) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid callback pointer.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid callback pointer.").Flush();
 
         OT_FAIL;
     }

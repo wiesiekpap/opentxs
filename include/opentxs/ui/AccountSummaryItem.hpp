@@ -13,13 +13,6 @@
 #include "ListRow.hpp"
 #include "opentxs/SharedPimpl.hpp"
 
-#ifdef SWIG
-// clang-format off
-%template(OTUIAccountSummaryItem) opentxs::SharedPimpl<opentxs::ui::AccountSummaryItem>;
-%rename(UIAccountSummaryItem) opentxs::ui::AccountSummaryItem;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -34,15 +27,15 @@ namespace opentxs
 {
 namespace ui
 {
-class AccountSummaryItem : virtual public ListRow
+class OPENTXS_EXPORT AccountSummaryItem : virtual public ListRow
 {
 public:
-    OPENTXS_EXPORT virtual std::string AccountID() const noexcept = 0;
-    OPENTXS_EXPORT virtual Amount Balance() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string DisplayBalance() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string Name() const noexcept = 0;
+    virtual auto AccountID() const noexcept -> std::string = 0;
+    virtual auto Balance() const noexcept -> Amount = 0;
+    virtual auto DisplayBalance() const noexcept -> std::string = 0;
+    virtual auto Name() const noexcept -> std::string = 0;
 
-    OPENTXS_EXPORT ~AccountSummaryItem() override = default;
+    ~AccountSummaryItem() override = default;
 
 protected:
     AccountSummaryItem() noexcept = default;
@@ -50,8 +43,8 @@ protected:
 private:
     AccountSummaryItem(const AccountSummaryItem&) = delete;
     AccountSummaryItem(AccountSummaryItem&&) = delete;
-    AccountSummaryItem& operator=(const AccountSummaryItem&) = delete;
-    AccountSummaryItem& operator=(AccountSummaryItem&&) = delete;
+    auto operator=(const AccountSummaryItem&) -> AccountSummaryItem& = delete;
+    auto operator=(AccountSummaryItem&&) -> AccountSummaryItem& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

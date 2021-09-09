@@ -52,7 +52,7 @@ static auto extract_attributes(const Claim& claim)
 }
 
 struct ContactItem::Imp {
-    const api::internal::Core& api_;
+    const api::Core& api_;
     const VersionNumber version_;
     const std::string nym_;
     const contact::ContactSectionName section_;
@@ -74,7 +74,7 @@ struct ContactItem::Imp {
         return in;
     }
 
-    Imp(const api::internal::Core& api,
+    Imp(const api::Core& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
@@ -100,9 +100,8 @@ struct ContactItem::Imp {
         , subtype_(subtype)
     {
         if (0 == version) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Warning: malformed version. "
-                "Setting to ")(parentVersion)(".")
+            LogOutput(OT_METHOD)(__func__)(": Warning: malformed version. "
+                                           "Setting to ")(parentVersion)(".")
                 .Flush();
         }
     }
@@ -171,7 +170,7 @@ struct ContactItem::Imp {
 };
 
 ContactItem::ContactItem(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& nym,
     const VersionNumber version,
     const VersionNumber parentVersion,
@@ -211,7 +210,7 @@ ContactItem::ContactItem(ContactItem&& rhs) noexcept
 }
 
 ContactItem::ContactItem(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& nym,
     const VersionNumber version,
     const VersionNumber parentVersion,
@@ -232,7 +231,7 @@ ContactItem::ContactItem(
 }
 
 ContactItem::ContactItem(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& nym,
     const VersionNumber parentVersion,
     const contact::ContactSectionName section,
@@ -253,7 +252,7 @@ ContactItem::ContactItem(
 }
 
 ContactItem::ContactItem(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& nym,
     const VersionNumber parentVersion,
     const contact::ContactSectionName section,

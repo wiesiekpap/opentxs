@@ -34,7 +34,7 @@ TEST(ClientSession, create)
 {
     const auto& otx = ot::InitContext(Args(true));
     const auto& client = otx.StartClient(0);
-    const auto reason = client.Factory().PasswordPrompt(__FUNCTION__);
+    const auto reason = client.Factory().PasswordPrompt(__func__);
     const auto nym = client.Wallet().Nym(reason);
 
     ASSERT_TRUE(nym);
@@ -50,7 +50,7 @@ TEST(ClientSession, restart)
 {
     const auto& otx = ot::InitContext(Args(true));
     const auto& client = otx.StartClient(0);
-    const auto reason = client.Factory().PasswordPrompt(__FUNCTION__);
+    const auto reason = client.Factory().PasswordPrompt(__func__);
     const auto nym = client.Wallet().Nym(client.Factory().NymID(nym_id_));
 
     ASSERT_TRUE(nym);
@@ -64,8 +64,8 @@ TEST(ClientSession, introduction_server)
     const auto& otx = ot::InitContext(Args(true));
     const auto& server = otx.StartServer(0);
     const auto& client = otx.StartClient(0);
-    const auto reasonS = server.Factory().PasswordPrompt(__FUNCTION__);
-    const auto reasonC = client.Factory().PasswordPrompt(__FUNCTION__);
+    const auto reasonS = server.Factory().PasswordPrompt(__func__);
+    const auto reasonC = client.Factory().PasswordPrompt(__func__);
     const auto& serverID = server.ID();
     const auto nymID = client.Factory().NymID(nym_id_);
     server_id_ = serverID.str();

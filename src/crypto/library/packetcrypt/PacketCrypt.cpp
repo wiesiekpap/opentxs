@@ -74,7 +74,7 @@ struct PacketCrypt::Imp {
             static constexpr auto threshold = decltype(height){122622};
 
             if (threshold > height) {
-                LogDetail(OT_METHOD)(__FUNCTION__)(
+                LogDetail(OT_METHOD)(__func__)(
                     ": Validation protocol for this block height not "
                     "supported. Assuming block is valid.")
                     .Flush();
@@ -193,7 +193,7 @@ struct PacketCrypt::Imp {
                 return false;
             }
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
@@ -219,7 +219,7 @@ auto PacketCrypt::Validate(const BitcoinBlock& block) const noexcept -> bool
     const auto* p = dynamic_cast<const Imp::PktBlock*>(&block);
 
     if (nullptr == p) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid block type").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid block type").Flush();
 
         return false;
     }

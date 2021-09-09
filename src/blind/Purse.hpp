@@ -34,18 +34,12 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
 namespace server
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace server
+
+class Core;
 }  // namespace api
 
 namespace blind
@@ -110,8 +104,7 @@ public:
     }
     auto Unlock(const identity::Nym& nym, const PasswordPrompt& reason) const
         -> bool final;
-    auto Verify(const api::server::internal::Manager& server) const
-        -> bool final;
+    auto Verify(const api::server::Manager& server) const -> bool final;
     auto Value() const -> Amount final { return total_value_; }
 
     auto AddNym(const identity::Nym& nym, const PasswordPrompt& reason)
@@ -138,7 +131,7 @@ public:
         -> const crypto::key::Symmetric& final;
 
     Purse(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identifier::Nym& owner,
         const identifier::Server& server,
         const blind::CashType type,
@@ -154,7 +147,7 @@ private:
 
     static const opentxs::crypto::key::symmetric::Algorithm mode_;
 
-    const api::internal::Core& api_;
+    const api::Core& api_;
     const VersionNumber version_;
     const blind::CashType type_;
     const OTServerID notary_;
@@ -173,11 +166,11 @@ private:
     const std::shared_ptr<const OTEnvelope> secondary_password_;
 
     static auto deserialize_secondary_key(
-        const api::internal::Core& api,
+        const api::Core& api,
         const proto::Purse& serialized) noexcept(false)
         -> std::unique_ptr<const OTSymmetricKey>;
     static auto deserialize_secondary_password(
-        const api::internal::Core& api,
+        const api::Core& api,
         const proto::Purse& serialized) noexcept(false)
         -> std::unique_ptr<const OTEnvelope>;
     static auto get_passwords(const proto::Purse& in)
@@ -190,12 +183,12 @@ private:
     void recalculate_times();
 
     Purse(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identifier::Server& server,
         const identifier::UnitDefinition& unit,
         const blind::CashType type);
     Purse(
-        const api::internal::Core& api,
+        const api::Core& api,
         const VersionNumber version,
         const blind::CashType type,
         const identifier::Server& notary,
@@ -210,9 +203,9 @@ private:
         const std::shared_ptr<const OTSymmetricKey> secondaryKey,
         const std::shared_ptr<const OTEnvelope> secondaryEncrypted,
         std::optional<OTSecret> secondaryKeyPassword);
-    Purse(const api::internal::Core& api, const Purse& owner);
-    Purse(const api::internal::Core& api, const proto::Purse& serialized);
-    Purse(const api::internal::Core& api, const ReadView& serialized);
+    Purse(const api::Core& api, const Purse& owner);
+    Purse(const api::Core& api, const proto::Purse& serialized);
+    Purse(const api::Core& api, const ReadView& serialized);
     Purse() = delete;
     Purse(const Purse&);
     Purse(Purse&&) = delete;

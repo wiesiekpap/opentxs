@@ -96,134 +96,138 @@ public:
     using AccountData = std::pair<Chain, OTNymID>;
 
     // Throws std::out_of_range for invalid chains
-    static Bip44Type Bip44(Chain chain) noexcept(false);
-    static bool Bip44Path(
+    static auto Bip44(Chain chain) noexcept(false) -> Bip44Type;
+    static auto Bip44Path(
         Chain chain,
         const std::string& seed,
-        AllocateOutput destination) noexcept(false);
+        AllocateOutput destination) noexcept(false) -> bool;
 
     /// Throws std::runtime_error if chain is invalid
-    virtual const opentxs::blockchain::crypto::Account& Account(
-        const identifier::Nym& nymID,
-        const Chain chain) const noexcept(false) = 0;
-    virtual std::set<OTIdentifier> AccountList(
-        const identifier::Nym& nymID) const noexcept = 0;
-    virtual std::set<OTIdentifier> AccountList(
-        const Chain chain) const noexcept = 0;
-    virtual std::set<OTIdentifier> AccountList() const noexcept = 0;
-    virtual std::string ActivityDescription(
+    virtual auto Account(const identifier::Nym& nymID, const Chain chain) const
+        noexcept(false) -> const opentxs::blockchain::crypto::Account& = 0;
+    virtual auto AccountList(const identifier::Nym& nymID) const noexcept
+        -> std::set<OTIdentifier> = 0;
+    virtual auto AccountList(const Chain chain) const noexcept
+        -> std::set<OTIdentifier> = 0;
+    virtual auto AccountList() const noexcept -> std::set<OTIdentifier> = 0;
+    virtual auto ActivityDescription(
         const identifier::Nym& nym,
         const Identifier& thread,
-        const std::string& threadItemID) const noexcept = 0;
-    virtual std::string ActivityDescription(
+        const std::string& threadItemID) const noexcept -> std::string = 0;
+    virtual auto ActivityDescription(
         const identifier::Nym& nym,
         const Chain chain,
-        const Tx& transaction) const noexcept = 0;
-    virtual bool AssignContact(
+        const Tx& transaction) const noexcept -> std::string = 0;
+    virtual auto AssignContact(
         const identifier::Nym& nymID,
         const Identifier& accountID,
         const Subchain subchain,
         const Bip32Index index,
-        const Identifier& label) const noexcept = 0;
-    virtual bool AssignLabel(
+        const Identifier& label) const noexcept -> bool = 0;
+    virtual auto AssignLabel(
         const identifier::Nym& nymID,
         const Identifier& accountID,
         const Subchain subchain,
         const Bip32Index index,
-        const std::string& label) const noexcept = 0;
-    virtual bool AssignTransactionMemo(
+        const std::string& label) const noexcept -> bool = 0;
+    virtual auto AssignTransactionMemo(
         const TxidHex& id,
-        const std::string& label) const noexcept = 0;
-    virtual std::string CalculateAddress(
+        const std::string& label) const noexcept -> bool = 0;
+    virtual auto CalculateAddress(
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::crypto::AddressStyle format,
-        const Data& pubkey) const noexcept = 0;
-    virtual bool Confirm(
+        const Data& pubkey) const noexcept -> std::string = 0;
+    virtual auto Confirm(
         const Key key,
-        const opentxs::blockchain::block::Txid& tx) const noexcept = 0;
-    virtual DecodedAddress DecodeAddress(
-        const std::string& encoded) const noexcept = 0;
-    virtual std::string EncodeAddress(
+        const opentxs::blockchain::block::Txid& tx) const noexcept -> bool = 0;
+    virtual auto DecodeAddress(const std::string& encoded) const noexcept
+        -> DecodedAddress = 0;
+    virtual auto EncodeAddress(
         const Style style,
         const Chain chain,
-        const Data& data) const noexcept = 0;
+        const Data& data) const noexcept -> std::string = 0;
     /// Throws std::out_of_range if the specified key does not exist
-    virtual const opentxs::blockchain::crypto::Element& GetKey(
-        const Key& id) const noexcept(false) = 0;
+    virtual auto GetKey(const Key& id) const noexcept(false)
+        -> const opentxs::blockchain::crypto::Element& = 0;
     /// Throws std::out_of_range if the specified account does not exist
-    virtual const opentxs::blockchain::crypto::HD& HDSubaccount(
+    virtual auto HDSubaccount(
         const identifier::Nym& nymID,
-        const Identifier& accountID) const noexcept(false) = 0;
-    virtual PatternID IndexItem(const ReadView bytes) const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual const internal::Blockchain& Internal()
-        const noexcept = 0;
-    virtual std::unique_ptr<const Tx> LoadTransactionBitcoin(
-        const Txid& id) const noexcept = 0;
-    virtual std::unique_ptr<const Tx> LoadTransactionBitcoin(
-        const TxidHex& id) const noexcept = 0;
-    virtual AccountData LookupAccount(const Identifier& id) const noexcept = 0;
-    virtual ContactList LookupContacts(
-        const std::string& address) const noexcept = 0;
-    virtual ContactList LookupContacts(
-        const Data& pubkeyHash) const noexcept = 0;
-    virtual OTIdentifier NewHDSubaccount(
+        const Identifier& accountID) const noexcept(false)
+        -> const opentxs::blockchain::crypto::HD& = 0;
+    virtual auto IndexItem(const ReadView bytes) const noexcept
+        -> PatternID = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
+        -> const internal::Blockchain& = 0;
+    virtual auto LoadTransactionBitcoin(const Txid& id) const noexcept
+        -> std::unique_ptr<const Tx> = 0;
+    virtual auto LoadTransactionBitcoin(const TxidHex& id) const noexcept
+        -> std::unique_ptr<const Tx> = 0;
+    virtual auto LookupAccount(const Identifier& id) const noexcept
+        -> AccountData = 0;
+    virtual auto LookupContacts(const std::string& address) const noexcept
+        -> ContactList = 0;
+    virtual auto LookupContacts(const Data& pubkeyHash) const noexcept
+        -> ContactList = 0;
+    virtual auto NewHDSubaccount(
         const identifier::Nym& nymID,
         const opentxs::blockchain::crypto::HDProtocol standard,
         const Chain chain,
-        const PasswordPrompt& reason) const noexcept = 0;
-    virtual OTIdentifier NewHDSubaccount(
+        const PasswordPrompt& reason) const noexcept -> OTIdentifier = 0;
+    virtual auto NewHDSubaccount(
         const identifier::Nym& nymID,
         const opentxs::blockchain::crypto::HDProtocol standard,
         const Chain derivationChain,
         const Chain targetChain,
-        const PasswordPrompt& reason) const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual OTIdentifier NewPaymentCodeSubaccount(
+        const PasswordPrompt& reason) const noexcept -> OTIdentifier = 0;
+    OPENTXS_NO_EXPORT virtual auto NewPaymentCodeSubaccount(
         const identifier::Nym& nymID,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
         const proto::HDPath& path,
         const Chain chain,
-        const PasswordPrompt& reason) const noexcept = 0;
-    virtual OTIdentifier NewPaymentCodeSubaccount(
+        const PasswordPrompt& reason) const noexcept -> OTIdentifier = 0;
+    virtual auto NewPaymentCodeSubaccount(
         const identifier::Nym& nymID,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
         const ReadView& view,
         const Chain chain,
-        const PasswordPrompt& reason) const noexcept = 0;
-    virtual const identifier::Nym& Owner(
-        const Identifier& accountID) const noexcept = 0;
-    virtual const identifier::Nym& Owner(const Key& key) const noexcept = 0;
+        const PasswordPrompt& reason) const noexcept -> OTIdentifier = 0;
+    virtual auto Owner(const Identifier& accountID) const noexcept
+        -> const identifier::Nym& = 0;
+    virtual auto Owner(const Key& key) const noexcept
+        -> const identifier::Nym& = 0;
     /// Throws std::out_of_range if the specified account does not exist
-    virtual const opentxs::blockchain::crypto::PaymentCode&
-    PaymentCodeSubaccount(
+    virtual auto PaymentCodeSubaccount(
         const identifier::Nym& nymID,
-        const Identifier& accountID) const noexcept(false) = 0;
-    OPENTXS_NO_EXPORT virtual const opentxs::blockchain::crypto::PaymentCode&
-    PaymentCodeSubaccount(
+        const Identifier& accountID) const noexcept(false)
+        -> const opentxs::blockchain::crypto::PaymentCode& = 0;
+    OPENTXS_NO_EXPORT virtual auto PaymentCodeSubaccount(
         const identifier::Nym& nymID,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
         const proto::HDPath& path,
         const Chain chain,
-        const PasswordPrompt& reason) const noexcept(false) = 0;
-    virtual bool ProcessTransaction(
+        const PasswordPrompt& reason) const noexcept(false)
+        -> const opentxs::blockchain::crypto::PaymentCode& = 0;
+    virtual auto ProcessTransaction(
         const Chain chain,
         const Tx& transaction,
-        const PasswordPrompt& reason) const noexcept = 0;
-    virtual OTIdentifier RecipientContact(const Key& key) const noexcept = 0;
-    virtual bool Release(const Key key) const noexcept = 0;
-    virtual OTIdentifier SenderContact(const Key& key) const noexcept = 0;
-    virtual std::set<OTIdentifier> SubaccountList(
-        const identifier::Nym& nymID,
-        const Chain chain) const noexcept = 0;
-    virtual bool Unconfirm(
+        const PasswordPrompt& reason) const noexcept -> bool = 0;
+    virtual auto RecipientContact(const Key& key) const noexcept
+        -> OTIdentifier = 0;
+    virtual auto Release(const Key key) const noexcept -> bool = 0;
+    virtual auto SenderContact(const Key& key) const noexcept
+        -> OTIdentifier = 0;
+    virtual auto SubaccountList(const identifier::Nym& nymID, const Chain chain)
+        const noexcept -> std::set<OTIdentifier> = 0;
+    virtual auto Unconfirm(
         const Key key,
         const opentxs::blockchain::block::Txid& tx,
-        const Time time = Clock::now()) const noexcept = 0;
+        const Time time = Clock::now()) const noexcept -> bool = 0;
     /// Throws std::runtime_error if chain is invalid
-    virtual const opentxs::blockchain::crypto::Wallet& Wallet(
-        const Chain chain) const noexcept(false) = 0;
+    virtual auto Wallet(const Chain chain) const noexcept(false)
+        -> const opentxs::blockchain::crypto::Wallet& = 0;
 
     OPENTXS_NO_EXPORT virtual ~Blockchain() = default;
 
@@ -233,8 +237,8 @@ protected:
 private:
     Blockchain(const Blockchain&) = delete;
     Blockchain(Blockchain&&) = delete;
-    Blockchain& operator=(const Blockchain&) = delete;
-    Blockchain& operator=(Blockchain&&) = delete;
+    auto operator=(const Blockchain&) -> Blockchain& = delete;
+    auto operator=(Blockchain&&) -> Blockchain& = delete;
 };
 }  // namespace client
 }  // namespace api

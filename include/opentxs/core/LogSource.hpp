@@ -35,32 +35,34 @@ class OPENTXS_EXPORT LogSource
 public:
     static void SetVerbosity(const int level) noexcept;
     static void Shutdown() noexcept;
-    static const LogSource& StartLog(
+    static auto StartLog(
         const LogSource& source,
-        const std::string& function) noexcept;
+        const std::string& function) noexcept -> const LogSource&;
 
-    const LogSource& operator()() const noexcept;
-    const LogSource& operator()(const char* in) const noexcept;
-    const LogSource& operator()(char* in) const noexcept;
-    const LogSource& operator()(const std::string& in) const noexcept;
-    const LogSource& operator()(const OTString& in) const noexcept;
-    const LogSource& operator()(const OTStringXML& in) const noexcept;
-    const LogSource& operator()(const OTArmored& in) const noexcept;
-    const LogSource& operator()(const String& in) const noexcept;
-    const LogSource& operator()(const StringXML& in) const noexcept;
-    const LogSource& operator()(const Armored& in) const noexcept;
-    const LogSource& operator()(const OTIdentifier& in) const noexcept;
-    const LogSource& operator()(const Identifier& in) const noexcept;
-    const LogSource& operator()(const OTNymID& in) const noexcept;
-    const LogSource& operator()(const identifier::Nym& in) const noexcept;
-    const LogSource& operator()(const OTServerID& in) const noexcept;
-    const LogSource& operator()(const identifier::Server& in) const noexcept;
-    const LogSource& operator()(const OTUnitID& in) const noexcept;
-    const LogSource& operator()(
-        const identifier::UnitDefinition& in) const noexcept;
-    const LogSource& operator()(const Time in) const noexcept;
+    auto operator()() const noexcept -> const LogSource&;
+    auto operator()(const char* in) const noexcept -> const LogSource&;
+    auto operator()(char* in) const noexcept -> const LogSource&;
+    auto operator()(const std::string& in) const noexcept -> const LogSource&;
+    auto operator()(const OTString& in) const noexcept -> const LogSource&;
+    auto operator()(const OTStringXML& in) const noexcept -> const LogSource&;
+    auto operator()(const OTArmored& in) const noexcept -> const LogSource&;
+    auto operator()(const String& in) const noexcept -> const LogSource&;
+    auto operator()(const StringXML& in) const noexcept -> const LogSource&;
+    auto operator()(const Armored& in) const noexcept -> const LogSource&;
+    auto operator()(const OTIdentifier& in) const noexcept -> const LogSource&;
+    auto operator()(const Identifier& in) const noexcept -> const LogSource&;
+    auto operator()(const OTNymID& in) const noexcept -> const LogSource&;
+    auto operator()(const identifier::Nym& in) const noexcept
+        -> const LogSource&;
+    auto operator()(const OTServerID& in) const noexcept -> const LogSource&;
+    auto operator()(const identifier::Server& in) const noexcept
+        -> const LogSource&;
+    auto operator()(const OTUnitID& in) const noexcept -> const LogSource&;
+    auto operator()(const identifier::UnitDefinition& in) const noexcept
+        -> const LogSource&;
+    auto operator()(const Time in) const noexcept -> const LogSource&;
     template <typename T>
-    const LogSource& operator()(const T& in) const noexcept
+    auto operator()(const T& in) const noexcept -> const LogSource&
     {
         return this->operator()(std::to_string(in));
     }
@@ -87,15 +89,15 @@ private:
 
     const int level_{-1};
 
-    static Source& get_buffer(std::string& id) noexcept;
+    static auto get_buffer(std::string& id) noexcept -> Source&;
 
     void send(const bool terminate) const noexcept;
 
     LogSource() = delete;
     LogSource(const LogSource&) = delete;
     LogSource(LogSource&&) = delete;
-    LogSource& operator=(const LogSource&) = delete;
-    LogSource& operator=(LogSource&&) = delete;
+    auto operator=(const LogSource&) -> LogSource& = delete;
+    auto operator=(LogSource&&) -> LogSource& = delete;
 };
 }  // namespace opentxs
 #endif

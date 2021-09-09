@@ -11,25 +11,6 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/core/Identifier.hpp"
 
-#ifdef SWIG
-// clang-format off
-%ignore opentxs::identifier::UnitDefinition::Factory;
-%extend opentxs::identifier::UnitDefinition {
-    static OTUnitID Factory()
-    {
-        return opentxs::identifier::UnitDefinition::Factory();
-    }
-    static OTUnitID Factory(
-        const std::string& rhs)
-    {
-        return opentxs::identifier::UnitDefinition::Factory(rhs);
-    }
-}
-%rename (UnitDefinitionID) opentxs::identifier::UnitDefinition;
-%template(OTUnitID) opentxs::Pimpl<opentxs::identifier::UnitDefinition>;
-// clang-format on
-#endif
-
 namespace opentxs
 {
 namespace identifier
@@ -39,26 +20,24 @@ class UnitDefinition;
 
 using OTUnitID = Pimpl<identifier::UnitDefinition>;
 
-#ifndef SWIG
-OPENTXS_EXPORT bool operator==(
+OPENTXS_EXPORT auto operator==(
     const OTUnitID& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-OPENTXS_EXPORT bool operator!=(
+    const opentxs::Identifier& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator!=(
     const OTUnitID& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-OPENTXS_EXPORT bool operator<(
+    const opentxs::Identifier& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator<(
     const OTUnitID& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-OPENTXS_EXPORT bool operator>(
+    const opentxs::Identifier& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator>(
     const OTUnitID& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-OPENTXS_EXPORT bool operator<=(
+    const opentxs::Identifier& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator<=(
     const OTUnitID& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-OPENTXS_EXPORT bool operator>=(
+    const opentxs::Identifier& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator>=(
     const OTUnitID& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-#endif
+    const opentxs::Identifier& rhs) noexcept -> bool;
 }  // namespace opentxs
 
 namespace opentxs
@@ -68,11 +47,9 @@ namespace identifier
 class OPENTXS_EXPORT UnitDefinition : virtual public opentxs::Identifier
 {
 public:
-#ifndef SWIG
-    static OTUnitID Factory();
-    static OTUnitID Factory(const std::string& rhs);
-    static OTUnitID Factory(const String& rhs);
-#endif
+    static auto Factory() -> OTUnitID;
+    static auto Factory(const std::string& rhs) -> OTUnitID;
+    static auto Factory(const String& rhs) -> OTUnitID;
 
     ~UnitDefinition() override = default;
 
@@ -83,13 +60,13 @@ private:
     friend OTUnitID;
 
 #ifndef _WIN32
-    UnitDefinition* clone() const override = 0;
+    auto clone() const -> UnitDefinition* override = 0;
 #endif
 
     UnitDefinition(const UnitDefinition&) = delete;
     UnitDefinition(UnitDefinition&&) = delete;
-    UnitDefinition& operator=(const UnitDefinition&) = delete;
-    UnitDefinition& operator=(UnitDefinition&&) = delete;
+    auto operator=(const UnitDefinition&) -> UnitDefinition& = delete;
+    auto operator=(UnitDefinition&&) -> UnitDefinition& = delete;
 };
 }  // namespace identifier
 }  // namespace opentxs

@@ -36,8 +36,7 @@ auto BitcoinP2PGetheaders(
     using ReturnType = bitcoin::message::implementation::Getheaders;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Invalid header")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -46,7 +45,7 @@ auto BitcoinP2PGetheaders(
     auto expectedSize = sizeof(version);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Payload too short (version)")
             .Flush();
 
@@ -59,7 +58,7 @@ auto BitcoinP2PGetheaders(
     expectedSize += sizeof(std::byte);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Payload too short (compactsize)")
             .Flush();
 
@@ -71,7 +70,7 @@ auto BitcoinP2PGetheaders(
         network::blockchain::bitcoin::DecodeSize(it, expectedSize, size, count);
 
     if (false == haveCount) {
-        LogOutput(__FUNCTION__)(": Invalid CompactSize").Flush();
+        LogOutput(__func__)(": Invalid CompactSize").Flush();
 
         return nullptr;
     }
@@ -84,7 +83,7 @@ auto BitcoinP2PGetheaders(
                 sizeof(blockchain::p2p::bitcoin::BlockHeaderHashField);
 
             if (expectedSize > size) {
-                LogOutput("opentxs::factory::")(__FUNCTION__)(
+                LogOutput("opentxs::factory::")(__func__)(
                     ": Header hash entries incomplete at entry index ")(i)
                     .Flush();
 
@@ -100,7 +99,7 @@ auto BitcoinP2PGetheaders(
     expectedSize += sizeof(blockchain::p2p::bitcoin::BlockHeaderHashField);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Stop hash entry missing or incomplete")
             .Flush();
 
@@ -173,8 +172,7 @@ auto Getheaders::payload() const noexcept -> OTData
         if (32 == hash->size()) {
             output += hash;
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid hash: ")(
-                hash->asHex())
+            LogOutput(OT_METHOD)(__func__)(": Invalid hash: ")(hash->asHex())
                 .Flush();
         }
     }

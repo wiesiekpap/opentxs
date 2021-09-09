@@ -26,11 +26,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
 class Core;
 }  // namespace api
 
@@ -102,7 +97,7 @@ protected:
         const -> bool final;
 
     Request(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         VersionNumber version,
         const identifier::Nym& recipient,
@@ -110,7 +105,7 @@ protected:
         const PeerRequestType& type,
         const std::string& conditions = {});
     Request(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const SerializedType& serialized,
         const std::string& conditions = {});
@@ -125,9 +120,8 @@ private:
     const OTIdentifier cookie_;
     const PeerRequestType type_;
 
-    static auto GetID(
-        const api::internal::Core& api,
-        const SerializedType& contract) -> OTIdentifier;
+    static auto GetID(const api::Core& api, const SerializedType& contract)
+        -> OTIdentifier;
     static auto FinalizeContract(
         Request& contract,
         const PasswordPrompt& reason) -> bool;

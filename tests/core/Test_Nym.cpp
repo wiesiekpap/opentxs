@@ -52,7 +52,7 @@ struct Test_Symmetric : public ::testing::Test {
 
     Test_Symmetric()
         : api_(ot::Context().StartClient(0))
-        , reason_(api_.Factory().PasswordPrompt(__FUNCTION__))
+        , reason_(api_.Factory().PasswordPrompt(__func__))
         , alice_()
         , bob_()
     {

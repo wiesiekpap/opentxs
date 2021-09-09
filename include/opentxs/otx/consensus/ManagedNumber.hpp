@@ -23,9 +23,9 @@ class ManagedNumber;
 
 using OTManagedNumber = Pimpl<otx::context::ManagedNumber>;
 
-OPENTXS_EXPORT bool operator<(
+OPENTXS_EXPORT auto operator<(
     const OTManagedNumber& lhs,
-    const OTManagedNumber& rhs);
+    const OTManagedNumber& rhs) -> bool;
 }  // namespace opentxs
 
 namespace opentxs
@@ -34,14 +34,14 @@ namespace otx
 {
 namespace context
 {
-class ManagedNumber
+class OPENTXS_EXPORT ManagedNumber
 {
 public:
-    OPENTXS_EXPORT virtual void SetSuccess(const bool value = true) const = 0;
-    OPENTXS_EXPORT virtual bool Valid() const = 0;
-    OPENTXS_EXPORT virtual TransactionNumber Value() const = 0;
+    virtual void SetSuccess(const bool value = true) const = 0;
+    virtual auto Valid() const -> bool = 0;
+    virtual auto Value() const -> TransactionNumber = 0;
 
-    OPENTXS_EXPORT virtual ~ManagedNumber() = default;
+    virtual ~ManagedNumber() = default;
 
 protected:
     ManagedNumber() = default;
@@ -49,8 +49,8 @@ protected:
 private:
     ManagedNumber(const ManagedNumber&) = delete;
     ManagedNumber(ManagedNumber&& rhs) = delete;
-    ManagedNumber& operator=(const ManagedNumber&) = delete;
-    ManagedNumber& operator=(ManagedNumber&&) = delete;
+    auto operator=(const ManagedNumber&) -> ManagedNumber& = delete;
+    auto operator=(ManagedNumber&&) -> ManagedNumber& = delete;
 };
 }  // namespace context
 }  // namespace otx

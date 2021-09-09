@@ -20,28 +20,26 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT bool CheckProto_1(
-    const UnitAccountMap& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_2(const UnitAccountMap&, const bool);
-OPENTXS_EXPORT bool CheckProto_3(const UnitAccountMap&, const bool);
-OPENTXS_EXPORT bool CheckProto_4(const UnitAccountMap&, const bool);
-OPENTXS_EXPORT bool CheckProto_5(const UnitAccountMap&, const bool);
-OPENTXS_EXPORT bool CheckProto_6(const UnitAccountMap&, const bool);
-OPENTXS_EXPORT bool CheckProto_7(const UnitAccountMap&, const bool);
-OPENTXS_EXPORT bool CheckProto_8(const UnitAccountMap&, const bool);
-OPENTXS_EXPORT bool CheckProto_9(const UnitAccountMap&, const bool);
-OPENTXS_EXPORT bool CheckProto_10(const UnitAccountMap&, const bool);
-OPENTXS_EXPORT bool CheckProto_11(const UnitAccountMap&, const bool);
-OPENTXS_EXPORT bool CheckProto_12(const UnitAccountMap&, const bool);
-OPENTXS_EXPORT bool CheckProto_13(const UnitAccountMap&, const bool);
-OPENTXS_EXPORT bool CheckProto_14(const UnitAccountMap&, const bool);
-OPENTXS_EXPORT bool CheckProto_15(const UnitAccountMap&, const bool);
-OPENTXS_EXPORT bool CheckProto_16(const UnitAccountMap&, const bool);
-OPENTXS_EXPORT bool CheckProto_17(const UnitAccountMap&, const bool);
-OPENTXS_EXPORT bool CheckProto_18(const UnitAccountMap&, const bool);
-OPENTXS_EXPORT bool CheckProto_19(const UnitAccountMap&, const bool);
-OPENTXS_EXPORT bool CheckProto_20(const UnitAccountMap&, const bool);
+auto CheckProto_1(const UnitAccountMap& input, const bool silent) -> bool;
+auto CheckProto_2(const UnitAccountMap&, const bool) -> bool;
+auto CheckProto_3(const UnitAccountMap&, const bool) -> bool;
+auto CheckProto_4(const UnitAccountMap&, const bool) -> bool;
+auto CheckProto_5(const UnitAccountMap&, const bool) -> bool;
+auto CheckProto_6(const UnitAccountMap&, const bool) -> bool;
+auto CheckProto_7(const UnitAccountMap&, const bool) -> bool;
+auto CheckProto_8(const UnitAccountMap&, const bool) -> bool;
+auto CheckProto_9(const UnitAccountMap&, const bool) -> bool;
+auto CheckProto_10(const UnitAccountMap&, const bool) -> bool;
+auto CheckProto_11(const UnitAccountMap&, const bool) -> bool;
+auto CheckProto_12(const UnitAccountMap&, const bool) -> bool;
+auto CheckProto_13(const UnitAccountMap&, const bool) -> bool;
+auto CheckProto_14(const UnitAccountMap&, const bool) -> bool;
+auto CheckProto_15(const UnitAccountMap&, const bool) -> bool;
+auto CheckProto_16(const UnitAccountMap&, const bool) -> bool;
+auto CheckProto_17(const UnitAccountMap&, const bool) -> bool;
+auto CheckProto_18(const UnitAccountMap&, const bool) -> bool;
+auto CheckProto_19(const UnitAccountMap&, const bool) -> bool;
+auto CheckProto_20(const UnitAccountMap&, const bool) -> bool;
 }  // namespace proto
 }  // namespace opentxs
 

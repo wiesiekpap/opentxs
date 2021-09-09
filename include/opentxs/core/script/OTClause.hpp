@@ -25,21 +25,21 @@ class OPENTXS_EXPORT OTClause
 
     OTClause(const OTClause&) = delete;
     OTClause(OTClause&&) = delete;
-    OTClause& operator=(const OTClause&) = delete;
-    OTClause& operator=(OTClause&&) = delete;
+    auto operator=(const OTClause&) -> OTClause& = delete;
+    auto operator=(OTClause&&) -> OTClause& = delete;
 
 public:
     void SetBylaw(OTBylaw& theBylaw) { m_pBylaw = &theBylaw; }
 
-    const String& GetName() const { return m_strName; }
+    auto GetName() const -> const String& { return m_strName; }
 
-    OTBylaw* GetBylaw() const { return m_pBylaw; }
+    auto GetBylaw() const -> OTBylaw* { return m_pBylaw; }
 
-    const char* GetCode() const;
+    auto GetCode() const -> const char*;
 
     void SetCode(const std::string& str_code);
 
-    bool Compare(const OTClause& rhs) const;
+    auto Compare(const OTClause& rhs) const -> bool;
 
     OTClause();
     OTClause(const char* szName, const char* szCode);

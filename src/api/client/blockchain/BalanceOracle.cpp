@@ -40,11 +40,11 @@
 #include "opentxs/util/WorkType.hpp"
 #include "util/ScopeGuard.hpp"
 
-// #define OT_METHOD "opentxs::api::client::implementation::BalanceOracle::"
+// #define OT_METHOD "opentxs::api::client::blockchain::BalanceOracle::"
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::api::client::implementation
+namespace opentxs::api::client::blockchain
 {
 struct BalanceOracle::Imp {
     auto RefreshBalance(const identifier::Nym& owner, const Chain chain)
@@ -249,4 +249,4 @@ auto BalanceOracle::UpdateBalance(
 }
 
 BalanceOracle::~BalanceOracle() = default;
-}  // namespace opentxs::api::client::implementation
+}  // namespace opentxs::api::client::blockchain

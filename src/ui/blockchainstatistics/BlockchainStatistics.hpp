@@ -41,10 +41,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 
 namespace network
@@ -91,7 +88,7 @@ class BlockchainStatistics final : public BlockchainStatisticsList,
 {
 public:
     BlockchainStatistics(
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const SimpleCallback& cb) noexcept;
 
     ~BlockchainStatistics() final;

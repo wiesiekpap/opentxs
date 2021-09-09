@@ -31,14 +31,14 @@ class OPENTXS_EXPORT Signable
 public:
     using Signature = std::shared_ptr<proto::Signature>;
 
-    virtual std::string Alias() const = 0;
-    virtual OTIdentifier ID() const = 0;
-    virtual std::string Name() const = 0;
-    virtual Nym_p Nym() const = 0;
-    virtual const std::string& Terms() const = 0;
-    virtual OTData Serialize() const = 0;
-    virtual bool Validate() const = 0;
-    virtual VersionNumber Version() const = 0;
+    virtual auto Alias() const -> std::string = 0;
+    virtual auto ID() const -> OTIdentifier = 0;
+    virtual auto Name() const -> std::string = 0;
+    virtual auto Nym() const -> Nym_p = 0;
+    virtual auto Terms() const -> const std::string& = 0;
+    virtual auto Serialize() const -> OTData = 0;
+    virtual auto Validate() const -> bool = 0;
+    virtual auto Version() const -> VersionNumber = 0;
 
     virtual void SetAlias(const std::string& alias) = 0;
 
@@ -51,15 +51,15 @@ private:
 #ifdef _WIN32
 public:
 #endif
-    virtual Signable* clone() const noexcept = 0;
+    virtual auto clone() const noexcept -> Signable* = 0;
 #ifdef _WIN32
 private:
 #endif
 
     Signable(const Signable&) = delete;
     Signable(Signable&&) = delete;
-    Signable& operator=(const Signable&) = delete;
-    Signable& operator=(Signable&&) = delete;
+    auto operator=(const Signable&) -> Signable& = delete;
+    auto operator=(Signable&&) -> Signable& = delete;
 };
 }  // namespace contract
 }  // namespace opentxs

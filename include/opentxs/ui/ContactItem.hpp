@@ -14,13 +14,6 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 
-#ifdef SWIG
-// clang-format off
-%template(OTUIContactItem) opentxs::SharedPimpl<opentxs::ui::ContactItem>;
-%rename(UIContactItem) opentxs::ui::ContactItem;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -35,15 +28,15 @@ namespace opentxs
 {
 namespace ui
 {
-class ContactItem : virtual public ListRow
+class OPENTXS_EXPORT ContactItem : virtual public ListRow
 {
 public:
-    OPENTXS_EXPORT virtual std::string ClaimID() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool IsActive() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool IsPrimary() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string Value() const noexcept = 0;
+    virtual auto ClaimID() const noexcept -> std::string = 0;
+    virtual auto IsActive() const noexcept -> bool = 0;
+    virtual auto IsPrimary() const noexcept -> bool = 0;
+    virtual auto Value() const noexcept -> std::string = 0;
 
-    OPENTXS_EXPORT ~ContactItem() override = default;
+    ~ContactItem() override = default;
 
 protected:
     ContactItem() noexcept = default;
@@ -51,8 +44,8 @@ protected:
 private:
     ContactItem(const ContactItem&) = delete;
     ContactItem(ContactItem&&) = delete;
-    ContactItem& operator=(const ContactItem&) = delete;
-    ContactItem& operator=(ContactItem&&) = delete;
+    auto operator=(const ContactItem&) -> ContactItem& = delete;
+    auto operator=(ContactItem&&) -> ContactItem& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

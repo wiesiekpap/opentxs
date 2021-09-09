@@ -29,10 +29,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -85,7 +82,7 @@ public:
 
     ContactSubsection(
         const ContactSectionInternalInterface& parent,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const ContactSectionRowID& rowID,
         const ContactSectionSortKey& key,
         CustomData& custom) noexcept;

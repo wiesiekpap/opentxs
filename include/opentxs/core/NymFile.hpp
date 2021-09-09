@@ -22,26 +22,28 @@ namespace opentxs
 class OPENTXS_EXPORT NymFile
 {
 public:
-    virtual bool CompareID(const identifier::Nym& theIdentifier) const = 0;
+    virtual auto CompareID(const identifier::Nym& theIdentifier) const
+        -> bool = 0;
     virtual void DisplayStatistics(String& strOutput) const = 0;
-    virtual bool GetInboxHash(
+    virtual auto GetInboxHash(
         const std::string& acct_id,
-        Identifier& theOutput) const = 0;  // client-side
-    virtual bool GetOutboxHash(
+        Identifier& theOutput) const -> bool = 0;  // client-side
+    virtual auto GetOutboxHash(
         const std::string& acct_id,
-        Identifier& theOutput) const = 0;  // client-side
-    virtual std::shared_ptr<Message> GetOutpaymentsByIndex(
-        const std::int32_t nIndex) const = 0;
-    virtual std::shared_ptr<Message> GetOutpaymentsByTransNum(
+        Identifier& theOutput) const -> bool = 0;  // client-side
+    virtual auto GetOutpaymentsByIndex(const std::int32_t nIndex) const
+        -> std::shared_ptr<Message> = 0;
+    virtual auto GetOutpaymentsByTransNum(
         const std::int64_t lTransNum,
         const PasswordPrompt& reason,
         std::unique_ptr<OTPayment>* pReturnPayment = nullptr,
-        std::int32_t* pnReturnIndex = nullptr) const = 0;
-    virtual std::int32_t GetOutpaymentsCount() const = 0;
-    virtual const std::int64_t& GetUsageCredits() const = 0;
-    virtual const identifier::Nym& ID() const = 0;
-    virtual std::string PaymentCode() const = 0;
-    virtual bool SerializeNymFile(String& output) const = 0;
+        std::int32_t* pnReturnIndex = nullptr) const
+        -> std::shared_ptr<Message> = 0;
+    virtual auto GetOutpaymentsCount() const -> std::int32_t = 0;
+    virtual auto GetUsageCredits() const -> const std::int64_t& = 0;
+    virtual auto ID() const -> const identifier::Nym& = 0;
+    virtual auto PaymentCode() const -> std::string = 0;
+    virtual auto SerializeNymFile(String& output) const -> bool = 0;
 
     // Whenever a Nym sends a payment, a copy is dropped std::into his
     // Outpayments. (Payments screen.) A payments message is the original
@@ -53,17 +55,18 @@ public:
     // deposit will have a transNum, but the purse itself does NOT.
     // That's okay in your outpayments box since it's like an outmail
     // box. It's not a ledger, so the items inside don't need a txn#.
-    virtual std::set<std::string>& GetSetAssetAccounts() = 0;
-    virtual bool RemoveOutpaymentsByIndex(const std::int32_t nIndex) = 0;
-    virtual bool RemoveOutpaymentsByTransNum(
+    virtual auto GetSetAssetAccounts() -> std::set<std::string>& = 0;
+    virtual auto RemoveOutpaymentsByIndex(const std::int32_t nIndex)
+        -> bool = 0;
+    virtual auto RemoveOutpaymentsByTransNum(
         const std::int64_t lTransNum,
-        const PasswordPrompt& reason) = 0;
-    virtual bool SetInboxHash(
+        const PasswordPrompt& reason) -> bool = 0;
+    virtual auto SetInboxHash(
         const std::string& acct_id,
-        const Identifier& theInput) = 0;  // client-side
-    virtual bool SetOutboxHash(
+        const Identifier& theInput) -> bool = 0;  // client-side
+    virtual auto SetOutboxHash(
         const std::string& acct_id,
-        const Identifier& theInput) = 0;  // client-side
+        const Identifier& theInput) -> bool = 0;  // client-side
     virtual void SetUsageCredits(const std::int64_t& lUsage) = 0;
 
     virtual ~NymFile() = default;
@@ -74,8 +77,8 @@ protected:
 private:
     NymFile(const NymFile&) = delete;
     NymFile(NymFile&&) = delete;
-    NymFile& operator=(const NymFile&) = delete;
-    NymFile& operator=(NymFile&&) = delete;
+    auto operator=(const NymFile&) -> NymFile& = delete;
+    auto operator=(NymFile&&) -> NymFile& = delete;
 };
 }  // namespace opentxs
 #endif

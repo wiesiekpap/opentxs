@@ -77,7 +77,7 @@ struct Seed::Imp {
         auto lock = Lock{lock_};
 
         if (index_ > index) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Index values must always increase.")
                 .Flush();
 
@@ -480,8 +480,7 @@ private:
         *proto.mutable_raw() = encrypted_entropy_;
 
         if (false == storage_.Store(proto, id)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to store seed.")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Failed to store seed.").Flush();
 
             return false;
         }

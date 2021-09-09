@@ -10,8 +10,8 @@
 #include <memory>
 
 #include "Proto.tpp"
-#include "internal/api/Api.hpp"
 #include "internal/api/crypto/Factory.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/core/Log.hpp"
@@ -24,7 +24,7 @@
 
 namespace opentxs::factory
 {
-auto Symmetric(const api::internal::Core& api) noexcept
+auto Symmetric(const api::Core& api) noexcept
     -> std::unique_ptr<api::crypto::Symmetric>
 {
     using ReturnType = api::crypto::implementation::Symmetric;
@@ -35,7 +35,7 @@ auto Symmetric(const api::internal::Core& api) noexcept
 
 namespace opentxs::api::crypto::implementation
 {
-Symmetric::Symmetric(const api::internal::Core& api) noexcept
+Symmetric::Symmetric(const api::Core& api) noexcept
     : api_(api)
 {
 }
@@ -80,7 +80,7 @@ auto Symmetric::IvSize(
     auto pEngine = GetEngine(mode);
 
     if (nullptr == pEngine) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid mode").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid mode").Flush();
 
         return 0;
     }

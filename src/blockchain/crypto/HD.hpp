@@ -38,17 +38,19 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
+class Blockchain;
 }  // namespace client
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
+
+namespace blockchain
+{
+namespace crypto
+{
+class Account;
+}  // namespace crypto
+}  // namespace blockchain
 
 namespace proto
 {
@@ -68,6 +70,10 @@ public:
     using Element = implementation::Element;
     using SerializedType = proto::HDAccount;
 
+    auto InternalHD() const noexcept -> internal::HD& final
+    {
+        return const_cast<HD&>(*this);
+    }
     auto Name() const noexcept -> std::string final;
     auto PrivateKey(
         const Subchain type,
@@ -75,15 +81,15 @@ public:
         const PasswordPrompt& reason) const noexcept -> ECKey final;
     auto Standard() const noexcept -> HDProtocol final { return standard_; }
 
-    HD(const api::internal::Core& api,
-       const internal::Account& parent,
+    HD(const api::Core& api,
+       const Account& parent,
        const proto::HDPath& path,
        const HDProtocol standard,
        const PasswordPrompt& reason,
        Identifier& id)
     noexcept(false);
-    HD(const api::internal::Core& api,
-       const internal::Account& parent,
+    HD(const api::Core& api,
+       const Account& parent,
        const SerializedType& serialized,
        Identifier& id)
     noexcept(false);

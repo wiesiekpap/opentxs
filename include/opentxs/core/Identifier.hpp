@@ -16,22 +16,6 @@
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Data.hpp"
 
-#ifdef SWIG
-// clang-format off
-%ignore opentxs::Pimpl<opentxs::Identifier>::Pimpl(opentxs::Identifier const &);
-%ignore opentxs::Pimpl<opentxs::Identifier>::operator opentxs::Identifier&;
-%ignore opentxs::Pimpl<opentxs::Identifier>::operator const opentxs::Identifier &;
-%rename(identifierCompareEqual) opentxs::Identifier::operator==(const Identifier& rhs) const;
-%rename(identifierCompareNotEqual) opentxs::Identifier::operator!=(const Identifier& rhs) const;
-%rename(identifierCompareGreaterThan) opentxs::Identifier::operator>(const Identifier& rhs) const;
-%rename(identifierCompareLessThan) opentxs::Identifier::operator<(const Identifier& rhs) const;
-%rename(identifierCompareGreaterOrEqual) opentxs::Identifier::operator>=(const Identifier& rhs) const;
-%rename(identifierCompareLessOrEqual) opentxs::Identifier::operator<=(const Identifier& rhs) const;
-%rename (IdentifierFactory) opentxs::Identifier::Factory;
-%template(OTIdentifier) opentxs::Pimpl<opentxs::Identifier>;
-// clang-format on
-#endif
-
 namespace opentxs
 {
 namespace proto
@@ -46,26 +30,24 @@ class Item;
 
 using OTIdentifier = Pimpl<Identifier>;
 
-#ifndef SWIG
-OPENTXS_EXPORT bool operator==(
+OPENTXS_EXPORT auto operator==(
     const opentxs::Pimpl<opentxs::Identifier>& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-OPENTXS_EXPORT bool operator!=(
+    const opentxs::Identifier& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator!=(
     const opentxs::Pimpl<opentxs::Identifier>& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-OPENTXS_EXPORT bool operator<(
+    const opentxs::Identifier& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator<(
     const opentxs::Pimpl<opentxs::Identifier>& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-OPENTXS_EXPORT bool operator>(
+    const opentxs::Identifier& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator>(
     const opentxs::Pimpl<opentxs::Identifier>& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-OPENTXS_EXPORT bool operator<=(
+    const opentxs::Identifier& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator<=(
     const opentxs::Pimpl<opentxs::Identifier>& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-OPENTXS_EXPORT bool operator>=(
+    const opentxs::Identifier& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator>=(
     const opentxs::Pimpl<opentxs::Identifier>& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-#endif
+    const opentxs::Identifier& rhs) noexcept -> bool;
 }  // namespace opentxs
 
 namespace opentxs
@@ -77,49 +59,48 @@ class OPENTXS_EXPORT Identifier : virtual public Data
 public:
     using ot_super = opentxs::Data;
 
-    static opentxs::Pimpl<opentxs::Identifier> Random();
-    static opentxs::Pimpl<opentxs::Identifier> Factory();
-    static opentxs::Pimpl<opentxs::Identifier> Factory(const Identifier& rhs);
-    static opentxs::Pimpl<opentxs::Identifier> Factory(const std::string& rhs);
-#ifndef SWIG
-    static opentxs::Pimpl<opentxs::Identifier> Factory(const String& rhs);
-    static opentxs::Pimpl<opentxs::Identifier> Factory(
-        const identity::Nym& nym);
-    static opentxs::Pimpl<opentxs::Identifier> Factory(const Cheque& cheque);
-    static opentxs::Pimpl<opentxs::Identifier> Factory(const Item& item);
-    static opentxs::Pimpl<opentxs::Identifier> Factory(
-        const Contract& contract);
-    OPENTXS_NO_EXPORT static opentxs::Pimpl<opentxs::Identifier> Factory(
+    static auto Random() -> opentxs::Pimpl<opentxs::Identifier>;
+    static auto Factory() -> opentxs::Pimpl<opentxs::Identifier>;
+    static auto Factory(const Identifier& rhs)
+        -> opentxs::Pimpl<opentxs::Identifier>;
+    static auto Factory(const std::string& rhs)
+        -> opentxs::Pimpl<opentxs::Identifier>;
+    static auto Factory(const String& rhs)
+        -> opentxs::Pimpl<opentxs::Identifier>;
+    static auto Factory(const identity::Nym& nym)
+        -> opentxs::Pimpl<opentxs::Identifier>;
+    static auto Factory(const Cheque& cheque)
+        -> opentxs::Pimpl<opentxs::Identifier>;
+    static auto Factory(const Item& item)
+        -> opentxs::Pimpl<opentxs::Identifier>;
+    static auto Factory(const Contract& contract)
+        -> opentxs::Pimpl<opentxs::Identifier>;
+    OPENTXS_NO_EXPORT static auto Factory(
         const contact::ContactItemType type,
-        const proto::HDPath& path);
-#endif
-    static bool Validate(const std::string& id);
+        const proto::HDPath& path) -> opentxs::Pimpl<opentxs::Identifier>;
+    static auto Validate(const std::string& id) -> bool;
 
     using ot_super::operator==;
-    virtual bool operator==(const Identifier& rhs) const noexcept = 0;
+    virtual auto operator==(const Identifier& rhs) const noexcept -> bool = 0;
     using ot_super::operator!=;
-    virtual bool operator!=(const Identifier& rhs) const noexcept = 0;
+    virtual auto operator!=(const Identifier& rhs) const noexcept -> bool = 0;
     using ot_super::operator>;
-    virtual bool operator>(const Identifier& rhs) const noexcept = 0;
+    virtual auto operator>(const Identifier& rhs) const noexcept -> bool = 0;
     using ot_super::operator<;
-    virtual bool operator<(const Identifier& rhs) const noexcept = 0;
+    virtual auto operator<(const Identifier& rhs) const noexcept -> bool = 0;
     using ot_super::operator<=;
-    virtual bool operator<=(const Identifier& rhs) const noexcept = 0;
+    virtual auto operator<=(const Identifier& rhs) const noexcept -> bool = 0;
     using ot_super::operator>=;
-    virtual bool operator>=(const Identifier& rhs) const noexcept = 0;
+    virtual auto operator>=(const Identifier& rhs) const noexcept -> bool = 0;
 
-#ifndef SWIG
     virtual void GetString(String& theStr) const = 0;
-#endif
-    virtual const ID& Type() const = 0;
+    virtual auto Type() const -> const ID& = 0;
 
-    virtual bool CalculateDigest(
+    virtual auto CalculateDigest(
         const ReadView bytes,
-        const ID type = ID::blake2b) = 0;
+        const ID type = ID::blake2b) -> bool = 0;
     virtual void SetString(const std::string& encoded) = 0;
-#ifndef SWIG
     virtual void SetString(const String& encoded) = 0;
-#endif
     using ot_super::swap;
     virtual void swap(Identifier& rhs) = 0;
 
@@ -132,24 +113,22 @@ private:
     friend opentxs::Pimpl<opentxs::Identifier>;
 
 #ifndef _WIN32
-    Identifier* clone() const override = 0;
+    auto clone() const -> Identifier* override = 0;
 #endif
     Identifier(const Identifier&) = delete;
     Identifier(Identifier&&) = delete;
-    Identifier& operator=(const Identifier&) = delete;
-    Identifier& operator=(Identifier&&) = delete;
+    auto operator=(const Identifier&) -> Identifier& = delete;
+    auto operator=(Identifier&&) -> Identifier& = delete;
 };
 }  // namespace opentxs
 
-#ifndef SWIG
 namespace std
 {
 template <>
 struct OPENTXS_EXPORT less<opentxs::OTIdentifier> {
-    bool operator()(
+    auto operator()(
         const opentxs::OTIdentifier& lhs,
-        const opentxs::OTIdentifier& rhs) const;
+        const opentxs::OTIdentifier& rhs) const -> bool;
 };
 }  // namespace std
-#endif
 #endif

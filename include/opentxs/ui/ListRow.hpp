@@ -12,23 +12,17 @@
 
 #include "opentxs/ui/Widget.hpp"
 
-#ifdef SWIG
-// clang-format off
-%rename(UIListRow) opentxs::ui::ListRow;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
 {
-class ListRow : virtual public Widget
+class OPENTXS_EXPORT ListRow : virtual public Widget
 {
 public:
-    OPENTXS_EXPORT virtual bool Last() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool Valid() const noexcept = 0;
+    virtual auto Last() const noexcept -> bool = 0;
+    virtual auto Valid() const noexcept -> bool = 0;
 
-    OPENTXS_EXPORT ~ListRow() override = default;
+    ~ListRow() override = default;
 
 protected:
     ListRow() noexcept = default;
@@ -36,8 +30,8 @@ protected:
 private:
     ListRow(const ListRow&) = delete;
     ListRow(ListRow&&) = delete;
-    ListRow& operator=(const ListRow&) = delete;
-    ListRow& operator=(ListRow&&) = delete;
+    auto operator=(const ListRow&) -> ListRow& = delete;
+    auto operator=(ListRow&&) -> ListRow& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

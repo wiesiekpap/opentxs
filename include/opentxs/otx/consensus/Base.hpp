@@ -38,43 +38,48 @@ public:
     using TransactionNumbers = std::set<TransactionNumber>;
     using RequestNumbers = std::set<RequestNumber>;
 
-    virtual RequestNumbers AcknowledgedNumbers() const = 0;
-    virtual std::size_t AvailableNumbers() const = 0;
-    virtual bool HaveLocalNymboxHash() const = 0;
-    virtual bool HaveRemoteNymboxHash() const = 0;
-    virtual TransactionNumbers IssuedNumbers() const = 0;
-    virtual std::string LegacyDataFolder() const = 0;
-    virtual OTIdentifier LocalNymboxHash() const = 0;
-    virtual const identifier::Server& Notary() const = 0;
-    virtual bool NymboxHashMatch() const = 0;
-    virtual std::unique_ptr<const opentxs::NymFile> Nymfile(
-        const PasswordPrompt& reason) const = 0;
-    virtual const identity::Nym& RemoteNym() const = 0;
-    virtual OTIdentifier RemoteNymboxHash() const = 0;
-    virtual RequestNumber Request() const = 0;
+    virtual auto AcknowledgedNumbers() const -> RequestNumbers = 0;
+    virtual auto AvailableNumbers() const -> std::size_t = 0;
+    virtual auto HaveLocalNymboxHash() const -> bool = 0;
+    virtual auto HaveRemoteNymboxHash() const -> bool = 0;
+    virtual auto IssuedNumbers() const -> TransactionNumbers = 0;
+    virtual auto LegacyDataFolder() const -> std::string = 0;
+    virtual auto LocalNymboxHash() const -> OTIdentifier = 0;
+    virtual auto Notary() const -> const identifier::Server& = 0;
+    virtual auto NymboxHashMatch() const -> bool = 0;
+    virtual auto Nymfile(const PasswordPrompt& reason) const
+        -> std::unique_ptr<const opentxs::NymFile> = 0;
+    virtual auto RemoteNym() const -> const identity::Nym& = 0;
+    virtual auto RemoteNymboxHash() const -> OTIdentifier = 0;
+    virtual auto Request() const -> RequestNumber = 0;
     using Signable::Serialize;
-    OPENTXS_NO_EXPORT virtual bool Serialize(proto::Context& out) const = 0;
-    virtual otx::ConsensusType Type() const = 0;
-    virtual bool VerifyAcknowledgedNumber(const RequestNumber& req) const = 0;
-    virtual bool VerifyAvailableNumber(
-        const TransactionNumber& number) const = 0;
-    virtual bool VerifyIssuedNumber(const TransactionNumber& number) const = 0;
+    OPENTXS_NO_EXPORT virtual auto Serialize(proto::Context& out) const
+        -> bool = 0;
+    virtual auto Type() const -> otx::ConsensusType = 0;
+    virtual auto VerifyAcknowledgedNumber(const RequestNumber& req) const
+        -> bool = 0;
+    virtual auto VerifyAvailableNumber(const TransactionNumber& number) const
+        -> bool = 0;
+    virtual auto VerifyIssuedNumber(const TransactionNumber& number) const
+        -> bool = 0;
 
-    virtual bool AddAcknowledgedNumber(const RequestNumber req) = 0;
-    virtual bool CloseCronItem(const TransactionNumber) = 0;
-    virtual bool ConsumeAvailable(const TransactionNumber& number) = 0;
-    virtual bool ConsumeIssued(const TransactionNumber& number) = 0;
-    virtual RequestNumber IncrementRequest() = 0;
-    virtual bool InitializeNymbox(const PasswordPrompt& reason) = 0;
-    virtual Editor<opentxs::NymFile> mutable_Nymfile(
-        const PasswordPrompt& reason) = 0;
-    virtual bool OpenCronItem(const TransactionNumber) = 0;
-    virtual bool RecoverAvailableNumber(const TransactionNumber& number) = 0;
-    virtual bool RemoveAcknowledgedNumber(const RequestNumbers& req) = 0;
+    virtual auto AddAcknowledgedNumber(const RequestNumber req) -> bool = 0;
+    virtual auto CloseCronItem(const TransactionNumber) -> bool = 0;
+    virtual auto ConsumeAvailable(const TransactionNumber& number) -> bool = 0;
+    virtual auto ConsumeIssued(const TransactionNumber& number) -> bool = 0;
+    virtual auto IncrementRequest() -> RequestNumber = 0;
+    virtual auto InitializeNymbox(const PasswordPrompt& reason) -> bool = 0;
+    virtual auto mutable_Nymfile(const PasswordPrompt& reason)
+        -> Editor<opentxs::NymFile> = 0;
+    virtual auto OpenCronItem(const TransactionNumber) -> bool = 0;
+    virtual auto RecoverAvailableNumber(const TransactionNumber& number)
+        -> bool = 0;
+    virtual auto RemoveAcknowledgedNumber(const RequestNumbers& req)
+        -> bool = 0;
     virtual void Reset() = 0;
-    OPENTXS_NO_EXPORT virtual bool Refresh(
+    OPENTXS_NO_EXPORT virtual auto Refresh(
         proto::Context& out,
-        const PasswordPrompt& reason) = 0;
+        const PasswordPrompt& reason) -> bool = 0;
     virtual void SetLocalNymboxHash(const Identifier& hash) = 0;
     virtual void SetRemoteNymboxHash(const Identifier& hash) = 0;
     virtual void SetRequest(const RequestNumber req) = 0;
@@ -87,8 +92,8 @@ protected:
 private:
     Base(const Base&) = delete;
     Base(Base&&) = delete;
-    Base& operator=(const Base&) = delete;
-    Base& operator=(Base&&) = delete;
+    auto operator=(const Base&) -> Base& = delete;
+    auto operator=(Base&&) -> Base& = delete;
 };
 }  // namespace context
 }  // namespace otx

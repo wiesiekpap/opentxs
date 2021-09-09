@@ -150,8 +150,7 @@ auto Block::serialize_post_header(ByteIterator& it, std::size_t& remaining)
 {
     for (const auto& [type, proof] : proofs_) {
         if (remaining < sizeof(type)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to serialize proof type")
+            LogOutput(OT_METHOD)(__func__)(": Failed to serialize proof type")
                 .Flush();
 
             return false;
@@ -167,8 +166,7 @@ auto Block::serialize_post_header(ByteIterator& it, std::size_t& remaining)
         const auto cs = network::blockchain::bitcoin::CompactSize{proof.size()};
 
         if (false == cs.Encode(preallocated(remaining, it))) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to serialize proof size")
+            LogOutput(OT_METHOD)(__func__)(": Failed to serialize proof size")
                 .Flush();
 
             return false;
@@ -181,7 +179,7 @@ auto Block::serialize_post_header(ByteIterator& it, std::size_t& remaining)
         }
 
         if (remaining < cs.Value()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize proof")
+            LogOutput(OT_METHOD)(__func__)(": Failed to serialize proof")
                 .Flush();
 
             return false;

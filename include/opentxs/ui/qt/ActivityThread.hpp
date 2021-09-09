@@ -49,6 +49,17 @@ public slots:
     void setDraft(QString);
 
 public:
+    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
+    Q_INVOKABLE bool pay(
+        const QString& amount,
+        const QString& sourceAccount,
+        const QString& memo = "") const noexcept;
+    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
+    Q_INVOKABLE QString paymentCode(const int currency) const noexcept;
+    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
+    Q_INVOKABLE bool sendDraft() const noexcept;
+
+public:
     enum Roles {
         IntAmountRole = Qt::UserRole + 0,     // int
         StringAmountRole = Qt::UserRole + 1,  // QString
@@ -82,12 +93,6 @@ public:
         int role = Qt::DisplayRole) const noexcept -> QVariant final;
     auto participants() const noexcept -> QString;
     auto threadID() const noexcept -> QString;
-    Q_INVOKABLE bool pay(
-        const QString& amount,
-        const QString& sourceAccount,
-        const QString& memo = "") const noexcept;
-    Q_INVOKABLE QString paymentCode(const int currency) const noexcept;
-    Q_INVOKABLE bool sendDraft() const noexcept;
 
     ActivityThreadQt(internal::ActivityThread& parent) noexcept;
 

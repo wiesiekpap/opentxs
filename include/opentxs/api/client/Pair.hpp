@@ -21,23 +21,24 @@ namespace client
 class Pair
 {
 public:
-    virtual bool AddIssuer(
+    virtual auto AddIssuer(
         const identifier::Nym& localNymID,
         const identifier::Nym& issuerNymID,
-        const std::string& pairingCode) const noexcept = 0;
-    virtual bool CheckIssuer(
+        const std::string& pairingCode) const noexcept -> bool = 0;
+    virtual auto CheckIssuer(
         const identifier::Nym& localNymID,
-        const identifier::UnitDefinition& unitDefinitionID) const noexcept = 0;
-    virtual std::string IssuerDetails(
+        const identifier::UnitDefinition& unitDefinitionID) const noexcept
+        -> bool = 0;
+    virtual auto IssuerDetails(
         const identifier::Nym& localNymID,
-        const identifier::Nym& issuerNymID) const noexcept = 0;
-    virtual std::set<OTNymID> IssuerList(
+        const identifier::Nym& issuerNymID) const noexcept -> std::string = 0;
+    virtual auto IssuerList(
         const identifier::Nym& localNymID,
-        const bool onlyTrusted) const noexcept = 0;
+        const bool onlyTrusted) const noexcept -> std::set<OTNymID> = 0;
     /** For unit tests */
-    virtual std::shared_future<void> Stop() const noexcept = 0;
+    virtual auto Stop() const noexcept -> std::shared_future<void> = 0;
     /** For unit tests */
-    virtual std::shared_future<void> Wait() const noexcept = 0;
+    virtual auto Wait() const noexcept -> std::shared_future<void> = 0;
 
     virtual ~Pair() = default;
 
@@ -47,8 +48,8 @@ protected:
 private:
     Pair(const Pair&) = delete;
     Pair(Pair&&) = delete;
-    Pair& operator=(const Pair&) = delete;
-    Pair& operator=(Pair&&) = delete;
+    auto operator=(const Pair&) -> Pair& = delete;
+    auto operator=(Pair&&) -> Pair& = delete;
 };
 }  // namespace client
 }  // namespace api

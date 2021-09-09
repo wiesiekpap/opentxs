@@ -33,10 +33,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace network
@@ -97,7 +94,7 @@ public:
         const opentxs::network::zeromq::ListenCallback& callback,
         const std::string& endpoint) const noexcept -> OTZMQPairSocket final;
     auto Pipeline(
-        const api::internal::Core& api,
+        const api::Core& api,
         std::function<void(zeromq::Message&)> callback) const noexcept
         -> OTZMQPipeline final;
     auto Proxy(

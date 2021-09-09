@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "internal/api/Api.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/core/Log.hpp"
@@ -19,7 +19,7 @@
 
 namespace opentxs
 {
-OTSignatureMetadata::OTSignatureMetadata(const api::internal::Core& api)
+OTSignatureMetadata::OTSignatureMetadata(const api::Core& api)
     : api_(api)
     , hasMetadata_(false)
     , metaKeyType_(0)
@@ -60,7 +60,7 @@ auto OTSignatureMetadata::SetMetadata(
         case 'S':
             break;
         default:
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Expected key type of A, E, or S, but instead found: ")(
                 metaKeyType)(" (bad data or error).")
                 .Flush();
@@ -75,7 +75,7 @@ auto OTSignatureMetadata::SetMetadata(
     str_verify_base62 += metaChildCredID;
 
     if (false == api_.Crypto().Encode().IsBase62(str_verify_base62)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Metadata for signature failed base62 validation: ")(
             str_verify_base62)(".")
             .Flush();

@@ -102,13 +102,12 @@ auto Thread::Add(
         case StorageBox::INCOMINGTRANSFER: {
         } break;
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Warning: unknown box.")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Warning: unknown box.").Flush();
         }
     }
 
     if (false == saved) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to save item.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Unable to save item.").Flush();
 
         return false;
     }
@@ -157,8 +156,7 @@ void Thread::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (false == bool(serialized)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to load thread index file.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to load thread index file.")
             .Flush();
         OT_FAIL;
     }
@@ -208,7 +206,7 @@ auto Thread::Read(const std::string& id, const bool unread) -> bool
     auto it = items_.find(id);
 
     if (items_.end() == it) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Item does not exist.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Item does not exist.").Flush();
 
         return false;
     }
@@ -242,8 +240,7 @@ auto Thread::Remove(const std::string& id) -> bool
         case StorageBox::BLOCKCHAIN: {
         } break;
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Warning: unknown box.")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Warning: unknown box.").Flush();
         }
     }
 

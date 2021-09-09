@@ -38,7 +38,7 @@ namespace opentxs
 // valid contract. This is used on the client side to produce a template for
 // the server, which then finalizes the contract.
 auto Factory::BasketContract(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const std::string& shortname,
     const std::string& name,
@@ -62,7 +62,7 @@ auto Factory::BasketContract(
 }
 
 auto Factory::BasketContract(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const proto::UnitDefinition serialized) noexcept
     -> std::shared_ptr<contract::unit::Basket>
@@ -89,7 +89,7 @@ auto Factory::BasketContract(
 namespace opentxs::contract::unit
 {
 auto Basket::CalculateBasketID(
-    const api::internal::Core& api,
+    const api::Core& api,
     const proto::UnitDefinition& serialized) -> OTIdentifier
 {
     auto contract(serialized);
@@ -105,7 +105,7 @@ auto Basket::CalculateBasketID(
 }
 
 auto Basket::FinalizeTemplate(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     proto::UnitDefinition& serialized,
     const PasswordPrompt& reason) -> bool
@@ -119,8 +119,7 @@ auto Basket::FinalizeTemplate(
     try {
         contract->first_time_init(lock);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::contract::unit::Basket::")(__FUNCTION__)(": ")(
-            e.what())
+        LogOutput("opentxs::contract::unit::Basket::")(__func__)(": ")(e.what())
             .Flush();
     }
 
@@ -131,7 +130,7 @@ auto Basket::FinalizeTemplate(
         if (contract->update_signature(lock, reason)) {
             lock.unlock();
             if (false == contract->Serialize(serialized, true)) {
-                LogOutput("Failed to serialize unit definition.")(__FUNCTION__)
+                LogOutput("Failed to serialize unit definition.")(__func__)
                     .Flush();
                 return false;
                 ;
@@ -148,7 +147,7 @@ auto Basket::FinalizeTemplate(
 namespace opentxs::contract::unit::implementation
 {
 Basket::Basket(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const std::string& shortname,
     const std::string& name,
@@ -164,7 +163,7 @@ Basket::Basket(
 }
 
 Basket::Basket(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const proto::UnitDefinition serialized)
     : Unit(api, nym, serialized)

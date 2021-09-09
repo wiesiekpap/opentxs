@@ -22,106 +22,106 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT bool CheckProto_1(
+auto CheckProto_1(
     const ContactSection& contactSection,
     const bool silent,
     const ClaimType indexed,
-    const uint32_t parentVersion = 0xffffffff);
-OPENTXS_EXPORT bool CheckProto_2(
+    const uint32_t parentVersion = 0xffffffff) -> bool;
+auto CheckProto_2(
     const ContactSection& contactSection,
     const bool silent,
     const ClaimType indexed,
-    const uint32_t parentVersion = 0xffffffff);
-OPENTXS_EXPORT bool CheckProto_3(
+    const uint32_t parentVersion = 0xffffffff) -> bool;
+auto CheckProto_3(
     const ContactSection& contactSection,
     const bool silent,
     const ClaimType indexed,
-    const uint32_t parentVersion = 0xffffffff);
-OPENTXS_EXPORT bool CheckProto_4(
+    const uint32_t parentVersion = 0xffffffff) -> bool;
+auto CheckProto_4(
     const ContactSection& contactSection,
     const bool silent,
     const ClaimType indexed,
-    const uint32_t parentVersion = 0xffffffff);
-OPENTXS_EXPORT bool CheckProto_5(
+    const uint32_t parentVersion = 0xffffffff) -> bool;
+auto CheckProto_5(
     const ContactSection& contactSection,
     const bool silent,
     const ClaimType indexed,
-    const uint32_t parentVersion = 0xffffffff);
-OPENTXS_EXPORT bool CheckProto_6(
+    const uint32_t parentVersion = 0xffffffff) -> bool;
+auto CheckProto_6(
     const ContactSection& contactSection,
     const bool silent,
     const ClaimType indexed,
-    const uint32_t parentVersion = 0xffffffff);
-OPENTXS_EXPORT bool CheckProto_7(
+    const uint32_t parentVersion = 0xffffffff) -> bool;
+auto CheckProto_7(
     const ContactSection& contactSection,
     const bool silent,
     const ClaimType indexed,
-    const uint32_t parentVersion = 0xffffffff);
-OPENTXS_EXPORT bool CheckProto_8(
+    const uint32_t parentVersion = 0xffffffff) -> bool;
+auto CheckProto_8(
     const ContactSection& contactSection,
     const bool silent,
     const ClaimType indexed,
-    const uint32_t parentVersion = 0xffffffff);
-OPENTXS_EXPORT bool CheckProto_9(
+    const uint32_t parentVersion = 0xffffffff) -> bool;
+auto CheckProto_9(
     const ContactSection& contactSection,
     const bool silent,
     const ClaimType indexed,
-    const uint32_t parentVersion = 0xffffffff);
-OPENTXS_EXPORT bool CheckProto_10(
+    const uint32_t parentVersion = 0xffffffff) -> bool;
+auto CheckProto_10(
     const ContactSection& contactSection,
     const bool silent,
     const ClaimType indexed,
-    const uint32_t parentVersion = 0xffffffff);
-OPENTXS_EXPORT bool CheckProto_11(
+    const uint32_t parentVersion = 0xffffffff) -> bool;
+auto CheckProto_11(
     const ContactSection& contactSection,
     const bool silent,
     const ClaimType indexed,
-    const uint32_t parentVersion = 0xffffffff);
-OPENTXS_EXPORT bool CheckProto_12(
+    const uint32_t parentVersion = 0xffffffff) -> bool;
+auto CheckProto_12(
     const ContactSection& contactSection,
     const bool silent,
     const ClaimType indexed,
-    const uint32_t parentVersion = 0xffffffff);
-OPENTXS_EXPORT bool CheckProto_13(
+    const uint32_t parentVersion = 0xffffffff) -> bool;
+auto CheckProto_13(
     const ContactSection& contactSection,
     const bool silent,
     const ClaimType indexed,
-    const uint32_t parentVersion = 0xffffffff);
-OPENTXS_EXPORT bool CheckProto_14(
+    const uint32_t parentVersion = 0xffffffff) -> bool;
+auto CheckProto_14(
     const ContactSection& contactSection,
     const bool silent,
     const ClaimType indexed,
-    const uint32_t parentVersion = 0xffffffff);
-OPENTXS_EXPORT bool CheckProto_15(
+    const uint32_t parentVersion = 0xffffffff) -> bool;
+auto CheckProto_15(
     const ContactSection& contactSection,
     const bool silent,
     const ClaimType indexed,
-    const uint32_t parentVersion = 0xffffffff);
-OPENTXS_EXPORT bool CheckProto_16(
+    const uint32_t parentVersion = 0xffffffff) -> bool;
+auto CheckProto_16(
     const ContactSection& contactSection,
     const bool silent,
     const ClaimType indexed,
-    const uint32_t parentVersion = 0xffffffff);
-OPENTXS_EXPORT bool CheckProto_17(
+    const uint32_t parentVersion = 0xffffffff) -> bool;
+auto CheckProto_17(
     const ContactSection& contactSection,
     const bool silent,
     const ClaimType indexed,
-    const uint32_t parentVersion = 0xffffffff);
-OPENTXS_EXPORT bool CheckProto_18(
+    const uint32_t parentVersion = 0xffffffff) -> bool;
+auto CheckProto_18(
     const ContactSection& contactSection,
     const bool silent,
     const ClaimType indexed,
-    const uint32_t parentVersion = 0xffffffff);
-OPENTXS_EXPORT bool CheckProto_19(
+    const uint32_t parentVersion = 0xffffffff) -> bool;
+auto CheckProto_19(
     const ContactSection& contactSection,
     const bool silent,
     const ClaimType indexed,
-    const uint32_t parentVersion = 0xffffffff);
-OPENTXS_EXPORT bool CheckProto_20(
+    const uint32_t parentVersion = 0xffffffff) -> bool;
+auto CheckProto_20(
     const ContactSection& contactSection,
     const bool silent,
     const ClaimType indexed,
-    const uint32_t parentVersion = 0xffffffff);
+    const uint32_t parentVersion = 0xffffffff) -> bool;
 }  // namespace proto
 }  // namespace opentxs
 

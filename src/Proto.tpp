@@ -63,7 +63,7 @@ std::unique_ptr<Output> DynamicFactory(
     const std::size_t size)
 {
     if (std::numeric_limits<int>::max() < size) {
-        std::cerr << __FUNCTION__ << ": input too large\n";
+        std::cerr << __func__ << ": input too large\n";
 
         return {};
     }
@@ -94,7 +94,7 @@ Output StringToProto(const String& input)
     OTString unconstInput = String::Factory(input.Get());
 
     if (!armored->LoadFromString(unconstInput)) {
-        std::cerr << __FUNCTION__ << ": failed to decode armored protobuf\n";
+        std::cerr << __func__ << ": failed to decode armored protobuf\n";
 
         return Output();
     } else {

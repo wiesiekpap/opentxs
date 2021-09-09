@@ -46,6 +46,14 @@
 
 namespace opentxs
 {
+namespace api
+{
+namespace client
+{
+class Manager;
+}  // namespace client
+}  // namespace api
+
 namespace contract
 {
 namespace peer
@@ -293,7 +301,7 @@ public:
 #endif  // OT_CASH
 
     OTX(const Flag& running,
-        const api::client::internal::Manager& client,
+        const api::client::Manager& client,
         const ContextLockCallback& lockCallback);
 
     ~OTX() final;
@@ -307,7 +315,7 @@ private:
 
     ContextLockCallback lock_callback_;
     const Flag& running_;
-    const api::client::internal::Manager& client_;
+    const api::client::Manager& client_;
     mutable std::mutex introduction_server_lock_{};
     mutable std::mutex nym_fetch_lock_{};
     mutable std::mutex task_status_lock_{};

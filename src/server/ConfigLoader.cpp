@@ -12,8 +12,8 @@
 #include <memory>
 #include <string>
 
-#include "internal/api/Api.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -28,7 +28,7 @@
 namespace opentxs::server
 {
 auto ConfigLoader::load(
-    const api::internal::Core& api,
+    const api::Core& api,
     const api::Settings& config,
     String& walletFilename) -> bool
 {

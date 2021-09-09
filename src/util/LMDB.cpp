@@ -57,7 +57,7 @@ struct LMDB::Imp {
 
             return success;
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
@@ -72,7 +72,7 @@ struct LMDB::Imp {
 
             return success;
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
@@ -89,7 +89,7 @@ struct LMDB::Imp {
 
             return success;
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
@@ -130,7 +130,7 @@ struct LMDB::Imp {
 
             return success;
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
@@ -157,7 +157,7 @@ struct LMDB::Imp {
 
             return 0 == ::mdb_cursor_get(cursor, &key, &value, MDB_SET);
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
@@ -215,7 +215,7 @@ struct LMDB::Imp {
 
             return success;
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
@@ -290,7 +290,7 @@ struct LMDB::Imp {
 
             return success;
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
@@ -304,7 +304,7 @@ struct LMDB::Imp {
         auto dbi = MDB_dbi{};
 
         if (0 != ::mdb_dbi_open(&tx, names_.at(table).c_str(), 0, &dbi)) {
-            LogTrace(OT_METHOD)(__FUNCTION__)(": table does not exist").Flush();
+            LogTrace(OT_METHOD)(__func__)(": table does not exist").Flush();
 
             return false;
         }
@@ -313,8 +313,7 @@ struct LMDB::Imp {
         read(dbi, cb, Dir::Forward);
 
         if (0 != ::mdb_drop(&tx, dbi, 1)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to delete table")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Failed to delete table").Flush();
 
             return false;
         }
@@ -378,7 +377,7 @@ struct LMDB::Imp {
 
             return success;
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
@@ -447,7 +446,7 @@ struct LMDB::Imp {
             code = ::mdb_put(tx, dbi, &key, &replace, flags);
             success = 0 == code;
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
         }
 
         return output;

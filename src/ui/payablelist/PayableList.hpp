@@ -31,10 +31,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -78,7 +75,7 @@ public:
     }
 
     PayableList(
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nymID,
         const contact::ContactItemType& currency,
         const SimpleCallback& cb) noexcept;

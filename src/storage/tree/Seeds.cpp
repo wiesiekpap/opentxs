@@ -65,7 +65,7 @@ void Seeds::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (!serialized) {
-        std::cerr << __FUNCTION__ << ": Failed to load seed index file."
+        std::cerr << __func__ << ": Failed to load seed index file."
                   << std::endl;
         abort();
     }
@@ -91,7 +91,7 @@ auto Seeds::Load(
 auto Seeds::save(const std::unique_lock<std::mutex>& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
-        std::cerr << __FUNCTION__ << ": Lock failure." << std::endl;
+        std::cerr << __func__ << ": Lock failure." << std::endl;
         abort();
     }
 
@@ -131,7 +131,7 @@ void Seeds::set_default(
     const std::string& id)
 {
     if (!verify_write_lock(lock)) {
-        std::cerr << __FUNCTION__ << ": Lock failure." << std::endl;
+        std::cerr << __func__ << ": Lock failure." << std::endl;
         abort();
     }
 

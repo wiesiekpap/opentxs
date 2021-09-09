@@ -19,15 +19,17 @@
 #include "blockchain/crypto/Deterministic.hpp"
 #include "blockchain/crypto/Element.hpp"
 #include "blockchain/crypto/Subaccount.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/crypto/Factory.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/HDSeed.hpp"
 #include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
+#include "opentxs/blockchain/crypto/Wallet.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -48,13 +50,12 @@ namespace opentxs::factory
 using ReturnType = blockchain::crypto::implementation::HD;
 
 auto BlockchainHDSubaccount(
-    const api::internal::Core& api,
-    const blockchain::crypto::internal::Account& parent,
+    const api::Core& api,
+    const blockchain::crypto::Account& parent,
     const proto::HDPath& path,
     const blockchain::crypto::HDProtocol standard,
     const PasswordPrompt& reason,
-    Identifier& id) noexcept
-    -> std::unique_ptr<blockchain::crypto::internal::HD>
+    Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::HD>
 {
     try {
         return std::make_unique<ReturnType>(
@@ -67,11 +68,10 @@ auto BlockchainHDSubaccount(
 }
 
 auto BlockchainHDSubaccount(
-    const api::internal::Core& api,
-    const blockchain::crypto::internal::Account& parent,
+    const api::Core& api,
+    const blockchain::crypto::Account& parent,
     const proto::HDAccount& serialized,
-    Identifier& id) noexcept
-    -> std::unique_ptr<blockchain::crypto::internal::HD>
+    Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::HD>
 {
     using ReturnType = blockchain::crypto::implementation::HD;
 
@@ -91,8 +91,8 @@ constexpr auto internalType{Subchain::Internal};
 constexpr auto externalType{Subchain::External};
 
 HD::HD(
-    const api::internal::Core& api,
-    const internal::Account& parent,
+    const api::Core& api,
+    const Account& parent,
     const proto::HDPath& path,
     const HDProtocol standard,
     const PasswordPrompt& reason,
@@ -115,8 +115,8 @@ HD::HD(
 }
 
 HD::HD(
-    const api::internal::Core& api,
-    const internal::Account& parent,
+    const api::Core& api,
+    const Account& parent,
     const SerializedType& serialized,
     Identifier& id) noexcept(false)
     : Deterministic(
@@ -141,7 +141,7 @@ HD::HD(
                       std::forward_as_tuple(
                           std::make_unique<implementation::Element>(
                               api,
-                              parent.ParentInternal().Parent(),
+                              parent.Parent().Parent(),
                               *this,
                               parent.Chain(),
                               internalType,
@@ -155,7 +155,7 @@ HD::HD(
                       std::forward_as_tuple(
                           std::make_unique<implementation::Element>(
                               api,
-                              parent.ParentInternal().Parent(),
+                              parent.Parent().Parent(),
                               *this,
                               parent.Chain(),
                               externalType,
@@ -285,11 +285,11 @@ auto HD::save(const rLock& lock) const noexcept -> bool
     serialize_deterministic(lock, *serialized.mutable_deterministic());
 
     for (const auto& [index, address] : data_.internal_.map_) {
-        *serialized.add_internaladdress() = address->Serialize();
+        *serialized.add_internaladdress() = address->Internal().Serialize();
     }
 
     for (const auto& [index, address] : data_.external_.map_) {
-        *serialized.add_externaladdress() = address->Serialize();
+        *serialized.add_externaladdress() = address->Internal().Serialize();
     }
 
     {

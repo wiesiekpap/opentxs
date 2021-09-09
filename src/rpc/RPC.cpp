@@ -271,7 +271,7 @@ auto RPC::accept_pending_payments(const proto::RPCCommand& command) const
                     const auto& [state, cheque] = chequeState;
 
                     if (false == bool(cheque)) {
-                        LogOutput(OT_METHOD)(__FUNCTION__)(
+                        LogOutput(OT_METHOD)(__func__)(
                             ": Unable to load cheque from workflow")
                             .Flush();
                         add_output_task(output, "");
@@ -288,7 +288,7 @@ auto RPC::accept_pending_payments(const proto::RPCCommand& command) const
                 case api::client::PaymentWorkflowType::OutgoingInvoice:
                 case api::client::PaymentWorkflowType::Error:
                 default: {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Unsupported workflow type")
                         .Flush();
                     add_output_task(output, "");
@@ -299,7 +299,7 @@ auto RPC::accept_pending_payments(const proto::RPCCommand& command) const
             }
 
             if (false == bool(payment)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Failed to instantiate payment")
                     .Flush();
                 add_output_task(output, "");
@@ -324,7 +324,7 @@ auto RPC::accept_pending_payments(const proto::RPCCommand& command) const
                     output);
             }
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             continue;
         }
@@ -433,7 +433,7 @@ void RPC::add_output_task(proto::RPCResponse& output, const std::string& taskid)
 }
 
 auto RPC::client_session(const request::Base& command) const noexcept(false)
-    -> const api::client::internal::Manager&
+    -> const api::client::Manager&
 {
     const auto session = command.Session();
 
@@ -444,7 +444,7 @@ auto RPC::client_session(const request::Base& command) const noexcept(false)
 
     if (is_client_session(session)) {
 
-        return dynamic_cast<const api::client::internal::Manager&>(
+        return dynamic_cast<const api::client::Manager&>(
             ot_.Client(static_cast<int>(get_index(session))));
     } else {
 
@@ -729,7 +729,7 @@ auto RPC::delete_claim(const proto::RPCCommand& command) const
 }
 
 void RPC::evaluate_deposit_payment(
-    const api::client::internal::Manager& client,
+    const api::client::Manager& client,
     const api::client::OTX::Result& result,
     proto::TaskComplete& output) const
 {
@@ -753,7 +753,7 @@ void RPC::evaluate_deposit_payment(
 }
 
 void RPC::evaluate_move_funds(
-    const api::client::internal::Manager& client,
+    const api::client::Manager& client,
     const api::client::OTX::Result& result,
     proto::RPCResponse& output) const
 {
@@ -873,22 +873,22 @@ auto RPC::get_args(const Args& serialized) -> Options
 }
 
 auto RPC::get_client(const std::int32_t instance) const
-    -> const api::client::internal::Manager*
+    -> const api::client::Manager*
 {
     if (is_server_session(instance)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Error: provided instance ")(instance)(" is a server session.")
+        LogOutput(OT_METHOD)(__func__)(": Error: provided instance ")(
+            instance)(" is a server session.")
             .Flush();
 
         return nullptr;
     } else {
         try {
-            return &dynamic_cast<const api::client::internal::Manager&>(
+            return &dynamic_cast<const api::client::Manager&>(
                 ot_.Client(static_cast<int>(get_index(instance))));
         } catch (...) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Error: provided instance ")(instance)(" is not a valid "
-                                                         "client session.")
+            LogOutput(OT_METHOD)(__func__)(": Error: provided instance ")(
+                instance)(" is not a valid "
+                          "client session.")
                 .Flush();
 
             return nullptr;
@@ -1111,8 +1111,8 @@ auto RPC::get_server(const std::int32_t instance) const
     -> const api::server::Manager*
 {
     if (is_client_session(instance)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Error: provided instance ")(instance)(" is a client session.")
+        LogOutput(OT_METHOD)(__func__)(": Error: provided instance ")(
+            instance)(" is a client session.")
             .Flush();
 
         return nullptr;
@@ -1120,9 +1120,9 @@ auto RPC::get_server(const std::int32_t instance) const
         try {
             return &ot_.Server(static_cast<int>(get_index(instance)));
         } catch (...) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Error: provided instance ")(instance)(" is not a valid "
-                                                         "server session.")
+            LogOutput(OT_METHOD)(__func__)(": Error: provided instance ")(
+                instance)(" is not a valid "
+                          "server session.")
                 .Flush();
 
             return nullptr;
@@ -1275,7 +1275,7 @@ auto RPC::get_workflow(const proto::RPCCommand& command) const
 }
 
 auto RPC::immediate_create_account(
-    const api::client::internal::Manager& client,
+    const api::client::Manager& client,
     const identifier::Nym& owner,
     const identifier::Server& notary,
     const identifier::UnitDefinition& unit) const -> bool
@@ -1294,7 +1294,7 @@ auto RPC::immediate_create_account(
 }
 
 auto RPC::immediate_register_issuer_account(
-    const api::client::internal::Manager& client,
+    const api::client::Manager& client,
     const identifier::Nym& owner,
     const identifier::Server& notary) const -> bool
 {
@@ -1302,7 +1302,7 @@ auto RPC::immediate_register_issuer_account(
 }
 
 auto RPC::immediate_register_nym(
-    const api::client::internal::Manager& client,
+    const api::client::Manager& client,
     const identifier::Server& notary) const -> bool
 {
     try {
@@ -1611,8 +1611,7 @@ auto RPC::Process(const proto::RPCCommand& command) const -> proto::RPCResponse
     const auto valid = proto::Validate(command, VERBOSE);
 
     if (false == valid) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid serialized command")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid serialized command").Flush();
 
         return invalid_command(command);
     }
@@ -1702,7 +1701,7 @@ auto RPC::Process(const proto::RPCCommand& command) const -> proto::RPCResponse
         case proto::RPCCOMMAND_ACCEPTVERIFICATION:
         case proto::RPCCOMMAND_SENDCONTACTMESSAGE:
         case proto::RPCCOMMAND_GETCONTACTACTIVITY: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Command not implemented.")
+            LogOutput(OT_METHOD)(__func__)(": Command not implemented.")
                 .Flush();
         } break;
         case proto::RPCCOMMAND_ACCEPTPENDINGPAYMENTS: {
@@ -1740,8 +1739,7 @@ auto RPC::Process(const proto::RPCCommand& command) const -> proto::RPCResponse
         }
         case proto::RPCCOMMAND_ERROR:
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported command.")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Unsupported command.").Flush();
         }
     }
 
@@ -1809,8 +1807,7 @@ auto RPC::Process(const request::Base& command) const
         case CommandType::rename_account:
         case CommandType::error:
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported command.")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Unsupported command.").Flush();
 
             return std::make_unique<response::Invalid>(command);
         }
@@ -2012,7 +2009,7 @@ void RPC::task_handler(const zmq::Message& in)
 
     const auto taskID = std::to_string(body.at(1).as<ID>());
     const auto success = body.at(2).as<bool>();
-    LogTrace(OT_METHOD)(__FUNCTION__)(": Received notice for task ")(taskID)
+    LogTrace(OT_METHOD)(__func__)(": Received notice for task ")(taskID)
         .Flush();
     auto lock = Lock{task_lock_};
     auto it = queued_tasks_.find(taskID);
@@ -2026,7 +2023,7 @@ void RPC::task_handler(const zmq::Message& in)
 
         if (finish) { finish(future.get(), task); }
     } else {
-        LogTrace(OT_METHOD)(__FUNCTION__)(": We don't care about task ")(taskID)
+        LogTrace(OT_METHOD)(__func__)(": We don't care about task ")(taskID)
             .Flush();
 
         return;

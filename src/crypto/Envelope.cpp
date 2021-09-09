@@ -21,7 +21,6 @@
 #include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "Proto.tpp"
-#include "internal/api/Api.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -55,14 +54,14 @@ namespace opentxs
 {
 using ReturnType = crypto::implementation::Envelope;
 
-auto Factory::Envelope(const api::internal::Core& api) noexcept
+auto Factory::Envelope(const api::Core& api) noexcept
     -> std::unique_ptr<crypto::Envelope>
 {
     return std::make_unique<ReturnType>(api);
 }
 
 auto Factory::Envelope(
-    const api::internal::Core& api,
+    const api::Core& api,
     const proto::Envelope& serialized) noexcept(false)
     -> std::unique_ptr<crypto::Envelope>
 {
@@ -70,7 +69,7 @@ auto Factory::Envelope(
 }
 
 auto Factory::Envelope(
-    const api::internal::Core& api,
+    const api::Core& api,
     const ReadView& serialized) noexcept(false)
     -> std::unique_ptr<crypto::Envelope>
 {
@@ -103,7 +102,7 @@ const Envelope::WeightMap Envelope::key_weights_{
 };
 const Envelope::Solutions Envelope::solutions_{calculate_solutions()};
 
-Envelope::Envelope(const api::internal::Core& api) noexcept
+Envelope::Envelope(const api::Core& api) noexcept
     : api_(api)
     , version_(default_version_)
     , dh_keys_()
@@ -112,9 +111,8 @@ Envelope::Envelope(const api::internal::Core& api) noexcept
 {
 }
 
-Envelope::Envelope(
-    const api::internal::Core& api,
-    const SerializedType& in) noexcept(false)
+Envelope::Envelope(const api::Core& api, const SerializedType& in) noexcept(
+    false)
     : api_(api)
     , version_(in.version())
     , dh_keys_(read_dh(api_, in))
@@ -123,8 +121,7 @@ Envelope::Envelope(
 {
 }
 
-Envelope::Envelope(const api::internal::Core& api, const ReadView& in) noexcept(
-    false)
+Envelope::Envelope(const api::Core& api, const ReadView& in) noexcept(false)
     : Envelope(api, proto::Factory<proto::Envelope>(in))
 {
 }
@@ -153,7 +150,7 @@ auto Envelope::attach_session_keys(
     const key::Symmetric& masterKey,
     const PasswordPrompt& reason) noexcept -> bool
 {
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": Recipient ")(nym.ID())(" has ")(
+    LogVerbose(OT_METHOD)(__func__)(": Recipient ")(nym.ID())(" has ")(
         nym.size())(" master credentials")
         .Flush();
 
@@ -166,7 +163,7 @@ auto Envelope::attach_session_keys(
             dhKey.CalculateTag(authority, type, reason, tag, password);
 
         if (false == haveTag) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failed to calculate session password")
                 .Flush();
 
@@ -179,7 +176,7 @@ auto Envelope::attach_session_keys(
         const auto locked = key.ChangePassword(previousPassword, password);
 
         if (false == locked) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to lock session key")
+            LogOutput(OT_METHOD)(__func__)(": Failed to lock session key")
                 .Flush();
 
             return false;
@@ -198,7 +195,7 @@ auto Envelope::calculate_requirements(const Nyms& recipients) noexcept(false)
         const auto& targets = output.emplace_back(nym->EncryptionTargets());
 
         if (targets.second.empty()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid recipient nym ")(
+            LogOutput(OT_METHOD)(__func__)(": Invalid recipient nym ")(
                 nym->ID())
                 .Flush();
 
@@ -318,7 +315,7 @@ auto Envelope::Open(
     const PasswordPrompt& reason) const noexcept -> bool
 {
     if (false == bool(ciphertext_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Nothing to decrypt").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Nothing to decrypt").Flush();
 
         return false;
     }
@@ -332,7 +329,7 @@ auto Envelope::Open(
 
         return key.Decrypt(ciphertext, password, plaintext);
     } catch (...) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": No session keys for this nym")
+        LogVerbose(OT_METHOD)(__func__)(": No session keys for this nym")
             .Flush();
 
         return false;
@@ -430,18 +427,18 @@ auto Envelope::seal(
     };
 
     if (ciphertext_) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Envelope has already been sealed")
+        LogOutput(OT_METHOD)(__func__)(": Envelope has already been sealed")
             .Flush();
 
         return false;
     }
 
     if (0 == recipients.size()) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": No recipients").Flush();
+        LogVerbose(OT_METHOD)(__func__)(": No recipients").Flush();
 
         return false;
     } else {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(recipients.size())(
+        LogVerbose(OT_METHOD)(__func__)(": ")(recipients.size())(
             " recipient(s)")
             .Flush();
     }
@@ -450,13 +447,13 @@ auto Envelope::seal(
     const auto dhkeys = find_solution(recipients, solution);
 
     if (0 == dhkeys.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": A recipient requires an unsupported key type")
             .Flush();
 
         return false;
     } else {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": ")(dhkeys.size())(
+        LogVerbose(OT_METHOD)(__func__)(": ")(dhkeys.size())(
             " dhkeys will be created")
             .Flush();
     }
@@ -481,7 +478,7 @@ auto Envelope::seal(
                     opentxs::crypto::key::asymmetric::Role::Encrypt);
             }
         } catch (...) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to generate DH key")
+            LogOutput(OT_METHOD)(__func__)(": Failed to generate DH key")
                 .Flush();
 
             return false;
@@ -499,8 +496,7 @@ auto Envelope::seal(
         masterKey->Encrypt(plaintext, password, *ciphertext_, false);
 
     if (false == encrypted) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to encrypt plaintext")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to encrypt plaintext").Flush();
 
         return false;
     }

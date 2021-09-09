@@ -84,7 +84,7 @@ auto BitcoinP2PPeerLegacy(
     using ReturnType = p2p::bitcoin::implementation::Peer;
 
     if (false == bool(address)) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Invalid null address")
+        LogOutput("opentxs::factory::")(__func__)(": Invalid null address")
             .Flush();
 
         return {};
@@ -97,7 +97,7 @@ auto BitcoinP2PPeerLegacy(
             break;
         }
         default: {
-            LogOutput("opentxs::factory::")(__FUNCTION__)(
+            LogOutput("opentxs::factory::")(__func__)(
                 ": Unsupported address type")
                 .Flush();
 
@@ -205,7 +205,7 @@ auto Peer::broadcast_block(zmq::Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (2 > body.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid command").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid command").Flush();
 
         OT_FAIL;
     }
@@ -227,7 +227,7 @@ auto Peer::broadcast_block(zmq::Message& in) noexcept -> void
         factory::BitcoinP2PInv(api_, chain_, std::move(payload))};
 
     if (false == bool(pMsg)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct inv").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to construct inv").Flush();
 
         return;
     }
@@ -243,7 +243,7 @@ auto Peer::broadcast_inv(
         factory::BitcoinP2PInv(api_, chain_, std::move(inv))};
 
     if (false == bool(pMsg)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct inv").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to construct inv").Flush();
 
         return;
     }
@@ -277,7 +277,7 @@ auto Peer::broadcast_transaction(zmq::Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (2 > body.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid command").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid command").Flush();
 
         OT_FAIL;
     }
@@ -286,7 +286,7 @@ auto Peer::broadcast_transaction(zmq::Message& in) noexcept -> void
         factory::BitcoinP2PTx(api_, chain_, body.at(1).Bytes())};
 
     if (false == bool(pMsg)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct tx").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to construct tx").Flush();
 
         return;
     }
@@ -371,8 +371,7 @@ auto Peer::ping() noexcept -> void
         factory::BitcoinP2PPing(api_, chain_, nonce_)};
 
     if (false == bool(pPing)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct ping")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to construct ping").Flush();
 
         return;
     }
@@ -387,8 +386,7 @@ auto Peer::pong() noexcept -> void
         factory::BitcoinP2PPong(api_, chain_, nonce_)};
 
     if (false == bool(pPong)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct pong")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to construct pong").Flush();
 
         return;
     }
@@ -410,7 +408,7 @@ auto Peer::process_addr(
             payload.size())};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -468,7 +466,7 @@ auto Peer::process_block(
             network_.Submit(work);
         }
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
     }
 }
 
@@ -485,7 +483,7 @@ auto Peer::process_blocktxn(
             payload.size())};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -507,7 +505,7 @@ auto Peer::process_cfcheckpt(
             payload.size())};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -539,7 +537,7 @@ auto Peer::process_cfheaders(
             payload.size())};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -548,12 +546,12 @@ auto Peer::process_cfheaders(
     const auto& message = *pMessage;
 
     if (verifying()) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
+        LogVerbose(OT_METHOD)(__func__)(
             ": Received checkpoint filter header message")
             .Flush();
 
         if (1 != pMessage->size()) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
+            LogVerbose(OT_METHOD)(__func__)(
                 ": Unexpected filter header count: ")(pMessage->size())
                 .Flush();
 
@@ -568,7 +566,7 @@ auto Peer::process_cfheaders(
                 api_, message.at(0).Bytes(), message.Previous().Bytes());
 
         if (filterHash != receivedFilterHeader) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": Unexpected filter header: ")(
+            LogVerbose(OT_METHOD)(__func__)(": Unexpected filter header: ")(
                 receivedFilterHeader->asHex())(". Expected: ")(
                 filterHash->asHex())
                 .Flush();
@@ -635,7 +633,7 @@ auto Peer::process_cfheaders(
 
             if (cfheader_job_.isDownloaded()) { reset_cfheader_job(); }
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
             reset_cfheader_job();
         }
     }
@@ -685,7 +683,7 @@ auto Peer::process_cfilter(
             if (cfilter_job_.isDownloaded()) { reset_cfilter_job(); }
         }
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
     }
 }
 
@@ -702,7 +700,7 @@ auto Peer::process_cmpctblock(
             payload.size())};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -724,7 +722,7 @@ auto Peer::process_feefilter(
             payload.size())};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -746,7 +744,7 @@ auto Peer::process_filteradd(
             payload.size())};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -763,7 +761,7 @@ auto Peer::process_filterclear(
         factory::BitcoinP2PFilterclear(api_, std::move(header))};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -785,7 +783,7 @@ auto Peer::process_filterload(
             payload.size())};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -802,7 +800,7 @@ auto Peer::process_getaddr(
         factory::BitcoinP2PGetaddr(api_, std::move(header))};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -824,7 +822,7 @@ auto Peer::process_getblocks(
             payload.size())};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -846,7 +844,7 @@ auto Peer::process_getblocktxn(
             payload.size())};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -868,7 +866,7 @@ auto Peer::process_getcfcheckpt(
             payload.size())};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -890,7 +888,7 @@ auto Peer::process_getcfheaders(
             payload.size())};
 
     if (false == bool(pIn)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -936,8 +934,7 @@ auto Peer::process_getcfheaders(
         api_, chain_, in.Type(), in.Stop(), previous, std::move(filterHashes))};
 
     if (false == bool(pOut)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct reply")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to construct reply").Flush();
 
         return;
     }
@@ -959,7 +956,7 @@ auto Peer::process_getcfilters(
             payload.size())};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -970,7 +967,7 @@ auto Peer::process_getcfilters(
     const auto pStopHeader = headers_.LoadHeader(stopHash);
 
     if (!pStopHeader) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Skipping request with unknown stop header")
             .Flush();
 
@@ -982,7 +979,7 @@ auto Peer::process_getcfilters(
     const auto stopHeight{stopHeader.Height()};
 
     if (startHeight > stopHeight) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Skipping request with malformed start height (")(
             startHeight)(") vs stop (")(stopHeight)(")")
             .Flush();
@@ -991,7 +988,7 @@ auto Peer::process_getcfilters(
     }
 
     if (0 > startHeight) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Skipping request with negative start height (")(startHeight)(")")
             .Flush();
 
@@ -1003,7 +1000,7 @@ auto Peer::process_getcfilters(
         static_cast<std::size_t>((stopHeight - startHeight) + 1u);
 
     if (count > limit) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Skipping request with excessive filter requests (")(
             count)(") vs allowed (")(limit)(")")
             .Flush();
@@ -1024,7 +1021,7 @@ auto Peer::process_getcfilters(
     }
 
     if (data.size() != count) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to load all filters, requested (")(count)("), loaded (")(
             data.size())(")")
             .Flush();
@@ -1041,7 +1038,7 @@ auto Peer::process_getcfilters(
             factory::BitcoinP2PCfilter(api_, chain_, type, *h, *(*g))};
 
         if (false == bool(pOut)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct reply")
+            LogOutput(OT_METHOD)(__func__)(": Failed to construct reply")
                 .Flush();
 
             return;
@@ -1065,7 +1062,7 @@ auto Peer::process_getdata(
             payload.size())};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -1164,7 +1161,7 @@ auto Peer::process_getheaders(
             payload.size())};
 
     if (false == bool(pIn)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -1186,8 +1183,7 @@ auto Peer::process_getheaders(
         factory::BitcoinP2PHeaders(api_, chain_, std::move(headers))};
 
     if (false == bool(pOut)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct reply")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to construct reply").Flush();
 
         return;
     }
@@ -1219,8 +1215,7 @@ auto Peer::process_headers(
             payload.size())};
 
     if (false == bool(pMessage)) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
-            ": Failed to decode message payload")
+        LogVerbose(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -1229,12 +1224,12 @@ auto Peer::process_headers(
     const auto& message = *pMessage;
 
     if (verifying()) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
+        LogVerbose(OT_METHOD)(__func__)(
             ": Received checkpoint block header message")
             .Flush();
 
         if (1 != pMessage->size()) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": Unexpected header count: ")(
+            LogVerbose(OT_METHOD)(__func__)(": Unexpected header count: ")(
                 pMessage->size())
                 .Flush();
 
@@ -1247,9 +1242,9 @@ auto Peer::process_headers(
         const auto& receivedBlockHash = message.at(0).Hash();
 
         if (checkpointHash != receivedBlockHash) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
-                ": Unexpected block header hash: ")(receivedBlockHash.asHex())(
-                ". Expected: ")(checkpointHash->asHex())
+            LogVerbose(OT_METHOD)(__func__)(": Unexpected block header hash: ")(
+                receivedBlockHash.asHex())(". Expected: ")(
+                checkpointHash->asHex())
                 .Flush();
 
             return;
@@ -1296,7 +1291,7 @@ auto Peer::process_inv(
             payload.size())};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -1364,7 +1359,7 @@ auto Peer::process_mempool(
         factory::BitcoinP2PMempool(api_, std::move(header))};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -1386,7 +1381,7 @@ auto Peer::process_merkleblock(
             payload.size())};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -1402,7 +1397,7 @@ auto Peer::process_message(const zmq::Message& message) noexcept -> void
     const auto body = message.Body();
 
     if (3 > body.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -1443,8 +1438,8 @@ auto Peer::process_message(const zmq::Message& message) noexcept -> void
         return;
     }
 
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": Received ")(DisplayString(chain_))(
-        " ")(CommandName(command))(" command")
+    LogVerbose(OT_METHOD)(__func__)(": Received ")(DisplayString(chain_))(" ")(
+        CommandName(command))(" command")
         .Flush();
 
     try {
@@ -1454,7 +1449,7 @@ auto Peer::process_message(const zmq::Message& message) noexcept -> void
         auto raw = Data::Factory(headerBytes);
         auto unknown = Data::Factory();
         raw->Extract(12, unknown, 4);
-        LogOutput(OT_METHOD)(__FUNCTION__)(": No handler for command ")(
+        LogOutput(OT_METHOD)(__func__)(": No handler for command ")(
             unknown->str())
             .Flush();
 
@@ -1475,7 +1470,7 @@ auto Peer::process_notfound(
             payload.size())};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -1497,7 +1492,7 @@ auto Peer::process_ping(
             payload.size())};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -1528,7 +1523,7 @@ auto Peer::process_pong(
             payload.size())};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -1547,7 +1542,7 @@ auto Peer::process_reject(
         payload.size())};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -1569,7 +1564,7 @@ auto Peer::process_sendcmpct(
             payload.size())};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -1586,7 +1581,7 @@ auto Peer::process_sendheaders(
         factory::BitcoinP2PSendheaders(api_, std::move(header))};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -1607,7 +1602,7 @@ auto Peer::process_tx(
         payload.size());
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -1629,7 +1624,7 @@ auto Peer::process_verack(
         factory::BitcoinP2PVerack(api_, std::move(header))};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -1652,7 +1647,7 @@ auto Peer::process_version(
             payload.size())};
 
     if (false == bool(pVersion)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decode message payload")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decode message payload")
             .Flush();
 
         return;
@@ -1666,8 +1661,7 @@ auto Peer::process_version(
     std::unique_ptr<Message> pVerack{factory::BitcoinP2PVerack(api_, chain_)};
 
     if (false == bool(pVerack)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct verack")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to construct verack").Flush();
 
         return;
     }
@@ -1733,8 +1727,7 @@ auto Peer::request_addresses() noexcept -> void
         std::unique_ptr<Message>{factory::BitcoinP2PGetaddr(api_, chain_)};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct getaddr")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to construct getaddr").Flush();
 
         return;
     }
@@ -1748,11 +1741,11 @@ auto Peer::request_block(zmq::Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (const auto count{body.size()}; 2 > count) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid command").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid command").Flush();
 
         OT_FAIL;
     } else {
-        LogTrace(OT_METHOD)(__FUNCTION__)(": ")(count - 1)(" blocks to request")
+        LogTrace(OT_METHOD)(__func__)(": ")(count - 1)(" blocks to request")
             .Flush();
     }
 
@@ -1775,7 +1768,7 @@ auto Peer::request_block(zmq::Message& in) noexcept -> void
             factory::BitcoinP2PGetdata(api_, chain_, std::move(list))};
 
         if (false == bool(pMessage)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct getdata")
+            LogOutput(OT_METHOD)(__func__)(": Failed to construct getdata")
                 .Flush();
 
             return;
@@ -1814,7 +1807,7 @@ auto Peer::request_blocks() noexcept -> void
         const auto& message = *pMessage;
         send(message.Encode());
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
     }
 }
 
@@ -1837,8 +1830,7 @@ auto Peer::request_cfheaders() noexcept -> void
                 data.back()->position_.second)};
 
         if (false == bool(pMessage)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to construct getcfheaders")
+            LogOutput(OT_METHOD)(__func__)(": Failed to construct getcfheaders")
                 .Flush();
 
             return;
@@ -1847,7 +1839,7 @@ auto Peer::request_cfheaders() noexcept -> void
         const auto& message = *pMessage;
         send(message.Encode());
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid parameters").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid parameters").Flush();
     }
 }
 
@@ -1869,8 +1861,7 @@ auto Peer::request_cfilter() noexcept -> void
             data.back()->position_.second)};
 
         if (false == bool(pMessage)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to construct getcfilters")
+            LogOutput(OT_METHOD)(__func__)(": Failed to construct getcfilters")
                 .Flush();
 
             return;
@@ -1879,7 +1870,7 @@ auto Peer::request_cfilter() noexcept -> void
         const auto& message = *pMessage;
         send(message.Encode());
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid parameters").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid parameters").Flush();
     }
 }
 
@@ -1911,8 +1902,7 @@ auto Peer::request_checkpoint_block_header() noexcept -> void
             std::move(checkpointBlockHash))};
 
         if (false == bool(pMessage)) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
-                ": Failed to construct getheaders")
+            LogVerbose(OT_METHOD)(__func__)(": Failed to construct getheaders")
                 .Flush();
 
             return;
@@ -1955,7 +1945,7 @@ auto Peer::request_checkpoint_filter_header() noexcept -> void
                 checkpointBlockHash)};
 
         if (false == bool(pMessage)) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
+            LogVerbose(OT_METHOD)(__func__)(
                 ": Failed to construct getcfheaders")
                 .Flush();
 
@@ -1966,7 +1956,7 @@ auto Peer::request_checkpoint_filter_header() noexcept -> void
         send(message.Encode());
         success = true;
     } catch (...) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Invalid parameters").Flush();
+        LogVerbose(OT_METHOD)(__func__)(": Invalid parameters").Flush();
     }
 }
 
@@ -1983,7 +1973,7 @@ auto Peer::request_headers(const block::Hash& hash) noexcept -> void
         api_, chain_, protocol_.load(), headers_.RecentHashes(), hash)};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct getheaders")
+        LogOutput(OT_METHOD)(__func__)(": Failed to construct getheaders")
             .Flush();
 
         return;
@@ -2000,8 +1990,7 @@ auto Peer::request_mempool() noexcept -> void
         std::unique_ptr<Message>{factory::BitcoinP2PMempool(api_, chain_)};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct mempool")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to construct mempool").Flush();
 
         return;
     }
@@ -2017,8 +2006,7 @@ auto Peer::request_transactions(
         factory::BitcoinP2PGetdata(api_, chain_, std::move(inv))};
 
     if (false == bool(pMessage)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct getdata")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to construct getdata").Flush();
 
         return;
     }

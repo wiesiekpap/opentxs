@@ -60,7 +60,7 @@ public:
 
     Test_ContactList()
         : client_(ot::Context().StartClient(0))
-        , reason_(client_.Factory().PasswordPrompt(__FUNCTION__))
+        , reason_(client_.Factory().PasswordPrompt(__func__))
         , fingerprint_(client_.Exec().Wallet_ImportSeed(
               "response seminar brave tip suit recall often sound stick owner "
               "lottery motion",

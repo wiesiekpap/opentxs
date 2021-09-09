@@ -38,8 +38,7 @@ auto BitcoinP2PReject(
     using ReturnType = bitcoin::message::Reject;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Invalid header")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -47,7 +46,7 @@ auto BitcoinP2PReject(
     auto expectedSize = sizeof(std::byte);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Size below minimum for Reject 1")
             .Flush();
 
@@ -61,7 +60,7 @@ auto BitcoinP2PReject(
         it, expectedSize, size, messageSize);
 
     if (!decodedSize) {
-        LogOutput(__FUNCTION__)(": CompactSize incomplete for message field")
+        LogOutput(__func__)(": CompactSize incomplete for message field")
             .Flush();
 
         return nullptr;
@@ -70,7 +69,7 @@ auto BitcoinP2PReject(
     expectedSize += messageSize;
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Size below minimum for message field")
             .Flush();
 
@@ -82,7 +81,7 @@ auto BitcoinP2PReject(
     expectedSize += sizeof(std::uint8_t);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Size below minimum for code field")
             .Flush();
 
@@ -96,7 +95,7 @@ auto BitcoinP2PReject(
     expectedSize += sizeof(std::byte);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Size below minimum for Reject 1")
             .Flush();
 
@@ -108,7 +107,7 @@ auto BitcoinP2PReject(
         it, expectedSize, size, reasonSize);
 
     if (!decodedReasonSize) {
-        LogOutput(__FUNCTION__)(": CompactSize incomplete for reason field")
+        LogOutput(__func__)(": CompactSize incomplete for reason field")
             .Flush();
 
         return nullptr;
@@ -117,7 +116,7 @@ auto BitcoinP2PReject(
     expectedSize += reasonSize;
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Size below minimum for reason field")
             .Flush();
 
@@ -150,8 +149,7 @@ auto BitcoinP2PReject(
             reason,
             extra);
     } catch (...) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Checksum failure")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Checksum failure").Flush();
 
         return nullptr;
     }

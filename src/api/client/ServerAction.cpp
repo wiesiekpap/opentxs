@@ -8,11 +8,11 @@
 #include "api/client/ServerAction.hpp"  // IWYU pragma: associated
 
 #include "client/OTAPI_Func.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/api/client/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Shared.hpp"
 #include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/ServerAction.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -23,7 +23,7 @@
 namespace opentxs::factory
 {
 auto ServerAction(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ContextLockCallback& lockCallback) -> api::client::ServerAction*
 {
     return new api::client::implementation::ServerAction(api, lockCallback);
@@ -33,7 +33,7 @@ auto ServerAction(
 namespace opentxs::api::client::implementation
 {
 ServerAction::ServerAction(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ContextLockCallback& lockCallback)
     : api_(api)
     , lock_callback_(lockCallback)

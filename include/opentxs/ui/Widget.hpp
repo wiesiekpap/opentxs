@@ -13,33 +13,18 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 
-#ifdef SWIG
-// clang-format off
-%extend opentxs::ui::Widget {
-    std::string WidgetID() const noexcept
-    {
-        return $self->WidgetID()->str();
-    }
-}
-%ignore opentxs::ui::Widget::SetCallback;
-%ignore opentxs::ui::Widget::WidgetID;
-%rename(UIWidget) opentxs::ui::Widget;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
 {
-class Widget
+class OPENTXS_EXPORT Widget
 {
 public:
-    OPENTXS_EXPORT virtual void ClearCallbacks() const noexcept = 0;
-    OPENTXS_EXPORT virtual void SetCallback(
-        SimpleCallback cb) const noexcept = 0;
-    OPENTXS_EXPORT virtual OTIdentifier WidgetID() const noexcept = 0;
+    virtual void ClearCallbacks() const noexcept = 0;
+    virtual void SetCallback(SimpleCallback cb) const noexcept = 0;
+    virtual auto WidgetID() const noexcept -> OTIdentifier = 0;
 
-    OPENTXS_EXPORT virtual ~Widget() = default;
+    virtual ~Widget() = default;
 
 protected:
     Widget() noexcept = default;
@@ -47,8 +32,8 @@ protected:
 private:
     Widget(const Widget&) = delete;
     Widget(Widget&&) = delete;
-    Widget& operator=(const Widget&) = delete;
-    Widget& operator=(Widget&&) = delete;
+    auto operator=(const Widget&) -> Widget& = delete;
+    auto operator=(Widget&&) -> Widget& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

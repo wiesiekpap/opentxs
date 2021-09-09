@@ -15,35 +15,33 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT void PrintErrorMessage(
-    const char* proto,
-    const char* error) noexcept;
-OPENTXS_EXPORT void PrintErrorMessage(
+void PrintErrorMessage(const char* proto, const char* error) noexcept;
+void PrintErrorMessage(
     const char* proto,
     const unsigned int version,
     const char* error) noexcept;
-OPENTXS_EXPORT void PrintErrorMessage(
+void PrintErrorMessage(
     const char* proto,
     const unsigned int version,
     const std::string& error) noexcept;
-OPENTXS_EXPORT void PrintErrorMessage(
+void PrintErrorMessage(
     const char* proto,
     const unsigned int version,
     const char* error,
     const long long int value) noexcept;
-OPENTXS_EXPORT void PrintErrorMessage(
+void PrintErrorMessage(
     const char* proto,
     const unsigned int version,
     const char* error,
     const std::string& value) noexcept;
 
 template <typename T, typename... Args>
-OPENTXS_EXPORT bool Check(
+auto Check(
     const T& input,
     const std::uint32_t minVersion,
     const std::uint32_t maxVersion,
     const bool silent,
-    Args&&... params) noexcept
+    Args&&... params) noexcept -> bool
 {
     if (false == input.has_version()) {
         PrintErrorMessage("protobuf", "missing version");
@@ -133,10 +131,8 @@ OPENTXS_EXPORT bool Check(
 }
 
 template <typename T, typename... Args>
-OPENTXS_EXPORT bool Validate(
-    const T& input,
-    const bool silent,
-    Args&&... params) noexcept
+auto Validate(const T& input, const bool silent, Args&&... params) noexcept
+    -> bool
 {
 
     if (!input.has_version()) {

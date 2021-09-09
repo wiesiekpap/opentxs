@@ -180,9 +180,9 @@ auto Accounts::add_set_index(
         mapID->SetString(argID.str());
     } else {
         if (mapID != argID) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Provided index id (")(argID)(
-                ") for account ")(accountID)(
-                " does not match existing index id ")(mapID)
+            LogOutput(OT_METHOD)(__func__)(": Provided index id (")(
+                argID)(") for account ")(
+                accountID)(" does not match existing index id ")(mapID)
                 .Flush();
 
             return false;
@@ -210,37 +210,37 @@ auto Accounts::check_update_account(
     const contact::ContactItemType unit) -> bool
 {
     if (accountID->empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid account ID.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid account ID.").Flush();
 
         return false;
     }
 
     if (ownerNym.empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid owner nym ID.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid owner nym ID.").Flush();
 
         return false;
     }
 
     if (signerNym.empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid signer nym ID.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid signer nym ID.").Flush();
 
         return false;
     }
 
     if (issuerNym.empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid issuer nym ID.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid issuer nym ID.").Flush();
 
         return false;
     }
 
     if (server.empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid server ID.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid server ID.").Flush();
 
         return false;
     }
 
     if (contract.empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid unit ID.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid unit ID.").Flush();
 
         return false;
     }
@@ -336,8 +336,7 @@ void Accounts::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (false == bool(serialized)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to load account index file.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to load account index file.")
             .Flush();
         OT_FAIL;
     }
@@ -382,7 +381,7 @@ auto Accounts::Load(
 auto Accounts::save(const Lock& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Lock failure.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Lock failure.").Flush();
         OT_FAIL;
     }
 

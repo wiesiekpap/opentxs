@@ -10,13 +10,6 @@
 
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 
-#ifdef SWIG
-// clang-format off
-%ignore opentxs::network::zeromq::curve::Server::SetPrivateKey;
-%interface(opentxs::network::zeromq::curve::Server);
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 class Secret;
@@ -30,17 +23,16 @@ namespace zeromq
 {
 namespace curve
 {
-class Server : virtual public socket::Socket
+class OPENTXS_EXPORT Server : virtual public socket::Socket
 {
 public:
-    OPENTXS_EXPORT virtual bool SetDomain(
-        const std::string& domain) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SetPrivateKey(
-        const Secret& key) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SetPrivateKey(
-        const std::string& z85) const noexcept = 0;
+    virtual auto SetDomain(const std::string& domain) const noexcept
+        -> bool = 0;
+    virtual auto SetPrivateKey(const Secret& key) const noexcept -> bool = 0;
+    virtual auto SetPrivateKey(const std::string& z85) const noexcept
+        -> bool = 0;
 
-    OPENTXS_EXPORT ~Server() override = default;
+    ~Server() override = default;
 
 protected:
     Server() noexcept = default;
@@ -48,8 +40,8 @@ protected:
 private:
     Server(const Server&) = delete;
     Server(Server&&) = delete;
-    Server& operator=(const Server&) = delete;
-    Server& operator=(Server&&) = delete;
+    auto operator=(const Server&) -> Server& = delete;
+    auto operator=(Server&&) -> Server& = delete;
 };
 }  // namespace curve
 }  // namespace zeromq

@@ -133,8 +133,7 @@ auto Threads::create(
         driver_, id, participants, mail_inbox_, mail_outbox_));
 
     if (!newThread) {
-        std::cerr << __FUNCTION__ << ": Failed to instantiate thread."
-                  << std::endl;
+        std::cerr << __func__ << ": Failed to instantiate thread." << std::endl;
         abort();
     }
 
@@ -149,7 +148,7 @@ auto Threads::create(
         node.swap(newThread);
         save(lock);
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Thread already exists.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Thread already exists.").Flush();
     }
 
     return id;
@@ -199,7 +198,7 @@ void Threads::init(const std::string& hash)
     driver_.LoadProto(hash, input);
 
     if (!input) {
-        std::cerr << __FUNCTION__ << ": Failed to load thread list index file."
+        std::cerr << __func__ << ": Failed to load thread list index file."
                   << std::endl;
         abort();
     }
@@ -234,7 +233,7 @@ void Threads::init(const std::string& hash)
                 data.emplace(std::move(threadID));
             }
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             continue;
         }
@@ -299,7 +298,7 @@ auto Threads::thread(
     const std::unique_lock<std::mutex>& lock) const -> storage::Thread*
 {
     if (!verify_write_lock(lock)) {
-        std::cerr << __FUNCTION__ << ": Lock failure." << std::endl;
+        std::cerr << __func__ << ": Lock failure." << std::endl;
         abort();
     }
 
@@ -313,7 +312,7 @@ auto Threads::thread(
             driver_, id, hash, alias, mail_inbox_, mail_outbox_));
 
         if (!node) {
-            std::cerr << __FUNCTION__ << ": Failed to instantiate thread."
+            std::cerr << __func__ << ": Failed to instantiate thread."
                       << std::endl;
             abort();
         }
@@ -335,8 +334,8 @@ auto Threads::Rename(const std::string& existingID, const std::string& newID)
     auto it = item_map_.find(existingID);
 
     if (item_map_.end() == it) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Thread ")(existingID)(
-            " does not exist.")
+        LogOutput(OT_METHOD)(__func__)(": Thread ")(
+            existingID)(" does not exist.")
             .Flush();
 
         return false;
@@ -357,7 +356,7 @@ auto Threads::Rename(const std::string& existingID, const std::string& newID)
     std::unique_ptr<storage::Thread> newThread{nullptr};
 
     if (false == oldThread->Rename(newID)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to rename thread ")(
+        LogOutput(OT_METHOD)(__func__)(": Failed to rename thread ")(
             existingID)(".")
             .Flush();
 
@@ -391,7 +390,7 @@ auto Threads::RemoveIndex(const Data& txid, const Identifier& thread) noexcept
 auto Threads::save(const std::unique_lock<std::mutex>& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
-        std::cerr << __FUNCTION__ << ": Lock failure." << std::endl;
+        std::cerr << __func__ << ": Lock failure." << std::endl;
         abort();
     }
 
@@ -408,12 +407,12 @@ void Threads::save(
     const std::string& id)
 {
     if (!verify_write_lock(lock)) {
-        std::cerr << __FUNCTION__ << ": Lock failure." << std::endl;
+        std::cerr << __func__ << ": Lock failure." << std::endl;
         abort();
     }
 
     if (nullptr == nym) {
-        std::cerr << __FUNCTION__ << ": Null target" << std::endl;
+        std::cerr << __func__ << ": Null target" << std::endl;
         abort();
     }
 
@@ -424,7 +423,7 @@ void Threads::save(
     alias = nym->Alias();
 
     if (!save(lock)) {
-        std::cerr << __FUNCTION__ << ": Save error" << std::endl;
+        std::cerr << __func__ << ": Save error" << std::endl;
         abort();
     }
 }

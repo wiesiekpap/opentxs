@@ -16,10 +16,10 @@ namespace crypto
 {
 namespace key
 {
-class Ed25519 : virtual public HD
+class OPENTXS_EXPORT Ed25519 : virtual public HD
 {
 public:
-    OPENTXS_EXPORT ~Ed25519() override = default;
+    ~Ed25519() override = default;
 
 protected:
     Ed25519() = default;
@@ -27,8 +27,8 @@ protected:
 private:
     Ed25519(const Ed25519&) = delete;
     Ed25519(Ed25519&&) = delete;
-    Ed25519& operator=(const Ed25519&) = delete;
-    Ed25519& operator=(Ed25519&&) = delete;
+    auto operator=(const Ed25519&) -> Ed25519& = delete;
+    auto operator=(Ed25519&&) -> Ed25519& = delete;
 };
 }  // namespace key
 }  // namespace crypto

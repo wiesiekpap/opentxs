@@ -38,35 +38,32 @@ namespace opentxs
 {
 namespace blind
 {
-class Mint : virtual public Contract
+class OPENTXS_EXPORT Mint : virtual public Contract
 {
 public:
-    OPENTXS_EXPORT virtual OTIdentifier AccountID() const = 0;
-    OPENTXS_EXPORT virtual bool Expired() const = 0;
-    OPENTXS_EXPORT virtual std::int64_t GetDenomination(
-        std::int32_t nIndex) const = 0;
-    OPENTXS_EXPORT virtual std::int32_t GetDenominationCount() const = 0;
-    OPENTXS_EXPORT virtual Time GetExpiration() const = 0;
-    OPENTXS_EXPORT virtual std::int64_t GetLargestDenomination(
-        std::int64_t lAmount) const = 0;
-    OPENTXS_EXPORT virtual bool GetPrivate(
-        Armored& theArmor,
-        std::int64_t lDenomination) const = 0;
-    OPENTXS_EXPORT virtual bool GetPublic(
-        Armored& theArmor,
-        std::int64_t lDenomination) const = 0;
-    OPENTXS_EXPORT virtual std::int32_t GetSeries() const = 0;
-    OPENTXS_EXPORT virtual Time GetValidFrom() const = 0;
-    OPENTXS_EXPORT virtual Time GetValidTo() const = 0;
-    OPENTXS_EXPORT virtual const identifier::UnitDefinition&
-    InstrumentDefinitionID() const = 0;
+    virtual auto AccountID() const -> OTIdentifier = 0;
+    virtual auto Expired() const -> bool = 0;
+    virtual auto GetDenomination(std::int32_t nIndex) const -> std::int64_t = 0;
+    virtual auto GetDenominationCount() const -> std::int32_t = 0;
+    virtual auto GetExpiration() const -> Time = 0;
+    virtual auto GetLargestDenomination(std::int64_t lAmount) const
+        -> std::int64_t = 0;
+    virtual auto GetPrivate(Armored& theArmor, std::int64_t lDenomination) const
+        -> bool = 0;
+    virtual auto GetPublic(Armored& theArmor, std::int64_t lDenomination) const
+        -> bool = 0;
+    virtual auto GetSeries() const -> std::int32_t = 0;
+    virtual auto GetValidFrom() const -> Time = 0;
+    virtual auto GetValidTo() const -> Time = 0;
+    virtual auto InstrumentDefinitionID() const
+        -> const identifier::UnitDefinition& = 0;
 
-    OPENTXS_EXPORT virtual bool AddDenomination(
+    virtual auto AddDenomination(
         const identity::Nym& theNotary,
         const std::int64_t denomination,
         const std::size_t keySize,
-        const PasswordPrompt& reason) = 0;
-    OPENTXS_EXPORT virtual void GenerateNewMint(
+        const PasswordPrompt& reason) -> bool = 0;
+    virtual void GenerateNewMint(
         const api::Wallet& wallet,
         const std::int32_t nSeries,
         const Time VALID_FROM,
@@ -87,25 +84,24 @@ public:
         const std::int64_t nDenom10,
         const std::size_t keySize,
         const PasswordPrompt& reason) = 0;
-    OPENTXS_EXPORT virtual bool LoadMint(const char* szAppend = nullptr) = 0;
-    OPENTXS_EXPORT virtual void Release_Mint() = 0;
-    OPENTXS_EXPORT virtual void ReleaseDenominations() = 0;
-    OPENTXS_EXPORT virtual bool SaveMint(const char* szAppend = nullptr) = 0;
-    OPENTXS_EXPORT virtual void SetInstrumentDefinitionID(
+    virtual auto LoadMint(const char* szAppend = nullptr) -> bool = 0;
+    virtual void Release_Mint() = 0;
+    virtual void ReleaseDenominations() = 0;
+    virtual auto SaveMint(const char* szAppend = nullptr) -> bool = 0;
+    virtual void SetInstrumentDefinitionID(
         const identifier::UnitDefinition& newID) = 0;
-    OPENTXS_EXPORT virtual void SetSavePrivateKeys(bool bDoIt = true) = 0;
-    OPENTXS_EXPORT virtual bool SignToken(
+    virtual void SetSavePrivateKeys(bool bDoIt = true) = 0;
+    virtual auto SignToken(
         const identity::Nym& notary,
         blind::Token& token,
-        const PasswordPrompt& reason) = 0;
-    OPENTXS_EXPORT virtual bool VerifyMint(
-        const identity::Nym& theOperator) = 0;
-    OPENTXS_EXPORT virtual bool VerifyToken(
+        const PasswordPrompt& reason) -> bool = 0;
+    virtual auto VerifyMint(const identity::Nym& theOperator) -> bool = 0;
+    virtual auto VerifyToken(
         const identity::Nym& notary,
         const blind::Token& token,
-        const PasswordPrompt& reason) = 0;
+        const PasswordPrompt& reason) -> bool = 0;
 
-    OPENTXS_EXPORT ~Mint() override = default;
+    ~Mint() override = default;
 
 protected:
     Mint() = default;
@@ -113,8 +109,8 @@ protected:
 private:
     Mint(const Mint&) = delete;
     Mint(Mint&&) = delete;
-    Mint& operator=(const Mint&) = delete;
-    Mint& operator=(Mint&&) = delete;
+    auto operator=(const Mint&) -> Mint& = delete;
+    auto operator=(Mint&&) -> Mint& = delete;
 };
 }  // namespace blind
 }  // namespace opentxs

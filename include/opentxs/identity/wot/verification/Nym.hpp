@@ -43,25 +43,26 @@ public:
     OPENTXS_NO_EXPORT virtual operator SerializedType() const noexcept = 0;
 
     /// Throws std::out_of_range for invalid position
-    virtual const value_type& at(const std::size_t position) const
-        noexcept(false) = 0;
-    virtual const_iterator begin() const noexcept = 0;
-    virtual const_iterator cbegin() const noexcept = 0;
-    virtual const_iterator cend() const noexcept = 0;
-    virtual const_iterator end() const noexcept = 0;
-    virtual const identifier::Nym& ID() const noexcept = 0;
-    virtual std::size_t size() const noexcept = 0;
-    virtual VersionNumber Version() const noexcept = 0;
+    virtual auto at(const std::size_t position) const noexcept(false)
+        -> const value_type& = 0;
+    virtual auto begin() const noexcept -> const_iterator = 0;
+    virtual auto cbegin() const noexcept -> const_iterator = 0;
+    virtual auto cend() const noexcept -> const_iterator = 0;
+    virtual auto end() const noexcept -> const_iterator = 0;
+    virtual auto ID() const noexcept -> const identifier::Nym& = 0;
+    virtual auto size() const noexcept -> std::size_t = 0;
+    virtual auto Version() const noexcept -> VersionNumber = 0;
 
-    virtual bool AddItem(
+    virtual auto AddItem(
         const Identifier& claim,
         const identity::Nym& signer,
         const PasswordPrompt& reason,
         const Item::Type value = Item::Type::Confirm,
         const Time start = {},
         const Time end = {},
-        const VersionNumber version = Item::DefaultVersion) noexcept = 0;
-    virtual bool DeleteItem(const Identifier& item) noexcept = 0;
+        const VersionNumber version = Item::DefaultVersion) noexcept
+        -> bool = 0;
+    virtual auto DeleteItem(const Identifier& item) noexcept -> bool = 0;
 
     virtual ~Nym() = default;
 
@@ -71,8 +72,8 @@ protected:
 private:
     Nym(const Nym&) = delete;
     Nym(Nym&&) = delete;
-    Nym& operator=(const Nym&) = delete;
-    Nym& operator=(Nym&&) = delete;
+    auto operator=(const Nym&) -> Nym& = delete;
+    auto operator=(Nym&&) -> Nym& = delete;
 };
 }  // namespace verification
 }  // namespace wot

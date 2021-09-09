@@ -36,16 +36,10 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace network
@@ -114,7 +108,7 @@ public:
     }
 
     ContactList(
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nymID,
         const SimpleCallback& cb) noexcept;
     ~ContactList() final;
@@ -134,17 +128,17 @@ private:
         OTPaymentCode payment_code_;
 
         ParsedArgs(
-            const api::internal::Core& api,
+            const api::Core& api,
             const std::string& purportedID,
             const std::string& purportedPaymentCode) noexcept;
 
     private:
         static auto extract_nymid(
-            const api::internal::Core& api,
+            const api::Core& api,
             const std::string& purportedID,
             const std::string& purportedPaymentCode) noexcept -> OTNymID;
         static auto extract_paymentcode(
-            const api::internal::Core& api,
+            const api::Core& api,
             const std::string& purportedID,
             const std::string& purportedPaymentCode) noexcept -> OTPaymentCode;
     };

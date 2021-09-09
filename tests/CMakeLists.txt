@@ -70,10 +70,7 @@ function(
   target_name
   file_name
 )
-  set(cxx-sources
-      "${opentxs_SOURCE_DIR}/tests/main.cpp"
-      "${file_name}"
-  )
+  set(cxx-sources "${opentxs_SOURCE_DIR}/tests/main.cpp" "${file_name}")
 
   add_opentx_test_target("${target_name}" "${cxx-sources}")
 endfunction()

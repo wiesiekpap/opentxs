@@ -41,11 +41,11 @@ public:
     using HDKey = std::unique_ptr<opentxs::crypto::key::HD>;
     using Secp256k1Key = std::unique_ptr<opentxs::crypto::key::Secp256k1>;
 
-    OPENTXS_NO_EXPORT virtual ECKey InstantiateECKey(
-        const proto::AsymmetricKey& serialized) const = 0;
-    OPENTXS_NO_EXPORT virtual HDKey InstantiateHDKey(
-        const proto::AsymmetricKey& serialized) const = 0;
-    virtual HDKey InstantiateKey(
+    OPENTXS_NO_EXPORT virtual auto InstantiateECKey(
+        const proto::AsymmetricKey& serialized) const -> ECKey = 0;
+    OPENTXS_NO_EXPORT virtual auto InstantiateHDKey(
+        const proto::AsymmetricKey& serialized) const -> HDKey = 0;
+    virtual auto InstantiateKey(
         const opentxs::crypto::key::asymmetric::Algorithm type,
         const std::string& seedID,
         const opentxs::crypto::Bip32::Key& serialized,
@@ -53,10 +53,11 @@ public:
         const opentxs::crypto::key::asymmetric::Role role =
             opentxs::crypto::key::asymmetric::Role::Sign,
         const VersionNumber version =
-            opentxs::crypto::key::EllipticCurve::DefaultVersion) const = 0;
-    OPENTXS_NO_EXPORT virtual Key InstantiateKey(
-        const proto::AsymmetricKey& serialized) const = 0;
-    virtual HDKey NewHDKey(
+            opentxs::crypto::key::EllipticCurve::DefaultVersion) const
+        -> HDKey = 0;
+    OPENTXS_NO_EXPORT virtual auto InstantiateKey(
+        const proto::AsymmetricKey& serialized) const -> Key = 0;
+    virtual auto NewHDKey(
         const std::string& seedID,
         const Secret& seed,
         const EcdsaCurve& curve,
@@ -65,22 +66,25 @@ public:
         const opentxs::crypto::key::asymmetric::Role role =
             opentxs::crypto::key::asymmetric::Role::Sign,
         const VersionNumber version =
-            opentxs::crypto::key::EllipticCurve::DefaultVersion) const = 0;
-    virtual Secp256k1Key InstantiateSecp256k1Key(
+            opentxs::crypto::key::EllipticCurve::DefaultVersion) const
+        -> HDKey = 0;
+    virtual auto InstantiateSecp256k1Key(
         const ReadView publicKey,
         const PasswordPrompt& reason,
         const opentxs::crypto::key::asymmetric::Role role =
             opentxs::crypto::key::asymmetric::Role::Sign,
         const VersionNumber version =
-            opentxs::crypto::key::Secp256k1::DefaultVersion) const noexcept = 0;
-    virtual Secp256k1Key InstantiateSecp256k1Key(
+            opentxs::crypto::key::Secp256k1::DefaultVersion) const noexcept
+        -> Secp256k1Key = 0;
+    virtual auto InstantiateSecp256k1Key(
         const Secret& privateKey,
         const PasswordPrompt& reason,
         const opentxs::crypto::key::asymmetric::Role role =
             opentxs::crypto::key::asymmetric::Role::Sign,
         const VersionNumber version =
-            opentxs::crypto::key::Secp256k1::DefaultVersion) const noexcept = 0;
-    virtual Secp256k1Key NewSecp256k1Key(
+            opentxs::crypto::key::Secp256k1::DefaultVersion) const noexcept
+        -> Secp256k1Key = 0;
+    virtual auto NewSecp256k1Key(
         const std::string& seedID,
         const Secret& seed,
         const opentxs::crypto::Bip32::Path& path,
@@ -88,14 +92,15 @@ public:
         const opentxs::crypto::key::asymmetric::Role role =
             opentxs::crypto::key::asymmetric::Role::Sign,
         const VersionNumber version =
-            opentxs::crypto::key::Secp256k1::DefaultVersion) const = 0;
-    virtual Key NewKey(
+            opentxs::crypto::key::Secp256k1::DefaultVersion) const
+        -> Secp256k1Key = 0;
+    virtual auto NewKey(
         const NymParameters& params,
         const PasswordPrompt& reason,
         const opentxs::crypto::key::asymmetric::Role role =
             opentxs::crypto::key::asymmetric::Role::Sign,
         const VersionNumber version =
-            opentxs::crypto::key::Asymmetric::DefaultVersion) const = 0;
+            opentxs::crypto::key::Asymmetric::DefaultVersion) const -> Key = 0;
 
     OPENTXS_NO_EXPORT virtual ~Asymmetric() = default;
 
@@ -105,8 +110,8 @@ protected:
 private:
     Asymmetric(const Asymmetric&) = delete;
     Asymmetric(Asymmetric&&) = delete;
-    Asymmetric& operator=(const Asymmetric&) = delete;
-    Asymmetric& operator=(Asymmetric&&) = delete;
+    auto operator=(const Asymmetric&) -> Asymmetric& = delete;
+    auto operator=(Asymmetric&&) -> Asymmetric& = delete;
 };
 }  // namespace crypto
 }  // namespace api

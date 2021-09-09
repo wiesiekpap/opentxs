@@ -28,6 +28,9 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
+#include "opentxs/blockchain/crypto/HD.hpp"
+#include "opentxs/blockchain/crypto/Imported.hpp"
+#include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
@@ -44,24 +47,14 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
-{
-namespace internal
-{
-class BalanceTreeIndex;
-}  // namespace internal
-}  // namespace client
-
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace blockchain
 {
 namespace crypto
 {
+class AccountIndex;
 class Element;
 }  // namespace crypto
 }  // namespace blockchain
@@ -95,7 +88,7 @@ public:
     {
         return chain_;
     }
-    auto ClaimAccountID(const std::string& id, internal::Subaccount* node)
+    auto ClaimAccountID(const std::string& id, crypto::Subaccount* node)
         const noexcept -> void final;
     auto FindNym(const identifier::Nym& id) const noexcept -> void final;
     auto GetDepositAddress(
@@ -120,32 +113,22 @@ public:
     {
         return payment_code_;
     }
-    auto HDChain(const Identifier& account) const noexcept(false)
-        -> const internal::HD& final
+    auto Internal() const noexcept -> Account& final
     {
-        return hd_.at(account);
+        return const_cast<Account&>(*this);
     }
     auto LookupUTXO(const Coin& coin) const noexcept
         -> std::optional<std::pair<Key, Amount>> final;
-    auto Node(const Identifier& id) const noexcept(false)
-        -> internal::Subaccount& final;
     auto NymID() const noexcept -> const identifier::Nym& final
     {
         return nym_id_;
-    }
-    auto PaymentCode(const Identifier& account) const noexcept(false)
-        -> const internal::PaymentCode& final
-    {
-        return payment_code_.at(account);
     }
     auto Parent() const noexcept -> const crypto::Wallet& final
     {
         return parent_;
     }
-    auto ParentInternal() const noexcept -> const internal::Wallet& final
-    {
-        return parent_;
-    }
+    auto Subaccount(const Identifier& id) const noexcept(false)
+        -> const crypto::Subaccount& final;
 
     auto AddHDNode(
         const proto::HDPath& path,
@@ -174,21 +157,11 @@ public:
     {
         return payment_code_.Construct(out, local, remote, path, txid, reason);
     }
-    auto HDChain(const Identifier& account) noexcept(false)
-        -> internal::HD& final
-    {
-        return hd_.at(account);
-    }
-    auto PaymentCode(const Identifier& account) noexcept(false)
-        -> internal::PaymentCode& final
-    {
-        return payment_code_.at(account);
-    }
 
     Account(
-        const api::internal::Core& api,
-        const internal::Wallet& parent,
-        const api::client::internal::BalanceTreeIndex& index,
+        const api::Core& api,
+        const crypto::Wallet& parent,
+        const AccountIndex& index,
         const identifier::Nym& nym,
         const Accounts& hd,
         const Accounts& imported,
@@ -268,7 +241,7 @@ private:
         }
 
         NodeGroup(
-            const api::internal::Core& api,
+            const api::Core& api,
             const SubaccountType type,
             Account& parent) noexcept
             : api_(api)
@@ -281,7 +254,7 @@ private:
         }
 
     private:
-        const api::internal::Core& api_;
+        const api::Core& api_;
         const SubaccountType type_;
         Account& parent_;
         mutable std::mutex lock_;
@@ -316,17 +289,16 @@ private:
     template <typename ReturnType, typename... Args>
     struct Factory {
         static auto get(
-            const api::internal::Core& api,
+            const api::Core& api,
             const Account& parent,
             Identifier& id,
             const Args&... args) noexcept -> std::unique_ptr<ReturnType>;
     };
 
     struct NodeIndex {
-        auto Find(const std::string& id) const noexcept
-            -> internal::Subaccount*;
+        auto Find(const std::string& id) const noexcept -> crypto::Subaccount*;
 
-        void Add(const std::string& id, internal::Subaccount* node) noexcept;
+        void Add(const std::string& id, crypto::Subaccount* node) noexcept;
 
         NodeIndex() noexcept
             : lock_()
@@ -336,17 +308,17 @@ private:
 
     private:
         mutable std::mutex lock_;
-        std::map<std::string, internal::Subaccount*> index_;
+        std::map<std::string, crypto::Subaccount*> index_;
     };
 
-    using HDNodes = NodeGroup<HDAccounts, internal::HD>;
-    using ImportedNodes = NodeGroup<ImportedAccounts, internal::Imported>;
+    using HDNodes = NodeGroup<HDAccounts, crypto::HD>;
+    using ImportedNodes = NodeGroup<ImportedAccounts, crypto::Imported>;
     using PaymentCodeNodes =
-        NodeGroup<PaymentCodeAccounts, internal::PaymentCode>;
+        NodeGroup<PaymentCodeAccounts, crypto::PaymentCode>;
 
-    const api::internal::Core& api_;
-    const internal::Wallet& parent_;
-    const api::client::internal::BalanceTreeIndex& account_index_;
+    const api::Core& api_;
+    const crypto::Wallet& parent_;
+    const AccountIndex& account_index_;
     const opentxs::blockchain::Type chain_;
     const OTNymID nym_id_;
     const OTIdentifier account_id_;

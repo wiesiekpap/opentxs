@@ -24,10 +24,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -58,7 +55,7 @@ public:
 
     PayableListItem(
         const PayableInternalInterface& parent,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const PayableListRowID& rowID,
         const PayableListSortKey& key,
         const std::string& paymentcode,

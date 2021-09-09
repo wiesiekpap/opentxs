@@ -16,8 +16,8 @@
 #include <string>
 #include <utility>
 
-#include "internal/api/Api.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Contract.hpp"
@@ -36,16 +36,14 @@ using namespace io;
 
 namespace opentxs
 {
-AccountList::AccountList(const api::internal::Core& core)
+AccountList::AccountList(const api::Core& core)
     : api_(core)
     , acctType_(Account::voucher)
     , mapAcctIDs_{}
 {
 }
 
-AccountList::AccountList(
-    const api::internal::Core& core,
-    Account::AccountType acctType)
+AccountList::AccountList(const api::Core& core, Account::AccountType acctType)
     : api_(core)
     , acctType_(acctType)
     , mapAcctIDs_{}
@@ -87,8 +85,8 @@ auto AccountList::ReadFromXMLNode(
     const String& acctCount) -> std::int32_t
 {
     if (!acctType.Exists()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed: Empty accountList "
-                                           "'type' attribute.")
+        LogOutput(OT_METHOD)(__func__)(": Failed: Empty accountList "
+                                       "'type' attribute.")
             .Flush();
         return -1;
     }
@@ -96,8 +94,8 @@ auto AccountList::ReadFromXMLNode(
     acctType_ = TranslateAccountTypeStringToEnum(acctType);
 
     if (Account::err_acct == acctType_) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed: accountList 'type' "
-                                           "attribute contains unknown value.")
+        LogOutput(OT_METHOD)(__func__)(": Failed: accountList 'type' "
+                                       "attribute contains unknown value.")
             .Flush();
         return -1;
     }
@@ -107,8 +105,8 @@ auto AccountList::ReadFromXMLNode(
     if (count > 0) {
         while (count-- > 0) {
             if (!Contract::SkipToElement(xml)) {
-                LogNormal(OT_METHOD)(__FUNCTION__)(": Failure: Unable to find "
-                                                   "expected element.")
+                LogNormal(OT_METHOD)(__func__)(": Failure: Unable to find "
+                                               "expected element.")
                     .Flush();
                 return -1;
             }
@@ -123,10 +121,11 @@ auto AccountList::ReadFromXMLNode(
                     "accountID"));  // Account ID for this account.
 
                 if (!instrumentDefinitionID->Exists() || !accountID->Exists()) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Error loading accountEntry: Either the "
-                        "instrumentDefinitionID (")(instrumentDefinitionID)(
-                        "), or the accountID (")(accountID)(") was EMPTY.")
+                        "instrumentDefinitionID (")(
+                        instrumentDefinitionID)("), or the accountID (")(
+                        accountID)(") was EMPTY.")
                         .Flush();
                     return -1;
                 }
@@ -134,7 +133,7 @@ auto AccountList::ReadFromXMLNode(
                 mapAcctIDs_.insert(std::make_pair(
                     instrumentDefinitionID->Get(), accountID->Get()));
             } else {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Expected accountEntry element in accountList.")
                     .Flush();
                 return -1;
@@ -144,9 +143,9 @@ auto AccountList::ReadFromXMLNode(
 
     if (!Contract::SkipAfterLoadingField(xml))  // </accountList>
     {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Bad data? Expected "
-                                           "EXN_ELEMENT_END here, but "
-                                           "didn't get it. Returning false.")
+        LogNormal(OT_METHOD)(__func__)(": Bad data? Expected "
+                                       "EXN_ELEMENT_END here, but "
+                                       "didn't get it. Returning false.")
             .Flush();
         return -1;
     }
@@ -172,7 +171,7 @@ auto AccountList::GetOrRegisterAccount(
 
     if (Account::stash == acctType_) {
         if (1 > stashTransNum) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failed attempt to "
                 "create stash account without cron item #.")
                 .Flush();
@@ -195,7 +194,7 @@ auto AccountList::GetOrRegisterAccount(
 
         if (account) {
 
-            LogDebug(OT_METHOD)(__FUNCTION__)(": Successfully loaded ")(
+            LogDebug(OT_METHOD)(__func__)(": Successfully loaded ")(
                 acctTypeString)(" account ID: ")(accountID)("Unit Type ID:: ")(
                 instrumentDefinitionID.str())
                 .Flush();
@@ -216,7 +215,7 @@ auto AccountList::GetOrRegisterAccount(
         reason);
 
     if (false == bool(account)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed trying to generate ")(
+        LogOutput(OT_METHOD)(__func__)(": Failed trying to generate ")(
             acctTypeString)(" account with instrument definition ID: ")(
             instrumentDefinitionID)(".")
             .Flush();
@@ -224,9 +223,10 @@ auto AccountList::GetOrRegisterAccount(
         auto acctIDString = String::Factory();
         account.get().GetIdentifier(acctIDString);
 
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Successfully created ")(
-            acctTypeString)(" account ID: ")(acctIDString)(
-            " Instrument Definition ID: ")(instrumentDefinitionID.str())
+        LogNormal(OT_METHOD)(__func__)(": Successfully created ")(
+            acctTypeString)(" account ID: ")(
+            acctIDString)(" Instrument Definition ID: ")(
+            instrumentDefinitionID.str())
             .Flush();
         mapAcctIDs_[instrumentDefinitionID.str()] = acctIDString->Get();
 

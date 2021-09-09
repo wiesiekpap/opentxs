@@ -12,11 +12,11 @@
 
 #include "2_Factory.hpp"
 #include "api/Wallet.hpp"
-#include "internal/api/Api.hpp"
-#include "internal/api/server/Server.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/SharedPimpl.hpp"
+#include "opentxs/api/Core.hpp"
+#include "opentxs/api/server/Manager.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -37,8 +37,7 @@
 
 namespace opentxs
 {
-auto Factory::Wallet(const api::server::internal::Manager& server)
-    -> api::Wallet*
+auto Factory::Wallet(const api::server::Manager& server) -> api::Wallet*
 {
     return new api::server::implementation::Wallet(server);
 }
@@ -46,7 +45,7 @@ auto Factory::Wallet(const api::server::internal::Manager& server)
 
 namespace opentxs::api::server::implementation
 {
-Wallet::Wallet(const api::server::internal::Manager& server)
+Wallet::Wallet(const api::server::Manager& server)
     : ot_super(server)
     , server_(server)
 {
@@ -99,19 +98,18 @@ auto Wallet::load_legacy_account(
     const auto signerNym = Nym(server_.NymID());
 
     if (false == bool(signerNym)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to load signer nym.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Unable to load signer nym.").Flush();
 
         return false;
     }
 
     if (false == pAccount->VerifySignature(*signerNym)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid signature.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid signature.").Flush();
 
         return false;
     }
 
-    LogOutput(OT_METHOD)(__FUNCTION__)(": Legacy account ")(accountID.str())(
+    LogOutput(OT_METHOD)(__func__)(": Legacy account ")(accountID.str())(
         " exists.")
         .Flush();
 

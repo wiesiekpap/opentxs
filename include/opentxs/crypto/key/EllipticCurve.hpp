@@ -27,30 +27,29 @@ namespace crypto
 {
 namespace key
 {
-class EllipticCurve : virtual public Asymmetric
+class OPENTXS_EXPORT EllipticCurve : virtual public Asymmetric
 {
 public:
-    OPENTXS_EXPORT static const VersionNumber DefaultVersion;
-    OPENTXS_EXPORT static const VersionNumber MaxVersion;
+    static const VersionNumber DefaultVersion;
+    static const VersionNumber MaxVersion;
 
-    OPENTXS_EXPORT virtual std::unique_ptr<EllipticCurve> asPublicEC()
-        const noexcept = 0;
-    OPENTXS_EXPORT virtual std::unique_ptr<EllipticCurve> CloneEC()
-        const noexcept = 0;
-    OPENTXS_EXPORT virtual const crypto::EcdsaProvider& ECDSA()
-        const noexcept = 0;
-    OPENTXS_EXPORT virtual std::unique_ptr<EllipticCurve> IncrementPrivate(
+    virtual auto asPublicEC() const noexcept
+        -> std::unique_ptr<EllipticCurve> = 0;
+    virtual auto CloneEC() const noexcept -> std::unique_ptr<EllipticCurve> = 0;
+    virtual auto ECDSA() const noexcept -> const crypto::EcdsaProvider& = 0;
+    virtual auto IncrementPrivate(
         const Secret& scalar,
-        const PasswordPrompt& reason) const noexcept = 0;
-    OPENTXS_EXPORT virtual std::unique_ptr<EllipticCurve> IncrementPublic(
-        const Secret& scalar) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SignDER(
+        const PasswordPrompt& reason) const noexcept
+        -> std::unique_ptr<EllipticCurve> = 0;
+    virtual auto IncrementPublic(const Secret& scalar) const noexcept
+        -> std::unique_ptr<EllipticCurve> = 0;
+    virtual auto SignDER(
         const ReadView preimage,
         const crypto::HashType hash,
         Space& output,
-        const PasswordPrompt& reason) const noexcept = 0;
+        const PasswordPrompt& reason) const noexcept -> bool = 0;
 
-    OPENTXS_EXPORT ~EllipticCurve() override = default;
+    ~EllipticCurve() override = default;
 
 protected:
     EllipticCurve() = default;
@@ -58,8 +57,8 @@ protected:
 private:
     EllipticCurve(const EllipticCurve&) = delete;
     EllipticCurve(EllipticCurve&&) = delete;
-    EllipticCurve& operator=(const EllipticCurve&) = delete;
-    EllipticCurve& operator=(EllipticCurve&&) = delete;
+    auto operator=(const EllipticCurve&) -> EllipticCurve& = delete;
+    auto operator=(EllipticCurve&&) -> EllipticCurve& = delete;
 };
 }  // namespace key
 }  // namespace crypto

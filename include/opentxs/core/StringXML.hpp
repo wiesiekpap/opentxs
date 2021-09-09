@@ -33,16 +33,17 @@ namespace opentxs
 class OPENTXS_EXPORT StringXML : virtual public String
 {
 public:
-    static OTStringXML Factory();
-    static OTStringXML Factory(const String& value);
+    static auto Factory() -> OTStringXML;
+    static auto Factory(const String& value) -> OTStringXML;
 
     virtual operator irr::io::IFileReadCallBack*() = 0;
 
-    virtual std::int32_t read(void* buffer, std::uint32_t sizeToRead) = 0;
-    virtual std::int32_t getSize() = 0;
+    virtual auto read(void* buffer, std::uint32_t sizeToRead)
+        -> std::int32_t = 0;
+    virtual auto getSize() -> std::int32_t = 0;
 
-    virtual StringXML& operator=(const String& rhs) = 0;
-    virtual StringXML& operator=(const StringXML& rhs) = 0;
+    virtual auto operator=(const String& rhs) -> StringXML& = 0;
+    virtual auto operator=(const StringXML& rhs) -> StringXML& = 0;
 
     ~StringXML() override = default;
 
@@ -51,7 +52,7 @@ protected:
 
 private:
     StringXML(StringXML&&) = delete;
-    StringXML& operator=(StringXML&&) = delete;
+    auto operator=(StringXML&&) -> StringXML& = delete;
 };
 }  // namespace opentxs
 #endif

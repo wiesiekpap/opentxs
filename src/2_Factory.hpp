@@ -28,11 +28,11 @@ namespace internal
 {
 struct Blockchain;
 struct Contacts;
-struct Manager;
 struct Pair;
 }  // namespace internal
 
 class Contacts;
+class Manager;
 }  // namespace client
 
 namespace crypto
@@ -53,7 +53,6 @@ class Storage;
 namespace internal
 {
 struct Context;
-struct Core;
 struct Factory;
 struct Log;
 }  // namespace internal
@@ -79,11 +78,6 @@ namespace implementation
 class Factory;
 class Manager;
 }  // namespace implementation
-
-namespace internal
-{
-struct Manager;
-}  // namespace internal
 
 class Manager;
 }  // namespace server
@@ -370,13 +364,13 @@ public:
     static auto Armored(const opentxs::crypto::Envelope& input)
         -> opentxs::Armored*;
     static auto Authority(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identity::Nym& parent,
         const identity::Source& source,
         const proto::KeyMode mode,
         const proto::Authority& serialized) -> identity::internal::Authority*;
     static auto Authority(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identity::Nym& parent,
         const identity::Source& source,
         const NymParameters& nymParameters,
@@ -384,7 +378,7 @@ public:
         const opentxs::PasswordPrompt& reason)
         -> identity::internal::Authority*;
     static auto BailmentNotice(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const identifier::Nym& recipientID,
         const identifier::UnitDefinition& unitID,
@@ -395,12 +389,12 @@ public:
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::request::BailmentNotice>;
     static auto BailmentNotice(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const proto::PeerRequest& serialized) noexcept
         -> std::shared_ptr<contract::peer::request::BailmentNotice>;
     static auto BailmentReply(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const identifier::Nym& initiator,
         const opentxs::Identifier& request,
@@ -409,12 +403,12 @@ public:
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::reply::Bailment>;
     static auto BailmentReply(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const proto::PeerReply& serialized) noexcept
         -> std::shared_ptr<contract::peer::reply::Bailment>;
     static auto BailmentRequest(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const identifier::Nym& recipient,
         const identifier::UnitDefinition& unit,
@@ -422,12 +416,12 @@ public:
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::request::Bailment>;
     static auto BailmentRequest(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const proto::PeerRequest& serialized) noexcept
         -> std::shared_ptr<contract::peer::request::Bailment>;
     static auto BasketContract(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const std::string& shortname,
         const std::string& name,
@@ -438,7 +432,7 @@ public:
         const VersionNumber version) noexcept
         -> std::shared_ptr<contract::unit::Basket>;
     static auto BasketContract(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const proto::UnitDefinition serialized) noexcept
         -> std::shared_ptr<contract::unit::Basket>;
@@ -446,7 +440,7 @@ public:
     static auto Bip39(const api::Crypto& api) noexcept
         -> std::unique_ptr<crypto::Bip39>;
     static auto ConnectionReply(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const identifier::Nym& initiator,
         const opentxs::Identifier& request,
@@ -459,12 +453,12 @@ public:
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::reply::Connection>;
     static auto ConnectionReply(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const proto::PeerReply& serialized) noexcept
         -> std::shared_ptr<contract::peer::reply::Connection>;
     static auto ConnectionRequest(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const identifier::Nym& recipient,
         const contract::peer::ConnectionInfoType type,
@@ -472,12 +466,12 @@ public:
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::request::Connection>;
     static auto ConnectionRequest(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const proto::PeerRequest& serialized) noexcept
         -> std::shared_ptr<contract::peer::request::Connection>;
     static auto ContactCredential(
-        const api::internal::Core& api,
+        const api::Core& api,
         identity::internal::Authority& parent,
         const identity::Source& source,
         const identity::credential::internal::Primary& master,
@@ -486,7 +480,7 @@ public:
         const opentxs::PasswordPrompt& reason)
         -> identity::credential::internal::Contact*;
     static auto ContactCredential(
-        const api::internal::Core& api,
+        const api::Core& api,
         identity::internal::Authority& parent,
         const identity::Source& source,
         const identity::credential::internal::Primary& master,
@@ -494,7 +488,7 @@ public:
         -> identity::credential::internal::Contact*;
     template <class C>
     static auto Credential(
-        const api::internal::Core& api,
+        const api::Core& api,
         identity::internal::Authority& parent,
         const identity::Source& source,
         const identity::credential::internal::Primary& master,
@@ -504,7 +498,7 @@ public:
         const opentxs::PasswordPrompt& reason) -> C*;
     template <class C>
     static auto Credential(
-        const api::internal::Core& api,
+        const api::Core& api,
         identity::internal::Authority& parent,
         const identity::Source& source,
         const identity::credential::internal::Primary& master,
@@ -512,7 +506,7 @@ public:
         const proto::KeyMode mode,
         const proto::CredentialRole role) -> C*;
     static auto CurrencyContract(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const std::string& shortname,
         const std::string& name,
@@ -526,36 +520,36 @@ public:
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::unit::Currency>;
     static auto CurrencyContract(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const proto::UnitDefinition serialized) noexcept
         -> std::shared_ptr<contract::unit::Currency>;
-    static auto Envelope(const api::internal::Core& api) noexcept
+    static auto Envelope(const api::Core& api) noexcept
         -> std::unique_ptr<crypto::Envelope>;
     static auto Envelope(
-        const api::internal::Core& api,
+        const api::Core& api,
         const proto::Envelope& serialized) noexcept(false)
         -> std::unique_ptr<crypto::Envelope>;
     static auto Envelope(
-        const api::internal::Core& api,
+        const api::Core& api,
         const ReadView& serialized) noexcept(false)
         -> std::unique_ptr<crypto::Envelope>;
-    static auto FactoryAPIServer(const api::server::internal::Manager& api)
+    static auto FactoryAPIServer(const api::server::Manager& api)
         -> api::internal::Factory*;
 #if OT_CASH
-    static auto MintLucre(const api::internal::Core& core) -> blind::Mint*;
+    static auto MintLucre(const api::Core& core) -> blind::Mint*;
     static auto MintLucre(
-        const api::internal::Core& core,
+        const api::Core& core,
         const String& strNotaryID,
         const String& strInstrumentDefinitionID) -> blind::Mint*;
     static auto MintLucre(
-        const api::internal::Core& core,
+        const api::Core& core,
         const String& strNotaryID,
         const String& strServerNymID,
         const String& strInstrumentDefinitionID) -> blind::Mint*;
 #endif
     static auto NoticeAcknowledgement(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const identifier::Nym& initiator,
         const opentxs::Identifier& request,
@@ -565,44 +559,42 @@ public:
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::reply::Acknowledgement>;
     static auto NoticeAcknowledgement(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const proto::PeerReply& serialized) noexcept
         -> std::shared_ptr<contract::peer::reply::Acknowledgement>;
     static auto NullCallback() -> OTCallback*;
     static auto Nym(
-        const api::internal::Core& api,
+        const api::Core& api,
         const NymParameters& nymParameters,
         const contact::ContactItemType type,
         const std::string name,
         const opentxs::PasswordPrompt& reason) -> identity::internal::Nym*;
     static auto Nym(
-        const api::internal::Core& api,
+        const api::Core& api,
         const proto::Nym& serialized,
         const std::string& alias) -> identity::internal::Nym*;
     static auto Nym(
-        const api::internal::Core& api,
+        const api::Core& api,
         const ReadView& serialized,
         const std::string& alias) -> identity::internal::Nym*;
-    static auto NymFile(
-        const api::internal::Core& core,
-        Nym_p targetNym,
-        Nym_p signerNym) -> internal::NymFile*;
+    static auto NymFile(const api::Core& core, Nym_p targetNym, Nym_p signerNym)
+        -> internal::NymFile*;
     static auto NymIDSource(
-        const api::internal::Core& api,
+        const api::Core& api,
         NymParameters& parameters,
         const opentxs::PasswordPrompt& reason) -> identity::Source*;
     static auto NymIDSource(
-        const api::internal::Core& api,
+        const api::Core& api,
         const proto::NymIDSource& serialized) -> identity::Source*;
     static auto Operation(
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nym,
         const identifier::Server& server,
         const opentxs::PasswordPrompt& reason)
         -> otx::client::internal::Operation*;
     static auto OutBailmentReply(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const identifier::Nym& initiator,
         const opentxs::Identifier& request,
@@ -611,12 +603,12 @@ public:
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::reply::Outbailment>;
     static auto OutBailmentReply(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const proto::PeerReply& serialized) noexcept
         -> std::shared_ptr<contract::peer::reply::Outbailment>;
     static auto OutbailmentRequest(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const identifier::Nym& recipientID,
         const identifier::UnitDefinition& unitID,
@@ -626,15 +618,14 @@ public:
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::request::Outbailment>;
     static auto OutbailmentRequest(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const proto::PeerRequest& serialized) noexcept
         -> std::shared_ptr<contract::peer::request::Outbailment>;
-    static auto PasswordPrompt(
-        const api::internal::Core& api,
-        const std::string& text) -> opentxs::PasswordPrompt*;
+    static auto PasswordPrompt(const api::Core& api, const std::string& text)
+        -> opentxs::PasswordPrompt*;
     static auto PaymentCode(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::uint8_t version,
         const bool hasBitmessage,
         const ReadView pubkey,
@@ -647,7 +638,7 @@ public:
 #endif
         ) noexcept -> std::unique_ptr<opentxs::PaymentCode>;
     static auto PrimaryCredential(
-        const api::internal::Core& api,
+        const api::Core& api,
         identity::internal::Authority& parent,
         const identity::Source& source,
         const NymParameters& nymParameters,
@@ -655,27 +646,25 @@ public:
         const opentxs::PasswordPrompt& reason)
         -> identity::credential::internal::Primary*;
     static auto PrimaryCredential(
-        const api::internal::Core& api,
+        const api::Core& api,
         identity::internal::Authority& parent,
         const identity::Source& source,
         const proto::Credential& credential)
         -> identity::credential::internal::Primary*;
 #if OT_CASH
+    static auto Purse(const api::Core& api, const proto::Purse& serialized)
+        -> blind::Purse*;
+    static auto Purse(const api::Core& api, const ReadView& serialized)
+        -> blind::Purse*;
     static auto Purse(
-        const api::internal::Core& api,
-        const proto::Purse& serialized) -> blind::Purse*;
-    static auto Purse(
-        const api::internal::Core& api,
-        const ReadView& serialized) -> blind::Purse*;
-    static auto Purse(
-        const api::internal::Core& api,
+        const api::Core& api,
         const otx::context::Server&,
         const blind::CashType type,
         const blind::Mint& mint,
         const Amount totalValue,
         const opentxs::PasswordPrompt& reason) -> blind::Purse*;
     static auto Purse(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identity::Nym& owner,
         const identifier::Server& server,
         const identity::Nym& serverNym,
@@ -684,12 +673,12 @@ public:
         const Amount totalValue,
         const opentxs::PasswordPrompt& reason) -> blind::Purse*;
     static auto Purse(
-        const api::internal::Core& api,
+        const api::Core& api,
         const blind::Purse& request,
         const identity::Nym& requester,
         const opentxs::PasswordPrompt& reason) -> blind::Purse*;
     static auto Purse(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identity::Nym& owner,
         const identifier::Server& server,
         const identifier::UnitDefinition& unit,
@@ -698,7 +687,7 @@ public:
 #endif
     static auto RPC(const api::Context& native) -> rpc::internal::RPC*;
     static auto SecondaryCredential(
-        const api::internal::Core& api,
+        const api::Core& api,
         identity::internal::Authority& parent,
         const identity::Source& source,
         const identity::credential::internal::Primary& master,
@@ -707,14 +696,14 @@ public:
         const opentxs::PasswordPrompt& reason)
         -> identity::credential::internal::Secondary*;
     static auto SecondaryCredential(
-        const api::internal::Core& api,
+        const api::Core& api,
         identity::internal::Authority& parent,
         const identity::Source& source,
         const identity::credential::internal::Primary& master,
         const proto::Credential& credential)
         -> identity::credential::internal::Secondary*;
     static auto SecurityContract(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const std::string& shortname,
         const std::string& name,
@@ -725,14 +714,14 @@ public:
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::unit::Security>;
     static auto SecurityContract(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const proto::UnitDefinition serialized) noexcept
         -> std::shared_ptr<contract::unit::Security>;
     static auto ServerContract(const api::Core& api) noexcept
         -> std::unique_ptr<contract::Server>;
     static auto ServerContract(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const std::list<Endpoint>& endpoints,
         const std::string& terms,
@@ -741,7 +730,7 @@ public:
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::unique_ptr<contract::Server>;
     static auto ServerContract(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const proto::ServerContract& serialized) noexcept
         -> std::unique_ptr<contract::Server>;
@@ -807,7 +796,7 @@ public:
         const Random& random,
         const Flag& bucket) -> opentxs::api::storage::Plugin*;
     static auto StoreSecret(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const identifier::Nym& recipientID,
         const contract::peer::SecretType type,
@@ -817,7 +806,7 @@ public:
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::request::StoreSecret>;
     static auto StoreSecret(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const proto::PeerRequest& serialized) noexcept
         -> std::shared_ptr<contract::peer::request::StoreSecret>;
@@ -825,12 +814,12 @@ public:
     static auto Token(const blind::Token& token, blind::Purse& purse) noexcept
         -> std::unique_ptr<blind::Token>;
     static auto Token(
-        const api::internal::Core& api,
+        const api::Core& api,
         blind::Purse& purse,
         const proto::Token& serialized) noexcept(false)
         -> std::unique_ptr<blind::Token>;
     static auto Token(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identity::Nym& owner,
         const blind::Mint& mint,
         const std::uint64_t value,
@@ -841,12 +830,12 @@ public:
     static auto UnitDefinition(const api::Core& api) noexcept
         -> std::shared_ptr<contract::Unit>;
     static auto UnitDefinition(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const proto::UnitDefinition serialized) noexcept
         -> std::shared_ptr<contract::Unit>;
     static auto VerificationCredential(
-        const api::internal::Core& api,
+        const api::Core& api,
         identity::internal::Authority& parent,
         const identity::Source& source,
         const identity::credential::internal::Primary& master,
@@ -855,7 +844,7 @@ public:
         const opentxs::PasswordPrompt& reason)
         -> identity::credential::internal::Verification*;
     static auto VerificationCredential(
-        const api::internal::Core& api,
+        const api::Core& api,
         identity::internal::Authority& parent,
         const identity::Source& source,
         const identity::credential::internal::Primary& master,
@@ -893,20 +882,19 @@ public:
         const proto::VerificationIdentity& serialized)
         -> identity::wot::verification::internal::Nym*;
     static auto VerificationSet(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identifier::Nym& nym,
         const VersionNumber version)
         -> identity::wot::verification::internal::Set*;
     static auto VerificationSet(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identifier::Nym& nym,
         const proto::VerificationSet& serialized)
         -> identity::wot::verification::internal::Set*;
-    static auto Wallet(const api::server::internal::Manager& server)
-        -> api::Wallet*;
+    static auto Wallet(const api::server::Manager& server) -> api::Wallet*;
     static auto ZAP(const network::zeromq::Context& context)
         -> api::network::ZAP*;
-    static auto ZMQ(const api::internal::Core& api, const Flag& running)
+    static auto ZMQ(const api::Core& api, const Flag& running)
         -> api::network::ZMQ*;
 };
 }  // namespace opentxs

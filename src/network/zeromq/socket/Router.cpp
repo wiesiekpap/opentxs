@@ -67,7 +67,7 @@ void Router::process_incoming(const Lock& lock, Message& message) noexcept
 {
     OT_ASSERT(verify_lock(lock))
 
-    LogTrace(OT_METHOD)(__FUNCTION__)(
+    LogTrace(OT_METHOD)(__func__)(
         ": Incoming messaged received. Triggering callback.")
         .Flush();
     // Router prepends an identity frame to the message.  This makes sure
@@ -75,7 +75,7 @@ void Router::process_incoming(const Lock& lock, Message& message) noexcept
     // make up the rest of the message.
     message.EnsureDelimiter();
     callback_.Process(message);
-    LogTrace(OT_METHOD)(__FUNCTION__)(": Done.").Flush();
+    LogTrace(OT_METHOD)(__func__)(": Done.").Flush();
 }
 
 Router::~Router() SHUTDOWN

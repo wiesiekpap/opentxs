@@ -85,7 +85,7 @@ auto Hash::bitcoin_hash_160(
 
     if (false ==
         digest(opentxs::crypto::HashType::Sha256, input, size, temp.data())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to calculate intermediate hash.")
             .Flush();
 
@@ -104,7 +104,7 @@ auto Hash::Digest(
     auto view = allocate(type, destination);
 
     if (false == view.valid()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to allocate output space.")
+        LogOutput(OT_METHOD)(__func__)(": Unable to allocate output space.")
             .Flush();
 
         return false;
@@ -121,7 +121,7 @@ auto Hash::Digest(
     auto view = allocate(type, destination);
 
     if (false == view.valid()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to allocate output space.")
+        LogOutput(OT_METHOD)(__func__)(": Unable to allocate output space.")
             .Flush();
 
         return false;
@@ -136,8 +136,7 @@ auto Hash::Digest(
     const AllocateOutput destination) const noexcept -> bool
 {
     if (false == bool(destination)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output allocator")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
@@ -148,7 +147,7 @@ auto Hash::Digest(
     auto view = allocate(type, temp->WriteInto());
 
     if (false == view.valid()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to allocate temp space")
+        LogOutput(OT_METHOD)(__func__)(": Unable to allocate temp space")
             .Flush();
 
         return false;
@@ -159,7 +158,7 @@ auto Hash::Digest(
         auto output = destination(encoded.size());
 
         if (false == output.valid(encoded.size())) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Unable to allocate encoded output space")
                 .Flush();
 
@@ -170,8 +169,7 @@ auto Hash::Digest(
 
         return true;
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to calculate digest")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to calculate digest").Flush();
 
         return false;
     }
@@ -221,7 +219,7 @@ auto Hash::digest(
         }
     }
 
-    LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported hash type.").Flush();
+    LogOutput(OT_METHOD)(__func__)(": Unsupported hash type.").Flush();
 
     return false;
 }
@@ -235,7 +233,7 @@ auto Hash::HMAC(
     auto output = allocate(type, digest);
 
     if (false == output.valid()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to allocate output space.")
+        LogOutput(OT_METHOD)(__func__)(": Unable to allocate output space.")
             .Flush();
 
         return false;
@@ -273,7 +271,7 @@ auto Hash::HMAC(
         }
     }
 
-    LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported hash type.").Flush();
+    LogOutput(OT_METHOD)(__func__)(": Unsupported hash type.").Flush();
 
     return false;
 }
@@ -376,7 +374,7 @@ auto Hash::sha_256_double(
 
     if (false ==
         digest(opentxs::crypto::HashType::Sha256, input, size, temp.data())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to calculate intermediate hash.")
             .Flush();
 
@@ -395,7 +393,7 @@ auto Hash::sha_256_double_checksum(
     auto temp = space(Provider::HashSize(opentxs::crypto::HashType::Sha256));
 
     if (false == sha_256_double(input, size, temp.data())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to calculate intermediate hash.")
             .Flush();
 

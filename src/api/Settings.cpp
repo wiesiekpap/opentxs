@@ -125,8 +125,8 @@ auto Settings::Load(const String& strConfigurationFileExactPath) const -> bool
     }
 
     if (!legacy_.BuildFilePath(strConfigurationFileExactPath)) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Failed to construct path ")(strConfigurationFileExactPath)
+        LogOutput(OT_METHOD)(__func__)(": Failed to construct path ")(
+            strConfigurationFileExactPath)
             .Flush();
 
         OT_FAIL;
@@ -203,8 +203,8 @@ auto Settings::LogChange_str(
     if (!StringFill(strCategory, strSection.Get(), 12)) return false;
     if (!StringFill(strOption, strKey.Get(), 30, " to:")) return false;
 
-    LogDetail(OT_METHOD)(__func__)(
-        ": Setting ")(strCategory)(" ")(strOption)(" ")(szValue)
+    LogDetail(OT_METHOD)(__func__)(": Setting ")(strCategory)(" ")(
+        strOption)(" ")(szValue)
         .Flush();
     return true;
 }

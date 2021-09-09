@@ -10,14 +10,14 @@
 #include <chrono>
 #include <cstdint>
 
-#include "internal/api/Api.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/script/OTScriptable.hpp"
 
 namespace opentxs
 {
-Instrument::Instrument(const api::internal::Core& core)
+Instrument::Instrument(const api::Core& core)
     : OTScriptable(core)
     , m_InstrumentDefinitionID(api_.Factory().UnitID())
     , m_NotaryID(api_.Factory().ServerID())
@@ -28,7 +28,7 @@ Instrument::Instrument(const api::internal::Core& core)
 }
 
 Instrument::Instrument(
-    const api::internal::Core& core,
+    const api::Core& core,
     const identifier::Server& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID)
     : OTScriptable(core)

@@ -38,31 +38,31 @@ namespace zeromq
 {
 namespace zap
 {
-class Reply : virtual public zeromq::Message
+class OPENTXS_EXPORT Reply : virtual public zeromq::Message
 {
 public:
-    OPENTXS_EXPORT static Pimpl<Reply> Factory(
+    static auto Factory(
         const Request& request,
         const zap::Status& code = zap::Status::Unknown,
         const std::string& status = "",
         const std::string& userID = "",
         const Data& metadata = Data::Factory(),
-        const std::string& version = "1.0");
+        const std::string& version = "1.0") -> Pimpl<Reply>;
 
-    OPENTXS_EXPORT virtual zap::Status Code() const = 0;
-    OPENTXS_EXPORT virtual std::string Debug() const = 0;
-    OPENTXS_EXPORT virtual OTData Metadata() const = 0;
-    OPENTXS_EXPORT virtual OTData RequestID() const = 0;
-    OPENTXS_EXPORT virtual std::string Status() const = 0;
-    OPENTXS_EXPORT virtual std::string UserID() const = 0;
-    OPENTXS_EXPORT virtual std::string Version() const = 0;
+    virtual auto Code() const -> zap::Status = 0;
+    virtual auto Debug() const -> std::string = 0;
+    virtual auto Metadata() const -> OTData = 0;
+    virtual auto RequestID() const -> OTData = 0;
+    virtual auto Status() const -> std::string = 0;
+    virtual auto UserID() const -> std::string = 0;
+    virtual auto Version() const -> std::string = 0;
 
-    OPENTXS_EXPORT virtual bool SetCode(const zap::Status& code) = 0;
-    OPENTXS_EXPORT virtual bool SetMetadata(const Data& metadata) = 0;
-    OPENTXS_EXPORT virtual bool SetStatus(const std::string& status) = 0;
-    OPENTXS_EXPORT virtual bool SetUserID(const std::string& userID) = 0;
+    virtual auto SetCode(const zap::Status& code) -> bool = 0;
+    virtual auto SetMetadata(const Data& metadata) -> bool = 0;
+    virtual auto SetStatus(const std::string& status) -> bool = 0;
+    virtual auto SetUserID(const std::string& userID) -> bool = 0;
 
-    OPENTXS_EXPORT ~Reply() override = default;
+    ~Reply() override = default;
 
 protected:
     Reply() = default;
@@ -71,13 +71,13 @@ private:
     friend OTZMQZAPReply;
 
 #ifndef _WIN32
-    Reply* clone() const override = 0;
+    auto clone() const -> Reply* override = 0;
 #endif
 
     Reply(const Reply&) = delete;
     Reply(Reply&&) = delete;
-    Reply& operator=(const Reply&) = delete;
-    Reply& operator=(Reply&&) = delete;
+    auto operator=(const Reply&) -> Reply& = delete;
+    auto operator=(Reply&&) -> Reply& = delete;
 };
 }  // namespace zap
 }  // namespace zeromq

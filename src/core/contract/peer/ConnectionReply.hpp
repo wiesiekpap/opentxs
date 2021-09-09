@@ -16,10 +16,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -40,11 +37,11 @@ class Connection final : public reply::Connection,
 {
 public:
     Connection(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const SerializedType& serialized);
     Connection(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const identifier::Nym& initiator,
         const Identifier& request,

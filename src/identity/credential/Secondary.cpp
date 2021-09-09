@@ -26,7 +26,7 @@ namespace opentxs
 using ReturnType = identity::credential::implementation::Secondary;
 
 auto Factory::SecondaryCredential(
-    const api::internal::Core& api,
+    const api::Core& api,
     identity::internal::Authority& parent,
     const identity::Source& source,
     const identity::credential::internal::Primary& master,
@@ -40,7 +40,7 @@ auto Factory::SecondaryCredential(
         return new ReturnType(
             api, parent, source, master, parameters, version, reason);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
+        LogOutput("opentxs::Factory::")(__func__)(
             ": Failed to create credential: ")(e.what())
             .Flush();
 
@@ -49,7 +49,7 @@ auto Factory::SecondaryCredential(
 }
 
 auto Factory::SecondaryCredential(
-    const api::internal::Core& api,
+    const api::Core& api,
     identity::internal::Authority& parent,
     const identity::Source& source,
     const identity::credential::internal::Primary& master,
@@ -60,7 +60,7 @@ auto Factory::SecondaryCredential(
 
         return new ReturnType(api, parent, source, master, serialized);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
+        LogOutput("opentxs::Factory::")(__func__)(
             ": Failed to deserialize credential: ")(e.what())
             .Flush();
 
@@ -72,7 +72,7 @@ auto Factory::SecondaryCredential(
 namespace opentxs::identity::credential::implementation
 {
 Secondary::Secondary(
-    const api::internal::Core& api,
+    const api::Core& api,
     const identity::internal::Authority& owner,
     const identity::Source& source,
     const internal::Primary& master,
@@ -98,7 +98,7 @@ Secondary::Secondary(
 }
 
 Secondary::Secondary(
-    const api::internal::Core& api,
+    const api::Core& api,
     const identity::internal::Authority& owner,
     const identity::Source& source,
     const internal::Primary& master,
@@ -128,8 +128,7 @@ auto Secondary::serialize(
         if (masterSignature) {
             *serializedCredential->add_signature() = *masterSignature;
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to get master signature.")
+            LogOutput(OT_METHOD)(__func__)(": Failed to get master signature.")
                 .Flush();
         }
     }

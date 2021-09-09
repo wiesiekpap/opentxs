@@ -33,8 +33,10 @@ private:
 
     TransactionStatement() = delete;
     TransactionStatement(const TransactionStatement& rhs) = delete;
-    TransactionStatement& operator=(const TransactionStatement& rhs) = delete;
-    TransactionStatement& operator=(TransactionStatement&& rhs) = delete;
+    auto operator=(const TransactionStatement& rhs)
+        -> TransactionStatement& = delete;
+    auto operator=(TransactionStatement&& rhs)
+        -> TransactionStatement& = delete;
 
 public:
     TransactionStatement(
@@ -46,8 +48,8 @@ public:
 
     explicit operator OTString() const;
 
-    const std::set<TransactionNumber>& Issued() const;
-    const std::string& Notary() const;
+    auto Issued() const -> const std::set<TransactionNumber>&;
+    auto Notary() const -> const std::string&;
 
     void Remove(const TransactionNumber& number);
 

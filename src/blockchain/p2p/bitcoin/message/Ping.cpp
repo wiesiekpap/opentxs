@@ -36,8 +36,7 @@ auto BitcoinP2PPing(
     using ReturnType = bitcoin::message::implementation::Ping;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Invalid header")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }

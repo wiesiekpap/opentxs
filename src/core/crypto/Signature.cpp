@@ -14,7 +14,7 @@
 
 namespace opentxs
 {
-auto Signature::Factory(const api::internal::Core& api) -> OTSignature
+auto Signature::Factory(const api::Core& api) -> OTSignature
 {
     return OTSignature(new implementation::Signature(api));
 }
@@ -22,7 +22,7 @@ auto Signature::Factory(const api::internal::Core& api) -> OTSignature
 
 namespace opentxs::implementation
 {
-Signature::Signature(const api::internal::Core& api)
+Signature::Signature(const api::Core& api)
     : opentxs::Signature()
     , Armored()
     , metadata_(api)

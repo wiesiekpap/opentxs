@@ -13,7 +13,7 @@
 
 #include "2_Factory.hpp"
 #include "core/contract/peer/PeerReply.hpp"
-#include "internal/api/Api.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -31,7 +31,7 @@ using ParentType = contract::peer::implementation::Reply;
 using ReturnType = contract::peer::reply::implementation::Acknowledgement;
 
 auto Factory::NoticeAcknowledgement(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const identifier::Nym& initiator,
     const Identifier& request,
@@ -64,21 +64,20 @@ auto Factory::NoticeAcknowledgement(
 
         return std::move(output);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
 }
 
 auto Factory::NoticeAcknowledgement(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const proto::PeerReply& serialized) noexcept
     -> std::shared_ptr<contract::peer::reply::Acknowledgement>
 {
     if (false == proto::Validate(serialized, VERBOSE)) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
-            ": Invalid serialized reply.")
+        LogOutput("opentxs::Factory::")(__func__)(": Invalid serialized reply.")
             .Flush();
 
         return {};
@@ -93,7 +92,7 @@ auto Factory::NoticeAcknowledgement(
         Lock lock(contract.lock_);
 
         if (false == contract.validate(lock)) {
-            LogOutput("opentxs::Factory::")(__FUNCTION__)(": Invalid reply.")
+            LogOutput("opentxs::Factory::")(__func__)(": Invalid reply.")
                 .Flush();
 
             return {};
@@ -101,7 +100,7 @@ auto Factory::NoticeAcknowledgement(
 
         return std::move(output);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -111,7 +110,7 @@ auto Factory::NoticeAcknowledgement(
 namespace opentxs::contract::peer::reply::implementation
 {
 Acknowledgement::Acknowledgement(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const identifier::Nym& initiator,
     const Identifier& request,
@@ -126,7 +125,7 @@ Acknowledgement::Acknowledgement(
 }
 
 Acknowledgement::Acknowledgement(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const SerializedType& serialized)
     : Reply(api, nym, serialized)

@@ -8,12 +8,6 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#ifdef SWIG
-// clang-format off
-%feature("director") ListenCallbackSwig;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace network
@@ -40,8 +34,8 @@ protected:
 private:
     ListenCallbackSwig(const ListenCallbackSwig&) = delete;
     ListenCallbackSwig(ListenCallbackSwig&&) = default;
-    ListenCallbackSwig& operator=(const ListenCallbackSwig&) = delete;
-    ListenCallbackSwig& operator=(ListenCallbackSwig&&) = default;
+    auto operator=(const ListenCallbackSwig&) -> ListenCallbackSwig& = delete;
+    auto operator=(ListenCallbackSwig&&) -> ListenCallbackSwig& = default;
 };
 }  // namespace opentxs
 #endif

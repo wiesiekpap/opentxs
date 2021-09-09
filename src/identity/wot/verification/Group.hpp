@@ -23,10 +23,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identity
@@ -45,7 +42,7 @@ class Group final : public internal::Group
 public:
     operator SerializedType() const noexcept final;
 
-    auto API() const noexcept -> const api::internal::Core& final
+    auto API() const noexcept -> const api::Core& final
     {
         return parent_.API();
     }

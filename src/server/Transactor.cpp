@@ -12,9 +12,9 @@
 #include <string>
 #include <utility>
 
-#include "internal/api/server/Server.hpp"
 #include "opentxs/Exclusive.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/server/Manager.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/AccountList.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -242,11 +242,11 @@ auto Transactor::getVoucherAccount(
         const auto strInstrumentDefinitionID =
             String::Factory(INSTRUMENT_DEFINITION_ID);
         {
-            LogNormal(OT_METHOD)(__func__)(
-                ": Successfully created "
-                "voucher account ID: ")(strAcctID)(" Instrument Definition "
-                                                   "ID:"
-                                                   " ")(strInstrumentDefinitionID)(".")
+            LogNormal(OT_METHOD)(__func__)(": Successfully created "
+                                           "voucher account ID: ")(
+                strAcctID)(" Instrument Definition "
+                           "ID:"
+                           " ")(strInstrumentDefinitionID)(".")
                 .Flush();
         }
         if (!server_.GetMainFile().SaveMainFile()) {

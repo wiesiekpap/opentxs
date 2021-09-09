@@ -32,11 +32,6 @@ namespace opentxs
 namespace api
 {
 class Core;
-
-namespace internal
-{
-struct Core;
-}  // namespace internal
 }  // namespace api
 
 namespace identifier
@@ -163,13 +158,13 @@ protected:
         const -> bool;
 
     Base(
-        const api::internal::Core& api,
+        const api::Core& api,
         const VersionNumber targetVersion,
         const Nym_p& local,
         const Nym_p& remote,
         const identifier::Server& server);
     Base(
-        const api::internal::Core& api,
+        const api::Core& api,
         const VersionNumber targetVersion,
         const proto::Context& serialized,
         const Nym_p& local,

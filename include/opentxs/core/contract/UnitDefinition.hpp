@@ -46,67 +46,68 @@ public:
     static const VersionNumber DefaultVersion;
     static const VersionNumber MaxVersion;
 
-    static std::string formatLongAmount(
+    static auto formatLongAmount(
         const Amount lValue,
         const std::int32_t nFactor = 100,
         const std::int32_t nPower = 2,
         const char* szCurrencySymbol = "",
         const char* szThousandSeparator = ",",
-        const char* szDecimalPoint = ".");
-    static bool ParseFormatted(
+        const char* szDecimalPoint = ".") -> std::string;
+    static auto ParseFormatted(
         Amount& lResult,
         const std::string& str_input,
         const std::int32_t nFactor = 100,
         const std::int32_t nPower = 2,
         const char* szThousandSeparator = ",",
-        const char* szDecimalPoint = ".");
-    static std::set<contact::ContactItemType> ValidUnits(
-        const VersionNumber version = DefaultVersion) noexcept;
+        const char* szDecimalPoint = ".") -> bool;
+    static auto ValidUnits(
+        const VersionNumber version = DefaultVersion) noexcept
+        -> std::set<contact::ContactItemType>;
 
-    virtual bool AddAccountRecord(
+    virtual auto AddAccountRecord(
         const std::string& dataFolder,
-        const Account& theAccount) const = 0;
-    virtual std::int32_t DecimalPower() const = 0;
-    virtual bool DisplayStatistics(String& strContents) const = 0;
-    virtual bool EraseAccountRecord(
+        const Account& theAccount) const -> bool = 0;
+    virtual auto DecimalPower() const -> std::int32_t = 0;
+    virtual auto DisplayStatistics(String& strContents) const -> bool = 0;
+    virtual auto EraseAccountRecord(
         const std::string& dataFolder,
-        const Identifier& theAcctID) const = 0;
-    virtual bool FormatAmountLocale(
+        const Identifier& theAcctID) const -> bool = 0;
+    virtual auto FormatAmountLocale(
         Amount amount,
         std::string& str_output,
         const std::string& str_thousand,
-        const std::string& str_decimal) const = 0;
-    virtual bool FormatAmountLocale(Amount amount, std::string& str_output)
-        const = 0;
-    virtual bool FormatAmountWithoutSymbolLocale(
+        const std::string& str_decimal) const -> bool = 0;
+    virtual auto FormatAmountLocale(Amount amount, std::string& str_output)
+        const -> bool = 0;
+    virtual auto FormatAmountWithoutSymbolLocale(
         Amount amount,
         std::string& str_output,
         const std::string& str_thousand,
-        const std::string& str_decimal) const = 0;
-    virtual bool FormatAmountWithoutSymbolLocale(
+        const std::string& str_decimal) const -> bool = 0;
+    virtual auto FormatAmountWithoutSymbolLocale(
         Amount amount,
-        std::string& str_output) const = 0;
-    virtual std::string FractionalUnitName() const = 0;
-    virtual const std::string& GetCurrencyName() const = 0;
-    virtual const std::string& GetCurrencySymbol() const = 0;
+        std::string& str_output) const -> bool = 0;
+    virtual auto FractionalUnitName() const -> std::string = 0;
+    virtual auto GetCurrencyName() const -> const std::string& = 0;
+    virtual auto GetCurrencySymbol() const -> const std::string& = 0;
     using Signable::Serialize;
-    OPENTXS_NO_EXPORT virtual bool Serialize(
+    OPENTXS_NO_EXPORT virtual auto Serialize(
         SerializedType&,
-        bool includeNym = false) const = 0;
-    virtual bool Serialize(AllocateOutput destination, bool includeNym = false)
-        const = 0;
-    virtual bool StringToAmountLocale(
+        bool includeNym = false) const -> bool = 0;
+    virtual auto Serialize(AllocateOutput destination, bool includeNym = false)
+        const -> bool = 0;
+    virtual auto StringToAmountLocale(
         Amount& amount,
         const std::string& str_input,
         const std::string& str_thousand,
-        const std::string& str_decimal) const = 0;
-    virtual std::string TLA() const = 0;
-    virtual contract::UnitType Type() const = 0;
-    virtual contact::ContactItemType UnitOfAccount() const = 0;
-    virtual bool VisitAccountRecords(
+        const std::string& str_decimal) const -> bool = 0;
+    virtual auto TLA() const -> std::string = 0;
+    virtual auto Type() const -> contract::UnitType = 0;
+    virtual auto UnitOfAccount() const -> contact::ContactItemType = 0;
+    virtual auto VisitAccountRecords(
         const std::string& dataFolder,
         AccountVisitor& visitor,
-        const PasswordPrompt& reason) const = 0;
+        const PasswordPrompt& reason) const -> bool = 0;
 
     virtual void InitAlias(const std::string& alias) = 0;
 
@@ -119,13 +120,13 @@ private:
     friend OTUnitDefinition;
 
 #ifndef _WIN32
-    Unit* clone() const noexcept override = 0;
+    auto clone() const noexcept -> Unit* override = 0;
 #endif
 
     Unit(const Unit&) = delete;
     Unit(Unit&&) = delete;
-    Unit& operator=(const Unit&) = delete;
-    Unit& operator=(Unit&&) = delete;
+    auto operator=(const Unit&) -> Unit& = delete;
+    auto operator=(Unit&&) -> Unit& = delete;
 };
 }  // namespace contract
 }  // namespace opentxs

@@ -11,11 +11,11 @@
 #include <tuple>
 #include <utility>
 
-#include "internal/api/client/Client.hpp"
 #include "internal/contact/Contact.hpp"
 #include "internal/ui/UI.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/ContactItemAttribute.hpp"
@@ -26,7 +26,7 @@ namespace opentxs::factory
 {
 auto ProfileItemWidget(
     const ui::implementation::ProfileSubsectionInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ui::implementation::ProfileSubsectionRowID& rowID,
     const ui::implementation::ProfileSubsectionSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
@@ -42,7 +42,7 @@ namespace opentxs::ui::implementation
 {
 ProfileItem::ProfileItem(
     const ProfileSubsectionInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ProfileSubsectionRowID& rowID,
     const ProfileSubsectionSortKey& sortKey,
     CustomData& custom) noexcept

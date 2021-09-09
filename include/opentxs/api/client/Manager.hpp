@@ -18,6 +18,11 @@ namespace api
 {
 namespace client
 {
+namespace internal
+{
+struct Manager;
+}  // namespace internal
+
 class Activity;
 class Blockchain;
 class Contacts;
@@ -47,20 +52,24 @@ namespace client
 class OPENTXS_EXPORT Manager : virtual public api::Core
 {
 public:
-    virtual const api::client::Activity& Activity() const = 0;
-    virtual const api::client::Blockchain& Blockchain() const = 0;
-    virtual const api::client::Contacts& Contacts() const = 0;
-    virtual const OTAPI_Exec& Exec(const std::string& wallet = "") const = 0;
-    virtual std::recursive_mutex& Lock(
+    virtual auto Activity() const -> const api::client::Activity& = 0;
+    virtual auto Blockchain() const -> const api::client::Blockchain& = 0;
+    virtual auto Contacts() const -> const api::client::Contacts& = 0;
+    virtual auto Exec(const std::string& wallet = "") const
+        -> const OTAPI_Exec& = 0;
+    OPENTXS_NO_EXPORT virtual auto InternalClient() const noexcept
+        -> internal::Manager& = 0;
+    virtual auto Lock(
         const identifier::Nym& nymID,
-        const identifier::Server& serverID) const = 0;
-    virtual const OT_API& OTAPI(const std::string& wallet = "") const = 0;
-    virtual const client::OTX& OTX() const = 0;
-    virtual const client::Pair& Pair() const = 0;
-    virtual const client::ServerAction& ServerAction() const = 0;
-    virtual const api::client::UI& UI() const = 0;
-    virtual const client::Workflow& Workflow() const = 0;
-    virtual const network::ZMQ& ZMQ() const = 0;
+        const identifier::Server& serverID) const -> std::recursive_mutex& = 0;
+    virtual auto OTAPI(const std::string& wallet = "") const
+        -> const OT_API& = 0;
+    virtual auto OTX() const -> const client::OTX& = 0;
+    virtual auto Pair() const -> const client::Pair& = 0;
+    virtual auto ServerAction() const -> const client::ServerAction& = 0;
+    virtual auto UI() const -> const api::client::UI& = 0;
+    virtual auto Workflow() const -> const client::Workflow& = 0;
+    virtual auto ZMQ() const -> const network::ZMQ& = 0;
 
     OPENTXS_NO_EXPORT ~Manager() override = default;
 
@@ -70,8 +79,8 @@ protected:
 private:
     Manager(const Manager&) = delete;
     Manager(Manager&&) = delete;
-    Manager& operator=(const Manager&) = delete;
-    Manager& operator=(Manager&&) = delete;
+    auto operator=(const Manager&) -> Manager& = delete;
+    auto operator=(Manager&&) -> Manager& = delete;
 };
 }  // namespace client
 }  // namespace api

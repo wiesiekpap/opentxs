@@ -21,10 +21,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 class PasswordPrompt;
@@ -48,7 +45,7 @@ public:
     }
 
     Currency(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const std::string& shortname,
         const std::string& name,
@@ -60,7 +57,7 @@ public:
         const contact::ContactItemType unitOfAccount,
         const VersionNumber version);
     Currency(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const proto::UnitDefinition serialized);
 
