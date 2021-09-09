@@ -3,14 +3,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+add_subdirectory(asio)
 add_subdirectory(blockchain)
 
 add_library(
   opentxs-api-network OBJECT
   "${opentxs_SOURCE_DIR}/src/internal/api/network/Factory.hpp"
   "${opentxs_SOURCE_DIR}/src/internal/api/network/Network.hpp"
-  "Asio.cpp"
-  "Asio.hpp"
   "Blockchain.cpp"
   "Blockchain.hpp"
   "Dht.cpp"

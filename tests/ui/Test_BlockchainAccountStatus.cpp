@@ -4,11 +4,16 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <atomic>
 #include <map>
+#include <memory>
 #include <optional>
+#include <string>
 
 #include "integration/Helpers.hpp"
 #include "opentxs/OT.hpp"
+#include "opentxs/Pimpl.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
@@ -18,6 +23,14 @@
 #include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
+#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/core/Data.hpp"
+#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/PasswordPrompt.hpp"
+#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/crypto/SeedStyle.hpp"
+#include "opentxs/identity/Nym.hpp"
 #include "paymentcode/VectorsV3.hpp"
 #include "ui/Helpers.hpp"
 

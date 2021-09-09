@@ -155,7 +155,7 @@ auto BlockchainImp::disable(const Lock& lock, const Chain type) const noexcept
     -> bool
 {
     if (0 == opentxs::blockchain::SupportedChains().count(type)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported chain").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Unsupported chain").Flush();
 
         return false;
     }
@@ -164,7 +164,7 @@ auto BlockchainImp::disable(const Lock& lock, const Chain type) const noexcept
 
     if (db_->Disable(type)) { return true; }
 
-    LogOutput(OT_METHOD)(__FUNCTION__)(": Database update failure").Flush();
+    LogOutput(OT_METHOD)(__func__)(": Database update failure").Flush();
 
     return false;
 }
@@ -183,7 +183,7 @@ auto BlockchainImp::enable(
     const std::string& seednode) const noexcept -> bool
 {
     if (0 == opentxs::blockchain::SupportedChains().count(type)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported chain").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Unsupported chain").Flush();
 
         return false;
     }
@@ -191,7 +191,7 @@ auto BlockchainImp::enable(
     init_.get();
 
     if (false == db_->Enable(type, seednode)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Database error").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Database error").Flush();
 
         return false;
     }
@@ -337,16 +337,20 @@ auto BlockchainImp::Init(
         return {};
     }();
     init_promise_.set_value();
-    static const auto defaultSyncServer =
-        std::string{"tcp://54.39.129.45:8814"};
+    static const auto defaultServers = std::vector<std::string>{
+        "tcp://54.39.129.45:8814",
+        "tcp://54.38.193.222:8814",
+    };
     const auto existing = [&] {
         auto out = std::set<std::string>{};
         auto v = GetSyncServers();
         std::move(v.begin(), v.end(), std::inserter(out, out.end()));
 
-        if (0 == out.count(defaultSyncServer)) {
-            AddSyncServer(defaultSyncServer);
-            out.emplace(defaultSyncServer);
+        for (const auto& server : defaultServers) {
+            if (0 == out.count(server)) {
+                AddSyncServer(server);
+                out.emplace(server);
+            }
         }
 
         return out;
@@ -439,14 +443,14 @@ auto BlockchainImp::start(
 
     if (Chain::UnitTest != type) {
         if (0 == opentxs::blockchain::SupportedChains().count(type)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported chain").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Unsupported chain").Flush();
 
             return false;
         }
     }
 
     if (0 != networks_.count(type)) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Chain already running").Flush();
+        LogVerbose(OT_METHOD)(__func__)(": Chain already running").Flush();
 
         return true;
     }
@@ -481,8 +485,8 @@ auto BlockchainImp::start(
                 type,
                 factory::BlockchainNetworkBitcoin(
                     api_, *crypto_, *this, type, config, seednode, endpoint));
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
-                ": started chain ")(static_cast<std::uint32_t>(type))
+            LogVerbose(OT_METHOD)(__func__)(": started chain ")(
+                static_cast<std::uint32_t>(type))
                 .Flush();
             publish_chain_state(type, true);
 
@@ -536,8 +540,7 @@ auto BlockchainImp::stop(const Lock& lock, const Chain type) const noexcept
 
     it->second->Shutdown().get();
     networks_.erase(it);
-    LogVerbose(OT_METHOD)(__FUNCTION__)(
-        ": stopped chain ")(opentxs::print(type))
+    LogVerbose(OT_METHOD)(__func__)(": stopped chain ")(opentxs::print(type))
         .Flush();
     publish_chain_state(type, false);
 

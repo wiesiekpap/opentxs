@@ -81,8 +81,9 @@ struct Asio {
 
     virtual auto Connect(const ReadView id, Socket& socket) noexcept
         -> bool = 0;
-    virtual auto Context() noexcept -> boost::asio::io_context& = 0;
-    virtual auto Post(Callback cb) noexcept -> bool = 0;
+    virtual auto IOContext() noexcept -> boost::asio::io_context& = 0;
+    virtual auto PostIO(Callback cb) noexcept -> bool = 0;
+    virtual auto PostCPU(Callback cb) noexcept -> bool = 0;
     virtual auto Receive(
         const ReadView id,
         const OTZMQWorkType type,

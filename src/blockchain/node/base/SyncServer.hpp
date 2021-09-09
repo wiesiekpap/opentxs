@@ -168,7 +168,7 @@ private:
 
         OT_ASSERT(saved);
 
-        LogNormal(DisplayString(chain_))(" sync data updated to height ")(
+        LogDetail(DisplayString(chain_))(" sync data updated to height ")(
             position.first)
             .Flush();
     }

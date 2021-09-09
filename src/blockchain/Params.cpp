@@ -1109,7 +1109,7 @@ auto Data::Chains() noexcept -> const ChainData&
              {
                  "seed.cjd.li",
                  "seed.anode.co",
-                 "seed.gridfinity.com",
+                 "pktdseed.pkt.world",
              },
              1000,
              {{

@@ -516,7 +516,7 @@ auto SubchainStateData::queue_work(const Task task, const char* log) noexcept
 {
     running_.store(true);
     ++job_counter_;
-    const auto queued = api_.Network().Asio().Internal().Post([this, task] {
+    const auto queued = api_.Network().Asio().Internal().PostCPU([this, task] {
         auto post = ScopeGuard{[this] {
             running_.store(false);
             task_finished_();

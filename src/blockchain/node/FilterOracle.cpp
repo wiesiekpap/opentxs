@@ -578,7 +578,7 @@ auto FilterOracle::ProcessSyncData(
                     }
                 }());
             ++jobCounter;
-            const auto queued = api_.Network().Asio().Internal().Post(
+            const auto queued = api_.Network().Asio().Internal().PostCPU(
                 [&] { ProcessSyncData(job); });
 
             if (false == queued) {
