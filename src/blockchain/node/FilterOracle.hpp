@@ -69,13 +69,10 @@ class Block;
 
 namespace node
 {
-struct GCS;
-}  // namespace node
-
-namespace node
-{
 class HeaderOracle;
 }  // namespace node
+
+class GCS;
 }  // namespace blockchain
 
 namespace network
@@ -140,7 +137,7 @@ public:
     auto GetHeaderJob() const noexcept -> CfheaderJob final;
     auto Heartbeat() const noexcept -> void final;
     auto LoadFilter(const filter::Type type, const block::Hash& block)
-        const noexcept -> std::unique_ptr<const node::GCS> final
+        const noexcept -> std::unique_ptr<const GCS> final
     {
         return database_.LoadFilter(type, block.Bytes());
     }
@@ -152,7 +149,7 @@ public:
     auto LoadFilterOrResetTip(
         const filter::Type type,
         const block::Position& position) const noexcept
-        -> std::unique_ptr<const node::GCS> final;
+        -> std::unique_ptr<const GCS> final;
     auto ProcessBlock(const block::bitcoin::Block& block) const noexcept
         -> bool final;
     auto ProcessBlock(BlockIndexerData& data) const noexcept -> void;
@@ -221,7 +218,7 @@ private:
     auto process_block(
         const filter::Type type,
         const block::bitcoin::Block& block) const noexcept
-        -> std::unique_ptr<const node::GCS>;
+        -> std::unique_ptr<const GCS>;
     auto reset_tips_to(
         const filter::Type type,
         const block::Position& position,

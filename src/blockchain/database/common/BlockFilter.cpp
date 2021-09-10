@@ -18,7 +18,7 @@
 #include "blockchain/database/common/Bulk.hpp"
 #include "internal/api/Api.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/Blockchain.hpp"
-#include "opentxs/blockchain/node/FilterOracle.hpp"
+#include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -73,9 +73,9 @@ auto BlockFilter::HaveFilterHeader(
 }
 
 auto BlockFilter::LoadFilter(const FilterType type, const ReadView blockHash)
-    const noexcept -> std::unique_ptr<const opentxs::blockchain::node::GCS>
+    const noexcept -> std::unique_ptr<const opentxs::blockchain::GCS>
 {
-    auto output = std::unique_ptr<const opentxs::blockchain::node::GCS>{};
+    auto output = std::unique_ptr<const opentxs::blockchain::GCS>{};
 
     try {
         const auto index = [&] {
@@ -169,7 +169,7 @@ auto BlockFilter::store(
     storage::lmdb::LMDB::Transaction& tx,
     const ReadView blockHash,
     const FilterType type,
-    const node::GCS& filter) const noexcept -> bool
+    const GCS& filter) const noexcept -> bool
 {
     try {
         const auto proto = [&] {

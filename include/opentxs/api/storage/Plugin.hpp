@@ -21,9 +21,9 @@ namespace storage
 class Plugin : public virtual Driver
 {
 public:
-    virtual auto EmptyBucket(const bool bucket) const -> bool override = 0;
-    virtual auto LoadRoot() const -> std::string override = 0;
-    virtual auto StoreRoot(const bool commit, const std::string& hash) const
+    auto EmptyBucket(const bool bucket) const -> bool override = 0;
+    auto LoadRoot() const -> std::string override = 0;
+    auto StoreRoot(const bool commit, const std::string& hash) const
         -> bool override = 0;
 
     ~Plugin() override = default;

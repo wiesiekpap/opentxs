@@ -60,10 +60,7 @@ class Block;
 class Header;
 }  // namespace block
 
-namespace node
-{
-struct GCS;
-}  // namespace node
+class GCS;
 }  // namespace blockchain
 
 namespace network
@@ -144,7 +141,7 @@ public:
         -> proto::BlockchainBlockHeader;
     auto LoadEnabledChains() const noexcept -> std::vector<EnabledChain>;
     auto LoadFilter(const FilterType type, const ReadView blockHash)
-        const noexcept -> std::unique_ptr<const opentxs::blockchain::node::GCS>;
+        const noexcept -> std::unique_ptr<const opentxs::blockchain::GCS>;
     auto LoadFilterHash(
         const FilterType type,
         const ReadView blockHash,

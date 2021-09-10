@@ -29,6 +29,7 @@
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
+#include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"

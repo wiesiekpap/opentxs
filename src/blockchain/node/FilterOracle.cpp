@@ -37,9 +37,9 @@
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
-#include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -350,7 +350,7 @@ auto FilterOracle::Heartbeat() const noexcept -> void
 auto FilterOracle::LoadFilterOrResetTip(
     const filter::Type type,
     const block::Position& position) const noexcept
-    -> std::unique_ptr<const node::GCS>
+    -> std::unique_ptr<const GCS>
 {
     auto output = LoadFilter(type, position.second);
 
@@ -720,7 +720,7 @@ auto FilterOracle::ProcessSyncData(
 auto FilterOracle::process_block(
     const filter::Type filterType,
     const block::bitcoin::Block& block) const noexcept
-    -> std::unique_ptr<const node::GCS>
+    -> std::unique_ptr<const GCS>
 {
     const auto& id = block.ID();
     const auto params = blockchain::internal::GetFilterParams(filterType);

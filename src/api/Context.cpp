@@ -20,6 +20,7 @@ extern "C" {
 #include <iosfwd>
 #include <limits>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <stdexcept>
 #include <string>
@@ -185,7 +186,7 @@ void Context::HandleSignals(ShutdownCallback* callback) const
     if (nullptr != callback) { shutdown_callback_ = callback; }
 
     if (false == bool(signal_handler_)) {
-        signal_handler_.reset(new Signals(running_));
+        signal_handler_ = std::make_unique<Signals>(running_);
     }
 #endif
 }
@@ -390,7 +391,7 @@ void Context::setup_default_external_password_callback()
 
     assert(null_callback_);
 
-    default_external_password_callback_.reset(new OTCaller);
+    default_external_password_callback_ = std::make_unique<OTCaller>();
 
     assert(default_external_password_callback_);
 

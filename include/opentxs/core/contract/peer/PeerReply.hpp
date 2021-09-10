@@ -68,7 +68,7 @@ public:
     virtual auto Type() const -> PeerRequestType = 0;
     virtual auto Server() const -> const identifier::Server& = 0;
 
-    virtual ~Reply() override = default;
+    ~Reply() override = default;
 
 protected:
     Reply() noexcept = default;

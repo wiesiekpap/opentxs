@@ -44,12 +44,8 @@ namespace block
 class Block;
 }  // namespace block
 
-namespace node
-{
-struct GCS;
-}  // namespace node
-
 class BloomFilter;
+class GCS;
 class NumericHash;
 class Work;
 }  // namespace blockchain
@@ -210,28 +206,28 @@ auto GCS(
     const std::uint32_t fpRate,
     const ReadView key,
     const std::vector<OTData>& elements) noexcept
-    -> std::unique_ptr<blockchain::node::GCS>;
+    -> std::unique_ptr<blockchain::GCS>;
 auto GCS(
     const api::Core& api,
     const blockchain::filter::Type type,
     const blockchain::block::Block& block) noexcept
-    -> std::unique_ptr<blockchain::node::GCS>;
+    -> std::unique_ptr<blockchain::GCS>;
 auto GCS(const api::Core& api, const proto::GCS& serialized) noexcept
-    -> std::unique_ptr<blockchain::node::GCS>;
+    -> std::unique_ptr<blockchain::GCS>;
 auto GCS(const api::Core& api, const ReadView serialized) noexcept
-    -> std::unique_ptr<blockchain::node::GCS>;
+    -> std::unique_ptr<blockchain::GCS>;
 auto GCS(
     const api::Core& api,
     const std::uint8_t bits,
     const std::uint32_t fpRate,
     const ReadView key,
     const std::uint32_t filterElementCount,
-    const ReadView filter) noexcept -> std::unique_ptr<blockchain::node::GCS>;
+    const ReadView filter) noexcept -> std::unique_ptr<blockchain::GCS>;
 auto GCS(
     const api::Core& api,
     const blockchain::filter::Type type,
     const ReadView key,
-    const ReadView encoded) noexcept -> std::unique_ptr<blockchain::node::GCS>;
+    const ReadView encoded) noexcept -> std::unique_ptr<blockchain::GCS>;
 #endif  // OT_BLOCKCHAIN
 auto NumericHash(const blockchain::block::Hash& hash) noexcept
     -> std::unique_ptr<blockchain::NumericHash>;

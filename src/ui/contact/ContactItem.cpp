@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"              // IWYU pragma: associated
 #include "ui/contact/ContactItem.hpp"  // IWYU pragma: associated
 
+#include <memory>
+
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/core/Log.hpp"
 #include "ui/base/Widget.hpp"
@@ -47,8 +49,8 @@ auto ContactItem::reindex(
     CustomData& custom) noexcept -> bool
 {
     eLock lock(shared_lock_);
-    item_.reset(
-        new opentxs::ContactItem(extract_custom<opentxs::ContactItem>(custom)));
+    item_ = std::make_unique<opentxs::ContactItem>(
+        extract_custom<opentxs::ContactItem>(custom));
 
     OT_ASSERT(item_);
 

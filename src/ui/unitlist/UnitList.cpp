@@ -75,7 +75,7 @@ UnitList::UnitList(
            new MessageProcessor<UnitList>(&UnitList::process_account)}}
 {
     setup_listeners(listeners_);
-    startup_.reset(new std::thread(&UnitList::startup, this));
+    startup_ = std::make_unique<std::thread>(&UnitList::startup, this);
 
     OT_ASSERT(startup_)
 }

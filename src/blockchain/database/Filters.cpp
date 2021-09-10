@@ -25,8 +25,8 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -107,7 +107,7 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
         const auto& blockHash = block.Hash();
         const auto bytes =
             api_.Factory().Data(genesis.second, StringStyle::Hex);
-        auto gcs = std::unique_ptr<const node::GCS>{factory::GCS(
+        auto gcs = std::unique_ptr<const GCS>{factory::GCS(
             api_,
             style,
             blockchain::internal::BlockHashToFilterKey(blockHash.Bytes()),
@@ -148,7 +148,7 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
 }
 
 auto Filters::LoadFilter(const filter::Type type, const ReadView block)
-    const noexcept -> std::unique_ptr<const blockchain::node::GCS>
+    const noexcept -> std::unique_ptr<const blockchain::GCS>
 {
     return common_.LoadFilter(type, block);
 }

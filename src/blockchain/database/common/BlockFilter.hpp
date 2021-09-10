@@ -34,10 +34,7 @@ class Bulk;
 }  // namespace common
 }  // namespace database
 
-namespace node
-{
-struct GCS;
-}  // namespace node
+class GCS;
 }  // namespace blockchain
 
 namespace storage
@@ -59,7 +56,7 @@ public:
     auto HaveFilterHeader(const FilterType type, const ReadView blockHash)
         const noexcept -> bool;
     auto LoadFilter(const FilterType type, const ReadView blockHash)
-        const noexcept -> std::unique_ptr<const opentxs::blockchain::node::GCS>;
+        const noexcept -> std::unique_ptr<const opentxs::blockchain::GCS>;
     auto LoadFilterHash(
         const FilterType type,
         const ReadView blockHash,
@@ -103,6 +100,6 @@ private:
         storage::lmdb::LMDB::Transaction& tx,
         const ReadView blockHash,
         const FilterType type,
-        const node::GCS& filter) const noexcept -> bool;
+        const GCS& filter) const noexcept -> bool;
 };
 }  // namespace opentxs::blockchain::database::common

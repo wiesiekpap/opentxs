@@ -239,7 +239,7 @@ auto Source::extract_key(
 
     for (auto& key : publicCred.key()) {
         if (role == key.role()) {
-            output.reset(new proto::AsymmetricKey(key));
+            output = std::make_unique<proto::AsymmetricKey>(key);
 
             break;
         }

@@ -9,6 +9,7 @@
 
 #include <ctime>
 #include <functional>
+#include <memory>
 
 #include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/core/Log.hpp"
@@ -158,8 +159,8 @@ auto Root::Migrate(const opentxs::api::storage::Driver& to) const -> bool
 
         if (!running) {
             cleanup();
-            gc_thread_.reset(
-                new std::thread(&Root::collect_garbage, this, &to));
+            gc_thread_ = std::make_unique<std::thread>(
+                &Root::collect_garbage, this, &to);
 
             return true;
         }

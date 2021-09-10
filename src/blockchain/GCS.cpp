@@ -74,7 +74,7 @@ auto GCS(
     const std::uint32_t fpRate,
     const ReadView key,
     const std::vector<OTData>& elements) noexcept
-    -> std::unique_ptr<blockchain::node::GCS>
+    -> std::unique_ptr<blockchain::GCS>
 {
     try {
         auto effective = std::vector<ReadView>{};
@@ -96,7 +96,7 @@ auto GCS(
 }
 
 auto GCS(const api::Core& api, const proto::GCS& in) noexcept
-    -> std::unique_ptr<blockchain::node::GCS>
+    -> std::unique_ptr<blockchain::GCS>
 {
     try {
         return std::make_unique<ReturnType>(
@@ -109,7 +109,7 @@ auto GCS(const api::Core& api, const proto::GCS& in) noexcept
 }
 
 auto GCS(const api::Core& api, const ReadView in) noexcept
-    -> std::unique_ptr<blockchain::node::GCS>
+    -> std::unique_ptr<blockchain::GCS>
 {
     try {
         const auto proto = proto::Factory<proto::GCS>(in.data(), in.size());
@@ -132,7 +132,7 @@ auto GCS(
     const std::uint32_t fpRate,
     const ReadView key,
     const std::uint32_t filterElementCount,
-    const ReadView filter) noexcept -> std::unique_ptr<blockchain::node::GCS>
+    const ReadView filter) noexcept -> std::unique_ptr<blockchain::GCS>
 {
     try {
         return std::make_unique<ReturnType>(
@@ -148,7 +148,7 @@ auto GCS(
     const api::Core& api,
     const blockchain::filter::Type type,
     const ReadView key,
-    const ReadView encoded) noexcept -> std::unique_ptr<blockchain::node::GCS>
+    const ReadView encoded) noexcept -> std::unique_ptr<blockchain::GCS>
 {
     const auto params = blockchain::internal::GetFilterParams(type);
 
@@ -169,7 +169,7 @@ auto GCS(
     const api::Core& api,
     const blockchain::filter::Type type,
     const blockchain::block::Block& block) noexcept
-    -> std::unique_ptr<blockchain::node::GCS>
+    -> std::unique_ptr<blockchain::GCS>
 {
     if (blockchain::filter::Type::Basic_BIP158 == type) {
         LogOutput("opentxs::factory::")(__func__)(

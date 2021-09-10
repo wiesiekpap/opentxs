@@ -13,7 +13,7 @@
 #include "internal/blockchain/Blockchain.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/blockchain/node/FilterOracle.hpp"
+#include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/protobuf/GCS.pb.h"
 
@@ -32,7 +32,7 @@ class GCS;
 
 namespace opentxs::blockchain::implementation
 {
-class GCS final : virtual public node::GCS
+class GCS final : virtual public blockchain::GCS
 {
 public:
     auto Compressed() const noexcept -> Space final;

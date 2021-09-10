@@ -69,6 +69,7 @@ SubchainStateData::SubchainStateData(
     , reorg_()
     , last_indexed_(db.SubchainLastIndexed(index_))
     , last_scanned_(db.SubchainLastScanned(index_))
+    , progress_(last_scanned_)
     , blocks_to_request_()
     , outstanding_blocks_()
     , process_block_queue_()
@@ -145,6 +146,57 @@ auto SubchainStateData::ReorgQueue::Next() noexcept -> block::Position
     parents_.pop();
 
     return output;
+}
+
+auto SubchainStateData::adjust_progress_finished() noexcept -> void
+{
+    OT_ASSERT(last_scanned_.has_value());
+
+    if (have_outstanding_process()) { return; }
+
+    progress_ = last_scanned_;
+    report_scan();
+}
+
+auto SubchainStateData::adjust_progress_process(block::Position pos) noexcept
+    -> void
+{
+    last_scanned_ = std::move(pos);
+    progress_ = last_scanned_;
+    report_scan();
+}
+
+auto SubchainStateData::adjust_progress_reorg(block::Position pos) noexcept
+    -> void
+{
+    OT_ASSERT(last_scanned_.has_value());
+
+    {
+        const auto changed = (last_scanned_.value() != pos);
+
+        if (false == changed) { return; }
+    }
+
+    job_counter_.wait_for_finished();
+    last_scanned_ = std::move(pos);
+
+    if (progress_.has_value() && progress_.value() > last_scanned_.value()) {
+        progress_ = last_scanned_;
+    }
+
+    last_reported_ = null_position_;
+    report_scan();
+}
+
+auto SubchainStateData::adjust_progress_scan(block::Position pos) noexcept
+    -> void
+{
+    last_scanned_ = std::move(pos);
+
+    if (have_outstanding_process()) { return; }
+
+    progress_ = last_scanned_;
+    report_scan();
 }
 
 auto SubchainStateData::check_blocks() noexcept -> bool
@@ -244,10 +296,9 @@ auto SubchainStateData::check_scan() noexcept -> bool
                 bestFilter.second->asHex())(" at height ")(bestFilter.first)
                 .Flush();
         } else {
-            const auto [ancestor, best] =
-                node_.HeaderOracleInternal().CommonParent(
-                    last_scanned_.value());
-            last_scanned_ = ancestor;
+            auto [ancestor, best] = node_.HeaderOracleInternal().CommonParent(
+                last_scanned_.value());
+            adjust_progress_reorg(std::move(ancestor));
 
             if (last_scanned_ == best) {
                 LogVerbose(OT_METHOD)(__func__)(": ")(
@@ -272,7 +323,7 @@ auto SubchainStateData::check_scan() noexcept -> bool
 
         return queue_work(Task::scan, job);
     } else {
-        report_scan();
+        adjust_progress_finished();
     }
 
     return false;
@@ -395,6 +446,11 @@ auto SubchainStateData::get_targets(
     translate(utxos, outpoints);
 }
 
+auto SubchainStateData::have_outstanding_process() const noexcept -> bool
+{
+    return (!blocks_to_request_.empty()) || (!process_block_queue_.empty());
+}
+
 auto SubchainStateData::index_element(
     const filter::Type type,
     const blockchain::crypto::Element& input,
@@ -507,7 +563,7 @@ auto SubchainStateData::process() noexcept -> void
     if (0 < general.size()) {
         // Re-scan this block because new keys may have been generated
         const auto height = std::max(header.Height() - 1, block::Height{0});
-        last_scanned_ = block::Position{height, oracle.BestHash(height)};
+        adjust_progress_process({height, oracle.BestHash(height)});
     }
 }
 
@@ -558,6 +614,8 @@ auto SubchainStateData::queue_work(const Task task, const char* log) noexcept
 
 auto SubchainStateData::reorg() noexcept -> void
 {
+    job_counter_.wait_for_finished();
+
     while (false == reorg_.Empty()) {
         reorg_.Next();
         const auto tip = db_.SubchainLastScanned(index_);
@@ -565,12 +623,11 @@ auto SubchainStateData::reorg() noexcept -> void
         db_.ReorgTo(id_, subchain_, index_, reorg);
     }
 
-    const auto scannedTarget =
-        node_.HeaderOracleInternal()
-            .CommonParent(db_.SubchainLastScanned(index_))
-            .first;
-
-    if (last_scanned_.has_value()) { last_scanned_ = scannedTarget; }
+    if (last_scanned_.has_value()) {
+        adjust_progress_reorg(node_.HeaderOracleInternal()
+                                  .CommonParent(db_.SubchainLastScanned(index_))
+                                  .first);
+    }
 
     blocks_to_request_.clear();
     outstanding_blocks_.clear();
@@ -582,17 +639,17 @@ auto SubchainStateData::reorg() noexcept -> void
 
 auto SubchainStateData::report_scan() noexcept -> void
 {
-    const auto pos = last_scanned_.value_or(null_position_);
+    OT_ASSERT(progress_.has_value());
+
+    const auto& pos = progress_.value();
 
     if (pos == last_reported_) { return; }
 
-    if (blocks_to_request_.empty() && process_block_queue_.empty()) {
-        update_scan(pos);
-        crypto_.ReportScan(
-            node_.Chain(), owner_, account_type_, id_, subchain_, pos);
-        last_reported_ = pos;
-        db_.SubchainSetLastScanned(index_, pos);
-    }
+    update_scan(pos);
+    crypto_.ReportScan(
+        node_.Chain(), owner_, account_type_, id_, subchain_, pos);
+    db_.SubchainSetLastScanned(index_, pos);
+    last_reported_ = pos;
 }
 
 auto SubchainStateData::scan() noexcept -> void
@@ -670,7 +727,7 @@ auto SubchainStateData::scan() noexcept -> void
             .Flush();
         std::move(
             cache.begin(), cache.end(), std::back_inserter(blocks_to_request_));
-        last_scanned_ = std::move(highestTested);
+        adjust_progress_scan(std::move(highestTested));
     } else {
         LogVerbose(OT_METHOD)(__func__)(": ")(
             name_)(" scan interrupted due to missing filter")
@@ -758,8 +815,5 @@ auto SubchainStateData::translate(
     }
 }
 
-SubchainStateData::~SubchainStateData()
-{
-    while (0 < job_counter_) { Sleep(std::chrono::microseconds(100)); }
-}
+SubchainStateData::~SubchainStateData() { job_counter_.wait_for_finished(); }
 }  // namespace opentxs::blockchain::node::wallet

@@ -1514,8 +1514,8 @@ void OTX::load_introduction_server(const Lock& lock) const
 {
     OT_ASSERT(CheckLock(lock, introduction_server_lock_))
 
-    introduction_server_id_.reset(
-        new OTServerID(get_introduction_server(lock)));
+    introduction_server_id_ =
+        std::make_unique<OTServerID>(get_introduction_server(lock));
 }
 
 auto OTX::MessageContact(
@@ -2240,7 +2240,7 @@ auto OTX::set_introduction_server(
         const auto instantiated = client_.Wallet().Server(serialized);
         const auto id = identifier::Server::Factory(
             instantiated->ID()->str());  // TODO conversion
-        introduction_server_id_.reset(new OTServerID(id));
+        introduction_server_id_ = std::make_unique<OTServerID>(id);
 
         OT_ASSERT(introduction_server_id_)
 

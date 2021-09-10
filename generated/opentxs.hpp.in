@@ -62,6 +62,7 @@
 #include "opentxs/blockchain/BloomFilter.hpp"
 #include "opentxs/blockchain/BloomUpdateFlag.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/NumericHash.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/blockchain/SendResult.hpp"

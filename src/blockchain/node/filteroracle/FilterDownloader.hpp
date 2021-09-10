@@ -11,6 +11,7 @@
 
 #include "blockchain/DownloadManager.hpp"
 #include "internal/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
@@ -24,7 +25,7 @@ namespace opentxs::blockchain::node::implementation
 {
 using FilterDM = download::Manager<
     FilterOracle::FilterDownloader,
-    std::unique_ptr<const node::GCS>,
+    std::unique_ptr<const GCS>,
     filter::pHeader,
     filter::Type>;
 using FilterWorker = Worker<FilterOracle::FilterDownloader, api::Core>;
@@ -199,8 +200,8 @@ private:
 
         for (const auto& task : data) {
             const auto& prior = task->previous_.get();
-            auto& gcs = const_cast<std::unique_ptr<const node::GCS>&>(
-                task->data_.get());
+            auto& gcs =
+                const_cast<std::unique_ptr<const GCS>&>(task->data_.get());
             const auto block = task->position_.second->Bytes();
             const auto expected = db_.LoadFilterHash(type_, block);
 

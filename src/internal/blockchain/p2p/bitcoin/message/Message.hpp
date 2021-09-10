@@ -54,11 +54,6 @@ class Transaction;
 }  // namespace bitcoin
 }  // namespace block
 
-namespace node
-{
-struct GCS;
-}  // namespace node
-
 namespace p2p
 {
 namespace bitcoin
@@ -78,6 +73,8 @@ class Tx;
 class Header;
 }  // namespace bitcoin
 }  // namespace p2p
+
+class GCS;
 }  // namespace blockchain
 
 namespace network
@@ -458,7 +455,7 @@ auto BitcoinP2PCfilter(
     const blockchain::Type network,
     const blockchain::filter::Type type,
     const blockchain::block::Hash& hash,
-    const blockchain::node::GCS& filter)
+    const blockchain::GCS& filter)
     -> blockchain::p2p::bitcoin::message::internal::Cfilter*;
 auto BitcoinP2PCmpctblock(
     const api::Core& api,

@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                     // IWYU pragma: associated
 #include "core/contract/peer/PeerObject.hpp"  // IWYU pragma: associated
 
+#include <memory>
 #include <stdexcept>
 
 #include "2_Factory.hpp"
@@ -157,8 +158,8 @@ auto PeerObject(
         std::unique_ptr<opentxs::PeerObject> output;
 
         if (valid) {
-            output.reset(new peer::implementation::Object(
-                contacts, api, signerNym, serialized));
+            output = std::make_unique<peer::implementation::Object>(
+                contacts, api, signerNym, serialized);
         } else {
             LogOutput(OT_METHOD)(__func__)(": Invalid peer object.").Flush();
         }
@@ -269,7 +270,7 @@ Object::Object(
 
     switch (contract::peer::internal::translate(serialized.type())) {
         case (contract::peer::PeerObjectType::Message): {
-            message_.reset(new std::string(serialized.otmessage()));
+            message_ = std::make_unique<std::string>(serialized.otmessage());
         } break;
         case (contract::peer::PeerObjectType::Request): {
             request_ = api_.Factory().PeerRequest(nym_, serialized.otrequest());
@@ -287,7 +288,7 @@ Object::Object(
             reply_ = api_.Factory().PeerReply(nym_, serialized.otreply());
         } break;
         case (contract::peer::PeerObjectType::Payment): {
-            payment_.reset(new std::string(serialized.otpayment()));
+            payment_ = std::make_unique<std::string>(serialized.otpayment());
         } break;
         case (contract::peer::PeerObjectType::Cash): {
 #if OT_CASH

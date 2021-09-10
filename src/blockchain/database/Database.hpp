@@ -37,6 +37,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
@@ -90,10 +91,7 @@ namespace node
 class UpdateTransaction;
 }  // namespace node
 
-namespace node
-{
-struct GCS;
-}  // namespace node
+class GCS;
 }  // namespace blockchain
 
 namespace identifier
@@ -337,7 +335,7 @@ public:
         return headers_.IsSibling(hash);
     }
     auto LoadFilter(const filter::Type type, const ReadView block)
-        const noexcept -> std::unique_ptr<const node::GCS> final
+        const noexcept -> std::unique_ptr<const GCS> final
     {
         return filters_.LoadFilter(type, block);
     }

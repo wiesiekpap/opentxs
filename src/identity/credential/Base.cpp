@@ -300,7 +300,7 @@ auto Base::serialize(
 
     if (identity::CredentialRole::MasterKey != role_) {
         std::unique_ptr<proto::ChildCredentialParameters> parameters;
-        parameters.reset(new proto::ChildCredentialParameters);
+        parameters = std::make_unique<proto::ChildCredentialParameters>();
 
         parameters->set_version(1);
         parameters->set_masterid(master_id_);

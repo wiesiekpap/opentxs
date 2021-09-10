@@ -30,7 +30,7 @@ extern "C" {
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
-#include "opentxs/blockchain/node/FilterOracle.hpp"
+#include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -116,8 +116,8 @@ auto Sync::import_genesis(const Chain chain) noexcept -> void
                 api_.Factory().Data(filter.second, StringStyle::Hex);
             const auto blockHash =
                 api_.Factory().Data(data.genesis_hash_hex_, StringStyle::Hex);
-            auto output = std::unique_ptr<const opentxs::blockchain::node::GCS>{
-                factory::GCS(
+            auto output =
+                std::unique_ptr<const opentxs::blockchain::GCS>{factory::GCS(
                     api_,
                     filterType,
                     opentxs::blockchain::internal::BlockHashToFilterKey(

@@ -86,8 +86,8 @@ ActivitySummaryItem::ActivitySummaryItem(
     , break_(false)
 {
     startup(custom);
-    newest_item_thread_.reset(
-        new std::thread(&ActivitySummaryItem::get_text, this));
+    newest_item_thread_ =
+        std::make_unique<std::thread>(&ActivitySummaryItem::get_text, this);
 
     OT_ASSERT(newest_item_thread_)
 }

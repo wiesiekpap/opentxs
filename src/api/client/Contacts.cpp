@@ -10,6 +10,7 @@
 #include <functional>
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
 #include <stdexcept>
 #include <type_traits>
@@ -512,8 +513,8 @@ auto Contacts::mutable_contact(const rLock& lock, const Identifier& id) const
 
     std::function<void(opentxs::Contact*)> callback =
         [&](opentxs::Contact* in) -> void { this->save(in); };
-    output.reset(
-        new Editor<opentxs::Contact>(it->second.second.get(), callback));
+    output = std::make_unique<Editor<opentxs::Contact>>(
+        it->second.second.get(), callback);
 
     return output;
 }

@@ -81,7 +81,7 @@ Profile::Profile(
     , payment_code_()
 {
     setup_listeners(listeners_);
-    startup_.reset(new std::thread(&Profile::startup, this));
+    startup_ = std::make_unique<std::thread>(&Profile::startup, this);
 
     OT_ASSERT(startup_)
 }

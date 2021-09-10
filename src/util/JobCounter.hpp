@@ -5,68 +5,54 @@
 
 #pragma once
 
-#include <atomic>
-#include <chrono>
-#include <map>
-#include <mutex>
-#include <optional>
-#include <thread>
-#include <utility>
-
 namespace opentxs
 {
-using OutstandingMap = std::map<int, std::atomic_int>;
-
 class JobCounter;
 
 class Outstanding
 {
+    struct Imp;
+
 public:
-    operator int() const noexcept { return position_.value()->second; }
+    auto operator++() noexcept -> Outstanding&;
+    auto operator--() noexcept -> Outstanding&;
+    auto wait_for_finished() noexcept -> void;
+    auto wait_for_ready() noexcept -> void;
 
-    auto limited() const noexcept -> bool
-    {
-        static const auto limit =
-            static_cast<int>(std::thread::hardware_concurrency());
-
-        return position_.value()->second >= limit;
-    }
-
-    auto operator++() noexcept -> Outstanding&
-    {
-        ++(position_.value()->second);
-
-        return *this;
-    }
-    auto operator--() noexcept -> Outstanding&
-    {
-        --(position_.value()->second);
-
-        return *this;
-    }
-
-    Outstanding(JobCounter& parent, OutstandingMap::iterator position) noexcept;
+    Outstanding(Imp* imp) noexcept;
     Outstanding(Outstanding&& rhs) noexcept;
-    Outstanding(const Outstanding&) = delete;
 
     ~Outstanding();
 
 private:
-    JobCounter& parent_;
-    std::optional<OutstandingMap::iterator> position_;
+    friend JobCounter;
+
+    Imp* imp_;
+
+    Outstanding(const Outstanding&) = delete;
+    auto operator=(const Outstanding&) -> Outstanding& = delete;
+    auto operator=(Outstanding&&) -> Outstanding& = delete;
 };
 
 class JobCounter
 {
 public:
     auto Allocate() noexcept -> Outstanding;
-    auto Deallocate(OutstandingMap::iterator position) noexcept -> void;
 
     JobCounter() noexcept;
 
+    ~JobCounter();
+
 private:
-    mutable std::mutex lock_;
-    int counter_;
-    OutstandingMap map_;
+    friend Outstanding;
+
+    struct Imp;
+
+    Imp* imp_;
+
+    JobCounter(const JobCounter&) = delete;
+    JobCounter(JobCounter&&) = delete;
+    auto operator=(const JobCounter&) -> JobCounter& = delete;
+    auto operator=(JobCounter&&) -> JobCounter& = delete;
 };
 }  // namespace opentxs
