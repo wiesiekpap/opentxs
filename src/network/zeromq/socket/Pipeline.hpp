@@ -18,10 +18,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace network
@@ -51,7 +48,7 @@ public:
     }
 
     Pipeline(
-        const api::internal::Core& api,
+        const api::Core& api,
         const zeromq::Context& context,
         std::function<void(zeromq::Message&)> callback) noexcept;
 

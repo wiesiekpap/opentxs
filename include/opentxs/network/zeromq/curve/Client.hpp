@@ -12,14 +12,6 @@
 
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 
-#ifdef SWIG
-// clang-format off
-%ignore opentxs::network::zeromq::curve::Client::SetServerPubkey;
-%template(CurveKeypair) std::pair<std::string, std::string>;
-%interface(opentxs::network::zeromq::curve::Client);
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace contract
@@ -38,31 +30,29 @@ namespace zeromq
 {
 namespace curve
 {
-class Client : virtual public socket::Socket
+class OPENTXS_EXPORT Client : virtual public socket::Socket
 {
 public:
-    OPENTXS_EXPORT static std::pair<std::string, std::string>
-    RandomKeypair() noexcept;
+    static auto RandomKeypair() noexcept -> std::pair<std::string, std::string>;
 
-    OPENTXS_EXPORT virtual bool SetKeysZ85(
+    virtual auto SetKeysZ85(
         const std::string& serverPublic,
         const std::string& clientPrivate,
-        const std::string& clientPublic) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SetServerPubkey(
-        const contract::Server& contract) const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SetServerPubkey(
-        const Data& key) const noexcept = 0;
+        const std::string& clientPublic) const noexcept -> bool = 0;
+    virtual auto SetServerPubkey(
+        const contract::Server& contract) const noexcept -> bool = 0;
+    virtual auto SetServerPubkey(const Data& key) const noexcept -> bool = 0;
 
-    OPENTXS_EXPORT ~Client() override = default;
+    ~Client() override = default;
 
 protected:
-    OPENTXS_EXPORT Client() noexcept = default;
+    Client() noexcept = default;
 
 private:
     Client(const Client&) = delete;
     Client(Client&&) = delete;
-    Client& operator=(const Client&) = delete;
-    Client& operator=(Client&&) = delete;
+    auto operator=(const Client&) -> Client& = delete;
+    auto operator=(Client&&) -> Client& = delete;
 };
 }  // namespace curve
 }  // namespace zeromq

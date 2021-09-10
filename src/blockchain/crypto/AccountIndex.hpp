@@ -30,9 +30,9 @@ class Nym;
 class Identifier;
 }  // namespace opentxs
 
-namespace opentxs::api::client::internal
+namespace opentxs::blockchain::crypto
 {
-class BalanceTreeIndex
+class AccountIndex
 {
 public:
     using Chain = opentxs::blockchain::Type;
@@ -49,18 +49,18 @@ public:
         const identifier::Nym& owner,
         Chain chain) const noexcept -> void;
 
-    BalanceTreeIndex(const api::Core& api) noexcept;
-    ~BalanceTreeIndex();
+    AccountIndex(const api::Core& api) noexcept;
+    ~AccountIndex();
 
 private:
     struct Imp;
 
     Imp* imp_;
 
-    BalanceTreeIndex() = delete;
-    BalanceTreeIndex(const BalanceTreeIndex&) = delete;
-    BalanceTreeIndex(BalanceTreeIndex&&) = delete;
-    auto operator=(const BalanceTreeIndex&) -> BalanceTreeIndex& = delete;
-    auto operator=(BalanceTreeIndex&&) -> BalanceTreeIndex& = delete;
+    AccountIndex() = delete;
+    AccountIndex(const AccountIndex&) = delete;
+    AccountIndex(AccountIndex&&) = delete;
+    auto operator=(const AccountIndex&) -> AccountIndex& = delete;
+    auto operator=(AccountIndex&&) -> AccountIndex& = delete;
 };
-}  // namespace opentxs::api::client::internal
+}  // namespace opentxs::blockchain::crypto

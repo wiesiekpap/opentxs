@@ -36,8 +36,7 @@ auto BitcoinP2PGetcfcheckpt(
     using ReturnType = bitcoin::message::implementation::Getcfcheckpt;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Invalid header")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -47,7 +46,7 @@ auto BitcoinP2PGetcfcheckpt(
     auto expectedSize = sizeof(raw);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Payload too short")
+        LogOutput("opentxs::factory::")(__func__)(": Payload too short")
             .Flush();
 
         return nullptr;

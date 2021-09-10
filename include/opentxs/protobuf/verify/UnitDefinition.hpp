@@ -20,86 +20,70 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT bool CheckProto_1(
+auto CheckProto_1(
     const UnitDefinition& contract,
     const bool silent,
-    const bool checkSig = true);
-OPENTXS_EXPORT bool CheckProto_2(
+    const bool checkSig = true) -> bool;
+auto CheckProto_2(const UnitDefinition&, const bool, const bool checkSig = true)
+    -> bool;
+auto CheckProto_3(const UnitDefinition&, const bool, const bool checkSig = true)
+    -> bool;
+auto CheckProto_4(const UnitDefinition&, const bool, const bool checkSig = true)
+    -> bool;
+auto CheckProto_5(const UnitDefinition&, const bool, const bool checkSig = true)
+    -> bool;
+auto CheckProto_6(const UnitDefinition&, const bool, const bool checkSig = true)
+    -> bool;
+auto CheckProto_7(const UnitDefinition&, const bool, const bool checkSig = true)
+    -> bool;
+auto CheckProto_8(const UnitDefinition&, const bool, const bool checkSig = true)
+    -> bool;
+auto CheckProto_9(const UnitDefinition&, const bool, const bool checkSig = true)
+    -> bool;
+auto CheckProto_10(
     const UnitDefinition&,
     const bool,
-    const bool checkSig = true);
-OPENTXS_EXPORT bool CheckProto_3(
+    const bool checkSig = true) -> bool;
+auto CheckProto_11(
     const UnitDefinition&,
     const bool,
-    const bool checkSig = true);
-OPENTXS_EXPORT bool CheckProto_4(
+    const bool checkSig = true) -> bool;
+auto CheckProto_12(
     const UnitDefinition&,
     const bool,
-    const bool checkSig = true);
-OPENTXS_EXPORT bool CheckProto_5(
+    const bool checkSig = true) -> bool;
+auto CheckProto_13(
     const UnitDefinition&,
     const bool,
-    const bool checkSig = true);
-OPENTXS_EXPORT bool CheckProto_6(
+    const bool checkSig = true) -> bool;
+auto CheckProto_14(
     const UnitDefinition&,
     const bool,
-    const bool checkSig = true);
-OPENTXS_EXPORT bool CheckProto_7(
+    const bool checkSig = true) -> bool;
+auto CheckProto_15(
     const UnitDefinition&,
     const bool,
-    const bool checkSig = true);
-OPENTXS_EXPORT bool CheckProto_8(
+    const bool checkSig = true) -> bool;
+auto CheckProto_16(
     const UnitDefinition&,
     const bool,
-    const bool checkSig = true);
-OPENTXS_EXPORT bool CheckProto_9(
+    const bool checkSig = true) -> bool;
+auto CheckProto_17(
     const UnitDefinition&,
     const bool,
-    const bool checkSig = true);
-OPENTXS_EXPORT bool CheckProto_10(
+    const bool checkSig = true) -> bool;
+auto CheckProto_18(
     const UnitDefinition&,
     const bool,
-    const bool checkSig = true);
-OPENTXS_EXPORT bool CheckProto_11(
+    const bool checkSig = true) -> bool;
+auto CheckProto_19(
     const UnitDefinition&,
     const bool,
-    const bool checkSig = true);
-OPENTXS_EXPORT bool CheckProto_12(
+    const bool checkSig = true) -> bool;
+auto CheckProto_20(
     const UnitDefinition&,
     const bool,
-    const bool checkSig = true);
-OPENTXS_EXPORT bool CheckProto_13(
-    const UnitDefinition&,
-    const bool,
-    const bool checkSig = true);
-OPENTXS_EXPORT bool CheckProto_14(
-    const UnitDefinition&,
-    const bool,
-    const bool checkSig = true);
-OPENTXS_EXPORT bool CheckProto_15(
-    const UnitDefinition&,
-    const bool,
-    const bool checkSig = true);
-OPENTXS_EXPORT bool CheckProto_16(
-    const UnitDefinition&,
-    const bool,
-    const bool checkSig = true);
-OPENTXS_EXPORT bool CheckProto_17(
-    const UnitDefinition&,
-    const bool,
-    const bool checkSig = true);
-OPENTXS_EXPORT bool CheckProto_18(
-    const UnitDefinition&,
-    const bool,
-    const bool checkSig = true);
-OPENTXS_EXPORT bool CheckProto_19(
-    const UnitDefinition&,
-    const bool,
-    const bool checkSig = true);
-OPENTXS_EXPORT bool CheckProto_20(
-    const UnitDefinition&,
-    const bool,
-    const bool checkSig = true);
+    const bool checkSig = true) -> bool;
 }  // namespace proto
 }  // namespace opentxs
 

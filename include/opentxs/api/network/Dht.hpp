@@ -54,7 +54,7 @@ public:
     virtual void Insert(const identity::Nym::Serialized& nym) const = 0;
     virtual void Insert(const proto::ServerContract& contract) const = 0;
     virtual void Insert(const proto::UnitDefinition& contract) const = 0;
-    virtual const opentxs::network::OpenDHT& OpenDHT() const = 0;
+    virtual auto OpenDHT() const -> const opentxs::network::OpenDHT& = 0;
     virtual void RegisterCallbacks(const CallbackMap& callbacks) const = 0;
 
     OPENTXS_NO_EXPORT virtual ~Dht() = default;
@@ -65,8 +65,8 @@ protected:
 private:
     Dht(const Dht&) = delete;
     Dht(Dht&&) = delete;
-    Dht& operator=(const Dht&) = delete;
-    Dht& operator=(Dht&&) = delete;
+    auto operator=(const Dht&) -> Dht& = delete;
+    auto operator=(Dht&&) -> Dht& = delete;
 };
 }  // namespace network
 }  // namespace api

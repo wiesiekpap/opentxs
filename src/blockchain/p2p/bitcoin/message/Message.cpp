@@ -170,7 +170,7 @@ auto VerifyChecksum(
         case p2p::Protocol::opentxs:
         case p2p::Protocol::ethereum:
         default: {
-            LogOutput(__FUNCTION__)(": Unsupported type").Flush();
+            LogOutput(__func__)(": Unsupported type").Flush();
         }
     }
 

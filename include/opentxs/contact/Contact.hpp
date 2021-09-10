@@ -39,16 +39,10 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 class ContactData;
@@ -72,76 +66,76 @@ public:
     using BlockchainType = blockchain::Type;
     using BlockchainAddress = std::tuple<OTData, AddressStyle, BlockchainType>;
 
-    static std::shared_ptr<ContactItem> Best(const ContactGroup& group);
-    static std::string ExtractLabel(const identity::Nym& nym);
-    static contact::ContactItemType ExtractType(const identity::Nym& nym);
-    static std::string PaymentCode(
+    static auto Best(const ContactGroup& group) -> std::shared_ptr<ContactItem>;
+    static auto ExtractLabel(const identity::Nym& nym) -> std::string;
+    static auto ExtractType(const identity::Nym& nym)
+        -> contact::ContactItemType;
+    static auto PaymentCode(
         const ContactData& data,
-        const contact::ContactItemType currency);
+        const contact::ContactItemType currency) -> std::string;
 
     OPENTXS_NO_EXPORT Contact(
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const proto::Contact& serialized);
-    Contact(
-        const api::client::internal::Manager& api,
-        const std::string& label);
+    Contact(const api::client::Manager& api, const std::string& label);
 
-    Contact& operator+=(Contact& rhs);
+    auto operator+=(Contact& rhs) -> Contact&;
 
-    std::string BestEmail() const;
-    std::string BestPhoneNumber() const;
-    std::string BestSocialMediaProfile(
-        const contact::ContactItemType type) const;
-    std::vector<BlockchainAddress> BlockchainAddresses() const;
-    std::shared_ptr<ContactData> Data() const;
-    std::string EmailAddresses(bool active = true) const;
-    const Identifier& ID() const;
-    const std::string& Label() const;
-    std::time_t LastUpdated() const;
-    std::vector<OTNymID> Nyms(const bool includeInactive = false) const;
-    std::string PaymentCode(
+    auto BestEmail() const -> std::string;
+    auto BestPhoneNumber() const -> std::string;
+    auto BestSocialMediaProfile(const contact::ContactItemType type) const
+        -> std::string;
+    auto BlockchainAddresses() const -> std::vector<BlockchainAddress>;
+    auto Data() const -> std::shared_ptr<ContactData>;
+    auto EmailAddresses(bool active = true) const -> std::string;
+    auto ID() const -> const Identifier&;
+    auto Label() const -> const std::string&;
+    auto LastUpdated() const -> std::time_t;
+    auto Nyms(const bool includeInactive = false) const -> std::vector<OTNymID>;
+    auto PaymentCode(
         const contact::ContactItemType currency =
-            contact::ContactItemType::BTC) const;
-    std::vector<std::string> PaymentCodes(
+            contact::ContactItemType::BTC) const -> std::string;
+    auto PaymentCodes(
         const contact::ContactItemType currency =
-            contact::ContactItemType::BTC) const;
-    std::string PhoneNumbers(bool active = true) const;
-    std::string Print() const;
-    OPENTXS_NO_EXPORT bool Serialize(proto::Contact& out) const;
-    std::string SocialMediaProfiles(
+            contact::ContactItemType::BTC) const -> std::vector<std::string>;
+    auto PhoneNumbers(bool active = true) const -> std::string;
+    auto Print() const -> std::string;
+    OPENTXS_NO_EXPORT auto Serialize(proto::Contact& out) const -> bool;
+    auto SocialMediaProfiles(
         const contact::ContactItemType type,
-        bool active = true) const;
-    const std::set<contact::ContactItemType> SocialMediaProfileTypes() const;
-    contact::ContactItemType Type() const;
+        bool active = true) const -> std::string;
+    auto SocialMediaProfileTypes() const
+        -> const std::set<contact::ContactItemType>;
+    auto Type() const -> contact::ContactItemType;
 
-    bool AddBlockchainAddress(
+    auto AddBlockchainAddress(
         const std::string& address,
-        const BlockchainType currency);
-    bool AddBlockchainAddress(
+        const BlockchainType currency) -> bool;
+    auto AddBlockchainAddress(
         const blockchain::crypto::AddressStyle& style,
         const blockchain::Type chain,
-        const opentxs::Data& bytes);
-    bool AddEmail(
+        const opentxs::Data& bytes) -> bool;
+    auto AddEmail(
         const std::string& value,
         const bool primary,
-        const bool active);
-    bool AddNym(const Nym_p& nym, const bool primary);
-    bool AddNym(const identifier::Nym& nymID, const bool primary);
-    bool AddPaymentCode(
+        const bool active) -> bool;
+    auto AddNym(const Nym_p& nym, const bool primary) -> bool;
+    auto AddNym(const identifier::Nym& nymID, const bool primary) -> bool;
+    auto AddPaymentCode(
         const opentxs::PaymentCode& code,
         const bool primary,
         const contact::ContactItemType currency = contact::ContactItemType::BTC,
-        const bool active = true);
-    bool AddPhoneNumber(
+        const bool active = true) -> bool;
+    auto AddPhoneNumber(
         const std::string& value,
         const bool primary,
-        const bool active);
-    bool AddSocialMediaProfile(
+        const bool active) -> bool;
+    auto AddSocialMediaProfile(
         const std::string& value,
         const contact::ContactItemType type,
         const bool primary,
-        const bool active);
-    bool RemoveNym(const identifier::Nym& nymID);
+        const bool active) -> bool;
+    auto RemoveNym(const identifier::Nym& nymID) -> bool;
     void SetLabel(const std::string& label);
     void Update(const identity::Nym::Serialized& nym);
 
@@ -155,8 +149,8 @@ private:
     Contact() = delete;
     Contact(const Contact&) = delete;
     Contact(Contact&&) = delete;
-    Contact& operator=(const Contact&) = delete;
-    Contact& operator=(Contact&&) = delete;
+    auto operator=(const Contact&) -> Contact& = delete;
+    auto operator=(Contact&&) -> Contact& = delete;
 };
 }  // namespace opentxs
 #endif

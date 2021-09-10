@@ -11,12 +11,6 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/ui/List.hpp"
 
-#ifdef SWIG
-// clang-format off
-%rename(UIActivitySummary) opentxs::ui::ActivitySummary;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -30,17 +24,15 @@ namespace opentxs
 {
 namespace ui
 {
-class ActivitySummary : virtual public List
+class OPENTXS_EXPORT ActivitySummary : virtual public List
 {
 public:
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<
-        opentxs::ui::ActivitySummaryItem>
-    First() const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<
-        opentxs::ui::ActivitySummaryItem>
-    Next() const noexcept = 0;
+    virtual auto First() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::ActivitySummaryItem> = 0;
+    virtual auto Next() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::ActivitySummaryItem> = 0;
 
-    OPENTXS_EXPORT ~ActivitySummary() override = default;
+    ~ActivitySummary() override = default;
 
 protected:
     ActivitySummary() = default;
@@ -48,8 +40,8 @@ protected:
 private:
     ActivitySummary(const ActivitySummary&) = delete;
     ActivitySummary(ActivitySummary&&) = delete;
-    ActivitySummary& operator=(const ActivitySummary&) = delete;
-    ActivitySummary& operator=(ActivitySummary&&) = delete;
+    auto operator=(const ActivitySummary&) -> ActivitySummary& = delete;
+    auto operator=(ActivitySummary&&) -> ActivitySummary& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

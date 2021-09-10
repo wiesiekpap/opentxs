@@ -12,17 +12,6 @@
 #include "opentxs/network/zeromq/curve/Server.hpp"
 #include "opentxs/network/zeromq/socket/Sender.hpp"
 
-#ifdef SWIG
-// clang-format off
-%ignore opentxs::Pimpl<opentxs::network::zeromq::socket::Publish>::Pimpl(opentxs::network::zeromq::socket::Publish const &);
-%ignore opentxs::Pimpl<opentxs::network::zeromq::socket::Publish>::operator opentxs::network::zeromq::socket::Publish&;
-%ignore opentxs::Pimpl<opentxs::network::zeromq::socket::Publish>::operator const opentxs::network::zeromq::socket::Publish &;
-%rename(assign) operator=(const opentxs::network::zeromq::socket::Publish&);
-%rename(ZMQPublish) opentxs::network::zeromq::socket::Publish;
-%template(OTZMQPublishSocket) opentxs::Pimpl<opentxs::network::zeromq::socket::Publish>;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace network
@@ -47,10 +36,11 @@ namespace zeromq
 {
 namespace socket
 {
-class Publish : virtual public curve::Server, virtual public Sender
+class OPENTXS_EXPORT Publish : virtual public curve::Server,
+                               virtual public Sender
 {
 public:
-    OPENTXS_EXPORT ~Publish() override = default;
+    ~Publish() override = default;
 
 protected:
     Publish() noexcept = default;
@@ -58,12 +48,12 @@ protected:
 private:
     friend OTZMQPublishSocket;
 
-    virtual Publish* clone() const noexcept = 0;
+    virtual auto clone() const noexcept -> Publish* = 0;
 
     Publish(const Publish&) = delete;
     Publish(Publish&&) = delete;
-    Publish& operator=(const Publish&) = delete;
-    Publish& operator=(Publish&&) = delete;
+    auto operator=(const Publish&) -> Publish& = delete;
+    auto operator=(Publish&&) -> Publish& = delete;
 };
 }  // namespace socket
 }  // namespace zeromq

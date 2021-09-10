@@ -13,20 +13,6 @@
 #include "ListRow.hpp"
 #include "opentxs/SharedPimpl.hpp"
 
-#ifdef SWIG
-// clang-format off
-%extend opentxs::ui::UnitListItem {
-    int Unit() const
-    {
-        return static_cast<int>($self->Unit());
-    }
-}
-%ignore opentxs::ui::UnitListItem::Unit;
-%template(OTUIUnitListItem) opentxs::SharedPimpl<opentxs::ui::UnitListItem>;
-%rename(UIUnitListItem) opentxs::ui::UnitListItem;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -41,11 +27,11 @@ namespace opentxs
 {
 namespace ui
 {
-class UnitListItem : virtual public ListRow
+class OPENTXS_EXPORT UnitListItem : virtual public ListRow
 {
 public:
-    OPENTXS_EXPORT virtual std::string Name() const noexcept = 0;
-    OPENTXS_EXPORT virtual contact::ContactItemType Unit() const noexcept = 0;
+    virtual auto Name() const noexcept -> std::string = 0;
+    virtual auto Unit() const noexcept -> contact::ContactItemType = 0;
 
     ~UnitListItem() override = default;
 
@@ -55,8 +41,8 @@ protected:
 private:
     UnitListItem(const UnitListItem&) = delete;
     UnitListItem(UnitListItem&&) = delete;
-    UnitListItem& operator=(const UnitListItem&) = delete;
-    UnitListItem& operator=(UnitListItem&&) = delete;
+    auto operator=(const UnitListItem&) -> UnitListItem& = delete;
+    auto operator=(UnitListItem&&) -> UnitListItem& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

@@ -12,22 +12,13 @@
 #include <iostream>
 #include <memory>
 
-#ifdef SWIG
-%ignore opentxs::SharedPimpl::SharedPimpl(const std::shared_ptr<const C>&);
-%ignore opentxs::SharedPimpl::SharedPimpl(SharedPimpl&&);
-%ignore opentxs::SharedPimpl::operator const C&();
-%rename(assign) opentxs::SharedPimpl::operator=(const SharedPimpl&);
-%rename(move) opentxs::SharedPimpl::operator=(SharedPimpl&&);
-#endif
-
 namespace opentxs
 {
 template <class C>
-class SharedPimpl
+class OPENTXS_EXPORT SharedPimpl
 {
 public:
-    OPENTXS_EXPORT explicit SharedPimpl(
-        const std::shared_ptr<const C>& in) noexcept
+    explicit SharedPimpl(const std::shared_ptr<const C>& in) noexcept
         : pimpl_(in)
     {
         if (false == bool(pimpl_)) {
@@ -35,25 +26,22 @@ public:
             abort();
         }
     }
-    OPENTXS_EXPORT SharedPimpl(const SharedPimpl& rhs) noexcept = default;
-    OPENTXS_EXPORT SharedPimpl(SharedPimpl&& rhs) noexcept = default;
-    OPENTXS_EXPORT SharedPimpl& operator=(const SharedPimpl& rhs) noexcept =
-        default;
-    OPENTXS_EXPORT SharedPimpl& operator=(SharedPimpl&& rhs) noexcept = default;
+    SharedPimpl(const SharedPimpl& rhs) noexcept = default;
+    SharedPimpl(SharedPimpl&& rhs) noexcept = default;
+    auto operator=(const SharedPimpl& rhs) noexcept -> SharedPimpl& = default;
+    auto operator=(SharedPimpl&& rhs) noexcept -> SharedPimpl& = default;
 
-#ifndef SWIG
-    OPENTXS_EXPORT operator const C&() const noexcept { return *pimpl_; }
-#endif
+    operator const C&() const noexcept { return *pimpl_; }
 
-    OPENTXS_EXPORT const C* operator->() const { return pimpl_.get(); }
+    auto operator->() const -> const C* { return pimpl_.get(); }
 
     template <typename Type>
-    OPENTXS_EXPORT SharedPimpl<Type> as() noexcept
+    auto as() noexcept -> SharedPimpl<Type>
     {
         return SharedPimpl<Type>{std::static_pointer_cast<const Type>(pimpl_)};
     }
     template <typename Type>
-    OPENTXS_EXPORT SharedPimpl<Type> dynamic() noexcept(false)
+    auto dynamic() noexcept(false) -> SharedPimpl<Type>
     {
         auto pointer = std::dynamic_pointer_cast<const Type>(pimpl_);
 
@@ -63,20 +51,14 @@ public:
             throw std::runtime_error("Invalid dynamic cast");
         }
     }
-    OPENTXS_EXPORT const C& get() const noexcept { return *pimpl_; }
+    auto get() const noexcept -> const C& { return *pimpl_; }
 
-    OPENTXS_EXPORT ~SharedPimpl() = default;
-
-#ifdef SWIG_VERSION
-    OPENTXS_EXPORT SharedPimpl() = default;
-#endif
+    ~SharedPimpl() = default;
 
 private:
     std::shared_ptr<const C> pimpl_{nullptr};
 
-#ifndef SWIG_VERSION
     SharedPimpl() = delete;
-#endif
 };  // class SharedPimpl
 }  // namespace opentxs
 #endif

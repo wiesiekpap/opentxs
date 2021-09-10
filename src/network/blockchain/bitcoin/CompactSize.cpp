@@ -71,7 +71,7 @@ auto DecodeSize(
 #pragma GCC diagnostic ignored "-Wtautological-type-limit-compare"
         // std::size_t might be 32 bit
         if (sizeof(std::size_t) < csExtraBytes) {
-            LogOutput("opentxs::network::blockchain::bitcoin::")(__FUNCTION__)(
+            LogOutput("opentxs::network::blockchain::bitcoin::")(__func__)(
                 ": Size too big")
                 .Flush();
 
@@ -181,8 +181,7 @@ auto CompactSize::Imp::convert_to_raw(AllocateOutput output) const noexcept
     OT_ASSERT(std::numeric_limits<SizeType>::max() >= data_);
 
     if (false == bool(output)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output allocator")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
@@ -190,8 +189,7 @@ auto CompactSize::Imp::convert_to_raw(AllocateOutput output) const noexcept
     const auto out = output(sizeof(SizeType));
 
     if (false == out.valid(sizeof(SizeType))) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to allocate output")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to allocate output").Flush();
 
         return false;
     }
@@ -216,7 +214,7 @@ auto CompactSize::Decode(const std::vector<std::byte>& bytes) noexcept -> bool
     } else if (sizeof(std::uint64_t) == bytes.size()) {
         imp_->convert_from_raw<std::uint64_t>(bytes);
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Wrong number of bytes: ")(
+        LogOutput(OT_METHOD)(__func__)(": Wrong number of bytes: ")(
             bytes.size())
             .Flush();
         output = false;
@@ -236,8 +234,7 @@ auto CompactSize::Encode() const noexcept -> std::vector<std::byte>
 auto CompactSize::Encode(AllocateOutput destination) const noexcept -> bool
 {
     if (false == bool(destination)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output allocator")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
@@ -246,8 +243,7 @@ auto CompactSize::Encode(AllocateOutput destination) const noexcept -> bool
     const auto out = destination(size);
 
     if (false == out.valid(size)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to allocate output")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to allocate output").Flush();
 
         return false;
     }

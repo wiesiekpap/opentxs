@@ -10,7 +10,6 @@
 #include <stdexcept>
 #include <utility>
 
-#include "internal/api/Api.hpp"
 #include "internal/otx/OTX.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
@@ -38,7 +37,7 @@
 namespace opentxs::otx::context::implementation
 {
 Base::Base(
-    const api::internal::Core& api,
+    const api::Core& api,
     const VersionNumber targetVersion,
     const Nym_p& local,
     const Nym_p& remote,
@@ -64,7 +63,7 @@ Base::Base(
 }
 
 Base::Base(
-    const api::internal::Core& api,
+    const api::Core& api,
     const VersionNumber targetVersion,
     const proto::Context& serialized,
     const Nym_p& local,
@@ -162,8 +161,8 @@ auto Base::consume_available(const Lock& lock, const TransactionNumber& number)
 {
     OT_ASSERT(verify_write_lock(lock));
 
-    LogVerbose(OT_METHOD)(__FUNCTION__)(
-        ": (")(type())(") ")("Consuming number ")(number)
+    LogVerbose(OT_METHOD)(__func__)(": (")(type())(") ")("Consuming number ")(
+        number)
         .Flush();
     clear_signatures(lock);
 
@@ -175,13 +174,13 @@ auto Base::consume_issued(const Lock& lock, const TransactionNumber& number)
 {
     OT_ASSERT(verify_write_lock(lock));
 
-    LogVerbose(OT_METHOD)(__FUNCTION__)(
-        ": (")(type())(") ")("Consuming number ")(number)
+    LogVerbose(OT_METHOD)(__func__)(": (")(type())(") ")("Consuming number ")(
+        number)
         .Flush();
     clear_signatures(lock);
 
     if (0 < available_transaction_numbers_.count(number)) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(
+        LogDetail(OT_METHOD)(__func__)(
             ": Consuming an issued number that was still available.")
             .Flush();
 
@@ -215,8 +214,7 @@ auto Base::contract(const Lock& lock) const -> proto::Context
         auto& sigProto = *output.mutable_signature();
         sigProto.CopyFrom(*signatures_.front());
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": warning: no signatures on context")
+        LogOutput(OT_METHOD)(__func__)(": warning: no signatures on context")
             .Flush();
     }
 
@@ -320,8 +318,8 @@ auto Base::InitializeNymbox(const PasswordPrompt& reason) -> bool
         api_.Factory().Ledger(ownerNymID, server_nym_id(lock), server_id_)};
 
     if (false == bool(nymbox)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Unable to instantiate nymbox for ")(ownerNymID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Unable to instantiate nymbox for ")(
+            ownerNymID)(".")
             .Flush();
 
         return false;
@@ -331,9 +329,9 @@ auto Base::InitializeNymbox(const PasswordPrompt& reason) -> bool
         ownerNymID, server_id_, ledgerType::nymbox, true);
 
     if (false == generated) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": (")(type())(") ")("Unable to generate nymbox "
-                                 "for ")(ownerNymID)(".")
+        LogOutput(OT_METHOD)(__func__)(": (")(type())(") ")(
+            "Unable to generate nymbox "
+            "for ")(ownerNymID)(".")
             .Flush();
 
         return false;
@@ -344,17 +342,17 @@ auto Base::InitializeNymbox(const PasswordPrompt& reason) -> bool
     OT_ASSERT(nym_)
 
     if (false == nymbox->SignContract(*nym_, reason)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": (")(type())(") ")("Unable to sign nymbox for ")(ownerNymID)(".")
+        LogOutput(OT_METHOD)(__func__)(": (")(type())(") ")(
+            "Unable to sign nymbox for ")(ownerNymID)(".")
             .Flush();
 
         return false;
     }
 
     if (false == nymbox->SaveContract()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": (")(type())(") ")("Unable to serialize nymbox "
-                                 "for ")(ownerNymID)(".")
+        LogOutput(OT_METHOD)(__func__)(": (")(type())(") ")(
+            "Unable to serialize nymbox "
+            "for ")(ownerNymID)(".")
             .Flush();
 
         return false;
@@ -363,8 +361,8 @@ auto Base::InitializeNymbox(const PasswordPrompt& reason) -> bool
     clear_signatures(lock);
 
     if (false == nymbox->SaveNymbox(local_nymbox_hash_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": (")(type())(") ")("Unable to save nymbox for ")(ownerNymID)
+        LogOutput(OT_METHOD)(__func__)(": (")(type())(") ")(
+            "Unable to save nymbox for ")(ownerNymID)
             .Flush();
 
         return false;
@@ -402,8 +400,8 @@ auto Base::issue_number(const Lock& lock, const TransactionNumber& number)
     const bool output = issued && available;
 
     if (!output) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": (")(type())(") ")("Failed to issue number ")(number)(".")
+        LogOutput(OT_METHOD)(__func__)(": (")(type())(") ")(
+            "Failed to issue number ")(number)(".")
             .Flush();
         issued_transaction_numbers_.erase(number);
         available_transaction_numbers_.erase(number);
@@ -610,9 +608,8 @@ auto Base::set_local_nymbox_hash(const Lock& lock, const Identifier& hash)
 
     clear_signatures(lock);
     local_nymbox_hash_ = hash;
-    LogVerbose(OT_METHOD)(__FUNCTION__)(
-        ": (")(type())(") ")("Set local nymbox hash to: ")(local_nymbox_hash_
-                                                               ->asHex())
+    LogVerbose(OT_METHOD)(__func__)(": (")(type())(") ")(
+        "Set local nymbox hash to: ")(local_nymbox_hash_->asHex())
         .Flush();
 }
 
@@ -623,9 +620,8 @@ auto Base::set_remote_nymbox_hash(const Lock& lock, const Identifier& hash)
 
     clear_signatures(lock);
     remote_nymbox_hash_ = hash;
-    LogVerbose(OT_METHOD)(__FUNCTION__)(
-        ": (")(type())(") ")("Set remote nymbox hash to: ")(remote_nymbox_hash_
-                                                                ->asHex())
+    LogVerbose(OT_METHOD)(__func__)(": (")(type())(") ")(
+        "Set remote nymbox hash to: ")(remote_nymbox_hash_->asHex())
         .Flush();
 }
 
@@ -677,8 +673,8 @@ auto Base::update_signature(const Lock& lock, const PasswordPrompt& reason)
     if (success) {
         signatures_.emplace_front(new proto::Signature(signature));
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": (")(type())(") ")("Failed to create signature.")
+        LogOutput(OT_METHOD)(__func__)(": (")(type())(") ")(
+            "Failed to create signature.")
             .Flush();
     }
 
@@ -690,8 +686,7 @@ auto Base::validate(const Lock& lock) const -> bool
     OT_ASSERT(verify_write_lock(lock));
 
     if (1 != signatures_.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Error: This context is not signed.")
+        LogOutput(OT_METHOD)(__func__)(": Error: This context is not signed.")
             .Flush();
 
         return false;
@@ -733,8 +728,8 @@ auto Base::verify_signature(const Lock& lock, const proto::Signature& signature)
     OT_ASSERT(verify_write_lock(lock));
 
     if (!Signable::verify_signature(lock, signature)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": (")(type())(") ")("Error: invalid signature.")
+        LogOutput(OT_METHOD)(__func__)(": (")(type())(") ")(
+            "Error: invalid signature.")
             .Flush();
 
         return false;

@@ -16,6 +16,17 @@
 
 namespace opentxs
 {
+namespace api
+{
+namespace server
+{
+namespace internal
+{
+struct Manager;
+}  // namespace internal
+}  // namespace server
+}  // namespace api
+
 namespace blind
 {
 class Mint;
@@ -56,6 +67,8 @@ public:
     virtual auto GetUserName() const -> std::string = 0;
     virtual auto GetUserTerms() const -> std::string = 0;
     virtual auto ID() const -> const identifier::Server& = 0;
+    OPENTXS_NO_EXPORT virtual auto InternalServer() const noexcept
+        -> internal::Manager& = 0;
     virtual auto MakeInprocEndpoint() const -> std::string = 0;
     virtual auto NymID() const -> const identifier::Nym& = 0;
     virtual auto ScanMints() const -> void = 0;
@@ -74,8 +87,8 @@ protected:
 private:
     Manager(const Manager&) = delete;
     Manager(Manager&&) = delete;
-    Manager& operator=(const Manager&) = delete;
-    Manager& operator=(Manager&&) = delete;
+    auto operator=(const Manager&) -> Manager& = delete;
+    auto operator=(Manager&&) -> Manager& = delete;
 };
 }  // namespace server
 }  // namespace api

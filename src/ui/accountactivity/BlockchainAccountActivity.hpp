@@ -23,6 +23,7 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -49,10 +50,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -153,7 +151,7 @@ public:
         -> std::string final;
 
     BlockchainAccountActivity(
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const blockchain::Type chain,
         const identifier::Nym& nymID,
         const Identifier& accountID,

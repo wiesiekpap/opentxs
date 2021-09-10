@@ -18,7 +18,7 @@ namespace opentxs
 namespace iterator
 {
 template <typename P, typename C>
-class Bidirectional
+class OPENTXS_EXPORT Bidirectional
 {
 public:
     using value_type = C;
@@ -27,25 +27,25 @@ public:
     using difference_type = std::ptrdiff_t;
     using iterator_category = std::bidirectional_iterator_tag;
 
-    OPENTXS_EXPORT Bidirectional(P* parent, std::size_t position = 0)
+    Bidirectional(P* parent, std::size_t position = 0)
         : position_{position}
         , parent_{parent}
     {
     }
-    OPENTXS_EXPORT Bidirectional() = default;
-    OPENTXS_EXPORT Bidirectional(const Bidirectional&) = default;
-    OPENTXS_EXPORT Bidirectional(Bidirectional&&) = default;
-    OPENTXS_EXPORT Bidirectional& operator=(const Bidirectional&) = default;
-    OPENTXS_EXPORT Bidirectional& operator=(Bidirectional&&) = default;
+    Bidirectional() = default;
+    Bidirectional(const Bidirectional&) = default;
+    Bidirectional(Bidirectional&&) = default;
+    auto operator=(const Bidirectional&) -> Bidirectional& = default;
+    auto operator=(Bidirectional&&) -> Bidirectional& = default;
 
-    OPENTXS_EXPORT reference operator*()
+    auto operator*() -> reference
     {
         if (nullptr == parent_) { throw std::out_of_range{""}; }
 
         return parent_->at(position_);
     }
 
-    OPENTXS_EXPORT Bidirectional& operator++()
+    auto operator++() -> Bidirectional&
     {
         if (std::numeric_limits<std::size_t>::max() == position_) {
             throw std::out_of_range{""};
@@ -55,14 +55,14 @@ public:
 
         return *this;
     }
-    OPENTXS_EXPORT Bidirectional operator++(int)
+    auto operator++(int) -> Bidirectional
     {
         Bidirectional output{*this};
         ++(*this);
 
         return output;
     }
-    OPENTXS_EXPORT Bidirectional& operator--()
+    auto operator--() -> Bidirectional&
     {
         if (std::numeric_limits<std::size_t>::min() == position_) {
             throw std::out_of_range{""};
@@ -72,23 +72,23 @@ public:
 
         return *this;
     }
-    OPENTXS_EXPORT Bidirectional operator--(int)
+    auto operator--(int) -> Bidirectional
     {
         const auto output{Bidirectional(*this)};
         --(*this);
 
         return output;
     }
-    OPENTXS_EXPORT bool operator==(const Bidirectional& rhs) const
+    auto operator==(const Bidirectional& rhs) const -> bool
     {
         return (parent_ == rhs.parent_) && (position_ == rhs.position_);
     }
-    OPENTXS_EXPORT bool operator!=(const Bidirectional& rhs) const
+    auto operator!=(const Bidirectional& rhs) const -> bool
     {
         return !(*this == rhs);
     }
 
-    OPENTXS_EXPORT ~Bidirectional() = default;
+    ~Bidirectional() = default;
 
 private:
     std::size_t position_{0};

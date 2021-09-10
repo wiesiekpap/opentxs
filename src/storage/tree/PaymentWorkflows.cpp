@@ -122,8 +122,7 @@ void PaymentWorkflows::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (!serialized) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to load workflow index file.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to load workflow index file.")
             .Flush();
         OT_FAIL
     }
@@ -247,7 +246,7 @@ void PaymentWorkflows::reindex(
 auto PaymentWorkflows::save(const Lock& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Lock failure.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Lock failure.").Flush();
         OT_FAIL
     }
 

@@ -27,10 +27,7 @@ namespace implementation
 class Factory;
 }  // namespace implementation
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -53,23 +50,23 @@ public:
         m_bHasRemitter = true;
         m_strContractType = String::Factory("VOUCHER");
     }
-    inline const String& GetMemo() const { return m_strMemo; }
-    inline const std::int64_t& GetAmount() const { return m_lAmount; }
-    inline const identifier::Nym& GetRecipientNymID() const
+    inline auto GetMemo() const -> const String& { return m_strMemo; }
+    inline auto GetAmount() const -> const std::int64_t& { return m_lAmount; }
+    inline auto GetRecipientNymID() const -> const identifier::Nym&
     {
         return m_RECIPIENT_NYM_ID;
     }
-    inline bool HasRecipient() const { return m_bHasRecipient; }
-    inline const identifier::Nym& GetRemitterNymID() const
+    inline auto HasRecipient() const -> bool { return m_bHasRecipient; }
+    inline auto GetRemitterNymID() const -> const identifier::Nym&
     {
         return m_REMITTER_NYM_ID;
     }
-    inline const Identifier& GetRemitterAcctID() const
+    inline auto GetRemitterAcctID() const -> const Identifier&
     {
         return m_REMITTER_ACCT_ID;
     }
-    inline bool HasRemitter() const { return m_bHasRemitter; }
-    inline const Identifier& SourceAccountID() const
+    inline auto HasRemitter() const -> bool { return m_bHasRemitter; }
+    inline auto SourceAccountID() const -> const Identifier&
     {
         return ((m_bHasRemitter) ? m_REMITTER_ACCT_ID : m_SENDER_ACCT_ID);
     }
@@ -81,7 +78,7 @@ public:
     // that the cheque is written...
 
     // Calling this function is like writing a check...
-    bool IssueCheque(
+    auto IssueCheque(
         const std::int64_t& lAmount,
         const std::int64_t& lTransactionNum,
         const Time& VALID_FROM,
@@ -91,11 +88,11 @@ public:
         const identifier::Nym& SENDER_NYM_ID,  // This ID must match the user ID
                                                // on the asset account,
         // AND must verify the cheque signature with that user's key.
-        const String& strMemo,                      // Optional memo field.
-        const identifier::Nym& pRECIPIENT_NYM_ID);  // Recipient
-                                                    // optional. (Might
-                                                    // be a blank
-                                                    // cheque.)
+        const String& strMemo,  // Optional memo field.
+        const identifier::Nym& pRECIPIENT_NYM_ID) -> bool;  // Recipient
+                                                            // optional. (Might
+                                                            // be a blank
+                                                            // cheque.)
 
     void CancelCheque();  // You still need to re-sign the cheque
                           // after doing this.
@@ -121,16 +118,16 @@ protected:
     OTIdentifier m_REMITTER_ACCT_ID;
     bool m_bHasRemitter{false};
 
-    std::int32_t ProcessXMLNode(irr::io::IrrXMLReader*& xml) override;
+    auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
 
 private:  // Private prevents erroneous use by other classes.
     friend api::implementation::Factory;
 
     using ot_super = OTTrackable;
 
-    Cheque(const api::internal::Core& core);
+    Cheque(const api::Core& core);
     Cheque(
-        const api::internal::Core& core,
+        const api::Core& core,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID);
 

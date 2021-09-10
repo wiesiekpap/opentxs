@@ -22,10 +22,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identity
@@ -40,16 +37,17 @@ class OPENTXS_EXPORT OTTransactionType : public Contract
 {
 public:
     void GetNumList(NumList& theOutput);
-    bool Contains(const String& strContains);  // Allows you to string-search
-                                               // the raw contract.
-    bool Contains(const char* szContains);     // Allows you to
-                                               // string-search
-                                               // the raw contract.
+    auto Contains(const String& strContains)
+        -> bool;  // Allows you to string-search
+                  // the raw contract.
+    auto Contains(const char* szContains) -> bool;  // Allows you to
+                                                    // string-search
+                                                    // the raw contract.
     // OTAccount, OTTransaction, Item, and OTLedger are all derived from
     // this class (OTTransactionType). Therefore they can all quickly identify
     // whether one of the other components belongs to the same account.
     //
-    bool IsSameAccount(const OTTransactionType& rhs) const;
+    auto IsSameAccount(const OTTransactionType& rhs) const -> bool;
 
     // This means, "I don't know the 'Real' IDs when I'm about to load this
     // contract, so just
@@ -68,23 +66,29 @@ public:
     // Someday I'll add EntityID and RoleID here (in lieu of NymID,
     // in cases when the account is owned by an Entity and not a Nym.)
     //
-    inline const identifier::Nym& GetNymID() const { return m_AcctNymID; }
+    inline auto GetNymID() const -> const identifier::Nym&
+    {
+        return m_AcctNymID;
+    }
     inline void SetNymID(const identifier::Nym& theID) { m_AcctNymID = theID; }
 
     // Used for: Load an account based on this ID
-    inline const Identifier& GetRealAccountID() const { return m_ID; }
+    inline auto GetRealAccountID() const -> const Identifier& { return m_ID; }
     inline void SetRealAccountID(const Identifier& theID) { m_ID = theID; }
 
     // Used for: Verify this ID on a transaction to make sure it matches the one
     // above.
-    inline const Identifier& GetPurportedAccountID() const { return m_AcctID; }
+    inline auto GetPurportedAccountID() const -> const Identifier&
+    {
+        return m_AcctID;
+    }
     inline void SetPurportedAccountID(const Identifier& theID)
     {
         m_AcctID = theID;
     }
 
     // Used for: Load or save a filename based on this ID.
-    inline const identifier::Server& GetRealNotaryID() const
+    inline auto GetRealNotaryID() const -> const identifier::Server&
     {
         return m_NotaryID;
     }
@@ -94,7 +98,7 @@ public:
     }
 
     // Used for: Load or save the ID in the file contents into/out of this ID.
-    inline const identifier::Server& GetPurportedNotaryID() const
+    inline auto GetPurportedNotaryID() const -> const identifier::Server&
     {
         return m_AcctNotaryID;
     }
@@ -107,42 +111,43 @@ public:
     // with m_ID (supposedly the same number.)
     // Also Verifies the NotaryID, since this object type is all about the both
     // of those IDs.
-    bool VerifyContractID() const override;
+    auto VerifyContractID() const -> bool override;
 
     // This calls VerifyContractID() as well as VerifySignature()
     // Use this instead of Contract::VerifyContract, which expects/uses a
     // pubkey from inside the contract.
-    virtual bool VerifyAccount(const identity::Nym& theNym);
+    virtual auto VerifyAccount(const identity::Nym& theNym) -> bool;
 
     void InitTransactionType();
     void Release() override;
     void Release_TransactionType();
 
     // need to know the transaction number of this transaction? Call this.
-    std::int64_t GetTransactionNum() const;
+    auto GetTransactionNum() const -> std::int64_t;
     void SetTransactionNum(std::int64_t lTransactionNum);
 
     virtual void CalculateNumberOfOrigin();
-    virtual std::int64_t GetNumberOfOrigin();
+    virtual auto GetNumberOfOrigin() -> std::int64_t;
 
-    std::int64_t GetRawNumberOfOrigin() const;  // Gets WITHOUT
-                                                // calculating.
+    auto GetRawNumberOfOrigin() const -> std::int64_t;  // Gets WITHOUT
+                                                        // calculating.
 
     void SetNumberOfOrigin(std::int64_t lTransactionNum);
     void SetNumberOfOrigin(OTTransactionType& setFrom);
 
-    bool VerifyNumberOfOrigin(OTTransactionType& compareTo);
+    auto VerifyNumberOfOrigin(OTTransactionType& compareTo) -> bool;
     // --------------------------------------------------------
-    originType GetOriginType() const;  // NOTE: used for GUI display purposes
-                                       // only.
+    auto GetOriginType() const -> originType;      // NOTE: used for GUI display
+                                                   // purposes only.
     void SetOriginType(originType theOriginType);  // (For paymentReceipts and
                                                    // finalReceipts.)
 
-    static originType GetOriginTypeFromString(const String& strOriginType);
+    static auto GetOriginTypeFromString(const String& strOriginType)
+        -> originType;
 
-    const char* GetOriginTypeString() const;
+    auto GetOriginTypeString() const -> const char*;
     // --------------------------------------------------------
-    std::int64_t GetReferenceToNum() const;
+    auto GetReferenceToNum() const -> std::int64_t;
     void SetReferenceToNum(std::int64_t lTransactionNum);
 
     void GetReferenceString(String& theStr) const;
@@ -714,19 +719,19 @@ protected:
     // OTTransactionType will require
     // both the Account ID and the NotaryID.
     explicit OTTransactionType(
-        const api::internal::Core& core,
+        const api::Core& core,
         const identifier::Nym& theNymID,
         const Identifier& theAccountID,
         const identifier::Server& theNotaryID,
         originType theOriginType = originType::not_applicable);
     explicit OTTransactionType(
-        const api::internal::Core& core,
+        const api::Core& core,
         const identifier::Nym& theNymID,
         const Identifier& theAccountID,
         const identifier::Server& theNotaryID,
         std::int64_t lTransactionNum,
         originType theOriginType = originType::not_applicable);
-    explicit OTTransactionType(const api::internal::Core& core);
+    explicit OTTransactionType(const api::Core& core);
 
 private:
     using ot_super = Contract;

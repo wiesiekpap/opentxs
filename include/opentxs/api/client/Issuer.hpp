@@ -58,56 +58,60 @@ public:
         Unused = 3,
     };
 
-    virtual std::string toString() const = 0;
+    virtual auto toString() const -> std::string = 0;
 
-    virtual std::set<OTIdentifier> AccountList(
+    virtual auto AccountList(
         const contact::ContactItemType type,
-        const identifier::UnitDefinition& unitID) const = 0;
-    virtual bool BailmentInitiated(
-        const identifier::UnitDefinition& unitID) const = 0;
-    virtual std::vector<BailmentDetails> BailmentInstructions(
+        const identifier::UnitDefinition& unitID) const
+        -> std::set<OTIdentifier> = 0;
+    virtual auto BailmentInitiated(
+        const identifier::UnitDefinition& unitID) const -> bool = 0;
+    virtual auto BailmentInstructions(
         const api::Core& client,
         const identifier::UnitDefinition& unitID,
-        const bool onlyUnused = true) const = 0;
-    virtual std::vector<ConnectionDetails> ConnectionInfo(
+        const bool onlyUnused = true) const -> std::vector<BailmentDetails> = 0;
+    virtual auto ConnectionInfo(
         const api::Core& client,
-        const contract::peer::ConnectionInfoType type) const = 0;
-    virtual bool ConnectionInfoInitiated(
-        const contract::peer::ConnectionInfoType type) const = 0;
-    virtual std::set<std::tuple<OTIdentifier, OTIdentifier, bool>> GetRequests(
+        const contract::peer::ConnectionInfoType type) const
+        -> std::vector<ConnectionDetails> = 0;
+    virtual auto ConnectionInfoInitiated(
+        const contract::peer::ConnectionInfoType type) const -> bool = 0;
+    virtual auto GetRequests(
         const contract::peer::PeerRequestType type,
-        const RequestStatus state = RequestStatus::All) const = 0;
-    virtual const identifier::Nym& IssuerID() const = 0;
-    virtual const identifier::Nym& LocalNymID() const = 0;
-    virtual bool Paired() const = 0;
-    virtual const std::string& PairingCode() const = 0;
-    virtual OTServerID PrimaryServer() const = 0;
-    virtual std::set<contract::peer::PeerRequestType> RequestTypes() const = 0;
-    OPENTXS_NO_EXPORT virtual bool Serialize(proto::Issuer&) const = 0;
-    virtual bool StoreSecretComplete() const = 0;
-    virtual bool StoreSecretInitiated() const = 0;
+        const RequestStatus state = RequestStatus::All) const
+        -> std::set<std::tuple<OTIdentifier, OTIdentifier, bool>> = 0;
+    virtual auto IssuerID() const -> const identifier::Nym& = 0;
+    virtual auto LocalNymID() const -> const identifier::Nym& = 0;
+    virtual auto Paired() const -> bool = 0;
+    virtual auto PairingCode() const -> const std::string& = 0;
+    virtual auto PrimaryServer() const -> OTServerID = 0;
+    virtual auto RequestTypes() const
+        -> std::set<contract::peer::PeerRequestType> = 0;
+    OPENTXS_NO_EXPORT virtual auto Serialize(proto::Issuer&) const -> bool = 0;
+    virtual auto StoreSecretComplete() const -> bool = 0;
+    virtual auto StoreSecretInitiated() const -> bool = 0;
 
     virtual void AddAccount(
         const contact::ContactItemType type,
         const identifier::UnitDefinition& unitID,
         const Identifier& accountID) = 0;
-    virtual bool AddReply(
+    virtual auto AddReply(
         const contract::peer::PeerRequestType type,
         const Identifier& requestID,
-        const Identifier& replyID) = 0;
-    virtual bool AddRequest(
+        const Identifier& replyID) -> bool = 0;
+    virtual auto AddRequest(
         const contract::peer::PeerRequestType type,
-        const Identifier& requestID) = 0;
-    virtual bool RemoveAccount(
+        const Identifier& requestID) -> bool = 0;
+    virtual auto RemoveAccount(
         const contact::ContactItemType type,
         const identifier::UnitDefinition& unitID,
-        const Identifier& accountID) = 0;
+        const Identifier& accountID) -> bool = 0;
     virtual void SetPaired(const bool paired) = 0;
     virtual void SetPairingCode(const std::string& code) = 0;
-    virtual bool SetUsed(
+    virtual auto SetUsed(
         const contract::peer::PeerRequestType type,
         const Identifier& requestID,
-        const bool isUsed = true) = 0;
+        const bool isUsed = true) -> bool = 0;
 
     virtual ~Issuer() = default;
 
@@ -117,8 +121,8 @@ protected:
 private:
     Issuer(const Issuer&) = delete;
     Issuer(Issuer&&) = delete;
-    Issuer& operator=(const Issuer&) = delete;
-    Issuer& operator=(Issuer&&) = delete;
+    auto operator=(const Issuer&) -> Issuer& = delete;
+    auto operator=(Issuer&&) -> Issuer& = delete;
 };
 }  // namespace client
 }  // namespace api

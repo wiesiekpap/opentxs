@@ -49,8 +49,7 @@ auto BloomFilter(const api::Core& api, const Data& serialized)
     blockchain::internal::SerializedBloomFilter raw{};
 
     if (sizeof(raw) > serialized.size()) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Input too short")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Input too short").Flush();
 
         return nullptr;
     }

@@ -19,8 +19,6 @@
 #include <utility>
 
 #include "2_Factory.hpp"
-#include "internal/api/client/Client.hpp"
-#include "internal/api/server/Server.hpp"
 #include "internal/otx/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
@@ -174,10 +172,10 @@ public:
     static std::shared_ptr<blind::Purse> untrusted_purse_;
 #endif
 
-    const ot::api::client::internal::Manager& client_1_;
-    const ot::api::client::internal::Manager& client_2_;
-    const ot::api::server::internal::Manager& server_1_;
-    const ot::api::server::internal::Manager& server_2_;
+    const ot::api::client::Manager& client_1_;
+    const ot::api::client::Manager& client_2_;
+    const ot::api::server::Manager& server_1_;
+    const ot::api::server::Manager& server_2_;
     ot::OTPasswordPrompt reason_c1_;
     ot::OTPasswordPrompt reason_c2_;
     ot::OTPasswordPrompt reason_s1_;
@@ -190,18 +188,18 @@ public:
     const ot::otx::context::Server::ExtraArgs extra_args_;
 
     Test_Basic()
-        : client_1_(dynamic_cast<const ot::api::client::internal::Manager&>(
+        : client_1_(dynamic_cast<const ot::api::client::Manager&>(
               Context().StartClient(0)))
-        , client_2_(dynamic_cast<const ot::api::client::internal::Manager&>(
+        , client_2_(dynamic_cast<const ot::api::client::Manager&>(
               Context().StartClient(1)))
-        , server_1_(dynamic_cast<const ot::api::server::internal::Manager&>(
+        , server_1_(dynamic_cast<const ot::api::server::Manager&>(
               Context().StartServer(0)))
-        , server_2_(dynamic_cast<const ot::api::server::internal::Manager&>(
+        , server_2_(dynamic_cast<const ot::api::server::Manager&>(
               Context().StartServer(1)))
-        , reason_c1_(client_1_.Factory().PasswordPrompt(__FUNCTION__))
-        , reason_c2_(client_2_.Factory().PasswordPrompt(__FUNCTION__))
-        , reason_s1_(server_1_.Factory().PasswordPrompt(__FUNCTION__))
-        , reason_s2_(server_2_.Factory().PasswordPrompt(__FUNCTION__))
+        , reason_c1_(client_1_.Factory().PasswordPrompt(__func__))
+        , reason_c2_(client_2_.Factory().PasswordPrompt(__func__))
+        , reason_s1_(server_1_.Factory().PasswordPrompt(__func__))
+        , reason_s2_(server_2_.Factory().PasswordPrompt(__func__))
         , asset_contract_1_(load_unit(client_1_, unit_id_1_))
         , asset_contract_2_(load_unit(client_2_, unit_id_2_))
         , server_1_id_(

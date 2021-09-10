@@ -44,11 +44,6 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
-
 class Manager;
 }  // namespace client
 
@@ -164,7 +159,7 @@ private:
     auto add_contact(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto client_session(const request::Base& command) const noexcept(false)
-        -> const api::client::internal::Manager&;
+        -> const api::client::Manager&;
     auto create_account(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto create_compatible_account(const proto::RPCCommand& command) const
@@ -178,11 +173,11 @@ private:
     auto delete_claim(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     void evaluate_deposit_payment(
-        const api::client::internal::Manager& client,
+        const api::client::Manager& client,
         const api::client::OTX::Result& result,
         proto::TaskComplete& output) const;
     void evaluate_move_funds(
-        const api::client::internal::Manager& client,
+        const api::client::Manager& client,
         const api::client::OTX::Result& result,
         proto::RPCResponse& output) const;
     template <typename T>
@@ -210,8 +205,7 @@ private:
         T& output,
         const proto::RPCResponseCode code =
             proto::RPCRESPONSE_TRANSACTION_FAILED) const;
-    auto get_client(std::int32_t instance) const
-        -> const api::client::internal::Manager*;
+    auto get_client(std::int32_t instance) const -> const api::client::Manager*;
     auto get_account_activity(const request::Base& command) const
         -> std::unique_ptr<response::Base>;
     auto get_account_balance(const request::Base& command) const noexcept
@@ -250,16 +244,16 @@ private:
     auto get_workflow(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto immediate_create_account(
-        const api::client::internal::Manager& client,
+        const api::client::Manager& client,
         const identifier::Nym& owner,
         const identifier::Server& notary,
         const identifier::UnitDefinition& unit) const -> bool;
     auto immediate_register_issuer_account(
-        const api::client::internal::Manager& client,
+        const api::client::Manager& client,
         const identifier::Nym& owner,
         const identifier::Server& notary) const -> bool;
     auto immediate_register_nym(
-        const api::client::internal::Manager& client,
+        const api::client::Manager& client,
         const identifier::Server& notary) const -> bool;
     auto import_seed(const proto::RPCCommand& command) const
         -> proto::RPCResponse;

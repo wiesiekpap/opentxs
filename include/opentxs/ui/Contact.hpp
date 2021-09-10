@@ -13,12 +13,6 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/ui/List.hpp"
 
-#ifdef SWIG
-// clang-format off
-%rename(UIContact) opentxs::ui::Contact;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -35,13 +29,13 @@ namespace ui
 class OPENTXS_EXPORT Contact : virtual public List
 {
 public:
-    virtual std::string ContactID() const noexcept = 0;
-    virtual std::string DisplayName() const noexcept = 0;
-    virtual opentxs::SharedPimpl<opentxs::ui::ContactSection> First()
-        const noexcept = 0;
-    virtual opentxs::SharedPimpl<opentxs::ui::ContactSection> Next()
-        const noexcept = 0;
-    virtual std::string PaymentCode() const noexcept = 0;
+    virtual auto ContactID() const noexcept -> std::string = 0;
+    virtual auto DisplayName() const noexcept -> std::string = 0;
+    virtual auto First() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::ContactSection> = 0;
+    virtual auto Next() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::ContactSection> = 0;
+    virtual auto PaymentCode() const noexcept -> std::string = 0;
 
     ~Contact() override = default;
 
@@ -51,8 +45,8 @@ protected:
 private:
     Contact(const Contact&) = delete;
     Contact(Contact&&) = delete;
-    Contact& operator=(const Contact&) = delete;
-    Contact& operator=(Contact&&) = delete;
+    auto operator=(const Contact&) -> Contact& = delete;
+    auto operator=(Contact&&) -> Contact& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

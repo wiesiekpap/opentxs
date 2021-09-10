@@ -35,10 +35,10 @@ namespace storage
 class Multiplex : virtual public Driver
 {
 public:
-    virtual std::string BestRoot(bool& primaryOutOfSync) = 0;
+    virtual auto BestRoot(bool& primaryOutOfSync) -> std::string = 0;
     virtual void InitBackup() = 0;
     virtual void InitEncryptedBackup(opentxs::crypto::key::Symmetric& key) = 0;
-    virtual Driver& Primary() = 0;
+    virtual auto Primary() -> Driver& = 0;
     virtual void SynchronizePlugins(
         const std::string& hash,
         const opentxs::storage::Root& root,
@@ -52,8 +52,8 @@ protected:
 private:
     Multiplex(const Multiplex&) = delete;
     Multiplex(Multiplex&&) = delete;
-    Multiplex& operator=(const Multiplex&) = delete;
-    Multiplex& operator=(Multiplex&&) = delete;
+    auto operator=(const Multiplex&) -> Multiplex& = delete;
+    auto operator=(Multiplex&&) -> Multiplex& = delete;
 };
 }  // namespace storage
 }  // namespace api

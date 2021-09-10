@@ -44,10 +44,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -194,7 +191,7 @@ private:
     static const std::map<otx::OperationType, Category> category_;
     static const std::map<otx::OperationType, std::size_t> transaction_numbers_;
 
-    const api::client::internal::Manager& api_;
+    const api::client::Manager& api_;
     const OTPasswordPrompt reason_;
     const OTNymID nym_id_;
     const OTServerID server_id_;
@@ -350,7 +347,7 @@ private:
     void transaction_numbers();
 
     Operation(
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nym,
         const identifier::Server& server,
         const PasswordPrompt& reason);

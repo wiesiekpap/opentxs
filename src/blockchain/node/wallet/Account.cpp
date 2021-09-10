@@ -56,7 +56,7 @@ struct Account::Imp {
 
         for (const auto& account : ref_.GetHD()) {
             const auto& id = account.ID();
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": Processing HD account ")(id)
+            LogVerbose(OT_METHOD)(__func__)(": Processing HD account ")(id)
                 .Flush();
             output |= get(account, Subchain::Internal, internal_)
                           .reorg_.Queue(parent);
@@ -66,7 +66,7 @@ struct Account::Imp {
 
         for (const auto& account : ref_.GetPaymentCode()) {
             const auto& id = account.ID();
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
+            LogVerbose(OT_METHOD)(__func__)(
                 ": Processing payment code account ")(id)
                 .Flush();
             output |= get(account, Subchain::Outgoing, outgoing_)
@@ -95,7 +95,7 @@ struct Account::Imp {
 
         for (const auto& account : ref_.GetHD()) {
             const auto& id = account.ID();
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": Processing HD account ")(id)
+            LogVerbose(OT_METHOD)(__func__)(": Processing HD account ")(id)
                 .Flush();
             output |= get(account, Subchain::Internal, internal_)
                           .state_machine(enabled);
@@ -105,7 +105,7 @@ struct Account::Imp {
 
         for (const auto& account : ref_.GetPaymentCode()) {
             const auto& id = account.ID();
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
+            LogVerbose(OT_METHOD)(__func__)(
                 ": Processing payment code account ")(id)
                 .Flush();
             output |= get(account, Subchain::Outgoing, outgoing_)

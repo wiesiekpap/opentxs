@@ -29,10 +29,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -76,7 +73,7 @@ public:
     auto SetCallbacks(Callbacks&& cb) noexcept -> void final;
 
     Contact(
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const Identifier& contactID,
         const SimpleCallback& cb) noexcept;
     ~Contact() final;

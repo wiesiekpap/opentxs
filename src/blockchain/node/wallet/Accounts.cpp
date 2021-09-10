@@ -47,7 +47,7 @@ struct Accounts::Imp {
             nym,
             api_,
             crypto_,
-            crypto_.AccountInternal(nym, chain_),
+            crypto_.Account(nym, chain_),
             node_,
             db_,
             filter_type_,
@@ -55,8 +55,8 @@ struct Accounts::Imp {
             task_finished_);
 
         if (added) {
-            LogNormal("Initializing ")(DisplayString(chain_))(
-                " wallet for ")(nym)
+            LogNormal("Initializing ")(DisplayString(chain_))(" wallet for ")(
+                nym)
                 .Flush();
         }
 
@@ -177,8 +177,8 @@ private:
 
         if (3 > code->Version()) { return; }
 
-        LogNormal("Initializing payment code ")(code->asBase58())(
-            " on ")(DisplayString(chain_))
+        LogNormal("Initializing payment code ")(code->asBase58())(" on ")(
+            DisplayString(chain_))
             .Flush();
         auto accountID =
             NotificationStateData::calculate_id(api_, chain_, code);

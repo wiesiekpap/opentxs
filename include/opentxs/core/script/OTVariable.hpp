@@ -65,8 +65,8 @@ private:
 
     OTVariable(const OTVariable&) = delete;
     OTVariable(OTVariable&&) = delete;
-    OTVariable& operator=(const OTVariable&) = delete;
-    OTVariable& operator=(OTVariable&&) = delete;
+    auto operator=(const OTVariable&) -> OTVariable& = delete;
+    auto operator=(OTVariable&&) -> OTVariable& = delete;
 
 public:
     void RegisterForExecution(OTScript& theScript);  // We keep an
@@ -76,46 +76,46 @@ public:
     // can remove
     // ourselves from the
     // script.
-    void UnregisterScript();  // If the script destructs before
-                              // the variable does, it
-                              // unregisters itself here, so the
-                              // variable isn't stuck with a bad
-                              // pointer.
-    bool IsDirty() const;  // So you can tell if the variable has CHANGED since
-                           // it was last set clean.
+    void UnregisterScript();       // If the script destructs before
+                                   // the variable does, it
+                                   // unregisters itself here, so the
+                                   // variable isn't stuck with a bad
+                                   // pointer.
+    auto IsDirty() const -> bool;  // So you can tell if the variable has
+                                   // CHANGED since it was last set clean.
     void SetAsClean();  // Sets the variable as clean, so you can check it later
                         // and see if it's been changed (if it's DIRTY again.)
-    bool IsConstant() const { return (Var_Constant == m_Access); }
-    bool IsPersistent() const
+    auto IsConstant() const -> bool { return (Var_Constant == m_Access); }
+    auto IsPersistent() const -> bool
     {
         return ((Var_Persistent == m_Access) || (Var_Important == m_Access));
     }  // important vars are persistent, too.
-    bool IsImportant() const { return (Var_Important == m_Access); }
+    auto IsImportant() const -> bool { return (Var_Important == m_Access); }
     void SetBylaw(OTBylaw& theBylaw) { m_pBylaw = &theBylaw; }
-    bool SetValue(const std::int32_t& nValue);
-    bool SetValue(bool bValue);
-    bool SetValue(const std::string& str_Value);
+    auto SetValue(const std::int32_t& nValue) -> bool;
+    auto SetValue(bool bValue) -> bool;
+    auto SetValue(const std::string& str_Value) -> bool;
 
-    const String& GetName() const
+    auto GetName() const -> const String&
     {
         return m_strName;
     }  // variable's name as used in a script.
-    OTVariable_Type GetType() const { return m_Type; }
-    OTVariable_Access GetAccess() const { return m_Access; }
+    auto GetType() const -> OTVariable_Type { return m_Type; }
+    auto GetAccess() const -> OTVariable_Access { return m_Access; }
 
-    bool IsInteger() const { return (Var_Integer == m_Type); }
-    bool IsBool() const { return (Var_Bool == m_Type); }
-    bool IsString() const { return (Var_String == m_Type); }
+    auto IsInteger() const -> bool { return (Var_Integer == m_Type); }
+    auto IsBool() const -> bool { return (Var_Bool == m_Type); }
+    auto IsString() const -> bool { return (Var_String == m_Type); }
 
-    std::int32_t CopyValueInteger() const { return m_nValue; }
-    bool CopyValueBool() const { return m_bValue; }
-    std::string CopyValueString() const { return m_str_Value; }
+    auto CopyValueInteger() const -> std::int32_t { return m_nValue; }
+    auto CopyValueBool() const -> bool { return m_bValue; }
+    auto CopyValueString() const -> std::string { return m_str_Value; }
 
-    std::int32_t& GetValueInteger() { return m_nValue; }
-    bool& GetValueBool() { return m_bValue; }
-    std::string& GetValueString() { return m_str_Value; }
+    auto GetValueInteger() -> std::int32_t& { return m_nValue; }
+    auto GetValueBool() -> bool& { return m_bValue; }
+    auto GetValueString() -> std::string& { return m_str_Value; }
 
-    bool Compare(OTVariable& rhs);
+    auto Compare(OTVariable& rhs) -> bool;
 
     OTVariable();
     OTVariable(

@@ -29,10 +29,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 
 class Core;
@@ -71,7 +68,7 @@ public:
 
     UnitListItem(
         const UnitListInternalInterface& parent,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const UnitListRowID& rowID,
         const UnitListSortKey& sortKey,
         CustomData& custom) noexcept;

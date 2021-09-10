@@ -37,8 +37,9 @@ namespace client
 namespace internal
 {
 struct Blockchain;
-struct Manager;
 }  // namespace internal
+
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -80,7 +81,7 @@ public:
 
     BlockchainSelectionItem(
         const BlockchainSelectionInternalInterface& parent,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const BlockchainSelectionRowID& rowID,
         const BlockchainSelectionSortKey& sortKey,
         CustomData& custom) noexcept;

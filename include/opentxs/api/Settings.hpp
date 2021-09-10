@@ -18,111 +18,110 @@ namespace opentxs
 {
 namespace api
 {
-class Settings
+class OPENTXS_EXPORT Settings
 {
 public:
-    OPENTXS_EXPORT virtual void SetConfigFilePath(
-        const String& strConfigFilePath) const = 0;
-    OPENTXS_EXPORT virtual bool HasConfigFilePath() const = 0;
+    virtual void SetConfigFilePath(const String& strConfigFilePath) const = 0;
+    virtual auto HasConfigFilePath() const -> bool = 0;
 
     // Core (Public Load and Save)
-    OPENTXS_EXPORT virtual bool Load() const = 0;
-    OPENTXS_EXPORT virtual bool Save() const = 0;
+    virtual auto Load() const -> bool = 0;
+    virtual auto Save() const -> bool = 0;
 
-    OPENTXS_EXPORT virtual const Flag& IsLoaded() const = 0;
+    virtual auto IsLoaded() const -> const Flag& = 0;
 
     // Configuration Helpers
     //
 
     // Core (Reset Config, and Check if Config is empty)
-    OPENTXS_EXPORT virtual bool IsEmpty() const = 0;
+    virtual auto IsEmpty() const -> bool = 0;
 
     // Check Only (get value of key from configuration, if the key exists, then
     // out_bKeyExist will be true.)
-    OPENTXS_EXPORT virtual bool Check_str(
+    virtual auto Check_str(
         const String& strSection,
         const String& strKey,
         String& out_strResult,
-        bool& out_bKeyExist) const = 0;
-    OPENTXS_EXPORT virtual bool Check_long(
+        bool& out_bKeyExist) const -> bool = 0;
+    virtual auto Check_long(
         const String& strSection,
         const String& strKey,
         std::int64_t& out_lResult,
-        bool& out_bKeyExist) const = 0;
-    OPENTXS_EXPORT virtual bool Check_bool(
+        bool& out_bKeyExist) const -> bool = 0;
+    virtual auto Check_bool(
         const String& strSection,
         const String& strKey,
         bool& out_bResult,
-        bool& out_bKeyExist) const = 0;
+        bool& out_bKeyExist) const -> bool = 0;
 
     // Set Only (set new or update value, out_bNewOrUpdate will be true if the
     // value changes.)
-    OPENTXS_EXPORT virtual bool Set_str(
+    virtual auto Set_str(
         const String& strSection,
         const String& strKey,
         const String& strValue,
         bool& out_bNewOrUpdate,
-        const String& strComment = String::Factory()) const = 0;
-    OPENTXS_EXPORT virtual bool Set_long(
+        const String& strComment = String::Factory()) const -> bool = 0;
+    virtual auto Set_long(
         const String& strSection,
         const String& strKey,
         const std::int64_t& lValue,
         bool& out_bNewOrUpdate,
-        const String& strComment = String::Factory()) const = 0;
-    OPENTXS_EXPORT virtual bool Set_bool(
+        const String& strComment = String::Factory()) const -> bool = 0;
+    virtual auto Set_bool(
         const String& strSection,
         const String& strKey,
         const bool& bValue,
         bool& out_bNewOrUpdate,
-        const String& strComment = String::Factory()) const = 0;
+        const String& strComment = String::Factory()) const -> bool = 0;
 
     // Check for a Section, if the section dosn't exist, it will be made and
     // out_bIsNewSection will be true.)
-    OPENTXS_EXPORT virtual bool CheckSetSection(
+    virtual auto CheckSetSection(
         const String& strSection,
         const String& strComment,
-        bool& out_bIsNewSection) const = 0;
+        bool& out_bIsNewSection) const -> bool = 0;
 
     // Check for Key, and returns if the key exists, otherwise will set the
     // default key. If the default key is set, then out_bIsNew will be true.)
-    OPENTXS_EXPORT virtual bool CheckSet_str(
+    virtual auto CheckSet_str(
         const String& strSection,
         const String& strKey,
         const String& strDefault,
         std::string& out_strResult,
         bool& out_bIsNew,
-        const String& strComment = String::Factory()) const = 0;
-    OPENTXS_EXPORT virtual bool CheckSet_str(
+        const String& strComment = String::Factory()) const -> bool = 0;
+    virtual auto CheckSet_str(
         const String& strSection,
         const String& strKey,
         const String& strDefault,
         String& out_strResult,
         bool& out_bIsNew,
-        const String& strComment = String::Factory()) const = 0;
-    OPENTXS_EXPORT virtual bool CheckSet_long(
+        const String& strComment = String::Factory()) const -> bool = 0;
+    virtual auto CheckSet_long(
         const String& strSection,
         const String& strKey,
         const std::int64_t& lDefault,
         std::int64_t& out_lResult,
         bool& out_bIsNew,
-        const String& strComment = String::Factory()) const = 0;
-    OPENTXS_EXPORT virtual bool CheckSet_bool(
+        const String& strComment = String::Factory()) const -> bool = 0;
+    virtual auto CheckSet_bool(
         const String& strSection,
         const String& strKey,
         const bool& bDefault,
         bool& out_bResult,
         bool& out_bIsNew,
-        const String& strComment = String::Factory()) const = 0;
+        const String& strComment = String::Factory()) const -> bool = 0;
 
     // Set Option helper function for setting bool's
-    OPENTXS_EXPORT virtual bool SetOption_bool(
+    virtual auto SetOption_bool(
         const String& strSection,
         const String& strKey,
-        bool& bVariableName) const = 0;
+        bool& bVariableName) const -> bool = 0;
 
-    OPENTXS_EXPORT virtual bool Reset() = 0;
+    virtual auto Reset() -> bool = 0;
 
-    OPENTXS_EXPORT virtual ~Settings() = default;
+    virtual ~Settings() = default;
 
 protected:
     Settings() = default;
@@ -130,8 +129,8 @@ protected:
 private:
     Settings(const Settings&) = delete;
     Settings(Settings&&) = delete;
-    Settings& operator=(const Settings&) = delete;
-    Settings& operator=(Settings&&) = delete;
+    auto operator=(const Settings&) -> Settings& = delete;
+    auto operator=(Settings&&) -> Settings& = delete;
 };
 }  // namespace api
 }  // namespace opentxs

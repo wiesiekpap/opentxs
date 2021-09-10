@@ -18,9 +18,9 @@
 #include <vector>
 
 #include "Proto.hpp"
-#include "internal/api/Api.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
@@ -57,7 +57,7 @@
 namespace opentxs::api::client
 {
 Activity::Imp::Imp(
-    const api::internal::Core& api,
+    const api::Core& api,
     const client::Contacts& contact) noexcept
     : api_(api)
     , contact_(contact)
@@ -100,12 +100,11 @@ auto Activity::Imp::add_blockchain_transaction(
 {
     const auto incoming =
         transaction.AssociatedRemoteContacts(blockchain, contact_, nym);
-    LogTrace(OT_METHOD)(__FUNCTION__)(
-        ": transaction ")(transaction.ID().asHex())(" is associated "
-                                                    "with ")(incoming
-                                                                 .size())(" con"
-                                                                          "tact"
-                                                                          "s")
+    LogTrace(OT_METHOD)(__func__)(": transaction ")(transaction.ID().asHex())(
+        " is associated "
+        "with ")(incoming.size())(" con"
+                                  "tact"
+                                  "s")
         .Flush();
     const auto existing =
         api_.Storage().BlockchainThreadMap(nym, transaction.ID());
@@ -188,10 +187,9 @@ auto Activity::Imp::AddBlockchainTransaction(
     auto lock = eLock(shared_lock_);
 
     for (const auto& nym : transaction.AssociatedLocalNyms(api)) {
-        LogTrace(OT_METHOD)(__FUNCTION__)(
-            ": blockchain transaction ")(transaction.ID()
-                                             .asHex())(" is relevant to local "
-                                                       "nym ")(nym->asHex())
+        LogTrace(OT_METHOD)(__func__)(": blockchain transaction ")(
+            transaction.ID().asHex())(" is relevant to local "
+                                      "nym ")(nym->asHex())
             .Flush();
 
         OT_ASSERT(false == nym->empty());
@@ -259,8 +257,7 @@ auto Activity::Imp::Cheque(
         case api::client::PaymentWorkflowType::IncomingTransfer:
         case api::client::PaymentWorkflowType::InternalTransfer:
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Wrong workflow type.")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Wrong workflow type.").Flush();
 
             return output;
         }
@@ -269,8 +266,8 @@ auto Activity::Imp::Cheque(
     auto workflow = proto::PaymentWorkflow{};
 
     if (false == api_.Storage().Load(nym.str(), workflowID, workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Workflow ")(workflowID)(" for nym ")(nym)(" can not be loaded.")
+        LogOutput(OT_METHOD)(__func__)(": Workflow ")(workflowID)(" for nym ")(
+            nym)(" can not be loaded.")
             .Flush();
 
         return output;
@@ -286,7 +283,7 @@ auto Activity::Imp::Cheque(
     try {
         contract = api_.Wallet().UnitDefinition(unit);
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Unable to load unit definition contract.")
             .Flush();
     }
@@ -316,7 +313,7 @@ auto Activity::Imp::Transfer(
         case api::client::PaymentWorkflowType::OutgoingInvoice:
         case api::client::PaymentWorkflowType::IncomingInvoice:
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Wrong workflow type").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Wrong workflow type").Flush();
 
             return output;
         }
@@ -325,8 +322,8 @@ auto Activity::Imp::Transfer(
     auto workflow = proto::PaymentWorkflow{};
 
     if (false == api_.Storage().Load(nym.str(), workflowID, workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Workflow ")(workflowID)(" for nym ")(nym)(" can not be loaded")
+        LogOutput(OT_METHOD)(__func__)(": Workflow ")(workflowID)(" for nym ")(
+            nym)(" can not be loaded")
             .Flush();
 
         return output;
@@ -338,8 +335,7 @@ auto Activity::Imp::Transfer(
     OT_ASSERT(transfer)
 
     if (0 == workflow.account_size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Workflow does not list any accounts.")
+        LogOutput(OT_METHOD)(__func__)(": Workflow does not list any accounts.")
             .Flush();
 
         return output;
@@ -349,7 +345,7 @@ auto Activity::Imp::Transfer(
         Identifier::Factory(workflow.account(0)));
 
     if (unit->empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Unable to calculate unit definition id.")
             .Flush();
 
@@ -359,7 +355,7 @@ auto Activity::Imp::Transfer(
     try {
         contract = api_.Wallet().UnitDefinition(unit);
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Unable to load unit definition contract.")
             .Flush();
     }
@@ -550,8 +546,8 @@ auto Activity::Imp::PaymentText(
     auto workflow = proto::PaymentWorkflow{};
 
     if (false == api_.Storage().Load(nym.str(), workflowID, workflow)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Workflow ")(workflowID)(" for nym ")(nym)(" can not be loaded.")
+        LogOutput(OT_METHOD)(__func__)(": Workflow ")(workflowID)(" for nym ")(
+            nym)(" can not be loaded.")
             .Flush();
 
         return std::move(output);
@@ -663,8 +659,7 @@ auto Activity::Imp::start_publisher(const std::string& endpoint) const noexcept
 
     OT_ASSERT(started);
 
-    LogDetail(OT_METHOD)(__FUNCTION__)(": Publisher started on ")(endpoint)
-        .Flush();
+    LogDetail(OT_METHOD)(__func__)(": Publisher started on ")(endpoint).Flush();
 
     return output;
 }
@@ -709,8 +704,8 @@ auto Activity::Imp::thread_preload_thread(
     auto thread = proto::StorageThread{};
 
     if (false == api_.Storage().Load(nymID, threadID, thread)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Unable to load thread ")(threadID)(" for nym ")(nymID)
+        LogOutput(OT_METHOD)(__func__)(": Unable to load thread ")(
+            threadID)(" for nym ")(nymID)
             .Flush();
 
         return;
@@ -720,8 +715,8 @@ auto Activity::Imp::thread_preload_thread(
     auto cached = std::size_t{0};
 
     if (start > size) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: start larger than size "
-                                           "(")(start)(" / ")(size)(").")
+        LogOutput(OT_METHOD)(__func__)(": Error: start larger than size "
+                                       "(")(start)(" / ")(size)(").")
             .Flush();
 
         return;
@@ -738,8 +733,8 @@ auto Activity::Imp::thread_preload_thread(
         switch (box) {
             case StorageBox::MAILINBOX:
             case StorageBox::MAILOUTBOX: {
-                LogTrace(OT_METHOD)(__FUNCTION__)(
-                    ": Preloading item ")(item.id())(" in thread ")(threadID)
+                LogTrace(OT_METHOD)(__func__)(": Preloading item ")(item.id())(
+                    " in thread ")(threadID)
                     .Flush();
                 mail_.GetText(
                     nym, api_.Factory().Identifier(item.id()), box, reason);

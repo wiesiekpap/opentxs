@@ -179,8 +179,8 @@ auto Factory(const api::Core& api, const zeromq::Message& in) noexcept
             }
         }
     } catch (const std::exception& e) {
-        LogOutput("opentxs::network::blockchain::sync::Base::")(__FUNCTION__)(
-            ": ")(e.what())
+        LogOutput("opentxs::network::blockchain::sync::Base::")(__func__)(": ")(
+            e.what())
             .Flush();
 
         return std::make_unique<Base>();

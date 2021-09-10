@@ -17,7 +17,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Activity.hpp"
@@ -40,7 +39,7 @@ namespace opentxs::factory
 {
 auto ActivitySummaryItem(
     const ui::implementation::ActivitySummaryInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const ui::implementation::ActivitySummaryRowID& rowID,
     const ui::implementation::ActivitySummarySortKey& sortKey,
@@ -66,7 +65,7 @@ namespace opentxs::ui::implementation
 {
 ActivitySummaryItem::ActivitySummaryItem(
     const ActivitySummaryInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const ActivitySummaryRowID& rowID,
     const ActivitySummarySortKey& sortKey,

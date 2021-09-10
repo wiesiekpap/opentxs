@@ -18,28 +18,6 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 
-#ifdef SWIG
-// clang-format off
-%extend opentxs::network::zeromq::socket::Socket {
-    bool SetTimeouts(
-        const int& lingerMilliseconds,
-        const int& sendMilliseconds,
-        const int& receiveMilliseconds) const
-    {
-        return $self->SetTimeouts(
-            std::chrono::milliseconds(lingerMilliseconds),
-            std::chrono::milliseconds(sendMilliseconds),
-            std::chrono::milliseconds(receiveMilliseconds));
-    }
-}
-%ignore opentxs::network::zeromq::socket::Socket::Context;
-%ignore opentxs::network::zeromq::socket::Socket::SetTimeouts;
-%ignore opentxs::network::zeromq::socket::Socket::operator void*() const;
-%template(ZMQMessageSendResult) std::pair<opentxs::SendResult, Pimpl<opentxs::network::zeromq::Message>>;
-%rename(ZMQSocket) opentxs::network::zeromq::socket::Socket;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace network
@@ -59,29 +37,27 @@ namespace zeromq
 {
 namespace socket
 {
-class Socket
+class OPENTXS_EXPORT Socket
 {
 public:
     using SendResult = std::pair<opentxs::SendResult, OTZMQMessage>;
     enum class Direction : bool { Bind = false, Connect = true };
 
-    OPENTXS_EXPORT virtual operator void*() const noexcept = 0;
+    virtual operator void*() const noexcept = 0;
 
-    OPENTXS_EXPORT virtual bool Close() const noexcept = 0;
-    OPENTXS_EXPORT virtual const zeromq::Context& Context() const noexcept = 0;
-    OPENTXS_EXPORT virtual bool SetTimeouts(
+    virtual auto Close() const noexcept -> bool = 0;
+    virtual auto Context() const noexcept -> const zeromq::Context& = 0;
+    virtual auto SetTimeouts(
         const std::chrono::milliseconds& linger,
         const std::chrono::milliseconds& send,
-        const std::chrono::milliseconds& receive) const noexcept = 0;
+        const std::chrono::milliseconds& receive) const noexcept -> bool = 0;
     // Do not call Start during callback execution
-    OPENTXS_EXPORT virtual bool Start(
-        const std::string& endpoint) const noexcept = 0;
+    virtual auto Start(const std::string& endpoint) const noexcept -> bool = 0;
     // StartAsync version may be called during callback execution
-    OPENTXS_EXPORT virtual void StartAsync(
-        const std::string& endpoint) const noexcept = 0;
-    OPENTXS_EXPORT virtual SocketType Type() const noexcept = 0;
+    virtual void StartAsync(const std::string& endpoint) const noexcept = 0;
+    virtual auto Type() const noexcept -> SocketType = 0;
 
-    OPENTXS_EXPORT virtual ~Socket() = default;
+    virtual ~Socket() = default;
 
 protected:
     Socket() noexcept = default;
@@ -89,8 +65,8 @@ protected:
 private:
     Socket(const Socket&) = delete;
     Socket(Socket&&) = default;
-    Socket& operator=(const Socket&) = delete;
-    Socket& operator=(Socket&&) = default;
+    auto operator=(const Socket&) -> Socket& = delete;
+    auto operator=(Socket&&) -> Socket& = default;
 };
 }  // namespace socket
 }  // namespace zeromq

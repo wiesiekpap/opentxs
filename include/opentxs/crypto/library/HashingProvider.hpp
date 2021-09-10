@@ -21,27 +21,27 @@ namespace opentxs
 {
 namespace crypto
 {
-class HashingProvider
+class OPENTXS_EXPORT HashingProvider
 {
 public:
-    static crypto::HashType StringToHashType(const String& inputString);
-    static OTString HashTypeToString(const crypto::HashType hashType);
-    static std::size_t HashSize(const crypto::HashType hashType);
+    static auto StringToHashType(const String& inputString) -> crypto::HashType;
+    static auto HashTypeToString(const crypto::HashType hashType) -> OTString;
+    static auto HashSize(const crypto::HashType hashType) -> std::size_t;
 
-    OPENTXS_EXPORT virtual bool Digest(
+    virtual auto Digest(
         const crypto::HashType hashType,
         const std::uint8_t* input,
         const std::size_t inputSize,
-        std::uint8_t* output) const = 0;
-    OPENTXS_EXPORT virtual bool HMAC(
+        std::uint8_t* output) const -> bool = 0;
+    virtual auto HMAC(
         const crypto::HashType hashType,
         const std::uint8_t* input,
         const std::size_t inputSize,
         const std::uint8_t* key,
         const std::size_t keySize,
-        std::uint8_t* output) const = 0;
+        std::uint8_t* output) const -> bool = 0;
 
-    OPENTXS_EXPORT virtual ~HashingProvider() = default;
+    virtual ~HashingProvider() = default;
 
 protected:
     HashingProvider() = default;
@@ -49,8 +49,8 @@ protected:
 private:
     HashingProvider(const HashingProvider&) = delete;
     HashingProvider(HashingProvider&&) = delete;
-    HashingProvider& operator=(const HashingProvider&) = delete;
-    HashingProvider& operator=(HashingProvider&&) = delete;
+    auto operator=(const HashingProvider&) -> HashingProvider& = delete;
+    auto operator=(HashingProvider&&) -> HashingProvider& = delete;
 };
 }  // namespace crypto
 }  // namespace opentxs

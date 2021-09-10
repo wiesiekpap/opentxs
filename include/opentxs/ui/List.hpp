@@ -14,20 +14,14 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/ui/Widget.hpp"
 
-#ifdef SWIG
-// clang-format off
-%rename(UIList) opentxs::ui::List;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
 {
-class List : virtual public Widget
+class OPENTXS_EXPORT List : virtual public Widget
 {
 public:
-    OPENTXS_EXPORT ~List() override = default;
+    ~List() override = default;
 
 protected:
     List() noexcept = default;
@@ -35,8 +29,8 @@ protected:
 private:
     List(const List&) = delete;
     List(List&&) = delete;
-    List& operator=(const List&) = delete;
-    List& operator=(List&&) = delete;
+    auto operator=(const List&) -> List& = delete;
+    auto operator=(List&&) -> List& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

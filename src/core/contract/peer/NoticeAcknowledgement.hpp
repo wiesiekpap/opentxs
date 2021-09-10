@@ -18,10 +18,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -42,7 +39,7 @@ class Acknowledgement final : public reply::Acknowledgement,
 {
 public:
     Acknowledgement(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const identifier::Nym& initiator,
         const Identifier& request,
@@ -50,7 +47,7 @@ public:
         const PeerRequestType type,
         const bool& ack);
     Acknowledgement(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const SerializedType& serialized);
 

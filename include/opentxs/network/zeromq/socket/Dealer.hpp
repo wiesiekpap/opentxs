@@ -12,17 +12,6 @@
 #include "opentxs/network/zeromq/curve/Client.hpp"
 #include "opentxs/network/zeromq/socket/Sender.hpp"
 
-#ifdef SWIG
-// clang-format off
-%ignore opentxs::Pimpl<opentxs::network::zeromq::socket::Dealer>::Pimpl(opentxs::network::zeromq::socket::Dealer const &);
-%ignore opentxs::Pimpl<opentxs::network::zeromq::socket::Dealer>::operator opentxs::network::zeromq::socket::Dealer&;
-%ignore opentxs::Pimpl<opentxs::network::zeromq::socket::Dealer>::operator const opentxs::network::zeromq::socket::Dealer &;
-%rename(assign) operator=(const opentxs::network::zeromq::socket::Dealer&);
-%rename(ZMQDealer) opentxs::network::zeromq::socket::Dealer;
-%template(OTZMQDealerSocket) opentxs::Pimpl<opentxs::network::zeromq::socket::Dealer>;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace network
@@ -47,13 +36,14 @@ namespace zeromq
 {
 namespace socket
 {
-class Dealer : virtual public curve::Client, virtual public Sender
+class OPENTXS_EXPORT Dealer : virtual public curve::Client,
+                              virtual public Sender
 {
 public:
-    OPENTXS_EXPORT virtual bool SetSocksProxy(
-        const std::string& proxy) const noexcept = 0;
+    virtual auto SetSocksProxy(const std::string& proxy) const noexcept
+        -> bool = 0;
 
-    OPENTXS_EXPORT ~Dealer() override = default;
+    ~Dealer() override = default;
 
 protected:
     Dealer() noexcept = default;
@@ -61,12 +51,12 @@ protected:
 private:
     friend OTZMQDealerSocket;
 
-    virtual Dealer* clone() const noexcept = 0;
+    virtual auto clone() const noexcept -> Dealer* = 0;
 
     Dealer(const Dealer&) = delete;
     Dealer(Dealer&&) = delete;
-    Dealer& operator=(const Dealer&) = delete;
-    Dealer& operator=(Dealer&&) = delete;
+    auto operator=(const Dealer&) -> Dealer& = delete;
+    auto operator=(Dealer&&) -> Dealer& = delete;
 };
 }  // namespace socket
 }  // namespace zeromq

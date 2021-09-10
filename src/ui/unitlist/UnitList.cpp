@@ -21,6 +21,7 @@
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -44,7 +45,7 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::factory
 {
 auto UnitListModel(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::UnitList>
@@ -58,7 +59,7 @@ auto UnitListModel(
 namespace opentxs::ui::implementation
 {
 UnitList::UnitList(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     : UnitListList(api, nymID, cb, false)

@@ -22,146 +22,146 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT bool CheckProto_1(
+auto CheckProto_1(
     const Authority& input,
     const bool silent,
     const std::string& nymID,
     const KeyMode& key,
     bool& haveHD,
-    const AuthorityMode& mode = AUTHORITYMODE_ERROR);
-OPENTXS_EXPORT bool CheckProto_2(
+    const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
+auto CheckProto_2(
     const Authority& input,
     const bool silent,
     const std::string& nymID,
     const KeyMode& key,
     bool& haveHD,
-    const AuthorityMode& mode = AUTHORITYMODE_ERROR);
-OPENTXS_EXPORT bool CheckProto_3(
+    const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
+auto CheckProto_3(
     const Authority& input,
     const bool silent,
     const std::string& nymID,
     const KeyMode& key,
     bool& haveHD,
-    const AuthorityMode& mode = AUTHORITYMODE_ERROR);
-OPENTXS_EXPORT bool CheckProto_4(
+    const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
+auto CheckProto_4(
     const Authority& input,
     const bool silent,
     const std::string& nymID,
     const KeyMode& key,
     bool& haveHD,
-    const AuthorityMode& mode = AUTHORITYMODE_ERROR);
-OPENTXS_EXPORT bool CheckProto_5(
+    const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
+auto CheckProto_5(
     const Authority& input,
     const bool silent,
     const std::string& nymID,
     const KeyMode& key,
     bool& haveHD,
-    const AuthorityMode& mode = AUTHORITYMODE_ERROR);
-OPENTXS_EXPORT bool CheckProto_6(
+    const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
+auto CheckProto_6(
     const Authority& input,
     const bool silent,
     const std::string& nymID,
     const KeyMode& key,
     bool& haveHD,
-    const AuthorityMode& mode = AUTHORITYMODE_ERROR);
-OPENTXS_EXPORT bool CheckProto_7(
+    const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
+auto CheckProto_7(
     const Authority& input,
     const bool silent,
     const std::string& nymID,
     const KeyMode& key,
     bool& haveHD,
-    const AuthorityMode& mode = AUTHORITYMODE_ERROR);
-OPENTXS_EXPORT bool CheckProto_8(
+    const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
+auto CheckProto_8(
     const Authority& input,
     const bool silent,
     const std::string& nymID,
     const KeyMode& key,
     bool& haveHD,
-    const AuthorityMode& mode = AUTHORITYMODE_ERROR);
-OPENTXS_EXPORT bool CheckProto_9(
+    const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
+auto CheckProto_9(
     const Authority& input,
     const bool silent,
     const std::string& nymID,
     const KeyMode& key,
     bool& haveHD,
-    const AuthorityMode& mode = AUTHORITYMODE_ERROR);
-OPENTXS_EXPORT bool CheckProto_10(
+    const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
+auto CheckProto_10(
     const Authority& input,
     const bool silent,
     const std::string& nymID,
     const KeyMode& key,
     bool& haveHD,
-    const AuthorityMode& mode = AUTHORITYMODE_ERROR);
-OPENTXS_EXPORT bool CheckProto_11(
+    const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
+auto CheckProto_11(
     const Authority& input,
     const bool silent,
     const std::string& nymID,
     const KeyMode& key,
     bool& haveHD,
-    const AuthorityMode& mode = AUTHORITYMODE_ERROR);
-OPENTXS_EXPORT bool CheckProto_12(
+    const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
+auto CheckProto_12(
     const Authority& input,
     const bool silent,
     const std::string& nymID,
     const KeyMode& key,
     bool& haveHD,
-    const AuthorityMode& mode = AUTHORITYMODE_ERROR);
-OPENTXS_EXPORT bool CheckProto_13(
+    const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
+auto CheckProto_13(
     const Authority& input,
     const bool silent,
     const std::string& nymID,
     const KeyMode& key,
     bool& haveHD,
-    const AuthorityMode& mode = AUTHORITYMODE_ERROR);
-OPENTXS_EXPORT bool CheckProto_14(
+    const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
+auto CheckProto_14(
     const Authority& input,
     const bool silent,
     const std::string& nymID,
     const KeyMode& key,
     bool& haveHD,
-    const AuthorityMode& mode = AUTHORITYMODE_ERROR);
-OPENTXS_EXPORT bool CheckProto_15(
+    const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
+auto CheckProto_15(
     const Authority& input,
     const bool silent,
     const std::string& nymID,
     const KeyMode& key,
     bool& haveHD,
-    const AuthorityMode& mode = AUTHORITYMODE_ERROR);
-OPENTXS_EXPORT bool CheckProto_16(
+    const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
+auto CheckProto_16(
     const Authority& input,
     const bool silent,
     const std::string& nymID,
     const KeyMode& key,
     bool& haveHD,
-    const AuthorityMode& mode = AUTHORITYMODE_ERROR);
-OPENTXS_EXPORT bool CheckProto_17(
+    const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
+auto CheckProto_17(
     const Authority& input,
     const bool silent,
     const std::string& nymID,
     const KeyMode& key,
     bool& haveHD,
-    const AuthorityMode& mode = AUTHORITYMODE_ERROR);
-OPENTXS_EXPORT bool CheckProto_18(
+    const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
+auto CheckProto_18(
     const Authority& input,
     const bool silent,
     const std::string& nymID,
     const KeyMode& key,
     bool& haveHD,
-    const AuthorityMode& mode = AUTHORITYMODE_ERROR);
-OPENTXS_EXPORT bool CheckProto_19(
+    const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
+auto CheckProto_19(
     const Authority& input,
     const bool silent,
     const std::string& nymID,
     const KeyMode& key,
     bool& haveHD,
-    const AuthorityMode& mode = AUTHORITYMODE_ERROR);
-OPENTXS_EXPORT bool CheckProto_20(
+    const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
+auto CheckProto_20(
     const Authority& input,
     const bool silent,
     const std::string& nymID,
     const KeyMode& key,
     bool& haveHD,
-    const AuthorityMode& mode = AUTHORITYMODE_ERROR);
+    const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
 }  // namespace proto
 }  // namespace opentxs
 #endif  // OPENTXS_PROTOBUF_AUTHORITY_HPP

@@ -62,11 +62,7 @@ class Activity;
 class Contacts;
 }  // namespace client
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
+class Core;
 class Legacy;
 }  // namespace api
 
@@ -122,9 +118,6 @@ public:
 
     auto Account(const identifier::Nym& nymID, const Chain chain) const
         noexcept(false) -> const opentxs::blockchain::crypto::Account& final;
-    auto AccountInternal(const identifier::Nym& nymID, const Chain chain) const
-        noexcept(false)
-            -> const opentxs::blockchain::crypto::internal::Account& final;
     auto AccountList(const identifier::Nym& nymID) const noexcept
         -> std::set<OTIdentifier> final;
     auto AccountList(const Chain chain) const noexcept
@@ -268,7 +261,7 @@ public:
     auto Init() noexcept -> void final;
 
     Blockchain(
-        const api::internal::Core& api,
+        const api::Core& api,
         const api::client::Activity& activity,
         const api::client::Contacts& contacts,
         const api::Legacy& legacy,

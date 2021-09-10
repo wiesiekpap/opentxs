@@ -75,16 +75,8 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
+class Blockchain;
 }  // namespace client
-
-namespace internal
-{
-struct Core;
-}  // namespace internal
 
 class Core;
 class Crypto;
@@ -102,16 +94,13 @@ class Transaction;
 
 namespace crypto
 {
-namespace internal
-{
-struct Account;
-struct Deterministic;
-struct HD;
-struct Imported;
-struct PaymentCode;
-struct Subaccount;
-struct Wallet;
-}  // namespace internal
+class Account;
+class Deterministic;
+class HD;
+class Imported;
+class PaymentCode;
+class Subaccount;
+class Wallet;
 }  // namespace crypto
 }  // namespace blockchain
 
@@ -148,18 +137,14 @@ namespace opentxs::blockchain::crypto::internal
 using ActivityMap = std::map<Coin, std::pair<Key, Amount>>;
 
 struct Wallet : virtual public crypto::Wallet {
-    virtual auto Nym(const identifier::Nym& id) const noexcept
-        -> const Account& = 0;
-
     virtual auto AddHDNode(
         const identifier::Nym& nym,
         const proto::HDPath& path,
         const crypto::HDProtocol standard,
         const PasswordPrompt& reason,
         Identifier& id) noexcept -> bool = 0;
-    virtual auto Nym(const identifier::Nym& id) noexcept -> Account& = 0;
-    virtual auto Parent() const noexcept
-        -> const api::client::internal::Blockchain& = 0;
+
+    ~Wallet() override = default;
 };
 
 struct Account : virtual public crypto::Account {
@@ -168,17 +153,11 @@ struct Account : virtual public crypto::Account {
         const std::vector<Activity>& spent,
         std::set<OTIdentifier>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool = 0;
-    virtual auto ClaimAccountID(
-        const std::string& id,
-        internal::Subaccount* node) const noexcept -> void = 0;
+    virtual auto ClaimAccountID(const std::string& id, crypto::Subaccount* node)
+        const noexcept -> void = 0;
     virtual auto FindNym(const identifier::Nym& id) const noexcept -> void = 0;
     virtual auto LookupUTXO(const Coin& coin) const noexcept
         -> std::optional<std::pair<Key, Amount>> = 0;
-    virtual auto HDChain(const Identifier& account) const noexcept(false)
-        -> const internal::HD& = 0;
-    virtual auto PaymentCode(const Identifier& account) const noexcept(false)
-        -> const internal::PaymentCode& = 0;
-    virtual auto ParentInternal() const noexcept -> const internal::Wallet& = 0;
 
     virtual auto AddHDNode(
         const proto::HDPath& path,
@@ -198,12 +177,8 @@ struct Account : virtual public crypto::Account {
         const opentxs::blockchain::block::Txid& notification,
         const PasswordPrompt& reason,
         Identifier& id) noexcept -> bool = 0;
-    virtual auto HDChain(const Identifier& account) noexcept(false)
-        -> internal::HD& = 0;
-    virtual auto Node(const Identifier& id) const noexcept(false)
-        -> internal::Subaccount& = 0;
-    virtual auto PaymentCode(const Identifier& account) noexcept(false)
-        -> internal::PaymentCode& = 0;
+
+    ~Account() override = default;
 };
 
 struct Element : virtual public crypto::Element {
@@ -239,10 +214,7 @@ struct Element : virtual public crypto::Element {
         -> bool = 0;
     virtual auto Unreserve() noexcept -> bool = 0;
 };
-}  // namespace opentxs::blockchain::crypto::internal
 
-namespace opentxs::blockchain::crypto::internal
-{
 struct Subaccount : virtual public crypto::Subaccount {
     virtual auto AssociateTransaction(
         const std::vector<Activity>& unspent,

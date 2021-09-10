@@ -11,12 +11,6 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/ui/List.hpp"
 
-#ifdef SWIG
-// clang-format off
-%rename(UIAccountList) opentxs::ui::AccountList;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -30,15 +24,15 @@ namespace opentxs
 {
 namespace ui
 {
-class AccountList : virtual public List
+class OPENTXS_EXPORT AccountList : virtual public List
 {
 public:
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::AccountListItem>
-    First() const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::AccountListItem>
-    Next() const noexcept = 0;
+    virtual auto First() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::AccountListItem> = 0;
+    virtual auto Next() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::AccountListItem> = 0;
 
-    OPENTXS_EXPORT ~AccountList() override = default;
+    ~AccountList() override = default;
 
 protected:
     AccountList() noexcept = default;
@@ -46,8 +40,8 @@ protected:
 private:
     AccountList(const AccountList&) = delete;
     AccountList(AccountList&&) = delete;
-    AccountList& operator=(const AccountList&) = delete;
-    AccountList& operator=(AccountList&&) = delete;
+    auto operator=(const AccountList&) -> AccountList& = delete;
+    auto operator=(AccountList&&) -> AccountList& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

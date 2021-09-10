@@ -72,17 +72,6 @@ class Settings;
 class Wallet;
 }  // namespace api
 
-namespace blockchain
-{
-namespace crypto
-{
-namespace internal
-{
-struct Account;
-}  // namespace internal
-}  // namespace crypto
-}  // namespace blockchain
-
 namespace identifier
 {
 class Nym;
@@ -157,10 +146,6 @@ auto translate(const proto::PaymentWorkflowType in) noexcept
 
 struct Blockchain : virtual public api::client::Blockchain {
     /// Throws std::runtime_error if type is invalid
-    virtual auto AccountInternal(
-        const identifier::Nym& nymID,
-        const Chain chain) const noexcept(false)
-        -> const opentxs::blockchain::crypto::internal::Account& = 0;
     virtual auto Contacts() const noexcept -> const api::client::Contacts& = 0;
     virtual auto KeyEndpoint() const noexcept -> const std::string& = 0;
     virtual auto KeyGenerated(const Chain chain) const noexcept -> void = 0;

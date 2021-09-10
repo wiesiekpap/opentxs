@@ -43,7 +43,7 @@ namespace block
 {
 namespace bitcoin
 {
-class Output
+class OPENTXS_EXPORT Output
 {
 public:
     using ContactID = Transaction::ContactID;
@@ -55,30 +55,27 @@ public:
     using KeyData = Transaction::KeyData;
     using SerializeType = proto::BlockchainTransactionOutput;
 
-    OPENTXS_EXPORT virtual auto CalculateSize() const noexcept
-        -> std::size_t = 0;
-    OPENTXS_EXPORT virtual auto ExtractElements(
-        const filter::Type style) const noexcept -> std::vector<Space> = 0;
-    OPENTXS_EXPORT virtual auto FindMatches(
+    virtual auto CalculateSize() const noexcept -> std::size_t = 0;
+    virtual auto ExtractElements(const filter::Type style) const noexcept
+        -> std::vector<Space> = 0;
+    virtual auto FindMatches(
         const ReadView txid,
         const FilterType type,
         const ParsedPatterns& elements) const noexcept -> Matches = 0;
-    OPENTXS_EXPORT virtual auto GetPatterns() const noexcept
-        -> std::vector<PatternID> = 0;
-    OPENTXS_EXPORT virtual auto Note(const api::client::Blockchain& blockchain)
-        const noexcept -> std::string = 0;
-    OPENTXS_EXPORT virtual auto Keys() const noexcept -> std::vector<KeyID> = 0;
-    OPENTXS_EXPORT virtual auto Payee() const noexcept -> ContactID = 0;
-    OPENTXS_EXPORT virtual auto Payer() const noexcept -> ContactID = 0;
-    OPENTXS_EXPORT virtual auto Print() const noexcept -> std::string = 0;
-    OPENTXS_EXPORT virtual auto Serialize(const AllocateOutput destination)
-        const noexcept -> std::optional<std::size_t> = 0;
-    OPENTXS_EXPORT virtual auto Serialize(
+    virtual auto GetPatterns() const noexcept -> std::vector<PatternID> = 0;
+    virtual auto Note(const api::client::Blockchain& blockchain) const noexcept
+        -> std::string = 0;
+    virtual auto Keys() const noexcept -> std::vector<KeyID> = 0;
+    virtual auto Payee() const noexcept -> ContactID = 0;
+    virtual auto Payer() const noexcept -> ContactID = 0;
+    virtual auto Print() const noexcept -> std::string = 0;
+    virtual auto Serialize(const AllocateOutput destination) const noexcept
+        -> std::optional<std::size_t> = 0;
+    virtual auto Serialize(
         const api::client::Blockchain& blockchain,
         SerializeType& destination) const noexcept -> bool = 0;
-    OPENTXS_EXPORT virtual auto Script() const noexcept
-        -> const bitcoin::Script& = 0;
-    OPENTXS_EXPORT virtual auto Value() const noexcept -> std::int64_t = 0;
+    virtual auto Script() const noexcept -> const bitcoin::Script& = 0;
+    virtual auto Value() const noexcept -> std::int64_t = 0;
 
     virtual auto SetKeyData(const KeyData& data) noexcept -> void = 0;
 
@@ -90,8 +87,8 @@ protected:
 private:
     Output(const Output&) = delete;
     Output(Output&&) = delete;
-    Output& operator=(const Output&) = delete;
-    Output& operator=(Output&&) = delete;
+    auto operator=(const Output&) -> Output& = delete;
+    auto operator=(Output&&) -> Output& = delete;
 };
 }  // namespace bitcoin
 }  // namespace block

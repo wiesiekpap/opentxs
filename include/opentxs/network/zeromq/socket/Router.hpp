@@ -13,17 +13,6 @@
 #include "opentxs/network/zeromq/curve/Server.hpp"
 #include "opentxs/network/zeromq/socket/Sender.hpp"
 
-#ifdef SWIG
-// clang-format off
-%ignore opentxs::Pimpl<opentxs::network::zeromq::socket::Router>::Pimpl(opentxs::network::zeromq::socket::Router const &);
-%ignore opentxs::Pimpl<opentxs::network::zeromq::socket::Router>::operator opentxs::network::zeromq::socket::Router&;
-%ignore opentxs::Pimpl<opentxs::network::zeromq::socket::Router>::operator const opentxs::network::zeromq::socket::Router &;
-%rename(assign) operator=(const opentxs::network::zeromq::socket::Router&);
-%rename(ZMQRouter) opentxs::network::zeromq::socket::Router;
-%template(OTZMQRouterSocket) opentxs::Pimpl<opentxs::network::zeromq::socket::Router>;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace network
@@ -48,15 +37,15 @@ namespace zeromq
 {
 namespace socket
 {
-class Router : virtual public curve::Server,
-               virtual public curve::Client,
-               virtual public Sender
+class OPENTXS_EXPORT Router : virtual public curve::Server,
+                              virtual public curve::Client,
+                              virtual public Sender
 {
 public:
-    OPENTXS_EXPORT virtual bool SetSocksProxy(
-        const std::string& proxy) const noexcept = 0;
+    virtual auto SetSocksProxy(const std::string& proxy) const noexcept
+        -> bool = 0;
 
-    OPENTXS_EXPORT ~Router() override = default;
+    ~Router() override = default;
 
 protected:
     Router() noexcept = default;
@@ -64,12 +53,12 @@ protected:
 private:
     friend OTZMQRouterSocket;
 
-    virtual Router* clone() const noexcept = 0;
+    virtual auto clone() const noexcept -> Router* = 0;
 
     Router(const Router&) = delete;
     Router(Router&&) = delete;
-    Router& operator=(const Router&) = delete;
-    Router& operator=(Router&&) = delete;
+    auto operator=(const Router&) -> Router& = delete;
+    auto operator=(Router&&) -> Router& = delete;
 };
 }  // namespace socket
 }  // namespace zeromq

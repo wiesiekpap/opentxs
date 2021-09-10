@@ -23,7 +23,6 @@
 
 #include "2_Factory.hpp"
 #include "core/StateMachine.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/otx/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/SharedPimpl.hpp"
@@ -71,8 +70,7 @@
     auto started = op_.a(__VA_ARGS__);                                         \
                                                                                \
     while (false == started) {                                                 \
-        LogDebug(OT_METHOD)(__FUNCTION__)(": State machine is not ready")      \
-            .Flush();                                                          \
+        LogDebug(OT_METHOD)(__func__)(": State machine is not ready").Flush(); \
                                                                                \
         if (shutdown().load()) {                                               \
             op_.Shutdown();                                                    \
@@ -105,8 +103,7 @@
     auto started = op_.a(__VA_ARGS__);                                         \
                                                                                \
     while (false == started) {                                                 \
-        LogDebug(OT_METHOD)(__FUNCTION__)(": State machine is not ready")      \
-            .Flush();                                                          \
+        LogDebug(OT_METHOD)(__func__)(": State machine is not ready").Flush(); \
         if (shutdown().load()) {                                               \
             op_.Shutdown();                                                    \
                                                                                \
@@ -152,10 +149,10 @@
 namespace opentxs::otx::client::implementation
 {
 StateMachine::StateMachine(
-    const api::client::internal::Manager& client,
+    const api::client::Manager& client,
     const api::client::internal::OTX& parent,
     const Flag& running,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ContextID& id,
     std::atomic<TaskID>& nextTaskID,
     const UniqueQueue<CheckNymTask>& missingnyms,
@@ -219,9 +216,7 @@ StateMachine::StateMachine(
 
 auto StateMachine::bump_task(const bool bump) const -> bool
 {
-    if (bump) {
-        LogInsane(OT_METHOD)(__FUNCTION__)(": ")(++task_count_).Flush();
-    }
+    if (bump) { LogInsane(OT_METHOD)(__func__)(": ")(++task_count_).Flush(); }
 
     return bump;
 }
@@ -271,9 +266,9 @@ void StateMachine::check_nym_revision(const otx::context::Server& context) const
 {
     if (context.StaleNym()) {
         const auto& nymID = context.Nym()->ID();
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Nym ")(nymID)(
-            " has is newer than version last registered version on server ")(
-            context.Notary())(".")
+        LogDetail(OT_METHOD)(__func__)(": Nym ")(
+            nymID)(" has is newer than version last registered version on "
+                   "server ")(context.Notary())(".")
             .Flush();
         bump_task(get_task<RegisterNymTask>().Push(next_task_id(), true));
     }
@@ -292,14 +287,14 @@ auto StateMachine::check_registration(
     if (context) {
         request = context->Request();
     } else {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Nym ")(nymID)(
-            " has never registered on ")(serverID)
+        LogDetail(OT_METHOD)(__func__)(": Nym ")(
+            nymID)(" has never registered on ")(serverID)
             .Flush();
     }
 
     if (0 != request) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Nym ")(nymID)(
-            " has registered on server ")(serverID)(" at least once.")
+        LogVerbose(OT_METHOD)(__func__)(": Nym ")(
+            nymID)(" has registered on server ")(serverID)(" at least once.")
             .Flush();
         state_ = State::ready;
 
@@ -311,8 +306,8 @@ auto StateMachine::check_registration(
     const auto output = register_nym(next_task_id(), false);
 
     if (output) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Nym ")(nymID)(
-            " is now registered on server ")(serverID)
+        LogVerbose(OT_METHOD)(__func__)(": Nym ")(
+            nymID)(" is now registered on server ")(serverID)
             .Flush();
         state_ = State::ready;
         context = client_.Wallet().ServerContext(nymID, serverID);
@@ -334,8 +329,8 @@ auto StateMachine::check_server_contract(
 
     try {
         client_.Wallet().Server(serverID);
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Server contract ")(serverID)(
-            " exists.")
+        LogVerbose(OT_METHOD)(__func__)(": Server contract ")(
+            serverID)(" exists.")
             .Flush();
         state_ = State::needRegistration;
 
@@ -343,8 +338,8 @@ auto StateMachine::check_server_contract(
     } catch (...) {
     }
 
-    LogDetail(OT_METHOD)(__FUNCTION__)(": Server contract for ")(serverID)(
-        " is not in the wallet.")
+    LogDetail(OT_METHOD)(__func__)(": Server contract for ")(
+        serverID)(" is not in the wallet.")
         .Flush();
     missing_servers_.Push(next_task_id(), serverID);
 
@@ -413,7 +408,7 @@ auto StateMachine::deposit_cheque(
     OT_ASSERT(payment);
 
     if ((false == payment->IsCheque()) && (false == payment->IsVoucher())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unhandled payment type.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Unhandled payment type.").Flush();
 
         return finish_task(taskID, false, error_result());
     }
@@ -425,7 +420,7 @@ auto StateMachine::deposit_cheque(
     const auto loaded = cheque->LoadContractFromString(payment->Payment());
 
     if (false == loaded) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid cheque.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid cheque.").Flush();
 
         return finish_task(taskID, false, error_result());
     }
@@ -554,29 +549,29 @@ auto StateMachine::find_contract(
 {
     if (load_contract<T>(targetID.get())) {
         if (skipExisting) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": Contract ")(targetID)(
-                " exists in the wallet.")
+            LogVerbose(OT_METHOD)(__func__)(": Contract ")(
+                targetID)(" exists in the wallet.")
                 .Flush();
             missing.CancelByValue(targetID);
 
             return finish_task(taskID, true, error_result());
         } else {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
+            LogVerbose(OT_METHOD)(__func__)(
                 ": Attempting re-download of contract ")(targetID)
                 .Flush();
         }
     }
 
     if (0 == unknown.count(targetID)) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Queueing contract ")(targetID)(
-            " for download on server ")(op_.ServerID())
+        LogVerbose(OT_METHOD)(__func__)(": Queueing contract ")(
+            targetID)(" for download on server ")(op_.ServerID())
             .Flush();
 
         return bump_task(get_task<T>().Push(taskID, targetID));
     } else {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
-            ": Previously failed to download contract ")(targetID)(
-            " from server ")(op_.ServerID())
+        LogVerbose(OT_METHOD)(__func__)(
+            ": Previously failed to download contract ")(
+            targetID)(" from server ")(op_.ServerID())
             .Flush();
 
         finish_task(taskID, false, error_result());
@@ -658,7 +653,7 @@ auto StateMachine::issue_unit_definition(
         OT_ASSERT(serialized);
 
         if (false == unitDefinition->Serialize(*serialized, true)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failed to serialize unit definition.")
                 .Flush();
 
@@ -681,8 +676,7 @@ auto StateMachine::issue_unit_definition(
 
         return finish_task(taskID, success, std::move(result));
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unit definition not found.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Unit definition not found.").Flush();
 
         return finish_task(taskID, false, error_result());
     }
@@ -793,11 +787,11 @@ auto StateMachine::message_nym(const TaskID taskID, const MessageTask& task)
 
     if (success) {
         if (false == messageID->empty()) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": Sent message: ")(messageID)
+            LogVerbose(OT_METHOD)(__func__)(": Sent message: ")(messageID)
                 .Flush();
             associate_message_id(messageID, taskID);
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid message ID").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Invalid message ID").Flush();
         }
     }
 
@@ -971,8 +965,8 @@ template <typename M, typename I>
 void StateMachine::resolve_unknown(const I& id, const bool found, M& map) const
 {
     if (found) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Contract ")(id)(
-            " successfully downloaded from server ")(op_.ServerID())
+        LogVerbose(OT_METHOD)(__func__)(": Contract ")(
+            id)(" successfully downloaded from server ")(op_.ServerID())
             .Flush();
         map.erase(id);
     } else {
@@ -980,15 +974,15 @@ void StateMachine::resolve_unknown(const I& id, const bool found, M& map) const
 
         if (map.end() == it) {
             map.emplace(id, 1);
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": Contract ")(id)(
-                " not found on server ")(op_.ServerID())
+            LogVerbose(OT_METHOD)(__func__)(": Contract ")(
+                id)(" not found on server ")(op_.ServerID())
                 .Flush();
         } else {
             auto& value = it->second;
 
             if (value < (std::numeric_limits<int>::max() / 2)) { value *= 2; }
 
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
+            LogVerbose(OT_METHOD)(__func__)(
                 ": Increasing retry interval for contract ")(id)(" to ")(value)
                 .Flush();
         }
@@ -1036,7 +1030,7 @@ auto StateMachine::run_task(std::function<bool(const TaskID, const T&)> func)
     new (&param) T(make_blank<T>::value(client_));
 
     while (get_task<T>().Pop(task_id_, param)) {
-        LogInsane(OT_METHOD)(__FUNCTION__)(": ")(--task_count_).Flush();
+        LogInsane(OT_METHOD)(__func__)(": ")(--task_count_).Flush();
 
         SHUTDOWN()
 
@@ -1093,7 +1087,7 @@ auto StateMachine::StartTask(const TaskID taskID, const T& params) const
     Lock lock(decision_lock_);
 
     if (shutdown().load()) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Shutting down").Flush();
+        LogVerbose(OT_METHOD)(__func__)(": Shutting down").Flush();
 
         return BackgroundTask{0, Future{}};
     }
@@ -1157,7 +1151,7 @@ auto StateMachine::write_and_send_cheque(
     OT_ASSERT(false == recipient->empty())
 
     if (0 >= value) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid amount.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid amount.").Flush();
 
         return task_done(finish_task(taskID, false, error_result()));
     }
@@ -1182,7 +1176,7 @@ auto StateMachine::write_and_send_cheque(
         recipient));
 
     if (false == bool(cheque)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to write cheque.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to write cheque.").Flush();
 
         return task_done(finish_task(taskID, false, error_result()));
     }
@@ -1191,14 +1185,14 @@ auto StateMachine::write_and_send_cheque(
         client_.Factory().Payment(String::Factory(*cheque))};
 
     if (false == bool(payment)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to instantiate payment.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to instantiate payment.")
             .Flush();
 
         return task_done(finish_task(taskID, false, error_result()));
     }
 
     if (false == payment->SetTempValues(reason_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid payment.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid payment.").Flush();
 
         return task_done(finish_task(taskID, false, error_result()));
     }

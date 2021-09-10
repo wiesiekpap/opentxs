@@ -44,7 +44,7 @@ auto BitcoinTransactionInputs(
 
         return std::make_unique<ReturnType>(std::move(inputs), size);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -81,7 +81,7 @@ auto Inputs::AnyoneCanPay(const std::size_t index) noexcept -> bool
 
         return true;
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid index").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid index").Flush();
 
         return false;
     }
@@ -116,7 +116,7 @@ auto Inputs::AssociatePreviousOutput(
 
         return inputs_.at(index)->AssociatePreviousOutput(blockchain, output);
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid index").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid index").Flush();
 
         return false;
     }
@@ -153,8 +153,7 @@ auto Inputs::ExtractElements(const filter::Type style) const noexcept
     -> std::vector<Space>
 {
     auto output = std::vector<Space>{};
-    LogTrace(OT_METHOD)(__FUNCTION__)(": processing ")(size())(" inputs")
-        .Flush();
+    LogTrace(OT_METHOD)(__func__)(": processing ")(size())(" inputs").Flush();
 
     for (const auto& txin : *this) {
         auto temp = txin.ExtractElements(style);
@@ -164,8 +163,7 @@ auto Inputs::ExtractElements(const filter::Type style) const noexcept
             std::make_move_iterator(temp.end()));
     }
 
-    LogTrace(OT_METHOD)(__FUNCTION__)(": extracted ")(output.size())(
-        " elements")
+    LogTrace(OT_METHOD)(__func__)(": extracted ")(output.size())(" elements")
         .Flush();
     std::sort(output.begin(), output.end());
 
@@ -184,7 +182,7 @@ auto Inputs::FindMatches(
 
     for (const auto& txin : *this) {
         auto temp = txin.FindMatches(txid, type, txos, patterns);
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Verified ")(
+        LogTrace(OT_METHOD)(__func__)(": Verified ")(
             temp.second.size() +
             temp.first.size())(" matches in input ")(++index)
             .Flush();
@@ -248,7 +246,7 @@ auto Inputs::ReplaceScript(const std::size_t index) noexcept -> bool
 
         return inputs_.at(index)->ReplaceScript();
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid index").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid index").Flush();
 
         return false;
     }
@@ -258,8 +256,7 @@ auto Inputs::serialize(const AllocateOutput destination, const bool normalize)
     const noexcept -> std::optional<std::size_t>
 {
     if (!destination) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output allocator")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return std::nullopt;
     }
@@ -268,7 +265,7 @@ auto Inputs::serialize(const AllocateOutput destination, const bool normalize)
     auto output = destination(size);
 
     if (false == output.valid(size)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to allocate output bytes")
+        LogOutput(OT_METHOD)(__func__)(": Failed to allocate output bytes")
             .Flush();
 
         return std::nullopt;
@@ -289,7 +286,7 @@ auto Inputs::serialize(const AllocateOutput destination, const bool normalize)
                       : row->Serialize(preallocated(remaining, it));
 
         if (false == bytes.has_value()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize input")
+            LogOutput(OT_METHOD)(__func__)(": Failed to serialize input")
                 .Flush();
 
             return std::nullopt;

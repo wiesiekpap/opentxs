@@ -31,10 +31,7 @@ namespace implementation
 class Factory;
 }  // namespace implementation
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -100,33 +97,34 @@ public:
     // signed off!!
     //
     //
-    bool AddBlankNumbersToItem(const NumList& theAddition);
-    std::int64_t GetClosingNum() const;
+    auto AddBlankNumbersToItem(const NumList& theAddition) -> bool;
+    auto GetClosingNum() const -> std::int64_t;
     void SetClosingNum(std::int64_t lClosingNum);
-    std::int64_t GetNumberOfOrigin() override;
+    auto GetNumberOfOrigin() -> std::int64_t override;
     void CalculateNumberOfOrigin() override;
     // used for looping through the items in a few places.
-    inline listOfItems& GetItemList() { return m_listItems; }
-    std::shared_ptr<const Item> GetItem(std::int32_t nIndex) const;
-    std::shared_ptr<Item> GetItem(std::int32_t nIndex);
-    std::shared_ptr<Item> GetItemByTransactionNum(
-        std::int64_t lTransactionNumber);  // While
+    inline auto GetItemList() -> listOfItems& { return m_listItems; }
+    auto GetItem(std::int32_t nIndex) const -> std::shared_ptr<const Item>;
+    auto GetItem(std::int32_t nIndex) -> std::shared_ptr<Item>;
+    auto GetItemByTransactionNum(std::int64_t lTransactionNumber)
+        -> std::shared_ptr<Item>;  // While
     // processing
     // an item, you
     // may
     // wish to query it for sub-items
-    std::shared_ptr<Item> GetFinalReceiptItemByReferenceNum(
-        std::int64_t lReferenceNumber);  // The final receipt item MAY be
-                                         // present, and co-relates to others
-                                         // that share its "in reference to"
-                                         // value. (Others such as
-                                         // marketReceipts and paymentReceipts.)
-    std::int32_t GetItemCountInRefTo(std::int64_t lReference);  // Count the
-                                                                // number
+    auto GetFinalReceiptItemByReferenceNum(std::int64_t lReferenceNumber)
+        -> std::shared_ptr<Item>;  // The final receipt item MAY be
+                                   // present, and co-relates to others
+                                   // that share its "in reference to"
+                                   // value. (Others such as
+                                   // marketReceipts and paymentReceipts.)
+    auto GetItemCountInRefTo(std::int64_t lReference)
+        -> std::int32_t;  // Count the
+                          // number
     // of items that are
     // IN REFERENCE TO
     // some transaction#.
-    inline std::int32_t GetItemCount() const
+    inline auto GetItemCount() const -> std::int32_t
     {
         return static_cast<std::int32_t>(m_listItems.size());
     }
@@ -142,7 +140,7 @@ public:
     {
         m_lNewOutboxTransNum = lTransNum;
     }
-    inline std::int64_t GetNewOutboxTransNum() const
+    inline auto GetNewOutboxTransNum() const -> std::int64_t
     {
         return m_lNewOutboxTransNum;
     }                     // See above comment in protected section.
@@ -157,7 +155,7 @@ public:
     // Call this on the server side, on a balanceStatement item, to verify
     // whether the wallet side set it up correctly (and thus it's okay to sign
     // and return with acknowledgement.)
-    bool VerifyBalanceStatement(
+    auto VerifyBalanceStatement(
         std::int64_t lActualAdjustment,
         const otx::context::Client& context,
         const Ledger& THE_INBOX,
@@ -166,26 +164,27 @@ public:
         const OTTransaction& TARGET_TRANSACTION,
         const std::set<TransactionNumber>& excluded,
         const PasswordPrompt& reason,
-        TransactionNumber outboxNum = 0) const;  // Used in special case of
-                                                 // transfers (the user didn't
-                                                 // know the outbox trans# when
-                                                 // constructing the original
-                                                 // request.) Unused when 0.
-                                                 // server-side
-    bool VerifyTransactionStatement(
+        TransactionNumber outboxNum = 0) const
+        -> bool;  // Used in special case of
+                  // transfers (the user didn't
+                  // know the outbox trans# when
+                  // constructing the original
+                  // request.) Unused when 0.
+                  // server-side
+    auto VerifyTransactionStatement(
         const otx::context::Client& THE_NYM,
         const OTTransaction& TARGET_TRANSACTION,
         const std::set<TransactionNumber> newNumbers,
-        const bool bIsRealTransaction = true) const;
-    bool VerifyTransactionStatement(
+        const bool bIsRealTransaction = true) const -> bool;
+    auto VerifyTransactionStatement(
         const otx::context::Client& THE_NYM,
         const OTTransaction& TARGET_TRANSACTION,
-        const bool bIsRealTransaction = true) const;
-    inline Item::itemStatus GetStatus() const { return m_Status; }
+        const bool bIsRealTransaction = true) const -> bool;
+    inline auto GetStatus() const -> Item::itemStatus { return m_Status; }
     inline void SetStatus(const Item::itemStatus& theVal) { m_Status = theVal; }
-    inline itemType GetType() const { return m_Type; }
+    inline auto GetType() const -> itemType { return m_Type; }
     inline void SetType(itemType theType) { m_Type = theType; }
-    inline std::int64_t GetAmount() const { return m_lAmount; }
+    inline auto GetAmount() const -> std::int64_t { return m_lAmount; }
     inline void SetAmount(std::int64_t lAmount) { m_lAmount = lAmount; }
     void GetNote(String& theStr) const;
     void SetNote(const String& theStr);
@@ -193,7 +192,10 @@ public:
     void GetAttachment(Data& output) const;
     void SetAttachment(const String& theStr);
     void SetAttachment(const Data& input);
-    inline const Identifier& GetDestinationAcctID() const { return m_AcctToID; }
+    inline auto GetDestinationAcctID() const -> const Identifier&
+    {
+        return m_AcctToID;
+    }
     inline void SetDestinationAcctID(const Identifier& theID)
     {
         m_AcctToID = theID;
@@ -236,7 +238,7 @@ protected:
     TransactionNumber m_lClosingTransactionNo{0};
 
     // return -1 if error, 0 if nothing, and 1 if the node was processed.
-    std::int32_t ProcessXMLNode(irr::io::IrrXMLReader*& xml) override;
+    auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
     // Before transmission or serialization, this is where the ledger saves its
     // contents
     void UpdateContents(const PasswordPrompt& reason) override;
@@ -246,26 +248,26 @@ private:  // Private prevents erroneous use by other classes.
 
     using ot_super = OTTransactionType;
 
-    itemType GetItemTypeFromString(const String& strType);
+    auto GetItemTypeFromString(const String& strType) -> itemType;
 
     // There is the OTTransaction transfer, which is a transaction type, and
     // there is also the Item transfer, which is an item type. They are
     // related. Every transaction has a list of items, and these perform the
     // transaction. A transaction trying to TRANSFER would have these items:
     // transfer, serverfee, balance, and possibly outboxhash.
-    Item(const api::internal::Core& api);
+    Item(const api::Core& api);
     Item(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identifier::Nym& theNymID,
         const Item& theOwner);  // From owner we can get acct ID, server ID,
                                 // and transaction Num
     Item(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identifier::Nym& theNymID,
         const OTTransaction& theOwner);  // From owner we can get acct ID,
                                          // server ID, and transaction Num
     Item(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identifier::Nym& theNymID,
         const OTTransaction& theOwner,
         itemType theType,

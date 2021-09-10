@@ -9,10 +9,10 @@
 
 #include <memory>
 
-#include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/client/Contacts.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/core/Log.hpp"
 
@@ -20,7 +20,7 @@ namespace opentxs::factory
 {
 auto PayableListItem(
     const ui::implementation::PayableInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ui::implementation::PayableListRowID& rowID,
     const ui::implementation::PayableListSortKey& key,
     const std::string& paymentcode,
@@ -38,7 +38,7 @@ namespace opentxs::ui::implementation
 {
 PayableListItem::PayableListItem(
     const PayableInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const PayableListRowID& rowID,
     const PayableListSortKey& key,
     const std::string& paymentcode,

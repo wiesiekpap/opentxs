@@ -16,10 +16,10 @@ namespace crypto
 {
 namespace key
 {
-class RSA : virtual public Asymmetric
+class OPENTXS_EXPORT RSA : virtual public Asymmetric
 {
 public:
-    OPENTXS_EXPORT ~RSA() override = default;
+    ~RSA() override = default;
 
 protected:
     RSA() = default;
@@ -27,8 +27,8 @@ protected:
 private:
     RSA(const RSA&) = delete;
     RSA(RSA&&) = delete;
-    RSA& operator=(const RSA&) = delete;
-    RSA& operator=(RSA&&) = delete;
+    auto operator=(const RSA&) -> RSA& = delete;
+    auto operator=(RSA&&) -> RSA& = delete;
 };
 }  // namespace key
 }  // namespace crypto

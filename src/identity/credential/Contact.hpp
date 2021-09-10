@@ -17,10 +17,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identity
@@ -65,7 +62,7 @@ private:
         -> std::shared_ptr<Base::SerializedType> final;
 
     Contact(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identity::internal::Authority& parent,
         const identity::Source& source,
         const internal::Primary& master,
@@ -73,7 +70,7 @@ private:
         const VersionNumber version,
         const PasswordPrompt& reason) noexcept(false);
     Contact(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identity::internal::Authority& parent,
         const identity::Source& source,
         const internal::Primary& master,

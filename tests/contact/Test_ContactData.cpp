@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "1_Internal.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/contact/Contact.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
@@ -42,13 +41,13 @@ public:
     Test_ContactData()
         : api_(ot::Context().StartClient(0))
         , contactData_(
-              dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+              dynamic_cast<const ot::api::client::Manager&>(api_),
               std::string("contactDataNym"),
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
               {})
         , activeContactItem_(new ot::ContactItem(
-              dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+              dynamic_cast<const ot::api::client::Manager&>(api_),
               std::string("activeContactItem"),
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
@@ -164,7 +163,7 @@ void Test_ContactData::testAddItemMethod(
 
     const auto& section1 =
         std::shared_ptr<ot::ContactSection>(new ot::ContactSection(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactSectionNym1",
             version,
             version,
@@ -173,7 +172,7 @@ void Test_ContactData::testAddItemMethod(
                 {ot::contact::ContactItemType::BCH, group1}}));
 
     const ot::ContactData data1(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("contactDataNym1"),
         version,
         version,
@@ -194,7 +193,7 @@ void Test_ContactData::testAddItemMethod(
     // Verify that the item was made primary.
     const ot::OTIdentifier identifier1(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym1",
             sectionName,
             ot::contact::ContactItemType::BCH,
@@ -217,7 +216,7 @@ void Test_ContactData::testAddItemMethod(
     // Verify that the item wasn't made primary.
     const ot::OTIdentifier identifier2(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym1",
             sectionName,
             ot::contact::ContactItemType::BCH,
@@ -243,7 +242,7 @@ void Test_ContactData::testAddItemMethod(
     // Verify that the item was made primary.
     const ot::OTIdentifier identifier3(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym1",
             sectionName,
             ot::contact::ContactItemType::EUR,
@@ -269,7 +268,7 @@ void Test_ContactData::testAddItemMethod(
     // Verify that the item was made active.
     const ot::OTIdentifier identifier4(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym1",
             sectionName,
             ot::contact::ContactItemType::USD,
@@ -292,7 +291,7 @@ void Test_ContactData::testAddItemMethod(
     // Verify that the item was made primary.
     const ot::OTIdentifier identifier5(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym1",
             sectionName,
             ot::contact::ContactItemType::USD,
@@ -318,7 +317,7 @@ void Test_ContactData::testAddItemMethod2(
 
     const auto& section1 =
         std::shared_ptr<ot::ContactSection>(new ot::ContactSection(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactSectionNym1",
             version,
             version,
@@ -326,7 +325,7 @@ void Test_ContactData::testAddItemMethod2(
             ot::ContactSection::GroupMap{{itemType, group1}}));
 
     const ot::ContactData data1(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("contactDataNym1"),
         version,
         version,
@@ -342,7 +341,7 @@ void Test_ContactData::testAddItemMethod2(
     // Verify that the item was made primary.
     const ot::OTIdentifier identifier1(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym1",
             sectionName,
             itemType,
@@ -360,7 +359,7 @@ void Test_ContactData::testAddItemMethod2(
     // Verify that the item wasn't made primary.
     const ot::OTIdentifier identifier2(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym1",
             sectionName,
             itemType,
@@ -375,7 +374,7 @@ void Test_ContactData::testAddItemMethod2(
     // Add a contact for a type with no group.
     const auto& section2 =
         std::shared_ptr<ot::ContactSection>(new ot::ContactSection(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactSectionNym2",
             version,
             version,
@@ -383,7 +382,7 @@ void Test_ContactData::testAddItemMethod2(
             ot::ContactSection::GroupMap{}));
 
     const ot::ContactData data4(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("contactDataNym4"),
         version,
         version,
@@ -396,7 +395,7 @@ void Test_ContactData::testAddItemMethod2(
     // Verify that the item was made primary.
     const ot::OTIdentifier identifier3(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym4",
             sectionName,
             itemType,
@@ -414,7 +413,7 @@ void Test_ContactData::testAddItemMethod2(
     // Verify that the item was made active.
     const ot::OTIdentifier identifier4(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym4",
             sectionName,
             itemType,
@@ -440,7 +439,7 @@ static const std::string expectedStringOutput =
 TEST_F(Test_ContactData, first_constructor)
 {
     const std::shared_ptr<ot::ContactSection> section1(new ot::ContactSection(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         "testContactSectionNym1",
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -450,7 +449,7 @@ TEST_F(Test_ContactData, first_constructor)
     const ot::ContactData::SectionMap map{{section1->Type(), section1}};
 
     const ot::ContactData contactData(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("contactDataNym"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -473,7 +472,7 @@ TEST_F(Test_ContactData, first_constructor)
 TEST_F(Test_ContactData, first_constructor_no_sections)
 {
     const ot::ContactData contactData(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("contactDataNym"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -484,7 +483,7 @@ TEST_F(Test_ContactData, first_constructor_no_sections)
 TEST_F(Test_ContactData, first_constructor_different_versions)
 {
     const ot::ContactData contactData(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("contactDataNym"),
         CONTACT_CONTACT_DATA_VERSION - 1,  // previous version
         CONTACT_CONTACT_DATA_VERSION,
@@ -495,7 +494,7 @@ TEST_F(Test_ContactData, first_constructor_different_versions)
 TEST_F(Test_ContactData, copy_constructor)
 {
     const std::shared_ptr<ot::ContactSection> section1(new ot::ContactSection(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         "testContactSectionNym1",
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -505,7 +504,7 @@ TEST_F(Test_ContactData, copy_constructor)
     const ot::ContactData::SectionMap map{{section1->Type(), section1}};
 
     const ot::ContactData contactData(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("contactDataNym"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -535,7 +534,7 @@ TEST_F(Test_ContactData, operator_plus)
     // Add a ContactData object with a section of the same type.
     const auto& contactItem2 =
         std::shared_ptr<ot::ContactItem>(new ot::ContactItem(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             std::string("contactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
@@ -554,7 +553,7 @@ TEST_F(Test_ContactData, operator_plus)
 
     const auto& section2 =
         std::shared_ptr<ot::ContactSection>(new ot::ContactSection(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactSectionNym2",
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
@@ -562,7 +561,7 @@ TEST_F(Test_ContactData, operator_plus)
             ot::ContactSection::GroupMap{{contactItem2->Type(), group2}}));
 
     const ot::ContactData data2(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("contactDataNym2"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -594,7 +593,7 @@ TEST_F(Test_ContactData, operator_plus)
     // Add a ContactData object with a section of a different type.
     const auto& contactItem4 =
         std::shared_ptr<ot::ContactItem>(new ot::ContactItem(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             std::string("contactItem4"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
@@ -613,7 +612,7 @@ TEST_F(Test_ContactData, operator_plus)
 
     const auto& section4 =
         std::shared_ptr<ot::ContactSection>(new ot::ContactSection(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactSectionNym4",
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
@@ -621,7 +620,7 @@ TEST_F(Test_ContactData, operator_plus)
             ot::ContactSection::GroupMap{{contactItem4->Type(), group4}}));
 
     const ot::ContactData data4(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("contactDataNym4"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -675,7 +674,7 @@ TEST_F(Test_ContactData, operator_plus_different_version)
 {
     // rhs version less than lhs
     const ot::ContactData contactData2(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("contactDataNym"),
         CONTACT_CONTACT_DATA_VERSION - 1,
         CONTACT_CONTACT_DATA_VERSION - 1,
@@ -707,7 +706,7 @@ TEST_F(Test_ContactData, Serialize)
     EXPECT_TRUE(data1.Serialize(ot::writer(bytes), false));
 
     auto restored1 = ot::ContactData{
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         "ContactDataNym1",
         data1.Version(),
         ot::reader(bytes)};
@@ -735,7 +734,7 @@ TEST_F(Test_ContactData, Serialize)
     EXPECT_TRUE(data1.Serialize(ot::writer(bytes), true));
 
     auto restored2 = ot::ContactData{
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         "ContactDataNym1",
         data1.Version(),
         ot::reader(bytes)};
@@ -839,7 +838,7 @@ TEST_F(Test_ContactData, AddItem_claim_different_versions)
 
     const auto& section1 =
         std::shared_ptr<ot::ContactSection>(new ot::ContactSection(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactSectionNym1",
             3,  // version of CONTACTSECTION_CONTRACT section before
                 // CITEMTYPE_BCH was added
@@ -849,7 +848,7 @@ TEST_F(Test_ContactData, AddItem_claim_different_versions)
                 {ot::contact::ContactItemType::BCH, group1}}));
 
     const ot::ContactData data1(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("contactDataNym1"),
         3,  // version of CONTACTSECTION_CONTRACT section before CITEMTYPE_BCH
             // was added
@@ -895,7 +894,7 @@ TEST_F(Test_ContactData, AddItem_item)
     // Add an item to a ContactData with a section.
     const auto& contactItem2 =
         std::shared_ptr<ot::ContactItem>(new ot::ContactItem(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             std::string("contactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
@@ -930,7 +929,7 @@ TEST_F(Test_ContactData, AddItem_item_different_versions)
 
     const auto& section1 =
         std::shared_ptr<ot::ContactSection>(new ot::ContactSection(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactSectionNym1",
             3,  // version of CONTACTSECTION_CONTRACT section before
                 // CITEMTYPE_BCH was added
@@ -940,7 +939,7 @@ TEST_F(Test_ContactData, AddItem_item_different_versions)
                 {ot::contact::ContactItemType::BCH, group1}}));
 
     const ot::ContactData data1(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("contactDataNym1"),
         3,  // version of CONTACTSECTION_CONTRACT section before CITEMTYPE_BCH
             // was added
@@ -950,7 +949,7 @@ TEST_F(Test_ContactData, AddItem_item_different_versions)
 
     const auto& contactItem1 =
         std::shared_ptr<ot::ContactItem>(new ot::ContactItem(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             std::string("contactItem1"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
@@ -1020,7 +1019,7 @@ TEST_F(Test_ContactData, AddPreferredOTServer)
 
     const auto& section1 =
         std::shared_ptr<ot::ContactSection>(new ot::ContactSection(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactSectionNym1",
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
@@ -1029,7 +1028,7 @@ TEST_F(Test_ContactData, AddPreferredOTServer)
                 {ot::contact::ContactItemType::Opentxs, group1}}));
 
     const ot::ContactData data1(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("contactDataNym1"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -1038,7 +1037,7 @@ TEST_F(Test_ContactData, AddPreferredOTServer)
 
     const ot::OTIdentifier serverIdentifier1(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym1",
             ot::contact::ContactSectionName::Communication,
             ot::contact::ContactItemType::Opentxs,
@@ -1051,7 +1050,7 @@ TEST_F(Test_ContactData, AddPreferredOTServer)
     // Verify that the item was made primary.
     const ot::OTIdentifier identifier1(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym1",
             ot::contact::ContactSectionName::Communication,
             ot::contact::ContactItemType::Opentxs,
@@ -1066,7 +1065,7 @@ TEST_F(Test_ContactData, AddPreferredOTServer)
     // Add a server to a group with a primary.
     const ot::OTIdentifier serverIdentifier2(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym1",
             ot::contact::ContactSectionName::Communication,
             ot::contact::ContactItemType::Opentxs,
@@ -1079,7 +1078,7 @@ TEST_F(Test_ContactData, AddPreferredOTServer)
     // Verify that the item wasn't made primary.
     const ot::OTIdentifier identifier2(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym1",
             ot::contact::ContactSectionName::Communication,
             ot::contact::ContactItemType::Opentxs,
@@ -1094,7 +1093,7 @@ TEST_F(Test_ContactData, AddPreferredOTServer)
     // Add a server to a ContactData with no group.
     const ot::OTIdentifier serverIdentifier3(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym",
             ot::contact::ContactSectionName::Communication,
             ot::contact::ContactItemType::Opentxs,
@@ -1114,7 +1113,7 @@ TEST_F(Test_ContactData, AddPreferredOTServer)
     // Verify that the item was made primary.
     const ot::OTIdentifier identifier3(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym",
             ot::contact::ContactSectionName::Communication,
             ot::contact::ContactItemType::Opentxs,
@@ -1129,7 +1128,7 @@ TEST_F(Test_ContactData, AddPreferredOTServer)
     // Add a primary server.
     const ot::OTIdentifier serverIdentifier4(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym",
             ot::contact::ContactSectionName::Communication,
             ot::contact::ContactItemType::Opentxs,
@@ -1142,7 +1141,7 @@ TEST_F(Test_ContactData, AddPreferredOTServer)
     // Verify that the item was made primary.
     const ot::OTIdentifier identifier4(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym",
             ot::contact::ContactSectionName::Communication,
             ot::contact::ContactItemType::Opentxs,
@@ -1177,7 +1176,7 @@ TEST_F(Test_ContactData, AddSocialMediaProfile)
     // Verify that the item was made primary.
     const ot::OTIdentifier identifier1(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym",
             ot::contact::ContactSectionName::Profile,
             ot::contact::ContactItemType::Aboutme,
@@ -1195,7 +1194,7 @@ TEST_F(Test_ContactData, AddSocialMediaProfile)
     // Verify that the item was made primary.
     const ot::OTIdentifier identifier2(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym",
             ot::contact::ContactSectionName::Profile,
             ot::contact::ContactItemType::Aboutme,
@@ -1213,7 +1212,7 @@ TEST_F(Test_ContactData, AddSocialMediaProfile)
     // Verify that the item was made active.
     const ot::OTIdentifier identifier3(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym",
             ot::contact::ContactSectionName::Profile,
             ot::contact::ContactItemType::Aboutme,
@@ -1232,7 +1231,7 @@ TEST_F(Test_ContactData, AddSocialMediaProfile)
     // Verify that it was added to the profile section.
     const ot::OTIdentifier identifier4(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym",
             ot::contact::ContactSectionName::Profile,
             ot::contact::ContactItemType::Linkedin,
@@ -1245,7 +1244,7 @@ TEST_F(Test_ContactData, AddSocialMediaProfile)
     // Verify that it was added to the communication section.
     const ot::OTIdentifier identifier5(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym",
             ot::contact::ContactSectionName::Communication,
             ot::contact::ContactItemType::Linkedin,
@@ -1263,7 +1262,7 @@ TEST_F(Test_ContactData, AddSocialMediaProfile)
     // Verify that it was added to the profile section.
     const ot::OTIdentifier identifier6(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym",
             ot::contact::ContactSectionName::Profile,
             ot::contact::ContactItemType::Yahoo,
@@ -1276,7 +1275,7 @@ TEST_F(Test_ContactData, AddSocialMediaProfile)
     // Verify that it was added to the identifier section.
     const ot::OTIdentifier identifier7(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym",
             ot::contact::ContactSectionName::Identifier,
             ot::contact::ContactItemType::Yahoo,
@@ -1294,7 +1293,7 @@ TEST_F(Test_ContactData, AddSocialMediaProfile)
     // Verify that it was added to the profile section.
     const ot::OTIdentifier identifier8(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym",
             ot::contact::ContactSectionName::Profile,
             ot::contact::ContactItemType::Twitter,
@@ -1307,7 +1306,7 @@ TEST_F(Test_ContactData, AddSocialMediaProfile)
     // Verify that it was added to the communication section.
     const ot::OTIdentifier identifier9(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym",
             ot::contact::ContactSectionName::Communication,
             ot::contact::ContactItemType::Twitter,
@@ -1320,7 +1319,7 @@ TEST_F(Test_ContactData, AddSocialMediaProfile)
     // Verify that it was added to the identifier section.
     const ot::OTIdentifier identifier10(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym",
             ot::contact::ContactSectionName::Identifier,
             ot::contact::ContactItemType::Twitter,
@@ -1499,7 +1498,7 @@ TEST_F(Test_ContactData, Delete)
     const auto& data1 = contactData_.AddItem(activeContactItem_);
     const auto& contactItem2 =
         std::shared_ptr<ot::ContactItem>(new ot::ContactItem(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             std::string("contactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
@@ -1608,7 +1607,7 @@ TEST_F(Test_ContactData, Name)
 
     const auto& section1 =
         std::shared_ptr<ot::ContactSection>(new ot::ContactSection(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactSectionNym1",
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
@@ -1617,7 +1616,7 @@ TEST_F(Test_ContactData, Name)
                 {ot::contact::ContactItemType::Individual, group1}}));
 
     const ot::ContactData data1(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("contactDataNym1"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -1667,7 +1666,7 @@ TEST_F(Test_ContactData, PreferredOTServer)
 
     const auto& section1 =
         std::shared_ptr<ot::ContactSection>(new ot::ContactSection(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactSectionNym1",
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
@@ -1676,7 +1675,7 @@ TEST_F(Test_ContactData, PreferredOTServer)
                 {ot::contact::ContactItemType::Opentxs, group1}}));
 
     const ot::ContactData data1(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("contactDataNym1"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -1689,7 +1688,7 @@ TEST_F(Test_ContactData, PreferredOTServer)
     // Test getting the preferred server.
     const ot::OTIdentifier serverIdentifier2(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym",
             ot::contact::ContactSectionName::Communication,
             ot::contact::ContactItemType::Opentxs,
@@ -1719,7 +1718,7 @@ TEST_F(Test_ContactData, SetCommonName)
     const auto& data1 = contactData_.SetCommonName("commonName");
     const ot::OTIdentifier identifier(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym",
             ot::contact::ContactSectionName::Identifier,
             ot::contact::ContactItemType::Commonname,
@@ -1743,7 +1742,7 @@ TEST_F(Test_ContactData, SetName)
     // Verify the item was created in the scope section and made primary.
     const ot::OTIdentifier identifier1(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym",
             ot::contact::ContactSectionName::Scope,
             ot::contact::ContactItemType::Individual,
@@ -1761,7 +1760,7 @@ TEST_F(Test_ContactData, SetName)
     const auto& data3 = data2.SetName("thirdName", false);
     const ot::OTIdentifier identifier2(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym",
             ot::contact::ContactSectionName::Scope,
             ot::contact::ContactItemType::Individual,
@@ -1782,7 +1781,7 @@ TEST_F(Test_ContactData, SetScope)
     // Verify the scope item was created.
     const ot::OTIdentifier identifier1(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym",
             ot::contact::ContactSectionName::Scope,
             ot::contact::ContactItemType::Organization,
@@ -1801,7 +1800,7 @@ TEST_F(Test_ContactData, SetScope)
     // Verify the item wasn't added.
     const ot::OTIdentifier identifier2(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "contactDataNym",
             ot::contact::ContactSectionName::Scope,
             ot::contact::ContactItemType::Business,
@@ -1820,7 +1819,7 @@ TEST_F(Test_ContactData, SetScope)
 TEST_F(Test_ContactData, SetScope_different_versions)
 {
     const ot::ContactData data1(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("dataNym1"),
         3,  // version of CONTACTSECTION_SCOPE section before CITEMTYPE_BOT
             // was added

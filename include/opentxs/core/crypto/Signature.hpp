@@ -15,10 +15,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 class OTSignatureMetadata;
@@ -32,11 +29,11 @@ namespace opentxs
 class OPENTXS_EXPORT Signature : virtual public Armored
 {
 public:
-    static Pimpl<opentxs::Signature> Factory(const api::internal::Core& api);
+    static auto Factory(const api::Core& api) -> Pimpl<opentxs::Signature>;
 
-    virtual const OTSignatureMetadata& getMetaData() const = 0;
+    virtual auto getMetaData() const -> const OTSignatureMetadata& = 0;
 
-    virtual OTSignatureMetadata& getMetaData() = 0;
+    virtual auto getMetaData() -> OTSignatureMetadata& = 0;
 
     ~Signature() override = default;
 
@@ -46,8 +43,8 @@ protected:
 private:
     Signature(const Signature&) = delete;
     Signature(Signature&&) = delete;
-    Signature& operator=(const Signature&) = delete;
-    Signature& operator=(Signature&&) = delete;
+    auto operator=(const Signature&) -> Signature& = delete;
+    auto operator=(Signature&&) -> Signature& = delete;
 };
 }  // namespace opentxs
 #endif

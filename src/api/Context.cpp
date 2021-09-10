@@ -129,8 +129,7 @@ auto Context::client_instance(const int count) -> int
     return (2 * count);
 }
 
-auto Context::Client(const int instance) const
-    -> const api::client::internal::Manager&
+auto Context::Client(const int instance) const -> const api::client::Manager&
 {
     auto& output = client_.at(instance);
 
@@ -441,11 +440,11 @@ void Context::start_client(const Lock& lock, const Options& args) const
 
     OT_ASSERT(client);
 
-    client->Init();
+    client->InternalClient().Init();
 }
 
 auto Context::StartClient(const Options& args, const int instance) const
-    -> const api::client::internal::Manager&
+    -> const api::client::Manager&
 {
     auto lock = Lock{lock_};
 
@@ -462,7 +461,7 @@ auto Context::StartClient(const Options& args, const int instance) const
 }
 
 auto Context::StartClient(const int instance) const
-    -> const api::client::internal::Manager&
+    -> const api::client::Manager&
 {
     static const auto blank = Options{};
 
@@ -473,8 +472,7 @@ auto Context::StartClient(
     const Options& args,
     const int instance,
     const std::string& recoverWords,
-    const std::string& recoverPassphrase) const
-    -> const api::client::internal::Manager&
+    const std::string& recoverPassphrase) const -> const api::client::Manager&
 {
 #if OT_CRYPTO_WITH_BIP32
     const auto& client = StartClient(args, instance);

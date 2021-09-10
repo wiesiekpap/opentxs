@@ -15,10 +15,10 @@
 #include <utility>
 
 #include "crypto/key/Null.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
@@ -78,7 +78,7 @@ const std::map<crypto::SignatureRole, VersionNumber> Asymmetric::sig_version_{
 };
 
 Asymmetric::Asymmetric(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::AsymmetricProvider& engine,
     const crypto::key::asymmetric::Algorithm keyType,
     const crypto::key::asymmetric::Role role,
@@ -126,7 +126,7 @@ Asymmetric::Asymmetric(
 }
 
 Asymmetric::Asymmetric(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::AsymmetricProvider& engine,
     const crypto::key::asymmetric::Algorithm keyType,
     const crypto::key::asymmetric::Role role,
@@ -146,7 +146,7 @@ Asymmetric::Asymmetric(
 }
 
 Asymmetric::Asymmetric(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::AsymmetricProvider& engine,
     const proto::AsymmetricKey& serialized,
     EncryptedExtractor getEncrypted) noexcept(false)
@@ -260,8 +260,7 @@ auto Asymmetric::CalculateHash(
         output->WriteInto());
 
     if (false == hashed) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to calculate hash")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to calculate hash").Flush();
 
         return Data::Factory();
     }
@@ -272,7 +271,7 @@ auto Asymmetric::CalculateHash(
 auto Asymmetric::CalculateID(Identifier& output) const noexcept -> bool
 {
     if (false == HasPublic()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing public key").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing public key").Flush();
 
         return false;
     }
@@ -290,7 +289,7 @@ auto Asymmetric::CalculateTag(
     auto lock = Lock{lock_};
 
     if (false == has_private_) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Not a private key.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Not a private key.").Flush();
 
         return false;
     }
@@ -303,14 +302,14 @@ auto Asymmetric::CalculateTag(
                 .GetPublicKey();
 
         if (false == get_tag(lock, key, nym.GetMasterCredID(), reason, tag)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to calculate tag.")
+            LogOutput(OT_METHOD)(__func__)(": Failed to calculate tag.")
                 .Flush();
 
             return false;
         }
 
         if (false == get_password(lock, key, reason, password)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failed to calculate session password.")
                 .Flush();
 
@@ -319,7 +318,7 @@ auto Asymmetric::CalculateTag(
 
         return true;
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid credential").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid credential").Flush();
 
         return false;
     }
@@ -334,7 +333,7 @@ auto Asymmetric::CalculateTag(
     auto lock = Lock{lock_};
 
     if (false == has_private_) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Not a private key.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Not a private key.").Flush();
 
         return false;
     }
@@ -350,7 +349,7 @@ auto Asymmetric::CalculateSessionPassword(
     auto lock = Lock{lock_};
 
     if (false == has_private_) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Not a private key.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Not a private key.").Flush();
 
         return false;
     }
@@ -359,7 +358,7 @@ auto Asymmetric::CalculateSessionPassword(
 }
 
 auto Asymmetric::create_key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::AsymmetricProvider& provider,
     const NymParameters& options,
     const crypto::key::asymmetric::Role role,
@@ -392,8 +391,7 @@ auto Asymmetric::encrypt_key(
     auto output = std::make_unique<proto::Ciphertext>();
 
     if (false == bool(output)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct output")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to construct output").Flush();
 
         return {};
     }
@@ -410,7 +408,7 @@ auto Asymmetric::encrypt_key(
 }
 
 auto Asymmetric::encrypt_key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const PasswordPrompt& reason,
     const ReadView plaintext,
     proto::Ciphertext& ciphertext) noexcept -> bool
@@ -431,7 +429,7 @@ auto Asymmetric::encrypt_key(
         sessionKey.Encrypt(plaintext, reason, ciphertext, attach);
 
     if (false == encrypted) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to encrypt key").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to encrypt key").Flush();
 
         return false;
     }
@@ -517,8 +515,7 @@ auto Asymmetric::get_tag(
                      private_key(lock, reason),
                      SecretStyle::Default,
                      password)) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
-            ": Failed to calculate shared secret")
+        LogVerbose(OT_METHOD)(__func__)(": Failed to calculate shared secret")
             .Flush();
 
         return false;
@@ -529,7 +526,7 @@ auto Asymmetric::get_tag(
                      password->Bytes(),
                      credential.Bytes(),
                      hashed->WriteInto(Secret::Mode::Mem))) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to hash shared secret")
+        LogOutput(OT_METHOD)(__func__)(": Failed to hash shared secret")
             .Flush();
 
         return false;
@@ -610,14 +607,14 @@ auto Asymmetric::NewSignature(
 
 auto Asymmetric::Path() const noexcept -> const std::string
 {
-    LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect key type.").Flush();
+    LogOutput(OT_METHOD)(__func__)(": Incorrect key type.").Flush();
 
     return "";
 }
 
 auto Asymmetric::Path(proto::HDPath&) const noexcept -> bool
 {
-    LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect key type.").Flush();
+    LogOutput(OT_METHOD)(__func__)(": Incorrect key type.").Flush();
 
     return false;
 }
@@ -637,7 +634,7 @@ auto Asymmetric::private_key(const Lock& lock, const PasswordPrompt& reason)
 
         return get_private_key(lock, reason).Bytes();
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -690,7 +687,7 @@ auto Asymmetric::Sign(
     try {
         signature = NewSignature(credential, role, type);
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid signature role.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid signature role.").Flush();
 
         return false;
     }
@@ -710,7 +707,7 @@ auto Asymmetric::Sign(
     auto lock = Lock{lock_};
 
     if (false == has_private_) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing private key").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing private key").Flush();
 
         return false;
     }
@@ -719,7 +716,7 @@ auto Asymmetric::Sign(
         engine().Sign(preimage, private_key(lock, reason), hash, output);
 
     if (false == success) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to sign preimage").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to sign preimage").Flush();
     }
 
     return success;
@@ -799,7 +796,7 @@ auto Asymmetric::Verify(const Data& plaintext, const proto::Signature& sig)
     const noexcept -> bool
 {
     if (false == HasPublic()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing public key").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing public key").Flush();
 
         return false;
     }
@@ -811,7 +808,7 @@ auto Asymmetric::Verify(const Data& plaintext, const proto::Signature& sig)
         translate(sig.hashtype()));
 
     if (false == output) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid signature").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid signature").Flush();
     }
 
     return output;

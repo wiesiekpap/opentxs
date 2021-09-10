@@ -54,7 +54,7 @@ auto BlockchainAddress(
             services,
             incoming);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -78,7 +78,7 @@ auto BlockchainAddress(
             ReturnType::instantiate_services(serialized),
             false);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }

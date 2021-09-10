@@ -31,49 +31,49 @@ namespace crypto
 class OPENTXS_EXPORT AsymmetricProvider
 {
 public:
-    static crypto::key::asymmetric::Algorithm CurveToKeyType(
-        const EcdsaCurve& curve);
-    static EcdsaCurve KeyTypeToCurve(
-        const crypto::key::asymmetric::Algorithm& type);
+    static auto CurveToKeyType(const EcdsaCurve& curve)
+        -> crypto::key::asymmetric::Algorithm;
+    static auto KeyTypeToCurve(const crypto::key::asymmetric::Algorithm& type)
+        -> EcdsaCurve;
 
-    virtual bool SeedToCurveKey(
+    virtual auto SeedToCurveKey(
         const ReadView seed,
         const AllocateOutput privateKey,
-        const AllocateOutput publicKey) const noexcept = 0;
-    virtual bool SharedSecret(
+        const AllocateOutput publicKey) const noexcept -> bool = 0;
+    virtual auto SharedSecret(
         const ReadView publicKey,
         const ReadView privateKey,
         const SecretStyle style,
-        Secret& secret) const noexcept = 0;
-    virtual bool RandomKeypair(
+        Secret& secret) const noexcept -> bool = 0;
+    virtual auto RandomKeypair(
         const AllocateOutput privateKey,
         const AllocateOutput publicKey,
         const opentxs::crypto::key::asymmetric::Role role =
             opentxs::crypto::key::asymmetric::Role::Sign,
         const NymParameters& options = {},
-        const AllocateOutput params = {}) const noexcept = 0;
-    virtual bool Sign(
+        const AllocateOutput params = {}) const noexcept -> bool = 0;
+    virtual auto Sign(
         const ReadView plaintext,
         const ReadView key,
         const crypto::HashType hash,
-        const AllocateOutput signature) const = 0;
-    virtual bool SignContract(
+        const AllocateOutput signature) const -> bool = 0;
+    virtual auto SignContract(
         const api::Core& api,
         const String& contract,
         const ReadView key,
         const crypto::HashType hashType,
-        Signature& output) const = 0;
-    virtual bool Verify(
+        Signature& output) const -> bool = 0;
+    virtual auto Verify(
         const ReadView plaintext,
         const ReadView key,
         const ReadView signature,
-        const crypto::HashType hashType) const = 0;
-    virtual bool VerifyContractSignature(
+        const crypto::HashType hashType) const -> bool = 0;
+    virtual auto VerifyContractSignature(
         const api::Core& api,
         const String& strContractToVerify,
         const ReadView key,
         const Signature& theSignature,
-        const crypto::HashType hashType) const = 0;
+        const crypto::HashType hashType) const -> bool = 0;
 
     OPENTXS_NO_EXPORT virtual ~AsymmetricProvider() = default;
 
@@ -83,8 +83,8 @@ protected:
 private:
     AsymmetricProvider(const AsymmetricProvider&) = delete;
     AsymmetricProvider(AsymmetricProvider&&) = delete;
-    AsymmetricProvider& operator=(const AsymmetricProvider&) = delete;
-    AsymmetricProvider& operator=(AsymmetricProvider&&) = delete;
+    auto operator=(const AsymmetricProvider&) -> AsymmetricProvider& = delete;
+    auto operator=(AsymmetricProvider&&) -> AsymmetricProvider& = delete;
 };
 }  // namespace crypto
 }  // namespace opentxs

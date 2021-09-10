@@ -38,7 +38,7 @@ namespace blockchain
 {
 namespace block
 {
-class Block
+class OPENTXS_EXPORT Block
 {
 public:
     using FilterType = filter::Type;
@@ -58,20 +58,17 @@ public:
 
     struct ParsedPatterns;
 
-    OPENTXS_EXPORT virtual auto CalculateSize() const noexcept
-        -> std::size_t = 0;
-    OPENTXS_EXPORT virtual auto ExtractElements(
-        const FilterType style) const noexcept -> std::vector<Space> = 0;
-    OPENTXS_EXPORT virtual auto FindMatches(
+    virtual auto CalculateSize() const noexcept -> std::size_t = 0;
+    virtual auto ExtractElements(const FilterType style) const noexcept
+        -> std::vector<Space> = 0;
+    virtual auto FindMatches(
         const FilterType type,
         const Patterns& txos,
         const Patterns& elements) const noexcept -> Matches = 0;
-    OPENTXS_EXPORT virtual auto Header() const noexcept
-        -> const block::Header& = 0;
-    OPENTXS_EXPORT virtual auto ID() const noexcept -> const block::Hash& = 0;
-    OPENTXS_EXPORT virtual auto Print() const noexcept -> std::string = 0;
-    OPENTXS_EXPORT virtual auto Serialize(AllocateOutput bytes) const noexcept
-        -> bool = 0;
+    virtual auto Header() const noexcept -> const block::Header& = 0;
+    virtual auto ID() const noexcept -> const block::Hash& = 0;
+    virtual auto Print() const noexcept -> std::string = 0;
+    virtual auto Serialize(AllocateOutput bytes) const noexcept -> bool = 0;
 
     virtual ~Block() = default;
 
@@ -81,8 +78,8 @@ protected:
 private:
     Block(const Block&) = delete;
     Block(Block&&) = delete;
-    Block& operator=(const Block&) = delete;
-    Block& operator=(Block&&) = delete;
+    auto operator=(const Block&) -> Block& = delete;
+    auto operator=(Block&&) -> Block& = delete;
 };
 }  // namespace block
 }  // namespace blockchain

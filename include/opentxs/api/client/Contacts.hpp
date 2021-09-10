@@ -39,41 +39,45 @@ namespace client
 class OPENTXS_EXPORT Contacts
 {
 public:
-    virtual std::shared_ptr<const opentxs::Contact> Contact(
-        const Identifier& id) const = 0;
+    virtual auto Contact(const Identifier& id) const
+        -> std::shared_ptr<const opentxs::Contact> = 0;
     /** Returns the contact ID for a nym, if it exists */
-    virtual OTIdentifier ContactID(const identifier::Nym& nymID) const = 0;
-    virtual ObjectList ContactList() const = 0;
-    virtual std::string ContactName(const Identifier& contactID) const = 0;
-    virtual std::string ContactName(
+    virtual auto ContactID(const identifier::Nym& nymID) const
+        -> OTIdentifier = 0;
+    virtual auto ContactList() const -> ObjectList = 0;
+    virtual auto ContactName(const Identifier& contactID) const
+        -> std::string = 0;
+    virtual auto ContactName(
         const Identifier& contactID,
-        contact::ContactItemType currencyHint) const = 0;
-    virtual std::shared_ptr<const opentxs::Contact> Merge(
-        const Identifier& parent,
-        const Identifier& child) const = 0;
-    virtual std::unique_ptr<Editor<opentxs::Contact>> mutable_Contact(
-        const Identifier& id) const = 0;
-    virtual std::shared_ptr<const opentxs::Contact> NewContact(
-        const std::string& label) const = 0;
-    virtual std::shared_ptr<const opentxs::Contact> NewContact(
+        contact::ContactItemType currencyHint) const -> std::string = 0;
+    virtual auto Merge(const Identifier& parent, const Identifier& child) const
+        -> std::shared_ptr<const opentxs::Contact> = 0;
+    virtual auto mutable_Contact(const Identifier& id) const
+        -> std::unique_ptr<Editor<opentxs::Contact>> = 0;
+    virtual auto NewContact(const std::string& label) const
+        -> std::shared_ptr<const opentxs::Contact> = 0;
+    virtual auto NewContact(
         const std::string& label,
         const identifier::Nym& nymID,
-        const PaymentCode& paymentCode) const = 0;
-    virtual std::shared_ptr<const opentxs::Contact> NewContactFromAddress(
+        const PaymentCode& paymentCode) const
+        -> std::shared_ptr<const opentxs::Contact> = 0;
+    virtual auto NewContactFromAddress(
         const std::string& address,
         const std::string& label,
-        const opentxs::blockchain::Type currency) const = 0;
+        const opentxs::blockchain::Type currency) const
+        -> std::shared_ptr<const opentxs::Contact> = 0;
     /** Returns an existing contact ID if it exists, or creates a new one */
-    virtual OTIdentifier NymToContact(const identifier::Nym& nymID) const = 0;
+    virtual auto NymToContact(const identifier::Nym& nymID) const
+        -> OTIdentifier = 0;
     /** Returns an existing contact ID if it exists, or creates a new one */
-    virtual OTIdentifier PaymentCodeToContact(
+    virtual auto PaymentCodeToContact(
         const PaymentCode& code,
-        const opentxs::blockchain::Type currency) const = 0;
-    virtual OTIdentifier PaymentCodeToContact(
+        const opentxs::blockchain::Type currency) const -> OTIdentifier = 0;
+    virtual auto PaymentCodeToContact(
         const std::string& code,
-        const opentxs::blockchain::Type currency) const = 0;
-    virtual std::shared_ptr<const opentxs::Contact> Update(
-        const identity::Nym& nym) const = 0;
+        const opentxs::blockchain::Type currency) const -> OTIdentifier = 0;
+    virtual auto Update(const identity::Nym& nym) const
+        -> std::shared_ptr<const opentxs::Contact> = 0;
 
     OPENTXS_NO_EXPORT virtual ~Contacts() = default;
 
@@ -83,8 +87,8 @@ protected:
 private:
     Contacts(const Contacts&) = delete;
     Contacts(Contacts&&) = delete;
-    Contacts& operator=(const Contacts&) = delete;
-    Contacts& operator=(Contacts&&) = delete;
+    auto operator=(const Contacts&) -> Contacts& = delete;
+    auto operator=(Contacts&&) -> Contacts& = delete;
 };
 }  // namespace client
 }  // namespace api

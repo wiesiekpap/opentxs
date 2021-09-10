@@ -29,10 +29,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identity
@@ -120,7 +117,7 @@ protected:
         const identity::credential::internal::Primary& master,
         const PasswordPrompt& reason) noexcept(false) override;
 
-    Key(const api::internal::Core& api,
+    Key(const api::Core& api,
         const identity::internal::Authority& owner,
         const identity::Source& source,
         const NymParameters& nymParameters,
@@ -129,7 +126,7 @@ protected:
         const PasswordPrompt& reason,
         const std::string& masterID,
         const bool useProvidedSigningKey = false) noexcept(false);
-    Key(const api::internal::Core& api,
+    Key(const api::Core& api,
         const identity::internal::Authority& owner,
         const identity::Source& source,
         const proto::Credential& serializedCred,
@@ -140,18 +137,18 @@ private:
     static const VersionConversionMap subversion_to_key_version_;
 
     static auto deserialize_key(
-        const api::internal::Core& api,
+        const api::Core& api,
         const int index,
         const proto::Credential& credential) -> OTKeypair;
     static auto new_key(
-        const api::internal::Core& api,
+        const api::Core& api,
         const proto::KeyRole role,
         const NymParameters& nymParameters,
         const VersionNumber version,
         const PasswordPrompt& reason,
         const ReadView dh = {}) noexcept(false) -> OTKeypair;
     static auto signing_key(
-        const api::internal::Core& api,
+        const api::Core& api,
         const NymParameters& params,
         const VersionNumber subversion,
         const bool useProvided,

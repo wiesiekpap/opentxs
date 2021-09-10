@@ -19,10 +19,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace otx
@@ -48,32 +45,30 @@ public:
     static const VersionNumber DefaultVersion;
     static const VersionNumber MaxVersion;
 
-    static Pimpl<opentxs::otx::Request> Factory(
-        const api::internal::Core& api,
+    static auto Factory(
+        const api::Core& api,
         const Nym_p signer,
         const identifier::Server& server,
         const otx::ServerRequestType type,
         const RequestNumber number,
-        const PasswordPrompt& reason);
-    OPENTXS_NO_EXPORT static Pimpl<opentxs::otx::Request> Factory(
-        const api::internal::Core& api,
-        const proto::ServerRequest serialized);
-    static Pimpl<opentxs::otx::Request> Factory(
-        const api::internal::Core& api,
-        const ReadView& view);
+        const PasswordPrompt& reason) -> Pimpl<opentxs::otx::Request>;
+    OPENTXS_NO_EXPORT static auto Factory(
+        const api::Core& api,
+        const proto::ServerRequest serialized) -> Pimpl<opentxs::otx::Request>;
+    static auto Factory(const api::Core& api, const ReadView& view)
+        -> Pimpl<opentxs::otx::Request>;
 
-    virtual const identifier::Nym& Initiator() const = 0;
-    virtual RequestNumber Number() const = 0;
+    virtual auto Initiator() const -> const identifier::Nym& = 0;
+    virtual auto Number() const -> RequestNumber = 0;
     using Signable::Serialize;
-    virtual bool Serialize(AllocateOutput destination) const = 0;
-    OPENTXS_NO_EXPORT virtual bool Serialize(
-        proto::ServerRequest& serialized) const = 0;
-    virtual const identifier::Server& Server() const = 0;
-    virtual otx::ServerRequestType Type() const = 0;
+    virtual auto Serialize(AllocateOutput destination) const -> bool = 0;
+    OPENTXS_NO_EXPORT virtual auto Serialize(
+        proto::ServerRequest& serialized) const -> bool = 0;
+    virtual auto Server() const -> const identifier::Server& = 0;
+    virtual auto Type() const -> otx::ServerRequestType = 0;
 
-    virtual bool SetIncludeNym(
-        const bool include,
-        const PasswordPrompt& reason) = 0;
+    virtual auto SetIncludeNym(const bool include, const PasswordPrompt& reason)
+        -> bool = 0;
 
     ~Request() override = default;
 
@@ -84,13 +79,13 @@ private:
     friend OTXRequest;
 
 #ifndef _WIN32
-    Request* clone() const noexcept override = 0;
+    auto clone() const noexcept -> Request* override = 0;
 #endif
 
     Request(const Request&) = delete;
     Request(Request&&) = delete;
-    Request& operator=(const Request&) = delete;
-    Request& operator=(Request&&) = delete;
+    auto operator=(const Request&) -> Request& = delete;
+    auto operator=(Request&&) -> Request& = delete;
 };
 }  // namespace otx
 }  // namespace opentxs

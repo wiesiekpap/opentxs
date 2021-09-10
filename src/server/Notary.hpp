@@ -21,10 +21,7 @@ namespace api
 {
 namespace server
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace server
 }  // namespace api
 
@@ -113,7 +110,7 @@ private:
 
     Server& server_;
     const PasswordPrompt& reason_;
-    const opentxs::api::server::internal::Manager& manager_;
+    const opentxs::api::server::Manager& manager_;
     OTZMQPushSocket notification_socket_;
 
     void AddHashesToTransaction(
@@ -300,7 +297,7 @@ private:
     Notary(
         Server& server,
         const PasswordPrompt& reason,
-        const opentxs::api::server::internal::Manager& manager);
+        const opentxs::api::server::Manager& manager);
     Notary() = delete;
     Notary(const Notary&) = delete;
     Notary(Notary&&) = delete;

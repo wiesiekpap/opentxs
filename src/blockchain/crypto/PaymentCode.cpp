@@ -20,16 +20,18 @@
 #include "blockchain/crypto/Deterministic.hpp"
 #include "blockchain/crypto/Element.hpp"
 #include "blockchain/crypto/Subaccount.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/crypto/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
+#include "opentxs/blockchain/crypto/Wallet.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -47,36 +49,34 @@ namespace opentxs::factory
 using ReturnType = blockchain::crypto::implementation::PaymentCode;
 
 auto BlockchainPCSubaccount(
-    const api::internal::Core& api,
-    const blockchain::crypto::internal::Account& parent,
+    const api::Core& api,
+    const blockchain::crypto::Account& parent,
     const opentxs::PaymentCode& local,
     const opentxs::PaymentCode& remote,
     const proto::HDPath& path,
     const Data& txid,
     const PasswordPrompt& reason,
-    Identifier& id) noexcept
-    -> std::unique_ptr<blockchain::crypto::internal::PaymentCode>
+    Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::PaymentCode>
 {
     try {
 
         return std::make_unique<ReturnType>(
             api, parent, local, remote, path, txid, reason, id);
     } catch (const std::exception& e) {
-        LogVerbose("opentxs::Factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogVerbose("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
 }
 
 auto BlockchainPCSubaccount(
-    const api::internal::Core& api,
-    const blockchain::crypto::internal::Account& parent,
+    const api::Core& api,
+    const blockchain::crypto::Account& parent,
     const proto::Bip47Channel& serialized,
-    Identifier& id) noexcept
-    -> std::unique_ptr<blockchain::crypto::internal::PaymentCode>
+    Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::PaymentCode>
 {
     auto contact =
-        parent.ParentInternal().Parent().Contacts().PaymentCodeToContact(
+        parent.Parent().Parent().Internal().Contacts().PaymentCodeToContact(
             api.Factory().PaymentCode(serialized.remote()), parent.Chain());
 
     OT_ASSERT(false == contact->empty());
@@ -86,7 +86,7 @@ auto BlockchainPCSubaccount(
         return std::make_unique<ReturnType>(
             api, parent, serialized, id, std::move(contact));
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
@@ -118,8 +118,8 @@ constexpr auto internalType{Subchain::Outgoing};
 constexpr auto externalType{Subchain::Incoming};
 
 PaymentCode::PaymentCode(
-    const api::internal::Core& api,
-    const internal::Account& parent,
+    const api::Core& api,
+    const Account& parent,
     const opentxs::PaymentCode& local,
     const opentxs::PaymentCode& remote,
     const proto::HDPath& path,
@@ -146,7 +146,7 @@ PaymentCode::PaymentCode(
     , local_(local, compare_)
     , remote_(remote, compare_)
     , contact_id_(
-          parent_.ParentInternal().Parent().Contacts().PaymentCodeToContact(
+          parent_.Parent().Parent().Internal().Contacts().PaymentCodeToContact(
               remote_,
               chain_))
 {
@@ -164,12 +164,12 @@ PaymentCode::PaymentCode(
     if (contact_id_->empty()) { throw std::runtime_error("Missing contact"); }
 
     init(reason);
-    parent_.FindNym(remote_.get().ID());
+    parent_.Internal().FindNym(remote_.get().ID());
 }
 
 PaymentCode::PaymentCode(
-    const api::internal::Core& api,
-    const internal::Account& parent,
+    const api::Core& api,
+    const Account& parent,
     const SerializedType& serialized,
     Identifier& id,
     OTIdentifier&& contact) noexcept(false)
@@ -195,7 +195,7 @@ PaymentCode::PaymentCode(
                       std::forward_as_tuple(
                           std::make_unique<implementation::Element>(
                               api,
-                              parent.ParentInternal().Parent(),
+                              parent.Parent().Parent(),
                               *this,
                               parent.Chain(),
                               internalType,
@@ -210,7 +210,7 @@ PaymentCode::PaymentCode(
                       std::forward_as_tuple(
                           std::make_unique<implementation::Element>(
                               api,
-                              parent.ParentInternal().Parent(),
+                              parent.Parent().Parent(),
                               *this,
                               parent.Chain(),
                               externalType,
@@ -243,14 +243,14 @@ PaymentCode::PaymentCode(
     , local_(api_.Factory().PaymentCode(serialized.local()), compare_)
     , remote_(api_.Factory().PaymentCode(serialized.remote()), compare_)
     , contact_id_(
-          parent_.ParentInternal().Parent().Contacts().PaymentCodeToContact(
+          parent_.Parent().Parent().Internal().Contacts().PaymentCodeToContact(
               remote_,
               chain_))
 {
     if (contact_id_->empty()) { throw std::runtime_error("Missing contact"); }
 
     init();
-    parent_.FindNym(remote_.get().ID());
+    parent_.Internal().FindNym(remote_.get().ID());
 }
 
 auto PaymentCode::account_already_exists(const rLock&) const noexcept -> bool
@@ -281,7 +281,7 @@ auto PaymentCode::has_private(const PasswordPrompt& reason) const noexcept
     auto pKey = local_.get().Key();
 
     if (!pKey) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": No local HD key").Flush();
+        LogOutput(OT_METHOD)(__func__)(": No local HD key").Flush();
 
         return false;
     }
@@ -308,7 +308,7 @@ auto PaymentCode::PrivateKey(
     const PasswordPrompt& reason) const noexcept -> ECKey
 {
     if (false == has_private(reason)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing private key").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing private key").Flush();
 
         return {};
     }
@@ -321,7 +321,7 @@ auto PaymentCode::PrivateKey(
             return local_.get().Incoming(remote_, index, chain_, reason);
         }
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid subchain").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Invalid subchain").Flush();
 
             return {};
         }
@@ -361,7 +361,7 @@ auto PaymentCode::save(const rLock& lock) const noexcept -> bool
     serialize_deterministic(lock, *serialized.mutable_deterministic());
     auto local = proto::PaymentCode{};
     if (false == local_.get().Serialize(local)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to serialize local paymentcode")
             .Flush();
 
@@ -370,7 +370,7 @@ auto PaymentCode::save(const rLock& lock) const noexcept -> bool
     *serialized.mutable_local() = local;
     auto remote = proto::PaymentCode{};
     if (false == remote_.get().Serialize(remote)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to serialize remote paymentcode")
             .Flush();
 
@@ -388,7 +388,7 @@ auto PaymentCode::save(const rLock& lock) const noexcept -> bool
         }
 
         for (const auto& [index, address] : data_.external_.map_) {
-            *dir.add_address() = address->Serialize();
+            *dir.add_address() = address->Internal().Serialize();
         }
     }
 
@@ -402,15 +402,14 @@ auto PaymentCode::save(const rLock& lock) const noexcept -> bool
         }
 
         for (const auto& [index, address] : data_.internal_.map_) {
-            *dir.add_address() = address->Serialize();
+            *dir.add_address() = address->Internal().Serialize();
         }
     }
 
     const bool saved = api_.Storage().Store(parent_.NymID(), id_, serialized);
 
     if (false == saved) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to save PaymentCode account")
+        LogOutput(OT_METHOD)(__func__)(": Failed to save PaymentCode account")
             .Flush();
 
         return false;

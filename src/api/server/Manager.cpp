@@ -96,7 +96,7 @@ auto Factory::ServerManager(
         try {
             manager->Init();
         } catch (const std::invalid_argument& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": There was a problem creating the server. The server "
                 "contract will be deleted. Error: ")(e.what())
                 .Flush();
@@ -177,8 +177,7 @@ Manager::Manager(
 
 void Manager::Cleanup()
 {
-    LogDetail(OT_METHOD)(__FUNCTION__)(": Shutting down and cleaning up.")
-        .Flush();
+    LogDetail(OT_METHOD)(__func__)(": Shutting down and cleaning up.").Flush();
     shutdown_sender_.Activate();
     message_processor_.cleanup();
     message_processor_p_.reset();
@@ -205,7 +204,7 @@ void Manager::generate_mint(
     auto mint = GetPrivateMint(Factory().UnitID(unitID), series);
 
     if (mint) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Mint already exists.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Mint already exists.").Flush();
 
         return;
     }
@@ -231,7 +230,7 @@ void Manager::generate_mint(
     const auto validTo = now + validInterval;
 
     if (false == verify_mint_directory(serverID)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to create mint directory.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to create mint directory.")
             .Flush();
 
         return;
@@ -488,8 +487,7 @@ void Manager::mint() const
         auto mint = GetPrivateMint(Factory().UnitID(unitID), last);
 
         if (false == bool(mint)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to load existing series.")
+            LogOutput(OT_METHOD)(__func__)(": Failed to load existing series.")
                 .Flush();
 
             continue;
@@ -504,7 +502,7 @@ void Manager::mint() const
         if (generate) {
             generate_mint(serverID, unitID, next);
         } else {
-            LogDetail(OT_METHOD)(__FUNCTION__)(": Existing mint file for ")(
+            LogDetail(OT_METHOD)(__func__)(": Existing mint file for ")(
                 unitID)(" is still valid.")
                 .Flush();
         }
@@ -567,13 +565,13 @@ auto Manager::verify_lock(const opentxs::Lock& lock, const std::mutex& mutex)
     const -> bool
 {
     if (lock.mutex() != &mutex) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect mutex.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Incorrect mutex.").Flush();
 
         return false;
     }
 
     if (false == lock.owns_lock()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Lock not owned.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Lock not owned.").Flush();
 
         return false;
     }
@@ -597,8 +595,7 @@ auto Manager::verify_mint(
     }
 
     if (false == mint->VerifyMint(server_.GetServerNym())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid mint for ")(unitID)
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid mint for ")(unitID).Flush();
 
         return {};
     }

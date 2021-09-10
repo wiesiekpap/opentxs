@@ -43,17 +43,17 @@ class OPENTXS_EXPORT Address
 public:
     using SerializedType = proto::BlockchainPeerAddress;
 
-    virtual OTData Bytes() const noexcept = 0;
-    virtual blockchain::Type Chain() const noexcept = 0;
-    virtual std::string Display() const noexcept = 0;
-    virtual const Identifier& ID() const noexcept = 0;
-    virtual Time LastConnected() const noexcept = 0;
-    virtual std::uint16_t Port() const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual bool Serialize(
-        SerializedType& out) const noexcept = 0;
-    virtual std::set<Service> Services() const noexcept = 0;
-    virtual Protocol Style() const noexcept = 0;
-    virtual Network Type() const noexcept = 0;
+    virtual auto Bytes() const noexcept -> OTData = 0;
+    virtual auto Chain() const noexcept -> blockchain::Type = 0;
+    virtual auto Display() const noexcept -> std::string = 0;
+    virtual auto ID() const noexcept -> const Identifier& = 0;
+    virtual auto LastConnected() const noexcept -> Time = 0;
+    virtual auto Port() const noexcept -> std::uint16_t = 0;
+    OPENTXS_NO_EXPORT virtual auto Serialize(SerializedType& out) const noexcept
+        -> bool = 0;
+    virtual auto Services() const noexcept -> std::set<Service> = 0;
+    virtual auto Style() const noexcept -> Protocol = 0;
+    virtual auto Type() const noexcept -> Network = 0;
 
     virtual void AddService(const Service service) noexcept = 0;
     virtual void RemoveService(const Service service) noexcept = 0;
@@ -68,12 +68,12 @@ protected:
 private:
     friend OTBlockchainAddress;
 
-    virtual Address* clone() const noexcept = 0;
+    virtual auto clone() const noexcept -> Address* = 0;
 
     Address(const Address&) = delete;
     Address(Address&&) = delete;
-    Address& operator=(const Address&) = delete;
-    Address& operator=(Address&&) = delete;
+    auto operator=(const Address&) -> Address& = delete;
+    auto operator=(Address&&) -> Address& = delete;
 };
 }  // namespace p2p
 }  // namespace blockchain

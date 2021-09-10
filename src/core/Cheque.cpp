@@ -12,8 +12,8 @@
 #include <memory>
 #include <string>
 
-#include "internal/api/Api.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Contract.hpp"
@@ -36,7 +36,7 @@ using namespace io;
 
 namespace opentxs
 {
-Cheque::Cheque(const api::internal::Core& core)
+Cheque::Cheque(const api::Core& core)
     : ot_super(core)
     , m_lAmount(0)
     , m_strMemo(String::Factory())
@@ -50,7 +50,7 @@ Cheque::Cheque(const api::internal::Core& core)
 }
 
 Cheque::Cheque(
-    const api::internal::Core& core,
+    const api::Core& core,
     const identifier::Server& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID)
     : ot_super(core, NOTARY_ID, INSTRUMENT_DEFINITION_ID)
@@ -192,24 +192,28 @@ auto Cheque::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
             m_REMITTER_ACCT_ID->Release();
         }
         {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": Cheque Amount: ")(m_lAmount)(
-                ". Transaction Number: ")(m_lTransactionNum)(" Valid From: ")(
-                str_valid_from)(" Valid To: ")(str_valid_to)(
-                " InstrumentDefinitionID: ")(strInstrumentDefinitionID)(
-                " NotaryID: ")(strNotaryID)(" senderAcctID: ")(strSenderAcctID)(
-                " senderNymID: ")(strSenderNymID)(" Has Recipient? ")(
-                m_bHasRecipient ? "Yes" : "No")(
-                ". If yes, NymID of Recipient: ")(strRecipientNymID)(
-                " Has Remitter? ")(m_bHasRemitter ? "Yes" : "No")(
-                ". If yes, NymID/Acct of Remitter: ")(strRemitterNymID)(" / ")(
-                strRemitterAcctID)
+            LogVerbose(OT_METHOD)(__func__)(": Cheque Amount: ")(
+                m_lAmount)(". Transaction Number: ")(
+                m_lTransactionNum)(" Valid From: ")(
+                str_valid_from)(" Valid To: ")(
+                str_valid_to)(" InstrumentDefinitionID: ")(
+                strInstrumentDefinitionID)(" NotaryID: ")(
+                strNotaryID)(" senderAcctID: ")(
+                strSenderAcctID)(" senderNymID: ")(
+                strSenderNymID)(" Has Recipient? ")(
+                m_bHasRecipient ? "Yes"
+                                : "No")(". If yes, NymID of Recipient: ")(
+                strRecipientNymID)(" Has Remitter? ")(
+                m_bHasRemitter ? "Yes"
+                               : "No")(". If yes, NymID/Acct of Remitter: ")(
+                strRemitterNymID)(" / ")(strRemitterAcctID)
                 .Flush();
         }
         nReturnVal = 1;
     } else if (!strcmp("memo", xml->getNodeName())) {
         if (!Contract::LoadEncodedTextField(xml, m_strMemo)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Memo field without "
-                                               "value.")
+            LogOutput(OT_METHOD)(__func__)(": Error: Memo field without "
+                                           "value.")
                 .Flush();
             return (-1);  // error condition
         }

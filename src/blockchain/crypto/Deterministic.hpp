@@ -38,13 +38,17 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
 class Core;
 }  // namespace api
+
+namespace blockchain
+{
+namespace crypto
+{
+class Account;
+class Element;
+}  // namespace crypto
+}  // namespace blockchain
 
 namespace proto
 {
@@ -66,6 +70,11 @@ public:
         noexcept(false) -> const crypto::Element& final;
     auto GenerateNext(const Subchain type, const PasswordPrompt& reason)
         const noexcept -> std::optional<Bip32Index> final;
+    auto InternalDeterministic() const noexcept
+        -> internal::Deterministic& final
+    {
+        return const_cast<Deterministic&>(*this);
+    }
     auto Key(const Subchain type, const Bip32Index index) const noexcept
         -> ECKey final;
     auto LastGenerated(const Subchain type) const noexcept
@@ -138,7 +147,7 @@ protected:
         Batch& generated,
         const PasswordPrompt& reason) const noexcept(false) -> void;
     auto element(const rLock& lock, const Subchain type, const Bip32Index index)
-        const noexcept(false) -> const internal::Element&
+        const noexcept(false) -> const Element&
     {
         return const_cast<Deterministic*>(this)->element(lock, type, index);
     }
@@ -166,21 +175,21 @@ protected:
     auto element(
         const rLock& lock,
         const Subchain type,
-        const Bip32Index index) noexcept(false) -> internal::Element&;
+        const Bip32Index index) noexcept(false) -> crypto::Element&;
     using Subaccount::init;
     auto init(const PasswordPrompt& reason) noexcept(false) -> void;
 
     Deterministic(
-        const api::internal::Core& api,
-        const internal::Account& parent,
+        const api::Core& api,
+        const Account& parent,
         const SubaccountType type,
         OTIdentifier&& id,
         const proto::HDPath path,
         ChainData&& data,
         Identifier& out) noexcept;
     Deterministic(
-        const api::internal::Core& api,
-        const internal::Account& parent,
+        const api::Core& api,
+        const Account& parent,
         const SubaccountType type,
         const SerializedType& serialized,
         const Bip32Index generated,
@@ -253,7 +262,7 @@ private:
     auto mutable_element(
         const rLock& lock,
         const Subchain type,
-        const Bip32Index index) noexcept(false) -> internal::Element& final;
+        const Bip32Index index) noexcept(false) -> Element& final;
     virtual auto set_deterministic_contact(
         std::set<OTIdentifier>&) const noexcept -> void
     {

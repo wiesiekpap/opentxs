@@ -85,7 +85,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     -> bool
 {
     if (false == common_.StoreBlockHeaders(update.UpdatedHeaders())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to save block headers")
+        LogOutput(OT_METHOD)(__func__)(": Failed to save block headers")
             .Flush();
 
         return false;
@@ -104,8 +104,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
                     tsv(static_cast<std::size_t>(update.Checkpoint().first)),
                     parentTxn)
                 .first) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to save checkpoint height")
+            LogOutput(OT_METHOD)(__func__)(": Failed to save checkpoint height")
                 .Flush();
 
             return false;
@@ -118,8 +117,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
                              update.Checkpoint().second->Bytes(),
                              parentTxn)
                          .first) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to save checkpoint hash")
+            LogOutput(OT_METHOD)(__func__)(": Failed to save checkpoint hash")
                 .Flush();
 
             return false;
@@ -134,8 +132,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
                              child->Bytes(),
                              parentTxn)
                          .first) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to save disconnected hash")
+            LogOutput(OT_METHOD)(__func__)(": Failed to save disconnected hash")
                 .Flush();
 
             return false;
@@ -148,7 +145,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
                          parent->Bytes(),
                          child->Bytes(),
                          parentTxn)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failed to delete disconnected hash")
                 .Flush();
 
@@ -164,7 +161,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
                              hash->Bytes(),
                              parentTxn)
                          .first) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to save sibling hash")
+            LogOutput(OT_METHOD)(__func__)(": Failed to save sibling hash")
                 .Flush();
 
             return false;
@@ -189,8 +186,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
             parentTxn);
 
         if (false == result.first) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to save block metadata")
+            LogOutput(OT_METHOD)(__func__)(": Failed to save block metadata")
                 .Flush();
 
             return false;
@@ -200,8 +196,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     if (update.HaveReorg()) {
         for (auto i = initialHeight; i > update.ReorgParent().first; --i) {
             if (false == pop_best(i, parentTxn)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": Failed to delete best hash")
+                LogOutput(OT_METHOD)(__func__)(": Failed to delete best hash")
                     .Flush();
 
                 return false;
@@ -223,7 +218,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
                              tsv(static_cast<std::size_t>(tip.first)),
                              parentTxn)
                          .first) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to store best hash")
+            LogOutput(OT_METHOD)(__func__)(": Failed to store best hash")
                 .Flush();
 
             return false;
@@ -231,7 +226,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     }
 
     if (false == parentTxn.Finalize(true)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Database error").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Database error").Flush();
 
         return false;
     }

@@ -58,28 +58,28 @@ public:
     using BackgroundTask = std::pair<TaskID, Future>;
     using Finished = std::shared_future<void>;
 
-    virtual BackgroundTask AcknowledgeBailment(
+    virtual auto AcknowledgeBailment(
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::Nym& targetNymID,
         const Identifier& requestID,
         const std::string& instructions,
-        const SetID setID = {}) const = 0;
-    virtual BackgroundTask AcknowledgeNotice(
+        const SetID setID = {}) const -> BackgroundTask = 0;
+    virtual auto AcknowledgeNotice(
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::Nym& recipientID,
         const Identifier& requestID,
         const bool ack,
-        const SetID setID = {}) const = 0;
-    virtual BackgroundTask AcknowledgeOutbailment(
+        const SetID setID = {}) const -> BackgroundTask = 0;
+    virtual auto AcknowledgeOutbailment(
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::Nym& recipientID,
         const Identifier& requestID,
         const std::string& details,
-        const SetID setID = {}) const = 0;
-    virtual BackgroundTask AcknowledgeConnection(
+        const SetID setID = {}) const -> BackgroundTask = 0;
+    virtual auto AcknowledgeConnection(
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::Nym& recipientID,
@@ -89,122 +89,127 @@ public:
         const std::string& login,
         const std::string& password,
         const std::string& key,
-        const SetID setID = {}) const = 0;
-    virtual bool AutoProcessInboxEnabled() const = 0;
-    virtual Depositability CanDeposit(
+        const SetID setID = {}) const -> BackgroundTask = 0;
+    virtual auto AutoProcessInboxEnabled() const -> bool = 0;
+    virtual auto CanDeposit(
         const identifier::Nym& recipientNymID,
-        const OTPayment& payment) const = 0;
-    virtual Depositability CanDeposit(
+        const OTPayment& payment) const -> Depositability = 0;
+    virtual auto CanDeposit(
         const identifier::Nym& recipientNymID,
         const Identifier& accountID,
-        const OTPayment& payment) const = 0;
-    virtual Messagability CanMessage(
+        const OTPayment& payment) const -> Depositability = 0;
+    virtual auto CanMessage(
         const identifier::Nym& senderNymID,
         const Identifier& recipientContactID,
-        const bool startIntroductionServer = true) const = 0;
-    virtual bool CheckTransactionNumbers(
+        const bool startIntroductionServer = true) const -> Messagability = 0;
+    virtual auto CheckTransactionNumbers(
         const identifier::Nym& nym,
         const identifier::Server& serverID,
-        const std::size_t quantity) const = 0;
-    virtual Finished ContextIdle(
+        const std::size_t quantity) const -> bool = 0;
+    virtual auto ContextIdle(
         const identifier::Nym& nym,
-        const identifier::Server& server) const = 0;
+        const identifier::Server& server) const -> Finished = 0;
     /** Deposit all available cheques for specified nym
      *
      *  \returns the number of cheques queued for deposit
      */
-    virtual std::size_t DepositCheques(const identifier::Nym& nymID) const = 0;
+    virtual auto DepositCheques(const identifier::Nym& nymID) const
+        -> std::size_t = 0;
     /** Deposit the specified list of cheques for specified nym
      *
      *  If the list of chequeIDs is empty, then all cheques will be deposited
      *
      *  \returns the number of cheques queued for deposit
      */
-    virtual std::size_t DepositCheques(
+    virtual auto DepositCheques(
         const identifier::Nym& nymID,
-        const std::set<OTIdentifier>& chequeIDs) const = 0;
-    virtual BackgroundTask DepositPayment(
+        const std::set<OTIdentifier>& chequeIDs) const -> std::size_t = 0;
+    virtual auto DepositPayment(
         const identifier::Nym& recipientNymID,
-        const std::shared_ptr<const OTPayment>& payment) const = 0;
-    virtual BackgroundTask DepositPayment(
+        const std::shared_ptr<const OTPayment>& payment) const
+        -> BackgroundTask = 0;
+    virtual auto DepositPayment(
         const identifier::Nym& recipientNymID,
         const Identifier& accountID,
-        const std::shared_ptr<const OTPayment>& payment) const = 0;
+        const std::shared_ptr<const OTPayment>& payment) const
+        -> BackgroundTask = 0;
     /** Used by unit tests */
     virtual void DisableAutoaccept() const = 0;
 #if OT_CASH
-    virtual BackgroundTask DownloadMint(
+    virtual auto DownloadMint(
         const identifier::Nym& nym,
         const identifier::Server& server,
-        const identifier::UnitDefinition& unit) const = 0;
+        const identifier::UnitDefinition& unit) const -> BackgroundTask = 0;
 #endif
-    virtual BackgroundTask DownloadNym(
+    virtual auto DownloadNym(
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
-        const identifier::Nym& targetNymID) const = 0;
-    virtual BackgroundTask DownloadNymbox(
+        const identifier::Nym& targetNymID) const -> BackgroundTask = 0;
+    virtual auto DownloadNymbox(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID) const = 0;
-    virtual BackgroundTask DownloadServerContract(
-        const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
-        const identifier::Server& contractID) const = 0;
-    virtual BackgroundTask DownloadUnitDefinition(
+        const identifier::Server& serverID) const -> BackgroundTask = 0;
+    virtual auto DownloadServerContract(
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
-        const identifier::UnitDefinition& contractID) const = 0;
-    virtual BackgroundTask FindNym(const identifier::Nym& nymID) const = 0;
-    virtual BackgroundTask FindNym(
+        const identifier::Server& contractID) const -> BackgroundTask = 0;
+    virtual auto DownloadUnitDefinition(
+        const identifier::Nym& localNymID,
+        const identifier::Server& serverID,
+        const identifier::UnitDefinition& contractID) const
+        -> BackgroundTask = 0;
+    virtual auto FindNym(const identifier::Nym& nymID) const
+        -> BackgroundTask = 0;
+    virtual auto FindNym(
         const identifier::Nym& nymID,
-        const identifier::Server& serverIDHint) const = 0;
-    virtual BackgroundTask FindServer(
-        const identifier::Server& serverID) const = 0;
-    virtual BackgroundTask FindUnitDefinition(
-        const identifier::UnitDefinition& unit) const = 0;
-    virtual BackgroundTask InitiateBailment(
+        const identifier::Server& serverIDHint) const -> BackgroundTask = 0;
+    virtual auto FindServer(const identifier::Server& serverID) const
+        -> BackgroundTask = 0;
+    virtual auto FindUnitDefinition(
+        const identifier::UnitDefinition& unit) const -> BackgroundTask = 0;
+    virtual auto InitiateBailment(
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::Nym& targetNymID,
         const identifier::UnitDefinition& instrumentDefinitionID,
-        const SetID setID = {}) const = 0;
-    virtual BackgroundTask InitiateOutbailment(
+        const SetID setID = {}) const -> BackgroundTask = 0;
+    virtual auto InitiateOutbailment(
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::Nym& targetNymID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const Amount amount,
         const std::string& message,
-        const SetID setID = {}) const = 0;
-    virtual BackgroundTask InitiateRequestConnection(
+        const SetID setID = {}) const -> BackgroundTask = 0;
+    virtual auto InitiateRequestConnection(
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::Nym& targetNymID,
         const contract::peer::ConnectionInfoType& type,
-        const SetID setID = {}) const = 0;
-    virtual BackgroundTask InitiateStoreSecret(
+        const SetID setID = {}) const -> BackgroundTask = 0;
+    virtual auto InitiateStoreSecret(
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::Nym& targetNymID,
         const contract::peer::SecretType& type,
         const std::string& primary,
         const std::string& secondary,
-        const SetID setID = {}) const = 0;
-    virtual const identifier::Server& IntroductionServer() const = 0;
-    virtual BackgroundTask IssueUnitDefinition(
+        const SetID setID = {}) const -> BackgroundTask = 0;
+    virtual auto IntroductionServer() const -> const identifier::Server& = 0;
+    virtual auto IssueUnitDefinition(
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::UnitDefinition& unitID,
         const contact::ContactItemType advertise =
             contact::ContactItemType::Error,
-        const std::string& label = "") const = 0;
-    virtual BackgroundTask MessageContact(
+        const std::string& label = "") const -> BackgroundTask = 0;
+    virtual auto MessageContact(
         const identifier::Nym& senderNymID,
         const Identifier& contactID,
         const std::string& message,
-        const SetID setID = {}) const = 0;
-    virtual std::pair<ThreadStatus, MessageID> MessageStatus(
-        const TaskID taskID) const = 0;
-    virtual BackgroundTask NotifyBailment(
+        const SetID setID = {}) const -> BackgroundTask = 0;
+    virtual auto MessageStatus(const TaskID taskID) const
+        -> std::pair<ThreadStatus, MessageID> = 0;
+    virtual auto NotifyBailment(
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::Nym& targetNymID,
@@ -212,45 +217,45 @@ public:
         const Identifier& requestID,
         const std::string& txid,
         const Amount amount,
-        const SetID setID = {}) const = 0;
-    virtual BackgroundTask PayContact(
+        const SetID setID = {}) const -> BackgroundTask = 0;
+    virtual auto PayContact(
         const identifier::Nym& senderNymID,
         const Identifier& contactID,
-        std::shared_ptr<const OTPayment> payment) const = 0;
+        std::shared_ptr<const OTPayment> payment) const -> BackgroundTask = 0;
 #if OT_CASH
-    virtual BackgroundTask PayContactCash(
+    virtual auto PayContactCash(
         const identifier::Nym& senderNymID,
         const Identifier& contactID,
-        const Identifier& workflowID) const = 0;
+        const Identifier& workflowID) const -> BackgroundTask = 0;
 #endif  // OT_CASH
-    virtual BackgroundTask ProcessInbox(
+    virtual auto ProcessInbox(
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
-        const Identifier& accountID) const = 0;
-    virtual BackgroundTask PublishServerContract(
+        const Identifier& accountID) const -> BackgroundTask = 0;
+    virtual auto PublishServerContract(
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
-        const Identifier& contractID) const = 0;
+        const Identifier& contractID) const -> BackgroundTask = 0;
     virtual void Refresh() const = 0;
-    virtual std::uint64_t RefreshCount() const = 0;
-    virtual BackgroundTask RegisterAccount(
+    virtual auto RefreshCount() const -> std::uint64_t = 0;
+    virtual auto RegisterAccount(
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::UnitDefinition& unitID,
-        const std::string& label = "") const = 0;
-    virtual BackgroundTask RegisterNym(
+        const std::string& label = "") const -> BackgroundTask = 0;
+    virtual auto RegisterNym(
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
-        const bool resync = false) const = 0;
-    virtual BackgroundTask RegisterNymPublic(
+        const bool resync = false) const -> BackgroundTask = 0;
+    virtual auto RegisterNymPublic(
         const identifier::Nym& nymID,
         const identifier::Server& server,
         const bool setContactData,
         const bool forcePrimary = false,
-        const bool resync = false) const = 0;
-    virtual OTServerID SetIntroductionServer(
-        const contract::Server& contract) const = 0;
-    virtual BackgroundTask SendCheque(
+        const bool resync = false) const -> BackgroundTask = 0;
+    virtual auto SetIntroductionServer(const contract::Server& contract) const
+        -> OTServerID = 0;
+    virtual auto SendCheque(
         const identifier::Nym& localNymID,
         const Identifier& sourceAccountID,
         const Identifier& recipientContactID,
@@ -258,30 +263,31 @@ public:
         const std::string& memo,
         const Time validFrom = Clock::now(),
         const Time validTo =
-            (Clock::now() + std::chrono::hours(OT_CHEQUE_HOURS))) const = 0;
-    virtual BackgroundTask SendExternalTransfer(
+            (Clock::now() + std::chrono::hours(OT_CHEQUE_HOURS))) const
+        -> BackgroundTask = 0;
+    virtual auto SendExternalTransfer(
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const Identifier& sourceAccountID,
         const Identifier& targetAccountID,
         const Amount value,
-        const std::string& memo) const = 0;
-    virtual BackgroundTask SendTransfer(
+        const std::string& memo) const -> BackgroundTask = 0;
+    virtual auto SendTransfer(
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const Identifier& sourceAccountID,
         const Identifier& targetAccountID,
         const Amount value,
-        const std::string& memo) const = 0;
+        const std::string& memo) const -> BackgroundTask = 0;
     virtual void StartIntroductionServer(
         const identifier::Nym& localNymID) const = 0;
-    virtual ThreadStatus Status(const TaskID taskID) const = 0;
+    virtual auto Status(const TaskID taskID) const -> ThreadStatus = 0;
 #if OT_CASH
-    virtual BackgroundTask WithdrawCash(
+    virtual auto WithdrawCash(
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const Identifier& account,
-        const Amount value) const = 0;
+        const Amount value) const -> BackgroundTask = 0;
 #endif
 
     OPENTXS_NO_EXPORT virtual ~OTX() = default;
@@ -292,8 +298,8 @@ protected:
 private:
     OTX(const OTX&) = delete;
     OTX(OTX&&) = delete;
-    OTX& operator=(const OTX&) = delete;
-    OTX& operator=(OTX&&) = delete;
+    auto operator=(const OTX&) -> OTX& = delete;
+    auto operator=(OTX&&) -> OTX& = delete;
 };
 }  // namespace client
 }  // namespace api

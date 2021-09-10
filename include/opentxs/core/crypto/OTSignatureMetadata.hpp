@@ -12,43 +12,46 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 class OPENTXS_EXPORT OTSignatureMetadata
 {
 public:
-    bool operator==(const OTSignatureMetadata& rhs) const;
+    auto operator==(const OTSignatureMetadata& rhs) const -> bool;
 
-    bool operator!=(const OTSignatureMetadata& rhs) const
+    auto operator!=(const OTSignatureMetadata& rhs) const -> bool
     {
         return !(operator==(rhs));
     }
 
-    bool SetMetadata(
+    auto SetMetadata(
         char metaKeyType,
         char metaNymID,
         char metaMasterCredID,
-        char metaChildCredID);
+        char metaChildCredID) -> bool;
 
-    inline bool HasMetadata() const { return hasMetadata_; }
+    inline auto HasMetadata() const -> bool { return hasMetadata_; }
 
-    inline char GetKeyType() const { return metaKeyType_; }
+    inline auto GetKeyType() const -> char { return metaKeyType_; }
 
-    inline char FirstCharNymID() const { return metaNymID_; }
+    inline auto FirstCharNymID() const -> char { return metaNymID_; }
 
-    inline char FirstCharMasterCredID() const { return metaMasterCredID_; }
+    inline auto FirstCharMasterCredID() const -> char
+    {
+        return metaMasterCredID_;
+    }
 
-    inline char FirstCharChildCredID() const { return metaChildCredID_; }
+    inline auto FirstCharChildCredID() const -> char
+    {
+        return metaChildCredID_;
+    }
 
-    OTSignatureMetadata(const api::internal::Core& api);
-    OTSignatureMetadata& operator=(const OTSignatureMetadata& rhs);
+    OTSignatureMetadata(const api::Core& api);
+    auto operator=(const OTSignatureMetadata& rhs) -> OTSignatureMetadata&;
 
 private:
-    const api::internal::Core& api_;
+    const api::Core& api_;
     // Defaults to false. Is set true by calling SetMetadata
     bool hasMetadata_{false};
     // Can be A, E, or S (authentication, encryption, or signing.

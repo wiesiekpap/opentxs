@@ -14,7 +14,6 @@
 #include <utility>
 
 #include "display/Definition.hpp"
-#include "internal/api/client/Client.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"

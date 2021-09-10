@@ -13,6 +13,17 @@
 
 namespace opentxs
 {
+namespace blockchain
+{
+namespace crypto
+{
+namespace internal
+{
+struct PaymentCode;
+}  // namespace internal
+}  // namespace crypto
+}  // namespace blockchain
+
 class PaymentCode;
 }  // namespace opentxs
 
@@ -25,11 +36,13 @@ namespace crypto
 class OPENTXS_EXPORT PaymentCode : virtual public Deterministic
 {
 public:
-    virtual bool AddNotification(const Txid& tx) const noexcept = 0;
-    virtual bool IsNotified() const noexcept = 0;
-    virtual const opentxs::PaymentCode& Local() const noexcept = 0;
-    virtual bool ReorgNotification(const Txid& tx) const noexcept = 0;
-    virtual const opentxs::PaymentCode& Remote() const noexcept = 0;
+    virtual auto AddNotification(const Txid& tx) const noexcept -> bool = 0;
+    OPENTXS_NO_EXPORT virtual auto InternalPaymentCode() const noexcept
+        -> internal::PaymentCode& = 0;
+    virtual auto IsNotified() const noexcept -> bool = 0;
+    virtual auto Local() const noexcept -> const opentxs::PaymentCode& = 0;
+    virtual auto ReorgNotification(const Txid& tx) const noexcept -> bool = 0;
+    virtual auto Remote() const noexcept -> const opentxs::PaymentCode& = 0;
 
     OPENTXS_NO_EXPORT ~PaymentCode() override = default;
 
@@ -39,8 +52,8 @@ protected:
 private:
     PaymentCode(const PaymentCode&) = delete;
     PaymentCode(PaymentCode&&) = delete;
-    PaymentCode& operator=(const PaymentCode&) = delete;
-    PaymentCode& operator=(PaymentCode&&) = delete;
+    auto operator=(const PaymentCode&) -> PaymentCode& = delete;
+    auto operator=(PaymentCode&&) -> PaymentCode& = delete;
 };
 }  // namespace crypto
 }  // namespace blockchain

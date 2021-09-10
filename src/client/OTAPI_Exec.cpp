@@ -15,10 +15,10 @@
 #include <utility>
 
 #include "Proto.tpp"
-#include "internal/api/Api.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/HDSeed.hpp"
 #include "opentxs/api/Wallet.hpp"
@@ -58,7 +58,7 @@ const std::int32_t OT_ERROR = (-1);
 #endif
 
 OTAPI_Exec::OTAPI_Exec(
-    const api::internal::Core& api,
+    const api::Core& api,
     const api::client::Activity& activity,
     const api::client::Contacts& contacts,
     const api::network::ZMQ& zeromq,
@@ -181,7 +181,7 @@ auto OTAPI_Exec::ProposePaymentPlan(
         static_cast<std::int32_t>(PAYMENT_PLAN_MAX_PAYMENTS)));
 
     if (!pPlan) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed in OTAPI_Exec::ProposePaymentPlan.")
             .Flush();
         return {};
@@ -368,7 +368,7 @@ auto OTAPI_Exec::ConfirmPaymentPlan(
 
     if (!strPlan->Exists() ||
         (false == thePlan->LoadContractFromString(strPlan))) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failure loading payment plan from string.")
             .Flush();
         return {};
@@ -380,7 +380,7 @@ auto OTAPI_Exec::ConfirmPaymentPlan(
         theRecipientNymID,
         *thePlan);
     if (!bConfirmed) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": failed in OTAPI_Exec::ConfirmPaymentPlan().")
             .Flush();
         return {};
@@ -411,12 +411,12 @@ auto OTAPI_Exec::Create_SmartContract(
     OT_VERIFY_ID_STR(SIGNER_NYM_ID);
 
     if (Clock::from_time_t(0) > VALID_FROM) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Negative: VALID_FROM passed in!")
+        LogOutput(OT_METHOD)(__func__)(": Negative: VALID_FROM passed in!")
             .Flush();
         return {};
     }
     if (Clock::from_time_t(0) > VALID_TO) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Negative: VALID_TO passed in!")
+        LogOutput(OT_METHOD)(__func__)(": Negative: VALID_TO passed in!")
             .Flush();
         return {};
     }
@@ -475,12 +475,12 @@ auto OTAPI_Exec::SmartContract_SetDates(
     OT_VERIFY_ID_STR(SIGNER_NYM_ID);
 
     if (Clock::from_time_t(0) > VALID_FROM) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Negative: VALID_FROM passed in!")
+        LogOutput(OT_METHOD)(__func__)(": Negative: VALID_FROM passed in!")
             .Flush();
         return {};
     }
     if (Clock::from_time_t(0) > VALID_TO) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Negative: VALID_TO passed in!")
+        LogOutput(OT_METHOD)(__func__)(": Negative: VALID_TO passed in!")
             .Flush();
         return {};
     }
@@ -1107,7 +1107,7 @@ auto OTAPI_Exec::SmartContract_AddAccount(
     OT_VERIFY_STD_STR(ACCT_NAME);
 
     //  if (INSTRUMENT_DEFINITION_ID.empty()) {
-    //      otErr << OT_METHOD << __FUNCTION__ << ": Null:
+    //      otErr << OT_METHOD << __func__ << ": Null:
     //        INSTRUMENT_DEFINITION_ID passed
     //        in!\n"; OT_FAIL; }
 
@@ -1292,7 +1292,7 @@ auto OTAPI_Exec::Smart_AreAllPartiesConfirmed(
     auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string : ")(
             strContract)(".")
             .Flush();
@@ -1302,17 +1302,17 @@ auto OTAPI_Exec::Smart_AreAllPartiesConfirmed(
         const bool bVerified =
             pScriptable->VerifyThisAgainstAllPartiesSignedCopies();
         if (!bConfirmed) {
-            //          otOut << OT_METHOD << __FUNCTION__ << ": Smart contract
+            //          otOut << OT_METHOD << __func__ << ": Smart contract
             //          loaded up,
             // but all
             // parties are NOT confirmed:\n\n" << strContract << "\n\n";
-            LogDetail(OT_METHOD)(__FUNCTION__)(
+            LogDetail(OT_METHOD)(__func__)(
                 ": Smart contract loaded up, but all ")(
                 "parties are NOT confirmed.")
                 .Flush();
             return false;
         } else if (bVerified) {
-            //          otOut << OT_METHOD << __FUNCTION__ << ": Success: Smart
+            //          otOut << OT_METHOD << __func__ << ": Success: Smart
             //          contract
             // loaded
             // up, and all parties have confirmed,\n"
@@ -1330,10 +1330,10 @@ auto OTAPI_Exec::Smart_AreAllPartiesConfirmed(
             //
             return true;
         }
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Suspicious: Smart contract loaded up, and is supposedly "
-            "confirmed by all parties, but failed to verify: ")(strContract)(
-            ".")
+            "confirmed by all parties, but failed to verify: ")(
+            strContract)(".")
             .Flush();
     }
     return false;
@@ -1348,11 +1348,11 @@ auto OTAPI_Exec::Smart_IsPartyConfirmed(
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(PARTY_NAME);
 
-    auto reason = api_.Factory().PasswordPrompt(__FUNCTION__);
+    auto reason = api_.Factory().PasswordPrompt(__func__);
     const auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string : ")(
             strContract)(".")
             .Flush();
@@ -1361,7 +1361,7 @@ auto OTAPI_Exec::Smart_IsPartyConfirmed(
 
     OTParty* pParty = pScriptable->GetParty(PARTY_NAME);
     if (nullptr == pParty) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to find a party "
             "with the name: ")(PARTY_NAME)(".")
             .Flush();
@@ -1372,9 +1372,9 @@ auto OTAPI_Exec::Smart_IsPartyConfirmed(
     //...is he confirmed?
     //
     if (!pParty->GetMySignedCopy().Exists()) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(
-            ": Smart contract loaded up, and party ")(PARTY_NAME)(
-            " was found, but didn't find a signed copy of the ")(
+        LogDetail(OT_METHOD)(__func__)(
+            ": Smart contract loaded up, and party ")(
+            PARTY_NAME)(" was found, but didn't find a signed copy of the ")(
             "agreement for that party.")
             .Flush();
         return false;
@@ -1386,7 +1386,7 @@ auto OTAPI_Exec::Smart_IsPartyConfirmed(
 
     if (nullptr == pPartySignedCopy) {
         const std::string current_party_name(pParty->GetPartyName());
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error loading party's (")(
+        LogOutput(OT_METHOD)(__func__)(": Error loading party's (")(
             current_party_name)(") signed copy of agreement. Has it been "
                                 "executed?")
             .Flush();
@@ -1395,7 +1395,7 @@ auto OTAPI_Exec::Smart_IsPartyConfirmed(
 
     if (!pScriptable->Compare(*pPartySignedCopy)) {
         const std::string current_party_name(pParty->GetPartyName());
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Suspicious: Party's (")(
+        LogOutput(OT_METHOD)(__func__)(": Suspicious: Party's (")(
             current_party_name)(") signed copy of agreement doesn't match the "
                                 "contract.")
             .Flush();
@@ -1428,7 +1428,7 @@ auto OTAPI_Exec::Smart_GetPartyCount(const std::string& THE_CONTRACT) const
     auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
@@ -1446,7 +1446,7 @@ auto OTAPI_Exec::Smart_GetBylawCount(const std::string& THE_CONTRACT) const
     auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string : ")(
             strContract)(".")
             .Flush();
@@ -1466,7 +1466,7 @@ auto OTAPI_Exec::Smart_GetPartyByIndex(
     const auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
@@ -1477,7 +1477,7 @@ auto OTAPI_Exec::Smart_GetPartyByIndex(
     OTParty* pParty = pScriptable->GetPartyByIndex(
         nTempIndex);  // has range-checking built-in.
     if (nullptr == pParty) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to retrieve the "
             "party using index: ")(nTempIndex)(".")
             .Flush();
@@ -1497,7 +1497,7 @@ auto OTAPI_Exec::Smart_GetBylawByIndex(
     const auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string : ")(
             strContract)(".")
             .Flush();
@@ -1508,7 +1508,7 @@ auto OTAPI_Exec::Smart_GetBylawByIndex(
     OTBylaw* pBylaw = pScriptable->GetBylawByIndex(
         nTempIndex);  // has range-checking built-in.
     if (nullptr == pBylaw) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to retrieve the "
             "bylaw using index: ")(nTempIndex)(".")
             .Flush();
@@ -1529,7 +1529,7 @@ auto OTAPI_Exec::Bylaw_GetLanguage(
     auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string : ")(
             strContract)(".")
             .Flush();
@@ -1538,7 +1538,7 @@ auto OTAPI_Exec::Bylaw_GetLanguage(
 
     OTBylaw* pBylaw = pScriptable->GetBylaw(BYLAW_NAME);
     if (nullptr == pBylaw) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to find a bylaw "
             "with the name: ")(BYLAW_NAME)(".")
             .Flush();
@@ -1559,7 +1559,7 @@ auto OTAPI_Exec::Bylaw_GetClauseCount(
     auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string : ")(
             strContract)(".")
             .Flush();
@@ -1568,7 +1568,7 @@ auto OTAPI_Exec::Bylaw_GetClauseCount(
 
     OTBylaw* pBylaw = pScriptable->GetBylaw(BYLAW_NAME);
     if (nullptr == pBylaw) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to find a bylaw "
             "with the name: ")(BYLAW_NAME)(".")
             .Flush();
@@ -1588,7 +1588,7 @@ auto OTAPI_Exec::Bylaw_GetVariableCount(
     auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string : ")(
             strContract)(".")
             .Flush();
@@ -1597,7 +1597,7 @@ auto OTAPI_Exec::Bylaw_GetVariableCount(
 
     OTBylaw* pBylaw = pScriptable->GetBylaw(BYLAW_NAME);
     if (nullptr == pBylaw) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to find a bylaw "
             "with the name: ")(BYLAW_NAME)(".")
             .Flush();
@@ -1617,7 +1617,7 @@ auto OTAPI_Exec::Bylaw_GetHookCount(
     auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string : ")(
             strContract)(".")
             .Flush();
@@ -1626,7 +1626,7 @@ auto OTAPI_Exec::Bylaw_GetHookCount(
 
     OTBylaw* pBylaw = pScriptable->GetBylaw(BYLAW_NAME);
     if (nullptr == pBylaw) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to find a bylaw "
             "with the name: ")(BYLAW_NAME)(".")
             .Flush();
@@ -1646,7 +1646,7 @@ auto OTAPI_Exec::Bylaw_GetCallbackCount(
     auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
@@ -1655,7 +1655,7 @@ auto OTAPI_Exec::Bylaw_GetCallbackCount(
 
     OTBylaw* pBylaw = pScriptable->GetBylaw(BYLAW_NAME);
     if (nullptr == pBylaw) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to find a bylaw "
             "with the name: ")(BYLAW_NAME)(".")
             .Flush();
@@ -1677,7 +1677,7 @@ auto OTAPI_Exec::Clause_GetNameByIndex(
     const auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
@@ -1686,7 +1686,7 @@ auto OTAPI_Exec::Clause_GetNameByIndex(
 
     OTBylaw* pBylaw = pScriptable->GetBylaw(BYLAW_NAME);
     if (nullptr == pBylaw) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to retrieve the "
             "bylaw with name: ")(BYLAW_NAME)(".")
             .Flush();
@@ -1696,10 +1696,9 @@ auto OTAPI_Exec::Clause_GetNameByIndex(
     const std::int32_t nTempIndex = nIndex;
     OTClause* pClause = pBylaw->GetClauseByIndex(nTempIndex);
     if (nullptr == pClause) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": Smart contract loaded up, and "
-            "bylaw found, but failed to retrieve "
-            "the clause at index: ")(nTempIndex)(".")
+        LogNormal(OT_METHOD)(__func__)(": Smart contract loaded up, and "
+                                       "bylaw found, but failed to retrieve "
+                                       "the clause at index: ")(nTempIndex)(".")
             .Flush();
         return {};
     }
@@ -1722,7 +1721,7 @@ auto OTAPI_Exec::Clause_GetContents(
     const auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
@@ -1731,7 +1730,7 @@ auto OTAPI_Exec::Clause_GetContents(
 
     OTBylaw* pBylaw = pScriptable->GetBylaw(BYLAW_NAME);
     if (nullptr == pBylaw) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to retrieve the "
             "bylaw with name: ")(BYLAW_NAME)(".")
             .Flush();
@@ -1741,7 +1740,7 @@ auto OTAPI_Exec::Clause_GetContents(
     OTClause* pClause = pBylaw->GetClause(CLAUSE_NAME);
 
     if (nullptr == pClause) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, and "
             "bylaw found, but failed to retrieve "
             "the clause with name: ")(CLAUSE_NAME)(".")
@@ -1764,7 +1763,7 @@ auto OTAPI_Exec::Variable_GetNameByIndex(
     const auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
@@ -1773,7 +1772,7 @@ auto OTAPI_Exec::Variable_GetNameByIndex(
 
     OTBylaw* pBylaw = pScriptable->GetBylaw(BYLAW_NAME);
     if (nullptr == pBylaw) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to retrieve the "
             "bylaw with name: ")(BYLAW_NAME)(".")
             .Flush();
@@ -1783,7 +1782,7 @@ auto OTAPI_Exec::Variable_GetNameByIndex(
     const std::int32_t nTempIndex = nIndex;
     OTVariable* pVar = pBylaw->GetVariableByIndex(nTempIndex);
     if (nullptr == pVar) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, and "
             "bylaw found, but failed to retrieve "
             "the variable at index: ")(nTempIndex)(".")
@@ -1807,7 +1806,7 @@ auto OTAPI_Exec::Variable_GetType(
     const auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
@@ -1816,7 +1815,7 @@ auto OTAPI_Exec::Variable_GetType(
 
     OTBylaw* pBylaw = pScriptable->GetBylaw(BYLAW_NAME);
     if (nullptr == pBylaw) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to retrieve the "
             "bylaw with name: ")(BYLAW_NAME)(".")
             .Flush();
@@ -1825,7 +1824,7 @@ auto OTAPI_Exec::Variable_GetType(
 
     OTVariable* pVar = pBylaw->GetVariable(VARIABLE_NAME);
     if (nullptr == pVar) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, and bylaw found, but "
             "failed to retrieve the variable with name: ")(VARIABLE_NAME)(".")
             .Flush();
@@ -1852,7 +1851,7 @@ auto OTAPI_Exec::Variable_GetAccess(
     const auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
@@ -1861,7 +1860,7 @@ auto OTAPI_Exec::Variable_GetAccess(
 
     OTBylaw* pBylaw = pScriptable->GetBylaw(BYLAW_NAME);
     if (nullptr == pBylaw) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to retrieve the "
             "bylaw with name: ")(BYLAW_NAME)(".")
             .Flush();
@@ -1870,7 +1869,7 @@ auto OTAPI_Exec::Variable_GetAccess(
 
     OTVariable* pVar = pBylaw->GetVariable(VARIABLE_NAME);
     if (nullptr == pVar) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, and bylaw found, but "
             "failed to retrieve the variable with name: ")(VARIABLE_NAME)(".")
             .Flush();
@@ -1897,7 +1896,7 @@ auto OTAPI_Exec::Variable_GetContents(
     const auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
@@ -1906,7 +1905,7 @@ auto OTAPI_Exec::Variable_GetContents(
 
     OTBylaw* pBylaw = pScriptable->GetBylaw(BYLAW_NAME);
     if (nullptr == pBylaw) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to retrieve the "
             "bylaw with name: ")(BYLAW_NAME)(".")
             .Flush();
@@ -1915,7 +1914,7 @@ auto OTAPI_Exec::Variable_GetContents(
 
     OTVariable* pVar = pBylaw->GetVariable(VARIABLE_NAME);
     if (nullptr == pVar) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, and bylaw found, but "
             "failed to retrieve the variable with name: ")(VARIABLE_NAME)(".")
             .Flush();
@@ -1931,8 +1930,7 @@ auto OTAPI_Exec::Variable_GetContents(
         case OTVariable::Var_Bool:
             return pVar->GetValueBool() ? "true" : "false";
         default:
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Error: Unknown variable type.")
+            LogOutput(OT_METHOD)(__func__)(": Error: Unknown variable type.")
                 .Flush();
             return {};
     }
@@ -1950,7 +1948,7 @@ auto OTAPI_Exec::Hook_GetNameByIndex(
     const auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
@@ -1959,7 +1957,7 @@ auto OTAPI_Exec::Hook_GetNameByIndex(
 
     OTBylaw* pBylaw = pScriptable->GetBylaw(BYLAW_NAME);
     if (nullptr == pBylaw) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to retrieve the "
             "bylaw with name: ")(BYLAW_NAME)(".")
             .Flush();
@@ -1983,7 +1981,7 @@ auto OTAPI_Exec::Hook_GetClauseCount(
     const auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
@@ -1992,7 +1990,7 @@ auto OTAPI_Exec::Hook_GetClauseCount(
 
     OTBylaw* pBylaw = pScriptable->GetBylaw(BYLAW_NAME);
     if (nullptr == pBylaw) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to retrieve the "
             "bylaw with name: ")(BYLAW_NAME)(".")
             .Flush();
@@ -2024,7 +2022,7 @@ auto OTAPI_Exec::Hook_GetClauseAtIndex(
     const auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
@@ -2033,7 +2031,7 @@ auto OTAPI_Exec::Hook_GetClauseAtIndex(
 
     OTBylaw* pBylaw = pScriptable->GetBylaw(BYLAW_NAME);
     if (nullptr == pBylaw) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to retrieve the "
             "bylaw with name: ")(BYLAW_NAME)(".")
             .Flush();
@@ -2072,7 +2070,7 @@ auto OTAPI_Exec::Callback_GetNameByIndex(
     const auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
@@ -2081,7 +2079,7 @@ auto OTAPI_Exec::Callback_GetNameByIndex(
 
     OTBylaw* pBylaw = pScriptable->GetBylaw(BYLAW_NAME);
     if (nullptr == pBylaw) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to retrieve the "
             "bylaw with name: ")(BYLAW_NAME)(".")
             .Flush();
@@ -2106,7 +2104,7 @@ auto OTAPI_Exec::Callback_GetClause(
     const auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
@@ -2115,7 +2113,7 @@ auto OTAPI_Exec::Callback_GetClause(
 
     OTBylaw* pBylaw = pScriptable->GetBylaw(BYLAW_NAME);
     if (nullptr == pBylaw) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to retrieve the "
             "bylaw with name: ")(BYLAW_NAME)(".")
             .Flush();
@@ -2124,7 +2122,7 @@ auto OTAPI_Exec::Callback_GetClause(
 
     OTClause* pClause = pBylaw->GetCallback(CALLBACK_NAME);
     if (nullptr == pClause) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, and bylaw found, but "
             "failed to retrieve the clause for callback: ")(CALLBACK_NAME)(".")
             .Flush();
@@ -2144,7 +2142,7 @@ auto OTAPI_Exec::Party_GetAcctCount(
     auto strContract = String::Factory(THE_CONTRACT);
     auto pScriptable(api_.Factory().Scriptable(strContract));
     if (nullptr == pScriptable) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
@@ -2153,7 +2151,7 @@ auto OTAPI_Exec::Party_GetAcctCount(
 
     OTParty* pParty = pScriptable->GetParty(PARTY_NAME);
     if (nullptr == pParty) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to find a party "
             "with the name: ")(PARTY_NAME)(".")
             .Flush();
@@ -2174,7 +2172,7 @@ auto OTAPI_Exec::Party_GetAgentCount(
     std::unique_ptr<OTScriptable> pScriptable(
         api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
@@ -2183,7 +2181,7 @@ auto OTAPI_Exec::Party_GetAgentCount(
 
     OTParty* pParty = pScriptable->GetParty(PARTY_NAME);
     if (nullptr == pParty) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to find a party "
             "with the name: ")(PARTY_NAME)(".")
             .Flush();
@@ -2207,7 +2205,7 @@ auto OTAPI_Exec::Party_GetID(
     std::unique_ptr<OTScriptable> pScriptable(
         api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
@@ -2216,7 +2214,7 @@ auto OTAPI_Exec::Party_GetID(
 
     OTParty* pParty = pScriptable->GetParty(PARTY_NAME);
     if (nullptr == pParty) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to find a party "
             "with the name: ")(PARTY_NAME)(".")
             .Flush();
@@ -2239,7 +2237,7 @@ auto OTAPI_Exec::Party_GetAcctNameByIndex(
     std::unique_ptr<OTScriptable> pScriptable(
         api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
@@ -2248,7 +2246,7 @@ auto OTAPI_Exec::Party_GetAcctNameByIndex(
 
     OTParty* pParty = pScriptable->GetParty(PARTY_NAME);
     if (nullptr == pParty) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to retrieve the "
             "party with name: ")(PARTY_NAME)(".")
             .Flush();
@@ -2258,7 +2256,7 @@ auto OTAPI_Exec::Party_GetAcctNameByIndex(
     const std::int32_t nTempIndex = nIndex;
     OTPartyAccount* pAcct = pParty->GetAccountByIndex(nTempIndex);
     if (nullptr == pAcct) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, and "
             "party found, but failed to retrieve "
             "the account at index: ")(nTempIndex)(".")
@@ -2285,7 +2283,7 @@ auto OTAPI_Exec::Party_GetAcctID(
     std::unique_ptr<OTScriptable> pScriptable(
         api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
@@ -2294,7 +2292,7 @@ auto OTAPI_Exec::Party_GetAcctID(
 
     OTParty* pParty = pScriptable->GetParty(PARTY_NAME);
     if (nullptr == pParty) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, but failed to retrieve the "
             "party with name: ")(PARTY_NAME)(".")
             .Flush();
@@ -2303,7 +2301,7 @@ auto OTAPI_Exec::Party_GetAcctID(
 
     const OTPartyAccount* pAcct = pParty->GetAccount(ACCT_NAME);
     if (nullptr == pAcct) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Smart contract loaded up, and "
             "party found, but failed to retrieve "
             "party's account named: ")(ACCT_NAME)(".")
@@ -2331,14 +2329,14 @@ auto OTAPI_Exec::Party_GetAcctInstrumentDefinitionID(
     std::unique_ptr<OTScriptable> pScriptable(
         api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
     } else {
         OTParty* pParty = pScriptable->GetParty(PARTY_NAME);
         if (nullptr == pParty) {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Smart contract loaded up, but failed to retrieve the "
                 "party with name: ")(PARTY_NAME)(".")
                 .Flush();
@@ -2347,7 +2345,7 @@ auto OTAPI_Exec::Party_GetAcctInstrumentDefinitionID(
             const OTPartyAccount* pAcct = pParty->GetAccount(ACCT_NAME);
 
             if (nullptr == pAcct) {
-                LogNormal(OT_METHOD)(__FUNCTION__)(
+                LogNormal(OT_METHOD)(__func__)(
                     ": Smart contract loaded up, and "
                     "party found, but failed to retrieve "
                     "party's account named: ")(ACCT_NAME)(".")
@@ -2379,14 +2377,14 @@ auto OTAPI_Exec::Party_GetAcctAgentName(
     std::unique_ptr<OTScriptable> pScriptable(
         api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
     } else {
         OTParty* pParty = pScriptable->GetParty(PARTY_NAME);
         if (nullptr == pParty) {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Smart contract loaded up, but failed to retrieve the "
                 "party with name: ")(PARTY_NAME)(".")
                 .Flush();
@@ -2395,7 +2393,7 @@ auto OTAPI_Exec::Party_GetAcctAgentName(
             const OTPartyAccount* pAcct = pParty->GetAccount(ACCT_NAME);
 
             if (nullptr == pAcct) {
-                LogNormal(OT_METHOD)(__FUNCTION__)(
+                LogNormal(OT_METHOD)(__func__)(
                     ": Smart contract loaded up, and "
                     "party found, but failed to retrieve "
                     "party's account named: ")(ACCT_NAME)(".")
@@ -2424,14 +2422,14 @@ auto OTAPI_Exec::Party_GetAgentNameByIndex(
     std::unique_ptr<OTScriptable> pScriptable(
         api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
     } else {
         OTParty* pParty = pScriptable->GetParty(PARTY_NAME);
         if (nullptr == pParty) {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Smart contract loaded up, but failed to retrieve the "
                 "party with name: ")(PARTY_NAME)(".")
                 .Flush();
@@ -2441,7 +2439,7 @@ auto OTAPI_Exec::Party_GetAgentNameByIndex(
             OTAgent* pAgent = pParty->GetAgentByIndex(nTempIndex);
 
             if (nullptr == pAgent) {
-                LogNormal(OT_METHOD)(__FUNCTION__)(
+                LogNormal(OT_METHOD)(__func__)(
                     ": Smart contract loaded up, and party found, but "
                     "failed to retrieve the agent at index: ")(nTempIndex)(".")
                     .Flush();
@@ -2471,14 +2469,14 @@ auto OTAPI_Exec::Party_GetAgentID(
     std::unique_ptr<OTScriptable> pScriptable(
         api_.Factory().Scriptable(strContract));
     if (false == bool(pScriptable)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed trying to load smart contract from string: ")(
             strContract)(".")
             .Flush();
     } else {
         OTParty* pParty = pScriptable->GetParty(PARTY_NAME);
         if (nullptr == pParty) {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Smart contract loaded up, but failed to retrieve the "
                 "party with name: ")(PARTY_NAME)(".")
                 .Flush();
@@ -2487,7 +2485,7 @@ auto OTAPI_Exec::Party_GetAgentID(
             OTAgent* pAgent = pParty->GetAgent(AGENT_NAME);
 
             if (nullptr == pAgent) {
-                LogNormal(OT_METHOD)(__FUNCTION__)(
+                LogNormal(OT_METHOD)(__func__)(
                     ": Smart contract loaded up, and "
                     "party found, but failed to retrieve "
                     "party's agent named: ")(AGENT_NAME)(".")
@@ -2588,7 +2586,7 @@ auto OTAPI_Exec::Basket_GetMinimumTransferAmount(
         ot_api_.GetBasketMinimumTransferAmount(theInstrumentDefinitionID);
 
     if (0 >= lMinTransAmount) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Returned 0 (or negative). Strange! What basket is "
             "this?")
             .Flush();
@@ -2626,7 +2624,7 @@ auto OTAPI_Exec::Basket_GetMemberMinimumTransferAmount(
         theInstrumentDefinitionID, nIndex);
 
     if (0 >= lMinTransAmount) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Returned 0 (or negative). Strange! What basket is "
             "this?")
             .Flush();
@@ -2668,7 +2666,7 @@ auto OTAPI_Exec::GenerateBasketCreation(
 
         auto serialized = proto::UnitDefinition{};
         if (false == basketTemplate->Serialize(serialized, true)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failed to serialize unit definition.")
                 .Flush();
             return {};

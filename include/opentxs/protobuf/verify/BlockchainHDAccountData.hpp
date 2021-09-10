@@ -20,28 +20,27 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT bool CheckProto_1(
-    const BlockchainHDAccountData& account,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_2(const BlockchainHDAccountData&, const bool);
-OPENTXS_EXPORT bool CheckProto_3(const BlockchainHDAccountData&, const bool);
-OPENTXS_EXPORT bool CheckProto_4(const BlockchainHDAccountData&, const bool);
-OPENTXS_EXPORT bool CheckProto_5(const BlockchainHDAccountData&, const bool);
-OPENTXS_EXPORT bool CheckProto_6(const BlockchainHDAccountData&, const bool);
-OPENTXS_EXPORT bool CheckProto_7(const BlockchainHDAccountData&, const bool);
-OPENTXS_EXPORT bool CheckProto_8(const BlockchainHDAccountData&, const bool);
-OPENTXS_EXPORT bool CheckProto_9(const BlockchainHDAccountData&, const bool);
-OPENTXS_EXPORT bool CheckProto_10(const BlockchainHDAccountData&, const bool);
-OPENTXS_EXPORT bool CheckProto_11(const BlockchainHDAccountData&, const bool);
-OPENTXS_EXPORT bool CheckProto_12(const BlockchainHDAccountData&, const bool);
-OPENTXS_EXPORT bool CheckProto_13(const BlockchainHDAccountData&, const bool);
-OPENTXS_EXPORT bool CheckProto_14(const BlockchainHDAccountData&, const bool);
-OPENTXS_EXPORT bool CheckProto_15(const BlockchainHDAccountData&, const bool);
-OPENTXS_EXPORT bool CheckProto_16(const BlockchainHDAccountData&, const bool);
-OPENTXS_EXPORT bool CheckProto_17(const BlockchainHDAccountData&, const bool);
-OPENTXS_EXPORT bool CheckProto_18(const BlockchainHDAccountData&, const bool);
-OPENTXS_EXPORT bool CheckProto_19(const BlockchainHDAccountData&, const bool);
-OPENTXS_EXPORT bool CheckProto_20(const BlockchainHDAccountData&, const bool);
+auto CheckProto_1(const BlockchainHDAccountData& account, const bool silent)
+    -> bool;
+auto CheckProto_2(const BlockchainHDAccountData&, const bool) -> bool;
+auto CheckProto_3(const BlockchainHDAccountData&, const bool) -> bool;
+auto CheckProto_4(const BlockchainHDAccountData&, const bool) -> bool;
+auto CheckProto_5(const BlockchainHDAccountData&, const bool) -> bool;
+auto CheckProto_6(const BlockchainHDAccountData&, const bool) -> bool;
+auto CheckProto_7(const BlockchainHDAccountData&, const bool) -> bool;
+auto CheckProto_8(const BlockchainHDAccountData&, const bool) -> bool;
+auto CheckProto_9(const BlockchainHDAccountData&, const bool) -> bool;
+auto CheckProto_10(const BlockchainHDAccountData&, const bool) -> bool;
+auto CheckProto_11(const BlockchainHDAccountData&, const bool) -> bool;
+auto CheckProto_12(const BlockchainHDAccountData&, const bool) -> bool;
+auto CheckProto_13(const BlockchainHDAccountData&, const bool) -> bool;
+auto CheckProto_14(const BlockchainHDAccountData&, const bool) -> bool;
+auto CheckProto_15(const BlockchainHDAccountData&, const bool) -> bool;
+auto CheckProto_16(const BlockchainHDAccountData&, const bool) -> bool;
+auto CheckProto_17(const BlockchainHDAccountData&, const bool) -> bool;
+auto CheckProto_18(const BlockchainHDAccountData&, const bool) -> bool;
+auto CheckProto_19(const BlockchainHDAccountData&, const bool) -> bool;
+auto CheckProto_20(const BlockchainHDAccountData&, const bool) -> bool;
 }  // namespace proto
 }  // namespace opentxs
 

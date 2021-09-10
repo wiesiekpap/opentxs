@@ -58,8 +58,8 @@ auto GenesisBlockHeader(
         case blockchain::Type::Ethereum_frontier:
         case blockchain::Type::Ethereum_ropsten:
         default: {
-            LogOutput("opentxs::factory::")(__FUNCTION__)(
-                ": Unsupported type (")(static_cast<std::uint32_t>(type))(")")
+            LogOutput("opentxs::factory::")(__func__)(": Unsupported type (")(
+                static_cast<std::uint32_t>(type))(")")
                 .Flush();
 
             return nullptr;

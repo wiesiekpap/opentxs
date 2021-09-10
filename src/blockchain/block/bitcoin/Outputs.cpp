@@ -45,7 +45,7 @@ auto BitcoinTransactionOutputs(
 
         return std::make_unique<ReturnType>(std::move(outputs), size);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -124,8 +124,7 @@ auto Outputs::ExtractElements(const filter::Type style) const noexcept
     -> std::vector<Space>
 {
     auto output = std::vector<Space>{};
-    LogTrace(OT_METHOD)(__FUNCTION__)(": processing ")(size())(" outputs")
-        .Flush();
+    LogTrace(OT_METHOD)(__func__)(": processing ")(size())(" outputs").Flush();
 
     for (const auto& txout : *this) {
         auto temp = txout.ExtractElements(style);
@@ -135,8 +134,7 @@ auto Outputs::ExtractElements(const filter::Type style) const noexcept
             std::make_move_iterator(temp.end()));
     }
 
-    LogTrace(OT_METHOD)(__FUNCTION__)(": extracted ")(output.size())(
-        " elements")
+    LogTrace(OT_METHOD)(__func__)(": extracted ")(output.size())(" elements")
         .Flush();
     std::sort(output.begin(), output.end());
 
@@ -153,7 +151,7 @@ auto Outputs::FindMatches(
 
     for (const auto& txout : *this) {
         auto temp = txout.FindMatches(txid, type, patterns);
-        LogTrace(OT_METHOD)(__FUNCTION__)(": Verified ")(temp.second.size())(
+        LogTrace(OT_METHOD)(__func__)(": Verified ")(temp.second.size())(
             " matches in output ")(++index)
             .Flush();
         output.second.insert(
@@ -223,8 +221,7 @@ auto Outputs::Serialize(const AllocateOutput destination) const noexcept
     -> std::optional<std::size_t>
 {
     if (!destination) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output allocator")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return std::nullopt;
     }
@@ -233,7 +230,7 @@ auto Outputs::Serialize(const AllocateOutput destination) const noexcept
     auto output = destination(size);
 
     if (false == output.valid(size)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to allocate output bytes")
+        LogOutput(OT_METHOD)(__func__)(": Failed to allocate output bytes")
             .Flush();
 
         return std::nullopt;
@@ -252,7 +249,7 @@ auto Outputs::Serialize(const AllocateOutput destination) const noexcept
         const auto bytes = row->Serialize(preallocated(remaining, it));
 
         if (false == bytes.has_value()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize script")
+            LogOutput(OT_METHOD)(__func__)(": Failed to serialize script")
                 .Flush();
 
             return std::nullopt;

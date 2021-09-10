@@ -22,7 +22,7 @@ namespace opentxs::factory
 {
 auto ContactListItem(
     const ui::implementation::ContactListInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ui::implementation::ContactListRowID& rowID,
     const ui::implementation::ContactListSortKey& key) noexcept
     -> std::shared_ptr<ui::implementation::ContactListRowInternal>
@@ -37,7 +37,7 @@ namespace opentxs::ui::implementation
 {
 ContactListItem::ContactListItem(
     const ContactListInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ContactListRowID& rowID,
     const ContactListSortKey& key) noexcept
     : ContactListItemRow(parent, api, rowID, true)

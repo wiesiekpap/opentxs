@@ -40,6 +40,14 @@ signals:
     void enabledChanged(int enabledCount);
 
 public:
+    /// chain is an opentxs::blockchain::Type, retrievable as TypeRole
+    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
+    Q_INVOKABLE bool disableChain(const int chain) noexcept;
+    /// chain is an opentxs::blockchain::Type, retrievable as TypeRole
+    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
+    Q_INVOKABLE bool enableChain(const int chain) noexcept;
+
+public:
     // One column
     //
     // Qt::DisplayRole and Qt::CheckStateRole are implemented in addition to the
@@ -52,10 +60,6 @@ public:
     auto enabledCount() const noexcept -> int;
     auto flags(const QModelIndex& index) const -> Qt::ItemFlags final;
 
-    /// chain is an opentxs::blockchain::Type, retrievable as TypeRole
-    Q_INVOKABLE bool disableChain(const int chain) noexcept;
-    /// chain is an opentxs::blockchain::Type, retrievable as TypeRole
-    Q_INVOKABLE bool enableChain(const int chain) noexcept;
     auto setData(const QModelIndex& index, const QVariant& value, int role)
         -> bool final;
 

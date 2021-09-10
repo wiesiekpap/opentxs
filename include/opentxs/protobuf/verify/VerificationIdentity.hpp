@@ -28,106 +28,106 @@ namespace proto
 {
 using VerificationNymMap = std::map<std::string, std::uint64_t>;
 
-OPENTXS_EXPORT bool CheckProto_1(
+auto CheckProto_1(
     const VerificationIdentity& verificationIdentity,
     const bool silent,
     VerificationNymMap& map,
-    const VerificationType indexed);
-OPENTXS_EXPORT bool CheckProto_2(
+    const VerificationType indexed) -> bool;
+auto CheckProto_2(
     const VerificationIdentity&,
     const bool,
     VerificationNymMap&,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_3(
+    const VerificationType) -> bool;
+auto CheckProto_3(
     const VerificationIdentity&,
     const bool,
     VerificationNymMap&,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_4(
+    const VerificationType) -> bool;
+auto CheckProto_4(
     const VerificationIdentity&,
     const bool,
     VerificationNymMap&,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_5(
+    const VerificationType) -> bool;
+auto CheckProto_5(
     const VerificationIdentity&,
     const bool,
     VerificationNymMap&,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_6(
+    const VerificationType) -> bool;
+auto CheckProto_6(
     const VerificationIdentity&,
     const bool,
     VerificationNymMap&,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_7(
+    const VerificationType) -> bool;
+auto CheckProto_7(
     const VerificationIdentity&,
     const bool,
     VerificationNymMap&,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_8(
+    const VerificationType) -> bool;
+auto CheckProto_8(
     const VerificationIdentity&,
     const bool,
     VerificationNymMap&,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_9(
+    const VerificationType) -> bool;
+auto CheckProto_9(
     const VerificationIdentity&,
     const bool,
     VerificationNymMap&,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_10(
+    const VerificationType) -> bool;
+auto CheckProto_10(
     const VerificationIdentity&,
     const bool,
     VerificationNymMap&,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_11(
+    const VerificationType) -> bool;
+auto CheckProto_11(
     const VerificationIdentity&,
     const bool,
     VerificationNymMap&,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_12(
+    const VerificationType) -> bool;
+auto CheckProto_12(
     const VerificationIdentity&,
     const bool,
     VerificationNymMap&,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_13(
+    const VerificationType) -> bool;
+auto CheckProto_13(
     const VerificationIdentity&,
     const bool,
     VerificationNymMap&,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_14(
+    const VerificationType) -> bool;
+auto CheckProto_14(
     const VerificationIdentity&,
     const bool,
     VerificationNymMap&,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_15(
+    const VerificationType) -> bool;
+auto CheckProto_15(
     const VerificationIdentity&,
     const bool,
     VerificationNymMap&,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_16(
+    const VerificationType) -> bool;
+auto CheckProto_16(
     const VerificationIdentity&,
     const bool,
     VerificationNymMap&,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_17(
+    const VerificationType) -> bool;
+auto CheckProto_17(
     const VerificationIdentity&,
     const bool,
     VerificationNymMap&,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_18(
+    const VerificationType) -> bool;
+auto CheckProto_18(
     const VerificationIdentity&,
     const bool,
     VerificationNymMap&,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_19(
+    const VerificationType) -> bool;
+auto CheckProto_19(
     const VerificationIdentity&,
     const bool,
     VerificationNymMap&,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_20(
+    const VerificationType) -> bool;
+auto CheckProto_20(
     const VerificationIdentity&,
     const bool,
     VerificationNymMap&,
-    const VerificationType);
+    const VerificationType) -> bool;
 }  // namespace proto
 }  // namespace opentxs
 

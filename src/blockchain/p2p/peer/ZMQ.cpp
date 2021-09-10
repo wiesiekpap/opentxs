@@ -58,7 +58,7 @@ struct ZMQConnectionManager : virtual public Peer::ConnectionManager {
 
     auto connect() noexcept -> void override
     {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Connecting to ")(zmq_).Flush();
+        LogVerbose(OT_METHOD)(__func__)(": Connecting to ")(zmq_).Flush();
         dealer_->Start(zmq_);
         parent_.on_connect();
     }

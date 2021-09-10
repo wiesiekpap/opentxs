@@ -43,7 +43,7 @@ public:
 
     Test_CreateNymHD()
         : client_(ot::Context().StartClient(0))
-        , reason_(client_.Factory().PasswordPrompt(__FUNCTION__))
+        , reason_(client_.Factory().PasswordPrompt(__func__))
         // these fingerprints are deterministic so we can share them among tests
         , SeedA_(client_.Exec().Wallet_ImportSeed(
               "spike nominee miss inquiry fee nothing belt list other daughter "

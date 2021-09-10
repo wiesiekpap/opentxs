@@ -19,9 +19,9 @@
 
 #include "2_Factory.hpp"
 #include "Proto.tpp"
-#include "internal/api/Api.hpp"
 #include "internal/identity/Identity.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/HDSeed.hpp"
 #include "opentxs/contact/ContactData.hpp"
@@ -66,7 +66,7 @@
 namespace opentxs
 {
 auto Factory::Nym(
-    const api::internal::Core& api,
+    const api::Core& api,
     const NymParameters& params,
     const contact::ContactItemType type,
     const std::string name,
@@ -76,7 +76,7 @@ auto Factory::Nym(
 
     if ((identity::CredentialType::Legacy == params.credentialType()) &&
         (identity::SourceType::Bip47 == params.SourceType())) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(": Invalid parameters")
+        LogOutput("opentxs::Factory::")(__func__)(": Invalid parameters")
             .Flush();
 
         return nullptr;
@@ -88,7 +88,7 @@ auto Factory::Nym(
             NymIDSource(api, revised, reason)};
 
         if (false == bool(pSource)) {
-            LogOutput("opentxs::Factory::")(__FUNCTION__)(
+            LogOutput("opentxs::Factory::")(__func__)(
                 ": Failed to generate nym id source")
                 .Flush();
 
@@ -117,8 +117,8 @@ auto Factory::Nym(
 
         return new ReturnType(api, revised, std::move(pSource), reason);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
-            ": Failed to create nym: ")(e.what())
+        LogOutput("opentxs::Factory::")(__func__)(": Failed to create nym: ")(
+            e.what())
             .Flush();
 
         return nullptr;
@@ -126,14 +126,14 @@ auto Factory::Nym(
 }
 
 auto Factory::Nym(
-    const api::internal::Core& api,
+    const api::Core& api,
     const proto::Nym& serialized,
     const std::string& alias) -> identity::internal::Nym*
 {
     try {
         return new identity::implementation::Nym(api, serialized, alias);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
+        LogOutput("opentxs::Factory::")(__func__)(
             ": Failed to instantiate nym: ")(e.what())
             .Flush();
 
@@ -142,7 +142,7 @@ auto Factory::Nym(
 }
 
 auto Factory::Nym(
-    const api::internal::Core& api,
+    const api::Core& api,
     const ReadView& view,
     const std::string& alias) -> identity::internal::Nym*
 {
@@ -160,7 +160,7 @@ const VersionNumber Nym::MaxVersion{6};
 namespace opentxs::identity::implementation
 {
 auto session_key_from_iv(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::key::Asymmetric& signingKey,
     const Data& iv,
     const crypto::HashType hashType,
@@ -180,7 +180,7 @@ const VersionConversionMap Nym::contact_credential_to_contact_data_version_{
 };
 
 Nym::Nym(
-    const api::internal::Core& api,
+    const api::Core& api,
     NymParameters& params,
     std::unique_ptr<const identity::Source> source,
     const opentxs::PasswordPrompt& reason) noexcept(false)
@@ -204,7 +204,7 @@ Nym::Nym(
 }
 
 Nym::Nym(
-    const api::internal::Core& api,
+    const api::Core& api,
     const proto::Nym& serialized,
     const std::string& alias) noexcept(false)
     : api_(api)
@@ -283,7 +283,7 @@ auto Nym::AddChildKeyCredential(
     const bool noMaster = (it == active_.end());
 
     if (noMaster) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Master ID not found.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Master ID not found.").Flush();
 
         return output;
     }
@@ -599,7 +599,7 @@ auto Nym::Contracts(
 }
 
 auto Nym::create_authority(
-    const api::internal::Core& api,
+    const api::Core& api,
     const identity::Nym& parent,
     const identity::Source& source,
     const VersionNumber version,
@@ -983,7 +983,7 @@ void Nym::init_claims(const eLock& lock) const
 }
 
 auto Nym::load_authorities(
-    const api::internal::Core& api,
+    const api::Core& api,
     const identity::Nym& parent,
     const identity::Source& source,
     const Serialized& serialized) noexcept(false) -> CredentialMap
@@ -1015,7 +1015,7 @@ auto Nym::load_authorities(
 }
 
 auto Nym::load_revoked(
-    const api::internal::Core& api,
+    const api::Core& api,
     const identity::Nym& parent,
     const identity::Source& source,
     const Serialized& serialized,
@@ -1062,7 +1062,7 @@ auto Nym::Name() const -> std::string
 }
 
 auto Nym::normalize(
-    const api::internal::Core& api,
+    const api::Core& api,
     const NymParameters& in,
     const PasswordPrompt& reason) noexcept(false) -> NymParameters
 {
@@ -1086,7 +1086,7 @@ auto Nym::normalize(
         const auto defaultIndex = in.UseAutoIndex();
 
         if (false == defaultIndex) {
-            LogDetail(OT_METHOD)(__FUNCTION__)(
+            LogDetail(OT_METHOD)(__func__)(
                 ": Re-creating nym at specified path.")
                 .Flush();
 
@@ -1128,8 +1128,7 @@ auto Nym::path(const sLock& lock, proto::HDPath& output) const -> bool
         }
     }
 
-    LogOutput(OT_METHOD)(__FUNCTION__)(": No authority contains a path.")
-        .Flush();
+    LogOutput(OT_METHOD)(__func__)(": No authority contains a path.").Flush();
 
     return false;
 }
@@ -1184,7 +1183,7 @@ auto Nym::PaymentCodePath(AllocateOutput destination) const -> bool
 {
     auto path = proto::HDPath{};
     if (false == PaymentCodePath(path)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to serialize payment code path to HDPath.")
             .Flush();
 
@@ -1347,7 +1346,7 @@ auto Nym::set_contact_data(
     auto version = proto::NymRequiredVersion(data.version(), version_);
 
     if ((0 == version) || version > MaxVersion) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Contact data version not supported by this nym.")
             .Flush();
 
@@ -1355,14 +1354,14 @@ auto Nym::set_contact_data(
     }
 
     if (false == has_capability(lock, NymCapability::SIGN_CHILDCRED)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": This nym can not be modified.")
+        LogOutput(OT_METHOD)(__func__)(": This nym can not be modified.")
             .Flush();
 
         return false;
     }
 
     if (false == proto::Validate(data, VERBOSE, proto::ClaimType::Normal)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid contact data.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid contact data.").Flush();
 
         return false;
     }
@@ -1595,10 +1594,9 @@ auto Nym::Verify(const ProtobufType& input, proto::Signature& signature) const
         }
     }
 
-    LogOutput(OT_METHOD)(__FUNCTION__)(
-        ": all ")(active_
-                      .size())(" authorities on nym ")(id_)(" failed to verify "
-                                                            "signature")
+    LogOutput(OT_METHOD)(__func__)(": all ")(active_.size())(
+        " authorities on nym ")(id_)(" failed to verify "
+                                     "signature")
         .Flush();
 
     return false;
@@ -1616,18 +1614,17 @@ auto Nym::verify_pseudonym(const eLock& lock) const -> bool
             // Verify all Credentials in the Authority, including source
             // verification for the master credential.
             if (!pCredential->VerifyInternally()) {
-                LogNormal(OT_METHOD)(__FUNCTION__)(
-                    ": Credential (")(pCredential
-                                          ->GetMasterCredID())(") failed its "
-                                                               "own internal "
-                                                               "verification.")
+                LogNormal(OT_METHOD)(__func__)(": Credential (")(
+                    pCredential->GetMasterCredID())(") failed its "
+                                                    "own internal "
+                                                    "verification.")
                     .Flush();
                 return false;
             }
         }
         return true;
     }
-    LogOutput(OT_METHOD)(__FUNCTION__)(": No credentials.").Flush();
+    LogOutput(OT_METHOD)(__func__)(": No credentials.").Flush();
     return false;
 }
 
@@ -1644,7 +1641,7 @@ auto Nym::WriteCredentials() const -> bool
 
     for (auto& it : active_) {
         if (!it.second->WriteCredentials()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to save credentials.")
+            LogOutput(OT_METHOD)(__func__)(": Failed to save credentials.")
                 .Flush();
 
             return false;

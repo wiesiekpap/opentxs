@@ -447,7 +447,7 @@ auto PeerManager::shutdown(std::promise<void>& promise) noexcept -> void
 
 auto PeerManager::state_machine() noexcept -> bool
 {
-    LogTrace(OT_METHOD)(__FUNCTION__).Flush();
+    LogTrace(OT_METHOD)(__func__).Flush();
 
     if (false == running_.get()) { return false; }
 

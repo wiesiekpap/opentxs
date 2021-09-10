@@ -81,8 +81,7 @@ OpenSSL::DH::DH() noexcept
 auto OpenSSL::BIO::Export(const AllocateOutput allocator) noexcept -> bool
 {
     if (false == bool(allocator)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output allocator")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
@@ -91,8 +90,7 @@ auto OpenSSL::BIO::Export(const AllocateOutput allocator) noexcept -> bool
     auto out = allocator(bytes);
 
     if (false == out.valid(bytes)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to allocate space for output")
+        LogOutput(OT_METHOD)(__func__)(": Failed to allocate space for output")
             .Flush();
 
         return false;
@@ -101,7 +99,7 @@ auto OpenSSL::BIO::Export(const AllocateOutput allocator) noexcept -> bool
     const auto size{static_cast<int>(out.size())};
 
     if (size != BIO_read(bio_.get(), out, size)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed write output").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed write output").Flush();
 
         return false;
     }
@@ -114,7 +112,7 @@ auto OpenSSL::BIO::Import(const ReadView in) noexcept -> bool
     const auto size{static_cast<int>(in.size())};
 
     if (size != BIO_write(bio_.get(), in.data(), size)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed read input").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed read input").Flush();
 
         return false;
     }
@@ -132,7 +130,7 @@ auto OpenSSL::DH::init_keys(const ReadView prv, const ReadView pub) noexcept
                 return PEM_read_bio_PrivateKey(bio, nullptr, nullptr, nullptr);
             },
             local_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed initializing local private key")
             .Flush();
 
@@ -146,7 +144,7 @@ auto OpenSSL::DH::init_keys(const ReadView prv, const ReadView pub) noexcept
                 return PEM_read_bio_PUBKEY(bio, nullptr, nullptr, nullptr);
             },
             remote_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed initializing remote public key")
             .Flush();
 
@@ -156,7 +154,7 @@ auto OpenSSL::DH::init_keys(const ReadView prv, const ReadView pub) noexcept
     dh_.reset(EVP_PKEY_CTX_new(local_.get(), nullptr));
 
     if (false == bool(dh_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed initializing dh context")
+        LogOutput(OT_METHOD)(__func__)(": Failed initializing dh context")
             .Flush();
 
         return false;
@@ -170,7 +168,7 @@ auto OpenSSL::MD::init_digest(const crypto::HashType hash) noexcept -> bool
     hash_ = HashTypeToOpenSSLType(hash);
 
     if (nullptr == hash_) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Unsupported hash algorithm.")
+        LogVerbose(OT_METHOD)(__func__)(": Unsupported hash algorithm.")
             .Flush();
 
         return false;
@@ -248,7 +246,7 @@ auto OpenSSL::Digest(
     if (false == md.init_digest(type)) { return false; }
 
     if (1 != EVP_DigestInit_ex(md, md, nullptr)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to initialize digest operation")
             .Flush();
 
@@ -256,8 +254,7 @@ auto OpenSSL::Digest(
     }
 
     if (1 != EVP_DigestUpdate(md, input, inputSize)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to process plaintext")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to process plaintext").Flush();
 
         return false;
     }
@@ -265,7 +262,7 @@ auto OpenSSL::Digest(
     unsigned int bytes{};
 
     if (1 != EVP_DigestFinal_ex(md, output, &bytes)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to write digest").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to write digest").Flush();
 
         return false;
     }
@@ -303,14 +300,13 @@ auto OpenSSL::HMAC(
 
             return true;
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed to produce a valid HMAC.")
+            LogOutput(OT_METHOD)(__func__)(": Failed to produce a valid HMAC.")
                 .Flush();
 
             return false;
         }
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid hash type.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid hash type.").Flush();
 
         return false;
     }
@@ -324,7 +320,7 @@ auto OpenSSL::init_key(
     auto pem = BIO{};
 
     if (false == pem.Import(bytes)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed read private key").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed read private key").Flush();
 
         return false;
     }
@@ -334,7 +330,7 @@ auto OpenSSL::init_key(
     output.reset(function(pem));
 
     if (false == bool(output)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to instantiate EVP_PKEY")
+        LogOutput(OT_METHOD)(__func__)(": Failed to instantiate EVP_PKEY")
             .Flush();
 
         return false;
@@ -358,25 +354,25 @@ auto OpenSSL::PKCS5_PBKDF2_HMAC(
     const auto max = static_cast<std::size_t>(std::numeric_limits<int>::max());
 
     if (inputSize > max) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid input size").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid input size").Flush();
 
         return false;
     }
 
     if (saltSize > max) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid salt size").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid salt size").Flush();
 
         return false;
     }
 
     if (iterations > max) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid iteration count").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid iteration count").Flush();
 
         return false;
     }
 
     if (bytes > max) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output size").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid output size").Flush();
 
         return false;
     }
@@ -384,9 +380,8 @@ auto OpenSSL::PKCS5_PBKDF2_HMAC(
     const auto* algorithm = HashTypeToOpenSSLType(hashType);
 
     if (nullptr == algorithm) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Error: invalid hash type: ")(HashingProvider::HashTypeToString(
-                                                hashType))
+        LogOutput(OT_METHOD)(__func__)(": Error: invalid hash type: ")(
+            HashingProvider::HashTypeToString(hashType))
             .Flush();
 
         return false;
@@ -419,14 +414,13 @@ auto OpenSSL::generate_dh(const NymParameters& options, ::EVP_PKEY* output)
         ::EVP_PKEY_CTX_new_id(EVP_PKEY_DH, nullptr), ::EVP_PKEY_CTX_free};
 
     if (false == bool(context)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed EVP_PKEY_CTX_new_id")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed EVP_PKEY_CTX_new_id").Flush();
 
         return false;
     }
 
     if (1 != ::EVP_PKEY_paramgen_init(context.get())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed EVP_PKEY_paramgen_init")
+        LogOutput(OT_METHOD)(__func__)(": Failed EVP_PKEY_paramgen_init")
             .Flush();
 
         return false;
@@ -434,7 +428,7 @@ auto OpenSSL::generate_dh(const NymParameters& options, ::EVP_PKEY* output)
 
     if (1 != EVP_PKEY_CTX_set_dh_paramgen_prime_len(
                  context.get(), options.keySize())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed EVP_PKEY_CTX_set_dh_paramgen_prime_len")
             .Flush();
 
@@ -442,8 +436,7 @@ auto OpenSSL::generate_dh(const NymParameters& options, ::EVP_PKEY* output)
     }
 
     if (1 != EVP_PKEY_paramgen(context.get(), &output)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed EVP_PKEY_paramgen")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed EVP_PKEY_paramgen").Flush();
 
         return false;
     }
@@ -460,14 +453,14 @@ auto OpenSSL::get_params(
 
     if (0 < existing.size()) {
         if (false == import_dh(existing, output)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to import dh params")
+            LogOutput(OT_METHOD)(__func__)(": Failed to import dh params")
                 .Flush();
 
             return false;
         }
     } else {
         if (false == generate_dh(options, output)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to generate dh params")
+            LogOutput(OT_METHOD)(__func__)(": Failed to generate dh params")
                 .Flush();
 
             return false;
@@ -508,14 +501,13 @@ auto OpenSSL::import_dh(const ReadView existing, ::EVP_PKEY* output)
     auto params = BIO{};
 
     if (false == params.Import(existing)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to read dh params")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to read dh params").Flush();
 
         return false;
     }
 
     if (nullptr == ::PEM_read_bio_DHparams(params, &dh.dh_, nullptr, nullptr)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed PEM_read_bio_DHparams")
+        LogOutput(OT_METHOD)(__func__)(": Failed PEM_read_bio_DHparams")
             .Flush();
 
         return false;
@@ -524,7 +516,7 @@ auto OpenSSL::import_dh(const ReadView existing, ::EVP_PKEY* output)
     OT_ASSERT(nullptr != dh.dh_);
 
     if (1 != ::EVP_PKEY_set1_DH(output, dh.dh_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed EVP_PKEY_set1_DH").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed EVP_PKEY_set1_DH").Flush();
 
         return false;
     }
@@ -566,8 +558,7 @@ auto OpenSSL::make_dh_key(
     auto key = Key{};
 
     if (false == get_params(dhParams, options, params.key_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to set up dh params")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to set up dh params").Flush();
 
         return false;
     }
@@ -576,20 +567,19 @@ auto OpenSSL::make_dh_key(
         ::EVP_PKEY_CTX_new(params.key_, nullptr), ::EVP_PKEY_CTX_free};
 
     if (false == bool(context)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed EVP_PKEY_CTX_new").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed EVP_PKEY_CTX_new").Flush();
 
         return false;
     }
 
     if (1 != ::EVP_PKEY_keygen_init(context.get())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed EVP_PKEY_keygen_init")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed EVP_PKEY_keygen_init").Flush();
 
         return false;
     }
 
     if (1 != ::EVP_PKEY_keygen(context.get(), &key.key_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed EVP_PKEY_keygen").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed EVP_PKEY_keygen").Flush();
 
         return false;
     }
@@ -616,7 +606,7 @@ auto OpenSSL::make_signing_key(
         auto rc = ::BN_set_word(exponent.get(), 65537);
 
         if (1 != rc) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed BN_set_word").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Failed BN_set_word").Flush();
 
             return false;
         }
@@ -629,8 +619,7 @@ auto OpenSSL::make_signing_key(
             nullptr);
 
         if (1 != rc) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to generate key")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Failed to generate key").Flush();
 
             return false;
         }
@@ -638,7 +627,7 @@ auto OpenSSL::make_signing_key(
         rc = ::EVP_PKEY_assign_RSA(evp.get(), rsa.release());
 
         if (1 != rc) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed EVP_PKEY_assign_RSA")
+            LogOutput(OT_METHOD)(__func__)(": Failed EVP_PKEY_assign_RSA")
                 .Flush();
 
             return false;
@@ -684,8 +673,7 @@ auto OpenSSL::SharedSecret(
     Secret& secret) const noexcept -> bool
 {
     if (SecretStyle::Default != style) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported secret style")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Unsupported secret style").Flush();
 
         return false;
     }
@@ -695,14 +683,13 @@ auto OpenSSL::SharedSecret(
     if (false == dh.init_keys(prv, pub)) { return false; }
 
     if (1 != ::EVP_PKEY_derive_init(dh)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed EVP_PKEY_derive_init")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed EVP_PKEY_derive_init").Flush();
 
         return false;
     }
 
     if (1 != ::EVP_PKEY_derive_set_peer(dh, dh.Remote())) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Failed EVP_PKEY_derive_set_peer")
+        LogVerbose(OT_METHOD)(__func__)(": Failed EVP_PKEY_derive_set_peer")
             .Flush();
 
         return false;
@@ -711,7 +698,7 @@ auto OpenSSL::SharedSecret(
     auto allocate = secret.WriteInto(Secret::Mode::Mem);
 
     if (false == bool(allocate)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to get output allocator")
+        LogOutput(OT_METHOD)(__func__)(": Failed to get output allocator")
             .Flush();
 
         return false;
@@ -720,7 +707,7 @@ auto OpenSSL::SharedSecret(
     auto size = std::size_t{};
 
     if (1 != ::EVP_PKEY_derive(dh, nullptr, &size)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to calculate shared secret size")
             .Flush();
 
@@ -730,7 +717,7 @@ auto OpenSSL::SharedSecret(
     auto output = allocate(size);
 
     if (false == output.valid(size)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to allocate space for shared secret")
             .Flush();
 
@@ -738,7 +725,7 @@ auto OpenSSL::SharedSecret(
     }
 
     if (1 != EVP_PKEY_derive(dh, output.as<unsigned char>(), &size)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to derive shared secret")
+        LogOutput(OT_METHOD)(__func__)(": Failed to derive shared secret")
             .Flush();
 
         return false;
@@ -757,7 +744,7 @@ auto OpenSSL::Sign(
         case crypto::HashType::Blake2b160:
         case crypto::HashType::Blake2b256:
         case crypto::HashType::Blake2b512: {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": Unsupported hash algorithm.")
+            LogVerbose(OT_METHOD)(__func__)(": Unsupported hash algorithm.")
                 .Flush();
 
             return false;
@@ -771,7 +758,7 @@ auto OpenSSL::Sign(
     if (false == md.init_sign(type, key)) { return false; }
 
     if (1 != EVP_DigestSignInit(md, nullptr, md, nullptr, md)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to initialize signing operation")
             .Flush();
 
@@ -779,8 +766,7 @@ auto OpenSSL::Sign(
     }
 
     if (1 != EVP_DigestSignUpdate(md, in.data(), in.size())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to process plaintext")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to process plaintext").Flush();
 
         return false;
     }
@@ -788,16 +774,14 @@ auto OpenSSL::Sign(
     auto bytes = std::size_t{};
 
     if (1 != EVP_DigestSignFinal(md, nullptr, &bytes)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to calculate signature size")
+        LogOutput(OT_METHOD)(__func__)(": Failed to calculate signature size")
             .Flush();
 
         return false;
     }
 
     if (false == bool(signature)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output allocator")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
@@ -805,7 +789,7 @@ auto OpenSSL::Sign(
     auto out = signature(bytes);
 
     if (false == out.valid(bytes)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to allocate space for signature")
             .Flush();
 
@@ -814,8 +798,7 @@ auto OpenSSL::Sign(
 
     if (1 != EVP_DigestSignFinal(
                  md, reinterpret_cast<unsigned char*>(out.data()), &bytes)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to write signature")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to write signature").Flush();
 
         return false;
     }
@@ -833,7 +816,7 @@ auto OpenSSL::Verify(
         case crypto::HashType::Blake2b160:
         case crypto::HashType::Blake2b256:
         case crypto::HashType::Blake2b512: {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": Unsupported hash algorithm.")
+            LogVerbose(OT_METHOD)(__func__)(": Unsupported hash algorithm.")
                 .Flush();
 
             return false;
@@ -847,7 +830,7 @@ auto OpenSSL::Verify(
     if (false == md.init_verify(type, key)) { return false; }
 
     if (1 != EVP_DigestVerifyInit(md, nullptr, md, nullptr, md)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to initialize verification operation")
             .Flush();
 
@@ -855,8 +838,7 @@ auto OpenSSL::Verify(
     }
 
     if (1 != EVP_DigestVerifyUpdate(md, in.data(), in.size())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to process plaintext")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to process plaintext").Flush();
 
         return false;
     }
@@ -865,7 +847,7 @@ auto OpenSSL::Verify(
                  md,
                  reinterpret_cast<const unsigned char*>(sig.data()),
                  sig.size())) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": Invalid signature").Flush();
+        LogVerbose(OT_METHOD)(__func__)(": Invalid signature").Flush();
 
         return false;
     }
@@ -879,7 +861,7 @@ auto OpenSSL::write_dh(const AllocateOutput dhParams, ::EVP_PKEY* input)
     auto dh = OpenSSL_DH{::EVP_PKEY_get1_DH(input), ::DH_free};
 
     if (false == bool(dh)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed EVP_PKEY_get1_DH").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed EVP_PKEY_get1_DH").Flush();
 
         return false;
     }
@@ -888,14 +870,13 @@ auto OpenSSL::write_dh(const AllocateOutput dhParams, ::EVP_PKEY* input)
     const auto rc = ::PEM_write_bio_DHparams(params, dh.get());
 
     if (1 != rc) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed PEM_write_DHparams")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed PEM_write_DHparams").Flush();
 
         return false;
     }
 
     if (false == params.Export(dhParams)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed write dh params").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed write dh params").Flush();
 
         return false;
     }
@@ -917,7 +898,7 @@ auto OpenSSL::write_keypair(
         privKey, evp, nullptr, nullptr, 0, nullptr, nullptr);
 
     if (1 != rc) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed PEM_write_bio_PrivateKey")
+        LogOutput(OT_METHOD)(__func__)(": Failed PEM_write_bio_PrivateKey")
             .Flush();
 
         return false;
@@ -926,21 +907,19 @@ auto OpenSSL::write_keypair(
     rc = ::PEM_write_bio_PUBKEY(pubKey, evp);
 
     if (1 != rc) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed PEM_write_bio_PUBKEY")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed PEM_write_bio_PUBKEY").Flush();
 
         return false;
     }
 
     if (false == pubKey.Export(publicKey)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed write public key").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed write public key").Flush();
 
         return false;
     }
 
     if (false == privKey.Export(privateKey)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed write private key")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed write private key").Flush();
 
         return false;
     }

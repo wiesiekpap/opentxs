@@ -36,10 +36,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -107,7 +104,7 @@ public:
 
     IssuerItem(
         const AccountSummaryInternalInterface& parent,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const AccountSummaryRowID& rowID,
         const AccountSummarySortKey& sortKey,
         CustomData& custom,

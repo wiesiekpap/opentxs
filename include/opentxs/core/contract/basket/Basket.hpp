@@ -25,10 +25,7 @@ namespace implementation
 class Factory;
 }  // namespace implementation
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -106,12 +103,12 @@ public:
 
     void CalculateContractID(Identifier& newID) const final;
 
-    inline std::int64_t GetMinimumTransfer() const
+    inline auto GetMinimumTransfer() const -> std::int64_t
     {
         return m_lMinimumTransfer;
     }
 
-    inline std::int32_t GetTransferMultiple() const
+    inline auto GetTransferMultiple() const -> std::int32_t
     {
         return m_nTransferMultiple;
     }
@@ -120,20 +117,23 @@ public:
         m_nTransferMultiple = nTransferMultiple;
     }
 
-    inline bool IsExchanging() const { return (m_nTransferMultiple > 0); }
+    inline auto IsExchanging() const -> bool
+    {
+        return (m_nTransferMultiple > 0);
+    }
 
-    inline bool GetExchangingIn() const { return m_bExchangingIn; }
+    inline auto GetExchangingIn() const -> bool { return m_bExchangingIn; }
     inline void SetExchangingIn(bool bDirection)
     {
         m_bExchangingIn = bDirection;
     }
 
-    std::int32_t Count() const;
-    BasketItem* At(std::uint32_t nIndex);
+    auto Count() const -> std::int32_t;
+    auto At(std::uint32_t nIndex) -> BasketItem*;
 
-    std::int64_t GetClosingTransactionNoAt(std::uint32_t nIndex);
+    auto GetClosingTransactionNoAt(std::uint32_t nIndex) -> std::int64_t;
 
-    inline std::int64_t GetClosingNum() const
+    inline auto GetClosingNum() const -> std::int64_t
     {
         return m_lClosingTransactionNo;
     }
@@ -161,7 +161,7 @@ public:
     {
         m_RequestAccountID = theAccountID;
     }
-    inline const Identifier& GetRequestAccountID()
+    inline auto GetRequestAccountID() -> const Identifier&
     {
         return m_RequestAccountID;
     }
@@ -200,14 +200,14 @@ protected:
     // For the main (basket) account, in a request basket (for exchanges.)
     TransactionNumber m_lClosingTransactionNo{0};
     // return -1 if error, 0 if nothing, and 1 if the node was processed.
-    std::int32_t ProcessXMLNode(irr::io::IrrXMLReader*& xml) final;
+    auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t final;
 
 private:
     friend api::implementation::Factory;
 
-    Basket(const api::internal::Core& api);
+    Basket(const api::Core& api);
     Basket(
-        const api::internal::Core& api,
+        const api::Core& api,
         std::int32_t nCount,
         std::int64_t lMinimumTransferAmount);
 

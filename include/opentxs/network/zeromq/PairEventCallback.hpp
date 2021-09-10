@@ -13,17 +13,6 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 
-#ifdef SWIG
-// clang-format off
-%ignore opentxs::Pimpl<opentxs::network::zeromq::PairEventCallback>::Pimpl(opentxs::network::zeromq::PairEventCallback const &);
-%ignore opentxs::Pimpl<opentxs::network::zeromq::PairEventCallback>::operator opentxs::network::zeromq::PairEventCallback&;
-%ignore opentxs::Pimpl<opentxs::network::zeromq::PairEventCallback>::operator const opentxs::network::zeromq::PairEventCallback &;
-%rename(assign) operator=(const opentxs::network::zeromq::PairEventCallback&);
-%rename(ZMQPairEventCallback) opentxs::network::zeromq::PairEventCallback;
-%template(OTZMQPairEventCallback) opentxs::Pimpl<opentxs::network::zeromq::PairEventCallback>;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace network
@@ -55,11 +44,9 @@ class OPENTXS_EXPORT PairEventCallback : virtual public ListenCallback
 public:
     using ReceiveCallback = std::function<void(const proto::PairEvent&)>;
 
-#ifndef SWIG
-    static OTZMQPairEventCallback Factory(ReceiveCallback callback);
-#endif
-    static opentxs::Pimpl<opentxs::network::zeromq::PairEventCallback> Factory(
-        PairEventCallbackSwig* callback);
+    static auto Factory(ReceiveCallback callback) -> OTZMQPairEventCallback;
+    static auto Factory(PairEventCallbackSwig* callback)
+        -> opentxs::Pimpl<opentxs::network::zeromq::PairEventCallback>;
 
     ~PairEventCallback() override = default;
 
@@ -70,13 +57,13 @@ private:
     friend OTZMQPairEventCallback;
 
 #ifndef _WIN32
-    PairEventCallback* clone() const override = 0;
+    auto clone() const -> PairEventCallback* override = 0;
 #endif
 
     PairEventCallback(const PairEventCallback&) = delete;
     PairEventCallback(PairEventCallback&&) = delete;
-    PairEventCallback& operator=(const PairEventCallback&) = delete;
-    PairEventCallback& operator=(PairEventCallback&&) = delete;
+    auto operator=(const PairEventCallback&) -> PairEventCallback& = delete;
+    auto operator=(PairEventCallback&&) -> PairEventCallback& = delete;
 };
 }  // namespace zeromq
 }  // namespace network

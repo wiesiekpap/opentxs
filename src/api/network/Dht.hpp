@@ -22,11 +22,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
+class Core;
 class Endpoints;
 }  // namespace api
 
@@ -61,7 +57,7 @@ public:
     auto OpenDHT() const -> const opentxs::network::OpenDHT& final;
     void RegisterCallbacks(const CallbackMap& callbacks) const final;
 
-    Dht(const api::internal::Core& api,
+    Dht(const api::Core& api,
         const opentxs::network::zeromq::Context& zeromq,
         const api::Endpoints& endpoints,
         opentxs::network::DhtConfig& config) noexcept;
@@ -69,7 +65,7 @@ public:
     ~Dht() final = default;
 
 private:
-    const api::internal::Core& api_;
+    const api::Core& api_;
     mutable CallbackMap callback_map_;
     const opentxs::network::DhtConfig config_;
     std::unique_ptr<opentxs::network::OpenDHT> node_;
@@ -81,17 +77,17 @@ private:
     OTZMQReplySocket request_unit_socket_;
 
     static auto ProcessPublicNym(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string key,
         const DhtResults& values,
         NotifyCB notifyCB) -> bool;
     static auto ProcessServerContract(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string key,
         const DhtResults& values,
         NotifyCB notifyCB) -> bool;
     static auto ProcessUnitDefinition(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string key,
         const DhtResults& values,
         NotifyCB notifyCB) -> bool;

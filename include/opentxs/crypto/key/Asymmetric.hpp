@@ -56,72 +56,74 @@ public:
     static const VersionNumber DefaultVersion;
     static const VersionNumber MaxVersion;
 
-    static OTAsymmetricKey Factory() noexcept;
+    static auto Factory() noexcept -> OTAsymmetricKey;
 
-    virtual std::unique_ptr<Asymmetric> asPublic() const noexcept = 0;
-    virtual OTData CalculateHash(
+    virtual auto asPublic() const noexcept -> std::unique_ptr<Asymmetric> = 0;
+    virtual auto CalculateHash(
         const crypto::HashType hashType,
-        const PasswordPrompt& reason) const noexcept = 0;
-    virtual bool CalculateID(Identifier& theOutput) const noexcept = 0;
-    virtual bool CalculateTag(
+        const PasswordPrompt& reason) const noexcept -> OTData = 0;
+    virtual auto CalculateID(Identifier& theOutput) const noexcept -> bool = 0;
+    virtual auto CalculateTag(
         const identity::Authority& nym,
         const crypto::key::asymmetric::Algorithm type,
         const PasswordPrompt& reason,
         std::uint32_t& tag,
-        Secret& password) const noexcept = 0;
-    virtual bool CalculateTag(
+        Secret& password) const noexcept -> bool = 0;
+    virtual auto CalculateTag(
         const Asymmetric& dhKey,
         const Identifier& credential,
         const PasswordPrompt& reason,
-        std::uint32_t& tag) const noexcept = 0;
-    virtual bool CalculateSessionPassword(
+        std::uint32_t& tag) const noexcept -> bool = 0;
+    virtual auto CalculateSessionPassword(
         const Asymmetric& dhKey,
         const PasswordPrompt& reason,
-        Secret& password) const noexcept = 0;
-    virtual const opentxs::crypto::AsymmetricProvider& engine()
-        const noexcept = 0;
-    virtual const OTSignatureMetadata* GetMetadata() const noexcept = 0;
-    virtual bool hasCapability(
-        const NymCapability& capability) const noexcept = 0;
-    virtual bool HasPrivate() const noexcept = 0;
-    virtual bool HasPublic() const noexcept = 0;
-    virtual crypto::key::asymmetric::Algorithm keyType() const noexcept = 0;
-    virtual ReadView Params() const noexcept = 0;
-    virtual const std::string Path() const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual bool Path(
-        proto::HDPath& output) const noexcept = 0;
-    virtual ReadView PrivateKey(
-        const PasswordPrompt& reason) const noexcept = 0;
-    virtual ReadView PublicKey() const noexcept = 0;
-    virtual opentxs::crypto::key::asymmetric::Role Role() const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual bool Serialize(
-        Serialized& serialized) const noexcept = 0;
-    virtual crypto::HashType SigHashType() const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual bool Sign(
+        Secret& password) const noexcept -> bool = 0;
+    virtual auto engine() const noexcept
+        -> const opentxs::crypto::AsymmetricProvider& = 0;
+    virtual auto GetMetadata() const noexcept -> const OTSignatureMetadata* = 0;
+    virtual auto hasCapability(const NymCapability& capability) const noexcept
+        -> bool = 0;
+    virtual auto HasPrivate() const noexcept -> bool = 0;
+    virtual auto HasPublic() const noexcept -> bool = 0;
+    virtual auto keyType() const noexcept
+        -> crypto::key::asymmetric::Algorithm = 0;
+    virtual auto Params() const noexcept -> ReadView = 0;
+    virtual auto Path() const noexcept -> const std::string = 0;
+    OPENTXS_NO_EXPORT virtual auto Path(proto::HDPath& output) const noexcept
+        -> bool = 0;
+    virtual auto PrivateKey(const PasswordPrompt& reason) const noexcept
+        -> ReadView = 0;
+    virtual auto PublicKey() const noexcept -> ReadView = 0;
+    virtual auto Role() const noexcept
+        -> opentxs::crypto::key::asymmetric::Role = 0;
+    OPENTXS_NO_EXPORT virtual auto Serialize(
+        Serialized& serialized) const noexcept -> bool = 0;
+    virtual auto SigHashType() const noexcept -> crypto::HashType = 0;
+    OPENTXS_NO_EXPORT virtual auto Sign(
         const GetPreimage input,
         const crypto::SignatureRole role,
         proto::Signature& signature,
         const Identifier& credential,
         const PasswordPrompt& reason,
-        const crypto::HashType hash =
-            crypto::HashType::Error) const noexcept = 0;
-    virtual bool Sign(
+        const crypto::HashType hash = crypto::HashType::Error) const noexcept
+        -> bool = 0;
+    virtual auto Sign(
         const ReadView preimage,
         const crypto::HashType hash,
         const AllocateOutput output,
-        const PasswordPrompt& reason) const noexcept = 0;
-    virtual bool TransportKey(
+        const PasswordPrompt& reason) const noexcept -> bool = 0;
+    virtual auto TransportKey(
         Data& publicKey,
         Secret& privateKey,
-        const PasswordPrompt& reason) const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual bool Verify(
+        const PasswordPrompt& reason) const noexcept -> bool = 0;
+    OPENTXS_NO_EXPORT virtual auto Verify(
         const Data& plaintext,
-        const proto::Signature& sig) const noexcept = 0;
-    virtual VersionNumber Version() const noexcept = 0;
+        const proto::Signature& sig) const noexcept -> bool = 0;
+    virtual auto Version() const noexcept -> VersionNumber = 0;
 
     virtual operator bool() const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual bool operator==(
-        const Serialized&) const noexcept = 0;
+    OPENTXS_NO_EXPORT virtual auto operator==(const Serialized&) const noexcept
+        -> bool = 0;
 
     virtual ~Asymmetric() = default;
 
@@ -131,12 +133,12 @@ protected:
 private:
     friend OTAsymmetricKey;
 
-    virtual Asymmetric* clone() const noexcept = 0;
+    virtual auto clone() const noexcept -> Asymmetric* = 0;
 
     Asymmetric(const Asymmetric&) = delete;
     Asymmetric(Asymmetric&&) = delete;
-    Asymmetric& operator=(const Asymmetric&) = delete;
-    Asymmetric& operator=(Asymmetric&&) = delete;
+    auto operator=(const Asymmetric&) -> Asymmetric& = delete;
+    auto operator=(Asymmetric&&) -> Asymmetric& = delete;
 };
 }  // namespace key
 }  // namespace crypto

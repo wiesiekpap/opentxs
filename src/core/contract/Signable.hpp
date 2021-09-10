@@ -17,10 +17,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace proto
@@ -50,7 +47,7 @@ public:
 protected:
     using Signatures = std::list<Signature>;
 
-    const api::internal::Core& api_;
+    const api::Core& api_;
     mutable std::mutex lock_;
     const Nym_p nym_;
     const VersionNumber version_;
@@ -79,13 +76,13 @@ protected:
     virtual auto GetID(const Lock& lock) const -> OTIdentifier = 0;
 
     Signable(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const VersionNumber version,
         const std::string& conditions,
         const std::string& alias) noexcept;
     Signable(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const VersionNumber version,
         const std::string& conditions,

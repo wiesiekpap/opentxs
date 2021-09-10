@@ -23,7 +23,7 @@ public:
 
 protected:
     Row(const ParentType& parent,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const IdentifierType id,
         const bool valid) noexcept
         : RowType<InterfaceType, ParentType, IdentifierType>(parent, id, valid)

@@ -42,8 +42,8 @@ struct OPENTXS_EXPORT Outpoint {
     Outpoint() noexcept;
     Outpoint(const Outpoint&) noexcept;
     Outpoint(Outpoint&&) noexcept;
-    Outpoint& operator=(const Outpoint&) noexcept;
-    Outpoint& operator=(Outpoint&&) noexcept;
+    auto operator=(const Outpoint&) noexcept -> Outpoint&;
+    auto operator=(Outpoint&&) noexcept -> Outpoint&;
 };
 }  // namespace block
 }  // namespace blockchain

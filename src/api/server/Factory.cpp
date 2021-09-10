@@ -9,14 +9,14 @@
 
 #include "2_Factory.hpp"
 #include "api/Factory.hpp"
-#include "internal/api/server/Server.hpp"
+#include "opentxs/api/server/Manager.hpp"
 #include "opentxs/core/cron/OTCron.hpp"
 
 //#define OT_METHOD "opentxs::api::server::implementation::Factory::"
 
 namespace opentxs
 {
-auto Factory::FactoryAPIServer(const api::server::internal::Manager& api)
+auto Factory::FactoryAPIServer(const api::server::Manager& api)
     -> api::internal::Factory*
 {
     return new api::server::implementation::Factory(api);
@@ -25,7 +25,7 @@ auto Factory::FactoryAPIServer(const api::server::internal::Manager& api)
 
 namespace opentxs::api::server::implementation
 {
-Factory::Factory(const api::server::internal::Manager& server)
+Factory::Factory(const api::server::Manager& server)
     : api::implementation::Factory(server)
     , server_(server)
 {

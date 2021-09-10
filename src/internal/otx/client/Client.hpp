@@ -310,7 +310,7 @@ struct StateMachine {
     using Result = api::client::OTX::Result;
     using TaskID = api::client::OTX::TaskID;
 
-    virtual auto api() const -> const api::internal::Core& = 0;
+    virtual auto api() const -> const api::Core& = 0;
     virtual auto DepositPayment(const otx::client::DepositPaymentTask& params)
         const -> BackgroundTask = 0;
     virtual auto DownloadUnitDefinition(

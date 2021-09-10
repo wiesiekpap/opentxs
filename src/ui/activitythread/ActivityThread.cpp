@@ -30,6 +30,7 @@
 #include "opentxs/api/client/Activity.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -61,7 +62,7 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::factory
 {
 auto ActivityThreadModel(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const Identifier& threadID,
     const SimpleCallback& cb) noexcept
@@ -76,7 +77,7 @@ auto ActivityThreadModel(
 namespace opentxs::ui::implementation
 {
 ActivityThread::ActivityThread(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const Identifier& threadID,
     const SimpleCallback& cb) noexcept

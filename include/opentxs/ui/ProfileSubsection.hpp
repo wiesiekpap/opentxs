@@ -14,21 +14,6 @@
 #include "opentxs/ui/List.hpp"
 #include "opentxs/ui/ListRow.hpp"
 
-#ifdef SWIG
-// clang-format off
-%extend opentxs::ui::ProfileSubsection {
-    int Type() const noexcept
-    {
-        return static_cast<int>($self->Type());
-    }
-}
-%ignore opentxs::ui::ProfileSubsection::Type;
-%ignore opentxs::ui::ProfileSubsection::Update;
-%template(OTUIProfileSubsection) opentxs::SharedPimpl<opentxs::ui::ProfileSubsection>;
-%rename(UIProfileSubsection) opentxs::ui::ProfileSubsection;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -47,23 +32,24 @@ class OPENTXS_EXPORT ProfileSubsection : virtual public List,
                                          virtual public ListRow
 {
 public:
-    virtual bool AddItem(
+    virtual auto AddItem(
         const std::string& value,
         const bool primary,
-        const bool active) const noexcept = 0;
-    virtual bool Delete(const std::string& claimID) const noexcept = 0;
-    virtual opentxs::SharedPimpl<opentxs::ui::ProfileItem> First()
-        const noexcept = 0;
-    virtual std::string Name(const std::string& lang) const noexcept = 0;
-    virtual opentxs::SharedPimpl<opentxs::ui::ProfileItem> Next()
-        const noexcept = 0;
-    virtual bool SetActive(const std::string& claimID, const bool active)
-        const noexcept = 0;
-    virtual bool SetPrimary(const std::string& claimID, const bool primary)
-        const noexcept = 0;
-    virtual bool SetValue(const std::string& claimID, const std::string& value)
-        const noexcept = 0;
-    virtual contact::ContactItemType Type() const noexcept = 0;
+        const bool active) const noexcept -> bool = 0;
+    virtual auto Delete(const std::string& claimID) const noexcept -> bool = 0;
+    virtual auto First() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::ProfileItem> = 0;
+    virtual auto Name(const std::string& lang) const noexcept
+        -> std::string = 0;
+    virtual auto Next() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::ProfileItem> = 0;
+    virtual auto SetActive(const std::string& claimID, const bool active)
+        const noexcept -> bool = 0;
+    virtual auto SetPrimary(const std::string& claimID, const bool primary)
+        const noexcept -> bool = 0;
+    virtual auto SetValue(const std::string& claimID, const std::string& value)
+        const noexcept -> bool = 0;
+    virtual auto Type() const noexcept -> contact::ContactItemType = 0;
 
     ~ProfileSubsection() override = default;
 
@@ -73,8 +59,8 @@ protected:
 private:
     ProfileSubsection(const ProfileSubsection&) = delete;
     ProfileSubsection(ProfileSubsection&&) = delete;
-    ProfileSubsection& operator=(const ProfileSubsection&) = delete;
-    ProfileSubsection& operator=(ProfileSubsection&&) = delete;
+    auto operator=(const ProfileSubsection&) -> ProfileSubsection& = delete;
+    auto operator=(ProfileSubsection&&) -> ProfileSubsection& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

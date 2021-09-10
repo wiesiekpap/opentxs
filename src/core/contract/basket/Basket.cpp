@@ -70,7 +70,7 @@
 namespace opentxs
 {
 Basket::Basket(
-    const api::internal::Core& core,
+    const api::Core& core,
     std::int32_t nCount,
     std::int64_t lMinimumTransferAmount)
     : Contract(core)
@@ -85,7 +85,7 @@ Basket::Basket(
 {
 }
 
-Basket::Basket(const api::internal::Core& core)
+Basket::Basket(const api::Core& core)
     : Basket(core, 0, 0)
 {
 }
@@ -218,8 +218,7 @@ auto Basket::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         m_nSubCount = atoi(strSubCount->Get());
         m_lMinimumTransfer = strMinTrans->ToLong();
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Loading currency basket...")
-            .Flush();
+        LogDetail(OT_METHOD)(__func__)(": Loading currency basket...").Flush();
 
         return 1;
     } else if (strNodeName->Compare("requestExchange")) {
@@ -241,10 +240,11 @@ auto Basket::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             m_bExchangingIn = strDirection->Compare("in");
         if (strTemp->Exists()) SetClosingNum(strTemp->ToLong());
 
-        LogVerbose(OT_METHOD)(__FUNCTION__)("Basket Transfer multiple is ")(
-            m_nTransferMultiple)(". Direction is ")(strDirection)(
-            ". Closing number is ")(m_lClosingTransactionNo)(
-            ". Target account is: ")(strRequestAccountID)
+        LogVerbose(OT_METHOD)(__func__)("Basket Transfer multiple is ")(
+            m_nTransferMultiple)(". Direction is ")(
+            strDirection)(". Closing number is ")(
+            m_lClosingTransactionNo)(". Target account is: ")(
+            strRequestAccountID)
             .Flush();
 
         return 1;
@@ -273,7 +273,7 @@ auto Basket::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         m_dequeItems.push_back(pItem);
 
-        LogVerbose(OT_METHOD)(__FUNCTION__)("Loaded basket item. ").Flush();
+        LogVerbose(OT_METHOD)(__func__)("Loaded basket item. ").Flush();
 
         return 1;
     }

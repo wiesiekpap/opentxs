@@ -102,8 +102,8 @@ auto OTStash::ReadFromXMLNode(
     const String& strItemCount) -> std::int32_t
 {
     if (!strStashName.Exists()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed: Empty stash 'name' "
-                                           "attribute.")
+        LogOutput(OT_METHOD)(__func__)(": Failed: Empty stash 'name' "
+                                       "attribute.")
             .Flush();
         return (-1);
     }
@@ -118,8 +118,8 @@ auto OTStash::ReadFromXMLNode(
         while (nCount-- > 0) {
             //            xml->read();
             if (!Contract::SkipToElement(xml)) {
-                LogNormal(OT_METHOD)(__FUNCTION__)(": Failure: Unable to find "
-                                                   "expected element.")
+                LogNormal(OT_METHOD)(__func__)(": Failure: Unable to find "
+                                               "expected element.")
                     .Flush();
                 return (-1);
             }
@@ -135,7 +135,7 @@ auto OTStash::ReadFromXMLNode(
 
                 if (!strInstrumentDefinitionID->Exists() ||
                     !strAmount->Exists()) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Error loading "
                         "stashItem: Either the instrumentDefinitionID (")(
                         strInstrumentDefinitionID)("), or the balance (")(
@@ -148,19 +148,19 @@ auto OTStash::ReadFromXMLNode(
                         strInstrumentDefinitionID->Get(),
                         strAmount->ToLong()))  // <===============
                 {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(": Failed crediting "
-                                                       "stashItem for stash ")(
+                    LogOutput(OT_METHOD)(__func__)(": Failed crediting "
+                                                   "stashItem for stash ")(
                         strStashName)(". instrumentDefinitionID (")(
-                        strInstrumentDefinitionID)("), balance (")(strAmount)(
-                        ").")
+                        strInstrumentDefinitionID)("), balance (")(
+                        strAmount)(").")
                         .Flush();
                     return (-1);
                 }
 
                 // (Success)
             } else {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Expected stashItem "
-                                                   "element.")
+                LogOutput(OT_METHOD)(__func__)(": Expected stashItem "
+                                               "element.")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -169,9 +169,9 @@ auto OTStash::ReadFromXMLNode(
 
     if (!Contract::SkipAfterLoadingField(xml))  // </stash>
     {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Bad data? Expected "
-                                           "EXN_ELEMENT_END here, but "
-                                           "didn't get it. Returning -1.")
+        LogNormal(OT_METHOD)(__func__)(": Bad data? Expected "
+                                       "EXN_ELEMENT_END here, but "
+                                       "didn't get it. Returning -1.")
             .Flush();
         return (-1);
     }

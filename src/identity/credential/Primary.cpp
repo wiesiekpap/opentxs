@@ -13,8 +13,8 @@
 #include "2_Factory.hpp"
 #include "core/contract/Signable.hpp"
 #include "identity/credential/Key.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/crypto/key/Key.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -46,7 +46,7 @@ namespace opentxs
 using ReturnType = identity::credential::implementation::Primary;
 
 auto Factory::PrimaryCredential(
-    const api::internal::Core& api,
+    const api::Core& api,
     identity::internal::Authority& parent,
     const identity::Source& source,
     const NymParameters& parameters,
@@ -58,7 +58,7 @@ auto Factory::PrimaryCredential(
 
         return new ReturnType(api, parent, source, parameters, version, reason);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
+        LogOutput("opentxs::Factory::")(__func__)(
             ": Failed to create credential: ")(e.what())
             .Flush();
 
@@ -67,7 +67,7 @@ auto Factory::PrimaryCredential(
 }
 
 auto Factory::PrimaryCredential(
-    const api::internal::Core& api,
+    const api::Core& api,
     identity::internal::Authority& parent,
     const identity::Source& source,
     const proto::Credential& serialized)
@@ -77,7 +77,7 @@ auto Factory::PrimaryCredential(
 
         return new ReturnType(api, parent, source, serialized);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
+        LogOutput("opentxs::Factory::")(__func__)(
             ": Failed to deserialize credential: ")(e.what())
             .Flush();
 
@@ -98,7 +98,7 @@ const VersionConversionMap Primary::credential_to_master_params_{
 };
 
 Primary::Primary(
-    const api::internal::Core& api,
+    const api::Core& api,
     const identity::internal::Authority& parent,
     const identity::Source& source,
     const NymParameters& params,
@@ -125,7 +125,7 @@ Primary::Primary(
 }
 
 Primary::Primary(
-    const api::internal::Core& api,
+    const api::Core& api,
     const identity::internal::Authority& parent,
     const identity::Source& source,
     const proto::Credential& serialized) noexcept(false)
@@ -158,7 +158,7 @@ auto Primary::Path(proto::HDPath& output) const -> bool
 
         return found;
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": No private key.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": No private key.").Flush();
 
         return false;
     }
@@ -271,8 +271,7 @@ auto Primary::Verify(
                 crypto::key::asymmetric::Mode::Public),
             opentxs::identity::credential::internal::translate(role),
             false)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid credential syntax.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid credential syntax.").Flush();
 
         return false;
     }
@@ -280,7 +279,7 @@ auto Primary::Verify(
     bool sameMaster = (id_ == masterID);
 
     if (!sameMaster) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Credential does not designate this credential as its master.")
             .Flush();
 
@@ -315,7 +314,7 @@ auto Primary::verify_against_source(const Lock& lock) const -> bool
     }
 
     if (false == bool(pSerialized)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize credentials")
+        LogOutput(OT_METHOD)(__func__)(": Failed to serialize credentials")
             .Flush();
 
         return false;
@@ -325,7 +324,7 @@ auto Primary::verify_against_source(const Lock& lock) const -> bool
     const auto pSig = hasSourceSignature ? SourceSignature() : SelfSignature();
 
     if (false == bool(pSig)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Master credential not signed by its source.")
             .Flush();
 
@@ -344,7 +343,7 @@ auto Primary::verify_internally(const Lock& lock) const -> bool
 
     // Check that the source validates this credential
     if (!verify_against_source(lock)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed verifying master credential against "
             "nym id source.")
             .Flush();

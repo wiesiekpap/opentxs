@@ -56,6 +56,26 @@ signals:
     void syncProgressUpdated(int, int) const;
 
 public:
+    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
+    Q_INVOKABLE int sendToAddress(
+        const QString& address,
+        const QString& amount,
+        const QString& memo,
+        int scale = 0) const noexcept;
+    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
+    Q_INVOKABLE int sendToContact(
+        const QString& contactID,
+        const QString& amount,
+        const QString& memo,
+        int scale = 0) const noexcept;
+    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
+    Q_INVOKABLE QString getDepositAddress(const int chain = 0) const noexcept;
+    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
+    Q_INVOKABLE bool validateAddress(const QString& address) const noexcept;
+    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
+    Q_INVOKABLE QString validateAmount(const QString& amount) const noexcept;
+
+public:
     // Five columns when used in a table view
     //
     // All data is available in a list view via the user roles defined below:
@@ -91,21 +111,8 @@ public:
         int section,
         Qt::Orientation orientation,
         int role = Qt::DisplayRole) const noexcept -> QVariant final;
-    Q_INVOKABLE int sendToAddress(
-        const QString& address,
-        const QString& amount,
-        const QString& memo,
-        int scale = 0) const noexcept;
-    Q_INVOKABLE int sendToContact(
-        const QString& contactID,
-        const QString& amount,
-        const QString& memo,
-        int scale = 0) const noexcept;
-    Q_INVOKABLE QString getDepositAddress(const int chain = 0) const noexcept;
     double syncPercentage() const noexcept;
     QVariantList syncProgress() const noexcept;
-    Q_INVOKABLE bool validateAddress(const QString& address) const noexcept;
-    Q_INVOKABLE QString validateAmount(const QString& amount) const noexcept;
 
     AccountActivityQt(internal::AccountActivity& parent) noexcept;
 

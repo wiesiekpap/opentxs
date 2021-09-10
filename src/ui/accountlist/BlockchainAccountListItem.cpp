@@ -10,8 +10,8 @@
 #include <memory>
 #include <string>
 
-#include "internal/api/client/Client.hpp"
 #include "internal/core/Core.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "ui/base/Widget.hpp"
@@ -22,7 +22,7 @@ namespace opentxs::factory
 {
 auto BlockchainAccountListItem(
     const ui::implementation::AccountListInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ui::implementation::AccountListRowID& rowID,
     const ui::implementation::AccountListSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
@@ -38,7 +38,7 @@ namespace opentxs::ui::implementation
 {
 BlockchainAccountListItem::BlockchainAccountListItem(
     const AccountListInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const AccountListRowID& rowID,
     const AccountListSortKey& sortKey,
     CustomData& custom) noexcept

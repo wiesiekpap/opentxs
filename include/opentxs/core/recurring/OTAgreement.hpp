@@ -27,10 +27,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -117,19 +114,22 @@ protected:
     std::deque<TransactionNumber> m_dequeRecipientClosingNumbers;
 
 public:
-    originType GetOriginType() const override
+    auto GetOriginType() const -> originType override
     {
         return originType::origin_payment_plan;
     }
 
     void setCustomerNymId(const identifier::Nym& NYM_ID);
 
-    const String& GetConsideration() const { return m_strConsideration; }
+    auto GetConsideration() const -> const String&
+    {
+        return m_strConsideration;
+    }
     void SetMerchantSignedCopy(const String& strMerchantCopy)
     {
         m_strMerchantSignedCopy = strMerchantCopy;
     }
-    const String& GetMerchantSignedCopy() const
+    auto GetMerchantSignedCopy() const -> const String&
     {
         return m_strMerchantSignedCopy;
     }
@@ -141,20 +141,20 @@ public:
     //                       const Time& VALID_FROM=0,    const Time&
     // VALID_TO=0);
 
-    bool SetProposal(
+    auto SetProposal(
         otx::context::Server& context,
         const Account& MERCHANT_ACCT,
         const String& strConsideration,
         const Time VALID_FROM = {},
-        const Time VALID_TO = {});
+        const Time VALID_TO = {}) -> bool;
 
     // Merchant Nym is passed here so we can verify the signature before
     // confirming.
-    bool Confirm(
+    auto Confirm(
         otx::context::Server& context,
         const Account& PAYER_ACCT,
         const identifier::Nym& p_id_MERCHANT_NYM,
-        const identity::Nym* pMERCHANT_NYM = nullptr);
+        const identity::Nym* pMERCHANT_NYM = nullptr) -> bool;
 
     // What should be the process here?
 
@@ -269,17 +269,17 @@ public:
     // make sure that none of
     // the vital terms, values, clauses, etc are different between the two.
     //
-    virtual bool VerifyAgreement(
+    virtual auto VerifyAgreement(
         const otx::context::Client& recipient,
-        const otx::context::Client& sender) const = 0;
+        const otx::context::Client& sender) const -> bool = 0;
 
-    virtual bool CompareAgreement(const OTAgreement& rhs) const;
+    virtual auto CompareAgreement(const OTAgreement& rhs) const -> bool;
 
-    inline const Identifier& GetRecipientAcctID() const
+    inline auto GetRecipientAcctID() const -> const Identifier&
     {
         return m_RECIPIENT_ACCT_ID;
     }
-    inline const identifier::Nym& GetRecipientNymID() const
+    inline auto GetRecipientNymID() const -> const identifier::Nym&
     {
         return m_RECIPIENT_NYM_ID;
     }
@@ -295,8 +295,9 @@ public:
     // The recipient must also provide an opening and closing transaction
     // number(s).
     //
-    std::int64_t GetRecipientClosingTransactionNoAt(std::uint32_t nIndex) const;
-    std::int32_t GetRecipientCountClosingNumbers() const;
+    auto GetRecipientClosingTransactionNoAt(std::uint32_t nIndex) const
+        -> std::int64_t;
+    auto GetRecipientCountClosingNumbers() const -> std::int32_t;
 
     void AddRecipientClosingTransactionNo(
         const std::int64_t& lClosingTransactionNo);
@@ -304,8 +305,8 @@ public:
     // This is a higher-level than the above functions. It calls them.
     // Below is the abstraction, above is the implementation.
 
-    TransactionNumber GetRecipientOpeningNum() const;
-    TransactionNumber GetRecipientClosingNum() const;
+    auto GetRecipientOpeningNum() const -> TransactionNumber;
+    auto GetRecipientClosingNum() const -> TransactionNumber;
 
     // From OTCronItem (parent class of this)
     /*
@@ -326,18 +327,20 @@ public:
 
      void    AddClosingTransactionNo(const std::int64_t& lClosingTransactionNo);
      */
-    bool CanRemoveItemFromCron(const otx::context::Client& context) override;
+    auto CanRemoveItemFromCron(const otx::context::Client& context)
+        -> bool override;
 
     void HarvestOpeningNumber(otx::context::Server& context) override;
     void HarvestClosingNumbers(otx::context::Server& context) override;
 
     // Return True if should stay on OTCron's list for more processing.
     // Return False if expired or otherwise should be removed.
-    bool ProcessCron(const PasswordPrompt& reason) override;  // OTCron calls
-                                                              // this regularly,
-                                                              // which is my
-                                                              // chance to
-                                                              // expire, etc.
+    auto ProcessCron(const PasswordPrompt& reason)
+        -> bool override;  // OTCron calls
+                           // this regularly,
+                           // which is my
+                           // chance to
+                           // expire, etc.
 
     // From OTTrackable (parent class of OTCronItem, parent class of this)
     /*
@@ -356,7 +359,7 @@ public:
      { m_SENDER_NYM_ID = NYM_ID; }
      */
 
-    bool HasTransactionNum(const std::int64_t& lInput) const override;
+    auto HasTransactionNum(const std::int64_t& lInput) const -> bool override;
     void GetAllTransactionNumbers(NumList& numlistOutput) const override;
 
     // From OTInstrument (parent class of OTTrackable, parent class of
@@ -397,13 +400,13 @@ public:
     // it the old way: they just check to
     // see if theNym has signed *this.
     //
-    bool VerifyNymAsAgent(
+    auto VerifyNymAsAgent(
         const identity::Nym& theNym,
-        const identity::Nym& theSignerNym) const override;
+        const identity::Nym& theSignerNym) const -> bool override;
 
-    bool VerifyNymAsAgentForAccount(
+    auto VerifyNymAsAgentForAccount(
         const identity::Nym& theNym,
-        const Account& theAccount) const override;
+        const Account& theAccount) const -> bool override;
 
     /*
      From Contract, I have:
@@ -411,8 +414,8 @@ public:
      virtual bool SignContract (const identity::Nym& theNym);
 
      */
-    bool SendNoticeToAllParties(
-        const api::internal::Core& core,
+    auto SendNoticeToAllParties(
+        const api::Core& core,
         bool bSuccessMsg,
         const identity::Nym& theServerNym,
         const identifier::Server& theNotaryID,
@@ -423,11 +426,11 @@ public:
         const PasswordPrompt& reason,
         OTString pstrNote = String::Factory(),
         OTString pstrAttachment = String::Factory(),
-        identity::Nym* pActualNym = nullptr) const;
+        identity::Nym* pActualNym = nullptr) const -> bool;
 
     // Nym receives an Item::acknowledgment or Item::rejection.
-    static bool DropServerNoticeToNymbox(
-        const api::internal::Core& core,
+    static auto DropServerNoticeToNymbox(
+        const api::Core& core,
         bool bSuccessMsg,
         const identity::Nym& theServerNym,
         const identifier::Server& NOTARY_ID,
@@ -439,7 +442,7 @@ public:
         OTString pstrNote,
         OTString pstrAttachment,
         const identifier::Nym& actualNymID,
-        const PasswordPrompt& reason);
+        const PasswordPrompt& reason) -> bool;
 
     ~OTAgreement() override;
 
@@ -447,25 +450,27 @@ public:
 
     void Release() override;
     void Release_Agreement();
-    bool IsValidOpeningNumber(const std::int64_t& lOpeningNum) const override;
-    std::int64_t GetOpeningNumber(
-        const identifier::Nym& theNymID) const override;
-    std::int64_t GetClosingNumber(const Identifier& theAcctID) const override;
+    auto IsValidOpeningNumber(const std::int64_t& lOpeningNum) const
+        -> bool override;
+    auto GetOpeningNumber(const identifier::Nym& theNymID) const
+        -> std::int64_t override;
+    auto GetClosingNumber(const Identifier& theAcctID) const
+        -> std::int64_t override;
     // return -1 if error, 0 if nothing, and 1 if the node was processed.
-    std::int32_t ProcessXMLNode(irr::io::IrrXMLReader*& xml) override;
+    auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
     void UpdateContents(const PasswordPrompt& reason)
         override;  // Before transmission or serialization,
                    // this
                    // is where the ledger saves its contents
 
 protected:
-    OTAgreement(const api::internal::Core& core);
+    OTAgreement(const api::Core& core);
     OTAgreement(
-        const api::internal::Core& core,
+        const api::Core& core,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID);
     OTAgreement(
-        const api::internal::Core& core,
+        const api::Core& core,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const Identifier& SENDER_ACCT_ID,

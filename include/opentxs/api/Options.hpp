@@ -95,7 +95,7 @@ public:
     ~Options();
 
 private:
-    friend Options operator+(const Options&, const Options&) noexcept;
+    friend auto operator+(const Options&, const Options&) noexcept -> Options;
 
     struct Imp;
 

@@ -34,23 +34,25 @@ namespace credential
 class OPENTXS_EXPORT Key : virtual public Base
 {
 public:
-    virtual const crypto::key::Keypair& GetKeypair(
+    virtual auto GetKeypair(
         const crypto::key::asymmetric::Algorithm type,
-        const opentxs::crypto::key::asymmetric::Role role) const = 0;
-    virtual const crypto::key::Keypair& GetKeypair(
-        const opentxs::crypto::key::asymmetric::Role role) const = 0;
-    virtual std::int32_t GetPublicKeysBySignature(
+        const opentxs::crypto::key::asymmetric::Role role) const
+        -> const crypto::key::Keypair& = 0;
+    virtual auto GetKeypair(const opentxs::crypto::key::asymmetric::Role role)
+        const -> const crypto::key::Keypair& = 0;
+    virtual auto GetPublicKeysBySignature(
         crypto::key::Keypair::Keys& listOutput,
         const opentxs::Signature& theSignature,
-        char cKeyType = '0') const = 0;
-    OPENTXS_NO_EXPORT virtual bool Sign(
+        char cKeyType = '0') const -> std::int32_t = 0;
+    OPENTXS_NO_EXPORT virtual auto Sign(
         const GetPreimage input,
         const crypto::SignatureRole role,
         proto::Signature& signature,
         const PasswordPrompt& reason,
         opentxs::crypto::key::asymmetric::Role key =
             opentxs::crypto::key::asymmetric::Role::Sign,
-        const crypto::HashType hash = crypto::HashType::Error) const = 0;
+        const crypto::HashType hash = crypto::HashType::Error) const
+        -> bool = 0;
 
     ~Key() override = default;
 
@@ -60,8 +62,8 @@ protected:
 private:
     Key(const Key&) = delete;
     Key(Key&&) = delete;
-    Key& operator=(const Key&) = delete;
-    Key& operator=(Key&&) = delete;
+    auto operator=(const Key&) -> Key& = delete;
+    auto operator=(Key&&) -> Key& = delete;
 };
 }  // namespace credential
 }  // namespace identity

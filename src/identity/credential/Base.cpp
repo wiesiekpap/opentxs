@@ -15,11 +15,11 @@
 #include "Proto.tpp"
 #include "core/contract/Signable.hpp"
 #include "identity/credential/Base.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/identity/Identity.hpp"
 #include "internal/identity/credential/Credential.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/core/Armored.hpp"
@@ -43,7 +43,7 @@
 namespace opentxs::identity::credential::implementation
 {
 Base::Base(
-    const api::internal::Core& api,
+    const api::Core& api,
     const identity::internal::Authority& parent,
     const identity::Source& source,
     const NymParameters& nymParameters,
@@ -63,7 +63,7 @@ Base::Base(
 }
 
 Base::Base(
-    const api::internal::Core& api,
+    const api::Core& api,
     const identity::internal::Authority& parent,
     const identity::Source& source,
     const proto::Credential& serialized,
@@ -249,9 +249,9 @@ auto Base::Save() const -> bool
     std::shared_ptr<SerializedType> serializedProto;
 
     if (!isValid(lock, serializedProto)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Unable to save serialized credential. Type (")(value(
-            role_))("), version ")(version_)
+        LogOutput(OT_METHOD)(__func__)(
+            ": Unable to save serialized credential. Type (")(value(role_))(
+            "), version ")(version_)
             .Flush();
 
         return false;
@@ -260,8 +260,7 @@ auto Base::Save() const -> bool
     const bool bSaved = api_.Wallet().SaveCredential(*serializedProto);
 
     if (!bSaved) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error saving credential.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Error saving credential.").Flush();
 
         return false;
     }
@@ -313,7 +312,7 @@ auto Base::serialize(
             serializedCredential->set_mode(
                 opentxs::crypto::key::internal::translate(mode_));
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Can't serialize a public credential as a private "
                 "credential.")
                 .Flush();
@@ -430,7 +429,7 @@ auto Base::Verify(
     const Identifier& masterID,
     const proto::Signature& masterSig) const -> bool
 {
-    LogOutput(OT_METHOD)(__FUNCTION__)(
+    LogOutput(OT_METHOD)(__func__)(
         ": Non-key credentials are not able to verify signatures")
         .Flush();
 
@@ -442,7 +441,7 @@ auto Base::Verify(
 auto Base::verify_internally(const Lock& lock) const -> bool
 {
     if (!CheckID(lock)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Purported ID for this credential does not match its actual "
             "contents.")
             .Flush();
@@ -459,7 +458,7 @@ auto Base::verify_internally(const Lock& lock) const -> bool
     }
 
     if (!GoodMasterSignature) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": This credential hasn't been signed by its master credential.")
             .Flush();
 
@@ -475,8 +474,7 @@ auto Base::verify_master_signature(const Lock& lock) const -> bool
     auto masterSig = MasterSignature();
 
     if (!masterSig) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing master signature.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing master signature.").Flush();
 
         return false;
     }

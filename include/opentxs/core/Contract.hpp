@@ -42,10 +42,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace crypto
@@ -70,7 +67,7 @@ namespace opentxs
 {
 using listOfSignatures = std::list<OTSignature>;
 
-OTString trim(const String& str);
+auto trim(const String& str) -> OTString;
 
 class OPENTXS_EXPORT Contract
 {
@@ -79,38 +76,38 @@ public:
      * it takes the input string, trims it, and if it's armored, it unarmors it,
      * with the result going into strOutput. On success, bool is returned, and
      * strFirstLine contains the first line from strOutput. */
-    static bool DearmorAndTrim(
+    static auto DearmorAndTrim(
         const String& strInput,
         String& strOutput,
-        String& strFirstLine);
+        String& strFirstLine) -> bool;
 
     /** The Method "RewriteContract" calls this. I put the meat into a static
      * method so I could use it from outside Contract as well. */
-    static bool AddBookendsAroundContent(
+    static auto AddBookendsAroundContent(
         String& strOutput,
         const String& strContents,
         const String& strContractType,
         const crypto::HashType hashType,
-        const listOfSignatures& listSignatures);
-    static bool LoadEncodedTextField(
+        const listOfSignatures& listSignatures) -> bool;
+    static auto LoadEncodedTextField(
         irr::io::IrrXMLReader*& xml,
-        Armored& ascOutput);
-    static bool LoadEncodedTextField(
+        Armored& ascOutput) -> bool;
+    static auto LoadEncodedTextField(
         irr::io::IrrXMLReader*& xml,
-        String& strOutput);
-    static bool LoadEncodedTextFieldByName(
+        String& strOutput) -> bool;
+    static auto LoadEncodedTextFieldByName(
         irr::io::IrrXMLReader*& xml,
         Armored& ascOutput,
         const char* szName,
-        String::Map* pmapExtraVars = nullptr);
-    static bool LoadEncodedTextFieldByName(
+        String::Map* pmapExtraVars = nullptr) -> bool;
+    static auto LoadEncodedTextFieldByName(
         irr::io::IrrXMLReader*& xml,
         String& strOutput,
         const char* szName,
-        String::Map* pmapExtraVars = nullptr);
-    static bool SkipToElement(irr::io::IrrXMLReader*& xml);
-    static bool SkipToTextField(irr::io::IrrXMLReader*& xml);
-    static bool SkipAfterLoadingField(irr::io::IrrXMLReader*& xml);
+        String::Map* pmapExtraVars = nullptr) -> bool;
+    static auto SkipToElement(irr::io::IrrXMLReader*& xml) -> bool;
+    static auto SkipToTextField(irr::io::IrrXMLReader*& xml) -> bool;
+    static auto SkipAfterLoadingField(irr::io::IrrXMLReader*& xml) -> bool;
 
     void SetIdentifier(const Identifier& theID);
 
@@ -158,35 +155,38 @@ public:
     /** This function is for those times when you already have the unsigned
      * version of the contract, and you have the signer, and you just want to
      * sign it and calculate its new ID from the finished result. */
-    virtual bool CreateContract(
+    virtual auto CreateContract(
         const String& strContract,
         const identity::Nym& theSigner,
-        const PasswordPrompt& reason);
+        const PasswordPrompt& reason) -> bool;
 
     /** CreateContract is great if you already know what kind of contract to
      * instantiate and have already done so. Otherwise this function will take
      * ANY flat text and use a generic Contract instance to sign it and then
      * write it to strOutput. This is due to the fact that OT was never really
      * designed for signing flat text, only contracts. */
-    static bool SignFlatText(
-        const api::internal::Core& api,
+    static auto SignFlatText(
+        const api::Core& api,
         String& strFlatText,
         const String& strContractType,  // "LEDGER" or "PURSE" etc.
         const identity::Nym& theSigner,
         String& strOutput,
-        const PasswordPrompt& reason);
+        const PasswordPrompt& reason) -> bool;
     inline void GetName(String& strName) const
     {
         strName.Set(m_strName->Get());
     }
     inline void SetName(const String& strName) { m_strName = strName; }
-    inline const String& GetContractType() const { return m_strContractType; }
+    inline auto GetContractType() const -> const String&
+    {
+        return m_strContractType;
+    }
     /** This function calls VerifyContractID, and if that checks out, then it
      * looks up the official "contract" key inside the contract by calling
      * GetContractPublicNym, and uses it to verify the signature on the
      * contract. So the contract is self-verifying. Right now only public keys
      * are supported, but soon contracts will also support x509 certs. */
-    virtual bool VerifyContract() const;
+    virtual auto VerifyContract() const -> bool;
 
     /** Overriden for example in OTOffer, OTMarket. You can get it in string or
      * binary form. */
@@ -198,39 +198,40 @@ public:
 
     /** assumes m_strFilename is already set. Then it reads that file into a
      * string. Then it parses that string into the object. */
-    virtual bool LoadContract();
-    bool LoadContract(const char* szFoldername, const char* szFilename);
+    virtual auto LoadContract() -> bool;
+    auto LoadContract(const char* szFoldername, const char* szFilename) -> bool;
 
     /** Just like it says. If you have a contract in string form, pass it in
      * here to import it. */
-    virtual bool LoadContractFromString(const String& theStr);
+    virtual auto LoadContractFromString(const String& theStr) -> bool;
 
     /** fopens m_strFilename and reads it off the disk into m_strRawFile */
-    bool LoadContractRawFile();
+    auto LoadContractRawFile() -> bool;
 
     /** data_folder/contracts/Contract-ID */
-    bool SaveToContractFolder();
+    auto SaveToContractFolder() -> bool;
 
     /** Saves the raw (pre-existing) contract text to any string you want to
      * pass in. */
-    bool SaveContractRaw(String& strOutput) const;
+    auto SaveContractRaw(String& strOutput) const -> bool;
 
     /** Takes the pre-existing XML contents (WITHOUT signatures) and re-writes
      * the Raw data, adding the pre-existing signatures along with new signature
      * bookends. */
-    bool RewriteContract(String& strOutput) const;
+    auto RewriteContract(String& strOutput) const -> bool;
 
     /** This saves the Contract to its own internal member string, m_strRawFile
      * (and does NOT actually save it to a file.) */
-    virtual bool SaveContract();
+    virtual auto SaveContract() -> bool;
 
     /** Saves the contract to a specific filename */
-    virtual bool SaveContract(const char* szFoldername, const char* szFilename);
+    virtual auto SaveContract(const char* szFoldername, const char* szFilename)
+        -> bool;
 
     /** Writes the contract to a specific filename without changing member
      *  variables */
-    bool WriteContract(const std::string& folder, const std::string& filename)
-        const;
+    auto WriteContract(const std::string& folder, const std::string& filename)
+        const -> bool;
 
     /** Update the internal unsigned contents based on the member variables
      * default behavior does nothing. */
@@ -246,40 +247,40 @@ public:
     void CreateInnerContents(Tag& parent);
 
     /** Save the internal contents (m_xmlUnsigned) to an already-open file */
-    virtual bool SaveContents(std::ofstream& ofs) const;
+    virtual auto SaveContents(std::ofstream& ofs) const -> bool;
 
     /** Saves the entire contract to a file that's already open (like a wallet).
      */
-    virtual bool SaveContractWallet(Tag& parent) const;
+    virtual auto SaveContractWallet(Tag& parent) const -> bool;
 
-    virtual bool DisplayStatistics(String& strContents) const;
+    virtual auto DisplayStatistics(String& strContents) const -> bool;
 
     /** Save m_xmlUnsigned to a string that's passed in */
-    virtual bool SaveContents(String& strContents) const;
-    virtual bool SignContract(
+    virtual auto SaveContents(String& strContents) const -> bool;
+    virtual auto SignContract(
         const identity::Nym& theNym,
-        const PasswordPrompt& reason);
-    bool SignContractAuthent(
+        const PasswordPrompt& reason) -> bool;
+    auto SignContractAuthent(
         const identity::Nym& theNym,
-        const PasswordPrompt& reason);
-    bool SignWithKey(
+        const PasswordPrompt& reason) -> bool;
+    auto SignWithKey(
         const crypto::key::Asymmetric& theKey,
-        const PasswordPrompt& reason);
-    bool SignContract(
+        const PasswordPrompt& reason) -> bool;
+    auto SignContract(
         const identity::Nym& theNym,
         Signature& theSignature,
-        const PasswordPrompt& reason);
+        const PasswordPrompt& reason) -> bool;
 
     /** Uses authentication key instead of signing key. */
-    bool SignContractAuthent(
+    auto SignContractAuthent(
         const identity::Nym& theNym,
         Signature& theSignature,
-        const PasswordPrompt& reason);
-    bool SignContract(
+        const PasswordPrompt& reason) -> bool;
+    auto SignContract(
         const crypto::key::Asymmetric& theKey,
         Signature& theSignature,
         const crypto::HashType hashType,
-        const PasswordPrompt& reason);
+        const PasswordPrompt& reason) -> bool;
 
     /** Calculates a hash of m_strRawFile (the xml portion of the contract plus
     the signatures) and compares to m_ID (supposedly the same. The ID is
@@ -296,30 +297,31 @@ public:
     account ID in the file, I have no way of re-calculating it from the account
     file, which changes! So my copies of the account file and wallet file are
     the only records of that account ID which is a giant std::int64_t number. */
-    virtual bool VerifyContractID() const;
+    virtual auto VerifyContractID() const -> bool;
     virtual void CalculateContractID(Identifier& newID) const;
     virtual void CalculateAndSetContractID(Identifier& newID);
 
     /** So far not overridden anywhere (used to be OTTrade.) */
-    virtual bool VerifySignature(const identity::Nym& theNym) const;
-    virtual bool VerifySigAuthent(const identity::Nym& theNym) const;
-    virtual bool VerifyWithKey(const crypto::key::Asymmetric& theKey) const;
-    bool VerifySignature(
+    virtual auto VerifySignature(const identity::Nym& theNym) const -> bool;
+    virtual auto VerifySigAuthent(const identity::Nym& theNym) const -> bool;
+    virtual auto VerifyWithKey(const crypto::key::Asymmetric& theKey) const
+        -> bool;
+    auto VerifySignature(
         const identity::Nym& theNym,
-        const Signature& theSignature) const;
+        const Signature& theSignature) const -> bool;
 
     /** Uses authentication key instead of signing key. */
-    bool VerifySigAuthent(
+    auto VerifySigAuthent(
         const identity::Nym& theNym,
-        const Signature& theSignature) const;
-    bool VerifySignature(
+        const Signature& theSignature) const -> bool;
+    auto VerifySignature(
         const crypto::key::Asymmetric& theKey,
         const Signature& theSignature,
-        const crypto::HashType hashType) const;
-    Nym_p GetContractPublicNym() const;
+        const crypto::HashType hashType) const -> bool;
+    auto GetContractPublicNym() const -> Nym_p;
 
 protected:
-    const api::internal::Core& api_;
+    const api::Core& api_;
 
     /** Contract name as shown in the wallet. */
     OTString m_strName;
@@ -378,25 +380,25 @@ protected:
 
     /** The XML file is in m_xmlUnsigned-> Load it from there into members here.
      */
-    bool LoadContractXML();
+    auto LoadContractXML() -> bool;
 
     /** parses m_strRawFile into the various member variables. Separating these
      * into two steps allows us to load contracts from other sources besides
      * files. */
-    bool ParseRawFile();
+    auto ParseRawFile() -> bool;
 
     /** return -1 if error, 0 if nothing, and 1 if the node was processed. */
-    virtual std::int32_t ProcessXMLNode(irr::io::IrrXMLReader*& xml);
+    virtual auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t;
 
-    explicit Contract(const api::internal::Core& core);
+    explicit Contract(const api::Core& core);
     explicit Contract(
-        const api::internal::Core& core,
+        const api::Core& core,
         const String& name,
         const String& foldername,
         const String& filename,
         const String& strID);
-    explicit Contract(const api::internal::Core& core, const Identifier& theID);
-    explicit Contract(const api::internal::Core& core, const String& strID);
+    explicit Contract(const api::Core& core, const Identifier& theID);
+    explicit Contract(const api::Core& core, const String& strID);
 
 private:
     Contract() = delete;

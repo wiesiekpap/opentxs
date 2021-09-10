@@ -22,166 +22,166 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT bool CheckProto_1(
+auto CheckProto_1(
     const Token& input,
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
     std::int64_t& totalValue,
     std::int64_t& validFrom,
-    std::int64_t& validTo);
-OPENTXS_EXPORT bool CheckProto_2(
+    std::int64_t& validTo) -> bool;
+auto CheckProto_2(
     const Token& input,
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
     std::int64_t& totalValue,
     std::int64_t& validFrom,
-    std::int64_t& validTo);
-OPENTXS_EXPORT bool CheckProto_3(
+    std::int64_t& validTo) -> bool;
+auto CheckProto_3(
     const Token& input,
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
     std::int64_t& totalValue,
     std::int64_t& validFrom,
-    std::int64_t& validTo);
-OPENTXS_EXPORT bool CheckProto_4(
+    std::int64_t& validTo) -> bool;
+auto CheckProto_4(
     const Token& input,
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
     std::int64_t& totalValue,
     std::int64_t& validFrom,
-    std::int64_t& validTo);
-OPENTXS_EXPORT bool CheckProto_5(
+    std::int64_t& validTo) -> bool;
+auto CheckProto_5(
     const Token& input,
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
     std::int64_t& totalValue,
     std::int64_t& validFrom,
-    std::int64_t& validTo);
-OPENTXS_EXPORT bool CheckProto_6(
+    std::int64_t& validTo) -> bool;
+auto CheckProto_6(
     const Token& input,
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
     std::int64_t& totalValue,
     std::int64_t& validFrom,
-    std::int64_t& validTo);
-OPENTXS_EXPORT bool CheckProto_7(
+    std::int64_t& validTo) -> bool;
+auto CheckProto_7(
     const Token& input,
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
     std::int64_t& totalValue,
     std::int64_t& validFrom,
-    std::int64_t& validTo);
-OPENTXS_EXPORT bool CheckProto_8(
+    std::int64_t& validTo) -> bool;
+auto CheckProto_8(
     const Token& input,
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
     std::int64_t& totalValue,
     std::int64_t& validFrom,
-    std::int64_t& validTo);
-OPENTXS_EXPORT bool CheckProto_9(
+    std::int64_t& validTo) -> bool;
+auto CheckProto_9(
     const Token& input,
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
     std::int64_t& totalValue,
     std::int64_t& validFrom,
-    std::int64_t& validTo);
-OPENTXS_EXPORT bool CheckProto_10(
+    std::int64_t& validTo) -> bool;
+auto CheckProto_10(
     const Token& input,
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
     std::int64_t& totalValue,
     std::int64_t& validFrom,
-    std::int64_t& validTo);
-OPENTXS_EXPORT bool CheckProto_11(
+    std::int64_t& validTo) -> bool;
+auto CheckProto_11(
     const Token& input,
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
     std::int64_t& totalValue,
     std::int64_t& validFrom,
-    std::int64_t& validTo);
-OPENTXS_EXPORT bool CheckProto_12(
+    std::int64_t& validTo) -> bool;
+auto CheckProto_12(
     const Token& input,
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
     std::int64_t& totalValue,
     std::int64_t& validFrom,
-    std::int64_t& validTo);
-OPENTXS_EXPORT bool CheckProto_13(
+    std::int64_t& validTo) -> bool;
+auto CheckProto_13(
     const Token& input,
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
     std::int64_t& totalValue,
     std::int64_t& validFrom,
-    std::int64_t& validTo);
-OPENTXS_EXPORT bool CheckProto_14(
+    std::int64_t& validTo) -> bool;
+auto CheckProto_14(
     const Token& input,
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
     std::int64_t& totalValue,
     std::int64_t& validFrom,
-    std::int64_t& validTo);
-OPENTXS_EXPORT bool CheckProto_15(
+    std::int64_t& validTo) -> bool;
+auto CheckProto_15(
     const Token& input,
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
     std::int64_t& totalValue,
     std::int64_t& validFrom,
-    std::int64_t& validTo);
-OPENTXS_EXPORT bool CheckProto_16(
+    std::int64_t& validTo) -> bool;
+auto CheckProto_16(
     const Token& input,
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
     std::int64_t& totalValue,
     std::int64_t& validFrom,
-    std::int64_t& validTo);
-OPENTXS_EXPORT bool CheckProto_17(
+    std::int64_t& validTo) -> bool;
+auto CheckProto_17(
     const Token& input,
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
     std::int64_t& totalValue,
     std::int64_t& validFrom,
-    std::int64_t& validTo);
-OPENTXS_EXPORT bool CheckProto_18(
+    std::int64_t& validTo) -> bool;
+auto CheckProto_18(
     const Token& input,
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
     std::int64_t& totalValue,
     std::int64_t& validFrom,
-    std::int64_t& validTo);
-OPENTXS_EXPORT bool CheckProto_19(
+    std::int64_t& validTo) -> bool;
+auto CheckProto_19(
     const Token& input,
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
     std::int64_t& totalValue,
     std::int64_t& validFrom,
-    std::int64_t& validTo);
-OPENTXS_EXPORT bool CheckProto_20(
+    std::int64_t& validTo) -> bool;
+auto CheckProto_20(
     const Token& input,
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
     std::int64_t& totalValue,
     std::int64_t& validFrom,
-    std::int64_t& validTo);
+    std::int64_t& validTo) -> bool;
 }  // namespace proto
 }  // namespace opentxs
 

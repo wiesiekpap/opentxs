@@ -50,6 +50,7 @@ namespace crypto
 class Asymmetric;
 }  // namespace crypto
 
+class Core;
 class Legacy;
 class Settings;
 }  // namespace api
@@ -87,7 +88,7 @@ class Core : virtual public api::internal::Core,
 {
 public:
     static auto get_api(const PasswordPrompt& reason) noexcept
-        -> const api::internal::Core&;
+        -> const api::Core&;
 
     auto Asymmetric() const noexcept -> const crypto::Asymmetric& final
     {
@@ -120,6 +121,10 @@ public:
         const bool twice,
         const std::string& key) const -> bool final;
     auto Instance() const noexcept -> int final { return instance_; }
+    auto Internal() const noexcept -> internal::Core& final
+    {
+        return const_cast<Core&>(*this);
+    }
     auto Legacy() const noexcept -> const api::Legacy& final
     {
         return parent_.Legacy();

@@ -10,14 +10,14 @@
 #include <functional>
 
 #include "api/Wallet.hpp"
-#include "internal/api/Api.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/api/client/Factory.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Contacts.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -37,7 +37,7 @@
 
 namespace opentxs::factory
 {
-auto Wallet(const api::client::internal::Manager& client) -> api::Wallet*
+auto Wallet(const api::client::Manager& client) -> api::Wallet*
 {
     return new api::client::implementation::Wallet(client);
 }
@@ -45,7 +45,7 @@ auto Wallet(const api::client::internal::Manager& client) -> api::Wallet*
 
 namespace opentxs::api::client::implementation
 {
-Wallet::Wallet(const api::client::internal::Manager& client)
+Wallet::Wallet(const api::client::Manager& client)
     : ot_super(client)
     , client_(client)
     , request_sent_(client_.Network().ZeroMQ().PublishSocket())

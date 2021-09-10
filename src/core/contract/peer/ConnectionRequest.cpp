@@ -31,7 +31,7 @@ using ParentType = contract::peer::implementation::Request;
 using ReturnType = contract::peer::request::implementation::Connection;
 
 auto Factory::ConnectionRequest(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const identifier::Nym& recipient,
     const contract::peer::ConnectionInfoType type,
@@ -51,20 +51,20 @@ auto Factory::ConnectionRequest(
 
         return std::move(output);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
 }
 
 auto Factory::ConnectionRequest(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const proto::PeerRequest& serialized) noexcept
     -> std::shared_ptr<contract::peer::request::Connection>
 {
     if (false == proto::Validate(serialized, VERBOSE)) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
+        LogOutput("opentxs::Factory::")(__func__)(
             ": Invalid serialized request.")
             .Flush();
 
@@ -80,7 +80,7 @@ auto Factory::ConnectionRequest(
         Lock lock(contract.lock_);
 
         if (false == contract.validate(lock)) {
-            LogOutput("opentxs::Factory::")(__FUNCTION__)(": Invalid request.")
+            LogOutput("opentxs::Factory::")(__func__)(": Invalid request.")
                 .Flush();
 
             return {};
@@ -88,7 +88,7 @@ auto Factory::ConnectionRequest(
 
         return std::move(output);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -98,7 +98,7 @@ auto Factory::ConnectionRequest(
 namespace opentxs::contract::peer::request::implementation
 {
 Connection::Connection(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const identifier::Nym& recipientID,
     const contract::peer::ConnectionInfoType type,
@@ -117,7 +117,7 @@ Connection::Connection(
 }
 
 Connection::Connection(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const SerializedType& serialized)
     : Request(api, nym, serialized)

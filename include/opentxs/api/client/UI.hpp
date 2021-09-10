@@ -21,31 +21,6 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/ui/Types.hpp"
 
-#ifdef SWIG
-// clang-format off
-%extend opentxs::api::client::UI {
-    const opentxs::ui::AccountSummary& AccountSummary(
-        const identifier::Nym& nymID,
-        const int currency) const noexcept
-    {
-        return $self->AccountSummary(
-            nymID,
-            static_cast<opentxs::contact::ContactItemType>(currency));
-    }
-    const opentxs::ui::PayableList& PayableList(
-        const identifier::Nym& nymID,
-        const int currency) const noexcept
-    {
-        return $self->PayableList(
-            nymID,
-            static_cast<opentxs::contact::ContactItemType>(currency));
-    }
-}
-%ignore opentxs::api::client::UI::AccountSummary;
-%ignore opentxs::api::client::UI::PayableList;
-// clang-format on
-#endif  // SWIG
-
 class QAbstractItemModel;
 
 namespace opentxs
@@ -104,122 +79,150 @@ class OPENTXS_EXPORT UI
 public:
     struct Imp;
 
-    const opentxs::ui::AccountActivity& AccountActivity(
+    auto AccountActivity(
         const identifier::Nym& nymID,
         const Identifier& accountID,
-        const SimpleCallback updateCB = {}) const noexcept;
+        const SimpleCallback updateCB = {}) const noexcept
+        -> const opentxs::ui::AccountActivity&;
     /// Caller does not own this pointer
-    opentxs::ui::AccountActivityQt* AccountActivityQt(
+    auto AccountActivityQt(
         const identifier::Nym& nymID,
         const Identifier& accountID,
-        const SimpleCallback updateCB = {}) const noexcept;
-    const opentxs::ui::AccountList& AccountList(
+        const SimpleCallback updateCB = {}) const noexcept
+        -> opentxs::ui::AccountActivityQt*;
+    auto AccountList(
         const identifier::Nym& nym,
-        const SimpleCallback updateCB = {}) const noexcept;
+        const SimpleCallback updateCB = {}) const noexcept
+        -> const opentxs::ui::AccountList&;
     /// Caller does not own this pointer
-    opentxs::ui::AccountListQt* AccountListQt(
+    auto AccountListQt(
         const identifier::Nym& nym,
-        const SimpleCallback updateCB = {}) const noexcept;
-    const opentxs::ui::AccountSummary& AccountSummary(
+        const SimpleCallback updateCB = {}) const noexcept
+        -> opentxs::ui::AccountListQt*;
+    auto AccountSummary(
         const identifier::Nym& nymID,
         const contact::ContactItemType currency,
-        const SimpleCallback updateCB = {}) const noexcept;
+        const SimpleCallback updateCB = {}) const noexcept
+        -> const opentxs::ui::AccountSummary&;
     /// Caller does not own this pointer
-    opentxs::ui::AccountSummaryQt* AccountSummaryQt(
+    auto AccountSummaryQt(
         const identifier::Nym& nymID,
         const contact::ContactItemType currency,
-        const SimpleCallback updateCB = {}) const noexcept;
-    const opentxs::ui::ActivitySummary& ActivitySummary(
+        const SimpleCallback updateCB = {}) const noexcept
+        -> opentxs::ui::AccountSummaryQt*;
+    auto ActivitySummary(
         const identifier::Nym& nymID,
-        const SimpleCallback updateCB = {}) const noexcept;
+        const SimpleCallback updateCB = {}) const noexcept
+        -> const opentxs::ui::ActivitySummary&;
     /// Caller does not own this pointer
-    opentxs::ui::ActivitySummaryQt* ActivitySummaryQt(
+    auto ActivitySummaryQt(
         const identifier::Nym& nymID,
-        const SimpleCallback updateCB = {}) const noexcept;
-    const opentxs::ui::ActivityThread& ActivityThread(
+        const SimpleCallback updateCB = {}) const noexcept
+        -> opentxs::ui::ActivitySummaryQt*;
+    auto ActivityThread(
         const identifier::Nym& nymID,
         const Identifier& threadID,
-        const SimpleCallback updateCB = {}) const noexcept;
+        const SimpleCallback updateCB = {}) const noexcept
+        -> const opentxs::ui::ActivityThread&;
     /// Caller does not own this pointer
-    opentxs::ui::ActivityThreadQt* ActivityThreadQt(
+    auto ActivityThreadQt(
         const identifier::Nym& nymID,
         const Identifier& threadID,
-        const SimpleCallback updateCB = {}) const noexcept;
+        const SimpleCallback updateCB = {}) const noexcept
+        -> opentxs::ui::ActivityThreadQt*;
     /// Caller does not own this pointer
-    QAbstractItemModel* BlankModel(const std::size_t columns) const noexcept;
-    const opentxs::ui::BlockchainAccountStatus& BlockchainAccountStatus(
+    auto BlankModel(const std::size_t columns) const noexcept
+        -> QAbstractItemModel*;
+    auto BlockchainAccountStatus(
         const identifier::Nym& nymID,
         const opentxs::blockchain::Type chain,
-        const SimpleCallback updateCB = {}) const noexcept;
+        const SimpleCallback updateCB = {}) const noexcept
+        -> const opentxs::ui::BlockchainAccountStatus&;
     /// Caller does not own this pointer
-    opentxs::ui::BlockchainAccountStatusQt* BlockchainAccountStatusQt(
+    auto BlockchainAccountStatusQt(
         const identifier::Nym& nymID,
         const opentxs::blockchain::Type chain,
-        const SimpleCallback updateCB = {}) const noexcept;
-    const identifier::Nym& BlockchainIssuerID(
-        const opentxs::blockchain::Type chain) const noexcept;
-    const identifier::Server& BlockchainNotaryID(
-        const opentxs::blockchain::Type chain) const noexcept;
-    const opentxs::ui::BlockchainSelection& BlockchainSelection(
+        const SimpleCallback updateCB = {}) const noexcept
+        -> opentxs::ui::BlockchainAccountStatusQt*;
+    auto BlockchainIssuerID(const opentxs::blockchain::Type chain)
+        const noexcept -> const identifier::Nym&;
+    auto BlockchainNotaryID(const opentxs::blockchain::Type chain)
+        const noexcept -> const identifier::Server&;
+    auto BlockchainSelection(
         const opentxs::ui::Blockchains type,
-        const SimpleCallback updateCB = {}) const noexcept;
+        const SimpleCallback updateCB = {}) const noexcept
+        -> const opentxs::ui::BlockchainSelection&;
     /// Caller does not own this pointer
-    opentxs::ui::BlockchainSelectionQt* BlockchainSelectionQt(
+    auto BlockchainSelectionQt(
         const opentxs::ui::Blockchains type,
-        const SimpleCallback updateCB = {}) const noexcept;
-    const opentxs::ui::BlockchainStatistics& BlockchainStatistics(
-        const SimpleCallback updateCB = {}) const noexcept;
-    opentxs::ui::BlockchainStatisticsQt* BlockchainStatisticsQt(
-        const SimpleCallback updateCB = {}) const noexcept;
-    const identifier::UnitDefinition& BlockchainUnitID(
-        const opentxs::blockchain::Type chain) const noexcept;
-    const opentxs::ui::Contact& Contact(
+        const SimpleCallback updateCB = {}) const noexcept
+        -> opentxs::ui::BlockchainSelectionQt*;
+    auto BlockchainStatistics(const SimpleCallback updateCB = {}) const noexcept
+        -> const opentxs::ui::BlockchainStatistics&;
+    auto BlockchainStatisticsQt(const SimpleCallback updateCB = {})
+        const noexcept -> opentxs::ui::BlockchainStatisticsQt*;
+    auto BlockchainUnitID(const opentxs::blockchain::Type chain) const noexcept
+        -> const identifier::UnitDefinition&;
+    auto Contact(
         const Identifier& contactID,
-        const SimpleCallback updateCB = {}) const noexcept;
-    opentxs::ui::ContactQt* ContactQt(
+        const SimpleCallback updateCB = {}) const noexcept
+        -> const opentxs::ui::Contact&;
+    auto ContactQt(
         const Identifier& contactID,
-        const SimpleCallback updateCB = {}) const noexcept;
-    const opentxs::ui::ContactList& ContactList(
+        const SimpleCallback updateCB = {}) const noexcept
+        -> opentxs::ui::ContactQt*;
+    auto ContactList(
         const identifier::Nym& nymID,
-        const SimpleCallback updateCB = {}) const noexcept;
+        const SimpleCallback updateCB = {}) const noexcept
+        -> const opentxs::ui::ContactList&;
     /// Caller does not own this pointer
-    opentxs::ui::ContactListQt* ContactListQt(
+    auto ContactListQt(
         const identifier::Nym& nymID,
-        const SimpleCallback updateCB = {}) const noexcept;
-    const opentxs::ui::MessagableList& MessagableList(
+        const SimpleCallback updateCB = {}) const noexcept
+        -> opentxs::ui::ContactListQt*;
+    auto MessagableList(
         const identifier::Nym& nymID,
-        const SimpleCallback updateCB = {}) const noexcept;
+        const SimpleCallback updateCB = {}) const noexcept
+        -> const opentxs::ui::MessagableList&;
     /// Caller does not own this pointer
-    opentxs::ui::MessagableListQt* MessagableListQt(
+    auto MessagableListQt(
         const identifier::Nym& nymID,
-        const SimpleCallback updateCB = {}) const noexcept;
-    const opentxs::ui::PayableList& PayableList(
+        const SimpleCallback updateCB = {}) const noexcept
+        -> opentxs::ui::MessagableListQt*;
+    auto PayableList(
         const identifier::Nym& nymID,
         const contact::ContactItemType currency,
-        const SimpleCallback updateCB = {}) const noexcept;
+        const SimpleCallback updateCB = {}) const noexcept
+        -> const opentxs::ui::PayableList&;
     /// Caller does not own this pointer
-    opentxs::ui::PayableListQt* PayableListQt(
+    auto PayableListQt(
         const identifier::Nym& nymID,
         const contact::ContactItemType currency,
-        const SimpleCallback updateCB = {}) const noexcept;
-    const opentxs::ui::Profile& Profile(
+        const SimpleCallback updateCB = {}) const noexcept
+        -> opentxs::ui::PayableListQt*;
+    auto Profile(
         const identifier::Nym& nymID,
-        const SimpleCallback updateCB = {}) const noexcept;
+        const SimpleCallback updateCB = {}) const noexcept
+        -> const opentxs::ui::Profile&;
     /// Caller does not own this pointer
-    opentxs::ui::ProfileQt* ProfileQt(
+    auto ProfileQt(
         const identifier::Nym& nymID,
-        const SimpleCallback updateCB = {}) const noexcept;
+        const SimpleCallback updateCB = {}) const noexcept
+        -> opentxs::ui::ProfileQt*;
     /// Caller does not own this pointer
-    const opentxs::ui::SeedValidator* SeedValidator(
+    auto SeedValidator(
         const opentxs::crypto::SeedStyle type,
-        const opentxs::crypto::Language lang) const noexcept;
-    const opentxs::ui::UnitList& UnitList(
+        const opentxs::crypto::Language lang) const noexcept
+        -> const opentxs::ui::SeedValidator*;
+    auto UnitList(
         const identifier::Nym& nym,
-        const SimpleCallback updateCB = {}) const noexcept;
+        const SimpleCallback updateCB = {}) const noexcept
+        -> const opentxs::ui::UnitList&;
     /// Caller does not own this pointer
-    opentxs::ui::UnitListQt* UnitListQt(
+    auto UnitListQt(
         const identifier::Nym& nym,
-        const SimpleCallback updateCB = {}) const noexcept;
+        const SimpleCallback updateCB = {}) const noexcept
+        -> opentxs::ui::UnitListQt*;
 
     OPENTXS_NO_EXPORT virtual ~UI();
 
@@ -232,8 +235,8 @@ private:
     UI() = delete;
     UI(const UI&) = delete;
     UI(UI&&) = delete;
-    UI& operator=(const UI&) = delete;
-    UI& operator=(UI&&) = delete;
+    auto operator=(const UI&) -> UI& = delete;
+    auto operator=(UI&&) -> UI& = delete;
 };
 }  // namespace client
 }  // namespace api

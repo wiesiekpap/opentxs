@@ -53,7 +53,7 @@ auto BlockFilter::HaveFilter(const FilterType type, const ReadView blockHash)
     try {
         return lmdb_.Exists(translate_filter(type), blockHash);
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }
@@ -66,7 +66,7 @@ auto BlockFilter::HaveFilterHeader(
     try {
         return lmdb_.Exists(translate_header(type), blockHash);
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }
@@ -96,7 +96,7 @@ auto BlockFilter::LoadFilter(const FilterType type, const ReadView blockHash)
         output = factory::GCS(
             api_, proto::Factory<proto::GCS>(bulk_.ReadView(index)));
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
     }
 
     return output;
@@ -127,7 +127,7 @@ auto BlockFilter::LoadFilterHash(
     try {
         lmdb_.Load(translate_header(type), blockHash, cb);
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
     }
 
     return output;
@@ -158,7 +158,7 @@ auto BlockFilter::LoadFilterHeader(
     try {
         lmdb_.Load(translate_header(type), blockHash, cb);
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
     }
 
     return output;
@@ -198,7 +198,7 @@ auto BlockFilter::store(
             const auto result = lmdb_.Store(table, blockHash, tsv(index), tx);
 
             if (false == result.first) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Failed to update index for cfilter header")
                     .Flush();
 
@@ -216,7 +216,7 @@ auto BlockFilter::store(
 
         return proto::write(proto, preallocated(bytes, view.data()));
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }
@@ -259,7 +259,7 @@ auto BlockFilter::StoreFilters(
 
             if (false == stored.first) { return false; }
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }

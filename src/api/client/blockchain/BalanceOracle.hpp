@@ -24,7 +24,7 @@ class Nym;
 }  // namespace identifier
 }  // namespace opentxs
 
-namespace opentxs::api::client::implementation
+namespace opentxs::api::client::blockchain
 {
 class BalanceOracle
 {
@@ -52,4 +52,4 @@ private:
 
     BalanceOracle() = delete;
 };
-}  // namespace opentxs::api::client::implementation
+}  // namespace opentxs::api::client::blockchain

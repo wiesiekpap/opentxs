@@ -17,10 +17,10 @@
 #include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/core/Data.hpp"
@@ -52,7 +52,7 @@ auto Factory::ServerContract(const api::Core& api) noexcept
 }
 
 auto Factory::ServerContract(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const std::list<Endpoint>& endpoints,
     const std::string& terms,
@@ -92,28 +92,27 @@ auto Factory::ServerContract(
         Lock lock(contract.lock_);
 
         if (false == contract.update_signature(lock, reason)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to sign contract")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Failed to sign contract").Flush();
 
             return nullptr;
         }
 
         if (!contract.validate(lock)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid contract").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Invalid contract").Flush();
 
             return nullptr;
         }
 
         return std::move(output);
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
 }
 
 auto Factory::ServerContract(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const proto::ServerContract& serialized) noexcept
     -> std::unique_ptr<contract::Server>
@@ -144,7 +143,7 @@ const VersionNumber Server::DefaultVersion{2};
 namespace opentxs::contract::implementation
 {
 Server::Server(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const VersionNumber version,
     const std::string& terms,
@@ -170,7 +169,7 @@ Server::Server(
 }
 
 Server::Server(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const proto::ServerContract& serialized)
     : Server(
@@ -348,8 +347,7 @@ auto Server::Serialize(AllocateOutput destination, bool includeNym) const
 {
     auto serialized = proto::ServerContract{};
     if (false == Serialize(serialized, includeNym)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize server.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to serialize server.").Flush();
         return false;
     }
 
@@ -416,8 +414,7 @@ auto Server::update_signature(const Lock& lock, const PasswordPrompt& reason)
     if (success) {
         signatures_.emplace_front(new proto::Signature(signature));
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": failed to create signature.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": failed to create signature.").Flush();
     }
 
     return success;
@@ -430,7 +427,7 @@ auto Server::validate(const Lock& lock) const -> bool
     if (nym_) { validNym = nym_->VerifyPseudonym(); }
 
     if (!validNym) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid nym.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid nym.").Flush();
 
         return false;
     }
@@ -438,13 +435,13 @@ auto Server::validate(const Lock& lock) const -> bool
     const bool validSyntax = proto::Validate(contract(lock), VERBOSE);
 
     if (!validSyntax) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid syntax.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid syntax.").Flush();
 
         return false;
     }
 
     if (1 > signatures_.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing signature.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing signature.").Flush();
 
         return false;
     }
@@ -455,7 +452,7 @@ auto Server::validate(const Lock& lock) const -> bool
     if (signature) { validSig = verify_signature(lock, *signature); }
 
     if (!validSig) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid signature.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid signature.").Flush();
 
         return false;
     }

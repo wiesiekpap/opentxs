@@ -13,7 +13,7 @@
 
 #include "2_Factory.hpp"
 #include "core/contract/peer/PeerRequest.hpp"
-#include "internal/api/Api.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/core/Log.hpp"
@@ -34,7 +34,7 @@ using ParentType = contract::peer::implementation::Request;
 using ReturnType = contract::peer::request::implementation::Bailment;
 
 auto Factory::BailmentRequest(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const identifier::Nym& recipient,
     const identifier::UnitDefinition& unit,
@@ -56,20 +56,20 @@ auto Factory::BailmentRequest(
 
         return std::move(output);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
 }
 
 auto Factory::BailmentRequest(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const proto::PeerRequest& serialized) noexcept
     -> std::shared_ptr<contract::peer::request::Bailment>
 {
     if (false == proto::Validate(serialized, VERBOSE)) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
+        LogOutput("opentxs::Factory::")(__func__)(
             ": Invalid serialized request.")
             .Flush();
 
@@ -85,7 +85,7 @@ auto Factory::BailmentRequest(
         Lock lock(contract.lock_);
 
         if (false == contract.validate(lock)) {
-            LogOutput("opentxs::Factory::")(__FUNCTION__)(": Invalid request.")
+            LogOutput("opentxs::Factory::")(__func__)(": Invalid request.")
                 .Flush();
 
             return {};
@@ -93,7 +93,7 @@ auto Factory::BailmentRequest(
 
         return std::move(output);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -103,7 +103,7 @@ auto Factory::BailmentRequest(
 namespace opentxs::contract::peer::request::implementation
 {
 Bailment::Bailment(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const identifier::Nym& recipientID,
     const identifier::UnitDefinition& unitID,
@@ -123,7 +123,7 @@ Bailment::Bailment(
 }
 
 Bailment::Bailment(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const SerializedType& serialized)
     : Request(api, nym, serialized)

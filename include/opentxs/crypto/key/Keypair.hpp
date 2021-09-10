@@ -52,24 +52,24 @@ public:
 
     virtual operator bool() const noexcept = 0;
 
-    virtual bool CheckCapability(
-        const NymCapability& capability) const noexcept = 0;
+    virtual auto CheckCapability(const NymCapability& capability) const noexcept
+        -> bool = 0;
     /// throws std::runtime_error if private key is missing
-    virtual const Asymmetric& GetPrivateKey() const noexcept(false) = 0;
+    virtual auto GetPrivateKey() const noexcept(false) -> const Asymmetric& = 0;
     /// throws std::runtime_error if public key is missing
-    virtual const Asymmetric& GetPublicKey() const noexcept(false) = 0;
+    virtual auto GetPublicKey() const noexcept(false) -> const Asymmetric& = 0;
     // inclusive means, return keys when theSignature has no metadata.
-    virtual std::int32_t GetPublicKeyBySignature(
+    virtual auto GetPublicKeyBySignature(
         Keys& listOutput,
         const Signature& theSignature,
-        bool bInclusive = false) const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual bool Serialize(
+        bool bInclusive = false) const noexcept -> std::int32_t = 0;
+    OPENTXS_NO_EXPORT virtual auto Serialize(
         proto::AsymmetricKey& serialized,
-        bool privateKey) const noexcept = 0;
-    virtual bool GetTransportKey(
+        bool privateKey) const noexcept -> bool = 0;
+    virtual auto GetTransportKey(
         Data& publicKey,
         Secret& privateKey,
-        const PasswordPrompt& reason) const noexcept = 0;
+        const PasswordPrompt& reason) const noexcept -> bool = 0;
 
     virtual ~Keypair() = default;
 
@@ -79,12 +79,12 @@ protected:
 private:
     friend OTKeypair;
 
-    virtual Keypair* clone() const = 0;
+    virtual auto clone() const -> Keypair* = 0;
 
     Keypair(const Keypair&) = delete;
     Keypair(Keypair&&) = delete;
-    Keypair& operator=(const Keypair&) = delete;
-    Keypair& operator=(Keypair&&) = delete;
+    auto operator=(const Keypair&) -> Keypair& = delete;
+    auto operator=(Keypair&&) -> Keypair& = delete;
 };
 }  // namespace key
 }  // namespace crypto

@@ -29,7 +29,7 @@ namespace opentxs::factory
 {
 auto ProfileSubsectionWidget(
     const ui::implementation::ProfileSectionInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ui::implementation::ProfileSectionRowID& rowID,
     const ui::implementation::ProfileSectionSortKey& key,
     ui::implementation::CustomData& custom) noexcept
@@ -45,7 +45,7 @@ namespace opentxs::ui::implementation
 {
 ProfileSubsection::ProfileSubsection(
     const ProfileSectionInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ProfileSectionRowID& rowID,
     const ProfileSectionSortKey& key,
     CustomData& custom) noexcept

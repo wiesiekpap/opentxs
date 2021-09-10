@@ -25,10 +25,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identity
@@ -149,7 +146,7 @@ protected:
         const PasswordPrompt& reason) noexcept(false);
 
     Base(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identity::internal::Authority& owner,
         const identity::Source& source,
         const NymParameters& nymParameters,
@@ -158,7 +155,7 @@ protected:
         const crypto::key::asymmetric::Mode mode,
         const std::string& masterID) noexcept;
     Base(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identity::internal::Authority& owner,
         const identity::Source& source,
         const proto::Credential& serialized,

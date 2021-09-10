@@ -11,10 +11,10 @@
 #include <type_traits>
 #include <utility>
 
-#include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Activity.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -33,7 +33,7 @@ namespace opentxs::factory
 {
 auto PaymentItem(
     const ui::implementation::ActivityThreadInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const ui::implementation::ActivityThreadRowID& rowID,
     const ui::implementation::ActivityThreadSortKey& sortKey,
@@ -62,7 +62,7 @@ namespace opentxs::ui::implementation
 {
 PaymentItem::PaymentItem(
     const ActivityThreadInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const ActivityThreadRowID& rowID,
     const ActivityThreadSortKey& sortKey,
@@ -140,7 +140,7 @@ auto PaymentItem::DisplayAmount() const noexcept -> std::string
 }
 
 auto PaymentItem::extract(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nym,
     const ActivityThreadRowID& row,
     CustomData& custom) noexcept

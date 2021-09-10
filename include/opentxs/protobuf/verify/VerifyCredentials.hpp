@@ -14,29 +14,29 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT const VersionMap& AsymmetricKeyAllowedCiphertext() noexcept;
-OPENTXS_EXPORT const VersionMap& AsymmetricKeyAllowedHDPath() noexcept;
-OPENTXS_EXPORT const VersionMap& AuthorityAllowedCredential() noexcept;
-OPENTXS_EXPORT const VersionMap& CiphertextAllowedSymmetricKey() noexcept;
-OPENTXS_EXPORT const VersionMap& CredentialAllowedChildParams() noexcept;
-OPENTXS_EXPORT const VersionMap& CredentialAllowedContactData() noexcept;
-OPENTXS_EXPORT const VersionMap& CredentialAllowedKeyCredential() noexcept;
-OPENTXS_EXPORT const VersionMap& CredentialAllowedMasterParams() noexcept;
-OPENTXS_EXPORT const VersionMap& CredentialAllowedSignatures() noexcept;
-OPENTXS_EXPORT const VersionMap& CredentialAllowedVerification() noexcept;
-OPENTXS_EXPORT const VersionMap& EnvelopeAllowedAsymmetricKey() noexcept;
-OPENTXS_EXPORT const VersionMap& EnvelopeAllowedCiphertext() noexcept;
-OPENTXS_EXPORT const VersionMap& EnvelopeAllowedTaggedKey() noexcept;
-OPENTXS_EXPORT const VersionMap& KeyCredentialAllowedAsymmetricKey() noexcept;
-OPENTXS_EXPORT const VersionMap& MasterParamsAllowedNymIDSource() noexcept;
-OPENTXS_EXPORT const VersionMap& MasterParamsAllowedSourceProof() noexcept;
-OPENTXS_EXPORT const VersionMap& NymAllowedAuthority() noexcept;
-OPENTXS_EXPORT const VersionMap& NymAllowedNymIDSource() noexcept;
-OPENTXS_EXPORT const VersionMap& NymIDSourceAllowedAsymmetricKey() noexcept;
-OPENTXS_EXPORT const VersionMap& NymIDSourceAllowedPaymentCode() noexcept;
-OPENTXS_EXPORT const VersionMap& SeedAllowedCiphertext() noexcept;
-OPENTXS_EXPORT const VersionMap& SymmetricKeyAllowedCiphertext() noexcept;
-OPENTXS_EXPORT const VersionMap& TaggedKeyAllowedSymmetricKey() noexcept;
+auto AsymmetricKeyAllowedCiphertext() noexcept -> const VersionMap&;
+auto AsymmetricKeyAllowedHDPath() noexcept -> const VersionMap&;
+auto AuthorityAllowedCredential() noexcept -> const VersionMap&;
+auto CiphertextAllowedSymmetricKey() noexcept -> const VersionMap&;
+auto CredentialAllowedChildParams() noexcept -> const VersionMap&;
+auto CredentialAllowedContactData() noexcept -> const VersionMap&;
+auto CredentialAllowedKeyCredential() noexcept -> const VersionMap&;
+auto CredentialAllowedMasterParams() noexcept -> const VersionMap&;
+auto CredentialAllowedSignatures() noexcept -> const VersionMap&;
+auto CredentialAllowedVerification() noexcept -> const VersionMap&;
+auto EnvelopeAllowedAsymmetricKey() noexcept -> const VersionMap&;
+auto EnvelopeAllowedCiphertext() noexcept -> const VersionMap&;
+auto EnvelopeAllowedTaggedKey() noexcept -> const VersionMap&;
+auto KeyCredentialAllowedAsymmetricKey() noexcept -> const VersionMap&;
+auto MasterParamsAllowedNymIDSource() noexcept -> const VersionMap&;
+auto MasterParamsAllowedSourceProof() noexcept -> const VersionMap&;
+auto NymAllowedAuthority() noexcept -> const VersionMap&;
+auto NymAllowedNymIDSource() noexcept -> const VersionMap&;
+auto NymIDSourceAllowedAsymmetricKey() noexcept -> const VersionMap&;
+auto NymIDSourceAllowedPaymentCode() noexcept -> const VersionMap&;
+auto SeedAllowedCiphertext() noexcept -> const VersionMap&;
+auto SymmetricKeyAllowedCiphertext() noexcept -> const VersionMap&;
+auto TaggedKeyAllowedSymmetricKey() noexcept -> const VersionMap&;
 }  // namespace proto
 }  // namespace opentxs
 #endif  // OPENTXS_PROTOBUF_VERIFYCREDENTIALS_HPP

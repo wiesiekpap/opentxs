@@ -16,6 +16,7 @@
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/client/Contacts.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #if OT_BLOCKCHAIN
@@ -40,7 +41,7 @@ namespace opentxs::factory
 {
 auto BalanceItem(
     const ui::implementation::AccountActivityInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ui::implementation::AccountActivityRowID& rowID,
     const ui::implementation::AccountActivitySortKey& sortKey,
     ui::implementation::CustomData& custom,
@@ -108,7 +109,7 @@ namespace opentxs::ui::implementation
 {
 BalanceItem::BalanceItem(
     const AccountActivityInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const AccountActivityRowID& rowID,
     const AccountActivitySortKey& sortKey,
     CustomData& custom,
@@ -140,7 +141,7 @@ auto BalanceItem::DisplayAmount() const noexcept -> std::string
 }
 
 auto BalanceItem::extract_contacts(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const proto::PaymentWorkflow& workflow) noexcept -> std::vector<std::string>
 {
     std::vector<std::string> output{};

@@ -45,8 +45,8 @@ class OPENTXS_EXPORT Bailment : virtual public peer::Request
 public:
     ~Bailment() override = default;
 
-    virtual const identifier::Server& ServerID() const = 0;
-    virtual const identifier::UnitDefinition& UnitID() const = 0;
+    virtual auto ServerID() const -> const identifier::Server& = 0;
+    virtual auto UnitID() const -> const identifier::UnitDefinition& = 0;
 
 protected:
     Bailment() noexcept = default;
@@ -55,13 +55,13 @@ private:
     friend OTBailmentRequest;
 
 #ifndef _WIN32
-    Bailment* clone() const noexcept override = 0;
+    auto clone() const noexcept -> Bailment* override = 0;
 #endif
 
     Bailment(const Bailment&) = delete;
     Bailment(Bailment&&) = delete;
-    Bailment& operator=(const Bailment&) = delete;
-    Bailment& operator=(Bailment&&) = delete;
+    auto operator=(const Bailment&) -> Bailment& = delete;
+    auto operator=(Bailment&&) -> Bailment& = delete;
 };
 }  // namespace request
 }  // namespace peer

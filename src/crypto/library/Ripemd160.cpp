@@ -36,7 +36,7 @@ auto Ripemd160::RIPEMD160(
     using SizeType = std::uint32_t;
 
     if (size > std::numeric_limits<SizeType>::max()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Input too large").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Input too large").Flush();
 
         return false;
     }

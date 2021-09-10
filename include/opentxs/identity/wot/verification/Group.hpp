@@ -60,16 +60,16 @@ public:
     OPENTXS_NO_EXPORT virtual operator SerializedType() const noexcept = 0;
 
     /// Throws std::out_of_range for invalid position
-    virtual const value_type& at(const std::size_t position) const
-        noexcept(false) = 0;
-    virtual const_iterator begin() const noexcept = 0;
-    virtual const_iterator cbegin() const noexcept = 0;
-    virtual const_iterator cend() const noexcept = 0;
-    virtual const_iterator end() const noexcept = 0;
-    virtual std::size_t size() const noexcept = 0;
-    virtual VersionNumber Version() const noexcept = 0;
+    virtual auto at(const std::size_t position) const noexcept(false)
+        -> const value_type& = 0;
+    virtual auto begin() const noexcept -> const_iterator = 0;
+    virtual auto cbegin() const noexcept -> const_iterator = 0;
+    virtual auto cend() const noexcept -> const_iterator = 0;
+    virtual auto end() const noexcept -> const_iterator = 0;
+    virtual auto size() const noexcept -> std::size_t = 0;
+    virtual auto Version() const noexcept -> VersionNumber = 0;
 
-    virtual bool AddItem(
+    virtual auto AddItem(
         const identifier::Nym& claimOwner,
         const Identifier& claim,
         const identity::Nym& signer,
@@ -77,15 +77,17 @@ public:
         const Item::Type value = Item::Type::Confirm,
         const Time start = {},
         const Time end = {},
-        const VersionNumber version = Item::DefaultVersion) noexcept = 0;
-    OPENTXS_NO_EXPORT virtual bool AddItem(
+        const VersionNumber version = Item::DefaultVersion) noexcept
+        -> bool = 0;
+    OPENTXS_NO_EXPORT virtual auto AddItem(
         const identifier::Nym& verifier,
-        const Item::SerializedType verification) noexcept = 0;
-    virtual bool DeleteItem(const Identifier& item) noexcept = 0;
+        const Item::SerializedType verification) noexcept -> bool = 0;
+    virtual auto DeleteItem(const Identifier& item) noexcept -> bool = 0;
     /// Throws std::out_of_range for invalid position
-    virtual value_type& at(const std::size_t position) noexcept(false) = 0;
-    virtual iterator begin() noexcept = 0;
-    virtual iterator end() noexcept = 0;
+    virtual auto at(const std::size_t position) noexcept(false)
+        -> value_type& = 0;
+    virtual auto begin() noexcept -> iterator = 0;
+    virtual auto end() noexcept -> iterator = 0;
 
     virtual ~Group() = default;
 
@@ -95,8 +97,8 @@ protected:
 private:
     Group(const Group&) = delete;
     Group(Group&&) = delete;
-    Group& operator=(const Group&) = delete;
-    Group& operator=(Group&&) = delete;
+    auto operator=(const Group&) -> Group& = delete;
+    auto operator=(Group&&) -> Group& = delete;
 };
 }  // namespace verification
 }  // namespace wot

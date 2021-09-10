@@ -22,126 +22,126 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT bool CheckProto_1(
+auto CheckProto_1(
     const PaymentEvent& input,
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events);
-OPENTXS_EXPORT bool CheckProto_2(
+    std::map<PaymentEventType, std::size_t>& events) -> bool;
+auto CheckProto_2(
     const PaymentEvent& input,
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events);
-OPENTXS_EXPORT bool CheckProto_3(
+    std::map<PaymentEventType, std::size_t>& events) -> bool;
+auto CheckProto_3(
     const PaymentEvent& input,
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events);
-OPENTXS_EXPORT bool CheckProto_4(
+    std::map<PaymentEventType, std::size_t>& events) -> bool;
+auto CheckProto_4(
     const PaymentEvent& input,
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events);
-OPENTXS_EXPORT bool CheckProto_5(
+    std::map<PaymentEventType, std::size_t>& events) -> bool;
+auto CheckProto_5(
     const PaymentEvent& input,
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events);
-OPENTXS_EXPORT bool CheckProto_6(
+    std::map<PaymentEventType, std::size_t>& events) -> bool;
+auto CheckProto_6(
     const PaymentEvent& input,
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events);
-OPENTXS_EXPORT bool CheckProto_7(
+    std::map<PaymentEventType, std::size_t>& events) -> bool;
+auto CheckProto_7(
     const PaymentEvent& input,
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events);
-OPENTXS_EXPORT bool CheckProto_8(
+    std::map<PaymentEventType, std::size_t>& events) -> bool;
+auto CheckProto_8(
     const PaymentEvent& input,
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events);
-OPENTXS_EXPORT bool CheckProto_9(
+    std::map<PaymentEventType, std::size_t>& events) -> bool;
+auto CheckProto_9(
     const PaymentEvent& input,
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events);
-OPENTXS_EXPORT bool CheckProto_10(
+    std::map<PaymentEventType, std::size_t>& events) -> bool;
+auto CheckProto_10(
     const PaymentEvent& input,
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events);
-OPENTXS_EXPORT bool CheckProto_11(
+    std::map<PaymentEventType, std::size_t>& events) -> bool;
+auto CheckProto_11(
     const PaymentEvent& input,
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events);
-OPENTXS_EXPORT bool CheckProto_12(
+    std::map<PaymentEventType, std::size_t>& events) -> bool;
+auto CheckProto_12(
     const PaymentEvent& input,
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events);
-OPENTXS_EXPORT bool CheckProto_13(
+    std::map<PaymentEventType, std::size_t>& events) -> bool;
+auto CheckProto_13(
     const PaymentEvent& input,
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events);
-OPENTXS_EXPORT bool CheckProto_14(
+    std::map<PaymentEventType, std::size_t>& events) -> bool;
+auto CheckProto_14(
     const PaymentEvent& input,
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events);
-OPENTXS_EXPORT bool CheckProto_15(
+    std::map<PaymentEventType, std::size_t>& events) -> bool;
+auto CheckProto_15(
     const PaymentEvent& input,
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events);
-OPENTXS_EXPORT bool CheckProto_16(
+    std::map<PaymentEventType, std::size_t>& events) -> bool;
+auto CheckProto_16(
     const PaymentEvent& input,
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events);
-OPENTXS_EXPORT bool CheckProto_17(
+    std::map<PaymentEventType, std::size_t>& events) -> bool;
+auto CheckProto_17(
     const PaymentEvent& input,
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events);
-OPENTXS_EXPORT bool CheckProto_18(
+    std::map<PaymentEventType, std::size_t>& events) -> bool;
+auto CheckProto_18(
     const PaymentEvent& input,
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events);
-OPENTXS_EXPORT bool CheckProto_19(
+    std::map<PaymentEventType, std::size_t>& events) -> bool;
+auto CheckProto_19(
     const PaymentEvent& input,
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events);
-OPENTXS_EXPORT bool CheckProto_20(
+    std::map<PaymentEventType, std::size_t>& events) -> bool;
+auto CheckProto_20(
     const PaymentEvent& input,
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events);
+    std::map<PaymentEventType, std::size_t>& events) -> bool;
 }  // namespace proto
 }  // namespace opentxs
 #endif  // OPENTXS_PROTOBUF_PAYMENTEVENT_HPP

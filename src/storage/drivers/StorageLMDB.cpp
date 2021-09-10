@@ -55,7 +55,7 @@ StorageLMDB::StorageLMDB(
               {Table::B, 0},
           })
 {
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": Using ")(config_.path_).Flush();
+    LogVerbose(OT_METHOD)(__func__)(": Using ")(config_.path_).Flush();
     Init_StorageLMDB();
 }
 
@@ -75,7 +75,7 @@ auto StorageLMDB::get_table(const bool bucket) const -> StorageLMDB::Table
 
 void StorageLMDB::Init_StorageLMDB()
 {
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": Database initialized.").Flush();
+    LogVerbose(OT_METHOD)(__func__)(": Database initialized.").Flush();
 }
 
 auto StorageLMDB::LoadFromBucket(

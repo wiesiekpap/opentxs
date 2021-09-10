@@ -11,9 +11,9 @@
 #include <memory>
 #include <string>
 
-#include "internal/api/client/Client.hpp"
 #include "internal/ui/UI.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/Workflow.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -33,7 +33,7 @@ namespace opentxs::ui::implementation
 {
 TransferBalanceItem::TransferBalanceItem(
     const AccountActivityInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const AccountActivityRowID& rowID,
     const AccountActivitySortKey& sortKey,
     CustomData& custom,

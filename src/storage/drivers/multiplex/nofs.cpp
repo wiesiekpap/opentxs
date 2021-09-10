@@ -16,7 +16,7 @@ namespace opentxs::storage::implementation
 auto StorageMultiplex::init_fs(
     std::unique_ptr<opentxs::api::storage::Plugin>& plugin) -> void
 {
-    LogOutput(OT_METHOD)(__FUNCTION__)(": Filesystem driver not compiled in.")
+    LogOutput(OT_METHOD)(__func__)(": Filesystem driver not compiled in.")
         .Flush();
 }
 

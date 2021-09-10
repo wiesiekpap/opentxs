@@ -14,24 +14,25 @@ namespace opentxs
 {
 namespace api
 {
-class Periodic
+class OPENTXS_EXPORT Periodic
 {
 public:
-    OPENTXS_EXPORT virtual bool Cancel(const int task) const = 0;
-    OPENTXS_EXPORT virtual bool Reschedule(
+    virtual auto Cancel(const int task) const -> bool = 0;
+    virtual auto Reschedule(
         const int task,
-        const std::chrono::seconds& interval) const = 0;
+        const std::chrono::seconds& interval) const -> bool = 0;
     /** Adds a task to the periodic task list with the specified interval. By
      * default, schedules for immediate execution.
      *
      * \returns: task identifier which may be used to manage the task
      */
-    OPENTXS_EXPORT virtual int Schedule(
+    virtual auto Schedule(
         const std::chrono::seconds& interval,
         const opentxs::PeriodicTask& task,
-        const std::chrono::seconds& last = std::chrono::seconds(0)) const = 0;
+        const std::chrono::seconds& last = std::chrono::seconds(0)) const
+        -> int = 0;
 
-    OPENTXS_EXPORT virtual ~Periodic() = default;
+    virtual ~Periodic() = default;
 
 protected:
     Periodic() = default;
@@ -39,8 +40,8 @@ protected:
 private:
     Periodic(const Periodic&) = delete;
     Periodic(Periodic&&) = delete;
-    Periodic& operator=(const Periodic&) = delete;
-    Periodic& operator=(Periodic&&) = delete;
+    auto operator=(const Periodic&) -> Periodic& = delete;
+    auto operator=(Periodic&&) -> Periodic& = delete;
 };
 }  // namespace api
 }  // namespace opentxs

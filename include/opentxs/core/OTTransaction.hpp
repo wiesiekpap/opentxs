@@ -28,10 +28,7 @@ namespace implementation
 class Factory;
 }  // namespace implementation
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -371,70 +368,79 @@ public:
     // See transactionType in Types.hpp.
 
     void Release() override;
-    std::int64_t GetNumberOfOrigin() override;
+    auto GetNumberOfOrigin() -> std::int64_t override;
     void CalculateNumberOfOrigin() override;
 
     // This calls VerifyContractID() as well as VerifySignature()
     // Use this instead of Contract::VerifyContract, which expects/uses a
     // pubkey from inside the contract.
-    bool VerifyAccount(const identity::Nym& theNym) override;
+    auto VerifyAccount(const identity::Nym& theNym) -> bool override;
 
     void InitTransaction();
 
-    bool IsCancelled() { return m_bCancelled; }
+    auto IsCancelled() -> bool { return m_bCancelled; }
 
     void SetAsCancelled() { m_bCancelled = true; }
 
     void SetParent(const Ledger& theParent) { m_pParent = &theParent; }
 
-    bool AddNumbersToTransaction(const NumList& theAddition);
+    auto AddNumbersToTransaction(const NumList& theAddition) -> bool;
 
-    bool IsAbbreviated() const { return m_bIsAbbreviated; }
+    auto IsAbbreviated() const -> bool { return m_bIsAbbreviated; }
 
-    std::int64_t GetAbbrevAdjustment() const { return m_lAbbrevAmount; }
+    auto GetAbbrevAdjustment() const -> std::int64_t { return m_lAbbrevAmount; }
 
     void SetAbbrevAdjustment(std::int64_t lAmount)
     {
         m_lAbbrevAmount = lAmount;
     }
 
-    std::int64_t GetAbbrevDisplayAmount() const { return m_lDisplayAmount; }
+    auto GetAbbrevDisplayAmount() const -> std::int64_t
+    {
+        return m_lDisplayAmount;
+    }
 
     void SetAbbrevDisplayAmount(std::int64_t lAmount)
     {
         m_lDisplayAmount = lAmount;
     }
 
-    std::int64_t GetAbbrevInRefDisplay() const { return m_lInRefDisplay; }
+    auto GetAbbrevInRefDisplay() const -> std::int64_t
+    {
+        return m_lInRefDisplay;
+    }
 
     void SetAbbrevInRefDisplay(std::int64_t lVal) { m_lInRefDisplay = lVal; }
 
     // These are used exclusively by replyNotice (so you can tell
     // which reply message it's a notice of.)
-    const std::int64_t& GetRequestNum() const { return m_lRequestNumber; }
+    auto GetRequestNum() const -> const std::int64_t&
+    {
+        return m_lRequestNumber;
+    }
 
     void SetRequestNum(const std::int64_t& lNum) { m_lRequestNumber = lNum; }
 
-    bool GetReplyTransSuccess() { return m_bReplyTransSuccess; }
+    auto GetReplyTransSuccess() -> bool { return m_bReplyTransSuccess; }
 
     void SetReplyTransSuccess(bool bVal) { m_bReplyTransSuccess = bVal; }
 
     // These are used for finalReceipt and basketReceipt
-    std::int64_t GetClosingNum() const;
+    auto GetClosingNum() const -> std::int64_t;
     void SetClosingNum(std::int64_t lClosingNum);
     /// For display purposes.The "ref #" you actually display (versus the one
     /// you use internally) might change based on transaction type. (Like with a
     /// cheque receipt you actually have to load up the original cheque.)
-    std::int64_t GetReferenceNumForDisplay();
+    auto GetReferenceNumForDisplay() -> std::int64_t;
 
-    bool GetSenderNymIDForDisplay(Identifier& theReturnID);
-    bool GetRecipientNymIDForDisplay(Identifier& theReturnID);
+    auto GetSenderNymIDForDisplay(Identifier& theReturnID) -> bool;
+    auto GetRecipientNymIDForDisplay(Identifier& theReturnID) -> bool;
 
-    bool GetSenderAcctIDForDisplay(Identifier& theReturnID);
-    bool GetRecipientAcctIDForDisplay(Identifier& theReturnID);
-    bool GetMemo(String& strMemo);
+    auto GetSenderAcctIDForDisplay(Identifier& theReturnID) -> bool;
+    auto GetRecipientAcctIDForDisplay(Identifier& theReturnID) -> bool;
+    auto GetMemo(String& strMemo) -> bool;
 
-    inline Time GetDateSigned() const { return m_DATE_SIGNED; }
+    inline auto GetDateSigned() const -> Time { return m_DATE_SIGNED; }
 
     // Tries to determine, based on items within,
     // whether the transaction was a success or fail.
@@ -458,56 +464,60 @@ public:
     // transaction is an actual transaction. (And a receipt or notice is not an
     // actual
     // transaction.)
-    bool GetSuccess(bool* pbHasSuccess = nullptr, bool* pbIsSuccess = nullptr);
+    auto GetSuccess(bool* pbHasSuccess = nullptr, bool* pbIsSuccess = nullptr)
+        -> bool;
 
-    std::int64_t GetReceiptAmount(const PasswordPrompt& reason);  // Tries to
-                                                                  // determine
-                                                                  // IF there
-                                                                  // is an
+    auto GetReceiptAmount(const PasswordPrompt& reason)
+        -> std::int64_t;  // Tries to
+                          // determine
+                          // IF there
+                          // is an
     // amount (depending on type) and return
     // it.
 
-    transactionType GetType() const;
+    auto GetType() const -> transactionType;
     void SetType(transactionType theType);
 
     // This function assumes that theLedger is the owner of this transaction.
     // We pass the ledger in so we can determine the proper directory we're
     // reading from.
-    bool SaveBoxReceipt(std::int64_t lLedgerType);
+    auto SaveBoxReceipt(std::int64_t lLedgerType) -> bool;
 
-    bool SaveBoxReceipt(Ledger& theLedger);
+    auto SaveBoxReceipt(Ledger& theLedger) -> bool;
 
-    bool DeleteBoxReceipt(Ledger& theLedger);
+    auto DeleteBoxReceipt(Ledger& theLedger) -> bool;
 
     // Call on abbreviated version, and pass in the purported full version.
-    bool VerifyBoxReceipt(OTTransaction& theFullVersion);
+    auto VerifyBoxReceipt(OTTransaction& theFullVersion) -> bool;
 
-    bool VerifyBalanceReceipt(
+    auto VerifyBalanceReceipt(
         const otx::context::Server& context,
-        const PasswordPrompt& reason);
+        const PasswordPrompt& reason) -> bool;
 
     // First VerifyContractID() is performed already on all the items when
     // they are first loaded up. NotaryID and AccountID have been verified.
     // Now we check ownership, and signatures, and transaction #s, etc.
     // (We go deeper.)
-    bool VerifyItems(const identity::Nym& theNym, const PasswordPrompt& reason);
+    auto VerifyItems(const identity::Nym& theNym, const PasswordPrompt& reason)
+        -> bool;
 
-    inline std::int32_t GetItemCount() const
+    inline auto GetItemCount() const -> std::int32_t
     {
         return static_cast<std::int32_t>(m_listItems.size());
     }
 
-    std::int32_t GetItemCountInRefTo(std::int64_t lReference);  // Count the
-                                                                // number
+    auto GetItemCountInRefTo(std::int64_t lReference)
+        -> std::int32_t;  // Count the
+                          // number
     // of items that are
     // IN REFERENCE TO
     // some transaction#.
 
     // While processing a transaction, you may wish to query it for items of a
     // certain type.
-    std::shared_ptr<Item> GetItem(itemType theType);
+    auto GetItem(itemType theType) -> std::shared_ptr<Item>;
 
-    std::shared_ptr<Item> GetItemInRefTo(std::int64_t lReference);
+    auto GetItemInRefTo(std::int64_t lReference) -> std::shared_ptr<Item>;
 
     void AddItem(std::shared_ptr<Item> theItem);  // You have to allocate
                                                   // the item on the heap
@@ -516,7 +526,7 @@ public:
     // OTTransaction will take care of it from there and will delete it in
     // destructor.
     // used for looping through the items in a few places.
-    inline listOfItems& GetItemList() { return m_listItems; }
+    inline auto GetItemList() -> listOfItems& { return m_listItems; }
 
     // Because all of the actual receipts cannot fit into the single inbox
     // file, you must put their hash, and then store the receipt itself
@@ -536,9 +546,9 @@ public:
         Item& theBalanceItem,
         const PasswordPrompt& reason);
 
-    static transactionType GetTypeFromString(const String& strType);
+    static auto GetTypeFromString(const String& strType) -> transactionType;
 
-    const char* GetTypeString() const;
+    auto GetTypeString() const -> const char*;
 
     // These functions are fairly smart about which transaction types are
     // harvestable,
@@ -549,17 +559,18 @@ public:
     // to harvest it, based on its type and the circumstances. Just make sure
     // you are accurate
     // when you tell it the circumstances (bools!)
-    bool HarvestOpeningNumber(
+    auto HarvestOpeningNumber(
         otx::context::Server& context,
-        bool bHarvestingForRetry,      // exchangeBasket, on retry, needs to
-                                       // clawback the opening # because it
-                                       // will be using another opening # the
-                                       // next time OT_API_exchangeBasket() is
-                                       // called.
-        bool bReplyWasSuccess,         // false until positively asserted.
-        bool bReplyWasFailure,         // false until positively asserted.
-        bool bTransactionWasSuccess,   // false until positively asserted.
-        bool bTransactionWasFailure);  // false until positively asserted.
+        bool bHarvestingForRetry,     // exchangeBasket, on retry, needs to
+                                      // clawback the opening # because it
+                                      // will be using another opening # the
+                                      // next time OT_API_exchangeBasket() is
+                                      // called.
+        bool bReplyWasSuccess,        // false until positively asserted.
+        bool bReplyWasFailure,        // false until positively asserted.
+        bool bTransactionWasSuccess,  // false until positively asserted.
+        bool bTransactionWasFailure)
+        -> bool;  // false until positively asserted.
 
     // NOTE: IN CASE it's not obvious, the NYM is harvesting numbers from the
     // TRANSACTION, and not the other way around!
@@ -567,21 +578,22 @@ public:
     // Normally do this if your transaction ran--and failed--so you can get most
     // of your transaction numbers back. (The opening number is already gone,
     // but any others are still salvageable.)
-    bool HarvestClosingNumbers(
+    auto HarvestClosingNumbers(
         otx::context::Server& context,
-        bool bHarvestingForRetry,      // exchangeBasket, on retry, needs to
-                                       // clawback the opening # because it
-                                       // will be using another opening # the
-                                       // next time OT_API_exchangeBasket() is
-                                       // called.
-        bool bReplyWasSuccess,         // false until positively asserted.
-        bool bReplyWasFailure,         // false until positively asserted.
-        bool bTransactionWasSuccess,   // false until positively asserted.
-        bool bTransactionWasFailure);  // false until positively asserted.
+        bool bHarvestingForRetry,     // exchangeBasket, on retry, needs to
+                                      // clawback the opening # because it
+                                      // will be using another opening # the
+                                      // next time OT_API_exchangeBasket() is
+                                      // called.
+        bool bReplyWasSuccess,        // false until positively asserted.
+        bool bReplyWasFailure,        // false until positively asserted.
+        bool bTransactionWasSuccess,  // false until positively asserted.
+        bool bTransactionWasFailure)
+        -> bool;  // false until positively asserted.
 
-    OTIdentifier GetAccountHash() const { return m_accounthash; }
-    OTIdentifier GetInboxHash() const { return m_inboxhash; }
-    OTIdentifier GetOutboxHash() const { return m_outboxhash; }
+    auto GetAccountHash() const -> OTIdentifier { return m_accounthash; }
+    auto GetInboxHash() const -> OTIdentifier { return m_inboxhash; }
+    auto GetOutboxHash() const -> OTIdentifier { return m_outboxhash; }
     void SetAccountHash(const Identifier& accounthash)
     {
         m_accounthash = accounthash;
@@ -711,7 +723,7 @@ protected:
     OTIdentifier m_accounthash;
 
     // return -1 if error, 0 if nothing, and 1 if the node was processed.
-    std::int32_t ProcessXMLNode(irr::io::IrrXMLReader*& xml) override;
+    auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
 
     void UpdateContents(const PasswordPrompt& reason)
         override;  // Before transmission or
@@ -721,16 +733,16 @@ protected:
 private:
     friend api::implementation::Factory;
 
-    OTTransaction(const api::internal::Core& api);
-    OTTransaction(const api::internal::Core& api, const Ledger& theOwner);
+    OTTransaction(const api::Core& api);
+    OTTransaction(const api::Core& api, const Ledger& theOwner);
     OTTransaction(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identifier::Nym& theNymID,
         const Identifier& theAccountID,
         const identifier::Server& theNotaryID,
         const originType theOriginType = originType::not_applicable);
     OTTransaction(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identifier::Nym& theNymID,
         const Identifier& theAccountID,
         const identifier::Server& theNotaryID,
@@ -741,7 +753,7 @@ private:
     // The full receipt is loaded only after the abbreviated ones are loaded,
     // and verified against them.
     OTTransaction(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identifier::Nym& theNymID,
         const Identifier& theAccountID,
         const identifier::Server& theNotaryID,
@@ -763,8 +775,8 @@ private:
     OTTransaction() = delete;
     OTTransaction(const OTTransaction&) = delete;
     OTTransaction(OTTransaction&&) = delete;
-    OTTransaction& operator=(const OTTransaction&) = delete;
-    OTTransaction& operator=(OTTransaction&&) = delete;
+    auto operator=(const OTTransaction&) -> OTTransaction& = delete;
+    auto operator=(OTTransaction&&) -> OTTransaction& = delete;
 };
 }  // namespace opentxs
 #endif

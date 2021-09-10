@@ -12,8 +12,8 @@
 
 #include "opentxs/Types.hpp"
 
-std::string formatBool(bool in);
-std::string formatTimestamp(const opentxs::Time in);
-std::string getTimestamp();
-opentxs::Time parseTimestamp(std::string in);
+auto formatBool(bool in) -> std::string;
+auto formatTimestamp(const opentxs::Time in) -> std::string;
+auto getTimestamp() -> std::string;
+auto parseTimestamp(std::string in) -> opentxs::Time;
 #endif

@@ -17,13 +17,13 @@
 #include <utility>
 
 #include "Proto.tpp"
-#include "internal/api/Api.hpp"
 #include "internal/api/Factory.hpp"
 #include "internal/api/crypto/Crypto.hpp"
 #include "internal/crypto/key/Factory.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Context.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/HDSeed.hpp"
 #include "opentxs/api/Primitives.hpp"
@@ -221,7 +221,7 @@ auto HDSeed::Bip32Root(const std::string& seedID, const PasswordPrompt& reason)
 
         return entropy->asHex();
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -281,7 +281,7 @@ auto HDSeed::GetOrCreateDefaultSeed(
 
         return seed.Entropy();
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return factory_.Secret(0);
     }
@@ -369,7 +369,7 @@ auto HDSeed::GetStorageKey(
         reason);
 
     if (false == bool(pKey)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to derive storage key.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to derive storage key.")
             .Flush();
 
         return OTSymmetricKey{opentxs::factory::SymmetricKey()};
@@ -427,7 +427,7 @@ auto HDSeed::ImportRaw(const Secret& entropy, const PasswordPrompt& reason)
 
         return id;
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -445,8 +445,7 @@ auto HDSeed::ImportSeed(
         case Style::PKT: {
         } break;
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported seed type")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Unsupported seed type").Flush();
 
             return {};
         }
@@ -472,7 +471,7 @@ auto HDSeed::ImportSeed(
 
         return id;
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -520,8 +519,7 @@ auto HDSeed::new_seed(
         case Style::BIP39: {
         } break;
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported seed type")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Unsupported seed type").Flush();
 
             return {};
         }
@@ -542,7 +540,7 @@ auto HDSeed::new_seed(
 
         return id;
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -558,7 +556,7 @@ auto HDSeed::Passphrase(const std::string& seedID, const PasswordPrompt& reason)
 
         return std::string{seed.Phrase().Bytes()};
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -577,7 +575,7 @@ auto HDSeed::Seed(
 
         return seed.Entropy();
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return factory_.Secret(0);
     }
@@ -633,7 +631,7 @@ auto HDSeed::UpdateIndex(
 
         return seed.IncrementIndex(index);
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }
@@ -665,8 +663,7 @@ auto HDSeed::WordCount(const Style type, const Strength strength) const noexcept
         case Style::PKT: {
         } break;
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported seed type")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Unsupported seed type").Flush();
 
             return {};
         }
@@ -699,7 +696,7 @@ auto HDSeed::Words(const std::string& seedID, const PasswordPrompt& reason)
 
         return std::string{seed.Words().Bytes()};
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return {};
     }

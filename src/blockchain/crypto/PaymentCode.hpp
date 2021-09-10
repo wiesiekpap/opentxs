@@ -47,17 +47,19 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
+class Blockchain;
 }  // namespace client
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
+
+namespace blockchain
+{
+namespace crypto
+{
+class Account;
+}  // namespace crypto
+}  // namespace blockchain
 
 namespace proto
 {
@@ -77,6 +79,10 @@ public:
     using SerializedType = proto::Bip47Channel;
 
     auto AddNotification(const Txid& tx) const noexcept -> bool final;
+    auto InternalPaymentCode() const noexcept -> internal::PaymentCode& final
+    {
+        return const_cast<PaymentCode&>(*this);
+    }
     auto IsNotified() const noexcept -> bool final;
     auto Local() const noexcept -> const opentxs::PaymentCode& final
     {
@@ -108,8 +114,8 @@ public:
 #endif  // OT_CRYPTO_WITH_BIP32
 
     PaymentCode(
-        const api::internal::Core& api,
-        const internal::Account& parent,
+        const api::Core& api,
+        const Account& parent,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
         const proto::HDPath& path,
@@ -117,8 +123,8 @@ public:
         const PasswordPrompt& reason,
         Identifier& id) noexcept(false);
     PaymentCode(
-        const api::internal::Core& api,
-        const internal::Account& parent,
+        const api::Core& api,
+        const Account& parent,
         const SerializedType& serialized,
         Identifier& id,
         OTIdentifier&& contact) noexcept(false);

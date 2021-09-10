@@ -20,9 +20,8 @@ namespace zeromq
 namespace socket
 {
 template <typename Input>
-std::
+auto Request::Send(const Input& data) const noexcept -> std::
     pair<opentxs::SendResult, opentxs::Pimpl<opentxs::network::zeromq::Message>>
-    Request::Send(const Input& data) const noexcept
 {
     return send_request(Context().Message(data));
 }

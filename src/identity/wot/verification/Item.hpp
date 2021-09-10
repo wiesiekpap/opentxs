@@ -16,10 +16,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -70,7 +67,7 @@ private:
     const proto::Signature sig_;
 
     static auto calculate_id(
-        const api::internal::Core& api,
+        const api::Core& api,
         const VersionNumber version,
         const Identifier& claim,
         const Type value,

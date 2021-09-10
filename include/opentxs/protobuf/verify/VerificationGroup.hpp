@@ -22,86 +22,48 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT bool CheckProto_1(
+auto CheckProto_1(
     const VerificationGroup& verificationGroup,
     const bool silent,
-    const VerificationType indexed);
-OPENTXS_EXPORT bool CheckProto_2(
-    const VerificationGroup&,
-    const bool,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_3(
-    const VerificationGroup&,
-    const bool,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_4(
-    const VerificationGroup&,
-    const bool,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_5(
-    const VerificationGroup&,
-    const bool,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_6(
-    const VerificationGroup&,
-    const bool,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_7(
-    const VerificationGroup&,
-    const bool,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_8(
-    const VerificationGroup&,
-    const bool,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_9(
-    const VerificationGroup&,
-    const bool,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_10(
-    const VerificationGroup&,
-    const bool,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_11(
-    const VerificationGroup&,
-    const bool,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_12(
-    const VerificationGroup&,
-    const bool,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_13(
-    const VerificationGroup&,
-    const bool,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_14(
-    const VerificationGroup&,
-    const bool,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_15(
-    const VerificationGroup&,
-    const bool,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_16(
-    const VerificationGroup&,
-    const bool,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_17(
-    const VerificationGroup&,
-    const bool,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_18(
-    const VerificationGroup&,
-    const bool,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_19(
-    const VerificationGroup&,
-    const bool,
-    const VerificationType);
-OPENTXS_EXPORT bool CheckProto_20(
-    const VerificationGroup&,
-    const bool,
-    const VerificationType);
+    const VerificationType indexed) -> bool;
+auto CheckProto_2(const VerificationGroup&, const bool, const VerificationType)
+    -> bool;
+auto CheckProto_3(const VerificationGroup&, const bool, const VerificationType)
+    -> bool;
+auto CheckProto_4(const VerificationGroup&, const bool, const VerificationType)
+    -> bool;
+auto CheckProto_5(const VerificationGroup&, const bool, const VerificationType)
+    -> bool;
+auto CheckProto_6(const VerificationGroup&, const bool, const VerificationType)
+    -> bool;
+auto CheckProto_7(const VerificationGroup&, const bool, const VerificationType)
+    -> bool;
+auto CheckProto_8(const VerificationGroup&, const bool, const VerificationType)
+    -> bool;
+auto CheckProto_9(const VerificationGroup&, const bool, const VerificationType)
+    -> bool;
+auto CheckProto_10(const VerificationGroup&, const bool, const VerificationType)
+    -> bool;
+auto CheckProto_11(const VerificationGroup&, const bool, const VerificationType)
+    -> bool;
+auto CheckProto_12(const VerificationGroup&, const bool, const VerificationType)
+    -> bool;
+auto CheckProto_13(const VerificationGroup&, const bool, const VerificationType)
+    -> bool;
+auto CheckProto_14(const VerificationGroup&, const bool, const VerificationType)
+    -> bool;
+auto CheckProto_15(const VerificationGroup&, const bool, const VerificationType)
+    -> bool;
+auto CheckProto_16(const VerificationGroup&, const bool, const VerificationType)
+    -> bool;
+auto CheckProto_17(const VerificationGroup&, const bool, const VerificationType)
+    -> bool;
+auto CheckProto_18(const VerificationGroup&, const bool, const VerificationType)
+    -> bool;
+auto CheckProto_19(const VerificationGroup&, const bool, const VerificationType)
+    -> bool;
+auto CheckProto_20(const VerificationGroup&, const bool, const VerificationType)
+    -> bool;
 }  // namespace proto
 }  // namespace opentxs
 

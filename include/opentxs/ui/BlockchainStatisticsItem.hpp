@@ -51,9 +51,10 @@ protected:
 private:
     BlockchainStatisticsItem(const BlockchainStatisticsItem&) = delete;
     BlockchainStatisticsItem(BlockchainStatisticsItem&&) = delete;
-    BlockchainStatisticsItem& operator=(const BlockchainStatisticsItem&) =
-        delete;
-    BlockchainStatisticsItem& operator=(BlockchainStatisticsItem&&) = delete;
+    auto operator=(const BlockchainStatisticsItem&)
+        -> BlockchainStatisticsItem& = delete;
+    auto operator=(BlockchainStatisticsItem&&)
+        -> BlockchainStatisticsItem& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

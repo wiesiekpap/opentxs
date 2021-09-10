@@ -393,7 +393,7 @@ public:
 
     Test_Bitcoin_Providers()
         : client_(ot::Context().StartClient(0))
-        , reason_(client_.Factory().PasswordPrompt(__FUNCTION__))
+        , reason_(client_.Factory().PasswordPrompt(__func__))
         , crypto_(client_.Crypto())
     {
     }

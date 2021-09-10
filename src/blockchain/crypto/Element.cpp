@@ -16,11 +16,12 @@
 #include <utility>
 #include <vector>
 
-#include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/core/Data.hpp"
@@ -37,9 +38,9 @@
 namespace opentxs::blockchain::crypto::implementation
 {
 Element::Element(
-    const api::internal::Core& api,
-    const api::client::internal::Blockchain& blockchain,
-    const internal::Subaccount& parent,
+    const api::Core& api,
+    const api::client::Blockchain& blockchain,
+    const crypto::Subaccount& parent,
     const opentxs::blockchain::Type chain,
     const VersionNumber version,
     const crypto::Subchain subchain,
@@ -81,9 +82,9 @@ Element::Element(
 }
 
 Element::Element(
-    const api::internal::Core& api,
-    const api::client::internal::Blockchain& blockchain,
-    const internal::Subaccount& parent,
+    const api::Core& api,
+    const api::client::Blockchain& blockchain,
+    const crypto::Subaccount& parent,
     const opentxs::blockchain::Type chain,
     const crypto::Subchain subchain,
     const Bip32Index index,
@@ -107,9 +108,9 @@ Element::Element(
 }
 
 Element::Element(
-    const api::internal::Core& api,
-    const api::client::internal::Blockchain& blockchain,
-    const internal::Subaccount& parent,
+    const api::Core& api,
+    const api::client::Blockchain& blockchain,
+    const crypto::Subaccount& parent,
     const opentxs::blockchain::Type chain,
     const crypto::Subchain subchain,
     const SerializedType& address,
@@ -149,9 +150,9 @@ Element::Element(
 }
 
 Element::Element(
-    const api::internal::Core& api,
-    const api::client::internal::Blockchain& blockchain,
-    const internal::Subaccount& parent,
+    const api::Core& api,
+    const api::client::Blockchain& blockchain,
+    const crypto::Subaccount& parent,
     const opentxs::blockchain::Type chain,
     const crypto::Subchain subchain,
     const SerializedType& address) noexcept(false)
@@ -217,7 +218,7 @@ auto Element::elements(const rLock&) const noexcept -> std::set<OTData>
     auto pubkey = api_.Factory().Data(pkey_->PublicKey());
 
     try {
-        output.emplace(blockchain_.PubkeyHash(chain_, pubkey));
+        output.emplace(blockchain_.Internal().PubkeyHash(chain_, pubkey));
     } catch (...) {
         OT_FAIL;
     }
@@ -227,11 +228,11 @@ auto Element::elements(const rLock&) const noexcept -> std::set<OTData>
 
 auto Element::IncomingTransactions() const noexcept -> std::set<std::string>
 {
-    return parent_.IncomingTransactions(KeyID());
+    return parent_.Internal().IncomingTransactions(KeyID());
 }
 
 auto Element::instantiate(
-    const api::internal::Core& api,
+    const api::Core& api,
     const proto::AsymmetricKey& serialized) noexcept(false)
     -> std::unique_ptr<opentxs::crypto::key::EllipticCurve>
 {
@@ -320,10 +321,10 @@ auto Element::PrivateKey(const PasswordPrompt& reason) const noexcept -> ECKey
     auto lock = rLock{lock_};
 
     if (false == pkey_->HasPrivate()) {
-        auto key = parent_.PrivateKey(subchain_, index_, reason);
+        auto key = parent_.Internal().PrivateKey(subchain_, index_, reason);
 
         if (!key) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": error deriving private key")
+            LogOutput(OT_METHOD)(__func__)(": error deriving private key")
                 .Flush();
 
             return {};
@@ -344,7 +345,7 @@ auto Element::PubkeyHash() const noexcept -> OTData
     auto lock = rLock{lock_};
     const auto key = api_.Factory().Data(pkey_->PublicKey());
 
-    return blockchain_.PubkeyHash(chain_, key);
+    return blockchain_.Internal().PubkeyHash(chain_, key);
 }
 
 auto Element::Reserve(const Time time) noexcept -> bool
@@ -457,7 +458,7 @@ auto Element::Unreserve() noexcept -> bool
     auto lock = rLock{lock_};
 
     if ((0u < confirmed_.size()) || (0u < confirmed_.size())) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
+        LogVerbose(OT_METHOD)(__func__)(
             ": element is already associated with transactions")
             .Flush();
 
@@ -480,6 +481,6 @@ auto Element::update_element(rLock& lock) const noexcept -> void
         std::begin(elements), std::end(elements), std::back_inserter(hashes), [
         ](const auto& in) -> auto { return in->Bytes(); });
     lock.unlock();
-    parent_.UpdateElement(hashes);
+    parent_.Internal().UpdateElement(hashes);
 }
 }  // namespace opentxs::blockchain::crypto::implementation

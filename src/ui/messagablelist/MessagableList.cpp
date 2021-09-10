@@ -11,12 +11,12 @@
 #include <list>
 #include <memory>
 
-#include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Contacts.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -33,7 +33,7 @@
 namespace opentxs::factory
 {
 auto MessagableListModel(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::MessagableList>
@@ -47,7 +47,7 @@ auto MessagableListModel(
 namespace opentxs::ui::implementation
 {
 MessagableList::MessagableList(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     : MessagableListList(api, nymID, cb, false)

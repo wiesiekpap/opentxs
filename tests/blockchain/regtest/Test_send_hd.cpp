@@ -111,7 +111,7 @@ protected:
         , alex_([&]() -> const ot::identity::Nym& {
             if (!alex_p_) {
                 const auto reason =
-                    client_1_.Factory().PasswordPrompt(__FUNCTION__);
+                    client_1_.Factory().PasswordPrompt(__func__);
 
                 alex_p_ = client_1_.Wallet().Nym(reason, "Alex");
 
@@ -155,7 +155,7 @@ protected:
                 [&] {
                     auto output = std::vector<OutputBuilder>{};
                     const auto reason =
-                        client_1_.Factory().PasswordPrompt(__FUNCTION__);
+                        client_1_.Factory().PasswordPrompt(__func__);
                     const auto keys = std::set<ot::blockchain::crypto::Key>{};
 
                     for (auto i = Index{0}; i < Index{count}; ++i) {

@@ -34,15 +34,12 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
 namespace network
 {
 class ZMQ;
 }  // namespace network
+
+class Core;
 }  // namespace api
 
 namespace network
@@ -104,7 +101,7 @@ private:
     friend opentxs::network::ServerConnection;
 
     const api::network::ZMQ& zmq_;
-    const api::internal::Core& api_;
+    const api::Core& api_;
     const zeromq::socket::Publish& updates_;
     const OTServerID server_id_;
     core::AddressType address_type_{core::AddressType::Error};
@@ -151,7 +148,7 @@ private:
     void reset_timer();
 
     ServerConnection(
-        const api::internal::Core& api,
+        const api::Core& api,
         const api::network::ZMQ& zmq,
         const zeromq::socket::Publish& updates,
         const OTServerContract& contract);

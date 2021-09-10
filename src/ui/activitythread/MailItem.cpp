@@ -18,7 +18,7 @@ namespace opentxs::factory
 {
 auto MailItem(
     const ui::implementation::ActivityThreadInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const ui::implementation::ActivityThreadRowID& rowID,
     const ui::implementation::ActivityThreadSortKey& sortKey,
@@ -36,7 +36,7 @@ namespace opentxs::ui::implementation
 {
 MailItem::MailItem(
     const ActivityThreadInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const ActivityThreadRowID& rowID,
     const ActivityThreadSortKey& sortKey,

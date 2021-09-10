@@ -27,10 +27,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -85,12 +82,12 @@ public:
     }
 
     ClientContext(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& local,
         const Nym_p& remote,
         const identifier::Server& server);
     ClientContext(
-        const api::internal::Core& api,
+        const api::Core& api,
         const proto::Context& serialized,
         const Nym_p& local,
         const Nym_p& remote,

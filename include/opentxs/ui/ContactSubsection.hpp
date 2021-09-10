@@ -14,21 +14,6 @@
 #include "opentxs/ui/List.hpp"
 #include "opentxs/ui/ListRow.hpp"
 
-#ifdef SWIG
-// clang-format off
-%extend opentxs::ui::ContactSubsection {
-    int Type() const
-    {
-        return static_cast<int>($self->Type());
-    }
-}
-%ignore opentxs::ui::ContactSubsection::Type;
-%ignore opentxs::ui::ContactSubsection::Update;
-%template(OTUIContactSubsection) opentxs::SharedPimpl<opentxs::ui::ContactSubsection>;
-%rename(UIContactSubsection) opentxs::ui::ContactSubsection;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -47,12 +32,13 @@ class OPENTXS_EXPORT ContactSubsection : virtual public List,
                                          virtual public ListRow
 {
 public:
-    virtual std::string Name(const std::string& lang) const noexcept = 0;
-    virtual opentxs::SharedPimpl<opentxs::ui::ContactItem> First()
-        const noexcept = 0;
-    virtual opentxs::SharedPimpl<opentxs::ui::ContactItem> Next()
-        const noexcept = 0;
-    virtual contact::ContactItemType Type() const noexcept = 0;
+    virtual auto Name(const std::string& lang) const noexcept
+        -> std::string = 0;
+    virtual auto First() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::ContactItem> = 0;
+    virtual auto Next() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::ContactItem> = 0;
+    virtual auto Type() const noexcept -> contact::ContactItemType = 0;
 
     ~ContactSubsection() override = default;
 
@@ -62,8 +48,8 @@ protected:
 private:
     ContactSubsection(const ContactSubsection&) = delete;
     ContactSubsection(ContactSubsection&&) = delete;
-    ContactSubsection& operator=(const ContactSubsection&) = delete;
-    ContactSubsection& operator=(ContactSubsection&&) = delete;
+    auto operator=(const ContactSubsection&) -> ContactSubsection& = delete;
+    auto operator=(ContactSubsection&&) -> ContactSubsection& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

@@ -23,8 +23,7 @@ namespace opentxs::storage::implementation
 auto StorageMultiplex::init_fs(
     std::unique_ptr<opentxs::api::storage::Plugin>& plugin) -> void
 {
-    LogVerbose(OT_METHOD)(__FUNCTION__)(
-        ": Initializing primary filesystem plugin.")
+    LogVerbose(OT_METHOD)(__func__)(": Initializing primary filesystem plugin.")
         .Flush();
     plugin.reset(Factory::StorageFSGC(
         storage_, config_, digest_, random_, primary_bucket_));

@@ -19,10 +19,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 
 class Wallet;
@@ -94,14 +91,14 @@ public:
         const Identifier& remoteID) const
         -> std::shared_ptr<const otx::context::Server> final;
 
-    Wallet(const api::client::internal::Manager& client);
+    Wallet(const api::client::Manager& client);
 
     ~Wallet() final = default;
 
 private:
     using ot_super = api::implementation::Wallet;
 
-    const api::client::internal::Manager& client_;
+    const api::client::Manager& client_;
     OTZMQPublishSocket request_sent_;
     OTZMQPublishSocket reply_received_;
 

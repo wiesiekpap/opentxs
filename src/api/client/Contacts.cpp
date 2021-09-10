@@ -21,6 +21,7 @@
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/contact/Contact.hpp"
@@ -46,7 +47,7 @@
 
 namespace opentxs::factory
 {
-auto ContactAPI(const api::client::internal::Manager& api) noexcept
+auto ContactAPI(const api::client::Manager& api) noexcept
     -> std::unique_ptr<api::client::internal::Contacts>
 {
     using ReturnType = opentxs::api::client::implementation::Contacts;
@@ -57,7 +58,7 @@ auto ContactAPI(const api::client::internal::Manager& api) noexcept
 
 namespace opentxs::api::client::implementation
 {
-Contacts::Contacts(const api::client::internal::Manager& api)
+Contacts::Contacts(const api::client::Manager& api)
     : api_(api)
     , lock_()
 #if OT_BLOCKCHAIN
@@ -137,7 +138,7 @@ auto Contacts::contact(const rLock& lock, const std::string& label) const
     auto contact = std::make_unique<opentxs::Contact>(api_, label);
 
     if (false == bool(contact)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to create new contact.")
+        LogOutput(OT_METHOD)(__func__)(": Unable to create new contact.")
             .Flush();
 
         return {};
@@ -160,7 +161,7 @@ auto Contacts::contact(const rLock& lock, const std::string& label) const
     }();
 
     if (false == api_.Storage().Store(proto)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to save contact.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Unable to save contact.").Flush();
         contact_map_.erase(it);
 
         return {};
@@ -339,7 +340,7 @@ auto Contacts::init(
 
 void Contacts::init_nym_map(const rLock& lock)
 {
-    LogDetail(OT_METHOD)(__FUNCTION__)(": Upgrading indices.").Flush();
+    LogDetail(OT_METHOD)(__func__)(": Upgrading indices.").Flush();
 
     for (const auto& it : api_.Storage().ContactList()) {
         const auto& contactID = api_.Factory().Identifier(it.first);
@@ -360,8 +361,7 @@ void Contacts::init_nym_map(const rLock& lock)
         const auto type = contact->Type();
 
         if (contact::ContactItemType::Error == type) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Invalid contact ")(it.first)(".")
+            LogOutput(OT_METHOD)(__func__)(": Invalid contact ")(it.first)(".")
                 .Flush();
             api_.Storage().DeleteContact(it.first);
         }
@@ -385,8 +385,7 @@ auto Contacts::load_contact(const rLock& lock, const Identifier& id) const
     const auto loaded = api_.Storage().Load(id.str(), serialized, SILENT);
 
     if (false == loaded) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Unable to load contact ")(id)
-            .Flush();
+        LogDetail(OT_METHOD)(__func__)(": Unable to load contact ")(id).Flush();
 
         return contact_map_.end();
     }
@@ -394,7 +393,7 @@ auto Contacts::load_contact(const rLock& lock, const Identifier& id) const
     auto contact = std::make_unique<opentxs::Contact>(api_, serialized);
 
     if (false == bool(contact)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Unable to instantate serialized contact.")
             .Flush();
 
@@ -411,8 +410,8 @@ auto Contacts::Merge(const Identifier& parent, const Identifier& child) const
     auto childContact = contact(lock, child);
 
     if (false == bool(childContact)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Child contact ")(child)(" can not be loaded.")
+        LogOutput(OT_METHOD)(__func__)(": Child contact ")(
+            child)(" can not be loaded.")
             .Flush();
 
         return {};
@@ -421,8 +420,8 @@ auto Contacts::Merge(const Identifier& parent, const Identifier& child) const
     const auto& childID = childContact->ID();
 
     if (childID != child) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Child contact ")(child)(" is already merged into ")(childID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Child contact ")(
+            child)(" is already merged into ")(childID)(".")
             .Flush();
 
         return {};
@@ -431,8 +430,8 @@ auto Contacts::Merge(const Identifier& parent, const Identifier& child) const
     auto parentContact = contact(lock, parent);
 
     if (false == bool(parentContact)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Parent contact ")(parent)(" can not be loaded.")
+        LogOutput(OT_METHOD)(__func__)(": Parent contact ")(
+            parent)(" can not be loaded.")
             .Flush();
 
         return {};
@@ -441,8 +440,8 @@ auto Contacts::Merge(const Identifier& parent, const Identifier& child) const
     const auto& parentID = parentContact->ID();
 
     if (parentID != parent) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Parent contact ")(parent)(" is merged into ")(parentID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Parent contact ")(
+            parent)(" is merged into ")(parentID)(".")
             .Flush();
 
         return {};
@@ -466,15 +465,14 @@ auto Contacts::Merge(const Identifier& parent, const Identifier& child) const
     }();
 
     if (false == api_.Storage().Store(rProto)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Unable to create save child contact.")
+        LogOutput(OT_METHOD)(__func__)(": Unable to create save child contact.")
             .Flush();
 
         OT_FAIL;
     }
 
     if (false == api_.Storage().Store(lProto)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Unable to create save parent contact.")
             .Flush();
 
@@ -488,7 +486,7 @@ auto Contacts::Merge(const Identifier& parent, const Identifier& child) const
     if (blockchain) {
         blockchain->ProcessMergedContact(lhs, rhs);
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Warning: contact not updated in blockchain API")
             .Flush();
     }
@@ -616,7 +614,7 @@ auto Contacts::NewContactFromAddress(
     auto blockchain = blockchain_.lock();
 
     if (false == bool(blockchain)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": shutting down ").Flush();
+        LogOutput(OT_METHOD)(__func__)(": shutting down ").Flush();
 
         return {};
     }
@@ -631,7 +629,7 @@ auto Contacts::NewContactFromAddress(
             return contact(lock, *existing.cbegin());
         }
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": multiple contacts claim address ")(address)
                 .Flush();
 
@@ -647,8 +645,7 @@ auto Contacts::NewContactFromAddress(
     auto& contact = *it.second;
 
     if (false == contact.AddBlockchainAddress(address, currency)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to add address to contact.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to add address to contact.")
             .Flush();
 
         OT_FAIL;
@@ -661,7 +658,7 @@ auto Contacts::NewContactFromAddress(
     }();
 
     if (false == api_.Storage().Store(proto)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to save contact.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Unable to save contact.").Flush();
 
         OT_FAIL;
     }
@@ -782,8 +779,7 @@ void Contacts::save(opentxs::Contact* contact) const
     }();
 
     if (false == api_.Storage().Store(proto)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Unable to create or save contact.")
+        LogOutput(OT_METHOD)(__func__)(": Unable to create or save contact.")
             .Flush();
 
         OT_FAIL;
@@ -792,8 +788,7 @@ void Contacts::save(opentxs::Contact* contact) const
     const auto& id = contact->ID();
 
     if (false == api_.Storage().SetContactAlias(id.str(), contact->Label())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Unable to create or save contact.")
+        LogOutput(OT_METHOD)(__func__)(": Unable to create or save contact.")
             .Flush();
 
         OT_FAIL;
@@ -807,7 +802,7 @@ void Contacts::save(opentxs::Contact* contact) const
     if (blockchain) {
         blockchain->ProcessContact(*contact);
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Warning: contact not updated in blockchain API")
             .Flush();
     }
@@ -856,9 +851,9 @@ auto Contacts::Update(const identity::Nym& nym) const
     const auto label = Contact::ExtractLabel(nym);
 
     if (contactIdentifier.empty()) {
-        LogDetail(OT_METHOD)(__FUNCTION__)(
-            ": Nym ")(nymID)(" is not associated with a contact. Creating a "
-                             "new contact named ")(label)
+        LogDetail(OT_METHOD)(__func__)(": Nym ")(
+            nymID)(" is not associated with a contact. Creating a "
+                   "new contact named ")(label)
             .Flush();
         auto code = api_.Factory().PaymentCode(nym.PaymentCode());
         return new_contact(lock, label, nymID, code);
@@ -868,7 +863,7 @@ auto Contacts::Update(const identity::Nym& nym) const
         auto contact = mutable_contact(lock, contactID);
         auto serialized = proto::Nym{};
         if (false == nym.Serialize(serialized)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize nym.")
+            LogOutput(OT_METHOD)(__func__)(": Failed to serialize nym.")
                 .Flush();
             return {};
         }
@@ -961,15 +956,14 @@ void Contacts::update_nym_map(
             }();
 
             if (false == api_.Storage().Store(proto)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Unable to create or save contact.")
                     .Flush();
 
                 OT_FAIL;
             }
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Duplicate nym found.")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Duplicate nym found.").Flush();
             contact.RemoveNym(nymID);
             const auto proto = [&] {
                 auto out = proto::Contact{};
@@ -978,7 +972,7 @@ void Contacts::update_nym_map(
             }();
 
             if (false == api_.Storage().Store(proto)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Unable to create or save contact.")
                     .Flush();
 
@@ -993,7 +987,7 @@ void Contacts::update_nym_map(
     if (blockchain) {
         blockchain->ProcessContact(contact);
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Warning: contact not updated in blockchain API")
             .Flush();
     }
@@ -1003,13 +997,13 @@ void Contacts::update_nym_map(
 auto Contacts::verify_write_lock(const rLock& lock) const -> bool
 {
     if (lock.mutex() != &lock_) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect mutex.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Incorrect mutex.").Flush();
 
         return false;
     }
 
     if (false == lock.owns_lock()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Lock not owned.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Lock not owned.").Flush();
 
         return false;
     }

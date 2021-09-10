@@ -14,8 +14,8 @@
 #include <string>
 #include <utility>
 
-#include "internal/api/Api.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Contract.hpp"
@@ -224,7 +224,7 @@ const std::map<MessageType, MessageType> Message::reply_message_{
 
 const Message::ReverseTypeMap Message::message_types_ = make_reverse_map();
 
-Message::Message(const api::internal::Core& core)
+Message::Message(const api::Core& core)
     : Contract(core)
     , m_bIsSigned(false)
     , m_strCommand(String::Factory())
@@ -331,7 +331,7 @@ auto Message::HarvestTransactionNumbers(
                      // ledger from *this.
 
     if (!strLedger->Exists() || !theLedger->LoadLedgerFromString(strLedger)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": ERROR: Failed trying to load message ledger: ")(strLedger)(".")
             .Flush();
         return false;
@@ -530,8 +530,8 @@ auto Message::processXmlNodeAckReplies(
 {
     auto strDepth = String::Factory();
     if (!Contract::LoadEncodedTextField(xml, strDepth)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: ackReplies field "
-                                           "without value.")
+        LogOutput(OT_METHOD)(__func__)(": Error: ackReplies field "
+                                       "without value.")
             .Flush();
         return (-1);  // error condition
     }
@@ -547,8 +547,8 @@ auto Message::processXmlNodeAcknowledgedReplies(
     [[maybe_unused]] Message& m,
     irr::io::IrrXMLReader*& xml) -> std::int32_t
 {
-    LogOutput(OT_METHOD)(__FUNCTION__)(": SKIPPING DEPRECATED FIELD: "
-                                       "acknowledgedReplies.")
+    LogOutput(OT_METHOD)(__func__)(": SKIPPING DEPRECATED FIELD: "
+                                   "acknowledgedReplies.")
         .Flush();
 
     while (xml->getNodeType() != irr::io::EXN_ELEMENT_END) { xml->read(); }
@@ -567,7 +567,7 @@ auto Message::processXmlNodeNotaryMessage(
     if (strDateSigned->Exists())
         m_lTime = Clock::to_time_t(parseTimestamp(strDateSigned->Get()));
 
-    LogVerbose(OT_METHOD)(__FUNCTION__)(
+    LogVerbose(OT_METHOD)(__func__)(
         " ===> Loading XML for Message into memory structures... ")
         .Flush();
 
@@ -621,7 +621,7 @@ auto Message::SignContract(
     m_bIsSigned = Contract::SignContractAuthent(theNym, reason);
 
     if (false == m_bIsSigned) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failure signing message: ")(
+        LogOutput(OT_METHOD)(__func__)(": Failure signing message: ")(
             m_xmlUnsigned)
             .Flush();
     }
@@ -708,7 +708,7 @@ public:
 
         if (strDepth->GetLength() > 0) m.m_lDepth = strDepth->ToLong();
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
             " Market ID: ")(m.m_strNymID2)(" Request #: ")(m.m_strRequestNum)
             .Flush();
@@ -772,7 +772,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -786,13 +786,13 @@ public:
         }
 
         if (m.m_bSuccess)
-            LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+            LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
                 "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
                 m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(" MarketID: ")(
                 m.m_strNymID2)
                 .Flush();  // m_ascPayload.Get()
         else
-            LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+            LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
                 "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
                 m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(" MarketID: ")(
                 m.m_strNymID2)
@@ -831,7 +831,7 @@ public:
             String::Factory(xml->getAttributeValue("requestNum"));
         m.m_strNymID2 = String::Factory(xml->getAttributeValue("marketID"));
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
             " Market ID: ")(m.m_strNymID2)(" Request #: ")(m.m_strRequestNum)
             .Flush();
@@ -895,7 +895,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -909,13 +909,13 @@ public:
         }
 
         if (m.m_bSuccess)
-            LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+            LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
                 "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
                 m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(" MarketID: ")(
                 m.m_strNymID2)
                 .Flush();  // m_ascPayload.Get()
         else
-            LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+            LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
                 "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
                 m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(" MarketID: ")(
                 m.m_strNymID2)
@@ -952,7 +952,7 @@ public:
         m.m_strRequestNum =
             String::Factory(xml->getAttributeValue("requestNum"));
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
             " Request #: ")(m.m_strRequestNum)
             .Flush();
@@ -1014,7 +1014,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -1028,12 +1028,12 @@ public:
         }
 
         if (m.m_bSuccess)
-            LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+            LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
                 "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
                 m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
                 .Flush();  // m_ascPayload.Get()
         else
-            LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+            LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
                 "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
                 m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
                 .Flush();  // m_ascInReferenceTo.Get()
@@ -1093,7 +1093,7 @@ public:
                 ascTextExpected,
                 pElementExpected,
                 &temp_MapAttributesAuthent)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+            LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
                 m.m_strCommand)(".")
                 .Flush();
@@ -1115,7 +1115,7 @@ public:
                 ascTextExpected,
                 pElementExpected,
                 &temp_MapAttributesEncrypt)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+            LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
                 m.m_strCommand)(".")
                 .Flush();
@@ -1124,7 +1124,7 @@ public:
 
         m.m_strNymID2->Set(ascTextExpected);
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
             " Public signing key: ")(m.m_strNymPublicKey)(
             " Public encryption key: ")(m.m_strNymID2)
@@ -1162,7 +1162,7 @@ public:
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
         m.m_strNotaryID = String::Factory(xml->getAttributeValue("notaryID"));
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " Success: ")(m.m_bSuccess ? "true" : "false")(" NymID:    ")(
             m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
             .Flush();
@@ -1211,7 +1211,7 @@ public:
             m.enum_ = 0;
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
             .Flush();
 
@@ -1261,14 +1261,14 @@ public:
 
         if (!Contract::LoadEncodedTextFieldByName(
                 xml, ascTextExpected, pElementExpected)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+            LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
                 m.m_strCommand)(".")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)("  ")(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("  ")(
             m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
             " NotaryID: ")(m.m_strNotaryID)
             .Flush();
@@ -1309,7 +1309,7 @@ public:
         m.m_strNymboxHash =
             String::Factory(xml->getAttributeValue("nymboxHash"));
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
             .Flush();
 
@@ -1364,7 +1364,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -1377,14 +1377,14 @@ public:
 
         if (!Contract::LoadEncodedTextFieldByName(
                 xml, ascTextExpected, pElementExpected)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+            LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
                 m.m_strCommand)(".")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)("  ")(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("  ")(
             m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
             " NotaryID: ")(m.m_strNotaryID)
             .Flush();
@@ -1420,7 +1420,7 @@ public:
         m.m_strRequestNum =
             String::Factory(xml->getAttributeValue("requestNum"));
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
             .Flush();
 
@@ -1467,14 +1467,14 @@ public:
 
         if (!Contract::LoadEncodedTextFieldByName(
                 xml, ascTextExpected, pElementExpected)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+            LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
                 m.m_strCommand)(".")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)("  ")(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("  ")(
             m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
             " NotaryID: ")(m.m_strNotaryID)
             .Flush();
@@ -1515,7 +1515,7 @@ public:
         m.m_strNymboxHash =
             String::Factory(xml->getAttributeValue("nymboxHash"));
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NymID2:    ")(m.m_strNymID2)(
             " NotaryID: ")(m.m_strNotaryID)(" Request #: ")(m.m_strRequestNum)
             .Flush();
@@ -1581,7 +1581,7 @@ public:
             m.m_ascInReferenceTo = ascTextExpected;
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -1593,7 +1593,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -1603,13 +1603,13 @@ public:
         }
 
         if (m.m_bBool)
-            LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+            LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
                 "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
                 m.m_strNymID)(" NymID2:    ")(m.m_strNymID2)(" NotaryID: ")(
                 m.m_strNotaryID)(" Nym2 Public Key: ")(m.m_strNymPublicKey)
                 .Flush();
         else
-            LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+            LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
                 "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
                 m.m_strNymID)(" NymID2:    ")(m.m_strNymID2)(" NotaryID: ")(
                 m.m_strNotaryID)
@@ -1656,7 +1656,7 @@ public:
         if (strAdjustment->GetLength() > 0)
             m.m_lDepth = strAdjustment->ToLong();
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NymID2:    ")(m.m_strNymID2)(
             " NotaryID: ")(m.m_strNotaryID)(" Request #: ")(m.m_strRequestNum)(
             " Adjustment: ")(m.m_lDepth)
@@ -1705,7 +1705,7 @@ public:
         if (strTotalCredits->GetLength() > 0)
             m.m_lDepth = strTotalCredits->ToLong();
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(" Command: ")(m.m_strCommand)("   ")(
+        LogDetail(OT_METHOD)(__func__)(" Command: ")(m.m_strCommand)("   ")(
             m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
             " NymID2:    ")(m.m_strNymID2)(" NotaryID: ")(m.m_strNotaryID)(
             " Total Credits: ")(m.m_lDepth)
@@ -1759,14 +1759,14 @@ public:
 
         if (!Contract::LoadEncodedTextFieldByName(
                 xml, ascTextExpected, pElementExpected)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+            LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
                 m.m_strCommand)(".")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NymID2:    ")(m.m_strNymID2)(
             " NotaryID: ")(m.m_strNotaryID)(" Request #: ")(m.m_strRequestNum)
             .Flush();
@@ -1820,14 +1820,14 @@ public:
 
         if (!Contract::LoadEncodedTextFieldByName(
                 xml, ascTextExpected, pElementExpected)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+            LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
                 m.m_strCommand)(".")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NymID2:    ")(m.m_strNymID2)(
             " NotaryID: ")(m.m_strNotaryID)(" Request #: ")(m.m_strRequestNum)
             .Flush();
@@ -1871,10 +1871,9 @@ public:
         m.m_strNymboxHash =
             String::Factory(xml->getAttributeValue("nymboxHash"));
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
-            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-            m.m_strNymID)(" NymID2:    ")(m.m_strNymID2)(" NotaryID: ")(
-            m.m_strNotaryID)
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("   ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
+            " NymID2:    ")(m.m_strNymID2)(" NotaryID: ")(m.m_strNotaryID)
             .Flush();
 
         return 1;
@@ -1936,14 +1935,14 @@ public:
 
         if (!Contract::LoadEncodedTextFieldByName(
                 xml, ascTextExpected, pElementExpected)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+            LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
                 m.m_strCommand)(".")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NymID2:    ")(m.m_strNymID2)(
             " NotaryID: ")(m.m_strNotaryID)(" Request #: ")(m.m_strRequestNum)
             .Flush();
@@ -1983,7 +1982,7 @@ public:
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
         m.m_strNotaryID = String::Factory(xml->getAttributeValue("notaryID"));
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
             .Flush();
 
@@ -2035,11 +2034,10 @@ public:
         m.m_lNewRequestNum =
             strNewRequestNum->Exists() ? strNewRequestNum->ToLong() : 0;
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
-            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-            m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
-            " Request Number:    ")(m.m_strRequestNum)(" New Number: ")(
-            m.m_lNewRequestNum)
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("   ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
+            " NotaryID: ")(m.m_strNotaryID)(" Request Number:    ")(
+            m.m_strRequestNum)(" New Number: ")(m.m_lNewRequestNum)
             .Flush();
 
         return 1;
@@ -2086,14 +2084,14 @@ public:
 
         if (!Contract::LoadEncodedTextFieldByName(
                 xml, ascTextExpected, pElementExpected)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+            LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
                 m.m_strCommand)(".")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
             " Request#: ")(m.m_strRequestNum)(" Asset Type: ")(
             m.m_strInstrumentDefinitionID)
@@ -2163,7 +2161,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -2177,7 +2175,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -2190,7 +2188,7 @@ public:
         // OR if it was successful but the Payload isn't there, then failure.
         if (!m.m_ascInReferenceTo->GetLength() ||
             (m.m_bSuccess && !m.m_ascPayload->GetLength())) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error: "
                 "Expected issuerAccount and/or inReferenceTo elements "
                 "with text fields in "
@@ -2200,11 +2198,10 @@ public:
         }
 
         auto acctContents = String::Factory(m.m_ascPayload);
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
-            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-            m.m_strNymID)(" AccountID: ")(m.m_strAcctID)(
-            " Instrument Definition ID: ")(m.m_strInstrumentDefinitionID)(
-            " NotaryID: ")(m.m_strNotaryID)
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("   ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
+            " AccountID: ")(m.m_strAcctID)(" Instrument Definition ID: ")(
+            m.m_strInstrumentDefinitionID)(" NotaryID: ")(m.m_strNotaryID)
             .Flush();
         //    "****New Account****:\n%s\n",
         //    m.m_ascInReferenceTo.Get(),
@@ -2250,14 +2247,14 @@ public:
 
         if (!Contract::LoadEncodedTextFieldByName(
                 xml, ascTextExpected, pElementExpected)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+            LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
                 m.m_strCommand)(".")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
             " Request#: ")(m.m_strRequestNum)
             .Flush();
@@ -2316,7 +2313,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -2330,7 +2327,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -2343,7 +2340,7 @@ public:
         // OR if it was successful but the Payload isn't there, then failure.
         if (!m.m_ascInReferenceTo->GetLength() ||
             (m.m_bSuccess && !m.m_ascPayload->GetLength())) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error: Expected stringMap and/or inReferenceTo elements "
                 "with text fields in "
                 "queryInstrumentDefinitionsResponse reply.")
@@ -2351,9 +2348,9 @@ public:
             return (-1);  // error condition
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
-            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-            m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("   ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
+            " NotaryID: ")(m.m_strNotaryID)
             .Flush();
 
         return 1;
@@ -2397,7 +2394,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -2408,14 +2405,14 @@ public:
         // Did we find everything we were looking for?
         // If the Payload isn't there, then failure.
         if (!m.m_ascPayload->GetLength()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error: Expected currencyBasket element with text fields in "
                 "issueBasket message.")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
             " Request#: ")(m.m_strRequestNum)
             .Flush();
@@ -2470,7 +2467,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -2482,18 +2479,17 @@ public:
         // If the "command responding to" isn't there,
         // OR if it was successful but the Payload isn't there, then failure.
         if (!m.m_ascInReferenceTo->GetLength()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error: Expected inReferenceTo element with text fields in "
                 "issueBasketResponse reply.")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
-            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-            m.m_strNymID)(" AccountID: ")(m.m_strAcctID)(
-            " InstrumentDefinitionID: ")(m.m_strInstrumentDefinitionID)(
-            " NotaryID: ")(m.m_strNotaryID)
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("   ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
+            " AccountID: ")(m.m_strAcctID)(" InstrumentDefinitionID: ")(
+            m.m_strInstrumentDefinitionID)(" NotaryID: ")(m.m_strNotaryID)
             .Flush();
 
         return 1;
@@ -2531,7 +2527,7 @@ public:
         m.m_strRequestNum =
             String::Factory(xml->getAttributeValue("requestNum"));
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
             " Request#: ")(m.m_strRequestNum)(" Asset Type: ")(
             m.m_strInstrumentDefinitionID)
@@ -2595,7 +2591,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -2609,7 +2605,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -2622,17 +2618,16 @@ public:
         // OR if it was successful but the Payload isn't there, then failure.
         //
         if (m.m_bSuccess && !m.m_ascPayload->GetLength()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error: Expected newAccount element with text field, in "
                 "registerAccountResponse reply.")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
-            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-            m.m_strNymID)(" AccountID: ")(m.m_strAcctID)(" NotaryID: ")(
-            m.m_strNotaryID)
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("   ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
+            " AccountID: ")(m.m_strAcctID)(" NotaryID: ")(m.m_strNotaryID)
             .Flush();
         //    "****New Account****:\n%s\n",
         //    m.m_ascInReferenceTo.Get(),
@@ -2695,14 +2690,14 @@ public:
             m.m_lDepth = 2;
         else {
             m.m_lDepth = 0;
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error: Expected boxType to be inbox, outbox, or nymbox, in "
                 "getBoxReceipt.")
                 .Flush();
             return (-1);
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" AccountID:    ")(m.m_strAcctID)(
             " NotaryID: ")(m.m_strNotaryID)(" Request#: ")(m.m_strRequestNum)(
             " Transaction#: ")(m.m_lTransactionNum)(" boxType: ")(
@@ -2780,7 +2775,7 @@ public:
             m.m_lDepth = 2;
         else {
             m.m_lDepth = 0;
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error: Expected boxType to be inbox, outbox, or nymbox, in "
                 "getBoxReceiptResponse reply.")
                 .Flush();
@@ -2796,7 +2791,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -2810,7 +2805,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -2823,17 +2818,16 @@ public:
         // OR if it was successful but the Payload isn't there, then failure.
         if (!m.m_ascInReferenceTo->GetLength() ||
             (m.m_bSuccess && !m.m_ascPayload->GetLength())) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error: Expected boxReceipt and/or inReferenceTo elements "
                 "with text fields in getBoxReceiptResponse reply.")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
-            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-            m.m_strNymID)(" AccountID: ")(m.m_strAcctID)(" NotaryID: ")(
-            m.m_strNotaryID)
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("   ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
+            " AccountID: ")(m.m_strAcctID)(" NotaryID: ")(m.m_strNotaryID)
             .Flush();
         //    "****New Account****:\n%s\n",
 
@@ -2870,7 +2864,7 @@ public:
         m.m_strRequestNum =
             String::Factory(xml->getAttributeValue("requestNum"));
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" AccountID:    ")(m.m_strAcctID)(
             " NotaryID: ")(m.m_strNotaryID)(" Request#: ")(m.m_strRequestNum)
             .Flush();
@@ -2924,7 +2918,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -2935,17 +2929,16 @@ public:
         // Did we find everything we were looking for?
         // If the "command responding to" isn't there, then failure.
         if (!m.m_ascInReferenceTo->GetLength()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error: Expected inReferenceTo element with text fields in "
                 "unregisterAccountResponse reply.")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
-            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-            m.m_strNymID)(" AccountID: ")(m.m_strAcctID)(" NotaryID: ")(
-            m.m_strNotaryID)
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("   ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
+            " AccountID: ")(m.m_strAcctID)(" NotaryID: ")(m.m_strNotaryID)
             .Flush();
         //    "****New Account****:\n%s\n",
         //    m.m_ascInReferenceTo.Get(),
@@ -2997,7 +2990,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -3005,7 +2998,7 @@ public:
             }
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" AccountID:    ")(m.m_strAcctID)(
             " NotaryID: ")(m.m_strNotaryID)(" Request#: ")(m.m_strRequestNum)
             .Flush();
@@ -3065,7 +3058,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -3079,7 +3072,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -3092,7 +3085,7 @@ public:
         // there, then failure.
         if (!m.m_ascInReferenceTo->GetLength() ||
             (!m.m_ascPayload->GetLength() && m.m_bSuccess)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error: Expected responseLedger and/or inReferenceTo "
                 "elements "
                 "with text fields in "
@@ -3102,10 +3095,9 @@ public:
         }
 
         //      OTString acctContents(m.m_ascPayload);
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
-            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-            m.m_strNymID)(" AccountID: ")(m.m_strAcctID)(" NotaryID: ")(
-            m.m_strNotaryID)
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("   ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
+            " AccountID: ")(m.m_strAcctID)(" NotaryID: ")(m.m_strNotaryID)
             .Flush();
         //    "****New Account****:\n%s\n",
         //    m.m_ascInReferenceTo.Get(),
@@ -3145,7 +3137,7 @@ public:
         m.m_strRequestNum =
             String::Factory(xml->getAttributeValue("requestNum"));
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
             " Request#: ")(m.m_strRequestNum)
             .Flush();
@@ -3187,9 +3179,9 @@ public:
             String::Factory(xml->getAttributeValue("nymboxHash"));
         m.m_strNotaryID = String::Factory(xml->getAttributeValue("notaryID"));
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
-            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-            m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("   ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
+            " NotaryID: ")(m.m_strNotaryID)
             .Flush();
 
         return 1;
@@ -3226,7 +3218,7 @@ public:
         m.m_strNymboxHash =
             String::Factory(xml->getAttributeValue("nymboxHash"));
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
             " Request #: ")(m.m_strRequestNum)
             .Flush();
@@ -3284,7 +3276,7 @@ public:
 
         if (!Contract::LoadEncodedTextFieldByName(
                 xml, ascTextExpected, pElementExpected)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+            LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
                 m.m_strCommand)(".")
                 .Flush();
@@ -3296,9 +3288,9 @@ public:
         else
             m.m_ascInReferenceTo = ascTextExpected;
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
-            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-            m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("   ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
+            " NotaryID: ")(m.m_strNotaryID)
             .Flush();
 
         return 1;
@@ -3334,7 +3326,7 @@ public:
         m.m_strRequestNum =
             String::Factory(xml->getAttributeValue("requestNum"));
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
             " AccountID:    ")(m.m_strAcctID)(" Request #: ")(m.m_strRequestNum)
             .Flush();
@@ -3399,7 +3391,7 @@ public:
         if (m.m_bSuccess) {
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, m.m_ascPayload, "account")) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Error: Expected account "
                     "element with text field, for ")(m.m_strCommand)(".")
                     .Flush();
@@ -3408,7 +3400,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, m.m_ascPayload2, "inbox")) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Error: Expected inbox"
                     " element with text field, for ")(m.m_strCommand)(".")
                     .Flush();
@@ -3417,7 +3409,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, m.m_ascPayload3, "outbox")) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Error: Expected outbox"
                     " element with text field, for ")(m.m_strCommand)(".")
                     .Flush();
@@ -3426,7 +3418,7 @@ public:
         } else {  // Message success=false
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, m.m_ascInReferenceTo, "inReferenceTo")) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Error: Expected "
                     "inReferenceTo element with text field, for ")(
                     m.m_strCommand)(".")
@@ -3435,10 +3427,9 @@ public:
             }
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
-            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-            m.m_strNymID)(" AccountID:    ")(m.m_strAcctID)(" NotaryID: ")(
-            m.m_strNotaryID)
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("   ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
+            " AccountID:    ")(m.m_strAcctID)(" NotaryID: ")(m.m_strNotaryID)
             .Flush();
 
         return 1;
@@ -3487,7 +3478,7 @@ public:
             m.enum_ = 0;
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
             " Asset Type:    ")(m.m_strInstrumentDefinitionID)(" Request #: ")(
             m.m_strRequestNum)
@@ -3560,7 +3551,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -3573,7 +3564,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -3585,10 +3576,10 @@ public:
 
         if (false == m.m_bSuccess) { m.m_ascInReferenceTo = ascTextExpected; }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
-            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-            m.m_strNymID)(" Instrument Definition ID:    ")(
-            m.m_strInstrumentDefinitionID)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("   ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
+            " Instrument Definition ID:    ")(m.m_strInstrumentDefinitionID)(
+            " NotaryID: ")(m.m_strNotaryID)
             .Flush();
 
         return 1;
@@ -3629,7 +3620,7 @@ public:
         m.m_strNymboxHash =
             String::Factory(xml->getAttributeValue("nymboxHash"));
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
             " Asset Type:    ")(m.m_strInstrumentDefinitionID)(" Request #: ")(
             m.m_strRequestNum)
@@ -3692,7 +3683,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -3707,7 +3698,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -3717,10 +3708,10 @@ public:
             m.m_ascPayload = ascTextExpected;
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
-            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-            m.m_strNymID)(" Instrument Definition ID:    ")(
-            m.m_strInstrumentDefinitionID)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("   ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
+            " Instrument Definition ID:    ")(m.m_strInstrumentDefinitionID)(
+            " NotaryID: ")(m.m_strNotaryID)
             .Flush();
 
         return 1;
@@ -3769,7 +3760,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -3777,7 +3768,7 @@ public:
             }
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" AccountID:    ")(m.m_strAcctID)(
             " NotaryID: ")(m.m_strNotaryID)(" Request#: ")(m.m_strRequestNum)
             .Flush();
@@ -3837,7 +3828,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -3851,7 +3842,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -3864,7 +3855,7 @@ public:
         // there, then failure.
         if (!m.m_ascInReferenceTo->GetLength() ||
             (!m.m_ascPayload->GetLength() && m.m_bSuccess)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error: Expected responseLedger and/or inReferenceTo "
                 "elements "
                 "with text fields in "
@@ -3873,10 +3864,9 @@ public:
             return (-1);  // error condition
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
-            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-            m.m_strNymID)(" AccountID: ")(m.m_strAcctID)(" NotaryID: ")(
-            m.m_strNotaryID)
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("   ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
+            " AccountID: ")(m.m_strAcctID)(" NotaryID: ")(m.m_strNotaryID)
             .Flush();
         //    "****New Account****:\n%s\n",
 
@@ -3924,7 +3914,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -3932,7 +3922,7 @@ public:
             }
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(" Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(" Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
             " Request#: ")(m.m_strRequestNum)
             .Flush();
@@ -3990,7 +3980,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -4004,7 +3994,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -4017,7 +4007,7 @@ public:
         // there, then failure.
         if (!m.m_ascInReferenceTo->GetLength() ||
             (!m.m_ascPayload->GetLength() && m.m_bSuccess)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error: Expected responseLedger and/or inReferenceTo "
                 "elements "
                 "with text fields in "
@@ -4026,9 +4016,9 @@ public:
             return (-1);  // error condition
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
-            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-            m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("   ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
+            " NotaryID: ")(m.m_strNotaryID)
             .Flush();
         //    "****New Account****:\n%s\n",
 
@@ -4088,7 +4078,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -4097,7 +4087,7 @@ public:
                 m.m_ascPayload = ascTextExpected;
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(" Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(" Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
             " Clause TransNum and Name:  ")(m.m_lTransactionNum)("  /  ")(
             m.m_strNymID2)(" Request #: ")(m.m_strRequestNum)
@@ -4147,7 +4137,7 @@ public:
 
         if (!Contract::LoadEncodedTextFieldByName(
                 xml, ascTextExpected, pElementExpected)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+            LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
                 m.m_strCommand)(".")
                 .Flush();
@@ -4156,9 +4146,9 @@ public:
 
         m.m_ascInReferenceTo = ascTextExpected;
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
-            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-            m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("   ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
+            " NotaryID: ")(m.m_strNotaryID)
             .Flush();
 
         return 1;
@@ -4192,7 +4182,7 @@ public:
         m.m_strRequestNum =
             String::Factory(xml->getAttributeValue("requestNum"));
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
             " Request #: ")(m.m_strRequestNum)
             .Flush();
@@ -4234,7 +4224,7 @@ public:
 
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -4248,12 +4238,12 @@ public:
         }
 
         if (m.m_bSuccess)
-            LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+            LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
                 "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
                 m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
                 .Flush();  // m_ascPayload.Get()
         else
-            LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+            LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
                 "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
                 m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
                 .Flush();  // m_ascInReferenceTo.Get()
@@ -4315,7 +4305,7 @@ public:
         m.m_strNymboxHash =
             String::Factory(xml->getAttributeValue("nymboxHash"));
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
             .Flush();
 
@@ -4369,14 +4359,14 @@ public:
 
         if (!Contract::LoadEncodedTextFieldByName(
                 xml, ascTextExpected, pElementExpected)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+            LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
                 m.m_strCommand)(".")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)("  ")(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("  ")(
             m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
             " NotaryID: ")(m.m_strNotaryID)
             .Flush();
@@ -4421,7 +4411,7 @@ public:
         const auto primary = String::Factory(xml->getAttributeValue("primary"));
         m.m_bBool = primary->Compare("true");
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)(
             " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
             .Flush();
 
@@ -4476,7 +4466,7 @@ public:
         if (false == m.m_bSuccess) {
             if (!Contract::LoadEncodedTextFieldByName(
                     xml, ascTextExpected, pElementExpected)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Expected ")(
+                LogOutput(OT_METHOD)(__func__)(": Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
                     m.m_strCommand)(".")
                     .Flush();
@@ -4484,7 +4474,7 @@ public:
             }
         }
 
-        LogDetail(OT_METHOD)(__FUNCTION__)(": Command: ")(m.m_strCommand)("  ")(
+        LogDetail(OT_METHOD)(__func__)(": Command: ")(m.m_strCommand)("  ")(
             m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
             " NotaryID: ")(m.m_strNotaryID)
             .Flush();

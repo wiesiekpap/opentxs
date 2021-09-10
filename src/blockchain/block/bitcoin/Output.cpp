@@ -74,7 +74,7 @@ auto BitcoinTransactionOutput(
             std::move(script),
             std::move(keySet));
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -100,7 +100,7 @@ auto BitcoinTransactionOutput(
             sizeof(value) + cs.Total(),
             script);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -130,7 +130,7 @@ auto BitcoinTransactionOutput(
                 ReturnType::KeyID{key.subaccount(), subchain, key.index()};
 
             if (blockchain::crypto::Subchain::Outgoing == subchain) {
-                LogOutput("opentxs::factory::")(__FUNCTION__)(
+                LogOutput("opentxs::factory::")(__func__)(
                     ": invalid key detected in transaction")
                     .Flush();
                 auto sender = blockchain.SenderContact(keyid);
@@ -192,7 +192,7 @@ auto BitcoinTransactionOutput(
 
         return std::move(out);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -353,8 +353,8 @@ auto Output::FindMatches(
 {
     const auto output =
         SetIntersection(api_, txid, patterns, ExtractElements(type));
-    LogTrace(OT_METHOD)(__FUNCTION__)(
-        ": Verified ")(output.second.size())(" pattern matches")
+    LogTrace(OT_METHOD)(__func__)(": Verified ")(output.second.size())(
+        " pattern matches")
         .Flush();
     std::for_each(
         std::begin(output.second),
@@ -392,8 +392,8 @@ auto Output::index_elements() noexcept -> void
     auto& hashes =
         const_cast<boost::container::flat_set<PatternID>&>(pubkey_hashes_);
     const auto patterns = script_->ExtractPatterns(api_, crypto_);
-    LogTrace(OT_METHOD)(__FUNCTION__)(
-        ": ")(patterns.size())(" pubkey hashes found:")
+    LogTrace(OT_METHOD)(__func__)(": ")(patterns.size())(
+        " pubkey hashes found:")
         .Flush();
     std::for_each(
         std::begin(patterns), std::end(patterns), [&](const auto& id) -> auto {
@@ -416,7 +416,7 @@ auto Output::MergeMetadata(const SerializeType& rhs) noexcept -> void
                 static_cast<std::uint8_t>(key.subchain()));
 
             if (crypto::Subchain::Outgoing == subchain) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": discarding invalid key")
+                LogOutput(OT_METHOD)(__func__)(": discarding invalid key")
                     .Flush();
             } else {
                 cache_.add({key.subaccount(), subchain, key.index()});
@@ -499,8 +499,7 @@ auto Output::Serialize(const AllocateOutput destination) const noexcept
     -> std::optional<std::size_t>
 {
     if (!destination) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output allocator")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return std::nullopt;
     }
@@ -509,7 +508,7 @@ auto Output::Serialize(const AllocateOutput destination) const noexcept
     auto output = destination(size);
 
     if (false == output.valid(size)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to allocate output bytes")
+        LogOutput(OT_METHOD)(__func__)(": Failed to allocate output bytes")
             .Flush();
 
         return std::nullopt;
@@ -528,8 +527,7 @@ auto Output::Serialize(const AllocateOutput destination) const noexcept
 
         return size;
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize script")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to serialize script").Flush();
 
         return std::nullopt;
     }

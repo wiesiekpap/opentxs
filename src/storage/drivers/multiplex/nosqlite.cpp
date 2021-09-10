@@ -16,7 +16,6 @@ namespace opentxs::storage::implementation
 auto StorageMultiplex::init_sqlite(
     std::unique_ptr<opentxs::api::storage::Plugin>& plugin) -> void
 {
-    LogOutput(OT_METHOD)(__FUNCTION__)(": Sqlite3 driver not compiled in.")
-        .Flush();
+    LogOutput(OT_METHOD)(__func__)(": Sqlite3 driver not compiled in.").Flush();
 }
 }  // namespace opentxs::storage::implementation

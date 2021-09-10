@@ -10,8 +10,8 @@
 #include <stdexcept>
 #include <string_view>
 
-#include "internal/api/Api.hpp"
 #include "internal/crypto/key/Factory.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -23,7 +23,7 @@ namespace opentxs::factory
 using ReturnType = crypto::key::implementation::Secp256k1;
 
 auto Secp256k1Key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const proto::AsymmetricKey& input) noexcept
     -> std::unique_ptr<crypto::key::Secp256k1>
@@ -32,8 +32,8 @@ auto Secp256k1Key(
 
         return std::make_unique<ReturnType>(api, ecdsa, input);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
-            ": Failed to generate key: ")(e.what())
+        LogOutput("opentxs::Factory::")(__func__)(": Failed to generate key: ")(
+            e.what())
             .Flush();
 
         return nullptr;
@@ -41,7 +41,7 @@ auto Secp256k1Key(
 }
 
 auto Secp256k1Key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const crypto::key::asymmetric::Role input,
     const VersionNumber version,
@@ -52,8 +52,8 @@ auto Secp256k1Key(
 
         return std::make_unique<ReturnType>(api, ecdsa, input, version, reason);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
-            ": Failed to generate key: ")(e.what())
+        LogOutput("opentxs::Factory::")(__func__)(": Failed to generate key: ")(
+            e.what())
             .Flush();
 
         return nullptr;
@@ -61,7 +61,7 @@ auto Secp256k1Key(
 }
 
 auto Secp256k1Key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const Secret& privateKey,
     const Data& publicKey,
@@ -83,8 +83,8 @@ auto Secp256k1Key(
             sessionKey,
             reason);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
-            ": Failed to generate key: ")(e.what())
+        LogOutput("opentxs::Factory::")(__func__)(": Failed to generate key: ")(
+            e.what())
             .Flush();
 
         return nullptr;
@@ -92,7 +92,7 @@ auto Secp256k1Key(
 }
 
 auto Secp256k1Key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const Secret& privateKey,
     const Secret& chainCode,
@@ -121,8 +121,8 @@ auto Secp256k1Key(
             sessionKey,
             reason);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
-            ": Failed to generate key: ")(e.what())
+        LogOutput("opentxs::Factory::")(__func__)(": Failed to generate key: ")(
+            e.what())
             .Flush();
 
         return nullptr;
@@ -134,7 +134,7 @@ auto Secp256k1Key(
 }
 
 auto Secp256k1Key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const Secret& privateKey,
     const Secret& chainCode,
@@ -158,8 +158,8 @@ auto Secp256k1Key(
             role,
             version);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
-            ": Failed to generate key: ")(e.what())
+        LogOutput("opentxs::Factory::")(__func__)(": Failed to generate key: ")(
+            e.what())
             .Flush();
 
         return nullptr;
@@ -174,7 +174,7 @@ auto Secp256k1Key(
 namespace opentxs::crypto::key::implementation
 {
 Secp256k1::Secp256k1(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const proto::AsymmetricKey& serializedKey) noexcept(false)
     : ot_super(api, ecdsa, serializedKey)
@@ -182,7 +182,7 @@ Secp256k1::Secp256k1(
 }
 
 Secp256k1::Secp256k1(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const crypto::key::asymmetric::Role role,
     const VersionNumber version,
@@ -199,7 +199,7 @@ Secp256k1::Secp256k1(
 }
 
 Secp256k1::Secp256k1(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const Secret& privateKey,
     const Data& publicKey,
@@ -222,7 +222,7 @@ Secp256k1::Secp256k1(
 
 #if OT_CRYPTO_WITH_BIP32
 Secp256k1::Secp256k1(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const Secret& privateKey,
     const Secret& chainCode,
@@ -250,7 +250,7 @@ Secp256k1::Secp256k1(
 }
 
 Secp256k1::Secp256k1(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const Secret& privateKey,
     const Secret& chainCode,

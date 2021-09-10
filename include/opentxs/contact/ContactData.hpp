@@ -28,10 +28,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace proto
@@ -52,99 +49,101 @@ public:
     using SectionMap =
         std::map<contact::ContactSectionName, std::shared_ptr<ContactSection>>;
 
-    OPENTXS_NO_EXPORT static std::string PrintContactData(
-        const proto::ContactData& data);
+    OPENTXS_NO_EXPORT static auto PrintContactData(
+        const proto::ContactData& data) -> std::string;
 
     ContactData(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber targetVersion,
         const SectionMap& sections);
     OPENTXS_NO_EXPORT ContactData(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& nym,
         const VersionNumber targetVersion,
         const proto::ContactData& serialized);
     ContactData(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& nym,
         const VersionNumber targetVersion,
         const ReadView& serialized);
     ContactData(const ContactData&);
 
-    ContactData operator+(const ContactData& rhs) const;
+    auto operator+(const ContactData& rhs) const -> ContactData;
 
     operator std::string() const;
 
-    ContactData AddContract(
+    auto AddContract(
         const std::string& instrumentDefinitionID,
         const contact::ContactItemType currency,
         const bool primary,
-        const bool active) const;
-    ContactData AddEmail(
+        const bool active) const -> ContactData;
+    auto AddEmail(
         const std::string& value,
         const bool primary,
-        const bool active) const;
-    ContactData AddItem(const Claim& claim) const;
-    ContactData AddItem(const std::shared_ptr<ContactItem>& item) const;
-    ContactData AddPaymentCode(
+        const bool active) const -> ContactData;
+    auto AddItem(const Claim& claim) const -> ContactData;
+    auto AddItem(const std::shared_ptr<ContactItem>& item) const -> ContactData;
+    auto AddPaymentCode(
         const std::string& code,
         const contact::ContactItemType currency,
         const bool primary,
-        const bool active) const;
-    ContactData AddPhoneNumber(
+        const bool active) const -> ContactData;
+    auto AddPhoneNumber(
         const std::string& value,
         const bool primary,
-        const bool active) const;
-    ContactData AddPreferredOTServer(const Identifier& id, const bool primary)
-        const;
-    ContactData AddSocialMediaProfile(
+        const bool active) const -> ContactData;
+    auto AddPreferredOTServer(const Identifier& id, const bool primary) const
+        -> ContactData;
+    auto AddSocialMediaProfile(
         const std::string& value,
         const contact::ContactItemType type,
         const bool primary,
-        const bool active) const;
-    SectionMap::const_iterator begin() const;
-    std::string BestEmail() const;
-    std::string BestPhoneNumber() const;
-    std::string BestSocialMediaProfile(
-        const contact::ContactItemType type) const;
-    std::shared_ptr<ContactItem> Claim(const Identifier& item) const;
-    std::set<OTIdentifier> Contracts(
+        const bool active) const -> ContactData;
+    auto begin() const -> SectionMap::const_iterator;
+    auto BestEmail() const -> std::string;
+    auto BestPhoneNumber() const -> std::string;
+    auto BestSocialMediaProfile(const contact::ContactItemType type) const
+        -> std::string;
+    auto Claim(const Identifier& item) const -> std::shared_ptr<ContactItem>;
+    auto Contracts(
         const contact::ContactItemType currency,
-        const bool onlyActive) const;
-    ContactData Delete(const Identifier& id) const;
-    std::string EmailAddresses(bool active = true) const;
-    SectionMap::const_iterator end() const;
-    std::shared_ptr<ContactGroup> Group(
+        const bool onlyActive) const -> std::set<OTIdentifier>;
+    auto Delete(const Identifier& id) const -> ContactData;
+    auto EmailAddresses(bool active = true) const -> std::string;
+    auto end() const -> SectionMap::const_iterator;
+    auto Group(
         const contact::ContactSectionName& section,
-        const contact::ContactItemType& type) const;
-    bool HaveClaim(const Identifier& item) const;
-    bool HaveClaim(
+        const contact::ContactItemType& type) const
+        -> std::shared_ptr<ContactGroup>;
+    auto HaveClaim(const Identifier& item) const -> bool;
+    auto HaveClaim(
         const contact::ContactSectionName& section,
         const contact::ContactItemType& type,
-        const std::string& value) const;
-    std::string Name() const;
-    std::string PhoneNumbers(bool active = true) const;
-    OTServerID PreferredOTServer() const;
-    std::shared_ptr<ContactSection> Section(
-        const contact::ContactSectionName& section) const;
-    bool Serialize(AllocateOutput destination, const bool withID = false) const;
-    OPENTXS_NO_EXPORT bool Serialize(
+        const std::string& value) const -> bool;
+    auto Name() const -> std::string;
+    auto PhoneNumbers(bool active = true) const -> std::string;
+    auto PreferredOTServer() const -> OTServerID;
+    auto Section(const contact::ContactSectionName& section) const
+        -> std::shared_ptr<ContactSection>;
+    auto Serialize(AllocateOutput destination, const bool withID = false) const
+        -> bool;
+    OPENTXS_NO_EXPORT auto Serialize(
         proto::ContactData& out,
-        const bool withID = false) const;
-    ContactData SetCommonName(const std::string& name) const;
-    ContactData SetName(const std::string& name, const bool primary = true)
-        const;
-    ContactData SetScope(
+        const bool withID = false) const -> bool;
+    auto SetCommonName(const std::string& name) const -> ContactData;
+    auto SetName(const std::string& name, const bool primary = true) const
+        -> ContactData;
+    auto SetScope(const contact::ContactItemType type, const std::string& name)
+        const -> ContactData;
+    auto SocialMediaProfiles(
         const contact::ContactItemType type,
-        const std::string& name) const;
-    std::string SocialMediaProfiles(
-        const contact::ContactItemType type,
-        bool active = true) const;
-    const std::set<contact::ContactItemType> SocialMediaProfileTypes() const;
-    contact::ContactItemType Type() const;
-    VersionNumber Version() const;
+        bool active = true) const -> std::string;
+    auto SocialMediaProfileTypes() const
+        -> const std::set<contact::ContactItemType>;
+    auto Type() const -> contact::ContactItemType;
+    auto Version() const -> VersionNumber;
 
     ~ContactData();
 
@@ -155,8 +154,8 @@ private:
 
     ContactData() = delete;
     ContactData(ContactData&&) = delete;
-    ContactData& operator=(const ContactData&) = delete;
-    ContactData& operator=(ContactData&&) = delete;
+    auto operator=(const ContactData&) -> ContactData& = delete;
+    auto operator=(ContactData&&) -> ContactData& = delete;
 };
 }  // namespace opentxs
 #endif

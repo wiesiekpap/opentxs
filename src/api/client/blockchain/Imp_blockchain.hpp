@@ -19,8 +19,8 @@
 #include <thread>
 #include <vector>
 
-#include "api/client/Blockchain.hpp"
 #include "api/client/blockchain/BalanceOracle.hpp"
+#include "api/client/blockchain/Blockchain.hpp"
 #include "api/client/blockchain/Imp.hpp"
 #include "blockchain/database/common/Database.hpp"
 #include "internal/api/client/Client.hpp"
@@ -63,11 +63,6 @@ struct Blockchain;
 class Activity;
 class Contacts;
 }  // namespace client
-
-namespace internal
-{
-struct Core;
-}  // namespace internal
 
 class Core;
 class Legacy;
@@ -176,7 +171,7 @@ struct BlockchainImp final : public Blockchain::Imp {
         -> void final;
 
     BlockchainImp(
-        const api::internal::Core& api,
+        const api::Core& api,
         const api::client::Activity& activity,
         const api::client::Contacts& contacts,
         const api::Legacy& legacy,
@@ -194,7 +189,7 @@ private:
     OTZMQPublishSocket key_updates_;
     OTZMQPublishSocket scan_updates_;
     OTZMQPublishSocket new_blockchain_accounts_;
-    BalanceOracle balances_;
+    blockchain::BalanceOracle balances_;
 
     auto broadcast_update_signal(const Txid& txid) const noexcept -> void
     {

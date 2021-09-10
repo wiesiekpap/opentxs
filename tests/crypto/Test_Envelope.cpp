@@ -70,8 +70,8 @@ public:
     Test_Envelope()
         : sender_(ot::Context().StartClient(0))
         , recipient_(ot::Context().StartClient(1))
-        , reason_s_(sender_.Factory().PasswordPrompt(__FUNCTION__))
-        , reason_r_(recipient_.Factory().PasswordPrompt(__FUNCTION__))
+        , reason_s_(sender_.Factory().PasswordPrompt(__func__))
+        , reason_r_(recipient_.Factory().PasswordPrompt(__func__))
         , plaintext_(ot::String::Factory(
               "The quick brown fox jumped over the lazy dog"))
     {

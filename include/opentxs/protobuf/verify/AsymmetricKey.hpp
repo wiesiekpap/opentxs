@@ -22,126 +22,126 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT bool CheckProto_1(
+auto CheckProto_1(
     const AsymmetricKey& key,
     const bool silent,
     const CredentialType type,
     const KeyMode mode,
-    const KeyRole role);
-OPENTXS_EXPORT bool CheckProto_2(
+    const KeyRole role) -> bool;
+auto CheckProto_2(
     const AsymmetricKey&,
     const bool,
     const CredentialType,
     const KeyMode,
-    const KeyRole);
-OPENTXS_EXPORT bool CheckProto_3(
+    const KeyRole) -> bool;
+auto CheckProto_3(
     const AsymmetricKey&,
     const bool,
     const CredentialType,
     const KeyMode,
-    const KeyRole);
-OPENTXS_EXPORT bool CheckProto_4(
+    const KeyRole) -> bool;
+auto CheckProto_4(
     const AsymmetricKey&,
     const bool,
     const CredentialType,
     const KeyMode,
-    const KeyRole);
-OPENTXS_EXPORT bool CheckProto_5(
+    const KeyRole) -> bool;
+auto CheckProto_5(
     const AsymmetricKey&,
     const bool,
     const CredentialType,
     const KeyMode,
-    const KeyRole);
-OPENTXS_EXPORT bool CheckProto_6(
+    const KeyRole) -> bool;
+auto CheckProto_6(
     const AsymmetricKey&,
     const bool,
     const CredentialType,
     const KeyMode,
-    const KeyRole);
-OPENTXS_EXPORT bool CheckProto_7(
+    const KeyRole) -> bool;
+auto CheckProto_7(
     const AsymmetricKey&,
     const bool,
     const CredentialType,
     const KeyMode,
-    const KeyRole);
-OPENTXS_EXPORT bool CheckProto_8(
+    const KeyRole) -> bool;
+auto CheckProto_8(
     const AsymmetricKey&,
     const bool,
     const CredentialType,
     const KeyMode,
-    const KeyRole);
-OPENTXS_EXPORT bool CheckProto_9(
+    const KeyRole) -> bool;
+auto CheckProto_9(
     const AsymmetricKey&,
     const bool,
     const CredentialType,
     const KeyMode,
-    const KeyRole);
-OPENTXS_EXPORT bool CheckProto_10(
+    const KeyRole) -> bool;
+auto CheckProto_10(
     const AsymmetricKey&,
     const bool,
     const CredentialType,
     const KeyMode,
-    const KeyRole);
-OPENTXS_EXPORT bool CheckProto_11(
+    const KeyRole) -> bool;
+auto CheckProto_11(
     const AsymmetricKey& key,
     const bool silent,
     const CredentialType type,
     const KeyMode mode,
-    const KeyRole role);
-OPENTXS_EXPORT bool CheckProto_12(
+    const KeyRole role) -> bool;
+auto CheckProto_12(
     const AsymmetricKey&,
     const bool,
     const CredentialType,
     const KeyMode,
-    const KeyRole);
-OPENTXS_EXPORT bool CheckProto_13(
+    const KeyRole) -> bool;
+auto CheckProto_13(
     const AsymmetricKey&,
     const bool,
     const CredentialType,
     const KeyMode,
-    const KeyRole);
-OPENTXS_EXPORT bool CheckProto_14(
+    const KeyRole) -> bool;
+auto CheckProto_14(
     const AsymmetricKey&,
     const bool,
     const CredentialType,
     const KeyMode,
-    const KeyRole);
-OPENTXS_EXPORT bool CheckProto_15(
+    const KeyRole) -> bool;
+auto CheckProto_15(
     const AsymmetricKey&,
     const bool,
     const CredentialType,
     const KeyMode,
-    const KeyRole);
-OPENTXS_EXPORT bool CheckProto_16(
+    const KeyRole) -> bool;
+auto CheckProto_16(
     const AsymmetricKey&,
     const bool,
     const CredentialType,
     const KeyMode,
-    const KeyRole);
-OPENTXS_EXPORT bool CheckProto_17(
+    const KeyRole) -> bool;
+auto CheckProto_17(
     const AsymmetricKey&,
     const bool,
     const CredentialType,
     const KeyMode,
-    const KeyRole);
-OPENTXS_EXPORT bool CheckProto_18(
+    const KeyRole) -> bool;
+auto CheckProto_18(
     const AsymmetricKey&,
     const bool,
     const CredentialType,
     const KeyMode,
-    const KeyRole);
-OPENTXS_EXPORT bool CheckProto_19(
+    const KeyRole) -> bool;
+auto CheckProto_19(
     const AsymmetricKey&,
     const bool,
     const CredentialType,
     const KeyMode,
-    const KeyRole);
-OPENTXS_EXPORT bool CheckProto_20(
+    const KeyRole) -> bool;
+auto CheckProto_20(
     const AsymmetricKey&,
     const bool,
     const CredentialType,
     const KeyMode,
-    const KeyRole);
+    const KeyRole) -> bool;
 }  // namespace proto
 }  // namespace opentxs
 

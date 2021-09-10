@@ -27,7 +27,7 @@ auto ExpandSeed(
     const AllocateOutput publicKey) noexcept -> bool
 {
     if ((nullptr == seed.data()) || (0 == seed.size())) {
-        LogOutput(__FUNCTION__)(": Invalid provided seed").Flush();
+        LogOutput(__func__)(": Invalid provided seed").Flush();
 
         return false;
     }
@@ -39,7 +39,7 @@ auto ExpandSeed(
         auto allocator = hashed->WriteInto();
 
         if (false == bool(allocator)) {
-            LogOutput(__FUNCTION__)(": Failed to get hash allocator").Flush();
+            LogOutput(__func__)(": Failed to get hash allocator").Flush();
 
             return false;
         }
@@ -47,8 +47,7 @@ auto ExpandSeed(
         auto output = allocator(crypto_sign_SEEDBYTES);
 
         if (false == output.valid(crypto_sign_SEEDBYTES)) {
-            LogOutput(__FUNCTION__)(
-                ": Failed to allocate space for hashed seed")
+            LogOutput(__func__)(": Failed to allocate space for hashed seed")
                 .Flush();
 
             return false;
@@ -61,7 +60,7 @@ auto ExpandSeed(
                      seed.size(),
                      nullptr,
                      0)) {
-            LogOutput(__FUNCTION__)(": Failed to normalize seed").Flush();
+            LogOutput(__func__)(": Failed to normalize seed").Flush();
 
             return false;
         }
@@ -70,13 +69,13 @@ auto ExpandSeed(
     }
 
     if ((nullptr == nSeed.data()) || (crypto_sign_SEEDBYTES != nSeed.size())) {
-        LogOutput(__FUNCTION__)(": Invalid normalized seed").Flush();
+        LogOutput(__func__)(": Invalid normalized seed").Flush();
 
         return false;
     }
 
     if (false == bool(privateKey) || false == bool(publicKey)) {
-        LogOutput(__FUNCTION__)(": Invalid output allocator").Flush();
+        LogOutput(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
@@ -85,14 +84,14 @@ auto ExpandSeed(
     auto pub = publicKey(crypto_sign_PUBLICKEYBYTES);
 
     if (false == prv.valid(crypto_sign_SECRETKEYBYTES)) {
-        LogOutput(__FUNCTION__)(": Failed to allocate space for private key")
+        LogOutput(__func__)(": Failed to allocate space for private key")
             .Flush();
 
         return false;
     }
 
     if (false == pub.valid(crypto_sign_PUBLICKEYBYTES)) {
-        LogOutput(__FUNCTION__)(": Failed to allocate space for public key")
+        LogOutput(__func__)(": Failed to allocate space for public key")
             .Flush();
 
         return false;
@@ -112,20 +111,20 @@ auto ToCurveKeypair(
 {
     if (nullptr == edPrivate.data() ||
         crypto_sign_SECRETKEYBYTES != edPrivate.size()) {
-        LogOutput(__FUNCTION__)(": Invalid ed25519 private key").Flush();
+        LogOutput(__func__)(": Invalid ed25519 private key").Flush();
 
         return false;
     }
 
     if (nullptr == edPublic.data() ||
         crypto_sign_PUBLICKEYBYTES != edPublic.size()) {
-        LogOutput(__FUNCTION__)(": Invalid ed25519 public key").Flush();
+        LogOutput(__func__)(": Invalid ed25519 public key").Flush();
 
         return false;
     }
 
     if (false == bool(curvePrivate) || false == bool(curvePublic)) {
-        LogOutput(__FUNCTION__)(": Invalid output allocator").Flush();
+        LogOutput(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
@@ -134,14 +133,14 @@ auto ToCurveKeypair(
     auto pub = curvePublic(crypto_scalarmult_curve25519_BYTES);
 
     if (false == prv.valid(crypto_scalarmult_curve25519_BYTES)) {
-        LogOutput(__FUNCTION__)(": Failed to allocate space for private key")
+        LogOutput(__func__)(": Failed to allocate space for private key")
             .Flush();
 
         return false;
     }
 
     if (false == pub.valid(crypto_scalarmult_curve25519_BYTES)) {
-        LogOutput(__FUNCTION__)(": Failed to allocate space for public key")
+        LogOutput(__func__)(": Failed to allocate space for public key")
             .Flush();
 
         return false;
@@ -150,7 +149,7 @@ auto ToCurveKeypair(
     if (0 != ::crypto_sign_ed25519_sk_to_curve25519(
                  prv.as<unsigned char>(),
                  reinterpret_cast<const unsigned char*>(edPrivate.data()))) {
-        LogOutput(__FUNCTION__)(
+        LogOutput(__func__)(
             ": Failed to convert private key from ed25519 to curve25519.")
             .Flush();
 
@@ -160,7 +159,7 @@ auto ToCurveKeypair(
     if (0 != ::crypto_sign_ed25519_pk_to_curve25519(
                  pub.as<unsigned char>(),
                  reinterpret_cast<const unsigned char*>(edPublic.data()))) {
-        LogOutput(__FUNCTION__)(
+        LogOutput(__func__)(
             ": Failed to convert public key from ed25519 to curve25519.")
             .Flush();
 

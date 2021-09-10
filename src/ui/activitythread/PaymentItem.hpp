@@ -21,10 +21,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -53,7 +50,7 @@ class PaymentItem final : public ActivityThreadItem
 {
 public:
     static auto extract(
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nym,
         const ActivityThreadRowID& row,
         CustomData& custom) noexcept
@@ -70,7 +67,7 @@ public:
 
     PaymentItem(
         const ActivityThreadInternalInterface& parent,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nymID,
         const ActivityThreadRowID& rowID,
         const ActivityThreadSortKey& sortKey,

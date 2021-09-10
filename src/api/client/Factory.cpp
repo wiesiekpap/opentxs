@@ -17,8 +17,6 @@
 #include <utility>
 
 #include "Proto.tpp"
-#include "internal/api/Api.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/api/client/Factory.hpp"
 #if OT_BLOCKCHAIN
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
@@ -26,6 +24,7 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "internal/core/contract/peer/Factory.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/block/Block.hpp"
@@ -47,7 +46,7 @@
 
 namespace opentxs::factory
 {
-auto FactoryAPIClient(const api::client::internal::Manager& api)
+auto FactoryAPIClient(const api::client::Manager& api)
     -> api::internal::Factory*
 {
     return new api::client::implementation::Factory(api);
@@ -56,7 +55,7 @@ auto FactoryAPIClient(const api::client::internal::Manager& api)
 
 namespace opentxs::api::client::implementation
 {
-Factory::Factory(const api::client::internal::Manager& client)
+Factory::Factory(const api::client::Manager& client)
     : api::implementation::Factory(client)
     , client_(client)
 {
@@ -202,7 +201,7 @@ auto Factory::BlockHeader(const proto::BlockchainBlockHeader& serialized) const
         case opentxs::blockchain::Type::Ethereum_frontier:
         case opentxs::blockchain::Type::Ethereum_ropsten:
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported type (")(
+            LogOutput(OT_METHOD)(__func__)(": Unsupported type (")(
                 static_cast<std::uint32_t>(type))(")")
                 .Flush();
 
@@ -236,7 +235,7 @@ auto Factory::BlockHeader(
         case opentxs::blockchain::Type::Ethereum_frontier:
         case opentxs::blockchain::Type::Ethereum_ropsten:
         default: {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported type (")(
+            LogOutput(OT_METHOD)(__func__)(": Unsupported type (")(
                 static_cast<std::uint32_t>(type))(")")
                 .Flush();
 

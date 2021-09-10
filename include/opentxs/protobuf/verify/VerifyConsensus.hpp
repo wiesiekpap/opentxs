@@ -17,14 +17,14 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT const VersionMap& ContextAllowedServer() noexcept;
-OPENTXS_EXPORT const VersionMap& ContextAllowedClient() noexcept;
-OPENTXS_EXPORT const VersionMap& ContextAllowedSignature() noexcept;
-OPENTXS_EXPORT const VersionMap& ServerContextAllowedPendingCommand() noexcept;
-OPENTXS_EXPORT const std::map<std::uint32_t, std::set<int>>&
-ServerContextAllowedState() noexcept;
-OPENTXS_EXPORT const std::map<std::uint32_t, std::set<int>>&
-ServerContextAllowedStatus() noexcept;
+auto ContextAllowedServer() noexcept -> const VersionMap&;
+auto ContextAllowedClient() noexcept -> const VersionMap&;
+auto ContextAllowedSignature() noexcept -> const VersionMap&;
+auto ServerContextAllowedPendingCommand() noexcept -> const VersionMap&;
+auto ServerContextAllowedState() noexcept
+    -> const std::map<std::uint32_t, std::set<int>>&;
+auto ServerContextAllowedStatus() noexcept
+    -> const std::map<std::uint32_t, std::set<int>>&;
 }  // namespace proto
 }  // namespace opentxs
 #endif  // OPENTXS_PROTOBUF_VERIFYCONSENSUS_HPP

@@ -26,11 +26,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
 class Core;
 }  // namespace api
 
@@ -66,7 +61,7 @@ class Reply : virtual public peer::Reply,
 public:
     static auto Finish(Reply& contract, const PasswordPrompt& reason) -> bool;
     static auto LoadRequest(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const Identifier& requestID,
         proto::PeerRequest& request) -> bool;
@@ -94,7 +89,7 @@ protected:
         const -> bool final;
 
     Reply(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const VersionNumber version,
         const identifier::Nym& initiator,
@@ -103,7 +98,7 @@ protected:
         const Identifier& request,
         const std::string& conditions = {});
     Reply(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const SerializedType& serialized,
         const std::string& conditions = {});
@@ -116,9 +111,8 @@ private:
     const OTIdentifier cookie_;
     const PeerRequestType type_;
 
-    static auto GetID(
-        const api::internal::Core& api,
-        const SerializedType& contract) -> OTIdentifier;
+    static auto GetID(const api::Core& api, const SerializedType& contract)
+        -> OTIdentifier;
     static auto FinalizeContract(Reply& contract, const PasswordPrompt& reason)
         -> bool;
 

@@ -35,39 +35,36 @@ namespace opentxs
 {
 namespace api
 {
-class Crypto
+class OPENTXS_EXPORT Crypto
 {
 public:
-    OPENTXS_EXPORT virtual const crypto::Config& Config() const = 0;
+    virtual auto Config() const -> const crypto::Config& = 0;
 
     // Encoding function interface
-    OPENTXS_EXPORT virtual const crypto::Encode& Encode() const = 0;
+    virtual auto Encode() const -> const crypto::Encode& = 0;
 
     // Hash function interface
-    OPENTXS_EXPORT virtual const crypto::Hash& Hash() const = 0;
+    virtual auto Hash() const -> const crypto::Hash& = 0;
 
     // Utility class for misc OpenSSL-provided functions
-    OPENTXS_EXPORT virtual const crypto::Util& Util() const = 0;
+    virtual auto Util() const -> const crypto::Util& = 0;
 
 #if OT_CRYPTO_SUPPORTED_KEY_ED25519
-    OPENTXS_EXPORT virtual const opentxs::crypto::EcdsaProvider& ED25519()
-        const = 0;
+    virtual auto ED25519() const -> const opentxs::crypto::EcdsaProvider& = 0;
 #endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 #if OT_CRYPTO_SUPPORTED_KEY_RSA
-    OPENTXS_EXPORT virtual const opentxs::crypto::AsymmetricProvider& RSA()
-        const = 0;
+    virtual auto RSA() const -> const opentxs::crypto::AsymmetricProvider& = 0;
 #endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-    OPENTXS_EXPORT virtual const opentxs::crypto::EcdsaProvider& SECP256K1()
-        const = 0;
+    virtual auto SECP256K1() const -> const opentxs::crypto::EcdsaProvider& = 0;
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 
-    OPENTXS_EXPORT virtual const opentxs::crypto::SymmetricProvider& Sodium()
-        const = 0;
-    OPENTXS_EXPORT virtual const opentxs::crypto::Bip32& BIP32() const = 0;
-    OPENTXS_EXPORT virtual const opentxs::crypto::Bip39& BIP39() const = 0;
+    virtual auto Sodium() const
+        -> const opentxs::crypto::SymmetricProvider& = 0;
+    virtual auto BIP32() const -> const opentxs::crypto::Bip32& = 0;
+    virtual auto BIP39() const -> const opentxs::crypto::Bip39& = 0;
 
-    OPENTXS_EXPORT virtual ~Crypto() = default;
+    virtual ~Crypto() = default;
 
 protected:
     Crypto() = default;
@@ -75,8 +72,8 @@ protected:
 private:
     Crypto(const Crypto&) = delete;
     Crypto(Crypto&&) = delete;
-    Crypto& operator=(const Crypto&) = delete;
-    Crypto& operator=(Crypto&&) = delete;
+    auto operator=(const Crypto&) -> Crypto& = delete;
+    auto operator=(Crypto&&) -> Crypto& = delete;
 };
 }  // namespace api
 }  // namespace opentxs

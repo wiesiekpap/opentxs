@@ -17,64 +17,6 @@
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/ui/List.hpp"
 
-#ifdef SWIG
-// clang-format off
-%extend opentxs::ui::Profile {
-    bool AddClaim(
-        const int section,
-        const int type,
-        const std::string& value,
-        const bool primary,
-        const bool active) const noexcept
-    {
-        return $self->AddClaim(
-            static_cast<opentxs::contact::ContactSectionName>(section),
-            static_cast<opentxs::contact::ContactItemType>(type),
-            value,
-            primary,
-            active);
-    }
-    std::vector<std::pair<int, std::string>> AllowedItems(
-        const int section,
-        const std::string& lang) noexcept
-    {
-        const auto types = opentxs::ui::ProfileSection::AllowedItems(
-            static_cast<opentxs::contact::ContactSectionName>(section),
-            lang);
-        std::vector<std::pair<int, std::string>> output;
-        std::transform(
-            types.begin(),
-            types.end(),
-            std::inserter(output, output.end()),
-            [](std::pair<opentxs::contact::ContactItemType, std::string> type) ->
-                std::pair<int, std::string> {
-                    return {static_cast<int>(type.first), type.second};} );
-
-        return output;
-    }
-    std::vector<std::pair<int, std::string>> AllowedSections(
-        const std::string& lang) noexcept
-    {
-        const auto sections = $self->AllowedSections(lang);
-        std::vector<std::pair<int, std::string>> output;
-        std::transform(
-            sections.begin(),
-            sections.end(),
-            std::inserter(output, output.end()),
-            [](std::pair<opentxs::contact::ContactSectionName, std::string> type) ->
-                std::pair<int, std::string> {
-                    return {static_cast<int>(type.first), type.second};} );
-
-        return output;
-    }
-}
-%ignore opentxs::ui::Profile::AddClaim;
-%ignore opentxs::ui::Profile::AllowedItems;
-%ignore opentxs::ui::Profile::AllowedSections;
-%rename(UIProfile) opentxs::ui::Profile;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -96,43 +38,43 @@ public:
     using SectionType = std::pair<contact::ContactSectionName, std::string>;
     using SectionTypeList = std::vector<SectionType>;
 
-    virtual bool AddClaim(
+    virtual auto AddClaim(
         const contact::ContactSectionName section,
         const contact::ContactItemType type,
         const std::string& value,
         const bool primary,
-        const bool active) const noexcept = 0;
-    virtual ItemTypeList AllowedItems(
+        const bool active) const noexcept -> bool = 0;
+    virtual auto AllowedItems(
         const contact::ContactSectionName section,
-        const std::string& lang) const noexcept = 0;
-    virtual SectionTypeList AllowedSections(
-        const std::string& lang) const noexcept = 0;
-    virtual bool Delete(
+        const std::string& lang) const noexcept -> ItemTypeList = 0;
+    virtual auto AllowedSections(const std::string& lang) const noexcept
+        -> SectionTypeList = 0;
+    virtual auto Delete(
         const int section,
         const int type,
-        const std::string& claimID) const noexcept = 0;
-    virtual std::string DisplayName() const noexcept = 0;
-    virtual opentxs::SharedPimpl<opentxs::ui::ProfileSection> First()
-        const noexcept = 0;
-    virtual std::string ID() const noexcept = 0;
-    virtual opentxs::SharedPimpl<opentxs::ui::ProfileSection> Next()
-        const noexcept = 0;
-    virtual std::string PaymentCode() const noexcept = 0;
-    virtual bool SetActive(
-        const int section,
-        const int type,
-        const std::string& claimID,
-        const bool active) const noexcept = 0;
-    virtual bool SetPrimary(
+        const std::string& claimID) const noexcept -> bool = 0;
+    virtual auto DisplayName() const noexcept -> std::string = 0;
+    virtual auto First() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::ProfileSection> = 0;
+    virtual auto ID() const noexcept -> std::string = 0;
+    virtual auto Next() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::ProfileSection> = 0;
+    virtual auto PaymentCode() const noexcept -> std::string = 0;
+    virtual auto SetActive(
         const int section,
         const int type,
         const std::string& claimID,
-        const bool primary) const noexcept = 0;
-    virtual bool SetValue(
+        const bool active) const noexcept -> bool = 0;
+    virtual auto SetPrimary(
         const int section,
         const int type,
         const std::string& claimID,
-        const std::string& value) const noexcept = 0;
+        const bool primary) const noexcept -> bool = 0;
+    virtual auto SetValue(
+        const int section,
+        const int type,
+        const std::string& claimID,
+        const std::string& value) const noexcept -> bool = 0;
 
     ~Profile() override = default;
 
@@ -142,8 +84,8 @@ protected:
 private:
     Profile(const Profile&) = delete;
     Profile(Profile&&) = delete;
-    Profile& operator=(const Profile&) = delete;
-    Profile& operator=(Profile&&) = delete;
+    auto operator=(const Profile&) -> Profile& = delete;
+    auto operator=(Profile&&) -> Profile& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

@@ -14,10 +14,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace proto
@@ -35,11 +32,11 @@ namespace credential
 class OPENTXS_EXPORT Verification : virtual public Base
 {
 public:
-    OPENTXS_NO_EXPORT static proto::Verification SigningForm(
-        const proto::Verification& item);
-    OPENTXS_NO_EXPORT static std::string VerificationID(
-        const api::internal::Core& api,
-        const proto::Verification& item);
+    OPENTXS_NO_EXPORT static auto SigningForm(const proto::Verification& item)
+        -> proto::Verification;
+    OPENTXS_NO_EXPORT static auto VerificationID(
+        const api::Core& api,
+        const proto::Verification& item) -> std::string;
 
     ~Verification() override = default;
 
@@ -49,8 +46,8 @@ protected:
 private:
     Verification(const Verification&) = delete;
     Verification(Verification&&) = delete;
-    Verification& operator=(const Verification&) = delete;
-    Verification& operator=(Verification&&) = delete;
+    auto operator=(const Verification&) -> Verification& = delete;
+    auto operator=(Verification&&) -> Verification& = delete;
 };
 }  // namespace credential
 }  // namespace identity

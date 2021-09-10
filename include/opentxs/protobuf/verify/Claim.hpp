@@ -20,26 +20,26 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT bool CheckProto_1(const Claim& claim, const bool silent);
-OPENTXS_EXPORT bool CheckProto_2(const Claim&, const bool);
-OPENTXS_EXPORT bool CheckProto_3(const Claim&, const bool);
-OPENTXS_EXPORT bool CheckProto_4(const Claim&, const bool);
-OPENTXS_EXPORT bool CheckProto_5(const Claim&, const bool);
-OPENTXS_EXPORT bool CheckProto_6(const Claim&, const bool);
-OPENTXS_EXPORT bool CheckProto_7(const Claim&, const bool);
-OPENTXS_EXPORT bool CheckProto_8(const Claim&, const bool);
-OPENTXS_EXPORT bool CheckProto_9(const Claim&, const bool);
-OPENTXS_EXPORT bool CheckProto_10(const Claim&, const bool);
-OPENTXS_EXPORT bool CheckProto_11(const Claim&, const bool);
-OPENTXS_EXPORT bool CheckProto_12(const Claim&, const bool);
-OPENTXS_EXPORT bool CheckProto_13(const Claim&, const bool);
-OPENTXS_EXPORT bool CheckProto_14(const Claim&, const bool);
-OPENTXS_EXPORT bool CheckProto_15(const Claim&, const bool);
-OPENTXS_EXPORT bool CheckProto_16(const Claim&, const bool);
-OPENTXS_EXPORT bool CheckProto_17(const Claim&, const bool);
-OPENTXS_EXPORT bool CheckProto_18(const Claim&, const bool);
-OPENTXS_EXPORT bool CheckProto_19(const Claim&, const bool);
-OPENTXS_EXPORT bool CheckProto_20(const Claim&, const bool);
+auto CheckProto_1(const Claim& claim, const bool silent) -> bool;
+auto CheckProto_2(const Claim&, const bool) -> bool;
+auto CheckProto_3(const Claim&, const bool) -> bool;
+auto CheckProto_4(const Claim&, const bool) -> bool;
+auto CheckProto_5(const Claim&, const bool) -> bool;
+auto CheckProto_6(const Claim&, const bool) -> bool;
+auto CheckProto_7(const Claim&, const bool) -> bool;
+auto CheckProto_8(const Claim&, const bool) -> bool;
+auto CheckProto_9(const Claim&, const bool) -> bool;
+auto CheckProto_10(const Claim&, const bool) -> bool;
+auto CheckProto_11(const Claim&, const bool) -> bool;
+auto CheckProto_12(const Claim&, const bool) -> bool;
+auto CheckProto_13(const Claim&, const bool) -> bool;
+auto CheckProto_14(const Claim&, const bool) -> bool;
+auto CheckProto_15(const Claim&, const bool) -> bool;
+auto CheckProto_16(const Claim&, const bool) -> bool;
+auto CheckProto_17(const Claim&, const bool) -> bool;
+auto CheckProto_18(const Claim&, const bool) -> bool;
+auto CheckProto_19(const Claim&, const bool) -> bool;
+auto CheckProto_20(const Claim&, const bool) -> bool;
 }  // namespace proto
 }  // namespace opentxs
 

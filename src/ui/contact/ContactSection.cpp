@@ -30,7 +30,7 @@ namespace opentxs::factory
 {
 auto ContactSectionWidget(
     const ui::implementation::ContactInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ui::implementation::ContactRowID& rowID,
     const ui::implementation::ContactSortKey& key,
     ui::implementation::CustomData& custom) noexcept
@@ -124,7 +124,7 @@ const std::
 
 ContactSection::ContactSection(
     const ContactInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ContactRowID& rowID,
     const ContactSortKey& key,
     CustomData& custom) noexcept

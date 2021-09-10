@@ -33,10 +33,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 
 class Wallet;
@@ -116,7 +113,7 @@ public:
     auto SetCallbacks(Callbacks&& cb) noexcept -> void final;
 
     Profile(
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nymID,
         const SimpleCallback& cb) noexcept;
     ~Profile() final;

@@ -11,12 +11,6 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/ui/List.hpp"
 
-#ifdef SWIG
-// clang-format off
-%rename(UIUnitList) opentxs::ui::UnitList;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -30,13 +24,13 @@ namespace opentxs
 {
 namespace ui
 {
-class UnitList : virtual public List
+class OPENTXS_EXPORT UnitList : virtual public List
 {
 public:
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::UnitListItem>
-    First() const noexcept = 0;
-    OPENTXS_EXPORT virtual opentxs::SharedPimpl<opentxs::ui::UnitListItem>
-    Next() const noexcept = 0;
+    virtual auto First() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::UnitListItem> = 0;
+    virtual auto Next() const noexcept
+        -> opentxs::SharedPimpl<opentxs::ui::UnitListItem> = 0;
 
     ~UnitList() override = default;
 
@@ -46,8 +40,8 @@ protected:
 private:
     UnitList(const UnitList&) = delete;
     UnitList(UnitList&&) = delete;
-    UnitList& operator=(const UnitList&) = delete;
-    UnitList& operator=(UnitList&&) = delete;
+    auto operator=(const UnitList&) -> UnitList& = delete;
+    auto operator=(UnitList&&) -> UnitList& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

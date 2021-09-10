@@ -13,6 +13,7 @@
 #include "internal/api/Api.hpp"
 #include "internal/identity/wot/verification/Verification.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/wot/verification/Item.hpp"
 #include "opentxs/identity/wot/verification/Nym.hpp"
@@ -21,10 +22,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identity
@@ -44,7 +42,7 @@ class Nym final : public internal::Nym
 public:
     operator SerializedType() const noexcept final;
 
-    auto API() const noexcept -> const api::internal::Core& final
+    auto API() const noexcept -> const api::Core& final
     {
         return parent_.API();
     }

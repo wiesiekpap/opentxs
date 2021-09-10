@@ -66,7 +66,7 @@ void Nym::_save(
     _save(mail_outbox_.get(), lock, mail_outbox_lock_, mail_outbox_root_);
 
     if (nullptr == input) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Null target.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Null target.").Flush();
         OT_FAIL;
     }
 
@@ -75,7 +75,7 @@ void Nym::_save(
     rootLock.unlock();
 
     if (false == save(lock)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Save error.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Save error.").Flush();
         OT_FAIL;
     }
 }
@@ -201,8 +201,7 @@ auto Nym::construct(
         pointer.reset(new T(driver_, root, params...));
 
         if (!pointer) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to instantiate.")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Unable to instantiate.").Flush();
             OT_FAIL;
         }
     }
@@ -285,7 +284,7 @@ void Nym::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (!serialized) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load nym index file.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to load nym index file.")
             .Flush();
         OT_FAIL;
     }
@@ -394,8 +393,7 @@ auto Nym::Load(
 
     if (blockchain_accounts_.end() == it) {
         if (false == checking) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Account does not exist.")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Account does not exist.").Flush();
         }
 
         return false;
@@ -415,8 +413,8 @@ auto Nym::Load(
 
     if (!check_hash(credentials_)) {
         if (false == checking) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error: nym with id ")(nymid_)(
-                " has no credentials.")
+            LogOutput(OT_METHOD)(__func__)(": Error: nym with id ")(
+                nymid_)(" has no credentials.")
                 .Flush();
         }
 
@@ -446,7 +444,7 @@ auto Nym::Load(
 
     if (purse_id_.end() == it) {
         if (false == checking) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Purse not found ").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Purse not found ").Flush();
         }
 
         return false;
@@ -653,7 +651,7 @@ auto Nym::ProcessedReplyBox() const -> const PeerReplies&
 auto Nym::save(const Lock& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Lock failure.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Lock failure.").Flush();
         OT_FAIL;
     }
 
@@ -672,12 +670,12 @@ void Nym::_save(
     std::string& root)
 {
     if (!verify_write_lock(lock)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Lock failure.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Lock failure.").Flush();
         OT_FAIL;
     }
 
     if (nullptr == input) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Null target.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Null target.").Flush();
         OT_FAIL;
     }
 
@@ -686,7 +684,7 @@ void Nym::_save(
     rootLock.unlock();
 
     if (false == save(lock)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Save error.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Save error.").Flush();
         OT_FAIL;
     }
 }
@@ -816,13 +814,13 @@ auto Nym::Store(
     const auto& accountID = data.deterministic().common().id();
 
     if (accountID.empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid account ID.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid account ID.").Flush();
 
         return false;
     }
 
     if (false == proto::Validate(data, VERBOSE)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid account.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid account.").Flush();
 
         return false;
     }
@@ -840,7 +838,7 @@ auto Nym::Store(
 
         if (existing->deterministic().common().revision() >
             data.deterministic().common().revision()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Not saving object with older revision.")
                 .Flush();
         } else {

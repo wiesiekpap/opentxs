@@ -11,9 +11,9 @@
 #include <utility>
 
 #include "crypto/key/Asymmetric.hpp"
-#include "internal/api/Api.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
@@ -36,7 +36,7 @@ const VersionNumber EllipticCurve::MaxVersion{2};
 namespace opentxs::crypto::key::implementation
 {
 EllipticCurve::EllipticCurve(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const proto::AsymmetricKey& serialized) noexcept(false)
     : Asymmetric(
@@ -51,7 +51,7 @@ EllipticCurve::EllipticCurve(
 }
 
 EllipticCurve::EllipticCurve(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const crypto::key::asymmetric::Algorithm keyType,
     const crypto::key::asymmetric::Role role,
@@ -85,7 +85,7 @@ EllipticCurve::EllipticCurve(
 }
 
 EllipticCurve::EllipticCurve(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const crypto::key::asymmetric::Algorithm keyType,
     const Secret& privateKey,
@@ -116,7 +116,7 @@ EllipticCurve::EllipticCurve(
 }
 
 EllipticCurve::EllipticCurve(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const crypto::key::asymmetric::Algorithm keyType,
     const Secret& privateKey,
@@ -165,7 +165,7 @@ EllipticCurve::EllipticCurve(
 
                   return pubkey;
               } else {
-                  LogOutput(OT_METHOD)(__FUNCTION__)(
+                  LogOutput(OT_METHOD)(__func__)(
                       ": Failed to calculate public key")
                       .Flush();
 
@@ -197,7 +197,7 @@ auto EllipticCurve::asPublicEC() const noexcept
 }
 
 auto EllipticCurve::extract_key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const proto::AsymmetricKey& proto,
     Data& publicKey) -> std::unique_ptr<proto::Ciphertext>
@@ -232,7 +232,7 @@ auto EllipticCurve::IncrementPrivate(
 
         return replace_secret_key(std::move(newKey));
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -251,7 +251,7 @@ auto EllipticCurve::IncrementPublic(const Secret& rhs) const noexcept
 
         return replace_public_key(reader(newKey));
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -285,7 +285,7 @@ auto EllipticCurve::SignDER(
     auto lock = Lock{lock_};
 
     if (false == has_private(lock)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing private key").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing private key").Flush();
 
         return false;
     }
@@ -294,7 +294,7 @@ auto EllipticCurve::SignDER(
         ecdsa_.SignDER(preimage, private_key(lock, reason), hash, output);
 
     if (false == success) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to sign preimage").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to sign preimage").Flush();
     }
 
     return success;

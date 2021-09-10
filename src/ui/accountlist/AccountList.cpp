@@ -22,12 +22,11 @@
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
-#if OT_BLOCKCHAIN
 #include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Network.hpp"
-#include "opentxs/blockchain/crypto/Account.hpp"
-#endif  // OT_BLOCKCHAIN
 #include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
@@ -53,7 +52,7 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::factory
 {
 auto AccountListModel(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::AccountList>
@@ -67,7 +66,7 @@ auto AccountListModel(
 namespace opentxs::ui::implementation
 {
 AccountList::AccountList(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     : AccountListList(api, nymID, cb, false)

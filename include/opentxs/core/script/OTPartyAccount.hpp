@@ -70,25 +70,25 @@ class OPENTXS_EXPORT OTPartyAccount
 public:
     void RegisterForExecution(OTScript& theScript);
 
-    OTParty* GetParty() const { return m_pForParty; }
+    auto GetParty() const -> OTParty* { return m_pForParty; }
     void SetParty(OTParty& theOwnerParty);  // This happens when the
                                             // partyaccount
                                             // is added to the party. (so I have
                                             // a ptr back)
 
-    const String& GetName() const
+    auto GetName() const -> const String&
     {
         return m_strName;
     }  // account's name as used in a script.
-    const String& GetAgentName() const
+    auto GetAgentName() const -> const String&
     {
         return m_strAgentName;
     }  // agent's name as used in a script.
-    const String& GetAcctID() const
+    auto GetAcctID() const -> const String&
     {
         return m_strAcctID;
     }  // account's ID as used internal to OT.
-    const String& GetInstrumentDefinitionID() const
+    auto GetInstrumentDefinitionID() const -> const String&
     {
         return m_strInstrumentDefinitionID;
     }  // instrument definition ID for the account.
@@ -98,35 +98,35 @@ public:
         m_strAgentName = strAgentName;
     }
     void SetAcctID(const String& strAccountID) { m_strAcctID = strAccountID; }
-    OTAgent* GetAuthorizedAgent();
-    SharedAccount LoadAccount();
-    bool IsAccount(const Account& theAccount);
-    bool IsAccountByID(const Identifier& theAcctID) const;
-    bool VerifyOwnership() const;  // I have a ptr
-                                   // to my
+    auto GetAuthorizedAgent() -> OTAgent*;
+    auto LoadAccount() -> SharedAccount;
+    auto IsAccount(const Account& theAccount) -> bool;
+    auto IsAccountByID(const Identifier& theAcctID) const -> bool;
+    auto VerifyOwnership() const -> bool;  // I have a ptr
+                                           // to my
     // owner (party), as well as to the actual account. I will ask him to
     // verify whether he actually owns it.
-    bool VerifyAgency();  // I can get a ptr to my
-                          // agent, and I have one
-                          // to the actual account.
-                          // I will ask him to
-                          // verify whether he
-                          // actually has agency
-                          // over it.
-    std::int64_t GetClosingTransNo() const { return m_lClosingTransNo; }
+    auto VerifyAgency() -> bool;  // I can get a ptr to my
+                                  // agent, and I have one
+                                  // to the actual account.
+                                  // I will ask him to
+                                  // verify whether he
+                                  // actually has agency
+                                  // over it.
+    auto GetClosingTransNo() const -> std::int64_t { return m_lClosingTransNo; }
     void SetClosingTransNo(std::int64_t lTransNo)
     {
         m_lClosingTransNo = lTransNo;
     }
-    bool Compare(const OTPartyAccount& rhs) const;
-    bool DropFinalReceiptToInbox(
+    auto Compare(const OTPartyAccount& rhs) const -> bool;
+    auto DropFinalReceiptToInbox(
         const String& strNotaryID,
         OTSmartContract& theSmartContract,
         const std::int64_t& lNewTransactionNumber,
         const String& strOrigCronItem,
         const PasswordPrompt& reason,
         OTString pstrNote = String::Factory(),
-        OTString pstrAttachment = String::Factory());
+        OTString pstrAttachment = String::Factory()) -> bool;
     void Serialize(
         Tag& parent,
         bool bCalculatingID = false,
@@ -189,13 +189,13 @@ private:
     // m_pOwnerParty->GetPartyID().
     //
 
-    SharedAccount get_account() const;
+    auto get_account() const -> SharedAccount;
 
     OTPartyAccount() = delete;
     OTPartyAccount(const OTPartyAccount&) = delete;
     OTPartyAccount(OTPartyAccount&&) = delete;
-    OTPartyAccount& operator=(const OTPartyAccount&) = delete;
-    OTPartyAccount& operator=(OTPartyAccount&&) = delete;
+    auto operator=(const OTPartyAccount&) -> OTPartyAccount& = delete;
+    auto operator=(OTPartyAccount&&) -> OTPartyAccount& = delete;
 };
 }  // namespace opentxs
 #endif

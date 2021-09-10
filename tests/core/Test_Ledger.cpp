@@ -40,8 +40,8 @@ struct Ledger : public ::testing::Test {
     Ledger()
         : client_(ot::Context().StartClient(0))
         , server_(ot::Context().StartServer(0))
-        , reason_c_(client_.Factory().PasswordPrompt(__FUNCTION__))
-        , reason_s_(server_.Factory().PasswordPrompt(__FUNCTION__))
+        , reason_c_(client_.Factory().PasswordPrompt(__func__))
+        , reason_s_(server_.Factory().PasswordPrompt(__func__))
     {
     }
 };

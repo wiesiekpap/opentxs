@@ -132,7 +132,7 @@ struct SyncClient::Imp {
 
             OT_ASSERT(0 == rc);
 
-            LogTrace(OT_METHOD)(__FUNCTION__)(": internal router bound to ")(
+            LogTrace(OT_METHOD)(__func__)(": internal router bound to ")(
                 endpoint_)
                 .Flush();
 
@@ -324,8 +324,7 @@ private:
         }();
 
         if (0 == msg->size()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Dropping empty message")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Dropping empty message").Flush();
 
             return;
         }
@@ -405,7 +404,7 @@ private:
                                 " for new block notifications")
                                 .Flush();
                         } else {
-                            LogOutput(OT_METHOD)(__FUNCTION__)(
+                            LogOutput(OT_METHOD)(__func__)(
                                 ": failed to connect external subscriber to ")(
                                 ep)
                                 .Flush();
@@ -481,7 +480,7 @@ private:
                 }
             }
         } catch (const std::exception& e) {
-            LogTrace(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogTrace(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return;
         }
@@ -524,7 +523,7 @@ private:
                 const auto chain = body.at(1).as<Chain>();
                 clients_[chain] = identity;
                 const auto& providers = providers_[chain];
-                LogVerbose(OT_METHOD)(__FUNCTION__)(": querying ")(
+                LogVerbose(OT_METHOD)(__func__)(": querying ")(
                     providers.size())(" providers for ")(DisplayString(chain))
                     .Flush();
 
@@ -540,7 +539,7 @@ private:
                 const auto provider = get_provider(chain);
 
                 if (provider.empty()) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(": no provider for ")(
+                    LogOutput(OT_METHOD)(__func__)(": no provider for ")(
                         DisplayString(chain))
                         .Flush();
 
@@ -578,7 +577,7 @@ private:
             case Task::Push:
             case Task::Processed:
             default: {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Unsupported message type on internal socket: ")(
                     static_cast<OTZMQWorkType>(type))
                     .Flush();
@@ -609,7 +608,7 @@ private:
                 servers_.at(endpoint).connected_ = true;
             } break;
             default: {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Unexpected event type: ")(
+                LogOutput(OT_METHOD)(__func__)(": Unexpected event type: ")(
                     event)
                     .Flush();
 
@@ -620,8 +619,7 @@ private:
     auto process_server(const std::string& ep) noexcept -> void
     {
         if (0 != ::zmq_connect(external_router_.get(), ep.c_str())) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": failed to connect router to ")(ep)
+            LogOutput(OT_METHOD)(__func__)(": failed to connect router to ")(ep)
                 .Flush();
 
             return;
@@ -714,7 +712,7 @@ private:
 
             if (0 > events) {
                 const auto error = ::zmq_errno();
-                LogOutput(OT_METHOD)(__FUNCTION__)(": ")(::zmq_strerror(error))
+                LogOutput(OT_METHOD)(__func__)(": ")(::zmq_strerror(error))
                     .Flush();
 
                 continue;

@@ -13,9 +13,9 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "core/contract/Signable.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/otx/OTX.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/core/Flag.hpp"
@@ -42,7 +42,7 @@ const VersionNumber Request::DefaultVersion{2};
 const VersionNumber Request::MaxVersion{2};
 
 auto Request::Factory(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p signer,
     const identifier::Server& server,
     const otx::ServerRequestType type,
@@ -65,14 +65,13 @@ auto Request::Factory(
 }
 
 auto Request::Factory(
-    const api::internal::Core& api,
+    const api::Core& api,
     const proto::ServerRequest serialized) -> OTXRequest
 {
     return OTXRequest{new implementation::Request(api, serialized)};
 }
 
-auto Request::Factory(const api::internal::Core& api, const ReadView& view)
-    -> OTXRequest
+auto Request::Factory(const api::Core& api, const ReadView& view) -> OTXRequest
 {
     return OTXRequest{new implementation::Request(
         api, proto::Factory<proto::ServerRequest>(view))};
@@ -82,7 +81,7 @@ auto Request::Factory(const api::internal::Core& api, const ReadView& view)
 namespace opentxs::otx::implementation
 {
 Request::Request(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p signer,
     const identifier::Nym& initiator,
     const identifier::Server& server,
@@ -99,9 +98,7 @@ Request::Request(
     first_time_init(lock);
 }
 
-Request::Request(
-    const api::internal::Core& api,
-    const proto::ServerRequest serialized)
+Request::Request(const api::Core& api, const proto::ServerRequest serialized)
     : Signable(
           api,
           extract_nym(api, serialized),
@@ -134,7 +131,7 @@ Request::Request(const Request& rhs)
 }
 
 auto Request::extract_nym(
-    const api::internal::Core& api,
+    const api::Core& api,
     const proto::ServerRequest serialized) -> Nym_p
 {
     if (serialized.has_credentials()) {
@@ -260,8 +257,7 @@ auto Request::update_signature(const Lock& lock, const PasswordPrompt& reason)
     if (success) {
         signatures_.emplace_front(new proto::Signature(signature));
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to create signature.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to create signature.").Flush();
     }
 
     return success;
@@ -274,7 +270,7 @@ auto Request::validate(const Lock& lock) const -> bool
     if (nym_) { validNym = nym_->VerifyPseudonym(); }
 
     if (false == validNym) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid nym.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid nym.").Flush();
 
         return false;
     }
@@ -282,14 +278,13 @@ auto Request::validate(const Lock& lock) const -> bool
     const bool validSyntax = proto::Validate(full_version(lock), VERBOSE);
 
     if (false == validSyntax) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid syntax.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid syntax.").Flush();
 
         return false;
     }
 
     if (1 != signatures_.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Wrong number signatures.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Wrong number signatures.").Flush();
 
         return false;
     }
@@ -300,7 +295,7 @@ auto Request::validate(const Lock& lock) const -> bool
     if (signature) { validSig = verify_signature(lock, *signature); }
 
     if (false == validSig) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid signature.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid signature.").Flush();
 
         return false;
     }

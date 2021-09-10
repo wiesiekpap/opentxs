@@ -63,8 +63,7 @@ void Nyms::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (!serialized) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to load nym list index file.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to load nym list index file.")
             .Flush();
         abort();
     }
@@ -148,7 +147,7 @@ auto Nyms::nym(const Lock& lock, const std::string& id) const -> storage::Nym*
         node.reset(new storage::Nym(driver_, id, hash, alias));
 
         if (!node) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to instantiate nym.")
+            LogOutput(OT_METHOD)(__func__)(": Failed to instantiate nym.")
                 .Flush();
             abort();
         }
@@ -200,7 +199,7 @@ auto Nyms::RelabelThread(const std::string& threadID, const std::string label)
 auto Nyms::save(const Lock& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Lock failure.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Lock failure.").Flush();
         abort();
     }
 
@@ -216,12 +215,12 @@ auto Nyms::save(const Lock& lock) const -> bool
 void Nyms::save(storage::Nym* nym, const Lock& lock, const std::string& id)
 {
     if (!verify_write_lock(lock)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Lock failure.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Lock failure.").Flush();
         abort();
     }
 
     if (nullptr == nym) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Null target.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Null target.").Flush();
         abort();
     }
 
@@ -234,7 +233,7 @@ void Nyms::save(storage::Nym* nym, const Lock& lock, const std::string& id)
     if (nym->private_.get()) { local_nyms_.emplace(nym->nymid_); }
 
     if (!save(lock)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Save error.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Save error.").Flush();
         abort();
     }
 }
@@ -276,12 +275,12 @@ void Nyms::UpgradeLocalnym()
         OT_ASSERT(node.checked_.get())
 
         if (node.private_.get()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Adding nym ")(id)(
-                " to local nym list.")
+            LogOutput(OT_METHOD)(__func__)(": Adding nym ")(
+                id)(" to local nym list.")
                 .Flush();
             local_nyms_.emplace(id);
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Nym ")(id)(" is not local.")
+            LogOutput(OT_METHOD)(__func__)(": Nym ")(id)(" is not local.")
                 .Flush();
         }
     }

@@ -3,27 +3,24 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                            // IWYU pragma: associated
-#include "1_Internal.hpp"                          // IWYU pragma: associated
-#include "api/client/blockchain/BalanceLists.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                       // IWYU pragma: associated
+#include "1_Internal.hpp"                     // IWYU pragma: associated
+#include "api/client/blockchain/Wallets.hpp"  // IWYU pragma: associated
 
 #include <map>
 #include <utility>
 
-#include "internal/api/Api.hpp"
-#include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/crypto/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/crypto/Wallet.hpp"
 #include "opentxs/core/Log.hpp"
 
-// #define OT_METHOD
-// "opentxs::api::client::implementation::BalanceLists::"
+// #define OT_METHOD "opentxs::api::client::blockchain::Wallets::"
 
-namespace opentxs::api::client::implementation
+namespace opentxs::api::client::blockchain
 {
-BalanceLists::BalanceLists(
-    const api::internal::Core& api,
-    api::client::internal::Blockchain& parent) noexcept
+Wallets::Wallets(const api::Core& api, api::client::Blockchain& parent) noexcept
     : api_(api)
     , parent_(parent)
     , index_(api_)
@@ -33,7 +30,7 @@ BalanceLists::BalanceLists(
 {
 }
 
-auto BalanceLists::AccountList(const identifier::Nym& nym) const noexcept
+auto Wallets::AccountList(const identifier::Nym& nym) const noexcept
     -> std::set<OTIdentifier>
 {
     populate();
@@ -41,7 +38,7 @@ auto BalanceLists::AccountList(const identifier::Nym& nym) const noexcept
     return index_.AccountList(nym);
 }
 
-auto BalanceLists::AccountList(const Chain chain) const noexcept
+auto Wallets::AccountList(const opentxs::blockchain::Type chain) const noexcept
     -> std::set<OTIdentifier>
 {
     populate();
@@ -49,23 +46,23 @@ auto BalanceLists::AccountList(const Chain chain) const noexcept
     return index_.AccountList(chain);
 }
 
-auto BalanceLists::AccountList() const noexcept -> std::set<OTIdentifier>
+auto Wallets::AccountList() const noexcept -> std::set<OTIdentifier>
 {
     populate();
 
     return index_.AccountList();
 }
 
-auto BalanceLists::Get(const Chain chain) noexcept
-    -> opentxs::blockchain::crypto::internal::Wallet&
+auto Wallets::Get(const opentxs::blockchain::Type chain) noexcept
+    -> opentxs::blockchain::crypto::Wallet&
 {
     auto lock = Lock{lock_};
 
     return get(lock, chain);
 }
 
-auto BalanceLists::get(const Lock& lock, const Chain chain) const noexcept
-    -> opentxs::blockchain::crypto::internal::Wallet&
+auto Wallets::get(const Lock& lock, const opentxs::blockchain::Type chain)
+    const noexcept -> opentxs::blockchain::crypto::Wallet&
 {
     auto it = lists_.find(chain);
 
@@ -80,21 +77,20 @@ auto BalanceLists::get(const Lock& lock, const Chain chain) const noexcept
     return *it2->second;
 }
 
-auto BalanceLists::LookupAccount(const Identifier& id) const noexcept
-    -> AccountData
+auto Wallets::LookupAccount(const Identifier& id) const noexcept -> AccountData
 {
     populate();
 
     return index_.Query(id);
 }
 
-auto BalanceLists::populate() const noexcept -> void
+auto Wallets::populate() const noexcept -> void
 {
     auto lock = Lock{lock_};
     populate(lock);
 }
 
-auto BalanceLists::populate(const Lock& lock) const noexcept -> void
+auto Wallets::populate(const Lock& lock) const noexcept -> void
 {
     if (populated_) { return; }
 
@@ -104,4 +100,4 @@ auto BalanceLists::populate(const Lock& lock) const noexcept -> void
 
     populated_ = true;
 }
-}  // namespace opentxs::api::client::implementation
+}  // namespace opentxs::api::client::blockchain

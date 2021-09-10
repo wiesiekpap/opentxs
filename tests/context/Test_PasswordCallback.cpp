@@ -72,7 +72,7 @@ TEST(PasswordCallback, create)
     const auto& otx = ot::InitContext(Args(true), &caller);
     profile_id_ = otx.ProfileId();
     const auto& client = otx.StartClient(0);
-    const auto reason = client.Factory().PasswordPrompt(__FUNCTION__);
+    const auto reason = client.Factory().PasswordPrompt(__func__);
     const auto nym = client.Wallet().Nym(reason);
 
     ASSERT_TRUE(nym);
@@ -104,7 +104,7 @@ TEST(PasswordCallback, load)
 
     // Have the Nym sign something here, which should succeed.
 
-    auto reason = client.Factory().PasswordPrompt(__FUNCTION__);
+    auto reason = client.Factory().PasswordPrompt(__func__);
     auto message{client.Factory().Message()};
 
     const auto signed_success = message->SignContract(*nym, reason);
@@ -130,7 +130,7 @@ TEST(PasswordCallback, wrongpw)
     // Have the Nym sign something here, which should fail since
     // we deliberately used the wrong password.
 
-    auto reason = client.Factory().PasswordPrompt(__FUNCTION__);
+    auto reason = client.Factory().PasswordPrompt(__func__);
     auto message{client.Factory().Message()};
 
     const auto signed_success = message->SignContract(*nym, reason);

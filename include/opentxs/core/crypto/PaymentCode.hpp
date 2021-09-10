@@ -71,77 +71,81 @@ public:
 
     virtual operator const crypto::key::Asymmetric&() const noexcept = 0;
 
-    OPENTXS_NO_EXPORT virtual bool operator==(
-        const Serialized& rhs) const noexcept = 0;
+    OPENTXS_NO_EXPORT virtual auto operator==(
+        const Serialized& rhs) const noexcept -> bool = 0;
 
-    virtual std::string asBase58() const noexcept = 0;
-    virtual bool Blind(
+    virtual auto asBase58() const noexcept -> std::string = 0;
+    virtual auto Blind(
         const PaymentCode& recipient,
         const crypto::key::EllipticCurve& privateKey,
         const ReadView outpoint,
         const AllocateOutput destination,
-        const PasswordPrompt& reason) const noexcept = 0;
-    virtual bool BlindV3(
+        const PasswordPrompt& reason) const noexcept -> bool = 0;
+    virtual auto BlindV3(
         const PaymentCode& recipient,
         const crypto::key::EllipticCurve& privateKey,
         const AllocateOutput destination,
-        const PasswordPrompt& reason) const noexcept = 0;
-    virtual std::unique_ptr<PaymentCode> DecodeNotificationElements(
+        const PasswordPrompt& reason) const noexcept -> bool = 0;
+    virtual auto DecodeNotificationElements(
         const std::uint8_t version,
         const Elements& elements,
-        const PasswordPrompt& reason) const noexcept = 0;
-    virtual Elements GenerateNotificationElements(
+        const PasswordPrompt& reason) const noexcept
+        -> std::unique_ptr<PaymentCode> = 0;
+    virtual auto GenerateNotificationElements(
         const PaymentCode& recipient,
         const crypto::key::EllipticCurve& privateKey,
-        const PasswordPrompt& reason) const noexcept = 0;
-    virtual const identifier::Nym& ID() const noexcept = 0;
-    virtual HDKey Key() const noexcept = 0;
-    virtual ECKey Incoming(
+        const PasswordPrompt& reason) const noexcept -> Elements = 0;
+    virtual auto ID() const noexcept -> const identifier::Nym& = 0;
+    virtual auto Key() const noexcept -> HDKey = 0;
+    virtual auto Incoming(
         const PaymentCode& sender,
         const Bip32Index index,
         const blockchain::Type chain,
         const PasswordPrompt& reason,
-        const std::uint8_t version = 0) const noexcept = 0;
-    virtual bool Locator(
+        const std::uint8_t version = 0) const noexcept -> ECKey = 0;
+    virtual auto Locator(
         const AllocateOutput destination,
-        const std::uint8_t version = 0) const noexcept = 0;
-    virtual ECKey Outgoing(
+        const std::uint8_t version = 0) const noexcept -> bool = 0;
+    virtual auto Outgoing(
         const PaymentCode& recipient,
         const Bip32Index index,
         const blockchain::Type chain,
         const PasswordPrompt& reason,
-        const std::uint8_t version = 0) const noexcept = 0;
-    virtual bool Serialize(AllocateOutput destination) const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual bool Serialize(
-        Serialized& serialized) const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual bool Sign(
+        const std::uint8_t version = 0) const noexcept -> ECKey = 0;
+    virtual auto Serialize(AllocateOutput destination) const noexcept
+        -> bool = 0;
+    OPENTXS_NO_EXPORT virtual auto Serialize(
+        Serialized& serialized) const noexcept -> bool = 0;
+    OPENTXS_NO_EXPORT virtual auto Sign(
         const identity::credential::Base& credential,
         proto::Signature& sig,
-        const PasswordPrompt& reason) const noexcept = 0;
-    virtual bool Sign(
+        const PasswordPrompt& reason) const noexcept -> bool = 0;
+    virtual auto Sign(
         const Data& data,
         Data& output,
-        const PasswordPrompt& reason) const noexcept = 0;
-    virtual std::unique_ptr<PaymentCode> Unblind(
+        const PasswordPrompt& reason) const noexcept -> bool = 0;
+    virtual auto Unblind(
         const ReadView blinded,
         const crypto::key::EllipticCurve& publicKey,
         const ReadView outpoint,
-        const PasswordPrompt& reason) const noexcept = 0;
-    virtual std::unique_ptr<PaymentCode> UnblindV3(
+        const PasswordPrompt& reason) const noexcept
+        -> std::unique_ptr<PaymentCode> = 0;
+    virtual auto UnblindV3(
         const std::uint8_t version,
         const ReadView blinded,
         const crypto::key::EllipticCurve& publicKey,
-        const PasswordPrompt& reason) const noexcept = 0;
-    virtual bool Valid() const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual bool Verify(
+        const PasswordPrompt& reason) const noexcept
+        -> std::unique_ptr<PaymentCode> = 0;
+    virtual auto Valid() const noexcept -> bool = 0;
+    OPENTXS_NO_EXPORT virtual auto Verify(
         const proto::Credential& master,
-        const proto::Signature& sourceSignature) const noexcept = 0;
-    virtual VersionNumber Version() const noexcept = 0;
+        const proto::Signature& sourceSignature) const noexcept -> bool = 0;
+    virtual auto Version() const noexcept -> VersionNumber = 0;
 
-    virtual bool AddPrivateKeys(
+    virtual auto AddPrivateKeys(
         std::string& seed,
         const Bip32Index index,
-        const PasswordPrompt& reason) noexcept = 0;
+        const PasswordPrompt& reason) noexcept -> bool = 0;
 
     virtual ~PaymentCode() = default;
 
@@ -151,12 +155,12 @@ protected:
 private:
     friend OTPaymentCode;
 
-    virtual PaymentCode* clone() const = 0;
+    virtual auto clone() const -> PaymentCode* = 0;
 
     PaymentCode(const PaymentCode&) = delete;
     PaymentCode(PaymentCode&&) = delete;
-    PaymentCode& operator=(const PaymentCode&);
-    PaymentCode& operator=(PaymentCode&&);
+    auto operator=(const PaymentCode&) -> PaymentCode&;
+    auto operator=(PaymentCode&&) -> PaymentCode&;
 };
 }  // namespace opentxs
 #endif

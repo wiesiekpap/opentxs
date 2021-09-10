@@ -258,7 +258,7 @@ void Test_Rpc_Async::setup()
         ot.StartServer(ArgList(), static_cast<int>(ot.Servers()), true);
     auto& server =
         ot.StartServer(ArgList(), static_cast<int>(ot.Servers()), true);
-    auto reasonServer = server.Factory().PasswordPrompt(__FUNCTION__);
+    auto reasonServer = server.Factory().PasswordPrompt(__func__);
 #if OT_CASH
     intro_server.SetMintKeySize(OT_MINT_KEY_SIZE_TEST);
     server.SetMintKeySize(OT_MINT_KEY_SIZE_TEST);
@@ -284,7 +284,7 @@ void Test_Rpc_Async::setup()
 
     auto& senderClient =
         ot.Client(static_cast<int>(get_index(response.session())));
-    auto reasonS = senderClient.Factory().PasswordPrompt(__FUNCTION__);
+    auto reasonS = senderClient.Factory().PasswordPrompt(__func__);
 
     cookie = ot::Identifier::Random()->str();
     command.set_cookie(cookie);
@@ -298,7 +298,7 @@ void Test_Rpc_Async::setup()
 
     auto& receiverClient =
         ot.Client(static_cast<int>(get_index(response.session())));
-    auto reasonR = receiverClient.Factory().PasswordPrompt(__FUNCTION__);
+    auto reasonR = receiverClient.Factory().PasswordPrompt(__func__);
 
     auto client_a_server_contract =
         senderClient.Wallet().Server(intro_server_contract->PublicContract());
@@ -342,8 +342,8 @@ TEST_F(Test_Rpc_Async, Setup)
     ot::Context();
     auto& senderClient = get_session(sender_session_);
     auto& receiverClient = get_session(receiver_session_);
-    auto reasonS = senderClient.Factory().PasswordPrompt(__FUNCTION__);
-    auto reasonR = receiverClient.Factory().PasswordPrompt(__FUNCTION__);
+    auto reasonS = senderClient.Factory().PasswordPrompt(__func__);
+    auto reasonR = receiverClient.Factory().PasswordPrompt(__func__);
 
     try {
         senderClient.Wallet().Server(server_id_);
@@ -1080,7 +1080,7 @@ TEST_F(Test_Rpc_Async, Create_Account)
     command.set_session(sender_session_);
 
     auto& client_a = ot_.Client(static_cast<int>(get_index(sender_session_)));
-    auto reason = client_a.Factory().PasswordPrompt(__FUNCTION__);
+    auto reason = client_a.Factory().PasswordPrompt(__func__);
     auto nym_id = client_a.Wallet().Nym(reason, TEST_NYM_6)->ID().str();
 
     ASSERT_FALSE(nym_id.empty());

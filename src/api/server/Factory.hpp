@@ -15,10 +15,7 @@ namespace api
 {
 namespace server
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace server
 
 namespace internal
@@ -43,9 +40,9 @@ public:
 private:
     friend opentxs::Factory;
 
-    const api::server::internal::Manager& server_;
+    const api::server::Manager& server_;
 
-    Factory(const api::server::internal::Manager& server);
+    Factory(const api::server::Manager& server);
     Factory() = delete;
     Factory(const Factory&) = delete;
     Factory(Factory&&) = delete;

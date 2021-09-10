@@ -31,11 +31,7 @@ namespace implementation
 class Factory;
 }  // namespace implementation
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
+class Core;
 class Wallet;
 }  // namespace api
 
@@ -77,30 +73,31 @@ using mapOfOffersTrnsNum = std::map<std::int64_t, OTOffer*>;
 class OPENTXS_EXPORT OTMarket : public Contract
 {
 public:
-    bool ValidateOfferForMarket(OTOffer& theOffer);
+    auto ValidateOfferForMarket(OTOffer& theOffer) -> bool;
 
-    OTOffer* GetOffer(const std::int64_t& lTransactionNum);
-    bool AddOffer(
+    auto GetOffer(const std::int64_t& lTransactionNum) -> OTOffer*;
+    auto AddOffer(
         OTTrade* pTrade,
         OTOffer& theOffer,
         const PasswordPrompt& reason,
         const bool bSaveFile = true,
-        const Time tDateAddedToMarket = {});
-    bool RemoveOffer(
+        const Time tDateAddedToMarket = {}) -> bool;
+    auto RemoveOffer(
         const std::int64_t& lTransactionNum,
-        const PasswordPrompt& reason);
+        const PasswordPrompt& reason) -> bool;
     // returns general information about offers on the market
-    bool GetOfferList(
+    auto GetOfferList(
         Armored& ascOutput,
         std::int64_t lDepth,
-        std::int32_t& nOfferCount);
-    bool GetRecentTradeList(Armored& ascOutput, std::int32_t& nTradeCount);
+        std::int32_t& nOfferCount) -> bool;
+    auto GetRecentTradeList(Armored& ascOutput, std::int32_t& nTradeCount)
+        -> bool;
 
     // Returns more detailed information about offers for a specific Nym.
-    bool GetNym_OfferList(
+    auto GetNym_OfferList(
         const identifier::Nym& NYM_ID,
         OTDB::OfferListNym& theOutputList,
-        std::int32_t& nNymOfferCount);
+        std::int32_t& nNymOfferCount) -> bool;
 
     // Assumes a few things: Offer is part of Trade, and both have been
     // proven already to be a part of this market.
@@ -114,17 +111,17 @@ public:
         OTOffer& theOffer,
         OTOffer& theOtherOffer,
         const PasswordPrompt& reason);
-    bool ProcessTrade(
+    auto ProcessTrade(
         const api::Wallet& wallet,
         OTTrade& theTrade,
         OTOffer& theOffer,
-        const PasswordPrompt& reason);
+        const PasswordPrompt& reason) -> bool;
 
-    std::int64_t GetHighestBidPrice();
-    std::int64_t GetLowestAskPrice();
+    auto GetHighestBidPrice() -> std::int64_t;
+    auto GetLowestAskPrice() -> std::int64_t;
 
-    mapOfOffers::size_type GetBidCount() { return m_mapBids.size(); }
-    mapOfOffers::size_type GetAskCount() { return m_mapAsks.size(); }
+    auto GetBidCount() -> mapOfOffers::size_type { return m_mapBids.size(); }
+    auto GetAskCount() -> mapOfOffers::size_type { return m_mapAsks.size(); }
     void SetInstrumentDefinitionID(
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID)
     {
@@ -139,24 +136,28 @@ public:
         m_NOTARY_ID = NOTARY_ID;
     }
 
-    inline const identifier::UnitDefinition& GetInstrumentDefinitionID() const
+    inline auto GetInstrumentDefinitionID() const
+        -> const identifier::UnitDefinition&
     {
         return m_INSTRUMENT_DEFINITION_ID;
     }
-    inline const identifier::UnitDefinition& GetCurrencyID() const
+    inline auto GetCurrencyID() const -> const identifier::UnitDefinition&
     {
         return m_CURRENCY_TYPE_ID;
     }
-    inline const identifier::Server& GetNotaryID() const { return m_NOTARY_ID; }
+    inline auto GetNotaryID() const -> const identifier::Server&
+    {
+        return m_NOTARY_ID;
+    }
 
-    inline const std::int64_t& GetScale() const { return m_lScale; }
+    inline auto GetScale() const -> const std::int64_t& { return m_lScale; }
     inline void SetScale(const std::int64_t& lScale)
     {
         m_lScale = lScale;
         if (m_lScale < 1) m_lScale = 1;
     }
 
-    inline const std::int64_t& GetLastSalePrice()
+    inline auto GetLastSalePrice() -> const std::int64_t&
     {
         if (m_lLastSalePrice < 1) m_lLastSalePrice = 1;
         return m_lLastSalePrice;
@@ -167,15 +168,15 @@ public:
         if (m_lLastSalePrice < 1) m_lLastSalePrice = 1;
     }
 
-    const std::string& GetLastSaleDate() { return m_strLastSaleDate; }
-    std::int64_t GetTotalAvailableAssets();
+    auto GetLastSaleDate() -> const std::string& { return m_strLastSaleDate; }
+    auto GetTotalAvailableAssets() -> std::int64_t;
 
     void GetIdentifier(Identifier& theIdentifier) const override;
 
     inline void SetCronPointer(OTCron& theCron) { m_pCron = &theCron; }
-    inline OTCron* GetCron() { return m_pCron; }
-    bool LoadMarket();
-    bool SaveMarket(const PasswordPrompt& reason);
+    inline auto GetCron() -> OTCron* { return m_pCron; }
+    auto LoadMarket() -> bool;
+    auto SaveMarket(const PasswordPrompt& reason) -> bool;
 
     void InitMarket();
 
@@ -183,7 +184,7 @@ public:
     void Release_Market();
 
     // return -1 if error, 0 if nothing, and 1 if the node was processed.
-    std::int32_t ProcessXMLNode(irr::io::IrrXMLReader*& xml) override;
+    auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
 
     void UpdateContents(const PasswordPrompt& reason)
         override;  // Before transmission or
@@ -239,10 +240,10 @@ private:
     // which instrument definition (currency type) it is being priced in. Other
     // than that, the two are technically interchangeable.
 
-    OTMarket(const api::internal::Core& api);
-    OTMarket(const api::internal::Core& api, const char* szFilename);
+    OTMarket(const api::Core& api);
+    OTMarket(const api::Core& api, const char* szFilename);
     OTMarket(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const identifier::UnitDefinition& CURRENCY_TYPE_ID,
@@ -265,8 +266,8 @@ private:
     OTMarket() = delete;
     OTMarket(const OTMarket&) = delete;
     OTMarket(OTMarket&&) = delete;
-    OTMarket& operator=(const OTMarket&) = delete;
-    OTMarket& operator=(OTMarket&&) = delete;
+    auto operator=(const OTMarket&) -> OTMarket& = delete;
+    auto operator=(OTMarket&&) -> OTMarket& = delete;
 };
 }  // namespace opentxs
 #endif

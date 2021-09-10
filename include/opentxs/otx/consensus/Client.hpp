@@ -27,33 +27,31 @@ namespace otx
 {
 namespace context
 {
-class Client : virtual public Base
+class OPENTXS_EXPORT Client : virtual public Base
 {
 public:
-    OPENTXS_EXPORT virtual bool hasOpenTransactions() const = 0;
+    virtual auto hasOpenTransactions() const -> bool = 0;
     using Base::IssuedNumbers;
-    OPENTXS_EXPORT virtual std::size_t IssuedNumbers(
-        const TransactionNumbers& exclude) const = 0;
-    OPENTXS_EXPORT virtual std::size_t OpenCronItems() const = 0;
-    OPENTXS_EXPORT virtual bool Verify(
+    virtual auto IssuedNumbers(const TransactionNumbers& exclude) const
+        -> std::size_t = 0;
+    virtual auto OpenCronItems() const -> std::size_t = 0;
+    virtual auto Verify(
         const TransactionStatement& statement,
         const TransactionNumbers& excluded,
-        const TransactionNumbers& included) const = 0;
-    OPENTXS_EXPORT virtual bool VerifyCronItem(
-        const TransactionNumber number) const = 0;
+        const TransactionNumbers& included) const -> bool = 0;
+    virtual auto VerifyCronItem(const TransactionNumber number) const
+        -> bool = 0;
     using Base::VerifyIssuedNumber;
-    OPENTXS_EXPORT virtual bool VerifyIssuedNumber(
+    virtual auto VerifyIssuedNumber(
         const TransactionNumber& number,
-        const TransactionNumbers& exclude) const = 0;
+        const TransactionNumbers& exclude) const -> bool = 0;
 
-    OPENTXS_EXPORT virtual bool AcceptIssuedNumbers(
-        TransactionNumbers& newNumbers) = 0;
-    OPENTXS_EXPORT virtual void FinishAcknowledgements(
-        const RequestNumbers& req) = 0;
-    OPENTXS_EXPORT virtual bool IssueNumber(
-        const TransactionNumber& number) = 0;
+    virtual auto AcceptIssuedNumbers(TransactionNumbers& newNumbers)
+        -> bool = 0;
+    virtual void FinishAcknowledgements(const RequestNumbers& req) = 0;
+    virtual auto IssueNumber(const TransactionNumber& number) -> bool = 0;
 
-    OPENTXS_EXPORT ~Client() override = default;
+    ~Client() override = default;
 
 protected:
     Client() = default;
@@ -61,8 +59,8 @@ protected:
 private:
     Client(const Client&) = delete;
     Client(Client&&) = delete;
-    Client& operator=(const Client&) = delete;
-    Client& operator=(Client&&) = delete;
+    auto operator=(const Client&) -> Client& = delete;
+    auto operator=(Client&&) -> Client& = delete;
 };
 }  // namespace context
 }  // namespace otx

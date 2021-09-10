@@ -26,13 +26,13 @@ auto copy(
     const std::size_t limit) noexcept -> bool
 {
     if ((nullptr == in.data()) || (0 == in.size())) {
-        LogOutput(__FUNCTION__)(": invalid input").Flush();
+        LogOutput(__func__)(": invalid input").Flush();
 
         return false;
     }
 
     if (false == bool(out)) {
-        LogOutput(__FUNCTION__)(": invalid allocator").Flush();
+        LogOutput(__func__)(": invalid allocator").Flush();
 
         return false;
     }
@@ -41,7 +41,7 @@ auto copy(
     auto write = out(size);
 
     if (false == write.valid(size)) {
-        LogOutput(__FUNCTION__)(": failed to allocate space").Flush();
+        LogOutput(__func__)(": failed to allocate space").Flush();
 
         return false;
     }

@@ -76,10 +76,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 
 namespace internal
@@ -195,12 +192,12 @@ public:
         const opentxs::PasswordPrompt& reason) const
         -> std::unique_ptr<opentxs::PeerObject> final;
 
-    Factory(const api::client::internal::Manager& client);
+    Factory(const api::client::Manager& client);
 
     ~Factory() final = default;
 
 private:
-    const api::client::internal::Manager& client_;
+    const api::client::Manager& client_;
 
     Factory() = delete;
     Factory(const Factory&) = delete;

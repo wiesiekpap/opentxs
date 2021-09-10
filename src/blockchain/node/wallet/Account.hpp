@@ -12,6 +12,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
 
 namespace opentxs
 {
@@ -40,10 +41,7 @@ class Transaction;
 
 namespace crypto
 {
-namespace internal
-{
-struct Account;
-}  // namespace internal
+class Account;
 }  // namespace crypto
 
 namespace node
@@ -80,7 +78,7 @@ namespace opentxs::blockchain::node::wallet
 class Account
 {
 public:
-    using BalanceTree = crypto::internal::Account;
+    using BalanceTree = crypto::Account;
 
     auto mempool(std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept
         -> void;

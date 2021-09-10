@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "display/Definition.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/core/Core.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -23,6 +22,7 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/storage/Storage.hpp"

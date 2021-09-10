@@ -69,8 +69,8 @@ protected:
 private:
     Subaccount(const Subaccount&) = delete;
     Subaccount(Subaccount&&) = delete;
-    Subaccount& operator=(const Subaccount&) = delete;
-    Subaccount& operator=(Subaccount&&) = delete;
+    auto operator=(const Subaccount&) -> Subaccount& = delete;
+    auto operator=(Subaccount&&) -> Subaccount& = delete;
 };
 }  // namespace crypto
 }  // namespace blockchain

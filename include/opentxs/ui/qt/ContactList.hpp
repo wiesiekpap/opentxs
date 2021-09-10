@@ -30,6 +30,14 @@ class ContactListQt;
 class OPENTXS_EXPORT opentxs::ui::ContactListQt final : public qt::Model
 {
     Q_OBJECT
+
+public:
+    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
+    Q_INVOKABLE QString addContact(
+        const QString& label,
+        const QString& paymentCode = "",
+        const QString& nymID = "") const noexcept;
+
 public:
     enum Roles {
         IDRole = Qt::UserRole + 0,       // QString
@@ -41,11 +49,6 @@ public:
     enum Columns {
         NameColumn = 0,
     };
-
-    Q_INVOKABLE QString addContact(
-        const QString& label,
-        const QString& paymentCode = "",
-        const QString& nymID = "") const noexcept;
 
     ContactListQt(internal::ContactList& parent) noexcept;
 

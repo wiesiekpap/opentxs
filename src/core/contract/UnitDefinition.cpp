@@ -28,6 +28,7 @@
 #include "internal/core/contract/Contract.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Shared.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Legacy.hpp"
 #include "opentxs/api/Wallet.hpp"
@@ -75,7 +76,7 @@ auto Factory::UnitDefinition(const api::Core& api) noexcept
 }
 
 auto Factory::UnitDefinition(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const proto::UnitDefinition serialized) noexcept
     -> std::shared_ptr<contract::Unit>
@@ -313,7 +314,7 @@ const std::map<VersionNumber, VersionNumber> Unit::unit_of_account_version_map_{
 const Unit::Locale Unit::locale_{};
 
 Unit::Unit(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const std::string& shortname,
     const std::string& name,
@@ -337,7 +338,7 @@ Unit::Unit(
 }
 
 Unit::Unit(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const SerializedType serialized)
     : Signable(
@@ -374,7 +375,7 @@ auto Unit::AddAccountRecord(
     Lock lock(lock_);
 
     if (theAccount.GetInstrumentDefinitionID() != id_) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Error: theAccount doesn't have the same asset "
             "type ID as *this does.")
             .Flush();
@@ -395,7 +396,7 @@ auto Unit::AddAccountRecord(
     if (OTDB::Exists(
             api_,
             dataFolder,
-            api_.Legacy().Contract(),
+            api_.Internal().Legacy().Contract(),
             strAcctRecordFile->Get(),
             "",
             ""))  // the file already exists; let's
@@ -404,7 +405,7 @@ auto Unit::AddAccountRecord(
             api_,
             OTDB::STORED_OBJ_STRING_MAP,
             dataFolder,
-            api_.Legacy().Contract(),
+            api_.Internal().Legacy().Contract(),
             strAcctRecordFile->Get(),
             "",
             "");
@@ -420,7 +421,7 @@ auto Unit::AddAccountRecord(
     // It exists.
     //
     if (nullptr == pMap) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Error: Failed trying to load or create the account records "
             "file for instrument definition: ")(strInstrumentDefinitionID)(".")
             .Flush();
@@ -451,12 +452,12 @@ auto Unit::AddAccountRecord(
                                                                // never
         // happen.
         {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error: wrong instrument definition found in "
                 "account records "
-                "file. For instrument definition: ")(strInstrumentDefinitionID)(
-                ". For account: ")(strAcctID)(
-                ". Found wrong instrument definition: ")(str2)(".")
+                "file. For instrument definition: ")(
+                strInstrumentDefinitionID)(". For account: ")(
+                strAcctID)(". Found wrong instrument definition: ")(str2)(".")
                 .Flush();
             return false;
         }
@@ -478,15 +479,15 @@ auto Unit::AddAccountRecord(
             api_,
             *pMap,
             dataFolder,
-            api_.Legacy().Contract(),
+            api_.Internal().Legacy().Contract(),
             strAcctRecordFile->Get(),
             "",
             "")) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed trying to StoreObject, while saving updated "
             "account records file for instrument definition: ")(
-            strInstrumentDefinitionID)(" to contain account ID: ")(strAcctID)(
-            ".")
+            strInstrumentDefinitionID)(" to contain account ID: ")(
+            strAcctID)(".")
             .Flush();
         return false;
     }
@@ -556,7 +557,7 @@ auto Unit::EraseAccountRecord(
     if (OTDB::Exists(
             api_,
             dataFolder,
-            api_.Legacy().Contract(),
+            api_.Internal().Legacy().Contract(),
             strAcctRecordFile->Get(),
             "",
             ""))  // the file already exists; let's
@@ -565,7 +566,7 @@ auto Unit::EraseAccountRecord(
             api_,
             OTDB::STORED_OBJ_STRING_MAP,
             dataFolder,
-            api_.Legacy().Contract(),
+            api_.Internal().Legacy().Contract(),
             strAcctRecordFile->Get(),
             "",
             "");
@@ -581,7 +582,7 @@ auto Unit::EraseAccountRecord(
     // It exists.
     //
     if (nullptr == pMap) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Error: Failed trying to load or create the account records "
             "file for instrument definition: ")(strInstrumentDefinitionID)(".")
             .Flush();
@@ -610,11 +611,11 @@ auto Unit::EraseAccountRecord(
             api_,
             *pMap,
             dataFolder,
-            api_.Legacy().Contract(),
+            api_.Internal().Legacy().Contract(),
             strAcctRecordFile->Get(),
             "",
             "")) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed trying to StoreObject, while saving updated "
             "account records file for instrument definition: ")(
             strInstrumentDefinitionID)(" to erase account ID: ")(strAcctID)(".")
@@ -731,7 +732,7 @@ auto Unit::GetID(const Lock& lock) const -> OTIdentifier
     return GetID(api_, IDVersion(lock));
 }
 
-auto Unit::GetID(const api::internal::Core& api, const SerializedType& contract)
+auto Unit::GetID(const api::Core& api, const SerializedType& contract)
     -> OTIdentifier
 {
     return api.Factory().Identifier(contract);
@@ -778,8 +779,7 @@ auto Unit::Serialize(AllocateOutput destination, bool includeNym) const -> bool
 {
     auto serialized = proto::UnitDefinition{};
     if (false == Serialize(serialized, includeNym)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to serialize unit definition.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to serialize unit definition.")
             .Flush();
         return false;
     }
@@ -875,8 +875,7 @@ auto Unit::update_signature(const Lock& lock, const PasswordPrompt& reason)
     if (success) {
         signatures_.emplace_front(new proto::Signature(signature));
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to create signature.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to create signature.").Flush();
     }
 
     return success;
@@ -891,7 +890,7 @@ auto Unit::validate(const Lock& lock) const -> bool
     const bool validSyntax = proto::Validate(contract(lock), VERBOSE, true);
 
     if (1 > signatures_.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing signature.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing signature.").Flush();
 
         return false;
     }
@@ -933,7 +932,7 @@ auto Unit::VisitAccountRecords(
         api_,
         OTDB::STORED_OBJ_STRING_MAP,
         dataFolder,
-        api_.Legacy().Contract(),
+        api_.Internal().Legacy().Contract(),
         strAcctRecordFile->Get(),
         "",
         ""));
@@ -966,10 +965,10 @@ auto Unit::VisitAccountRecords(
 
             if (!strInstrumentDefinitionID->Compare(
                     str_instrument_definition_id.c_str())) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": Error: wrong "
-                    "instrument definition ID (")(str_instrument_definition_id)(
-                    ") when expecting: ")(strInstrumentDefinitionID)(".")
+                LogOutput(OT_METHOD)(__func__)(": Error: wrong "
+                                               "instrument definition ID (")(
+                    str_instrument_definition_id)(") when expecting: ")(
+                    strInstrumentDefinitionID)(".")
                     .Flush();
             } else {
                 const auto& wallet = api_.Wallet();
@@ -977,15 +976,15 @@ auto Unit::VisitAccountRecords(
                 auto account = wallet.Account(accountID);
 
                 if (false == bool(account)) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
-                        ": Unable to load account ")(str_acct_id)(".")
+                    LogOutput(OT_METHOD)(__func__)(": Unable to load account ")(
+                        str_acct_id)(".")
                         .Flush();
 
                     continue;
                 }
 
                 if (false == visitor.Trigger(account.get(), reason)) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Error: Trigger failed for account ")(str_acct_id)
                         .Flush();
                 }

@@ -47,13 +47,13 @@ private:
     friend OTOutbailmentReply;
 
 #ifndef _WIN32
-    Outbailment* clone() const noexcept override = 0;
+    auto clone() const noexcept -> Outbailment* override = 0;
 #endif
 
     Outbailment(const Outbailment&) = delete;
     Outbailment(Outbailment&&) = delete;
-    Outbailment& operator=(const Outbailment&) = delete;
-    Outbailment& operator=(Outbailment&&) = delete;
+    auto operator=(const Outbailment&) -> Outbailment& = delete;
+    auto operator=(Outbailment&&) -> Outbailment& = delete;
 };
 }  // namespace reply
 }  // namespace peer

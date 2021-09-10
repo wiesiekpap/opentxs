@@ -34,8 +34,7 @@ auto BitcoinP2PCmpctblock(
     using ReturnType = bitcoin::message::Cmpctblock;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Invalid header")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -45,8 +44,7 @@ auto BitcoinP2PCmpctblock(
     try {
         return new ReturnType(api, std::move(pHeader), raw_cmpctblock);
     } catch (...) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Checksum failure")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Checksum failure").Flush();
 
         return nullptr;
     }

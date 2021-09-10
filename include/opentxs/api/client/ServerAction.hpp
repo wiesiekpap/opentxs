@@ -49,25 +49,25 @@ class OPENTXS_EXPORT ServerAction
 public:
     using Action = Pimpl<opentxs::client::ServerAction>;
 
-    virtual Action ActivateSmartContract(
+    virtual auto ActivateSmartContract(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const Identifier& accountID,
         const std::string& agentName,
-        std::unique_ptr<OTSmartContract>& contract) const = 0;
-    virtual Action AdjustUsageCredits(
+        std::unique_ptr<OTSmartContract>& contract) const -> Action = 0;
+    virtual auto AdjustUsageCredits(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::Nym& targetNymID,
-        const Amount adjustment) const = 0;
-    virtual Action CancelPaymentPlan(
+        const Amount adjustment) const -> Action = 0;
+    virtual auto CancelPaymentPlan(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
-        std::unique_ptr<OTPaymentPlan>& plan) const = 0;
-    virtual Action CreateMarketOffer(
+        std::unique_ptr<OTPaymentPlan>& plan) const -> Action = 0;
+    virtual auto CreateMarketOffer(
         const PasswordPrompt& reason,
         const Identifier& assetAccountID,
         const Identifier& currencyAccountID,
@@ -78,89 +78,89 @@ public:
         const bool selling,
         const std::chrono::seconds lifetime,
         const std::string& stopSign,
-        const Amount activationPrice) const = 0;
-    virtual Action DepositPaymentPlan(
+        const Amount activationPrice) const -> Action = 0;
+    virtual auto DepositPaymentPlan(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
-        std::unique_ptr<OTPaymentPlan>& plan) const = 0;
-    virtual Action DownloadMarketList(
+        std::unique_ptr<OTPaymentPlan>& plan) const -> Action = 0;
+    virtual auto DownloadMarketList(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID) const = 0;
-    virtual Action DownloadMarketOffers(
+        const identifier::Server& serverID) const -> Action = 0;
+    virtual auto DownloadMarketOffers(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const Identifier& marketID,
-        const Amount depth) const = 0;
-    virtual Action DownloadMarketRecentTrades(
+        const Amount depth) const -> Action = 0;
+    virtual auto DownloadMarketRecentTrades(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
-        const Identifier& marketID) const = 0;
-    virtual Action DownloadNymMarketOffers(
+        const Identifier& marketID) const -> Action = 0;
+    virtual auto DownloadNymMarketOffers(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID) const = 0;
-    virtual Action ExchangeBasketCurrency(
+        const identifier::Server& serverID) const -> Action = 0;
+    virtual auto ExchangeBasketCurrency(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const Identifier& accountID,
         const Identifier& basketID,
-        const bool direction) const = 0;
-    virtual Action IssueBasketCurrency(
+        const bool direction) const -> Action = 0;
+    virtual auto IssueBasketCurrency(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const proto::UnitDefinition& basket,
-        const std::string& label = "") const = 0;
-    virtual Action KillMarketOffer(
+        const std::string& label = "") const -> Action = 0;
+    virtual auto KillMarketOffer(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const Identifier& accountID,
-        const TransactionNumber number) const = 0;
-    virtual Action KillPaymentPlan(
+        const TransactionNumber number) const -> Action = 0;
+    virtual auto KillPaymentPlan(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const Identifier& accountID,
-        const TransactionNumber number) const = 0;
-    virtual Action PayDividend(
+        const TransactionNumber number) const -> Action = 0;
+    virtual auto PayDividend(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const Identifier& accountID,
         const std::string& memo,
-        const Amount amountPerShare) const = 0;
-    virtual Action TriggerClause(
+        const Amount amountPerShare) const -> Action = 0;
+    virtual auto TriggerClause(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const TransactionNumber transactionNumber,
         const std::string& clause,
-        const std::string& parameter) const = 0;
-    virtual Action UnregisterAccount(
+        const std::string& parameter) const -> Action = 0;
+    virtual auto UnregisterAccount(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
-        const Identifier& accountID) const = 0;
-    virtual Action UnregisterNym(
+        const Identifier& accountID) const -> Action = 0;
+    virtual auto UnregisterNym(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID) const = 0;
-    virtual Action WithdrawVoucher(
+        const identifier::Server& serverID) const -> Action = 0;
+    virtual auto WithdrawVoucher(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const Identifier& accountID,
         const identifier::Nym& recipientNymID,
         const Amount amount,
-        const std::string& memo) const = 0;
+        const std::string& memo) const -> Action = 0;
 
     OPENTXS_NO_EXPORT virtual ~ServerAction() = default;
 
@@ -170,8 +170,8 @@ protected:
 private:
     ServerAction(const ServerAction&) = delete;
     ServerAction(ServerAction&&) = delete;
-    ServerAction& operator=(const ServerAction&) = delete;
-    ServerAction& operator=(ServerAction&&) = delete;
+    auto operator=(const ServerAction&) -> ServerAction& = delete;
+    auto operator=(ServerAction&&) -> ServerAction& = delete;
 };
 }  // namespace client
 }  // namespace api

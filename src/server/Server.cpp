@@ -18,7 +18,6 @@
 
 #include "Proto.tpp"
 #include "core/OTStorage.hpp"
-#include "internal/api/server/Server.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Endpoints.hpp"
@@ -30,6 +29,7 @@
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/server/Manager.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
@@ -79,7 +79,7 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::server
 {
 Server::Server(
-    const opentxs::api::server::internal::Manager& manager,
+    const opentxs::api::server::Manager& manager,
     const PasswordPrompt& reason)
     : manager_(manager)
     , reason_(reason)
@@ -377,9 +377,9 @@ void Server::CreateMainFile(bool& mainFileExists)
     core::AddressType type{};
 
     if (!contract->ConnectInfo(strHostname, nPort, type, type)) {
-        LogNormal(OT_METHOD)(__func__)(
-            __func__)(": Unable to retrieve connection info from this "
-                      "contract.")
+        LogNormal(OT_METHOD)(__func__)(__func__)(
+            ": Unable to retrieve connection info from this "
+            "contract.")
             .Flush();
 
         OT_FAIL;
@@ -403,8 +403,8 @@ void Server::CreateMainFile(bool& mainFileExists)
 
     auto proto = proto::ServerContract{};
     if (false == contract->Serialize(proto, true)) {
-        LogNormal(OT_METHOD)(__func__)(
-            __func__)(": Failed to serialize server contract.")
+        LogNormal(OT_METHOD)(__func__)(__func__)(
+            ": Failed to serialize server contract.")
             .Flush();
 
         OT_FAIL;

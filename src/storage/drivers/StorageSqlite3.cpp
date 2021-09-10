@@ -93,7 +93,7 @@ auto StorageSqlite3::commit_transaction(const std::string& rootHash) const
     set_root(rootHash, sql);
     commit(sql);
     pending_.clear();
-    LogVerbose(OT_METHOD)(__FUNCTION__)(sql.str()).Flush();
+    LogVerbose(OT_METHOD)(__func__)(sql.str()).Flush();
 
     return (
         SQLITE_OK ==
@@ -146,7 +146,7 @@ void StorageSqlite3::Init_StorageSqlite3()
         Create(config_.sqlite3_secondary_bucket_);
         Create(config_.sqlite3_control_table_);
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to initialize database.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to initialize database.")
             .Flush();
 
         OT_FAIL
@@ -196,7 +196,7 @@ auto StorageSqlite3::Select(
         "SELECT v FROM '" + tablename + "' WHERE k GLOB ?1;";
     const auto sql = bind_key(query, key, 1);
     sqlite3_prepare_v2(db_, sql.c_str(), -1, &statement, nullptr);
-    LogVerbose(OT_METHOD)(__FUNCTION__)(sql).Flush();
+    LogVerbose(OT_METHOD)(__func__)(sql).Flush();
     auto result = sqlite3_step(statement);
     bool success = false;
     std::size_t retry{3};
@@ -215,13 +215,13 @@ auto StorageSqlite3::Select(
                 }
             } break;
             case SQLITE_BUSY: {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Busy.").Flush();
+                LogOutput(OT_METHOD)(__func__)(": Busy.").Flush();
                 result = sqlite3_step(statement);
                 --retry;
             } break;
             default: {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Unknown error (")(result)(
-                    ").")
+                LogOutput(OT_METHOD)(__func__)(": Unknown error (")(
+                    result)(").")
                     .Flush();
                 result = sqlite3_step(statement);
                 --retry;
@@ -382,7 +382,7 @@ auto StorageSqlite3::Upsert(
         value.c_str(),
         static_cast<int>(value.size()),
         SQLITE_STATIC);
-    LogVerbose(OT_METHOD)(__FUNCTION__)(expand_sql(statement)).Flush();
+    LogVerbose(OT_METHOD)(__func__)(expand_sql(statement)).Flush();
     const auto result = sqlite3_step(statement);
     sqlite3_finalize(statement);
 

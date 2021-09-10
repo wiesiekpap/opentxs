@@ -10,7 +10,7 @@ namespace opentxs::crypto::key::implementation
 class SymmetricNull final : virtual public key::Symmetric
 {
 public:
-    auto api() const -> const api::internal::Core& final { throw; }
+    auto api() const -> const api::Core& final { throw; }
 
     auto ChangePassword(const PasswordPrompt&, const Secret&) -> bool final
     {

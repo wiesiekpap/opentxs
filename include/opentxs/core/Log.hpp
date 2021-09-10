@@ -34,7 +34,7 @@
     };
 
 #define OT_INTERMEDIATE_FORMAT(OT_THE_ERROR_STRING)                            \
-    ((std::string(OT_METHOD) + std::string(__FUNCTION__) + std::string(": ") + \
+    ((std::string(OT_METHOD) + std::string(__func__) + std::string(": ") +     \
       std::string(OT_THE_ERROR_STRING) + std::string("\n"))                    \
          .c_str())
 
@@ -42,34 +42,34 @@
 #define OT_TO_STR(A) OT_TO_STR_A(A)
 
 #define OT_ID_FORMAT(OT_ID_OBJECT)                                             \
-    ((std::string(OT_METHOD) + std::string(__FUNCTION__) +                     \
+    ((std::string(OT_METHOD) + std::string(__func__) +                         \
       std::string(": Empty ID for '") + std::string(OT_TO_STR(OT_ID_OBJECT)) + \
       std::string("' passed in to the API (by the client application).\n"))    \
          .c_str())
 
 #define OT_OTHER_ID_FORMAT(OT_ID_OBJECT)                                       \
-    ((std::string(OT_METHOD) + std::string(__FUNCTION__) +                     \
+    ((std::string(OT_METHOD) + std::string(__func__) +                         \
       std::string(": Empty or invalid ID for '") +                             \
       std::string(OT_TO_STR(OT_ID_OBJECT)) +                                   \
       std::string("' passed in to the API (by the client application).\n"))    \
          .c_str())
 
 #define OT_BOUNDS_FORMAT(OT_NUMBER)                                            \
-    ((std::string(OT_METHOD) + std::string(__FUNCTION__) +                     \
+    ((std::string(OT_METHOD) + std::string(__func__) +                         \
       std::string(": Out-of-bounds value for '") +                             \
       std::string(OT_TO_STR(OT_NUMBER)) +                                      \
       std::string("' passed in to the API (by the client application).\n"))    \
          .c_str())
 
 #define OT_MIN_BOUND_FORMAT(OT_NUMBER)                                         \
-    ((std::string(OT_METHOD) + std::string(__FUNCTION__) +                     \
+    ((std::string(OT_METHOD) + std::string(__func__) +                         \
       std::string(": Lower-than-minimum allowed value for '") +                \
       std::string(OT_TO_STR(OT_NUMBER)) +                                      \
       std::string("' passed in to the API (by the client application).\n"))    \
          .c_str())
 
 #define OT_STD_STR_FORMAT(OT_STRING_INPUT)                                     \
-    ((std::string(OT_METHOD) + std::string(__FUNCTION__) +                     \
+    ((std::string(OT_METHOD) + std::string(__func__) +                         \
       std::string(": Empty string for '") +                                    \
       std::string(OT_TO_STR(OT_STRING_INPUT)) +                                \
       std::string("' passed in to the API (by the client application).\n"))    \
@@ -156,8 +156,8 @@ OPENTXS_EXPORT extern LogSource LogDebug;
 OPENTXS_EXPORT extern LogSource LogTrace;
 OPENTXS_EXPORT extern LogSource LogInsane;
 
-OPENTXS_EXPORT const char* PathSeparator();
-OPENTXS_EXPORT bool Sleep(const std::chrono::microseconds us);
-OPENTXS_EXPORT const char* Version();
+OPENTXS_EXPORT auto PathSeparator() -> const char*;
+OPENTXS_EXPORT auto Sleep(const std::chrono::microseconds us) -> bool;
+OPENTXS_EXPORT auto Version() -> const char*;
 }  // namespace opentxs
 #endif

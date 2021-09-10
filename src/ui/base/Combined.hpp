@@ -23,7 +23,7 @@ protected:
     SortKey key_;
 
     Combined(
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const typename ListTemplate::ListPrimaryID::interface_type& primaryID,
         const Identifier& widgetID,
         const typename RowTemplate::RowParentType& parent,

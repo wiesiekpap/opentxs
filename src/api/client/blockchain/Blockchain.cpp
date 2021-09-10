@@ -3,9 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"               // IWYU pragma: associated
-#include "1_Internal.hpp"             // IWYU pragma: associated
-#include "api/client/Blockchain.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                          // IWYU pragma: associated
+#include "1_Internal.hpp"                        // IWYU pragma: associated
+#include "api/client/blockchain/Blockchain.hpp"  // IWYU pragma: associated
 
 #include <set>
 #include <type_traits>
@@ -16,7 +16,6 @@
 #include "api/client/blockchain/Imp.hpp"
 #include "internal/api/client/Factory.hpp"
 #include "internal/blockchain/Params.hpp"
-#include "internal/blockchain/crypto/Crypto.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
@@ -36,7 +35,7 @@ using ReturnType = opentxs::api::client::implementation::Blockchain;
 namespace opentxs::factory
 {
 auto BlockchainAPI(
-    const api::internal::Core& api,
+    const api::Core& api,
     const api::client::Activity& activity,
     const api::client::Contacts& contacts,
     const api::Legacy& legacy,
@@ -77,14 +76,6 @@ namespace opentxs::api::client::implementation
 {
 auto Blockchain::Account(const identifier::Nym& nymID, const Chain chain) const
     noexcept(false) -> const opentxs::blockchain::crypto::Account&
-{
-    return AccountInternal(nymID, chain);
-}
-
-auto Blockchain::AccountInternal(
-    const identifier::Nym& nymID,
-    const Chain chain) const noexcept(false)
-    -> const opentxs::blockchain::crypto::internal::Account&
 {
     return imp_->Account(nymID, chain);
 }

@@ -18,13 +18,13 @@
 #include <utility>
 #include <vector>
 
-#include "internal/api/client/Client.hpp"
 #include "internal/contact/Contact.hpp"
 #include "internal/ui/UI.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactItemAttribute.hpp"
@@ -47,7 +47,7 @@ template struct std::pair<int, std::string>;
 namespace opentxs::factory
 {
 auto ProfileModel(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept -> std::unique_ptr<ui::internal::Profile>
 {
@@ -68,7 +68,7 @@ const std::map<contact::ContactSectionName, int> Profile::sort_keys_{
     {contact::ContactSectionName::Profile, 1}};
 
 Profile::Profile(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     : ProfileList(api, nymID, cb, false)

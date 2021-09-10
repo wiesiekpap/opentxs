@@ -33,10 +33,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace crypto
@@ -156,7 +153,7 @@ protected:
     using EncryptedExtractor = std::function<EncryptedKey(Data&, Secret&)>;
     using PlaintextExtractor = std::function<OTSecret()>;
 
-    const api::internal::Core& api_;
+    const api::Core& api_;
     const VersionNumber version_;
     const crypto::key::asymmetric::Algorithm type_;
     const opentxs::crypto::key::asymmetric::Role role_;
@@ -166,7 +163,7 @@ protected:
     std::unique_ptr<const proto::Ciphertext> encrypted_key_;
 
     static auto create_key(
-        const api::internal::Core& api,
+        const api::Core& api,
         const crypto::AsymmetricProvider& provider,
         const NymParameters& options,
         const crypto::key::asymmetric::Role role,
@@ -183,7 +180,7 @@ protected:
         const ReadView plaintext) noexcept
         -> std::unique_ptr<proto::Ciphertext>;
     static auto encrypt_key(
-        const api::internal::Core& api,
+        const api::Core& api,
         const PasswordPrompt& reason,
         const ReadView plaintext,
         proto::Ciphertext& ciphertext) noexcept -> bool;
@@ -212,7 +209,7 @@ protected:
     virtual void erase_private_data(const Lock& lock);
 
     Asymmetric(
-        const api::internal::Core& api,
+        const api::Core& api,
         const crypto::AsymmetricProvider& engine,
         const crypto::key::asymmetric::Algorithm keyType,
         const crypto::key::asymmetric::Role role,
@@ -223,14 +220,14 @@ protected:
         EncryptedExtractor get,
         PlaintextExtractor getPlaintext = {}) noexcept(false);
     Asymmetric(
-        const api::internal::Core& api,
+        const api::Core& api,
         const crypto::AsymmetricProvider& engine,
         const crypto::key::asymmetric::Algorithm keyType,
         const crypto::key::asymmetric::Role role,
         const VersionNumber version,
         EncryptedExtractor get) noexcept(false);
     Asymmetric(
-        const api::internal::Core& api,
+        const api::Core& api,
         const crypto::AsymmetricProvider& engine,
         const proto::AsymmetricKey& serializedKey,
         EncryptedExtractor get) noexcept(false);

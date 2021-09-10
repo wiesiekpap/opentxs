@@ -31,21 +31,21 @@ namespace opentxs
 {
 namespace api
 {
-class ThreadPool
+class OPENTXS_EXPORT ThreadPool
 {
 public:
     using Message = opentxs::network::zeromq::Message;
     using Callback = std::function<void(const Message&)>;
     using WorkType = OTZMQWorkType;
 
-    OPENTXS_EXPORT static auto Capacity() noexcept -> std::size_t;
-    OPENTXS_EXPORT static auto MakeWork(
+    static auto Capacity() noexcept -> std::size_t;
+    static auto MakeWork(
         const opentxs::network::zeromq::Context& zmq,
         WorkType type) noexcept -> OTZMQMessage;
 
-    OPENTXS_EXPORT virtual auto Endpoint() const noexcept -> std::string = 0;
-    OPENTXS_EXPORT virtual auto Register(WorkType type, Callback handler)
-        const noexcept -> bool = 0;
+    virtual auto Endpoint() const noexcept -> std::string = 0;
+    virtual auto Register(WorkType type, Callback handler) const noexcept
+        -> bool = 0;
 
     virtual ~ThreadPool() = default;
 

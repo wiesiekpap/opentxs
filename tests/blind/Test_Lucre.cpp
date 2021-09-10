@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "2_Factory.hpp"
-#include "internal/api/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -61,15 +60,15 @@ public:
     static ot::Time valid_from_;
     static ot::Time valid_to_;
 
-    const ot::api::client::internal::Manager& api_;
+    const ot::api::client::Manager& api_;
     ot::OTPasswordPrompt reason_;
     ot::Nym_p alice_;
     ot::Nym_p bob_;
 
     Test_Basic()
-        : api_(dynamic_cast<const ot::api::client::internal::Manager&>(
+        : api_(dynamic_cast<const ot::api::client::Manager&>(
               ot::Context().StartClient(0)))
-        , reason_(api_.Factory().PasswordPrompt(__FUNCTION__))
+        , reason_(api_.Factory().PasswordPrompt(__func__))
         , alice_()
         , bob_()
     {

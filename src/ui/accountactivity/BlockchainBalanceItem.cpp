@@ -10,9 +10,9 @@
 #include <memory>
 #include <string>
 
-#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
@@ -30,7 +30,7 @@ namespace opentxs::ui::implementation
 {
 BlockchainBalanceItem::BlockchainBalanceItem(
     const AccountActivityInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const AccountActivityRowID& rowID,
     const AccountActivitySortKey& sortKey,
     CustomData& custom,

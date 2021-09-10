@@ -25,10 +25,8 @@ namespace implementation
 {
 class Factory;
 }  // namespace implementation
-namespace internal
-{
-struct Core;
-}  // namespace internal
+
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -66,7 +64,7 @@ class PasswordPrompt;
 class OPENTXS_EXPORT OTOffer : public Instrument
 {
 public:
-    bool MakeOffer(
+    auto MakeOffer(
         bool bBuyingOrSelling,            // True == SELLING, False == BUYING
         const std::int64_t& lPriceLimit,  // Per Scale...
         const std::int64_t& lTotalAssetsOffer,  // Total assets available for
@@ -79,39 +77,42 @@ public:
                                               // authorizing
                                               // this trade.
         const Time VALID_FROM = {},           // defaults to RIGHT NOW
-        const Time VALID_TO = {});            // defaults to 24 hours (a
+        const Time VALID_TO = {}) -> bool;    // defaults to 24 hours (a
                                               // "Day Order")
     inline void IncrementFinishedSoFar(const std::int64_t& lFinishedSoFar)
     {
         m_lFinishedSoFar += lFinishedSoFar;
     }
 
-    inline std::int64_t GetAmountAvailable() const
+    inline auto GetAmountAvailable() const -> std::int64_t
     {
         return GetTotalAssetsOnOffer() - GetFinishedSoFar();
     }
-    inline const std::int64_t& GetTransactionNum() const
+    inline auto GetTransactionNum() const -> const std::int64_t&
     {
         return m_lTransactionNum;
     }
 
-    inline const std::int64_t& GetPriceLimit() const { return m_lPriceLimit; }
-    inline const std::int64_t& GetTotalAssetsOnOffer() const
+    inline auto GetPriceLimit() const -> const std::int64_t&
+    {
+        return m_lPriceLimit;
+    }
+    inline auto GetTotalAssetsOnOffer() const -> const std::int64_t&
     {
         return m_lTotalAssetsOffer;
     }
-    inline const std::int64_t& GetFinishedSoFar() const
+    inline auto GetFinishedSoFar() const -> const std::int64_t&
     {
         return m_lFinishedSoFar;
     }
-    inline const std::int64_t& GetMinimumIncrement()
+    inline auto GetMinimumIncrement() -> const std::int64_t&
     {
         if (m_lMinimumIncrement < 1) m_lMinimumIncrement = 1;
         return m_lMinimumIncrement;
     }
-    inline const std::int64_t& GetScale() const { return m_lScale; }
+    inline auto GetScale() const -> const std::int64_t& { return m_lScale; }
 
-    inline const Identifier& GetCurrencyID() const
+    inline auto GetCurrencyID() const -> const Identifier&
     {
         return m_CURRENCY_TYPE_ID;
     }
@@ -121,15 +122,15 @@ public:
     }
 
     // Buying or selling?
-    inline bool IsBid() { return !m_bSelling; }
-    inline bool IsAsk() { return m_bSelling; }
+    inline auto IsBid() -> bool { return !m_bSelling; }
+    inline auto IsAsk() -> bool { return m_bSelling; }
 
-    bool IsMarketOrder() const;
-    bool IsLimitOrder() const;
+    auto IsMarketOrder() const -> bool;
+    auto IsLimitOrder() const -> bool;
 
     // Stores a pointer to theTrade for later use. (Not responsible to clean up,
     // just convenient.)
-    inline OTTrade* GetTrade() { return m_pTrade; }
+    inline auto GetTrade() -> OTTrade* { return m_pTrade; }
     inline void SetTrade(const OTTrade& theTrade)
     {
         m_pTrade = &(const_cast<OTTrade&>(theTrade));
@@ -137,7 +138,7 @@ public:
     // Note: m_tDateAddedToMarket is not saved in the Offer Contract, but
     // OTMarket sets/saves/loads it.
     //
-    Time GetDateAddedToMarket() const;            // Used in
+    auto GetDateAddedToMarket() const -> Time;    // Used in
                                                   // OTMarket::GetOfferList
                                                   // and GetNymOfferList.
     void SetDateAddedToMarket(const Time tDate);  // Used in OTCron when
@@ -152,7 +153,7 @@ public:
     void Release_Offer();
 
     // return -1 if error, 0 if nothing, and 1 if the node was processed.
-    std::int32_t ProcessXMLNode(irr::io::IrrXMLReader*& xml) override;
+    auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
 
     void UpdateContents(const PasswordPrompt& reason)
         override;  // Before transmission or
@@ -227,21 +228,21 @@ private:
 
     Time m_tDateAddedToMarket;
 
-    bool isPowerOfTen(const std::int64_t& x);
+    auto isPowerOfTen(const std::int64_t& x) -> bool;
 
-    OTOffer(const api::internal::Core& core);  // The constructor contains
-                                               // the 3 variables needed to
-                                               // identify any market.
+    OTOffer(const api::Core& core);  // The constructor contains
+                                     // the 3 variables needed to
+                                     // identify any market.
     OTOffer(
-        const api::internal::Core& core,
+        const api::Core& core,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const identifier::UnitDefinition& CURRENCY_ID,
         const std::int64_t& MARKET_SCALE);
     OTOffer(const OTOffer&) = delete;
     OTOffer(OTOffer&&) = delete;
-    OTOffer& operator=(const OTOffer&) = delete;
-    OTOffer& operator=(OTOffer&&) = delete;
+    auto operator=(const OTOffer&) -> OTOffer& = delete;
+    auto operator=(OTOffer&&) -> OTOffer& = delete;
 
     OTOffer() = delete;
 };

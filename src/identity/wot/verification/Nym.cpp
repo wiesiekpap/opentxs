@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "2_Factory.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/identity/wot/verification/Verification.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -42,7 +41,7 @@ auto Factory::VerificationNym(
 
         return new ReturnType(parent, nym, version);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
+        LogOutput("opentxs::Factory::")(__func__)(
             "Failed to construct verification nym: ")(e.what())
             .Flush();
 
@@ -62,7 +61,7 @@ auto Factory::VerificationNym(
 
         return new ReturnType(parent, serialized);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
+        LogOutput("opentxs::Factory::")(__func__)(
             "Failed to construct verification nym: ")(e.what())
             .Flush();
 
@@ -133,8 +132,7 @@ auto Nym::AddItem(
         version)};
 
     if (false == bool(pCandidate)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct item")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to construct item").Flush();
 
         return false;
     }
@@ -147,8 +145,7 @@ auto Nym::AddItem(const Item::SerializedType item) noexcept -> bool
     auto pCandidate = Child{Factory::VerificationItem(*this, item)};
 
     if (false == bool(pCandidate)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct item")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to construct item").Flush();
 
         return false;
     }
@@ -280,8 +277,8 @@ auto Nym::UpgradeItemVersion(
                 proto::VerificationIdentityAllowedVerification().at(nymVersion);
 
             if (itemVersion < min) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Version ")(itemVersion)(
-                    " too old")
+                LogOutput(OT_METHOD)(__func__)(": Version ")(
+                    itemVersion)(" too old")
                     .Flush();
 
                 return false;
@@ -295,7 +292,7 @@ auto Nym::UpgradeItemVersion(
             }
         }
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": No support for version ")(
+        LogOutput(OT_METHOD)(__func__)(": No support for version ")(
             itemVersion)(" items")
             .Flush();
 

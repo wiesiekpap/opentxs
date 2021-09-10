@@ -44,10 +44,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -260,7 +257,7 @@ protected:
     auto init(Endpoints endpoints) noexcept -> void;
 
     AccountActivity(
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nymID,
         const Identifier& accountID,
         const AccountType type,

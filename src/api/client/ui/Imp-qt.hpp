@@ -49,8 +49,9 @@ namespace client
 namespace internal
 {
 struct Blockchain;
-struct Manager;
 }  // namespace internal
+
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -124,7 +125,7 @@ public:
     auto ShutdownModels() noexcept -> void final;
 
     ImpQt(
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const api::client::internal::Blockchain& blockchain,
         const Flag& running) noexcept;
 

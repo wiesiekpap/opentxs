@@ -155,7 +155,7 @@ void Receiver<InterfaceType, MessageType>::thread() noexcept
 
         if (-1 == events) {
             const auto error = zmq_errno();
-            std::cerr << RECEIVER_METHOD << __FUNCTION__
+            std::cerr << RECEIVER_METHOD << __func__
                       << ": Poll error: " << zmq_strerror(error) << std::endl;
 
             continue;
@@ -167,7 +167,7 @@ void Receiver<InterfaceType, MessageType>::thread() noexcept
         const auto received = Socket::receive_message(lock, socket_, reply);
 
         if (false == received) {
-            std::cerr << RECEIVER_METHOD << __FUNCTION__
+            std::cerr << RECEIVER_METHOD << __func__
                       << ": Failed to receive incoming message." << std::endl;
 
             continue;

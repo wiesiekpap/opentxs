@@ -80,7 +80,7 @@ auto BlockHeader::Store(
 
     if (tx.Finalize(true)) { return true; }
 
-    LogOutput(OT_METHOD)(__FUNCTION__)(": Database update error").Flush();
+    LogOutput(OT_METHOD)(__func__)(": Database update error").Flush();
 
     return false;
 }
@@ -101,7 +101,7 @@ auto BlockHeader::Store(const UpdatedHeader& headers) const noexcept -> bool
 
     if (tx.Finalize(true)) { return true; }
 
-    LogOutput(OT_METHOD)(__FUNCTION__)(": Database update error").Flush();
+    LogOutput(OT_METHOD)(__func__)(": Database update error").Flush();
 
     return false;
 }
@@ -143,7 +143,7 @@ auto BlockHeader::store(
                 lmdb_.Store(table_, hash.Bytes(), tsv(index), tx);
 
             if (false == result.first) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": Failed to update index for block header ")(hash.asHex())
                     .Flush();
 
@@ -161,7 +161,7 @@ auto BlockHeader::store(
 
         return proto::write(proto, preallocated(bytes, view.data()));
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }

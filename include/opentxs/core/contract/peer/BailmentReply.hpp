@@ -47,13 +47,13 @@ private:
     friend OTBailmentReply;
 
 #ifndef _WIN32
-    Bailment* clone() const noexcept override = 0;
+    auto clone() const noexcept -> Bailment* override = 0;
 #endif
 
     Bailment(const Bailment&) = delete;
     Bailment(Bailment&&) = delete;
-    Bailment& operator=(const Bailment&) = delete;
-    Bailment& operator=(Bailment&&) = delete;
+    auto operator=(const Bailment&) -> Bailment& = delete;
+    auto operator=(Bailment&&) -> Bailment& = delete;
 };
 }  // namespace reply
 }  // namespace peer

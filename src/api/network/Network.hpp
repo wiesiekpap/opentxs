@@ -18,17 +18,13 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
 namespace network
 {
 class Asio;
 class Dht;
 }  // namespace network
 
+class Core;
 class Endpoints;
 }  // namespace api
 
@@ -49,7 +45,7 @@ struct Network::Imp {
     std::unique_ptr<Dht> dht_;
     network::Blockchain blockchain_;
 
-    Imp(const api::internal::Core& api,
+    Imp(const api::Core& api,
         const network::Asio& asio,
         const opentxs::network::zeromq::Context& zmq,
         const api::Endpoints& endpoints,

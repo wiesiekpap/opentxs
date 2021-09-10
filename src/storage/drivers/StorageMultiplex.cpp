@@ -168,7 +168,7 @@ void StorageMultiplex::init(
 void StorageMultiplex::init_memdb(
     std::unique_ptr<opentxs::api::storage::Plugin>& plugin)
 {
-    LogVerbose(OT_METHOD)(__FUNCTION__)(": Initializing primary MemDB plugin.")
+    LogVerbose(OT_METHOD)(__func__)(": Initializing primary MemDB plugin.")
         .Flush();
     plugin.reset(Factory::StorageMemDB(
         storage_, config_, digest_, random_, primary_bucket_));
@@ -213,7 +213,7 @@ auto StorageMultiplex::Load(
     if (primary_plugin_->Load(key, checking, value)) { return true; }
 
     if (false == checking) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(
+        LogVerbose(OT_METHOD)(__func__)(
             ": key not found by primary storage plugin.")
             .Flush();
     }
@@ -231,7 +231,7 @@ auto StorageMultiplex::Load(
         }
 
         if (false == checking) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(
+            LogVerbose(OT_METHOD)(__func__)(
                 ": key not found by backup storage plugin ")
                 .Flush();
         }
@@ -240,7 +240,7 @@ auto StorageMultiplex::Load(
     }
 
     if (false == checking) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Key not found by any plugin.")
+        LogOutput(OT_METHOD)(__func__)(": Key not found by any plugin.")
             .Flush();
 
         throw std::runtime_error("Key not found by any plugin");
@@ -330,12 +330,11 @@ void StorageMultiplex::migrate_primary(
     const auto migrated = tree.Migrate(*newPlugin);
 
     if (migrated) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Successfully migrated to new primary plugin.")
             .Flush();
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to migrate primary plugin.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to migrate primary plugin.")
             .Flush();
 
         OT_FAIL;
@@ -439,17 +438,17 @@ void StorageMultiplex::SynchronizePlugins(
     if (syncPrimary) {
         OT_ASSERT(primary_plugin_);
 
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Primary plugin is out of sync.")
+        LogOutput(OT_METHOD)(__func__)(": Primary plugin is out of sync.")
             .Flush();
 
         const auto migrated = tree.Migrate(*primary_plugin_);
 
         if (migrated) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Successfully restored primary plugin from backup.")
                 .Flush();
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failed to restore primary plugin from backup.")
                 .Flush();
         }
@@ -460,28 +459,28 @@ void StorageMultiplex::SynchronizePlugins(
 
         if (hash == plugin->LoadRoot()) { continue; }
 
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Backup plugin is uninitialized or out of sync.")
             .Flush();
 
         if (tree.Migrate(*plugin)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Successfully initialized backup plugin.")
                 .Flush();
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failed to initialize backup plugin.")
                 .Flush();
         }
 
         if (false == root.Save(*plugin)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failed to update root index object for backup plugin.")
                 .Flush();
         }
 
         if (false == plugin->StoreRoot(false, hash)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failed to update root hash for backup plugin.")
                 .Flush();
         }

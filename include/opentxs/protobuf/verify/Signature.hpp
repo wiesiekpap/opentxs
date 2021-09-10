@@ -22,7 +22,7 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT bool CheckProto_1(
+auto CheckProto_1(
     const Signature& signature,
     const bool silent,
     const std::string& selfID,
@@ -31,12 +31,12 @@ OPENTXS_EXPORT bool CheckProto_1(
     std::uint32_t& selfPrivate,
     std::uint32_t& masterPublic,
     std::uint32_t& sourcePublic,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_1(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_1(
     const Signature& signature,
     const bool silent,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_2(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_2(
     const Signature& signature,
     const bool silent,
     const std::string& selfID,
@@ -45,12 +45,12 @@ OPENTXS_EXPORT bool CheckProto_2(
     std::uint32_t& selfPrivate,
     std::uint32_t& masterPublic,
     std::uint32_t& sourcePublic,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_2(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_2(
     const Signature& signature,
     const bool silent,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_3(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_3(
     const Signature&,
     const bool,
     const std::string&,
@@ -59,26 +59,12 @@ OPENTXS_EXPORT bool CheckProto_3(
     std::uint32_t&,
     std::uint32_t&,
     std::uint32_t&,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_3(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_3(
     const Signature&,
     const bool,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_4(
-    const Signature&,
-    const bool,
-    const std::string&,
-    const std::string&,
-    std::uint32_t&,
-    std::uint32_t&,
-    std::uint32_t&,
-    std::uint32_t&,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_4(
-    const Signature&,
-    const bool,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_5(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_4(
     const Signature&,
     const bool,
     const std::string&,
@@ -87,13 +73,27 @@ OPENTXS_EXPORT bool CheckProto_5(
     std::uint32_t&,
     std::uint32_t&,
     std::uint32_t&,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_5(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_4(
     const Signature&,
     const bool,
-    const SignatureRole role = SIGROLE_ERROR);
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_5(
+    const Signature&,
+    const bool,
+    const std::string&,
+    const std::string&,
+    std::uint32_t&,
+    std::uint32_t&,
+    std::uint32_t&,
+    std::uint32_t&,
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_5(
+    const Signature&,
+    const bool,
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
 
-OPENTXS_EXPORT bool CheckProto_6(
+auto CheckProto_6(
     const Signature&,
     const bool,
     const std::string&,
@@ -102,8 +102,8 @@ OPENTXS_EXPORT bool CheckProto_6(
     std::uint32_t&,
     std::uint32_t&,
     std::uint32_t&,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_7(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_7(
     const Signature&,
     const bool,
     const std::string&,
@@ -112,8 +112,8 @@ OPENTXS_EXPORT bool CheckProto_7(
     std::uint32_t&,
     std::uint32_t&,
     std::uint32_t&,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_8(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_8(
     const Signature&,
     const bool,
     const std::string&,
@@ -122,8 +122,8 @@ OPENTXS_EXPORT bool CheckProto_8(
     std::uint32_t&,
     std::uint32_t&,
     std::uint32_t&,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_9(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_9(
     const Signature&,
     const bool,
     const std::string&,
@@ -132,8 +132,8 @@ OPENTXS_EXPORT bool CheckProto_9(
     std::uint32_t&,
     std::uint32_t&,
     std::uint32_t&,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_10(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_10(
     const Signature&,
     const bool,
     const std::string&,
@@ -142,8 +142,8 @@ OPENTXS_EXPORT bool CheckProto_10(
     std::uint32_t&,
     std::uint32_t&,
     std::uint32_t&,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_11(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_11(
     const Signature&,
     const bool,
     const std::string&,
@@ -152,8 +152,8 @@ OPENTXS_EXPORT bool CheckProto_11(
     std::uint32_t&,
     std::uint32_t&,
     std::uint32_t&,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_12(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_12(
     const Signature&,
     const bool,
     const std::string&,
@@ -162,8 +162,8 @@ OPENTXS_EXPORT bool CheckProto_12(
     std::uint32_t&,
     std::uint32_t&,
     std::uint32_t&,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_13(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_13(
     const Signature&,
     const bool,
     const std::string&,
@@ -172,8 +172,8 @@ OPENTXS_EXPORT bool CheckProto_13(
     std::uint32_t&,
     std::uint32_t&,
     std::uint32_t&,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_14(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_14(
     const Signature&,
     const bool,
     const std::string&,
@@ -182,8 +182,8 @@ OPENTXS_EXPORT bool CheckProto_14(
     std::uint32_t&,
     std::uint32_t&,
     std::uint32_t&,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_15(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_15(
     const Signature&,
     const bool,
     const std::string&,
@@ -192,8 +192,8 @@ OPENTXS_EXPORT bool CheckProto_15(
     std::uint32_t&,
     std::uint32_t&,
     std::uint32_t&,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_16(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_16(
     const Signature&,
     const bool,
     const std::string&,
@@ -202,8 +202,8 @@ OPENTXS_EXPORT bool CheckProto_16(
     std::uint32_t&,
     std::uint32_t&,
     std::uint32_t&,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_17(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_17(
     const Signature&,
     const bool,
     const std::string&,
@@ -212,8 +212,8 @@ OPENTXS_EXPORT bool CheckProto_17(
     std::uint32_t&,
     std::uint32_t&,
     std::uint32_t&,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_18(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_18(
     const Signature&,
     const bool,
     const std::string&,
@@ -222,8 +222,8 @@ OPENTXS_EXPORT bool CheckProto_18(
     std::uint32_t&,
     std::uint32_t&,
     std::uint32_t&,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_19(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_19(
     const Signature&,
     const bool,
     const std::string&,
@@ -232,8 +232,8 @@ OPENTXS_EXPORT bool CheckProto_19(
     std::uint32_t&,
     std::uint32_t&,
     std::uint32_t&,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_20(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_20(
     const Signature&,
     const bool,
     const std::string&,
@@ -242,68 +242,68 @@ OPENTXS_EXPORT bool CheckProto_20(
     std::uint32_t&,
     std::uint32_t&,
     std::uint32_t&,
-    const SignatureRole role = SIGROLE_ERROR);
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
 
-OPENTXS_EXPORT bool CheckProto_6(
+auto CheckProto_6(
     const Signature&,
     const bool,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_7(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_7(
     const Signature&,
     const bool,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_8(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_8(
     const Signature&,
     const bool,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_9(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_9(
     const Signature&,
     const bool,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_10(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_10(
     const Signature&,
     const bool,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_11(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_11(
     const Signature&,
     const bool,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_12(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_12(
     const Signature&,
     const bool,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_13(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_13(
     const Signature&,
     const bool,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_14(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_14(
     const Signature&,
     const bool,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_15(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_15(
     const Signature&,
     const bool,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_16(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_16(
     const Signature&,
     const bool,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_17(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_17(
     const Signature&,
     const bool,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_18(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_18(
     const Signature&,
     const bool,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_19(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_19(
     const Signature&,
     const bool,
-    const SignatureRole role = SIGROLE_ERROR);
-OPENTXS_EXPORT bool CheckProto_20(
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
+auto CheckProto_20(
     const Signature&,
     const bool,
-    const SignatureRole role = SIGROLE_ERROR);
+    const SignatureRole role = SIGROLE_ERROR) -> bool;
 }  // namespace proto
 }  // namespace opentxs
 

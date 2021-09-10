@@ -67,9 +67,9 @@ auto OTStashItem::CreditStash(const std::int64_t& lAmount) -> bool
 {
     if (lAmount < 0) {
         {
-            LogNormal(OT_METHOD)(__FUNCTION__)(": Failed attempt to credit a "
-                                               "negative amount (")(lAmount)(
-                "). Asset Type: ")(m_strInstrumentDefinitionID)(".")
+            LogNormal(OT_METHOD)(__func__)(": Failed attempt to credit a "
+                                           "negative amount (")(
+                lAmount)("). Asset Type: ")(m_strInstrumentDefinitionID)(".")
                 .Flush();
         }
         return false;
@@ -84,9 +84,9 @@ auto OTStashItem::DebitStash(const std::int64_t& lAmount) -> bool
 {
     if (lAmount < 0) {
         {
-            LogNormal(OT_METHOD)(__FUNCTION__)(": Failed attempt to debit a "
-                                               "negative amount (")(lAmount)(
-                "). Asset Type: ")(m_strInstrumentDefinitionID)(".")
+            LogNormal(OT_METHOD)(__func__)(": Failed attempt to debit a "
+                                           "negative amount (")(
+                lAmount)("). Asset Type: ")(m_strInstrumentDefinitionID)(".")
                 .Flush();
         }
         return false;
@@ -96,10 +96,10 @@ auto OTStashItem::DebitStash(const std::int64_t& lAmount) -> bool
 
     if (lTentativeNewBalance < 0) {
         {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
-                ": Failed attempt to debit (amount of) ")(lAmount)(
-                ": New stash balance would have been a negative "
-                "amount (")(lTentativeNewBalance)("). Asset Type: ")(
+            LogNormal(OT_METHOD)(__func__)(
+                ": Failed attempt to debit (amount of) ")(
+                lAmount)(": New stash balance would have been a negative "
+                         "amount (")(lTentativeNewBalance)("). Asset Type: ")(
                 m_strInstrumentDefinitionID)(".")
                 .Flush();
         }

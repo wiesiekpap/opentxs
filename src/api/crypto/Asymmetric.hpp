@@ -15,6 +15,7 @@
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -28,10 +29,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace proto
@@ -50,10 +48,7 @@ namespace opentxs::api::crypto::implementation
 class Asymmetric final : virtual public api::crypto::internal::Asymmetric
 {
 public:
-    auto API() const noexcept -> const api::internal::Core& final
-    {
-        return api_;
-    }
+    auto API() const noexcept -> const api::Core& final { return api_; }
     auto InstantiateECKey(const proto::AsymmetricKey& serialized) const
         -> ECKey final;
     auto InstantiateHDKey(const proto::AsymmetricKey& serialized) const
@@ -101,7 +96,7 @@ public:
         const opentxs::crypto::key::asymmetric::Role role,
         const VersionNumber version) const -> Key final;
 
-    Asymmetric(const api::internal::Core& api) noexcept;
+    Asymmetric(const api::Core& api) noexcept;
 
     ~Asymmetric() final = default;
 
@@ -112,7 +107,7 @@ private:
     static const VersionNumber serialized_path_version_;
     static const TypeMap curve_to_key_type_;
 
-    const api::internal::Core& api_;
+    const api::Core& api_;
 
 #if OT_CRYPTO_WITH_BIP32
     static auto serialize_path(

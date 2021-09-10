@@ -11,8 +11,6 @@ add_library(
   opentxs-api-client OBJECT
   "${opentxs_SOURCE_DIR}/src/internal/api/client/Client.hpp"
   "${opentxs_SOURCE_DIR}/src/internal/api/client/Factory.hpp"
-  "Blockchain.cpp"
-  "Blockchain.hpp"
   "Client.cpp"
   "Contacts.cpp"
   "Contacts.hpp"
@@ -48,20 +46,11 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/Workflow.hpp"
 )
 target_link_libraries(
-  opentxs-api-client
-  PRIVATE
-    Boost::headers
-    opentxs::messages
-    bech32
+  opentxs-api-client PRIVATE Boost::headers opentxs::messages
 )
 target_include_directories(
   opentxs-api-client SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
-
-if(OT_BLOCKCHAIN_EXPORT)
-  target_link_libraries(opentxs-api-client PRIVATE lmdb)
-  target_link_libraries(opentxs PRIVATE lmdb)
-endif()
 
 target_sources(opentxs-api-client PRIVATE ${cxx-install-headers})
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-api-client>)

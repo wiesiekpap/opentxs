@@ -47,13 +47,13 @@ private:
     friend OTStoreSecret;
 
 #ifndef _WIN32
-    StoreSecret* clone() const noexcept override = 0;
+    auto clone() const noexcept -> StoreSecret* override = 0;
 #endif
 
     StoreSecret(const StoreSecret&) = delete;
     StoreSecret(StoreSecret&&) = delete;
-    StoreSecret& operator=(const StoreSecret&) = delete;
-    StoreSecret& operator=(StoreSecret&&) = delete;
+    auto operator=(const StoreSecret&) -> StoreSecret& = delete;
+    auto operator=(StoreSecret&&) -> StoreSecret& = delete;
 };
 }  // namespace request
 }  // namespace peer

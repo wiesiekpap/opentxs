@@ -14,13 +14,13 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT const VersionMap& LucreTokenDataAllowedCiphertext() noexcept;
-OPENTXS_EXPORT const VersionMap& PurseAllowedCiphertext() noexcept;
-OPENTXS_EXPORT const VersionMap& PurseAllowedEnvelope() noexcept;
-OPENTXS_EXPORT const VersionMap& PurseAllowedSymmetricKey() noexcept;
-OPENTXS_EXPORT const VersionMap& PurseAllowedToken() noexcept;
-OPENTXS_EXPORT const VersionMap& PurseExchangeAllowedPurse() noexcept;
-OPENTXS_EXPORT const VersionMap& TokenAllowedLucreTokenData() noexcept;
+auto LucreTokenDataAllowedCiphertext() noexcept -> const VersionMap&;
+auto PurseAllowedCiphertext() noexcept -> const VersionMap&;
+auto PurseAllowedEnvelope() noexcept -> const VersionMap&;
+auto PurseAllowedSymmetricKey() noexcept -> const VersionMap&;
+auto PurseAllowedToken() noexcept -> const VersionMap&;
+auto PurseExchangeAllowedPurse() noexcept -> const VersionMap&;
+auto TokenAllowedLucreTokenData() noexcept -> const VersionMap&;
 }  // namespace proto
 }  // namespace opentxs
 #endif  // OPENTXS_PROTOBUF_VERIFYCASH_HPP

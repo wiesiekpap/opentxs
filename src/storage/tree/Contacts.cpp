@@ -61,7 +61,7 @@ auto Contacts::Delete(const std::string& id) -> bool { return delete_item(id); }
 void Contacts::extract_nyms(const Lock& lock, const proto::Contact& data) const
 {
     if (false == verify_write_lock(lock)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Lock failure.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Lock failure.").Flush();
 
         abort();
     }
@@ -92,8 +92,7 @@ void Contacts::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (false == bool(serialized)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to load contact index file.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to load contact index file.")
             .Flush();
 
         abort();
@@ -173,7 +172,7 @@ auto Contacts::NymOwner(std::string nym) const -> std::string
 void Contacts::reconcile_maps(const Lock& lock, const proto::Contact& data)
 {
     if (false == verify_write_lock(lock)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Lock failure.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Lock failure.").Flush();
 
         abort();
     }
@@ -215,7 +214,7 @@ void Contacts::reverse_merged()
 auto Contacts::save(const Lock& lock) const -> bool
 {
     if (false == verify_write_lock(lock)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Lock failure.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Lock failure.").Flush();
 
         abort();
     }

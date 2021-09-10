@@ -34,8 +34,7 @@ auto BitcoinP2PSendcmpct(
     using ReturnType = bitcoin::message::Sendcmpct;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Invalid header")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -43,7 +42,7 @@ auto BitcoinP2PSendcmpct(
     auto expectedSize = sizeof(ReturnType::Raw);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Size below minimum for Sendcmpct 1")
             .Flush();
 
@@ -60,8 +59,7 @@ auto BitcoinP2PSendcmpct(
     try {
         return new ReturnType(api, std::move(pHeader), announce, version);
     } catch (...) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Checksum failure")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Checksum failure").Flush();
 
         return nullptr;
     }

@@ -20,12 +20,12 @@
 
 #include "blockchain/database/common/Database.hpp"
 #include "core/Worker.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/network/Network.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Activity.hpp"
@@ -57,7 +57,7 @@
 namespace opentxs::api::client::implementation
 {
 BlockchainImp::BlockchainImp(
-    const api::internal::Core& api,
+    const api::Core& api,
     const api::client::Activity& activity,
     const api::client::Contacts& contacts,
     const api::Legacy& legacy,

@@ -35,8 +35,7 @@ auto BitcoinP2PMerkleblock(
     using ReturnType = bitcoin::message::Merkleblock;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Invalid header")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -46,7 +45,7 @@ auto BitcoinP2PMerkleblock(
     auto expectedSize = sizeof(raw_item);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Size below minimum for Merkleblock 1")
             .Flush();
 
@@ -64,7 +63,7 @@ auto BitcoinP2PMerkleblock(
     expectedSize += sizeof(std::byte);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Size below minimum for Merkleblock 1")
             .Flush();
 
@@ -76,7 +75,7 @@ auto BitcoinP2PMerkleblock(
         it, expectedSize, size, hashCount);
 
     if (!decodedSize) {
-        LogOutput(__FUNCTION__)(": CompactSize incomplete").Flush();
+        LogOutput(__func__)(": CompactSize incomplete").Flush();
 
         return nullptr;
     }
@@ -88,7 +87,7 @@ auto BitcoinP2PMerkleblock(
             expectedSize += sizeof(bitcoin::BlockHeaderHashField);
 
             if (expectedSize > size) {
-                LogOutput("opentxs::factory::")(__FUNCTION__)(
+                LogOutput("opentxs::factory::")(__func__)(
                     ": Hash entries incomplete at entry index ")(ii)
                     .Flush();
 
@@ -104,7 +103,7 @@ auto BitcoinP2PMerkleblock(
     expectedSize += sizeof(std::byte);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Size below minimum for Merkleblock 1")
             .Flush();
 
@@ -116,7 +115,7 @@ auto BitcoinP2PMerkleblock(
         it, expectedSize, size, flagByteCount);
 
     if (!decodedFlagSize) {
-        LogOutput(__FUNCTION__)(": CompactSize incomplete").Flush();
+        LogOutput(__func__)(": CompactSize incomplete").Flush();
 
         return nullptr;
     }
@@ -127,8 +126,7 @@ auto BitcoinP2PMerkleblock(
         expectedSize += flagByteCount;
 
         if (expectedSize > size) {
-            LogOutput("opentxs::factory::")(__FUNCTION__)(
-                ": Flag field incomplete")
+            LogOutput("opentxs::factory::")(__func__)(": Flag field incomplete")
                 .Flush();
 
             return nullptr;
@@ -144,8 +142,7 @@ auto BitcoinP2PMerkleblock(
         return new ReturnType(
             api, std::move(pHeader), block_header, txn_count, hashes, flags);
     } catch (...) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Checksum failure")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Checksum failure").Flush();
 
         return nullptr;
     }

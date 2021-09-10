@@ -13,13 +13,6 @@
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 
-#ifdef SWIG
-// clang-format off
-%rename(ZMQPipeline) opentxs::network::zeromq::Pipeline;
-%template(OTZMQPipeline) opentxs::Pimpl<opentxs::network::zeromq::Pipeline>;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace network
@@ -42,10 +35,10 @@ namespace zeromq
 class OPENTXS_EXPORT Pipeline
 {
 public:
-    virtual bool Close() const noexcept = 0;
-    virtual const zeromq::Context& Context() const noexcept = 0;
+    virtual auto Close() const noexcept -> bool = 0;
+    virtual auto Context() const noexcept -> const zeromq::Context& = 0;
     template <typename Input>
-    bool Push(const Input& data) const noexcept
+    auto Push(const Input& data) const noexcept -> bool
     {
         return push(Context().Message(data));
     }
@@ -59,13 +52,14 @@ protected:
 private:
     friend OTZMQPipeline;
 
-    virtual Pipeline* clone() const noexcept = 0;
-    virtual bool push(network::zeromq::Message& data) const noexcept = 0;
+    virtual auto clone() const noexcept -> Pipeline* = 0;
+    virtual auto push(network::zeromq::Message& data) const noexcept
+        -> bool = 0;
 
     Pipeline(const Pipeline&) = delete;
     Pipeline(Pipeline&&) = delete;
-    Pipeline& operator=(const Pipeline&) = delete;
-    Pipeline& operator=(Pipeline&&) = delete;
+    auto operator=(const Pipeline&) -> Pipeline& = delete;
+    auto operator=(Pipeline&&) -> Pipeline& = delete;
 };
 }  // namespace zeromq
 }  // namespace network

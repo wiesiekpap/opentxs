@@ -81,15 +81,13 @@ public:
     auto ChangePassword(const PasswordPrompt& reason, const Secret& newPassword)
         -> bool final;
 
+    Symmetric(const api::Core& api, const crypto::SymmetricProvider& engine);
     Symmetric(
-        const api::internal::Core& api,
-        const crypto::SymmetricProvider& engine);
-    Symmetric(
-        const api::internal::Core& api,
+        const api::Core& api,
         const crypto::SymmetricProvider& engine,
         const proto::SymmetricKey serialized);
     Symmetric(
-        const api::internal::Core& api,
+        const api::Core& api,
         const crypto::SymmetricProvider& engine,
         const Secret& seed,
         const ReadView salt,
@@ -105,13 +103,13 @@ public:
 private:
     friend std::unique_ptr<crypto::key::Symmetric> opentxs::factory::
         SymmetricKey(
-            const api::internal::Core&,
+            const api::Core&,
             const crypto::SymmetricProvider&,
             const opentxs::PasswordPrompt&,
             const crypto::key::symmetric::Algorithm) noexcept;
     friend std::unique_ptr<crypto::key::Symmetric> opentxs::factory::
         SymmetricKey(
-            const api::internal::Core&,
+            const api::Core&,
             const crypto::SymmetricProvider&,
             const Secret&,
             const std::uint64_t,
@@ -120,7 +118,7 @@ private:
             const crypto::key::symmetric::Source) noexcept;
     friend std::unique_ptr<crypto::key::Symmetric> opentxs::factory::
         SymmetricKey(
-            const api::internal::Core&,
+            const api::Core&,
             const crypto::SymmetricProvider&,
             const Secret&,
             const opentxs::PasswordPrompt&) noexcept;
@@ -128,7 +126,7 @@ private:
 
     static constexpr auto default_version_ = VersionNumber{1u};
 
-    const api::internal::Core& api_;
+    const api::Core& api_;
     /// The library providing the underlying crypto algorithms
     const crypto::SymmetricProvider& engine_;
     const VersionNumber version_;
@@ -191,7 +189,7 @@ private:
     auto unlock(const Lock& lock, const PasswordPrompt& reason) const -> bool;
 
     Symmetric(
-        const api::internal::Core& api,
+        const api::Core& api,
         const crypto::SymmetricProvider& engine,
         const VersionNumber version,
         const crypto::key::symmetric::Source type,

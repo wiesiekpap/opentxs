@@ -19,6 +19,7 @@
 #include "internal/api/Factory.hpp"
 #include "internal/api/storage/Storage.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/HDSeed.hpp"
 #include "opentxs/api/Options.hpp"
@@ -54,18 +55,18 @@ extern "C" auto internal_password_cb(
     const bool askTwice = (1 == rwflag);
     const auto& reason = *static_cast<opentxs::PasswordPrompt*>(userdata);
     const auto& api = opentxs::api::implementation::Core::get_api(reason);
-    opentxs::Lock lock(api.Lock());
+    opentxs::Lock lock(api.Internal().Lock());
     auto secret = api.Factory().Secret(0);
 
-    if (false == api.GetSecret(lock, secret, reason, askTwice)) {
-        opentxs::LogOutput(__FUNCTION__)(": Callback error").Flush();
+    if (false == api.Internal().GetSecret(lock, secret, reason, askTwice)) {
+        opentxs::LogOutput(__func__)(": Callback error").Flush();
 
         return 0;
     }
 
     if (static_cast<std::uint64_t>(secret->size()) >
         static_cast<std::uint64_t>(std::numeric_limits<std::int32_t>::max())) {
-        opentxs::LogOutput(__FUNCTION__)(": Secret too big").Flush();
+        opentxs::LogOutput(__func__)(": Secret too big").Flush();
 
         return 0;
     }
@@ -73,7 +74,7 @@ extern "C" auto internal_password_cb(
     const auto len = std::min(static_cast<std::int32_t>(secret->size()), size);
 
     if (len <= 0) {
-        opentxs::LogOutput(__FUNCTION__)(": Callback error").Flush();
+        opentxs::LogOutput(__func__)(": Callback error").Flush();
 
         return 0;
     }
@@ -165,8 +166,7 @@ void Core::cleanup()
     if (password_timeout_.joinable()) { password_timeout_.join(); }
 }
 
-auto Core::get_api(const PasswordPrompt& reason) noexcept
-    -> const api::internal::Core&
+auto Core::get_api(const PasswordPrompt& reason) noexcept -> const api::Core&
 {
     return reason.api_;
 }
@@ -214,8 +214,7 @@ auto Core::GetSecret(
     prompt->SetPassword(masterPassword);
 
     if (false == master_key_->Unlock(prompt)) {
-        opentxs::LogOutput(__FUNCTION__)(": Failed to unlock master key")
-            .Flush();
+        opentxs::LogOutput(__func__)(": Failed to unlock master key").Flush();
 
         return success;
     }
@@ -226,7 +225,7 @@ auto Core::GetSecret(
         master_secret_.value()->WriteInto(Secret::Mode::Mem));
 
     if (false == decrypted) {
-        opentxs::LogOutput(__FUNCTION__)(": Failed to decrypt master secret")
+        opentxs::LogOutput(__func__)(": Failed to decrypt master secret")
             .Flush();
 
         return success;

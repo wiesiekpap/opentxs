@@ -35,10 +35,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 
 class Core;
@@ -84,7 +81,7 @@ public:
     auto Unit() const noexcept -> contact::ContactItemType final;
 
     CustodialAccountActivity(
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nymID,
         const Identifier& accountID,
         const SimpleCallback& cb) noexcept;

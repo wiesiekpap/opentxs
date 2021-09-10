@@ -39,14 +39,11 @@ using PaymentEventVersion = std::pair<std::uint32_t, PaymentEventType>;
 using EventTransportMap =
     std::map<PaymentEventVersion, std::set<EventTransportMethod>>;
 
-OPENTXS_EXPORT const EventTransportMap&
-PaymentEventAllowedTransportMethod() noexcept;
-OPENTXS_EXPORT const WorkflowEventMap&
-PaymentWorkflowAllowedEventTypes() noexcept;
-OPENTXS_EXPORT const VersionMap&
-PaymentWorkflowAllowedInstrumentRevision() noexcept;
-OPENTXS_EXPORT const VersionMap& PaymentWorkflowAllowedPaymentEvent() noexcept;
-OPENTXS_EXPORT const WorkflowStateMap& PaymentWorkflowAllowedState() noexcept;
+auto PaymentEventAllowedTransportMethod() noexcept -> const EventTransportMap&;
+auto PaymentWorkflowAllowedEventTypes() noexcept -> const WorkflowEventMap&;
+auto PaymentWorkflowAllowedInstrumentRevision() noexcept -> const VersionMap&;
+auto PaymentWorkflowAllowedPaymentEvent() noexcept -> const VersionMap&;
+auto PaymentWorkflowAllowedState() noexcept -> const WorkflowStateMap&;
 }  // namespace proto
 }  // namespace opentxs
 #endif  // OPENTXS_PROTOBUF_VERIFYWORKFLOWS_HPP

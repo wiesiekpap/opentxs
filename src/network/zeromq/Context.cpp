@@ -64,14 +64,13 @@ auto Context::RawToZ85(
     const AllocateOutput destination) noexcept -> bool
 {
     if (0 != input.size() % 4) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid input size.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid input size.").Flush();
 
         return false;
     }
 
     if (false == bool(destination)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output allocator.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator.").Flush();
 
         return false;
     }
@@ -80,8 +79,7 @@ auto Context::RawToZ85(
     auto out = destination(target);
 
     if (false == out.valid(target)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to allocate output")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to allocate output").Flush();
 
         return false;
     }
@@ -97,14 +95,13 @@ auto Context::Z85ToRaw(
     const AllocateOutput destination) noexcept -> bool
 {
     if (0 != input.size() % 5) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid input size.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid input size.").Flush();
 
         return false;
     }
 
     if (false == bool(destination)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output allocator.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator.").Flush();
 
         return false;
     }
@@ -113,8 +110,7 @@ auto Context::Z85ToRaw(
     auto out = destination(target);
 
     if (false == out.valid(target)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to allocate output")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to allocate output").Flush();
 
         return false;
     }
@@ -234,7 +230,7 @@ auto Context::PairSocket(
 }
 
 auto Context::Pipeline(
-    const api::internal::Core& api,
+    const api::Core& api,
     std::function<void(zeromq::Message&)> callback) const noexcept
     -> OTZMQPipeline
 {

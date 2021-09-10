@@ -32,10 +32,7 @@ namespace implementation
 class Factory;
 }  // namespace implementation
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -77,7 +74,7 @@ public:
     using mapOfAccounts = std::map<std::string, SharedAccount>;
     using mapOfStashes = std::map<std::string, OTStash*>;
 
-    originType GetOriginType() const override
+    auto GetOriginType() const -> originType override
     {
         return originType::origin_smart_contract;
     }
@@ -93,18 +90,24 @@ public:
     // then set right when a MoveAcctFunds() or StashAcctFunds() is being
     // performed.
     //
-    const String& GetLastSenderNymID() const { return m_strLastSenderUser; }
-    const String& GetLastSenderAcctID() const { return m_strLastSenderAcct; }
-    const String& GetLastRecipientNymID() const
+    auto GetLastSenderNymID() const -> const String&
+    {
+        return m_strLastSenderUser;
+    }
+    auto GetLastSenderAcctID() const -> const String&
+    {
+        return m_strLastSenderAcct;
+    }
+    auto GetLastRecipientNymID() const -> const String&
     {
         return m_strLastRecipientUser;
     }
-    const String& GetLastRecipientAcctID() const
+    auto GetLastRecipientAcctID() const -> const String&
     {
         return m_strLastRecipientAcct;
     }
-    std::int32_t GetCountStashes() const;
-    std::int32_t GetCountStashAccts() const;
+    auto GetCountStashes() const -> std::int32_t;
+    auto GetCountStashAccts() const -> std::int32_t;
     // Merchant Nym is passed here so we can verify the signature before
     // confirming.
     // These notes are from OTAgreement/OTPaymentPlan but they are still
@@ -130,9 +133,10 @@ public:
     // make sure that none of
     // the vital terms, values, clauses, etc are different between the two.
     //
-    bool Compare(OTScriptable& rhs) const override;
+    auto Compare(OTScriptable& rhs) const -> bool override;
     // From OTCronItem (parent class of this)
-    bool CanRemoveItemFromCron(const otx::context::Client& context) override;
+    auto CanRemoveItemFromCron(const otx::context::Client& context)
+        -> bool override;
 
     void HarvestOpeningNumber(otx::context::Server& context) override;
     void HarvestClosingNumbers(otx::context::Server& context) override;
@@ -156,29 +160,30 @@ public:
 
     // Return True if should stay on OTCron's list for more processing.
     // Return False if expired or otherwise should be removed.
-    bool ProcessCron(const PasswordPrompt& reason) override;  // OTCron calls
-                                                              // this regularly,
-                                                              // which is my
-                                                              // chance to
-                                                              // expire, etc.
+    auto ProcessCron(const PasswordPrompt& reason)
+        -> bool override;  // OTCron calls
+                           // this regularly,
+                           // which is my
+                           // chance to
+                           // expire, etc.
 
-    bool HasTransactionNum(const std::int64_t& lInput) const override;
+    auto HasTransactionNum(const std::int64_t& lInput) const -> bool override;
     void GetAllTransactionNumbers(NumList& numlistOutput) const override;
 
-    bool AddParty(OTParty& theParty) override;  // Takes ownership.
-    bool ConfirmParty(
+    auto AddParty(OTParty& theParty) -> bool override;  // Takes ownership.
+    auto ConfirmParty(
         OTParty& theParty,
         otx::context::Server& context,
-        const PasswordPrompt& reason) override;  // Takes ownership.
+        const PasswordPrompt& reason) -> bool override;  // Takes ownership.
     // Returns true if it was empty (and thus successfully set).
-    bool SetNotaryIDIfEmpty(const identifier::Server& theID);
+    auto SetNotaryIDIfEmpty(const identifier::Server& theID) -> bool;
 
-    bool VerifySmartContract(
+    auto VerifySmartContract(
         const identity::Nym& theNym,
         const Account& theAcct,
         const identity::Nym& theServerNym,
         const PasswordPrompt& reason,
-        bool bBurnTransNo = false);
+        bool bBurnTransNo = false) -> bool;
 
     // theNym is trying to activate the smart contract, and has
     // supplied transaction numbers and a user/acct ID. theNym definitely IS the
@@ -234,10 +239,11 @@ public:
     //    bool OTScriptable::CanExecuteClause(std::string str_party_name,
     // std::string str_clause_name); // This calls (if available) the
     // scripted clause: bool party_may_execute_clause(party_name, clause_name)
-    bool CanCancelContract(std::string str_party_name);  // This calls (if
-                                                         // available) the
-                                                         // scripted
-                                                         // clause:
+    auto CanCancelContract(std::string str_party_name)
+        -> bool;  // This calls (if
+                  // available) the
+                  // scripted
+                  // clause:
     // bool party_may_cancel_contract(party_name)
     // OT NATIVE FUNCTIONS -- Available for scripts to call:
 
@@ -251,37 +257,37 @@ public:
                                                                // until
                                                                // then,
                                                                // either.)
-    std::string GetRemainingTimer() const;  // returns seconds left on the
-                                            // timer,
-                                            // in string format, or "0".
+    auto GetRemainingTimer() const
+        -> std::string;  // returns seconds left on the
+                         // timer,
+                         // in string format, or "0".
     // class member, with string parameter
-    bool MoveAcctFundsStr(
+    auto MoveAcctFundsStr(
         std::string from_acct_name,
         std::string to_acct_name,
-        std::string str_Amount);  // calls OTCronItem::MoveFunds()
-    bool StashAcctFunds(
+        std::string str_Amount) -> bool;  // calls OTCronItem::MoveFunds()
+    auto StashAcctFunds(
         std::string from_acct_name,
         std::string to_stash_name,
-        std::string str_Amount);  // calls StashFunds()
-    bool UnstashAcctFunds(
+        std::string str_Amount) -> bool;  // calls StashFunds()
+    auto UnstashAcctFunds(
         std::string to_acct_name,
         std::string from_stash_name,
-        std::string str_Amount);  // calls StashFunds(lAmount * (-1) )
-    std::string GetAcctBalance(std::string from_acct_name);
-    std::string GetStashBalance(
+        std::string str_Amount) -> bool;  // calls StashFunds(lAmount * (-1) )
+    auto GetAcctBalance(std::string from_acct_name) -> std::string;
+    auto GetStashBalance(
         std::string stash_name,
-        std::string instrument_definition_id);
+        std::string instrument_definition_id) -> std::string;
 
-    std::string GetUnitTypeIDofAcct(std::string from_acct_name);
+    auto GetUnitTypeIDofAcct(std::string from_acct_name) -> std::string;
 
     // Todo: someday add "rejection notice" here too.
     // (Might be a demand for smart contracts to send failure notices.)
     // We already send a failure notice to all parties in the cash where
     // the smart contract fails to activate.
-    bool SendNoticeToParty(
-        std::string party_name,
-        const PasswordPrompt& reason);
-    bool SendANoticeToAllParties(const PasswordPrompt& reason);
+    auto SendNoticeToParty(std::string party_name, const PasswordPrompt& reason)
+        -> bool;
+    auto SendANoticeToAllParties(const PasswordPrompt& reason) -> bool;
 
     void DeactivateSmartContract();
 
@@ -300,7 +306,7 @@ public:
     // Done: Have a server backing account to double this record (like with cash
     // withdrawals) so it will turn up properly on an audit.
     //
-    OTStash* GetStash(std::string str_stash_name);
+    auto GetStash(std::string str_stash_name) -> OTStash*;
 
     // Low-level.
     void ExecuteClauses(
@@ -317,14 +323,14 @@ public:
     // especially from
     // a script, is to call StashAcctFunds() or UnstashAcctFunds() (BELOW)
     //
-    bool StashFunds(
+    auto StashFunds(
         const std::int64_t& lAmount,  // negative amount here means UNstash.
                                       // Positive
                                       // means STASH.
         const Identifier& PARTY_ACCT_ID,
         const identifier::Nym& PARTY_NYM_ID,
         OTStash& theStash,
-        const PasswordPrompt& reason);
+        const PasswordPrompt& reason) -> bool;
 
     void InitSmartContract();
 
@@ -332,13 +338,15 @@ public:
     void Release_SmartContract();
     void ReleaseStashes();
 
-    bool IsValidOpeningNumber(const std::int64_t& lOpeningNum) const override;
+    auto IsValidOpeningNumber(const std::int64_t& lOpeningNum) const
+        -> bool override;
 
-    std::int64_t GetOpeningNumber(
-        const identifier::Nym& theNymID) const override;
-    std::int64_t GetClosingNumber(const Identifier& theAcctID) const override;
+    auto GetOpeningNumber(const identifier::Nym& theNymID) const
+        -> std::int64_t override;
+    auto GetClosingNumber(const Identifier& theAcctID) const
+        -> std::int64_t override;
     // return -1 if error, 0 if nothing, and 1 if the node was processed.
-    std::int32_t ProcessXMLNode(irr::io::IrrXMLReader*& xml) override;
+    auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
 
     void UpdateContents(const PasswordPrompt& reason)
         override;  // Before transmission or
@@ -370,7 +378,7 @@ protected:
     {
         m_tNextProcessDate = tNEXT_DATE;
     }
-    const Time GetNextProcessDate() const { return m_tNextProcessDate; }
+    auto GetNextProcessDate() const -> const Time { return m_tNextProcessDate; }
 
 private:
     friend api::implementation::Factory;
@@ -429,18 +437,16 @@ private:
 
     // For moving money from one nym's account to another.
     // it is also nearly identically copied in OTPaymentPlan.
-    bool MoveFunds(
+    auto MoveFunds(
         const std::int64_t& lAmount,
         const Identifier& SOURCE_ACCT_ID,
         const identifier::Nym& SENDER_NYM_ID,
         const Identifier& RECIPIENT_ACCT_ID,
         const identifier::Nym& RECIPIENT_NYM_ID,
-        const PasswordPrompt& reason);
+        const PasswordPrompt& reason) -> bool;
 
-    OTSmartContract(const api::internal::Core& api);
-    OTSmartContract(
-        const api::internal::Core& api,
-        const identifier::Server& NOTARY_ID);
+    OTSmartContract(const api::Core& api);
+    OTSmartContract(const api::Core& api, const identifier::Server& NOTARY_ID);
 
     OTSmartContract() = delete;
 };

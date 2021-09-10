@@ -20,11 +20,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
+class Core;
 class Wallet;
 }  // namespace api
 
@@ -82,7 +78,7 @@ public:
 
     void CleanupAgents();
     void CleanupAccounts();
-    bool Compare(const OTParty& rhs) const;
+    auto Compare(const OTParty& rhs) const -> bool;
     void Serialize(
         Tag& parent,
         bool bCalculatingID = false,
@@ -94,15 +90,16 @@ public:
     //
     void ClearTemporaryPointers();
     // The party will use its authorizing agent.
-    bool SignContract(Contract& theInput, const PasswordPrompt& reason) const;
+    auto SignContract(Contract& theInput, const PasswordPrompt& reason) const
+        -> bool;
     // See if a certain transaction number is present.
     // Checks opening number on party, and closing numbers on his accounts.
-    bool HasTransactionNum(const std::int64_t& lInput) const;
+    auto HasTransactionNum(const std::int64_t& lInput) const -> bool;
     void GetAllTransactionNumbers(NumList& numlistOutput) const;
     // Set aside all the necessary transaction #s from the various Nyms.
     // (Assumes those Nym pointers are available inside their various agents.)
     //
-    bool ReserveTransNumsForConfirm(otx::context::Server& context);
+    auto ReserveTransNumsForConfirm(otx::context::Server& context) -> bool;
     void HarvestAllTransactionNumbers(otx::context::Server& context);
     void HarvestOpeningNumber(const String& strNotaryID);
     void HarvestOpeningNumber(otx::context::Server& context);
@@ -115,23 +112,23 @@ public:
     void HarvestClosingNumbers(otx::context::Server& context);
     // Iterates through the agents.
     //
-    bool DropFinalReceiptToNymboxes(
+    auto DropFinalReceiptToNymboxes(
         const std::int64_t& lNewTransactionNumber,
         const String& strOrigCronItem,
         const PasswordPrompt& reason,
         OTString pstrNote = String::Factory(),
-        OTString pstrAttachment = String::Factory());
+        OTString pstrAttachment = String::Factory()) -> bool;
     // Iterates through the accounts.
     //
-    bool DropFinalReceiptToInboxes(
+    auto DropFinalReceiptToInboxes(
         const String& strNotaryID,
         const std::int64_t& lNewTransactionNumber,
         const String& strOrigCronItem,
         const PasswordPrompt& reason,
         OTString pstrNote = String::Factory(),
-        OTString pstrAttachment = String::Factory());
-    bool SendNoticeToParty(
-        const api::internal::Core& api,
+        OTString pstrAttachment = String::Factory()) -> bool;
+    auto SendNoticeToParty(
+        const api::Core& api,
         bool bSuccessMsg,
         const identity::Nym& theServerNym,
         const identifier::Server& theNotaryID,
@@ -142,10 +139,10 @@ public:
         const PasswordPrompt& reason,
         OTString pstrNote = String::Factory(),
         OTString pstrAttachment = String::Factory(),
-        identity::Nym* pActualNym = nullptr);
+        identity::Nym* pActualNym = nullptr) -> bool;
     // This pointer isn't owned -- just stored for convenience.
     //
-    OTScriptable* GetOwnerAgreement() { return m_pOwnerAgreement; }
+    auto GetOwnerAgreement() -> OTScriptable* { return m_pOwnerAgreement; }
     void SetOwnerAgreement(OTScriptable& theOwner)
     {
         m_pOwnerAgreement = &theOwner;
@@ -154,8 +151,8 @@ public:
     {
         m_strMySignedCopy->Set(strMyCopy.Get());
     }
-    const String& GetMySignedCopy() { return m_strMySignedCopy; }
-    std::int64_t GetOpeningTransNo() const { return m_lOpeningTransNo; }
+    auto GetMySignedCopy() -> const String& { return m_strMySignedCopy; }
+    auto GetOpeningTransNo() const -> std::int64_t { return m_lOpeningTransNo; }
     void SetOpeningTransNo(const std::int64_t& theNumber)
     {
         m_lOpeningTransNo = theNumber;
@@ -163,33 +160,33 @@ public:
     // There is one of these for each asset account on the party.
     // You need the acct name to look it up.
     //
-    std::int64_t GetClosingTransNo(std::string str_for_acct_name) const;
+    auto GetClosingTransNo(std::string str_for_acct_name) const -> std::int64_t;
     // as used "IN THE SCRIPT."
     //
-    std::string GetPartyName(
-        bool* pBoolSuccess = nullptr) const;  // "sales_director",
-                                              // "marketer",
-                                              // etc
-    bool SetPartyName(const std::string& str_party_name_input);
+    auto GetPartyName(bool* pBoolSuccess = nullptr) const
+        -> std::string;  // "sales_director",
+                         // "marketer",
+                         // etc
+    auto SetPartyName(const std::string& str_party_name_input) -> bool;
     // ACTUAL PARTY OWNER (Only ONE of these can be true...)
     // Debating whether these two functions should be private. (Should it matter
     // to outsider?)
     //
-    bool IsNym() const;     // If the party is a Nym. (The party is the actual
-                            // owner/beneficiary.)
-    bool IsEntity() const;  // If the party is an Entity. (Either way, the AGENT
-                            // carries out all wishes.)
+    auto IsNym() const -> bool;     // If the party is a Nym. (The party is the
+                                    // actual owner/beneficiary.)
+    auto IsEntity() const -> bool;  // If the party is an Entity. (Either way,
+                                    // the AGENT carries out all wishes.)
     // ACTUAL PARTY OWNER
     //
     // If the party is a Nym, this is the Nym's ID. Otherwise this is false.
-    std::string GetNymID(bool* pBoolSuccess = nullptr) const;
+    auto GetNymID(bool* pBoolSuccess = nullptr) const -> std::string;
 
     // If the party is an Entity, this is the Entity's ID. Otherwise this is
     // false.
-    std::string GetEntityID(bool* pBoolSuccess = nullptr) const;
+    auto GetEntityID(bool* pBoolSuccess = nullptr) const -> std::string;
 
     // If party is a Nym, this is the NymID. Else return EntityID().
-    std::string GetPartyID(bool* pBoolSuccess = nullptr) const;
+    auto GetPartyID(bool* pBoolSuccess = nullptr) const -> std::string;
     // Some agents are passive (voting groups) and cannot behave actively, and
     // so cannot do
     // certain things that only Nyms can do. But they can still act as an agent
@@ -201,15 +198,15 @@ public:
     // do those actions otherwise will fail.
     // It's almost a separate kind of party but not worthy of a separate class.
     //
-    bool HasActiveAgent() const;
-    bool AddAgent(OTAgent& theAgent);
-    std::int32_t GetAgentCount() const
+    auto HasActiveAgent() const -> bool;
+    auto AddAgent(OTAgent& theAgent) -> bool;
+    auto GetAgentCount() const -> std::int32_t
     {
         return static_cast<std::int32_t>(m_mapAgents.size());
     }
-    OTAgent* GetAgent(const std::string& str_agent_name) const;
-    OTAgent* GetAgentByIndex(std::int32_t nIndex) const;
-    const std::string& GetAuthorizingAgentName() const
+    auto GetAgent(const std::string& str_agent_name) const -> OTAgent*;
+    auto GetAgentByIndex(std::int32_t nIndex) const -> OTAgent*;
+    auto GetAuthorizingAgentName() const -> const std::string&
     {
         return m_str_authorizing_agent;
     }
@@ -220,78 +217,79 @@ public:
     // If Nym is authorizing agent for Party, set agent's pointer to Nym and
     // return true.
     //
-    bool HasAgent(
+    auto HasAgent(
         const identity::Nym& theNym,
-        OTAgent** ppAgent = nullptr) const;  // If Nym is agent for
-                                             // Party,
+        OTAgent** ppAgent = nullptr) const -> bool;  // If Nym is agent for
+                                                     // Party,
     // set agent's pointer to Nym
     // and return true.
-    bool HasAgentByNymID(
+    auto HasAgentByNymID(
         const Identifier& theNymID,
-        OTAgent** ppAgent = nullptr) const;
-    bool HasAuthorizingAgent(
+        OTAgent** ppAgent = nullptr) const -> bool;
+    auto HasAuthorizingAgent(
         const identity::Nym& theNym,
-        OTAgent** ppAgent = nullptr) const;
-    bool HasAuthorizingAgentByNymID(
+        OTAgent** ppAgent = nullptr) const -> bool;
+    auto HasAuthorizingAgentByNymID(
         const Identifier& theNymID,
-        OTAgent** ppAgent = nullptr) const;  // ppAgent lets you get the agent
-                                             // ptr if it was there.
+        OTAgent** ppAgent = nullptr) const
+        -> bool;  // ppAgent lets you get the agent
+                  // ptr if it was there.
     // Load the authorizing agent from storage. Set agent's pointer to Nym.
     //
-    Nym_p LoadAuthorizingAgentNym(
+    auto LoadAuthorizingAgentNym(
         const identity::Nym& theSignerNym,
-        OTAgent** ppAgent = nullptr);
-    bool AddAccount(OTPartyAccount& thePartyAcct);
-    bool AddAccount(
+        OTAgent** ppAgent = nullptr) -> Nym_p;
+    auto AddAccount(OTPartyAccount& thePartyAcct) -> bool;
+    auto AddAccount(
         const String& strAgentName,
         const String& strName,
         const String& strAcctID,
         const String& strInstrumentDefinitionID,
-        std::int64_t lClosingTransNo);
-    bool AddAccount(
+        std::int64_t lClosingTransNo) -> bool;
+    auto AddAccount(
         const String& strAgentName,
         const char* szAcctName,
         Account& theAccount,
-        std::int64_t lClosingTransNo);
+        std::int64_t lClosingTransNo) -> bool;
 
-    bool RemoveAccount(const std::string str_Name);
+    auto RemoveAccount(const std::string str_Name) -> bool;
 
-    std::int32_t GetAccountCount() const
+    auto GetAccountCount() const -> std::int32_t
     {
         return static_cast<std::int32_t>(m_mapPartyAccounts.size());
     }  // returns total of all accounts owned by this party.
-    std::int32_t GetAccountCount(std::string str_agent_name)
-        const;  // Only counts accounts authorized for str_agent_name.
-    OTPartyAccount* GetAccount(
-        const std::string& str_acct_name) const;  // Get PartyAcct by name.
-    OTPartyAccount* GetAccountByIndex(std::int32_t nIndex);  // by index
-    OTPartyAccount* GetAccountByAgent(
-        const std::string& str_agent_name);  // by agent name
-    OTPartyAccount* GetAccountByID(
-        const Identifier& theAcctID) const;  // by asset acct id
+    auto GetAccountCount(std::string str_agent_name) const
+        -> std::int32_t;  // Only counts accounts authorized for str_agent_name.
+    auto GetAccount(const std::string& str_acct_name) const
+        -> OTPartyAccount*;  // Get PartyAcct by name.
+    auto GetAccountByIndex(std::int32_t nIndex) -> OTPartyAccount*;  // by index
+    auto GetAccountByAgent(const std::string& str_agent_name)
+        -> OTPartyAccount*;  // by agent name
+    auto GetAccountByID(const Identifier& theAcctID) const
+        -> OTPartyAccount*;  // by asset acct id
     // If account is present for Party, set account's pointer to theAccount and
     // return true.
     //
-    bool HasAccount(
+    auto HasAccount(
         const Account& theAccount,
-        OTPartyAccount** ppPartyAccount = nullptr) const;
-    bool HasAccountByID(
+        OTPartyAccount** ppPartyAccount = nullptr) const -> bool;
+    auto HasAccountByID(
         const Identifier& theAcctID,
-        OTPartyAccount** ppPartyAccount = nullptr) const;
-    bool VerifyOwnershipOfAccount(const Account& theAccount) const;
-    bool VerifyAccountsWithTheirAgents(
+        OTPartyAccount** ppPartyAccount = nullptr) const -> bool;
+    auto VerifyOwnershipOfAccount(const Account& theAccount) const -> bool;
+    auto VerifyAccountsWithTheirAgents(
         const String& strNotaryID,
         const PasswordPrompt& reason,
-        bool bBurnTransNo = false);
-    bool CopyAcctsToConfirmingParty(OTParty& theParty)
-        const;  // When confirming a party, a new version replaces the original.
-                // This is part of that process.
+        bool bBurnTransNo = false) -> bool;
+    auto CopyAcctsToConfirmingParty(OTParty& theParty) const
+        -> bool;  // When confirming a party, a new version replaces the
+                  // original. This is part of that process.
     void RegisterAccountsForExecution(OTScript& theScript);
 
-    bool LoadAndVerifyAssetAccounts(
+    auto LoadAndVerifyAssetAccounts(
         const String& strNotaryID,
         mapOfAccounts& map_Accts_Already_Loaded,
-        mapOfAccounts& map_NewlyLoaded);
+        mapOfAccounts& map_NewlyLoaded) -> bool;
 
     // ------------- OPERATIONS -------------
 
@@ -370,7 +368,7 @@ private:
 
     OTParty() = delete;
     OTParty(const OTParty&) = delete;
-    OTParty& operator=(const OTParty&) = delete;
+    auto operator=(const OTParty&) -> OTParty& = delete;
 };
 }  // namespace opentxs
 #endif

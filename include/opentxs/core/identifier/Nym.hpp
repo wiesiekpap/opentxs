@@ -11,25 +11,6 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/core/Identifier.hpp"
 
-#ifdef SWIG
-// clang-format off
-%ignore opentxs::identifier::Nym::Factory;
-%extend opentxs::identifier::Nym {
-    static OTNymID Factory()
-    {
-        return opentxs::identifier::Nym::Factory();
-    }
-    static OTNymID Factory(
-        const std::string& rhs)
-    {
-        return opentxs::identifier::Nym::Factory(rhs);
-    }
-}
-%rename (NymID) opentxs::identifier::Nym;
-%template(OTNymID) opentxs::Pimpl<opentxs::identifier::Nym>;
-// clang-format on
-#endif
-
 namespace opentxs
 {
 namespace identifier
@@ -39,26 +20,24 @@ class Nym;
 
 using OTNymID = Pimpl<identifier::Nym>;
 
-#ifndef SWIG
-OPENTXS_EXPORT bool operator==(
+OPENTXS_EXPORT auto operator==(
     const OTNymID& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-OPENTXS_EXPORT bool operator!=(
+    const opentxs::Identifier& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator!=(
     const OTNymID& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-OPENTXS_EXPORT bool operator<(
+    const opentxs::Identifier& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator<(
     const OTNymID& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-OPENTXS_EXPORT bool operator>(
+    const opentxs::Identifier& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator>(
     const OTNymID& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-OPENTXS_EXPORT bool operator<=(
+    const opentxs::Identifier& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator<=(
     const OTNymID& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-OPENTXS_EXPORT bool operator>=(
+    const opentxs::Identifier& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator>=(
     const OTNymID& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-#endif
+    const opentxs::Identifier& rhs) noexcept -> bool;
 }  // namespace opentxs
 
 namespace opentxs
@@ -68,12 +47,10 @@ namespace identifier
 class OPENTXS_EXPORT Nym : virtual public opentxs::Identifier
 {
 public:
-#ifndef SWIG
-    static OTNymID Factory();
-    static OTNymID Factory(const std::string& rhs);
-    static OTNymID Factory(const String& rhs);
-    static OTNymID Factory(const identity::Nym& nym);
-#endif
+    static auto Factory() -> OTNymID;
+    static auto Factory(const std::string& rhs) -> OTNymID;
+    static auto Factory(const String& rhs) -> OTNymID;
+    static auto Factory(const identity::Nym& nym) -> OTNymID;
 
     ~Nym() override = default;
 
@@ -84,12 +61,12 @@ private:
     friend OTNymID;
 
 #ifndef _WIN32
-    Nym* clone() const override = 0;
+    auto clone() const -> Nym* override = 0;
 #endif
     Nym(const Nym&) = delete;
     Nym(Nym&&) = delete;
-    Nym& operator=(const Nym&) = delete;
-    Nym& operator=(Nym&&) = delete;
+    auto operator=(const Nym&) -> Nym& = delete;
+    auto operator=(Nym&&) -> Nym& = delete;
 };
 }  // namespace identifier
 }  // namespace opentxs

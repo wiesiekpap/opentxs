@@ -16,17 +16,17 @@ namespace api
 {
 namespace crypto
 {
-class Config
+class OPENTXS_EXPORT Config
 {
 public:
-    OPENTXS_EXPORT virtual std::uint32_t IterationCount() const = 0;
-    OPENTXS_EXPORT virtual std::uint32_t SymmetricSaltSize() const = 0;
-    OPENTXS_EXPORT virtual std::uint32_t SymmetricKeySize() const = 0;
-    OPENTXS_EXPORT virtual std::uint32_t SymmetricKeySizeMax() const = 0;
-    OPENTXS_EXPORT virtual std::uint32_t SymmetricIvSize() const = 0;
-    OPENTXS_EXPORT virtual std::uint32_t SymmetricBufferSize() const = 0;
-    OPENTXS_EXPORT virtual std::uint32_t PublicKeysize() const = 0;
-    OPENTXS_EXPORT virtual std::uint32_t PublicKeysizeMax() const = 0;
+    virtual auto IterationCount() const -> std::uint32_t = 0;
+    virtual auto SymmetricSaltSize() const -> std::uint32_t = 0;
+    virtual auto SymmetricKeySize() const -> std::uint32_t = 0;
+    virtual auto SymmetricKeySizeMax() const -> std::uint32_t = 0;
+    virtual auto SymmetricIvSize() const -> std::uint32_t = 0;
+    virtual auto SymmetricBufferSize() const -> std::uint32_t = 0;
+    virtual auto PublicKeysize() const -> std::uint32_t = 0;
+    virtual auto PublicKeysizeMax() const -> std::uint32_t = 0;
 
     virtual ~Config() = default;
 
@@ -36,8 +36,8 @@ protected:
 private:
     Config(const Config&) = delete;
     Config(Config&&) = delete;
-    Config& operator=(const Config&) = delete;
-    Config& operator=(Config&&) = delete;
+    auto operator=(const Config&) -> Config& = delete;
+    auto operator=(Config&&) -> Config& = delete;
 };
 }  // namespace crypto
 }  // namespace api

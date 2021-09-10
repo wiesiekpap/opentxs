@@ -197,7 +197,7 @@ auto Sync::Load(const Chain chain, const Height height, Message& output)
 
             return total < 1_MiB;
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
@@ -207,7 +207,7 @@ auto Sync::Load(const Chain chain, const Height height, Message& output)
         using Dir = storage::lmdb::LMDB::Dir;
         lmdb_.ReadFrom(ChainToSyncTable(chain), start, cb, Dir::Forward);
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
     }
 
     return haveOne;
@@ -223,7 +223,7 @@ auto Sync::Reorg(const Chain chain, const Height height) const noexcept -> bool
 auto Sync::reorg(const Chain chain, const Height height) const noexcept -> bool
 {
     if (0 > height) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid height").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid height").Flush();
 
         return false;
     }
@@ -234,7 +234,7 @@ auto Sync::reorg(const Chain chain, const Height height) const noexcept -> bool
 
     for (auto key = Height{height + 1}; key <= tip; ++key) {
         if (false == lmdb_.Delete(table, static_cast<std::size_t>(key), txn)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Delete error").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Delete error").Flush();
 
             return false;
         }
@@ -243,13 +243,13 @@ auto Sync::reorg(const Chain chain, const Height height) const noexcept -> bool
     const auto key = static_cast<std::size_t>(chain);
 
     if (false == lmdb_.Store(tip_table_, key, tsv(height), txn).first) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to update tip").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to update tip").Flush();
 
         return false;
     }
 
     if (false == txn.Finalize(true)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Finalize error").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Finalize error").Flush();
 
         return false;
     }
@@ -269,7 +269,7 @@ auto Sync::Store(const Chain chain, const Items& items) const noexcept -> bool
         const auto parent = std::max<Height>(first.Height() - 1, 0);
 
         if (false == reorg(chain, parent)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Reorg error").Flush();
+            LogOutput(OT_METHOD)(__func__)(": Reorg error").Flush();
 
             return false;
         }
@@ -280,15 +280,14 @@ auto Sync::Store(const Chain chain, const Items& items) const noexcept -> bool
     OT_ASSERT(-2 < previous);
 
     auto txn = lmdb_.TransactionRW();
-    LogTrace(OT_METHOD)(__FUNCTION__)(": previous tip height: ")(previous)
-        .Flush();
+    LogTrace(OT_METHOD)(__func__)(": previous tip height: ")(previous).Flush();
 
     for (const auto& item : items) {
         const auto height = item.Height();
 
         if (++previous != height) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": sequence error. Got ")(height)(" expected ")(previous)
+            LogOutput(OT_METHOD)(__func__)(": sequence error. Got ")(
+                height)(" expected ")(previous)
                 .Flush();
 
             return false;
@@ -299,7 +298,7 @@ auto Sync::Store(const Chain chain, const Items& items) const noexcept -> bool
         auto raw = Space{};
 
         if (false == item.Serialize(writer(raw))) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize item")
+            LogOutput(OT_METHOD)(__func__)(": Failed to serialize item")
                 .Flush();
 
             return false;
@@ -309,7 +308,7 @@ auto Sync::Store(const Chain chain, const Items& items) const noexcept -> bool
         auto write = get_write_view(txn, data.index_, size);
 
         if (false == write.valid(size)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failed to allocate space for writing")
                 .Flush();
 
@@ -325,7 +324,7 @@ auto Sync::Store(const Chain chain, const Items& items) const noexcept -> bool
                      write.as<unsigned char>(),
                      write.size(),
                      checksum_key_.data())) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to calculate checksum")
+            LogOutput(OT_METHOD)(__func__)(": Failed to calculate checksum")
                 .Flush();
 
             return false;
@@ -335,8 +334,7 @@ auto Sync::Store(const Chain chain, const Items& items) const noexcept -> bool
             lmdb_.Store(ChainToSyncTable(chain), dbKey, data, txn);
 
         if (false == result.first) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to update index")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Failed to update index").Flush();
 
             return false;
         }
@@ -346,7 +344,7 @@ auto Sync::Store(const Chain chain, const Items& items) const noexcept -> bool
     const auto tip = static_cast<Height>(items.back().Height());
 
     if (false == lmdb_.Store(tip_table_, dbKey, tsv(tip), txn).first) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to update tip").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to update tip").Flush();
 
         return false;
     }
@@ -354,7 +352,7 @@ auto Sync::Store(const Chain chain, const Items& items) const noexcept -> bool
     tips_.at(chain) = tip;
 
     if (false == txn.Finalize(true)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Finalize error").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Finalize error").Flush();
 
         return false;
     }

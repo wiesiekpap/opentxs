@@ -17,7 +17,7 @@ namespace opentxs::factory
 {
 auto BlockchainSubaccountSourceWidget(
     const ui::implementation::BlockchainAccountStatusInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ui::implementation::BlockchainAccountStatusRowID& rowID,
     const ui::implementation::BlockchainAccountStatusSortKey& key,
     ui::implementation::CustomData& custom) noexcept
@@ -33,7 +33,7 @@ namespace opentxs::ui::implementation
 {
 BlockchainSubaccountSource::BlockchainSubaccountSource(
     const BlockchainAccountStatusInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const BlockchainAccountStatusRowID& rowID,
     const BlockchainAccountStatusSortKey& key,
     CustomData& custom) noexcept

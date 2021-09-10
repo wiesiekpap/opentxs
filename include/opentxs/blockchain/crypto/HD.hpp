@@ -19,9 +19,25 @@ namespace blockchain
 {
 namespace crypto
 {
+namespace internal
+{
+struct HD;
+}  // namespace internal
+}  // namespace crypto
+}  // namespace blockchain
+}  // namespace opentxs
+
+namespace opentxs
+{
+namespace blockchain
+{
+namespace crypto
+{
 class OPENTXS_EXPORT HD : virtual public Deterministic
 {
 public:
+    OPENTXS_NO_EXPORT virtual auto InternalHD() const noexcept
+        -> internal::HD& = 0;
     virtual auto Name() const noexcept -> std::string = 0;
     virtual auto Standard() const noexcept -> HDProtocol = 0;
 
@@ -33,8 +49,8 @@ protected:
 private:
     HD(const HD&) = delete;
     HD(HD&&) = delete;
-    HD& operator=(const HD&) = delete;
-    HD& operator=(HD&&) = delete;
+    auto operator=(const HD&) -> HD& = delete;
+    auto operator=(HD&&) -> HD& = delete;
 };
 }  // namespace crypto
 }  // namespace blockchain

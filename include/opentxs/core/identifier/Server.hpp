@@ -11,25 +11,6 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/core/Identifier.hpp"
 
-#ifdef SWIG
-// clang-format off
-%ignore opentxs::identifier::Server::Factory;
-%extend opentxs::identifier::Server {
-    static OTServerID Factory()
-    {
-        return opentxs::identifier::Server::Factory();
-    }
-    static OTServerID Factory(
-        const std::string& rhs)
-    {
-        return opentxs::identifier::Server::Factory(rhs);
-    }
-}
-%rename (ServerID) opentxs::identifier::Server;
-%template(OTServerID) opentxs::Pimpl<opentxs::identifier::Server>;
-// clang-format on
-#endif
-
 namespace opentxs
 {
 namespace identifier
@@ -39,26 +20,24 @@ class Server;
 
 using OTServerID = Pimpl<identifier::Server>;
 
-#ifndef SWIG
-OPENTXS_EXPORT bool operator==(
+OPENTXS_EXPORT auto operator==(
     const OTServerID& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-OPENTXS_EXPORT bool operator!=(
+    const opentxs::Identifier& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator!=(
     const OTServerID& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-OPENTXS_EXPORT bool operator<(
+    const opentxs::Identifier& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator<(
     const OTServerID& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-OPENTXS_EXPORT bool operator>(
+    const opentxs::Identifier& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator>(
     const OTServerID& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-OPENTXS_EXPORT bool operator<=(
+    const opentxs::Identifier& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator<=(
     const OTServerID& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-OPENTXS_EXPORT bool operator>=(
+    const opentxs::Identifier& rhs) noexcept -> bool;
+OPENTXS_EXPORT auto operator>=(
     const OTServerID& lhs,
-    const opentxs::Identifier& rhs) noexcept;
-#endif
+    const opentxs::Identifier& rhs) noexcept -> bool;
 }  // namespace opentxs
 
 namespace opentxs
@@ -68,11 +47,9 @@ namespace identifier
 class OPENTXS_EXPORT Server : virtual public opentxs::Identifier
 {
 public:
-#ifndef SWIG
-    static OTServerID Factory();
-    static OTServerID Factory(const std::string& rhs);
-    static OTServerID Factory(const String& rhs);
-#endif
+    static auto Factory() -> OTServerID;
+    static auto Factory(const std::string& rhs) -> OTServerID;
+    static auto Factory(const String& rhs) -> OTServerID;
 
     ~Server() override = default;
 
@@ -83,12 +60,12 @@ private:
     friend OTServerID;
 
 #ifndef _WIN32
-    Server* clone() const override = 0;
+    auto clone() const -> Server* override = 0;
 #endif
     Server(const Server&) = delete;
     Server(Server&&) = delete;
-    Server& operator=(const Server&) = delete;
-    Server& operator=(Server&&) = delete;
+    auto operator=(const Server&) -> Server& = delete;
+    auto operator=(Server&&) -> Server& = delete;
 };
 }  // namespace identifier
 }  // namespace opentxs

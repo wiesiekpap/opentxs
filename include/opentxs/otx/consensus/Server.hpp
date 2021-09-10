@@ -21,10 +21,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -64,7 +61,7 @@ namespace otx
 {
 namespace context
 {
-class Server : virtual public Base
+class OPENTXS_EXPORT Server : virtual public Base
 {
 public:
     using DeliveryResult =
@@ -74,133 +71,132 @@ public:
     // account label, resync nym
     using ExtraArgs = std::pair<std::string, bool>;
 
-    OPENTXS_EXPORT virtual std::vector<OTIdentifier> Accounts() const = 0;
-    OPENTXS_EXPORT virtual const std::string& AdminPassword() const = 0;
-    OPENTXS_EXPORT virtual bool AdminAttempted() const = 0;
-    OPENTXS_EXPORT virtual bool FinalizeServerCommand(
+    virtual auto Accounts() const -> std::vector<OTIdentifier> = 0;
+    virtual auto AdminPassword() const -> const std::string& = 0;
+    virtual auto AdminAttempted() const -> bool = 0;
+    virtual auto FinalizeServerCommand(
         Message& command,
-        const PasswordPrompt& reason) const = 0;
-    OPENTXS_EXPORT virtual bool HaveAdminPassword() const = 0;
-    OPENTXS_EXPORT virtual bool HaveSufficientNumbers(
-        const MessageType reason) const = 0;
-    OPENTXS_EXPORT virtual TransactionNumber Highest() const = 0;
-    OPENTXS_EXPORT virtual bool isAdmin() const = 0;
-    OPENTXS_EXPORT virtual void Join() const = 0;
+        const PasswordPrompt& reason) const -> bool = 0;
+    virtual auto HaveAdminPassword() const -> bool = 0;
+    virtual auto HaveSufficientNumbers(const MessageType reason) const
+        -> bool = 0;
+    virtual auto Highest() const -> TransactionNumber = 0;
+    virtual auto isAdmin() const -> bool = 0;
+    virtual void Join() const = 0;
 #if OT_CASH
-    OPENTXS_EXPORT virtual std::shared_ptr<const blind::Purse> Purse(
-        const identifier::UnitDefinition& id) const = 0;
+    virtual auto Purse(const identifier::UnitDefinition& id) const
+        -> std::shared_ptr<const blind::Purse> = 0;
 #endif
-    OPENTXS_EXPORT virtual std::uint64_t Revision() const = 0;
-    OPENTXS_EXPORT virtual bool ShouldRename(
-        const std::string& defaultName = "localhost") const = 0;
-    OPENTXS_EXPORT virtual bool StaleNym() const = 0;
-    OPENTXS_EXPORT virtual std::unique_ptr<Item> Statement(
+    virtual auto Revision() const -> std::uint64_t = 0;
+    virtual auto ShouldRename(
+        const std::string& defaultName = "localhost") const -> bool = 0;
+    virtual auto StaleNym() const -> bool = 0;
+    virtual auto Statement(
         const OTTransaction& owner,
-        const PasswordPrompt& reason) const = 0;
-    OPENTXS_EXPORT virtual std::unique_ptr<Item> Statement(
+        const PasswordPrompt& reason) const -> std::unique_ptr<Item> = 0;
+    virtual auto Statement(
         const OTTransaction& owner,
         const TransactionNumbers& adding,
-        const PasswordPrompt& reason) const = 0;
-    OPENTXS_EXPORT virtual std::unique_ptr<TransactionStatement> Statement(
+        const PasswordPrompt& reason) const -> std::unique_ptr<Item> = 0;
+    virtual auto Statement(
         const TransactionNumbers& adding,
         const TransactionNumbers& without,
-        const PasswordPrompt& reason) const = 0;
-    OPENTXS_EXPORT virtual bool Verify(
-        const TransactionStatement& statement) const = 0;
-    OPENTXS_EXPORT virtual bool VerifyTentativeNumber(
-        const TransactionNumber& number) const = 0;
+        const PasswordPrompt& reason) const
+        -> std::unique_ptr<TransactionStatement> = 0;
+    virtual auto Verify(const TransactionStatement& statement) const
+        -> bool = 0;
+    virtual auto VerifyTentativeNumber(const TransactionNumber& number) const
+        -> bool = 0;
 
-    OPENTXS_EXPORT virtual bool AcceptIssuedNumber(
-        const TransactionNumber& number) = 0;
-    OPENTXS_EXPORT virtual bool AcceptIssuedNumbers(
-        const TransactionStatement& statement) = 0;
-    OPENTXS_EXPORT virtual bool AddTentativeNumber(
-        const TransactionNumber& number) = 0;
-    OPENTXS_EXPORT virtual network::ServerConnection& Connection() = 0;
-    OPENTXS_EXPORT virtual std::pair<RequestNumber, std::unique_ptr<Message>>
-    InitializeServerCommand(
+    virtual auto AcceptIssuedNumber(const TransactionNumber& number)
+        -> bool = 0;
+    virtual auto AcceptIssuedNumbers(const TransactionStatement& statement)
+        -> bool = 0;
+    virtual auto AddTentativeNumber(const TransactionNumber& number)
+        -> bool = 0;
+    virtual auto Connection() -> network::ServerConnection& = 0;
+    virtual auto InitializeServerCommand(
         const MessageType type,
         const Armored& payload,
         const Identifier& accountID,
         const RequestNumber provided,
         const bool withAcknowledgments = true,
-        const bool withNymboxHash = true) = 0;
-    OPENTXS_EXPORT virtual std::pair<RequestNumber, std::unique_ptr<Message>>
-    InitializeServerCommand(
+        const bool withNymboxHash = true)
+        -> std::pair<RequestNumber, std::unique_ptr<Message>> = 0;
+    virtual auto InitializeServerCommand(
         const MessageType type,
         const identifier::Nym& recipientNymID,
         const RequestNumber provided,
         const bool withAcknowledgments = true,
-        const bool withNymboxHash = false) = 0;
-    OPENTXS_EXPORT virtual std::pair<RequestNumber, std::unique_ptr<Message>>
-    InitializeServerCommand(
+        const bool withNymboxHash = false)
+        -> std::pair<RequestNumber, std::unique_ptr<Message>> = 0;
+    virtual auto InitializeServerCommand(
         const MessageType type,
         const RequestNumber provided,
         const bool withAcknowledgments = true,
-        const bool withNymboxHash = false) = 0;
+        const bool withNymboxHash = false)
+        -> std::pair<RequestNumber, std::unique_ptr<Message>> = 0;
 #if OT_CASH
-    OPENTXS_EXPORT virtual Editor<blind::Purse> mutable_Purse(
+    virtual auto mutable_Purse(
         const identifier::UnitDefinition& id,
-        const PasswordPrompt& reason) = 0;
+        const PasswordPrompt& reason) -> Editor<blind::Purse> = 0;
 #endif
-    OPENTXS_EXPORT virtual OTManagedNumber NextTransactionNumber(
-        const MessageType reason) = 0;
-    OPENTXS_EXPORT virtual NetworkReplyMessage PingNotary(
-        const PasswordPrompt& reason) = 0;
-    OPENTXS_EXPORT virtual bool ProcessNotification(
-        const api::client::internal::Manager& client,
+    virtual auto NextTransactionNumber(const MessageType reason)
+        -> OTManagedNumber = 0;
+    virtual auto PingNotary(const PasswordPrompt& reason)
+        -> NetworkReplyMessage = 0;
+    virtual auto ProcessNotification(
+        const api::client::Manager& client,
         const otx::Reply& notification,
-        const PasswordPrompt& reason) = 0;
-    OPENTXS_EXPORT virtual QueueResult Queue(
-        const api::client::internal::Manager& client,
+        const PasswordPrompt& reason) -> bool = 0;
+    virtual auto Queue(
+        const api::client::Manager& client,
         std::shared_ptr<Message> message,
         const PasswordPrompt& reason,
-        const ExtraArgs& args = ExtraArgs{}) = 0;
-    OPENTXS_EXPORT virtual QueueResult Queue(
-        const api::client::internal::Manager& client,
+        const ExtraArgs& args = ExtraArgs{}) -> QueueResult = 0;
+    virtual auto Queue(
+        const api::client::Manager& client,
         std::shared_ptr<Message> message,
         std::shared_ptr<Ledger> inbox,
         std::shared_ptr<Ledger> outbox,
         std::set<OTManagedNumber>* numbers,
         const PasswordPrompt& reason,
-        const ExtraArgs& args = ExtraArgs{}) = 0;
-    OPENTXS_EXPORT virtual QueueResult RefreshNymbox(
-        const api::client::internal::Manager& client,
-        const PasswordPrompt& reason) = 0;
-    OPENTXS_EXPORT virtual bool RemoveTentativeNumber(
-        const TransactionNumber& number) = 0;
-    OPENTXS_EXPORT virtual void ResetThread() = 0;
-    OPENTXS_EXPORT virtual bool Resync(const proto::Context& serialized) = 0;
-    [[deprecated]] OPENTXS_EXPORT virtual NetworkReplyMessage SendMessage(
-        const api::client::internal::Manager& client,
+        const ExtraArgs& args = ExtraArgs{}) -> QueueResult = 0;
+    virtual auto RefreshNymbox(
+        const api::client::Manager& client,
+        const PasswordPrompt& reason) -> QueueResult = 0;
+    virtual auto RemoveTentativeNumber(const TransactionNumber& number)
+        -> bool = 0;
+    virtual void ResetThread() = 0;
+    virtual auto Resync(const proto::Context& serialized) -> bool = 0;
+    [[deprecated]] virtual auto SendMessage(
+        const api::client::Manager& client,
         const std::set<OTManagedNumber>& pending,
         Server& context,
         const Message& message,
         const PasswordPrompt& reason,
         const std::string& label = "",
-        const bool resync = false) = 0;
-    OPENTXS_EXPORT virtual void SetAdminAttempted() = 0;
-    OPENTXS_EXPORT virtual void SetAdminPassword(
-        const std::string& password) = 0;
-    OPENTXS_EXPORT virtual void SetAdminSuccess() = 0;
-    OPENTXS_EXPORT virtual bool SetHighest(
-        const TransactionNumber& highest) = 0;
-    OPENTXS_EXPORT virtual void SetPush(const bool enabled) = 0;
-    OPENTXS_EXPORT virtual void SetRevision(const std::uint64_t revision) = 0;
-    OPENTXS_EXPORT virtual TransactionNumber UpdateHighest(
+        const bool resync = false) -> NetworkReplyMessage = 0;
+    virtual void SetAdminAttempted() = 0;
+    virtual void SetAdminPassword(const std::string& password) = 0;
+    virtual void SetAdminSuccess() = 0;
+    virtual auto SetHighest(const TransactionNumber& highest) -> bool = 0;
+    virtual void SetPush(const bool enabled) = 0;
+    virtual void SetRevision(const std::uint64_t revision) = 0;
+    virtual auto UpdateHighest(
         const TransactionNumbers& numbers,
         TransactionNumbers& good,
-        TransactionNumbers& bad) = 0;
-    OPENTXS_EXPORT virtual RequestNumber UpdateRequestNumber(
-        const PasswordPrompt& reason) = 0;
-    OPENTXS_EXPORT virtual RequestNumber UpdateRequestNumber(
+        TransactionNumbers& bad) -> TransactionNumber = 0;
+    virtual auto UpdateRequestNumber(const PasswordPrompt& reason)
+        -> RequestNumber = 0;
+    virtual auto UpdateRequestNumber(
         bool& sendStatus,
-        const PasswordPrompt& reason) = 0;
-    OPENTXS_EXPORT virtual bool UpdateRequestNumber(
+        const PasswordPrompt& reason) -> RequestNumber = 0;
+    virtual auto UpdateRequestNumber(
         Message& command,
-        const PasswordPrompt& reason) = 0;
+        const PasswordPrompt& reason) -> bool = 0;
 
-    OPENTXS_EXPORT ~Server() override = default;
+    ~Server() override = default;
 
 protected:
     Server() = default;
@@ -208,8 +204,8 @@ protected:
 private:
     Server(const Server&) = delete;
     Server(Server&&) = delete;
-    Server& operator=(const Server&) = delete;
-    Server& operator=(Server&&) = delete;
+    auto operator=(const Server&) -> Server& = delete;
+    auto operator=(Server&&) -> Server& = delete;
 };
 }  // namespace context
 }  // namespace otx

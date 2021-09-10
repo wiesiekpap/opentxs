@@ -22,9 +22,9 @@ extern "C" {
 #include "blind/Lucre.hpp"
 #include "crypto/library/openssl/OpenSSL.hpp"
 #include "crypto/library/openssl/OpenSSL_BIO.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/blind/Blind.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blind/Mint.hpp"
@@ -48,7 +48,7 @@ extern "C" {
 namespace opentxs::blind::token::implementation
 {
 Lucre::Lucre(
-    const api::internal::Core& api,
+    const api::Core& api,
     Purse& purse,
     const VersionNumber version,
     const blind::TokenState state,
@@ -111,10 +111,7 @@ Lucre::Lucre(const Lucre& rhs, blind::Purse& newOwner)
 {
 }
 
-Lucre::Lucre(
-    const api::internal::Core& api,
-    Purse& purse,
-    const proto::Token& in)
+Lucre::Lucre(const api::Core& api, Purse& purse, const proto::Token& in)
     : Lucre(
           api,
           purse,
@@ -134,54 +131,49 @@ Lucre::Lucre(
         std::numeric_limits<std::uint32_t>::max() >= lucre.signature().size());
 
     if (lucre.has_signature()) {
-        LogInsane(OT_METHOD)(__FUNCTION__)(": This token has a signature")
-            .Flush();
+        LogInsane(OT_METHOD)(__func__)(": This token has a signature").Flush();
         signature_->Set(
             lucre.signature().data(),
             static_cast<std::uint32_t>(lucre.signature().size()));
     } else {
-        LogInsane(OT_METHOD)(__FUNCTION__)(
-            ": This token does not have a signature")
+        LogInsane(OT_METHOD)(__func__)(": This token does not have a signature")
             .Flush();
     }
 
     if (lucre.has_privateprototoken()) {
-        LogInsane(OT_METHOD)(__FUNCTION__)(
-            ": This token has a private prototoken")
+        LogInsane(OT_METHOD)(__func__)(": This token has a private prototoken")
             .Flush();
         private_ =
             std::make_shared<proto::Ciphertext>(lucre.privateprototoken());
     } else {
-        LogInsane(OT_METHOD)(__FUNCTION__)(
+        LogInsane(OT_METHOD)(__func__)(
             ": This token does not have a private prototoken")
             .Flush();
     }
 
     if (lucre.has_publicprototoken()) {
-        LogInsane(OT_METHOD)(__FUNCTION__)(
-            ": This token has a public prototoken")
+        LogInsane(OT_METHOD)(__func__)(": This token has a public prototoken")
             .Flush();
         public_ = std::make_shared<proto::Ciphertext>(lucre.publicprototoken());
     } else {
-        LogInsane(OT_METHOD)(__FUNCTION__)(
+        LogInsane(OT_METHOD)(__func__)(
             ": This token does not have a public prototoken")
             .Flush();
     }
 
     if (lucre.has_spendable()) {
-        LogInsane(OT_METHOD)(__FUNCTION__)(
-            ": This token has a spendable string")
+        LogInsane(OT_METHOD)(__func__)(": This token has a spendable string")
             .Flush();
         spend_ = std::make_shared<proto::Ciphertext>(lucre.spendable());
     } else {
-        LogInsane(OT_METHOD)(__FUNCTION__)(
+        LogInsane(OT_METHOD)(__func__)(
             ": This token does not have a spendable string")
             .Flush();
     }
 }
 
 Lucre::Lucre(
-    const api::internal::Core& api,
+    const api::Core& api,
     const identity::Nym& owner,
     const Mint& mint,
     const Denomination value,
@@ -211,7 +203,7 @@ Lucre::Lucre(
 auto Lucre::AddSignature(const String& signature) -> bool
 {
     if (signature.empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing signature").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing signature").Flush();
 
         return false;
     }
@@ -236,7 +228,7 @@ auto Lucre::ChangeOwner(
 
     if (public_) {
         if (false == reencrypt(oldKey, oldPass, newKey, newPass, *public_)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failed to re-encrypt public prototoken")
                 .Flush();
 
@@ -246,7 +238,7 @@ auto Lucre::ChangeOwner(
 
     if (spend_) {
         if (false == reencrypt(oldKey, oldPass, newKey, newPass, *spend_)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failed to re-encrypt spendable token")
                 .Flush();
 
@@ -272,17 +264,16 @@ auto Lucre::GenerateTokenRequest(
     auto serializedMint = String::Factory(armoredMint);
 
     if (serializedMint->empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to get public mint for series ")(denomination_)
             .Flush();
 
         return false;
     } else {
-        LogInsane(OT_METHOD)(__FUNCTION__)(
-            ": Begin mint series ")(denomination_)
+        LogInsane(OT_METHOD)(__func__)(": Begin mint series ")(denomination_)
             .Flush();
         LogInsane(serializedMint).Flush();
-        LogInsane(OT_METHOD)(__FUNCTION__)(": End mint").Flush();
+        LogInsane(OT_METHOD)(__func__)(": End mint").Flush();
     }
 
     BIO_puts(bioBank, serializedMint->Get());
@@ -297,7 +288,7 @@ auto Lucre::GenerateTokenRequest(
     const auto strPublicCoin = bioPublicCoin.ToString();
 
     if (strPrivateCoin->empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to generate private prototoken")
             .Flush();
 
@@ -305,8 +296,7 @@ auto Lucre::GenerateTokenRequest(
     }
 
     if (strPublicCoin->empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to generate public prototoken")
+        LogOutput(OT_METHOD)(__func__)(": Failed to generate public prototoken")
             .Flush();
 
         return false;
@@ -316,7 +306,7 @@ auto Lucre::GenerateTokenRequest(
     public_ = std::make_shared<proto::Ciphertext>();
 
     if (false == bool(private_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to instantiate private prototoken")
             .Flush();
 
@@ -324,7 +314,7 @@ auto Lucre::GenerateTokenRequest(
     }
 
     if (false == bool(public_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to instantiate public prototoken")
             .Flush();
 
@@ -339,7 +329,7 @@ auto Lucre::GenerateTokenRequest(
                     strPrivateCoin->Bytes(), password, *private_, false, mode_);
 
         if (false == bool(encryptedPrivate)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failed to encrypt private prototoken")
                 .Flush();
 
@@ -353,7 +343,7 @@ auto Lucre::GenerateTokenRequest(
             strPublicCoin->Bytes(), password, *public_, false, mode_);
 
         if (false == bool(encryptedPublic)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failed to encrypt public prototoken")
                 .Flush();
 
@@ -368,8 +358,7 @@ auto Lucre::GetPublicPrototoken(String& output, const PasswordPrompt& reason)
     -> bool
 {
     if (false == bool(public_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing public prototoken")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing public prototoken").Flush();
 
         return false;
     }
@@ -382,13 +371,13 @@ auto Lucre::GetPublicPrototoken(String& output, const PasswordPrompt& reason)
         decrypted = purse_.PrimaryKey(password).Decrypt(
             ciphertext, password, output.WriteInto());
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing primary key").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing primary key").Flush();
 
         return false;
     }
 
     if (false == decrypted) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decrypt prototoken")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decrypt prototoken")
             .Flush();
     }
 
@@ -399,7 +388,7 @@ auto Lucre::GetSpendable(String& output, const PasswordPrompt& reason) const
     -> bool
 {
     if (false == bool(spend_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing spendable token").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing spendable token").Flush();
 
         return false;
     }
@@ -412,14 +401,13 @@ auto Lucre::GetSpendable(String& output, const PasswordPrompt& reason) const
         decrypted = purse_.PrimaryKey(password).Decrypt(
             ciphertext, password, output.WriteInto());
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing primary key").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing primary key").Flush();
 
         return false;
     }
 
     if (false == decrypted) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to decrypt spendable token")
+        LogOutput(OT_METHOD)(__func__)(": Failed to decrypt spendable token")
             .Flush();
     }
 
@@ -431,8 +419,7 @@ auto Lucre::ID(const PasswordPrompt& reason) const -> std::string
     auto spendable = String::Factory();
 
     if (false == GetSpendable(spendable, reason)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing spendable string")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing spendable string").Flush();
 
         return {};
     }
@@ -495,7 +482,7 @@ auto Lucre::MarkSpent(const PasswordPrompt& reason) -> bool
     try {
         output = api_.Storage().MarkTokenSpent(notary_, unit_, series_, id);
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to load spendable token")
+        LogOutput(OT_METHOD)(__func__)(": Failed to load spendable token")
             .Flush();
     }
 
@@ -510,29 +497,28 @@ auto Lucre::Process(
     const PasswordPrompt& reason) -> bool
 {
     if (blind::TokenState::Signed != state_) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Incorrect token state.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Incorrect token state.").Flush();
 
         return false;
     } else {
-        LogInsane(OT_METHOD)(__FUNCTION__)(": Processing signed token").Flush();
+        LogInsane(OT_METHOD)(__func__)(": Processing signed token").Flush();
     }
 
     if (signature_->empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing signature").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing signature").Flush();
 
         return false;
     } else {
-        LogInsane(OT_METHOD)(__FUNCTION__)(": Loaded signature").Flush();
+        LogInsane(OT_METHOD)(__func__)(": Loaded signature").Flush();
     }
 
     if (false == bool(private_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing encrypted prototoken")
+        LogOutput(OT_METHOD)(__func__)(": Missing encrypted prototoken")
             .Flush();
 
         return false;
     } else {
-        LogInsane(OT_METHOD)(__FUNCTION__)(": Loaded encrypted prototoken")
-            .Flush();
+        LogInsane(OT_METHOD)(__func__)(": Loaded encrypted prototoken").Flush();
     }
 
 #if OT_LUCRE_DEBUG
@@ -549,17 +535,16 @@ auto Lucre::Process(
     auto serializedMint = String::Factory(armoredMint);
 
     if (serializedMint->empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to get public mint for series ")(denomination_)
             .Flush();
 
         return false;
     } else {
-        LogInsane(OT_METHOD)(__FUNCTION__)(
-            ": Begin mint series ")(denomination_)
+        LogInsane(OT_METHOD)(__func__)(": Begin mint series ")(denomination_)
             .Flush();
         LogInsane(serializedMint).Flush();
-        LogInsane(OT_METHOD)(__FUNCTION__)(": End mint").Flush();
+        LogInsane(OT_METHOD)(__func__)(": End mint").Flush();
     }
 
     BIO_puts(bioBank.get(), serializedMint->Get());
@@ -573,27 +558,26 @@ auto Lucre::Process(
             key.Decrypt(*private_, password, prototoken->WriteInto());
 
         if (false == decrypted) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to decrypt prototoken")
+            LogOutput(OT_METHOD)(__func__)(": Failed to decrypt prototoken")
                 .Flush();
 
             return false;
         } else {
-            LogInsane(OT_METHOD)(__FUNCTION__)(": Prototoken decrypted")
-                .Flush();
+            LogInsane(OT_METHOD)(__func__)(": Prototoken decrypted").Flush();
         }
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to get secondary key.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to get secondary key.")
             .Flush();
 
         return false;
     }
 
     if (prototoken->empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing prototoken").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing prototoken").Flush();
 
         return false;
     } else {
-        LogInsane(OT_METHOD)(__FUNCTION__)(": Prototoken ready:").Flush();
+        LogInsane(OT_METHOD)(__func__)(": Prototoken ready:").Flush();
     }
 
     BIO_puts(bioPrivateRequest.get(), prototoken->Get());
@@ -611,18 +595,17 @@ auto Lucre::Process(
     const auto spend = bioCoin.ToString();
 
     if (spend->empty()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to read token").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to read token").Flush();
 
         return false;
     } else {
-        LogInsane(OT_METHOD)(__FUNCTION__)(": Obtained spendable token")
-            .Flush();
+        LogInsane(OT_METHOD)(__func__)(": Obtained spendable token").Flush();
     }
 
     spend_ = std::make_shared<proto::Ciphertext>();
 
     if (false == bool(spend_)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to instantiate spendable ciphertext")
             .Flush();
 
@@ -636,15 +619,14 @@ auto Lucre::Process(
             key.Encrypt(spend->Bytes(), password, *spend_, false, mode_);
 
         if (false == encrypted) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Failed to encrypt spendable token")
                 .Flush();
 
             return false;
         }
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to get primary key.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to get primary key.").Flush();
 
         return false;
     }
@@ -694,7 +676,7 @@ auto Lucre::Serialize(proto::Token& output) const noexcept -> bool
             }
         }
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }

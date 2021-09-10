@@ -64,9 +64,9 @@ public:
         -> const reply::Outbailment& = 0;
 
     using Signable::Serialize;
-    OPENTXS_NO_EXPORT virtual bool Serialize(SerializedType&) const = 0;
-    virtual PeerRequestType Type() const = 0;
-    virtual const identifier::Server& Server() const = 0;
+    OPENTXS_NO_EXPORT virtual auto Serialize(SerializedType&) const -> bool = 0;
+    virtual auto Type() const -> PeerRequestType = 0;
+    virtual auto Server() const -> const identifier::Server& = 0;
 
     virtual ~Reply() override = default;
 
@@ -77,13 +77,13 @@ private:
     friend OTPeerReply;
 
 #ifndef _WIN32
-    Reply* clone() const noexcept override = 0;
+    auto clone() const noexcept -> Reply* override = 0;
 #endif
 
     Reply(const Reply&) = delete;
     Reply(Reply&&) = delete;
-    Reply& operator=(const Reply&) = delete;
-    Reply& operator=(Reply&&) = delete;
+    auto operator=(const Reply&) -> Reply& = delete;
+    auto operator=(Reply&&) -> Reply& = delete;
 };
 }  // namespace peer
 }  // namespace contract

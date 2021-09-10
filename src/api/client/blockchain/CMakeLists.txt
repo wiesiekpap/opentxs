@@ -6,12 +6,20 @@
 add_library(
   opentxs-api-client-blockchain OBJECT
   "AccountCache.cpp"
-  "BalanceLists.cpp"
+  "AccountCache.hpp"
+  "Blockchain.cpp"
+  "Blockchain.hpp"
   "Imp.cpp"
   "Imp.hpp"
+  "Wallets.cpp"
+  "Wallets.hpp"
 )
 target_link_libraries(
-  opentxs-api-client-blockchain PRIVATE opentxs::messages Boost::headers
+  opentxs-api-client-blockchain
+  PRIVATE
+    bech32
+    Boost::headers
+    opentxs::messages
 )
 target_include_directories(
   opentxs-api-client-blockchain SYSTEM
@@ -24,14 +32,15 @@ if(OT_BLOCKCHAIN_EXPORT)
     opentxs-api-client-blockchain
     PRIVATE
       "BalanceOracle.cpp"
+      "BalanceOracle.hpp"
       "Imp_blockchain.cpp"
       "Imp_blockchain.hpp"
       "NonNull.cpp"
   )
   target_link_libraries(
-    opentxs-api-client-blockchain PRIVATE "${OT_ZMQ_TARGET}"
+    opentxs-api-client-blockchain PRIVATE lmdb "${OT_ZMQ_TARGET}"
   )
-  target_link_libraries(opentxs PUBLIC "${OT_ZMQ_TARGET}")
+  target_link_libraries(opentxs PUBLIC lmdb "${OT_ZMQ_TARGET}")
 else()
   target_sources(opentxs-api-client-blockchain PRIVATE "Null.cpp")
 endif()

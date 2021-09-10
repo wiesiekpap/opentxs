@@ -22,7 +22,7 @@ namespace opentxs
 class OPENTXS_EXPORT OTCaller
 {
 public:
-    bool HaveCallback() const;
+    auto HaveCallback() const -> bool;
 
     void AskOnce(
         const PasswordPrompt& prompt,
@@ -43,8 +43,8 @@ private:
 
     OTCaller(const OTCaller&) = delete;
     OTCaller(OTCaller&&) = delete;
-    OTCaller& operator=(const OTCaller&) = delete;
-    OTCaller& operator=(OTCaller&&) = delete;
+    auto operator=(const OTCaller&) -> OTCaller& = delete;
+    auto operator=(OTCaller&&) -> OTCaller& = delete;
 };
 }  // namespace opentxs
 #endif

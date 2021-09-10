@@ -32,9 +32,10 @@ namespace client
 {
 namespace internal
 {
-struct Manager;
 struct UI;
 }  // namespace internal
+
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -88,7 +89,7 @@ class Widget : virtual public opentxs::ui::Widget
 public:
     using Message = network::zeromq::Message;
 
-    const api::client::internal::Manager& api_;
+    const api::client::Manager& api_;
 
     class MessageFunctor
     {
@@ -165,7 +166,7 @@ protected:
     }
 
     Widget(
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const Identifier& id,
         const SimpleCallback& cb = {}) noexcept;
 

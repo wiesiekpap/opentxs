@@ -128,7 +128,7 @@ protected:
 
         if (!exists) {
             if (!checking) {
-                std::cout << __FUNCTION__ << ": Error: item with id " << id
+                std::cout << __func__ << ": Error: item with id " << id
                           << " does not exist." << std::endl;
             }
 
@@ -177,8 +177,7 @@ protected:
             std::shared_ptr<T> existing{nullptr};
 
             if (false == driver_.LoadProto(hash, existing, false)) {
-                LogOutput(method)(__FUNCTION__)(": Unable to load object.")
-                    .Flush();
+                LogOutput(method)(__func__)(": Unable to load object.").Flush();
 
                 abort();
             }
@@ -239,7 +238,7 @@ protected:
 
         // Upgrade version
         if (version > original_version_) {
-            LogOutput("opentxs::storage::Node::")(__FUNCTION__)(
+            LogOutput("opentxs::storage::Node::")(__func__)(
                 ": Upgrading to version ")(version)
                 .Flush();
             version_ = version;

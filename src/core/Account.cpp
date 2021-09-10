@@ -16,6 +16,7 @@
 #include "core/OTStorage.hpp"
 #include "internal/api/Api.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Legacy.hpp"
 #include "opentxs/core/Armored.hpp"
@@ -59,7 +60,7 @@ char const* const __TypeStringsAccount[] = {
 
 // Used for generating accounts, thus no accountID needed.
 Account::Account(
-    const api::internal::Core& core,
+    const api::Core& core,
     const identifier::Nym& nymID,
     const identifier::Server& notaryID)
     : OTTransactionType(core)
@@ -79,7 +80,7 @@ Account::Account(
     SetPurportedNotaryID(notaryID);
 }
 
-Account::Account(const api::internal::Core& core)
+Account::Account(const api::Core& core)
     : OTTransactionType(core)
     , acctType_(err_acct)
     , acctInstrumentDefinitionID_(api_.Factory().UnitID())
@@ -95,7 +96,7 @@ Account::Account(const api::internal::Core& core)
 }
 
 Account::Account(
-    const api::internal::Core& core,
+    const api::Core& core,
     const identifier::Nym& nymID,
     const Identifier& accountId,
     const identifier::Server& notaryID,
@@ -116,7 +117,7 @@ Account::Account(
 }
 
 Account::Account(
-    const api::internal::Core& core,
+    const api::Core& core,
     const identifier::Nym& nymID,
     const Identifier& accountId,
     const identifier::Server& notaryID)
@@ -153,14 +154,14 @@ auto Account::ConsensusHash(
     if (false == nymid.empty()) {
         preimage->Concatenate(nymid.data(), nymid.size());
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing nym id.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing nym id.").Flush();
     }
 
     auto& serverid = context.Notary();
     if (false == serverid.empty()) {
         preimage->Concatenate(serverid.data(), serverid.size());
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing server id.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing server id.").Flush();
     }
 
     auto accountid{api_.Factory().Identifier()};
@@ -168,14 +169,14 @@ auto Account::ConsensusHash(
     if (false == accountid->empty()) {
         preimage->Concatenate(accountid->data(), accountid->size());
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing account id.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing account id.").Flush();
     }
 
     if (false == balanceAmount_->empty()) {
         preimage->Concatenate(
             balanceAmount_->Get(), balanceAmount_->GetLength());
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": No account balance.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": No account balance.").Flush();
     }
 
     const auto nymfile = context.Nymfile(reason);
@@ -188,7 +189,7 @@ auto Account::ConsensusHash(
     if (false == inboxhash->empty()) {
         preimage->Concatenate(inboxhash->data(), inboxhash->size());
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Empty inbox hash.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Empty inbox hash.").Flush();
     }
 
     auto outboxhash{api_.Factory().Identifier()};
@@ -199,7 +200,7 @@ auto Account::ConsensusHash(
     if (false == outboxhash->empty()) {
         preimage->Concatenate(outboxhash->data(), outboxhash->size());
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Empty outbox hash.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Empty outbox hash.").Flush();
     }
 
     const auto& issuednumbers = context.IssuedNumbers();
@@ -213,7 +214,7 @@ auto Account::ConsensusHash(
 
     if (false == bCalcDigest) {
         theOutput.Release();
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed trying to calculate hash (for a ")(GetTypeString())(").")
             .Flush();
     }
@@ -233,8 +234,7 @@ auto Account::create_box(
     box.reset(api_.Factory().Ledger(nymID, accountID, serverID).release());
 
     if (false == bool(box)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to construct ledger.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to construct ledger.").Flush();
 
         return false;
     }
@@ -243,7 +243,7 @@ auto Account::create_box(
         box->CreateLedger(nymID, accountID, serverID, type, true);
 
     if (false == created) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to generate box.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to generate box.").Flush();
 
         return false;
     }
@@ -251,7 +251,7 @@ auto Account::create_box(
     const auto signature = box->SignContract(signer, reason);
 
     if (false == signature) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to sign box.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to sign box.").Flush();
 
         return false;
     }
@@ -259,8 +259,7 @@ auto Account::create_box(
     const auto serialized = box->SaveContract();
 
     if (false == serialized) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize box.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to serialize box.").Flush();
 
         return false;
     }
@@ -286,10 +285,10 @@ auto Account::LoadInbox(const identity::Nym& nym) const
     auto strNymID = String::Factory(GetNymID()),
          strAcctID = String::Factory(GetRealAccountID());
     {
-        LogVerbose(OT_METHOD)(__FUNCTION__)("Unable to load or verify inbox: ")
+        LogVerbose(OT_METHOD)(__func__)("Unable to load or verify inbox: ")
             .Flush();
-        LogVerbose(OT_METHOD)(__FUNCTION__)(strAcctID)("  For user: ").Flush();
-        LogVerbose(OT_METHOD)(__FUNCTION__)(strNymID).Flush();
+        LogVerbose(OT_METHOD)(__func__)(strAcctID)("  For user: ").Flush();
+        LogVerbose(OT_METHOD)(__func__)(strNymID).Flush();
     }
     return nullptr;
 }
@@ -307,10 +306,10 @@ auto Account::LoadOutbox(const identity::Nym& nym) const
     auto strNymID = String::Factory(GetNymID()),
          strAcctID = String::Factory(GetRealAccountID());
     {
-        LogVerbose(OT_METHOD)(__FUNCTION__)("Unable to load or verify outbox: ")
+        LogVerbose(OT_METHOD)(__func__)("Unable to load or verify outbox: ")
             .Flush();
-        LogVerbose(OT_METHOD)(__FUNCTION__)(strAcctID)(" For user: ").Flush();
-        LogVerbose(OT_METHOD)(__FUNCTION__)(strNymID).Flush();
+        LogVerbose(OT_METHOD)(__func__)(strAcctID)(" For user: ").Flush();
+        LogVerbose(OT_METHOD)(__func__)(strNymID).Flush();
     }
     return nullptr;
 }
@@ -322,7 +321,7 @@ auto Account::save_box(
     void (Account::*set)(const Identifier&)) -> bool
 {
     if (!IsSameAccount(box)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": ERROR: The ledger passed in, "
             "isn't even for this account! Acct ID: ")(GetRealAccountID())(
             ". Other ID: ")(box.GetRealAccountID())(". Notary ID: ")(
@@ -419,18 +418,18 @@ auto Account::InitBoxes(
     const identity::Nym& signer,
     const PasswordPrompt& reason) -> bool
 {
-    LogDetail(OT_METHOD)(__FUNCTION__)(": Generating inbox/outbox.").Flush();
+    LogDetail(OT_METHOD)(__func__)(": Generating inbox/outbox.").Flush();
     std::unique_ptr<Ledger> inbox{LoadInbox(signer)};
     std::unique_ptr<Ledger> outbox{LoadInbox(signer)};
 
     if (inbox) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Inbox already exists.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Inbox already exists.").Flush();
 
         return false;
     }
 
     if (false == create_box(inbox, signer, ledgerType::inbox, reason)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to create inbox.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to create inbox.").Flush();
 
         return false;
     }
@@ -438,20 +437,19 @@ auto Account::InitBoxes(
     OT_ASSERT(inbox);
 
     if (false == SaveInbox(*inbox)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to save inbox.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to save inbox.").Flush();
 
         return false;
     }
 
     if (outbox) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Inbox already exists.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Inbox already exists.").Flush();
 
         return false;
     }
 
     if (false == create_box(outbox, signer, ledgerType::outbox, reason)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to create outbox.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to create outbox.").Flush();
 
         return false;
     }
@@ -459,7 +457,7 @@ auto Account::InitBoxes(
     OT_ASSERT(outbox);
 
     if (false == SaveOutbox(*outbox)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to save outbox.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to save outbox.").Flush();
 
         return false;
     }
@@ -480,14 +478,15 @@ auto Account::LoadContract() -> bool
     auto id = String::Factory();
     GetIdentifier(id);
 
-    return Contract::LoadContract(api_.Legacy().Account(), id->Get());
+    return Contract::LoadContract(
+        api_.Internal().Legacy().Account(), id->Get());
 }
 
 auto Account::SaveAccount() -> bool
 {
     auto id = String::Factory();
     GetIdentifier(id);
-    return SaveContract(api_.Legacy().Account(), id->Get());
+    return SaveContract(api_.Internal().Legacy().Account(), id->Get());
 }
 
 // Debit a certain amount from the account (presumably the same amount is being
@@ -591,24 +590,24 @@ auto Account::VerifyOwnerByID(const identifier::Nym& nymId) const -> bool
 }
 
 auto Account::LoadExistingAccount(
-    const api::internal::Core& core,
+    const api::Core& core,
     const Identifier& accountId,
     const identifier::Server& notaryID) -> Account*
 {
     auto strDataFolder = String::Factory(core.DataFolder().c_str());
     auto strAccountPath = String::Factory("");
 
-    if (!core.Legacy().AppendFolder(
+    if (!core.Internal().Legacy().AppendFolder(
             strAccountPath,
             strDataFolder,
-            String::Factory(core.Legacy().Account()))) {
+            String::Factory(core.Internal().Legacy().Account()))) {
         OT_FAIL;
     }
 
-    if (!core.Legacy().ConfirmCreateFolder(strAccountPath)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+    if (!core.Internal().Legacy().ConfirmCreateFolder(strAccountPath)) {
+        LogOutput(OT_METHOD)(__func__)(
             ": Unable to find or create accounts folder: ")(
-            core.Legacy().Account())(".")
+            core.Internal().Legacy().Account())(".")
             .Flush();
         return nullptr;
     }
@@ -620,7 +619,8 @@ auto Account::LoadExistingAccount(
     account->SetRealAccountID(accountId);
     account->SetRealNotaryID(notaryID);
     auto strAcctID = String::Factory(accountId);
-    account->m_strFoldername = String::Factory(core.Legacy().Account());
+    account->m_strFoldername =
+        String::Factory(core.Internal().Legacy().Account());
     account->m_strFilename = String::Factory(strAcctID->Get());
 
     if (!OTDB::Exists(
@@ -630,7 +630,7 @@ auto Account::LoadExistingAccount(
             account->m_strFilename->Get(),
             "",
             "")) {
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": File does not exist: ")(
+        LogVerbose(OT_METHOD)(__func__)(": File does not exist: ")(
             account->m_strFoldername)(PathSeparator())(account->m_strFilename)(
             ".")
             .Flush();
@@ -647,7 +647,7 @@ auto Account::LoadExistingAccount(
 }
 
 auto Account::GenerateNewAccount(
-    const api::internal::Core& core,
+    const api::Core& core,
     const identifier::Nym& nymID,
     const identifier::Server& notaryID,
     const identity::Nym& serverNym,
@@ -694,7 +694,7 @@ auto Account::GenerateNewAccount(
     auto payload = Data::Factory();
     // TODO: hardcoding. Plus: is 100 bytes of random a little much here?
     if (!payload->Randomize(100)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed trying to acquire random numbers.")
             .Flush();
         return false;
@@ -704,7 +704,7 @@ auto Account::GenerateNewAccount(
     // OTIdentifier).
     auto newID = api_.Factory().Identifier();
     if (!newID->CalculateDigest(payload->Bytes())) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error generating new account ID.")
+        LogOutput(OT_METHOD)(__func__)(": Error generating new account ID.")
             .Flush();
         return false;
     }
@@ -722,7 +722,7 @@ auto Account::GenerateNewAccount(
     m_strName->Set(strID);
 
     // Next we create the full path filename for the account using the ID.
-    m_strFoldername = String::Factory(api_.Legacy().Account());
+    m_strFoldername = String::Factory(api_.Internal().Legacy().Account());
     m_strFilename = String::Factory(strID->Get());
 
     // Then we try to load it, in order to make sure that it doesn't already
@@ -734,7 +734,7 @@ auto Account::GenerateNewAccount(
             m_strFilename->Get(),
             "",
             "")) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Account already exists: ")(
+        LogOutput(OT_METHOD)(__func__)(": Account already exists: ")(
             m_strFilename)(".")
             .Flush();
         return false;
@@ -756,7 +756,7 @@ auto Account::GenerateNewAccount(
     acctInstrumentDefinitionID_->SetString(
         String::Factory(instrumentDefinitionID));
 
-    LogDebug(OT_METHOD)(__FUNCTION__)(": Creating new account, type: ")(
+    LogDebug(OT_METHOD)(__func__)(": Creating new account, type: ")(
         instrumentDefinitionID)(".")
         .Flush();
 
@@ -969,8 +969,8 @@ auto Account::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
         acctType = String::Factory(xml->getAttributeValue("type"));
 
         if (!acctType->Exists()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed: Empty account "
-                                               "'type' attribute.")
+            LogOutput(OT_METHOD)(__func__)(": Failed: Empty account "
+                                           "'type' attribute.")
                 .Flush();
             return -1;
         }
@@ -978,9 +978,8 @@ auto Account::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
         acctType_ = TranslateAccountTypeStringToEnum(acctType);
 
         if (Account::err_acct == acctType_) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Failed: account 'type' "
-                "attribute contains unknown value.")
+            LogOutput(OT_METHOD)(__func__)(": Failed: account 'type' "
+                                           "attribute contains unknown value.")
                 .Flush();
             return -1;
         }
@@ -991,8 +990,8 @@ auto Account::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
         if (strAcctAssetType->Exists()) {
             acctInstrumentDefinitionID_->SetString(strAcctAssetType);
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Failed: missing "
-                                               "instrumentDefinitionID.")
+            LogOutput(OT_METHOD)(__func__)(": Failed: missing "
+                                           "instrumentDefinitionID.")
                 .Flush();
             return -1;
         }
@@ -1011,33 +1010,31 @@ auto Account::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
 
         auto strInstrumentDefinitionID =
             String::Factory(acctInstrumentDefinitionID_);
-        LogDebug(OT_METHOD)(__FUNCTION__)("Account Type: ")(acctType).Flush();
-        LogDebug(OT_METHOD)(__FUNCTION__)("AccountID: ")(strAccountID).Flush();
-        LogDebug(OT_METHOD)(__FUNCTION__)("NymID: ")(strAcctNymID).Flush();
-        LogDebug(OT_METHOD)(__FUNCTION__)("Unit Type ID: ")(
+        LogDebug(OT_METHOD)(__func__)("Account Type: ")(acctType).Flush();
+        LogDebug(OT_METHOD)(__func__)("AccountID: ")(strAccountID).Flush();
+        LogDebug(OT_METHOD)(__func__)("NymID: ")(strAcctNymID).Flush();
+        LogDebug(OT_METHOD)(__func__)("Unit Type ID: ")(
             strInstrumentDefinitionID)
             .Flush();
-        LogDebug(OT_METHOD)(__FUNCTION__)("NotaryID: ")(strNotaryID).Flush();
+        LogDebug(OT_METHOD)(__func__)("NotaryID: ")(strNotaryID).Flush();
 
         retval = 1;
     } else if (strNodeName->Compare("inboxHash")) {
 
         auto strHash = String::Factory(xml->getAttributeValue("value"));
         if (strHash->Exists()) { inboxHash_->SetString(strHash); }
-        LogDebug(OT_METHOD)(__FUNCTION__)("Account inboxHash: ")(strHash)
-            .Flush();
+        LogDebug(OT_METHOD)(__func__)("Account inboxHash: ")(strHash).Flush();
         retval = 1;
     } else if (strNodeName->Compare("outboxHash")) {
 
         auto strHash = String::Factory(xml->getAttributeValue("value"));
         if (strHash->Exists()) { outboxHash_->SetString(strHash); }
-        LogDebug(OT_METHOD)(__FUNCTION__)("Account outboxHash: ")(strHash)
-            .Flush();
+        LogDebug(OT_METHOD)(__func__)("Account outboxHash: ")(strHash).Flush();
 
         retval = 1;
     } else if (strNodeName->Compare("MARKED_FOR_DELETION")) {
         markForDeletion_ = true;
-        LogDebug(OT_METHOD)(__FUNCTION__)(
+        LogDebug(OT_METHOD)(__func__)(
             "This asset account has been MARKED_FOR_DELETION at some point"
             "prior. ")
             .Flush();
@@ -1056,14 +1053,13 @@ auto Account::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
         balanceDate_->Set(String::Factory(formatTimestamp(date)));
         balanceAmount_->Format("%" PRId64, amount);
 
-        LogDebug(OT_METHOD)(__FUNCTION__)("BALANCE  -- ")(balanceAmount_)
-            .Flush();
-        LogDebug(OT_METHOD)(__FUNCTION__)("DATE     --")(balanceDate_).Flush();
+        LogDebug(OT_METHOD)(__func__)("BALANCE  -- ")(balanceAmount_).Flush();
+        LogDebug(OT_METHOD)(__func__)("DATE     --")(balanceDate_).Flush();
 
         retval = 1;
     } else if (strNodeName->Compare("stashinfo")) {
         if (!IsStashAcct()) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error: Encountered stashinfo "
                 "tag while loading NON-STASH account.")
                 .Flush();
@@ -1076,7 +1072,7 @@ auto Account::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
         if (!strStashTransNum->Exists() ||
             ((lTransNum = strStashTransNum->ToLong()) <= 0)) {
             stashTransNum_ = 0;
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error: Bad transaction number "
                 "for supposed corresponding cron item: ")(lTransNum)(".")
                 .Flush();
@@ -1085,7 +1081,7 @@ auto Account::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
             stashTransNum_ = lTransNum;
         }
 
-        LogDebug(OT_METHOD)(__FUNCTION__)("STASH INFO:   CronItemNum     --")(
+        LogDebug(OT_METHOD)(__func__)("STASH INFO:   CronItemNum     --")(
             stashTransNum_)
             .Flush();
 
@@ -1108,8 +1104,7 @@ auto Account::IsInternalServerAcct() const -> bool
         case Account::stash:
             return true;
         default:
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unknown account type.")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Unknown account type.").Flush();
             return false;
     }
 }
@@ -1127,8 +1122,7 @@ auto Account::IsOwnedByUser() const -> bool
         case Account::stash:
             return false;
         default:
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unknown account type.")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Unknown account type.").Flush();
             return false;
     }
 }
@@ -1159,8 +1153,7 @@ auto Account::IsAllowedToGoNegative() const -> bool
         case Account::stash:
             return false;
         default:
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Unknown account type.")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Unknown account type.").Flush();
             return false;
     }
 }

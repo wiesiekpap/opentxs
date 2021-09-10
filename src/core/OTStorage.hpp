@@ -24,10 +24,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace OTDB
@@ -413,7 +410,7 @@ protected:
     // for this class, it is.
     //
     virtual bool onStorePackedBuffer(
-        const api::internal::Core& api,
+        const api::Core& api,
         PackedBuffer& theBuffer,
         const std::string& dataFolder,
         const std::string& strFolder,
@@ -422,7 +419,7 @@ protected:
         const std::string& threeStr) = 0;
 
     virtual bool onQueryPackedBuffer(
-        const api::internal::Core& api,
+        const api::Core& api,
         PackedBuffer& theBuffer,
         const std::string& dataFolder,
         const std::string& strFolder,
@@ -431,7 +428,7 @@ protected:
         const std::string& threeStr) = 0;
 
     virtual bool onStorePlainString(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& theBuffer,
         const std::string& dataFolder,
         const std::string& strFolder,
@@ -440,7 +437,7 @@ protected:
         const std::string& threeStr) = 0;
 
     virtual bool onQueryPlainString(
-        const api::internal::Core& api,
+        const api::Core& api,
         std::string& theBuffer,
         const std::string& dataFolder,
         const std::string& strFolder,
@@ -449,7 +446,7 @@ protected:
         const std::string& threeStr) = 0;
 
     virtual bool onEraseValueByKey(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& dataFolder,
         const std::string& strFolder,
         const std::string& oneStr,
@@ -472,7 +469,7 @@ public:
 
     // See if the file is there.
     virtual bool Exists(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& dataFolder,
         const std::string& strFolder,
         const std::string& oneStr,
@@ -480,7 +477,7 @@ public:
         const std::string& threeStr) = 0;
 
     virtual std::int64_t FormPathString(
-        const api::internal::Core& api,
+        const api::Core& api,
         std::string& strOutput,
         const std::string& dataFolder,
         const std::string& strFolder,
@@ -497,7 +494,7 @@ public:
     // Store/Retrieve a string.
 
     bool StoreString(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& strContents,
         const std::string& dataFolder,
         const std::string& strFolder,
@@ -506,7 +503,7 @@ public:
         const std::string& threeStr);
 
     std::string QueryString(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& dataFolder,
         const std::string& strFolder,
         const std::string& oneStr,
@@ -514,7 +511,7 @@ public:
         const std::string& threeStr);
 
     bool StorePlainString(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& strContents,
         const std::string& dataFolder,
         const std::string& strFolder,
@@ -523,7 +520,7 @@ public:
         const std::string& threeStr);
 
     std::string QueryPlainString(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& dataFolder,
         const std::string& strFolder,
         const std::string& oneStr,
@@ -533,7 +530,7 @@ public:
     // Store/Retrieve an object. (Storable.)
 
     bool StoreObject(
-        const api::internal::Core& api,
+        const api::Core& api,
         Storable& theContents,
         const std::string& dataFolder,
         const std::string& strFolder,
@@ -543,7 +540,7 @@ public:
 
     // Use %newobject OTDB::Storage::QueryObject();
     Storable* QueryObject(
-        const api::internal::Core& api,
+        const api::Core& api,
         const StoredObjectType& theObjectType,
         const std::string& dataFolder,
         const std::string& strFolder,
@@ -552,9 +549,7 @@ public:
         const std::string& threeStr);
     // Store/Retrieve a Storable object inside an Armored object.
 
-    std::string EncodeObject(
-        const api::internal::Core& api,
-        Storable& theContents);
+    std::string EncodeObject(const api::Core& api, Storable& theContents);
 
     // Use %newobject OTDB::Storage::DecodeObject();
     Storable* DecodeObject(
@@ -564,7 +559,7 @@ public:
     // Erase any value based on its location.
 
     bool EraseValueByKey(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& dataFolder,
         const std::string& strFolder,
         const std::string& oneStr,
@@ -622,7 +617,7 @@ bool CheckStringsExistInOrder(
 // See if the file is there.
 //
 bool Exists(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& dataFolder,
     const std::string strFolder,
     const std::string oneStr,
@@ -630,7 +625,7 @@ bool Exists(
     const std::string threeStr);
 
 std::int64_t FormPathString(
-    const api::internal::Core& api,
+    const api::Core& api,
     std::string& strOutput,
     const std::string& dataFolder,
     const std::string& strFolder,
@@ -640,7 +635,7 @@ std::int64_t FormPathString(
 // Store/Retrieve a string.
 //
 bool StoreString(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& strContents,
     const std::string& dataFolder,
     const std::string& strFolder,
@@ -649,7 +644,7 @@ bool StoreString(
     const std::string& threeStr);
 
 std::string QueryString(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& dataFolder,
     const std::string& strFolder,
     const std::string& oneStr,
@@ -657,7 +652,7 @@ std::string QueryString(
     const std::string& threeStr);
 
 bool StorePlainString(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& strContents,
     const std::string& dataFolder,
     const std::string& strFolder,
@@ -666,7 +661,7 @@ bool StorePlainString(
     const std::string& threeStr);
 
 std::string QueryPlainString(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& dataFolder,
     const std::string& strFolder,
     const std::string& oneStr,
@@ -676,7 +671,7 @@ std::string QueryPlainString(
 // Store/Retrieve an object. (Storable.)
 //
 bool StoreObject(
-    const api::internal::Core& api,
+    const api::Core& api,
     Storable& theContents,
     const std::string& dataFolder,
     const std::string& strFolder,
@@ -686,7 +681,7 @@ bool StoreObject(
 
 // Use %newobject OTDB::Storage::Query();
 Storable* QueryObject(
-    const api::internal::Core& api,
+    const api::Core& api,
     const StoredObjectType theObjectType,
     const std::string& dataFolder,
     const std::string& strFolder,
@@ -695,7 +690,7 @@ Storable* QueryObject(
     const std::string& threeStr);
 
 // Store/Retrieve a Storable object inside an Armored object.
-std::string EncodeObject(const api::internal::Core& api, Storable& theContents);
+std::string EncodeObject(const api::Core& api, Storable& theContents);
 
 // Use %newobject OTDB::Storage::DecodeObject();
 Storable* DecodeObject(
@@ -705,7 +700,7 @@ Storable* DecodeObject(
 // Erase any value based on its location.
 
 bool EraseValueByKey(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& dataFolder,
     const std::string& strFolder,
     const std::string& oneStr,
@@ -1674,7 +1669,7 @@ protected:
 
     // Confirms if a file exists.  If it exists at path; return length.
     std::int64_t ConstructAndConfirmPath(
-        const api::internal::Core& api,
+        const api::Core& api,
         std::string& strOutput,
         const std::string& dataFolder,
         const std::string& strFolder,
@@ -1685,7 +1680,7 @@ protected:
 public:
     // Verifies whether path exists AND creates folders where necessary.
     std::int64_t ConstructAndCreatePath(
-        const api::internal::Core& api,
+        const api::Core& api,
         std::string& strOutput,
         const std::string& dataFolder,
         const std::string& strFolder,
@@ -1695,7 +1690,7 @@ public:
 
 private:
     std::int64_t ConstructAndConfirmPathImp(
-        const api::internal::Core& api,
+        const api::Core& api,
         const bool bMakePath,
         std::string& strOutput,
         const std::string& dataFolder,
@@ -1710,7 +1705,7 @@ protected:
     // The below 6 methods are the only overrides you need to copy.
     //
     bool onStorePackedBuffer(
-        const api::internal::Core& api,
+        const api::Core& api,
         PackedBuffer& theBuffer,
         const std::string& dataFolder,
         const std::string& strFolder,
@@ -1719,7 +1714,7 @@ protected:
         const std::string& threeStr) override;
 
     bool onQueryPackedBuffer(
-        const api::internal::Core& api,
+        const api::Core& api,
         PackedBuffer& theBuffer,
         const std::string& dataFolder,
         const std::string& strFolder,
@@ -1728,7 +1723,7 @@ protected:
         const std::string& threeStr) override;
 
     bool onStorePlainString(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& theBuffer,
         const std::string& dataFolder,
         const std::string& strFolder,
@@ -1737,7 +1732,7 @@ protected:
         const std::string& threeStr) override;
 
     bool onQueryPlainString(
-        const api::internal::Core& api,
+        const api::Core& api,
         std::string& theBuffer,
         const std::string& dataFolder,
         const std::string& strFolder,
@@ -1746,7 +1741,7 @@ protected:
         const std::string& threeStr) override;
 
     bool onEraseValueByKey(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& dataFolder,
         const std::string& strFolder,
         const std::string& oneStr,
@@ -1755,7 +1750,7 @@ protected:
 
 public:
     bool Exists(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& dataFolder,
         const std::string& strFolder,
         const std::string& oneStr,
@@ -1763,7 +1758,7 @@ public:
         const std::string& threeStr) override;
 
     std::int64_t FormPathString(
-        const api::internal::Core& api,
+        const api::Core& api,
         std::string& strOutput,
         const std::string& dataFolder,
         const std::string& strFolder,

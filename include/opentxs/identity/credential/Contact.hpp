@@ -19,10 +19,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace proto
@@ -41,28 +38,28 @@ namespace credential
 class OPENTXS_EXPORT Contact : virtual public Base
 {
 public:
-    OPENTXS_NO_EXPORT static std::string ClaimID(
-        const api::internal::Core& api,
+    OPENTXS_NO_EXPORT static auto ClaimID(
+        const api::Core& api,
         const std::string& nymid,
         const std::uint32_t section,
-        const proto::ContactItem& item);
-    static std::string ClaimID(
-        const api::internal::Core& api,
+        const proto::ContactItem& item) -> std::string;
+    static auto ClaimID(
+        const api::Core& api,
         const std::string& nymid,
         const contact::ContactSectionName section,
         const contact::ContactItemType type,
         const std::int64_t start,
         const std::int64_t end,
         const std::string& value,
-        const std::string& subtype);
-    OPENTXS_NO_EXPORT static OTIdentifier ClaimID(
-        const api::internal::Core& api,
-        const proto::Claim& preimage);
-    OPENTXS_NO_EXPORT static Claim asClaim(
-        const api::internal::Core& api,
+        const std::string& subtype) -> std::string;
+    OPENTXS_NO_EXPORT static auto ClaimID(
+        const api::Core& api,
+        const proto::Claim& preimage) -> OTIdentifier;
+    OPENTXS_NO_EXPORT static auto asClaim(
+        const api::Core& api,
         const String& nymid,
         const std::uint32_t section,
-        const proto::ContactItem& item);
+        const proto::ContactItem& item) -> Claim;
 
     ~Contact() override = default;
 
@@ -72,8 +69,8 @@ protected:
 private:
     Contact(const Contact&) = delete;
     Contact(Contact&&) = delete;
-    Contact& operator=(const Contact&) = delete;
-    Contact& operator=(Contact&&) = delete;
+    auto operator=(const Contact&) -> Contact& = delete;
+    auto operator=(Contact&&) -> Contact& = delete;
 };
 }  // namespace credential
 }  // namespace identity

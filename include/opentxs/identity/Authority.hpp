@@ -51,89 +51,101 @@ public:
     using AuthorityKeys = Nym::AuthorityKeys;
     using Serialized = proto::Authority;
 
-    virtual VersionNumber ContactCredentialVersion() const = 0;
-    virtual AuthorityKeys EncryptionTargets() const noexcept = 0;
-    virtual bool GetContactData(proto::ContactData& contactData) const = 0;
-    virtual OTIdentifier GetMasterCredID() const = 0;
-    virtual const crypto::key::Asymmetric& GetPublicAuthKey(
+    virtual auto ContactCredentialVersion() const -> VersionNumber = 0;
+    virtual auto EncryptionTargets() const noexcept -> AuthorityKeys = 0;
+    virtual auto GetContactData(proto::ContactData& contactData) const
+        -> bool = 0;
+    virtual auto GetMasterCredID() const -> OTIdentifier = 0;
+    virtual auto GetPublicAuthKey(
         crypto::key::asymmetric::Algorithm keytype,
-        const String::List* plistRevokedIDs = nullptr) const = 0;
-    virtual const crypto::key::Asymmetric& GetPublicEncrKey(
+        const String::List* plistRevokedIDs = nullptr) const
+        -> const crypto::key::Asymmetric& = 0;
+    virtual auto GetPublicEncrKey(
         crypto::key::asymmetric::Algorithm keytype,
-        const String::List* plistRevokedIDs = nullptr) const = 0;
-    virtual std::int32_t GetPublicKeysBySignature(
+        const String::List* plistRevokedIDs = nullptr) const
+        -> const crypto::key::Asymmetric& = 0;
+    virtual auto GetPublicKeysBySignature(
         crypto::key::Keypair::Keys& listOutput,
         const Signature& theSignature,
-        char cKeyType = '0') const = 0;
-    virtual const crypto::key::Asymmetric& GetPublicSignKey(
+        char cKeyType = '0') const -> std::int32_t = 0;
+    virtual auto GetPublicSignKey(
         crypto::key::asymmetric::Algorithm keytype,
-        const String::List* plistRevokedIDs = nullptr) const = 0;
-    virtual const crypto::key::Asymmetric& GetPrivateSignKey(
+        const String::List* plistRevokedIDs = nullptr) const
+        -> const crypto::key::Asymmetric& = 0;
+    virtual auto GetPrivateSignKey(
         crypto::key::asymmetric::Algorithm keytype,
-        const String::List* plistRevokedIDs = nullptr) const = 0;
-    virtual const crypto::key::Asymmetric& GetPrivateEncrKey(
+        const String::List* plistRevokedIDs = nullptr) const
+        -> const crypto::key::Asymmetric& = 0;
+    virtual auto GetPrivateEncrKey(
         crypto::key::asymmetric::Algorithm keytype,
-        const String::List* plistRevokedIDs = nullptr) const = 0;
-    virtual const crypto::key::Asymmetric& GetPrivateAuthKey(
+        const String::List* plistRevokedIDs = nullptr) const
+        -> const crypto::key::Asymmetric& = 0;
+    virtual auto GetPrivateAuthKey(
         crypto::key::asymmetric::Algorithm keytype,
-        const String::List* plistRevokedIDs = nullptr) const = 0;
-    virtual const crypto::key::Keypair& GetAuthKeypair(
+        const String::List* plistRevokedIDs = nullptr) const
+        -> const crypto::key::Asymmetric& = 0;
+    virtual auto GetAuthKeypair(
         crypto::key::asymmetric::Algorithm keytype,
-        const String::List* plistRevokedIDs = nullptr) const = 0;
-    virtual const crypto::key::Keypair& GetEncrKeypair(
+        const String::List* plistRevokedIDs = nullptr) const
+        -> const crypto::key::Keypair& = 0;
+    virtual auto GetEncrKeypair(
         crypto::key::asymmetric::Algorithm keytype,
-        const String::List* plistRevokedIDs = nullptr) const = 0;
-    virtual const crypto::key::Keypair& GetSignKeypair(
+        const String::List* plistRevokedIDs = nullptr) const
+        -> const crypto::key::Keypair& = 0;
+    virtual auto GetSignKeypair(
         crypto::key::asymmetric::Algorithm keytype,
-        const String::List* plistRevokedIDs = nullptr) const = 0;
-    virtual const credential::Key& GetTagCredential(
-        crypto::key::asymmetric::Algorithm keytype) const noexcept(false) = 0;
-    virtual bool GetVerificationSet(
-        proto::VerificationSet& verificationSet) const = 0;
-    virtual bool hasCapability(const NymCapability& capability) const = 0;
-    virtual ReadView Params(
-        const crypto::key::asymmetric::Algorithm type) const noexcept = 0;
-    virtual bool Path(proto::HDPath& output) const = 0;
-    OPENTXS_NO_EXPORT virtual bool Serialize(
+        const String::List* plistRevokedIDs = nullptr) const
+        -> const crypto::key::Keypair& = 0;
+    virtual auto GetTagCredential(crypto::key::asymmetric::Algorithm keytype)
+        const noexcept(false) -> const credential::Key& = 0;
+    virtual auto GetVerificationSet(
+        proto::VerificationSet& verificationSet) const -> bool = 0;
+    virtual auto hasCapability(const NymCapability& capability) const
+        -> bool = 0;
+    virtual auto Params(const crypto::key::asymmetric::Algorithm type)
+        const noexcept -> ReadView = 0;
+    virtual auto Path(proto::HDPath& output) const -> bool = 0;
+    OPENTXS_NO_EXPORT virtual auto Serialize(
         Serialized& serialized,
-        const CredentialIndexModeFlag mode) const = 0;
-    virtual bool Sign(
+        const CredentialIndexModeFlag mode) const -> bool = 0;
+    virtual auto Sign(
         const GetPreimage input,
         const crypto::SignatureRole role,
         proto::Signature& signature,
         const PasswordPrompt& reason,
         opentxs::crypto::key::asymmetric::Role key =
             opentxs::crypto::key::asymmetric::Role::Sign,
-        const crypto::HashType hash = crypto::HashType::Error) const = 0;
-    virtual const identity::Source& Source() const = 0;
-    virtual bool TransportKey(
+        const crypto::HashType hash = crypto::HashType::Error) const
+        -> bool = 0;
+    virtual auto Source() const -> const identity::Source& = 0;
+    virtual auto TransportKey(
         Data& publicKey,
         Secret& privateKey,
-        const PasswordPrompt& reason) const = 0;
-    virtual bool Unlock(
+        const PasswordPrompt& reason) const -> bool = 0;
+    virtual auto Unlock(
         const crypto::key::Asymmetric& dhKey,
         const std::uint32_t tag,
         const crypto::key::asymmetric::Algorithm type,
         const crypto::key::Symmetric& key,
-        PasswordPrompt& reason) const noexcept = 0;
-    virtual VersionNumber VerificationCredentialVersion() const = 0;
-    virtual bool Verify(
+        PasswordPrompt& reason) const noexcept -> bool = 0;
+    virtual auto VerificationCredentialVersion() const -> VersionNumber = 0;
+    virtual auto Verify(
         const Data& plaintext,
         const proto::Signature& sig,
         const opentxs::crypto::key::asymmetric::Role key =
-            opentxs::crypto::key::asymmetric::Role::Sign) const = 0;
-    virtual bool Verify(const proto::Verification& item) const = 0;
-    virtual bool VerifyInternally() const = 0;
+            opentxs::crypto::key::asymmetric::Role::Sign) const -> bool = 0;
+    virtual auto Verify(const proto::Verification& item) const -> bool = 0;
+    virtual auto VerifyInternally() const -> bool = 0;
 
-    virtual std::string AddChildKeyCredential(
+    virtual auto AddChildKeyCredential(
         const NymParameters& nymParameters,
-        const PasswordPrompt& reason) = 0;
-    virtual bool AddVerificationCredential(
+        const PasswordPrompt& reason) -> std::string = 0;
+    virtual auto AddVerificationCredential(
         const proto::VerificationSet& verificationSet,
-        const PasswordPrompt& reason) = 0;
-    virtual bool AddContactCredential(
+        const PasswordPrompt& reason) -> bool = 0;
+    virtual auto AddContactCredential(
         const proto::ContactData& contactData,
-        const PasswordPrompt& reason) = 0;
+        const PasswordPrompt& reason) -> bool = 0;
     virtual void RevokeContactCredentials(
         std::list<std::string>& contactCredentialIDs) = 0;
     virtual void RevokeVerificationCredentials(
@@ -147,8 +159,8 @@ protected:
 private:
     Authority(const Authority&) = delete;
     Authority(Authority&&) = delete;
-    Authority& operator=(const Authority&) = delete;
-    Authority& operator=(Authority&&) = delete;
+    auto operator=(const Authority&) -> Authority& = delete;
+    auto operator=(Authority&&) -> Authority& = delete;
 };
 }  // namespace identity
 }  // namespace opentxs

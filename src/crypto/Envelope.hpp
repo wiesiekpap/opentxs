@@ -28,11 +28,6 @@ namespace opentxs
 namespace api
 {
 class Core;
-
-namespace internal
-{
-struct Core;
-}  // namespace internal
 }  // namespace api
 
 namespace identity
@@ -71,13 +66,10 @@ public:
         const ReadView plaintext,
         const PasswordPrompt& reason) noexcept -> bool final;
 
-    Envelope(const api::internal::Core& api) noexcept;
-    Envelope(
-        const api::internal::Core& api,
-        const SerializedType& serialized) noexcept(false);
-    Envelope(
-        const api::internal::Core& api,
-        const ReadView& serialized) noexcept(false);
+    Envelope(const api::Core& api) noexcept;
+    Envelope(const api::Core& api, const SerializedType& serialized) noexcept(
+        false);
+    Envelope(const api::Core& api, const ReadView& serialized) noexcept(false);
 
     ~Envelope() final = default;
 
@@ -107,7 +99,7 @@ private:
     static const WeightMap key_weights_;
     static const Solutions solutions_;
 
-    const api::internal::Core& api_;
+    const api::Core& api_;
     const VersionNumber version_;
     DHMap dh_keys_;
     SessionKeys session_keys_;

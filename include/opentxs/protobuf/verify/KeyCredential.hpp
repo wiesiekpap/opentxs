@@ -22,106 +22,106 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT bool CheckProto_1(
+auto CheckProto_1(
     const KeyCredential& keyCredential,
     const bool silent,
     const CredentialType credType,
-    const KeyMode mode);
-OPENTXS_EXPORT bool CheckProto_2(
+    const KeyMode mode) -> bool;
+auto CheckProto_2(
     const KeyCredential&,
     const bool,
     const CredentialType,
-    const KeyMode);
-OPENTXS_EXPORT bool CheckProto_3(
+    const KeyMode) -> bool;
+auto CheckProto_3(
     const KeyCredential&,
     const bool,
     const CredentialType,
-    const KeyMode);
-OPENTXS_EXPORT bool CheckProto_4(
+    const KeyMode) -> bool;
+auto CheckProto_4(
     const KeyCredential&,
     const bool,
     const CredentialType,
-    const KeyMode);
-OPENTXS_EXPORT bool CheckProto_5(
+    const KeyMode) -> bool;
+auto CheckProto_5(
     const KeyCredential&,
     const bool,
     const CredentialType,
-    const KeyMode);
-OPENTXS_EXPORT bool CheckProto_6(
+    const KeyMode) -> bool;
+auto CheckProto_6(
     const KeyCredential&,
     const bool,
     const CredentialType,
-    const KeyMode);
-OPENTXS_EXPORT bool CheckProto_7(
+    const KeyMode) -> bool;
+auto CheckProto_7(
     const KeyCredential&,
     const bool,
     const CredentialType,
-    const KeyMode);
-OPENTXS_EXPORT bool CheckProto_8(
+    const KeyMode) -> bool;
+auto CheckProto_8(
     const KeyCredential&,
     const bool,
     const CredentialType,
-    const KeyMode);
-OPENTXS_EXPORT bool CheckProto_9(
+    const KeyMode) -> bool;
+auto CheckProto_9(
     const KeyCredential&,
     const bool,
     const CredentialType,
-    const KeyMode);
-OPENTXS_EXPORT bool CheckProto_10(
+    const KeyMode) -> bool;
+auto CheckProto_10(
     const KeyCredential&,
     const bool,
     const CredentialType,
-    const KeyMode);
-OPENTXS_EXPORT bool CheckProto_11(
+    const KeyMode) -> bool;
+auto CheckProto_11(
     const KeyCredential&,
     const bool,
     const CredentialType,
-    const KeyMode);
-OPENTXS_EXPORT bool CheckProto_12(
+    const KeyMode) -> bool;
+auto CheckProto_12(
     const KeyCredential&,
     const bool,
     const CredentialType,
-    const KeyMode);
-OPENTXS_EXPORT bool CheckProto_13(
+    const KeyMode) -> bool;
+auto CheckProto_13(
     const KeyCredential&,
     const bool,
     const CredentialType,
-    const KeyMode);
-OPENTXS_EXPORT bool CheckProto_14(
+    const KeyMode) -> bool;
+auto CheckProto_14(
     const KeyCredential&,
     const bool,
     const CredentialType,
-    const KeyMode);
-OPENTXS_EXPORT bool CheckProto_15(
+    const KeyMode) -> bool;
+auto CheckProto_15(
     const KeyCredential&,
     const bool,
     const CredentialType,
-    const KeyMode);
-OPENTXS_EXPORT bool CheckProto_16(
+    const KeyMode) -> bool;
+auto CheckProto_16(
     const KeyCredential&,
     const bool,
     const CredentialType,
-    const KeyMode);
-OPENTXS_EXPORT bool CheckProto_17(
+    const KeyMode) -> bool;
+auto CheckProto_17(
     const KeyCredential&,
     const bool,
     const CredentialType,
-    const KeyMode);
-OPENTXS_EXPORT bool CheckProto_18(
+    const KeyMode) -> bool;
+auto CheckProto_18(
     const KeyCredential&,
     const bool,
     const CredentialType,
-    const KeyMode);
-OPENTXS_EXPORT bool CheckProto_19(
+    const KeyMode) -> bool;
+auto CheckProto_19(
     const KeyCredential&,
     const bool,
     const CredentialType,
-    const KeyMode);
-OPENTXS_EXPORT bool CheckProto_20(
+    const KeyMode) -> bool;
+auto CheckProto_20(
     const KeyCredential&,
     const bool,
     const CredentialType,
-    const KeyMode);
+    const KeyMode) -> bool;
 }  // namespace proto
 }  // namespace opentxs
 

@@ -14,41 +14,40 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT const VersionMap& AddClaimAllowedContactItem() noexcept;
-OPENTXS_EXPORT const VersionMap& ContactEventAllowedAccountEvent() noexcept;
-OPENTXS_EXPORT const VersionMap& CreateNymAllowedAddClaim() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCCommandAllowedAPIArgument() noexcept;
-OPENTXS_EXPORT const VersionMap&
-RPCCommandAllowedAcceptPendingPayment() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCCommandAllowedAddClaim() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCCommandAllowedAddContact() noexcept;
-OPENTXS_EXPORT const VersionMap&
-RPCCommandAllowedCreateInstrumentDefinition() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCCommandAllowedCreateNym() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCCommandAllowedGetWorkflow() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCCommandAllowedHDSeed() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCCommandAllowedModifyAccount() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCCommandAllowedSendMessage() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCCommandAllowedSendPayment() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCCommandAllowedServerContract() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCCommandAllowedVerification() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCCommandAllowedVerifyClaim() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCPushAllowedAccountEvent() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCPushAllowedContactEvent() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCPushAllowedTaskComplete() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCResponseAllowedAccountData() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCResponseAllowedAccountEvent() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCResponseAllowedContact() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCResponseAllowedContactEvent() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCResponseAllowedHDSeed() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCResponseAllowedNym() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCResponseAllowedRPCStatus() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCResponseAllowedRPCTask() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCResponseAllowedServerContract() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCResponseAllowedSessionData() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCResponseAllowedTransactionData() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCResponseAllowedUnitDefinition() noexcept;
-OPENTXS_EXPORT const VersionMap& RPCResponseAllowedWorkflow() noexcept;
+auto AddClaimAllowedContactItem() noexcept -> const VersionMap&;
+auto ContactEventAllowedAccountEvent() noexcept -> const VersionMap&;
+auto CreateNymAllowedAddClaim() noexcept -> const VersionMap&;
+auto RPCCommandAllowedAPIArgument() noexcept -> const VersionMap&;
+auto RPCCommandAllowedAcceptPendingPayment() noexcept -> const VersionMap&;
+auto RPCCommandAllowedAddClaim() noexcept -> const VersionMap&;
+auto RPCCommandAllowedAddContact() noexcept -> const VersionMap&;
+auto RPCCommandAllowedCreateInstrumentDefinition() noexcept
+    -> const VersionMap&;
+auto RPCCommandAllowedCreateNym() noexcept -> const VersionMap&;
+auto RPCCommandAllowedGetWorkflow() noexcept -> const VersionMap&;
+auto RPCCommandAllowedHDSeed() noexcept -> const VersionMap&;
+auto RPCCommandAllowedModifyAccount() noexcept -> const VersionMap&;
+auto RPCCommandAllowedSendMessage() noexcept -> const VersionMap&;
+auto RPCCommandAllowedSendPayment() noexcept -> const VersionMap&;
+auto RPCCommandAllowedServerContract() noexcept -> const VersionMap&;
+auto RPCCommandAllowedVerification() noexcept -> const VersionMap&;
+auto RPCCommandAllowedVerifyClaim() noexcept -> const VersionMap&;
+auto RPCPushAllowedAccountEvent() noexcept -> const VersionMap&;
+auto RPCPushAllowedContactEvent() noexcept -> const VersionMap&;
+auto RPCPushAllowedTaskComplete() noexcept -> const VersionMap&;
+auto RPCResponseAllowedAccountData() noexcept -> const VersionMap&;
+auto RPCResponseAllowedAccountEvent() noexcept -> const VersionMap&;
+auto RPCResponseAllowedContact() noexcept -> const VersionMap&;
+auto RPCResponseAllowedContactEvent() noexcept -> const VersionMap&;
+auto RPCResponseAllowedHDSeed() noexcept -> const VersionMap&;
+auto RPCResponseAllowedNym() noexcept -> const VersionMap&;
+auto RPCResponseAllowedRPCStatus() noexcept -> const VersionMap&;
+auto RPCResponseAllowedRPCTask() noexcept -> const VersionMap&;
+auto RPCResponseAllowedServerContract() noexcept -> const VersionMap&;
+auto RPCResponseAllowedSessionData() noexcept -> const VersionMap&;
+auto RPCResponseAllowedTransactionData() noexcept -> const VersionMap&;
+auto RPCResponseAllowedUnitDefinition() noexcept -> const VersionMap&;
+auto RPCResponseAllowedWorkflow() noexcept -> const VersionMap&;
 }  // namespace proto
 }  // namespace opentxs
 #endif  // OPENTXS_PROTOBUF_VERIFYRPC_HPP

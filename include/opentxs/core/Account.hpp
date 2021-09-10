@@ -32,11 +32,6 @@ namespace implementation
 class Wallet;
 }  // namespace implementation
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
 namespace server
 {
 namespace implementation
@@ -44,6 +39,8 @@ namespace implementation
 class Wallet;
 }  // namespace implementation
 }  // namespace server
+
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -97,47 +94,54 @@ public:
         err_acct
     };
 
-    static char const* _GetTypeString(AccountType accountType);
+    static auto _GetTypeString(AccountType accountType) -> char const*;
 
-    std::string Alias() const;
-    bool ConsensusHash(
+    auto Alias() const -> std::string;
+    auto ConsensusHash(
         const otx::context::Base& context,
         Identifier& theOutput,
-        const PasswordPrompt& reason) const;
-    bool DisplayStatistics(String& contents) const override;
-    Amount GetBalance() const;
-    const identifier::UnitDefinition& GetInstrumentDefinitionID() const;
-    TransactionNumber GetStashTransNum() const { return stashTransNum_; }
-    char const* GetTypeString() const { return _GetTypeString(acctType_); }
-    bool IsAllowedToGoNegative() const;
-    bool IsInternalServerAcct() const;
-    bool IsOwnedByUser() const;
-    bool IsOwnedByEntity() const;
-    bool IsIssuer() const;
+        const PasswordPrompt& reason) const -> bool;
+    auto DisplayStatistics(String& contents) const -> bool override;
+    auto GetBalance() const -> Amount;
+    auto GetInstrumentDefinitionID() const -> const identifier::UnitDefinition&;
+    auto GetStashTransNum() const -> TransactionNumber
+    {
+        return stashTransNum_;
+    }
+    auto GetTypeString() const -> char const*
+    {
+        return _GetTypeString(acctType_);
+    }
+    auto IsAllowedToGoNegative() const -> bool;
+    auto IsInternalServerAcct() const -> bool;
+    auto IsOwnedByUser() const -> bool;
+    auto IsOwnedByEntity() const -> bool;
+    auto IsIssuer() const -> bool;
     // For accounts used by smart contracts, to stash funds while running.
-    bool IsStashAcct() const { return (acctType_ == stash); }
-    std::unique_ptr<Ledger> LoadInbox(const identity::Nym& nym) const;
-    std::unique_ptr<Ledger> LoadOutbox(const identity::Nym& nym) const;
+    auto IsStashAcct() const -> bool { return (acctType_ == stash); }
+    auto LoadInbox(const identity::Nym& nym) const -> std::unique_ptr<Ledger>;
+    auto LoadOutbox(const identity::Nym& nym) const -> std::unique_ptr<Ledger>;
     // Compares the NymID loaded from the account file with whatever Nym the
     // programmer wants to verify.
-    bool VerifyOwner(const identity::Nym& candidate) const;
-    bool VerifyOwnerByID(const identifier::Nym& nymId) const;
+    auto VerifyOwner(const identity::Nym& candidate) const -> bool;
+    auto VerifyOwnerByID(const identifier::Nym& nymId) const -> bool;
 
     // Debit a certain amount from the account (presumably the same amount is
     // being added somewhere)
-    bool Debit(const Amount amount);
+    auto Debit(const Amount amount) -> bool;
     // Credit a certain amount from the account (presumably the same amount is
     // being subtracted somewhere)
-    bool Credit(const Amount amount);
-    bool GetInboxHash(Identifier& output);
-    bool GetOutboxHash(Identifier& output);
-    bool InitBoxes(const identity::Nym& signer, const PasswordPrompt& reason);
+    auto Credit(const Amount amount) -> bool;
+    auto GetInboxHash(Identifier& output) -> bool;
+    auto GetOutboxHash(Identifier& output) -> bool;
+    auto InitBoxes(const identity::Nym& signer, const PasswordPrompt& reason)
+        -> bool;
     // If you pass the identifier in, the inbox hash is recorded there
-    bool SaveInbox(Ledger& box);
-    bool SaveInbox(Ledger& box, Identifier& hash);
+    auto SaveInbox(Ledger& box) -> bool;
+    auto SaveInbox(Ledger& box, Identifier& hash) -> bool;
     // If you pass the identifier in, the outbox hash is recorded there
-    bool SaveOutbox(Ledger& box);
-    bool SaveOutbox(Ledger& box, Identifier& hash);
+    auto SaveOutbox(Ledger& box) -> bool;
+    auto SaveOutbox(Ledger& box, Identifier& hash) -> bool;
     void SetAlias(const std::string& alias);
     void SetInboxHash(const Identifier& input);
     void SetOutboxHash(const Identifier& input);
@@ -172,8 +176,8 @@ private:
     OTIdentifier outboxHash_;
     std::string alias_;
 
-    static Account* GenerateNewAccount(
-        const api::internal::Core& api,
+    static auto GenerateNewAccount(
+        const api::Core& api,
         const identifier::Nym& nymID,
         const identifier::Server& notaryID,
         const identity::Nym& serverNym,
@@ -181,65 +185,65 @@ private:
         const identifier::UnitDefinition& instrumentDefinitionID,
         const PasswordPrompt& reason,
         AccountType acctType = user,
-        TransactionNumber stashTransNum = 0);
+        TransactionNumber stashTransNum = 0) -> Account*;
     // Let's say you don't have or know the NymID, and you just want to load
     // the damn thing up. Then call this function. It will set nymID for you.
-    static Account* LoadExistingAccount(
-        const api::internal::Core& api,
+    static auto LoadExistingAccount(
+        const api::Core& api,
         const Identifier& accountId,
-        const identifier::Server& notaryID);
+        const identifier::Server& notaryID) -> Account*;
 
-    bool SaveContractWallet(Tag& parent) const override;
+    auto SaveContractWallet(Tag& parent) const -> bool override;
 
-    bool create_box(
+    auto create_box(
         std::unique_ptr<Ledger>& box,
         const identity::Nym& signer,
         const ledgerType type,
-        const PasswordPrompt& reason);
-    bool GenerateNewAccount(
+        const PasswordPrompt& reason) -> bool;
+    auto GenerateNewAccount(
         const identity::Nym& server,
         const Identifier& userNymID,
         const identifier::Server& notaryID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const PasswordPrompt& reason,
         AccountType acctType = user,
-        std::int64_t stashTransNum = 0);
+        std::int64_t stashTransNum = 0) -> bool;
     void InitAccount();
     // overriding this so I can set filename automatically inside based on ID.
-    bool LoadContract() override;
-    bool LoadContractFromString(const String& theStr) override;
+    auto LoadContract() -> bool override;
+    auto LoadContractFromString(const String& theStr) -> bool override;
     // return -1 if error, 0 if nothing, and 1 if the node was processed.
-    std::int32_t ProcessXMLNode(irr::io::IrrXMLReader*& xml) override;
+    auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
     void Release() override;
     void Release_Account();
     // generates filename based on accounts path and account ID. Saves to the
     // standard location for an acct.
-    bool SaveAccount();
+    auto SaveAccount() -> bool;
 
-    bool save_box(
+    auto save_box(
         Ledger& box,
         Identifier& hash,
         bool (Ledger::*save)(Identifier&),
-        void (Account::*set)(const Identifier&));
+        void (Account::*set)(const Identifier&)) -> bool;
 
     void UpdateContents(const PasswordPrompt& reason) override;
 
     Account(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identifier::Nym& nymID,
         const Identifier& accountId,
         const identifier::Server& notaryID,
         const String& name);
     Account(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identifier::Nym& nymID,
         const Identifier& accountId,
         const identifier::Server& notaryID);
     Account(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identifier::Nym& nymID,
         const identifier::Server& notaryID);
-    Account(const api::internal::Core& api);
+    Account(const api::Core& api);
     Account() = delete;
 };
 }  // namespace opentxs

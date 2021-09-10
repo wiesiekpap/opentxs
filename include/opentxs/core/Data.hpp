@@ -16,31 +16,6 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
 
-#ifdef SWIG
-// clang-format off
-%ignore opentxs::Data::at;
-%ignore opentxs::Data::begin;
-%ignore opentxs::Data::cbegin;
-%ignore opentxs::Data::cend;
-%ignore opentxs::Data::Concatenate;
-%ignore opentxs::Data::end;
-%ignore opentxs::Data::GetPointer;
-%ignore opentxs::Data::OTfread;
-%ignore opentxs::Pimpl<opentxs::Data>::Pimpl(opentxs::Data const &);
-%ignore opentxs::Pimpl<opentxs::Data>::operator opentxs::Data&;
-%ignore opentxs::Pimpl<opentxs::Data>::operator const opentxs::Data &;
-%ignore operator==(OTData& lhs, const Data& rhs);
-%ignore operator!=(OTData& lhs, const Data& rhs);
-%ignore operator+=(OTData& lhs, const OTData& rhs);
-%rename(dataCompareEqual) opentxs::Data::operator==(const Data& rhs) const;
-%rename(dataCompareNotEqual) opentxs::Data::operator!=(const Data& rhs) const;
-%rename(dataPlusEqual) opentxs::Data::operator+=(const Data& rhs);
-%rename(assign) operator=(const opentxs::Data&);
-%rename (DataFactory) opentxs::Data::Factory;
-%template(OTData) opentxs::Pimpl<opentxs::Data>;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace network
@@ -59,17 +34,23 @@ using OTData = Pimpl<Data>;
 
 namespace opentxs
 {
-OPENTXS_EXPORT bool operator==(const OTData& lhs, const Data& rhs) noexcept;
-OPENTXS_EXPORT bool operator!=(const OTData& lhs, const Data& rhs) noexcept;
-OPENTXS_EXPORT bool operator<(const OTData& lhs, const Data& rhs) noexcept;
-OPENTXS_EXPORT bool operator>(const OTData& lhs, const Data& rhs) noexcept;
-OPENTXS_EXPORT bool operator<=(const OTData& lhs, const Data& rhs) noexcept;
-OPENTXS_EXPORT bool operator>=(const OTData& lhs, const Data& rhs) noexcept;
-OPENTXS_EXPORT OTData& operator+=(OTData& lhs, const OTData& rhs);
-OPENTXS_EXPORT OTData& operator+=(OTData& lhs, const std::uint8_t rhs);
-OPENTXS_EXPORT OTData& operator+=(OTData& lhs, const std::uint16_t rhs);
-OPENTXS_EXPORT OTData& operator+=(OTData& lhs, const std::uint32_t rhs);
-OPENTXS_EXPORT OTData& operator+=(OTData& lhs, const std::uint64_t rhs);
+OPENTXS_EXPORT auto operator==(const OTData& lhs, const Data& rhs) noexcept
+    -> bool;
+OPENTXS_EXPORT auto operator!=(const OTData& lhs, const Data& rhs) noexcept
+    -> bool;
+OPENTXS_EXPORT auto operator<(const OTData& lhs, const Data& rhs) noexcept
+    -> bool;
+OPENTXS_EXPORT auto operator>(const OTData& lhs, const Data& rhs) noexcept
+    -> bool;
+OPENTXS_EXPORT auto operator<=(const OTData& lhs, const Data& rhs) noexcept
+    -> bool;
+OPENTXS_EXPORT auto operator>=(const OTData& lhs, const Data& rhs) noexcept
+    -> bool;
+OPENTXS_EXPORT auto operator+=(OTData& lhs, const OTData& rhs) -> OTData&;
+OPENTXS_EXPORT auto operator+=(OTData& lhs, const std::uint8_t rhs) -> OTData&;
+OPENTXS_EXPORT auto operator+=(OTData& lhs, const std::uint16_t rhs) -> OTData&;
+OPENTXS_EXPORT auto operator+=(OTData& lhs, const std::uint32_t rhs) -> OTData&;
+OPENTXS_EXPORT auto operator+=(OTData& lhs, const std::uint64_t rhs) -> OTData&;
 }  // namespace opentxs
 
 namespace opentxs
@@ -83,94 +64,81 @@ public:
     using const_iterator =
         opentxs::iterator::Bidirectional<const Data, const std::byte>;
 
-    static Pimpl<opentxs::Data> Factory();
-    static Pimpl<opentxs::Data> Factory(const Data& rhs);
-#ifndef SWIG
-    static Pimpl<opentxs::Data> Factory(const void* data, std::size_t size);
-    static OTData Factory(const Armored& source);
-    static OTData Factory(const std::vector<unsigned char>& source);
-    static OTData Factory(const std::vector<std::byte>& source);
-    static OTData Factory(const network::zeromq::Frame& message);
-    static OTData Factory(const std::uint8_t in);
+    static auto Factory() -> Pimpl<opentxs::Data>;
+    static auto Factory(const Data& rhs) -> Pimpl<opentxs::Data>;
+    static auto Factory(const void* data, std::size_t size)
+        -> Pimpl<opentxs::Data>;
+    static auto Factory(const Armored& source) -> OTData;
+    static auto Factory(const std::vector<unsigned char>& source) -> OTData;
+    static auto Factory(const std::vector<std::byte>& source) -> OTData;
+    static auto Factory(const network::zeromq::Frame& message) -> OTData;
+    static auto Factory(const std::uint8_t in) -> OTData;
     /// Bytes will be stored in big endian order
-    static OTData Factory(const std::uint16_t in);
+    static auto Factory(const std::uint16_t in) -> OTData;
     /// Bytes will be stored in big endian order
-    static OTData Factory(const std::uint32_t in);
+    static auto Factory(const std::uint32_t in) -> OTData;
     /// Bytes will be stored in big endian order
-    static OTData Factory(const std::uint64_t in);
-    static OTData Factory(const std::string in, const Mode mode);
-#endif
+    static auto Factory(const std::uint64_t in) -> OTData;
+    static auto Factory(const std::string in, const Mode mode) -> OTData;
 
-    virtual bool operator==(const Data& rhs) const noexcept = 0;
-    virtual bool operator!=(const Data& rhs) const noexcept = 0;
-    virtual bool operator<(const Data& rhs) const noexcept = 0;
-    virtual bool operator>(const Data& rhs) const noexcept = 0;
-    virtual bool operator<=(const Data& rhs) const noexcept = 0;
-    virtual bool operator>=(const Data& rhs) const noexcept = 0;
-    virtual std::string asHex() const = 0;
-    virtual const std::byte& at(const std::size_t position) const = 0;
-    virtual const_iterator begin() const = 0;
-    virtual ReadView Bytes() const noexcept = 0;
-    virtual const_iterator cbegin() const = 0;
-    virtual const_iterator cend() const = 0;
-    virtual const void* data() const = 0;
-    virtual bool empty() const = 0;
-    virtual const_iterator end() const = 0;
-    virtual bool Extract(
+    virtual auto operator==(const Data& rhs) const noexcept -> bool = 0;
+    virtual auto operator!=(const Data& rhs) const noexcept -> bool = 0;
+    virtual auto operator<(const Data& rhs) const noexcept -> bool = 0;
+    virtual auto operator>(const Data& rhs) const noexcept -> bool = 0;
+    virtual auto operator<=(const Data& rhs) const noexcept -> bool = 0;
+    virtual auto operator>=(const Data& rhs) const noexcept -> bool = 0;
+    virtual auto asHex() const -> std::string = 0;
+    virtual auto at(const std::size_t position) const -> const std::byte& = 0;
+    virtual auto begin() const -> const_iterator = 0;
+    virtual auto Bytes() const noexcept -> ReadView = 0;
+    virtual auto cbegin() const -> const_iterator = 0;
+    virtual auto cend() const -> const_iterator = 0;
+    virtual auto data() const -> const void* = 0;
+    virtual auto empty() const -> bool = 0;
+    virtual auto end() const -> const_iterator = 0;
+    virtual auto Extract(
         const std::size_t amount,
         Data& output,
-        const std::size_t pos = 0) const = 0;
-    virtual bool Extract(std::uint8_t& output, const std::size_t pos = 0)
-        const = 0;
-    virtual bool Extract(std::uint16_t& output, const std::size_t pos = 0)
-        const = 0;
-    virtual bool Extract(std::uint32_t& output, const std::size_t pos = 0)
-        const = 0;
-    virtual bool Extract(std::uint64_t& output, const std::size_t pos = 0)
-        const = 0;
-#ifndef SWIG
-    [[deprecated]] virtual const void* GetPointer() const = 0;
-#endif
-#ifndef SWIG
-    [[deprecated]] virtual std::size_t GetSize() const = 0;
-#endif
-#ifndef SWIG
-    [[deprecated]] virtual bool IsEmpty() const = 0;
-#endif
-    virtual bool IsNull() const = 0;
-    virtual std::size_t size() const = 0;
-    virtual std::string str() const = 0;
+        const std::size_t pos = 0) const -> bool = 0;
+    virtual auto Extract(std::uint8_t& output, const std::size_t pos = 0) const
+        -> bool = 0;
+    virtual auto Extract(std::uint16_t& output, const std::size_t pos = 0) const
+        -> bool = 0;
+    virtual auto Extract(std::uint32_t& output, const std::size_t pos = 0) const
+        -> bool = 0;
+    virtual auto Extract(std::uint64_t& output, const std::size_t pos = 0) const
+        -> bool = 0;
+    [[deprecated]] virtual auto GetPointer() const -> const void* = 0;
+    [[deprecated]] virtual auto GetSize() const -> std::size_t = 0;
+    [[deprecated]] virtual auto IsEmpty() const -> bool = 0;
+    virtual auto IsNull() const -> bool = 0;
+    virtual auto size() const -> std::size_t = 0;
+    virtual auto str() const -> std::string = 0;
 
-    virtual Data& operator+=(const Data& rhs) = 0;
-    virtual Data& operator+=(const std::uint8_t rhs) = 0;
+    virtual auto operator+=(const Data& rhs) -> Data& = 0;
+    virtual auto operator+=(const std::uint8_t rhs) -> Data& = 0;
     /// Bytes will be stored in big endian order
-    virtual Data& operator+=(const std::uint16_t rhs) = 0;
+    virtual auto operator+=(const std::uint16_t rhs) -> Data& = 0;
     /// Bytes will be stored in big endian order
-    virtual Data& operator+=(const std::uint32_t rhs) = 0;
+    virtual auto operator+=(const std::uint32_t rhs) -> Data& = 0;
     /// Bytes will be stored in big endian order
-    virtual Data& operator+=(const std::uint64_t rhs) = 0;
+    virtual auto operator+=(const std::uint64_t rhs) -> Data& = 0;
     virtual void Assign(const Data& source) = 0;
     virtual void Assign(const ReadView source) = 0;
-#ifndef SWIG
     virtual void Assign(const void* data, const std::size_t& size) = 0;
-#endif
-    virtual std::byte& at(const std::size_t position) = 0;
-    virtual iterator begin() = 0;
-#ifndef SWIG
-    virtual void* data() = 0;
-    virtual bool DecodeHex(const std::string& hex) = 0;
-#endif
+    virtual auto at(const std::size_t position) -> std::byte& = 0;
+    virtual auto begin() -> iterator = 0;
+    virtual auto data() -> void* = 0;
+    virtual auto DecodeHex(const std::string& hex) -> bool = 0;
     virtual void Concatenate(const ReadView data) = 0;
-#ifndef SWIG
     virtual void Concatenate(const void* data, const std::size_t& size) = 0;
-#endif
-    virtual iterator end() = 0;
-    virtual bool Randomize(const std::size_t& size) = 0;
+    virtual auto end() -> iterator = 0;
+    virtual auto Randomize(const std::size_t& size) -> bool = 0;
     virtual void Release() = 0;
     virtual void resize(const std::size_t size) = 0;
     virtual void SetSize(const std::size_t size) = 0;
     virtual void swap(Data&& rhs) = 0;
-    virtual AllocateOutput WriteInto() noexcept = 0;
+    virtual auto WriteInto() noexcept -> AllocateOutput = 0;
     virtual void zeroMemory() = 0;
 
     virtual ~Data() = default;
@@ -184,26 +152,24 @@ private:
 #ifdef _WIN32
 public:
 #endif
-    virtual Data* clone() const = 0;
+    virtual auto clone() const -> Data* = 0;
 #ifdef _WIN32
 private:
 #endif
 
     Data(const Data& rhs) = delete;
     Data(Data&& rhs) = delete;
-    Data& operator=(const Data& rhs) = delete;
-    Data& operator=(Data&& rhs) = delete;
+    auto operator=(const Data& rhs) -> Data& = delete;
+    auto operator=(Data&& rhs) -> Data& = delete;
 };
 }  // namespace opentxs
 
-#ifndef SWIG
 namespace std
 {
 template <>
 struct OPENTXS_EXPORT less<opentxs::OTData> {
-    bool operator()(const opentxs::OTData& lhs, const opentxs::OTData& rhs)
-        const;
+    auto operator()(const opentxs::OTData& lhs, const opentxs::OTData& rhs)
+        const -> bool;
 };
 }  // namespace std
-#endif
 #endif

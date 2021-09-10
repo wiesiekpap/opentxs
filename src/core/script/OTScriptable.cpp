@@ -30,9 +30,9 @@
 #include <string>
 #include <utility>
 
-#include "internal/api/Api.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -73,7 +73,7 @@
 
 namespace opentxs
 {
-OTScriptable::OTScriptable(const api::internal::Core& core)
+OTScriptable::OTScriptable(const api::Core& core)
     : Contract(core)
     , openingNumsInOrderOfSigning_()
     , m_mapParties()
@@ -106,12 +106,12 @@ auto OTScriptable::is_ot_namechar_invalid(char c) -> bool
 auto OTScriptable::ValidateName(const std::string& str_name) -> bool
 {
     if (str_name.size() <= 0) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Name has zero size.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Name has zero size.").Flush();
         return false;
     } else if (
         find_if(str_name.begin(), str_name.end(), is_ot_namechar_invalid) !=
         str_name.end()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Name fails validation testing: ")(
+        LogOutput(OT_METHOD)(__func__)(": Name fails validation testing: ")(
             str_name)(".")
             .Flush();
         return false;
@@ -160,13 +160,13 @@ auto OTScriptable::ValidateVariableName(const std::string& str_name) -> bool
     // This prefix is disallowed since it's reserved for clause parameter names.
     //
     if (str_name.compare(0, 6, "param_") == 0) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid variable name (")(
+        LogOutput(OT_METHOD)(__func__)(": Invalid variable name (")(
             str_name)("). ('param_' is reserved).")
             .Flush();
         return false;
     }
     if (str_name.compare(0, 7, "return_") == 0) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid variable name (")(
+        LogOutput(OT_METHOD)(__func__)(": Invalid variable name (")(
             str_name)("). ('return_' is reserved).")
             .Flush();
         return false;
@@ -185,7 +185,7 @@ auto OTScriptable::ValidateClauseName(const std::string& str_name) -> bool
     //
     if (0 == str_name.compare(0, 5, "cron_"))  // todo stop hardcoding
     {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Invalid Clause name: '")(
+        LogNormal(OT_METHOD)(__func__)(": Invalid Clause name: '")(
             str_name)("'. Name "
                       "should not start with 'cron_'.")
             .Flush();
@@ -194,7 +194,7 @@ auto OTScriptable::ValidateClauseName(const std::string& str_name) -> bool
 
     if (0 == str_name.compare(0, 5, "hook_"))  // todo stop hardcoding
     {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Invalid Clause name: '")(
+        LogNormal(OT_METHOD)(__func__)(": Invalid Clause name: '")(
             str_name)("'. Name "
                       "should not start with 'hook_'.")
             .Flush();
@@ -203,7 +203,7 @@ auto OTScriptable::ValidateClauseName(const std::string& str_name) -> bool
 
     if (0 == str_name.compare(0, 9, "callback_"))  // todo stop hardcoding
     {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Invalid Clause name: '")(
+        LogNormal(OT_METHOD)(__func__)(": Invalid Clause name: '")(
             str_name)("'. Name "
                       "should not start with 'callback_'.")
             .Flush();
@@ -220,8 +220,8 @@ auto OTScriptable::ValidateHookName(const std::string& str_name) -> bool
 
     if ((str_name.compare(0, 5, "cron_") != 0) &&
         (str_name.compare(0, 5, "hook_") != 0)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Invalid hook name: '")(str_name)(
-            "'. MUST begin with either 'hook_' or 'cron_'.")
+        LogNormal(OT_METHOD)(__func__)(": Invalid hook name: '")(
+            str_name)("'. MUST begin with either 'hook_' or 'cron_'.")
             .Flush();
         return false;
     }
@@ -237,7 +237,7 @@ auto OTScriptable::ValidateCallbackName(const std::string& str_name) -> bool
     // If the callback name DOESN'T begin with 'callback_' then it is
     // rejected.
     if (0 != str_name.compare(0, 9, "callback_")) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Invalid Callback name: '")(
+        LogNormal(OT_METHOD)(__func__)(": Invalid Callback name: '")(
             str_name)("'. MUST begin with 'callback_'.")
             .Flush();
         return false;
@@ -271,7 +271,7 @@ void OTScriptable::RegisterOTNativeCallsWithScript(
     } else
 #endif  // OT_SCRIPT_CHAI
     {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed "
             "dynamic casting OTScript to OTScriptChai.")
             .Flush();
@@ -306,14 +306,14 @@ auto OTScriptable::CanExecuteClause(
     OTClause* pClause = GetClause(str_clause_name);
 
     if (nullptr == pParty) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Unable to find this party: ")(
+        LogNormal(OT_METHOD)(__func__)(": Unable to find this party: ")(
             str_party_name.size() > 0 ? str_party_name.c_str() : "")(".")
             .Flush();
         return false;
     }
 
     if (nullptr == pClause) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Unable to find this clause: ")(
+        LogNormal(OT_METHOD)(__func__)(": Unable to find this clause: ")(
             str_clause_name.size() > 0 ? str_clause_name.c_str() : "")(".")
             .Flush();
         return false;
@@ -383,18 +383,16 @@ auto OTScriptable::CanExecuteClause(
     //
     if (str_clause_name.compare(0, 5, "cron_") == 0)  // todo stop hardcoding
     {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": Parties may not directly "
-            "trigger clauses beginning in cron_.")
+        LogNormal(OT_METHOD)(__func__)(": Parties may not directly "
+                                       "trigger clauses beginning in cron_.")
             .Flush();
         return false;
     }
 
     if (str_clause_name.compare(0, 5, "hook_") == 0)  // todo stop hardcoding
     {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": Parties may not directly "
-            "trigger clauses beginning in hook_.")
+        LogNormal(OT_METHOD)(__func__)(": Parties may not directly "
+                                       "trigger clauses beginning in hook_.")
             .Flush();
         return false;
     }
@@ -402,7 +400,7 @@ auto OTScriptable::CanExecuteClause(
     if (str_clause_name.compare(0, 9, "callback_") == 0)  // todo stop
                                                           // hardcoding
     {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Parties may not directly "
             "trigger clauses beginning in callback_.")
             .Flush();
@@ -428,7 +426,7 @@ auto OTScriptable::CanExecuteClause(
 
     if (nullptr != pCallbackClause)  // Found it!
     {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Found script for: ")(
+        LogNormal(OT_METHOD)(__func__)(": Found script for: ")(
             SCRIPTABLE_CALLBACK_PARTY_MAY_EXECUTE)(". Asking...")
             .Flush();
 
@@ -458,26 +456,26 @@ auto OTScriptable::CanExecuteClause(
                 theParameters,
                 theReturnVal))  // <============================================
         {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
-                ": Error while running "
-                "callback script ")(SCRIPTABLE_CALLBACK_PARTY_MAY_EXECUTE)(
-                ", clause ")(str_clause_name)(".")
+            LogOutput(OT_METHOD)(__func__)(": Error while running "
+                                           "callback script ")(
+                SCRIPTABLE_CALLBACK_PARTY_MAY_EXECUTE)(", clause ")(
+                str_clause_name)(".")
                 .Flush();
             return false;
         } else {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
-                ": Success executing "
-                "callback script ")(SCRIPTABLE_CALLBACK_PARTY_MAY_EXECUTE)(
-                ", clause: ")(str_clause_name)(".")
+            LogNormal(OT_METHOD)(__func__)(": Success executing "
+                                           "callback script ")(
+                SCRIPTABLE_CALLBACK_PARTY_MAY_EXECUTE)(", clause: ")(
+                str_clause_name)(".")
                 .Flush();
 
             return theReturnVal.CopyValueBool();
         }
 
     } else {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Unable to find script for: ")(
-            SCRIPTABLE_CALLBACK_PARTY_MAY_EXECUTE)(
-            ". Therefore, default return value is: TRUE.")
+        LogNormal(OT_METHOD)(__func__)(": Unable to find script for: ")(
+            SCRIPTABLE_CALLBACK_PARTY_MAY_EXECUTE)(". Therefore, default "
+                                                   "return value is: TRUE.")
             .Flush();
     }
 
@@ -580,20 +578,19 @@ auto OTScriptable::ExecuteCallback(
         pScript->SetDisplayFilename(m_strLabel->Get());
 
         if (!pScript->ExecuteScript(&varReturnVal)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Error while running "
                 "callback on scriptable: ")(m_strLabel)(".")
                 .Flush();
         } else {
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Successfully executed "
                 "callback on scriptable: ")(m_strLabel)(".")
                 .Flush();
             return true;
         }
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error instantiating script!")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Error instantiating script!").Flush();
     }
 
     // NOTE: Normally after calling a script, you want to check to see if any of
@@ -806,7 +803,7 @@ auto OTScriptable::GetPartyAccount(std::string str_acct_name) const
 {
     if (!OTScriptable::ValidateName(str_acct_name))  // this logs, FYI.
     {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: invalid name.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Error: invalid name.").Flush();
         return nullptr;
     }
 
@@ -982,7 +979,7 @@ auto OTScriptable::VerifyPartyAuthorization(
     // This party hasn't signed the contract??
     //
     if (!theParty.GetMySignedCopy().Exists()) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Unable to find party's signed copy of this "
             "contract. Has it been executed?")
             .Flush();
@@ -1007,7 +1004,7 @@ auto OTScriptable::VerifyPartyAuthorization(
     {
         OT_ASSERT(nullptr != pAuthorizingAgent);  // This HAS to be set now.
                                                   // I assume it henceforth.
-        LogDebug(OT_METHOD)(__FUNCTION__)(
+        LogDebug(OT_METHOD)(__func__)(
             ": I just had to load the authorizing agent's Nym "
             "for a party (")(theParty.GetPartyName())(
             "), so "
@@ -1015,10 +1012,9 @@ auto OTScriptable::VerifyPartyAuthorization(
             "Nyms that were already loaded.")
             .Flush();
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Error: Strange, unable to load "
-            "authorizing agent's Nym (to verify his "
-            "signature).")
+        LogOutput(OT_METHOD)(__func__)(": Error: Strange, unable to load "
+                                       "authorizing agent's Nym (to verify his "
+                                       "signature).")
             .Flush();
         return false;
     }
@@ -1047,11 +1043,11 @@ auto OTScriptable::VerifyPartyAuthorization(
     {
         if (false ==
             pAuthorizingAgent->VerifyIssuedNumber(lOpeningNo, strNotaryID)) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Opening trans number ")(
-                lOpeningNo)(
-                " doesn't "
-                "verify for the nym listed as the authorizing agent for "
-                "party ")(theParty.GetPartyName())(".")
+            LogOutput(OT_METHOD)(__func__)(": Opening trans number ")(
+                lOpeningNo)(" doesn't "
+                            "verify for the nym listed as the authorizing "
+                            "agent for "
+                            "party ")(theParty.GetPartyName())(".")
                 .Flush();
             return false;
         }
@@ -1062,7 +1058,7 @@ auto OTScriptable::VerifyPartyAuthorization(
         else if (bBurnTransNo) {
             if (false == pAuthorizingAgent->VerifyTransactionNumber(
                              lOpeningNo, strNotaryID)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Opening trans number ")(
+                LogOutput(OT_METHOD)(__func__)(": Opening trans number ")(
                     lOpeningNo)(" doesn't "
                                 "verify as available for use, for the "
                                 "nym listed as the authorizing agent "
@@ -1086,7 +1082,7 @@ auto OTScriptable::VerifyPartyAuthorization(
     else if (bBurnTransNo)  // In this case, bBurnTransNo=true, then the caller
                             // EXPECTED to burn a transaction
     {                       // num. But the number was 0! Therefore, FAILURE!
-        LogNormal(OT_METHOD)(__FUNCTION__)(": FAILURE. On Party ")(
+        LogNormal(OT_METHOD)(__func__)(": FAILURE. On Party ")(
             theParty.GetPartyName().c_str())(
             ", expected to burn a legitimate opening transaction "
             "number, but got this instead: ")(lOpeningNo)(".")
@@ -1120,9 +1116,8 @@ auto OTScriptable::VerifyPartyAuthorization(
         api_.Factory().Scriptable(theParty.GetMySignedCopy())};
 
     if (false == bool(pPartySignedCopy)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Error loading party's signed copy of "
-            "agreement. Has it been executed?")
+        LogOutput(OT_METHOD)(__func__)(": Error loading party's signed copy of "
+                                       "agreement. Has it been executed?")
             .Flush();
         return false;
     }
@@ -1143,13 +1138,13 @@ auto OTScriptable::VerifyPartyAuthorization(
                                          // non-zero.
 
         if (!bContentsVerified)
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Though the signature verifies, the contract "
                 "signed by the party (")(theParty.GetPartyName())(
                 ") doesn't match this contract. (Failed comparison).")
                 .Flush();
     } else
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Signature failed to verify for party: ")(
             theParty.GetPartyName())(".")
             .Flush();
@@ -1208,8 +1203,8 @@ auto OTScriptable::VerifyNymAsAgent(
     OTParty* pParty = FindPartyBasedOnNymAsAgent(theNym);
 
     if (nullptr == pParty) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Unable to find party based "
-                                           "on Nym as agent.")
+        LogNormal(OT_METHOD)(__func__)(": Unable to find party based "
+                                       "on Nym as agent.")
             .Flush();
         return false;
     }
@@ -1218,7 +1213,7 @@ auto OTScriptable::VerifyNymAsAgent(
     // This party hasn't signed the contract??
     //
     if (!pParty->GetMySignedCopy().Exists()) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Unable to find party's (")(
+        LogNormal(OT_METHOD)(__func__)(": Unable to find party's (")(
             pParty->GetPartyName())(
             ") signed copy of this contract. Has it been executed?")
             .Flush();
@@ -1256,7 +1251,7 @@ auto OTScriptable::VerifyNymAsAgent(
         {
             OT_ASSERT(nullptr != pAuthorizingAgent);  // This HAS to be set now.
                                                       // I assume it henceforth.
-            LogDebug(OT_METHOD)(__FUNCTION__)(
+            LogDebug(OT_METHOD)(__func__)(
                 ": I just had to load the "
                 "authorizing agent's Nym for a party (")(
                 pParty->GetPartyName())(
@@ -1264,9 +1259,9 @@ auto OTScriptable::VerifyNymAsAgent(
                 " available on the list of Nyms that were already loaded.")
                 .Flush();
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Strange, unable "
-                                               "to load authorizing "
-                                               "agent's Nym for party ")(
+            LogOutput(OT_METHOD)(__func__)(": Error: Strange, unable "
+                                           "to load authorizing "
+                                           "agent's Nym for party ")(
                 pParty->GetPartyName())(" (to verify his signature).")
                 .Flush();
             pParty->ClearTemporaryPointers();
@@ -1307,7 +1302,7 @@ auto OTScriptable::VerifyNymAsAgent(
     auto pPartySignedCopy{api_.Factory().Scriptable(pParty->GetMySignedCopy())};
 
     if (false == bool(pPartySignedCopy)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error loading party's (")(
+        LogOutput(OT_METHOD)(__func__)(": Error loading party's (")(
             pParty->GetPartyName())(
             ") signed copy of agreement. Has it been executed?")
             .Flush();
@@ -1328,14 +1323,14 @@ auto OTScriptable::VerifyNymAsAgent(
         bContentsVerified = Compare(*pPartySignedCopy);
 
         if (!bContentsVerified)
-            LogNormal(OT_METHOD)(__FUNCTION__)(
+            LogNormal(OT_METHOD)(__func__)(
                 ": Though the signature "
                 "verifies, the contract "
                 "signed by the party (")(pParty->GetPartyName())(
                 ") doesn't match this contract. (Failed comparison).")
                 .Flush();
     } else
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Signature failed to verify "
             "for party: ")(pParty->GetPartyName())(".")
             .Flush();
@@ -1387,7 +1382,7 @@ auto OTScriptable::VerifyPartyAcctAuthorization(
     OTParty* pParty = thePartyAcct.GetParty();
 
     if (nullptr == pParty) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Unable to find party for acct: ")(
+        LogOutput(OT_METHOD)(__func__)(": Unable to find party for acct: ")(
             thePartyAcct.GetName())(".")
             .Flush();
         return false;
@@ -1396,9 +1391,9 @@ auto OTScriptable::VerifyPartyAcctAuthorization(
     OTAgent* pAuthorizedAgent = thePartyAcct.GetAuthorizedAgent();
 
     if (nullptr == pAuthorizedAgent) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": Unable to find authorized agent (")(thePartyAcct.GetAgentName())(
-            ") for acct: ")(thePartyAcct.GetName())("")
+        LogNormal(OT_METHOD)(__func__)(": Unable to find authorized agent (")(
+            thePartyAcct.GetAgentName())(") for acct: ")(
+            thePartyAcct.GetName())("")
             .Flush();
         return false;
     }
@@ -1417,7 +1412,7 @@ auto OTScriptable::VerifyPartyAcctAuthorization(
     //
     if (!thePartyAcct.VerifyOwnership())  // This uses pParty internally.
     {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Unable to verify party's (")(
+        LogNormal(OT_METHOD)(__func__)(": Unable to verify party's (")(
             pParty->GetPartyName())(") ownership of acct: ")(
             thePartyAcct.GetName())(".")
             .Flush();
@@ -1430,7 +1425,7 @@ auto OTScriptable::VerifyPartyAcctAuthorization(
     if (!thePartyAcct.VerifyAgency())  // This will use pAuthorizedAgent
                                        // internally.
     {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Unable to verify agent's (")(
+        LogNormal(OT_METHOD)(__func__)(": Unable to verify agent's (")(
             pAuthorizedAgent->GetName().Get())(") rights re: acct: ")(
             thePartyAcct.GetName())(".")
             .Flush();
@@ -1459,11 +1454,11 @@ auto OTScriptable::VerifyPartyAcctAuthorization(
     {
         if (false ==
             pAuthorizedAgent->VerifyIssuedNumber(lClosingNo, strNotaryID)) {
-            LogNormal(OT_METHOD)(__FUNCTION__)(": Closing trans number ")(
-                lClosingNo)(
-                " doesn't "
-                "verify for the nym listed as the authorized agent for "
-                "account ")(thePartyAcct.GetName())(".")
+            LogNormal(OT_METHOD)(__func__)(": Closing trans number ")(
+                lClosingNo)(" doesn't "
+                            "verify for the nym listed as the authorized agent "
+                            "for "
+                            "account ")(thePartyAcct.GetName())(".")
                 .Flush();
             return false;
         }
@@ -1475,7 +1470,7 @@ auto OTScriptable::VerifyPartyAcctAuthorization(
         else if (bBurnTransNo) {
             if (false == pAuthorizedAgent->VerifyTransactionNumber(
                              lClosingNo, strNotaryID)) {
-                LogNormal(OT_METHOD)(__FUNCTION__)(": Closing trans number ")(
+                LogNormal(OT_METHOD)(__func__)(": Closing trans number ")(
                     lClosingNo)(" doesn't "
                                 "verify as available for use, for the "
                                 "nym listed as the authorized agent for "
@@ -1499,7 +1494,7 @@ auto OTScriptable::VerifyPartyAcctAuthorization(
     else if (bBurnTransNo)  // In this case, bBurnTransNo=true, then the caller
                             // EXPECTED to burn a transaction
     {                       // num. But the number was 0! Therefore, FAILURE!
-        LogNormal(OT_METHOD)(__FUNCTION__)(": FAILURE. On Acct ")(
+        LogNormal(OT_METHOD)(__func__)(": FAILURE. On Acct ")(
             thePartyAcct.GetName())(
             ", expected to burn a legitimate closing transaction "
             "number, but got this instead: ")(lClosingNo)(".")
@@ -1527,8 +1522,8 @@ auto OTScriptable::VerifyNymAsAgentForAccount(
 
     if (nullptr == pParty) {
         OT_ASSERT(nullptr != pPartyAcct);
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Unable to find "
-                                           "party based on account.")
+        LogNormal(OT_METHOD)(__func__)(": Unable to find "
+                                       "party based on account.")
             .Flush();
         return false;
     }
@@ -1537,8 +1532,8 @@ auto OTScriptable::VerifyNymAsAgentForAccount(
     // Verify ownership.
     //
     if (!pParty->VerifyOwnershipOfAccount(theAccount)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": pParty is not the "
-                                           "owner of theAccount.")
+        LogNormal(OT_METHOD)(__func__)(": pParty is not the "
+                                       "owner of theAccount.")
             .Flush();
         pParty->ClearTemporaryPointers();  // Just in case.
         return false;
@@ -1550,8 +1545,8 @@ auto OTScriptable::VerifyNymAsAgentForAccount(
     // Make sure they are from the SAME PARTY.
     //
     if (nullptr == pAgent) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": Unable to find the "
-                                           "right agent for this account.")
+        LogNormal(OT_METHOD)(__func__)(": Unable to find the "
+                                       "right agent for this account.")
             .Flush();
         pParty->ClearTemporaryPointers();  // Just in case.
         return false;
@@ -1570,15 +1565,15 @@ auto OTScriptable::VerifyNymAsAgentForAccount(
     // assuming theNym really is the agent that partyAcct was talking about.
     //
     if (!pAgent->IsValidSigner(theNym)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": theNym is not a "
-                                           "valid signer for pAgent.")
+        LogNormal(OT_METHOD)(__func__)(": theNym is not a "
+                                       "valid signer for pAgent.")
             .Flush();
         pParty->ClearTemporaryPointers();  // Just in case.
         return false;
     }
     if (!pAgent->VerifyAgencyOfAccount(theAccount)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(": theNym is not a "
-                                           "valid agent for theAccount.")
+        LogNormal(OT_METHOD)(__func__)(": theNym is not a "
+                                       "valid agent for theAccount.")
             .Flush();
         pParty->ClearTemporaryPointers();  // Just in case.
         return false;
@@ -1732,7 +1727,7 @@ auto OTScriptable::GetClause(std::string str_clause_name) const -> OTClause*
 {
     if (!OTScriptable::ValidateName(str_clause_name))  // this logs, FYI.
     {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: invalid name.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Error: invalid name.").Flush();
         return nullptr;
     }
 
@@ -1753,7 +1748,7 @@ auto OTScriptable::GetAgent(std::string str_agent_name) const -> OTAgent*
 {
     if (!OTScriptable::ValidateName(str_agent_name))  // this logs, FYI.
     {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: invalid name.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Error: invalid name.").Flush();
         return nullptr;
     }
 
@@ -1774,7 +1769,7 @@ auto OTScriptable::GetBylaw(std::string str_bylaw_name) const -> OTBylaw*
 {
     if (!OTScriptable::ValidateName(str_bylaw_name))  // this logs, FYI.
     {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: invalid name.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Error: invalid name.").Flush();
         return nullptr;
     }
 
@@ -1795,7 +1790,7 @@ auto OTScriptable::GetParty(std::string str_party_name) const -> OTParty*
 {
     if (!OTScriptable::ValidateName(str_party_name))  // this logs, FYI.
     {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: invalid name.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Error: invalid name.").Flush();
         return nullptr;
     }
 
@@ -1816,8 +1811,7 @@ auto OTScriptable::GetPartyByIndex(std::int32_t nIndex) const -> OTParty*
 {
     if ((nIndex < 0) ||
         (nIndex >= static_cast<std::int64_t>(m_mapParties.size()))) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Index out of bounds: ")(nIndex)(
-            ".")
+        LogOutput(OT_METHOD)(__func__)(": Index out of bounds: ")(nIndex)(".")
             .Flush();
     } else {
 
@@ -1839,8 +1833,7 @@ auto OTScriptable::GetBylawByIndex(std::int32_t nIndex) const -> OTBylaw*
 {
     if ((nIndex < 0) ||
         (nIndex >= static_cast<std::int64_t>(m_mapBylaws.size()))) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Index out of bounds: ")(nIndex)(
-            ".")
+        LogOutput(OT_METHOD)(__func__)(": Index out of bounds: ")(nIndex)(".")
             .Flush();
     } else {
 
@@ -1881,9 +1874,9 @@ auto OTScriptable::VerifyThisAgainstAllPartiesSignedCopies() -> bool
                 api_.Factory().Scriptable(pParty->GetMySignedCopy())};
 
             if (false == bool(pPartySignedCopy)) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Error loading party's (")(
-                    current_party_name)(
-                    ") signed copy of agreement. Has it been executed?")
+                LogOutput(OT_METHOD)(__func__)(": Error loading party's (")(
+                    current_party_name)(") signed copy of agreement. Has it "
+                                        "been executed?")
                     .Flush();
                 return false;
             }
@@ -1892,9 +1885,9 @@ auto OTScriptable::VerifyThisAgainstAllPartiesSignedCopies() -> bool
                                               // copies, we compare them to
                                               // *this.
             {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Party's (")(
-                    current_party_name)(
-                    ") signed copy of agreement doesn't match *this.")
+                LogOutput(OT_METHOD)(__func__)(": Party's (")(
+                    current_party_name)(") signed copy of agreement doesn't "
+                                        "match *this.")
                     .Flush();
                 return false;
             }
@@ -1928,7 +1921,7 @@ auto OTScriptable::ConfirmParty(
 
     if (!OTScriptable::ValidateName(str_party_name))  // this logs, FYI.
     {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Invalid name.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Error: Invalid name.").Flush();
         return false;
     }
 
@@ -1966,8 +1959,8 @@ auto OTScriptable::ConfirmParty(
         if (!pParty->Compare(theParty))  // Make sure my party compares to the
                                          // one it's replacing...
         {
-            LogNormal(OT_METHOD)(__FUNCTION__)(": Party (")(str_party_name)(
-                ") doesn't match the one it's confirming.")
+            LogNormal(OT_METHOD)(__func__)(": Party (")(
+                str_party_name)(") doesn't match the one it's confirming.")
                 .Flush();
             return false;
         }
@@ -2017,7 +2010,7 @@ auto OTScriptable::ConfirmParty(
 
         return false;
     } else
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed attempt to confirm "
             "non-existent party: ")(str_party_name)(".")
             .Flush();
@@ -2034,7 +2027,7 @@ auto OTScriptable::AddParty(OTParty& theParty) -> bool
 
     if (!OTScriptable::ValidatePartyName(str_party_name))  // this logs, FYI.
     {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Invalid name.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Error: Invalid name.").Flush();
         return false;
     }
 
@@ -2048,9 +2041,8 @@ auto OTScriptable::AddParty(OTParty& theParty) -> bool
 
         return true;
     } else
-        LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": Failed attempt: party already exists "
-            "on contract.")
+        LogNormal(OT_METHOD)(__func__)(": Failed attempt: party already exists "
+                                       "on contract.")
             .Flush();
 
     return false;
@@ -2060,7 +2052,7 @@ auto OTScriptable::RemoveParty(std::string str_Name) -> bool
 {
     if (!OTScriptable::ValidatePartyName(str_Name))  // this logs, FYI.
     {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Invalid name.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Error: Invalid name.").Flush();
         return false;
     }
 
@@ -2076,9 +2068,8 @@ auto OTScriptable::RemoveParty(std::string str_Name) -> bool
         pParty = nullptr;
         return true;
     } else
-        LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": Failed attempt: party didn't exist "
-            "on contract.")
+        LogNormal(OT_METHOD)(__func__)(": Failed attempt: party didn't exist "
+                                       "on contract.")
             .Flush();
 
     return false;
@@ -2088,7 +2079,7 @@ auto OTScriptable::RemoveBylaw(std::string str_Name) -> bool
 {
     if (!OTScriptable::ValidateBylawName(str_Name))  // this logs, FYI.
     {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Invalid name.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Error: Invalid name.").Flush();
         return false;
     }
 
@@ -2104,9 +2095,8 @@ auto OTScriptable::RemoveBylaw(std::string str_Name) -> bool
         pBylaw = nullptr;
         return true;
     } else
-        LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": Failed attempt: bylaw didn't exist "
-            "on contract.")
+        LogNormal(OT_METHOD)(__func__)(": Failed attempt: bylaw didn't exist "
+                                       "on contract.")
             .Flush();
 
     return false;
@@ -2118,7 +2108,7 @@ auto OTScriptable::AddBylaw(OTBylaw& theBylaw) -> bool
 
     if (!OTScriptable::ValidateBylawName(str_name))  // this logs, FYI.
     {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Invalid name.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Error: Invalid name.").Flush();
         return false;
     }
 
@@ -2132,9 +2122,8 @@ auto OTScriptable::AddBylaw(OTBylaw& theBylaw) -> bool
 
         return true;
     } else
-        LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": Failed attempt: bylaw already exists "
-            "on contract.")
+        LogNormal(OT_METHOD)(__func__)(": Failed attempt: bylaw already exists "
+                                       "on contract.")
             .Flush();
 
     return false;
@@ -2167,14 +2156,13 @@ auto OTScriptable::Compare(OTScriptable& rhs) const -> bool
     // versus verifying the content.)
     //
     if (GetPartyCount() != rhs.GetPartyCount()) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": The number of parties does not match.")
             .Flush();
         return false;
     }
     if (GetBylawCount() != rhs.GetBylawCount()) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": The number of bylaws does not match.")
+        LogNormal(OT_METHOD)(__func__)(": The number of bylaws does not match.")
             .Flush();
         return false;
     }
@@ -2187,12 +2175,12 @@ auto OTScriptable::Compare(OTScriptable& rhs) const -> bool
         OTBylaw* p2 = rhs.GetBylaw(str_bylaw_name);
 
         if (nullptr == p2) {
-            LogNormal(OT_METHOD)(__FUNCTION__)(": Unable to find bylaw ")(
+            LogNormal(OT_METHOD)(__func__)(": Unable to find bylaw ")(
                 str_bylaw_name)(" on rhs.")
                 .Flush();
             return false;
         } else if (!pBylaw->Compare(*p2)) {
-            LogNormal(OT_METHOD)(__FUNCTION__)(": Bylaws don't match: ")(
+            LogNormal(OT_METHOD)(__func__)(": Bylaws don't match: ")(
                 str_bylaw_name)(".")
                 .Flush();
             return false;
@@ -2207,12 +2195,12 @@ auto OTScriptable::Compare(OTScriptable& rhs) const -> bool
         OTParty* p2 = rhs.GetParty(str_party_name);
 
         if (nullptr == p2) {
-            LogNormal(OT_METHOD)(__FUNCTION__)(": Unable to find party ")(
+            LogNormal(OT_METHOD)(__func__)(": Unable to find party ")(
                 str_party_name)(" on rhs.")
                 .Flush();
             return false;
         } else if (!pParty->Compare(*p2)) {
-            LogNormal(OT_METHOD)(__FUNCTION__)(": Parties don't match: ")(
+            LogNormal(OT_METHOD)(__func__)(": Parties don't match: ")(
                 str_party_name)(".")
                 .Flush();
             return false;
@@ -2399,7 +2387,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             while (nPartyCount-- > 0) {
                 //                xml->read(); // <==================
                 if (!SkipToElement(xml)) {
-                    LogNormal(OT_METHOD)(__FUNCTION__)(
+                    LogNormal(OT_METHOD)(__func__)(
                         ": Failure: Unable to find expected "
                         "element for party.")
                         .Flush();
@@ -2448,7 +2436,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                     if (strOpeningTransNo->Exists())
                         lOpeningTransNo = strOpeningTransNo->ToLong();
                     else
-                        LogOutput(OT_METHOD)(__FUNCTION__)(
+                        LogOutput(OT_METHOD)(__func__)(
                             ": Expected openingTransNo in party.")
                             .Flush();
 
@@ -2475,7 +2463,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                             //                          xml->read(); //
                             // <==================
                             if (!SkipToElement(xml)) {
-                                LogNormal(OT_METHOD)(__FUNCTION__)(
+                                LogNormal(OT_METHOD)(__func__)(
                                     ": Failure: Unable to find "
                                     "expected element for "
                                     "agent.")
@@ -2529,7 +2517,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 if (!strAgentName->Exists() ||
                                     !strAgentRepSelf->Exists() ||
                                     !strAgentIndividual->Exists()) {
-                                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                                    LogOutput(OT_METHOD)(__func__)(
                                         ": Error loading agent: "
                                         "Either the name, or "
                                         "one of the bool "
@@ -2542,7 +2530,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
                                 if (!OTScriptable::ValidateName(
                                         strAgentName->Get())) {
-                                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                                    LogOutput(OT_METHOD)(__func__)(
                                         ": Failed loading agent due to "
                                         "Invalid name: ")(strAgentName)(".")
                                         .Flush();
@@ -2572,11 +2560,11 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 if (nullptr != pExistingAgent)  // Uh-oh, it's
                                 // already there!
                                 {
-                                    LogNormal(OT_METHOD)(__FUNCTION__)(
+                                    LogNormal(OT_METHOD)(__func__)(
                                         ": Error loading agent named ")(
-                                        strAgentName)(
-                                        ", since one was "
-                                        "already there on party ")(strName)(".")
+                                        strAgentName)(", since one was "
+                                                      "already there on "
+                                                      "party ")(strName)(".")
                                         .Flush();
                                     delete pParty;
                                     pParty = nullptr;
@@ -2604,7 +2592,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                     pAgent = nullptr;
                                     delete pParty;
                                     pParty = nullptr;
-                                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                                    LogOutput(OT_METHOD)(__func__)(
                                         ": Failed adding agent to party.")
                                         .Flush();
                                     return (-1);
@@ -2617,7 +2605,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
                                 // Update: Nope.
                             } else {
-                                LogOutput(OT_METHOD)(__FUNCTION__)(
+                                LogOutput(OT_METHOD)(__func__)(
                                     ": Expected agent element in party.")
                                     .Flush();
                                 delete pParty;
@@ -2635,7 +2623,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                     if (nAcctCount > 0) {
                         while (nAcctCount-- > 0) {
                             if (!Contract::SkipToElement(xml)) {
-                                LogOutput(OT_METHOD)(__FUNCTION__)(
+                                LogOutput(OT_METHOD)(__func__)(
                                     ": Error finding expected "
                                     "next element for party "
                                     "account.")
@@ -2677,7 +2665,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                     lClosingTransNo =
                                         strClosingTransNo->ToLong();
                                 else {
-                                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                                    LogOutput(OT_METHOD)(__func__)(
                                         ": Expected "
                                         "closingTransNo in "
                                         "partyaccount.")
@@ -2694,7 +2682,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 if (!strAcctName->Exists() ||
                                     (m_bSpecifyInstrumentDefinitionID &&
                                      !strInstrumentDefinitionID->Exists())) {
-                                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                                    LogOutput(OT_METHOD)(__func__)(
                                         ": Expected missing "
                                         "AcctID, InstrumentDefinitionID "
                                         ", Name, or AgentName "
@@ -2716,11 +2704,11 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 if (nullptr != pAcct)  // Uh-oh, it's already
                                                        // there!
                                 {
-                                    LogNormal(OT_METHOD)(__FUNCTION__)(
+                                    LogNormal(OT_METHOD)(__func__)(
                                         ": Error loading partyacct named ")(
-                                        strAcctName)(
-                                        ", since one was "
-                                        "already there on party ")(strName)(".")
+                                        strAcctName)(", since one was "
+                                                     "already there on party ")(
+                                        strName)(".")
                                         .Flush();
                                     delete pParty;
                                     pParty = nullptr;
@@ -2739,7 +2727,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                                  strAcctID,
                                                  strInstrumentDefinitionID,
                                                  lClosingTransNo)) {
-                                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                                    LogOutput(OT_METHOD)(__func__)(
                                         ": Failed adding "
                                         "account to party.")
                                         .Flush();
@@ -2754,7 +2742,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 // UPdate: Nope. Not here.
 
                             } else {
-                                LogOutput(OT_METHOD)(__FUNCTION__)(
+                                LogOutput(OT_METHOD)(__func__)(
                                     ": Expected assetAccount "
                                     "element in party.")
                                     .Flush();
@@ -2773,7 +2761,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                         if (false ==
                             Contract::LoadEncodedTextFieldByName(
                                 xml, strTextExpected, pElementExpected)) {
-                            LogOutput(OT_METHOD)(__FUNCTION__)(": Expected ")(
+                            LogOutput(OT_METHOD)(__func__)(": Expected ")(
                                 pElementExpected)(" element with text field.")
                                 .Flush();
                             delete pParty;
@@ -2786,11 +2774,11 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                     }
 
                     if (AddParty(*pParty))
-                        LogVerbose(OT_METHOD)(__FUNCTION__)(": Loaded Party: ")(
+                        LogVerbose(OT_METHOD)(__func__)(": Loaded Party: ")(
                             pParty->GetPartyName())
                             .Flush();
                     else {
-                        LogOutput(OT_METHOD)(__FUNCTION__)(
+                        LogOutput(OT_METHOD)(__func__)(
                             ": Failed loading Party: ")(pParty->GetPartyName())(
                             ".")
                             .Flush();
@@ -2799,8 +2787,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                         return (-1);  // error condition
                     }
                 } else {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
-                        ": Expected party element.")
+                    LogOutput(OT_METHOD)(__func__)(": Expected party element.")
                         .Flush();
                     return (-1);  // error condition
                 }
@@ -2814,7 +2801,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         if (nBylawCount > 0) {
             while (nBylawCount-- > 0) {
                 if (!SkipToElement(xml)) {
-                    LogNormal(OT_METHOD)(__FUNCTION__)(
+                    LogNormal(OT_METHOD)(__func__)(
                         ": Failure: Unable to find expected "
                         "element for bylaw.")
                         .Flush();
@@ -2855,7 +2842,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                     if (nCount > 0) {
                         while (nCount-- > 0) {
                             if (!Contract::SkipToElement(xml)) {
-                                LogOutput(OT_METHOD)(__FUNCTION__)(
+                                LogOutput(OT_METHOD)(__func__)(
                                     ": Error finding expected "
                                     "next element for "
                                     "variable.")
@@ -2890,7 +2877,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 if (!strVarName->Exists() ||
                                     !strVarType->Exists() ||
                                     !strVarAccess->Exists()) {
-                                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                                    LogOutput(OT_METHOD)(__func__)(
                                         ": Expected missing "
                                         "name, type, or access "
                                         "type in variable.")
@@ -2911,12 +2898,12 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 if (nullptr != pVar)  // Uh-oh, it's already
                                                       // there!
                                 {
-                                    LogNormal(OT_METHOD)(__FUNCTION__)(
+                                    LogNormal(OT_METHOD)(__func__)(
                                         ": Error loading variable named ")(
-                                        strVarName)(
-                                        ", since one was "
-                                        "already there on one of the "
-                                        "bylaws.")
+                                        strVarName)(", since one was "
+                                                    "already there on one of "
+                                                    "the "
+                                                    "bylaws.")
                                         .Flush();
                                     delete pBylaw;
                                     pBylaw = nullptr;
@@ -2941,9 +2928,9 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 else if (strVarType->Compare("bool"))
                                     theVarType = OTVariable::Var_Bool;
                                 else
-                                    LogOutput(OT_METHOD)(__FUNCTION__)(
-                                        ": Bad variable type: ")(strVarType)(
-                                        ".")
+                                    LogOutput(OT_METHOD)(__func__)(
+                                        ": Bad variable type: ")(
+                                        strVarType)(".")
                                         .Flush();
 
                                 OTVariable::OTVariable_Access theVarAccess =
@@ -2956,7 +2943,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 else if (strVarAccess->Compare("important"))
                                     theVarAccess = OTVariable::Var_Important;
                                 else
-                                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                                    LogOutput(OT_METHOD)(__func__)(
                                         ": Bad variable access type: ")(
                                         strVarAccess)(".")
                                         .Flush();
@@ -2965,11 +2952,11 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                      theVarAccess) ||
                                     (OTVariable::Var_Error_Type ==
                                      theVarType)) {
-                                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                                    LogOutput(OT_METHOD)(__func__)(
                                         ": Error loading variable to "
-                                        "bylaw: bad type (")(strVarType)(
-                                        ") or access type (")(strVarAccess)(
-                                        ").")
+                                        "bylaw: bad type (")(
+                                        strVarType)(") or access type (")(
+                                        strVarAccess)(").")
                                         .Flush();
                                     delete pBylaw;
                                     pBylaw = nullptr;
@@ -2990,7 +2977,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                                 nVarValue,
                                                 theVarAccess);
                                         } else {
-                                            LogOutput(OT_METHOD)(__FUNCTION__)(
+                                            LogOutput(OT_METHOD)(__func__)(
                                                 ": No value found for "
                                                 "integer "
                                                 "variable: ")(strVarName)(".")
@@ -3012,7 +2999,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                                 bVarValue,
                                                 theVarAccess);
                                         } else {
-                                            LogOutput(OT_METHOD)(__FUNCTION__)(
+                                            LogOutput(OT_METHOD)(__func__)(
                                                 ": No value found for bool "
                                                 "variable: ")(strVarName)(".")
                                                 .Flush();
@@ -3032,8 +3019,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                             if (false ==
                                                 Contract::LoadEncodedTextField(
                                                     xml, strVarValue)) {
-                                                LogOutput(OT_METHOD)(
-                                                    __FUNCTION__)(
+                                                LogOutput(OT_METHOD)(__func__)(
                                                     ": No value found for "
                                                     "string variable: ")(
                                                     strVarName)(".")
@@ -3060,7 +3046,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                             theVarAccess);
                                     } break;
                                     default:
-                                        LogOutput(OT_METHOD)(__FUNCTION__)(
+                                        LogOutput(OT_METHOD)(__func__)(
                                             ": Wrong variable type... "
                                             "somehow AFTER I should have "
                                             "already detected it...")
@@ -3071,7 +3057,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 }
 
                                 if (!bAddedVar) {
-                                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                                    LogOutput(OT_METHOD)(__func__)(
                                         ": Failed adding "
                                         "variable to bylaw.")
                                         .Flush();
@@ -3081,7 +3067,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 }
 
                             } else {
-                                LogOutput(OT_METHOD)(__FUNCTION__)(
+                                LogOutput(OT_METHOD)(__func__)(
                                     ": Expected variable "
                                     "element in bylaw.")
                                     .Flush();
@@ -3122,9 +3108,10 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                     pElementExpected,
                                     &temp_MapAttributes))  // </clause>
                             {
-                                LogOutput(OT_METHOD)(__FUNCTION__)(
-                                    ": Error: Expected ")(pElementExpected)(
-                                    " element with text field.")
+                                LogOutput(OT_METHOD)(__func__)(
+                                    ": Error: Expected ")(
+                                    pElementExpected)(" element with text "
+                                                      "field.")
                                     .Flush();
                                 delete pBylaw;
                                 pBylaw = nullptr;
@@ -3160,11 +3147,11 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                     if (nullptr != pClause)  // Uh-oh, it's
                                                              // already there!
                                     {
-                                        LogNormal(OT_METHOD)(__FUNCTION__)(
+                                        LogNormal(OT_METHOD)(__func__)(
                                             ": Error loading clause named ")(
-                                            str_name)(
-                                            ", since one was already "
-                                            "there on one of the bylaws.")
+                                            str_name)(", since one was already "
+                                                      "there on one of the "
+                                                      "bylaws.")
                                             .Flush();
                                         delete pBylaw;
                                         pBylaw = nullptr;
@@ -3173,7 +3160,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                         false == pBylaw->AddClause(
                                                      str_name.c_str(),
                                                      strTextExpected->Get())) {
-                                        LogOutput(OT_METHOD)(__FUNCTION__)(
+                                        LogOutput(OT_METHOD)(__func__)(
                                             ": Failed adding "
                                             "clause to bylaw.")
                                             .Flush();
@@ -3187,7 +3174,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 // that we set above for "name" in
                                 // temp_MapAttributes.
                                 else {
-                                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                                    LogOutput(OT_METHOD)(__func__)(
                                         ": Expected clause name.")
                                         .Flush();
                                     delete pBylaw;
@@ -3195,7 +3182,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                     return (-1);  // error condition
                                 }
                             } else {
-                                LogOutput(OT_METHOD)(__FUNCTION__)(
+                                LogOutput(OT_METHOD)(__func__)(
                                     ": Strange error: couldn't "
                                     "find name AT ALL.")
                                     .Flush();
@@ -3214,7 +3201,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                         while (nCount-- > 0) {
                             //                          xml->read();
                             if (!SkipToElement(xml)) {
-                                LogNormal(OT_METHOD)(__FUNCTION__)(
+                                LogNormal(OT_METHOD)(__func__)(
                                     ": Failure: Unable to find "
                                     "expected element.")
                                     .Flush();
@@ -3239,7 +3226,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
                                 if (!strHookName->Exists() ||
                                     !strClause->Exists()) {
-                                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                                    LogOutput(OT_METHOD)(__func__)(
                                         ": Expected missing "
                                         "name or clause while "
                                         "loading hook.")
@@ -3252,7 +3239,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 if (false ==
                                     pBylaw->AddHook(
                                         strHookName->Get(), strClause->Get())) {
-                                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                                    LogOutput(OT_METHOD)(__func__)(
                                         ": Failed adding hook to bylaw.")
                                         .Flush();
                                     delete pBylaw;
@@ -3260,7 +3247,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                     return (-1);
                                 }
                             } else {
-                                LogOutput(OT_METHOD)(__FUNCTION__)(
+                                LogOutput(OT_METHOD)(__func__)(
                                     ": Expected hook element in bylaw.")
                                     .Flush();
                                 delete pBylaw;
@@ -3279,7 +3266,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                         while (nCount-- > 0) {
                             //                          xml->read();
                             if (!SkipToElement(xml)) {
-                                LogNormal(OT_METHOD)(__FUNCTION__)(
+                                LogNormal(OT_METHOD)(__func__)(
                                     ": Failure: Unable to find "
                                     "expected element.")
                                     .Flush();
@@ -3304,7 +3291,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
                                 if (!strCallbackName->Exists() ||
                                     !strClause->Exists()) {
-                                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                                    LogOutput(OT_METHOD)(__func__)(
                                         ": Expected, yet nevertheless "
                                         "missing, name or clause while "
                                         "loading "
@@ -3326,11 +3313,12 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 if (nullptr != pClause)  // Uh-oh, it's already
                                                          // there!
                                 {
-                                    LogNormal(OT_METHOD)(__FUNCTION__)(
+                                    LogNormal(OT_METHOD)(__func__)(
                                         ": Error loading callback ")(
-                                        strCallbackName)(
-                                        ", since one was already there on "
-                                        "one of the other bylaws.")
+                                        strCallbackName)(", since one was "
+                                                         "already there on "
+                                                         "one of the other "
+                                                         "bylaws.")
                                         .Flush();
                                     delete pBylaw;
                                     pBylaw = nullptr;
@@ -3346,7 +3334,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 if (false == pBylaw->AddCallback(
                                                  strCallbackName->Get(),
                                                  strClause->Get())) {
-                                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                                    LogOutput(OT_METHOD)(__func__)(
                                         ": Failed adding callback (")(
                                         strCallbackName)(") to bylaw (")(
                                         strName)(").")
@@ -3356,7 +3344,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                     return (-1);
                                 }
                             } else {
-                                LogOutput(OT_METHOD)(__FUNCTION__)(
+                                LogOutput(OT_METHOD)(__func__)(
                                     ": Expected callback "
                                     "element in bylaw.")
                                     .Flush();
@@ -3368,11 +3356,11 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                     }
 
                     if (AddBylaw(*pBylaw)) {
-                        LogVerbose(OT_METHOD)(__FUNCTION__)(": Loaded Bylaw: ")(
+                        LogVerbose(OT_METHOD)(__func__)(": Loaded Bylaw: ")(
                             pBylaw->GetName())
                             .Flush();
                     } else {
-                        LogOutput(OT_METHOD)(__FUNCTION__)(
+                        LogOutput(OT_METHOD)(__func__)(
                             ": Failed loading Bylaw: ")(pBylaw->GetName())(".")
                             .Flush();
                         delete pBylaw;
@@ -3380,8 +3368,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                         return (-1);  // error condition
                     }
                 } else {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
-                        ": Expected bylaw element.")
+                    LogOutput(OT_METHOD)(__func__)(": Expected bylaw element.")
                         .Flush();
                     return (-1);  // error condition
                 }
@@ -3402,7 +3389,7 @@ auto OTScriptable::GetVariable(std::string str_VarName) -> OTVariable*
 {
     if (!OTScriptable::ValidateName(str_VarName))  // this logs, FYI.
     {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Invalid name.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Error: Invalid name.").Flush();
         return nullptr;
     }
 
@@ -3427,7 +3414,7 @@ auto OTScriptable::GetCallback(std::string str_CallbackName) -> OTClause*
     if ((false == OTScriptable::ValidateName(str_CallbackName)) ||
         (str_CallbackName.compare(0, 9, "callback_") != 0))  // this logs, FYI.
     {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Invalid name: ")(
+        LogOutput(OT_METHOD)(__func__)(": Error: Invalid name: ")(
             str_CallbackName)(".")
             .Flush();
         return nullptr;
@@ -3454,7 +3441,7 @@ auto OTScriptable::GetHooks(std::string str_HookName, mapOfClauses& theResults)
     if (false == OTScriptable::ValidateHookName(str_HookName))  // this logs,
                                                                 // FYI.
     {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Error: Invalid name.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Error: Invalid name.").Flush();
         return false;
     }
 

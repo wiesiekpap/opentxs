@@ -31,10 +31,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -104,7 +101,7 @@ protected:
 
     BalanceItem(
         const AccountActivityInternalInterface& parent,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const AccountActivityRowID& rowID,
         const AccountActivitySortKey& sortKey,
         CustomData& custom,
@@ -117,7 +114,7 @@ private:
     const std::vector<std::string> contacts_;
 
     static auto extract_contacts(
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const proto::PaymentWorkflow& workflow) noexcept
         -> std::vector<std::string>;
 

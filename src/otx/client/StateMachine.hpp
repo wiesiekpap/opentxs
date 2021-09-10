@@ -26,6 +26,8 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/Core.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
@@ -213,7 +215,7 @@ public:
 
     otx::client::implementation::PaymentTasks payment_tasks_;
 
-    auto api() const -> const api::internal::Core& override { return client_; }
+    auto api() const -> const api::Core& override { return client_; }
     auto DepositPayment(const DepositPaymentTask& params) const
         -> BackgroundTask override
     {
@@ -239,10 +241,10 @@ public:
     void Shutdown() { op_.Shutdown(); }
 
     StateMachine(
-        const api::client::internal::Manager& client,
+        const api::client::Manager& client,
         const api::client::internal::OTX& parent,
         const Flag& running,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const ContextID& id,
         std::atomic<TaskID>& nextTaskID,
         const UniqueQueue<CheckNymTask>& missingNyms,
@@ -256,7 +258,7 @@ private:
     enum class TaskDone : int { no, yes, retry };
     enum class State : int { needServerContract, needRegistration, ready };
 
-    const api::client::internal::Manager& client_;
+    const api::client::Manager& client_;
     const api::client::internal::OTX& parent_;
     std::atomic<TaskID>& next_task_id_;
     const UniqueQueue<CheckNymTask>& missing_nyms_;

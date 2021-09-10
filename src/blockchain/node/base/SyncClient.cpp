@@ -82,8 +82,8 @@ struct SyncClient::Imp {
 
             OT_ASSERT(0 == rc);
 
-            LogTrace(OT_METHOD)(__FUNCTION__)(
-                ": internal dealer connected to ")(endpoint)
+            LogTrace(OT_METHOD)(__func__)(": internal dealer connected to ")(
+                endpoint)
                 .Flush();
 
             return out;
@@ -192,8 +192,8 @@ private:
     {
         auto msg = MakeWork(api_, Task::Register);
         msg->AddFrame(chain_);
-        LogDebug(OT_METHOD)(__FUNCTION__)(": registering ")(
-            DisplayString(chain_))(" with high level api")
+        LogDebug(OT_METHOD)(__func__)(": registering ")(DisplayString(chain_))(
+            " with high level api")
             .Flush();
         auto lock = Lock{lock_};
         OTSocket::send_message(lock, dealer_.get(), msg);
@@ -211,7 +211,7 @@ private:
 
             return proto;
         }());
-        LogVerbose(OT_METHOD)(__FUNCTION__)(": requesting sync data for ")(
+        LogVerbose(OT_METHOD)(__func__)(": requesting sync data for ")(
             DisplayString(chain_))(" starting from block ")(position.first)
             .Flush();
         auto lock = Lock{lock_};
@@ -228,9 +228,9 @@ private:
         if (0u == blocks.size()) { return; }
 
         const auto bytes = msg->Total();
-        LogDebug(OT_METHOD)(__FUNCTION__)(": buffering ")(bytes)(
-            " bytes of sync data for ")(DisplayString(chain_))(" blocks ")(
-            blocks.front().Height())(" to ")(blocks.back().Height())
+        LogDebug(OT_METHOD)(__func__)(": buffering ")(
+            bytes)(" bytes of sync data for ")(DisplayString(chain_))(
+            " blocks ")(blocks.front().Height())(" to ")(blocks.back().Height())
             .Flush();
         queued_bytes_ += bytes;
         queue_.emplace(std::move(msg));
@@ -277,7 +277,7 @@ private:
         if (duration < limit) { return false; }
 
         if (timer_.test(retry_interval_)) {
-            LogVerbose(OT_METHOD)(__FUNCTION__)(": more than ")(limit.count())(
+            LogVerbose(OT_METHOD)(__func__)(": more than ")(limit.count())(
                 " minutes since data received for ")(DisplayString(chain_))
                 .Flush();
 
@@ -290,7 +290,7 @@ private:
     auto need_sync() noexcept -> bool
     {
         if (local_position_ == remote_position_) {
-            LogTrace(OT_METHOD)(__FUNCTION__)(": ")(DisplayString(chain_))(
+            LogTrace(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
                 " is up to date")
                 .Flush();
 
@@ -298,7 +298,7 @@ private:
         }
 
         if (queue_position_ == remote_position_) {
-            LogTrace(OT_METHOD)(__FUNCTION__)(": ")(DisplayString(chain_))(
+            LogTrace(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
                 " data already queued")
                 .Flush();
 
@@ -306,7 +306,7 @@ private:
         }
 
         if (queued_bytes_ >= limit_) {
-            LogTrace(OT_METHOD)(__FUNCTION__)(": ")(DisplayString(chain_))(
+            LogTrace(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
                 " buffer is full with ")(queued_bytes_)(" bytes ")
                 .Flush();
 
@@ -326,8 +326,7 @@ private:
         }();
 
         if (0 == msg->size()) {
-            LogTrace(OT_METHOD)(__FUNCTION__)(": Dropping empty message")
-                .Flush();
+            LogTrace(OT_METHOD)(__func__)(": Dropping empty message").Flush();
 
             return;
         }
@@ -350,9 +349,8 @@ private:
                     const auto& ack = base->asAcknowledgement();
                     update_remote_position(ack.State(chain_));
                     activity_ = Clock::now();
-                    LogVerbose(OT_METHOD)(__FUNCTION__)(
-                        ": best chain tip for ")(DisplayString(chain_))(
-                        " according to sync peer is ")(
+                    LogVerbose(OT_METHOD)(__func__)(": best chain tip for ")(
+                        DisplayString(chain_))(" according to sync peer is ")(
                         remote_position_.second->asHex())(" at height ")(
                         remote_position_.first)
                         .Flush();
@@ -378,7 +376,7 @@ private:
                         case State::Init:
                         case State::Sync:
                         default: {
-                            LogDebug(OT_METHOD)(__FUNCTION__)(": ignoring ")(
+                            LogDebug(OT_METHOD)(__func__)(": ignoring ")(
                                 DisplayString(chain_))(
                                 " push notification until sync is complete")
                                 .Flush();
@@ -401,7 +399,7 @@ private:
                 }
             }
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return;
         }
@@ -463,7 +461,7 @@ private:
 
             if (0 > events) {
                 const auto error = ::zmq_errno();
-                LogOutput(OT_METHOD)(__FUNCTION__)(": ")(::zmq_strerror(error))
+                LogOutput(OT_METHOD)(__func__)(": ")(::zmq_strerror(error))
                     .Flush();
 
                 continue;

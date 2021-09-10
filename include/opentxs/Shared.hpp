@@ -15,32 +15,23 @@
 
 #include "opentxs/Types.hpp"
 
-#ifdef SWIG
-%ignore opentxs::Shared::Shared(Shared&&);
-%rename(assign) opentxs::Shared::operator=(const Shared&);
-%rename(move) opentxs::Shared::operator=(Shared&&);
-%rename(valid) opentxs::Shared::operator bool();
-#endif
-
 namespace opentxs
 {
 template <class C>
-class Shared
+class OPENTXS_EXPORT Shared
 {
 public:
-    OPENTXS_EXPORT operator bool() const { return nullptr != p_; }
-#ifndef SWIG
-    OPENTXS_EXPORT operator const C&() const { return get(); }
-#endif
+    operator bool() const { return nullptr != p_; }
+    operator const C&() const { return get(); }
 
-    OPENTXS_EXPORT const C& get() const
+    auto get() const -> const C&
     {
         if (nullptr == p_) { throw std::runtime_error("Invalid pointer"); }
 
         return *p_;
     }
 
-    OPENTXS_EXPORT bool Release() noexcept
+    auto Release() noexcept -> bool
     {
         if (nullptr == p_) { return false; }
 
@@ -50,32 +41,32 @@ public:
         return true;
     }
 
-    OPENTXS_EXPORT Shared(const C* in, std::shared_mutex& lock) noexcept
+    Shared(const C* in, std::shared_mutex& lock) noexcept
         : p_(in)
         , lock_(new sLock(lock))
     {
         assert(lock_);
     }
-    OPENTXS_EXPORT Shared() noexcept
+    Shared() noexcept
         : p_(nullptr)
         , lock_(nullptr)
     {
     }
 
-    OPENTXS_EXPORT Shared(const Shared& rhs) noexcept
+    Shared(const Shared& rhs) noexcept
         : p_(rhs.p_)
         , lock_(
               (nullptr != rhs.lock_->mutex()) ? new sLock(*rhs.lock_->mutex())
                                               : nullptr)
     {
     }
-    OPENTXS_EXPORT Shared(Shared&& rhs) noexcept
+    Shared(Shared&& rhs) noexcept
         : p_(rhs.p_)
         , lock_(rhs.lock_.release())
     {
         rhs.p_ = nullptr;
     }
-    OPENTXS_EXPORT Shared& operator=(const Shared& rhs) noexcept
+    auto operator=(const Shared& rhs) noexcept -> Shared&
     {
         p_ = rhs.p_;
 
@@ -87,7 +78,7 @@ public:
 
         return *this;
     }
-    OPENTXS_EXPORT Shared& operator=(Shared&& rhs) noexcept
+    auto operator=(Shared&& rhs) noexcept -> Shared&
     {
         p_ = rhs.p_;
         rhs.p_ = nullptr;
@@ -96,7 +87,7 @@ public:
         return *this;
     }
 
-    OPENTXS_EXPORT ~Shared() { Release(); }
+    ~Shared() { Release(); }
 
 private:
     const C* p_{nullptr};

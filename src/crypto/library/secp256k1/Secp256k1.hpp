@@ -34,11 +34,7 @@ namespace crypto
 class Util;
 }  // namespace crypto
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
+class Core;
 class Crypto;
 }  // namespace api
 

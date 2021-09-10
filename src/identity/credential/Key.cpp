@@ -14,10 +14,10 @@
 #include "Proto.tpp"
 #include "core/contract/Signable.hpp"
 #include "identity/credential/Base.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -56,7 +56,7 @@ const VersionConversionMap Key::subversion_to_key_version_{
 };
 
 Key::Key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const identity::internal::Authority& parent,
     const identity::Source& source,
     const NymParameters& params,
@@ -93,7 +93,7 @@ Key::Key(
 }
 
 Key::Key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const identity::internal::Authority& parent,
     const identity::Source& source,
     const proto::Credential& serialized,
@@ -119,7 +119,7 @@ auto Key::addKeyCredentialtoSerializedCredential(
         new proto::KeyCredential);
 
     if (!keyCredential) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to allocate keyCredential protobuf.")
             .Flush();
 
@@ -192,7 +192,7 @@ auto Key::addKeytoSerializedKeyCredential(
 }
 
 auto Key::deserialize_key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const int index,
     const proto::Credential& credential) -> OTKeypair
 {
@@ -299,10 +299,10 @@ auto Key::GetPublicKeysBySignature(
                         listOutput, theSignature);
                     break;  // bInclusive=false by default
                 default:
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
+                    LogOutput(OT_METHOD)(__func__)(
                         ": Unexpected keytype value in signature "
-                        "metadata: ")(theSignature.getMetaData()
-                                          .GetKeyType())(" (Failure)!")
+                        "metadata: ")(theSignature.getMetaData().GetKeyType())(
+                        " (Failure)!")
                         .Flush();
                     return 0;
             }
@@ -324,7 +324,7 @@ auto Key::GetPublicKeysBySignature(
                 listOutput, theSignature, true);
             break;  // bInclusive=true
         default:
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Unexpected value for cKeyType (should be 0, A, E, or "
                 "S): ")(cKeyType)(".")
                 .Flush();
@@ -353,7 +353,7 @@ auto Key::hasCapability(const NymCapability& capability) const -> bool
 }
 
 auto Key::new_key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const proto::KeyRole role,
     const NymParameters& params,
     const VersionNumber version,
@@ -504,7 +504,7 @@ auto Key::Sign(
 }
 
 auto Key::signing_key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const NymParameters& params,
     const VersionNumber subversion,
     const bool useProvided,
@@ -551,7 +551,7 @@ auto Key::Verify(
             keyToUse = &signing_key_.get();
             break;
         default:
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Can not verify signatures with the "
                 "specified key.")
                 .Flush();
@@ -564,8 +564,7 @@ auto Key::Verify(
 
         return keyToUse->GetPublicKey().Verify(plaintext, sig);
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to verify signature.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to verify signature.").Flush();
 
         return false;
     }
@@ -589,7 +588,7 @@ auto Key::verify_internally(const Lock& lock) const -> bool
 
     // All KeyCredentials must sign themselves
     if (!VerifySignedBySelf(lock)) {
-        LogNormal(OT_METHOD)(__FUNCTION__)(
+        LogNormal(OT_METHOD)(__func__)(
             ": Failed verifying key credential: it's not "
             "signed by itself (its own signing key).")
             .Flush();
@@ -607,7 +606,7 @@ auto Key::VerifySig(
     std::shared_ptr<Base::SerializedType> serialized;
 
     if ((crypto::key::asymmetric::Mode::Private != mode_) && asPrivate) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Can not serialize a public credential as a private credential.")
             .Flush();
         return false;
@@ -632,7 +631,7 @@ auto Key::VerifySignedBySelf(const Lock& lock) const -> bool
     auto publicSig = SelfSignature(PUBLIC_VERSION);
 
     if (!publicSig) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Could not find public self signature.")
             .Flush();
 
@@ -642,7 +641,7 @@ auto Key::VerifySignedBySelf(const Lock& lock) const -> bool
     bool goodPublic = VerifySig(lock, *publicSig, PUBLIC_VERSION);
 
     if (!goodPublic) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Could not verify public self signature.")
             .Flush();
 
@@ -653,7 +652,7 @@ auto Key::VerifySignedBySelf(const Lock& lock) const -> bool
         auto privateSig = SelfSignature(PRIVATE_VERSION);
 
         if (!privateSig) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Could not find private self signature.")
                 .Flush();
 
@@ -663,7 +662,7 @@ auto Key::VerifySignedBySelf(const Lock& lock) const -> bool
         bool goodPrivate = VerifySig(lock, *privateSig, PRIVATE_VERSION);
 
         if (!goodPrivate) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Could not verify private self signature.")
                 .Flush();
 

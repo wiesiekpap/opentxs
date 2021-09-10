@@ -68,7 +68,7 @@ public:
         OT_ASSERT(set_.size() == queue_.size())
     }
 
-    std::map<T, Key> Copy() const
+    auto Copy() const -> std::map<T, Key>
     {
         std::map<T, Key> output{};
         Lock lock(lock_);
@@ -85,14 +85,14 @@ public:
         return output;
     }
 
-    bool empty() const
+    auto empty() const -> bool
     {
         Lock lock(lock_);
 
         return queue_.empty();
     }
 
-    bool Push(const Key key, const T& in) const
+    auto Push(const Key key, const T& in) const -> bool
     {
         OT_ASSERT(0 < key)
 
@@ -110,7 +110,7 @@ public:
         return false;
     }
 
-    bool Pop(Key& key, T& out) const
+    auto Pop(Key& key, T& out) const -> bool
     {
         Lock lock(lock_);
 
@@ -131,7 +131,7 @@ public:
         return true;
     }
 
-    std::size_t size() const
+    auto size() const -> std::size_t
     {
         Lock lock(lock_);
 
@@ -152,8 +152,8 @@ private:
 
     UniqueQueue(const UniqueQueue&) = delete;
     UniqueQueue(UniqueQueue&&) = delete;
-    UniqueQueue& operator=(const UniqueQueue&) = delete;
-    UniqueQueue& operator=(UniqueQueue&&) = delete;
+    auto operator=(const UniqueQueue&) -> UniqueQueue& = delete;
+    auto operator=(UniqueQueue&&) -> UniqueQueue& = delete;
 };
 }  // namespace opentxs
 #endif

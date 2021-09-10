@@ -11,11 +11,11 @@
 #include <list>
 #include <memory>
 
-#include "internal/api/Api.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/core/Data.hpp"
@@ -46,7 +46,7 @@ auto PeerReply(const api::Core& api) noexcept
 namespace opentxs::contract::peer::implementation
 {
 Reply::Reply(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const VersionNumber version,
     const identifier::Nym& initiator,
@@ -64,7 +64,7 @@ Reply::Reply(
 }
 
 Reply::Reply(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const SerializedType& serialized,
     const std::string& conditions)
@@ -152,7 +152,7 @@ auto Reply::Finish(Reply& contract, const PasswordPrompt& reason) -> bool
 
         return true;
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to finalize contract.")
+        LogOutput(OT_METHOD)(__func__)(": Failed to finalize contract.")
             .Flush();
 
         return false;
@@ -164,9 +164,8 @@ auto Reply::GetID(const Lock& lock) const -> OTIdentifier
     return GetID(api_, IDVersion(lock));
 }
 
-auto Reply::GetID(
-    const api::internal::Core& api,
-    const SerializedType& contract) -> OTIdentifier
+auto Reply::GetID(const api::Core& api, const SerializedType& contract)
+    -> OTIdentifier
 {
     return api.Factory().Identifier(contract);
 }
@@ -195,7 +194,7 @@ auto Reply::IDVersion(const Lock& lock) const -> SerializedType
 }
 
 auto Reply::LoadRequest(
-    const api::internal::Core& api,
+    const api::Core& api,
     const Nym_p& nym,
     const Identifier& requestID,
     proto::PeerRequest& output) -> bool
@@ -214,12 +213,11 @@ auto Reply::LoadRequest(
             output);
 
         if (loaded) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(
+            LogOutput(OT_METHOD)(__func__)(
                 ": Request has already been processed.")
                 .Flush();
         } else {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Request does not exist.")
-                .Flush();
+            LogOutput(OT_METHOD)(__func__)(": Request does not exist.").Flush();
         }
     }
 
@@ -265,8 +263,7 @@ auto Reply::update_signature(const Lock& lock, const PasswordPrompt& reason)
     if (success) {
         signatures_.emplace_front(new proto::Signature(signature));
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to create signature.")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to create signature.").Flush();
     }
 
     return success;
@@ -279,13 +276,13 @@ auto Reply::validate(const Lock& lock) const -> bool
     if (nym_) {
         validNym = nym_->VerifyPseudonym();
     } else {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing nym.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing nym.").Flush();
 
         return false;
     }
 
     if (false == validNym) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid nym.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid nym.").Flush();
 
         return false;
     }
@@ -293,13 +290,13 @@ auto Reply::validate(const Lock& lock) const -> bool
     const bool validSyntax = proto::Validate(contract(lock), VERBOSE);
 
     if (!validSyntax) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid syntax.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid syntax.").Flush();
 
         return false;
     }
 
     if (1 > signatures_.size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing signature.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Missing signature.").Flush();
 
         return false;
     }
@@ -310,7 +307,7 @@ auto Reply::validate(const Lock& lock) const -> bool
     if (signature) { validSig = verify_signature(lock, *signature); }
 
     if (!validSig) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid signature.").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid signature.").Flush();
     }
 
     return (validNym && validSyntax && validSig);

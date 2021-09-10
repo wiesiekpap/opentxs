@@ -68,7 +68,7 @@ public:
         rhs.object_ = nullptr;
     }
 
-    ChildType& get() { return *object_; }
+    auto get() -> ChildType& { return *object_; }
 
     ~Editor()
     {
@@ -100,7 +100,7 @@ private:
 
     Editor() = delete;
     Editor(const Editor&) = delete;
-    Editor& operator=(const Editor&) = delete;
+    auto operator=(const Editor&) -> Editor& = delete;
 };  // class Editor
 }  // namespace opentxs
 

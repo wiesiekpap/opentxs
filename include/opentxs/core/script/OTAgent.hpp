@@ -20,11 +20,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
+class Core;
 class Wallet;
 }  // namespace api
 
@@ -118,8 +114,8 @@ private:
     OTAgent() = delete;
     OTAgent(const OTAgent&) = delete;
     OTAgent(OTAgent&&) = delete;
-    OTAgent& operator=(const OTAgent&) = delete;
-    OTAgent& operator=(OTAgent&&) = delete;
+    auto operator=(const OTAgent&) -> OTAgent& = delete;
+    auto operator=(OTAgent&&) -> OTAgent& = delete;
 
 public:
     OTAgent(const api::Wallet& wallet);
@@ -149,51 +145,53 @@ public:
     // NOTE: Current iteration, these functions ASSUME that m_pNym is loaded.
     // They will definitely fail if you haven't already loaded the Nym.
     //
-    bool VerifyIssuedNumber(
+    auto VerifyIssuedNumber(
         const TransactionNumber& lNumber,
-        const String& strNotaryID);
-    bool VerifyTransactionNumber(
+        const String& strNotaryID) -> bool;
+    auto VerifyTransactionNumber(
         const TransactionNumber& lNumber,
-        const String& strNotaryID);
-    bool RemoveIssuedNumber(
-        const TransactionNumber& lNumber,
-        const String& strNotaryID,
-        const PasswordPrompt& reason);
-    bool RemoveTransactionNumber(
+        const String& strNotaryID) -> bool;
+    auto RemoveIssuedNumber(
         const TransactionNumber& lNumber,
         const String& strNotaryID,
-        const PasswordPrompt& reason);
-    bool RecoverTransactionNumber(
-        const TransactionNumber& lNumber,
-        otx::context::Base& context);
-    bool RecoverTransactionNumber(
+        const PasswordPrompt& reason) -> bool;
+    auto RemoveTransactionNumber(
         const TransactionNumber& lNumber,
         const String& strNotaryID,
-        const PasswordPrompt& reason);
-    bool ReserveOpeningTransNum(otx::context::Server& context);
-    bool ReserveClosingTransNum(
+        const PasswordPrompt& reason) -> bool;
+    auto RecoverTransactionNumber(
+        const TransactionNumber& lNumber,
+        otx::context::Base& context) -> bool;
+    auto RecoverTransactionNumber(
+        const TransactionNumber& lNumber,
+        const String& strNotaryID,
+        const PasswordPrompt& reason) -> bool;
+    auto ReserveOpeningTransNum(otx::context::Server& context) -> bool;
+    auto ReserveClosingTransNum(
         otx::context::Server& context,
-        OTPartyAccount& thePartyAcct);
-    bool SignContract(Contract& theInput, const PasswordPrompt& reason) const;
+        OTPartyAccount& thePartyAcct) -> bool;
+    auto SignContract(Contract& theInput, const PasswordPrompt& reason) const
+        -> bool;
 
     // Verify that this agent somehow has legitimate agency over this account.
     // (According to the account.)
     //
-    bool VerifyAgencyOfAccount(const Account& theAccount) const;
-    bool VerifySignature(const Contract& theContract)
-        const;  // Have the agent try to verify his own signature against any
-                // contract.
+    auto VerifyAgencyOfAccount(const Account& theAccount) const -> bool;
+    auto VerifySignature(const Contract& theContract) const
+        -> bool;  // Have the agent try to verify his own signature against any
+                  // contract.
 
     void SetParty(OTParty& theOwnerParty);  // This happens when the agent is
                                             // added to the party.
 
-    bool IsValidSigner(const identity::Nym& theNym);
-    bool IsValidSignerID(const Identifier& theNymID);
+    auto IsValidSigner(const identity::Nym& theNym) -> bool;
+    auto IsValidSignerID(const Identifier& theNymID) -> bool;
 
-    bool IsAuthorizingAgentForParty();  // true/false whether THIS agent is the
-                                        // authorizing agent for his party.
-    std::int32_t GetCountAuthorizedAccts();  // The number of accounts, owned by
-                                             // this
+    auto IsAuthorizingAgentForParty()
+        -> bool;  // true/false whether THIS agent is the
+                  // authorizing agent for his party.
+    auto GetCountAuthorizedAccts() -> std::int32_t;  // The number of accounts,
+                                                     // owned by this
     // agent's party, that this agent is the
     // authorized agent FOR.
 
@@ -201,7 +199,8 @@ public:
     // (I wrestle with making these 2 calls private, since technically it should
     // be irrelevant to the external.)
     //
-    bool DoesRepresentHimself() const;  // If the agent is a Nym acting for
+    auto DoesRepresentHimself() const
+        -> bool;  // If the agent is a Nym acting for
     // himself, this will be true. Otherwise,
     // if agent is a Nym acting in a role for
     // an entity, or if agent is a voting
@@ -209,10 +208,11 @@ public:
     // it belongs, either way, this will be
     // false.
     // ** OR **
-    bool DoesRepresentAnEntity() const;  // Whether the agent is a voting group
-                                         // acting for an entity, or is a Nym
-                                         // acting in a Role for an entity, this
-                                         // will be true either way. (Otherwise,
+    auto DoesRepresentAnEntity() const
+        -> bool;  // Whether the agent is a voting group
+                  // acting for an entity, or is a Nym
+                  // acting in a Role for an entity, this
+                  // will be true either way. (Otherwise,
     // if agent is a Nym acting for himself,
     // then this will be false.)
 
@@ -220,18 +220,19 @@ public:
     // - Agent is either a Nym acting for himself or some entity,
     // - or agent is a group acting for some entity.
 
-    bool IsAnIndividual() const;  // Agent is an individual Nym.
-                                  // (Meaning either he IS ALSO
-                                  // the party and thus
+    auto IsAnIndividual() const -> bool;  // Agent is an individual Nym.
+                                          // (Meaning either he IS ALSO
+                                          // the party and thus
     // represents himself, OR he is an agent
     // for an entity who is the party, and
     // he's acting in a role for that
     // entity.) If agent were a group, this
     // would be false.
     // ** OR **
-    bool IsAGroup() const;  // OR: Agent is a voting group, which cannot take
-                            // proactive or instant action, but only passive and
-                            // delayed. Entity-ONLY. (A voting group cannot
+    auto IsAGroup() const
+        -> bool;  // OR: Agent is a voting group, which cannot take
+                  // proactive or instant action, but only passive and
+                  // delayed. Entity-ONLY. (A voting group cannot
     // decide on behalf of individual, but only on behalf
     // of the entity it belongs to.)
 
@@ -245,20 +246,21 @@ public:
 
     // For when the agent is an individual:
     //
-    bool GetNymID(Identifier& theOutput) const;  // If IsIndividual(),
-                                                 // then this is his
-                                                 // own personal NymID,
+    auto GetNymID(Identifier& theOutput) const -> bool;  // If IsIndividual(),
+                                                         // then this is his
+                                                         // own personal NymID,
     // (whether he DoesRepresentHimself() or DoesRepresentAnEntity()
     // -- either way). Otherwise if IsGroup(), this returns false.
 
-    bool GetRoleID(Identifier& theOutput) const;  // IF IsIndividual() AND
-                                                  // DoesRepresentAnEntity(),
-                                                  // then this is his RoleID
-                                                  // within that Entity.
-                                                  // Otherwise, if IsGroup()
-                                                  // or
-                                                  // DoesRepresentHimself(),
-                                                  // then this returns false.
+    auto GetRoleID(Identifier& theOutput) const
+        -> bool;  // IF IsIndividual() AND
+                  // DoesRepresentAnEntity(),
+                  // then this is his RoleID
+                  // within that Entity.
+                  // Otherwise, if IsGroup()
+                  // or
+                  // DoesRepresentHimself(),
+                  // then this returns false.
 
     // Notice if the agent is a voting group, then it has no signer. (Instead it
     // will have an election.)
@@ -272,7 +274,7 @@ public:
     // anything needing it as part of the
     // script would also therefore be impossible.
     //
-    bool GetSignerID(Identifier& theOutput) const;
+    auto GetSignerID(Identifier& theOutput) const -> bool;
     // If IsIndividual() and DoesRepresentAnEntity() then this returns
     // GetRoleID().
     // else if Individual() and DoesRepresentHimself() then this returns
@@ -292,18 +294,20 @@ public:
     // I'm debating making this function private along with DoesRepresentHimself
     // / DoesRepresentAnEntity().
     //
-    bool GetEntityID(Identifier& theOutput) const;  // IF represents an
-                                                    // entity, this is its ID.
-                                                    // Else fail.
+    auto GetEntityID(Identifier& theOutput) const
+        -> bool;  // IF represents an
+                  // entity, this is its ID.
+                  // Else fail.
 
-    const String& GetName()
+    auto GetName() -> const String&
     {
         return m_strName;
     }  // agent's name as used in a script.
     // For when the agent is a voting group:
     //
-    bool GetGroupName(String& strGroupName);  // The GroupName group will be
-                                              // found in the EntityID entity.
+    auto GetGroupName(String& strGroupName)
+        -> bool;  // The GroupName group will be
+                  // found in the EntityID entity.
     //
     // If !IsGroup() aka IsIndividual(), then this will return false.
     //
@@ -320,9 +324,9 @@ public:
     // If DoesRepresentHimself() then return GetNymID()
     // else (thus DoesRepresentAnEntity()) so return GetEntityID()
     //
-    bool GetPartyID(Identifier& theOutput) const;
+    auto GetPartyID(Identifier& theOutput) const -> bool;
 
-    OTParty* GetParty() const { return m_pForParty; }
+    auto GetParty() const -> OTParty* { return m_pForParty; }
 
     // IDEA: Put a Nym in the Nyms folder for each entity. While it may
     // not have a public key in the pubkey folder, or embedded within it,
@@ -331,17 +335,17 @@ public:
     // This also makes sure that Nyms and Entities don't ever share IDs, so the
     // IDs become more and more interchangeable.
 
-    Nym_p LoadNym();
+    auto LoadNym() -> Nym_p;
 
-    bool DropFinalReceiptToNymbox(
+    auto DropFinalReceiptToNymbox(
         OTSmartContract& theSmartContract,
         const std::int64_t& lNewTransactionNumber,
         const String& strOrigCronItem,
         const PasswordPrompt& reason,
         OTString pstrNote = String::Factory(),
-        OTString pstrAttachment = String::Factory());
+        OTString pstrAttachment = String::Factory()) -> bool;
 
-    bool DropFinalReceiptToInbox(
+    auto DropFinalReceiptToInbox(
         const String& strNotaryID,
         OTSmartContract& theSmartContract,
         const Identifier& theAccountID,
@@ -350,10 +354,10 @@ public:
         const String& strOrigCronItem,
         const PasswordPrompt& reason,
         OTString pstrNote = String::Factory(),
-        OTString pstrAttachment = String::Factory());
+        OTString pstrAttachment = String::Factory()) -> bool;
 
-    bool DropServerNoticeToNymbox(
-        const api::internal::Core& api,
+    auto DropServerNoticeToNymbox(
+        const api::Core& api,
         bool bSuccessMsg,  // the notice can be "acknowledgment" or "rejection"
         const identity::Nym& theServerNym,
         const identifier::Server& theNotaryID,
@@ -363,7 +367,7 @@ public:
         const PasswordPrompt& reason,
         OTString pstrNote = String::Factory(),
         OTString pstrAttachment = String::Factory(),
-        identity::Nym* pActualNym = nullptr);
+        identity::Nym* pActualNym = nullptr) -> bool;
 };
 }  // namespace opentxs
 #endif

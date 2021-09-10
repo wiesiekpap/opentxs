@@ -14,59 +14,56 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT const VersionMap& Bip47ChainAllowedBip47Channel() noexcept;
-OPENTXS_EXPORT const VersionMap& Bip47ChannelAllowedBip47Direction() noexcept;
-OPENTXS_EXPORT const VersionMap&
-Bip47ChannelAllowedBlockchainDeterministicAccountData() noexcept;
-OPENTXS_EXPORT const VersionMap& Bip47ChannelAllowedPaymentCode() noexcept;
-OPENTXS_EXPORT const VersionMap& Bip47ContextAllowedBip47Chain() noexcept;
-OPENTXS_EXPORT const VersionMap&
-Bip47DirectionAllowedBlockchainAddress() noexcept;
-OPENTXS_EXPORT const VersionMap&
-BlockchainAccountDataAllowedBlockchainActivity() noexcept;
-OPENTXS_EXPORT const VersionMap&
-BlockchainAddressAllowedAsymmetricKey() noexcept;
-OPENTXS_EXPORT const VersionMap&
-BlockchainBlockHeaderAllowedBitcoinBlockHeaderFields() noexcept;
-OPENTXS_EXPORT const VersionMap&
-BlockchainBlockHeaderAllowedBlockchainBlockLocalData() noexcept;
-OPENTXS_EXPORT const VersionMap&
-BlockchainBlockHeaderAllowedEthereumBlockHeaderFields() noexcept;
-OPENTXS_EXPORT const VersionMap&
-BlockchainDeterministicAccountDataAllowedBlockchainAccountData() noexcept;
-OPENTXS_EXPORT const VersionMap&
-BlockchainDeterministicAccountDataAllowedHDPath() noexcept;
-OPENTXS_EXPORT const VersionMap&
-BlockchainP2PHelloAllowedBlockchainP2PChainState() noexcept;
-OPENTXS_EXPORT const VersionMap& BlockchainTransactionAllowedInput() noexcept;
-OPENTXS_EXPORT const VersionMap& BlockchainTransactionAllowedOutput() noexcept;
-OPENTXS_EXPORT const VersionMap&
-BlockchainTransactionInputAllowedBlockchainInputWitness() noexcept;
-OPENTXS_EXPORT const VersionMap&
-BlockchainTransactionInputAllowedBlockchainPreviousOutput() noexcept;
-OPENTXS_EXPORT const VersionMap&
-BlockchainTransactionInputAllowedBlockchainTransactionOutput() noexcept;
-OPENTXS_EXPORT const VersionMap&
-BlockchainTransactionInputAllowedBlockchainWalletKey() noexcept;
-OPENTXS_EXPORT const VersionMap&
-BlockchainTransactionOutputAllowedBlockchainWalletKey() noexcept;
-OPENTXS_EXPORT const VersionMap&
-BlockchainTransactionProposalAllowedBlockchainTransaction() noexcept;
-OPENTXS_EXPORT const VersionMap&
-BlockchainTransactionProposalAllowedBlockchainTransactionProposedNotification() noexcept;
-OPENTXS_EXPORT const VersionMap&
-BlockchainTransactionProposalAllowedBlockchainTransactionProposedOutput() noexcept;
-OPENTXS_EXPORT const VersionMap&
-BlockchainTransactionProposedNotificationAllowedHDPath() noexcept;
-OPENTXS_EXPORT const VersionMap&
-BlockchainTransactionProposedNotificationAllowedPaymentCode() noexcept;
-OPENTXS_EXPORT const VersionMap&
-BlockchainTransactionProposedOutputAllowedBlockchainOutputMultisigDetails() noexcept;
-OPENTXS_EXPORT const VersionMap& HDAccountAllowedBlockchainAddress() noexcept;
-OPENTXS_EXPORT const VersionMap&
-HDAccountAllowedBlockchainDeterministicAccountData() noexcept;
-OPENTXS_EXPORT const VersionMap&
-HDAccountAllowedBlockchainHDAccountData() noexcept;
+auto Bip47ChainAllowedBip47Channel() noexcept -> const VersionMap&;
+auto Bip47ChannelAllowedBip47Direction() noexcept -> const VersionMap&;
+auto Bip47ChannelAllowedBlockchainDeterministicAccountData() noexcept
+    -> const VersionMap&;
+auto Bip47ChannelAllowedPaymentCode() noexcept -> const VersionMap&;
+auto Bip47ContextAllowedBip47Chain() noexcept -> const VersionMap&;
+auto Bip47DirectionAllowedBlockchainAddress() noexcept -> const VersionMap&;
+auto BlockchainAccountDataAllowedBlockchainActivity() noexcept
+    -> const VersionMap&;
+auto BlockchainAddressAllowedAsymmetricKey() noexcept -> const VersionMap&;
+auto BlockchainBlockHeaderAllowedBitcoinBlockHeaderFields() noexcept
+    -> const VersionMap&;
+auto BlockchainBlockHeaderAllowedBlockchainBlockLocalData() noexcept
+    -> const VersionMap&;
+auto BlockchainBlockHeaderAllowedEthereumBlockHeaderFields() noexcept
+    -> const VersionMap&;
+auto BlockchainDeterministicAccountDataAllowedBlockchainAccountData() noexcept
+    -> const VersionMap&;
+auto BlockchainDeterministicAccountDataAllowedHDPath() noexcept
+    -> const VersionMap&;
+auto BlockchainP2PHelloAllowedBlockchainP2PChainState() noexcept
+    -> const VersionMap&;
+auto BlockchainTransactionAllowedInput() noexcept -> const VersionMap&;
+auto BlockchainTransactionAllowedOutput() noexcept -> const VersionMap&;
+auto BlockchainTransactionInputAllowedBlockchainInputWitness() noexcept
+    -> const VersionMap&;
+auto BlockchainTransactionInputAllowedBlockchainPreviousOutput() noexcept
+    -> const VersionMap&;
+auto BlockchainTransactionInputAllowedBlockchainTransactionOutput() noexcept
+    -> const VersionMap&;
+auto BlockchainTransactionInputAllowedBlockchainWalletKey() noexcept
+    -> const VersionMap&;
+auto BlockchainTransactionOutputAllowedBlockchainWalletKey() noexcept
+    -> const VersionMap&;
+auto BlockchainTransactionProposalAllowedBlockchainTransaction() noexcept
+    -> const VersionMap&;
+auto BlockchainTransactionProposalAllowedBlockchainTransactionProposedNotification() noexcept
+    -> const VersionMap&;
+auto BlockchainTransactionProposalAllowedBlockchainTransactionProposedOutput() noexcept
+    -> const VersionMap&;
+auto BlockchainTransactionProposedNotificationAllowedHDPath() noexcept
+    -> const VersionMap&;
+auto BlockchainTransactionProposedNotificationAllowedPaymentCode() noexcept
+    -> const VersionMap&;
+auto BlockchainTransactionProposedOutputAllowedBlockchainOutputMultisigDetails() noexcept
+    -> const VersionMap&;
+auto HDAccountAllowedBlockchainAddress() noexcept -> const VersionMap&;
+auto HDAccountAllowedBlockchainDeterministicAccountData() noexcept
+    -> const VersionMap&;
+auto HDAccountAllowedBlockchainHDAccountData() noexcept -> const VersionMap&;
 }  // namespace proto
 }  // namespace opentxs
 #endif  // OPENTXS_PROTOBUF_VERIFYBLOCKCHAIN_HPP

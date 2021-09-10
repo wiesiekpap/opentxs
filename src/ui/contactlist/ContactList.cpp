@@ -13,13 +13,12 @@
 #include <string>
 #include <type_traits>
 
-#include "internal/api/Api.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/ui/UI.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Contacts.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/core/Flag.hpp"
@@ -38,7 +37,7 @@
 namespace opentxs::factory
 {
 auto ContactListModel(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::ContactList>
@@ -52,7 +51,7 @@ auto ContactListModel(
 namespace opentxs::ui::implementation
 {
 ContactList::ContactList(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     : ContactListList(api, nymID, cb, false)
@@ -67,7 +66,7 @@ ContactList::ContactList(
 }
 
 ContactList::ParsedArgs::ParsedArgs(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& purportedID,
     const std::string& purportedPaymentCode) noexcept
     : nym_id_(extract_nymid(api, purportedID, purportedPaymentCode))
@@ -76,7 +75,7 @@ ContactList::ParsedArgs::ParsedArgs(
 }
 
 auto ContactList::ParsedArgs::extract_nymid(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& purportedID,
     const std::string& purportedPaymentCode) noexcept -> OTNymID
 {
@@ -112,7 +111,7 @@ auto ContactList::ParsedArgs::extract_nymid(
 }
 
 auto ContactList::ParsedArgs::extract_paymentcode(
-    const api::internal::Core& api,
+    const api::Core& api,
     const std::string& purportedID,
     const std::string& purportedPaymentCode) noexcept -> OTPaymentCode
 {

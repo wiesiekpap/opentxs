@@ -22,11 +22,11 @@ class OPENTXS_EXPORT OTStashItem
     std::int64_t m_lAmount;
 
 public:
-    std::int64_t GetAmount() const { return m_lAmount; }
+    auto GetAmount() const -> std::int64_t { return m_lAmount; }
     void SetAmount(std::int64_t lAmount) { m_lAmount = lAmount; }
-    bool CreditStash(const std::int64_t& lAmount);
-    bool DebitStash(const std::int64_t& lAmount);
-    const String& GetInstrumentDefinitionID()
+    auto CreditStash(const std::int64_t& lAmount) -> bool;
+    auto DebitStash(const std::int64_t& lAmount) -> bool;
+    auto GetInstrumentDefinitionID() -> const String&
     {
         return m_strInstrumentDefinitionID;
     }

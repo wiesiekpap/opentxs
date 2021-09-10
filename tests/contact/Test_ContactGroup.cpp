@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "1_Internal.hpp"
-#include "internal/api/client/Client.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/Manager.hpp"
@@ -37,7 +36,7 @@ public:
               ot::contact::ContactItemType::Employee,
               {})
         , primary_(new ot::ContactItem(
-              dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+              dynamic_cast<const ot::api::client::Manager&>(api_),
               std::string("primaryContactItem"),
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
@@ -49,7 +48,7 @@ public:
               NULL_END,
               ""))
         , active_(new ot::ContactItem(
-              dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+              dynamic_cast<const ot::api::client::Manager&>(api_),
               std::string("activeContactItem"),
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
@@ -73,7 +72,7 @@ TEST_F(Test_ContactGroup, first_constructor)
 {
     // Test constructing a group with a map containing two primary items.
     const std::shared_ptr<ot::ContactItem> primary2(new ot::ContactItem(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("primaryContactItemNym2"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -170,7 +169,7 @@ TEST_F(Test_ContactGroup, operator_plus)
 
     // Test adding a group with 2 items to a group with 1 item.
     const std::shared_ptr<ot::ContactItem> primary2(new ot::ContactItem(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("primaryContactItemNym2"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -279,7 +278,7 @@ TEST_F(Test_ContactGroup, Best_primary)
 TEST_F(Test_ContactGroup, Best_active_and_local)
 {
     const std::shared_ptr<ot::ContactItem> local(new ot::ContactItem(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("localContactItemNym"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,

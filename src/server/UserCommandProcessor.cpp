@@ -16,17 +16,17 @@
 
 #include "Proto.tpp"
 #include "core/OTStorage.hpp"
-#include "internal/api/Api.hpp"
-#include "internal/api/server/Server.hpp"
 #include "internal/contact/Contact.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "opentxs/Exclusive.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/SharedPimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Editor.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/server/Manager.hpp"
 #if OT_CASH
 #include "opentxs/blind/Mint.hpp"  // IWYU pragma: keep
 #endif                             // OT_CASH
@@ -87,7 +87,7 @@
 namespace opentxs::server
 {
 UserCommandProcessor::FinalizeResponse::FinalizeResponse(
-    const api::internal::Core& core,
+    const api::Core& core,
     const identity::Nym& nym,
     ReplyMessage& reply,
     Ledger& ledger)
@@ -160,18 +160,18 @@ UserCommandProcessor::FinalizeResponse::~FinalizeResponse()
     }
 
     reply_.SetPayload(String::Factory(ledger_));
-    LogDetail(OT_METHOD)(__func__)(
-        ": ")(reply_.Context().AvailableNumbers())(" numbers available.")
+    LogDetail(OT_METHOD)(__func__)(": ")(reply_.Context().AvailableNumbers())(
+        " numbers available.")
         .Flush();
-    LogDetail(OT_METHOD)(__func__)(
-        ": ")(reply_.Context().IssuedNumbers({}))(" numbers issued.")
+    LogDetail(OT_METHOD)(__func__)(": ")(reply_.Context().IssuedNumbers({}))(
+        " numbers issued.")
         .Flush();
 }
 
 UserCommandProcessor::UserCommandProcessor(
     Server& server,
     const PasswordPrompt& reason,
-    const opentxs::api::server::internal::Manager& manager)
+    const opentxs::api::server::Manager& manager)
     : server_(server)
     , reason_(reason)
     , manager_(manager)
@@ -379,8 +379,8 @@ auto UserCommandProcessor::check_message_notary(
     // Validate the server ID, to keep users from intercepting a valid requst
     // and sending it to the wrong server.
     if (false == (realNotaryID == notaryID)) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Invalid server ID (")(notaryID)(") sent in command request.")
+        LogOutput(OT_METHOD)(__func__)(": Invalid server ID (")(
+            notaryID)(") sent in command request.")
             .Flush();
 
         return false;
@@ -436,10 +436,10 @@ auto UserCommandProcessor::check_request_number(
         return false;
     }
 
-    LogDebug(OT_METHOD)(__func__)(
-        ": Request number in this message ")(messageNumber)(" does match the "
-                                                            "one in the "
-                                                            "context.")
+    LogDebug(OT_METHOD)(__func__)(": Request number in this message ")(
+        messageNumber)(" does match the "
+                       "one in the "
+                       "context.")
         .Flush();
 
     return true;
@@ -452,10 +452,10 @@ auto UserCommandProcessor::check_server_lock(const identifier::Nym& nymID)
 
     if (isAdmin(nymID)) { return true; }
 
-    LogOutput(OT_METHOD)(__func__)(
-        ": Nym ")(nymID)(" failed attempt to message the server, while server "
-                         "is in "
-                         "**LOCK DOWN MODE**.")
+    LogOutput(OT_METHOD)(__func__)(": Nym ")(
+        nymID)(" failed attempt to message the server, while server "
+               "is in "
+               "**LOCK DOWN MODE**.")
         .Flush();
 
     return false;
@@ -478,8 +478,8 @@ auto UserCommandProcessor::check_usage_credits(ReplyMessage& reply) const
         const auto& credits = nymFile.get().GetUsageCredits();
 
         if (0 == credits) {
-            LogOutput(OT_METHOD)(__func__)(
-                ": Nym ")(nymFile.get().ID())(" is out of usage credits.")
+            LogOutput(OT_METHOD)(__func__)(": Nym ")(nymFile.get().ID())(
+                " is out of usage credits.")
                 .Flush();
 
             return false;
@@ -550,8 +550,8 @@ auto UserCommandProcessor::cmd_check_nym(ReplyMessage& reply) const -> bool
     if (nym) {
         auto publicNym = proto::Nym{};
         if (false == nym->Serialize(publicNym)) {
-            LogOutput(OT_METHOD)(__func__)(
-                ": Failed to serialize nym ")(targetNym)
+            LogOutput(OT_METHOD)(__func__)(": Failed to serialize nym ")(
+                targetNym)
                 .Flush();
             reply.SetBool(false);
         } else {
@@ -584,8 +584,8 @@ auto UserCommandProcessor::cmd_delete_asset_account(ReplyMessage& reply) const
     auto account = server_.API().Wallet().mutable_Account(accountID, reason_);
 
     if (false == bool(account)) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Error loading account ")(accountID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Error loading account ")(
+            accountID)(".")
             .Flush();
 
         return false;
@@ -594,9 +594,9 @@ auto UserCommandProcessor::cmd_delete_asset_account(ReplyMessage& reply) const
     const auto balance = account.get().GetBalance();
 
     if (balance != 0) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Unable to delete account ")(accountID)(" with non-zero "
-                                                      "balance ")(balance)(".")
+        LogOutput(OT_METHOD)(__func__)(": Unable to delete account ")(
+            accountID)(" with non-zero "
+                       "balance ")(balance)(".")
             .Flush();
 
         return false;
@@ -606,16 +606,16 @@ auto UserCommandProcessor::cmd_delete_asset_account(ReplyMessage& reply) const
     std::unique_ptr<Ledger> outbox(account.get().LoadOutbox(serverNym));
 
     if (false == bool(inbox)) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Error loading inbox for account ")(accountID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Error loading inbox for account ")(
+            accountID)(".")
             .Flush();
 
         return false;
     }
 
     if (false == bool(outbox)) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Error loading outbox for account ")(accountID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Error loading outbox for account ")(
+            accountID)(".")
             .Flush();
 
         return false;
@@ -625,18 +625,18 @@ auto UserCommandProcessor::cmd_delete_asset_account(ReplyMessage& reply) const
     const auto outboxTransactions = outbox->GetTransactionCount();
 
     if (inboxTransactions > 0) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Unable to delete account ")(accountID)(" with"
-                                                      " ")(inboxTransactions)(" open inbox transactions.")
+        LogOutput(OT_METHOD)(__func__)(": Unable to delete account ")(
+            accountID)(" with"
+                       " ")(inboxTransactions)(" open inbox transactions.")
             .Flush();
 
         return false;
     }
 
     if (outboxTransactions > 0) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Unable to delete account ")(accountID)(" with"
-                                                      " ")(inboxTransactions)(" open outbox transactions.")
+        LogOutput(OT_METHOD)(__func__)(": Unable to delete account ")(
+            accountID)(" with"
+                       " ")(inboxTransactions)(" open outbox transactions.")
             .Flush();
 
         return false;
@@ -658,8 +658,8 @@ auto UserCommandProcessor::cmd_delete_asset_account(ReplyMessage& reply) const
             }
         }
     } catch (...) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Unable to load unit definition ")(contractID)
+        LogOutput(OT_METHOD)(__func__)(": Unable to load unit definition ")(
+            contractID)
             .Flush();
 
         return false;
@@ -769,16 +769,16 @@ auto UserCommandProcessor::cmd_get_account_data(ReplyMessage& reply) const
     auto account = server_.API().Wallet().mutable_Account(accountID, reason_);
 
     if (false == bool(account)) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Unable to load account ")(accountID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Unable to load account ")(
+            accountID)(".")
             .Flush();
 
         return false;
     }
 
     if (account.get().GetNymID() != nymID) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Nym ")(nymID)(" does not own account ")(accountID)
+        LogOutput(OT_METHOD)(__func__)(": Nym ")(
+            nymID)(" does not own account ")(accountID)
             .Flush();
 
         return false;
@@ -1260,9 +1260,9 @@ auto UserCommandProcessor::cmd_get_transaction_numbers(
     }
 
     if (nCount > MAX_UNUSED_NUMBERS) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Nym ")(nymID)(" already has more than 50 unused transaction "
-                             "numbers.")
+        LogOutput(OT_METHOD)(__func__)(": Nym ")(
+            nymID)(" already has more than 50 unused transaction "
+                   "numbers.")
             .Flush();
 
         return false;
@@ -1387,8 +1387,8 @@ auto UserCommandProcessor::cmd_issue_basket(ReplyMessage& reply) const -> bool
             server_.API().Wallet().UnitDefinition(
                 identifier::UnitDefinition::Factory(subcontractID));
         } catch (...) {
-            LogOutput(OT_METHOD)(__func__)(
-                ": Missing subcurrency ")(subcontractID)(".")
+            LogOutput(OT_METHOD)(__func__)(": Missing subcurrency ")(
+                subcontractID)(".")
                 .Flush();
 
             return false;
@@ -1670,8 +1670,8 @@ auto UserCommandProcessor::cmd_process_inbox(ReplyMessage& reply) const -> bool
     const auto inputNumber = processInbox.GetTransactionNum();
 
     if (false == context.VerifyIssuedNumber(inputNumber)) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Transaction number ")(inputNumber)(" is not issued to ")(nymID)
+        LogOutput(OT_METHOD)(__func__)(": Transaction number ")(
+            inputNumber)(" is not issued to ")(nymID)
             .Flush();
 
         return false;
@@ -1695,12 +1695,12 @@ auto UserCommandProcessor::cmd_process_inbox(ReplyMessage& reply) const -> bool
     // the user no longer has the number on his AVAILABLE list. Removal from
     // issued list happens separately.)
     if (context.ConsumeAvailable(inputNumber)) {
-        LogDetail(OT_METHOD)(__func__)(
-            ": Consumed available number ")(inputNumber)
+        LogDetail(OT_METHOD)(__func__)(": Consumed available number ")(
+            inputNumber)
             .Flush();
     } else {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Error removing available number ")(inputNumber)
+        LogOutput(OT_METHOD)(__func__)(": Error removing available number ")(
+            inputNumber)
             .Flush();
 
         return false;
@@ -1761,22 +1761,22 @@ auto UserCommandProcessor::cmd_process_inbox(ReplyMessage& reply) const -> bool
         LogDetail(OT_METHOD)(__func__)(": Consumed issued number ")(inputNumber)
             .Flush();
     } else {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Error removing issued number ")(inputNumber)
+        LogOutput(OT_METHOD)(__func__)(": Error removing issued number ")(
+            inputNumber)
             .Flush();
 
         OT_FAIL;
     }
 
     if (transactionSuccess) {
-        LogDetail(OT_METHOD)(__func__)(
-            ": Success processing process inbox ")(inputNumber)(" for "
-                                                                "nym ")(nymID)
+        LogDetail(OT_METHOD)(__func__)(": Success processing process inbox ")(
+            inputNumber)(" for "
+                         "nym ")(nymID)
             .Flush();
     } else {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Failure processing process inbox ")(inputNumber)(" for "
-                                                                "nym ")(nymID)
+        LogOutput(OT_METHOD)(__func__)(": Failure processing process inbox ")(
+            inputNumber)(" for "
+                         "nym ")(nymID)
             .Flush();
     }
 
@@ -1969,8 +1969,8 @@ auto UserCommandProcessor::cmd_register_account(ReplyMessage& reply) const
             }
         }
     } catch (...) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Unable to load unit definition ")(contractID)
+        LogOutput(OT_METHOD)(__func__)(": Unable to load unit definition ")(
+            contractID)
             .Flush();
 
         return false;
@@ -2026,8 +2026,8 @@ auto UserCommandProcessor::cmd_register_account(ReplyMessage& reply) const
     }
 
     if (false == inboxLoaded) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Error generating inbox for account ")(accountID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Error generating inbox for account ")(
+            accountID)(".")
             .Flush();
 
         return false;
@@ -2092,8 +2092,8 @@ auto UserCommandProcessor::cmd_register_contract(ReplyMessage& reply) const
             }
         } break;
         default: {
-            LogOutput(OT_METHOD)(__func__)(
-                ": Invalid contract type: ")(msgIn.enum_)
+            LogOutput(OT_METHOD)(__func__)(": Invalid contract type: ")(
+                msgIn.enum_)
                 .Flush();
         }
     }
@@ -2115,8 +2115,8 @@ auto UserCommandProcessor::cmd_register_instrument_definition(
     // Make sure the contract isn't already available on this server.
     try {
         server_.API().Wallet().UnitDefinition(contractID);
-        LogOutput(OT_METHOD)(__func__)(
-            ": Instrument definition ")(contractID)(" already exists.")
+        LogOutput(OT_METHOD)(__func__)(": Instrument definition ")(
+            contractID)(" already exists.")
             .Flush();
 
         return false;
@@ -2212,8 +2212,8 @@ auto UserCommandProcessor::cmd_register_nym(ReplyMessage& reply) const -> bool
     LogDebug(OT_METHOD)(__func__)(": Nym verified!").Flush();
 
     if (false == msgIn.VerifySignature(*sender_nym)) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Invalid signature ")(sender_nym->ID())(".")
+        LogOutput(OT_METHOD)(__func__)(": Invalid signature ")(
+            sender_nym->ID())(".")
             .Flush();
 
         return false;
@@ -2394,8 +2394,8 @@ auto UserCommandProcessor::cmd_trigger_clause(ReplyMessage& reply) const -> bool
     smartContract = dynamic_cast<OTSmartContract*>(cronItem.get());
 
     if (nullptr == smartContract) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Cron item ")(number)(" is not a smart contract.")
+        LogOutput(OT_METHOD)(__func__)(": Cron item ")(
+            number)(" is not a smart contract.")
             .Flush();
 
         return false;
@@ -2421,8 +2421,8 @@ auto UserCommandProcessor::cmd_trigger_clause(ReplyMessage& reply) const -> bool
         auto clause = smartContract->GetClause(clauseID);
 
         if (nullptr == clause) {
-            LogOutput(OT_METHOD)(__func__)(
-                ": Clause ")(clauseID)(" does not exist.")
+            LogOutput(OT_METHOD)(__func__)(": Clause ")(
+                clauseID)(" does not exist.")
                 .Flush();
 
             return false;
@@ -2432,17 +2432,16 @@ auto UserCommandProcessor::cmd_trigger_clause(ReplyMessage& reply) const -> bool
         smartContract->ExecuteClauses(theMatchingClauses, reason_);
 
         if (smartContract->IsFlaggedForRemoval()) {
-            LogOutput(OT_METHOD)(__func__)(
-                ": Removing smart contract ")(smartContract
-                                                  ->GetTransactionNum())(" from"
-                                                                         " cron"
-                                                                         ".")
+            LogOutput(OT_METHOD)(__func__)(": Removing smart contract ")(
+                smartContract->GetTransactionNum())(" from"
+                                                    " cron"
+                                                    ".")
                 .Flush();
         }
     } else {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Party ")(party->GetPartyName())(" lacks permission to execute "
-                                               "clause ")(clauseID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Party ")(party->GetPartyName())(
+            " lacks permission to execute "
+            "clause ")(clauseID)(".")
             .Flush();
 
         return false;
@@ -2456,9 +2455,9 @@ auto UserCommandProcessor::cmd_trigger_clause(ReplyMessage& reply) const -> bool
     // require my processing out all related marketReceipts) then the closing
     // number will be removed from my list of responsibility.
 
-    LogOutput(OT_METHOD)(__func__)(
-        ": Party ")(party->GetPartyName())(" successfully triggered "
-                                           "clause: ")(clauseID)(".")
+    LogOutput(OT_METHOD)(__func__)(": Party ")(party->GetPartyName())(
+        " successfully triggered "
+        "clause: ")(clauseID)(".")
         .Flush();
 
     return true;
@@ -2507,8 +2506,8 @@ auto UserCommandProcessor::cmd_usage_credits(ReplyMessage& reply) const -> bool
     }
 
     if (false == bool(nymbox)) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Unable to load nymbox for ")(targetNymID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Unable to load nymbox for ")(
+            targetNymID)(".")
             .Flush();
 
         return false;
@@ -2539,8 +2538,8 @@ auto UserCommandProcessor::create_nymbox(
     auto nymbox{manager_.Factory().Ledger(nymID, nymID, server)};
 
     if (false == bool(nymbox)) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Unable to instantiate nymbox for ")(nymID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Unable to instantiate nymbox for ")(
+            nymID)(".")
             .Flush();
 
         return {};
@@ -2548,8 +2547,8 @@ auto UserCommandProcessor::create_nymbox(
 
     if (false ==
         nymbox->GenerateLedger(nymID, server, ledgerType::nymbox, true)) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Unable to generate nymbox for ")(nymID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Unable to generate nymbox for ")(
+            nymID)(".")
             .Flush();
 
         return {};
@@ -2558,8 +2557,8 @@ auto UserCommandProcessor::create_nymbox(
     auto notUsed = Identifier::Factory();
 
     if (false == save_nymbox(serverNym, notUsed, *nymbox)) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Unable to save nymbox for ")(nymID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Unable to save nymbox for ")(
+            nymID)(".")
             .Flush();
 
         return {};
@@ -2733,24 +2732,24 @@ auto UserCommandProcessor::load_inbox(
     auto inbox{manager_.Factory().Ledger(nymID, accountID, serverID)};
 
     if (false == bool(inbox)) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Unable to instantiate inbox for ")(nymID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Unable to instantiate inbox for ")(
+            nymID)(".")
             .Flush();
 
         return {};
     }
 
     if (false == inbox->LoadInbox()) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Unable to load inbox for ")(nymID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Unable to load inbox for ")(
+            nymID)(".")
             .Flush();
 
         return {};
     }
 
     if (false == verify_box(nymID, *inbox, serverNym, verifyAccount)) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Unable to verify inbox for ")(nymID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Unable to verify inbox for ")(
+            nymID)(".")
             .Flush();
 
         return {};
@@ -2772,24 +2771,24 @@ auto UserCommandProcessor::load_nymbox(
     auto nymbox{manager_.Factory().Ledger(nymID, nymID, serverID)};
 
     if (false == bool(nymbox)) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Unable to instantiate nymbox for ")(nymID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Unable to instantiate nymbox for ")(
+            nymID)(".")
             .Flush();
 
         return {};
     }
 
     if (false == nymbox->LoadNymbox()) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Unable to load nymbox for ")(nymID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Unable to load nymbox for ")(
+            nymID)(".")
             .Flush();
 
         return {};
     }
 
     if (false == verify_box(nymID, *nymbox, serverNym, verifyAccount)) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Unable to verify nymbox for ")(nymID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Unable to verify nymbox for ")(
+            nymID)(".")
             .Flush();
 
         return {};
@@ -2821,24 +2820,24 @@ auto UserCommandProcessor::load_outbox(
     auto outbox{manager_.Factory().Ledger(nymID, accountID, serverID)};
 
     if (false == bool(outbox)) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Unable to instantiate outbox for ")(nymID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Unable to instantiate outbox for ")(
+            nymID)(".")
             .Flush();
 
         return {};
     }
 
     if (false == outbox->LoadOutbox()) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Unable to load outbox for ")(nymID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Unable to load outbox for ")(
+            nymID)(".")
             .Flush();
 
         return {};
     }
 
     if (false == verify_box(nymID, *outbox, serverNym, verifyAccount)) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Unable to verify outbox for ")(nymID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Unable to verify outbox for ")(
+            nymID)(".")
             .Flush();
 
         return {};
@@ -3026,8 +3025,8 @@ auto UserCommandProcessor::ProcessUserCommand(
             return cmd_add_claim(reply);
         }
         default: {
-            LogOutput(OT_METHOD)(__func__)(
-                ": Unknown command type: ")(command)(".")
+            LogOutput(OT_METHOD)(__func__)(": Unknown command type: ")(
+                command)(".")
                 .Flush();
 
             reply.SetAccount(msgIn.m_strAcctID);
@@ -3133,8 +3132,8 @@ auto UserCommandProcessor::verify_box(
     const bool full) const -> bool
 {
     if (false == box.VerifyContractID()) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Unable to verify box ID for ")(ownerID)(".")
+        LogOutput(OT_METHOD)(__func__)(": Unable to verify box ID for ")(
+            ownerID)(".")
             .Flush();
 
         return false;
@@ -3142,16 +3141,16 @@ auto UserCommandProcessor::verify_box(
 
     if (full) {
         if (false == box.VerifyAccount(nym)) {
-            LogOutput(OT_METHOD)(__func__)(
-                ": Unable to verify box for ")(ownerID)(".")
+            LogOutput(OT_METHOD)(__func__)(": Unable to verify box for ")(
+                ownerID)(".")
                 .Flush();
 
             return false;
         }
     } else {
         if (false == box.VerifySignature(nym)) {
-            LogOutput(OT_METHOD)(__func__)(
-                ": Unable to verify signature for ")(ownerID)(".")
+            LogOutput(OT_METHOD)(__func__)(": Unable to verify signature for ")(
+                ownerID)(".")
                 .Flush();
 
             return false;

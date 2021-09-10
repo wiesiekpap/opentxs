@@ -17,22 +17,6 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 
-#ifdef SWIG
-// clang-format off
-%extend opentxs::ui::BalanceItem {
-    int Timestamp() const noexcept
-    {
-        return Clock::to_time_t($self->Timestamp());
-    }
-}
-%ignore opentxs::ui::BalanceItem::Timestamp;
-%ignore opentxs::ui::BalanceItem::Update;
-%template(ListOfContactIDs) std::vector<std::string>;
-%template(OTUIBalanceItem) opentxs::SharedPimpl<opentxs::ui::BalanceItem>;
-%rename(UIBalanceItem) opentxs::ui::BalanceItem;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace ui
@@ -47,21 +31,20 @@ namespace opentxs
 {
 namespace ui
 {
-class BalanceItem : virtual public ListRow
+class OPENTXS_EXPORT BalanceItem : virtual public ListRow
 {
 public:
-    OPENTXS_EXPORT virtual opentxs::Amount Amount() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::vector<std::string> Contacts()
-        const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string DisplayAmount() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string Memo() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string Workflow() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string Text() const noexcept = 0;
-    OPENTXS_EXPORT virtual Time Timestamp() const noexcept = 0;
-    OPENTXS_EXPORT virtual StorageBox Type() const noexcept = 0;
-    OPENTXS_EXPORT virtual std::string UUID() const noexcept = 0;
+    virtual auto Amount() const noexcept -> opentxs::Amount = 0;
+    virtual auto Contacts() const noexcept -> std::vector<std::string> = 0;
+    virtual auto DisplayAmount() const noexcept -> std::string = 0;
+    virtual auto Memo() const noexcept -> std::string = 0;
+    virtual auto Workflow() const noexcept -> std::string = 0;
+    virtual auto Text() const noexcept -> std::string = 0;
+    virtual auto Timestamp() const noexcept -> Time = 0;
+    virtual auto Type() const noexcept -> StorageBox = 0;
+    virtual auto UUID() const noexcept -> std::string = 0;
 
-    OPENTXS_EXPORT ~BalanceItem() override = default;
+    ~BalanceItem() override = default;
 
 protected:
     BalanceItem() noexcept = default;
@@ -69,8 +52,8 @@ protected:
 private:
     BalanceItem(const BalanceItem&) = delete;
     BalanceItem(BalanceItem&&) = delete;
-    BalanceItem& operator=(const BalanceItem&) = delete;
-    BalanceItem& operator=(BalanceItem&&) = delete;
+    auto operator=(const BalanceItem&) -> BalanceItem& = delete;
+    auto operator=(BalanceItem&&) -> BalanceItem& = delete;
 };
 }  // namespace ui
 }  // namespace opentxs

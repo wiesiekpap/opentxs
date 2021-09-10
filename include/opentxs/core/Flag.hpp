@@ -23,18 +23,18 @@ namespace opentxs
 class OPENTXS_EXPORT Flag
 {
 public:
-    static OTFlag Factory(const bool state);
+    static auto Factory(const bool state) -> OTFlag;
 
     virtual operator bool() const = 0;
 
     /** Returns true if new state differs from previous state */
-    virtual bool Off() = 0;
+    virtual auto Off() -> bool = 0;
     /** Returns true if new state differs from previous state */
-    virtual bool On() = 0;
+    virtual auto On() -> bool = 0;
     /** Returns previous state */
-    virtual bool Set(const bool value) = 0;
+    virtual auto Set(const bool value) -> bool = 0;
     /** Returns previous state */
-    virtual bool Toggle() = 0;
+    virtual auto Toggle() -> bool = 0;
 
     virtual ~Flag() = default;
 
@@ -44,12 +44,12 @@ protected:
 private:
     friend OTFlag;
 
-    virtual Flag* clone() const = 0;
+    virtual auto clone() const -> Flag* = 0;
 
     Flag(const Flag&) = delete;
     Flag(Flag&&) = delete;
-    Flag& operator=(const Flag&) = delete;
-    Flag& operator=(Flag&&) = delete;
+    auto operator=(const Flag&) -> Flag& = delete;
+    auto operator=(Flag&&) -> Flag& = delete;
 };
 }  // namespace opentxs
 #endif

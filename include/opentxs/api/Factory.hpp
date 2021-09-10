@@ -139,26 +139,28 @@ namespace api
 class OPENTXS_EXPORT Factory : virtual public Primitives
 {
 public:
-    virtual OTArmored Armored() const = 0;
-    virtual OTArmored Armored(const std::string& input) const = 0;
-    virtual OTArmored Armored(const opentxs::Data& input) const = 0;
-    virtual OTArmored Armored(const opentxs::String& input) const = 0;
-    virtual OTArmored Armored(const opentxs::crypto::Envelope& input) const = 0;
-    OPENTXS_NO_EXPORT virtual OTArmored Armored(
-        const google::protobuf::MessageLite& input) const = 0;
-    OPENTXS_NO_EXPORT virtual OTString Armored(
+    virtual auto Armored() const -> OTArmored = 0;
+    virtual auto Armored(const std::string& input) const -> OTArmored = 0;
+    virtual auto Armored(const opentxs::Data& input) const -> OTArmored = 0;
+    virtual auto Armored(const opentxs::String& input) const -> OTArmored = 0;
+    virtual auto Armored(const opentxs::crypto::Envelope& input) const
+        -> OTArmored = 0;
+    OPENTXS_NO_EXPORT virtual auto Armored(
+        const google::protobuf::MessageLite& input) const -> OTArmored = 0;
+    OPENTXS_NO_EXPORT virtual auto Armored(
         const google::protobuf::MessageLite& input,
-        const std::string& header) const = 0;
-    virtual OTAsymmetricKey AsymmetricKey(
+        const std::string& header) const -> OTString = 0;
+    virtual auto AsymmetricKey(
         const NymParameters& params,
         const opentxs::PasswordPrompt& reason,
         const opentxs::crypto::key::asymmetric::Role role =
             opentxs::crypto::key::asymmetric::Role::Sign,
         const VersionNumber version =
-            opentxs::crypto::key::Asymmetric::DefaultVersion) const = 0;
-    OPENTXS_NO_EXPORT virtual OTAsymmetricKey AsymmetricKey(
-        const proto::AsymmetricKey& serialized) const = 0;
-    virtual OTBailmentNotice BailmentNotice(
+            opentxs::crypto::key::Asymmetric::DefaultVersion) const
+        -> OTAsymmetricKey = 0;
+    OPENTXS_NO_EXPORT virtual auto AsymmetricKey(
+        const proto::AsymmetricKey& serialized) const -> OTAsymmetricKey = 0;
+    virtual auto BailmentNotice(
         const Nym_p& nym,
         const identifier::Nym& recipientID,
         const identifier::UnitDefinition& unitID,
@@ -166,37 +168,43 @@ public:
         const Identifier& requestID,
         const std::string& txid,
         const Amount& amount,
-        const opentxs::PasswordPrompt& reason) const noexcept(false) = 0;
-    OPENTXS_NO_EXPORT virtual OTBailmentNotice BailmentNotice(
+        const opentxs::PasswordPrompt& reason) const noexcept(false)
+        -> OTBailmentNotice = 0;
+    OPENTXS_NO_EXPORT virtual auto BailmentNotice(
         const Nym_p& nym,
-        const proto::PeerRequest& serialized) const noexcept(false) = 0;
-    virtual OTBailmentReply BailmentReply(
+        const proto::PeerRequest& serialized) const noexcept(false)
+        -> OTBailmentNotice = 0;
+    virtual auto BailmentReply(
         const Nym_p& nym,
         const identifier::Nym& initiator,
         const Identifier& request,
         const identifier::Server& server,
         const std::string& terms,
-        const opentxs::PasswordPrompt& reason) const noexcept(false) = 0;
-    OPENTXS_NO_EXPORT virtual OTBailmentReply BailmentReply(
+        const opentxs::PasswordPrompt& reason) const noexcept(false)
+        -> OTBailmentReply = 0;
+    OPENTXS_NO_EXPORT virtual auto BailmentReply(
         const Nym_p& nym,
-        const proto::PeerReply& serialized) const noexcept(false) = 0;
-    virtual OTBailmentRequest BailmentRequest(
+        const proto::PeerReply& serialized) const noexcept(false)
+        -> OTBailmentReply = 0;
+    virtual auto BailmentRequest(
         const Nym_p& nym,
         const identifier::Nym& recipient,
         const identifier::UnitDefinition& unit,
         const identifier::Server& server,
-        const opentxs::PasswordPrompt& reason) const noexcept(false) = 0;
-    OPENTXS_NO_EXPORT virtual OTBailmentRequest BailmentRequest(
+        const opentxs::PasswordPrompt& reason) const noexcept(false)
+        -> OTBailmentRequest = 0;
+    OPENTXS_NO_EXPORT virtual auto BailmentRequest(
         const Nym_p& nym,
-        const proto::PeerRequest& serialized) const noexcept(false) = 0;
-    virtual OTBailmentRequest BailmentRequest(
-        const Nym_p& nym,
-        const ReadView& view) const noexcept(false) = 0;
-    virtual std::unique_ptr<opentxs::Basket> Basket() const = 0;
-    virtual std::unique_ptr<opentxs::Basket> Basket(
+        const proto::PeerRequest& serialized) const noexcept(false)
+        -> OTBailmentRequest = 0;
+    virtual auto BailmentRequest(const Nym_p& nym, const ReadView& view) const
+        noexcept(false) -> OTBailmentRequest = 0;
+    virtual auto Basket() const -> std::unique_ptr<opentxs::Basket> = 0;
+    virtual auto Basket(
         std::int32_t nCount,
-        std::int64_t lMinimumTransferAmount) const = 0;
-    virtual OTBasketContract BasketContract(
+        std::int64_t lMinimumTransferAmount) const
+        -> std::unique_ptr<opentxs::Basket> = 0;
+    virtual auto BasketContract(
         const Nym_p& nym,
         const std::string& shortname,
         const std::string& name,
@@ -204,10 +212,12 @@ public:
         const std::string& terms,
         const std::uint64_t weight,
         const contact::ContactItemType unitOfAccount,
-        const VersionNumber version) const noexcept(false) = 0;
-    OPENTXS_NO_EXPORT virtual OTBasketContract BasketContract(
+        const VersionNumber version) const noexcept(false)
+        -> OTBasketContract = 0;
+    OPENTXS_NO_EXPORT virtual auto BasketContract(
         const Nym_p& nym,
-        const proto::UnitDefinition serialized) const noexcept(false) = 0;
+        const proto::UnitDefinition serialized) const noexcept(false)
+        -> OTBasketContract = 0;
 #if OT_BLOCKCHAIN
     virtual auto BitcoinBlock(
         const opentxs::blockchain::Type chain,
@@ -281,7 +291,7 @@ public:
         const Time& time = Clock::now()) const noexcept
         -> std::unique_ptr<
             const opentxs::blockchain::block::bitcoin::Transaction> = 0;
-    virtual OTBlockchainAddress BlockchainAddress(
+    virtual auto BlockchainAddress(
         const opentxs::blockchain::p2p::Protocol protocol,
         const opentxs::blockchain::p2p::Network network,
         const opentxs::Data& bytes,
@@ -289,31 +299,34 @@ public:
         const opentxs::blockchain::Type chain,
         const Time lastConnected,
         const std::set<opentxs::blockchain::p2p::Service>& services,
-        const bool incoming = false) const = 0;
-    virtual OTBlockchainAddress BlockchainAddress(
+        const bool incoming = false) const -> OTBlockchainAddress = 0;
+    virtual auto BlockchainAddress(
         const opentxs::blockchain::p2p::Address::SerializedType& serialized)
-        const = 0;
+        const -> OTBlockchainAddress = 0;
     using BlockHeaderP = std::unique_ptr<opentxs::blockchain::block::Header>;
-    OPENTXS_NO_EXPORT virtual BlockHeaderP BlockHeader(
-        const proto::BlockchainBlockHeader& serialized) const = 0;
-    virtual BlockHeaderP BlockHeader(const ReadView protobuf) const = 0;
-    virtual BlockHeaderP BlockHeader(
+    OPENTXS_NO_EXPORT virtual auto BlockHeader(
+        const proto::BlockchainBlockHeader& serialized) const
+        -> BlockHeaderP = 0;
+    virtual auto BlockHeader(const ReadView protobuf) const -> BlockHeaderP = 0;
+    virtual auto BlockHeader(
         const opentxs::blockchain::Type type,
-        const ReadView native) const = 0;
-    virtual BlockHeaderP BlockHeader(
-        const opentxs::blockchain::block::Block& block) const = 0;
-    virtual BlockHeaderP BlockHeaderForUnitTests(
+        const ReadView native) const -> BlockHeaderP = 0;
+    virtual auto BlockHeader(const opentxs::blockchain::block::Block& block)
+        const -> BlockHeaderP = 0;
+    virtual auto BlockHeaderForUnitTests(
         const opentxs::blockchain::block::Hash& hash,
         const opentxs::blockchain::block::Hash& parent,
-        const opentxs::blockchain::block::Height height) const = 0;
+        const opentxs::blockchain::block::Height height) const
+        -> BlockHeaderP = 0;
 #endif  // OT_BLOCKCHAIN
-    virtual std::unique_ptr<opentxs::Cheque> Cheque(
-        const OTTransaction& receipt) const = 0;
-    virtual std::unique_ptr<opentxs::Cheque> Cheque() const = 0;
-    virtual std::unique_ptr<opentxs::Cheque> Cheque(
+    virtual auto Cheque(const OTTransaction& receipt) const
+        -> std::unique_ptr<opentxs::Cheque> = 0;
+    virtual auto Cheque() const -> std::unique_ptr<opentxs::Cheque> = 0;
+    virtual auto Cheque(
         const identifier::Server& NOTARY_ID,
-        const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID) const = 0;
-    virtual OTConnectionReply ConnectionReply(
+        const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID) const
+        -> std::unique_ptr<opentxs::Cheque> = 0;
+    virtual auto ConnectionReply(
         const Nym_p& nym,
         const identifier::Nym& initiator,
         const Identifier& request,
@@ -323,25 +336,29 @@ public:
         const std::string& login,
         const std::string& password,
         const std::string& key,
-        const opentxs::PasswordPrompt& reason) const noexcept(false) = 0;
-    OPENTXS_NO_EXPORT virtual OTConnectionReply ConnectionReply(
+        const opentxs::PasswordPrompt& reason) const noexcept(false)
+        -> OTConnectionReply = 0;
+    OPENTXS_NO_EXPORT virtual auto ConnectionReply(
         const Nym_p& nym,
-        const proto::PeerReply& serialized) const noexcept(false) = 0;
-    virtual OTConnectionRequest ConnectionRequest(
+        const proto::PeerReply& serialized) const noexcept(false)
+        -> OTConnectionReply = 0;
+    virtual auto ConnectionRequest(
         const Nym_p& nym,
         const identifier::Nym& recipient,
         const contract::peer::ConnectionInfoType type,
         const identifier::Server& server,
-        const opentxs::PasswordPrompt& reason) const noexcept(false) = 0;
-    OPENTXS_NO_EXPORT virtual OTConnectionRequest ConnectionRequest(
+        const opentxs::PasswordPrompt& reason) const noexcept(false)
+        -> OTConnectionRequest = 0;
+    OPENTXS_NO_EXPORT virtual auto ConnectionRequest(
         const Nym_p& nym,
-        const proto::PeerRequest& serialized) const noexcept(false) = 0;
-    virtual std::unique_ptr<opentxs::Contract> Contract(
-        const String& strCronItem) const = 0;
-    virtual std::unique_ptr<OTCron> Cron() const = 0;
-    virtual std::unique_ptr<OTCronItem> CronItem(
-        const String& strCronItem) const = 0;
-    virtual OTCurrencyContract CurrencyContract(
+        const proto::PeerRequest& serialized) const noexcept(false)
+        -> OTConnectionRequest = 0;
+    virtual auto Contract(const String& strCronItem) const
+        -> std::unique_ptr<opentxs::Contract> = 0;
+    virtual auto Cron() const -> std::unique_ptr<OTCron> = 0;
+    virtual auto CronItem(const String& strCronItem) const
+        -> std::unique_ptr<OTCronItem> = 0;
+    virtual auto CurrencyContract(
         const Nym_p& nym,
         const std::string& shortname,
         const std::string& name,
@@ -352,257 +369,294 @@ public:
         const std::string& fraction,
         const contact::ContactItemType unitOfAccount,
         const VersionNumber version,
-        const opentxs::PasswordPrompt& reason) const noexcept(false) = 0;
-    OPENTXS_NO_EXPORT virtual OTCurrencyContract CurrencyContract(
+        const opentxs::PasswordPrompt& reason) const noexcept(false)
+        -> OTCurrencyContract = 0;
+    OPENTXS_NO_EXPORT virtual auto CurrencyContract(
         const Nym_p& nym,
-        const proto::UnitDefinition serialized) const noexcept(false) = 0;
-    virtual OTData Data() const = 0;
-    virtual OTData Data(const opentxs::Armored& input) const = 0;
-    OPENTXS_NO_EXPORT virtual OTData Data(
-        const google::protobuf::MessageLite& input) const = 0;
-    virtual OTData Data(const opentxs::network::zeromq::Frame& input) const = 0;
-    virtual OTData Data(const std::uint8_t input) const = 0;
-    virtual OTData Data(const std::uint32_t input) const = 0;
-    virtual OTData Data(const std::string& input, const StringStyle mode)
-        const = 0;
-    virtual OTData Data(const std::vector<unsigned char>& input) const = 0;
-    virtual OTData Data(const std::vector<std::byte>& input) const = 0;
-    virtual OTData Data(const ReadView input) const = 0;
-    virtual OTEnvelope Envelope() const noexcept = 0;
-    virtual OTEnvelope Envelope(const opentxs::Armored& ciphertext) const
-        noexcept(false) = 0;
-    virtual OTEnvelope Envelope(
+        const proto::UnitDefinition serialized) const noexcept(false)
+        -> OTCurrencyContract = 0;
+    virtual auto Data() const -> OTData = 0;
+    virtual auto Data(const opentxs::Armored& input) const -> OTData = 0;
+    OPENTXS_NO_EXPORT virtual auto Data(
+        const google::protobuf::MessageLite& input) const -> OTData = 0;
+    virtual auto Data(const opentxs::network::zeromq::Frame& input) const
+        -> OTData = 0;
+    virtual auto Data(const std::uint8_t input) const -> OTData = 0;
+    virtual auto Data(const std::uint32_t input) const -> OTData = 0;
+    virtual auto Data(const std::string& input, const StringStyle mode) const
+        -> OTData = 0;
+    virtual auto Data(const std::vector<unsigned char>& input) const
+        -> OTData = 0;
+    virtual auto Data(const std::vector<std::byte>& input) const -> OTData = 0;
+    virtual auto Data(const ReadView input) const -> OTData = 0;
+    virtual auto Envelope() const noexcept -> OTEnvelope = 0;
+    virtual auto Envelope(const opentxs::Armored& ciphertext) const
+        noexcept(false) -> OTEnvelope = 0;
+    virtual auto Envelope(
         const opentxs::crypto::Envelope::SerializedType& serialized) const
-        noexcept(false) = 0;
-    virtual OTEnvelope Envelope(const opentxs::ReadView& serialized) const
-        noexcept(false) = 0;
-    virtual OTIdentifier Identifier() const = 0;
-    virtual OTIdentifier Identifier(const std::string& serialized) const = 0;
-    virtual OTIdentifier Identifier(
-        const opentxs::String& serialized) const = 0;
-    virtual OTIdentifier Identifier(
-        const opentxs::Contract& contract) const = 0;
-    virtual OTIdentifier Identifier(const opentxs::Item& item) const = 0;
-    virtual OTIdentifier Identifier(const ReadView bytes) const = 0;
-    OPENTXS_NO_EXPORT virtual OTIdentifier Identifier(
-        const google::protobuf::MessageLite& proto) const = 0;
-    virtual std::unique_ptr<opentxs::Item> Item(
-        const String& serialized) const = 0;
-    virtual std::unique_ptr<opentxs::Item> Item(
-        const std::string& serialized) const = 0;
-    virtual std::unique_ptr<opentxs::Item> Item(
+        noexcept(false) -> OTEnvelope = 0;
+    virtual auto Envelope(const opentxs::ReadView& serialized) const
+        noexcept(false) -> OTEnvelope = 0;
+    virtual auto Identifier() const -> OTIdentifier = 0;
+    virtual auto Identifier(const std::string& serialized) const
+        -> OTIdentifier = 0;
+    virtual auto Identifier(const opentxs::String& serialized) const
+        -> OTIdentifier = 0;
+    virtual auto Identifier(const opentxs::Contract& contract) const
+        -> OTIdentifier = 0;
+    virtual auto Identifier(const opentxs::Item& item) const
+        -> OTIdentifier = 0;
+    virtual auto Identifier(const ReadView bytes) const -> OTIdentifier = 0;
+    OPENTXS_NO_EXPORT virtual auto Identifier(
+        const google::protobuf::MessageLite& proto) const -> OTIdentifier = 0;
+    virtual auto Item(const String& serialized) const
+        -> std::unique_ptr<opentxs::Item> = 0;
+    virtual auto Item(const std::string& serialized) const
+        -> std::unique_ptr<opentxs::Item> = 0;
+    virtual auto Item(
         const identifier::Nym& theNymID,
-        const opentxs::Item& theOwner) const = 0;
-    virtual std::unique_ptr<opentxs::Item> Item(
+        const opentxs::Item& theOwner) const
+        -> std::unique_ptr<opentxs::Item> = 0;
+    virtual auto Item(
         const identifier::Nym& theNymID,
-        const OTTransaction& theOwner) const = 0;
-    virtual std::unique_ptr<opentxs::Item> Item(
+        const OTTransaction& theOwner) const
+        -> std::unique_ptr<opentxs::Item> = 0;
+    virtual auto Item(
         const identifier::Nym& theNymID,
         const OTTransaction& theOwner,
         itemType theType,
-        const opentxs::Identifier& pDestinationAcctID) const = 0;
-    virtual std::unique_ptr<opentxs::Item> Item(
+        const opentxs::Identifier& pDestinationAcctID) const
+        -> std::unique_ptr<opentxs::Item> = 0;
+    virtual auto Item(
         const String& strItem,
         const identifier::Server& theNotaryID,
-        std::int64_t lTransactionNumber) const = 0;
-    virtual std::unique_ptr<opentxs::Item> Item(
+        std::int64_t lTransactionNumber) const
+        -> std::unique_ptr<opentxs::Item> = 0;
+    virtual auto Item(
         const OTTransaction& theOwner,
         itemType theType,
-        const opentxs::Identifier& pDestinationAcctID) const = 0;
-    virtual OTKeypair Keypair(
+        const opentxs::Identifier& pDestinationAcctID) const
+        -> std::unique_ptr<opentxs::Item> = 0;
+    virtual auto Keypair(
         const NymParameters& nymParameters,
         const VersionNumber version,
         const opentxs::crypto::key::asymmetric::Role role,
-        const opentxs::PasswordPrompt& reason) const = 0;
-    OPENTXS_NO_EXPORT virtual OTKeypair Keypair(
+        const opentxs::PasswordPrompt& reason) const -> OTKeypair = 0;
+    OPENTXS_NO_EXPORT virtual auto Keypair(
         const proto::AsymmetricKey& serializedPubkey,
-        const proto::AsymmetricKey& serializedPrivkey) const = 0;
-    OPENTXS_NO_EXPORT virtual OTKeypair Keypair(
-        const proto::AsymmetricKey& serializedPubkey) const = 0;
+        const proto::AsymmetricKey& serializedPrivkey) const -> OTKeypair = 0;
+    OPENTXS_NO_EXPORT virtual auto Keypair(
+        const proto::AsymmetricKey& serializedPubkey) const -> OTKeypair = 0;
 #if OT_CRYPTO_WITH_BIP32
-    virtual OTKeypair Keypair(
+    virtual auto Keypair(
         const std::string& fingerprint,
         const Bip32Index nym,
         const Bip32Index credset,
         const Bip32Index credindex,
         const EcdsaCurve& curve,
         const opentxs::crypto::key::asymmetric::Role role,
-        const opentxs::PasswordPrompt& reason) const = 0;
+        const opentxs::PasswordPrompt& reason) const -> OTKeypair = 0;
 #endif  // OT_CRYPTO_WITH_BIP32
-    virtual std::unique_ptr<opentxs::Ledger> Ledger(
+    virtual auto Ledger(
         const opentxs::Identifier& theAccountID,
-        const identifier::Server& theNotaryID) const = 0;
-    virtual std::unique_ptr<opentxs::Ledger> Ledger(
+        const identifier::Server& theNotaryID) const
+        -> std::unique_ptr<opentxs::Ledger> = 0;
+    virtual auto Ledger(
         const identifier::Nym& theNymID,
         const opentxs::Identifier& theAccountID,
-        const identifier::Server& theNotaryID) const = 0;
-    virtual std::unique_ptr<opentxs::Ledger> Ledger(
+        const identifier::Server& theNotaryID) const
+        -> std::unique_ptr<opentxs::Ledger> = 0;
+    virtual auto Ledger(
         const identifier::Nym& theNymID,
         const opentxs::Identifier& theAcctID,
         const identifier::Server& theNotaryID,
         ledgerType theType,
-        bool bCreateFile = false) const = 0;
-    virtual std::unique_ptr<OTMarket> Market() const = 0;
-    virtual std::unique_ptr<OTMarket> Market(const char* szFilename) const = 0;
-    virtual std::unique_ptr<OTMarket> Market(
+        bool bCreateFile = false) const -> std::unique_ptr<opentxs::Ledger> = 0;
+    virtual auto Market() const -> std::unique_ptr<OTMarket> = 0;
+    virtual auto Market(const char* szFilename) const
+        -> std::unique_ptr<OTMarket> = 0;
+    virtual auto Market(
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const identifier::UnitDefinition& CURRENCY_TYPE_ID,
-        const std::int64_t& lScale) const = 0;
-    virtual std::unique_ptr<opentxs::Message> Message() const = 0;
+        const std::int64_t& lScale) const -> std::unique_ptr<OTMarket> = 0;
+    virtual auto Message() const -> std::unique_ptr<opentxs::Message> = 0;
 #if OT_CASH
-    virtual std::unique_ptr<blind::Mint> Mint() const = 0;
-    virtual std::unique_ptr<blind::Mint> Mint(
+    virtual auto Mint() const -> std::unique_ptr<blind::Mint> = 0;
+    virtual auto Mint(
         const String& strNotaryID,
-        const String& strInstrumentDefinitionID) const = 0;
-    virtual std::unique_ptr<blind::Mint> Mint(
+        const String& strInstrumentDefinitionID) const
+        -> std::unique_ptr<blind::Mint> = 0;
+    virtual auto Mint(
         const String& strNotaryID,
         const String& strServerNymID,
-        const String& strInstrumentDefinitionID) const = 0;
+        const String& strInstrumentDefinitionID) const
+        -> std::unique_ptr<blind::Mint> = 0;
 #endif
-    virtual OTNymID NymID() const = 0;
-    virtual OTNymID NymID(const std::string& serialized) const = 0;
-    virtual OTNymID NymID(const opentxs::String& serialized) const = 0;
-    virtual OTNymID NymIDFromPaymentCode(
-        const std::string& serialized) const = 0;
-    virtual std::unique_ptr<OTOffer> Offer() const = 0;  // The constructor
-                                                         // contains the 3
-                                                         // variables needed to
-                                                         // identify any market.
-    virtual std::unique_ptr<OTOffer> Offer(
+    virtual auto NymID() const -> OTNymID = 0;
+    virtual auto NymID(const std::string& serialized) const -> OTNymID = 0;
+    virtual auto NymID(const opentxs::String& serialized) const -> OTNymID = 0;
+    virtual auto NymIDFromPaymentCode(const std::string& serialized) const
+        -> OTNymID = 0;
+    virtual auto Offer() const
+        -> std::unique_ptr<OTOffer> = 0;  // The constructor
+                                          // contains the 3
+                                          // variables needed to
+                                          // identify any market.
+    virtual auto Offer(
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const identifier::UnitDefinition& CURRENCY_ID,
-        const std::int64_t& MARKET_SCALE) const = 0;
-    virtual OTOutbailmentReply OutbailmentReply(
+        const std::int64_t& MARKET_SCALE) const -> std::unique_ptr<OTOffer> = 0;
+    virtual auto OutbailmentReply(
         const Nym_p& nym,
         const identifier::Nym& initiator,
         const opentxs::Identifier& request,
         const identifier::Server& server,
         const std::string& terms,
-        const opentxs::PasswordPrompt& reason) const noexcept(false) = 0;
-    OPENTXS_NO_EXPORT virtual OTOutbailmentReply OutbailmentReply(
+        const opentxs::PasswordPrompt& reason) const noexcept(false)
+        -> OTOutbailmentReply = 0;
+    OPENTXS_NO_EXPORT virtual auto OutbailmentReply(
         const Nym_p& nym,
-        const proto::PeerReply& serialized) const noexcept(false) = 0;
-    virtual OTOutbailmentRequest OutbailmentRequest(
+        const proto::PeerReply& serialized) const noexcept(false)
+        -> OTOutbailmentReply = 0;
+    virtual auto OutbailmentRequest(
         const Nym_p& nym,
         const identifier::Nym& recipientID,
         const identifier::UnitDefinition& unitID,
         const identifier::Server& serverID,
         const std::uint64_t& amount,
         const std::string& terms,
-        const opentxs::PasswordPrompt& reason) const noexcept(false) = 0;
-    OPENTXS_NO_EXPORT virtual OTOutbailmentRequest OutbailmentRequest(
+        const opentxs::PasswordPrompt& reason) const noexcept(false)
+        -> OTOutbailmentRequest = 0;
+    OPENTXS_NO_EXPORT virtual auto OutbailmentRequest(
         const Nym_p& nym,
-        const proto::PeerRequest& serialized) const noexcept(false) = 0;
-    virtual OTPasswordPrompt PasswordPrompt(const std::string& text) const = 0;
-    virtual OTPasswordPrompt PasswordPrompt(
-        const opentxs::PasswordPrompt& rhs) const = 0;
-    virtual std::unique_ptr<OTPayment> Payment() const = 0;
-    virtual std::unique_ptr<OTPayment> Payment(
-        const String& strPayment) const = 0;
-    virtual std::unique_ptr<OTPayment> Payment(
+        const proto::PeerRequest& serialized) const noexcept(false)
+        -> OTOutbailmentRequest = 0;
+    virtual auto PasswordPrompt(const std::string& text) const
+        -> OTPasswordPrompt = 0;
+    virtual auto PasswordPrompt(const opentxs::PasswordPrompt& rhs) const
+        -> OTPasswordPrompt = 0;
+    virtual auto Payment() const -> std::unique_ptr<OTPayment> = 0;
+    virtual auto Payment(const String& strPayment) const
+        -> std::unique_ptr<OTPayment> = 0;
+    virtual auto Payment(
         const opentxs::Contract& contract,
-        const opentxs::PasswordPrompt& reason) const = 0;
-    virtual OTPaymentCode PaymentCode(
-        const std::string& base58) const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual OTPaymentCode PaymentCode(
-        const proto::PaymentCode& serialized) const noexcept = 0;
-    virtual OTPaymentCode PaymentCode(
-        const ReadView& serialized) const noexcept = 0;
+        const opentxs::PasswordPrompt& reason) const
+        -> std::unique_ptr<OTPayment> = 0;
+    virtual auto PaymentCode(const std::string& base58) const noexcept
+        -> OTPaymentCode = 0;
+    OPENTXS_NO_EXPORT virtual auto PaymentCode(
+        const proto::PaymentCode& serialized) const noexcept
+        -> OTPaymentCode = 0;
+    virtual auto PaymentCode(const ReadView& serialized) const noexcept
+        -> OTPaymentCode = 0;
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    virtual OTPaymentCode PaymentCode(
+    virtual auto PaymentCode(
         const std::string& seed,
         const Bip32Index nym,
         const std::uint8_t version,
         const opentxs::PasswordPrompt& reason,
         const bool bitmessage = false,
         const std::uint8_t bitmessageVersion = 0,
-        const std::uint8_t bitmessageStream = 0) const noexcept = 0;
+        const std::uint8_t bitmessageStream = 0) const noexcept
+        -> OTPaymentCode = 0;
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    virtual std::unique_ptr<OTPaymentPlan> PaymentPlan() const = 0;
-    virtual std::unique_ptr<OTPaymentPlan> PaymentPlan(
+    virtual auto PaymentPlan() const -> std::unique_ptr<OTPaymentPlan> = 0;
+    virtual auto PaymentPlan(
         const identifier::Server& NOTARY_ID,
-        const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID) const = 0;
-    virtual std::unique_ptr<OTPaymentPlan> PaymentPlan(
+        const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID) const
+        -> std::unique_ptr<OTPaymentPlan> = 0;
+    virtual auto PaymentPlan(
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const opentxs::Identifier& SENDER_ACCT_ID,
         const identifier::Nym& SENDER_NYM_ID,
         const opentxs::Identifier& RECIPIENT_ACCT_ID,
-        const identifier::Nym& RECIPIENT_NYM_ID) const = 0;
-    virtual std::unique_ptr<opentxs::PeerObject> PeerObject(
-        const Nym_p& senderNym,
-        const std::string& message) const = 0;
-    virtual std::unique_ptr<opentxs::PeerObject> PeerObject(
+        const identifier::Nym& RECIPIENT_NYM_ID) const
+        -> std::unique_ptr<OTPaymentPlan> = 0;
+    virtual auto PeerObject(const Nym_p& senderNym, const std::string& message)
+        const -> std::unique_ptr<opentxs::PeerObject> = 0;
+    virtual auto PeerObject(
         const Nym_p& senderNym,
         const std::string& payment,
-        const bool isPayment) const = 0;
+        const bool isPayment) const -> std::unique_ptr<opentxs::PeerObject> = 0;
 #if OT_CASH
-    virtual std::unique_ptr<opentxs::PeerObject> PeerObject(
+    virtual auto PeerObject(
         const Nym_p& senderNym,
-        const std::shared_ptr<blind::Purse> purse) const = 0;
+        const std::shared_ptr<blind::Purse> purse) const
+        -> std::unique_ptr<opentxs::PeerObject> = 0;
 #endif
-    virtual std::unique_ptr<opentxs::PeerObject> PeerObject(
+    virtual auto PeerObject(
         const OTPeerRequest request,
         const OTPeerReply reply,
-        const VersionNumber version) const = 0;
-    virtual std::unique_ptr<opentxs::PeerObject> PeerObject(
+        const VersionNumber version) const
+        -> std::unique_ptr<opentxs::PeerObject> = 0;
+    virtual auto PeerObject(
         const OTPeerRequest request,
-        const VersionNumber version) const = 0;
-    OPENTXS_NO_EXPORT virtual std::unique_ptr<opentxs::PeerObject> PeerObject(
+        const VersionNumber version) const
+        -> std::unique_ptr<opentxs::PeerObject> = 0;
+    OPENTXS_NO_EXPORT virtual auto PeerObject(
         const Nym_p& signerNym,
-        const proto::PeerObject& serialized) const = 0;
-    virtual std::unique_ptr<opentxs::PeerObject> PeerObject(
+        const proto::PeerObject& serialized) const
+        -> std::unique_ptr<opentxs::PeerObject> = 0;
+    virtual auto PeerObject(
         const Nym_p& recipientNym,
         const opentxs::Armored& encrypted,
-        const opentxs::PasswordPrompt& reason) const = 0;
-    virtual OTPeerReply PeerReply() const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual OTPeerReply PeerReply(
+        const opentxs::PasswordPrompt& reason) const
+        -> std::unique_ptr<opentxs::PeerObject> = 0;
+    virtual auto PeerReply() const noexcept -> OTPeerReply = 0;
+    OPENTXS_NO_EXPORT virtual auto PeerReply(
         const Nym_p& nym,
-        const proto::PeerReply& serialized) const noexcept(false) = 0;
-    virtual OTPeerReply PeerReply(const Nym_p& nym, const ReadView& view) const
-        noexcept(false) = 0;
-    virtual OTPeerRequest PeerRequest() const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual OTPeerRequest PeerRequest(
+        const proto::PeerReply& serialized) const noexcept(false)
+        -> OTPeerReply = 0;
+    virtual auto PeerReply(const Nym_p& nym, const ReadView& view) const
+        noexcept(false) -> OTPeerReply = 0;
+    virtual auto PeerRequest() const noexcept -> OTPeerRequest = 0;
+    OPENTXS_NO_EXPORT virtual auto PeerRequest(
         const Nym_p& nym,
-        const proto::PeerRequest& serialized) const noexcept(false) = 0;
-    virtual OTPeerRequest PeerRequest(const Nym_p& nym, const ReadView& view)
-        const noexcept(false) = 0;
-    virtual OTZMQPipeline Pipeline(
-        std::function<void(opentxs::network::zeromq::Message&)> callback)
-        const = 0;
+        const proto::PeerRequest& serialized) const noexcept(false)
+        -> OTPeerRequest = 0;
+    virtual auto PeerRequest(const Nym_p& nym, const ReadView& view) const
+        noexcept(false) -> OTPeerRequest = 0;
+    virtual auto Pipeline(
+        std::function<void(opentxs::network::zeromq::Message&)> callback) const
+        -> OTZMQPipeline = 0;
 #if OT_CASH
-    virtual std::unique_ptr<blind::Purse> Purse(
+    virtual auto Purse(
         const otx::context::Server& context,
         const identifier::UnitDefinition& unit,
         const blind::Mint& mint,
         const Amount totalValue,
         const opentxs::PasswordPrompt& reason,
-        const blind::CashType type = blind::CashType::Lucre) const = 0;
-    OPENTXS_NO_EXPORT virtual std::unique_ptr<blind::Purse> Purse(
-        const proto::Purse& serialized) const = 0;
-    virtual std::unique_ptr<blind::Purse> Purse(
+        const blind::CashType type = blind::CashType::Lucre) const
+        -> std::unique_ptr<blind::Purse> = 0;
+    OPENTXS_NO_EXPORT virtual auto Purse(const proto::Purse& serialized) const
+        -> std::unique_ptr<blind::Purse> = 0;
+    virtual auto Purse(
         const identity::Nym& owner,
         const identifier::Server& server,
         const identifier::UnitDefinition& unit,
         const opentxs::PasswordPrompt& reason,
-        const blind::CashType type = blind::CashType::Lucre) const = 0;
+        const blind::CashType type = blind::CashType::Lucre) const
+        -> std::unique_ptr<blind::Purse> = 0;
 #endif  // OT_CASH
-    virtual OTReplyAcknowledgement ReplyAcknowledgement(
+    virtual auto ReplyAcknowledgement(
         const Nym_p& nym,
         const identifier::Nym& initiator,
         const opentxs::Identifier& request,
         const identifier::Server& server,
         const contract::peer::PeerRequestType type,
         const bool& ack,
-        const opentxs::PasswordPrompt& reason) const noexcept(false) = 0;
-    OPENTXS_NO_EXPORT virtual OTReplyAcknowledgement ReplyAcknowledgement(
+        const opentxs::PasswordPrompt& reason) const noexcept(false)
+        -> OTReplyAcknowledgement = 0;
+    OPENTXS_NO_EXPORT virtual auto ReplyAcknowledgement(
         const Nym_p& nym,
-        const proto::PeerReply& serialized) const noexcept(false) = 0;
-    virtual std::unique_ptr<OTScriptable> Scriptable(
-        const String& strCronItem) const = 0;
-    virtual OTSecurityContract SecurityContract(
+        const proto::PeerReply& serialized) const noexcept(false)
+        -> OTReplyAcknowledgement = 0;
+    virtual auto Scriptable(const String& strCronItem) const
+        -> std::unique_ptr<OTScriptable> = 0;
+    virtual auto SecurityContract(
         const Nym_p& nym,
         const std::string& shortname,
         const std::string& name,
@@ -610,40 +664,43 @@ public:
         const std::string& terms,
         const contact::ContactItemType unitOfAccount,
         const VersionNumber version,
-        const opentxs::PasswordPrompt& reason) const noexcept(false) = 0;
-    OPENTXS_NO_EXPORT virtual OTSecurityContract SecurityContract(
+        const opentxs::PasswordPrompt& reason) const noexcept(false)
+        -> OTSecurityContract = 0;
+    OPENTXS_NO_EXPORT virtual auto SecurityContract(
         const Nym_p& nym,
-        const proto::UnitDefinition serialized) const noexcept(false) = 0;
-    virtual OTServerContract ServerContract() const noexcept(false) = 0;
-    virtual OTServerID ServerID() const = 0;
-    virtual OTServerID ServerID(const std::string& serialized) const = 0;
-    virtual OTServerID ServerID(const opentxs::String& serialized) const = 0;
-    virtual std::unique_ptr<OTSignedFile> SignedFile() const = 0;
-    virtual std::unique_ptr<OTSignedFile> SignedFile(
-        const String& LOCAL_SUBDIR,
-        const String& FILE_NAME) const = 0;
-    virtual std::unique_ptr<OTSignedFile> SignedFile(
-        const char* LOCAL_SUBDIR,
-        const String& FILE_NAME) const = 0;
-    virtual std::unique_ptr<OTSignedFile> SignedFile(
-        const char* LOCAL_SUBDIR,
-        const char* FILE_NAME) const = 0;
-    virtual std::unique_ptr<OTSmartContract> SmartContract() const = 0;
-    virtual std::unique_ptr<OTSmartContract> SmartContract(
-        const identifier::Server& NOTARY_ID) const = 0;
-    virtual OTStoreSecret StoreSecret(
+        const proto::UnitDefinition serialized) const noexcept(false)
+        -> OTSecurityContract = 0;
+    virtual auto ServerContract() const noexcept(false) -> OTServerContract = 0;
+    virtual auto ServerID() const -> OTServerID = 0;
+    virtual auto ServerID(const std::string& serialized) const
+        -> OTServerID = 0;
+    virtual auto ServerID(const opentxs::String& serialized) const
+        -> OTServerID = 0;
+    virtual auto SignedFile() const -> std::unique_ptr<OTSignedFile> = 0;
+    virtual auto SignedFile(const String& LOCAL_SUBDIR, const String& FILE_NAME)
+        const -> std::unique_ptr<OTSignedFile> = 0;
+    virtual auto SignedFile(const char* LOCAL_SUBDIR, const String& FILE_NAME)
+        const -> std::unique_ptr<OTSignedFile> = 0;
+    virtual auto SignedFile(const char* LOCAL_SUBDIR, const char* FILE_NAME)
+        const -> std::unique_ptr<OTSignedFile> = 0;
+    virtual auto SmartContract() const -> std::unique_ptr<OTSmartContract> = 0;
+    virtual auto SmartContract(const identifier::Server& NOTARY_ID) const
+        -> std::unique_ptr<OTSmartContract> = 0;
+    virtual auto StoreSecret(
         const Nym_p& nym,
         const identifier::Nym& recipientID,
         const contract::peer::SecretType type,
         const std::string& primary,
         const std::string& secondary,
         const identifier::Server& server,
-        const opentxs::PasswordPrompt& reason) const noexcept(false) = 0;
-    OPENTXS_NO_EXPORT virtual OTStoreSecret StoreSecret(
+        const opentxs::PasswordPrompt& reason) const noexcept(false)
+        -> OTStoreSecret = 0;
+    OPENTXS_NO_EXPORT virtual auto StoreSecret(
         const Nym_p& nym,
-        const proto::PeerRequest& serialized) const noexcept(false) = 0;
+        const proto::PeerRequest& serialized) const noexcept(false)
+        -> OTStoreSecret = 0;
     /** Generate a blank, invalid key */
-    virtual OTSymmetricKey SymmetricKey() const = 0;
+    virtual auto SymmetricKey() const -> OTSymmetricKey = 0;
     /** Derive a new, random symmetric key
      *
      *  \param[in] engine A reference to the crypto library to be bound to the
@@ -652,20 +709,21 @@ public:
      *  \param[in] mode The symmetric algorithm for which to generate an
      *                  appropriate key
      */
-    virtual OTSymmetricKey SymmetricKey(
+    virtual auto SymmetricKey(
         const opentxs::crypto::SymmetricProvider& engine,
         const opentxs::PasswordPrompt& password,
         const opentxs::crypto::key::symmetric::Algorithm mode =
-            opentxs::crypto::key::symmetric::Algorithm::Error) const = 0;
+            opentxs::crypto::key::symmetric::Algorithm::Error) const
+        -> OTSymmetricKey = 0;
     /** Instantiate a symmetric key from serialized form
      *
      *  \param[in] engine A reference to the crypto library to be bound to the
      *                    instance
      *  \param[in] serialized The symmetric key in protobuf form
      */
-    OPENTXS_NO_EXPORT virtual OTSymmetricKey SymmetricKey(
+    OPENTXS_NO_EXPORT virtual auto SymmetricKey(
         const opentxs::crypto::SymmetricProvider& engine,
-        const proto::SymmetricKey serialized) const = 0;
+        const proto::SymmetricKey serialized) const -> OTSymmetricKey = 0;
     /** Derive a symmetric key from a seed
      *
      *  \param[in] seed A binary or text seed to be expanded into a secret key
@@ -678,14 +736,15 @@ public:
      *                        key
      *  \param[in] type       The KDF to be used for the derivation process
      */
-    virtual OTSymmetricKey SymmetricKey(
+    virtual auto SymmetricKey(
         const opentxs::crypto::SymmetricProvider& engine,
         const opentxs::Secret& seed,
         const std::uint64_t operations,
         const std::uint64_t difficulty,
         const std::size_t size,
-        const opentxs::crypto::key::symmetric::Source type) const = 0;
-    virtual OTSymmetricKey SymmetricKey(
+        const opentxs::crypto::key::symmetric::Source type) const
+        -> OTSymmetricKey = 0;
+    virtual auto SymmetricKey(
         const opentxs::crypto::SymmetricProvider& engine,
         const opentxs::Secret& seed,
         const ReadView salt,
@@ -693,44 +752,48 @@ public:
         const std::uint64_t difficulty,
         const std::uint64_t parallel,
         const std::size_t size,
-        const opentxs::crypto::key::symmetric::Source type) const = 0;
+        const opentxs::crypto::key::symmetric::Source type) const
+        -> OTSymmetricKey = 0;
     /** Construct a symmetric key from an existing Secret
      *
      *  \param[in] engine A reference to the crypto library to be bound to the
      *                    instance
      *  \param[in] raw An existing, unencrypted binary or text secret
      */
-    virtual OTSymmetricKey SymmetricKey(
+    virtual auto SymmetricKey(
         const opentxs::crypto::SymmetricProvider& engine,
         const opentxs::Secret& raw,
-        const opentxs::PasswordPrompt& reason) const = 0;
-    virtual std::unique_ptr<OTTrade> Trade() const = 0;
-    virtual std::unique_ptr<OTTrade> Trade(
+        const opentxs::PasswordPrompt& reason) const -> OTSymmetricKey = 0;
+    virtual auto Trade() const -> std::unique_ptr<OTTrade> = 0;
+    virtual auto Trade(
         const identifier::Server& notaryID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const opentxs::Identifier& assetAcctId,
         const identifier::Nym& nymID,
         const identifier::UnitDefinition& currencyId,
-        const opentxs::Identifier& currencyAcctId) const = 0;
-    virtual std::unique_ptr<OTTransactionType> Transaction(
-        const String& strCronItem) const = 0;
-    virtual std::unique_ptr<OTTransaction> Transaction(
-        const opentxs::Ledger& theOwner) const = 0;
-    virtual std::unique_ptr<OTTransaction> Transaction(
+        const opentxs::Identifier& currencyAcctId) const
+        -> std::unique_ptr<OTTrade> = 0;
+    virtual auto Transaction(const String& strCronItem) const
+        -> std::unique_ptr<OTTransactionType> = 0;
+    virtual auto Transaction(const opentxs::Ledger& theOwner) const
+        -> std::unique_ptr<OTTransaction> = 0;
+    virtual auto Transaction(
         const identifier::Nym& theNymID,
         const opentxs::Identifier& theAccountID,
         const identifier::Server& theNotaryID,
-        originType theOriginType = originType::not_applicable) const = 0;
-    virtual std::unique_ptr<OTTransaction> Transaction(
+        originType theOriginType = originType::not_applicable) const
+        -> std::unique_ptr<OTTransaction> = 0;
+    virtual auto Transaction(
         const identifier::Nym& theNymID,
         const opentxs::Identifier& theAccountID,
         const identifier::Server& theNotaryID,
         std::int64_t lTransactionNum,
-        originType theOriginType = originType::not_applicable) const = 0;
+        originType theOriginType = originType::not_applicable) const
+        -> std::unique_ptr<OTTransaction> = 0;
     // THIS factory only used when loading an abbreviated box receipt (inbox,
     // nymbox, or outbox receipt). The full receipt is loaded only after the
     // abbreviated ones are loaded, and verified against them.
-    virtual std::unique_ptr<OTTransaction> Transaction(
+    virtual auto Transaction(
         const identifier::Nym& theNymID,
         const opentxs::Identifier& theAccountID,
         const identifier::Server& theNotaryID,
@@ -747,26 +810,31 @@ public:
         const std::int64_t& lClosingNum,
         const std::int64_t& lRequestNum,
         bool bReplyTransSuccess,
-        NumList* pNumList = nullptr) const = 0;
-    virtual std::unique_ptr<OTTransaction> Transaction(
+        NumList* pNumList = nullptr) const
+        -> std::unique_ptr<OTTransaction> = 0;
+    virtual auto Transaction(
         const identifier::Nym& theNymID,
         const opentxs::Identifier& theAccountID,
         const identifier::Server& theNotaryID,
         transactionType theType,
         originType theOriginType = originType::not_applicable,
-        std::int64_t lTransactionNum = 0) const = 0;
-    virtual std::unique_ptr<OTTransaction> Transaction(
+        std::int64_t lTransactionNum = 0) const
+        -> std::unique_ptr<OTTransaction> = 0;
+    virtual auto Transaction(
         const opentxs::Ledger& theOwner,
         transactionType theType,
         originType theOriginType = originType::not_applicable,
-        std::int64_t lTransactionNum = 0) const = 0;
-    virtual OTUnitID UnitID() const = 0;
-    virtual OTUnitID UnitID(const std::string& serialized) const = 0;
-    virtual OTUnitID UnitID(const opentxs::String& serialized) const = 0;
-    virtual OTUnitDefinition UnitDefinition() const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual OTUnitDefinition UnitDefinition(
+        std::int64_t lTransactionNum = 0) const
+        -> std::unique_ptr<OTTransaction> = 0;
+    virtual auto UnitID() const -> OTUnitID = 0;
+    virtual auto UnitID(const std::string& serialized) const -> OTUnitID = 0;
+    virtual auto UnitID(const opentxs::String& serialized) const
+        -> OTUnitID = 0;
+    virtual auto UnitDefinition() const noexcept -> OTUnitDefinition = 0;
+    OPENTXS_NO_EXPORT virtual auto UnitDefinition(
         const Nym_p& nym,
-        const proto::UnitDefinition serialized) const noexcept(false) = 0;
+        const proto::UnitDefinition serialized) const noexcept(false)
+        -> OTUnitDefinition = 0;
 
     OPENTXS_NO_EXPORT ~Factory() override = default;
 
@@ -776,8 +844,8 @@ protected:
 private:
     Factory(const Factory&) = delete;
     Factory(Factory&&) = delete;
-    Factory& operator=(const Factory&) = delete;
-    Factory& operator=(Factory&&) = delete;
+    auto operator=(const Factory&) -> Factory& = delete;
+    auto operator=(Factory&&) -> Factory& = delete;
 };
 }  // namespace api
 }  // namespace opentxs

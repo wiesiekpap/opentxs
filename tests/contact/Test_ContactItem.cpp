@@ -9,7 +9,6 @@
 #include <string>
 
 #include "1_Internal.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/contact/Contact.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
@@ -33,7 +32,7 @@ public:
     Test_ContactItem()
         : api_(ot::Context().StartClient(0))
         , contactItem_(
-              dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+              dynamic_cast<const ot::api::client::Manager&>(api_),
               std::string("testNym"),
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
@@ -54,7 +53,7 @@ public:
 TEST_F(Test_ContactItem, first_constructor)
 {
     const ot::ContactItem contactItem1(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("testContactItemNym"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -68,7 +67,7 @@ TEST_F(Test_ContactItem, first_constructor)
 
     const ot::OTIdentifier identifier(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "testContactItemNym",
             ot::contact::ContactSectionName::Identifier,
             ot::contact::ContactItemType::Employee,
@@ -93,7 +92,7 @@ TEST_F(Test_ContactItem, first_constructor)
 TEST_F(Test_ContactItem, first_constructor_different_versions)
 {
     const ot::ContactItem contactItem1(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("testContactItemNym"),
         CONTACT_CONTACT_DATA_VERSION - 1,  // previous version
         CONTACT_CONTACT_DATA_VERSION,
@@ -110,7 +109,7 @@ TEST_F(Test_ContactItem, first_constructor_different_versions)
 TEST_F(Test_ContactItem, second_constructor)
 {
     const ot::ContactItem contactItem1(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("testContactItemNym"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -128,7 +127,7 @@ TEST_F(Test_ContactItem, second_constructor)
 
     const ot::OTIdentifier identifier(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "testContactItemNym",
             ot::contact::ContactSectionName::Identifier,
             ot::contact::ContactItemType::Employee,
@@ -175,7 +174,7 @@ TEST_F(Test_ContactItem, operator_equal_true)
 TEST_F(Test_ContactItem, operator_equal_false)
 {
     ot::ContactItem contactItem2(
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         std::string("testNym2"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -196,7 +195,7 @@ TEST_F(Test_ContactItem, public_accessors)
 {
     const ot::OTIdentifier identifier(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+            dynamic_cast<const ot::api::client::Manager&>(api_),
             "testNym",
             ot::contact::ContactSectionName::Identifier,
             ot::contact::ContactItemType::Employee,
@@ -271,7 +270,7 @@ TEST_F(Test_ContactItem, Serialize)
     EXPECT_TRUE(contactItem_.Serialize(ot::writer(bytes), false));
 
     auto restored1 = ot::ContactItem{
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         "testNym",
         contactItem_.Version(),
         contactItem_.Section(),
@@ -287,7 +286,7 @@ TEST_F(Test_ContactItem, Serialize)
     EXPECT_TRUE(contactItem_.Serialize(ot::writer(bytes), true));
 
     auto restored2 = ot::ContactItem{
-        dynamic_cast<const ot::api::client::internal::Manager&>(api_),
+        dynamic_cast<const ot::api::client::Manager&>(api_),
         "testNym",
         contactItem_.Version(),
         contactItem_.Section(),

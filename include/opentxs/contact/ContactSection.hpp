@@ -24,10 +24,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace proto
@@ -50,50 +47,51 @@ public:
         std::map<contact::ContactItemType, std::shared_ptr<ContactGroup>>;
 
     ContactSection(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
         const contact::ContactSectionName section,
         const GroupMap& groups);
     ContactSection(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
         const contact::ContactSectionName section,
         const std::shared_ptr<ContactItem>& item);
     OPENTXS_NO_EXPORT ContactSection(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& nym,
         const VersionNumber parentVersion,
         const proto::ContactSection& serialized);
     ContactSection(
-        const api::internal::Core& api,
+        const api::Core& api,
         const std::string& nym,
         const VersionNumber parentVersion,
         const ReadView& serialized);
     ContactSection(const ContactSection&) noexcept;
     ContactSection(ContactSection&&) noexcept;
 
-    ContactSection operator+(const ContactSection& rhs) const;
+    auto operator+(const ContactSection& rhs) const -> ContactSection;
 
-    ContactSection AddItem(const std::shared_ptr<ContactItem>& item) const;
-    GroupMap::const_iterator begin() const;
-    std::shared_ptr<ContactItem> Claim(const Identifier& item) const;
-    ContactSection Delete(const Identifier& id) const;
-    GroupMap::const_iterator end() const;
-    std::shared_ptr<ContactGroup> Group(
-        const contact::ContactItemType& type) const;
-    bool HaveClaim(const Identifier& item) const;
-    bool Serialize(AllocateOutput destination, const bool withIDs = false)
-        const;
-    OPENTXS_NO_EXPORT bool SerializeTo(
+    auto AddItem(const std::shared_ptr<ContactItem>& item) const
+        -> ContactSection;
+    auto begin() const -> GroupMap::const_iterator;
+    auto Claim(const Identifier& item) const -> std::shared_ptr<ContactItem>;
+    auto Delete(const Identifier& id) const -> ContactSection;
+    auto end() const -> GroupMap::const_iterator;
+    auto Group(const contact::ContactItemType& type) const
+        -> std::shared_ptr<ContactGroup>;
+    auto HaveClaim(const Identifier& item) const -> bool;
+    auto Serialize(AllocateOutput destination, const bool withIDs = false) const
+        -> bool;
+    OPENTXS_NO_EXPORT auto SerializeTo(
         proto::ContactData& data,
-        const bool withIDs = false) const;
-    std::size_t Size() const;
-    const contact::ContactSectionName& Type() const;
-    VersionNumber Version() const;
+        const bool withIDs = false) const -> bool;
+    auto Size() const -> std::size_t;
+    auto Type() const -> const contact::ContactSectionName&;
+    auto Version() const -> VersionNumber;
 
     ~ContactSection();
 
@@ -103,8 +101,8 @@ private:
     std::unique_ptr<Imp> imp_;
 
     ContactSection() = delete;
-    ContactSection& operator=(const ContactSection&) = delete;
-    ContactSection& operator=(ContactSection&&) = delete;
+    auto operator=(const ContactSection&) -> ContactSection& = delete;
+    auto operator=(ContactSection&&) -> ContactSection& = delete;
 };
 }  // namespace opentxs
 #endif

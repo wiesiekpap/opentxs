@@ -32,10 +32,7 @@ namespace implementation
 class Factory;
 }  // namespace implementation
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identity
@@ -62,9 +59,8 @@ namespace opentxs
 class OTMessageStrategy
 {
 public:
-    virtual std::int32_t processXml(
-        Message& message,
-        irr::io::IrrXMLReader*& xml) = 0;
+    virtual auto processXml(Message& message, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t = 0;
     virtual void writeXml(Message& message, Tag& parent) = 0;
     virtual ~OTMessageStrategy();
 
@@ -74,7 +70,7 @@ public:
 class OTMessageStrategyManager
 {
 public:
-    OTMessageStrategy* findStrategy(std::string name)
+    auto findStrategy(std::string name) -> OTMessageStrategy*
     {
         auto strategy = mapping.find(name);
         if (strategy == mapping.end()) return nullptr;
@@ -97,7 +93,7 @@ private:
 class OPENTXS_EXPORT Message final : public Contract
 {
 protected:
-    std::int32_t ProcessXMLNode(irr::io::IrrXMLReader*& xml) final;
+    auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t final;
 
     void UpdateContents(const PasswordPrompt& reason) final;
 
@@ -113,44 +109,42 @@ private:
     static const ReverseTypeMap message_types_;
     static const std::map<MessageType, MessageType> reply_message_;
 
-    static ReverseTypeMap make_reverse_map();
-    static MessageType reply_command(const MessageType& type);
+    static auto make_reverse_map() -> ReverseTypeMap;
+    static auto reply_command(const MessageType& type) -> MessageType;
 
-    Message(const api::internal::Core& api);
+    Message(const api::Core& api);
 
-    bool updateContentsByType(Tag& parent);
+    auto updateContentsByType(Tag& parent) -> bool;
 
-    std::int32_t processXmlNodeAckReplies(
+    auto processXmlNodeAckReplies(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t;
+    auto processXmlNodeAcknowledgedReplies(
         Message& m,
-        irr::io::IrrXMLReader*& xml);
-    std::int32_t processXmlNodeAcknowledgedReplies(
-        Message& m,
-        irr::io::IrrXMLReader*& xml);
-    std::int32_t processXmlNodeNotaryMessage(
-        Message& m,
-        irr::io::IrrXMLReader*& xml);
+        irr::io::IrrXMLReader*& xml) -> std::int32_t;
+    auto processXmlNodeNotaryMessage(Message& m, irr::io::IrrXMLReader*& xml)
+        -> std::int32_t;
 
 public:
-    static std::string Command(const MessageType type);
-    static MessageType Type(const std::string& type);
-    static std::string ReplyCommand(const MessageType type);
+    static auto Command(const MessageType type) -> std::string;
+    static auto Type(const std::string& type) -> MessageType;
+    static auto ReplyCommand(const MessageType type) -> std::string;
 
     ~Message() final;
 
-    bool VerifyContractID() const final;
+    auto VerifyContractID() const -> bool final;
 
-    bool SignContract(const identity::Nym& theNym, const PasswordPrompt& reason)
-        final;
-    bool VerifySignature(const identity::Nym& theNym) const final;
+    auto SignContract(const identity::Nym& theNym, const PasswordPrompt& reason)
+        -> bool final;
+    auto VerifySignature(const identity::Nym& theNym) const -> bool final;
 
-    bool HarvestTransactionNumbers(
+    auto HarvestTransactionNumbers(
         otx::context::Server& context,
-        bool bHarvestingForRetry,            // false until positively asserted.
-        bool bReplyWasSuccess,               // false until positively asserted.
-        bool bReplyWasFailure,               // false until positively asserted.
-        bool bTransactionWasSuccess,         // false until positively asserted.
-        bool bTransactionWasFailure) const;  // false until positively
-                                             // asserted.
+        bool bHarvestingForRetry,     // false until positively asserted.
+        bool bReplyWasSuccess,        // false until positively asserted.
+        bool bReplyWasFailure,        // false until positively asserted.
+        bool bTransactionWasSuccess,  // false until positively asserted.
+        bool bTransactionWasFailure) const -> bool;  // false until positively
+                                                     // asserted.
 
     // So the message can get the list of numbers from the Nym, before sending,
     // that should be listed as acknowledged that the server reply has already

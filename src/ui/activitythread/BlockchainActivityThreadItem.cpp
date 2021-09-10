@@ -10,9 +10,9 @@
 #include <memory>
 #include <utility>
 
-#include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -26,7 +26,7 @@ namespace opentxs::factory
 {
 auto BlockchainActivityThreadItem(
     const ui::implementation::ActivityThreadInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const ui::implementation::ActivityThreadRowID& rowID,
     const ui::implementation::ActivityThreadSortKey& sortKey,
@@ -56,7 +56,7 @@ namespace opentxs::ui::implementation
 {
 BlockchainActivityThreadItem::BlockchainActivityThreadItem(
     const ActivityThreadInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     const ActivityThreadRowID& rowID,
     const ActivityThreadSortKey& sortKey,
@@ -91,7 +91,7 @@ auto BlockchainActivityThreadItem::DisplayAmount() const noexcept -> std::string
 }
 
 auto BlockchainActivityThreadItem::extract(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const identifier::Nym& nymID,
     CustomData& custom) noexcept
     -> std::tuple<OTData, opentxs::Amount, std::string, std::string>

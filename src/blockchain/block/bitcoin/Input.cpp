@@ -73,7 +73,7 @@ auto BitcoinTransactionInput(
         BitcoinTransactionOutput(api, blockchain, chain, spends.second);
 
     if (false == bool(pPrevOut)) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Failed to instantiate previous output")
             .Flush();
 
@@ -84,7 +84,7 @@ auto BitcoinTransactionInput(
     const auto& outputKeys = prevOut.Keys();
 
     if (0 == outputKeys.size()) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": No keys associated with previous output")
             .Flush();
 
@@ -121,8 +121,7 @@ auto BitcoinTransactionInput(
             }
         } break;
         default: {
-            LogOutput("opentxs::factory::")(__FUNCTION__)(
-                ": Unhandled script type")
+            LogOutput("opentxs::factory::")(__func__)(": Unhandled script type")
                 .Flush();
 
             return {};
@@ -194,7 +193,7 @@ auto BitcoinTransactionInput(
                 outpoint.size() + cs.Total() + sequence.size());
         }
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -280,7 +279,7 @@ auto BitcoinTransactionInput(
                 std::move(spends));
         }
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -542,7 +541,7 @@ auto Input::AssociatePreviousOutput(
     const proto::BlockchainTransactionOutput& in) noexcept -> bool
 {
     if (previous_.Index() != in.index()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Wrong previous output").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Wrong previous output").Flush();
 
         return false;
     }
@@ -685,8 +684,7 @@ auto Input::ExtractElements(const filter::Type style) const noexcept
     switch (style) {
         case filter::Type::ES: {
 
-            LogTrace(OT_METHOD)(__FUNCTION__)(": processing input script")
-                .Flush();
+            LogTrace(OT_METHOD)(__func__)(": processing input script").Flush();
             output = script_->ExtractElements(style);
 
             for (const auto& data : witness_) {
@@ -720,8 +718,7 @@ auto Input::ExtractElements(const filter::Type style) const noexcept
                         std::make_move_iterator(temp.begin()),
                         std::make_move_iterator(temp.end()));
                 } else if (Redeem::MaybeP2WSH != type) {
-                    LogOutput(OT_METHOD)(__FUNCTION__)(
-                        ": Invalid redeem script")
+                    LogOutput(OT_METHOD)(__func__)(": Invalid redeem script")
                         .Flush();
                 }
             }
@@ -729,19 +726,18 @@ auto Input::ExtractElements(const filter::Type style) const noexcept
             [[fallthrough]];
         }
         case filter::Type::Basic_BCHVariant: {
-            LogTrace(OT_METHOD)(__FUNCTION__)(": processing consumed outpoint")
+            LogTrace(OT_METHOD)(__func__)(": processing consumed outpoint")
                 .Flush();
             auto it = reinterpret_cast<const std::byte*>(&previous_);
             output.emplace_back(it, it + sizeof(previous_));
         } break;
         case filter::Type::Basic_BIP158:
         default: {
-            LogTrace(OT_METHOD)(__FUNCTION__)(": skipping input").Flush();
+            LogTrace(OT_METHOD)(__func__)(": skipping input").Flush();
         }
     }
 
-    LogTrace(OT_METHOD)(__FUNCTION__)(
-        ": extracted ")(output.size())(" elements")
+    LogTrace(OT_METHOD)(__func__)(": extracted ")(output.size())(" elements")
         .Flush();
     std::sort(output.begin(), output.end());
 
@@ -767,8 +763,8 @@ auto Input::FindMatches(
         cache_.add({account->str(), subchain, index});
     }
 
-    LogTrace(OT_METHOD)(__FUNCTION__)(
-        ": Verified ")(inputs.size())(" outpoint matches")
+    LogTrace(OT_METHOD)(__func__)(": Verified ")(inputs.size())(
+        " outpoint matches")
         .Flush();
 
     return matches;
@@ -785,8 +781,8 @@ auto Input::index_elements(const api::client::Blockchain& blockchain) noexcept
     auto& hashes =
         const_cast<boost::container::flat_set<PatternID>&>(pubkey_hashes_);
     const auto patterns = script_->ExtractPatterns(api_, blockchain);
-    LogTrace(OT_METHOD)(__FUNCTION__)(
-        ": ")(patterns.size())(" pubkey hashes found:")
+    LogTrace(OT_METHOD)(__func__)(": ")(patterns.size())(
+        " pubkey hashes found:")
         .Flush();
     std::for_each(
         std::begin(patterns), std::end(patterns), [&](const auto& id) -> auto {
@@ -858,7 +854,7 @@ auto Input::ReplaceScript() noexcept -> bool
 
         return true;
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }
@@ -868,8 +864,7 @@ auto Input::serialize(const AllocateOutput destination, const bool normalized)
     const noexcept -> std::optional<std::size_t>
 {
     if (!destination) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output allocator")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return std::nullopt;
     }
@@ -878,7 +873,7 @@ auto Input::serialize(const AllocateOutput destination, const bool normalized)
     auto output = destination(size);
 
     if (false == output.valid(size)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to allocate output bytes")
+        LogOutput(OT_METHOD)(__func__)(": Failed to allocate output bytes")
             .Flush();
 
         return std::nullopt;
@@ -901,8 +896,7 @@ auto Input::serialize(const AllocateOutput destination, const bool normalized)
             std::memcpy(it, coinbase_.data(), coinbase_.size());
         } else {
             if (false == script_->Serialize(preallocated(cs.Value(), it))) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
-                    ": Failed to serialize script")
+                LogOutput(OT_METHOD)(__func__)(": Failed to serialize script")
                     .Flush();
 
                 return std::nullopt;

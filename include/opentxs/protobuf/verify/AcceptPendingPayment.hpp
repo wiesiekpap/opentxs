@@ -20,66 +20,37 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT bool CheckProto_1(
-    const AcceptPendingPayment& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_2(
-    const AcceptPendingPayment& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_3(
-    const AcceptPendingPayment& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_4(
-    const AcceptPendingPayment& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_5(
-    const AcceptPendingPayment& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_6(
-    const AcceptPendingPayment& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_7(
-    const AcceptPendingPayment& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_8(
-    const AcceptPendingPayment& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_9(
-    const AcceptPendingPayment& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_10(
-    const AcceptPendingPayment& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_11(
-    const AcceptPendingPayment& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_12(
-    const AcceptPendingPayment& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_13(
-    const AcceptPendingPayment& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_14(
-    const AcceptPendingPayment& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_15(
-    const AcceptPendingPayment& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_16(
-    const AcceptPendingPayment& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_17(
-    const AcceptPendingPayment& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_18(
-    const AcceptPendingPayment& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_19(
-    const AcceptPendingPayment& input,
-    const bool silent);
-OPENTXS_EXPORT bool CheckProto_20(
-    const AcceptPendingPayment& input,
-    const bool silent);
+auto CheckProto_1(const AcceptPendingPayment& input, const bool silent) -> bool;
+auto CheckProto_2(const AcceptPendingPayment& input, const bool silent) -> bool;
+auto CheckProto_3(const AcceptPendingPayment& input, const bool silent) -> bool;
+auto CheckProto_4(const AcceptPendingPayment& input, const bool silent) -> bool;
+auto CheckProto_5(const AcceptPendingPayment& input, const bool silent) -> bool;
+auto CheckProto_6(const AcceptPendingPayment& input, const bool silent) -> bool;
+auto CheckProto_7(const AcceptPendingPayment& input, const bool silent) -> bool;
+auto CheckProto_8(const AcceptPendingPayment& input, const bool silent) -> bool;
+auto CheckProto_9(const AcceptPendingPayment& input, const bool silent) -> bool;
+auto CheckProto_10(const AcceptPendingPayment& input, const bool silent)
+    -> bool;
+auto CheckProto_11(const AcceptPendingPayment& input, const bool silent)
+    -> bool;
+auto CheckProto_12(const AcceptPendingPayment& input, const bool silent)
+    -> bool;
+auto CheckProto_13(const AcceptPendingPayment& input, const bool silent)
+    -> bool;
+auto CheckProto_14(const AcceptPendingPayment& input, const bool silent)
+    -> bool;
+auto CheckProto_15(const AcceptPendingPayment& input, const bool silent)
+    -> bool;
+auto CheckProto_16(const AcceptPendingPayment& input, const bool silent)
+    -> bool;
+auto CheckProto_17(const AcceptPendingPayment& input, const bool silent)
+    -> bool;
+auto CheckProto_18(const AcceptPendingPayment& input, const bool silent)
+    -> bool;
+auto CheckProto_19(const AcceptPendingPayment& input, const bool silent)
+    -> bool;
+auto CheckProto_20(const AcceptPendingPayment& input, const bool silent)
+    -> bool;
 }  // namespace proto
 }  // namespace opentxs
 

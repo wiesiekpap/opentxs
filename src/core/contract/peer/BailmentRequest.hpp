@@ -16,10 +16,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace identifier
@@ -43,13 +40,13 @@ class Bailment final : public request::Bailment,
 {
 public:
     Bailment(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const identifier::Nym& recipientID,
         const identifier::UnitDefinition& unitID,
         const identifier::Server& serverID);
     Bailment(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Nym_p& nym,
         const proto::PeerRequest& serialized);
 

@@ -16,7 +16,6 @@
 #include <utility>
 #include <vector>
 
-#include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Shared.hpp"
 #include "opentxs/Types.hpp"
@@ -24,6 +23,7 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Issuer.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -42,7 +42,7 @@ namespace opentxs::factory
 {
 auto IssuerItem(
     const ui::implementation::AccountSummaryInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ui::implementation::AccountSummaryRowID& rowID,
     const ui::implementation::AccountSummarySortKey& sortKey,
     ui::implementation::CustomData& custom,
@@ -60,7 +60,7 @@ namespace opentxs::ui::implementation
 {
 IssuerItem::IssuerItem(
     const AccountSummaryInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const AccountSummaryRowID& rowID,
     const AccountSummarySortKey& key,
     [[maybe_unused]] CustomData& custom,

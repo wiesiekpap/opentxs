@@ -15,12 +15,12 @@
 #include <utility>
 #include <vector>
 
-#include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Contacts.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactSection.hpp"
@@ -37,7 +37,7 @@
 namespace opentxs::factory
 {
 auto ContactModel(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ui::implementation::ContactPrimaryID& contactID,
     const SimpleCallback& cb) noexcept -> std::unique_ptr<ui::internal::Contact>
 {
@@ -58,7 +58,7 @@ const std::map<contact::ContactSectionName, int> Contact::sort_keys_{
     {contact::ContactSectionName::Profile, 1}};
 
 Contact::Contact(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const Identifier& contactID,
     const SimpleCallback& cb) noexcept
     : ContactType(api, contactID, cb, false)

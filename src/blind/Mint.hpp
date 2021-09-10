@@ -24,11 +24,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
+class Core;
 class Wallet;
 }  // namespace api
 
@@ -132,13 +128,13 @@ protected:
     Time m_EXPIRATION;
     OTIdentifier m_CashAccountID;
 
-    Mint(const api::internal::Core& core);
+    Mint(const api::Core& core);
     Mint(
-        const api::internal::Core& core,
+        const api::Core& core,
         const String& strNotaryID,
         const String& strInstrumentDefinitionID);
     Mint(
-        const api::internal::Core& core,
+        const api::Core& core,
         const String& strNotaryID,
         const String& strServerNymID,
         const String& strInstrumentDefinitionID);

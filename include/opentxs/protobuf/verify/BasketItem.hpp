@@ -26,62 +26,27 @@ namespace proto
 {
 using BasketItemMap = std::map<std::string, std::uint64_t>;
 
-OPENTXS_EXPORT bool CheckProto_1(
-    const BasketItem& item,
-    const bool silent,
-    BasketItemMap& map);
-OPENTXS_EXPORT bool CheckProto_2(const BasketItem&, const bool, BasketItemMap&);
-OPENTXS_EXPORT bool CheckProto_3(const BasketItem&, const bool, BasketItemMap&);
-OPENTXS_EXPORT bool CheckProto_4(const BasketItem&, const bool, BasketItemMap&);
-OPENTXS_EXPORT bool CheckProto_5(const BasketItem&, const bool, BasketItemMap&);
-OPENTXS_EXPORT bool CheckProto_6(const BasketItem&, const bool, BasketItemMap&);
-OPENTXS_EXPORT bool CheckProto_7(const BasketItem&, const bool, BasketItemMap&);
-OPENTXS_EXPORT bool CheckProto_8(const BasketItem&, const bool, BasketItemMap&);
-OPENTXS_EXPORT bool CheckProto_9(const BasketItem&, const bool, BasketItemMap&);
-OPENTXS_EXPORT bool CheckProto_10(
-    const BasketItem&,
-    const bool,
-    BasketItemMap&);
-OPENTXS_EXPORT bool CheckProto_11(
-    const BasketItem&,
-    const bool,
-    BasketItemMap&);
-OPENTXS_EXPORT bool CheckProto_12(
-    const BasketItem&,
-    const bool,
-    BasketItemMap&);
-OPENTXS_EXPORT bool CheckProto_13(
-    const BasketItem&,
-    const bool,
-    BasketItemMap&);
-OPENTXS_EXPORT bool CheckProto_14(
-    const BasketItem&,
-    const bool,
-    BasketItemMap&);
-OPENTXS_EXPORT bool CheckProto_15(
-    const BasketItem&,
-    const bool,
-    BasketItemMap&);
-OPENTXS_EXPORT bool CheckProto_16(
-    const BasketItem&,
-    const bool,
-    BasketItemMap&);
-OPENTXS_EXPORT bool CheckProto_17(
-    const BasketItem&,
-    const bool,
-    BasketItemMap&);
-OPENTXS_EXPORT bool CheckProto_18(
-    const BasketItem&,
-    const bool,
-    BasketItemMap&);
-OPENTXS_EXPORT bool CheckProto_19(
-    const BasketItem&,
-    const bool,
-    BasketItemMap&);
-OPENTXS_EXPORT bool CheckProto_20(
-    const BasketItem&,
-    const bool,
-    BasketItemMap&);
+auto CheckProto_1(const BasketItem& item, const bool silent, BasketItemMap& map)
+    -> bool;
+auto CheckProto_2(const BasketItem&, const bool, BasketItemMap&) -> bool;
+auto CheckProto_3(const BasketItem&, const bool, BasketItemMap&) -> bool;
+auto CheckProto_4(const BasketItem&, const bool, BasketItemMap&) -> bool;
+auto CheckProto_5(const BasketItem&, const bool, BasketItemMap&) -> bool;
+auto CheckProto_6(const BasketItem&, const bool, BasketItemMap&) -> bool;
+auto CheckProto_7(const BasketItem&, const bool, BasketItemMap&) -> bool;
+auto CheckProto_8(const BasketItem&, const bool, BasketItemMap&) -> bool;
+auto CheckProto_9(const BasketItem&, const bool, BasketItemMap&) -> bool;
+auto CheckProto_10(const BasketItem&, const bool, BasketItemMap&) -> bool;
+auto CheckProto_11(const BasketItem&, const bool, BasketItemMap&) -> bool;
+auto CheckProto_12(const BasketItem&, const bool, BasketItemMap&) -> bool;
+auto CheckProto_13(const BasketItem&, const bool, BasketItemMap&) -> bool;
+auto CheckProto_14(const BasketItem&, const bool, BasketItemMap&) -> bool;
+auto CheckProto_15(const BasketItem&, const bool, BasketItemMap&) -> bool;
+auto CheckProto_16(const BasketItem&, const bool, BasketItemMap&) -> bool;
+auto CheckProto_17(const BasketItem&, const bool, BasketItemMap&) -> bool;
+auto CheckProto_18(const BasketItem&, const bool, BasketItemMap&) -> bool;
+auto CheckProto_19(const BasketItem&, const bool, BasketItemMap&) -> bool;
+auto CheckProto_20(const BasketItem&, const bool, BasketItemMap&) -> bool;
 }  // namespace proto
 }  // namespace opentxs
 

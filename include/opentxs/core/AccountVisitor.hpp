@@ -28,13 +28,12 @@ class AccountVisitor
 public:
     using mapOfAccounts = std::map<std::string, const Account*>;
 
-    const identifier::Server& GetNotaryID() const { return notaryID_; }
+    auto GetNotaryID() const -> const identifier::Server& { return notaryID_; }
 
-    virtual bool Trigger(
-        const Account& account,
-        const PasswordPrompt& reason) = 0;
+    virtual auto Trigger(const Account& account, const PasswordPrompt& reason)
+        -> bool = 0;
 
-    const api::Wallet& Wallet() const { return wallet_; }
+    auto Wallet() const -> const api::Wallet& { return wallet_; }
 
     virtual ~AccountVisitor() = default;
 
@@ -51,8 +50,8 @@ private:
     AccountVisitor() = delete;
     AccountVisitor(const AccountVisitor&) = delete;
     AccountVisitor(AccountVisitor&&) = delete;
-    AccountVisitor& operator=(const AccountVisitor&) = delete;
-    AccountVisitor& operator=(AccountVisitor&&) = delete;
+    auto operator=(const AccountVisitor&) -> AccountVisitor& = delete;
+    auto operator=(AccountVisitor&&) -> AccountVisitor& = delete;
 };
 }  // namespace opentxs
 #endif

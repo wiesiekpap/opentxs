@@ -25,11 +25,7 @@ namespace implementation
 class Factory;
 }  // namespace implementation
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
-
+class Core;
 class Wallet;
 }  // namespace api
 
@@ -132,17 +128,18 @@ public:
 
     // Then call one (or both) of these:
 
-    bool SetInitialPayment(
+    auto SetInitialPayment(
         const Amount lAmount,
-        const std::chrono::seconds tTimeUntilInitialPayment = {});  // default:
-                                                                    // now.
+        const std::chrono::seconds tTimeUntilInitialPayment = {})
+        -> bool;  // default:
+                  // now.
 
     // These two methods (above and below) can be called independent of each
     // other.
     //
     // Meaning: You can have an initial payment AND/OR a payment plan.
 
-    bool SetPaymentPlan(
+    auto SetPaymentPlan(
         const Amount lPaymentAmount,
         const std::chrono::seconds tTimeUntilPlanStart =
             std::chrono::hours{24 * 30},
@@ -150,7 +147,7 @@ public:
             std::chrono::hours{24 * 30},  // Default: 30
                                           // days.
         const std::chrono::seconds tPlanLength = {},
-        const std::int32_t nMaxPayments = 0);
+        const std::int32_t nMaxPayments = 0) -> bool;
 
     // VerifyAgreement()
     // This function verifies both Nyms and both signatures. Due to the
@@ -167,89 +164,97 @@ public:
     // contract can also be compared to each other, to make sure that none
     // of the vital terms, values, clauses, etc are different between the two.
     //
-    bool VerifyAgreement(
+    auto VerifyAgreement(
         const otx::context::Client& recipient,
-        const otx::context::Client& sender) const override;
-    bool CompareAgreement(const OTAgreement& rh) const override;
+        const otx::context::Client& sender) const -> bool override;
+    auto CompareAgreement(const OTAgreement& rh) const -> bool override;
 
-    bool VerifyMerchantSignature(const identity::Nym& RECIPIENT_NYM) const;
-    bool VerifyCustomerSignature(const identity::Nym& SENDER_NYM) const;
+    auto VerifyMerchantSignature(const identity::Nym& RECIPIENT_NYM) const
+        -> bool;
+    auto VerifyCustomerSignature(const identity::Nym& SENDER_NYM) const -> bool;
 
     // ************ "INITIAL PAYMENT" public GET METHODS **************
-    inline bool HasInitialPayment() const { return m_bInitialPayment; }
-    inline const Time GetInitialPaymentDate() const
+    inline auto HasInitialPayment() const -> bool { return m_bInitialPayment; }
+    inline auto GetInitialPaymentDate() const -> const Time
     {
         return m_tInitialPaymentDate;
     }
-    inline const std::int64_t& GetInitialPaymentAmount() const
+    inline auto GetInitialPaymentAmount() const -> const std::int64_t&
     {
         return m_lInitialPaymentAmount;
     }
-    inline bool IsInitialPaymentDone() const { return m_bInitialPaymentDone; }
+    inline auto IsInitialPaymentDone() const -> bool
+    {
+        return m_bInitialPaymentDone;
+    }
 
-    inline const Time GetInitialPaymentCompletedDate() const
+    inline auto GetInitialPaymentCompletedDate() const -> const Time
     {
         return m_tInitialPaymentCompletedDate;
     }
-    inline const Time GetLastFailedInitialPaymentDate() const
+    inline auto GetLastFailedInitialPaymentDate() const -> const Time
     {
         return m_tFailedInitialPaymentDate;
     }
-    inline std::int32_t GetNoInitialFailures() const
+    inline auto GetNoInitialFailures() const -> std::int32_t
     {
         return m_nNumberInitialFailures;
     }
 
     // ************ "PAYMENT PLAN" public GET METHODS ****************
-    inline bool HasPaymentPlan() const { return m_bPaymentPlan; }
-    inline const std::int64_t& GetPaymentPlanAmount() const
+    inline auto HasPaymentPlan() const -> bool { return m_bPaymentPlan; }
+    inline auto GetPaymentPlanAmount() const -> const std::int64_t&
     {
         return m_lPaymentPlanAmount;
     }
-    inline const std::chrono::seconds GetTimeBetweenPayments() const
+    inline auto GetTimeBetweenPayments() const -> const std::chrono::seconds
     {
         return m_tTimeBetweenPayments;
     }
-    inline const Time GetPaymentPlanStartDate() const
+    inline auto GetPaymentPlanStartDate() const -> const Time
     {
         return m_tPaymentPlanStartDate;
     }
-    inline const std::chrono::seconds GetPaymentPlanLength() const
+    inline auto GetPaymentPlanLength() const -> const std::chrono::seconds
     {
         return m_tPaymentPlanLength;
     }
-    inline std::int32_t GetMaximumNoPayments() const
+    inline auto GetMaximumNoPayments() const -> std::int32_t
     {
         return m_nMaximumNoPayments;
     }
 
-    inline const Time GetDateOfLastPayment() const
+    inline auto GetDateOfLastPayment() const -> const Time
     {
         return m_tDateOfLastPayment;
     }
-    inline const Time GetDateOfLastFailedPayment() const
+    inline auto GetDateOfLastFailedPayment() const -> const Time
     {
         return m_tDateOfLastFailedPayment;
     }
 
-    inline std::int32_t GetNoPaymentsDone() const { return m_nNoPaymentsDone; }
-    inline std::int32_t GetNoFailedPayments() const
+    inline auto GetNoPaymentsDone() const -> std::int32_t
+    {
+        return m_nNoPaymentsDone;
+    }
+    inline auto GetNoFailedPayments() const -> std::int32_t
     {
         return m_nNoFailedPayments;
     }
 
     // Return True if should stay on OTCron's list for more processing.
     // Return False if expired or otherwise should be removed.
-    bool ProcessCron(const PasswordPrompt& reason) override;  // OTCron calls
-                                                              // this regularly,
-                                                              // which is my
-                                                              // chance to
-                                                              // expire, etc.
+    auto ProcessCron(const PasswordPrompt& reason)
+        -> bool override;  // OTCron calls
+                           // this regularly,
+                           // which is my
+                           // chance to
+                           // expire, etc.
     void InitPaymentPlan();
     void Release() override;
     void Release_PaymentPlan();
     // return -1 if error, 0 if nothing, and 1 if the node was processed.
-    std::int32_t ProcessXMLNode(irr::io::IrrXMLReader*& xml) override;
+    auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
     void UpdateContents(const PasswordPrompt& reason)
         override;  // Before transmission or serialization,
                    // this
@@ -260,13 +265,13 @@ public:
 private:
     friend api::implementation::Factory;
 
-    OTPaymentPlan(const api::internal::Core& core);
+    OTPaymentPlan(const api::Core& core);
     OTPaymentPlan(
-        const api::internal::Core& core,
+        const api::Core& core,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID);
     OTPaymentPlan(
-        const api::internal::Core& core,
+        const api::Core& core,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const Identifier& SENDER_ACCT_ID,
@@ -287,7 +292,7 @@ protected:
 
     // Sets the bool that officially the initial payment has been done. (Checks
     // first to make sure not already done.)
-    bool SetInitialPaymentDone();
+    auto SetInitialPaymentDone() -> bool;
 
     inline void SetInitialPaymentCompletedDate(const Time tInitialPaymentDate)
     {
@@ -348,10 +353,10 @@ protected:
     inline void IncrementNoPaymentsDone() { m_nNoPaymentsDone++; }
     inline void IncrementNoFailedPayments() { m_nNoFailedPayments++; }
 
-    bool ProcessPayment(
+    auto ProcessPayment(
         const api::Wallet& wallet,
         const Amount& amount,
-        const PasswordPrompt& reason);
+        const PasswordPrompt& reason) -> bool;
     void ProcessInitialPayment(
         const api::Wallet& wallet,
         const PasswordPrompt& reason);

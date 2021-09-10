@@ -11,8 +11,8 @@
 #include <memory>
 #include <string>
 
-#include "internal/api/client/Client.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/Workflow.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -33,7 +33,7 @@ namespace opentxs::ui::implementation
 {
 ChequeBalanceItem::ChequeBalanceItem(
     const AccountActivityInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const AccountActivityRowID& rowID,
     const AccountActivitySortKey& sortKey,
     CustomData& custom,

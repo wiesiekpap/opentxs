@@ -25,47 +25,46 @@ class PaymentCode;
 namespace opentxs::blockchain::crypto::implementation
 {
 template <>
-struct Account::
-    Factory<internal::HD, proto::HDPath, HDProtocol, PasswordPrompt> {
+struct Account::Factory<crypto::HD, proto::HDPath, HDProtocol, PasswordPrompt> {
     static auto get(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Account& parent,
         Identifier& id,
         const proto::HDPath& data,
         const HDProtocol standard,
-        const PasswordPrompt& reason) noexcept -> std::unique_ptr<internal::HD>
+        const PasswordPrompt& reason) noexcept -> std::unique_ptr<crypto::HD>
     {
         return factory::BlockchainHDSubaccount(
             api, parent, data, standard, reason, id);
     }
 };
 template <>
-struct Account::Factory<internal::HD, proto::HDAccount> {
+struct Account::Factory<crypto::HD, proto::HDAccount> {
     static auto get(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Account& parent,
         Identifier& id,
-        const proto::HDAccount& data) noexcept -> std::unique_ptr<internal::HD>
+        const proto::HDAccount& data) noexcept -> std::unique_ptr<crypto::HD>
     {
         return factory::BlockchainHDSubaccount(api, parent, data, id);
     }
 };
 template <>
 struct Account::Factory<
-    internal::PaymentCode,
+    crypto::PaymentCode,
     opentxs::PaymentCode,
     opentxs::PaymentCode,
     proto::HDPath,
     PasswordPrompt> {
     static auto get(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Account& parent,
         Identifier& id,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
         const proto::HDPath& path,
         const PasswordPrompt& reason) noexcept
-        -> std::unique_ptr<internal::PaymentCode>
+        -> std::unique_ptr<crypto::PaymentCode>
     {
         static const auto blank = api.Factory().Data();
 
@@ -75,14 +74,14 @@ struct Account::Factory<
 };
 template <>
 struct Account::Factory<
-    internal::PaymentCode,
+    crypto::PaymentCode,
     opentxs::PaymentCode,
     opentxs::PaymentCode,
     proto::HDPath,
     opentxs::blockchain::block::Txid,
     PasswordPrompt> {
     static auto get(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Account& parent,
         Identifier& id,
         const opentxs::PaymentCode& local,
@@ -90,20 +89,20 @@ struct Account::Factory<
         const proto::HDPath& path,
         const opentxs::blockchain::block::Txid& txid,
         const PasswordPrompt& reason) noexcept
-        -> std::unique_ptr<internal::PaymentCode>
+        -> std::unique_ptr<crypto::PaymentCode>
     {
         return factory::BlockchainPCSubaccount(
             api, parent, local, remote, path, txid, reason, id);
     }
 };
 template <>
-struct Account::Factory<internal::PaymentCode, proto::Bip47Channel> {
+struct Account::Factory<crypto::PaymentCode, proto::Bip47Channel> {
     static auto get(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Account& parent,
         Identifier& id,
         const proto::Bip47Channel& data) noexcept
-        -> std::unique_ptr<internal::PaymentCode>
+        -> std::unique_ptr<crypto::PaymentCode>
     {
         return factory::BlockchainPCSubaccount(api, parent, data, id);
     }
@@ -117,16 +116,15 @@ auto Account::NodeGroup<InterfaceType, PayloadType>::add(
 {
     if (false == bool(node)) {
         LogOutput("opentxs::blockchain::crypto::implementation::"
-                  "Account::NodeGroup::")(__FUNCTION__)(": Invalid node")
+                  "Account::NodeGroup::")(__func__)(": Invalid node")
             .Flush();
 
         return false;
     }
 
     if (0 < index_.count(id)) {
-        LogOutput(
-            "opentxs::blockchain::crypto::implementation::"
-            "Account::NodeGroup::")(__FUNCTION__)(": Index already exists")
+        LogOutput("opentxs::blockchain::crypto::implementation::"
+                  "Account::NodeGroup::")(__func__)(": Index already exists")
             .Flush();
 
         return false;

@@ -73,8 +73,8 @@ private:
 
     Socket() noexcept = delete;
     Socket(const Socket&) = delete;
-    Socket& operator=(const Socket&) = delete;
-    Socket& operator=(Socket&&) = delete;
+    auto operator=(const Socket&) -> Socket& = delete;
+    auto operator=(Socket&&) -> Socket& = delete;
 };
 }  // namespace asio
 }  // namespace network

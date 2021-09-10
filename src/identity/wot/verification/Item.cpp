@@ -10,9 +10,9 @@
 #include <stdexcept>
 
 #include "2_Factory.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/identity/wot/verification/Verification.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
@@ -50,7 +50,7 @@ auto Factory::VerificationItem(
             end,
             version);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
+        LogOutput("opentxs::Factory::")(__func__)(
             "Failed to construct verification item: ")(e.what())
             .Flush();
 
@@ -70,7 +70,7 @@ auto Factory::VerificationItem(
 
         return new ReturnType(parent, serialized);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__FUNCTION__)(
+        LogOutput("opentxs::Factory::")(__func__)(
             "Failed to construct verification item: ")(e.what())
             .Flush();
 
@@ -156,7 +156,7 @@ Item::operator SerializedType() const noexcept
 }
 
 auto Item::calculate_id(
-    const api::internal::Core& api,
+    const api::Core& api,
     const VersionNumber version,
     const Identifier& claim,
     const Type value,

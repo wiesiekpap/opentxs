@@ -39,10 +39,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace crypto
@@ -257,7 +254,7 @@ private:
     static const VersionConversionMap
         contact_credential_to_contact_data_version_;
 
-    const api::internal::Core& api_;
+    const api::Core& api_;
     const std::unique_ptr<const identity::Source> source_p_;
     const identity::Source& source_;
     const OTNymID id_;
@@ -273,25 +270,25 @@ private:
     String::List m_listRevokedIDs;
 
     static auto create_authority(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identity::Nym& parent,
         const identity::Source& source,
         const VersionNumber version,
         const NymParameters& params,
         const PasswordPrompt& reason) noexcept(false) -> CredentialMap;
     static auto load_authorities(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identity::Nym& parent,
         const identity::Source& source,
         const Serialized& serialized) noexcept(false) -> CredentialMap;
     static auto load_revoked(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identity::Nym& parent,
         const identity::Source& source,
         const Serialized& serialized,
         CredentialMap& revoked) noexcept(false) -> String::List;
     static auto normalize(
-        const api::internal::Core& api,
+        const api::Core& api,
         const NymParameters& in,
         const PasswordPrompt& reason) noexcept(false) -> NymParameters;
 
@@ -335,11 +332,11 @@ private:
         const PasswordPrompt& reason) -> bool;
     auto path(const sLock& lock, proto::HDPath& output) const -> bool;
 
-    Nym(const api::internal::Core& api,
+    Nym(const api::Core& api,
         NymParameters& nymParameters,
         std::unique_ptr<const identity::Source> source,
         const PasswordPrompt& reason) noexcept(false);
-    Nym(const api::internal::Core& api,
+    Nym(const api::Core& api,
         const proto::Nym& serialized,
         const std::string& alias) noexcept(false);
     Nym() = delete;

@@ -21,8 +21,7 @@ namespace opentxs::storage::implementation
 auto StorageMultiplex::init_sqlite(
     std::unique_ptr<opentxs::api::storage::Plugin>& plugin) -> void
 {
-    LogVerbose(OT_METHOD)(__FUNCTION__)(
-        ": Initializing primary sqlite3 plugin.")
+    LogVerbose(OT_METHOD)(__func__)(": Initializing primary sqlite3 plugin.")
         .Flush();
     plugin.reset(Factory::StorageSqlite3(
         storage_, config_, digest_, random_, primary_bucket_));

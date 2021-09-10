@@ -57,8 +57,9 @@ namespace client
 namespace internal
 {
 struct Blockchain;
-struct Manager;
 }  // namespace internal
+
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -298,7 +299,7 @@ public:
     auto Init() noexcept -> void {}
     auto Shutdown() noexcept -> void;
 
-    Imp(const api::client::internal::Manager& api,
+    Imp(const api::client::Manager& api,
         const api::client::internal::Blockchain& blockchain,
         const Flag& running) noexcept;
 
@@ -368,7 +369,7 @@ protected:
     using ProfileMap = std::map<ProfileKey, ProfilePointer>;
     using UnitListMap = std::map<UnitListKey, UnitListPointer>;
 
-    const api::client::internal::Manager& api_;
+    const api::client::Manager& api_;
     const api::client::internal::Blockchain& blockchain_;
     const Flag& running_;
     mutable AccountActivityMap accounts_;

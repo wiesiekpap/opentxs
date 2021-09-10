@@ -238,14 +238,14 @@ private:
     }
     auto process_position(const Position& pos) noexcept -> void
     {
-        LogTrace(SYNC_SERVER)(__FUNCTION__)(": processing block ")(
+        LogTrace(SYNC_SERVER)(__func__)(": processing block ")(
             pos.second->asHex())(" at height ")(pos.first)
             .Flush();
 
         try {
             auto current = known();
             auto hashes = header_.Ancestors(current, pos, 2000);
-            LogTrace(SYNC_SERVER)(__FUNCTION__)(
+            LogTrace(SYNC_SERVER)(__func__)(
                 ": current position best known position is block ")(
                 current.second->asHex())(" at height ")(current.first)
                 .Flush();
@@ -253,7 +253,7 @@ private:
             OT_ASSERT(0 < hashes.size());
 
             if (1 == hashes.size()) {
-                LogTrace(SYNC_SERVER)(__FUNCTION__)(
+                LogTrace(SYNC_SERVER)(__func__)(
                     ": current position matches incoming block ")(
                     pos.second->asHex())(" at height ")(pos.first)
                     .Flush();
@@ -274,11 +274,10 @@ private:
                 const auto& last = hashes.back();
 
                 if (first.first <= current.first) {
-                    LogTrace(SYNC_SERVER)(__FUNCTION__)(": reorg detected")
-                        .Flush();
+                    LogTrace(SYNC_SERVER)(__func__)(": reorg detected").Flush();
                 }
 
-                LogTrace(SYNC_SERVER)(__FUNCTION__)(
+                LogTrace(SYNC_SERVER)(__func__)(
                     ": scheduling download starting from block ")(
                     first.second->asHex())(" at height ")(first.first)(
                     " until block ")(last.second->asHex())(" at height ")(
@@ -301,7 +300,7 @@ private:
         const auto base = sync::Factory(api_, incoming);
 
         if (auto type = base->Type(); type != sync::MessageType::sync_request) {
-            LogOutput(SYNC_SERVER)(__FUNCTION__)(
+            LogOutput(SYNC_SERVER)(__func__)(
                 ": Invalid or unsupported message type ")(opentxs::print(type))
                 .Flush();
 
@@ -332,7 +331,7 @@ private:
                 OTSocket::send_message(lock, socket_.get(), out);
             }
         } catch (const std::exception& e) {
-            LogOutput(SYNC_SERVER)(__FUNCTION__)(": ")(e.what()).Flush();
+            LogOutput(SYNC_SERVER)(__func__)(": ")(e.what()).Flush();
         }
     }
     auto queue_processing(DownloadedData&& data) noexcept -> void
@@ -388,14 +387,14 @@ private:
                     reader(filterBytes));
                 task->process(1);
             } catch (const std::exception& e) {
-                LogOutput(SYNC_SERVER)(__FUNCTION__)(": ")(e.what()).Flush();
+                LogOutput(SYNC_SERVER)(__func__)(": ")(e.what()).Flush();
                 task->redownload();
                 break;
             }
         }
 
         if (previousFilterHeader->empty() || (0 == items.size())) {
-            LogOutput(SYNC_SERVER)(__FUNCTION__)(": missing data").Flush();
+            LogOutput(SYNC_SERVER)(__func__)(": missing data").Flush();
 
             return;
         }
@@ -453,8 +452,7 @@ private:
 
             if (0 > events) {
                 const auto error = ::zmq_errno();
-                LogOutput(SYNC_SERVER)(__FUNCTION__)(": ")(
-                    ::zmq_strerror(error))
+                LogOutput(SYNC_SERVER)(__func__)(": ")(::zmq_strerror(error))
                     .Flush();
 
                 continue;

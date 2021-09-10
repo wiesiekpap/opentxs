@@ -18,7 +18,7 @@ namespace api
 {
 namespace network
 {
-class ZAP
+class OPENTXS_EXPORT ZAP
 {
 public:
     using Callback = opentxs::network::zeromq::zap::Callback::ReceiveCallback;
@@ -34,9 +34,9 @@ public:
      *
      *   \return True if the domain is valid and not already registered
      */
-    OPENTXS_EXPORT virtual bool RegisterDomain(
+    virtual auto RegisterDomain(
         const std::string& domain,
-        const Callback& callback) const = 0;
+        const Callback& callback) const -> bool = 0;
 
     /** Configure ZAP policy for unhandled domains
      *
@@ -45,9 +45,9 @@ public:
      *  \param[in]  policy  Accept or reject ZAP requests for a domain which has
      *                      no registered callback
      */
-    OPENTXS_EXPORT virtual bool SetDefaultPolicy(const Policy policy) const = 0;
+    virtual auto SetDefaultPolicy(const Policy policy) const -> bool = 0;
 
-    OPENTXS_EXPORT virtual ~ZAP() = default;
+    virtual ~ZAP() = default;
 
 protected:
     ZAP() = default;
@@ -55,8 +55,8 @@ protected:
 private:
     ZAP(const ZAP&) = delete;
     ZAP(ZAP&&) = delete;
-    ZAP& operator=(const ZAP&) = delete;
-    ZAP& operator=(ZAP&&) = delete;
+    auto operator=(const ZAP&) -> ZAP& = delete;
+    auto operator=(ZAP&&) -> ZAP& = delete;
 };
 }  // namespace network
 }  // namespace api

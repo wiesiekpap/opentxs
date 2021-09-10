@@ -218,7 +218,7 @@ public:
 
         if (false == init_) {
             reason_p_.reset(new ot::OTPasswordPrompt{
-                api.Factory().PasswordPrompt(__FUNCTION__)});
+                api.Factory().PasswordPrompt(__func__)});
             invalid_nym_p_.reset(new ot::OTNymID{api.Factory().NymID("junk")});
             nym_not_in_wallet_p_.reset(new ot::OTNymID{
                 api.Factory().NymID("ottaRUsttUuJZj738f9AE6kJJMBp6iedFYQ")});

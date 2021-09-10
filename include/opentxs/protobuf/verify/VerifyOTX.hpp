@@ -14,10 +14,10 @@ namespace opentxs
 {
 namespace proto
 {
-OPENTXS_EXPORT const VersionMap& ServerReplyAllowedOTXPush() noexcept;
-OPENTXS_EXPORT const VersionMap& ServerReplyAllowedSignature() noexcept;
-OPENTXS_EXPORT const VersionMap& ServerRequestAllowedNym() noexcept;
-OPENTXS_EXPORT const VersionMap& ServerRequestAllowedSignature() noexcept;
+auto ServerReplyAllowedOTXPush() noexcept -> const VersionMap&;
+auto ServerReplyAllowedSignature() noexcept -> const VersionMap&;
+auto ServerRequestAllowedNym() noexcept -> const VersionMap&;
+auto ServerRequestAllowedSignature() noexcept -> const VersionMap&;
 }  // namespace proto
 }  // namespace opentxs
 #endif  // OPENTXS_PROTOBUF_VERIFYOTX_HPP

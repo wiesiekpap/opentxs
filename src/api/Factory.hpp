@@ -81,6 +81,11 @@
 
 namespace opentxs
 {
+namespace api
+{
+class Core;
+}  // namespace api
+
 namespace blind
 {
 class Mint;
@@ -838,14 +843,14 @@ public:
     ~Factory() override = default;
 
 protected:
-    const api::internal::Core& api_;
+    const api::Core& api_;
     const api::Primitives& primitives_;
     std::unique_ptr<const api::crypto::internal::Asymmetric> pAsymmetric_;
     const api::crypto::internal::Asymmetric& asymmetric_;
     std::unique_ptr<const api::crypto::Symmetric> pSymmetric_;
     const api::crypto::Symmetric& symmetric_;
 
-    Factory(const api::internal::Core& api);
+    Factory(const api::Core& api);
 
 private:
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1

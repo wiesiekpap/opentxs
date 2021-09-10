@@ -55,10 +55,7 @@ namespace client
 class Issuer;
 }  // namespace client
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace blind
@@ -360,7 +357,7 @@ protected:
     using ContextMap =
         std::map<ContextID, std::shared_ptr<otx::context::internal::Base>>;
 
-    const api::internal::Core& api_;
+    const api::Core& api_;
     mutable ContextMap context_map_;
     mutable std::mutex context_map_lock_;
 
@@ -377,7 +374,7 @@ protected:
         otx::context::internal::Base* context) const;
     auto server_to_nym(Identifier& nymOrNotaryID) const -> OTNymID;
 
-    Wallet(const api::internal::Core& core);
+    Wallet(const api::Core& core);
 
 private:
     using AccountMap = std::map<OTIdentifier, AccountLock>;

@@ -52,29 +52,29 @@ public:
     using Denomination = std::uint64_t;
     using MintSeries = std::uint64_t;
 
-    virtual std::string ID(const PasswordPrompt& reason) const = 0;
-    virtual bool IsSpent(const PasswordPrompt& reason) const = 0;
-    virtual const identifier::Server& Notary() const = 0;
-    virtual Purse& Owner() const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual bool Serialize(
-        proto::Token& out) const noexcept = 0;
-    virtual MintSeries Series() const = 0;
-    virtual blind::TokenState State() const = 0;
-    virtual blind::CashType Type() const = 0;
-    virtual const identifier::UnitDefinition& Unit() const = 0;
-    virtual Time ValidFrom() const = 0;
-    virtual Time ValidTo() const = 0;
-    virtual Denomination Value() const = 0;
+    virtual auto ID(const PasswordPrompt& reason) const -> std::string = 0;
+    virtual auto IsSpent(const PasswordPrompt& reason) const -> bool = 0;
+    virtual auto Notary() const -> const identifier::Server& = 0;
+    virtual auto Owner() const noexcept -> Purse& = 0;
+    OPENTXS_NO_EXPORT virtual auto Serialize(proto::Token& out) const noexcept
+        -> bool = 0;
+    virtual auto Series() const -> MintSeries = 0;
+    virtual auto State() const -> blind::TokenState = 0;
+    virtual auto Type() const -> blind::CashType = 0;
+    virtual auto Unit() const -> const identifier::UnitDefinition& = 0;
+    virtual auto ValidFrom() const -> Time = 0;
+    virtual auto ValidTo() const -> Time = 0;
+    virtual auto Value() const -> Denomination = 0;
 
-    virtual bool ChangeOwner(
+    virtual auto ChangeOwner(
         Purse& oldOwner,
         Purse& newOwner,
-        const PasswordPrompt& reason) = 0;
-    virtual bool MarkSpent(const PasswordPrompt& reason) = 0;
-    virtual bool Process(
+        const PasswordPrompt& reason) -> bool = 0;
+    virtual auto MarkSpent(const PasswordPrompt& reason) -> bool = 0;
+    virtual auto Process(
         const identity::Nym& owner,
         const Mint& mint,
-        const PasswordPrompt& reason) = 0;
+        const PasswordPrompt& reason) -> bool = 0;
 
     virtual ~Token() = default;
 
@@ -84,12 +84,12 @@ protected:
 private:
     friend OTToken;
 
-    virtual Token* clone() const noexcept = 0;
+    virtual auto clone() const noexcept -> Token* = 0;
 
     Token(const Token&) = delete;
     Token(Token&&) = delete;
-    Token& operator=(const Token&) = delete;
-    Token& operator=(Token&&) = delete;
+    auto operator=(const Token&) -> Token& = delete;
+    auto operator=(Token&&) -> Token& = delete;
 };
 }  // namespace blind
 }  // namespace opentxs

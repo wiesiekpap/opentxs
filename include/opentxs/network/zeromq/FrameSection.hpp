@@ -15,12 +15,6 @@
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameIterator.hpp"
 
-#ifdef SWIG
-// clang-format off
-%rename(ZMQFrameSection) opentxs::network::zeromq::FrameSection;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace network
@@ -29,7 +23,7 @@ namespace zeromq
 {
 class Message;
 
-class FrameSection
+class OPENTXS_EXPORT FrameSection
 {
 public:
     using difference_type = std::size_t;
@@ -38,22 +32,17 @@ public:
     using reference = Frame&;
     using iterator_category = std::forward_iterator_tag;
 
-    OPENTXS_EXPORT const Frame& at(const std::size_t index) const;
-    OPENTXS_EXPORT FrameIterator begin() const;
-    OPENTXS_EXPORT FrameIterator end() const;
-    OPENTXS_EXPORT std::size_t size() const;
+    auto at(const std::size_t index) const -> const Frame&;
+    auto begin() const -> FrameIterator;
+    auto end() const -> FrameIterator;
+    auto size() const -> std::size_t;
 
-    OPENTXS_EXPORT Frame& Replace(const std::size_t index, OTZMQFrame&& frame);
+    auto Replace(const std::size_t index, OTZMQFrame&& frame) -> Frame&;
 
-#ifndef SWIG
-    OPENTXS_EXPORT FrameSection(
-        const Message* parent,
-        std::size_t position,
-        std::size_t size);
-#endif
-    OPENTXS_EXPORT FrameSection(const FrameSection&);
+    FrameSection(const Message* parent, std::size_t position, std::size_t size);
+    FrameSection(const FrameSection&);
 
-    OPENTXS_EXPORT ~FrameSection() = default;
+    ~FrameSection() = default;
 
 private:
     const Message* parent_;
@@ -62,8 +51,8 @@ private:
 
     FrameSection() = delete;
     FrameSection(FrameSection&&) = delete;
-    FrameSection& operator=(const FrameSection&) = delete;
-    FrameSection& operator=(FrameSection&&) = delete;
+    auto operator=(const FrameSection&) -> FrameSection& = delete;
+    auto operator=(FrameSection&&) -> FrameSection& = delete;
 };
 }  // namespace zeromq
 }  // namespace network

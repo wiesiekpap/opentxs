@@ -16,10 +16,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace crypto
@@ -55,12 +52,12 @@ namespace opentxs::factory
 {
 #if OT_CRYPTO_SUPPORTED_KEY_ED25519
 auto Ed25519Key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const proto::AsymmetricKey& serializedKey) noexcept
     -> std::unique_ptr<crypto::key::Ed25519>;
 auto Ed25519Key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const crypto::key::asymmetric::Role role,
     const VersionNumber version,
@@ -68,7 +65,7 @@ auto Ed25519Key(
     -> std::unique_ptr<crypto::key::Ed25519>;
 #if OT_CRYPTO_WITH_BIP32
 auto Ed25519Key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const opentxs::Secret& privateKey,
     const opentxs::Secret& chainCode,
@@ -83,19 +80,19 @@ auto Ed25519Key(
 #endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 auto Keypair() noexcept -> std::unique_ptr<crypto::key::Keypair>;
 auto Keypair(
-    const api::internal::Core& api,
+    const api::Core& api,
     const opentxs::crypto::key::asymmetric::Role role,
     std::unique_ptr<crypto::key::Asymmetric> publicKey,
     std::unique_ptr<crypto::key::Asymmetric> privateKey) noexcept(false)
     -> std::unique_ptr<crypto::key::Keypair>;
 #if OT_CRYPTO_SUPPORTED_KEY_RSA
 auto RSAKey(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::AsymmetricProvider& engine,
     const proto::AsymmetricKey& input) noexcept
     -> std::unique_ptr<crypto::key::RSA>;
 auto RSAKey(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::AsymmetricProvider& engine,
     const crypto::key::asymmetric::Role input,
     const VersionNumber version,
@@ -105,19 +102,19 @@ auto RSAKey(
 #endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 auto Secp256k1Key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const proto::AsymmetricKey& serializedKey) noexcept
     -> std::unique_ptr<crypto::key::Secp256k1>;
 auto Secp256k1Key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const crypto::key::asymmetric::Role role,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::unique_ptr<crypto::key::Secp256k1>;
 auto Secp256k1Key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const opentxs::Secret& privateKey,
     const Data& publicKey,
@@ -126,7 +123,7 @@ auto Secp256k1Key(
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::unique_ptr<crypto::key::Secp256k1>;
 auto Secp256k1Key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const opentxs::Secret& privateKey,
     const opentxs::Secret& chainCode,
@@ -138,7 +135,7 @@ auto Secp256k1Key(
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::unique_ptr<crypto::key::Secp256k1>;
 auto Secp256k1Key(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::EcdsaProvider& ecdsa,
     const Secret& privateKey,
     const Secret& chainCode,
@@ -151,18 +148,18 @@ auto Secp256k1Key(
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 auto SymmetricKey() noexcept -> std::unique_ptr<crypto::key::Symmetric>;
 auto SymmetricKey(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::SymmetricProvider& engine,
     const opentxs::PasswordPrompt& reason,
     const opentxs::crypto::key::symmetric::Algorithm mode) noexcept
     -> std::unique_ptr<crypto::key::Symmetric>;
 auto SymmetricKey(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::SymmetricProvider& engine,
     const proto::SymmetricKey serialized) noexcept
     -> std::unique_ptr<crypto::key::Symmetric>;
 auto SymmetricKey(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::SymmetricProvider& engine,
     const opentxs::Secret& seed,
     const std::uint64_t operations,
@@ -171,7 +168,7 @@ auto SymmetricKey(
     const crypto::key::symmetric::Source type) noexcept
     -> std::unique_ptr<crypto::key::Symmetric>;
 auto SymmetricKey(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::SymmetricProvider& engine,
     const opentxs::Secret& seed,
     const ReadView salt,
@@ -182,7 +179,7 @@ auto SymmetricKey(
     const crypto::key::symmetric::Source type) noexcept
     -> std::unique_ptr<crypto::key::Symmetric>;
 auto SymmetricKey(
-    const api::internal::Core& api,
+    const api::Core& api,
     const crypto::SymmetricProvider& engine,
     const opentxs::Secret& raw,
     const opentxs::PasswordPrompt& reason) noexcept

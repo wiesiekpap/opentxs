@@ -11,17 +11,6 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/network/zeromq/curve/Server.hpp"
 
-#ifdef SWIG
-// clang-format off
-%ignore opentxs::Pimpl<opentxs::network::zeromq::socket::Pull>::Pimpl(opentxs::network::zeromq::socket::Pull const &);
-%ignore opentxs::Pimpl<opentxs::network::zeromq::socket::Pull>::operator opentxs::network::zeromq::socket::Pull&;
-%ignore opentxs::Pimpl<opentxs::network::zeromq::socket::Pull>::operator const opentxs::network::zeromq::socket::Pull &;
-%rename(assign) operator=(const opentxs::network::zeromq::socket::Pull&);
-%rename(ZMQPull) opentxs::network::zeromq::socket::Pull;
-%template(OTZMQPullSocket) opentxs::Pimpl<opentxs::network::zeromq::socket::Pull>;
-// clang-format on
-#endif  // SWIG
-
 namespace opentxs
 {
 namespace network
@@ -46,10 +35,10 @@ namespace zeromq
 {
 namespace socket
 {
-class Pull : virtual public curve::Server
+class OPENTXS_EXPORT Pull : virtual public curve::Server
 {
 public:
-    OPENTXS_EXPORT ~Pull() override = default;
+    ~Pull() override = default;
 
 protected:
     Pull() noexcept = default;
@@ -57,12 +46,12 @@ protected:
 private:
     friend OTZMQPullSocket;
 
-    virtual Pull* clone() const noexcept = 0;
+    virtual auto clone() const noexcept -> Pull* = 0;
 
     Pull(const Pull&) = delete;
     Pull(Pull&&) = delete;
-    Pull& operator=(const Pull&) = delete;
-    Pull& operator=(Pull&&) = delete;
+    auto operator=(const Pull&) -> Pull& = delete;
+    auto operator=(Pull&&) -> Pull& = delete;
 };
 }  // namespace socket
 }  // namespace zeromq

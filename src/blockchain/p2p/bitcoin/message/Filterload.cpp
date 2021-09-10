@@ -37,8 +37,7 @@ auto BitcoinP2PFilterload(
     using ReturnType = bitcoin::message::implementation::Filterload;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Invalid header")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -47,8 +46,7 @@ auto BitcoinP2PFilterload(
         factory::BloomFilter(api, Data::Factory(payload, size))};
 
     if (false == bool(pFilter)) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Invalid filter")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Invalid filter").Flush();
 
         return nullptr;
     }

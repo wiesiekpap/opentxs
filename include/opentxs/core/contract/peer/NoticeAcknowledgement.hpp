@@ -47,13 +47,13 @@ private:
     friend OTReplyAcknowledgement;
 
 #ifndef _WIN32
-    Acknowledgement* clone() const noexcept override = 0;
+    auto clone() const noexcept -> Acknowledgement* override = 0;
 #endif
 
     Acknowledgement(const Acknowledgement&) = delete;
     Acknowledgement(Acknowledgement&&) = delete;
-    Acknowledgement& operator=(const Acknowledgement&) = delete;
-    Acknowledgement& operator=(Acknowledgement&&) = delete;
+    auto operator=(const Acknowledgement&) -> Acknowledgement& = delete;
+    auto operator=(Acknowledgement&&) -> Acknowledgement& = delete;
 };
 }  // namespace reply
 }  // namespace peer

@@ -14,11 +14,11 @@
 #include <utility>
 #include <vector>
 
-#include "internal/api/client/Client.hpp"
 #include "internal/api/network/Network.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Endpoints.hpp"
+#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -42,7 +42,7 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::factory
 {
 auto BlockchainSelectionModel(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const api::network::internal::Blockchain& blockchain,
     const ui::Blockchains type,
     const SimpleCallback& cb) noexcept
@@ -57,7 +57,7 @@ auto BlockchainSelectionModel(
 namespace opentxs::ui::implementation
 {
 BlockchainSelection::BlockchainSelection(
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const api::network::internal::Blockchain& blockchain,
     const ui::Blockchains type,
     const SimpleCallback& cb) noexcept

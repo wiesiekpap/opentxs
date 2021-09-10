@@ -25,6 +25,11 @@ namespace opentxs
 {
 namespace api
 {
+namespace client
+{
+class Manager;
+}  // namespace client
+
 namespace storage
 {
 class Storage;
@@ -92,7 +97,7 @@ public:
     auto Update(const identity::Nym& nym) const
         -> std::shared_ptr<const opentxs::Contact> final;
 
-    Contacts(const api::client::internal::Manager& api);
+    Contacts(const api::client::Manager& api);
 
     ~Contacts() final = default;
 
@@ -103,7 +108,7 @@ private:
     using ContactMap = std::map<OTIdentifier, ContactLock>;
     using ContactNameMap = std::map<OTIdentifier, std::string>;
 
-    const api::client::internal::Manager& api_;
+    const api::client::Manager& api_;
     mutable std::recursive_mutex lock_{};
 #if OT_BLOCKCHAIN
     std::weak_ptr<const internal::Blockchain> blockchain_;

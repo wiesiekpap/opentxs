@@ -21,10 +21,10 @@ namespace storage
 class Plugin : public virtual Driver
 {
 public:
-    virtual bool EmptyBucket(const bool bucket) const override = 0;
-    virtual std::string LoadRoot() const override = 0;
-    virtual bool StoreRoot(const bool commit, const std::string& hash)
-        const override = 0;
+    virtual auto EmptyBucket(const bool bucket) const -> bool override = 0;
+    virtual auto LoadRoot() const -> std::string override = 0;
+    virtual auto StoreRoot(const bool commit, const std::string& hash) const
+        -> bool override = 0;
 
     ~Plugin() override = default;
 
@@ -34,8 +34,8 @@ protected:
 private:
     Plugin(const Plugin&) = delete;
     Plugin(Plugin&&) = delete;
-    Plugin& operator=(const Plugin&) = delete;
-    Plugin& operator=(Plugin&&) = delete;
+    auto operator=(const Plugin&) -> Plugin& = delete;
+    auto operator=(Plugin&&) -> Plugin& = delete;
 };
 }  // namespace storage
 }  // namespace api

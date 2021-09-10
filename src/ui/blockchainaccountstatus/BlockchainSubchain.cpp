@@ -20,7 +20,7 @@ namespace opentxs::factory
 {
 auto BlockchainSubchainWidget(
     const ui::implementation::BlockchainSubaccountInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const ui::implementation::BlockchainSubaccountRowID& rowID,
     const ui::implementation::BlockchainSubaccountSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
@@ -36,7 +36,7 @@ namespace opentxs::ui::implementation
 {
 BlockchainSubchain::BlockchainSubchain(
     const BlockchainSubaccountInternalInterface& parent,
-    const api::client::internal::Manager& api,
+    const api::client::Manager& api,
     const BlockchainSubaccountRowID& rowID,
     const BlockchainSubaccountSortKey& sortKey,
     CustomData& custom) noexcept

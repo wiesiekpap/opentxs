@@ -111,7 +111,7 @@ auto Data::Add(ReadView data) noexcept -> bool
             static_cast<opentxs::blockchain::block::Height>(proto.height());
 
         if (height != expected) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": Non-contiguous sync data")
+            LogOutput(OT_METHOD)(__func__)(": Non-contiguous sync data")
                 .Flush();
 
             return false;
@@ -123,7 +123,7 @@ auto Data::Add(ReadView data) noexcept -> bool
 
         return true;
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }

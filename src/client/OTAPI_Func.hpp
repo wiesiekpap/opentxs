@@ -36,10 +36,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -106,14 +103,14 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID);
     explicit OTAPI_Func(
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const proto::UnitDefinition& unitDefinition,
@@ -122,7 +119,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const identifier::Nym& nymID2);
@@ -130,7 +127,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const identifier::Nym& nymID2,
@@ -139,7 +136,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const Identifier& recipientID,
@@ -148,7 +145,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const TransactionNumber& transactionNumber,
@@ -158,7 +155,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const Identifier& accountID,
@@ -168,7 +165,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const Identifier& recipientID,
@@ -178,7 +175,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const identifier::Nym& nymID2,
@@ -189,7 +186,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const Identifier& targetID,
@@ -200,7 +197,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const Identifier& recipientID,
@@ -212,7 +209,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const identifier::UnitDefinition& instrumentDefinitionID,
@@ -224,7 +221,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const Identifier& assetAccountID,
@@ -286,7 +283,7 @@ private:
     Time lifetime_{};
     std::int32_t nRequestNum_{-1};
     std::int32_t nTransNumsNeeded_{0};
-    const api::client::internal::Manager& api_;
+    const api::client::Manager& api_;
     Editor<otx::context::Server> context_editor_;
     otx::context::Server& context_;
     CommandResult last_attempt_;
@@ -315,7 +312,7 @@ private:
     explicit OTAPI_Func(
         const PasswordPrompt& reason,
         std::recursive_mutex& apilock,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const OTAPI_Func_Type type);

@@ -51,7 +51,7 @@ void PeerReplies::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (!serialized) {
-        std::cerr << __FUNCTION__ << ": Failed to load peer reply index file."
+        std::cerr << __func__ << ": Failed to load peer reply index file."
                   << std::endl;
         abort();
     }
@@ -101,7 +101,7 @@ auto PeerReplies::Load(
 auto PeerReplies::save(const std::unique_lock<std::mutex>& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
-        std::cerr << __FUNCTION__ << ": Lock failure." << std::endl;
+        std::cerr << __func__ << ": Lock failure." << std::endl;
         abort();
     }
 

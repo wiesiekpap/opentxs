@@ -38,8 +38,7 @@ auto BitcoinP2PVersion(
     using ReturnType = bitcoin::message::implementation::Version;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": Invalid header")
-            .Flush();
+        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -48,7 +47,7 @@ auto BitcoinP2PVersion(
     auto expectedSize = sizeof(ReturnType::BitcoinFormat_1);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(
+        LogOutput("opentxs::factory::")(__func__)(
             ": Size below minimum for version 1")
             .Flush();
 
@@ -76,7 +75,7 @@ auto BitcoinP2PVersion(
         expectedSize += (1 + sizeof(ReturnType::BitcoinFormat_106));
 
         if (expectedSize > size) {
-            LogOutput("opentxs::factory::")(__FUNCTION__)(
+            LogOutput("opentxs::factory::")(__func__)(
                 ": Size below minimum for version 106")
                 .Flush();
 
@@ -100,7 +99,7 @@ auto BitcoinP2PVersion(
             expectedSize += csBytes;
 
             if (expectedSize > size) {
-                LogOutput("opentxs::factory::")(__FUNCTION__)(
+                LogOutput("opentxs::factory::")(__func__)(
                     ": CompactSize incomplete")
                     .Flush();
 
@@ -120,7 +119,7 @@ auto BitcoinP2PVersion(
             expectedSize += uaSize;
 
             if (expectedSize > size) {
-                LogOutput("opentxs::factory::")(__FUNCTION__)(
+                LogOutput("opentxs::factory::")(__func__)(
                     ": User agent string incomplete")
                     .Flush();
 
@@ -136,7 +135,7 @@ auto BitcoinP2PVersion(
         expectedSize += sizeof(ReturnType::BitcoinFormat_209);
 
         if (expectedSize > size) {
-            LogOutput("opentxs::factory::")(__FUNCTION__)(
+            LogOutput("opentxs::factory::")(__func__)(
                 ": Required height field is missing")
                 .Flush();
 
@@ -207,7 +206,7 @@ auto BitcoinP2PVersion(
         try {
             local = tcp::endpoint(ip::make_address_v6(localAddress), localPort);
         } catch (...) {
-            LogOutput("opentxs::factory::")(__FUNCTION__)(
+            LogOutput("opentxs::factory::")(__func__)(
                 ": Invalid local address: ")(localAddress)
                 .Flush();
 
@@ -218,7 +217,7 @@ auto BitcoinP2PVersion(
             remote =
                 tcp::endpoint(ip::make_address_v6(remoteAddress), remotePort);
         } catch (...) {
-            LogOutput("opentxs::factory::")(__FUNCTION__)(
+            LogOutput("opentxs::factory::")(__func__)(
                 ": Invalid remote address: ")(remoteAddress)
                 .Flush();
 

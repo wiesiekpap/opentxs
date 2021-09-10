@@ -24,10 +24,7 @@ namespace api
 {
 namespace client
 {
-namespace internal
-{
-struct Manager;
-}  // namespace internal
+class Manager;
 }  // namespace client
 }  // namespace api
 
@@ -56,7 +53,7 @@ public:
 
     BlockchainSubchain(
         const BlockchainSubaccountInternalInterface& parent,
-        const api::client::internal::Manager& api,
+        const api::client::Manager& api,
         const BlockchainSubaccountRowID& rowID,
         const BlockchainSubaccountSortKey& sortKey,
         CustomData& custom) noexcept;

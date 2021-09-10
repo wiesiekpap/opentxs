@@ -113,7 +113,7 @@ public:
         const contract::Server& contract,
         const ot::api::client::Manager& client)
     {
-        auto reason = client.Factory().PasswordPrompt(__FUNCTION__);
+        auto reason = client.Factory().PasswordPrompt(__func__);
         auto bytes = ot::Space{};
         EXPECT_TRUE(server_contract_->Serialize(ot::writer(bytes), true));
         auto clientVersion = client.Wallet().Server(ot::reader(bytes));
@@ -138,9 +138,9 @@ public:
                 "abandon abandon abandon abandon abandon abandon abandon "
                 "abandon abandon abandon abandon about",
                 "");
-        auto reasonA = alice_client_.Factory().PasswordPrompt(__FUNCTION__);
-        auto reasonB = bob_client_.Factory().PasswordPrompt(__FUNCTION__);
-        auto reasonI = issuer_client_.Factory().PasswordPrompt(__FUNCTION__);
+        auto reasonA = alice_client_.Factory().PasswordPrompt(__func__);
+        auto reasonB = bob_client_.Factory().PasswordPrompt(__func__);
+        auto reasonI = issuer_client_.Factory().PasswordPrompt(__func__);
         const_cast<OTNymID&>(alice_nym_id_) =
             alice_client_.Wallet().Nym(reasonA, ALEX, {SeedA_, 0})->ID();
         const_cast<OTNymID&>(bob_nym_id_) =
@@ -184,9 +184,9 @@ OTIdentifier Test_DepositCheques::issuer_account_id_{Identifier::Factory()};
 
 TEST_F(Test_DepositCheques, payment_codes)
 {
-    auto reasonA = alice_client_.Factory().PasswordPrompt(__FUNCTION__);
-    auto reasonB = bob_client_.Factory().PasswordPrompt(__FUNCTION__);
-    auto reasonI = issuer_client_.Factory().PasswordPrompt(__FUNCTION__);
+    auto reasonA = alice_client_.Factory().PasswordPrompt(__func__);
+    auto reasonB = bob_client_.Factory().PasswordPrompt(__func__);
+    auto reasonI = issuer_client_.Factory().PasswordPrompt(__func__);
     auto alice = alice_client_.Wallet().mutable_Nym(alice_nym_id_, reasonA);
     auto bob = bob_client_.Wallet().mutable_Nym(bob_nym_id_, reasonB);
     auto issuer = issuer_client_.Wallet().mutable_Nym(issuer_nym_id_, reasonI);
@@ -345,7 +345,7 @@ TEST_F(Test_DepositCheques, add_contacts)
 
 TEST_F(Test_DepositCheques, issue_dollars)
 {
-    auto reasonI = issuer_client_.Factory().PasswordPrompt(__FUNCTION__);
+    auto reasonI = issuer_client_.Factory().PasswordPrompt(__func__);
     const auto contract = issuer_client_.Wallet().UnitDefinition(
         issuer_nym_id_->str(),
         UNIT_DEFINITION_CONTRACT_NAME,

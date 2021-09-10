@@ -49,22 +49,24 @@ public:
     ContactGroup(const ContactGroup&) noexcept;
     ContactGroup(ContactGroup&&) noexcept;
 
-    ContactGroup operator+(const ContactGroup& rhs) const;
+    auto operator+(const ContactGroup& rhs) const -> ContactGroup;
 
-    ItemMap::const_iterator begin() const;
-    std::shared_ptr<ContactItem> Best() const;
-    std::shared_ptr<ContactItem> Claim(const Identifier& item) const;
-    bool HaveClaim(const Identifier& item) const;
-    ContactGroup AddItem(const std::shared_ptr<ContactItem>& item) const;
-    ContactGroup AddPrimary(const std::shared_ptr<ContactItem>& item) const;
-    ContactGroup Delete(const Identifier& id) const;
-    ItemMap::const_iterator end() const;
-    const Identifier& Primary() const;
-    std::shared_ptr<ContactItem> PrimaryClaim() const;
-    bool SerializeTo(proto::ContactSection& section, const bool withIDs = false)
-        const;
-    std::size_t Size() const;
-    const contact::ContactItemType& Type() const;
+    auto begin() const -> ItemMap::const_iterator;
+    auto Best() const -> std::shared_ptr<ContactItem>;
+    auto Claim(const Identifier& item) const -> std::shared_ptr<ContactItem>;
+    auto HaveClaim(const Identifier& item) const -> bool;
+    auto AddItem(const std::shared_ptr<ContactItem>& item) const
+        -> ContactGroup;
+    auto AddPrimary(const std::shared_ptr<ContactItem>& item) const
+        -> ContactGroup;
+    auto Delete(const Identifier& id) const -> ContactGroup;
+    auto end() const -> ItemMap::const_iterator;
+    auto Primary() const -> const Identifier&;
+    auto PrimaryClaim() const -> std::shared_ptr<ContactItem>;
+    auto SerializeTo(proto::ContactSection& section, const bool withIDs = false)
+        const -> bool;
+    auto Size() const -> std::size_t;
+    auto Type() const -> const contact::ContactItemType&;
 
     ~ContactGroup();
 
@@ -74,8 +76,8 @@ private:
     std::unique_ptr<Imp> imp_;
 
     ContactGroup() = delete;
-    ContactGroup& operator=(const ContactGroup&) = delete;
-    ContactGroup& operator=(ContactGroup&&) = delete;
+    auto operator=(const ContactGroup&) -> ContactGroup& = delete;
+    auto operator=(ContactGroup&&) -> ContactGroup& = delete;
 };
 }  // namespace opentxs
 #endif

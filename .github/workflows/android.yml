@@ -7,13 +7,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        binding: [qt, java]
+        binding: [qt]
         arch: [arm64, arm, x64, x86]
         include:
           - binding: qt
-            platform: ubuntu-20.04
-            docker: v9
-          - binding: java
             platform: ubuntu-20.04
             docker: v9
     runs-on: ${{ matrix.platform }}
@@ -42,7 +39,7 @@ jobs:
 #    needs: build
 #    strategy:
 #      matrix:
-#        binding: [qt, java]
+#        binding: [qt]
 #    runs-on: ubuntu-20.04
 #    steps:
 #    - run: |

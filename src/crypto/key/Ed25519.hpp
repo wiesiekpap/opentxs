@@ -24,10 +24,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace crypto
@@ -72,14 +69,14 @@ public:
         const PasswordPrompt& reason) const noexcept -> bool final;
 
     Ed25519(
-        const api::internal::Core& api,
+        const api::Core& api,
         const crypto::EcdsaProvider& ecdsa,
         const crypto::key::asymmetric::Role role,
         const VersionNumber version,
         const PasswordPrompt& reason) noexcept(false);
 #if OT_CRYPTO_WITH_BIP32
     Ed25519(
-        const api::internal::Core& api,
+        const api::Core& api,
         const crypto::EcdsaProvider& ecdsa,
         const Secret& privateKey,
         const Secret& chainCode,
@@ -92,7 +89,7 @@ public:
         const PasswordPrompt& reason) noexcept(false);
 #endif  // OT_CRYPTO_WITH_BIP32
     Ed25519(
-        const api::internal::Core& api,
+        const api::Core& api,
         const crypto::EcdsaProvider& ecdsa,
         const proto::AsymmetricKey& serializedKey) noexcept(false);
     Ed25519(const Ed25519& rhs, const ReadView newPublic) noexcept;

@@ -26,19 +26,6 @@
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 
-#ifdef SWIG
-// clang-format off
-%ignore opentxs::Pimpl<opentxs::network::zeromq::Context>::Pimpl(opentxs::network::zeromq::Context const &);
-%ignore opentxs::Pimpl<opentxs::network::zeromq::Context>::operator opentxs::network::zeromq::Context&;
-%ignore opentxs::Pimpl<opentxs::network::zeromq::Context>::operator const opentxs::network::zeromq::Context &;
-%ignore opentxs::network::zeromq::Context::operator void*() const;
-%ignore opentxs::network::zeromq::Context::Pipeline const;
-%rename(assign) operator=(const opentxs::network::zeromq::Context&);
-%rename(ZMQContext) opentxs::network::zeromq::Context;
-%template(OTZMQContext) opentxs::Pimpl<opentxs::network::zeromq::Context>;
-// clang-format on
-#endif  // SWIG
-
 namespace google
 {
 namespace protobuf
@@ -51,10 +38,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace network
@@ -82,28 +66,28 @@ namespace zeromq
 class OPENTXS_EXPORT Context
 {
 public:
-    static bool RawToZ85(
+    static auto RawToZ85(
         const ReadView input,
-        const AllocateOutput output) noexcept;
-    static bool Z85ToRaw(
+        const AllocateOutput output) noexcept -> bool;
+    static auto Z85ToRaw(
         const ReadView input,
-        const AllocateOutput output) noexcept;
+        const AllocateOutput output) noexcept -> bool;
 
     virtual operator void*() const noexcept = 0;
 
-    virtual std::string BuildEndpoint(
+    virtual auto BuildEndpoint(
         const std::string& path,
         const int instance,
-        const int version) const noexcept = 0;
-    virtual std::string BuildEndpoint(
+        const int version) const noexcept -> std::string = 0;
+    virtual auto BuildEndpoint(
         const std::string& path,
         const int instance,
         const int version,
-        const std::string& suffix) const noexcept = 0;
-    virtual Pimpl<network::zeromq::socket::Dealer> DealerSocket(
+        const std::string& suffix) const noexcept -> std::string = 0;
+    virtual auto DealerSocket(
         const ListenCallback& callback,
-        const socket::Socket::Direction direction) const noexcept = 0;
-#ifndef SWIG
+        const socket::Socket::Direction direction) const noexcept
+        -> Pimpl<network::zeromq::socket::Dealer> = 0;
     template <
         typename Input,
         std::enable_if_t<
@@ -112,27 +96,26 @@ public:
         std::enable_if_t<
             std::is_integral<decltype(std::declval<Input&>().size())>::value,
             int> = 0>
-    OTZMQFrame Frame(const Input& input) const noexcept
+    auto Frame(const Input& input) const noexcept -> OTZMQFrame
     {
         return Frame(input.data(), input.size());
     }
     template <
         typename Input,
         std::enable_if_t<std::is_trivially_copyable<Input>::value, int> = 0>
-    OTZMQFrame Frame(const Input& input) const noexcept
+    auto Frame(const Input& input) const noexcept -> OTZMQFrame
     {
         return Frame(&input, sizeof(input));
     }
-#endif
-    virtual Pimpl<network::zeromq::Frame> Frame(
-        const void* input,
-        const std::size_t size) const noexcept = 0;
-    virtual Pimpl<network::zeromq::Message> Message() const noexcept = 0;
-    OPENTXS_NO_EXPORT virtual Pimpl<network::zeromq::Message> Message(
-        const ::google::protobuf::MessageLite& input) const noexcept = 0;
-    virtual Pimpl<network::zeromq::Message> Message(
-        const network::zeromq::Message& input) const noexcept = 0;
-#ifndef SWIG
+    virtual auto Frame(const void* input, const std::size_t size) const noexcept
+        -> Pimpl<network::zeromq::Frame> = 0;
+    virtual auto Message() const noexcept
+        -> Pimpl<network::zeromq::Message> = 0;
+    OPENTXS_NO_EXPORT virtual auto Message(
+        const ::google::protobuf::MessageLite& input) const noexcept
+        -> Pimpl<network::zeromq::Message> = 0;
+    virtual auto Message(const network::zeromq::Message& input) const noexcept
+        -> Pimpl<network::zeromq::Message> = 0;
     template <
         typename Input,
         std::enable_if_t<
@@ -141,95 +124,97 @@ public:
         std::enable_if_t<
             std::is_integral<decltype(std::declval<Input&>().size())>::value,
             int> = 0>
-    Pimpl<network::zeromq::Message> Message(const Input& input) const noexcept
+    auto Message(const Input& input) const noexcept
+        -> Pimpl<network::zeromq::Message>
     {
         return Message(input.data(), input.size());
     }
     template <
         typename Input,
         std::enable_if_t<std::is_trivially_copyable<Input>::value, int> = 0>
-    Pimpl<network::zeromq::Message> Message(const Input& input) const noexcept
+    auto Message(const Input& input) const noexcept
+        -> Pimpl<network::zeromq::Message>
     {
         return Message(&input, sizeof(input));
     }
     template <typename Input>
-    Pimpl<network::zeromq::Message> Message(
-        const Pimpl<Input>& input) const noexcept
+    auto Message(const Pimpl<Input>& input) const noexcept
+        -> Pimpl<network::zeromq::Message>
     {
         return Message(input.get());
     }
-#endif
-    virtual Pimpl<network::zeromq::Message> Message(
-        const void* input,
-        const std::size_t size) const noexcept = 0;
-    virtual Pimpl<network::zeromq::socket::Subscribe> PairEventListener(
+    virtual auto Message(const void* input, const std::size_t size)
+        const noexcept -> Pimpl<network::zeromq::Message> = 0;
+    virtual auto PairEventListener(
         const PairEventCallback& callback,
-        const int instance) const noexcept = 0;
-    virtual Pimpl<network::zeromq::socket::Pair> PairSocket(
-        const ListenCallback& callback) const noexcept = 0;
-    virtual Pimpl<network::zeromq::socket::Pair> PairSocket(
+        const int instance) const noexcept
+        -> Pimpl<network::zeromq::socket::Subscribe> = 0;
+    virtual auto PairSocket(const ListenCallback& callback) const noexcept
+        -> Pimpl<network::zeromq::socket::Pair> = 0;
+    virtual auto PairSocket(
         const ListenCallback& callback,
-        const zeromq::socket::Pair& peer) const noexcept = 0;
-    virtual Pimpl<network::zeromq::socket::Pair> PairSocket(
+        const zeromq::socket::Pair& peer) const noexcept
+        -> Pimpl<network::zeromq::socket::Pair> = 0;
+    virtual auto PairSocket(
         const ListenCallback& callback,
-        const std::string& endpoint) const noexcept = 0;
-    virtual Pimpl<network::zeromq::Pipeline> Pipeline(
-        const api::internal::Core& api,
-        std::function<void(zeromq::Message&)> callback) const noexcept = 0;
-    virtual Pimpl<network::zeromq::Proxy> Proxy(
-        socket::Socket& frontend,
-        socket::Socket& backend) const noexcept = 0;
-    virtual Pimpl<network::zeromq::socket::Publish> PublishSocket()
-        const noexcept = 0;
-    virtual Pimpl<network::zeromq::socket::Pull> PullSocket(
-        const socket::Socket::Direction direction) const noexcept = 0;
-    virtual Pimpl<network::zeromq::socket::Pull> PullSocket(
+        const std::string& endpoint) const noexcept
+        -> Pimpl<network::zeromq::socket::Pair> = 0;
+    virtual auto Pipeline(
+        const api::Core& api,
+        std::function<void(zeromq::Message&)> callback) const noexcept
+        -> Pimpl<network::zeromq::Pipeline> = 0;
+    virtual auto Proxy(socket::Socket& frontend, socket::Socket& backend)
+        const noexcept -> Pimpl<network::zeromq::Proxy> = 0;
+    virtual auto PublishSocket() const noexcept
+        -> Pimpl<network::zeromq::socket::Publish> = 0;
+    virtual auto PullSocket(const socket::Socket::Direction direction)
+        const noexcept -> Pimpl<network::zeromq::socket::Pull> = 0;
+    virtual auto PullSocket(
         const ListenCallback& callback,
-        const socket::Socket::Direction direction) const noexcept = 0;
-    virtual Pimpl<network::zeromq::socket::Push> PushSocket(
-        const socket::Socket::Direction direction) const noexcept = 0;
-    virtual Pimpl<network::zeromq::Message> ReplyMessage(
-        const zeromq::Message& request) const noexcept = 0;
-    virtual Pimpl<network::zeromq::Message> ReplyMessage(
-        const ReadView connectionID) const noexcept = 0;
-    virtual Pimpl<network::zeromq::socket::Reply> ReplySocket(
+        const socket::Socket::Direction direction) const noexcept
+        -> Pimpl<network::zeromq::socket::Pull> = 0;
+    virtual auto PushSocket(const socket::Socket::Direction direction)
+        const noexcept -> Pimpl<network::zeromq::socket::Push> = 0;
+    virtual auto ReplyMessage(const zeromq::Message& request) const noexcept
+        -> Pimpl<network::zeromq::Message> = 0;
+    virtual auto ReplyMessage(const ReadView connectionID) const noexcept
+        -> Pimpl<network::zeromq::Message> = 0;
+    virtual auto ReplySocket(
         const ReplyCallback& callback,
-        const socket::Socket::Direction direction) const noexcept = 0;
-    virtual Pimpl<network::zeromq::socket::Request> RequestSocket()
-        const noexcept = 0;
-    virtual Pimpl<network::zeromq::socket::Router> RouterSocket(
+        const socket::Socket::Direction direction) const noexcept
+        -> Pimpl<network::zeromq::socket::Reply> = 0;
+    virtual auto RequestSocket() const noexcept
+        -> Pimpl<network::zeromq::socket::Request> = 0;
+    virtual auto RouterSocket(
         const ListenCallback& callback,
-        const socket::Socket::Direction direction) const noexcept = 0;
-    virtual Pimpl<network::zeromq::socket::Subscribe> SubscribeSocket(
-        const ListenCallback& callback) const noexcept = 0;
-#ifndef SWIG
+        const socket::Socket::Direction direction) const noexcept
+        -> Pimpl<network::zeromq::socket::Router> = 0;
+    virtual auto SubscribeSocket(const ListenCallback& callback) const noexcept
+        -> Pimpl<network::zeromq::socket::Subscribe> = 0;
     template <
         typename Input,
         std::enable_if_t<std::is_trivially_copyable<Input>::value, int> = 0>
-    Pimpl<network::zeromq::Message> TaggedMessage(
-        const Input& tag) const noexcept
+    auto TaggedMessage(const Input& tag) const noexcept
+        -> Pimpl<network::zeromq::Message>
     {
         return TaggedMessage(&tag, sizeof(tag));
     }
     template <
         typename Input,
         std::enable_if_t<std::is_trivially_copyable<Input>::value, int> = 0>
-    Pimpl<network::zeromq::Message> TaggedReply(
-        const zeromq::Message& request,
-        const Input& tag) const noexcept
+    auto TaggedReply(const zeromq::Message& request, const Input& tag)
+        const noexcept -> Pimpl<network::zeromq::Message>
     {
         return TaggedReply(request, &tag, sizeof(tag));
     }
     template <
         typename Input,
         std::enable_if_t<std::is_trivially_copyable<Input>::value, int> = 0>
-    Pimpl<network::zeromq::Message> TaggedReply(
-        const ReadView connectionID,
-        const Input& tag) const noexcept
+    auto TaggedReply(const ReadView connectionID, const Input& tag)
+        const noexcept -> Pimpl<network::zeromq::Message>
     {
         return TaggedReply(connectionID, &tag, sizeof(tag));
     }
-#endif
 
     virtual ~Context() = default;
 
@@ -239,23 +224,24 @@ protected:
 private:
     friend OTZMQContext;
 
-    virtual Context* clone() const noexcept = 0;
-    virtual Pimpl<network::zeromq::Message> TaggedMessage(
-        const void* tag,
-        const std::size_t size) const noexcept = 0;
-    virtual Pimpl<network::zeromq::Message> TaggedReply(
+    virtual auto clone() const noexcept -> Context* = 0;
+    virtual auto TaggedMessage(const void* tag, const std::size_t size)
+        const noexcept -> Pimpl<network::zeromq::Message> = 0;
+    virtual auto TaggedReply(
         const zeromq::Message& request,
         const void* tag,
-        const std::size_t size) const noexcept = 0;
-    virtual Pimpl<network::zeromq::Message> TaggedReply(
+        const std::size_t size) const noexcept
+        -> Pimpl<network::zeromq::Message> = 0;
+    virtual auto TaggedReply(
         const ReadView connectionID,
         const void* tag,
-        const std::size_t size) const noexcept = 0;
+        const std::size_t size) const noexcept
+        -> Pimpl<network::zeromq::Message> = 0;
 
     Context(const Context&) = delete;
     Context(Context&&) = delete;
-    Context& operator=(const Context&) = delete;
-    Context& operator=(Context&&) = delete;
+    auto operator=(const Context&) -> Context& = delete;
+    auto operator=(Context&&) -> Context& = delete;
 };
 }  // namespace zeromq
 }  // namespace network

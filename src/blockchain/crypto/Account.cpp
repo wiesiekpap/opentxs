@@ -18,10 +18,10 @@
 
 #include "blockchain/crypto/Account.tpp"  // IWYU pragma: keep
 #include "blockchain/crypto/AccountIndex.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/crypto/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -48,14 +48,14 @@
 namespace opentxs::factory
 {
 auto BlockchainAccountKeys(
-    const api::internal::Core& api,
-    const blockchain::crypto::internal::Wallet& parent,
-    const api::client::internal::BalanceTreeIndex& index,
+    const api::Core& api,
+    const blockchain::crypto::Wallet& parent,
+    const blockchain::crypto::AccountIndex& index,
     const identifier::Nym& id,
     const std::set<OTIdentifier>& hd,
     const std::set<OTIdentifier>& imported,
     const std::set<OTIdentifier>& pc) noexcept
-    -> std::unique_ptr<blockchain::crypto::internal::Account>
+    -> std::unique_ptr<blockchain::crypto::Account>
 {
     using ReturnType = blockchain::crypto::implementation::Account;
 
@@ -67,9 +67,9 @@ auto BlockchainAccountKeys(
 namespace opentxs::blockchain::crypto::implementation
 {
 Account::Account(
-    const api::internal::Core& api,
-    const internal::Wallet& parent,
-    const api::client::internal::BalanceTreeIndex& index,
+    const api::Core& api,
+    const crypto::Wallet& parent,
+    const AccountIndex& index,
     const identifier::Nym& nym,
     const Accounts& hd,
     const Accounts& imported,
@@ -111,7 +111,7 @@ Account::Account(
 
 auto Account::NodeIndex::Add(
     const std::string& id,
-    internal::Subaccount* node) noexcept -> void
+    crypto::Subaccount* node) noexcept -> void
 {
     OT_ASSERT(nullptr != node);
 
@@ -120,7 +120,7 @@ auto Account::NodeIndex::Add(
 }
 
 auto Account::NodeIndex::Find(const std::string& id) const noexcept
-    -> internal::Subaccount*
+    -> crypto::Subaccount*
 {
     Lock lock(lock_);
 
@@ -179,7 +179,7 @@ auto Account::AssociateTransaction(
         }
 
         const auto& node = *pNode;
-        const auto accepted = node.AssociateTransaction(
+        const auto accepted = node.Internal().AssociateTransaction(
             value.first, value.second, contacts, reason);
 
         if (accepted) {
@@ -207,7 +207,7 @@ auto Account::AssociateTransaction(
     return true;
 }
 
-auto Account::ClaimAccountID(const std::string& id, internal::Subaccount* node)
+auto Account::ClaimAccountID(const std::string& id, crypto::Subaccount* node)
     const noexcept -> void
 {
     node_index_.Add(id, node);
@@ -335,8 +335,8 @@ auto Account::LookupUTXO(const Coin& coin) const noexcept
     }
 }
 
-auto Account::Node(const Identifier& id) const noexcept(false)
-    -> internal::Subaccount&
+auto Account::Subaccount(const Identifier& id) const noexcept(false)
+    -> const crypto::Subaccount&
 {
     auto* output = node_index_.Find(id.str());
 

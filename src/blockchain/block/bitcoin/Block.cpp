@@ -141,7 +141,7 @@ auto BitcoinBlock(
             case blockchain::Type::Ethereum_frontier:
             case blockchain::Type::Ethereum_ropsten:
             default: {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported type (")(
+                LogOutput(OT_METHOD)(__func__)(": Unsupported type (")(
                     static_cast<std::uint32_t>(chain))(")")
                     .Flush();
 
@@ -149,7 +149,7 @@ auto BitcoinBlock(
             }
         }
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -180,7 +180,7 @@ auto BitcoinBlock(
             case blockchain::Type::Ethereum_frontier:
             case blockchain::Type::Ethereum_ropsten:
             default: {
-                LogOutput(OT_METHOD)(__FUNCTION__)(": Unsupported type (")(
+                LogOutput(OT_METHOD)(__func__)(": Unsupported type (")(
                     static_cast<std::uint32_t>(chain))(")")
                     .Flush();
 
@@ -188,7 +188,7 @@ auto BitcoinBlock(
             }
         }
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -367,7 +367,7 @@ auto Block::at(const std::size_t index) const noexcept -> const value_type&
 
         return at(reader(index_.at(index)));
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what()).Flush();
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return null_tx_;
     }
@@ -379,7 +379,7 @@ auto Block::at(const ReadView txid) const noexcept -> const value_type&
 
         return transactions_.at(txid);
     } catch (...) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": transaction ")(
+        LogOutput(OT_METHOD)(__func__)(": transaction ")(
             api_.Factory().Data(txid)->asHex())(" not found in block ")(
             header_.Hash().asHex())
             .Flush();
@@ -499,7 +499,7 @@ auto Block::ExtractElements(const FilterType style) const noexcept
     -> std::vector<Space>
 {
     auto output = std::vector<Space>{};
-    LogTrace(OT_METHOD)(__FUNCTION__)(": processing ")(transactions_.size())(
+    LogTrace(OT_METHOD)(__func__)(": processing ")(transactions_.size())(
         " transactions")
         .Flush();
 
@@ -511,8 +511,7 @@ auto Block::ExtractElements(const FilterType style) const noexcept
             std::make_move_iterator(temp.end()));
     }
 
-    LogTrace(OT_METHOD)(__FUNCTION__)(": extracted ")(output.size())(
-        " elements")
+    LogTrace(OT_METHOD)(__func__)(": extracted ")(output.size())(" elements")
         .Flush();
     std::sort(output.begin(), output.end());
 
@@ -526,7 +525,7 @@ auto Block::FindMatches(
 {
     if (0 == (outpoints.size() + patterns.size())) { return {}; }
 
-    LogTrace(OT_METHOD)(__FUNCTION__)(": Verifying ")(
+    LogTrace(OT_METHOD)(__func__)(": Verifying ")(
         patterns.size() + outpoints.size())(" potential matches in ")(
         transactions_.size())(" transactions")
         .Flush();
@@ -580,8 +579,7 @@ auto Block::Print() const noexcept -> std::string
 auto Block::Serialize(AllocateOutput bytes) const noexcept -> bool
 {
     if (false == bool(bytes)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Invalid output allocator")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
@@ -590,21 +588,19 @@ auto Block::Serialize(AllocateOutput bytes) const noexcept -> bool
     const auto out = bytes(size);
 
     if (false == out.valid(size)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to allocate output")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to allocate output").Flush();
 
         return false;
     }
 
-    LogInsane(OT_METHOD)(__FUNCTION__)(": Serializing ")(txCount.Value())(
+    LogInsane(OT_METHOD)(__func__)(": Serializing ")(txCount.Value())(
         " transactions into ")(size)(" bytes.")
         .Flush();
     auto remaining = std::size_t{size};
     auto it = static_cast<std::byte*>(out.data());
 
     if (false == header_.Serialize(preallocated(remaining, it))) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Failed to serialize header")
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Failed to serialize header").Flush();
 
         return false;
     }
@@ -613,15 +609,14 @@ auto Block::Serialize(AllocateOutput bytes) const noexcept -> bool
     std::advance(it, header_bytes_);
 
     if (false == serialize_post_header(it, remaining)) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
-            ": Failed to extra data (post header)")
+        LogOutput(OT_METHOD)(__func__)(": Failed to extra data (post header)")
             .Flush();
 
         return false;
     }
 
     if (false == txCount.Encode(preallocated(remaining, it))) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(
+        LogOutput(OT_METHOD)(__func__)(
             ": Failed to serialize transaction count")
             .Flush();
 
@@ -641,7 +636,7 @@ auto Block::Serialize(AllocateOutput bytes) const noexcept -> bool
             const auto encoded = tx.Serialize(preallocated(remaining, it));
 
             if (false == encoded.has_value()) {
-                LogOutput(OT_METHOD)(__FUNCTION__)(
+                LogOutput(OT_METHOD)(__func__)(
                     ": failed to serialize transaction ")(tx.ID().asHex())
                     .Flush();
 
@@ -651,15 +646,14 @@ auto Block::Serialize(AllocateOutput bytes) const noexcept -> bool
             remaining -= encoded.value();
             std::advance(it, encoded.value());
         } catch (...) {
-            LogOutput(OT_METHOD)(__FUNCTION__)(": missing transaction").Flush();
+            LogOutput(OT_METHOD)(__func__)(": missing transaction").Flush();
 
             return false;
         }
     }
 
     if (0 != remaining) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Extra bytes: ")(remaining)
-            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Extra bytes: ")(remaining).Flush();
 
         return false;
     }

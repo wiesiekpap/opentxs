@@ -7,8 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "internal/api/client/Client.hpp"
-#include "internal/api/server/Server.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -50,20 +48,20 @@ public:
     static const std::string Alice_;
     static const OTNymID alice_nym_id_;
 
-    const ot::api::client::internal::Manager& client_;
-    const ot::api::server::internal::Manager& server_;
+    const ot::api::client::Manager& client_;
+    const ot::api::server::Manager& server_;
     ot::OTPasswordPrompt reason_c_;
     ot::OTPasswordPrompt reason_s_;
     const identifier::Server& server_id_;
     const OTServerContract server_contract_;
 
     Test_Messages()
-        : client_(dynamic_cast<const ot::api::client::internal::Manager&>(
+        : client_(dynamic_cast<const ot::api::client::Manager&>(
               Context().StartClient(0)))
-        , server_(dynamic_cast<const ot::api::server::internal::Manager&>(
+        , server_(dynamic_cast<const ot::api::server::Manager&>(
               Context().StartServer(0)))
-        , reason_c_(client_.Factory().PasswordPrompt(__FUNCTION__))
-        , reason_s_(server_.Factory().PasswordPrompt(__FUNCTION__))
+        , reason_c_(client_.Factory().PasswordPrompt(__func__))
+        , reason_s_(server_.Factory().PasswordPrompt(__func__))
         , server_id_(server_.ID())
         , server_contract_(server_.Wallet().Server(server_id_))
     {

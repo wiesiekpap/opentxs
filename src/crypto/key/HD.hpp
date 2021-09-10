@@ -27,10 +27,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace crypto
@@ -73,18 +70,18 @@ public:
 protected:
     void erase_private_data(const Lock& lock) final;
 
-    HD(const api::internal::Core& api,
+    HD(const api::Core& api,
        const crypto::EcdsaProvider& ecdsa,
        const proto::AsymmetricKey& serializedKey)
     noexcept(false);
-    HD(const api::internal::Core& api,
+    HD(const api::Core& api,
        const crypto::EcdsaProvider& ecdsa,
        const crypto::key::asymmetric::Algorithm keyType,
        const crypto::key::asymmetric::Role role,
        const VersionNumber version,
        const PasswordPrompt& reason)
     noexcept(false);
-    HD(const api::internal::Core& api,
+    HD(const api::Core& api,
        const crypto::EcdsaProvider& ecdsa,
        const crypto::key::asymmetric::Algorithm keyType,
        const Secret& privateKey,
@@ -95,7 +92,7 @@ protected:
        const PasswordPrompt& reason)
     noexcept(false);
 #if OT_CRYPTO_WITH_BIP32
-    HD(const api::internal::Core& api,
+    HD(const api::Core& api,
        const crypto::EcdsaProvider& ecdsa,
        const crypto::key::asymmetric::Algorithm keyType,
        const Secret& privateKey,
@@ -108,7 +105,7 @@ protected:
        key::Symmetric& sessionKey,
        const PasswordPrompt& reason)
     noexcept(false);
-    HD(const api::internal::Core& api,
+    HD(const api::Core& api,
        const crypto::EcdsaProvider& ecdsa,
        const crypto::key::asymmetric::Algorithm keyType,
        const Secret& privateKey,

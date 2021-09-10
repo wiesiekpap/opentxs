@@ -39,10 +39,7 @@ namespace opentxs
 {
 namespace api
 {
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace crypto
@@ -219,7 +216,7 @@ private:
     static const VersionConversionMap authority_to_verification_;
     static const VersionConversionMap nym_to_authority_;
 
-    const api::internal::Core& api_;
+    const api::Core& api_;
     const identity::Nym& parent_;
     const VersionNumber version_{0};
     std::uint32_t index_{0};
@@ -234,7 +231,7 @@ private:
         const std::string& id,
         const String::List* plistRevokedIDs) -> bool;
     static auto create_child_credential(
-        const api::internal::Core& api,
+        const api::Core& api,
         const NymParameters& parameters,
         const identity::Source& source,
         const credential::internal::Primary& master,
@@ -244,7 +241,7 @@ private:
         const opentxs::PasswordPrompt& reason) noexcept(false)
         -> KeyCredentialMap;
     static auto create_contact_credental(
-        const api::internal::Core& api,
+        const api::Core& api,
         const NymParameters& parameters,
         const identity::Source& source,
         const credential::internal::Primary& master,
@@ -253,7 +250,7 @@ private:
         const opentxs::PasswordPrompt& reason) noexcept(false)
         -> ContactCredentialMap;
     static auto create_key_credential(
-        const api::internal::Core& api,
+        const api::Core& api,
         const NymParameters& parameters,
         const identity::Source& source,
         const credential::internal::Primary& master,
@@ -263,7 +260,7 @@ private:
         const opentxs::PasswordPrompt& reason) noexcept(false)
         -> KeyCredentialItem;
     static auto create_master(
-        const api::internal::Core& api,
+        const api::Core& api,
         identity::internal::Authority& owner,
         const identity::Source& source,
         const VersionNumber version,
@@ -273,7 +270,7 @@ private:
         -> std::unique_ptr<credential::internal::Primary>;
     template <typename Type>
     static void extract_child(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identity::Source& source,
         internal::Authority& authority,
         const credential::internal::Primary& master,
@@ -282,7 +279,7 @@ private:
         const proto::CredentialRole role,
         std::map<OTIdentifier, std::unique_ptr<Type>>& map) noexcept(false);
     static auto load_master(
-        const api::internal::Core& api,
+        const api::Core& api,
         identity::internal::Authority& owner,
         const identity::Source& source,
         const proto::KeyMode mode,
@@ -290,7 +287,7 @@ private:
         -> std::unique_ptr<credential::internal::Primary>;
     template <typename Type>
     static auto load_child(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identity::Source& source,
         internal::Authority& authority,
         const credential::internal::Primary& master,
@@ -317,13 +314,13 @@ private:
         -> bool;
 
     Authority(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identity::Nym& parent,
         const identity::Source& source,
         const proto::KeyMode mode,
         const Serialized& serialized) noexcept(false);
     Authority(
-        const api::internal::Core& api,
+        const api::Core& api,
         const identity::Nym& parent,
         const identity::Source& source,
         const NymParameters& parameters,

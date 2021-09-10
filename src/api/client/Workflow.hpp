@@ -41,10 +41,7 @@ class Activity;
 class Contacts;
 }  // namespace client
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace blind
@@ -195,7 +192,7 @@ public:
     auto WriteCheque(const opentxs::Cheque& cheque) const -> OTIdentifier final;
 
     Workflow(
-        const api::internal::Core& api,
+        const api::Core& api,
         const Activity& activity,
         const Contacts& contact);
 
@@ -213,7 +210,7 @@ private:
 
     static const VersionMap versions_;
 
-    const api::internal::Core& api_;
+    const api::Core& api_;
     const Activity& activity_;
     const Contacts& contact_;
     const OTZMQPublishSocket account_publisher_;

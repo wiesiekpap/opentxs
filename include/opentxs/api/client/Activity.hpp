@@ -33,10 +33,7 @@ class Blockchain;
 class Contacts;
 }  // namespace client
 
-namespace internal
-{
-struct Core;
-}  // namespace internal
+class Core;
 }  // namespace api
 
 namespace blockchain
@@ -258,7 +255,7 @@ public:
         -> std::string;
 
     OPENTXS_NO_EXPORT Activity(
-        const api::internal::Core& api,
+        const api::Core& api,
         const client::Contacts& contact) noexcept;
 
     OPENTXS_NO_EXPORT ~Activity();

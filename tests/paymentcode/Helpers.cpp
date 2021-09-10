@@ -175,7 +175,7 @@ PC_Fixture_Base::PC_Fixture_Base(
     const std::string& aliceExpectedPC,
     const std::string& bobExpectedPC) noexcept
     : api_(ot::Context().StartClient(0))
-    , reason_(api_.Factory().PasswordPrompt(__FUNCTION__))
+    , reason_(api_.Factory().PasswordPrompt(__func__))
     , alice_seed_(user_1_.seed(api_, aliceBip39, reason_))
     , bob_seed_(user_2_.seed(api_, bobBip39, reason_))
     , alice_pc_secret_(user_1_.payment_code_secret(api_, aliceVersion, reason_))

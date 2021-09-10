@@ -10,7 +10,6 @@
 #include <string_view>
 #include <vector>
 
-#include "Basic.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -62,7 +61,7 @@ protected:
 
     Test_BIP44()
         : api_(ot::Context().StartClient(0))
-        , reason_(api_.Factory().PasswordPrompt(__FUNCTION__))
+        , reason_(api_.Factory().PasswordPrompt(__func__))
         , nym_id_([&]() -> const ot::identifier::Nym& {
             if (seed_id_.empty()) {
                 const auto words =

@@ -44,11 +44,14 @@ public slots:
     void setScale(int);
 
 public:
+    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
+    Q_INVOKABLE QString revise(const QString& input, int previousValue) const;
+
+public:
     int getMaxDecimals() const;
     int getMinDecimals() const;
     int getScale() const;
     void fixup(QString& input) const final;
-    Q_INVOKABLE QString revise(const QString& input, int previousValue) const;
     State validate(QString& input, int& pos) const final;
 
     AmountValidator(implementation::AccountActivity& parent) noexcept;

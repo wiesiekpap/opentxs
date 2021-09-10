@@ -42,22 +42,24 @@ class OPENTXS_EXPORT OTStash
                                       // definition ID.
                                       // owned.
 public:
-    const std::string GetName() const { return m_str_stash_name; }
-    OTStashItem* GetStash(const std::string& str_instrument_definition_id);
+    auto GetName() const -> const std::string { return m_str_stash_name; }
+    auto GetStash(const std::string& str_instrument_definition_id)
+        -> OTStashItem*;
 
-    std::int64_t GetAmount(const std::string& str_instrument_definition_id);
-    bool CreditStash(
+    auto GetAmount(const std::string& str_instrument_definition_id)
+        -> std::int64_t;
+    auto CreditStash(
         const std::string& str_instrument_definition_id,
-        const std::int64_t& lAmount);
-    bool DebitStash(
+        const std::int64_t& lAmount) -> bool;
+    auto DebitStash(
         const std::string& str_instrument_definition_id,
-        const std::int64_t& lAmount);
+        const std::int64_t& lAmount) -> bool;
 
     void Serialize(Tag& parent) const;
-    std::int32_t ReadFromXMLNode(
+    auto ReadFromXMLNode(
         irr::io::IrrXMLReader*& xml,
         const String& strStashName,
-        const String& strItemCount);
+        const String& strItemCount) -> std::int32_t;
 
     OTStash();
     OTStash(const std::string& str_stash_name);
