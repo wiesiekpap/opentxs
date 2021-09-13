@@ -309,7 +309,8 @@ Symmetric::Symmetric(const Symmetric& rhs)
     }
 
     if (rhs.encrypted_key_) {
-        encrypted_key_.reset(new proto::Ciphertext(*rhs.encrypted_key_));
+        encrypted_key_ =
+            std::make_unique<proto::Ciphertext>(*rhs.encrypted_key_);
     }
 }
 
@@ -581,7 +582,7 @@ auto Symmetric::encrypt_key(
     const crypto::key::symmetric::Source type) const -> bool
 {
     auto& encrypted = get_encrypted(lock);
-    encrypted.reset(new proto::Ciphertext);
+    encrypted = std::make_unique<proto::Ciphertext>();
 
     OT_ASSERT(encrypted);
 

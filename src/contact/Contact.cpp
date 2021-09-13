@@ -9,6 +9,7 @@
 
 #include <atomic>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <sstream>
 #include <stdexcept>
@@ -172,11 +173,11 @@ struct Contact::Imp {
         , revision_(serialized.revision())
     {
         if (serialized.has_contactdata()) {
-            contact_data_.reset(new ContactData(
+            contact_data_ = std::make_unique<ContactData>(
                 api_,
                 serialized.id(),
                 CONTACT_CONTACT_DATA_VERSION,
-                serialized.contactdata()));
+                serialized.contactdata());
         }
 
         OT_ASSERT(contact_data_);
@@ -202,12 +203,12 @@ struct Contact::Imp {
         , cached_contact_data_()
         , revision_(1)
     {
-        contact_data_.reset(new ContactData(
+        contact_data_ = std::make_unique<ContactData>(
             api_,
             String::Factory(id_)->Get(),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
-            ContactData::SectionMap{}));
+            ContactData::SectionMap{});
 
         OT_ASSERT(contact_data_);
     }
@@ -318,6 +319,7 @@ struct Contact::Imp {
         OT_ASSERT(verify_write_lock(lock));
         OT_ASSERT(contact_data_);
 
+        // NOLINTNEXTLINE(modernize-make-unique)
         contact_data_.reset(new ContactData(contact_data_->AddItem(item)));
 
         OT_ASSERT(contact_data_);
@@ -489,13 +491,14 @@ auto Contact::operator+=(Contact& rhs) -> Contact&
 
     if (imp_->contact_data_) {
         if (rhs.imp_->contact_data_) {
+            // NOLINTNEXTLINE(modernize-make-unique)
             imp_->contact_data_.reset(new ContactData(
                 *imp_->contact_data_ + *rhs.imp_->contact_data_));
         }
     } else {
         if (rhs.imp_->contact_data_) {
-            imp_->contact_data_.reset(
-                new ContactData(*rhs.imp_->contact_data_));
+            imp_->contact_data_ =
+                std::make_unique<ContactData>(*rhs.imp_->contact_data_);
         }
     }
 
@@ -538,7 +541,7 @@ auto Contact::AddBlockchainAddress(
     const blockchain::Type chain,
     const opentxs::Data& bytes) -> bool
 {
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
 
     std::shared_ptr<ContactItem> claim{nullptr};
     claim.reset(new ContactItem(
@@ -565,8 +568,9 @@ auto Contact::AddEmail(
 {
     if (value.empty()) { return false; }
 
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
 
+    // NOLINTNEXTLINE(modernize-make-unique)
     imp_->contact_data_.reset(
         new ContactData(imp_->contact_data_->AddEmail(value, primary, active)));
 
@@ -580,14 +584,14 @@ auto Contact::AddEmail(
 
 auto Contact::AddNym(const Nym_p& nym, const bool primary) -> bool
 {
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
 
     return imp_->add_nym(lock, nym, primary);
 }
 
 auto Contact::AddNym(const identifier::Nym& nymID, const bool primary) -> bool
 {
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
 
     const bool needPrimary = (0 == imp_->nyms_.size());
     const bool isPrimary = needPrimary || primary;
@@ -645,8 +649,9 @@ auto Contact::AddPhoneNumber(
 {
     if (value.empty()) { return false; }
 
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
 
+    // NOLINTNEXTLINE(modernize-make-unique)
     imp_->contact_data_.reset(new ContactData(
         imp_->contact_data_->AddPhoneNumber(value, primary, active)));
 
@@ -666,8 +671,9 @@ auto Contact::AddSocialMediaProfile(
 {
     if (value.empty()) { return false; }
 
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
 
+    // NOLINTNEXTLINE(modernize-make-unique)
     imp_->contact_data_.reset(
         new ContactData(imp_->contact_data_->AddSocialMediaProfile(
             value, type, primary, active)));
@@ -699,7 +705,7 @@ auto Contact::Best(const ContactGroup& group) -> std::shared_ptr<ContactItem>
 
 auto Contact::BestEmail() const -> std::string
 {
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
     lock.unlock();
 
@@ -710,7 +716,7 @@ auto Contact::BestEmail() const -> std::string
 
 auto Contact::BestPhoneNumber() const -> std::string
 {
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
     lock.unlock();
 
@@ -722,7 +728,7 @@ auto Contact::BestPhoneNumber() const -> std::string
 auto Contact::BestSocialMediaProfile(const contact::ContactItemType type) const
     -> std::string
 {
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
     lock.unlock();
 
@@ -735,7 +741,7 @@ auto Contact::BlockchainAddresses() const
     -> std::vector<Contact::BlockchainAddress>
 {
     auto output = std::vector<BlockchainAddress>{};
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
     auto data = imp_->merged_data(lock);
     lock.unlock();
 
@@ -779,14 +785,14 @@ auto Contact::BlockchainAddresses() const
 
 auto Contact::Data() const -> std::shared_ptr<ContactData>
 {
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
 
     return imp_->merged_data(lock);
 }
 
 auto Contact::EmailAddresses(bool active) const -> std::string
 {
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
     lock.unlock();
 
@@ -849,7 +855,7 @@ auto Contact::LastUpdated() const -> std::time_t
 auto Contact::Nyms(const bool includeInactive) const
     -> std::vector<opentxs::OTNymID>
 {
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
     lock.unlock();
 
@@ -903,7 +909,7 @@ auto Contact::PaymentCode(
 auto Contact::PaymentCode(const contact::ContactItemType currency) const
     -> std::string
 {
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
     lock.unlock();
 
@@ -915,7 +921,7 @@ auto Contact::PaymentCode(const contact::ContactItemType currency) const
 auto Contact::PaymentCodes(const contact::ContactItemType currency) const
     -> std::vector<std::string>
 {
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
     const auto group = imp_->payment_codes(lock, currency);
     lock.unlock();
 
@@ -935,7 +941,7 @@ auto Contact::PaymentCodes(const contact::ContactItemType currency) const
 
 auto Contact::PhoneNumbers(bool active) const -> std::string
 {
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
     lock.unlock();
 
@@ -946,7 +952,7 @@ auto Contact::PhoneNumbers(bool active) const -> std::string
 
 auto Contact::Print() const -> std::string
 {
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
     std::stringstream out{};
     out << "Contact: " << String::Factory(imp_->id_)->Get() << ", version "
         << imp_->version_ << "revision " << imp_->revision_ << "\n"
@@ -988,7 +994,7 @@ auto Contact::Print() const -> std::string
 
 auto Contact::RemoveNym(const identifier::Nym& nymID) -> bool
 {
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
 
     auto result = imp_->nyms_.erase(nymID);
 
@@ -1001,7 +1007,7 @@ auto Contact::RemoveNym(const identifier::Nym& nymID) -> bool
 
 auto Contact::Serialize(proto::Contact& output) const -> bool
 {
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
     output.set_version(imp_->version_);
     output.set_id(String::Factory(imp_->id_)->Get());
     output.set_revision(imp_->revision_);
@@ -1022,7 +1028,7 @@ auto Contact::Serialize(proto::Contact& output) const -> bool
 
 void Contact::SetLabel(const std::string& label)
 {
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
     imp_->label_ = label;
     imp_->revision_++;
 
@@ -1036,7 +1042,7 @@ auto Contact::SocialMediaProfiles(
     const contact::ContactItemType type,
     bool active) const -> std::string
 {
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
     lock.unlock();
 
@@ -1048,7 +1054,7 @@ auto Contact::SocialMediaProfiles(
 auto Contact::SocialMediaProfileTypes() const
     -> const std::set<contact::ContactItemType>
 {
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
     lock.unlock();
 
@@ -1057,7 +1063,7 @@ auto Contact::SocialMediaProfileTypes() const
 
 auto Contact::Type() const -> contact::ContactItemType
 {
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
 
     return imp_->type(lock);
 }
@@ -1072,7 +1078,7 @@ void Contact::Update(const proto::Nym& serialized)
         return;
     }
 
-    Lock lock(imp_->lock_);
+    auto lock = Lock{imp_->lock_};
     const auto& nymID = nym->ID();
     auto it = imp_->nyms_.find(nymID);
 

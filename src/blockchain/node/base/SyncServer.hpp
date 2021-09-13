@@ -22,6 +22,7 @@
 #include "internal/blockchain/Blockchain.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/core/Log.hpp"
@@ -44,7 +45,7 @@
 namespace opentxs::blockchain::node::base
 {
 using SyncDM = download::
-    Manager<SyncServer, std::unique_ptr<const node::GCS>, int, filter::Type>;
+    Manager<SyncServer, std::unique_ptr<const GCS>, int, filter::Type>;
 using SyncWorker = Worker<SyncServer, api::Core>;
 
 class SyncServer : public SyncDM, public SyncWorker

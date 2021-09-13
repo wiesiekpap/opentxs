@@ -136,10 +136,10 @@ ContactSection::ContactSection(
           rowID,
           key)
 {
-    startup_.reset(new std::thread(
+    startup_ = std::make_unique<std::thread>(
         &ContactSection::startup,
         this,
-        extract_custom<opentxs::ContactSection>(custom)));
+        extract_custom<opentxs::ContactSection>(custom));
 
     OT_ASSERT(startup_)
 }

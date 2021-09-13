@@ -11,6 +11,7 @@
 #include <atomic>
 #include <iterator>
 #include <map>
+#include <memory>
 #include <set>
 #include <thread>
 #include <utility>
@@ -85,7 +86,7 @@ IssuerItem::IssuerItem(
     OT_ASSERT(issuer_)
 
     setup_listeners(listeners_);
-    startup_.reset(new std::thread(&IssuerItem::startup, this));
+    startup_ = std::make_unique<std::thread>(&IssuerItem::startup, this);
 
     OT_ASSERT(startup_)
 }

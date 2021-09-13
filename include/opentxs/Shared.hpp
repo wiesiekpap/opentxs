@@ -71,7 +71,7 @@ public:
         p_ = rhs.p_;
 
         if (nullptr != rhs.lock_->mutex()) {
-            lock_.reset(new sLock(*rhs.lock_->mutex()));
+            lock_ = std::make_unique<sLock>(*rhs.lock_->mutex());
         } else {
             lock_.reset(nullptr);
         }

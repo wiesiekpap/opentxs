@@ -73,7 +73,7 @@ AccountSummary::AccountSummary(
     , nym_server_map_{}
 {
     setup_listeners(listeners_);
-    startup_.reset(new std::thread(&AccountSummary::startup, this));
+    startup_ = std::make_unique<std::thread>(&AccountSummary::startup, this);
 
     OT_ASSERT(startup_)
 }

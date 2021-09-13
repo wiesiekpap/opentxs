@@ -42,6 +42,7 @@
 #include "opentxs/api/crypto/Util.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
@@ -1008,7 +1009,7 @@ auto Peer::process_getcfilters(
         return;
     }
 
-    auto data = std::vector<std::unique_ptr<const node::GCS>>{};
+    auto data = std::vector<std::unique_ptr<const GCS>>{};
     data.reserve(count);
     const auto& filters = network_.FilterOracle();
     const auto type = message.Type();

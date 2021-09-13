@@ -429,7 +429,7 @@ void MessageProcessor::process_notification(const zmq::Message& incoming)
         server_.GetServerID(),
         otx::ServerReplyType::Push,
         true,
-        0,
+        false,
         reason_,
         proto::DynamicFactory<proto::OTXPush>(payload));
 

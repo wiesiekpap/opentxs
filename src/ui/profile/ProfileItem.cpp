@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"              // IWYU pragma: associated
 #include "ui/profile/ProfileItem.hpp"  // IWYU pragma: associated
 
+#include <memory>
 #include <set>
 #include <tuple>
 #include <utility>
@@ -100,8 +101,8 @@ auto ProfileItem::reindex(
     CustomData& custom) noexcept -> bool
 {
     eLock lock(shared_lock_);
-    item_.reset(
-        new opentxs::ContactItem(extract_custom<opentxs::ContactItem>(custom)));
+    item_ = std::make_unique<opentxs::ContactItem>(
+        extract_custom<opentxs::ContactItem>(custom));
 
     OT_ASSERT(item_);
 

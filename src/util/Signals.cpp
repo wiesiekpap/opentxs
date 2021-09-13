@@ -8,6 +8,7 @@
 #include "opentxs/util/Signals.hpp"  // IWYU pragma: associated
 
 #include <csignal>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -44,7 +45,7 @@ Signals::Signals(const Flag& running)
     : running_(running)
     , thread_(nullptr)
 {
-    thread_.reset(new std::thread(&Signals::handle, this));
+    thread_ = std::make_unique<std::thread>(&Signals::handle, this);
 }
 
 void Signals::Block()

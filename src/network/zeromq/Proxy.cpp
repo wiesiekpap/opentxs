@@ -8,6 +8,7 @@
 #include "network/zeromq/Proxy.hpp"  // IWYU pragma: associated
 
 #include <zmq.h>
+#include <memory>
 
 #include "internal/network/zeromq/socket/Socket.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -48,7 +49,7 @@ Proxy::Proxy(
           factory::PairSocket(null_callback_, control_listener_, false))
     , thread_(nullptr)
 {
-    thread_.reset(new std::thread(&Proxy::proxy, this));
+    thread_ = std::make_unique<std::thread>(&Proxy::proxy, this);
 
     OT_ASSERT(thread_)
 }

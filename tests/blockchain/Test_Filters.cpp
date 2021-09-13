@@ -34,7 +34,7 @@
 #include "opentxs/blockchain/BloomFilter.hpp"
 #include "opentxs/blockchain/BloomUpdateFlag.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
-#include "opentxs/blockchain/node/FilterOracle.hpp"
+#include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/HashType.hpp"
@@ -607,7 +607,7 @@ TEST_F(Test_Filters, test_set_intersection)
     }();
 
     const auto targets = [&] {
-        auto out = ot::blockchain::node::GCS::Targets{};
+        auto out = ot::blockchain::GCS::Targets{};
         out.reserve(subset.size());
         std::transform(
             subset.begin(),

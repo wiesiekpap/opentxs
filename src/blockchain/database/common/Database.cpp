@@ -37,6 +37,7 @@ extern "C" {
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Legacy.hpp"
 #include "opentxs/api/Options.hpp"
+#include "opentxs/blockchain/GCS.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
@@ -533,7 +534,7 @@ auto Database::LoadBlockHeader(const BlockHash& hash) const noexcept(false)
 }
 
 auto Database::LoadFilter(const FilterType type, const ReadView blockHash)
-    const noexcept -> std::unique_ptr<const opentxs::blockchain::node::GCS>
+    const noexcept -> std::unique_ptr<const opentxs::blockchain::GCS>
 {
     return imp_.filters_.LoadFilter(type, blockHash);
 }

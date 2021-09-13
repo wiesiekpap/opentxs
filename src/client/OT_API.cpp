@@ -320,7 +320,7 @@ auto OT_API::LoadConfigFile() -> bool
             ": Success invoking OTDB::InitDefaultStorage")
             .Flush();
 
-        m_pClient.reset(new OTClient(api_));
+        m_pClient = std::make_unique<OTClient>(api_);
     } else {
         LogOutput(OT_METHOD)(__func__)(
             ": Failed invoking OTDB::InitDefaultStorage.")

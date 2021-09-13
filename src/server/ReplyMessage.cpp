@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"           // IWYU pragma: associated
 #include "server/ReplyMessage.hpp"  // IWYU pragma: associated
 
+#include <memory>
 #include <string>
 
 #include "opentxs/Pimpl.hpp"
@@ -221,8 +222,8 @@ auto ReplyMessage::LoadContext(const PasswordPrompt& reason) -> bool
         return false;
     }
 
-    context_.reset(new Editor<otx::context::Client>(
-        wallet_.mutable_ClientContext(sender_nym_->ID(), reason)));
+    context_ = std::make_unique<Editor<otx::context::Client>>(
+        wallet_.mutable_ClientContext(sender_nym_->ID(), reason));
 
     return bool(context_);
 }

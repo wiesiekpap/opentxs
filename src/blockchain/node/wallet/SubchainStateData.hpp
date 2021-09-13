@@ -23,6 +23,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
@@ -147,6 +148,7 @@ public:
     ReorgQueue reorg_;
     std::optional<Bip32Index> last_indexed_;
     std::optional<block::Position> last_scanned_;
+    std::optional<block::Position> progress_;
     std::vector<block::pHash> blocks_to_request_;
     OutstandingMap outstanding_blocks_;
     ProcessQueue process_block_queue_;
@@ -164,7 +166,7 @@ protected:
     using Task = node::internal::Wallet::Task;
     using Patterns = WalletDatabase::Patterns;
     using UTXOs = std::vector<WalletDatabase::UTXO>;
-    using Targets = node::GCS::Targets;
+    using Targets = GCS::Targets;
     using Tested = WalletDatabase::MatchingIndices;
 
     const api::Core& api_;
@@ -224,7 +226,12 @@ private:
         Targets& targets,
         Patterns& outpoints,
         Tested& tested) const noexcept -> void;
+    auto have_outstanding_process() const noexcept -> bool;
 
+    auto adjust_progress_finished() noexcept -> void;
+    auto adjust_progress_process(block::Position pos) noexcept -> void;
+    auto adjust_progress_reorg(block::Position pos) noexcept -> void;
+    auto adjust_progress_scan(block::Position pos) noexcept -> void;
     auto check_blocks() noexcept -> bool;
     virtual auto check_index() noexcept -> bool = 0;
     auto check_mempool() noexcept -> void;

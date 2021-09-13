@@ -52,10 +52,7 @@ class Database;
 }  // namespace common
 }  // namespace database
 
-namespace node
-{
-struct GCS;
-}  // namespace node
+class GCS;
 }  // namespace blockchain
 
 namespace storage
@@ -85,7 +82,7 @@ public:
     auto HaveFilterHeader(const filter::Type type, const block::Hash& block)
         const noexcept -> bool;
     auto LoadFilter(const filter::Type type, const ReadView block)
-        const noexcept -> std::unique_ptr<const blockchain::node::GCS>;
+        const noexcept -> std::unique_ptr<const blockchain::GCS>;
     auto LoadFilterHash(const filter::Type type, const ReadView block)
         const noexcept -> Hash;
     auto LoadFilterHeader(const filter::Type type, const ReadView block)

@@ -27,6 +27,7 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/BlockchainType.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/BloomUpdateFlag.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/FilterType.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/GCS.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/SendResult.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/Types.hpp"
 )

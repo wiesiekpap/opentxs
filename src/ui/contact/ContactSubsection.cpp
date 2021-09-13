@@ -57,10 +57,10 @@ ContactSubsection::ContactSubsection(
           key)
     , sequence_(-1)
 {
-    startup_.reset(new std::thread(
+    startup_ = std::make_unique<std::thread>(
         &ContactSubsection::startup,
         this,
-        extract_custom<opentxs::ContactGroup>(custom)));
+        extract_custom<opentxs::ContactGroup>(custom));
 
     OT_ASSERT(startup_)
 }

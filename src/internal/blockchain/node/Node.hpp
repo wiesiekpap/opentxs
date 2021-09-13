@@ -118,6 +118,8 @@ struct Address;
 
 class Address;
 }  // namespace p2p
+
+class GCS;
 }  // namespace blockchain
 
 namespace identifier
@@ -201,8 +203,8 @@ using DisconnectedList = std::multimap<block::pHash, block::pHash>;
 
 using CfheaderJob =
     download::Batch<filter::pHash, filter::pHeader, filter::Type>;
-using CfilterJob = download::
-    Batch<std::unique_ptr<const node::GCS>, filter::pHeader, filter::Type>;
+using CfilterJob =
+    download::Batch<std::unique_ptr<const GCS>, filter::pHeader, filter::Type>;
 using BlockJob =
     download::Batch<std::shared_ptr<const block::bitcoin::Block>, int>;
 }  // namespace opentxs::blockchain::node
@@ -269,7 +271,7 @@ struct FilterDatabase {
     /// block hash, filter header, filter hash
     using Header = std::tuple<block::pHash, filter::pHeader, ReadView>;
     /// block hash, filter
-    using Filter = std::pair<ReadView, std::unique_ptr<const node::GCS>>;
+    using Filter = std::pair<ReadView, std::unique_ptr<const GCS>>;
 
     virtual auto FilterHeaderTip(const filter::Type type) const noexcept
         -> block::Position = 0;
@@ -281,7 +283,7 @@ struct FilterDatabase {
         const filter::Type type,
         const block::Hash& block) const noexcept -> bool = 0;
     virtual auto LoadFilter(const filter::Type type, const ReadView block)
-        const noexcept -> std::unique_ptr<const node::GCS> = 0;
+        const noexcept -> std::unique_ptr<const GCS> = 0;
     virtual auto LoadFilterHash(const filter::Type type, const ReadView block)
         const noexcept -> Hash = 0;
     virtual auto LoadFilterHeader(const filter::Type type, const ReadView block)
@@ -317,7 +319,7 @@ struct FilterOracle : virtual public node::FilterOracle {
     virtual auto LoadFilterOrResetTip(
         const filter::Type type,
         const block::Position& position) const noexcept
-        -> std::unique_ptr<const node::GCS> = 0;
+        -> std::unique_ptr<const GCS> = 0;
     virtual auto ProcessBlock(const block::bitcoin::Block& block) const noexcept
         -> bool = 0;
     virtual auto ProcessSyncData(

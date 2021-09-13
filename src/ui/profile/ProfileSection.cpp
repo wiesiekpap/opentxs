@@ -160,10 +160,10 @@ ProfileSection::ProfileSection(
     CustomData& custom) noexcept
     : Combined(api, parent.NymID(), parent.WidgetID(), parent, rowID, key)
 {
-    startup_.reset(new std::thread(
+    startup_ = std::make_unique<std::thread>(
         &ProfileSection::startup,
         this,
-        extract_custom<opentxs::ContactSection>(custom)));
+        extract_custom<opentxs::ContactSection>(custom));
 
     OT_ASSERT(startup_)
 }

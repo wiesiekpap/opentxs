@@ -58,6 +58,7 @@ namespace blockchain
 namespace crypto
 {
 class Account;
+class PaymentCode;
 }  // namespace crypto
 }  // namespace blockchain
 

@@ -49,6 +49,7 @@ namespace blockchain
 namespace crypto
 {
 class Account;
+class HD;
 }  // namespace crypto
 }  // namespace blockchain
 
