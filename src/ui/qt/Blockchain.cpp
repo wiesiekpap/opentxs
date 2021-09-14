@@ -62,45 +62,56 @@ auto BlockchainAccountListItem::qt_data(
     const int role,
     QVariant& out) const noexcept -> void
 {
+    using Parent = AccountListQt;
+
     switch (role) {
-        case AccountListQt::NotaryIDRole: {
-            out = NotaryID().c_str();
-        } break;
-        case AccountListQt::UnitRole: {
-            out = static_cast<int>(Unit());
-        } break;
-        case AccountListQt::AccountIDRole: {
-            out = AccountID().c_str();
-        } break;
-        case AccountListQt::BalanceRole: {
-            out = static_cast<unsigned long long>(Balance());
-        } break;
-        case AccountListQt::PolarityRole: {
-            out = polarity(Balance());
-        } break;
-        case AccountListQt::AccountTypeRole: {
-            out = static_cast<int>(Type());
-        } break;
-        case AccountListQt::ContractIdRole: {
-            out = ContractID().c_str();
-        } break;
         case Qt::DisplayRole: {
             switch (column) {
-                case AccountListQt::NotaryNameColumn: {
-                    out = NotaryName().c_str();
+                case Parent::NotaryNameColumn: {
+                    qt_data(column, Parent::NotaryNameRole, out);
                 } break;
-                case AccountListQt::DisplayUnitColumn: {
-                    out = DisplayUnit().c_str();
+                case Parent::DisplayUnitColumn: {
+                    qt_data(column, Parent::UnitNameRole, out);
                 } break;
-                case AccountListQt::AccountNameColumn: {
-                    out = Name().c_str();
+                case Parent::AccountNameColumn: {
+                    qt_data(column, Parent::NameRole, out);
                 } break;
-                case AccountListQt::DisplayBalanceColumn: {
-                    out = DisplayBalance().c_str();
+                case Parent::DisplayBalanceColumn: {
+                    qt_data(column, Parent::BalanceRole, out);
                 } break;
                 default: {
                 }
             }
+        } break;
+        case Parent::NameRole: {
+            out = Name().c_str();
+        } break;
+        case Parent::NotaryIDRole: {
+            out = NotaryID().c_str();
+        } break;
+        case Parent::NotaryNameRole: {
+            out = NotaryName().c_str();
+        } break;
+        case Parent::UnitRole: {
+            out = static_cast<int>(Unit());
+        } break;
+        case Parent::UnitNameRole: {
+            out = DisplayUnit().c_str();
+        } break;
+        case Parent::AccountIDRole: {
+            out = AccountID().c_str();
+        } break;
+        case Parent::BalanceRole: {
+            out = DisplayBalance().c_str();
+        } break;
+        case Parent::PolarityRole: {
+            out = polarity(Balance());
+        } break;
+        case Parent::AccountTypeRole: {
+            out = static_cast<int>(Type());
+        } break;
+        case Parent::ContractIdRole: {
+            out = ContractID().c_str();
         } break;
         default: {
         }

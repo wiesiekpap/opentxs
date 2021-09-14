@@ -532,6 +532,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2WPKH, "P2WPKH"},
                  {Style::P2PKH, "P2PKH"},
              },
+             100,
          }},
         {blockchain::Type::Bitcoin_testnet3,
          {
@@ -594,6 +595,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2WPKH, "P2WPKH"},
                  {Style::P2PKH, "P2PKH"},
              },
+             100,
          }},
         {blockchain::Type::BitcoinCash,
          {
@@ -656,6 +658,7 @@ auto Data::Chains() noexcept -> const ChainData&
              {
                  {Style::P2PKH, "P2PKH"},
              },
+             100,
          }},
         {blockchain::Type::BitcoinCash_testnet3,
          {
@@ -717,6 +720,7 @@ auto Data::Chains() noexcept -> const ChainData&
              {
                  {Style::P2PKH, "P2PKH"},
              },
+             100,
          }},
         {blockchain::Type::Ethereum_frontier,
          {
@@ -748,6 +752,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2TR, false},
              },
              {},
+             {},
          }},
         {blockchain::Type::Ethereum_ropsten,
          {
@@ -778,6 +783,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2WSH, false},
                  {Style::P2TR, false},
              },
+             {},
              {},
          }},
         {blockchain::Type::Litecoin,
@@ -840,6 +846,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2WPKH, "P2WPKH"},
                  {Style::P2PKH, "P2PKH"},
              },
+             100,
          }},
         {blockchain::Type::Litecoin_testnet4,
          {
@@ -899,6 +906,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2WPKH, "P2WPKH"},
                  {Style::P2PKH, "P2PKH"},
              },
+             100,
          }},
         {blockchain::Type::PKT,
          {
@@ -1131,6 +1139,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2WPKH, "P2WPKH"},
                  {Style::P2PKH, "P2PKH"},
              },
+             100,
          }},
         {blockchain::Type::PKT_testnet,
          {
@@ -1182,6 +1191,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2WPKH, "P2WPKH"},
                  {Style::P2PKH, "P2PKH"},
              },
+             100,
          }},
         {blockchain::Type::UnitTest,
          {
@@ -1234,6 +1244,7 @@ auto Data::Chains() noexcept -> const ChainData&
                  {Style::P2WPKH, "P2WPKH"},
                  {Style::P2PKH, "P2PKH"},
              },
+             10,
          }},
     };
 

@@ -5,8 +5,10 @@
 
 #include "Helpers.hpp"  // IWYU pragma: associated
 
+#include <cctype>
 #include <chrono>
 #include <memory>
+#include <sstream>
 #include <utility>
 
 #include "opentxs/Bytes.hpp"
@@ -211,6 +213,16 @@ User::User(
     : words_(words)
     , passphrase_(passphrase)
     , name_(name)
+    , name_lower_([&] {
+        auto out = std::stringstream{};
+
+        for (const auto c : name_) {
+            out << static_cast<char>(
+                std::tolower(static_cast<unsigned char>(c)));
+        }
+
+        return out.str();
+    }())
     , api_(nullptr)
     , init_(false)
     , seed_id_()

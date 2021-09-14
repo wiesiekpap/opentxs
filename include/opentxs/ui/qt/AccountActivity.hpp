@@ -76,9 +76,6 @@ public:
     Q_INVOKABLE QString validateAmount(const QString& amount) const noexcept;
 
 public:
-    // Five columns when used in a table view
-    //
-    // All data is available in a list view via the user roles defined below:
     enum Roles {
         AmountRole = Qt::UserRole + 0,    // QString
         TextRole = Qt::UserRole + 1,      // QString

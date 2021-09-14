@@ -39,6 +39,7 @@
 #include <vector>
 
 #include "Basic.hpp"
+#include "integration/Helpers.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -50,7 +51,11 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
+#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
+#include "ui/Helpers.hpp"
 
 namespace opentxs
 {
@@ -61,6 +66,11 @@ namespace client
 class Manager;
 }  // namespace client
 
+namespace server
+{
+class Manager;
+}  // namespace server
+
 class Context;
 class Core;
 }  // namespace api
@@ -69,11 +79,18 @@ namespace blockchain
 {
 namespace block
 {
+namespace bitcoin
+{
+class Transaction;
+}  // namespace bitcoin
+
 struct Outpoint;
 }  // namespace block
 
 namespace crypto
 {
+class HD;
+class PaymentCode;
 class Subaccount;
 }  // namespace crypto
 
@@ -88,6 +105,11 @@ namespace identifier
 class Server;
 class UnitDefinition;
 }  // namespace identifier
+
+namespace identity
+{
+class Nym;
+}  // namespace identity
 
 namespace network
 {
@@ -113,6 +135,7 @@ class Identifier;
 namespace b = ot::blockchain;
 namespace zmq = ot::network::zeromq;
 namespace otsync = ot::network::blockchain::sync;
+namespace bca = ot::blockchain::crypto;
 
 namespace ottest
 {
@@ -126,6 +149,9 @@ constexpr auto sync_server_update_public_{
     "inproc://sync_server_public_endpoint/update"};
 constexpr auto coinbase_fun_{"The Industrial Revolution and its consequences "
                              "have been a disaster for the human race."};
+
+struct Server;
+struct User;
 
 class PeerListener
 {
@@ -279,6 +305,72 @@ private:
     std::unique_ptr<Imp> imp_;
 };
 
+struct TXOState {
+    struct Data {
+        ot::blockchain::Balance balance_;
+        std::map<
+            ot::blockchain::node::Wallet::TxoState,
+            std::set<ot::blockchain::block::Outpoint>>
+            data_;
+
+        Data() noexcept;
+    };
+
+    struct NymData {
+        Data nym_;
+        std::map<ot::OTIdentifier, Data> accounts_;
+
+        NymData() noexcept;
+    };
+
+    Data wallet_;
+    std::map<ot::OTNymID, NymData> nyms_;
+
+    TXOState() noexcept;
+};
+
+struct TXOs {
+    auto AddConfirmed(
+        const ot::blockchain::block::bitcoin::Transaction& tx,
+        const std::size_t index,
+        const ot::blockchain::crypto::Subaccount& owner) noexcept -> bool;
+    auto AddGenerated(
+        const ot::blockchain::block::bitcoin::Transaction& tx,
+        const std::size_t index,
+        const ot::blockchain::crypto::Subaccount& owner,
+        const ot::blockchain::block::Height position) noexcept -> bool;
+    auto AddUnconfirmed(
+        const ot::blockchain::block::bitcoin::Transaction& tx,
+        const std::size_t index,
+        const ot::blockchain::crypto::Subaccount& owner) noexcept -> bool;
+    auto Confirm(const ot::blockchain::block::Txid& transaction) noexcept
+        -> bool;
+    auto Mature(const ot::blockchain::block::Height position) noexcept -> bool;
+    auto Orphan(const ot::blockchain::block::Txid& transaction) noexcept
+        -> bool;
+    auto SpendUnconfirmed(const ot::blockchain::block::Outpoint& txo) noexcept
+        -> bool;
+    auto SpendConfirmed(const ot::blockchain::block::Outpoint& txo) noexcept
+        -> bool;
+
+    auto Extract(TXOState& output) const noexcept -> void;
+
+    TXOs(const User& owner) noexcept;
+
+    ~TXOs();
+
+private:
+    struct Imp;
+
+    std::unique_ptr<Imp> imp_;
+
+    TXOs() = delete;
+    TXOs(const TXOs&) = delete;
+    TXOs(TXOs&&) = delete;
+    auto operator=(const TXOs&) -> TXOs& = delete;
+    auto operator=(TXOs&&) -> TXOs& = delete;
+};
+
 class Regtest_fixture_base : virtual public ::testing::Test
 {
 protected:
@@ -292,6 +384,8 @@ protected:
     using Amount = std::int64_t;
     using OutpointMetadata = std::tuple<Key, Amount, Pattern>;
     using Expected = std::map<Outpoint, OutpointMetadata>;
+
+    static Expected expected_;
 
     const ot::api::Context& ot_;
     const ot::Options client_args_;
@@ -318,6 +412,8 @@ protected:
         const std::vector<Transaction>& extra = {}) noexcept -> bool;
     auto TestUTXOs(const Expected& expected, const std::vector<UTXO>& utxos)
         const noexcept -> bool;
+    auto TestWallet(const ot::api::client::Manager& api, const TXOState& state)
+        const noexcept -> bool;
 
     virtual auto Shutdown() noexcept -> void;
     auto Start() noexcept -> bool;
@@ -332,6 +428,7 @@ private:
     using BlockListen = std::map<int, std::unique_ptr<BlockListener>>;
     using WalletListen = std::map<int, std::unique_ptr<WalletListener>>;
 
+    static const std::set<ot::blockchain::node::Wallet::TxoState> states_;
     static std::unique_ptr<const ot::OTBlockchainAddress> listen_address_;
     static std::unique_ptr<const PeerListener> peer_listener_;
     static std::unique_ptr<MinedBlocks> mined_block_cache_;
@@ -353,12 +450,108 @@ private:
         -> const PeerListener&;
     static auto init_wallet(const int index, const ot::api::Core& api) noexcept
         -> WalletListener&;
+
+    auto compare_outpoints(
+        const ot::blockchain::node::Wallet& wallet,
+        const TXOState::Data& data) const noexcept -> bool;
+    auto compare_outpoints(
+        const ot::blockchain::node::Wallet& wallet,
+        const ot::identifier::Nym& nym,
+        const TXOState::Data& data) const noexcept -> bool;
+    auto compare_outpoints(
+        const ot::blockchain::node::Wallet& wallet,
+        const ot::identifier::Nym& nym,
+        const ot::Identifier& subaccount,
+        const TXOState::Data& data) const noexcept -> bool;
+    auto compare_outpoints(
+        const ot::blockchain::node::Wallet::TxoState type,
+        const TXOState::Data& expected,
+        const std::vector<UTXO>& got) const noexcept -> bool;
 };
 
 class Regtest_fixture_normal : public Regtest_fixture_base
 {
 protected:
     Regtest_fixture_normal(const int clientCount);
+};
+
+class Regtest_fixture_hd : public Regtest_fixture_normal
+{
+protected:
+    using Subchain = ot::blockchain::crypto::Subchain;
+    using UTXO = ot::blockchain::node::Wallet::UTXO;
+
+    static ot::Nym_p alex_p_;
+    static std::deque<ot::blockchain::block::pTxid> transactions_;
+    static std::unique_ptr<ScanListener> listener_p_;
+
+    const ot::identity::Nym& alex_;
+    const ot::blockchain::crypto::HD& account_;
+    const ot::Identifier& expected_account_;
+    const ot::identifier::Server& expected_notary_;
+    const ot::identifier::UnitDefinition& expected_unit_;
+    const std::string expected_display_unit_;
+    const std::string expected_account_name_;
+    const std::string expected_notary_name_;
+    const std::string memo_outgoing_;
+    const ot::AccountType expected_account_type_;
+    const ot::contact::ContactItemType expected_unit_type_;
+    const Generator hd_generator_;
+    ScanListener& listener_;
+
+    auto Shutdown() noexcept -> void final;
+
+    Regtest_fixture_hd();
+};
+
+class Regtest_payment_code : public Regtest_fixture_normal
+{
+protected:
+    using Subchain = bca::Subchain;
+    using Transactions = std::deque<ot::blockchain::block::pTxid>;
+
+    static constexpr auto message_text_{
+        "I have come here to chew bubblegum and kick ass...and I'm all out of "
+        "bubblegum."};
+
+    static const User alice_;
+    static const User bob_;
+    static bool init_;
+    static Server server_1_;
+    static TXOs txos_alice_;
+    static TXOs txos_bob_;
+    static Transactions transactions_;
+    static std::unique_ptr<ScanListener> listener_alice_p_;
+    static std::unique_ptr<ScanListener> listener_bob_p_;
+
+    const ot::api::server::Manager& api_server_1_;
+    const ot::identifier::Server& expected_notary_;
+    const ot::identifier::UnitDefinition& expected_unit_;
+    const std::string expected_display_unit_;
+    const std::string expected_account_name_;
+    const std::string expected_notary_name_;
+    const std::string memo_outgoing_;
+    const ot::AccountType expected_account_type_;
+    const ot::contact::ContactItemType expected_unit_type_;
+    const Generator mine_to_alice_;
+    ScanListener& listener_alice_;
+    ScanListener& listener_bob_;
+
+    auto CheckContactID(
+        const User& local,
+        const User& remote,
+        const std::string& paymentcode) const noexcept -> bool;
+    auto CheckTXODBAlice() const noexcept -> bool;
+    auto CheckTXODBBob() const noexcept -> bool;
+
+    auto ReceiveHD() const noexcept -> const bca::HD&;
+    auto ReceivePC() const noexcept -> const bca::PaymentCode&;
+    auto SendHD() const noexcept -> const bca::HD&;
+    auto SendPC() const noexcept -> const bca::PaymentCode&;
+
+    auto Shutdown() noexcept -> void final;
+
+    Regtest_payment_code();
 };
 
 class Regtest_fixture_single : public Regtest_fixture_normal

@@ -108,6 +108,7 @@ struct User {
     const std::string words_;
     const std::string passphrase_;
     const std::string name_;
+    const std::string name_lower_;
     const ot::api::client::Manager* api_;
     bool init_;
     std::string seed_id_;

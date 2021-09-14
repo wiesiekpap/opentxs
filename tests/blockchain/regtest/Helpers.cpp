@@ -26,6 +26,7 @@
 #include <utility>
 #include <vector>
 
+#include "integration/Helpers.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -34,7 +35,11 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Options.hpp"
+#include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/client/UI.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
@@ -42,7 +47,12 @@
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
+#include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
+#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
+#include "opentxs/blockchain/crypto/Element.hpp"
+#include "opentxs/blockchain/crypto/HD.hpp"
+#include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
@@ -53,7 +63,12 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/core/PasswordPrompt.hpp"
+#include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/crypto/Types.hpp"
+#include "opentxs/crypto/key/EllipticCurve.hpp"
+#include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/blockchain/sync/Base.hpp"
 #include "opentxs/network/blockchain/sync/Block.hpp"
 #include "opentxs/network/blockchain/sync/Data.hpp"
@@ -68,6 +83,7 @@
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "paymentcode/VectorsV3.hpp"
 
 namespace ottest
 {
@@ -313,6 +329,85 @@ Regtest_fixture_base::Regtest_fixture_base(
     const ot::Options& clientArgs)
     : Regtest_fixture_base(clientCount, ot::Options{}, clientArgs)
 {
+}
+
+auto Regtest_fixture_base::compare_outpoints(
+    const ot::blockchain::node::Wallet& wallet,
+    const TXOState::Data& data) const noexcept -> bool
+{
+    auto output{true};
+
+    for (const auto state : states_) {
+        output &= compare_outpoints(state, data, wallet.GetOutputs(state));
+    }
+
+    return output;
+}
+
+auto Regtest_fixture_base::compare_outpoints(
+    const ot::blockchain::node::Wallet& wallet,
+    const ot::identifier::Nym& nym,
+    const TXOState::Data& data) const noexcept -> bool
+{
+    auto output{true};
+
+    for (const auto state : states_) {
+        output &= compare_outpoints(state, data, wallet.GetOutputs(nym, state));
+    }
+
+    return output;
+}
+
+auto Regtest_fixture_base::compare_outpoints(
+    const ot::blockchain::node::Wallet& wallet,
+    const ot::identifier::Nym& nym,
+    const ot::Identifier& subaccount,
+    const TXOState::Data& data) const noexcept -> bool
+{
+    auto output{true};
+
+    for (const auto state : states_) {
+        output &= compare_outpoints(
+            state, data, wallet.GetOutputs(nym, subaccount, state));
+    }
+
+    return output;
+}
+
+auto Regtest_fixture_base::compare_outpoints(
+    const ot::blockchain::node::Wallet::TxoState type,
+    const TXOState::Data& expected,
+    const std::vector<UTXO>& got) const noexcept -> bool
+{
+    auto output{true};
+    static const auto emptySet = std::set<ot::blockchain::block::Outpoint>{};
+    const auto& set = [&]() -> auto&
+    {
+        try {
+
+            return expected.data_.at(type);
+        } catch (...) {
+
+            return emptySet;
+        }
+    }
+    ();
+    output &= set.size() == got.size();
+
+    EXPECT_EQ(set.size(), got.size());
+
+    for (const auto& [outpoint, pOutput] : got) {
+        const auto have = (1 == set.count(outpoint));
+        const auto match = TestUTXOs(expected_, got);
+
+        output &= have;
+        output &= match;
+
+        EXPECT_TRUE(have);
+        EXPECT_TRUE(match);
+    }
+
+    return output;
 }
 
 auto Regtest_fixture_base::Connect() noexcept -> bool
@@ -685,6 +780,204 @@ auto Regtest_fixture_base::TestUTXOs(
     return out;
 }
 
+auto Regtest_fixture_base::TestWallet(
+    const ot::api::client::Manager& api,
+    const TXOState& state) const noexcept -> bool
+{
+    auto output{true};
+    const auto& network = api.Network().Blockchain().GetChain(test_chain_);
+    const auto& wallet = network.Wallet();
+    using Balance = ot::blockchain::Balance;
+    static const auto blankNym = api.Factory().NymID();
+    static const auto blankAccount = api.Factory().Identifier();
+    static const auto noBalance = Balance{0, 0};
+    static const auto blankData = TXOState::Data{};
+    const auto test2 = [&](const auto& eBalance,
+                           const auto wBalance,
+                           const auto nBalance,
+                           const auto outpoints) {
+        auto output{true};
+        output &= (wBalance == eBalance);
+        output &= (nBalance == eBalance);
+        output &= outpoints;
+
+        EXPECT_EQ(wBalance, eBalance);
+        EXPECT_EQ(nBalance, eBalance);
+        EXPECT_TRUE(outpoints);
+
+        return output;
+    };
+    const auto test =
+        [&](const auto& eBalance, const auto wBalance, const auto outpoints) {
+            return test2(eBalance, wBalance, wBalance, outpoints);
+        };
+    output &= test2(
+        state.wallet_.balance_,
+        wallet.GetBalance(),
+        network.GetBalance(),
+        compare_outpoints(wallet, state.wallet_));
+    output &= test2(
+        noBalance,
+        wallet.GetBalance(blankNym),
+        network.GetBalance(blankNym),
+        compare_outpoints(wallet, blankNym, blankData));
+    output &= test(
+        noBalance,
+        wallet.GetBalance(blankNym, blankAccount),
+        compare_outpoints(wallet, blankNym, blankAccount, blankData));
+
+    for (const auto& [nymID, nymData] : state.nyms_) {
+        output &= test2(
+            nymData.nym_.balance_,
+            wallet.GetBalance(nymID),
+            network.GetBalance(nymID),
+            compare_outpoints(wallet, nymID, nymData.nym_));
+        output &= test(
+            noBalance,
+            wallet.GetBalance(nymID, blankAccount),
+            compare_outpoints(wallet, nymID, blankAccount, blankData));
+
+        for (const auto& [accountID, accountData] : nymData.accounts_) {
+            output &= test(
+                accountData.balance_,
+                wallet.GetBalance(nymID, accountID),
+                compare_outpoints(wallet, nymID, accountID, nymData.nym_));
+            output &= test(
+                noBalance,
+                wallet.GetBalance(blankNym, accountID),
+                compare_outpoints(wallet, blankNym, accountID, blankData));
+        }
+    }
+
+    return output;
+}
+
+Regtest_fixture_hd::Regtest_fixture_hd()
+    : Regtest_fixture_normal(1)
+    , alex_([&]() -> const ot::identity::Nym& {
+        if (!alex_p_) {
+            const auto reason = client_1_.Factory().PasswordPrompt(__func__);
+
+            alex_p_ = client_1_.Wallet().Nym(reason, "Alex");
+
+            OT_ASSERT(alex_p_)
+
+            client_1_.Blockchain().NewHDSubaccount(
+                alex_p_->ID(),
+                ot::blockchain::crypto::HDProtocol::BIP_44,
+                test_chain_,
+                reason);
+        }
+
+        OT_ASSERT(alex_p_)
+
+        return *alex_p_;
+    }())
+    , account_(
+          client_1_.Blockchain().Account(alex_.ID(), test_chain_).GetHD().at(0))
+    , expected_account_(account_.Parent().AccountID())
+    , expected_notary_(client_1_.UI().BlockchainNotaryID(test_chain_))
+    , expected_unit_(client_1_.UI().BlockchainUnitID(test_chain_))
+    , expected_display_unit_(u8"UNITTEST")
+    , expected_account_name_(u8"This device")
+    , expected_notary_name_(u8"Unit Test Simulation")
+    , memo_outgoing_("memo for outgoing transaction")
+    , expected_account_type_(ot::AccountType::Blockchain)
+    , expected_unit_type_(ot::contact::ContactItemType::Regtest)
+    , hd_generator_([&](Height height) -> Transaction {
+        using OutputBuilder = ot::api::Factory::OutputBuilder;
+        using Index = ot::Bip32Index;
+        static constexpr auto count = 100u;
+        static constexpr auto baseAmmount = ot::blockchain::Amount{100000000};
+        auto meta = std::vector<OutpointMetadata>{};
+        meta.reserve(count);
+        auto output = miner_.Factory().BitcoinGenerationTransaction(
+            test_chain_,
+            height,
+            [&] {
+                auto output = std::vector<OutputBuilder>{};
+                const auto reason =
+                    client_1_.Factory().PasswordPrompt(__func__);
+                const auto keys = std::set<ot::blockchain::crypto::Key>{};
+
+                for (auto i = Index{0}; i < Index{count}; ++i) {
+                    const auto index = account_.Reserve(
+                        Subchain::External,
+                        client_1_.Factory().PasswordPrompt(""));
+                    const auto& element = account_.BalanceElement(
+                        Subchain::External, index.value_or(0));
+                    const auto key = element.Key();
+
+                    OT_ASSERT(key);
+
+                    switch (i) {
+                        case 0: {
+                            const auto& [bytes, value, pattern] =
+                                meta.emplace_back(
+                                    client_1_.Factory().Data(
+                                        element.Key()->PublicKey()),
+                                    baseAmmount + i,
+                                    Pattern::PayToPubkey);
+                            output.emplace_back(
+                                value,
+                                miner_.Factory().BitcoinScriptP2PK(
+                                    test_chain_, *key),
+                                keys);
+                        } break;
+                        default: {
+                            const auto& [bytes, value, pattern] =
+                                meta.emplace_back(
+                                    element.PubkeyHash(),
+                                    baseAmmount + i,
+                                    Pattern::PayToPubkeyHash);
+                            output.emplace_back(
+                                value,
+                                miner_.Factory().BitcoinScriptP2PKH(
+                                    test_chain_, *key),
+                                keys);
+                        }
+                    }
+                }
+
+                return output;
+            }(),
+            coinbase_fun_);
+
+        OT_ASSERT(output);
+
+        const auto& txid = transactions_.emplace_back(output->ID()).get();
+
+        for (auto i = Index{0}; i < Index{count}; ++i) {
+            auto& [bytes, amount, pattern] = meta.at(i);
+            expected_.emplace(
+                std::piecewise_construct,
+                std::forward_as_tuple(txid.Bytes(), i),
+                std::forward_as_tuple(
+                    std::move(bytes), std::move(amount), std::move(pattern)));
+        }
+
+        return output;
+    })
+    , listener_([&]() -> ScanListener& {
+        if (!listener_p_) {
+            listener_p_ = std::make_unique<ScanListener>(client_1_);
+        }
+
+        OT_ASSERT(listener_p_);
+
+        return *listener_p_;
+    }())
+{
+}
+
+auto Regtest_fixture_hd::Shutdown() noexcept -> void
+{
+    listener_p_.reset();
+    transactions_.clear();
+    alex_p_.reset();
+    Regtest_fixture_normal::Shutdown();
+}
+
 Regtest_fixture_normal::Regtest_fixture_normal(const int clientCount)
     : Regtest_fixture_base(
           clientCount,
@@ -765,6 +1058,194 @@ Regtest_fixture_tcp::Regtest_fixture_tcp()
 auto Regtest_fixture_tcp::Connect() noexcept -> bool
 {
     return Connect(tcp_listen_address_);
+}
+
+Regtest_payment_code::Regtest_payment_code()
+    : Regtest_fixture_normal(2)
+    , api_server_1_(ot::Context().StartServer(0))
+    , expected_notary_(client_1_.UI().BlockchainNotaryID(test_chain_))
+    , expected_unit_(client_1_.UI().BlockchainUnitID(test_chain_))
+    , expected_display_unit_(u8"UNITTEST")
+    , expected_account_name_(u8"This device")
+    , expected_notary_name_(u8"Unit Test Simulation")
+    , memo_outgoing_("memo for outgoing transaction")
+    , expected_account_type_(ot::AccountType::Blockchain)
+    , expected_unit_type_(ot::contact::ContactItemType::Regtest)
+    , mine_to_alice_([&](Height height) -> Transaction {
+        using OutputBuilder = ot::api::Factory::OutputBuilder;
+        static constexpr auto baseAmmount = ot::blockchain::Amount{10000000000};
+        auto meta = std::vector<OutpointMetadata>{};
+        const auto& account = SendHD();
+        auto output = miner_.Factory().BitcoinGenerationTransaction(
+            test_chain_,
+            height,
+            [&] {
+                auto output = std::vector<OutputBuilder>{};
+                const auto reason =
+                    client_1_.Factory().PasswordPrompt(__func__);
+                const auto keys = std::set<bca::Key>{};
+                const auto index = account.Reserve(Subchain::External, reason);
+
+                EXPECT_TRUE(index.has_value());
+
+                const auto& element = account.BalanceElement(
+                    Subchain::External, index.value_or(0));
+                const auto key = element.Key();
+
+                OT_ASSERT(key);
+
+                const auto& [bytes, value, pattern] = meta.emplace_back(
+                    client_1_.Factory().Data(element.Key()->PublicKey()),
+                    baseAmmount,
+                    Pattern::PayToPubkey);
+                output.emplace_back(
+                    value,
+                    miner_.Factory().BitcoinScriptP2PK(test_chain_, *key),
+                    keys);
+
+                return output;
+            }(),
+            coinbase_fun_);
+
+        OT_ASSERT(output);
+
+        const auto& txid = transactions_.emplace_back(output->ID()).get();
+        auto& [bytes, amount, pattern] = meta.at(0);
+        expected_.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple(txid.Bytes(), 0),
+            std::forward_as_tuple(
+                std::move(bytes), std::move(amount), std::move(pattern)));
+        txos_alice_.AddGenerated(*output, 0, account, height);
+
+        return output;
+    })
+    , listener_alice_([&]() -> ScanListener& {
+        if (!listener_alice_p_) {
+            listener_alice_p_ = std::make_unique<ScanListener>(client_1_);
+        }
+
+        OT_ASSERT(listener_alice_p_);
+
+        return *listener_alice_p_;
+    }())
+    , listener_bob_([&]() -> ScanListener& {
+        if (!listener_bob_p_) {
+            listener_bob_p_ = std::make_unique<ScanListener>(client_2_);
+        }
+
+        OT_ASSERT(listener_bob_p_);
+
+        return *listener_bob_p_;
+    }())
+{
+    if (false == init_) {
+        server_1_.init(api_server_1_);
+        set_introduction_server(miner_, server_1_);
+        auto cb = [](User& user) {
+            const auto& api = *user.api_;
+            const auto& nymID = user.nym_id_.get();
+            const auto reason = api.Factory().PasswordPrompt(__func__);
+            api.Blockchain().NewHDSubaccount(
+                nymID,
+                ot::blockchain::crypto::HDProtocol::BIP_44,
+                test_chain_,
+                reason);
+        };
+        auto& alice = const_cast<User&>(alice_);
+        auto& bob = const_cast<User&>(bob_);
+        alice.init_custom(client_1_, server_1_, cb);
+        bob.init_custom(client_2_, server_1_, cb);
+
+        OT_ASSERT(alice_.payment_code_ == GetVectors3().alice_.payment_code_);
+        OT_ASSERT(bob_.payment_code_ == GetVectors3().bob_.payment_code_);
+
+        init_ = true;
+    }
+}
+
+auto Regtest_payment_code::CheckContactID(
+    const User& local,
+    const User& remote,
+    const std::string& paymentcode) const noexcept -> bool
+{
+    const auto& api = *local.api_;
+    const auto n2c = api.Contacts().ContactID(remote.nym_id_);
+    const auto p2c = api.Contacts().PaymentCodeToContact(
+        api.Factory().PaymentCode(paymentcode), test_chain_);
+
+    EXPECT_EQ(n2c, p2c);
+    EXPECT_EQ(p2c->str(), local.Contact(remote.name_).str());
+
+    auto output{true};
+    output &= (n2c == p2c);
+    output &= (p2c->str() == local.Contact(remote.name_).str());
+
+    return output;
+}
+
+auto Regtest_payment_code::CheckTXODBAlice() const noexcept -> bool
+{
+    const auto state = [&] {
+        auto out = TXOState{};
+        txos_alice_.Extract(out);
+
+        return out;
+    }();
+
+    return TestWallet(client_1_, state);
+}
+
+auto Regtest_payment_code::CheckTXODBBob() const noexcept -> bool
+{
+    const auto state = [&] {
+        auto out = TXOState{};
+        txos_bob_.Extract(out);
+
+        return out;
+    }();
+
+    return TestWallet(client_2_, state);
+}
+
+auto Regtest_payment_code::ReceiveHD() const noexcept -> const bca::HD&
+{
+    return client_2_.Blockchain()
+        .Account(bob_.nym_id_, test_chain_)
+        .GetHD()
+        .at(0);
+}
+
+auto Regtest_payment_code::ReceivePC() const noexcept -> const bca::PaymentCode&
+{
+    return client_2_.Blockchain()
+        .Account(bob_.nym_id_, test_chain_)
+        .GetPaymentCode()
+        .at(0);
+}
+
+auto Regtest_payment_code::SendHD() const noexcept -> const bca::HD&
+{
+    return client_1_.Blockchain()
+        .Account(alice_.nym_id_, test_chain_)
+        .GetHD()
+        .at(0);
+}
+
+auto Regtest_payment_code::SendPC() const noexcept -> const bca::PaymentCode&
+{
+    return client_1_.Blockchain()
+        .Account(alice_.nym_id_, test_chain_)
+        .GetPaymentCode()
+        .at(0);
+}
+
+auto Regtest_payment_code::Shutdown() noexcept -> void
+{
+    listener_bob_p_.reset();
+    listener_alice_p_.reset();
+    transactions_.clear();
+    Regtest_fixture_normal::Shutdown();
 }
 
 struct ScanListener::Imp {
@@ -1186,6 +1667,387 @@ auto SyncSubscriber::wait(const bool hard) noexcept -> bool
 
 SyncSubscriber::~SyncSubscriber() = default;
 
+TXOState::TXOState() noexcept
+    : wallet_()
+    , nyms_()
+{
+}
+
+TXOState::NymData::NymData() noexcept
+    : nym_()
+    , accounts_()
+{
+}
+
+TXOState::Data::Data() noexcept
+    : balance_()
+    , data_()
+{
+}
+
+struct TXOs::Imp {
+    auto AddConfirmed(
+        const ot::blockchain::block::bitcoin::Transaction& tx,
+        const std::size_t index,
+        const ot::blockchain::crypto::Subaccount& owner) noexcept -> bool
+    {
+        return add_to_map(tx, index, owner, confirmed_incoming_);
+    }
+    auto AddGenerated(
+        const ot::blockchain::block::bitcoin::Transaction& tx,
+        const std::size_t index,
+        const ot::blockchain::crypto::Subaccount& owner,
+        const ot::blockchain::block::Height position) noexcept -> bool
+    {
+        return AddConfirmed(tx, index, owner);  // TODO
+    }
+    auto AddUnconfirmed(
+        const ot::blockchain::block::bitcoin::Transaction& tx,
+        const std::size_t index,
+        const ot::blockchain::crypto::Subaccount& owner) noexcept -> bool
+    {
+        return add_to_map(tx, index, owner, unconfirmed_incoming_);
+    }
+    auto Confirm(const ot::blockchain::block::Txid& txid) noexcept -> bool
+    {
+        auto confirmed =
+            move_txos(txid, unconfirmed_incoming_, confirmed_incoming_);
+        confirmed += move_txos(txid, unconfirmed_spent_, confirmed_spent_);
+
+        return 0 < confirmed;
+    }
+    auto Mature(const ot::blockchain::block::Height position) noexcept -> bool
+    {
+        return true;  // TODO
+    }
+    auto Orphan(const ot::blockchain::block::Txid& txid) noexcept -> bool
+    {
+        return true;  // TODO
+    }
+    auto SpendUnconfirmed(const ot::blockchain::block::Outpoint& txo) noexcept
+        -> bool
+    {
+        return spend_txo(txo, unconfirmed_spent_);
+    }
+    auto SpendConfirmed(const ot::blockchain::block::Outpoint& txo) noexcept
+        -> bool
+    {
+        return spend_txo(txo, confirmed_spent_);
+    }
+
+    auto Extract(TXOState& output) const noexcept -> void
+    {
+        using State = ot::blockchain::node::Wallet::TxoState;
+        static constexpr auto all{State::All};
+        auto& nym = output.nyms_[user_.nym_id_];
+        auto& [wConfirmed, wUnconfirmed] = output.wallet_.balance_;
+        auto& [nConfirmed, nUnconfirmed] = nym.nym_.balance_;
+        auto& wMap = output.wallet_.data_;
+        auto& nMap = nym.nym_.data_;
+
+        for (const auto& [account, txos] : confirmed_incoming_) {
+            auto& aData = nym.accounts_[account];
+            auto& [aConfirmed, aUnconfirmed] = aData.balance_;
+            auto& aMap = aData.data_;
+
+            for (const auto& [outpoint, value] : txos) {
+                wConfirmed += value;
+                nConfirmed += value;
+                aConfirmed += value;
+                wUnconfirmed += value;
+                nUnconfirmed += value;
+                aUnconfirmed += value;
+                static constexpr auto state{State::ConfirmedNew};
+                wMap[state].emplace(outpoint);
+                nMap[state].emplace(outpoint);
+                aMap[state].emplace(outpoint);
+                wMap[all].emplace(outpoint);
+                nMap[all].emplace(outpoint);
+                aMap[all].emplace(outpoint);
+            }
+        }
+
+        for (const auto& [account, txos] : unconfirmed_incoming_) {
+            auto& aData = nym.accounts_[account];
+            auto& [aConfirmed, aUnconfirmed] = aData.balance_;
+            auto& aMap = aData.data_;
+
+            for (const auto& [outpoint, value] : txos) {
+                wConfirmed += 0;
+                nConfirmed += 0;
+                aConfirmed += 0;
+                wUnconfirmed += value;
+                nUnconfirmed += value;
+                aUnconfirmed += value;
+                static constexpr auto state{State::UnconfirmedNew};
+                wMap[state].emplace(outpoint);
+                nMap[state].emplace(outpoint);
+                aMap[state].emplace(outpoint);
+                wMap[all].emplace(outpoint);
+                nMap[all].emplace(outpoint);
+                aMap[all].emplace(outpoint);
+            }
+        }
+
+        for (const auto& [account, txos] : confirmed_spent_) {
+            auto& aData = nym.accounts_[account];
+            auto& [aConfirmed, aUnconfirmed] = aData.balance_;
+            auto& aMap = aData.data_;
+
+            for (const auto& [outpoint, value] : txos) {
+                wConfirmed += 0;
+                nConfirmed += 0;
+                aConfirmed += 0;
+                wUnconfirmed += 0;
+                nUnconfirmed += 0;
+                aUnconfirmed += 0;
+                static constexpr auto state{State::ConfirmedSpend};
+                wMap[state].emplace(outpoint);
+                nMap[state].emplace(outpoint);
+                aMap[state].emplace(outpoint);
+                wMap[all].emplace(outpoint);
+                nMap[all].emplace(outpoint);
+                aMap[all].emplace(outpoint);
+            }
+        }
+
+        for (const auto& [account, txos] : unconfirmed_spent_) {
+            auto& aData = nym.accounts_[account];
+            auto& [aConfirmed, aUnconfirmed] = aData.balance_;
+            auto& aMap = aData.data_;
+
+            for (const auto& [outpoint, value] : txos) {
+                wConfirmed += value;
+                nConfirmed += value;
+                aConfirmed += value;
+                wUnconfirmed += 0;
+                nUnconfirmed += 0;
+                aUnconfirmed += 0;
+                static constexpr auto state{State::UnconfirmedSpend};
+                wMap[state].emplace(outpoint);
+                nMap[state].emplace(outpoint);
+                aMap[state].emplace(outpoint);
+                wMap[all].emplace(outpoint);
+                nMap[all].emplace(outpoint);
+                aMap[all].emplace(outpoint);
+            }
+        }
+    }
+
+    Imp(const User& owner) noexcept
+        : user_(owner)
+        , unconfirmed_incoming_()
+        , confirmed_incoming_()
+        , unconfirmed_spent_()
+        , confirmed_spent_()
+    {
+    }
+
+private:
+    struct TXO {
+        ot::blockchain::block::Outpoint outpoint_;
+        ot::blockchain::Amount value_;
+
+        auto operator<(const TXO& rhs) const noexcept -> bool
+        {
+            if (outpoint_ < rhs.outpoint_) { return true; }
+
+            if (rhs.outpoint_ < outpoint_) { return false; }
+
+            return value_ < rhs.value_;
+        }
+
+        TXO(const ot::blockchain::block::Txid& txid,
+            const std::size_t index,
+            ot::blockchain::Amount value)
+        noexcept
+            : outpoint_(txid.Bytes(), static_cast<std::uint32_t>(index))
+            , value_(value)
+        {
+        }
+
+    private:
+        TXO() = delete;
+        TXO(const TXO&) = delete;
+        TXO(TXO&&) = delete;
+        auto operator=(const TXO&) -> TXO& = delete;
+        auto operator=(TXO&&) -> TXO& = delete;
+    };
+
+    using TXOSet = std::set<TXO>;
+    using Map = std::map<ot::OTIdentifier, TXOSet>;
+
+    const User& user_;
+    Map unconfirmed_incoming_;
+    Map confirmed_incoming_;
+    Map unconfirmed_spent_;
+    Map confirmed_spent_;
+
+    auto add_to_map(
+        const ot::blockchain::block::bitcoin::Transaction& tx,
+        const std::size_t index,
+        const ot::blockchain::crypto::Subaccount& owner,
+        Map& map) noexcept -> bool
+    {
+        try {
+            const auto& output = tx.Outputs().at(index);
+            const auto [it, added] =
+                map[owner.ID()].emplace(tx.ID(), index, output.Value());
+
+            return added;
+        } catch (...) {
+
+            return false;
+        }
+    }
+    auto move_txo(
+        const ot::blockchain::block::Outpoint& target,
+        Map& from,
+        Map& to) noexcept -> bool
+    {
+        try {
+            auto set = Map::iterator{from.end()};
+            auto node = search(target, from, set);
+            auto& dest = to[set->first];
+            dest.insert(set->second.extract(node));
+
+            return true;
+        } catch (...) {
+
+            return false;
+        }
+    }
+    auto move_txos(
+        const ot::blockchain::block::Txid& txid,
+        Map& from,
+        Map& to) noexcept -> std::size_t
+    {
+        auto toMove = std::vector<std::pair<Map::iterator, TXOSet::iterator>>{};
+
+        for (auto s{from.begin()}; s != from.end(); ++s) {
+            auto& set = s->second;
+
+            for (auto t{set.begin()}; t != set.end(); ++t) {
+                if (t->outpoint_.Txid() == txid.Bytes()) {
+                    toMove.emplace_back(s, t);
+                }
+            }
+        }
+
+        for (auto& [set, node] : toMove) {
+            auto& dest = to[set->first];
+            dest.insert(set->second.extract(node));
+        }
+
+        return toMove.size();
+    }
+    auto search(
+        const ot::blockchain::block::Outpoint& target,
+        Map& map,
+        Map::iterator& output) noexcept(false) -> TXOSet::iterator
+    {
+        for (auto s{map.begin()}; s != map.end(); ++s) {
+            auto& value = s->second;
+
+            for (auto t{value.begin()}; t != value.end(); ++t) {
+                if (t->outpoint_ == target) {
+                    output = s;
+
+                    return t;
+                }
+            }
+        }
+
+        throw std::runtime_error{"not found"};
+    }
+    auto spend_txo(const ot::blockchain::block::Outpoint& txo, Map& to) noexcept
+        -> bool
+    {
+        if (move_txo(txo, confirmed_incoming_, to)) {
+
+            return true;
+        } else if (move_txo(txo, unconfirmed_incoming_, to)) {
+
+            return true;
+        } else {
+
+            return false;
+        }
+    }
+
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
+};
+
+TXOs::TXOs(const User& owner) noexcept
+    : imp_(std::make_unique<Imp>(owner))
+{
+}
+
+auto TXOs::AddConfirmed(
+    const ot::blockchain::block::bitcoin::Transaction& tx,
+    const std::size_t index,
+    const ot::blockchain::crypto::Subaccount& owner) noexcept -> bool
+{
+    return imp_->AddConfirmed(tx, index, owner);
+}
+
+auto TXOs::AddGenerated(
+    const ot::blockchain::block::bitcoin::Transaction& tx,
+    const std::size_t index,
+    const ot::blockchain::crypto::Subaccount& owner,
+    const ot::blockchain::block::Height position) noexcept -> bool
+{
+    return imp_->AddGenerated(tx, index, owner, position);
+}
+
+auto TXOs::AddUnconfirmed(
+    const ot::blockchain::block::bitcoin::Transaction& tx,
+    const std::size_t index,
+    const ot::blockchain::crypto::Subaccount& owner) noexcept -> bool
+{
+    return imp_->AddUnconfirmed(tx, index, owner);
+}
+
+auto TXOs::Confirm(const ot::blockchain::block::Txid& transaction) noexcept
+    -> bool
+{
+    return imp_->Confirm(transaction);
+}
+
+auto TXOs::Mature(const ot::blockchain::block::Height position) noexcept -> bool
+{
+    return imp_->Mature(position);
+}
+
+auto TXOs::Orphan(const ot::blockchain::block::Txid& transaction) noexcept
+    -> bool
+{
+    return imp_->Orphan(transaction);
+}
+
+auto TXOs::SpendUnconfirmed(const ot::blockchain::block::Outpoint& txo) noexcept
+    -> bool
+{
+    return imp_->SpendUnconfirmed(txo);
+}
+
+auto TXOs::SpendConfirmed(const ot::blockchain::block::Outpoint& txo) noexcept
+    -> bool
+{
+    return imp_->SpendConfirmed(txo);
+}
+
+auto TXOs::Extract(TXOState& output) const noexcept -> void
+{
+    return imp_->Extract(output);
+}
+
+TXOs::~TXOs() = default;
+
 struct WalletListener::Imp {
     const ot::api::Core& api_;
     mutable std::mutex lock_;
@@ -1240,12 +2102,33 @@ auto WalletListener::GetFuture(const Height height) noexcept -> Future
 
 WalletListener::~WalletListener() = default;
 
+Regtest_fixture_base::Expected Regtest_fixture_base::expected_{};
+using TxoState = ot::blockchain::node::Wallet::TxoState;
+const std::set<TxoState> Regtest_fixture_base::states_{
+    TxoState::UnconfirmedNew,
+    TxoState::UnconfirmedSpend,
+    TxoState::ConfirmedNew,
+    TxoState::ConfirmedSpend,
+    TxoState::All,
+};
 std::unique_ptr<const ot::OTBlockchainAddress>
     Regtest_fixture_base::listen_address_{};
 std::unique_ptr<const PeerListener> Regtest_fixture_base::peer_listener_{};
 std::unique_ptr<MinedBlocks> Regtest_fixture_base::mined_block_cache_{};
 Regtest_fixture_base::BlockListen Regtest_fixture_base::block_listener_{};
 Regtest_fixture_base::WalletListen Regtest_fixture_base::wallet_listener_{};
+ot::Nym_p Regtest_fixture_hd::alex_p_{};
+std::deque<ot::blockchain::block::pTxid> Regtest_fixture_hd::transactions_{};
+std::unique_ptr<ScanListener> Regtest_fixture_hd::listener_p_{};
 std::unique_ptr<SyncSubscriber> Regtest_fixture_sync::sync_subscriber_{};
 std::unique_ptr<SyncRequestor> Regtest_fixture_sync::sync_requestor_{};
+bool Regtest_payment_code::init_{false};
+Server Regtest_payment_code::server_1_{};
+const User Regtest_payment_code::alice_{GetVectors3().alice_.words_, "Alice"};
+const User Regtest_payment_code::bob_{GetVectors3().bob_.words_, "Bob"};
+TXOs Regtest_payment_code::txos_alice_{alice_};
+TXOs Regtest_payment_code::txos_bob_{bob_};
+Regtest_payment_code::Transactions Regtest_payment_code::transactions_{};
+std::unique_ptr<ScanListener> Regtest_payment_code::listener_alice_p_{};
+std::unique_ptr<ScanListener> Regtest_payment_code::listener_bob_p_{};
 }  // namespace ottest

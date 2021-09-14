@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"      // IWYU pragma: associated
 #include "internal/ui/UI.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
 #include <atomic>
 
 #include "opentxs/Pimpl.hpp"
@@ -21,6 +22,17 @@ auto Row::next_index() noexcept -> std::ptrdiff_t
     static auto counter = std::atomic<std::ptrdiff_t>{-1};
 
     return ++counter;
+}
+
+auto make_progress(
+    blockchain::block::Height& actual,
+    blockchain::block::Height& target) noexcept -> double
+{
+    target = std::max<blockchain::block::Height>(1, target);
+    actual = std::max<blockchain::block::Height>(0, actual);
+    actual = std::min(actual, target);
+
+    return double(100 * actual) / double(target);
 }
 }  // namespace opentxs::ui::internal
 

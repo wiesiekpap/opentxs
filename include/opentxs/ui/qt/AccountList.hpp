@@ -32,35 +32,23 @@ class OPENTXS_EXPORT opentxs::ui::AccountListQt final : public qt::Model
     Q_OBJECT
 
 public:
-    // User roles return the same data for all columns
-    //
-    // NotaryIDRole: QString
-    // UnitRole: int (contact::ContactItemType)
-    // AccountIDRole: QString
-    // BalanceRole: int
-    // PolarityRole: int (-1, 0, or 1)
-    // AccountTypeRole: int (opentxs::AccountType)
-    // ContractIdRole: QString
-    //
-    // Qt::DisplayRole, NotaryNameColumn: QString
-    // Qt::DisplayRole, DisplayUnitColumn: QString
-    // Qt::DisplayRole, AccountNameColumn: QString
-    // Qt::DisplayRole, DisplayBalanceColumn: QString
-
+    enum Roles {
+        NameRole = Qt::UserRole + 0,         // QString
+        NotaryIDRole = Qt::UserRole + 1,     // QString
+        NotaryNameRole = Qt::UserRole + 2,   // QString
+        UnitRole = Qt::UserRole + 3,         // int (contact::ContactItemType)
+        UnitNameRole = Qt::UserRole + 4,     // QString
+        AccountIDRole = Qt::UserRole + 5,    // QString
+        BalanceRole = Qt::UserRole + 6,      // QString
+        PolarityRole = Qt::UserRole + 7,     // int (-1, 0, or 1)
+        AccountTypeRole = Qt::UserRole + 8,  // int (opentxs::AccountType)
+        ContractIdRole = Qt::UserRole + 9,   // QString
+    };
     enum Columns {
         NotaryNameColumn = 0,
         DisplayUnitColumn = 1,
         AccountNameColumn = 2,
         DisplayBalanceColumn = 3,
-    };
-    enum Roles {
-        NotaryIDRole = Qt::UserRole + 0,
-        UnitRole = Qt::UserRole + 1,
-        AccountIDRole = Qt::UserRole + 2,
-        BalanceRole = Qt::UserRole + 3,
-        PolarityRole = Qt::UserRole + 4,
-        AccountTypeRole = Qt::UserRole + 5,
-        ContractIdRole = Qt::UserRole + 6,
     };
 
     AccountListQt(internal::AccountList& parent) noexcept;

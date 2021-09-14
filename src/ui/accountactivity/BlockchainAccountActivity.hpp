@@ -174,13 +174,15 @@ private:
             return ratio_;
         }
 
-        auto set(const int height, const int target) noexcept -> double
+        auto set(
+            blockchain::block::Height height,
+            blockchain::block::Height target) noexcept -> double
         {
             Lock lock{lock_};
             auto& [current, max] = ratio_;
-            current = height;
-            max = target;
-            percentage_ = (double(height) / double(target)) * double{100};
+            current = static_cast<int>(height);
+            max = static_cast<int>(target);
+            percentage_ = internal::make_progress(height, target);
 
             return percentage_;
         }

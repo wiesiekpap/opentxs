@@ -9,6 +9,7 @@
 #include <chrono>
 #include <iostream>
 #include <iterator>
+#include <sstream>
 
 #include "integration/Helpers.hpp"
 #include "opentxs/SharedPimpl.hpp"
@@ -17,17 +18,49 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/ui/AccountActivity.hpp"
+#include "opentxs/ui/AccountList.hpp"
+#include "opentxs/ui/AccountListItem.hpp"
 #include "opentxs/ui/ActivityThread.hpp"
 #include "opentxs/ui/ActivityThreadItem.hpp"
+#include "opentxs/ui/BalanceItem.hpp"
 #include "opentxs/ui/BlockchainAccountStatus.hpp"
+#include "opentxs/ui/BlockchainSelection.hpp"
+#include "opentxs/ui/BlockchainSelectionItem.hpp"
 #include "opentxs/ui/BlockchainSubaccount.hpp"
 #include "opentxs/ui/BlockchainSubaccountSource.hpp"
 #include "opentxs/ui/BlockchainSubchain.hpp"
+#include "opentxs/ui/Blockchains.hpp"
 #include "opentxs/ui/ContactList.hpp"
 #include "opentxs/ui/ContactListItem.hpp"
 
 namespace ottest
 {
+auto activity_thread_send_message(const User& user, const User& remote) noexcept
+    -> bool
+{
+    const auto& widget = user.api_->UI().ActivityThread(
+        user.nym_id_, user.Contact(remote.name_));
+
+    return widget.SendDraft();
+}
+
+auto activity_thread_send_message(
+    const User& user,
+    const User& remote,
+    const std::string& messasge) noexcept -> bool
+{
+    const auto& widget = user.api_->UI().ActivityThread(
+        user.nym_id_, user.Contact(remote.name_));
+    const auto set = widget.SetDraft(messasge);
+    const auto sent = widget.SendDraft();
+
+    EXPECT_TRUE(set);
+    EXPECT_TRUE(sent);
+
+    return set && sent;
+}
+
 auto check_blockchain_subaccounts(
     const ot::ui::BlockchainSubaccountSource& widget,
     const std::vector<BlockchainSubaccountData>& v) noexcept -> bool;
@@ -40,7 +73,182 @@ auto check_account_activity(
     const ot::Identifier& account,
     const AccountActivityData& expected) noexcept -> bool
 {
-    return true;  // TODO
+    const auto& widget = user.api_->UI().AccountActivity(user.nym_id_, account);
+    auto output{true};
+    output &= (widget.AccountID() == expected.id_);
+    output &= (widget.Balance() == expected.balance_);
+    output &= (widget.BalancePolarity() == expected.polarity_);
+    output &= (widget.ContractID() == expected.contract_id_);
+    output &= (widget.DepositChains() == expected.deposit_chains_);
+    output &= (widget.DisplayBalance() == expected.display_balance_);
+    output &= (widget.DisplayUnit() == expected.contract_name_);
+    output &= (widget.Name() == expected.name_);
+    output &= (widget.NotaryID() == expected.notary_id_);
+    output &= (widget.NotaryName() == expected.notary_name_);
+    output &=
+        (std::to_string(widget.SyncPercentage()) ==
+         std::to_string(expected.sync_));
+    output &= (widget.SyncProgress() == expected.progress_);
+    output &= (widget.Type() == expected.type_);
+    output &= (widget.Unit() == expected.unit_);
+
+    if (const auto& a = expected.default_deposit_address_; !a.empty()) {
+        output &= (widget.DepositAddress() == a);
+
+        EXPECT_EQ(widget.DepositAddress(), a);
+    }
+
+    for (const auto& [type, address] : expected.deposit_addresses_) {
+        output &= (widget.DepositAddress(type) == address);
+
+        EXPECT_EQ(widget.DepositAddress(type), address);
+    }
+
+    for (const auto& [input, valid] : expected.addresses_to_validate_) {
+        const auto validated = widget.ValidateAddress(input);
+        output &= (validated == valid);
+
+        EXPECT_EQ(validated, valid);
+    }
+
+    for (const auto& [input, valid] : expected.amounts_to_validate_) {
+        const auto validated = widget.ValidateAmount(input);
+        output &= (validated == valid);
+
+        EXPECT_EQ(validated, valid);
+    }
+
+    EXPECT_EQ(widget.AccountID(), expected.id_);
+    EXPECT_EQ(widget.Balance(), expected.balance_);
+    EXPECT_EQ(widget.BalancePolarity(), expected.polarity_);
+    EXPECT_EQ(widget.ContractID(), expected.contract_id_);
+    EXPECT_EQ(widget.DepositChains(), expected.deposit_chains_);
+    EXPECT_EQ(widget.DisplayBalance(), expected.display_balance_);
+    EXPECT_EQ(widget.DisplayUnit(), expected.contract_name_);
+    EXPECT_EQ(widget.Name(), expected.name_);
+    EXPECT_EQ(widget.NotaryID(), expected.notary_id_);
+    EXPECT_EQ(widget.NotaryName(), expected.notary_name_);
+    EXPECT_EQ(
+        std::to_string(widget.SyncPercentage()),
+        std::to_string(expected.sync_));
+    EXPECT_EQ(widget.SyncProgress(), expected.progress_);
+    EXPECT_EQ(widget.Type(), expected.type_);
+    EXPECT_EQ(widget.Unit(), expected.unit_);
+
+    const auto& v = expected.rows_;
+    auto row = widget.First();
+
+    if (const auto valid = row->Valid(); 0 < v.size()) {
+        output &= valid;
+
+        EXPECT_TRUE(valid);
+
+        if (false == valid) { return output; }
+    } else {
+        output &= (false == valid);
+
+        EXPECT_FALSE(valid);
+    }
+
+    for (auto it{v.begin()}; it < v.end(); ++it, row = widget.Next()) {
+        output &= (row->Amount() == it->amount_);
+        output &= (row->Contacts() == it->contacts_);
+        output &= (row->DisplayAmount() == it->display_amount_);
+        output &= (row->Memo() == it->memo_);
+        output &= (row->Workflow() == it->workflow_);
+        output &= (row->Text() == it->text_);
+        output &= (row->Type() == it->type_);
+        output &= (row->UUID() == it->uuid_);
+
+        if (auto& time = it->timestamp_; time.has_value()) {
+            output &= (row->Timestamp() == time.value());
+
+            EXPECT_EQ(row->Timestamp(), time.value());
+        }
+
+        const auto lastVector = std::next(it) == v.end();
+        const auto lastRow = row->Last();
+        output &= (lastVector == lastRow);
+
+        EXPECT_EQ(row->Amount(), it->amount_);
+        EXPECT_EQ(row->Contacts(), it->contacts_);
+        EXPECT_EQ(row->DisplayAmount(), it->display_amount_);
+        EXPECT_EQ(row->Memo(), it->memo_);
+        EXPECT_EQ(row->Workflow(), it->workflow_);
+        EXPECT_EQ(row->Text(), it->text_);
+        EXPECT_EQ(row->Type(), it->type_);
+        EXPECT_EQ(row->UUID(), it->uuid_);
+
+        if (lastVector) {
+            EXPECT_TRUE(lastRow);
+        } else {
+            EXPECT_FALSE(lastRow);
+
+            if (lastRow) { return output; }
+        }
+    }
+
+    return output;
+}
+
+auto check_account_list(
+    const User& user,
+    const AccountListData& expected) noexcept -> bool
+{
+    const auto& widget = user.api_->UI().AccountList(user.nym_id_);
+    auto output{true};
+    const auto& v = expected.rows_;
+    auto row = widget.First();
+
+    if (const auto valid = row->Valid(); 0 < v.size()) {
+        output &= valid;
+
+        EXPECT_TRUE(valid);
+
+        if (false == valid) { return output; }
+    } else {
+        output &= (false == valid);
+
+        EXPECT_FALSE(valid);
+    }
+
+    for (auto it{v.begin()}; it < v.end(); ++it, row = widget.Next()) {
+        const auto lastVector = std::next(it) == v.end();
+        const auto lastRow = row->Last();
+        output &= (row->AccountID() == it->account_id_);
+        output &= (row->Balance() == it->balance_);
+        output &= (row->ContractID() == it->contract_id_);
+        output &= (row->DisplayBalance() == it->display_balance_);
+        output &= (row->DisplayUnit() == it->display_unit_);
+        output &= (row->Name() == it->name_);
+        output &= (row->NotaryID() == it->notary_id_);
+        output &= (row->NotaryName() == it->notary_name_);
+        output &= (row->Type() == it->type_);
+        output &= (row->Unit() == it->unit_);
+        output &= (lastVector == lastRow);
+
+        EXPECT_EQ(row->AccountID(), it->account_id_);
+        EXPECT_EQ(row->Balance(), it->balance_);
+        EXPECT_EQ(row->ContractID(), it->contract_id_);
+        EXPECT_EQ(row->DisplayBalance(), it->display_balance_);
+        EXPECT_EQ(row->DisplayUnit(), it->display_unit_);
+        EXPECT_EQ(row->Name(), it->name_);
+        EXPECT_EQ(row->NotaryID(), it->notary_id_);
+        EXPECT_EQ(row->NotaryName(), it->notary_name_);
+        EXPECT_EQ(row->Type(), it->type_);
+        EXPECT_EQ(row->Unit(), it->unit_);
+        EXPECT_EQ(lastVector, lastRow);
+
+        if (lastVector) {
+            EXPECT_TRUE(lastRow);
+        } else {
+            EXPECT_FALSE(lastRow);
+
+            if (lastRow) { return output; }
+        }
+    }
+
+    return output;
 }
 
 auto check_activity_thread(
@@ -191,6 +399,55 @@ auto check_blockchain_account_status(
     return output;
 }
 
+auto check_blockchain_selection(
+    const ot::api::client::Manager& api,
+    const ot::ui::Blockchains type,
+    const BlockchainSelectionData& expected) noexcept -> bool
+{
+    const auto& widget = api.UI().BlockchainSelection(type);
+    auto output{true};
+    const auto& v = expected.rows_;
+    auto row = widget.First();
+
+    if (const auto valid = row->Valid(); 0 < v.size()) {
+        output &= valid;
+
+        EXPECT_TRUE(valid);
+
+        if (false == valid) { return output; }
+    } else {
+        output &= (false == valid);
+
+        EXPECT_FALSE(valid);
+    }
+
+    for (auto it{v.begin()}; it < v.end(); ++it, row = widget.Next()) {
+        output &= (row->Name() == it->name_);
+        output &= (row->IsEnabled() == it->enabled_);
+        output &= (row->IsTestnet() == it->testnet_);
+        output &= (row->Type() == it->type_);
+
+        EXPECT_EQ(row->Name(), it->name_);
+        EXPECT_EQ(row->IsEnabled(), it->enabled_);
+        EXPECT_EQ(row->IsTestnet(), it->testnet_);
+        EXPECT_EQ(row->Type(), it->type_);
+
+        const auto lastVector = std::next(it) == v.end();
+        const auto lastRow = row->Last();
+        output &= (lastVector == lastRow);
+
+        if (lastVector) {
+            EXPECT_TRUE(lastRow);
+        } else {
+            EXPECT_FALSE(lastRow);
+
+            if (lastRow) { return output; }
+        }
+    }
+
+    return output;
+}
+
 auto check_blockchain_subaccounts(
     const ot::ui::BlockchainSubaccountSource& widget,
     const std::vector<BlockchainSubaccountData>& v) noexcept -> bool
@@ -278,22 +535,25 @@ auto check_blockchain_subchains(
 
 auto check_contact_list(
     const User& user,
-    const std::vector<ContactListData>& v) noexcept -> bool
+    const ContactListData& expected) noexcept -> bool
 {
-    EXPECT_GT(v.size(), 0);
-
-    if (0 == v.size()) { return false; }
-
     const auto& widget = user.api_->UI().ContactList(user.nym_id_);
     auto output{true};
+    const auto& v = expected.rows_;
     auto row = widget.First();
 
-    EXPECT_TRUE(row->Valid());
+    if (const auto valid = row->Valid(); 0 < v.size()) {
+        output &= valid;
 
-    if (false == row->Valid()) { return false; }
+        EXPECT_TRUE(valid);
 
-    // NOTE contact list is different than other widgets because it is required
-    // to always have one row. Other widgets are allowed to be empty.
+        if (false == valid) { return output; }
+    } else {
+        output &= (false == valid);
+
+        EXPECT_FALSE(valid);
+    }
+
     for (auto it{v.begin()}; it < v.end(); ++it, row = widget.Next()) {
         const auto& index = it->contact_id_index_;
 
@@ -315,15 +575,11 @@ auto check_contact_list(
         }
 
         output &= (row->DisplayName() == it->name_);
-
-        EXPECT_EQ(row->DisplayName(), it->name_);
-
         output &= (row->ImageURI() == it->image_);
-
-        EXPECT_EQ(row->ImageURI(), it->image_);
-
         output &= (row->Section() == it->section_);
 
+        EXPECT_EQ(row->DisplayName(), it->name_);
+        EXPECT_EQ(row->ImageURI(), it->image_);
         EXPECT_EQ(row->Section(), it->section_);
 
         const auto lastVector = std::next(it) == v.end();
@@ -350,6 +606,64 @@ auto make_cb(Counter& counter, const std::string name) noexcept
 
         if (++value > expected) { std::cout << name << ": " << value << '\n'; }
     };
+}
+
+auto init_account_activity(
+    const User& user,
+    const ot::Identifier& account,
+    Counter& counter) noexcept -> void
+{
+    user.api_->UI().AccountActivity(
+        user.nym_id_, account, make_cb(counter, [&] {
+            auto out = std::stringstream{};
+            out << u8"account_activity_";
+            out << user.name_lower_;
+
+            return out.str();
+        }()));
+    wait_for_counter(counter);
+}
+
+auto init_account_list(const User& user, Counter& counter) noexcept -> void
+{
+    user.api_->UI().AccountList(user.nym_id_, make_cb(counter, [&] {
+                                    auto out = std::stringstream{};
+                                    out << u8"account_list_";
+                                    out << user.name_lower_;
+
+                                    return out.str();
+                                }()));
+    wait_for_counter(counter);
+}
+
+auto init_activity_thread(
+    const User& user,
+    const User& remote,
+    Counter& counter) noexcept -> void
+{
+    user.api_->UI().ActivityThread(
+        user.nym_id_, user.Contact(remote.name_), make_cb(counter, [&] {
+            auto out = std::stringstream{};
+            out << u8"activity_thread_";
+            out << user.name_lower_;
+            out << '_';
+            out << remote.name_lower_;
+
+            return out.str();
+        }()));
+    wait_for_counter(counter);
+}
+
+auto init_contact_list(const User& user, Counter& counter) noexcept -> void
+{
+    user.api_->UI().ContactList(user.nym_id_, make_cb(counter, [&] {
+                                    auto out = std::stringstream{};
+                                    out << u8"contact_list_";
+                                    out << user.name_lower_;
+
+                                    return out.str();
+                                }()));
+    wait_for_counter(counter);
 }
 
 auto wait_for_counter(Counter& data, const bool hard) noexcept -> bool
