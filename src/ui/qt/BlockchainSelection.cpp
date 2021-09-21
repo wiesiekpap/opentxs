@@ -49,7 +49,9 @@ BlockchainSelectionQt::BlockchainSelectionQt(
     if (nullptr != internal_) {
         internal_->SetColumnCount(nullptr, 1);
         internal_->SetRoleData({
+            {BlockchainSelectionQt::NameRole, "name"},
             {BlockchainSelectionQt::TypeRole, "type"},
+            {BlockchainSelectionQt::IsEnabled, "enabled"},
             {BlockchainSelectionQt::IsTestnet, "testnet"},
         });
     }
@@ -126,15 +128,25 @@ auto BlockchainSelectionItem::qt_data(
     const int role,
     QVariant& out) const noexcept -> void
 {
+    using Parent = BlockchainSelectionQt;
+
+    if (0 != column) { return; }
+
     switch (role) {
         case Qt::DisplayRole: {
-            out = Name().c_str();
+            qt_data(column, Parent::NameRole, out);
         } break;
         case Qt::CheckStateRole: {
             out = IsEnabled() ? Qt::Checked : Qt::Unchecked;
         } break;
+        case BlockchainSelectionQt::NameRole: {
+            out = Name().c_str();
+        } break;
         case BlockchainSelectionQt::TypeRole: {
             out = static_cast<int>(static_cast<std::uint32_t>(Type()));
+        } break;
+        case BlockchainSelectionQt::IsEnabled: {
+            out = IsEnabled();
         } break;
         case BlockchainSelectionQt::IsTestnet: {
             out = IsTestnet();

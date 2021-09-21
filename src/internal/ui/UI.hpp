@@ -24,6 +24,7 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
@@ -1357,6 +1358,10 @@ struct UnitListItem final : virtual public Row,
     }
 };
 }  // namespace blank
+
+auto make_progress(
+    blockchain::block::Height& actual,
+    blockchain::block::Height& target) noexcept -> double;
 }  // namespace opentxs::ui::internal
 
 namespace opentxs::ui::qt::internal

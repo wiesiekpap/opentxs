@@ -54,7 +54,7 @@ ActivityThreadQt::ActivityThreadQt(internal::ActivityThread& parent) noexcept
     , imp_(std::make_unique<Imp>(parent).release())
 {
     if (nullptr != internal_) {
-        internal_->SetColumnCount(nullptr, 6);
+        internal_->SetColumnCount(nullptr, 7);
         internal_->SetRoleData({
             {ActivityThreadQt::IntAmountRole, "intamount"},
             {ActivityThreadQt::StringAmountRole, "stramount"},

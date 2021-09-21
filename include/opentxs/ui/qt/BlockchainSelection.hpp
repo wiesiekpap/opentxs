@@ -48,13 +48,14 @@ public:
     Q_INVOKABLE bool enableChain(const int chain) noexcept;
 
 public:
-    // One column
-    //
-    // Qt::DisplayRole and Qt::CheckStateRole are implemented in addition to the
-    // roles below:
     enum Roles {
-        TypeRole = Qt::UserRole + 0,   // int, opentxs::blockchain::Type
-        IsTestnet = Qt::UserRole + 1,  // bool
+        NameRole = Qt::UserRole + 0,   // QString
+        TypeRole = Qt::UserRole + 1,   // int, opentxs::blockchain::Type
+        IsEnabled = Qt::UserRole + 2,  // bool
+        IsTestnet = Qt::UserRole + 3,  // bool
+    };
+    enum Columns {
+        NameColumn = 0,
     };
 
     auto enabledCount() const noexcept -> int;

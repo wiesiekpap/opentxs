@@ -15,6 +15,11 @@ auto check_account_activity_qt(
     return true;
 }
 
+auto check_account_list_qt(const User&, const AccountListData&) noexcept -> bool
+{
+    return true;
+}
+
 auto check_activity_thread_qt(
     const User&,
     const ot::Identifier&,
@@ -31,9 +36,15 @@ auto check_blockchain_account_status_qt(
     return true;
 }
 
-auto check_contact_list_qt(
-    const User&,
-    const std::vector<ContactListData>&) noexcept -> bool
+auto check_blockchain_selection_qt(
+    const ot::api::client::Manager&,
+    const ot::ui::Blockchains,
+    const BlockchainSelectionData&) noexcept -> bool
+{
+    return true;
+}
+
+auto check_contact_list_qt(const User&, const ContactListData&) noexcept -> bool
 {
     return true;
 }

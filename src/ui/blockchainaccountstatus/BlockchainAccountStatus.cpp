@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "ui/blockchainaccountstatus/BlockchainAccountStatus.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <chrono>
 #include <exception>
 #include <map>
@@ -467,14 +466,14 @@ auto BlockchainAccountStatus::subchain_display_name(
             return std::nullopt;
         }
     }();
-    const auto effective = std::max<Height>(0, scanned.value_or(0));
-    const auto eTarget = std::max<Height>(1, target.value_or(1));
-    const auto eProgress = std::min(effective, eTarget);
+    auto actual = scanned.value_or(0);
+    auto eTarget = target.value_or(1);
+    const auto eProgress = internal::make_progress(actual, eTarget);
     const auto percent = [&] {
         auto out = std::stringstream{};
 
         if (target.has_value()) {
-            out << std::to_string((100 * eProgress) / eTarget);
+            out << std::to_string(eProgress);
         } else {
             out << "?";
         }
@@ -484,7 +483,7 @@ auto BlockchainAccountStatus::subchain_display_name(
         return out.str();
     }();
     name << opentxs::print(subchain) << " subchain";
-    progress << std::to_string(eProgress);
+    progress << std::to_string(actual);
     progress << " of ";
 
     if (target.has_value()) {

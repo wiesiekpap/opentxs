@@ -440,11 +440,11 @@ auto PeerManager::Peers::get_peer() const noexcept -> Endpoint
 
     pAddress = get_fallback_peer(protocol);
 
-    OT_ASSERT(pAddress);
-
-    LogVerbose(OT_METHOD)(__func__)(
-        ": Attempting to connect to fallback peer: ")(pAddress->Display())
-        .Flush();
+    if (pAddress) {
+        LogVerbose(OT_METHOD)(__func__)(
+            ": Attempting to connect to fallback peer: ")(pAddress->Display())
+            .Flush();
+    }
 
     return pAddress;
 }
@@ -619,7 +619,9 @@ auto PeerManager::Peers::Run() noexcept -> bool
         LogVerbose(OT_METHOD)(__func__)(": Fewer peers (")(peers_.size())(
             ") than desired (")(target)(")")
             .Flush();
-        add_peer(get_peer());
+        auto peer = get_peer();
+
+        if (peer) { add_peer(std::move(peer)); }
     }
 
     return target > peers_.size();

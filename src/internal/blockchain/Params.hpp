@@ -82,6 +82,7 @@ struct Data {
     std::size_t block_download_batch_{};
     ScriptMap scripts_{};
     StylePref styles_{};
+    block::Height maturation_interval_{};
 
 #if OT_BLOCKCHAIN
     static auto Bip158() noexcept -> const FilterTypes&;

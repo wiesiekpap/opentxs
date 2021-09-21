@@ -8,7 +8,6 @@
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <deque>
-#include <optional>
 #include <set>
 #include <string>
 #include <utility>
@@ -17,7 +16,6 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/UI.hpp"
@@ -32,22 +30,16 @@
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
-#include "opentxs/blockchain/crypto/HDProtocol.hpp"
-#include "opentxs/blockchain/crypto/Subchain.hpp"
-#include "opentxs/blockchain/crypto/Types.hpp"
+#include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/crypto/Types.hpp"
-#include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/rpc/AccountData.hpp"
 #include "opentxs/rpc/AccountEvent.hpp"
@@ -72,169 +64,6 @@ namespace ottest
 {
 Counter account_list_{};
 Counter account_activity_{};
-
-class Regtest_fixture_hd : public Regtest_fixture_normal
-{
-protected:
-    using Subchain = ot::blockchain::crypto::Subchain;
-    using UTXO = ot::blockchain::node::Wallet::UTXO;
-
-    static ot::Nym_p alex_p_;
-    static std::deque<ot::blockchain::block::pTxid> transactions_;
-    static std::unique_ptr<ScanListener> listener_p_;
-    static Expected expected_;
-
-    const ot::identity::Nym& alex_;
-    const ot::blockchain::crypto::HD& account_;
-    const ot::Identifier& expected_account_;
-    const ot::identifier::Server& expected_notary_;
-    const ot::identifier::UnitDefinition& expected_unit_;
-    const std::string expected_display_unit_;
-    const std::string expected_account_name_;
-    const std::string expected_notary_name_;
-    const std::string memo_outgoing_;
-    const ot::AccountType expected_account_type_;
-    const ot::contact::ContactItemType expected_unit_type_;
-    const Generator hd_generator_;
-    ScanListener& listener_;
-
-    auto Shutdown() noexcept -> void final
-    {
-        listener_p_.reset();
-        transactions_.clear();
-        alex_p_.reset();
-        Regtest_fixture_normal::Shutdown();
-    }
-
-    Regtest_fixture_hd()
-        : Regtest_fixture_normal(1)
-        , alex_([&]() -> const ot::identity::Nym& {
-            if (!alex_p_) {
-                const auto reason =
-                    client_1_.Factory().PasswordPrompt(__func__);
-
-                alex_p_ = client_1_.Wallet().Nym(reason, "Alex");
-
-                OT_ASSERT(alex_p_)
-
-                client_1_.Blockchain().NewHDSubaccount(
-                    alex_p_->ID(),
-                    ot::blockchain::crypto::HDProtocol::BIP_44,
-                    test_chain_,
-                    reason);
-            }
-
-            OT_ASSERT(alex_p_)
-
-            return *alex_p_;
-        }())
-        , account_(client_1_.Blockchain()
-                       .Account(alex_.ID(), test_chain_)
-                       .GetHD()
-                       .at(0))
-        , expected_account_(account_.Parent().AccountID())
-        , expected_notary_(client_1_.UI().BlockchainNotaryID(test_chain_))
-        , expected_unit_(client_1_.UI().BlockchainUnitID(test_chain_))
-        , expected_display_unit_(u8"UNITTEST")
-        , expected_account_name_(u8"This device")
-        , expected_notary_name_(u8"Unit Test Simulation")
-        , memo_outgoing_("memo for outgoing transaction")
-        , expected_account_type_(ot::AccountType::Blockchain)
-        , expected_unit_type_(ot::contact::ContactItemType::Regtest)
-        , hd_generator_([&](Height height) -> Transaction {
-            using OutputBuilder = ot::api::Factory::OutputBuilder;
-            using Index = ot::Bip32Index;
-            static constexpr auto count = 100u;
-            static constexpr auto baseAmmount =
-                ot::blockchain::Amount{100000000};
-            auto meta = std::vector<OutpointMetadata>{};
-            meta.reserve(count);
-            auto output = miner_.Factory().BitcoinGenerationTransaction(
-                test_chain_,
-                height,
-                [&] {
-                    auto output = std::vector<OutputBuilder>{};
-                    const auto reason =
-                        client_1_.Factory().PasswordPrompt(__func__);
-                    const auto keys = std::set<ot::blockchain::crypto::Key>{};
-
-                    for (auto i = Index{0}; i < Index{count}; ++i) {
-                        const auto index = account_.Reserve(
-                            Subchain::External,
-                            client_1_.Factory().PasswordPrompt(""));
-                        const auto& element = account_.BalanceElement(
-                            Subchain::External, index.value_or(0));
-                        const auto key = element.Key();
-
-                        OT_ASSERT(key);
-
-                        switch (i) {
-                            case 0: {
-                                const auto& [bytes, value, pattern] =
-                                    meta.emplace_back(
-                                        client_1_.Factory().Data(
-                                            element.Key()->PublicKey()),
-                                        baseAmmount + i,
-                                        Pattern::PayToPubkey);
-                                output.emplace_back(
-                                    value,
-                                    miner_.Factory().BitcoinScriptP2PK(
-                                        test_chain_, *key),
-                                    keys);
-                            } break;
-                            default: {
-                                const auto& [bytes, value, pattern] =
-                                    meta.emplace_back(
-                                        element.PubkeyHash(),
-                                        baseAmmount + i,
-                                        Pattern::PayToPubkeyHash);
-                                output.emplace_back(
-                                    value,
-                                    miner_.Factory().BitcoinScriptP2PKH(
-                                        test_chain_, *key),
-                                    keys);
-                            }
-                        }
-                    }
-
-                    return output;
-                }(),
-                coinbase_fun_);
-
-            OT_ASSERT(output);
-
-            const auto& txid = transactions_.emplace_back(output->ID()).get();
-
-            for (auto i = Index{0}; i < Index{count}; ++i) {
-                auto& [bytes, amount, pattern] = meta.at(i);
-                expected_.emplace(
-                    std::piecewise_construct,
-                    std::forward_as_tuple(txid.Bytes(), i),
-                    std::forward_as_tuple(
-                        std::move(bytes),
-                        std::move(amount),
-                        std::move(pattern)));
-            }
-
-            return output;
-        })
-        , listener_([&]() -> ScanListener& {
-            if (!listener_p_) {
-                listener_p_ = std::make_unique<ScanListener>(client_1_);
-            }
-
-            OT_ASSERT(listener_p_);
-
-            return *listener_p_;
-        }())
-    {
-    }
-};
-
-ot::Nym_p Regtest_fixture_hd::alex_p_{};
-std::deque<ot::blockchain::block::pTxid> Regtest_fixture_hd::transactions_{};
-std::unique_ptr<ScanListener> Regtest_fixture_hd::listener_p_{};
-Regtest_fixture_hd::Expected Regtest_fixture_hd::expected_{};
 
 TEST_F(Regtest_fixture_hd, init_opentxs) {}
 

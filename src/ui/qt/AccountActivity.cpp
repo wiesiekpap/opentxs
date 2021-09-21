@@ -309,11 +309,13 @@ auto AccountActivity::shutdown_qt() noexcept -> void
 auto BalanceItem::qt_data(const int column, const int role, QVariant& out)
     const noexcept -> void
 {
+    using Parent = AccountActivityQt;
+
     switch (role) {
         case Qt::TextAlignmentRole: {
             switch (column) {
-                case AccountActivityQt::TextColumn:
-                case AccountActivityQt::MemoColumn: {
+                case Parent::TextColumn:
+                case Parent::MemoColumn: {
                     out = Qt::AlignLeft;
                 } break;
                 default: {
@@ -323,47 +325,47 @@ auto BalanceItem::qt_data(const int column, const int role, QVariant& out)
         } break;
         case Qt::DisplayRole: {
             switch (column) {
-                case AccountActivityQt::AmountColumn: {
-                    qt_data(column, AccountActivityQt::AmountRole, out);
+                case Parent::AmountColumn: {
+                    qt_data(column, Parent::AmountRole, out);
                 } break;
-                case AccountActivityQt::TextColumn: {
-                    qt_data(column, AccountActivityQt::TextRole, out);
+                case Parent::TextColumn: {
+                    qt_data(column, Parent::TextRole, out);
                 } break;
-                case AccountActivityQt::MemoColumn: {
-                    qt_data(column, AccountActivityQt::MemoRole, out);
+                case Parent::MemoColumn: {
+                    qt_data(column, Parent::MemoRole, out);
                 } break;
-                case AccountActivityQt::TimeColumn: {
-                    qt_data(column, AccountActivityQt::TimeRole, out);
+                case Parent::TimeColumn: {
+                    qt_data(column, Parent::TimeRole, out);
                 } break;
-                case AccountActivityQt::UUIDColumn: {
-                    qt_data(column, AccountActivityQt::UUIDRole, out);
+                case Parent::UUIDColumn: {
+                    qt_data(column, Parent::UUIDRole, out);
                 } break;
                 default: {
                 }
             }
         } break;
-        case AccountActivityQt::AmountRole: {
+        case Parent::AmountRole: {
             out = DisplayAmount().c_str();
         } break;
-        case AccountActivityQt::TextRole: {
+        case Parent::TextRole: {
             out = Text().c_str();
         } break;
-        case AccountActivityQt::MemoRole: {
+        case Parent::MemoRole: {
             out = Memo().c_str();
         } break;
-        case AccountActivityQt::TimeRole: {
+        case Parent::TimeRole: {
             auto qdatetime = QDateTime{};
             qdatetime.setSecsSinceEpoch(Clock::to_time_t(Timestamp()));
 
             out = qdatetime;
         } break;
-        case AccountActivityQt::UUIDRole: {
+        case Parent::UUIDRole: {
             out = UUID().c_str();
         } break;
-        case AccountActivityQt::PolarityRole: {
+        case Parent::PolarityRole: {
             out = polarity(Amount());
         } break;
-        case AccountActivityQt::ContactsRole: {
+        case Parent::ContactsRole: {
             auto output = QStringList{};
 
             for (const auto& contact : Contacts()) {
@@ -372,10 +374,10 @@ auto BalanceItem::qt_data(const int column, const int role, QVariant& out)
 
             out = output;
         } break;
-        case AccountActivityQt::WorkflowRole: {
+        case Parent::WorkflowRole: {
             out = Workflow().c_str();
         } break;
-        case AccountActivityQt::TypeRole: {
+        case Parent::TypeRole: {
             out = static_cast<int>(Type());
         } break;
         default: {
