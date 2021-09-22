@@ -58,7 +58,7 @@ OTOffer::OTOffer(
     const identifier::Server& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
     const identifier::UnitDefinition& CURRENCY_ID,
-    const std::int64_t& lScale)
+    const Amount& lScale)
     : Instrument(core, NOTARY_ID, INSTRUMENT_DEFINITION_ID)
     , m_pTrade(nullptr)
     , m_CURRENCY_TYPE_ID(CURRENCY_ID)
@@ -139,15 +139,15 @@ void OTOffer::GetIdentifier(Identifier& theIdentifier) const
          strAsset = String::Factory(GetInstrumentDefinitionID()),
          strCurrency = String::Factory(GetCurrencyID());
 
-    std::int64_t lScale = GetScale();
+    const Amount& lScale = GetScale();
 
     // In this way we generate a unique ID that will always be consistent
     // for the same instrument definition id, currency ID, and market scale.
     strTemp->Format(
-        "ASSET TYPE:\n%s\nCURRENCY TYPE:\n%s\nMARKET SCALE:\n%" PRId64 "\n",
+        "ASSET TYPE:\n%s\nCURRENCY TYPE:\n%s\nMARKET SCALE:\n%s\n",
         strAsset->Get(),
         strCurrency->Get(),
-        lScale);
+        lScale.str().c_str());
 
     theIdentifier.CalculateDigest(strTemp->Bytes());
 }
@@ -321,12 +321,12 @@ auto OTOffer::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             tValidTo)("\n InstrumentDefinitionID: ")(
             strInstrumentDefinitionID)("\n  CurrencyTypeID: ")(
             strCurrencyTypeID)("\n NotaryID: ")(
-            strNotaryID)("\n Price Limit: ")(GetPriceLimit())(
-            ",  Total Assets on Offer: ")(GetTotalAssetsOnOffer())(",  ")(
-            (m_bSelling ? "sold" : "bought"))(" so far: ")(GetFinishedSoFar())(
-            "\n  Scale: ")(GetScale())(".   Minimum Increment: ")(
-            GetMinimumIncrement())(".  This offer is a")(
-            (m_bSelling ? "n ASK" : " BID"))(".")
+            strNotaryID)("\n Price Limit: ")(GetPriceLimit().str())(
+            ",  Total Assets on Offer: ")(GetTotalAssetsOnOffer().str())(",  ")(
+            (m_bSelling ? "sold" : "bought"))(" so far: ")(
+            GetFinishedSoFar().str())("\n  Scale: ")(GetScale().str())(
+            ".   Minimum Increment: ")(GetMinimumIncrement().str())(
+            ".  This offer is a")((m_bSelling ? "n ASK" : " BID"))(".")
             .Flush();
 
         nReturnVal = 1;
@@ -354,13 +354,11 @@ void OTOffer::UpdateContents(const PasswordPrompt& reason)
     tag.add_attribute(
         "instrumentDefinitionID", INSTRUMENT_DEFINITION_ID->Get());
     tag.add_attribute("currencyTypeID", CURRENCY_TYPE_ID->Get());
-    tag.add_attribute("priceLimit", std::to_string(GetPriceLimit()));
-    tag.add_attribute(
-        "totalAssetsOnOffer", std::to_string(GetTotalAssetsOnOffer()));
-    tag.add_attribute("finishedSoFar", std::to_string(GetFinishedSoFar()));
-    tag.add_attribute("marketScale", std::to_string(GetScale()));
-    tag.add_attribute(
-        "minimumIncrement", std::to_string(GetMinimumIncrement()));
+    tag.add_attribute("priceLimit", GetPriceLimit());
+    tag.add_attribute("totalAssetsOnOffer", GetTotalAssetsOnOffer());
+    tag.add_attribute("finishedSoFar", GetFinishedSoFar());
+    tag.add_attribute("marketScale", GetScale());
+    tag.add_attribute("minimumIncrement", GetMinimumIncrement());
     tag.add_attribute("transactionNum", std::to_string(GetTransactionNum()));
     tag.add_attribute("validFrom", formatTimestamp(GetValidFrom()));
     tag.add_attribute("validTo", formatTimestamp(GetValidTo()));
@@ -373,14 +371,14 @@ void OTOffer::UpdateContents(const PasswordPrompt& reason)
 
 auto OTOffer::MakeOffer(
     bool bBuyingOrSelling,            // True == SELLING, False == BUYING
-    const std::int64_t& lPriceLimit,  // Per Minimum Increment... (Zero price
+    const Amount& lPriceLimit,        // Per Minimum Increment... (Zero price
                                       // means
                                       // it's a market order.)
-    const std::int64_t& lTotalAssetsOffer,  // Total assets available for sale
-                                            // or
-                                            // purchase.
-    const std::int64_t& lMinimumIncrement,  // The minimum increment that must
-                                            // be
+    const Amount& lTotalAssetsOffer,  // Total assets available for sale
+                                      // or
+                                      // purchase.
+    const Amount& lMinimumIncrement,  // The minimum increment that must
+                                      // be
     // bought or sold for each transaction
     const std::int64_t& lTransactionNum,  // The transaction number authorizing
                                           // this
@@ -397,7 +395,7 @@ auto OTOffer::MakeOffer(
     // Make sure minimum increment isn't bigger than total Assets.
     // (If you pass them into this function as the same value, it's functionally
     // a "FILL OR KILL" order.)
-    std::int64_t lRealMinInc = lMinimumIncrement;
+    Amount lRealMinInc = lMinimumIncrement;
     if (lMinimumIncrement > lTotalAssetsOffer)  // Once the total, minus finish
                                                 // so far, is smaller than the
                                                 // minimum increment,

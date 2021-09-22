@@ -54,7 +54,7 @@ auto BitcoinTransactionOutput(
     const api::client::Blockchain& blockchain,
     const blockchain::Type chain,
     const std::uint32_t index,
-    const std::uint64_t value,
+    const blockchain::Amount& value,
     std::unique_ptr<const blockchain::block::bitcoin::internal::Script> script,
     const std::set<blockchain::crypto::Key>& keys) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Output>
@@ -85,7 +85,7 @@ auto BitcoinTransactionOutput(
     const api::client::Blockchain& blockchain,
     const blockchain::Type chain,
     const std::uint32_t index,
-    const std::uint64_t value,
+    const blockchain::Amount& value,
     const blockchain::bitcoin::CompactSize& cs,
     const ReadView script) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Output>
@@ -114,7 +114,7 @@ auto BitcoinTransactionOutput(
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Output>
 {
     try {
-        auto value = static_cast<std::int64_t>(in.value());
+        auto value = Amount{in.value()};
         auto cs = blockchain::bitcoin::CompactSize(in.script().size());
         auto keys = boost::container::flat_set<ReturnType::KeyID>{};
         auto pkh = boost::container::flat_set<blockchain::PatternID>{};
@@ -210,7 +210,7 @@ Output::Output(
     const blockchain::Type chain,
     const VersionNumber version,
     const std::uint32_t index,
-    const std::uint64_t value,
+    const blockchain::Amount& value,
     std::unique_ptr<const internal::Script> script,
     std::optional<std::size_t> size,
     boost::container::flat_set<KeyID>&& keys,
@@ -240,7 +240,7 @@ Output::Output(
     const api::client::Blockchain& blockchain,
     const blockchain::Type chain,
     const std::uint32_t index,
-    const std::uint64_t value,
+    const blockchain::Amount& value,
     const std::size_t size,
     const ReadView in,
     const VersionNumber version) noexcept(false)
@@ -265,7 +265,7 @@ Output::Output(
     const api::client::Blockchain& blockchain,
     const blockchain::Type chain,
     const std::uint32_t index,
-    const std::uint64_t value,
+    const blockchain::Amount& value,
     std::unique_ptr<const internal::Script> script,
     boost::container::flat_set<KeyID>&& keys,
     const VersionNumber version) noexcept(false)
@@ -336,7 +336,7 @@ auto Output::CalculateSize() const noexcept -> std::size_t
         const auto scriptCS =
             blockchain::bitcoin::CompactSize(script_->CalculateSize());
 
-        return sizeof(value_) + scriptCS.Total();
+        return Amount::SerializeBitcoinSize() + scriptCS.Total();
     });
 }
 
@@ -488,7 +488,7 @@ auto Output::Note(const api::client::Blockchain& blockchain) const noexcept
 auto Output::Print() const noexcept -> std::string
 {
     auto out = std::stringstream{};
-    out << "    value: " << std::to_string(value_) << '\n';
+    out << "    value: " << value_.str() << '\n';
     out << "    script: " << '\n';
     out << script_->Print();
 
@@ -518,8 +518,8 @@ auto Output::Serialize(const AllocateOutput destination) const noexcept
         blockchain::bitcoin::CompactSize(script_->CalculateSize());
     const auto csData = scriptCS.Encode();
     auto it = static_cast<std::byte*>(output.data());
-    std::memcpy(static_cast<void*>(it), &value_, sizeof(value_));
-    std::advance(it, sizeof(value_));
+    value_.SerializeBitcoin(destination);
+    std::advance(it, Amount::SerializeBitcoinSize());
     std::memcpy(static_cast<void*>(it), csData.data(), csData.size());
     std::advance(it, csData.size());
 

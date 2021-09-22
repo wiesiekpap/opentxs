@@ -19,6 +19,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "core/Amount.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"  // IWYU pragma: keep
@@ -105,7 +106,8 @@ auto BitcoinTransaction(
     for (const auto& output : *outputs) {
         raw.outputs_.emplace_back();
         auto& out = *raw.outputs_.rbegin();
-        out.value_ = output.Value();
+        out.value_ =
+            output.Value().Internal().amount_.convert_to<std::int64_t>();
         output.Script().Serialize(writer(out.script_));
         out.cs_ = out.script_.size();
     }
@@ -203,7 +205,7 @@ auto BitcoinTransaction(
                         blockchain,
                         chain,
                         counter++,
-                        output.value_.value(),
+                        Amount{output.value_.value()},
                         output.cs_,
                         reader(output.script_)));
                 outputBytes += output.size();

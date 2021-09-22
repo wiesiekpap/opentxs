@@ -7,6 +7,7 @@
 
 #include <cstdint>
 
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/CashEnums.pb.h"
 #include "opentxs/protobuf/Token.pb.h"
@@ -29,7 +30,7 @@ auto CheckProto_1(
     const bool silent,
     const CashType type,
     const std::set<TokenState>& state,
-    std::int64_t& totalValue,
+    std::string& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool
 {
@@ -51,7 +52,9 @@ auto CheckProto_1(
         case TOKENSTATE_BLINDED:
         case TOKENSTATE_SIGNED:
         case TOKENSTATE_READY: {
-            totalValue += input.denomination();
+            const auto total =
+                Amount(totalValue) + Amount(input.denomination());
+            totalValue = total.str();
             validFrom = std::max(input.validfrom(), validFrom);
             validTo = std::min(input.validto(), validTo);
         } break;
@@ -85,7 +88,7 @@ auto CheckProto_2(
     const bool silent,
     const CashType,
     const std::set<TokenState>&,
-    std::int64_t&,
+    std::string&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -97,7 +100,7 @@ auto CheckProto_3(
     const bool silent,
     const CashType,
     const std::set<TokenState>&,
-    std::int64_t&,
+    std::string&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -109,7 +112,7 @@ auto CheckProto_4(
     const bool silent,
     const CashType,
     const std::set<TokenState>&,
-    std::int64_t&,
+    std::string&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -121,7 +124,7 @@ auto CheckProto_5(
     const bool silent,
     const CashType,
     const std::set<TokenState>&,
-    std::int64_t&,
+    std::string&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -133,7 +136,7 @@ auto CheckProto_6(
     const bool silent,
     const CashType,
     const std::set<TokenState>&,
-    std::int64_t&,
+    std::string&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -145,7 +148,7 @@ auto CheckProto_7(
     const bool silent,
     const CashType,
     const std::set<TokenState>&,
-    std::int64_t&,
+    std::string&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -157,7 +160,7 @@ auto CheckProto_8(
     const bool silent,
     const CashType,
     const std::set<TokenState>&,
-    std::int64_t&,
+    std::string&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -169,7 +172,7 @@ auto CheckProto_9(
     const bool silent,
     const CashType,
     const std::set<TokenState>&,
-    std::int64_t&,
+    std::string&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -181,7 +184,7 @@ auto CheckProto_10(
     const bool silent,
     const CashType,
     const std::set<TokenState>&,
-    std::int64_t&,
+    std::string&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -193,7 +196,7 @@ auto CheckProto_11(
     const bool silent,
     const CashType,
     const std::set<TokenState>&,
-    std::int64_t&,
+    std::string&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -205,7 +208,7 @@ auto CheckProto_12(
     const bool silent,
     const CashType,
     const std::set<TokenState>&,
-    std::int64_t&,
+    std::string&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -217,7 +220,7 @@ auto CheckProto_13(
     const bool silent,
     const CashType,
     const std::set<TokenState>&,
-    std::int64_t&,
+    std::string&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -229,7 +232,7 @@ auto CheckProto_14(
     const bool silent,
     const CashType,
     const std::set<TokenState>&,
-    std::int64_t&,
+    std::string&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -241,7 +244,7 @@ auto CheckProto_15(
     const bool silent,
     const CashType,
     const std::set<TokenState>&,
-    std::int64_t&,
+    std::string&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -253,7 +256,7 @@ auto CheckProto_16(
     const bool silent,
     const CashType,
     const std::set<TokenState>&,
-    std::int64_t&,
+    std::string&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -265,7 +268,7 @@ auto CheckProto_17(
     const bool silent,
     const CashType,
     const std::set<TokenState>&,
-    std::int64_t&,
+    std::string&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -277,7 +280,7 @@ auto CheckProto_18(
     const bool silent,
     const CashType,
     const std::set<TokenState>&,
-    std::int64_t&,
+    std::string&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -289,7 +292,7 @@ auto CheckProto_19(
     const bool silent,
     const CashType,
     const std::set<TokenState>&,
-    std::int64_t&,
+    std::string&,
     std::int64_t&,
     std::int64_t&) -> bool
 {
@@ -301,7 +304,7 @@ auto CheckProto_20(
     const bool silent,
     const CashType,
     const std::set<TokenState>&,
-    std::int64_t&,
+    std::string&,
     std::int64_t&,
     std::int64_t&) -> bool
 {

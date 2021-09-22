@@ -596,7 +596,7 @@ auto UserCommandProcessor::cmd_delete_asset_account(ReplyMessage& reply) const
     if (balance != 0) {
         LogOutput(OT_METHOD)(__func__)(": Unable to delete account ")(
             accountID)(" with non-zero "
-                       "balance ")(balance)(".")
+                       "balance ")(balance.str())(".")
             .Flush();
 
         return false;

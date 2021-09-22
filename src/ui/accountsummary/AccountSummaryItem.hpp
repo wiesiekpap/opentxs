@@ -63,7 +63,11 @@ public:
     {
         return account_id_.str();
     }
-    auto Balance() const noexcept -> Amount final { return balance_.load(); }
+    auto Balance() const noexcept -> Amount final
+    {
+        sLock lock(shared_lock_);
+        return balance_;
+    }
     auto DisplayBalance() const noexcept -> std::string final;
     auto Name() const noexcept -> std::string final;
 
@@ -79,7 +83,7 @@ public:
 private:
     const Identifier& account_id_;
     const contact::ContactItemType& currency_;
-    mutable std::atomic<Amount> balance_;
+    mutable Amount balance_;
     IssuerItemSortKey name_;
     mutable OTUnitDefinition contract_;
 

@@ -323,7 +323,7 @@ auto ActivityThread::Pay(
     wait_for_startup();
 
     if (0 >= amount) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid amount: (")(amount)(")")
+        LogOutput(OT_METHOD)(__func__)(": Invalid amount: (")(amount.str())(")")
             .Flush();
 
         return false;

@@ -44,6 +44,7 @@ class Nym;
 class UnitDefinition;
 }  // namespace identifier
 
+class Amount;
 class Armored;
 class Identifier;
 class OTCronItem;
@@ -125,7 +126,7 @@ public:
     auto GetOrCreateMarket(
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const identifier::UnitDefinition& CURRENCY_ID,
-        const std::int64_t& lScale) -> std::shared_ptr<OTMarket>;
+        const Amount& lScale) -> std::shared_ptr<OTMarket>;
     /** This is informational only. It returns OTStorage-type data objects,
      * packed in a string. */
     auto GetMarketList(Armored& ascOutput, std::int32_t& nMarketCount) -> bool;

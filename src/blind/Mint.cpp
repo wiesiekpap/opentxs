@@ -398,7 +398,7 @@ auto Mint::VerifyContractID() const -> bool
 
 // The mint has a different key pair for each denomination.
 // Pass in the actual denomination such as 5, 10, 20, 50, 100...
-auto Mint::GetPrivate(Armored& theArmor, std::int64_t lDenomination) const
+auto Mint::GetPrivate(Armored& theArmor, const Amount& lDenomination) const
     -> bool
 {
     try {
@@ -406,8 +406,8 @@ auto Mint::GetPrivate(Armored& theArmor, std::int64_t lDenomination) const
 
         return true;
     } catch (...) {
-        LogTrace(OT_METHOD)(__func__)(": Denomination ")(
-            lDenomination)(" not found")
+        LogTrace(OT_METHOD)(__func__)(": Denomination ")(lDenomination.str())(
+            " not found")
             .Flush();
 
         return false;
@@ -416,7 +416,7 @@ auto Mint::GetPrivate(Armored& theArmor, std::int64_t lDenomination) const
 
 // The mint has a different key pair for each denomination.
 // Pass in the actual denomination such as 5, 10, 20, 50, 100...
-auto Mint::GetPublic(Armored& theArmor, std::int64_t lDenomination) const
+auto Mint::GetPublic(Armored& theArmor, const Amount& lDenomination) const
     -> bool
 {
     try {
@@ -424,8 +424,8 @@ auto Mint::GetPublic(Armored& theArmor, std::int64_t lDenomination) const
 
         return true;
     } catch (...) {
-        LogTrace(OT_METHOD)(__func__)(": Denomination ")(
-            lDenomination)(" not found")
+        LogTrace(OT_METHOD)(__func__)(": Denomination ")(lDenomination.str())(
+            " not found")
             .Flush();
 
         return false;
@@ -438,11 +438,11 @@ auto Mint::GetPublic(Armored& theArmor, std::int64_t lDenomination) const
 // Then you can subtract the denomination from the amount and call this method
 // again, and again, until it reaches 0, in order to create all the necessary
 // tokens to reach the full withdrawal amount.
-auto Mint::GetLargestDenomination(std::int64_t lAmount) const -> std::int64_t
+auto Mint::GetLargestDenomination(const Amount& lAmount) const -> Amount
 {
     for (std::int32_t nIndex = GetDenominationCount() - 1; nIndex >= 0;
          nIndex--) {
-        std::int64_t lDenom = GetDenomination(nIndex);
+        const Amount& lDenom = GetDenomination(nIndex);
 
         if (lDenom <= lAmount) return lDenom;
     }
@@ -453,7 +453,7 @@ auto Mint::GetLargestDenomination(std::int64_t lAmount) const -> std::int64_t
 // If you call GetDenominationCount, you can then use this method
 // to look up a denomination by index.
 // You could also iterate through them by index.
-auto Mint::GetDenomination(std::int32_t nIndex) const -> std::int64_t
+auto Mint::GetDenomination(std::int32_t nIndex) const -> Amount
 {
     // index out of bounds.
     if (nIndex > (m_nDenominationCount - 1)) { return 0; }
@@ -504,15 +504,13 @@ void Mint::UpdateContents(const PasswordPrompt& reason)
             for (auto& it : m_mapPrivate) {
                 TagPtr tagPrivateInfo(
                     new Tag("mintPrivateInfo", it.second->Get()));
-                tagPrivateInfo->add_attribute(
-                    "denomination", std::to_string(it.first));
+                tagPrivateInfo->add_attribute("denomination", it.first);
                 tag.add_tag(tagPrivateInfo);
             }
         }
         for (auto& it : m_mapPublic) {
             TagPtr tagPublicInfo(new Tag("mintPublicInfo", it.second->Get()));
-            tagPublicInfo->add_attribute(
-                "denomination", std::to_string(it.first));
+            tagPublicInfo->add_attribute("denomination", it.first);
             tag.add_tag(tagPublicInfo);
         }
     }
@@ -579,8 +577,7 @@ auto Mint::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         nReturnVal = 1;
     } else if (strNodeName->Compare("mintPrivateInfo")) {
-        std::int64_t lDenomination =
-            String::StringToLong(xml->getAttributeValue("denomination"));
+        auto lDenomination = Amount(xml->getAttributeValue("denomination"));
         auto pArmor = Armored::Factory();
 
         if (!Contract::LoadEncodedTextField(xml, pArmor) || !pArmor->Exists()) {
@@ -591,15 +588,14 @@ auto Mint::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             return (-1);  // error condition
         } else {
             LogTrace(OT_METHOD)(__func__)(
-                ": Loading private key for denomination ")(lDenomination)
+                ": Loading private key for denomination ")(lDenomination.str())
                 .Flush();
             m_mapPrivate.emplace(lDenomination, std::move(pArmor));
         }
 
         return 1;
     } else if (strNodeName->Compare("mintPublicInfo")) {
-        std::int64_t lDenomination =
-            String::StringToLong(xml->getAttributeValue("denomination"));
+        auto lDenomination = Amount(xml->getAttributeValue("denomination"));
 
         auto pArmor = Armored::Factory();
 
@@ -611,7 +607,7 @@ auto Mint::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             return (-1);  // error condition
         } else {
             LogTrace(OT_METHOD)(__func__)(
-                ": Loading public key for denomination ")(lDenomination)
+                ": Loading public key for denomination ")(lDenomination.str())
                 .Flush();
             m_mapPublic.emplace(lDenomination, std::move(pArmor));
             // Whether client or server, both sides have public. Each public
@@ -667,16 +663,16 @@ void Mint::GenerateNewMint(
     const identifier::UnitDefinition& theInstrumentDefinitionID,
     const identifier::Server& theNotaryID,
     const identity::Nym& theNotary,
-    const std::int64_t nDenom1,
-    const std::int64_t nDenom2,
-    const std::int64_t nDenom3,
-    const std::int64_t nDenom4,
-    const std::int64_t nDenom5,
-    const std::int64_t nDenom6,
-    const std::int64_t nDenom7,
-    const std::int64_t nDenom8,
-    const std::int64_t nDenom9,
-    const std::int64_t nDenom10,
+    const Amount& nDenom1,
+    const Amount& nDenom2,
+    const Amount& nDenom3,
+    const Amount& nDenom4,
+    const Amount& nDenom5,
+    const Amount& nDenom6,
+    const Amount& nDenom7,
+    const Amount& nDenom8,
+    const Amount& nDenom9,
+    const Amount& nDenom10,
     const std::size_t keySize,
     const PasswordPrompt& reason)
 {

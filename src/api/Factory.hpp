@@ -234,7 +234,7 @@ public:
     auto BailmentRequest(const Nym_p& nym, const ReadView& view) const
         noexcept(false) -> OTBailmentRequest final;
     auto Basket() const -> std::unique_ptr<opentxs::Basket> final;
-    auto Basket(std::int32_t nCount, std::int64_t lMinimumTransferAmount) const
+    auto Basket(std::int32_t nCount, const Amount& lMinimumTransferAmount) const
         -> std::unique_ptr<opentxs::Basket> final;
     auto BasketContract(
         const Nym_p& nym,
@@ -519,7 +519,7 @@ public:
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const identifier::UnitDefinition& CURRENCY_TYPE_ID,
-        const std::int64_t& lScale) const -> std::unique_ptr<OTMarket> final;
+        const Amount& lScale) const -> std::unique_ptr<OTMarket> final;
     auto Message() const -> std::unique_ptr<opentxs::Message> final;
 #if OT_CASH
     auto Mint() const -> std::unique_ptr<blind::Mint> final;
@@ -543,8 +543,7 @@ public:
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const identifier::UnitDefinition& CURRENCY_ID,
-        const std::int64_t& MARKET_SCALE) const
-        -> std::unique_ptr<OTOffer> final;
+        const Amount& MARKET_SCALE) const -> std::unique_ptr<OTOffer> final;
     auto OutbailmentReply(
         const Nym_p& nym,
         const identifier::Nym& initiator,
@@ -560,7 +559,7 @@ public:
         const identifier::Nym& recipientID,
         const identifier::UnitDefinition& unitID,
         const identifier::Server& serverID,
-        const std::uint64_t& amount,
+        const Amount& amount,
         const std::string& terms,
         const opentxs::PasswordPrompt& reason) const noexcept(false)
         -> OTOutbailmentRequest final;
@@ -657,7 +656,7 @@ public:
         const otx::context::Server& context,
         const identifier::UnitDefinition& unit,
         const blind::Mint& mint,
-        const Amount totalValue,
+        const Amount& totalValue,
         const opentxs::PasswordPrompt& reason,
         const blind::CashType type) const
         -> std::unique_ptr<blind::Purse> final;
@@ -810,8 +809,8 @@ public:
         const Time the_DATE_SIGNED,
         transactionType theType,
         const String& strHash,
-        const std::int64_t& lAdjustment,
-        const std::int64_t& lDisplayValue,
+        const Amount& lAdjustment,
+        const Amount& lDisplayValue,
         const std::int64_t& lClosingNum,
         const std::int64_t& lRequestNum,
         bool bReplyTransSuccess,

@@ -720,8 +720,7 @@ public:
     // would return a string containing "10", in that example.
     */
     auto Basket_GetMinimumTransferAmount(
-        const std::string& BASKET_INSTRUMENT_DEFINITION_ID) const
-        -> std::int64_t;
+        const std::string& BASKET_INSTRUMENT_DEFINITION_ID) const -> Amount;
 
     /** ----------------------------------------------------
     // GET BASKET MEMBER's MINIMUM TRANSFER AMOUNT
@@ -738,7 +737,7 @@ public:
     */
     auto Basket_GetMemberMinimumTransferAmount(
         const std::string& BASKET_INSTRUMENT_DEFINITION_ID,
-        const std::int32_t& nIndex) const -> std::int64_t;
+        const std::int32_t& nIndex) const -> Amount;
 
     /** ----------------------------------------------------
     // GENERATE BASKET CREATION REQUEST

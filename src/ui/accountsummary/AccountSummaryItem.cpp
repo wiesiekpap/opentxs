@@ -68,14 +68,13 @@ auto AccountSummaryItem::DisplayBalance() const noexcept -> std::string
     sLock lock(shared_lock_);
 
     if (0 < contract_->Version()) {
-        const auto amount = balance_.load();
         std::string output{};
         const auto formatted =
-            contract_->FormatAmountLocale(amount, output, ",", ".");
+            contract_->FormatAmountLocale(balance_, output, ",", ".");
 
         if (formatted) { return output; }
 
-        return std::to_string(amount);
+        return balance_;
     }
 
     return {};
@@ -103,8 +102,8 @@ auto AccountSummaryItem::reindex(
     const IssuerItemSortKey& key,
     CustomData& custom) noexcept -> bool
 {
-    balance_.store(extract_custom<Amount>(custom));
     eLock lock(shared_lock_);
+    balance_ = extract_custom<Amount>(custom);
     name_ = key;
 
     return true;

@@ -169,7 +169,7 @@ auto Subaccount::convert(const proto::BlockchainActivity& in) noexcept
     auto& [account, chain, index] = key;
     txid = in.txid();
     out = in.output();
-    value = in.amount();
+    value = Amount{in.amount()};
     account = in.account();
     chain = static_cast<Subchain>(in.subchain());
     index = in.index();

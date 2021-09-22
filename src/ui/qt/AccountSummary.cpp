@@ -12,6 +12,7 @@
 #include <memory>
 #include <string>
 
+#include "core/Amount.hpp"
 #include "internal/ui/UI.hpp"
 #include "ui/accountsummary/AccountSummaryItem.hpp"
 #include "ui/accountsummary/IssuerItem.hpp"
@@ -77,7 +78,7 @@ auto AccountSummaryItem::qt_data(
             out = AccountID().c_str();
         } break;
         case AccountSummaryQt::BalanceRole: {
-            out = static_cast<unsigned long long>(Balance());
+            out = Balance().Internal().amount_.convert_to<unsigned long long>();
         } break;
         case Qt::DisplayRole: {
             switch (column) {

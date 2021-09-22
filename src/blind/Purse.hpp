@@ -19,6 +19,7 @@
 #include "opentxs/blind/PurseType.hpp"
 #include "opentxs/blind/Token.hpp"
 #include "opentxs/blind/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -105,7 +106,7 @@ public:
     auto Unlock(const identity::Nym& nym, const PasswordPrompt& reason) const
         -> bool final;
     auto Verify(const api::server::Manager& server) const -> bool final;
-    auto Value() const -> Amount final { return total_value_; }
+    auto Value() const -> const Amount& final { return total_value_; }
 
     auto AddNym(const identity::Nym& nym, const PasswordPrompt& reason)
         -> bool final;
@@ -121,7 +122,7 @@ public:
     auto GeneratePrototokens(
         const identity::Nym& owner,
         const Mint& mint,
-        const Amount amount,
+        const Amount& amount,
         const PasswordPrompt& reason) -> bool;
     auto PrimaryKey(PasswordPrompt& password) -> crypto::key::Symmetric& final;
     auto Pop() -> std::shared_ptr<Token> final;
@@ -194,7 +195,7 @@ private:
         const identifier::Server& notary,
         const identifier::UnitDefinition& unit,
         const blind::PurseType state,
-        const Amount totalValue,
+        const Amount& totalValue,
         const Time validFrom,
         const Time validTo,
         const std::vector<OTToken>& tokens,

@@ -12,12 +12,13 @@ option optimize_for = LITE_RUNTIME;
 
 import public "RPCEnums.proto";
 
-message SendPayment {
+message SendPayment
+{
     optional uint32 version = 1;
-    optional RPCPaymentType type = 2;		// see RPCEnums.proto
-    optional string contact = 3;			// contact id
-    optional string sourceaccount = 4;		// source account id
-    optional string destinationaccount = 5;	// destination account id
+    optional RPCPaymentType type = 2;        // see RPCEnums.proto
+    optional string contact = 3;             // contact id
+    optional string sourceaccount = 4;       // source account id
+    optional string destinationaccount = 5;  // destination account id
     optional string memo = 6;
-    optional uint64 amount = 7;
+    optional bytes amount = 7;
 }

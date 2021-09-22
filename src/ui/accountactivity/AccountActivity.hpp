@@ -125,10 +125,17 @@ public:
     {
         return account_id_->str();
     }
-    auto Balance() const noexcept -> Amount final { return balance_.load(); }
+    auto Balance() const noexcept -> const Amount final
+    {
+        sLock lock(shared_lock_);
+
+        return balance_;
+    }
     auto BalancePolarity() const noexcept -> int final
     {
-        return polarity(balance_.load());
+        sLock lock(shared_lock_);
+
+        return polarity(balance_);
     }
     auto ClearCallbacks() const noexcept -> void final;
     auto Contract() const noexcept -> const contract::Unit& final
@@ -151,7 +158,9 @@ public:
     }
     auto DisplayBalance() const noexcept -> std::string final
     {
-        return display_balance(balance_.load());
+        sLock lock(shared_lock_);
+
+        return display_balance(balance_);
     }
     auto Notary() const noexcept -> const contract::Server& final
     {
@@ -160,7 +169,7 @@ public:
     using ui::AccountActivity::Send;
     auto Send(
         [[maybe_unused]] const Identifier& contact,
-        [[maybe_unused]] const Amount amount,
+        [[maybe_unused]] const Amount& amount,
         [[maybe_unused]] const std::string& memo) const noexcept
         -> bool override
     {
@@ -186,7 +195,7 @@ public:
     }
     auto Send(
         [[maybe_unused]] const std::string& address,
-        [[maybe_unused]] const Amount amount,
+        [[maybe_unused]] const Amount& amount,
         [[maybe_unused]] const std::string& memo) const noexcept
         -> bool override
     {
@@ -243,7 +252,7 @@ protected:
     };
 
     mutable CallbackHolder callbacks_;
-    mutable std::atomic<Amount> balance_;
+    mutable Amount balance_;
     const OTIdentifier account_id_;
     const AccountType type_;
     OTUnitDefinition contract_;

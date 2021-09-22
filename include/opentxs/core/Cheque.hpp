@@ -51,7 +51,7 @@ public:
         m_strContractType = String::Factory("VOUCHER");
     }
     inline auto GetMemo() const -> const String& { return m_strMemo; }
-    inline auto GetAmount() const -> const std::int64_t& { return m_lAmount; }
+    inline auto GetAmount() const -> const Amount& { return m_lAmount; }
     inline auto GetRecipientNymID() const -> const identifier::Nym&
     {
         return m_RECIPIENT_NYM_ID;
@@ -79,7 +79,7 @@ public:
 
     // Calling this function is like writing a check...
     auto IssueCheque(
-        const std::int64_t& lAmount,
+        const Amount& lAmount,
         const std::int64_t& lTransactionNum,
         const Time& VALID_FROM,
         const Time& VALID_TO,  // The expiration date (valid from/to dates.)

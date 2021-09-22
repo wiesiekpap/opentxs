@@ -85,7 +85,7 @@ void Cheque::UpdateContents([[maybe_unused]] const PasswordPrompt& reason)
     Tag tag("cheque");
 
     tag.add_attribute("version", m_strVersion->Get());
-    tag.add_attribute("amount", std::to_string(m_lAmount));
+    tag.add_attribute("amount", m_lAmount);
     tag.add_attribute(
         "instrumentDefinitionID", INSTRUMENT_DEFINITION_ID->Get());
     tag.add_attribute("transactionNum", std::to_string(GetTransactionNum()));
@@ -141,7 +141,7 @@ auto Cheque::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
         m_bHasRemitter = strHasRemitter->Compare("true");
 
         m_strVersion = String::Factory(xml->getAttributeValue("version"));
-        m_lAmount = String::StringToLong(xml->getAttributeValue("amount"));
+        m_lAmount = Amount{xml->getAttributeValue("amount")};
 
         SetTransactionNum(
             String::StringToLong(xml->getAttributeValue("transactionNum")));
@@ -193,7 +193,7 @@ auto Cheque::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
         }
         {
             LogVerbose(OT_METHOD)(__func__)(": Cheque Amount: ")(
-                m_lAmount)(". Transaction Number: ")(
+                m_lAmount.str())(". Transaction Number: ")(
                 m_lTransactionNum)(" Valid From: ")(
                 str_valid_from)(" Valid To: ")(
                 str_valid_to)(" InstrumentDefinitionID: ")(
@@ -253,7 +253,7 @@ void Cheque::CancelCheque()
 // That's basically what this function does.
 // Make sure to sign it afterwards.
 auto Cheque::IssueCheque(
-    const std::int64_t& lAmount,
+    const Amount& lAmount,
     const std::int64_t& lTransactionNum,
     const Time& VALID_FROM,
     const Time& VALID_TO,  // The expiration date (valid from/to dates) of

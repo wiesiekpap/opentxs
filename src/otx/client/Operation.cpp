@@ -2501,7 +2501,7 @@ auto Operation::SendPeerRequest(
 auto Operation::SendTransfer(
     const Identifier& sourceAccountID,
     const Identifier& destinationAccountID,
-    const Amount amount,
+    const Amount& amount,
     const String& memo) -> bool
 {
     START()
@@ -2818,7 +2818,7 @@ auto Operation::UpdateAccount(const Identifier& accountID) -> bool
 }
 
 #if OT_CASH
-auto Operation::WithdrawCash(const Identifier& accountID, const Amount amount)
+auto Operation::WithdrawCash(const Identifier& accountID, const Amount& amount)
     -> bool
 {
     START()

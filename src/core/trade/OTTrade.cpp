@@ -235,7 +235,7 @@ auto OTTrade::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         LogDebug(OT_METHOD)(__func__)("Stop order --")(
             stopActivated_ ? "Already activated" : "Will activate")(
             " when price ")(stopActivated_ ? "was" : "reaches")(
-            ('<' == stopSign_) ? "LESS THAN" : "GREATER THAN")(stopPrice_)
+            ('<' == stopSign_) ? "LESS THAN" : "GREATER THAN")(stopPrice_.str())
             .Flush();
 
         returnVal = 1;
@@ -302,7 +302,7 @@ void OTTrade::UpdateContents(const PasswordPrompt& reason)
         TagPtr tagStopOrder(new Tag("stopOrder"));
         tagStopOrder->add_attribute("hasActivated", formatBool(stopActivated_));
         tagStopOrder->add_attribute("sign", std::to_string(stopSign_));
-        tagStopOrder->add_attribute("price", std::to_string(stopPrice_));
+        tagStopOrder->add_attribute("price", stopPrice_);
         tag.add_tag(tagStopOrder);
     }
 
@@ -582,7 +582,7 @@ auto OTTrade::GetOffer(
     // Should we activate it now?
     //
     else if (IsStopOrder() && !stopActivated_) {
-        std::int64_t relevantPrice = 0;
+        Amount relevantPrice = 0;
 
         // If the stop order is trying to sell something, then it cares about
         // the highest bidder.
@@ -672,7 +672,7 @@ void OTTrade::onRemovalFromCron(const PasswordPrompt& reason)
     // store the original internally) and I will look up the scale.
     //
 
-    std::int64_t scale = 1;  // todo stop hardcoding.
+    Amount scale = 1;  // todo stop hardcoding.
     std::int64_t transactionNum = 0;
 
     if (offer_ == nullptr) {
@@ -1138,7 +1138,7 @@ processed through this order? We keep track.
 // This is called by the client side. First you call MakeOffer() to set up the
 // Offer,
 // then you call IssueTrade() and pass the Offer into it here.
-auto OTTrade::IssueTrade(OTOffer& offer, char stopSign, std::int64_t stopPrice)
+auto OTTrade::IssueTrade(OTOffer& offer, char stopSign, const Amount& stopPrice)
     -> bool
 {
     // Make sure the Stop Sign is within parameters (0, '<', or '>')

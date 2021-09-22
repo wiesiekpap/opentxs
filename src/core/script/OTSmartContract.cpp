@@ -1284,7 +1284,7 @@ auto OTSmartContract::GetAcctBalance(std::string from_acct_name) -> std::string
         return {};
     }
 
-    return std::to_string(account.get().GetBalance());
+    return account.get().GetBalance();
 }
 
 auto OTSmartContract::GetUnitTypeIDofAcct(std::string from_acct_name)
@@ -2369,9 +2369,8 @@ auto OTSmartContract::StashFunds(
     // are coming from, is that source LARGE enough to accommodate the amount
     // we're trying to move?
     //
-    const std::int64_t lSourceAmount2 = bUnstashing
-                                            ? stashAccount.get().GetBalance()
-                                            : account.get().GetBalance();
+    const Amount& lSourceAmount2 = bUnstashing ? stashAccount.get().GetBalance()
+                                               : account.get().GetBalance();
 
     // If the source, minus amount, is less than 0, then it CANNOT accommodate
     // the action.

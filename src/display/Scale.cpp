@@ -41,7 +41,7 @@ Scale::Scale(Scale&& rhs) noexcept
 }
 
 auto Scale::Format(
-    const Amount amount,
+    const Amount& amount,
     const OptionalInt minDecimals,
     const OptionalInt maxDecimals) const noexcept(false) -> std::string
 {

@@ -58,7 +58,7 @@ auto Factory::Purse(
     const otx::context::Server& context,
     const blind::CashType type,
     const blind::Mint& mint,
-    const Amount totalValue,
+    const Amount& totalValue,
     const opentxs::PasswordPrompt& reason) -> blind::Purse*
 {
     return Purse(
@@ -79,7 +79,7 @@ auto Factory::Purse(
     const identity::Nym& serverNym,
     const blind::CashType type,
     const blind::Mint& mint,
-    const Amount totalValue,
+    const Amount& totalValue,
     const opentxs::PasswordPrompt& reason) -> blind::Purse*
 {
     auto pEnvelope = std::make_unique<OTEnvelope>(api.Factory().Envelope());
@@ -195,7 +195,7 @@ Purse::Purse(
     const identifier::Server& notary,
     const identifier::UnitDefinition& unit,
     const blind::PurseType state,
-    const Amount totalValue,
+    const Amount& totalValue,
     const Time validFrom,
     const Time validTo,
     const std::vector<OTToken>& tokens,
@@ -320,7 +320,7 @@ Purse::Purse(const api::Core& api, const proto::Purse& in)
           identifier::Server::Factory(in.notary()),
           identifier::UnitDefinition::Factory(in.mint()),
           internal::translate(in.state()),
-          in.totalvalue(),
+          Amount{in.totalvalue()},
           Clock::from_time_t(in.latestvalidfrom()),
           Clock::from_time_t(in.earliestvalidto()),
           {},
@@ -491,7 +491,7 @@ auto Purse::generate_key(Secret& password) const -> OTSymmetricKey
 auto Purse::GeneratePrototokens(
     const identity::Nym& owner,
     const Mint& mint,
-    const Amount amount,
+    const Amount& amount,
     const opentxs::PasswordPrompt& reason) -> bool
 {
     Amount workingAmount(amount);

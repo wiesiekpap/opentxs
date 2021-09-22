@@ -47,11 +47,11 @@ class PayDividendVisitor final : public AccountVisitor
                           // the payDividend transaction request.
                           // (Stored in the memo field for each
                           // voucher.)
-    std::int64_t m_lPayoutPerShare{0};
-    std::int64_t m_lAmountPaidOut{0};   // as we pay each voucher out, we keep a
-                                        // running count.
-    std::int64_t m_lAmountReturned{0};  // as we pay each voucher out, we keep a
-                                        // running count.
+    Amount m_lPayoutPerShare{0};
+    Amount m_lAmountPaidOut{0};   // as we pay each voucher out, we keep a
+                                  // running count.
+    Amount m_lAmountReturned{0};  // as we pay each voucher out, we keep a
+                                  // running count.
 
     PayDividendVisitor() = delete;
 
@@ -63,7 +63,7 @@ public:
         const identifier::UnitDefinition& thePayoutUnitTypeId,
         const Identifier& theVoucherAcctID,
         const String& strMemo,
-        std::int64_t lPayoutPerShare);
+        const Amount& lPayoutPerShare);
 
     auto GetNymID() -> const identifier::Nym& { return nymId_; }
     auto GetPayoutUnitTypeId() -> const identifier::UnitDefinition&
@@ -73,9 +73,9 @@ public:
     auto GetVoucherAcctID() -> const Identifier& { return voucherAcctId_; }
     auto GetMemo() -> OTString { return m_pstrMemo; }
     auto GetServer() -> server::Server& { return server_; }
-    auto GetPayoutPerShare() -> std::int64_t { return m_lPayoutPerShare; }
-    auto GetAmountPaidOut() -> std::int64_t { return m_lAmountPaidOut; }
-    auto GetAmountReturned() -> std::int64_t { return m_lAmountReturned; }
+    auto GetPayoutPerShare() -> const Amount& { return m_lPayoutPerShare; }
+    auto GetAmountPaidOut() -> const Amount& { return m_lAmountPaidOut; }
+    auto GetAmountReturned() -> const Amount& { return m_lAmountReturned; }
 
     auto Trigger(const Account& theAccount, const PasswordPrompt& reason)
         -> bool final;

@@ -135,8 +135,8 @@ auto LoadAbbreviatedRecord(
     Time& the_DATE_SIGNED,
     transactionType& theType,
     String& strHash,
-    std::int64_t& lAdjustment,
-    std::int64_t& lDisplayValue,
+    Amount& lAdjustment,
+    Amount& lDisplayValue,
     std::int64_t& lClosingNum,
     std::int64_t& lRequestNum,
     bool& bReplyTransSuccess,
@@ -225,12 +225,12 @@ auto LoadAbbreviatedRecord(
     const auto strAbbrevAdjustment =
         String::Factory(xml->getAttributeValue("adjustment"));
     if (strAbbrevAdjustment->Exists())
-        lAdjustment = strAbbrevAdjustment->ToLong();
+        lAdjustment = Amount{strAbbrevAdjustment->Get()};
     // -------------------------------------
     const auto strAbbrevDisplayValue =
         String::Factory(xml->getAttributeValue("displayValue"));
     if (strAbbrevDisplayValue->Exists())
-        lDisplayValue = strAbbrevDisplayValue->ToLong();
+        lDisplayValue = Amount{strAbbrevDisplayValue->Get()};
 
     if (transactionType::replyNotice == theType) {
         const auto strRequestNum =

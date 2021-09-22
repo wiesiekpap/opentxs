@@ -692,7 +692,7 @@ auto Wallet::UpdateAccount(
             auto work =
                 api_.Network().ZeroMQ().TaggedMessage(WorkType::AccountUpdated);
             work->AddFrame(accountID);
-            work->AddFrame(balance);
+            work->AddFrame(balance.str());
             account_publisher_->Send(work);
         }
 

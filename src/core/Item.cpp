@@ -277,7 +277,7 @@ auto Item::VerifyTransactionStatement(
 // 3) That the transactions on the Nym, minus the current transaction number
 //    being processed, are all still there.
 auto Item::VerifyBalanceStatement(
-    std::int64_t lActualAdjustment,
+    const Amount& lActualAdjustment,
     const otx::context::Client& context,
     const Ledger& THE_INBOX,
     const Ledger& THE_OUTBOX,
@@ -309,12 +309,13 @@ auto Item::VerifyBalanceStatement(
 
     // GetAmount() contains what the balance WOULD be AFTER successful
     // transaction.
-    if ((THE_ACCOUNT.GetBalance() + lActualAdjustment) != GetAmount()) {
+    const auto balance = THE_ACCOUNT.GetBalance() + lActualAdjustment;
+    if (balance != GetAmount()) {
         LogNormal(OT_METHOD)(__func__)(
-            ": This balance statement has a value of ")(GetAmount())(
-            ", but expected ")(THE_ACCOUNT.GetBalance() + lActualAdjustment)(
-            ". (Acct balance of ")(THE_ACCOUNT.GetBalance())(
-            " plus actualAdjustment of ")(lActualAdjustment)(").")
+            ": This balance statement has a value of ")(GetAmount().str())(
+            ", but expected ")(balance.str())(". (Acct balance of ")(
+            THE_ACCOUNT.GetBalance().str())(" plus actualAdjustment of ")(
+            lActualAdjustment.str())(").")
             .Flush();
 
         return false;
@@ -333,7 +334,7 @@ auto Item::VerifyBalanceStatement(
 
         OT_ASSERT(false != bool(pSubItem));
 
-        std::int64_t lReceiptAmountMultiplier = 1;  // needed for outbox items.
+        Amount lReceiptAmountMultiplier = 1;  // needed for outbox items.
         const Ledger* pLedger = nullptr;
 
         switch (pSubItem->GetType()) {
@@ -453,7 +454,7 @@ auto Item::VerifyBalanceStatement(
             LogNormal(OT_METHOD)(__func__)(": Expected ")(
                 pszLedgerType)(" transaction (server ")(outboxNum)(", client ")(
                 pSubItem->GetTransactionNum())(") not found. (Amount ")(
-                pSubItem->GetAmount())(").")
+                pSubItem->GetAmount().str())(").")
                 .Flush();
 
             return false;
@@ -483,18 +484,17 @@ auto Item::VerifyBalanceStatement(
             return false;
         }
 
-        std::int64_t lTransactionAmount =
-            pTransaction->GetReceiptAmount(reason);
+        Amount lTransactionAmount = pTransaction->GetReceiptAmount(reason);
         lTransactionAmount *= lReceiptAmountMultiplier;
 
         if (pSubItem->GetAmount() != lTransactionAmount) {
             LogNormal(OT_METHOD)(__func__)(": Transaction (")(
                 pSubItem->GetTransactionNum())(
                 ") amounts don't match: report amount is ")(
-                pSubItem->GetAmount())(", but expected ")(
-                lTransactionAmount)(". Trans Receipt Amt: ")(
-                pTransaction->GetReceiptAmount(reason))(" (GetAmount() == ")(
-                GetAmount())(").")
+                pSubItem->GetAmount().str())(", but expected ")(
+                lTransactionAmount.str())(". Trans Receipt Amt: ")(
+                pTransaction->GetReceiptAmount(reason).str())(
+                " (GetAmount() == ")(GetAmount().str())(").")
                 .Flush();
 
             return false;
@@ -1452,7 +1452,7 @@ auto Item::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         strTemp = String::Factory(xml->getAttributeValue("inReferenceTo"));
         if (strTemp->Exists()) SetReferenceToNum(strTemp->ToLong());
 
-        m_lAmount = String::StringToLong(xml->getAttributeValue("amount"));
+        m_lAmount = Amount(xml->getAttributeValue("amount"));
 
         LogDebug(OT_METHOD)(__func__)(
             ": Loaded transaction Item, transaction num ")(GetTransactionNum())(
@@ -1897,7 +1897,7 @@ void Item::UpdateContents(const PasswordPrompt& reason)  // Before transmission
     tag.add_attribute("fromAccountID", strFromAcctID->Get());
     tag.add_attribute("toAccountID", strToAcctID->Get());
     tag.add_attribute("inReferenceTo", std::to_string(GetReferenceToNum()));
-    tag.add_attribute("amount", std::to_string(m_lAmount));
+    tag.add_attribute("amount", m_lAmount);
 
     // Only used in server reply item:
     // atBalanceStatement. In cases
@@ -1960,8 +1960,7 @@ void Item::UpdateContents(const PasswordPrompt& reason)  // Before transmission
             tagReport->add_attribute(
                 "type",
                 receiptType->Exists() ? receiptType->Get() : "error_state");
-            tagReport->add_attribute(
-                "adjustment", std::to_string(pItem->GetAmount()));
+            tagReport->add_attribute("adjustment", pItem->GetAmount());
             tagReport->add_attribute("accountID", acctID->Get());
             tagReport->add_attribute("nymID", nymID->Get());
             tagReport->add_attribute("notaryID", notaryID->Get());

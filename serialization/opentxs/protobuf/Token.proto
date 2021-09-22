@@ -20,7 +20,7 @@ message Token {
     optional string notary = 4;
     optional string mint = 5;
     optional uint64 series = 6;
-    optional uint64 denomination = 7;
+    optional bytes denomination = 7;
     optional int64 validfrom = 8;
     optional int64 validto = 9;
     oneof algorithm {

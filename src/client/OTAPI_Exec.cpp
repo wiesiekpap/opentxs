@@ -2575,14 +2575,14 @@ auto OTAPI_Exec::Basket_GetMemberType(
 // would return a string containing "10", in that example.
 //
 auto OTAPI_Exec::Basket_GetMinimumTransferAmount(
-    const std::string& BASKET_INSTRUMENT_DEFINITION_ID) const -> std::int64_t
+    const std::string& BASKET_INSTRUMENT_DEFINITION_ID) const -> Amount
 {
     OT_VERIFY_ID_STR(BASKET_INSTRUMENT_DEFINITION_ID);
 
     const auto theInstrumentDefinitionID =
         api_.Factory().UnitID(BASKET_INSTRUMENT_DEFINITION_ID);
 
-    std::int64_t lMinTransAmount =
+    const Amount lMinTransAmount =
         ot_api_.GetBasketMinimumTransferAmount(theInstrumentDefinitionID);
 
     if (0 >= lMinTransAmount) {
@@ -2612,7 +2612,7 @@ auto OTAPI_Exec::Basket_GetMinimumTransferAmount(
 //
 auto OTAPI_Exec::Basket_GetMemberMinimumTransferAmount(
     const std::string& BASKET_INSTRUMENT_DEFINITION_ID,
-    const std::int32_t& nIndex) const -> std::int64_t
+    const std::int32_t& nIndex) const -> Amount
 {
     OT_VERIFY_ID_STR(BASKET_INSTRUMENT_DEFINITION_ID);
     OT_VERIFY_MIN_BOUND(nIndex, 0);
@@ -2620,7 +2620,7 @@ auto OTAPI_Exec::Basket_GetMemberMinimumTransferAmount(
     const auto theInstrumentDefinitionID =
         api_.Factory().UnitID(BASKET_INSTRUMENT_DEFINITION_ID);
 
-    std::int64_t lMinTransAmount = ot_api_.GetBasketMemberMinimumTransferAmount(
+    Amount lMinTransAmount = ot_api_.GetBasketMemberMinimumTransferAmount(
         theInstrumentDefinitionID, nIndex);
 
     if (0 >= lMinTransAmount) {

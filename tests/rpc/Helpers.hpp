@@ -53,6 +53,7 @@ class Message;
 }  // namespace zeromq
 }  // namespace network
 
+class Amount;
 class Identifier;
 }  // namespace opentxs
 
@@ -101,7 +102,7 @@ class RPC_fixture : virtual public ::testing::Test
 {
 protected:
     using AccountMap = std::map<std::string, std::vector<std::string>>;
-    using Amount = std::int64_t;
+    using Amount = ot::Amount;
     using IssuedUnits = std::vector<std::string>;
     using LocalNymMap = std::map<int, std::set<std::string>>;
     using SeedMap = std::map<int, std::set<std::string>>;

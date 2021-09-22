@@ -901,7 +901,7 @@ Regtest_fixture_hd::Regtest_fixture_hd()
         using OutputBuilder = ot::api::Factory::OutputBuilder;
         using Index = ot::Bip32Index;
         static constexpr auto count = 100u;
-        static constexpr auto baseAmount = ot::blockchain::Amount{100000000};
+        static const auto baseAmount = ot::blockchain::Amount{100000000};
         auto meta = std::vector<OutpointMetadata>{};
         meta.reserve(count);
         const auto& account = SendHD();
@@ -1125,7 +1125,7 @@ Regtest_payment_code::Regtest_payment_code()
     , expected_unit_type_(ot::contact::ContactItemType::Regtest)
     , mine_to_alice_([&](Height height) -> Transaction {
         using OutputBuilder = ot::api::Factory::OutputBuilder;
-        static constexpr auto baseAmmount = ot::blockchain::Amount{10000000000};
+        static const auto baseAmmount = ot::blockchain::Amount{10000000000};
         auto meta = std::vector<OutpointMetadata>{};
         const auto& account = SendHD();
         auto output = miner_.Factory().BitcoinGenerationTransaction(

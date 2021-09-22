@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "Proto.hpp"
+#include "core/Amount.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
@@ -182,7 +183,7 @@ struct BitcoinTransactionBuilder::Imp {
                     crypto_,
                     chain_,
                     static_cast<std::uint32_t>(outputs_.size()),
-                    0,
+                    Amount{0},
                     std::move(pScript),
                     {keyID});
             }();
@@ -234,7 +235,7 @@ struct BitcoinTransactionBuilder::Imp {
             .Flush();
         input_count_ = inputs_.size();
         input_total_ += input.CalculateSize();
-        const auto amount = static_cast<Amount>(utxo.second.value());
+        const auto amount = Amount{utxo.second.value()};
         input_value_ += amount;
         inputs_.emplace_back(std::move(pInput), amount);
 
@@ -326,7 +327,7 @@ struct BitcoinTransactionBuilder::Imp {
                 crypto_,
                 chain_,
                 static_cast<std::uint32_t>(++index),
-                static_cast<std::int64_t>(output.amount()),
+                Amount{output.amount()},
                 std::move(pScript),
                 {});
 
@@ -849,7 +850,8 @@ private:
     {
         // TODO this should account for script type
 
-        return std::size_t{148} * fee_rate_ / 1000;
+        const auto amount = 148 * fee_rate_ / 1000;
+        return amount.Internal().amount_.convert_to<std::size_t>();
     }
     auto get_private_key(
         const opentxs::crypto::key::EllipticCurve& pubkey,
@@ -1040,20 +1042,19 @@ private:
             const auto& outpoint = input->PreviousOutput();
             text << " * " << outpoint.str()
                  << ", sequence: " << std::to_string(input->Sequence())
-                 << ", value: " << std::to_string(value) << '\n';
+                 << ", value: " << value.str() << '\n';
         }
 
         text << "output count: " << std::to_string(outputs_.size()) << '\n';
 
         for (const auto& output : outputs_) {
             text << " * bytes: " << std::to_string(output->CalculateSize())
-                 << ", value: " << std::to_string(output->Value()) << '\n';
+                 << ", value: " << output->Value().str() << '\n';
         }
 
-        text << "total output value: " << std::to_string(output_value_) << '\n';
-        text << " total input value: " << std::to_string(input_value_) << '\n';
-        text << "               fee: "
-             << std::to_string(input_value_ - output_value_);
+        text << "total output value: " << output_value_.str() << '\n';
+        text << " total input value: " << input_value_.str() << '\n';
+        text << "               fee: " << (input_value_ - output_value_).str();
 
         return text.str();
     }

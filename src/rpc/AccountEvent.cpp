@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "internal/rpc/RPC.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/protobuf/AccountEvent.pb.h"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/rpc/AccountEventType.hpp"
@@ -144,8 +145,8 @@ AccountEvent::AccountEvent(const proto::AccountEvent& in) noexcept(false)
                in.workflow(),
                in.amountformatted(),
                in.pendingamountformatted(),
-               in.amount(),
-               in.pendingamount(),
+               Amount{in.amount()},
+               Amount{in.pendingamount()},
                Clock::from_time_t(in.timestamp()),
                in.memo(),
                in.uuid(),

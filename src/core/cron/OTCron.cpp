@@ -225,22 +225,22 @@ auto OTCron::GetMarketList(Armored& ascOutput, std::int32_t& nMarketCount)
             str_INSTRUMENT_DEFINITION_ID->Get();
         pMarketData->currency_type_id = str_CURRENCY_ID->Get();
         // --------------------------------------------
-        const std::int64_t& lScale = pMarket->GetScale();
+        const Amount& lScale = pMarket->GetScale();
 
-        pMarketData->scale = std::to_string(lScale);
+        pMarketData->scale = lScale.str();
 
-        const std::uint64_t theCurrentBid = pMarket->GetHighestBidPrice();
-        const std::uint64_t theCurrentAsk = pMarket->GetLowestAskPrice();
+        const Amount theCurrentBid = pMarket->GetHighestBidPrice();
+        const Amount theCurrentAsk = pMarket->GetLowestAskPrice();
 
-        pMarketData->current_bid = std::to_string(theCurrentBid);
-        pMarketData->current_ask = std::to_string(theCurrentAsk);
+        pMarketData->current_bid = theCurrentBid.str();
+        pMarketData->current_ask = theCurrentAsk.str();
 
-        const std::int64_t& lLastSalePrice = pMarket->GetLastSalePrice();
-        const std::int64_t& lTotalAvailableAssets =
+        const Amount& lLastSalePrice = pMarket->GetLastSalePrice();
+        const Amount& lTotalAvailableAssets =
             pMarket->GetTotalAvailableAssets();
 
-        pMarketData->total_assets = std::to_string(lTotalAvailableAssets);
-        pMarketData->last_sale_price = std::to_string(lLastSalePrice);
+        pMarketData->total_assets = lTotalAvailableAssets.str();
+        pMarketData->last_sale_price = lLastSalePrice.str();
 
         pMarketData->last_sale_date = pMarket->GetLastSaleDate();
 
@@ -547,8 +547,7 @@ void OTCron::UpdateContents(const PasswordPrompt& reason)
         tagMarket->add_attribute(
             "instrumentDefinitionID", str_INSTRUMENT_DEFINITION_ID->Get());
         tagMarket->add_attribute("currencyID", str_CURRENCY_ID->Get());
-        tagMarket->add_attribute(
-            "marketScale", std::to_string(pMarket->GetScale()));
+        tagMarket->add_attribute("marketScale", pMarket->GetScale());
         tag.add_tag(tagMarket);
     }
 
@@ -1041,7 +1040,7 @@ auto OTCron::AddMarket(
 auto OTCron::GetOrCreateMarket(
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
     const identifier::UnitDefinition& CURRENCY_ID,
-    const std::int64_t& lScale) -> std::shared_ptr<OTMarket>
+    const Amount& lScale) -> std::shared_ptr<OTMarket>
 {
     auto pMarket{api_.Factory().Market(
         GetNotaryID(), INSTRUMENT_DEFINITION_ID, CURRENCY_ID, lScale)};

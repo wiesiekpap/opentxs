@@ -1694,9 +1694,9 @@ void OTX::process_account(const zmq::Message& message) const
 
     auto accountID = client_.Factory().Identifier();
     accountID->Assign(body.at(1).Bytes());
-    const auto balance = body.at(2).as<Amount>();
+    const auto balance = Amount{body.at(2)};
     LogVerbose(OT_METHOD)(__func__)(": Account ")(accountID->str())(
-        " balance: ")(balance)
+        " balance: ")(balance.str())
         .Flush();
 }
 
@@ -2129,7 +2129,7 @@ auto OTX::SendExternalTransfer(
     const identifier::Server& serverID,
     const Identifier& sourceAccountID,
     const Identifier& targetAccountID,
-    const std::int64_t value,
+    const Amount& value,
     const std::string& memo) const -> OTX::BackgroundTask
 {
     CHECK_ARGS(localNymID, serverID, targetAccountID)
@@ -2173,7 +2173,7 @@ auto OTX::SendTransfer(
     const identifier::Server& serverID,
     const Identifier& sourceAccountID,
     const Identifier& targetAccountID,
-    const std::int64_t value,
+    const Amount& value,
     const std::string& memo) const -> OTX::BackgroundTask
 {
     CHECK_ARGS(localNymID, serverID, targetAccountID)

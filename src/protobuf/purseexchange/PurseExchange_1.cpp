@@ -22,8 +22,8 @@ namespace opentxs::proto
 {
 auto CheckProto_1(const PurseExchange& input, const bool silent) -> bool
 {
-    std::int64_t inValue{0};
-    std::int64_t outValue{0};
+    std::string inValue{"0"};
+    std::string outValue{"0"};
     const auto& incoming = input.exchange();
     const auto& outgoing = input.request();
 

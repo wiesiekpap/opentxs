@@ -491,11 +491,11 @@ auto Account::SaveAccount() -> bool
 
 // Debit a certain amount from the account (presumably the same amount is being
 // credited somewhere else)
-auto Account::Debit(const Amount amount) -> bool
+auto Account::Debit(const Amount& amount) -> bool
 {
-    std::int64_t oldBalance = balanceAmount_->ToLong();
+    const Amount oldBalance{balanceAmount_->ToLong()};
     // The MINUS here is the big difference between Debit and Credit
-    std::int64_t newBalance = oldBalance - amount;
+    const auto newBalance{oldBalance - amount};
 
     // fail if integer overflow
     if ((amount > 0 && oldBalance < INT64_MIN + amount) ||
@@ -514,7 +514,7 @@ auto Account::Debit(const Amount amount) -> bool
     // and it means that we now allow <0 debits on normal accounts,
     // AS LONG AS the result is a HIGHER BALANCE  :-)
     else {
-        balanceAmount_->Format("%" PRId64, newBalance);
+        balanceAmount_->Format("%s", newBalance.str().c_str());
         balanceDate_->Set(String::Factory(getTimestamp()));
         return true;
     }
@@ -522,11 +522,11 @@ auto Account::Debit(const Amount amount) -> bool
 
 // Credit a certain amount to the account (presumably the same amount is being
 // debited somewhere else)
-auto Account::Credit(const Amount amount) -> bool
+auto Account::Credit(const Amount& amount) -> bool
 {
-    std::int64_t oldBalance = balanceAmount_->ToLong();
+    const Amount oldBalance{balanceAmount_->ToLong()};
     // The PLUS here is the big difference between Debit and Credit.
-    std::int64_t newBalance = oldBalance + amount;
+    const auto newBalance{oldBalance + amount};
 
     // fail if integer overflow
     if ((amount > 0 && oldBalance > INT64_MAX - amount) ||
@@ -554,7 +554,7 @@ auto Account::Credit(const Amount amount) -> bool
     // and it means that we now allow <0 credits on normal accounts,
     // AS LONG AS the result is a HIGHER BALANCE  :-)
     else {
-        balanceAmount_->Format("%" PRId64, newBalance);
+        balanceAmount_->Format("%s", newBalance.str().c_str());
         balanceDate_->Set(String::Factory(getTimestamp()));
         return true;
     }
@@ -797,10 +797,10 @@ auto Account::GenerateNewAccount(
     return true;
 }
 
-auto Account::GetBalance() const -> std::int64_t
+auto Account::GetBalance() const -> Amount
 {
-    if (balanceAmount_->Exists()) { return balanceAmount_->ToLong(); }
-    return 0;
+    if (balanceAmount_->Exists()) { return Amount{balanceAmount_->ToLong()}; }
+    return Amount{};
 }
 
 auto Account::DisplayStatistics(String& contents) const -> bool
@@ -1051,7 +1051,7 @@ auto Account::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
         const Amount amount = balanceAmount_->ToLong();
 
         balanceDate_->Set(String::Factory(formatTimestamp(date)));
-        balanceAmount_->Format("%" PRId64, amount);
+        balanceAmount_->Format("%s", amount.str().c_str());
 
         LogDebug(OT_METHOD)(__func__)("BALANCE  -- ")(balanceAmount_).Flush();
         LogDebug(OT_METHOD)(__func__)("DATE     --")(balanceDate_).Flush();

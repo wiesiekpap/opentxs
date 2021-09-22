@@ -388,19 +388,22 @@ public:
 
     auto IsAbbreviated() const -> bool { return m_bIsAbbreviated; }
 
-    auto GetAbbrevAdjustment() const -> std::int64_t { return m_lAbbrevAmount; }
+    auto GetAbbrevAdjustment() const -> const Amount&
+    {
+        return m_lAbbrevAmount;
+    }
 
-    void SetAbbrevAdjustment(std::int64_t lAmount)
+    void SetAbbrevAdjustment(const Amount& lAmount)
     {
         m_lAbbrevAmount = lAmount;
     }
 
-    auto GetAbbrevDisplayAmount() const -> std::int64_t
+    auto GetAbbrevDisplayAmount() const -> const Amount&
     {
         return m_lDisplayAmount;
     }
 
-    void SetAbbrevDisplayAmount(std::int64_t lAmount)
+    void SetAbbrevDisplayAmount(const Amount& lAmount)
     {
         m_lDisplayAmount = lAmount;
     }
@@ -467,13 +470,9 @@ public:
     auto GetSuccess(bool* pbHasSuccess = nullptr, bool* pbIsSuccess = nullptr)
         -> bool;
 
-    auto GetReceiptAmount(const PasswordPrompt& reason)
-        -> std::int64_t;  // Tries to
-                          // determine
-                          // IF there
-                          // is an
-    // amount (depending on type) and return
+    // Tries to determine IF there is an amount (depending on type) and return
     // it.
+    auto GetReceiptAmount(const PasswordPrompt& reason) -> Amount;
 
     auto GetType() const -> transactionType;
     void SetType(transactionType theType);
@@ -627,7 +626,7 @@ protected:
     // placed here, which makes it available for necessary calculations without
     // being forced to load up
     // all of the box receipts to do so.
-    std::int64_t m_lAbbrevAmount;
+    Amount m_lAbbrevAmount;
     // Just like m_lAbbrevAmount, except it stores the display amount. For
     // example, a transferReceipt for
     // a 5000 clam transfer has an effective value of 0 (since the transfer is
@@ -645,7 +644,7 @@ protected:
     // current process of loading
     // transaction items from a string every time we need to check the amount,
     // can be time-consuming, CPU-wise.)
-    std::int64_t m_lDisplayAmount;
+    Amount m_lDisplayAmount;
     // The value of GetReferenceNumForDisplay() is saved when saving an
     // abbreviated record of this transaction,
     // and then loaded into THIS member variable when loading the abbreviated
@@ -765,8 +764,8 @@ private:
         const Time the_DATE_SIGNED,
         const transactionType theType,
         const String& strHash,
-        const std::int64_t& lAdjustment,
-        const std::int64_t& lDisplayValue,
+        const Amount& lAdjustment,
+        const Amount& lDisplayValue,
         const std::int64_t& lClosingNum,
         const std::int64_t& lRequestNum,
         const bool bReplyTransSuccess,

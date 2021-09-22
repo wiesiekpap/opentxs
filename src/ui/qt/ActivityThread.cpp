@@ -14,6 +14,7 @@
 #include <memory>
 #include <string>
 
+#include "core/Amount.hpp"
 #include "internal/ui/UI.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -228,7 +229,7 @@ auto ActivityThreadItem::qt_data(
             }
         } break;
         case ActivityThreadQt::IntAmountRole: {
-            out = static_cast<int>(Amount());
+            out = Amount().Internal().amount_.convert_to<int>();
         } break;
         case ActivityThreadQt::StringAmountRole: {
             out = DisplayAmount().c_str();

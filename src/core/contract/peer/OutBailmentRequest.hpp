@@ -14,6 +14,7 @@
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/core/Amount.hpp"
 
 namespace opentxs
 {
@@ -48,7 +49,7 @@ public:
         const identifier::Nym& recipientID,
         const identifier::UnitDefinition& unitID,
         const identifier::Server& serverID,
-        const std::uint64_t& amount,
+        const Amount& amount,
         const std::string& terms);
     Outbailment(
         const api::Core& api,

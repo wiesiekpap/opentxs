@@ -41,7 +41,7 @@ PayDividendVisitor::PayDividendVisitor(
     const identifier::UnitDefinition& thePayoutUnitTypeId,
     const Identifier& theVoucherAcctID,
     const String& strMemo,
-    std::int64_t lPayoutPerShare)
+    const Amount& lPayoutPerShare)
     : AccountVisitor(server.API().Wallet(), theNotaryID)
     , server_(server)
     , nymId_(theNymID)
@@ -68,7 +68,7 @@ auto PayDividendVisitor::Trigger(
 // account.  Here, we'll send a dollars voucher
 // to its owner.
 {
-    const std::int64_t lPayoutAmount =
+    const Amount lPayoutAmount =
         (theSharesAccount.GetBalance() * GetPayoutPerShare());
 
     if (lPayoutAmount <= 0) {
@@ -194,12 +194,8 @@ auto PayDividendVisitor::Trigger(
             LogOutput(OT_METHOD)(__func__)(
                 ": ERROR failed issuing "
                 "voucher (to send to dividend payout recipient). WAS "
-                "TRYING TO PAY ")(lPayoutAmount)(" of instrument "
-                                                 "definition"
-                                                 " ")(strPayoutUnitTypeId)(" to"
-                                                                           " Ny"
-                                                                           "m"
-                                                                           " ")(
+                "TRYING TO PAY ")(lPayoutAmount.str())(
+                " of instrument definition ")(strPayoutUnitTypeId)(" to Nym ")(
                 strRecipientNymID)(".")
                 .Flush();
         }
@@ -266,18 +262,13 @@ auto PayDividendVisitor::Trigger(
                                String::Factory(payoutUnitTypeId),
                            strSenderNymID = String::Factory(theSenderNymID);
                 LogOutput(OT_METHOD)(__func__)(
-                    ": ERROR! Failed issuing voucher (to return "
-                    "back to "
-                    "the dividend payout initiator, after a "
-                    "failed "
+                    ": ERROR! Failed issuing voucher (to return back to "
+                    "the dividend payout initiator, after a failed "
                     "payment attempt to the originally intended "
                     "recipient). WAS TRYING TO "
-                    "PAY ")(lPayoutAmount)(" of instrument "
-                                           "definition"
-                                           " ")(strPayoutUnitTypeId)(" to "
-                                                                     "Nym"
-                                                                     " ")(
-                    strSenderNymID)(".")
+                    "PAY ")(lPayoutAmount.str())(
+                    " of instrument definition"
+                    " ")(strPayoutUnitTypeId)(" to Nym ")(strSenderNymID)(".")
                     .Flush();
             }
         }   // if !bSent
@@ -288,12 +279,10 @@ auto PayDividendVisitor::Trigger(
         LogOutput(OT_METHOD)(__func__)(
             ": ERROR! Failed issuing next transaction number while "
             "trying to send a voucher (while paying dividends). "
-            "WAS TRYING TO PAY ")(lPayoutAmount)(" of instrument "
-                                                 "definition"
-                                                 " ")(
-            strPayoutUnitTypeId->Get())(" to "
-                                        "Nym"
-                                        " ")(strRecipientNymID->Get())(".")
+            "WAS TRYING TO PAY ")(lPayoutAmount.str())(
+            " of instrument "
+            "definition ")(strPayoutUnitTypeId->Get())(" to Nym ")(
+            strRecipientNymID->Get())(".")
             .Flush();
     }
 

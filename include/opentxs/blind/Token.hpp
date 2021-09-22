@@ -14,6 +14,8 @@
 #if OT_CASH
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/blind/Types.hpp"
+#include "opentxs/core/Amount.hpp"
+#include "opentxs/identity/Nym.hpp"
 
 namespace opentxs
 {
@@ -49,7 +51,7 @@ class OPENTXS_EXPORT Token
 public:
     using Clock = std::chrono::system_clock;
     using Time = Clock::time_point;
-    using Denomination = std::uint64_t;
+    using Denomination = Amount;
     using MintSeries = std::uint64_t;
 
     virtual auto ID(const PasswordPrompt& reason) const -> std::string = 0;

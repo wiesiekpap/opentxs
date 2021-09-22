@@ -16,6 +16,8 @@
 #include <sstream>
 #include <utility>
 
+#include "core/Amount.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Log.hpp"
 
 namespace bmp = boost::multiprecision;
@@ -29,7 +31,7 @@ struct Scale::Imp {
     const std::string suffix_;
 
     auto format(
-        const Amount amount,
+        const Amount& amount,
         const OptionalInt minDecimals,
         const OptionalInt maxDecimals) const noexcept(false) -> std::string
     {
@@ -39,7 +41,8 @@ struct Scale::Imp {
 
         const auto decimalSymbol = locale_.decimal_point();
         const auto seperator = locale_.thousands_sep();
-        const auto scaled = outgoing_ * Imp::Backend{amount};
+        const auto& raw_amount = amount.Internal().amount_;
+        const auto scaled = outgoing_ * Imp::Backend{raw_amount};
         const auto [min, max] = effective_limits(minDecimals, maxDecimals);
         auto fractionalDigits = std::max<unsigned>(max, 1u);
         auto string = scaled.str(fractionalDigits, std::ios_base::fixed);
@@ -107,7 +110,11 @@ struct Scale::Imp {
         try {
             const auto output = incoming_ * Imp::Backend{Imp::strip(formatted)};
 
-            return output.convert_to<Amount>();
+            auto amount = Amount{};
+            amount.Internal().amount_ =
+                output.convert_to<Amount::Imp::Backend>();
+            return amount;
+            // return output.convert_to<Amount>();
         } catch (const std::exception& e) {
             LogTrace(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 

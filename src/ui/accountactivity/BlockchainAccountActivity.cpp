@@ -219,8 +219,8 @@ auto BlockchainAccountActivity::process_balance(const Message& in) noexcept
     OT_ASSERT(4 < body.size());
 
     const auto chain = body.at(1).as<blockchain::Type>();
-    const auto confirmed = body.at(2).as<Amount>();
-    const auto unconfirmed = body.at(3).as<Amount>();
+    const auto confirmed = Amount{body.at(2)};
+    const auto unconfirmed = Amount{body.at(3)};
     const auto nym = [&] {
         auto output = Widget::api_.Factory().NymID();
         output->Assign(body.at(4).Bytes());
@@ -231,16 +231,26 @@ auto BlockchainAccountActivity::process_balance(const Message& in) noexcept
     OT_ASSERT(chain_ == chain);
     OT_ASSERT(primary_id_ == nym);
 
-    const auto oldBalance = balance_.exchange(unconfirmed);
-    const auto oldConfirmed = confirmed_.exchange(confirmed);
-    auto notify = (oldBalance != unconfirmed) || (oldConfirmed != confirmed);
+    const auto oldBalance = [&] {
+        eLock lock(shared_lock_);
+
+        const auto oldbalance = balance_;
+        balance_ = unconfirmed;
+        return oldbalance;
+    }();
+    const auto oldConfirmed = [&] {
+        eLock lock(shared_lock_);
+
+        const auto oldconfirmed = confirmed_;
+        confirmed_ = confirmed;
+        return oldconfirmed;
+    }();
 
     if (oldBalance != unconfirmed) {
         notify_balance(unconfirmed);
-        notify = false;
+    } else if (oldConfirmed != confirmed) {
+        UpdateNotify();
     }
-
-    if (notify) { UpdateNotify(); }
 
     load_thread();
 }
@@ -354,7 +364,7 @@ auto BlockchainAccountActivity::process_txid(const Data& txid) noexcept
 
 auto BlockchainAccountActivity::Send(
     const std::string& address,
-    const Amount amount,
+    const Amount& amount,
     const std::string& memo) const noexcept -> bool
 {
     try {

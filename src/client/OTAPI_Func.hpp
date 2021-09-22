@@ -131,7 +131,7 @@ public:
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const identifier::Nym& nymID2,
-        const std::int64_t& int64Val);
+        const Amount& int64Val);
     explicit OTAPI_Func(
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
@@ -228,7 +228,7 @@ public:
         const Identifier& currencyAccountID,
         const Amount& scale,
         const Amount& increment,
-        const Amount& quantity,
+        const std::int64_t& quantity,
         const Amount& price,
         const bool selling,
         const Time lifetime,
@@ -293,7 +293,7 @@ private:
     Amount amount_{0};
     Amount depth_{0};
     Amount increment_{0};
-    Amount quantity_{0};
+    std::int64_t quantity_{0};
     Amount price_{0};
     Amount scale_{0};
     TransactionNumber transactionNumber_{0};  // This is not what gets returned

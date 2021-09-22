@@ -746,7 +746,7 @@ auto Base::process_send_to_address(network::zeromq::Message& in) noexcept
         return out;
     }();
     const auto address = std::string{body.at(2).Bytes()};
-    const auto amount = body.at(3).as<Amount>();
+    const auto amount = Amount{body.at(3)};
     const auto memo = std::string{body.at(4).Bytes()};
     const auto promise = body.at(5).as<int>();
     auto rc = SendResult::UnspecifiedError;
@@ -835,7 +835,7 @@ auto Base::process_send_to_payment_code(network::zeromq::Message& in) noexcept
         api_.Factory().PaymentCode(std::string{body.at(2).Bytes()});
     const auto contact =
         crypto_.Internal().Contacts().PaymentCodeToContact(recipient, chain_);
-    const auto amount = body.at(3).as<Amount>();
+    const auto amount = Amount{body.at(3)};
     const auto memo = std::string{body.at(4).Bytes()};
     const auto promise = body.at(5).as<int>();
     auto rc = SendResult::UnspecifiedError;
@@ -1035,7 +1035,7 @@ auto Base::SendToAddress(
     auto work = MakeWork(Task::SendToAddress);
     work->AddFrame(sender);
     work->AddFrame(address);
-    work->AddFrame(amount);
+    work->AddFrame(amount.str());
     work->AddFrame(memo);
     work->AddFrame(index);
     pipeline_->Push(work);
@@ -1053,7 +1053,7 @@ auto Base::SendToPaymentCode(
     auto work = MakeWork(Task::SendToPaymentCode);
     work->AddFrame(nymID);
     work->AddFrame(recipient);
-    work->AddFrame(amount);
+    work->AddFrame(amount.str());
     work->AddFrame(memo);
     work->AddFrame(index);
     pipeline_->Push(work);

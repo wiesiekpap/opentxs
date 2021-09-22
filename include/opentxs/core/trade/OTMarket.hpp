@@ -61,9 +61,9 @@ class PasswordPrompt;
 // Using multi-map since there will be more than one offer for each single
 // price.
 // (Map would only allow a single item on the map for each price.)
-using mapOfOffers = std::multimap<std::int64_t, OTOffer*>;
+using mapOfOffers = std::multimap<Amount, OTOffer*>;
 // The same offers are also mapped (uniquely) to transaction number.
-using mapOfOffersTrnsNum = std::map<std::int64_t, OTOffer*>;
+using mapOfOffersTrnsNum = std::map<Amount, OTOffer*>;
 
 // A market has a list of OTOffers for all the bids, and another list of
 // OTOffers for all the asks.
@@ -117,8 +117,8 @@ public:
         OTOffer& theOffer,
         const PasswordPrompt& reason) -> bool;
 
-    auto GetHighestBidPrice() -> std::int64_t;
-    auto GetLowestAskPrice() -> std::int64_t;
+    auto GetHighestBidPrice() -> Amount;
+    auto GetLowestAskPrice() -> Amount;
 
     auto GetBidCount() -> mapOfOffers::size_type { return m_mapBids.size(); }
     auto GetAskCount() -> mapOfOffers::size_type { return m_mapAsks.size(); }
@@ -150,14 +150,14 @@ public:
         return m_NOTARY_ID;
     }
 
-    inline auto GetScale() const -> const std::int64_t& { return m_lScale; }
-    inline void SetScale(const std::int64_t& lScale)
+    inline auto GetScale() const -> const Amount& { return m_lScale; }
+    inline void SetScale(const Amount& lScale)
     {
         m_lScale = lScale;
         if (m_lScale < 1) m_lScale = 1;
     }
 
-    inline auto GetLastSalePrice() -> const std::int64_t&
+    inline auto GetLastSalePrice() -> const Amount&
     {
         if (m_lLastSalePrice < 1) m_lLastSalePrice = 1;
         return m_lLastSalePrice;
@@ -169,7 +169,7 @@ public:
     }
 
     auto GetLastSaleDate() -> const std::string& { return m_strLastSaleDate; }
-    auto GetTotalAvailableAssets() -> std::int64_t;
+    auto GetTotalAvailableAssets() -> Amount;
 
     void GetIdentifier(Identifier& theIdentifier) const override;
 
@@ -224,9 +224,9 @@ private:
     // equally into.
     // (There is a "gold for dollars, minimum 1 oz" market, a "gold for dollars,
     // min 500 oz" market, etc.)
-    std::int64_t m_lScale{0};
+    Amount m_lScale{0};
 
-    std::int64_t m_lLastSalePrice{0};
+    Amount m_lLastSalePrice{0};
     std::string m_strLastSaleDate;
 
     // The server stores a map of markets, one for each unique combination of
@@ -247,21 +247,21 @@ private:
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const identifier::UnitDefinition& CURRENCY_TYPE_ID,
-        const std::int64_t& lScale);
+        const Amount& lScale);
 
     void rollback_four_accounts(
         Account& p1,
         bool b1,
-        const std::int64_t& a1,
+        const Amount& a1,
         Account& p2,
         bool b2,
-        const std::int64_t& a2,
+        const Amount& a2,
         Account& p3,
         bool b3,
-        const std::int64_t& a3,
+        const Amount& a3,
         Account& p4,
         bool b4,
-        const std::int64_t& a4);
+        const Amount& a4);
 
     OTMarket() = delete;
     OTMarket(const OTMarket&) = delete;

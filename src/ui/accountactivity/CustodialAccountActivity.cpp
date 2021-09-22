@@ -102,7 +102,7 @@ auto CustodialAccountActivity::display_balance(
 
     if (formatted) { return output; }
 
-    return std::to_string(amount);
+    return amount.str();
 }
 
 auto CustodialAccountActivity::DisplayUnit() const noexcept -> std::string
@@ -442,8 +442,14 @@ auto CustodialAccountActivity::process_balance(const Message& message) noexcept
 
     if (account_id_ != accountID) { return; }
 
-    const auto balance = body.at(2).as<Amount>();
-    const auto oldBalance = balance_.exchange(balance);
+    const auto balance = Amount{body.at(2)};
+    const auto oldBalance = [&] {
+        eLock lock(shared_lock_);
+
+        const auto oldbalance = balance_;
+        balance_ = balance;
+        return oldbalance;
+    }();
     const auto balanceChanged = (oldBalance != balance);
     const auto alias = [&] {
         auto account = Widget::api_.Wallet().Account(account_id_);

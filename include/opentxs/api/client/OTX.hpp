@@ -39,6 +39,7 @@ class Server;
 class UnitDefinition;
 }  // namespace identifier
 
+class Amount;
 class OTPayment;
 }  // namespace opentxs
 
@@ -270,14 +271,14 @@ public:
         const identifier::Server& serverID,
         const Identifier& sourceAccountID,
         const Identifier& targetAccountID,
-        const Amount value,
+        const Amount& value,
         const std::string& memo) const -> BackgroundTask = 0;
     virtual auto SendTransfer(
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const Identifier& sourceAccountID,
         const Identifier& targetAccountID,
-        const Amount value,
+        const Amount& value,
         const std::string& memo) const -> BackgroundTask = 0;
     virtual void StartIntroductionServer(
         const identifier::Nym& localNymID) const = 0;

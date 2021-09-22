@@ -15,13 +15,14 @@ import public "Ciphertext.proto";
 import public "Envelope.proto";
 import public "Token.proto";
 
-message Purse {
+message Purse
+{
     optional uint32 version = 1;
     optional CashType type = 2;
     optional PurseType state = 3;
     optional string notary = 4;
     optional string mint = 5;
-    optional int64 totalvalue = 6;
+    optional bytes totalvalue = 6;
     optional int64 latestvalidfrom = 7;
     optional int64 earliestvalidto = 8;
     repeated Token token = 9;

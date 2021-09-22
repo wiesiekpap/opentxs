@@ -26,7 +26,6 @@ namespace opentxs
 {
 using TransactionNumber = std::int64_t;
 using RequestNumber = std::int64_t;
-using Amount = std::int64_t;
 
 namespace identity
 {

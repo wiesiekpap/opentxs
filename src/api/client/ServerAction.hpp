@@ -57,7 +57,7 @@ public:
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::Nym& targetNymID,
-        const Amount adjustment) const -> Action final;
+        const Amount& adjustment) const -> Action final;
     auto CancelPaymentPlan(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
@@ -67,10 +67,10 @@ public:
         const PasswordPrompt& reason,
         const Identifier& assetAccountID,
         const Identifier& currencyAccountID,
-        const Amount scale,
-        const Amount increment,
-        const Amount quantity,
-        const Amount price,
+        const Amount& scale,
+        const Amount& increment,
+        const std::int64_t quantity,
+        const Amount& price,
         const bool selling,
         const std::chrono::seconds lifetime,
         const std::string& stopSign,

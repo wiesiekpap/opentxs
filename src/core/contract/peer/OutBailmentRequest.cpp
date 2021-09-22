@@ -41,7 +41,7 @@ auto Factory::OutbailmentRequest(
     const identifier::Nym& recipientID,
     const identifier::UnitDefinition& unitID,
     const identifier::Server& serverID,
-    const std::uint64_t& amount,
+    const Amount& amount,
     const std::string& terms,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::shared_ptr<contract::peer::request::Outbailment>
@@ -111,7 +111,7 @@ Outbailment::Outbailment(
     const identifier::Nym& recipientID,
     const identifier::UnitDefinition& unitID,
     const identifier::Server& serverID,
-    const std::uint64_t& amount,
+    const Amount& amount,
     const std::string& terms)
     : Request(
           api,

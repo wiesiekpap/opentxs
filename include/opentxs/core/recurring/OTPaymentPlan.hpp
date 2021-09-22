@@ -140,7 +140,7 @@ public:
     // Meaning: You can have an initial payment AND/OR a payment plan.
 
     auto SetPaymentPlan(
-        const Amount lPaymentAmount,
+        const Amount& lPaymentAmount,
         const std::chrono::seconds tTimeUntilPlanStart =
             std::chrono::hours{24 * 30},
         const std::chrono::seconds tBetweenPayments =
@@ -179,7 +179,7 @@ public:
     {
         return m_tInitialPaymentDate;
     }
-    inline auto GetInitialPaymentAmount() const -> const std::int64_t&
+    inline auto GetInitialPaymentAmount() const -> const Amount&
     {
         return m_lInitialPaymentAmount;
     }
@@ -203,7 +203,7 @@ public:
 
     // ************ "PAYMENT PLAN" public GET METHODS ****************
     inline auto HasPaymentPlan() const -> bool { return m_bPaymentPlan; }
-    inline auto GetPaymentPlanAmount() const -> const std::int64_t&
+    inline auto GetPaymentPlanAmount() const -> const Amount&
     {
         return m_lPaymentPlanAmount;
     }
@@ -285,7 +285,7 @@ protected:
     {
         m_tInitialPaymentDate = tInitialPaymentDate;
     }
-    inline void SetInitialPaymentAmount(const std::int64_t& lAmount)
+    inline void SetInitialPaymentAmount(const Amount& lAmount)
     {
         m_lInitialPaymentAmount = lAmount;
     }
@@ -311,7 +311,7 @@ protected:
     inline void IncrementNoInitialFailures() { m_nNumberInitialFailures++; }
 
     // "PAYMENT PLAN" protected SET METHODS
-    inline void SetPaymentPlanAmount(const std::int64_t& lAmount)
+    inline void SetPaymentPlanAmount(const Amount& lAmount)
     {
         m_lPaymentPlanAmount = lAmount;
     }
@@ -371,18 +371,20 @@ private:
     bool m_bInitialPayment;      // Will there be an initial payment?
     Time m_tInitialPaymentDate;  // Date of the initial payment, measured
                                  // seconds after creation.
-    Time m_tInitialPaymentCompletedDate;   // Date the initial payment was
-                                           // finally transacted.
-    Time m_tFailedInitialPaymentDate;      // Date of the last failed
-                                           // payment, measured seconds after
-                                           // creation.
-    std::int64_t m_lInitialPaymentAmount;  // Amount of the initial payment.
-    bool m_bInitialPaymentDone;            // Has the initial payment been made?
+    Time m_tInitialPaymentCompletedDate;  // Date the initial payment was
+                                          // finally transacted.
+    Time m_tFailedInitialPaymentDate;     // Date of the last failed
+                                          // payment, measured seconds after
+                                          // creation.
+    Amount m_lInitialPaymentAmount;       // Amount of the
+                                          // initial payment.
+    bool m_bInitialPaymentDone;           // Has the initial payment been made?
     std::int32_t m_nNumberInitialFailures;  // If we've tried to process this
                                             // multiple times, we'll know.
     // "PAYMENT PLAN" private MEMBERS
-    bool m_bPaymentPlan;                // Will there be a payment plan?
-    std::int64_t m_lPaymentPlanAmount;  // Amount of each payment.
+    bool m_bPaymentPlan;          // Will there be a payment plan?
+    Amount m_lPaymentPlanAmount;  // Amount of each
+                                  // payment.
     std::chrono::seconds m_tTimeBetweenPayments;  // How much time between
                                                   // each payment?
     Time m_tPaymentPlanStartDate;  // Date for the first payment plan

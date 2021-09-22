@@ -322,7 +322,7 @@ auto Factory::Basket() const -> std::unique_ptr<opentxs::Basket>
     return basket;
 }
 
-auto Factory::Basket(std::int32_t nCount, std::int64_t lMinimumTransferAmount)
+auto Factory::Basket(std::int32_t nCount, const Amount& lMinimumTransferAmount)
     const -> std::unique_ptr<opentxs::Basket>
 {
     std::unique_ptr<opentxs::Basket> basket;
@@ -1439,7 +1439,7 @@ auto Factory::Market(
     const identifier::Server& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
     const identifier::UnitDefinition& CURRENCY_TYPE_ID,
-    const std::int64_t& lScale) const -> std::unique_ptr<OTMarket>
+    const Amount& lScale) const -> std::unique_ptr<OTMarket>
 {
     std::unique_ptr<opentxs::OTMarket> market;
     market.reset(new opentxs::OTMarket(
@@ -1555,7 +1555,7 @@ auto Factory::Offer(
     const identifier::Server& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
     const identifier::UnitDefinition& CURRENCY_ID,
-    const std::int64_t& MARKET_SCALE) const -> std::unique_ptr<OTOffer>
+    const Amount& MARKET_SCALE) const -> std::unique_ptr<OTOffer>
 {
     std::unique_ptr<OTOffer> offer;
     offer.reset(new OTOffer(
@@ -1602,7 +1602,7 @@ auto Factory::OutbailmentRequest(
     const identifier::Nym& recipient,
     const identifier::UnitDefinition& unit,
     const identifier::Server& server,
-    const std::uint64_t& amount,
+    const Amount& amount,
     const std::string& terms,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
     -> OTOutbailmentRequest
@@ -2034,7 +2034,7 @@ auto Factory::Purse(
     const otx::context::Server& context,
     const identifier::UnitDefinition& unit,
     const blind::Mint& mint,
-    const Amount totalValue,
+    const Amount& totalValue,
     const opentxs::PasswordPrompt& reason,
     const blind::CashType type) const -> std::unique_ptr<blind::Purse>
 {
@@ -2539,8 +2539,8 @@ auto Factory::Transaction(
     const Time the_DATE_SIGNED,
     transactionType theType,
     const String& strHash,
-    const std::int64_t& lAdjustment,
-    const std::int64_t& lDisplayValue,
+    const Amount& lAdjustment,
+    const Amount& lDisplayValue,
     const std::int64_t& lClosingNum,
     const std::int64_t& lRequestNum,
     bool bReplyTransSuccess,

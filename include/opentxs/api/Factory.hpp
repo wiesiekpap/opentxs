@@ -202,7 +202,7 @@ public:
     virtual auto Basket() const -> std::unique_ptr<opentxs::Basket> = 0;
     virtual auto Basket(
         std::int32_t nCount,
-        std::int64_t lMinimumTransferAmount) const
+        const Amount& lMinimumTransferAmount) const
         -> std::unique_ptr<opentxs::Basket> = 0;
     virtual auto BasketContract(
         const Nym_p& nym,
@@ -479,7 +479,7 @@ public:
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const identifier::UnitDefinition& CURRENCY_TYPE_ID,
-        const std::int64_t& lScale) const -> std::unique_ptr<OTMarket> = 0;
+        const Amount& lScale) const -> std::unique_ptr<OTMarket> = 0;
     virtual auto Message() const -> std::unique_ptr<opentxs::Message> = 0;
 #if OT_CASH
     virtual auto Mint() const -> std::unique_ptr<blind::Mint> = 0;
@@ -507,7 +507,7 @@ public:
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const identifier::UnitDefinition& CURRENCY_ID,
-        const std::int64_t& MARKET_SCALE) const -> std::unique_ptr<OTOffer> = 0;
+        const Amount& MARKET_SCALE) const -> std::unique_ptr<OTOffer> = 0;
     virtual auto OutbailmentReply(
         const Nym_p& nym,
         const identifier::Nym& initiator,
@@ -525,7 +525,7 @@ public:
         const identifier::Nym& recipientID,
         const identifier::UnitDefinition& unitID,
         const identifier::Server& serverID,
-        const std::uint64_t& amount,
+        const Amount& amount,
         const std::string& terms,
         const opentxs::PasswordPrompt& reason) const noexcept(false)
         -> OTOutbailmentRequest = 0;
@@ -627,7 +627,7 @@ public:
         const otx::context::Server& context,
         const identifier::UnitDefinition& unit,
         const blind::Mint& mint,
-        const Amount totalValue,
+        const Amount& totalValue,
         const opentxs::PasswordPrompt& reason,
         const blind::CashType type = blind::CashType::Lucre) const
         -> std::unique_ptr<blind::Purse> = 0;
@@ -805,8 +805,8 @@ public:
         const Time the_DATE_SIGNED,
         transactionType theType,
         const String& strHash,
-        const std::int64_t& lAdjustment,
-        const std::int64_t& lDisplayValue,
+        const Amount& lAdjustment,
+        const Amount& lDisplayValue,
         const std::int64_t& lClosingNum,
         const std::int64_t& lRequestNum,
         bool bReplyTransSuccess,

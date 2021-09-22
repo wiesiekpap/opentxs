@@ -128,10 +128,10 @@ public:
 
     // Debit a certain amount from the account (presumably the same amount is
     // being added somewhere)
-    auto Debit(const Amount amount) -> bool;
+    auto Debit(const Amount& amount) -> bool;
     // Credit a certain amount from the account (presumably the same amount is
     // being subtracted somewhere)
-    auto Credit(const Amount amount) -> bool;
+    auto Credit(const Amount& amount) -> bool;
     auto GetInboxHash(Identifier& output) -> bool;
     auto GetOutboxHash(Identifier& output) -> bool;
     auto InitBoxes(const identity::Nym& signer, const PasswordPrompt& reason)

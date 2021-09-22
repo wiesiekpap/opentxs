@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "opentxs/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 
 namespace opentxs
@@ -55,7 +56,7 @@ public:
         const Identifier& pHisNymID,
         const Identifier& pHisAcctID,
         const PasswordPrompt& reason,
-        const Amount lTransactionAmount = 0,
+        const Amount& lTransactionAmount = 0,
         const Account* pAccount = nullptr,
         const contract::Unit* pMyUnitDefinition = nullptr) -> std::int32_t;
 

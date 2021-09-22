@@ -93,12 +93,13 @@ public:
 private:
     const blockchain::Type chain_;
     const OTData txid_;
-    std::atomic<opentxs::Amount> amount_;
+    opentxs::Amount amount_;
     std::string memo_;
 
     auto effective_amount() const noexcept -> opentxs::Amount final
     {
-        return amount_.load();
+        sLock lock(shared_lock_);
+        return amount_;
     }
 
     auto reindex(
