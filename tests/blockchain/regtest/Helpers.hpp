@@ -376,6 +376,7 @@ class Regtest_fixture_base : virtual public ::testing::Test
 protected:
     using Height = b::block::Height;
     using Transaction = ot::api::Factory::Transaction_p;
+    using Transactions = std::deque<ot::blockchain::block::pTxid>;
     using Generator = std::function<Transaction(Height)>;
     using Outpoint = ot::blockchain::block::Outpoint;
     using Script = ot::blockchain::block::bitcoin::Script;
@@ -384,8 +385,11 @@ protected:
     using Amount = std::int64_t;
     using OutpointMetadata = std::tuple<Key, Amount, Pattern>;
     using Expected = std::map<Outpoint, OutpointMetadata>;
+    using Subchain = bca::Subchain;
 
+    static bool init_;
     static Expected expected_;
+    static Transactions transactions_;
 
     const ot::api::Context& ot_;
     const ot::Options client_args_;
@@ -478,16 +482,10 @@ protected:
 class Regtest_fixture_hd : public Regtest_fixture_normal
 {
 protected:
-    using Subchain = ot::blockchain::crypto::Subchain;
-    using UTXO = ot::blockchain::node::Wallet::UTXO;
-
-    static ot::Nym_p alex_p_;
-    static std::deque<ot::blockchain::block::pTxid> transactions_;
+    static const User alice_;
+    static TXOs txos_;
     static std::unique_ptr<ScanListener> listener_p_;
 
-    const ot::identity::Nym& alex_;
-    const ot::blockchain::crypto::HD& account_;
-    const ot::Identifier& expected_account_;
     const ot::identifier::Server& expected_notary_;
     const ot::identifier::UnitDefinition& expected_unit_;
     const std::string expected_display_unit_;
@@ -499,6 +497,9 @@ protected:
     const Generator hd_generator_;
     ScanListener& listener_;
 
+    auto CheckTXODB() const noexcept -> bool;
+    auto SendHD() const noexcept -> const bca::HD&;
+
     auto Shutdown() noexcept -> void final;
 
     Regtest_fixture_hd();
@@ -507,20 +508,15 @@ protected:
 class Regtest_payment_code : public Regtest_fixture_normal
 {
 protected:
-    using Subchain = bca::Subchain;
-    using Transactions = std::deque<ot::blockchain::block::pTxid>;
-
     static constexpr auto message_text_{
         "I have come here to chew bubblegum and kick ass...and I'm all out of "
         "bubblegum."};
 
     static const User alice_;
     static const User bob_;
-    static bool init_;
     static Server server_1_;
     static TXOs txos_alice_;
     static TXOs txos_bob_;
-    static Transactions transactions_;
     static std::unique_ptr<ScanListener> listener_alice_p_;
     static std::unique_ptr<ScanListener> listener_bob_p_;
 

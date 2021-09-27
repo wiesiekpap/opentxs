@@ -156,6 +156,14 @@ struct User {
         const std::uint32_t index = 0,
         const ot::crypto::SeedStyle seed =
             ot::crypto::SeedStyle::BIP39) noexcept -> void;
+    auto init_custom(
+        const ot::api::client::Manager& api,
+        const std::function<void(User&)> custom,
+        const ot::contact::ContactItemType type =
+            ot::contact::ContactItemType::Individual,
+        const std::uint32_t index = 0,
+        const ot::crypto::SeedStyle seed =
+            ot::crypto::SeedStyle::BIP39) noexcept -> void;
 
     User(
         const std::string words,

@@ -35,7 +35,6 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Options.hpp"
-#include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/Manager.hpp"
@@ -68,7 +67,6 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
-#include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/blockchain/sync/Base.hpp"
 #include "opentxs/network/blockchain/sync/Block.hpp"
 #include "opentxs/network/blockchain/sync/Data.hpp"
@@ -854,28 +852,6 @@ auto Regtest_fixture_base::TestWallet(
 
 Regtest_fixture_hd::Regtest_fixture_hd()
     : Regtest_fixture_normal(1)
-    , alex_([&]() -> const ot::identity::Nym& {
-        if (!alex_p_) {
-            const auto reason = client_1_.Factory().PasswordPrompt(__func__);
-
-            alex_p_ = client_1_.Wallet().Nym(reason, "Alex");
-
-            OT_ASSERT(alex_p_)
-
-            client_1_.Blockchain().NewHDSubaccount(
-                alex_p_->ID(),
-                ot::blockchain::crypto::HDProtocol::BIP_44,
-                test_chain_,
-                reason);
-        }
-
-        OT_ASSERT(alex_p_)
-
-        return *alex_p_;
-    }())
-    , account_(
-          client_1_.Blockchain().Account(alex_.ID(), test_chain_).GetHD().at(0))
-    , expected_account_(account_.Parent().AccountID())
     , expected_notary_(client_1_.UI().BlockchainNotaryID(test_chain_))
     , expected_unit_(client_1_.UI().BlockchainUnitID(test_chain_))
     , expected_display_unit_(u8"UNITTEST")
@@ -891,6 +867,7 @@ Regtest_fixture_hd::Regtest_fixture_hd()
         static constexpr auto baseAmmount = ot::blockchain::Amount{100000000};
         auto meta = std::vector<OutpointMetadata>{};
         meta.reserve(count);
+        const auto& account = SendHD();
         auto output = miner_.Factory().BitcoinGenerationTransaction(
             test_chain_,
             height,
@@ -901,10 +878,10 @@ Regtest_fixture_hd::Regtest_fixture_hd()
                 const auto keys = std::set<ot::blockchain::crypto::Key>{};
 
                 for (auto i = Index{0}; i < Index{count}; ++i) {
-                    const auto index = account_.Reserve(
+                    const auto index = account.Reserve(
                         Subchain::External,
                         client_1_.Factory().PasswordPrompt(""));
-                    const auto& element = account_.BalanceElement(
+                    const auto& element = account.BalanceElement(
                         Subchain::External, index.value_or(0));
                     const auto key = element.Key();
 
@@ -954,6 +931,7 @@ Regtest_fixture_hd::Regtest_fixture_hd()
                 std::forward_as_tuple(txid.Bytes(), i),
                 std::forward_as_tuple(
                     std::move(bytes), std::move(amount), std::move(pattern)));
+            txos_.AddGenerated(*output, i, account, height);
         }
 
         return output;
@@ -968,13 +946,50 @@ Regtest_fixture_hd::Regtest_fixture_hd()
         return *listener_p_;
     }())
 {
+    if (false == init_) {
+        auto cb = [](User& user) {
+            const auto& api = *user.api_;
+            const auto& nymID = user.nym_id_.get();
+            const auto reason = api.Factory().PasswordPrompt(__func__);
+            api.Blockchain().NewHDSubaccount(
+                nymID,
+                ot::blockchain::crypto::HDProtocol::BIP_44,
+                test_chain_,
+                reason);
+        };
+        auto& alice = const_cast<User&>(alice_);
+        alice.init_custom(client_1_, cb);
+
+        OT_ASSERT(alice_.payment_code_ == GetVectors3().alice_.payment_code_);
+
+        init_ = true;
+    }
+}
+
+auto Regtest_fixture_hd::CheckTXODB() const noexcept -> bool
+{
+    const auto state = [&] {
+        auto out = TXOState{};
+        txos_.Extract(out);
+
+        return out;
+    }();
+
+    return TestWallet(client_1_, state);
+}
+
+auto Regtest_fixture_hd::SendHD() const noexcept -> const bca::HD&
+{
+    return client_1_.Blockchain()
+        .Account(alice_.nym_id_, test_chain_)
+        .GetHD()
+        .at(0);
 }
 
 auto Regtest_fixture_hd::Shutdown() noexcept -> void
 {
     listener_p_.reset();
     transactions_.clear();
-    alex_p_.reset();
     Regtest_fixture_normal::Shutdown();
 }
 
@@ -2102,7 +2117,9 @@ auto WalletListener::GetFuture(const Height height) noexcept -> Future
 
 WalletListener::~WalletListener() = default;
 
+bool Regtest_fixture_base::init_{false};
 Regtest_fixture_base::Expected Regtest_fixture_base::expected_{};
+Regtest_fixture_base::Transactions Regtest_fixture_base::transactions_{};
 using TxoState = ot::blockchain::node::Wallet::TxoState;
 const std::set<TxoState> Regtest_fixture_base::states_{
     TxoState::UnconfirmedNew,
@@ -2117,18 +2134,16 @@ std::unique_ptr<const PeerListener> Regtest_fixture_base::peer_listener_{};
 std::unique_ptr<MinedBlocks> Regtest_fixture_base::mined_block_cache_{};
 Regtest_fixture_base::BlockListen Regtest_fixture_base::block_listener_{};
 Regtest_fixture_base::WalletListen Regtest_fixture_base::wallet_listener_{};
-ot::Nym_p Regtest_fixture_hd::alex_p_{};
-std::deque<ot::blockchain::block::pTxid> Regtest_fixture_hd::transactions_{};
+const User Regtest_fixture_hd::alice_{GetVectors3().alice_.words_, "Alice"};
+TXOs Regtest_fixture_hd::txos_{alice_};
 std::unique_ptr<ScanListener> Regtest_fixture_hd::listener_p_{};
 std::unique_ptr<SyncSubscriber> Regtest_fixture_sync::sync_subscriber_{};
 std::unique_ptr<SyncRequestor> Regtest_fixture_sync::sync_requestor_{};
-bool Regtest_payment_code::init_{false};
 Server Regtest_payment_code::server_1_{};
 const User Regtest_payment_code::alice_{GetVectors3().alice_.words_, "Alice"};
 const User Regtest_payment_code::bob_{GetVectors3().bob_.words_, "Bob"};
 TXOs Regtest_payment_code::txos_alice_{alice_};
 TXOs Regtest_payment_code::txos_bob_{bob_};
-Regtest_payment_code::Transactions Regtest_payment_code::transactions_{};
 std::unique_ptr<ScanListener> Regtest_payment_code::listener_alice_p_{};
 std::unique_ptr<ScanListener> Regtest_payment_code::listener_bob_p_{};
 }  // namespace ottest
