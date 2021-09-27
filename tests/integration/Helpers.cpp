@@ -328,6 +328,20 @@ auto User::init_custom(
     if (init(api, server, type, index, seed) && custom) { custom(*this); }
 }
 
+auto User::init_custom(
+    const ot::api::client::Manager& api,
+    const std::function<void(User&)> custom,
+    const ot::contact::ContactItemType type,
+    const std::uint32_t index,
+    const ot::crypto::SeedStyle seed) noexcept -> void
+{
+    if (init_basic(api, type, index, seed)) {
+        if (custom) { custom(*this); }
+
+        init_ = true;
+    }
+}
+
 auto User::PaymentCode() const -> ot::OTPaymentCode
 {
     OT_ASSERT(nullptr != api_);

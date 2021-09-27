@@ -52,6 +52,8 @@ namespace zeromq
 class Message;
 }  // namespace zeromq
 }  // namespace network
+
+class Identifier;
 }  // namespace opentxs
 
 namespace ot = opentxs;
@@ -59,6 +61,18 @@ namespace zmq = ot::network::zeromq;
 
 namespace ottest
 {
+struct AccountActivityData;
+struct AccountListData;
+struct User;
+
+auto check_account_activity_rpc(
+    const User& user,
+    const ot::Identifier& account,
+    const AccountActivityData& expected) noexcept -> bool;
+auto check_account_list_rpc(
+    const User& user,
+    const AccountListData& expected) noexcept -> bool;
+
 class RPCPushCounter
 {
 public:
