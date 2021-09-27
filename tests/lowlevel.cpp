@@ -14,8 +14,7 @@
 
 int main(int argc, char** argv)
 {
-    auto& args = const_cast<ot::Options&>(ottest::Args(false));
-    args.ParseCommandLine(argc, argv);
+    const auto& args = ottest::Args(false, argc, argv);
     auto parser = ottest::ArgumentParser{};
     parser.parse(argc, argv);
 

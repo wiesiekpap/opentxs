@@ -163,13 +163,13 @@ private:
     struct Progress {
         auto get_percentage() const noexcept -> double
         {
-            Lock lock{lock_};
+            auto lock = Lock{lock_};
 
             return percentage_;
         }
         auto get_progress() const noexcept -> std::pair<int, int>
         {
-            Lock lock{lock_};
+            auto lock = Lock{lock_};
 
             return ratio_;
         }
@@ -178,7 +178,7 @@ private:
             blockchain::block::Height height,
             blockchain::block::Height target) noexcept -> double
         {
-            Lock lock{lock_};
+            auto lock = Lock{lock_};
             auto& [current, max] = ratio_;
             current = static_cast<int>(height);
             max = static_cast<int>(target);

@@ -6,10 +6,13 @@
 #include "0_stdafx.hpp"                       // IWYU pragma: associated
 #include "1_Internal.hpp"                     // IWYU pragma: associated
 #include "internal/blockchain/node/Node.hpp"  // IWYU pragma: associated
+#include "opentxs/blockchain/node/Types.hpp"  // IWYU pragma: associated
 
 #include <iosfwd>
 #include <sstream>
 
+#include "opentxs/blockchain/node/TxoState.hpp"
+#include "opentxs/blockchain/node/TxoTag.hpp"
 #include "opentxs/network/zeromq/socket/Sender.tpp"  // IWYU pragma: keep
 
 namespace opentxs::blockchain::node::internal
@@ -38,3 +41,45 @@ auto Config::print() const noexcept -> std::string
     return output.str();
 }
 }  // namespace opentxs::blockchain::node::internal
+
+namespace opentxs
+{
+auto print(blockchain::node::TxoState in) noexcept -> std::string
+{
+    using Type = blockchain::node::TxoState;
+    static const auto map = std::map<Type, std::string>{
+        {Type::UnconfirmedNew, "unspent (unconfirmed)"},
+        {Type::UnconfirmedSpend, "spent (unconfirmed)"},
+        {Type::ConfirmedNew, "unspent"},
+        {Type::ConfirmedSpend, "spent"},
+        {Type::OrphanedNew, "orphaned"},
+        {Type::OrphanedSpend, "orphaned"},
+        {Type::Immature, "newly generated"},
+    };
+
+    try {
+
+        return map.at(in);
+    } catch (...) {
+
+        return {};
+    }
+}
+
+auto print(blockchain::node::TxoTag in) noexcept -> std::string
+{
+    using Type = blockchain::node::TxoTag;
+    static const auto map = std::map<Type, std::string>{
+        {Type::Normal, "normal"},
+        {Type::Generation, "generated"},
+    };
+
+    try {
+
+        return map.at(in);
+    } catch (...) {
+
+        return {};
+    }
+}
+}  // namespace opentxs

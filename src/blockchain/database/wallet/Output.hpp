@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/node/TxoState.hpp"
+
 #pragma once
 
 #include <cstddef>
@@ -84,20 +86,19 @@ public:
     using FilterType = Parent::FilterType;
     using UTXO = Parent::UTXO;
     using Spend = Parent::Spend;
-    using State = node::Wallet::TxoState;
 
     auto CancelProposal(const Identifier& id) noexcept -> bool;
     auto GetBalance() const noexcept -> Balance;
     auto GetBalance(const identifier::Nym& owner) const noexcept -> Balance;
     auto GetBalance(const identifier::Nym& owner, const NodeID& node)
         const noexcept -> Balance;
-    auto GetOutputs(State type) const noexcept -> std::vector<UTXO>;
-    auto GetOutputs(const identifier::Nym& owner, State type) const noexcept
-        -> std::vector<UTXO>;
+    auto GetOutputs(node::TxoState type) const noexcept -> std::vector<UTXO>;
+    auto GetOutputs(const identifier::Nym& owner, node::TxoState type)
+        const noexcept -> std::vector<UTXO>;
     auto GetOutputs(
         const identifier::Nym& owner,
         const Identifier& node,
-        State type) const noexcept -> std::vector<UTXO>;
+        node::TxoState type) const noexcept -> std::vector<UTXO>;
     auto GetMutex() const noexcept -> std::shared_mutex&;
     auto GetUnspentOutputs() const noexcept -> std::vector<UTXO>;
     auto GetUnspentOutputs(const NodeID& balanceNode) const noexcept
@@ -119,6 +120,8 @@ public:
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
         const block::bitcoin::Transaction& transaction) noexcept -> bool;
+    auto AdvanceTo(const block::Position& pos) noexcept -> bool;
+    auto GetWalletHeight() const noexcept -> block::Height;
     auto ReserveUTXO(
         const identifier::Nym& spender,
         const Identifier& proposal,
@@ -127,6 +130,7 @@ public:
         const eLock& lock,
         const SubchainID& subchain,
         const block::Position& position) noexcept -> bool;
+    auto RollbackTo(const block::Position& pos) noexcept -> bool;
 
     Output(
         const api::Core& api,

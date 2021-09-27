@@ -33,6 +33,24 @@ namespace opentxs::blockchain::node::wallet
 using Subchain = node::internal::WalletDatabase::Subchain;
 
 struct Account::Imp {
+    auto finish_background_tasks() noexcept -> void
+    {
+        for (auto& [id, account] : internal_) {
+            account.finish_background_tasks();
+        }
+
+        for (auto& [id, account] : internal_) {
+            account.finish_background_tasks();
+        }
+
+        for (auto& [id, account] : outgoing_) {
+            account.finish_background_tasks();
+        }
+
+        for (auto& [id, account] : incoming_) {
+            account.finish_background_tasks();
+        }
+    }
     auto mempool(std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept
         -> void
     {
@@ -58,10 +76,10 @@ struct Account::Imp {
             const auto& id = account.ID();
             LogVerbose(OT_METHOD)(__func__)(": Processing HD account ")(id)
                 .Flush();
-            output |= get(account, Subchain::Internal, internal_)
-                          .reorg_.Queue(parent);
-            output |= get(account, Subchain::External, external_)
-                          .reorg_.Queue(parent);
+            auto& internal = get(account, Subchain::Internal, internal_);
+            auto& external = get(account, Subchain::External, external_);
+            output |= internal.queue_reorg(parent);
+            output |= external.queue_reorg(parent);
         }
 
         for (const auto& account : ref_.GetPaymentCode()) {
@@ -69,10 +87,10 @@ struct Account::Imp {
             LogVerbose(OT_METHOD)(__func__)(
                 ": Processing payment code account ")(id)
                 .Flush();
-            output |= get(account, Subchain::Outgoing, outgoing_)
-                          .reorg_.Queue(parent);
-            output |= get(account, Subchain::Incoming, incoming_)
-                          .reorg_.Queue(parent);
+            auto& outgoing = get(account, Subchain::Outgoing, outgoing_);
+            auto& incoming = get(account, Subchain::Incoming, incoming_);
+            output |= outgoing.queue_reorg(parent);
+            output |= incoming.queue_reorg(parent);
         }
 
         return output;
@@ -228,6 +246,11 @@ Account::Account(Account&& rhs) noexcept
     : imp_(std::move(rhs.imp_))
 {
     OT_ASSERT(imp_);
+}
+
+auto Account::finish_background_tasks() noexcept -> void
+{
+    return imp_->finish_background_tasks();
 }
 
 auto Account::mempool(

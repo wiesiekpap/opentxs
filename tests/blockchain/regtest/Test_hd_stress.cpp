@@ -38,6 +38,7 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
+#include "opentxs/blockchain/node/TxoState.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/crypto/Language.hpp"
@@ -335,7 +336,7 @@ TEST_F(Regtest_stress, alice_after_receive_wallet)
     EXPECT_EQ(wallet.GetBalance(nym, blankAccount), noBalance);
     EXPECT_EQ(wallet.GetBalance(blankNym, account), noBalance);
 
-    using TxoState = ot::blockchain::node::Wallet::TxoState;
+    using TxoState = ot::blockchain::node::TxoState;
     auto type = TxoState::All;
 
     EXPECT_EQ(wallet.GetOutputs(type).size(), outputs);

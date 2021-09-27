@@ -23,6 +23,7 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/blockchain/node/TxoState.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -126,9 +127,20 @@ auto Wallet::GetBalance(const identifier::Nym& owner, const Identifier& node)
     return db_.GetBalance(owner, node);
 }
 
+auto Wallet::GetOutputs() const noexcept -> std::vector<UTXO>
+{
+    return GetOutputs(TxoState::All);
+}
+
 auto Wallet::GetOutputs(TxoState type) const noexcept -> std::vector<UTXO>
 {
     return convert(db_.GetOutputs(type));
+}
+
+auto Wallet::GetOutputs(const identifier::Nym& owner) const noexcept
+    -> std::vector<UTXO>
+{
+    return GetOutputs(owner, TxoState::All);
 }
 
 auto Wallet::GetOutputs(const identifier::Nym& owner, TxoState type)
@@ -139,10 +151,22 @@ auto Wallet::GetOutputs(const identifier::Nym& owner, TxoState type)
 
 auto Wallet::GetOutputs(
     const identifier::Nym& owner,
+    const Identifier& subaccount) const noexcept -> std::vector<UTXO>
+{
+    return GetOutputs(owner, subaccount, TxoState::All);
+}
+
+auto Wallet::GetOutputs(
+    const identifier::Nym& owner,
     const Identifier& node,
     TxoState type) const noexcept -> std::vector<UTXO>
 {
     return convert(db_.GetOutputs(owner, node, type));
+}
+
+auto Wallet::Height() const noexcept -> block::Height
+{
+    return db_.GetWalletHeight();
 }
 
 auto Wallet::Init() noexcept -> void
@@ -178,7 +202,7 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
             shutdown(shutdown_promise_);
         } break;
         case Work::block: {
-            // nothing to do until the filter is downloaded
+            process_block(in);
         } break;
         case Work::reorg: {
             process_reorg(in);
@@ -207,6 +231,26 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
     }
 }
 
+auto Wallet::process_block(const zmq::Message& in) noexcept -> void
+{
+    const auto body = in.Body();
+
+    if (4 > body.size()) {
+        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
+
+        OT_FAIL;
+    }
+
+    const auto chain = body.at(1).as<blockchain::Type>();
+
+    if (chain_ != chain) { return; }
+
+    const auto position = block::Position{
+        body.at(3).as<block::Height>(),
+        api_.Factory().Data(body.at(2).Bytes())};
+    db_.AdvanceTo(position);
+}
+
 auto Wallet::process_mempool(const zmq::Message& in) noexcept -> void
 {
     const auto body = in.Body();
@@ -223,7 +267,7 @@ auto Wallet::process_reorg(const zmq::Message& in) noexcept -> void
 {
     const auto body = in.Body();
 
-    if (4 > body.size()) {
+    if (6 > body.size()) {
         LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
@@ -233,10 +277,17 @@ auto Wallet::process_reorg(const zmq::Message& in) noexcept -> void
 
     if (chain_ != chain) { return; }
 
-    const auto parent = block::Position{
+    const auto ancestor = block::Position{
         body.at(3).as<block::Height>(),
         api_.Factory().Data(body.at(2).Bytes())};
-    accounts_.Reorg(parent);
+    const auto tip = block::Position{
+        body.at(5).as<block::Height>(),
+        api_.Factory().Data(body.at(4).Bytes())};
+    accounts_.finish_background_tasks();
+    accounts_.Reorg(ancestor);
+    accounts_.finish_background_tasks();
+    db_.RollbackTo(ancestor);
+    db_.AdvanceTo(tip);
 }
 
 auto Wallet::shutdown(std::promise<void>& promise) noexcept -> void

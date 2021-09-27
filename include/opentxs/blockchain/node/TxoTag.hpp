@@ -1,0 +1,24 @@
+// Copyright (c) 2010-2021 The Open-Transactions developers
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+#ifndef OPENTXS_BLOCKCHAIN_NODE_TXOTAG_HPP
+#define OPENTXS_BLOCKCHAIN_NODE_TXOTAG_HPP
+
+#include "opentxs/blockchain/node/Types.hpp"  // IWYU pragma: associated
+
+namespace opentxs
+{
+namespace blockchain
+{
+namespace node
+{
+enum class TxoTag : std::uint16_t {
+    Normal = 0,
+    Generation = 1,
+};
+}  // namespace node
+}  // namespace blockchain
+}  // namespace opentxs
+#endif

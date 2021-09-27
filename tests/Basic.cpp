@@ -14,10 +14,19 @@ namespace fs = boost::filesystem;
 
 namespace ottest
 {
-auto Args(bool lowlevel) noexcept -> const ot::Options&
+auto Args(bool lowlevel, int argc, char** argv) noexcept -> const ot::Options&
 {
     using Connection = opentxs::Options::ConnectionMode;
-    static const auto minimal = ot::Options{}
+    static const auto parsed = [&] {
+        if ((0 < argc) && (nullptr != argv)) {
+
+            return ot::Options{argc, argv};
+        } else {
+
+            return ot::Options{};
+        }
+    }();
+    static const auto minimal = ot::Options{parsed}
                                     .SetDefaultMintKeyBytes(288)
                                     .SetHome(Home().c_str())
                                     .SetIpv4ConnectionMode(Connection::off)

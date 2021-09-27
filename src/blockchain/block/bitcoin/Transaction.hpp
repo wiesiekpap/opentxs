@@ -102,6 +102,7 @@ public:
     {
         return *inputs_;
     }
+    auto IsGeneration() const noexcept -> bool final { return is_generation_; }
     auto Keys() const noexcept -> std::vector<KeyID> final;
     auto Locktime() const noexcept -> std::uint32_t final { return lock_time_; }
     auto Memo(const api::client::Blockchain& blockchain) const noexcept

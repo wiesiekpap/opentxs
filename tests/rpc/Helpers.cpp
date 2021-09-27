@@ -47,6 +47,8 @@
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
+#include "opentxs/rpc/AccountData.hpp"
+#include "opentxs/rpc/AccountEvent.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
 #include "opentxs/rpc/request/GetAccountActivity.hpp"
 #include "opentxs/rpc/request/GetAccountBalance.hpp"

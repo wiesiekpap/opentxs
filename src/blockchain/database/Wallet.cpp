@@ -78,6 +78,11 @@ auto Wallet::AddProposal(
     return proposals_.AddProposal(id, tx);
 }
 
+auto Wallet::AdvanceTo(const block::Position& pos) const noexcept -> bool
+{
+    return outputs_.AdvanceTo(pos);
+}
+
 auto Wallet::CancelProposal(const Identifier& id) const noexcept -> bool
 {
     return outputs_.CancelProposal(id);
@@ -118,13 +123,13 @@ auto Wallet::GetIndex(
     return subchains_.GetIndex(balanceNode, subchain, type);
 }
 
-auto Wallet::GetOutputs(State type) const noexcept -> std::vector<UTXO>
+auto Wallet::GetOutputs(node::TxoState type) const noexcept -> std::vector<UTXO>
 {
     return outputs_.GetOutputs(type);
 }
 
-auto Wallet::GetOutputs(const identifier::Nym& owner, State type) const noexcept
-    -> std::vector<UTXO>
+auto Wallet::GetOutputs(const identifier::Nym& owner, node::TxoState type)
+    const noexcept -> std::vector<UTXO>
 {
     return outputs_.GetOutputs(owner, type);
 }
@@ -132,7 +137,7 @@ auto Wallet::GetOutputs(const identifier::Nym& owner, State type) const noexcept
 auto Wallet::GetOutputs(
     const identifier::Nym& owner,
     const Identifier& node,
-    State type) const noexcept -> std::vector<UTXO>
+    node::TxoState type) const noexcept -> std::vector<UTXO>
 {
     return outputs_.GetOutputs(owner, node, type);
 }
@@ -161,6 +166,11 @@ auto Wallet::GetUntestedPatterns(
     const ReadView blockID) const noexcept -> Patterns
 {
     return subchains_.GetUntestedPatterns(index, blockID);
+}
+
+auto Wallet::GetWalletHeight() const noexcept -> block::Height
+{
+    return outputs_.GetWalletHeight();
 }
 
 auto Wallet::LoadProposal(const Identifier& id) const noexcept
@@ -228,6 +238,11 @@ auto Wallet::ReserveUTXO(
     }
 
     return outputs_.ReserveUTXO(spender, id, policy);
+}
+
+auto Wallet::RollbackTo(const block::Position& pos) const noexcept -> bool
+{
+    return outputs_.RollbackTo(pos);
 }
 
 auto Wallet::SetDefaultFilterType(const FilterType type) const noexcept -> bool

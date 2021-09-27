@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/node/TxoState.hpp"
+
 #pragma once
 
 #include <boost/endian/buffers.hpp>
@@ -44,6 +46,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
+#include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -113,15 +116,21 @@ public:
     auto GetBalance() const noexcept -> Balance final;
     auto GetBalance(const identifier::Nym& owner) const noexcept
         -> Balance final;
-    auto GetBalance(const identifier::Nym& owner, const Identifier& node)
+    auto GetBalance(const identifier::Nym& owner, const Identifier& subaccount)
         const noexcept -> Balance final;
+    auto GetOutputs() const noexcept -> std::vector<UTXO> final;
     auto GetOutputs(TxoState type) const noexcept -> std::vector<UTXO> final;
+    auto GetOutputs(const identifier::Nym& owner) const noexcept
+        -> std::vector<UTXO> final;
     auto GetOutputs(const identifier::Nym& owner, TxoState type) const noexcept
         -> std::vector<UTXO> final;
+    auto GetOutputs(const identifier::Nym& owner, const Identifier& subaccount)
+        const noexcept -> std::vector<UTXO> final;
     auto GetOutputs(
         const identifier::Nym& owner,
-        const Identifier& node,
+        const Identifier& subaccount,
         TxoState type) const noexcept -> std::vector<UTXO> final;
+    auto Height() const noexcept -> block::Height final;
 
     auto Init() noexcept -> void final;
     auto Shutdown() noexcept -> std::shared_future<void> final
@@ -168,6 +177,7 @@ private:
 
     auto convert(const DBUTXOs& in) const noexcept -> std::vector<UTXO>;
     auto pipeline(const zmq::Message& in) noexcept -> void;
+    auto process_block(const zmq::Message& in) noexcept -> void;
     auto process_mempool(const zmq::Message& in) noexcept -> void;
     auto process_reorg(const zmq::Message& in) noexcept -> void;
     auto shutdown(std::promise<void>& promise) noexcept -> void;

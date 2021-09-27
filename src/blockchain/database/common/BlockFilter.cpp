@@ -96,7 +96,7 @@ auto BlockFilter::LoadFilter(const FilterType type, const ReadView blockHash)
         output = factory::GCS(
             api_, proto::Factory<proto::GCS>(bulk_.ReadView(index)));
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogVerbose(OT_METHOD)(__func__)(": ")(e.what()).Flush();
     }
 
     return output;

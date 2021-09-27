@@ -2245,8 +2245,11 @@ auto Wallet::Server(
     const std::chrono::milliseconds& timeout) const -> OTServerContract
 {
     if (blockchain::Type::Unknown != blockchain::Chain(api_, id)) {
-        throw std::runtime_error(
-            "Erroneously attempting to load a blockchain as a notary");
+        throw std::runtime_error{"Attempting to load a blockchain as a notary"};
+    }
+
+    if (id.empty()) {
+        throw std::runtime_error{"Attempting to load a null notary contract"};
     }
 
     const std::string server = id.str();
@@ -2568,8 +2571,12 @@ auto Wallet::UnitDefinition(
     const std::chrono::milliseconds& timeout) const -> OTUnitDefinition
 {
     if (blockchain::Type::Unknown != blockchain::Chain(api_, id)) {
-        throw std::runtime_error(
-            "Erroneously attempting to load a blockchain as a unit definition");
+        throw std::runtime_error{
+            "Attempting to load a blockchain as a unit definition"};
+    }
+
+    if (id.empty()) {
+        throw std::runtime_error{"Attempting to load a null unit definition"};
     }
 
     const std::string unit = id.str();

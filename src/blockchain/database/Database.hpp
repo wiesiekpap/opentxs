@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/node/TxoState.hpp"
+
 #pragma once
 
 #include <boost/container/flat_set.hpp>
@@ -42,6 +44,7 @@
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
+#include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -173,6 +176,10 @@ public:
     {
         return wallet_.AddProposal(id, tx);
     }
+    auto AdvanceTo(const block::Position& pos) const noexcept -> bool final
+    {
+        return wallet_.AdvanceTo(pos);
+    }
     auto ApplyUpdate(const node::UpdateTransaction& update) const noexcept
         -> bool final
     {
@@ -268,19 +275,20 @@ public:
     {
         return wallet_.GetIndex(balanceNode, subchain, type);
     }
-    auto GetOutputs(State type) const noexcept -> std::vector<UTXO> final
+    auto GetOutputs(node::TxoState type) const noexcept
+        -> std::vector<UTXO> final
     {
         return wallet_.GetOutputs(type);
     }
-    auto GetOutputs(const identifier::Nym& owner, State type) const noexcept
-        -> std::vector<UTXO> final
+    auto GetOutputs(const identifier::Nym& owner, node::TxoState type)
+        const noexcept -> std::vector<UTXO> final
     {
         return wallet_.GetOutputs(owner, type);
     }
     auto GetOutputs(
         const identifier::Nym& owner,
         const Identifier& node,
-        State type) const noexcept -> std::vector<UTXO> final
+        node::TxoState type) const noexcept -> std::vector<UTXO> final
     {
         return wallet_.GetOutputs(owner, node, type);
     }
@@ -302,6 +310,10 @@ public:
         const noexcept -> Patterns final
     {
         return wallet_.GetUntestedPatterns(index, blockID);
+    }
+    auto GetWalletHeight() const noexcept -> block::Height final
+    {
+        return wallet_.GetWalletHeight();
     }
     auto HasDisconnectedChildren(const block::Hash& hash) const noexcept
         -> bool final
@@ -397,6 +409,10 @@ public:
         const Spend policy) const noexcept -> std::optional<UTXO> final
     {
         return wallet_.ReserveUTXO(spender, proposal, policy);
+    }
+    auto RollbackTo(const block::Position& pos) const noexcept -> bool final
+    {
+        return wallet_.RollbackTo(pos);
     }
     auto SetBlockTip(const block::Position& position) const noexcept
         -> bool final

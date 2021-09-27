@@ -171,6 +171,8 @@ constexpr auto value(const WorkType in) noexcept
  *          1: chain type as blockchain::Type
  *          2: ancestor block hash (encoded as byte sequence)
  *          3: height of the ancestor block as blockchain::block::Height
+ *          4: new block hash (encoded as byte sequence)
+ *          5: height of the new block as blockchain::block::Height
  *
  *   BlockchainStateChange: reports changes to the enabled state of a
  *                          blockchain

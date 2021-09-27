@@ -16,7 +16,6 @@
 #include <map>
 #include <mutex>
 #include <numeric>
-#include <ostream>
 #include <set>
 #include <string>
 #include <string_view>
@@ -29,6 +28,7 @@
 #include "blockchain/database/wallet/Subchain.hpp"
 #include "blockchain/database/wallet/Transaction.hpp"
 #include "internal/api/client/Client.hpp"
+#include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
@@ -48,6 +48,8 @@
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
+#include "opentxs/blockchain/node/TxoState.hpp"
+#include "opentxs/blockchain/node/TxoTag.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -149,14 +151,14 @@ struct Output::Imp {
         return get_balance(lock, owner, node);
     }
     auto GetMutex() const noexcept -> std::shared_mutex& { return lock_; }
-    auto GetOutputs(State type) const noexcept -> std::vector<UTXO>
+    auto GetOutputs(node::TxoState type) const noexcept -> std::vector<UTXO>
     {
         auto lock = sLock{lock_};
 
         return get_outputs(lock, states(type), nullptr, nullptr, nullptr);
     }
-    auto GetOutputs(const identifier::Nym& owner, State type) const noexcept
-        -> std::vector<UTXO>
+    auto GetOutputs(const identifier::Nym& owner, node::TxoState type)
+        const noexcept -> std::vector<UTXO>
     {
         auto lock = sLock{lock_};
 
@@ -167,7 +169,7 @@ struct Output::Imp {
     auto GetOutputs(
         const identifier::Nym& owner,
         const Identifier& node,
-        State type) const noexcept -> std::vector<UTXO>
+        node::TxoState type) const noexcept -> std::vector<UTXO>
     {
         auto lock = sLock{lock_};
 
@@ -187,6 +189,12 @@ struct Output::Imp {
 
         return get_unspent_outputs(lock, id);
     }
+    auto GetWalletHeight() const noexcept -> block::Height
+    {
+        auto lock = sLock{lock_};
+
+        return position_.first;
+    }
 
     auto AddTransaction(
         const AccountID& account,
@@ -194,10 +202,11 @@ struct Output::Imp {
         const block::Position& block,
         const std::vector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& original,
-        const node::Wallet::TxoState consumed,
-        const node::Wallet::TxoState created) noexcept -> bool
+        const node::TxoState consumed,
+        const node::TxoState created) noexcept -> bool
     {
         auto lock = eLock{lock_};
+        const auto isGeneration = original.IsGeneration();
         auto pCopy = original.clone();
 
         OT_ASSERT(pCopy);
@@ -276,7 +285,8 @@ struct Output::Imp {
                 }
             } catch (...) {
                 if (false ==
-                    create_state(lock, outpoint, created, block, output)) {
+                    create_state(
+                        lock, isGeneration, outpoint, created, block, output)) {
                     LogOutput(OT_METHOD)(__func__)(
                         ": Error created new output state")
                         .Flush();
@@ -334,12 +344,8 @@ struct Output::Imp {
             return false;
         }
 
-        // NOTE do not call this function except for debugging: print(lock);
-        blockchain_.UpdateBalance(chain_, get_balance(lock));
-
-        for (const auto& [nym, balance] : get_balances(lock)) {
-            blockchain_.UpdateBalance(nym, chain_, balance);
-        }
+        // NOTE uncomment this for detailed debugging: print(lock);
+        publish_balance(lock);
 
         return true;
     }
@@ -356,8 +362,8 @@ struct Output::Imp {
             block,
             outputIndices,
             original,
-            TxoState::ConfirmedSpend,
-            TxoState::ConfirmedNew);
+            node::TxoState::ConfirmedSpend,
+            node::TxoState::ConfirmedNew);
     }
     auto AddMempoolTransaction(
         const AccountID& account,
@@ -373,14 +379,16 @@ struct Output::Imp {
             block,
             outputIndices,
             original,
-            TxoState::UnconfirmedSpend,
-            TxoState::UnconfirmedNew);
+            node::TxoState::UnconfirmedSpend,
+            node::TxoState::UnconfirmedNew);
     }
     auto AddOutgoingTransaction(
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
         const block::bitcoin::Transaction& transaction) noexcept -> bool
     {
+        OT_ASSERT(false == transaction.IsGeneration());
+
         auto lock = eLock{lock_};
 
         for (const auto& input : transaction.Inputs()) {
@@ -395,8 +403,7 @@ struct Output::Imp {
                 }
             } catch (...) {
                 LogOutput(OT_METHOD)(__func__)(": Input spending")(
-                    outpoint.str())(" not registered with "
-                                    "a proposal")
+                    outpoint.str())(" not registered with a proposal")
                     .Flush();
 
                 return false;
@@ -438,7 +445,7 @@ struct Output::Imp {
                                  lock,
                                  outpoint,
                                  serialized,
-                                 TxoState::UnconfirmedNew,
+                                 node::TxoState::UnconfirmedNew,
                                  blank_)) {
                     LogOutput(OT_METHOD)(__func__)(
                         ": Error updating created output state")
@@ -449,8 +456,9 @@ struct Output::Imp {
             } catch (...) {
                 if (false == create_state(
                                  lock,
+                                 false,
                                  outpoint,
-                                 TxoState::UnconfirmedNew,
+                                 node::TxoState::UnconfirmedNew,
                                  blank_,
                                  output)) {
                     LogOutput(OT_METHOD)(__func__)(
@@ -493,14 +501,56 @@ struct Output::Imp {
             return false;
         }
 
-        print(lock);
-        blockchain_.UpdateBalance(chain_, get_balance(lock));
-
-        for (const auto& [nym, balance] : get_balances(lock)) {
-            blockchain_.UpdateBalance(nym, chain_, balance);
-        }
+        // NOTE uncomment this for detailed debugging: print(lock);
+        publish_balance(lock);
 
         return true;
+    }
+    auto AdvanceTo(const block::Position& pos) noexcept -> bool
+    {
+        auto output{true};
+        auto changed{0};
+        auto lock = eLock{lock_};
+        const auto start = position_.first;
+
+        if (pos == position_) { return true; }
+        if (pos.first < position_.first) { return true; }
+
+        OT_ASSERT(pos.first > start);
+
+        auto count = (pos.first - start);
+        const auto stop = std::max<block::Height>(
+            0,
+            start - params::Data::Chains().at(chain_).maturation_interval_ - 1);
+
+        for (auto i{gen_.crbegin()}; i != gen_.crend(); ++i) {
+            const auto& [height, outputs] = *i;
+
+            if (height <= stop) {
+                break;
+            } else if (is_mature(lock, height, pos)) {
+                using State = node::TxoState;
+
+                for (const auto& outpoint : outputs) {
+                    output &=
+                        change_state(lock, outpoint, State::ConfirmedNew, pos);
+
+                    OT_ASSERT(output);
+
+                    ++changed;
+                }
+
+                --count;
+            }
+
+            if (0 == count) { break; }
+        }
+
+        position_ = pos;
+
+        if (0 < changed) { publish_balance(lock); }
+
+        return output;
     }
     auto CancelProposal(const Identifier& id) noexcept -> bool
     {
@@ -512,8 +562,8 @@ struct Output::Imp {
             if (false == change_state(
                              lock,
                              id,
-                             TxoState::UnconfirmedSpend,
-                             TxoState::ConfirmedNew)) {
+                             node::TxoState::UnconfirmedSpend,
+                             node::TxoState::ConfirmedNew)) {
                 LogOutput(OT_METHOD)(__func__)(": failed to reclaim outpoint ")(
                     id.str())
                     .Flush();
@@ -528,8 +578,8 @@ struct Output::Imp {
             if (false == change_state(
                              lock,
                              id,
-                             TxoState::UnconfirmedNew,
-                             TxoState::OrphanedNew)) {
+                             node::TxoState::UnconfirmedNew,
+                             node::TxoState::OrphanedNew)) {
                 LogOutput(OT_METHOD)(__func__)(
                     ": failed to orphan canceled outpoint ")(id.str())
                     .Flush();
@@ -559,7 +609,11 @@ struct Output::Imp {
 
             auto output = std::make_optional<UTXO>(outpoint, data);
             const auto changed = change_state(
-                lock, outpoint, serialized, TxoState::UnconfirmedSpend, blank_);
+                lock,
+                outpoint,
+                serialized,
+                node::TxoState::UnconfirmedSpend,
+                blank_);
 
             OT_ASSERT(changed);
 
@@ -585,12 +639,12 @@ struct Output::Imp {
             return std::nullopt;
         };
 
-        output = select(find_state(lock, TxoState::ConfirmedNew));
+        output = select(find_state(lock, node::TxoState::ConfirmedNew));
 
         if (output.has_value()) { return output; }
 
         if (Spend::UnconfirmedToo == policy) {
-            output = select(find_state(lock, TxoState::UnconfirmedNew));
+            output = select(find_state(lock, node::TxoState::UnconfirmedNew));
 
             if (output.has_value()) { return output; }
         }
@@ -624,17 +678,18 @@ struct Output::Imp {
 
         for (const auto& id : outpoints) {
             auto& serialized = find_output(lock, id);
-            const auto state = [&]() -> std::optional<TxoState> {
+            using State = node::TxoState;
+            const auto state = [&]() -> std::optional<State> {
                 switch (std::get<0>(serialized)) {
-                    case TxoState::ConfirmedNew:
-                    case TxoState::OrphanedNew: {
+                    case State::ConfirmedNew:
+                    case State::OrphanedNew: {
 
-                        return TxoState::UnconfirmedNew;
+                        return State::UnconfirmedNew;
                     }
-                    case TxoState::ConfirmedSpend:
-                    case TxoState::OrphanedSpend: {
+                    case State::ConfirmedSpend:
+                    case State::OrphanedSpend: {
 
-                        return TxoState::UnconfirmedSpend;
+                        return State::UnconfirmedSpend;
                     }
                     default: {
 
@@ -676,6 +731,42 @@ struct Output::Imp {
 
         return true;
     }
+    auto RollbackTo(const block::Position& pos) noexcept -> bool
+    {
+        auto output{true};
+        auto lock = eLock{lock_};
+
+        if (position_ != pos) {
+            auto outputs = Outpoints{};
+            auto heights = std::set<block::Height>{};
+
+            for (auto i{gen_.rbegin()}; i != gen_.rend(); ++i) {
+                const auto& [height, data] = *i;
+
+                if (height < pos.first) { break; }
+
+                std::move(
+                    data.begin(),
+                    data.end(),
+                    std::inserter(outputs, outputs.end()));
+                heights.emplace(height);
+            }
+
+            for (const auto height : heights) { gen_.erase(height); }
+
+            for (const auto& id : outputs) {
+                using State = node::TxoState;
+                output &= change_state(lock, id, State::OrphanedNew, pos);
+
+                OT_ASSERT(output);
+            }
+
+            position_ = pos;
+            publish_balance(lock);
+        }
+
+        return output;
+    }
 
     Imp(const api::Core& api,
         const api::client::internal::Blockchain& blockchain,
@@ -696,7 +787,10 @@ struct Output::Imp {
 
             return out;
         }())
+        , maturation_target_(
+              params::Data::Chains().at(chain_).maturation_interval_)
         , lock_()
+        , position_(blank_)
         , outputs_()
         , account_index_()
         , nym_index_()
@@ -706,6 +800,8 @@ struct Output::Imp {
         , proposal_reverse_index_()
         , state_index_()
         , subchain_index_()
+        , tags_()
+        , gen_()
     {
     }
 
@@ -714,9 +810,10 @@ private:
     using pSubchainID = OTIdentifier;
     using Outpoint = block::Outpoint;
     using Outpoints = std::set<Outpoint>;
-    using TxoState = node::Wallet::TxoState;
-    using Output = std::
-        tuple<TxoState, block::Position, proto::BlockchainTransactionOutput>;
+    using Output = std::tuple<
+        node::TxoState,
+        block::Position,
+        proto::BlockchainTransactionOutput>;
     using OutputMap =
         robin_hood::unordered_flat_map<Outpoint, std::unique_ptr<Output>>;
     using AccountIndex = std::map<OTIdentifier, Outpoints>;
@@ -724,13 +821,15 @@ private:
     using PositionIndex = std::map<block::Position, Outpoints>;
     using ProposalIndex = std::map<OTIdentifier, Outpoints>;
     using ProposalReverseIndex = std::map<Outpoint, OTIdentifier>;
-    using StateIndex = std::map<TxoState, Outpoints>;
+    using StateIndex = std::map<node::TxoState, Outpoints>;
     using SubchainIndex =
         robin_hood::unordered_flat_map<pSubchainID, Outpoints>;
     using NymBalances = std::map<OTNymID, Balance>;
     using KeyID = blockchain::crypto::Key;
-    using States = std::vector<TxoState>;
+    using States = std::vector<node::TxoState>;
     using Matches = std::vector<Outpoint>;
+    using TagMap = std::map<Outpoint, std::set<node::TxoTag>>;
+    using GenerationMap = std::map<block::Height, Outpoints>;
 
     const api::Core& api_;
     const api::client::internal::Blockchain& blockchain_;
@@ -739,7 +838,9 @@ private:
     wallet::Proposal& proposals_;
     wallet::Transaction& transactions_;
     const block::Position blank_;
+    const block::Height maturation_target_;
     mutable std::shared_mutex lock_;
+    block::Position position_;
     OutputMap outputs_;
     AccountIndex account_index_;
     NymIndex nym_index_;
@@ -749,6 +850,8 @@ private:
     ProposalReverseIndex proposal_reverse_index_;
     StateIndex state_index_;
     SubchainIndex subchain_index_;
+    TagMap tags_;
+    GenerationMap gen_;
 
     static auto owns(
         const identifier::Nym& spender,
@@ -766,18 +869,20 @@ private:
 
         return false;
     }
-    static auto states(TxoState in) noexcept -> States
+    static auto states(node::TxoState in) noexcept -> States
     {
+        using State = node::TxoState;
         static const auto all = States{
-            TxoState::UnconfirmedNew,
-            TxoState::UnconfirmedSpend,
-            TxoState::ConfirmedNew,
-            TxoState::ConfirmedSpend,
-            TxoState::OrphanedNew,
-            TxoState::OrphanedSpend,
+            State::UnconfirmedNew,
+            State::UnconfirmedSpend,
+            State::ConfirmedNew,
+            State::ConfirmedSpend,
+            State::OrphanedNew,
+            State::OrphanedSpend,
+            State::Immature,
         };
 
-        if (TxoState::All == in) { return all; }
+        if (State::All == in) { return all; }
 
         return States{in};
     }
@@ -800,13 +905,15 @@ private:
         return false;
     }
     auto effective_position(
-        const TxoState state,
+        const node::TxoState state,
         const block::Position& oldPos,
         const block::Position& newPos) const noexcept -> const block::Position&
     {
+        using State = node::TxoState;
+
         switch (state) {
-            case TxoState::UnconfirmedNew:
-            case TxoState::UnconfirmedSpend: {
+            case State::UnconfirmedNew:
+            case State::UnconfirmedSpend: {
 
                 return oldPos;
             }
@@ -851,7 +958,7 @@ private:
         return *outputs_.at(id);
     }
     template <typename LockType>
-    auto find_state(const LockType& lock, TxoState state) const noexcept
+    auto find_state(const LockType& lock, node::TxoState state) const noexcept
         -> const Outpoints&
     {
         static const auto empty = Outpoints{};
@@ -911,24 +1018,24 @@ private:
         };
 
         const auto unconfirmedSpendTotal = [&] {
-            const auto txos =
-                match(lock, {TxoState::UnconfirmedSpend}, pNym, pAcct, nullptr);
+            const auto txos = match(
+                lock, {node::TxoState::UnconfirmedSpend}, pNym, pAcct, nullptr);
 
             return std::accumulate(
                 txos.begin(), txos.end(), std::uint64_t{0}, cb);
         }();
 
         {
-            const auto txos =
-                match(lock, {TxoState::ConfirmedNew}, pNym, pAcct, nullptr);
+            const auto txos = match(
+                lock, {node::TxoState::ConfirmedNew}, pNym, pAcct, nullptr);
             confirmed =
                 unconfirmedSpendTotal +
                 std::accumulate(txos.begin(), txos.end(), std::uint64_t{0}, cb);
         }
 
         {
-            const auto txos =
-                match(lock, {TxoState::UnconfirmedNew}, pNym, pAcct, nullptr);
+            const auto txos = match(
+                lock, {node::TxoState::UnconfirmedNew}, pNym, pAcct, nullptr);
             unconfirmed =
                 std::accumulate(txos.begin(), txos.end(), confirmed, cb) -
                 unconfirmedSpendTotal;
@@ -971,9 +1078,9 @@ private:
 
         return get_outputs(
             lock,
-            {TxoState::UnconfirmedNew,
-             TxoState::ConfirmedNew,
-             TxoState::UnconfirmedSpend},
+            {node::TxoState::UnconfirmedNew,
+             node::TxoState::ConfirmedNew,
+             node::TxoState::UnconfirmedSpend},
             nullptr,
             nullptr,
             pSub);
@@ -1001,6 +1108,43 @@ private:
         const Outpoint& outpoint) const noexcept -> bool
     {
         return 0 < find_subchain<LockType>(lock, id).count(outpoint);
+    }
+    template <typename LockType>
+    auto has_tag(
+        const LockType& lock,
+        const Outpoint& outpoint,
+        const node::TxoTag tag) const noexcept -> bool
+    {
+        try {
+
+            return 0 < tags_.at(outpoint).count(tag);
+        } catch (...) {
+
+            return false;
+        }
+    }
+    template <typename LockType>
+    auto is_generation(const LockType& lock, const Outpoint& outpoint)
+        const noexcept -> bool
+    {
+        using Tag = node::TxoTag;
+
+        return has_tag(lock, outpoint, Tag::Generation);
+    }
+    // NOTE: a mature output is available to be spent in the next block
+    template <typename LockType>
+    auto is_mature(const LockType& lock, const block::Height height)
+        const noexcept -> bool
+    {
+        return is_mature(lock, height, position_);
+    }
+    template <typename LockType>
+    auto is_mature(
+        const LockType& lock,
+        const block::Height height,
+        const block::Position& pos) const noexcept -> bool
+    {
+        return (pos.first - height) >= maturation_target_;
     }
     template <typename LockType>
     auto match(
@@ -1042,7 +1186,7 @@ private:
             std::stringstream text_{};
             std::size_t total_{};
         };
-        auto output = std::map<TxoState, Output>{};
+        auto output = std::map<node::TxoState, Output>{};
 
         for (const auto& data : outputs_) {
             const auto& outpoint = data.first;
@@ -1080,25 +1224,45 @@ private:
             }
         }
 
-        const auto& unconfirmed = output[TxoState::UnconfirmedNew];
-        const auto& confirmed = output[TxoState::ConfirmedNew];
-        const auto& pending = output[TxoState::UnconfirmedSpend];
-        const auto& spent = output[TxoState::ConfirmedSpend];
-        LogTrace(OT_METHOD)(__func__)(": Instance ")(api_.Instance())(
+        const auto& unconfirmed = output[node::TxoState::UnconfirmedNew];
+        const auto& confirmed = output[node::TxoState::ConfirmedNew];
+        const auto& pending = output[node::TxoState::UnconfirmedSpend];
+        const auto& spent = output[node::TxoState::ConfirmedSpend];
+        const auto& orphan = output[node::TxoState::OrphanedNew];
+        const auto& outgoingOrphan = output[node::TxoState::OrphanedSpend];
+        const auto& immature = output[node::TxoState::Immature];
+        LogOutput(OT_METHOD)(__func__)(": Instance ")(api_.Instance())(
             " TXO database contents:")
             .Flush();
-        LogTrace(OT_METHOD)(__func__)(": Unconfirmed available value: ")(
+        LogOutput(OT_METHOD)(__func__)(": Unconfirmed available value: ")(
             unconfirmed.total_)(unconfirmed.text_.str())
             .Flush();
-        LogTrace(OT_METHOD)(__func__)(": Confirmed available value: ")(
+        LogOutput(OT_METHOD)(__func__)(": Confirmed available value: ")(
             confirmed.total_)(confirmed.text_.str())
             .Flush();
-        LogTrace(OT_METHOD)(__func__)(": Unconfirmed spent value: ")(
+        LogOutput(OT_METHOD)(__func__)(": Unconfirmed spent value: ")(
             pending.total_)(pending.text_.str())
             .Flush();
-        LogTrace(OT_METHOD)(__func__)(": Confirmed spent value: ")(
+        LogOutput(OT_METHOD)(__func__)(": Confirmed spent value: ")(
             spent.total_)(spent.text_.str())
             .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Orphaned incoming value: ")(
+            orphan.total_)(orphan.text_.str())
+            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Orphaned spend value: ")(
+            outgoingOrphan.total_)(outgoingOrphan.text_.str())
+            .Flush();
+        LogOutput(OT_METHOD)(__func__)(": Immature value: ")(immature.total_)(
+            immature.text_.str())
+            .Flush();
+    }
+    auto publish_balance(const eLock& lock) const noexcept -> void
+    {
+        blockchain_.UpdateBalance(chain_, get_balance(lock));
+
+        for (const auto& [nym, balance] : get_balances(lock)) {
+            blockchain_.UpdateBalance(nym, chain_, balance);
+        }
     }
 
     auto associate(
@@ -1141,8 +1305,8 @@ private:
     auto change_state(
         const eLock& lock,
         const Outpoint& id,
-        const TxoState oldState,
-        const TxoState newState) noexcept -> bool
+        const node::TxoState oldState,
+        const node::TxoState newState) noexcept -> bool
     {
         try {
             auto& serialized = find_output(lock, id);
@@ -1168,7 +1332,7 @@ private:
     auto change_state(
         const eLock& lock,
         const Outpoint& id,
-        const TxoState newState,
+        const node::TxoState newState,
         const block::Position newPosition) noexcept -> bool
     {
         try {
@@ -1187,7 +1351,7 @@ private:
         const eLock& lock,
         const Outpoint& id,
         Output& serialized,
-        const TxoState newState,
+        const node::TxoState newState,
         const block::Position newPosition) noexcept -> bool
     {
         auto& [oldState, oldPosition, data] = serialized;
@@ -1231,7 +1395,7 @@ private:
 
                 if (txid != rhs) {
                     const auto changed = change_state(
-                        lock, outpoint, TxoState::OrphanedNew, block);
+                        lock, outpoint, node::TxoState::OrphanedNew, block);
 
                     if (false == changed) {
                         LogOutput(OT_METHOD)(__func__)(
@@ -1260,8 +1424,9 @@ private:
     }
     auto create_state(
         const eLock& lock,
+        bool isGeneration,
         const Outpoint& id,
-        const TxoState state,
+        const node::TxoState state,
         const block::Position position,
         const block::bitcoin::Output& output) noexcept -> bool
     {
@@ -1272,7 +1437,31 @@ private:
             return false;
         }
 
-        const auto& effective = effective_position(state, blank_, position);
+        const auto& pos = effective_position(state, blank_, position);
+        const auto effState = [&] {
+            using State = node::TxoState;
+
+            if (isGeneration) {
+                if (State::ConfirmedNew == state) {
+                    if (is_mature(lock, position.first)) {
+
+                        return State::ConfirmedNew;
+                    } else {
+
+                        return State::Immature;
+                    }
+                } else {
+                    LogOutput(OT_METHOD)(__func__)(
+                        ": Invalid state for generation transaction output")
+                        .Flush();
+
+                    OT_FAIL;
+                }
+            } else {
+
+                return state;
+            }
+        }();
 
         {
             auto data = block::bitcoin::Output::SerializeType{};
@@ -1289,12 +1478,14 @@ private:
             outputs_.emplace(
                 std::piecewise_construct,
                 std::forward_as_tuple(id),
-                std::forward_as_tuple(std::make_unique<Output>(
-                    state, effective, std::move(data))));
+                std::forward_as_tuple(
+                    std::make_unique<Output>(effState, pos, std::move(data))));
         }
 
-        state_index_[state].emplace(id);
-        position_index_[effective].emplace(id);
+        state_index_[effState].emplace(id);
+        position_index_[pos].emplace(id);
+
+        if (isGeneration) { gen_[position.first].emplace(id); }
 
         return true;
     }
@@ -1348,6 +1539,11 @@ auto Output::AddOutgoingTransaction(
     return imp_->AddOutgoingTransaction(proposalID, proposal, transaction);
 }
 
+auto Output::AdvanceTo(const block::Position& pos) noexcept -> bool
+{
+    return imp_->AdvanceTo(pos);
+}
+
 auto Output::CancelProposal(const Identifier& id) noexcept -> bool
 {
     return imp_->CancelProposal(id);
@@ -1369,13 +1565,13 @@ auto Output::GetBalance(const identifier::Nym& owner, const NodeID& node)
     return imp_->GetBalance(owner, node);
 }
 
-auto Output::GetOutputs(State type) const noexcept -> std::vector<UTXO>
+auto Output::GetOutputs(node::TxoState type) const noexcept -> std::vector<UTXO>
 {
     return imp_->GetOutputs(type);
 }
 
-auto Output::GetOutputs(const identifier::Nym& owner, State type) const noexcept
-    -> std::vector<UTXO>
+auto Output::GetOutputs(const identifier::Nym& owner, node::TxoState type)
+    const noexcept -> std::vector<UTXO>
 {
     return imp_->GetOutputs(owner, type);
 }
@@ -1383,7 +1579,7 @@ auto Output::GetOutputs(const identifier::Nym& owner, State type) const noexcept
 auto Output::GetOutputs(
     const identifier::Nym& owner,
     const NodeID& node,
-    State type) const noexcept -> std::vector<UTXO>
+    node::TxoState type) const noexcept -> std::vector<UTXO>
 {
     return imp_->GetOutputs(owner, node, type);
 }
@@ -1404,6 +1600,11 @@ auto Output::GetUnspentOutputs(const NodeID& balanceNode) const noexcept
     return imp_->GetUnspentOutputs(balanceNode);
 }
 
+auto Output::GetWalletHeight() const noexcept -> block::Height
+{
+    return imp_->GetWalletHeight();
+}
+
 auto Output::ReserveUTXO(
     const identifier::Nym& spender,
     const Identifier& proposal,
@@ -1418,6 +1619,11 @@ auto Output::Rollback(
     const block::Position& position) noexcept -> bool
 {
     return imp_->Rollback(lock, subchain, position);
+}
+
+auto Output::RollbackTo(const block::Position& pos) noexcept -> bool
+{
+    return imp_->RollbackTo(pos);
 }
 
 Output::~Output() = default;

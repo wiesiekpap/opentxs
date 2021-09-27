@@ -80,6 +80,7 @@ class Account
 public:
     using BalanceTree = crypto::Account;
 
+    auto finish_background_tasks() noexcept -> void;
     auto mempool(std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept
         -> void;
     auto reorg(const block::Position& parent) noexcept -> bool;

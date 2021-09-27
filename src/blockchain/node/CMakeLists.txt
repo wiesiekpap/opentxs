@@ -36,6 +36,9 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/node/FilterOracle.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/node/HeaderOracle.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/node/Manager.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/node/TxoState.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/node/TxoTag.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/node/Types.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/node/Wallet.hpp"
 )
 

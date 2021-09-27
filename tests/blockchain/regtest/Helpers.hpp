@@ -3,15 +3,16 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: no_include "opentxs/blockchain/crypto/Subchain.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/FilterType.hpp"
-// IWYU pragma: no_include "opentxs/network/zeromq/ListenCallback.hpp"
-// IWYU pragma: no_include "opentxs/blockchain/crypto/Subaccount.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/FilterType.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/FilterType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/block/Outpoint.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/crypto/Subaccount.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/crypto/Subchain.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/node/TxoState.hpp"
 // IWYU pragma: no_include "opentxs/network/blockchain/sync/State.hpp"
-// IWYU pragma: no_include "opentxs/blockchain/FilterType.hpp"
-// IWYU pragma: no_include "opentxs/blockchain/FilterType.hpp"
 // IWYU pragma: no_include "opentxs/network/zeromq/Context.hpp"
+// IWYU pragma: no_include "opentxs/network/zeromq/ListenCallback.hpp"
 
 #pragma once
 
@@ -49,6 +50,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
+#include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
@@ -309,7 +311,7 @@ struct TXOState {
     struct Data {
         ot::blockchain::Balance balance_;
         std::map<
-            ot::blockchain::node::Wallet::TxoState,
+            ot::blockchain::node::TxoState,
             std::set<ot::blockchain::block::Outpoint>>
             data_;
 
@@ -348,6 +350,8 @@ struct TXOs {
     auto Mature(const ot::blockchain::block::Height position) noexcept -> bool;
     auto Orphan(const ot::blockchain::block::Txid& transaction) noexcept
         -> bool;
+    auto OrphanGeneration(
+        const ot::blockchain::block::Txid& transaction) noexcept -> bool;
     auto SpendUnconfirmed(const ot::blockchain::block::Outpoint& txo) noexcept
         -> bool;
     auto SpendConfirmed(const ot::blockchain::block::Outpoint& txo) noexcept
@@ -373,6 +377,9 @@ private:
 
 class Regtest_fixture_base : virtual public ::testing::Test
 {
+public:
+    static auto MaturationInterval() noexcept -> ot::blockchain::block::Height;
+
 protected:
     using Height = b::block::Height;
     using Transaction = ot::api::Factory::Transaction_p;
@@ -390,6 +397,7 @@ protected:
     static bool init_;
     static Expected expected_;
     static Transactions transactions_;
+    static ot::blockchain::block::Height height_;
 
     const ot::api::Context& ot_;
     const ot::Options client_args_;
@@ -432,7 +440,7 @@ private:
     using BlockListen = std::map<int, std::unique_ptr<BlockListener>>;
     using WalletListen = std::map<int, std::unique_ptr<WalletListener>>;
 
-    static const std::set<ot::blockchain::node::Wallet::TxoState> states_;
+    static const std::set<ot::blockchain::node::TxoState> states_;
     static std::unique_ptr<const ot::OTBlockchainAddress> listen_address_;
     static std::unique_ptr<const PeerListener> peer_listener_;
     static std::unique_ptr<MinedBlocks> mined_block_cache_;
@@ -468,7 +476,7 @@ private:
         const ot::Identifier& subaccount,
         const TXOState::Data& data) const noexcept -> bool;
     auto compare_outpoints(
-        const ot::blockchain::node::Wallet::TxoState type,
+        const ot::blockchain::node::TxoState type,
         const TXOState::Data& expected,
         const std::vector<UTXO>& got) const noexcept -> bool;
 };

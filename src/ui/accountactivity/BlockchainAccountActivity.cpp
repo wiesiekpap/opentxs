@@ -233,10 +233,14 @@ auto BlockchainAccountActivity::process_balance(const Message& in) noexcept
 
     const auto oldBalance = balance_.exchange(unconfirmed);
     const auto oldConfirmed = confirmed_.exchange(confirmed);
+    auto notify = (oldBalance != unconfirmed) || (oldConfirmed != confirmed);
 
-    if (oldBalance != unconfirmed) { notify_balance(unconfirmed); }
+    if (oldBalance != unconfirmed) {
+        notify_balance(unconfirmed);
+        notify = false;
+    }
 
-    if (oldConfirmed != confirmed) { UpdateNotify(); }
+    if (notify) { UpdateNotify(); }
 
     load_thread();
 }
@@ -290,13 +294,19 @@ auto BlockchainAccountActivity::process_sync(const Message& in) noexcept -> void
     OT_ASSERT(height <= std::numeric_limits<int>::max());
     OT_ASSERT(target <= std::numeric_limits<int>::max());
 
+    const auto previous = progress_.get_progress();
     const auto current = static_cast<int>(height);
     const auto max = static_cast<int>(target);
     const auto percent = progress_.set(current, max);
-    Lock lock(callbacks_.lock_);
-    const auto& cb = callbacks_.cb_.sync_;
 
-    if (cb) { cb(current, max, percent); }
+    if (progress_.get_progress() != previous) {
+        auto lock = Lock{callbacks_.lock_};
+        const auto& cb = callbacks_.cb_.sync_;
+
+        if (cb) { cb(current, max, percent); }
+
+        UpdateNotify();
+    }
 }
 
 auto BlockchainAccountActivity::process_txid(const Message& in) noexcept -> void

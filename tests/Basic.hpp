@@ -22,7 +22,8 @@ class QObject;
 
 namespace ottest
 {
-auto Args(bool lowlevel = false) noexcept -> const ot::Options&;
+auto Args(bool lowlevel = false, int argc = 0, char** argv = nullptr) noexcept
+    -> const ot::Options&;
 auto GetQT() noexcept -> QObject*;
 auto Home() noexcept -> const std::string&;
 auto StartQT(bool lowlevel = false) noexcept -> std::thread;
