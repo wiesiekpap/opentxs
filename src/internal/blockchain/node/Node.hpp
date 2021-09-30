@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/node/TxoState.hpp"
+
 #pragma once
 
 #include <boost/asio.hpp>
@@ -39,6 +41,7 @@
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
+#include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/blockchain/p2p/Types.hpp"
@@ -584,7 +587,6 @@ struct WalletDatabase {
     using UTXO = std::
         pair<blockchain::block::Outpoint, proto::BlockchainTransactionOutput>;
     using KeyID = blockchain::crypto::Key;
-    using State = node::Wallet::TxoState;
 
     enum class Spend : bool {
         ConfirmedOnly = false,
@@ -614,6 +616,8 @@ struct WalletDatabase {
         const Identifier& id,
         const proto::BlockchainTransactionProposal& tx) const noexcept
         -> bool = 0;
+    virtual auto AdvanceTo(const block::Position& pos) const noexcept
+        -> bool = 0;
     virtual auto CancelProposal(const Identifier& id) const noexcept
         -> bool = 0;
     virtual auto CompletedProposals() const noexcept
@@ -629,13 +633,14 @@ struct WalletDatabase {
         const NodeID& balanceNode,
         const Subchain subchain,
         const FilterType type) const noexcept -> pSubchainIndex = 0;
-    virtual auto GetOutputs(State type) const noexcept -> std::vector<UTXO> = 0;
-    virtual auto GetOutputs(const identifier::Nym& owner, State type)
+    virtual auto GetOutputs(node::TxoState type) const noexcept
+        -> std::vector<UTXO> = 0;
+    virtual auto GetOutputs(const identifier::Nym& owner, node::TxoState type)
         const noexcept -> std::vector<UTXO> = 0;
     virtual auto GetOutputs(
         const identifier::Nym& owner,
         const Identifier& node,
-        State type) const noexcept -> std::vector<UTXO> = 0;
+        node::TxoState type) const noexcept -> std::vector<UTXO> = 0;
     virtual auto GetPatterns(const SubchainIndex& index) const noexcept
         -> Patterns = 0;
     virtual auto GetUnspentOutputs() const noexcept -> std::vector<UTXO> = 0;
@@ -645,6 +650,7 @@ struct WalletDatabase {
     virtual auto GetUntestedPatterns(
         const SubchainIndex& index,
         const ReadView blockID) const noexcept -> Patterns = 0;
+    virtual auto GetWalletHeight() const noexcept -> block::Height = 0;
     virtual auto LoadProposal(const Identifier& id) const noexcept
         -> std::optional<proto::BlockchainTransactionProposal> = 0;
     virtual auto LoadProposals() const noexcept
@@ -660,6 +666,8 @@ struct WalletDatabase {
         const identifier::Nym& spender,
         const Identifier& proposal,
         const Spend policy) const noexcept -> std::optional<UTXO> = 0;
+    virtual auto RollbackTo(const block::Position& pos) const noexcept
+        -> bool = 0;
     virtual auto SetDefaultFilterType(const FilterType type) const noexcept
         -> bool = 0;
     virtual auto SubchainAddElements(

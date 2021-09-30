@@ -72,11 +72,11 @@ class Accounts
 public:
     auto Add(const identifier::Nym& nym) noexcept -> bool;
     auto Add(const network::zeromq::Frame& message) noexcept -> bool;
+    auto finish_background_tasks() noexcept -> void;
     auto Mempool(
         std::shared_ptr<const block::bitcoin::Transaction>&& tx) noexcept
         -> void;
     auto Reorg(const block::Position& parent) noexcept -> bool;
-
     auto shutdown() noexcept -> void;
     auto state_machine(bool enabled) noexcept -> bool;
 

@@ -66,7 +66,6 @@ SubchainStateData::SubchainStateData(
     , task_finished_(taskFinished)
     , running_(false)
     , mempool_()
-    , reorg_()
     , last_indexed_(db.SubchainLastIndexed(index_))
     , last_scanned_(db.SubchainLastScanned(index_))
     , progress_(last_scanned_)
@@ -79,6 +78,7 @@ SubchainStateData::SubchainStateData(
     , db_(db)
     , name_()
     , null_position_(make_blank<block::Position>::value(api_))
+    , reorg_(null_position_)
     , last_reported_(null_position_)
 {
     OT_ASSERT(task_finished_);
@@ -121,33 +121,6 @@ auto SubchainStateData::MempoolQueue::Next() noexcept
     return output;
 }
 
-auto SubchainStateData::ReorgQueue::Empty() const noexcept -> bool
-{
-    auto lock = Lock{lock_};
-
-    return 0 == parents_.size();
-}
-
-auto SubchainStateData::ReorgQueue::Queue(
-    const block::Position& parent) noexcept -> bool
-{
-    auto lock = Lock{lock_};
-    parents_.push(parent);
-
-    return true;
-}
-
-auto SubchainStateData::ReorgQueue::Next() noexcept -> block::Position
-{
-    OT_ASSERT(false == Empty());
-
-    auto lock = Lock{lock_};
-    auto output{parents_.front()};
-    parents_.pop();
-
-    return output;
-}
-
 auto SubchainStateData::adjust_progress_finished() noexcept -> void
 {
     OT_ASSERT(last_scanned_.has_value());
@@ -177,7 +150,6 @@ auto SubchainStateData::adjust_progress_reorg(block::Position pos) noexcept
         if (false == changed) { return; }
     }
 
-    job_counter_.wait_for_finished();
     last_scanned_ = std::move(pos);
 
     if (progress_.has_value() && progress_.value() > last_scanned_.value()) {
@@ -273,15 +245,6 @@ auto SubchainStateData::check_process() noexcept -> bool
     return false;
 }
 
-auto SubchainStateData::check_reorg() noexcept -> bool
-{
-    if (reorg_.Empty()) { return false; }
-
-    static constexpr auto job{"reorg"};
-
-    return queue_work(Task::reorg, job);
-}
-
 auto SubchainStateData::check_scan() noexcept -> bool
 {
     auto needScan{false};
@@ -296,6 +259,7 @@ auto SubchainStateData::check_scan() noexcept -> bool
                 bestFilter.second->asHex())(" at height ")(bestFilter.first)
                 .Flush();
         } else {
+            job_counter_.wait_for_finished();
             auto [ancestor, best] = node_.HeaderOracleInternal().CommonParent(
                 last_scanned_.value());
             adjust_progress_reorg(std::move(ancestor));
@@ -361,6 +325,11 @@ auto SubchainStateData::describe() const noexcept -> std::string
     out << " subchain";
 
     return out.str();
+}
+
+auto SubchainStateData::finish_background_tasks() noexcept -> void
+{
+    job_counter_.wait_for_finished();
 }
 
 auto SubchainStateData::get_account_targets() const noexcept
@@ -567,6 +536,15 @@ auto SubchainStateData::process() noexcept -> void
     }
 }
 
+auto SubchainStateData::queue_reorg(const block::Position& ancestor) noexcept
+    -> bool
+{
+    static constexpr auto job{"reorg"};
+    reorg_ = ancestor;
+
+    return queue_work(Task::reorg, job);
+}
+
 auto SubchainStateData::queue_work(const Task task, const char* log) noexcept
     -> bool
 {
@@ -614,14 +592,10 @@ auto SubchainStateData::queue_work(const Task task, const char* log) noexcept
 
 auto SubchainStateData::reorg() noexcept -> void
 {
-    job_counter_.wait_for_finished();
-
-    while (false == reorg_.Empty()) {
-        reorg_.Next();
-        const auto tip = db_.SubchainLastScanned(index_);
-        const auto reorg = node_.HeaderOracleInternal().CalculateReorg(tip);
-        db_.ReorgTo(id_, subchain_, index_, reorg);
-    }
+    const auto tip = db_.SubchainLastScanned(index_);
+    // TODO use reorg_
+    const auto reorg = node_.HeaderOracleInternal().CalculateReorg(tip);
+    db_.ReorgTo(id_, subchain_, index_, reorg);
 
     if (last_scanned_.has_value()) {
         adjust_progress_reorg(node_.HeaderOracleInternal()
@@ -758,7 +732,6 @@ auto SubchainStateData::state_machine(bool enabled) noexcept -> bool
     }
 
     if (enabled) {
-        if (check_reorg()) { return false; }
         if (check_blocks()) { return false; }
     }
 
@@ -815,5 +788,5 @@ auto SubchainStateData::translate(
     }
 }
 
-SubchainStateData::~SubchainStateData() { job_counter_.wait_for_finished(); }
+SubchainStateData::~SubchainStateData() { finish_background_tasks(); }
 }  // namespace opentxs::blockchain::node::wallet

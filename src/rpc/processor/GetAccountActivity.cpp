@@ -88,14 +88,18 @@ auto RPC::get_account_activity(const request::Base& base) const
                     return {};
                 }();
                 const auto state = [&] {
+                    auto out{proto::PAYMENTWORKFLOWSTATE_ERROR};
                     const auto id = api.Factory().Identifier(row.Workflow());
+
+                    if (id->empty()) { return out; }
+
                     auto proto = proto::PaymentWorkflow{};
 
                     if (api.Workflow().LoadWorkflow(owner, id, proto)) {
                         return proto.state();
                     }
 
-                    return proto::PAYMENTWORKFLOWSTATE_ERROR;
+                    return out;
                 }();
                 events.emplace_back(
                     id,

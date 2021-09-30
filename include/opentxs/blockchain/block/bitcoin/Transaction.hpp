@@ -98,6 +98,7 @@ public:
     virtual auto ID() const noexcept -> const Txid& = 0;
     virtual auto IDNormalized() const noexcept -> const Identifier& = 0;
     virtual auto Inputs() const noexcept -> const bitcoin::Inputs& = 0;
+    virtual auto IsGeneration() const noexcept -> bool = 0;
     virtual auto Keys() const noexcept -> std::vector<KeyID> = 0;
     virtual auto Locktime() const noexcept -> std::uint32_t = 0;
     virtual auto Memo(const api::client::Blockchain& blockchain) const noexcept

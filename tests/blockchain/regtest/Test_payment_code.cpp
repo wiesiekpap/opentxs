@@ -120,7 +120,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_initial)
         {},
         {test_chain_},
         0,
-        {0, 0},
+        {height_, height_},
         {},
         {},
         {},
@@ -184,7 +184,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_initial)
         {},
         {test_chain_},
         0,
-        {0, 0},
+        {height_, height_},
         {},
         {},
         {},
@@ -220,16 +220,42 @@ TEST_F(Regtest_payment_code, bob_account_list_initial)
 
 TEST_F(Regtest_payment_code, mine_initial_balance)
 {
-    auto future = listener_alice_.get_future(SendHD(), Subchain::External, 1);
-    constexpr auto start{0};
+    constexpr auto orphan{0};
     constexpr auto count{1};
-    account_activity_alice_.expected_ += (3 * count);
-    account_list_alice_.expected_ += (1 * count);
+    const auto start = height_ - orphan;
+    const auto end{start + count};
+    auto future = listener_alice_.get_future(SendHD(), Subchain::External, end);
+    account_activity_alice_.expected_ += (count + 1);
+    account_activity_bob_.expected_ += count;
+    account_list_alice_.expected_ += 0;
+    account_list_bob_.expected_ += 0;
 
+    EXPECT_EQ(start, 0);
+    EXPECT_EQ(end, 1);
     EXPECT_TRUE(Mine(start, count, mine_to_alice_));
-    EXPECT_TRUE(txos_alice_.Mature(start + count));
-    EXPECT_TRUE(txos_bob_.Mature(start + count));
     EXPECT_TRUE(listener_alice_.wait(future));
+    EXPECT_TRUE(txos_alice_.Mature(end));
+    EXPECT_TRUE(txos_bob_.Mature(end));
+}
+
+TEST_F(Regtest_payment_code, mature_initial_balance)
+{
+    constexpr auto orphan{0};
+    const auto count = static_cast<int>(MaturationInterval());
+    const auto start = height_ - orphan;
+    const auto end{start + count};
+    auto future = listener_alice_.get_future(SendHD(), Subchain::External, end);
+    account_activity_alice_.expected_ += (count + 1);
+    account_activity_bob_.expected_ += count;
+    account_list_alice_.expected_ += 1;
+    account_list_bob_.expected_ += 0;
+
+    EXPECT_EQ(start, 1);
+    EXPECT_EQ(end, 11);
+    EXPECT_TRUE(Mine(start, count));
+    EXPECT_TRUE(listener_alice_.wait(future));
+    EXPECT_TRUE(txos_alice_.Mature(end));
+    EXPECT_TRUE(txos_bob_.Mature(end));
 }
 
 TEST_F(Regtest_payment_code, first_block)
@@ -257,6 +283,7 @@ TEST_F(Regtest_payment_code, first_block)
     EXPECT_EQ(tx.ID(), transactions_.at(0));
     EXPECT_EQ(tx.BlockPosition(), 0);
     ASSERT_EQ(tx.Outputs().size(), 1);
+    EXPECT_TRUE(tx.IsGeneration());
 }
 
 TEST_F(Regtest_payment_code, alice_account_activity_initial_receive)
@@ -278,7 +305,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_initial_receive)
         {},
         {test_chain_},
         100,
-        {1, 1},
+        {height_, height_},
         {},
         {},
         {
@@ -481,7 +508,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_first_spend_unconfirmed)
         {},
         {test_chain_},
         100,
-        {1, 1},
+        {height_, height_},
         {},
         {},
         {
@@ -615,7 +642,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_first_unconfirmed_incoming)
         {},
         {test_chain_},
         100,
-        {1, 1},
+        {height_, height_},
         {},
         {},
         {
@@ -717,12 +744,18 @@ TEST_F(Regtest_payment_code, bob_txodb_first_unconfirmed_incoming)
 
 TEST_F(Regtest_payment_code, confirm_send)
 {
-    auto future1 = listener_alice_.get_future(SendHD(), Subchain::External, 2);
-    auto future2 = listener_alice_.get_future(SendHD(), Subchain::Internal, 2);
-    constexpr auto start{1};
+    constexpr auto orphan{0};
     constexpr auto count{1};
-    account_activity_alice_.expected_ += 3;
-    account_activity_bob_.expected_ += 2;
+    const auto start = height_ - orphan;
+    const auto end{start + count};
+    auto future1 =
+        listener_alice_.get_future(SendHD(), Subchain::External, end);
+    auto future2 =
+        listener_alice_.get_future(SendHD(), Subchain::Internal, end);
+    account_activity_alice_.expected_ += (count + 4);
+    account_activity_bob_.expected_ += (count + 2);
+    account_list_alice_.expected_ += 2;
+    account_list_bob_.expected_ += 0;
     const auto& txid = transactions_.at(1).get();
     const auto extra = [&] {
         auto output = std::vector<Transaction>{};
@@ -734,21 +767,23 @@ TEST_F(Regtest_payment_code, confirm_send)
         return output;
     }();
 
+    EXPECT_EQ(start, 11);
+    EXPECT_EQ(end, 12);
     EXPECT_TRUE(Mine(start, count, default_, extra));
-    EXPECT_TRUE(txos_alice_.Mature(start + count));
-    EXPECT_TRUE(txos_alice_.Confirm(transactions_.at(0)));
-    EXPECT_TRUE(txos_alice_.Confirm(txid));
-    EXPECT_TRUE(txos_bob_.Mature(start + count));
-    EXPECT_TRUE(txos_bob_.Confirm(txid));
     EXPECT_TRUE(listener_alice_.wait(future1));
     EXPECT_TRUE(listener_alice_.wait(future2));
+    EXPECT_TRUE(txos_alice_.Mature(end));
+    EXPECT_TRUE(txos_alice_.Confirm(transactions_.at(0)));
+    EXPECT_TRUE(txos_alice_.Confirm(txid));
+    EXPECT_TRUE(txos_bob_.Mature(end));
+    EXPECT_TRUE(txos_bob_.Confirm(txid));
 }
 
 TEST_F(Regtest_payment_code, second_block)
 {
     const auto& blockchain =
         client_1_.Network().Blockchain().GetChain(test_chain_);
-    const auto blockHash = blockchain.HeaderOracle().BestHash(2);
+    const auto blockHash = blockchain.HeaderOracle().BestHash(height_);
     auto expected = std::vector<ot::Space>{};
 
     ASSERT_FALSE(blockHash->empty());
@@ -783,7 +818,7 @@ TEST_F(Regtest_payment_code, second_block)
 
         EXPECT_EQ(tx.ID(), transactions_.at(1));
         EXPECT_EQ(tx.BlockPosition(), 1);
-
+        EXPECT_FALSE(tx.IsGeneration());
         ASSERT_EQ(tx.Inputs().size(), 1);
 
         {
@@ -863,7 +898,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_first_spend_confirmed)
         {},
         {test_chain_},
         100,
-        {2, 2},
+        {height_, height_},
         {},
         {},
         {
@@ -991,7 +1026,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_first_spend_confirmed)
         {},
         {test_chain_},
         100,
-        {2, 2},
+        {height_, height_},
         {},
         {},
         {
@@ -1222,7 +1257,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_second_spend_unconfirmed)
         {},
         {test_chain_},
         100,
-        {2, 2},
+        {height_, height_},
         {},
         {},
         {
@@ -1477,7 +1512,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_second_unconfirmed_incoming)
         {},
         {test_chain_},
         100,
-        {2, 2},
+        {height_, height_},
         {},
         {},
         {
@@ -1691,7 +1726,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_after_otx)
         {},
         {test_chain_},
         100,
-        {2, 2},
+        {height_, height_},
         {},
         {},
         {
@@ -1839,7 +1874,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_after_otx)
         {},
         {test_chain_},
         100,
-        {2, 2},
+        {height_, height_},
         {},
         {},
         {

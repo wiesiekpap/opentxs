@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/node/TxoState.hpp"
+
 #pragma once
 
 #include <algorithm>
@@ -37,6 +39,7 @@
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
+#include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -114,7 +117,6 @@ public:
     using MatchingIndices = Parent::MatchingIndices;
     using UTXO = Parent::UTXO;
     using Spend = Parent::Spend;
-    using State = node::Wallet::TxoState;
 
     auto AddConfirmedTransaction(
         const NodeID& balanceNode,
@@ -135,6 +137,7 @@ public:
     auto AddProposal(
         const Identifier& id,
         const proto::BlockchainTransactionProposal& tx) const noexcept -> bool;
+    auto AdvanceTo(const block::Position& pos) const noexcept -> bool;
     auto CancelProposal(const Identifier& id) const noexcept -> bool;
     auto CompletedProposals() const noexcept -> std::set<OTIdentifier>;
     auto ForgetProposals(const std::set<OTIdentifier>& ids) const noexcept
@@ -147,19 +150,20 @@ public:
         const NodeID& balanceNode,
         const Subchain subchain,
         const FilterType type) const noexcept -> pSubchainIndex;
-    auto GetOutputs(State type) const noexcept -> std::vector<UTXO>;
-    auto GetOutputs(const identifier::Nym& owner, State type) const noexcept
-        -> std::vector<UTXO>;
+    auto GetOutputs(node::TxoState type) const noexcept -> std::vector<UTXO>;
+    auto GetOutputs(const identifier::Nym& owner, node::TxoState type)
+        const noexcept -> std::vector<UTXO>;
     auto GetOutputs(
         const identifier::Nym& owner,
         const Identifier& node,
-        State type) const noexcept -> std::vector<UTXO>;
+        node::TxoState type) const noexcept -> std::vector<UTXO>;
     auto GetPatterns(const SubchainIndex& index) const noexcept -> Patterns;
     auto GetUnspentOutputs() const noexcept -> std::vector<UTXO>;
     auto GetUnspentOutputs(const NodeID& balanceNode, const Subchain subchain)
         const noexcept -> std::vector<UTXO>;
     auto GetUntestedPatterns(const SubchainIndex& index, const ReadView blockID)
         const noexcept -> Patterns;
+    auto GetWalletHeight() const noexcept -> block::Height;
     auto LoadProposal(const Identifier& id) const noexcept
         -> std::optional<proto::BlockchainTransactionProposal>;
     auto LoadProposals() const noexcept
@@ -175,6 +179,7 @@ public:
         const identifier::Nym& spender,
         const Identifier& proposal,
         const Spend policy) const noexcept -> std::optional<UTXO>;
+    auto RollbackTo(const block::Position& pos) const noexcept -> bool;
     auto SetDefaultFilterType(const FilterType type) const noexcept -> bool;
     auto SubchainAddElements(
         const SubchainIndex& index,

@@ -73,6 +73,14 @@ struct Accounts::Imp {
 
         return Add(id);
     }
+    auto finish_background_tasks() noexcept -> void
+    {
+        for (auto& [id, account] : payment_codes_) {
+            account.finish_background_tasks();
+        }
+
+        for (auto& [id, account] : map_) { account.finish_background_tasks(); }
+    }
     auto Mempool(
         std::shared_ptr<const block::bitcoin::Transaction>&& tx) noexcept
         -> void
@@ -94,7 +102,7 @@ struct Accounts::Imp {
         for (auto& [nym, account] : map_) { output |= account.reorg(parent); }
 
         for (auto& [code, account] : payment_codes_) {
-            output |= account.reorg_.Queue(parent);
+            output |= account.queue_reorg(parent);
         }
 
         return output;
@@ -240,6 +248,11 @@ auto Accounts::shutdown() noexcept -> void { imp_->shutdown(); }
 auto Accounts::state_machine(bool enabled) noexcept -> bool
 {
     return imp_->state_machine(enabled);
+}
+
+auto Accounts::finish_background_tasks() noexcept -> void
+{
+    return imp_->finish_background_tasks();
 }
 
 Accounts::~Accounts() { imp_->shutdown(); }

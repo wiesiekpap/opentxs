@@ -232,21 +232,24 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     }
 
     const auto position = best(lock);
+    const auto& [height, hash] = position;
+    const auto bytes = hash->Bytes();
 
     if (update.HaveReorg()) {
-        const auto [height, hash] = update.ReorgParent();
-        const auto bytes = hash->Bytes();
-        LogNormal("Blockchain reorg detected. Last common ancestor is ")(
-            hash->asHex())(" at height ")(height)
+        const auto [pHeight, pHash] = update.ReorgParent();
+        const auto pBytes = pHash->Bytes();
+        LogNormal(DisplayString(network_.Chain()))(
+            " reorg detected. Last common ancestor is ")(pHash->asHex())(
+            " at height ")(pHeight)
             .Flush();
         auto work = MakeWork(api_, WorkType::BlockchainReorg);
         work->AddFrame(network_.Chain());
+        work->AddFrame(pBytes.data(), pBytes.size());
+        work->AddFrame(pHeight);
         work->AddFrame(bytes.data(), bytes.size());
         work->AddFrame(height);
         network_.Reorg().Send(work);
     } else {
-        const auto& [height, hash] = position;
-        const auto bytes = hash->Bytes();
         auto work = MakeWork(api_, WorkType::BlockchainNewHeader);
         work->AddFrame(network_.Chain());
         work->AddFrame(bytes.data(), bytes.size());

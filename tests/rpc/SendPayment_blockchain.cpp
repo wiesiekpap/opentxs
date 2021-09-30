@@ -154,11 +154,11 @@ TEST_F(RPC_BC, preconditions)
     ASSERT_TRUE(Connect());
 
     {
-        auto future1 = listener_.get_future(account_, Subchain::External, 1);
-        auto future2 = listener_.get_future(account_, Subchain::Internal, 1);
-        constexpr auto count{1};
+        auto future1 = listener_.get_future(account_, Subchain::External, 11);
+        auto future2 = listener_.get_future(account_, Subchain::Internal, 11);
 
-        EXPECT_TRUE(Mine(0, count, mine_to_alex_));
+        EXPECT_TRUE(Mine(0, 1, mine_to_alex_));
+        EXPECT_TRUE(Mine(1, 10));
         EXPECT_TRUE(listener_.wait(future1));
         EXPECT_TRUE(listener_.wait(future2));
     }

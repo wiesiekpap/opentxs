@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "integration/Helpers.hpp"
+#include "internal/blockchain/Params.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -35,6 +36,7 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Options.hpp"
+#include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/Manager.hpp"
@@ -57,6 +59,7 @@
 #include "opentxs/blockchain/crypto/Wallet.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
+#include "opentxs/blockchain/node/TxoState.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
@@ -67,6 +70,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
+#include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/blockchain/sync/Base.hpp"
 #include "opentxs/network/blockchain/sync/Block.hpp"
 #include "opentxs/network/blockchain/sync/Data.hpp"
@@ -108,16 +112,38 @@ struct BlockListener::Imp {
         , cb_(zmq::ListenCallback::Factory([&](const zmq::Message& msg) {
             const auto body = msg.Body();
 
-            OT_ASSERT(body.size() == 4);
+            OT_ASSERT(0 < body.size());
 
-            auto lock = ot::Lock{lock_};
-            auto position = Position{body.at(3).as<Height>(), [&] {
-                                         auto output = api_.Factory().Data();
-                                         output->Assign(body.at(2).Bytes());
+            auto position = [&]() -> Position {
+                switch (body.at(0).as<ot::WorkType>()) {
+                    case ot::WorkType::BlockchainNewHeader: {
+                        OT_ASSERT(3 < body.size());
 
-                                         return output;
-                                     }()};
+                        return {body.at(3).as<Height>(), [&] {
+                                    auto output = api_.Factory().Data();
+                                    output->Assign(body.at(2).Bytes());
+
+                                    return output;
+                                }()};
+                    }
+                    case ot::WorkType::BlockchainReorg: {
+                        OT_ASSERT(5 < body.size());
+
+                        return {body.at(5).as<Height>(), [&] {
+                                    auto output = api_.Factory().Data();
+                                    output->Assign(body.at(4).Bytes());
+
+                                    return output;
+                                }()};
+                    }
+                    default: {
+
+                        OT_FAIL;
+                    }
+                }
+            }();
             const auto& [height, hash] = position;
+            auto lock = ot::Lock{lock_};
 
             if (height == target_) {
                 try {
@@ -373,7 +399,7 @@ auto Regtest_fixture_base::compare_outpoints(
 }
 
 auto Regtest_fixture_base::compare_outpoints(
-    const ot::blockchain::node::Wallet::TxoState type,
+    const ot::blockchain::node::TxoState type,
     const TXOState::Data& expected,
     const std::vector<UTXO>& got) const noexcept -> bool
 {
@@ -574,6 +600,16 @@ auto Regtest_fixture_base::init_wallet(
     return *p;
 }
 
+auto Regtest_fixture_base::MaturationInterval() noexcept
+    -> ot::blockchain::block::Height
+{
+    static const auto interval = ot::blockchain::params::Data::Chains()
+                                     .at(test_chain_)
+                                     .maturation_interval_;
+
+    return interval;
+}
+
 auto Regtest_fixture_base::Mine(
     const Height ancestor,
     const std::size_t count) noexcept -> bool
@@ -664,6 +700,8 @@ auto Regtest_fixture_base::Mine(
 
         output &= (height == targetHeight);
     }
+
+    if (output) { height_ = targetHeight; }
 
     return output;
 }
@@ -1714,7 +1752,18 @@ struct TXOs::Imp {
         const ot::blockchain::crypto::Subaccount& owner,
         const ot::blockchain::block::Height position) noexcept -> bool
     {
-        return AddConfirmed(tx, index, owner);  // TODO
+        try {
+            const auto& output = tx.Outputs().at(index);
+            const auto [it, added] = immature_[position].emplace(
+                std::piecewise_construct,
+                std::forward_as_tuple(owner.ID()),
+                std::forward_as_tuple(tx.ID(), index, output.Value()));
+
+            return added;
+        } catch (...) {
+
+            return false;
+        }
     }
     auto AddUnconfirmed(
         const ot::blockchain::block::bitcoin::Transaction& tx,
@@ -1731,11 +1780,36 @@ struct TXOs::Imp {
 
         return 0 < confirmed;
     }
-    auto Mature(const ot::blockchain::block::Height position) noexcept -> bool
+    auto Mature(const ot::blockchain::block::Height pos) noexcept -> bool
+    {
+        auto output{true};
+
+        for (auto i{immature_.begin()}; i != immature_.end();) {
+            auto& [height, outputs] = *i;
+            const auto mature =
+                (pos - height) >= Regtest_fixture_base::MaturationInterval();
+
+            if (mature) {
+                for (auto& [subaccount, txo] : outputs) {
+                    const auto [it, added] =
+                        confirmed_incoming_[subaccount].emplace(txo);
+                    output &= added;
+                }
+
+                i = immature_.erase(i);
+            } else {
+                break;
+            }
+        }
+
+        return output;
+    }
+    auto Orphan(const ot::blockchain::block::Txid& txid) noexcept -> bool
     {
         return true;  // TODO
     }
-    auto Orphan(const ot::blockchain::block::Txid& txid) noexcept -> bool
+    auto OrphanGeneration(const ot::blockchain::block::Txid& txid) noexcept
+        -> bool
     {
         return true;  // TODO
     }
@@ -1752,7 +1826,7 @@ struct TXOs::Imp {
 
     auto Extract(TXOState& output) const noexcept -> void
     {
-        using State = ot::blockchain::node::Wallet::TxoState;
+        using State = ot::blockchain::node::TxoState;
         static constexpr auto all{State::All};
         auto& nym = output.nyms_[user_.nym_id_];
         auto& [wConfirmed, wUnconfirmed] = output.wallet_.balance_;
@@ -1847,6 +1921,28 @@ struct TXOs::Imp {
                 aMap[all].emplace(outpoint);
             }
         }
+
+        for (const auto& [height, data] : immature_) {
+            for (const auto& [account, txo] : data) {
+                const auto& outpoint = txo.outpoint_;
+                auto& aData = nym.accounts_[account];
+                auto& [aConfirmed, aUnconfirmed] = aData.balance_;
+                auto& aMap = aData.data_;
+                wConfirmed += 0;
+                nConfirmed += 0;
+                aConfirmed += 0;
+                wUnconfirmed += 0;
+                nUnconfirmed += 0;
+                aUnconfirmed += 0;
+                static constexpr auto state{State::Immature};
+                wMap[state].emplace(outpoint);
+                nMap[state].emplace(outpoint);
+                aMap[state].emplace(outpoint);
+                wMap[all].emplace(outpoint);
+                nMap[all].emplace(outpoint);
+                aMap[all].emplace(outpoint);
+            }
+        }
     }
 
     Imp(const User& owner) noexcept
@@ -1855,6 +1951,7 @@ struct TXOs::Imp {
         , confirmed_incoming_()
         , unconfirmed_spent_()
         , confirmed_spent_()
+        , immature_()
     {
     }
 
@@ -1880,10 +1977,15 @@ private:
             , value_(value)
         {
         }
+        TXO(const TXO& rhs)
+        noexcept
+            : outpoint_(rhs.outpoint_)
+            , value_(rhs.value_)
+        {
+        }
 
     private:
         TXO() = delete;
-        TXO(const TXO&) = delete;
         TXO(TXO&&) = delete;
         auto operator=(const TXO&) -> TXO& = delete;
         auto operator=(TXO&&) -> TXO& = delete;
@@ -1891,12 +1993,16 @@ private:
 
     using TXOSet = std::set<TXO>;
     using Map = std::map<ot::OTIdentifier, TXOSet>;
+    using Immature = std::map<
+        ot::blockchain::block::Height,
+        std::set<std::pair<ot::OTIdentifier, TXO>>>;
 
     const User& user_;
     Map unconfirmed_incoming_;
     Map confirmed_incoming_;
     Map unconfirmed_spent_;
     Map confirmed_spent_;
+    Immature immature_;
 
     auto add_to_map(
         const ot::blockchain::block::bitcoin::Transaction& tx,
@@ -2044,6 +2150,12 @@ auto TXOs::Orphan(const ot::blockchain::block::Txid& transaction) noexcept
     return imp_->Orphan(transaction);
 }
 
+auto TXOs::OrphanGeneration(
+    const ot::blockchain::block::Txid& transaction) noexcept -> bool
+{
+    return imp_->OrphanGeneration(transaction);
+}
+
 auto TXOs::SpendUnconfirmed(const ot::blockchain::block::Outpoint& txo) noexcept
     -> bool
 {
@@ -2120,7 +2232,8 @@ WalletListener::~WalletListener() = default;
 bool Regtest_fixture_base::init_{false};
 Regtest_fixture_base::Expected Regtest_fixture_base::expected_{};
 Regtest_fixture_base::Transactions Regtest_fixture_base::transactions_{};
-using TxoState = ot::blockchain::node::Wallet::TxoState;
+ot::blockchain::block::Height Regtest_fixture_base::height_{0};
+using TxoState = ot::blockchain::node::TxoState;
 const std::set<TxoState> Regtest_fixture_base::states_{
     TxoState::UnconfirmedNew,
     TxoState::UnconfirmedSpend,

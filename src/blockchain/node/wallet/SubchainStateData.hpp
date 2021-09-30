@@ -124,17 +124,6 @@ public:
         std::queue<std::shared_ptr<const block::bitcoin::Transaction>> tx_{};
     };
 
-    struct ReorgQueue {
-        auto Empty() const noexcept -> bool;
-
-        auto Queue(const block::Position& parent) noexcept -> bool;
-        auto Next() noexcept -> block::Position;
-
-    private:
-        mutable std::mutex lock_{};
-        std::queue<block::Position> parents_{};
-    };
-
     const OTNymID owner_;
     const crypto::SubaccountType account_type_;
     const OTIdentifier id_;
@@ -145,7 +134,6 @@ public:
     const SimpleCallback& task_finished_;
     std::atomic<bool> running_;
     MempoolQueue mempool_;
-    ReorgQueue reorg_;
     std::optional<Bip32Index> last_indexed_;
     std::optional<block::Position> last_scanned_;
     std::optional<block::Position> progress_;
@@ -153,8 +141,10 @@ public:
     OutstandingMap outstanding_blocks_;
     ProcessQueue process_block_queue_;
 
+    auto finish_background_tasks() noexcept -> void;
     virtual auto index() noexcept -> void = 0;
     virtual auto process() noexcept -> void;
+    auto queue_reorg(const block::Position& ancestor) noexcept -> bool;
     virtual auto reorg() noexcept -> void;
     virtual auto scan() noexcept -> void;
 
@@ -175,6 +165,7 @@ protected:
     const WalletDatabase& db_;
     const std::string name_;
     const block::Position null_position_;
+    block::Position reorg_;
 
     auto describe() const noexcept -> std::string;
     auto get_account_targets() const noexcept
@@ -236,7 +227,6 @@ private:
     virtual auto check_index() noexcept -> bool = 0;
     auto check_mempool() noexcept -> void;
     auto check_process() noexcept -> bool;
-    auto check_reorg() noexcept -> bool;
     auto check_scan() noexcept -> bool;
     virtual auto handle_confirmed_matches(
         const block::bitcoin::Block& block,

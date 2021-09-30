@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/node/TxoState.hpp"
+
 #ifndef OPENTXS_BLOCKCHAIN_CLIENT_WALLET_HPP
 #define OPENTXS_BLOCKCHAIN_CLIENT_WALLET_HPP
 
@@ -12,7 +14,9 @@
 #include <set>
 #include <tuple>
 
+#include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/node/Types.hpp"
 
 namespace opentxs
 {
@@ -46,16 +50,6 @@ namespace node
 class OPENTXS_EXPORT Wallet
 {
 public:
-    enum class TxoState : std::uint8_t {
-        UnconfirmedNew = 0,
-        UnconfirmedSpend = 1,
-        ConfirmedNew = 2,
-        ConfirmedSpend = 3,
-        OrphanedNew = 4,
-        OrphanedSpend = 5,
-        All = 255,
-    };
-
     using UTXO =
         std::pair<block::Outpoint, std::unique_ptr<block::bitcoin::Output>>;
 
@@ -64,16 +58,22 @@ public:
         -> Balance = 0;
     virtual auto GetBalance(
         const identifier::Nym& owner,
-        const Identifier& node) const noexcept -> Balance = 0;
-    virtual auto GetOutputs(TxoState type = TxoState::All) const noexcept
+        const Identifier& subaccount) const noexcept -> Balance = 0;
+    virtual auto GetOutputs() const noexcept -> std::vector<UTXO> = 0;
+    virtual auto GetOutputs(TxoState type) const noexcept
         -> std::vector<UTXO> = 0;
+    virtual auto GetOutputs(const identifier::Nym& owner) const noexcept
+        -> std::vector<UTXO> = 0;
+    virtual auto GetOutputs(const identifier::Nym& owner, TxoState type)
+        const noexcept -> std::vector<UTXO> = 0;
     virtual auto GetOutputs(
         const identifier::Nym& owner,
-        TxoState type = TxoState::All) const noexcept -> std::vector<UTXO> = 0;
+        const Identifier& subaccount) const noexcept -> std::vector<UTXO> = 0;
     virtual auto GetOutputs(
         const identifier::Nym& owner,
-        const Identifier& node,
-        TxoState type = TxoState::All) const noexcept -> std::vector<UTXO> = 0;
+        const Identifier& subaccount,
+        TxoState type) const noexcept -> std::vector<UTXO> = 0;
+    virtual auto Height() const noexcept -> block::Height = 0;
 
     virtual ~Wallet() = default;
 

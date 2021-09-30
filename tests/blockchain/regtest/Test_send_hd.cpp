@@ -82,7 +82,7 @@ TEST_F(Regtest_fixture_hd, account_activity_initial)
         {},
         {test_chain_},
         0,
-        {0, 0},
+        {height_, height_},
         {
             {"mipcBbFg9gMiCh81Kj8tqqdgoZub1ZJRfn", true},
             {"2MzQwSSnBHWHqSAqtTVQ6v47XtaisrJa1Vc", true},
@@ -126,17 +126,25 @@ TEST_F(Regtest_fixture_hd, account_list_initial)
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
 }
 
-TEST_F(Regtest_fixture_hd, mine)
-{
-    auto future1 = listener_.get_future(SendHD(), Subchain::External, 1);
-    auto future2 = listener_.get_future(SendHD(), Subchain::Internal, 1);
-    constexpr auto count{1};
-    account_list_.expected_ += count;
-    account_activity_.expected_ += (2 * count) + 1;
+TEST_F(Regtest_fixture_hd, txodb_initial) { EXPECT_TRUE(CheckTXODB()); }
 
-    EXPECT_TRUE(Mine(0, count, hd_generator_));
+TEST_F(Regtest_fixture_hd, generate)
+{
+    constexpr auto orphan{0};
+    constexpr auto count{1};
+    const auto start = height_ - orphan;
+    const auto end{start + count};
+    auto future1 = listener_.get_future(SendHD(), Subchain::External, end);
+    auto future2 = listener_.get_future(SendHD(), Subchain::Internal, end);
+    account_list_.expected_ += 0;
+    account_activity_.expected_ += (count + 1);
+
+    EXPECT_EQ(start, 0);
+    EXPECT_EQ(end, 1);
+    EXPECT_TRUE(Mine(start, count, hd_generator_));
     EXPECT_TRUE(listener_.wait(future1));
     EXPECT_TRUE(listener_.wait(future2));
+    EXPECT_TRUE(txos_.Mature(end));
 }
 
 TEST_F(Regtest_fixture_hd, first_block)
@@ -164,9 +172,10 @@ TEST_F(Regtest_fixture_hd, first_block)
     EXPECT_EQ(tx.ID(), transactions_.at(0));
     EXPECT_EQ(tx.BlockPosition(), 0);
     EXPECT_EQ(tx.Outputs().size(), 100);
+    EXPECT_TRUE(tx.IsGeneration());
 }
 
-TEST_F(Regtest_fixture_hd, account_activity_initial_receive)
+TEST_F(Regtest_fixture_hd, account_activity_immature)
 {
     const auto& id = SendHD().Parent().AccountID();
     const auto expected = AccountActivityData{
@@ -178,14 +187,14 @@ TEST_F(Regtest_fixture_hd, account_activity_initial_receive)
         expected_display_unit_,
         expected_notary_.str(),
         expected_notary_name_,
-        1,
-        10000004950,
-        u8"100.000\u202F049\u202F5 units",
+        0,
+        0,
+        u8"0 units",
         "",
         {},
         {test_chain_},
         100,
-        {1, 1},
+        {height_, height_},
         {},
         {},
         {
@@ -210,7 +219,184 @@ TEST_F(Regtest_fixture_hd, account_activity_initial_receive)
     EXPECT_TRUE(check_account_activity_rpc(alice_, id, expected));
 }
 
-TEST_F(Regtest_fixture_hd, account_list_initial_receive)
+TEST_F(Regtest_fixture_hd, account_list_immature)
+{
+    const auto expected = AccountListData{{
+        {SendHD().Parent().AccountID().str(),
+         expected_unit_.str(),
+         expected_display_unit_,
+         expected_account_name_,
+         expected_notary_.str(),
+         expected_notary_name_,
+         expected_account_type_,
+         expected_unit_type_,
+         0,
+         0,
+         u8"0 units"},
+    }};
+
+    ASSERT_TRUE(wait_for_counter(account_list_));
+    EXPECT_TRUE(check_account_list(alice_, expected));
+    EXPECT_TRUE(check_account_list_qt(alice_, expected));
+    EXPECT_TRUE(check_account_list_rpc(alice_, expected));
+}
+
+TEST_F(Regtest_fixture_hd, txodb_immature) { EXPECT_TRUE(CheckTXODB()); }
+
+TEST_F(Regtest_fixture_hd, advance_chain_one_block_before_maturation)
+{
+    constexpr auto orphan{0};
+    const auto count = static_cast<int>(MaturationInterval() - 1);
+    const auto start = height_ - orphan;
+    const auto end{start + count};
+    auto future1 = listener_.get_future(SendHD(), Subchain::External, end);
+    auto future2 = listener_.get_future(SendHD(), Subchain::Internal, end);
+    account_list_.expected_ += 0;
+    account_activity_.expected_ += count;
+
+    EXPECT_EQ(start, 1);
+    EXPECT_EQ(end, 10);
+    EXPECT_TRUE(Mine(start, count));
+    EXPECT_TRUE(listener_.wait(future1));
+    EXPECT_TRUE(listener_.wait(future2));
+    EXPECT_TRUE(txos_.Mature(end));
+}
+
+TEST_F(Regtest_fixture_hd, account_activity_one_block_before_maturation)
+{
+    const auto& id = SendHD().Parent().AccountID();
+    const auto expected = AccountActivityData{
+        expected_account_type_,
+        id.str(),
+        expected_account_name_,
+        expected_unit_type_,
+        expected_unit_.str(),
+        expected_display_unit_,
+        expected_notary_.str(),
+        expected_notary_name_,
+        0,
+        0,
+        u8"0 units",
+        "",
+        {},
+        {test_chain_},
+        100,
+        {height_, height_},
+        {},
+        {},
+        {
+            {
+                ot::StorageBox::BLOCKCHAIN,
+                1,
+                10000004950,
+                u8"100.000\u202F049\u202F5 units",
+                {},
+                "",
+                "",
+                "Incoming Unit Test Simulation transaction",
+                ot::blockchain::HashToNumber(transactions_.at(0)),
+                std::nullopt,
+            },
+        },
+    };
+
+    ASSERT_TRUE(wait_for_counter(account_activity_));
+    EXPECT_TRUE(check_account_activity(alice_, id, expected));
+    EXPECT_TRUE(check_account_activity_qt(alice_, id, expected));
+    EXPECT_TRUE(check_account_activity_rpc(alice_, id, expected));
+}
+
+TEST_F(Regtest_fixture_hd, account_list_one_block_before_maturation)
+{
+    const auto expected = AccountListData{{
+        {SendHD().Parent().AccountID().str(),
+         expected_unit_.str(),
+         expected_display_unit_,
+         expected_account_name_,
+         expected_notary_.str(),
+         expected_notary_name_,
+         expected_account_type_,
+         expected_unit_type_,
+         0,
+         0,
+         u8"0 units"},
+    }};
+
+    ASSERT_TRUE(wait_for_counter(account_list_));
+    EXPECT_TRUE(check_account_list(alice_, expected));
+    EXPECT_TRUE(check_account_list_qt(alice_, expected));
+    EXPECT_TRUE(check_account_list_rpc(alice_, expected));
+}
+
+TEST_F(Regtest_fixture_hd, txodb_one_block_before_maturation)
+{
+    EXPECT_TRUE(CheckTXODB());
+}
+
+TEST_F(Regtest_fixture_hd, mature)
+{
+    constexpr auto orphan{0};
+    constexpr auto count{1};
+    const auto start = height_ - orphan;
+    const auto end{start + count};
+    auto future1 = listener_.get_future(SendHD(), Subchain::External, end);
+    auto future2 = listener_.get_future(SendHD(), Subchain::Internal, end);
+    account_list_.expected_ += 1;
+    account_activity_.expected_ += (count + 1);
+
+    EXPECT_EQ(start, 10);
+    EXPECT_EQ(end, 11);
+    EXPECT_TRUE(Mine(start, count));
+    EXPECT_TRUE(listener_.wait(future1));
+    EXPECT_TRUE(listener_.wait(future2));
+    EXPECT_TRUE(txos_.Mature(end));
+}
+
+TEST_F(Regtest_fixture_hd, account_activity_mature)
+{
+    const auto& id = SendHD().Parent().AccountID();
+    const auto expected = AccountActivityData{
+        expected_account_type_,
+        id.str(),
+        expected_account_name_,
+        expected_unit_type_,
+        expected_unit_.str(),
+        expected_display_unit_,
+        expected_notary_.str(),
+        expected_notary_name_,
+        1,
+        10000004950,
+        u8"100.000\u202F049\u202F5 units",
+        "",
+        {},
+        {test_chain_},
+        100,
+        {height_, height_},
+        {},
+        {},
+        {
+            {
+                ot::StorageBox::BLOCKCHAIN,
+                1,
+                10000004950,
+                u8"100.000\u202F049\u202F5 units",
+                {},
+                "",
+                "",
+                "Incoming Unit Test Simulation transaction",
+                ot::blockchain::HashToNumber(transactions_.at(0)),
+                std::nullopt,
+            },
+        },
+    };
+
+    ASSERT_TRUE(wait_for_counter(account_activity_));
+    EXPECT_TRUE(check_account_activity(alice_, id, expected));
+    EXPECT_TRUE(check_account_activity_qt(alice_, id, expected));
+    EXPECT_TRUE(check_account_activity_rpc(alice_, id, expected));
+}
+
+TEST_F(Regtest_fixture_hd, account_list_mature)
 {
     const auto expected = AccountListData{{
         {SendHD().Parent().AccountID().str(),
@@ -232,7 +418,7 @@ TEST_F(Regtest_fixture_hd, account_list_initial_receive)
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
 }
 
-TEST_F(Regtest_fixture_hd, txodb_inital_receive) { EXPECT_TRUE(CheckTXODB()); }
+TEST_F(Regtest_fixture_hd, txodb_inital_mature) { EXPECT_TRUE(CheckTXODB()); }
 
 TEST_F(Regtest_fixture_hd, spend)
 {
@@ -274,7 +460,7 @@ TEST_F(Regtest_fixture_hd, spend)
     EXPECT_TRUE(txos_.AddUnconfirmed(tx, 0, SendHD()));
 }
 
-TEST_F(Regtest_fixture_hd, account_activity_after_unconfirmed_spend)
+TEST_F(Regtest_fixture_hd, account_activity_unconfirmed_spend)
 {
     const auto& id = SendHD().Parent().AccountID();
     const auto expected = AccountActivityData{
@@ -293,7 +479,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_unconfirmed_spend)
         {},
         {test_chain_},
         100,
-        {1, 1},
+        {height_, height_},
         {},
         {},
         {
@@ -330,7 +516,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_unconfirmed_spend)
     EXPECT_TRUE(check_account_activity_rpc(alice_, id, expected));
 }
 
-TEST_F(Regtest_fixture_hd, account_list_after_unconfirmed_spend)
+TEST_F(Regtest_fixture_hd, account_list_unconfirmed_spend)
 {
     const auto expected = AccountListData{{
         {SendHD().Parent().AccountID().str(),
@@ -352,19 +538,21 @@ TEST_F(Regtest_fixture_hd, account_list_after_unconfirmed_spend)
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
 }
 
-TEST_F(Regtest_fixture_hd, wallet_after_unconfirmed_spend)
+TEST_F(Regtest_fixture_hd, wallet_unconfirmed_spend)
 {
     EXPECT_TRUE(CheckTXODB());
 }
 
 TEST_F(Regtest_fixture_hd, confirm)
 {
-    auto future1 = listener_.get_future(SendHD(), Subchain::External, 2);
-    auto future2 = listener_.get_future(SendHD(), Subchain::Internal, 2);
-    constexpr auto start{1};
+    constexpr auto orphan{0};
     constexpr auto count{1};
-    account_list_.expected_ += 0;
-    account_activity_.expected_ += 1;
+    const auto start = height_ - orphan;
+    const auto end{start + count};
+    auto future1 = listener_.get_future(SendHD(), Subchain::External, end);
+    auto future2 = listener_.get_future(SendHD(), Subchain::Internal, end);
+    account_list_.expected_ += 2;
+    account_activity_.expected_ += (count + 2);
     const auto& txid = transactions_.at(1).get();
     const auto extra = [&] {
         auto output = std::vector<Transaction>{};
@@ -376,15 +564,29 @@ TEST_F(Regtest_fixture_hd, confirm)
         return output;
     }();
 
+    EXPECT_EQ(start, 11);
+    EXPECT_EQ(end, 12);
     EXPECT_TRUE(Mine(start, count, default_, extra));
     EXPECT_TRUE(listener_.wait(future1));
     EXPECT_TRUE(listener_.wait(future2));
-    EXPECT_TRUE(txos_.Mature(start + count));
+    EXPECT_TRUE(txos_.Mature(end));
     EXPECT_TRUE(txos_.Confirm(transactions_.at(0)));
     EXPECT_TRUE(txos_.Confirm(txid));
 }
 
-TEST_F(Regtest_fixture_hd, account_activity_after_confirmed_spend)
+TEST_F(Regtest_fixture_hd, outgoing_transaction)
+{
+    const auto pTX =
+        client_1_.Blockchain().LoadTransactionBitcoin(transactions_.at(1));
+
+    ASSERT_TRUE(pTX);
+
+    const auto& tx = *pTX;
+
+    EXPECT_FALSE(tx.IsGeneration());
+}
+
+TEST_F(Regtest_fixture_hd, account_activity_confirmed_spend)
 {
     const auto& id = SendHD().Parent().AccountID();
     const auto expected = AccountActivityData{
@@ -403,7 +605,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_confirmed_spend)
         {},
         {test_chain_},
         100,
-        {2, 2},
+        {height_, height_},
         {},
         {},
         {
@@ -440,7 +642,7 @@ TEST_F(Regtest_fixture_hd, account_activity_after_confirmed_spend)
     EXPECT_TRUE(check_account_activity_rpc(alice_, id, expected));
 }
 
-TEST_F(Regtest_fixture_hd, account_list_after_confirmed_spend)
+TEST_F(Regtest_fixture_hd, account_list_confirmed_spend)
 {
     const auto expected = AccountListData{{
         {SendHD().Parent().AccountID().str(),
@@ -462,10 +664,34 @@ TEST_F(Regtest_fixture_hd, account_list_after_confirmed_spend)
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
 }
 
-TEST_F(Regtest_fixture_hd, wallet_after_confirmed_spend)
+TEST_F(Regtest_fixture_hd, wallet_confirmed_spend)
 {
     EXPECT_TRUE(CheckTXODB());
 }
+
+TEST_F(Regtest_fixture_hd, reorg_matured_coins)
+{
+    constexpr auto orphan{12};
+    constexpr auto count{13};
+    const auto start = height_ - orphan;
+    const auto end{start + count};
+    auto future1 = listener_.get_future(SendHD(), Subchain::External, end);
+    auto future2 = listener_.get_future(SendHD(), Subchain::Internal, end);
+    account_list_.expected_ += 1;
+    account_activity_.expected_ += 5;
+
+    EXPECT_EQ(start, 0);
+    EXPECT_EQ(end, 13);
+    EXPECT_TRUE(Mine(start, count));
+    EXPECT_TRUE(listener_.wait(future1));
+    EXPECT_TRUE(listener_.wait(future2));
+    EXPECT_TRUE(txos_.OrphanGeneration(transactions_.at(0)));
+    EXPECT_TRUE(txos_.Orphan(transactions_.at(1)));
+    EXPECT_TRUE(txos_.Mature(end));
+}
+
+// TODO balances are not correctly calculated when ancestor transactions are
+// invalidated by conflicts
 
 TEST_F(Regtest_fixture_hd, shutdown) { Shutdown(); }
 }  // namespace ottest

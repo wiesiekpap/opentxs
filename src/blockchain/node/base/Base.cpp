@@ -49,6 +49,7 @@
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
+#include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -101,11 +102,22 @@ struct NullWallet final : public node::internal::Wallet {
     {
         return {};
     }
+    auto GetOutputs() const noexcept -> std::vector<UTXO> final { return {}; }
     auto GetOutputs(TxoState) const noexcept -> std::vector<UTXO> final
     {
         return {};
     }
+    auto GetOutputs(const identifier::Nym&) const noexcept
+        -> std::vector<UTXO> final
+    {
+        return {};
+    }
     auto GetOutputs(const identifier::Nym&, TxoState) const noexcept
+        -> std::vector<UTXO> final
+    {
+        return {};
+    }
+    auto GetOutputs(const identifier::Nym&, const Identifier&) const noexcept
         -> std::vector<UTXO> final
     {
         return {};
@@ -115,6 +127,7 @@ struct NullWallet final : public node::internal::Wallet {
     {
         return {};
     }
+    auto Height() const noexcept -> block::Height final { return {}; }
     auto Init() noexcept -> void final {}
     auto Shutdown() noexcept -> std::shared_future<void> final
     {

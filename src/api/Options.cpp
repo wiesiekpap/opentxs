@@ -107,8 +107,7 @@ struct Options::Imp::Parser {
                 "Blockchain wallet support");
             out.add_options()(
                 default_mint_key_bytes_,
-                po::value<std::size_t>()->default_value(
-                    api::server::Manager::DefaultMintKeyBytes()),
+                po::value<std::size_t>(),
                 "Default key size for blinded mints");
             out.add_options()(
                 home_,

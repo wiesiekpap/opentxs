@@ -122,6 +122,8 @@ protected:
         std::string& alias,
         const bool checking) const -> bool
     {
+        if (id.empty()) { return false; }
+
         Lock lock(write_lock_);
         const auto& it = item_map_.find(id);
         const bool exists = (item_map_.end() != it);
