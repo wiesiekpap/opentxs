@@ -33,6 +33,8 @@
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
+#include "opentxs/blockchain/node/TxoState.hpp"
+#include "opentxs/blockchain/node/TxoTag.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -352,6 +354,40 @@ TEST_F(Regtest_fixture_hd, mature)
     EXPECT_TRUE(txos_.Mature(end));
 }
 
+TEST_F(Regtest_fixture_hd, key_index)
+{
+    static constexpr auto count = 100u;
+    static constexpr auto baseAmount = ot::blockchain::Amount{100000000};
+    const auto& account = SendHD();
+    using Index = ot::Bip32Index;
+
+    for (auto i = Index{0}; i < Index{count}; ++i) {
+        using State = ot::blockchain::node::TxoState;
+        using Tag = ot::blockchain::node::TxoTag;
+        const auto& element = account.BalanceElement(Subchain::External, i);
+        const auto key = element.KeyID();
+        const auto& chain =
+            client_1_.Network().Blockchain().GetChain(test_chain_);
+        const auto& wallet = chain.Wallet();
+        const auto balance = wallet.GetBalance(key);
+        const auto allOutputs = wallet.GetOutputs(key, State::All);
+        const auto outputs = wallet.GetOutputs(key, State::ConfirmedNew);
+        const auto& [confirmed, unconfirmed] = balance;
+
+        EXPECT_EQ(confirmed, baseAmount + i);
+        EXPECT_EQ(unconfirmed, baseAmount + i);
+        EXPECT_EQ(allOutputs.size(), 1);
+        EXPECT_EQ(outputs.size(), 1);
+
+        for (const auto& outpoint : allOutputs) {
+            const auto tags = wallet.GetTags(outpoint.first);
+
+            EXPECT_EQ(tags.size(), 1);
+            EXPECT_EQ(tags.count(Tag::Generation), 1);
+        }
+    }
+}
+
 TEST_F(Regtest_fixture_hd, account_activity_mature)
 {
     const auto& id = SendHD().Parent().AccountID();
@@ -584,6 +620,14 @@ TEST_F(Regtest_fixture_hd, outgoing_transaction)
     const auto& tx = *pTX;
 
     EXPECT_FALSE(tx.IsGeneration());
+
+    const auto& chain = client_1_.Network().Blockchain().GetChain(test_chain_);
+    const auto& wallet = chain.Wallet();
+    const auto tags = wallet.GetTags({transactions_.at(1)->Bytes(), 0});
+    using Tag = ot::blockchain::node::TxoTag;
+
+    EXPECT_EQ(tags.size(), 1);
+    EXPECT_EQ(tags.count(Tag::Normal), 1);
 }
 
 TEST_F(Regtest_fixture_hd, account_activity_confirmed_spend)

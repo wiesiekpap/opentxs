@@ -115,6 +115,11 @@ auto Wallet::GetBalance(const identifier::Nym& owner, const NodeID& node)
     return outputs_.GetBalance(owner, node);
 }
 
+auto Wallet::GetBalance(const crypto::Key& key) const noexcept -> Balance
+{
+    return outputs_.GetBalance(key);
+}
+
 auto Wallet::GetIndex(
     const NodeID& balanceNode,
     const Subchain subchain,
@@ -140,6 +145,18 @@ auto Wallet::GetOutputs(
     node::TxoState type) const noexcept -> std::vector<UTXO>
 {
     return outputs_.GetOutputs(owner, node, type);
+}
+
+auto Wallet::GetOutputs(const crypto::Key& key, node::TxoState type)
+    const noexcept -> std::vector<UTXO>
+{
+    return outputs_.GetOutputs(key, type);
+}
+
+auto Wallet::GetOutputTags(const block::Outpoint& output) const noexcept
+    -> std::set<node::TxoTag>
+{
+    return outputs_.GetOutputTags(output);
 }
 
 auto Wallet::GetPatterns(const SubchainIndex& index) const noexcept -> Patterns

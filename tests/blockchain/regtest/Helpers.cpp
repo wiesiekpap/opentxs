@@ -36,7 +36,6 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Options.hpp"
-#include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/Manager.hpp"
@@ -70,7 +69,6 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
-#include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/blockchain/sync/Base.hpp"
 #include "opentxs/network/blockchain/sync/Block.hpp"
 #include "opentxs/network/blockchain/sync/Data.hpp"
@@ -85,6 +83,7 @@
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/util/WorkType.hpp"
 #include "paymentcode/VectorsV3.hpp"
 
 namespace ottest
@@ -902,7 +901,7 @@ Regtest_fixture_hd::Regtest_fixture_hd()
         using OutputBuilder = ot::api::Factory::OutputBuilder;
         using Index = ot::Bip32Index;
         static constexpr auto count = 100u;
-        static constexpr auto baseAmmount = ot::blockchain::Amount{100000000};
+        static constexpr auto baseAmount = ot::blockchain::Amount{100000000};
         auto meta = std::vector<OutpointMetadata>{};
         meta.reserve(count);
         const auto& account = SendHD();
@@ -931,7 +930,7 @@ Regtest_fixture_hd::Regtest_fixture_hd()
                                 meta.emplace_back(
                                     client_1_.Factory().Data(
                                         element.Key()->PublicKey()),
-                                    baseAmmount + i,
+                                    baseAmount + i,
                                     Pattern::PayToPubkey);
                             output.emplace_back(
                                 value,
@@ -943,7 +942,7 @@ Regtest_fixture_hd::Regtest_fixture_hd()
                             const auto& [bytes, value, pattern] =
                                 meta.emplace_back(
                                     element.PubkeyHash(),
-                                    baseAmmount + i,
+                                    baseAmount + i,
                                     Pattern::PayToPubkeyHash);
                             output.emplace_back(
                                 value,

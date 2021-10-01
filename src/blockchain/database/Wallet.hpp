@@ -4,6 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 // IWYU pragma: no_include "opentxs/blockchain/node/TxoState.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/node/TxoTag.hpp"
 
 #pragma once
 
@@ -36,6 +37,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
@@ -146,6 +148,7 @@ public:
     auto GetBalance(const identifier::Nym& owner) const noexcept -> Balance;
     auto GetBalance(const identifier::Nym& owner, const NodeID& node)
         const noexcept -> Balance;
+    auto GetBalance(const crypto::Key& key) const noexcept -> Balance;
     auto GetIndex(
         const NodeID& balanceNode,
         const Subchain subchain,
@@ -157,6 +160,10 @@ public:
         const identifier::Nym& owner,
         const Identifier& node,
         node::TxoState type) const noexcept -> std::vector<UTXO>;
+    auto GetOutputs(const crypto::Key& key, node::TxoState type) const noexcept
+        -> std::vector<UTXO>;
+    auto GetOutputTags(const block::Outpoint& output) const noexcept
+        -> std::set<node::TxoTag>;
     auto GetPatterns(const SubchainIndex& index) const noexcept -> Patterns;
     auto GetUnspentOutputs() const noexcept -> std::vector<UTXO>;
     auto GetUnspentOutputs(const NodeID& balanceNode, const Subchain subchain)

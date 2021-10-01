@@ -10,7 +10,6 @@
 #include "Basic.hpp"
 #include "Cli.hpp"
 #include "OTTestEnvironment.hpp"
-#include "opentxs/api/Options.hpp"
 
 int main(int argc, char** argv)
 {

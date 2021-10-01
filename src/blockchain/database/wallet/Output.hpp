@@ -13,6 +13,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <set>
 #include <shared_mutex>
 #include <vector>
 
@@ -21,6 +22,9 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Outpoint.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
+#include "opentxs/blockchain/node/TxoTag.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
 #include "opentxs/core/Identifier.hpp"
 
@@ -92,6 +96,7 @@ public:
     auto GetBalance(const identifier::Nym& owner) const noexcept -> Balance;
     auto GetBalance(const identifier::Nym& owner, const NodeID& node)
         const noexcept -> Balance;
+    auto GetBalance(const crypto::Key& key) const noexcept -> Balance;
     auto GetOutputs(node::TxoState type) const noexcept -> std::vector<UTXO>;
     auto GetOutputs(const identifier::Nym& owner, node::TxoState type)
         const noexcept -> std::vector<UTXO>;
@@ -99,6 +104,8 @@ public:
         const identifier::Nym& owner,
         const Identifier& node,
         node::TxoState type) const noexcept -> std::vector<UTXO>;
+    auto GetOutputs(const crypto::Key& key, node::TxoState type) const noexcept
+        -> std::vector<UTXO>;
     auto GetMutex() const noexcept -> std::shared_mutex&;
     auto GetUnspentOutputs() const noexcept -> std::vector<UTXO>;
     auto GetUnspentOutputs(const NodeID& balanceNode) const noexcept
@@ -121,6 +128,8 @@ public:
         const proto::BlockchainTransactionProposal& proposal,
         const block::bitcoin::Transaction& transaction) noexcept -> bool;
     auto AdvanceTo(const block::Position& pos) noexcept -> bool;
+    auto GetOutputTags(const block::Outpoint& output) const noexcept
+        -> std::set<node::TxoTag>;
     auto GetWalletHeight() const noexcept -> block::Height;
     auto ReserveUTXO(
         const identifier::Nym& spender,

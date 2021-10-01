@@ -41,6 +41,7 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/SendResult.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
+#include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
@@ -48,6 +49,7 @@
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
@@ -102,6 +104,10 @@ struct NullWallet final : public node::internal::Wallet {
     {
         return {};
     }
+    auto GetBalance(const crypto::Key&) const noexcept -> Balance final
+    {
+        return {};
+    }
     auto GetOutputs() const noexcept -> std::vector<UTXO> final { return {}; }
     auto GetOutputs(TxoState) const noexcept -> std::vector<UTXO> final
     {
@@ -124,6 +130,16 @@ struct NullWallet final : public node::internal::Wallet {
     }
     auto GetOutputs(const identifier::Nym&, const Identifier&, TxoState)
         const noexcept -> std::vector<UTXO> final
+    {
+        return {};
+    }
+    auto GetOutputs(const crypto::Key&, TxoState) const noexcept
+        -> std::vector<UTXO> final
+    {
+        return {};
+    }
+    auto GetTags(const block::Outpoint& output) const noexcept
+        -> std::set<TxoTag> final
     {
         return {};
     }
