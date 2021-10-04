@@ -40,6 +40,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/crypto/Types.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
 #include "rpc/Helpers.hpp"

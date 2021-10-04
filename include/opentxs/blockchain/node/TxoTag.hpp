@@ -17,6 +17,7 @@ namespace node
 enum class TxoTag : std::uint16_t {
     Normal = 0,
     Generation = 1,
+    Notification = 2,
 };
 }  // namespace node
 }  // namespace blockchain

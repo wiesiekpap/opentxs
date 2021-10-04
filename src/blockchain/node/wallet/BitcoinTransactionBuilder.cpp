@@ -77,6 +77,10 @@ struct BitcoinTransactionBuilder::Imp {
     {
         return input_value_ > (output_value_ + required_fee());
     }
+    auto Notifications() const noexcept -> std::set<std::uint32_t>
+    {
+        return notifications_;
+    }
     auto Spender() const noexcept -> const identifier::Nym&
     {
         return sender_->ID();
@@ -90,6 +94,7 @@ struct BitcoinTransactionBuilder::Imp {
             const auto& element = account.GetNextChangeKey(reason);
             const auto keyID = element.KeyID();
             change_keys_.emplace(keyID);
+            auto isNotification{false};
 
             auto pOutput = [&] {
                 auto elements = [&] {
@@ -147,6 +152,7 @@ struct BitcoinTransactionBuilder::Imp {
                         out.emplace_back(bi::PushData(reader(keys.at(2))));
                         out.emplace_back(bi::Opcode(bb::OP::THREE));
                         out.emplace_back(bi::Opcode(bb::OP::CHECKMULTISIG));
+                        isNotification = true;
                     } else {
                         const auto pkh = element.PubkeyHash();
                         out.emplace_back(bi::Opcode(bb::OP::DUP));
@@ -183,6 +189,10 @@ struct BitcoinTransactionBuilder::Imp {
 
             if (false == bool(pOutput)) {
                 throw std::runtime_error{"Failed to construct output"};
+            }
+
+            if (isNotification) {
+                notification_outputs_.emplace(pOutput.get());
             }
 
             {
@@ -488,13 +498,16 @@ struct BitcoinTransactionBuilder::Imp {
 
             return out;
         }())
+        , notification_outputs_()
+        , notifications_()
     {
         OT_ASSERT(sender_);
     }
 
 private:
     using Input = std::unique_ptr<block::bitcoin::internal::Input>;
-    using Output = std::unique_ptr<block::bitcoin::internal::Output>;
+    using OutputType = block::bitcoin::internal::Output;
+    using Output = std::unique_ptr<OutputType>;
     using Bip143 = std::optional<bitcoin::Bip143Hashes>;
     using Hash = std::array<std::byte, 32>;
 
@@ -521,6 +534,8 @@ private:
     Amount output_value_;
     std::set<KeyID> change_keys_;
     std::set<KeyID> outgoing_keys_;
+    std::set<OutputType*> notification_outputs_;
+    std::set<std::uint32_t> notifications_;
 
     static auto is_segwit(const block::bitcoin::internal::Input& input) noexcept
         -> bool
@@ -1238,7 +1253,15 @@ private:
         std::sort(std::begin(outputs_), std::end(outputs_), outputSort);
         auto index{-1};
 
-        for (const auto& output : outputs_) { output->SetIndex(++index); }
+        for (const auto& output : outputs_) {
+            output->SetIndex(++index);
+
+            if (0 < notification_outputs_.count(output.get())) {
+                notifications_.emplace(index);
+            }
+        }
+
+        notification_outputs_.clear();
     }
 };
 
@@ -1284,6 +1307,12 @@ auto BitcoinTransactionBuilder::FinalizeTransaction() noexcept -> Transaction
 auto BitcoinTransactionBuilder::IsFunded() const noexcept -> bool
 {
     return imp_->IsFunded();
+}
+
+auto BitcoinTransactionBuilder::Notifications() const noexcept
+    -> std::set<std::uint32_t>
+{
+    return imp_->Notifications();
 }
 
 auto BitcoinTransactionBuilder::ReleaseKeys() noexcept -> void

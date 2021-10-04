@@ -113,6 +113,7 @@ public:
 
     auto IsFunded() const noexcept -> bool;
     auto Spender() const noexcept -> const identifier::Nym&;
+    auto Notifications() const noexcept -> std::set<std::uint32_t>;
 
     auto AddChange(const Proposal& proposal) noexcept -> bool;
     auto AddInput(const UTXO& utxo) noexcept -> bool;

@@ -132,6 +132,8 @@ public:
         const Subchain subchain,
         const std::vector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction) const noexcept -> bool;
+    auto AddNotificationOutput(const block::Outpoint& output) const noexcept
+        -> bool;
     auto AddOutgoingTransaction(
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,

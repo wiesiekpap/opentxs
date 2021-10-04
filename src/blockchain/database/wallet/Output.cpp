@@ -439,6 +439,13 @@ struct Output::Imp {
             node::TxoState::UnconfirmedSpend,
             node::TxoState::UnconfirmedNew);
     }
+    auto AddNotificationOutput(const block::Outpoint& output) noexcept -> bool
+    {
+        auto lock = eLock{lock_};
+        tags_[output].emplace(node::TxoTag::Notification);
+
+        return true;
+    }
     auto AddOutgoingTransaction(
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
@@ -1641,6 +1648,12 @@ auto Output::AddMempoolTransaction(
 {
     return imp_->AddMempoolTransaction(
         account, subchain, outputIndices, transaction);
+}
+
+auto Output::AddNotificationOutput(const block::Outpoint& output) noexcept
+    -> bool
+{
+    return imp_->AddNotificationOutput(output);
 }
 
 auto Output::AddOutgoingTransaction(
