@@ -608,6 +608,8 @@ struct WalletDatabase {
         const std::vector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction) const noexcept
         -> bool = 0;
+    virtual auto AddNotificationOutput(
+        const block::Outpoint& output) const noexcept -> bool = 0;
     virtual auto AddOutgoingTransaction(
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,

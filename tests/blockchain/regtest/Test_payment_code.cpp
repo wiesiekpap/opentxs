@@ -41,6 +41,7 @@
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
+#include "opentxs/blockchain/node/TxoTag.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -417,6 +418,7 @@ TEST_F(Regtest_payment_code, first_outgoing_transaction)
 {
     const auto& api = client_1_;
     const auto& blockchain = api.Blockchain();
+    const auto& chain = api.Network().Blockchain().GetChain(test_chain_);
     const auto& contact = api.Contacts();
     const auto& me = alice_.nym_id_;
     const auto self = contact.ContactID(me);
@@ -472,6 +474,13 @@ TEST_F(Regtest_payment_code, first_outgoing_transaction)
         EXPECT_EQ(payment.Payee(), other);
         EXPECT_EQ(change.Payer(), self);
         EXPECT_EQ(change.Payee(), self);
+
+        const auto tags = chain.Wallet().GetTags({tx.ID().Bytes(), 1});
+        using Tag = ot::blockchain::node::TxoTag;
+
+        EXPECT_EQ(tags.size(), 2);
+        EXPECT_EQ(tags.count(Tag::Normal), 1);
+        EXPECT_EQ(tags.count(Tag::Notification), 1);
     }
 }
 

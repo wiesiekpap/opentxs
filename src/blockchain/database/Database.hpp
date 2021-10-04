@@ -158,6 +158,11 @@ public:
         return wallet_.AddMempoolTransaction(
             balanceNode, subchain, outputIndices, transaction);
     }
+    auto AddNotificationOutput(const block::Outpoint& output) const noexcept
+        -> bool final
+    {
+        return wallet_.AddNotificationOutput(output);
+    }
     auto AddOutgoingTransaction(
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
