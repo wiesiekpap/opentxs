@@ -127,6 +127,11 @@ auto Wallet::GetBalance(const identifier::Nym& owner, const Identifier& node)
     return db_.GetBalance(owner, node);
 }
 
+auto Wallet::GetBalance(const crypto::Key& key) const noexcept -> Balance
+{
+    return db_.GetBalance(key);
+}
+
 auto Wallet::GetOutputs() const noexcept -> std::vector<UTXO>
 {
     return GetOutputs(TxoState::All);
@@ -162,6 +167,18 @@ auto Wallet::GetOutputs(
     TxoState type) const noexcept -> std::vector<UTXO>
 {
     return convert(db_.GetOutputs(owner, node, type));
+}
+
+auto Wallet::GetOutputs(const crypto::Key& key, TxoState type) const noexcept
+    -> std::vector<UTXO>
+{
+    return convert(db_.GetOutputs(key, type));
+}
+
+auto Wallet::GetTags(const block::Outpoint& output) const noexcept
+    -> std::set<TxoTag>
+{
+    return db_.GetOutputTags(output);
 }
 
 auto Wallet::Height() const noexcept -> block::Height

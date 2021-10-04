@@ -4,6 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 // IWYU pragma: no_include "opentxs/blockchain/node/TxoState.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/node/TxoTag.hpp"
 
 #pragma once
 
@@ -629,6 +630,8 @@ struct WalletDatabase {
         -> Balance = 0;
     virtual auto GetBalance(const identifier::Nym& owner, const NodeID& node)
         const noexcept -> Balance = 0;
+    virtual auto GetBalance(const crypto::Key& key) const noexcept
+        -> Balance = 0;
     virtual auto GetIndex(
         const NodeID& balanceNode,
         const Subchain subchain,
@@ -641,6 +644,10 @@ struct WalletDatabase {
         const identifier::Nym& owner,
         const Identifier& node,
         node::TxoState type) const noexcept -> std::vector<UTXO> = 0;
+    virtual auto GetOutputs(const crypto::Key& key, TxoState type)
+        const noexcept -> std::vector<UTXO> = 0;
+    virtual auto GetOutputTags(const block::Outpoint& output) const noexcept
+        -> std::set<node::TxoTag> = 0;
     virtual auto GetPatterns(const SubchainIndex& index) const noexcept
         -> Patterns = 0;
     virtual auto GetUnspentOutputs() const noexcept -> std::vector<UTXO> = 0;

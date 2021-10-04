@@ -4,6 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 // IWYU pragma: no_include "opentxs/blockchain/node/TxoState.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/node/TxoTag.hpp"
 
 #ifndef OPENTXS_BLOCKCHAIN_CLIENT_WALLET_HPP
 #define OPENTXS_BLOCKCHAIN_CLIENT_WALLET_HPP
@@ -16,6 +17,7 @@
 
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
 
 namespace opentxs
@@ -59,6 +61,8 @@ public:
     virtual auto GetBalance(
         const identifier::Nym& owner,
         const Identifier& subaccount) const noexcept -> Balance = 0;
+    virtual auto GetBalance(const crypto::Key& key) const noexcept
+        -> Balance = 0;
     virtual auto GetOutputs() const noexcept -> std::vector<UTXO> = 0;
     virtual auto GetOutputs(TxoState type) const noexcept
         -> std::vector<UTXO> = 0;
@@ -73,6 +77,10 @@ public:
         const identifier::Nym& owner,
         const Identifier& subaccount,
         TxoState type) const noexcept -> std::vector<UTXO> = 0;
+    virtual auto GetOutputs(const crypto::Key& key, TxoState type)
+        const noexcept -> std::vector<UTXO> = 0;
+    virtual auto GetTags(const block::Outpoint& output) const noexcept
+        -> std::set<TxoTag> = 0;
     virtual auto Height() const noexcept -> block::Height = 0;
 
     virtual ~Wallet() = default;

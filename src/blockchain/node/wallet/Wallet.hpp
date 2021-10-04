@@ -4,6 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 // IWYU pragma: no_include "opentxs/blockchain/node/TxoState.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/node/TxoTag.hpp"
 
 #pragma once
 
@@ -44,6 +45,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
@@ -118,6 +120,7 @@ public:
         -> Balance final;
     auto GetBalance(const identifier::Nym& owner, const Identifier& subaccount)
         const noexcept -> Balance final;
+    auto GetBalance(const crypto::Key& key) const noexcept -> Balance final;
     auto GetOutputs() const noexcept -> std::vector<UTXO> final;
     auto GetOutputs(TxoState type) const noexcept -> std::vector<UTXO> final;
     auto GetOutputs(const identifier::Nym& owner) const noexcept
@@ -130,6 +133,10 @@ public:
         const identifier::Nym& owner,
         const Identifier& subaccount,
         TxoState type) const noexcept -> std::vector<UTXO> final;
+    auto GetOutputs(const crypto::Key& key, TxoState type) const noexcept
+        -> std::vector<UTXO> final;
+    auto GetTags(const block::Outpoint& output) const noexcept
+        -> std::set<TxoTag> final;
     auto Height() const noexcept -> block::Height final;
 
     auto Init() noexcept -> void final;

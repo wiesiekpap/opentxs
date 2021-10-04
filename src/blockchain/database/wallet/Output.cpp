@@ -70,6 +70,7 @@ using Outpoint = opentxs::blockchain::block::Outpoint;
 using Position = opentxs::blockchain::block::Position;
 using Identifier = opentxs::OTIdentifier;
 using NymID = opentxs::OTNymID;
+using Key = opentxs::blockchain::crypto::Key;
 
 template <>
 struct hash<Outpoint> {
@@ -122,6 +123,32 @@ struct hash<NymID> {
         return hasher(data.get());
     }
 };
+
+template <>
+struct hash<Key> {
+    auto operator()(const Key& data) const noexcept -> std::size_t
+    {
+        const auto preimage = [&]() {
+            const auto& [account, subchain, index] = data;
+            auto out = opentxs::Data::Factory();
+            out->Concatenate(account);
+            out->Concatenate(&subchain, sizeof(subchain));
+            out->Concatenate(&index, sizeof(index));
+
+            return out;
+        }();
+        static const auto& api = opentxs::Context().Crypto().Hash();
+        static const auto key = std::array<char, 16>{};
+        auto out = std::size_t{};
+        api.HMAC(
+            opentxs::crypto::HashType::SipHash24,
+            {key.data(), key.size()},
+            preimage->Bytes(),
+            opentxs::preallocated(sizeof(out), &out));
+
+        return out;
+    }
+};
 }  // namespace std
 
 namespace opentxs::blockchain::database::wallet
@@ -148,14 +175,23 @@ struct Output::Imp {
 
         if (owner.empty() || node.empty()) { return {}; }
 
-        return get_balance(lock, owner, node);
+        return get_balance(lock, owner, node, nullptr);
+    }
+    auto GetBalance(const crypto::Key& key) const noexcept -> Balance
+    {
+        auto lock = sLock{lock_};
+        static const auto owner = api_.Factory().NymID();
+        static const auto node = api_.Factory().Identifier();
+
+        return get_balance(lock, owner, node, &key);
     }
     auto GetMutex() const noexcept -> std::shared_mutex& { return lock_; }
     auto GetOutputs(node::TxoState type) const noexcept -> std::vector<UTXO>
     {
         auto lock = sLock{lock_};
 
-        return get_outputs(lock, states(type), nullptr, nullptr, nullptr);
+        return get_outputs(
+            lock, states(type), nullptr, nullptr, nullptr, nullptr);
     }
     auto GetOutputs(const identifier::Nym& owner, node::TxoState type)
         const noexcept -> std::vector<UTXO>
@@ -164,7 +200,8 @@ struct Output::Imp {
 
         if (owner.empty()) { return {}; }
 
-        return get_outputs(lock, states(type), &owner, nullptr, nullptr);
+        return get_outputs(
+            lock, states(type), &owner, nullptr, nullptr, nullptr);
     }
     auto GetOutputs(
         const identifier::Nym& owner,
@@ -175,7 +212,27 @@ struct Output::Imp {
 
         if (owner.empty() || node.empty()) { return {}; }
 
-        return get_outputs(lock, states(type), &owner, &node, nullptr);
+        return get_outputs(lock, states(type), &owner, &node, nullptr, nullptr);
+    }
+    auto GetOutputs(const crypto::Key& key, node::TxoState type) const noexcept
+        -> std::vector<UTXO>
+    {
+        auto lock = sLock{lock_};
+
+        return get_outputs(lock, states(type), nullptr, nullptr, nullptr, &key);
+    }
+    auto GetOutputTags(const block::Outpoint& output) const noexcept
+        -> std::set<node::TxoTag>
+    {
+        auto lock = sLock{lock_};
+
+        try {
+
+            return tags_.at(output);
+        } catch (...) {
+
+            return {};
+        }
     }
     auto GetUnspentOutputs() const noexcept -> std::vector<UTXO>
     {
@@ -800,6 +857,7 @@ struct Output::Imp {
         , proposal_reverse_index_()
         , state_index_()
         , subchain_index_()
+        , key_index_()
         , tags_()
         , gen_()
     {
@@ -824,6 +882,7 @@ private:
     using StateIndex = std::map<node::TxoState, Outpoints>;
     using SubchainIndex =
         robin_hood::unordered_flat_map<pSubchainID, Outpoints>;
+    using KeyIndex = robin_hood::unordered_flat_map<crypto::Key, Outpoints>;
     using NymBalances = std::map<OTNymID, Balance>;
     using KeyID = blockchain::crypto::Key;
     using States = std::vector<node::TxoState>;
@@ -850,6 +909,7 @@ private:
     ProposalReverseIndex proposal_reverse_index_;
     StateIndex state_index_;
     SubchainIndex subchain_index_;
+    KeyIndex key_index_;
     TagMap tags_;
     GenerationMap gen_;
 
@@ -938,6 +998,20 @@ private:
         }
     }
     template <typename LockType>
+    auto find_key(const LockType& lock, const crypto::Key& id) const noexcept
+        -> const Outpoints&
+    {
+        static const auto empty = Outpoints{};
+
+        try {
+
+            return key_index_.at(id);
+        } catch (...) {
+
+            return empty;
+        }
+    }
+    template <typename LockType>
     auto find_nym(const LockType& lock, const identifier::Nym& id)
         const noexcept -> const Outpoints&
     {
@@ -998,13 +1072,14 @@ private:
     {
         static const auto blank = api_.Factory().Identifier();
 
-        return get_balance<LockType>(lock, owner, blank);
+        return get_balance<LockType>(lock, owner, blank, nullptr);
     }
     template <typename LockType>
     auto get_balance(
         const LockType& lock,
         const identifier::Nym& owner,
-        const AccountID& account) const noexcept -> Balance
+        const AccountID& account,
+        const crypto::Key* key) const noexcept -> Balance
     {
         auto output = Balance{};
         auto& [confirmed, unconfirmed] = output;
@@ -1019,7 +1094,12 @@ private:
 
         const auto unconfirmedSpendTotal = [&] {
             const auto txos = match(
-                lock, {node::TxoState::UnconfirmedSpend}, pNym, pAcct, nullptr);
+                lock,
+                {node::TxoState::UnconfirmedSpend},
+                pNym,
+                pAcct,
+                nullptr,
+                key);
 
             return std::accumulate(
                 txos.begin(), txos.end(), std::uint64_t{0}, cb);
@@ -1027,7 +1107,12 @@ private:
 
         {
             const auto txos = match(
-                lock, {node::TxoState::ConfirmedNew}, pNym, pAcct, nullptr);
+                lock,
+                {node::TxoState::ConfirmedNew},
+                pNym,
+                pAcct,
+                nullptr,
+                key);
             confirmed =
                 unconfirmedSpendTotal +
                 std::accumulate(txos.begin(), txos.end(), std::uint64_t{0}, cb);
@@ -1035,7 +1120,12 @@ private:
 
         {
             const auto txos = match(
-                lock, {node::TxoState::UnconfirmedNew}, pNym, pAcct, nullptr);
+                lock,
+                {node::TxoState::UnconfirmedNew},
+                pNym,
+                pAcct,
+                nullptr,
+                key);
             unconfirmed =
                 std::accumulate(txos.begin(), txos.end(), confirmed, cb) -
                 unconfirmedSpendTotal;
@@ -1059,9 +1149,10 @@ private:
         const States states,
         const identifier::Nym* owner,
         const AccountID* account,
-        const NodeID* subchain) const noexcept -> std::vector<UTXO>
+        const NodeID* subchain,
+        const crypto::Key* key) const noexcept -> std::vector<UTXO>
     {
-        const auto matches = match(lock, states, owner, account, subchain);
+        const auto matches = match(lock, states, owner, account, subchain, key);
         auto output = std::vector<UTXO>{};
 
         for (const auto& outpoint : matches) {
@@ -1083,7 +1174,8 @@ private:
              node::TxoState::UnconfirmedSpend},
             nullptr,
             nullptr,
-            pSub);
+            pSub,
+            nullptr);
     }
     template <typename LockType>
     auto has_account(
@@ -1092,6 +1184,14 @@ private:
         const Outpoint& outpoint) const noexcept -> bool
     {
         return 0 < find_account<LockType>(lock, id).count(outpoint);
+    }
+    template <typename LockType>
+    auto has_key(
+        const LockType& lock,
+        const crypto::Key& key,
+        const Outpoint& outpoint) const noexcept -> bool
+    {
+        return 0 < find_key<LockType>(lock, key).count(outpoint);
     }
     template <typename LockType>
     auto has_nym(
@@ -1152,26 +1252,29 @@ private:
         const States states,
         const identifier::Nym* owner,
         const AccountID* account,
-        const NodeID* subchain) const noexcept -> Matches
+        const NodeID* subchain,
+        const crypto::Key* key) const noexcept -> Matches
     {
         auto output = Matches{};
         const auto allSubs = (nullptr == subchain);
         const auto allAccts = (nullptr == account);
         const auto allNyms = (nullptr == owner);
+        const auto allKeys = (nullptr == key);
 
         for (const auto state : states) {
             for (const auto& outpoint : find_state(lock, state)) {
                 // NOTE if a more specific conditions is requested then it's
                 // not necessary to test any more general conditions. A subchain
                 // match implies an account match implies a nym match
-                const auto goodSub =
-                    allSubs || has_subchain(lock, *subchain, outpoint);
-                const auto goodAcct = (!allSubs) || allAccts ||
+                const auto goodKey = allKeys || has_key(lock, *key, outpoint);
+                const auto goodSub = (!allKeys) || allSubs ||
+                                     has_subchain(lock, *subchain, outpoint);
+                const auto goodAcct = (!allKeys) || (!allSubs) || allAccts ||
                                       has_account(lock, *account, outpoint);
-                const auto goodNym = (!allSubs) || (!allAccts) || allNyms ||
-                                     has_nym(lock, *owner, outpoint);
+                const auto goodNym = (!allKeys) || (!allSubs) || (!allAccts) ||
+                                     allNyms || has_nym(lock, *owner, outpoint);
 
-                if (goodNym && goodAcct && goodSub) {
+                if (goodNym && goodAcct && goodSub && goodKey) {
                     output.emplace_back(outpoint);
                 }
             }
@@ -1485,7 +1588,16 @@ private:
         state_index_[effState].emplace(id);
         position_index_[pos].emplace(id);
 
-        if (isGeneration) { gen_[position.first].emplace(id); }
+        for (const auto& key : output.Keys()) { key_index_[key].emplace(id); }
+
+        auto& tags = tags_[id];
+
+        if (isGeneration) {
+            gen_[position.first].emplace(id);
+            tags.emplace(node::TxoTag::Generation);
+        } else {
+            tags.emplace(node::TxoTag::Normal);
+        }
 
         return true;
     }
@@ -1565,6 +1677,11 @@ auto Output::GetBalance(const identifier::Nym& owner, const NodeID& node)
     return imp_->GetBalance(owner, node);
 }
 
+auto Output::GetBalance(const crypto::Key& key) const noexcept -> Balance
+{
+    return imp_->GetBalance(key);
+}
+
 auto Output::GetOutputs(node::TxoState type) const noexcept -> std::vector<UTXO>
 {
     return imp_->GetOutputs(type);
@@ -1584,9 +1701,21 @@ auto Output::GetOutputs(
     return imp_->GetOutputs(owner, node, type);
 }
 
+auto Output::GetOutputs(const crypto::Key& key, node::TxoState type)
+    const noexcept -> std::vector<UTXO>
+{
+    return imp_->GetOutputs(key, type);
+}
+
 auto Output::GetMutex() const noexcept -> std::shared_mutex&
 {
     return imp_->GetMutex();
+}
+
+auto Output::GetOutputTags(const block::Outpoint& output) const noexcept
+    -> std::set<node::TxoTag>
+{
+    return imp_->GetOutputTags(output);
 }
 
 auto Output::GetUnspentOutputs() const noexcept -> std::vector<UTXO>
