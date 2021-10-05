@@ -35,8 +35,6 @@
 #include "opentxs/core/script/OTSmartContract.hpp"
 #include "opentxs/core/util/Tag.hpp"
 
-template class std::shared_ptr<const opentxs::OTPayment>;
-
 #define OT_METHOD "opentxs::OTPayment::"
 
 namespace opentxs
