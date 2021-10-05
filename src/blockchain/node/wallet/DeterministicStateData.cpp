@@ -22,6 +22,7 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
@@ -53,9 +54,10 @@ DeterministicStateData::DeterministicStateData(
     const api::Core& api,
     const api::client::internal::Blockchain& crypto,
     const node::internal::Network& node,
+    Accounts& parent,
     const WalletDatabase& db,
     const crypto::Deterministic& subaccount,
-    const SimpleCallback& taskFinished,
+    const std::function<void(const Identifier&, const char*)>& taskFinished,
     Outstanding& jobCounter,
     const filter::Type filter,
     const Subchain subchain) noexcept
@@ -63,6 +65,7 @@ DeterministicStateData::DeterministicStateData(
           api,
           crypto,
           node,
+          parent,
           db,
           OTNymID{subaccount.Parent().NymID()},
           subaccount.Type(),
@@ -72,37 +75,9 @@ DeterministicStateData::DeterministicStateData(
           filter,
           subchain)
     , subaccount_(subaccount)
+    , index_(subaccount_, *this, scan_, rescan_, progress_)
 {
     init();
-}
-
-auto DeterministicStateData::check_index() noexcept -> bool
-{
-    last_indexed_ = db_.SubchainLastIndexed(index_);
-    const auto generated = subaccount_.LastGenerated(subchain_);
-
-    if (generated.has_value()) {
-        if ((false == last_indexed_.has_value()) ||
-            (last_indexed_.value() != generated.value())) {
-            LogVerbose(OT_METHOD)(__func__)(": ")(name_)(" has ")(
-                generated.value() + 1)(" keys generated, but only ")(
-                last_indexed_.value_or(0))(" have been indexed.")
-                .Flush();
-            static constexpr auto job{"index"};
-
-            return queue_work(Task::index, job);
-        } else {
-            LogTrace(OT_METHOD)(__func__)(": ")(name_)(" all ")(
-                generated.value() + 1)(" generated keys have been indexed.")
-                .Flush();
-        }
-    } else {
-        LogVerbose(OT_METHOD)(__func__)(": ")(
-            name_)(" no generated keys present")
-            .Flush();
-    }
-
-    return false;
 }
 
 auto DeterministicStateData::handle_confirmed_matches(
@@ -172,31 +147,6 @@ auto DeterministicStateData::handle_mempool_matches(
     auto updated = db_.AddMempoolTransaction(id_, subchain_, outputs, *pTX);
 
     OT_ASSERT(updated);  // TODO handle database errors
-}
-
-auto DeterministicStateData::index() noexcept -> void
-{
-    const auto first =
-        last_indexed_.has_value() ? last_indexed_.value() + 1u : Bip32Index{0u};
-    const auto last = subaccount_.LastGenerated(subchain_).value_or(0u);
-    auto elements = WalletDatabase::ElementMap{};
-
-    if (last > first) {
-        LogVerbose(OT_METHOD)(__func__)(": ")(
-            name_)(" indexing elements from ")(first)(" to ")(last)
-            .Flush();
-    } else {
-        LogVerbose(OT_METHOD)(__func__)(": ")(
-            name_)(" subchain is fully indexed to item ")(last)
-            .Flush();
-    }
-
-    for (auto i{first}; i <= last; ++i) {
-        const auto& element = subaccount_.BalanceElement(subchain_, i);
-        index_element(filter_type_, element, i, elements);
-    }
-
-    db_.SubchainAddElements(index_, elements);
 }
 
 auto DeterministicStateData::process(
@@ -334,9 +284,10 @@ auto DeterministicStateData::type() const noexcept -> std::stringstream
     return output;
 }
 
-auto DeterministicStateData::update_scan(const block::Position& pos) noexcept
-    -> void
+auto DeterministicStateData::update_scan(
+    const block::Position& pos) const noexcept -> void
 {
     subaccount_.Internal().SetScanProgress(pos, subchain_);
+    SubchainStateData::update_scan(pos);
 }
 }  // namespace opentxs::blockchain::node::wallet

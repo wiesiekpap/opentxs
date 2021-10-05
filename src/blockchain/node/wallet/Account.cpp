@@ -7,11 +7,13 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "blockchain/node/wallet/Account.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
 #include <map>
+#include <random>
 #include <utility>
+#include <vector>
 
 #include "blockchain/node/wallet/DeterministicStateData.hpp"
-#include "blockchain/node/wallet/SubchainStateData.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
@@ -21,48 +23,53 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
 #include "util/Gatekeeper.hpp"
 #include "util/JobCounter.hpp"
 
-#define OT_METHOD "opentxs::blockchain::node::wallet::Account::"
+// #define OT_METHOD "opentxs::blockchain::node::wallet::Account::"
 
 namespace opentxs::blockchain::node::wallet
 {
 using Subchain = node::internal::WalletDatabase::Subchain;
 
 struct Account::Imp {
+    auto block_available(const block::Hash& block) noexcept -> void
+    {
+        auto ticket = gatekeeper_.get();
+
+        if (ticket) { return; }
+
+        for_each_subchain([&](auto& s) { s.ProcessBlockAvailable(block); });
+    }
     auto finish_background_tasks() noexcept -> void
     {
-        for (auto& [id, account] : internal_) {
-            account.finish_background_tasks();
-        }
-
-        for (auto& [id, account] : internal_) {
-            account.finish_background_tasks();
-        }
-
-        for (auto& [id, account] : outgoing_) {
-            account.finish_background_tasks();
-        }
-
-        for (auto& [id, account] : incoming_) {
-            account.finish_background_tasks();
-        }
+        for_each_account([](auto& s) { s.FinishBackgroundTasks(); });
     }
     auto mempool(std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept
         -> void
     {
-        for (const auto& account : ref_.GetHD()) {
-            get(account, Subchain::Internal, internal_).mempool_.Queue(tx);
-            get(account, Subchain::External, external_).mempool_.Queue(tx);
-        }
+        auto ticket = gatekeeper_.get();
 
-        for (const auto& account : ref_.GetPaymentCode()) {
-            get(account, Subchain::Outgoing, outgoing_).mempool_.Queue(tx);
-            get(account, Subchain::Incoming, incoming_).mempool_.Queue(tx);
-        }
+        if (ticket) { return; }
+
+        for_each_subchain([&](auto& s) { s.ProcessMempool(tx); });
+    }
+    auto new_filter(const block::Position& tip) noexcept -> void
+    {
+        auto ticket = gatekeeper_.get();
+
+        if (ticket) { return; }
+
+        for_each_subchain([&](auto& s) { s.ProcessNewFilter(tip); });
+    }
+    auto new_key() noexcept -> void
+    {
+        auto ticket = gatekeeper_.get();
+
+        if (ticket) { return; }
+
+        for_each_subchain([&](auto& s) { s.ProcessKey(); });
     }
     auto reorg(const block::Position& parent) noexcept -> bool
     {
@@ -72,32 +79,14 @@ struct Account::Imp {
 
         auto output{false};
 
-        for (const auto& account : ref_.GetHD()) {
-            const auto& id = account.ID();
-            LogVerbose(OT_METHOD)(__func__)(": Processing HD account ")(id)
-                .Flush();
-            auto& internal = get(account, Subchain::Internal, internal_);
-            auto& external = get(account, Subchain::External, external_);
-            output |= internal.queue_reorg(parent);
-            output |= external.queue_reorg(parent);
-        }
-
-        for (const auto& account : ref_.GetPaymentCode()) {
-            const auto& id = account.ID();
-            LogVerbose(OT_METHOD)(__func__)(
-                ": Processing payment code account ")(id)
-                .Flush();
-            auto& outgoing = get(account, Subchain::Outgoing, outgoing_);
-            auto& incoming = get(account, Subchain::Incoming, incoming_);
-            output |= outgoing.queue_reorg(parent);
-            output |= incoming.queue_reorg(parent);
-        }
+        for_each_subchain([&](auto& s) { output |= s.ProcessReorg(parent); });
 
         return output;
     }
     auto shutdown() noexcept -> void
     {
         gatekeeper_.shutdown();
+        for_each_subchain([&](auto& s) { s.Shutdown(); });
         internal_.clear();
         external_.clear();
         outgoing_.clear();
@@ -111,45 +100,43 @@ struct Account::Imp {
 
         auto output{false};
 
-        for (const auto& account : ref_.GetHD()) {
-            const auto& id = account.ID();
-            LogVerbose(OT_METHOD)(__func__)(": Processing HD account ")(id)
-                .Flush();
-            output |= get(account, Subchain::Internal, internal_)
-                          .state_machine(enabled);
-            output |= get(account, Subchain::External, external_)
-                          .state_machine(enabled);
-        }
-
-        for (const auto& account : ref_.GetPaymentCode()) {
-            const auto& id = account.ID();
-            LogVerbose(OT_METHOD)(__func__)(
-                ": Processing payment code account ")(id)
-                .Flush();
-            output |= get(account, Subchain::Outgoing, outgoing_)
-                          .state_machine(enabled);
-            output |= get(account, Subchain::Incoming, incoming_)
-                          .state_machine(enabled);
-        }
+        for_each_subchain(
+            [&](auto& s) { output |= s.ProcessStateMachine(enabled); });
 
         return output;
+    }
+    auto task_complete(
+        const Identifier& id,
+        const char* type,
+        bool enabled) noexcept -> void
+    {
+        auto ticket = gatekeeper_.get();
+
+        if (ticket) { return; }
+
+        for_each_subchain(
+            [&](auto& s) { s.ProcessTaskComplete(id, type, enabled); });
     }
 
     Imp(const api::Core& api,
         const api::client::internal::Blockchain& crypto,
         const BalanceTree& ref,
         const node::internal::Network& node,
+        Accounts& parent,
         const node::internal::WalletDatabase& db,
         const filter::Type filter,
         Outstanding&& jobs,
-        const SimpleCallback& taskFinished) noexcept
+        const std::function<void(const Identifier&, const char*)>&
+            taskFinished) noexcept
         : api_(api)
         , crypto_(crypto)
         , ref_(ref)
         , node_(node)
+        , parent_(parent)
         , db_(db)
         , filter_type_(node_.FilterOracleInternal().DefaultType())
         , task_finished_(taskFinished)
+        , rng_(std::random_device{}())
         , internal_()
         , external_()
         , outgoing_()
@@ -176,9 +163,11 @@ private:
     const api::client::internal::Blockchain& crypto_;
     const BalanceTree& ref_;
     const node::internal::Network& node_;
+    Accounts& parent_;
     const node::internal::WalletDatabase& db_;
     const filter::Type filter_type_;
-    const SimpleCallback& task_finished_;
+    const std::function<void(const Identifier&, const char*)>& task_finished_;
+    std::default_random_engine rng_;
     Map internal_;
     Map external_;
     Map outgoing_;
@@ -186,6 +175,36 @@ private:
     Outstanding jobs_;
     Gatekeeper gatekeeper_;
 
+    template <typename Action>
+    auto for_each_account(Action action) noexcept -> void
+    {
+        for (auto& [id, account] : internal_) { action(account); }
+
+        for (auto& [id, account] : internal_) { action(account); }
+
+        for (auto& [id, account] : outgoing_) { action(account); }
+
+        for (auto& [id, account] : incoming_) { action(account); }
+    }
+    template <typename Action>
+    auto for_each_subchain(Action action) noexcept -> void
+    {
+        auto actors = std::vector<Actor*>{};
+
+        for (const auto& account : ref_.GetHD()) {
+            actors.emplace_back(&get(account, Subchain::Internal, internal_));
+            actors.emplace_back(&get(account, Subchain::External, external_));
+        }
+
+        for (const auto& account : ref_.GetPaymentCode()) {
+            actors.emplace_back(&get(account, Subchain::Outgoing, outgoing_));
+            actors.emplace_back(&get(account, Subchain::Incoming, incoming_));
+        }
+
+        std::shuffle(actors.begin(), actors.end(), rng_);
+
+        for (auto* actor : actors) { action(*actor); }
+    }
     auto get(
         const crypto::Deterministic& account,
         const Subchain subchain,
@@ -207,6 +226,7 @@ private:
             api_,
             crypto_,
             node_,
+            parent_,
             db_,
             account,
             task_finished_,
@@ -225,15 +245,18 @@ Account::Account(
     const api::client::internal::Blockchain& crypto,
     const BalanceTree& ref,
     const node::internal::Network& node,
+    Accounts& parent,
     const node::internal::WalletDatabase& db,
     const filter::Type filter,
     Outstanding&& jobs,
-    const SimpleCallback& taskFinished) noexcept
+    const std::function<void(const Identifier&, const char*)>&
+        taskFinished) noexcept
     : imp_(std::make_unique<Imp>(
           api,
           crypto,
           ref,
           node,
+          parent,
           db,
           filter,
           std::move(jobs),
@@ -248,28 +271,48 @@ Account::Account(Account&& rhs) noexcept
     OT_ASSERT(imp_);
 }
 
-auto Account::finish_background_tasks() noexcept -> void
+auto Account::FinishBackgroundTasks() noexcept -> void
 {
     return imp_->finish_background_tasks();
 }
 
-auto Account::mempool(
+auto Account::ProcessBlockAvailable(const block::Hash& block) noexcept -> void
+{
+    imp_->block_available(block);
+}
+
+auto Account::ProcessKey() noexcept -> void { imp_->new_key(); }
+
+auto Account::ProcessMempool(
     std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept -> void
 {
     imp_->mempool(tx);
 }
 
-auto Account::reorg(const block::Position& parent) noexcept -> bool
+auto Account::ProcessNewFilter(const block::Position& tip) noexcept -> void
+{
+    imp_->new_filter(tip);
+}
+
+auto Account::ProcessReorg(const block::Position& parent) noexcept -> bool
 {
     return imp_->reorg(parent);
 }
 
-auto Account::shutdown() noexcept -> void { imp_->shutdown(); }
-
-auto Account::state_machine(bool enabled) noexcept -> bool
+auto Account::ProcessStateMachine(bool enabled) noexcept -> bool
 {
     return imp_->state_machine(enabled);
 }
+
+auto Account::ProcessTaskComplete(
+    const Identifier& id,
+    const char* type,
+    bool enabled) noexcept -> void
+{
+    imp_->task_complete(id, type, enabled);
+}
+
+auto Account::Shutdown() noexcept -> void { imp_->shutdown(); }
 
 Account::~Account() { imp_->shutdown(); }
 }  // namespace opentxs::blockchain::node::wallet

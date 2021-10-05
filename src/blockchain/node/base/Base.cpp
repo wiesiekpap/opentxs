@@ -174,6 +174,9 @@ Base::Base(
     const std::string& seednode,
     const std::string& syncEndpoint) noexcept
     : Worker(api, std::chrono::seconds(0))
+    , crypto_(crypto)
+    , network_(network)
+    , chain_(type)
     , shutdown_sender_(api.Network().ZeroMQ(), shutdown_endpoint())
     , database_p_(factory::BlockchainDatabase(
           api,
@@ -231,9 +234,6 @@ Base::Base(
                 shutdown_sender_.endpoint_);
         }
     }())
-    , crypto_(crypto)
-    , network_(network)
-    , chain_(type)
     , database_(*database_p_)
     , filters_(*filter_p_)
     , header_(*header_p_)
@@ -984,20 +984,24 @@ auto Base::process_sync_data(network::zeromq::Message& in) noexcept -> void
     auto hashes = std::vector<block::pHash>{};
     const auto accepted = header_.ProcessSyncData(prior, hashes, data);
 
-    if (0u == accepted) { return; }
+    if (0u < accepted) {
+        const auto& blocks = data.Blocks();
 
-    const auto& blocks = data.Blocks();
+        LogVerbose("Accepted ")(accepted)(" of ")(blocks.size())(" ")(
+            DisplayString(chain_))(" headers")
+            .Flush();
+        filters_.ProcessSyncData(prior, hashes, data);
+        const auto elapsed =
+            std::chrono::duration_cast<std::chrono::microseconds>(
+                Clock::now() - start);
+        LogDetail("Processed ")(blocks.size())(" ")(DisplayString(chain_))(
+            " sync packets in ")(elapsed.count())(" microseconds (")(
+            blocks.size() * 1000000 / elapsed.count())(" blocks/sec)")
+            .Flush();
+    } else {
+        LogOutput("Invalid ")(DisplayString(chain_))(" sync data").Flush();
+    }
 
-    LogVerbose("Accepted ")(accepted)(" of ")(blocks.size())(" ")(
-        DisplayString(chain_))(" headers")
-        .Flush();
-    filters_.ProcessSyncData(prior, hashes, data);
-    const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(
-        Clock::now() - start);
-    LogDetail("Processed ")(blocks.size())(" ")(DisplayString(chain_))(
-        " sync packets in ")(elapsed.count())(" microseconds (")(
-        blocks.size() * 1000000 / elapsed.count())(" blocks/sec)")
-        .Flush();
     notify_sync_client();
 }
 

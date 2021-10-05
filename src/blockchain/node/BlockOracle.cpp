@@ -62,7 +62,13 @@ BlockOracle::BlockOracle(
     , node_(node)
     , db_(db)
     , lock_()
-    , cache_(api, node, db, network.BlockQueueUpdate(), chain)
+    , cache_(
+          api,
+          node,
+          db,
+          network.BlockAvailable(),
+          network.BlockQueueUpdate(),
+          chain)
     , block_downloader_([&]() -> std::unique_ptr<BlockDownloader> {
         using Policy = database::BlockStorage;
 

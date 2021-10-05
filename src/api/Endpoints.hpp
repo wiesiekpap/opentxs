@@ -35,6 +35,7 @@ public:
     auto AccountUpdate() const noexcept -> std::string final;
     auto BlockchainAccountCreated() const noexcept -> std::string final;
     auto BlockchainBalance() const noexcept -> std::string final;
+    auto BlockchainBlockAvailable() const noexcept -> std::string final;
     auto BlockchainBlockDownloadQueue() const noexcept -> std::string final;
     auto BlockchainMempool() const noexcept -> std::string final;
     auto BlockchainNewFilter() const noexcept -> std::string final;

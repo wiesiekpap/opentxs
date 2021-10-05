@@ -21,6 +21,7 @@
 #define BLOCKCHAIN_ASIO_ENDPOINT "blockchain/asio"
 #define BLOCKCHAIN_BALANCE_ENDPOINT "blockchain/balance/interactive"
 #define BLOCKCHAIN_BALANCE_PUBLISHER_ENDPOINT "blockchain/balance"
+#define BLOCKCHAIN_BLOCK_AVAILABLE "blockchain/block/available"
 #define BLOCKCHAIN_BLOCK_QUEUE_UPDATED "blockchain/block/queue"
 #define BLOCKCHAIN_BLOCK_UPDATED "blockchain/block/"
 #define BLOCKCHAIN_FILTER_ENDPOINT "blockchain/filter"
@@ -113,6 +114,11 @@ auto Endpoints::BlockchainAccountCreated() const noexcept -> std::string
 auto Endpoints::BlockchainBalance() const noexcept -> std::string
 {
     return build_inproc_path(BLOCKCHAIN_BALANCE_ENDPOINT, ENDPOINT_VERSION_1);
+}
+
+auto Endpoints::BlockchainBlockAvailable() const noexcept -> std::string
+{
+    return build_inproc_path(BLOCKCHAIN_BLOCK_AVAILABLE, ENDPOINT_VERSION_1);
 }
 
 auto Endpoints::BlockchainBlockDownloadQueue() const noexcept -> std::string

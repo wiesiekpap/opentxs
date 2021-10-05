@@ -42,12 +42,14 @@ BlockOracle::Cache::Cache(
     const api::Core& api,
     const internal::Network& node,
     const internal::BlockDatabase& db,
-    const network::zeromq::socket::Publish& socket,
+    const network::zeromq::socket::Publish& blockAvailable,
+    const network::zeromq::socket::Publish& downloadCache,
     const blockchain::Type chain) noexcept
     : api_(api)
     , node_(node)
     , db_(db)
-    , cache_size_publisher_(socket)
+    , block_available_(blockAvailable)
+    , cache_size_publisher_(downloadCache)
     , chain_(chain)
     , lock_()
     , pending_()
@@ -70,6 +72,16 @@ auto BlockOracle::Cache::publish(std::size_t size) const noexcept -> void
     work->AddFrame(chain_);
     work->AddFrame(size);
     cache_size_publisher_.Send(work);
+}
+
+auto BlockOracle::Cache::publish(const block::Hash& block) const noexcept
+    -> void
+{
+    auto work = api_.Network().ZeroMQ().TaggedMessage(
+        WorkType::BlockchainBlockAvailable);
+    work->AddFrame(chain_);
+    work->AddFrame(block);
+    block_available_.Send(work);
 }
 
 auto BlockOracle::Cache::ReceiveBlock(const zmq::Frame& in) const noexcept
@@ -107,6 +119,7 @@ auto BlockOracle::Cache::ReceiveBlock(BitcoinBlock_p in) const noexcept -> void
 
     auto& [time, promise, future, queued] = pending->second;
     promise.set_value(std::move(in));
+    publish(id);
     LogVerbose(OT_METHOD)(__func__)(": Cached block ")(id.asHex()).Flush();
     mem_.push(id, std::move(future));
     pending_.erase(pending);

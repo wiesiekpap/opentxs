@@ -7,16 +7,21 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "blockchain/node/wallet/Accounts.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
+#include <atomic>
 #include <map>
+#include <mutex>
+#include <random>
 #include <set>
 #include <utility>
+#include <vector>
 
 #include "blockchain/node/wallet/Account.hpp"
 #include "blockchain/node/wallet/NotificationStateData.hpp"
-#include "blockchain/node/wallet/SubchainStateData.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
@@ -37,6 +42,8 @@
 namespace opentxs::blockchain::node::wallet
 {
 struct Accounts::Imp {
+    auto Query() const noexcept -> bool { return subchains_.Query(); }
+
     auto Add(const identifier::Nym& nym) noexcept -> bool
     {
         auto ticket = gatekeeper_.get();
@@ -49,6 +56,7 @@ struct Accounts::Imp {
             crypto_,
             crypto_.Account(nym, chain_),
             node_,
+            parent_,
             db_,
             filter_type_,
             job_counter_.Allocate(),
@@ -73,23 +81,55 @@ struct Accounts::Imp {
 
         return Add(id);
     }
+    auto BlockAvailable(const block::Hash& block) noexcept -> void
+    {
+        auto ticket = gatekeeper_.get();
+
+        if (ticket) { return; }
+
+        for_each([&](auto& a) { a.ProcessBlockAvailable(block); });
+    }
+    auto Complete(const Identifier& id) noexcept -> void
+    {
+        subchains_.Complete(id);
+    }
     auto finish_background_tasks() noexcept -> void
     {
-        for (auto& [id, account] : payment_codes_) {
-            account.finish_background_tasks();
-        }
-
-        for (auto& [id, account] : map_) { account.finish_background_tasks(); }
+        for_each([](auto& a) { a.FinishBackgroundTasks(); });
+    }
+    auto Init() noexcept -> void
+    {
+        for (const auto& id : api_.Wallet().LocalNyms()) { Add(id); }
     }
     auto Mempool(
         std::shared_ptr<const block::bitcoin::Transaction>&& tx) noexcept
         -> void
     {
-        for (auto& [code, account] : payment_codes_) {
-            account.mempool_.Queue(tx);
-        }
+        auto ticket = gatekeeper_.get();
 
-        for (auto& [nym, account] : map_) { account.mempool(tx); }
+        if (ticket) { return; }
+
+        for_each([&](auto& a) { a.ProcessMempool(tx); });
+    }
+    auto NewFilter(const block::Position& tip) noexcept -> void
+    {
+        auto ticket = gatekeeper_.get();
+
+        if (ticket) { return; }
+
+        for_each([&](auto& a) { a.ProcessNewFilter(tip); });
+    }
+    auto NewKey() noexcept -> void
+    {
+        auto ticket = gatekeeper_.get();
+
+        if (ticket) { return; }
+
+        for_each([](auto& a) { a.ProcessKey(); });
+    }
+    auto Register(const Identifier& id) noexcept -> void
+    {
+        subchains_.Register(id);
     }
     auto Reorg(const block::Position& parent) noexcept -> bool
     {
@@ -99,20 +139,16 @@ struct Accounts::Imp {
 
         auto output{false};
 
-        for (auto& [nym, account] : map_) { output |= account.reorg(parent); }
-
-        for (auto& [code, account] : payment_codes_) {
-            output |= account.queue_reorg(parent);
-        }
+        for_each([&](auto& a) { output |= a.ProcessReorg(parent); });
 
         return output;
     }
     auto shutdown() noexcept -> void
     {
         gatekeeper_.shutdown();
+        for_each([&](auto& a) { a.Shutdown(); });
         payment_codes_.clear();
-
-        for (auto& [id, account] : map_) { account.shutdown(); }
+        map_.clear();
     }
     auto state_machine(bool enabled) noexcept -> bool
     {
@@ -123,36 +159,51 @@ struct Accounts::Imp {
         auto output{false};
 
         for (auto& [code, account] : payment_codes_) {
-            output |= account.state_machine(enabled);
+            output |= account.ProcessStateMachine(enabled);
         }
 
         for (auto& [nym, account] : map_) {
-            output |= account.state_machine(enabled);
+            output |= account.ProcessStateMachine(enabled);
         }
 
         return output;
+    }
+    auto TaskComplete(
+        const Identifier& id,
+        const char* type,
+        bool enabled) noexcept -> void
+    {
+        auto ticket = gatekeeper_.get();
+
+        if (ticket) { return; }
+
+        for_each([&](auto& a) { a.ProcessTaskComplete(id, type, enabled); });
     }
 
     Imp(const api::Core& api,
         const api::client::internal::Blockchain& crypto,
         const node::internal::Network& node,
+        Accounts& parent,
         const node::internal::WalletDatabase& db,
         const Type chain,
-        const SimpleCallback& taskFinished) noexcept
+        const std::function<void(const Identifier&, const char*)>&
+            taskFinished) noexcept
         : api_(api)
         , crypto_(crypto)
         , node_(node)
+        , parent_(parent)
         , db_(db)
         , task_finished_(taskFinished)
         , chain_(chain)
         , filter_type_(node_.FilterOracleInternal().DefaultType())
+        , subchains_()
+        , rng_(std::random_device{}())
         , job_counter_()
         , map_()
         , pc_counter_(job_counter_.Allocate())
         , payment_codes_()
         , gatekeeper_()
     {
-        for (const auto& id : api_.Wallet().LocalNyms()) { Add(id); }
     }
 
     ~Imp() { shutdown(); }
@@ -161,18 +212,60 @@ private:
     using AccountMap = std::map<OTNymID, wallet::Account>;
     using PCMap = std::map<OTIdentifier, NotificationStateData>;
 
+    struct Subchains {
+        auto Query() const noexcept -> bool { return finished_; }
+
+        auto Complete(const Identifier& id) noexcept -> void
+        {
+            auto lock = Lock{lock_};
+            done_.emplace(id);
+            finished_ = (done_.size() == registered_.size());
+        }
+        auto Register(const Identifier& id) noexcept -> void
+        {
+            auto lock = Lock{lock_};
+            registered_.emplace(id);
+            finished_ = (done_.size() == registered_.size());
+        }
+
+        mutable std::mutex lock_{};
+        std::set<OTIdentifier> registered_{};
+        std::set<OTIdentifier> done_{};
+        std::atomic_bool finished_{false};
+    };
+
     const api::Core& api_;
     const api::client::internal::Blockchain& crypto_;
     const node::internal::Network& node_;
+    Accounts& parent_;
     const node::internal::WalletDatabase& db_;
-    const SimpleCallback& task_finished_;
+    const std::function<void(const Identifier&, const char*)>& task_finished_;
     const Type chain_;
     const filter::Type filter_type_;
+    Subchains subchains_;
+    std::default_random_engine rng_;
     JobCounter job_counter_;
     AccountMap map_;
     Outstanding pc_counter_;
     PCMap payment_codes_;
     Gatekeeper gatekeeper_;
+
+    auto for_each(std::function<void(Actor&)> action) noexcept -> void
+    {
+        if (!action) { return; }
+
+        auto actors = std::vector<Actor*>{};
+
+        for (auto& [nym, account] : map_) { actors.emplace_back(&account); }
+
+        for (auto& [code, account] : payment_codes_) {
+            actors.emplace_back(&account);
+        }
+
+        std::shuffle(actors.begin(), actors.end(), rng_);
+
+        for (auto* actor : actors) { action(*actor); }
+    }
 
     auto index_nym(const identifier::Nym& id) noexcept -> void
     {
@@ -195,6 +288,7 @@ private:
             api_,
             crypto_,
             node_,
+            parent_,
             db_,
             task_finished_,
             pc_counter_,
@@ -217,43 +311,78 @@ Accounts::Accounts(
     const node::internal::Network& node,
     const node::internal::WalletDatabase& db,
     const Type chain,
-    const SimpleCallback& taskFinished) noexcept
-    : imp_(std::make_unique<Imp>(api, crypto, node, db, chain, taskFinished))
+    const std::function<void(const Identifier&, const char*)>&
+        taskFinished) noexcept
+    : imp_(std::make_unique<
+           Imp>(api, crypto, node, *this, db, chain, taskFinished))
 {
+    imp_->Init();
 }
 
-auto Accounts::Add(const identifier::Nym& nym) noexcept -> bool
+auto Accounts::Complete(const Identifier& id) noexcept -> void
 {
-    return imp_->Add(nym);
+    imp_->Complete(id);
 }
 
-auto Accounts::Add(const zmq::Frame& message) noexcept -> bool
+auto Accounts::FinishBackgroundTasks() noexcept -> void
 {
-    return imp_->Add(message);
+    return imp_->finish_background_tasks();
 }
 
-auto Accounts::Mempool(
-    std::shared_ptr<const block::bitcoin::Transaction>&& tx) noexcept -> void
+auto Accounts::ProcessBlockAvailable(const block::Hash& block) noexcept -> void
+{
+    imp_->BlockAvailable(block);
+}
+
+auto Accounts::ProcessKey() noexcept -> void { imp_->NewKey(); }
+
+auto Accounts::ProcessMempool(
+    std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept -> void
 {
     imp_->Mempool(std::move(tx));
 }
 
-auto Accounts::Reorg(const block::Position& parent) noexcept -> bool
+auto Accounts::ProcessNewFilter(const block::Position& tip) noexcept -> void
+{
+    imp_->NewFilter(tip);
+}
+
+auto Accounts::ProcessNym(const identifier::Nym& nym) noexcept -> bool
+{
+    return imp_->Add(nym);
+}
+
+auto Accounts::ProcessNym(const zmq::Frame& message) noexcept -> bool
+{
+    return imp_->Add(message);
+}
+
+auto Accounts::ProcessReorg(const block::Position& parent) noexcept -> bool
 {
     return imp_->Reorg(parent);
 }
 
-auto Accounts::shutdown() noexcept -> void { imp_->shutdown(); }
-
-auto Accounts::state_machine(bool enabled) noexcept -> bool
+auto Accounts::ProcessStateMachine(bool enabled) noexcept -> bool
 {
     return imp_->state_machine(enabled);
 }
 
-auto Accounts::finish_background_tasks() noexcept -> void
+auto Accounts::ProcessTaskComplete(
+    const Identifier& id,
+    const char* type,
+    bool enabled) noexcept -> void
 {
-    return imp_->finish_background_tasks();
+    imp_->TaskComplete(id, type, enabled);
 }
+
+auto Accounts::Query() const noexcept -> bool { return imp_->Query(); }
+
+auto Accounts::Register(const Identifier& id) noexcept -> void
+{
+    return imp_->Register(id);
+}
+
+auto Accounts::Shutdown() noexcept -> void { imp_->shutdown(); }
 
 Accounts::~Accounts() { imp_->shutdown(); }
 }  // namespace opentxs::blockchain::node::wallet
