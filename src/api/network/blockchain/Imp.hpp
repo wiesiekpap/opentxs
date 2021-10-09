@@ -94,6 +94,10 @@ namespace opentxs::api::network
 struct BlockchainImp final : public Blockchain::Imp {
     auto AddSyncServer(const std::string& endpoint) const noexcept
         -> bool final;
+    auto BlockAvailable() const noexcept -> const zmq::socket::Publish& final
+    {
+        return block_available_;
+    }
     auto BlockQueueUpdate() const noexcept -> const zmq::socket::Publish& final
     {
         return block_download_queue_;
@@ -173,6 +177,7 @@ private:
     const api::client::internal::Blockchain* crypto_;
     std::unique_ptr<opentxs::blockchain::database::common::Database> db_;
     OTZMQPublishSocket active_peer_updates_;
+    OTZMQPublishSocket block_available_;
     OTZMQPublishSocket block_download_queue_;
     OTZMQPublishSocket chain_state_publisher_;
     OTZMQPublishSocket connected_peer_updates_;

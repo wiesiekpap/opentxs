@@ -5,8 +5,10 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 
+#include "blockchain/node/wallet/Actor.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"
@@ -54,6 +56,7 @@ struct WalletDatabase;
 
 namespace wallet
 {
+class Accounts;
 class SubchainStateData;
 }  // namespace wallet
 }  // namespace node
@@ -70,35 +73,46 @@ class Push;
 }  // namespace zeromq
 }  // namespace network
 
+class Identifier;
 class Outstanding;
 }  // namespace opentxs
 
 namespace opentxs::blockchain::node::wallet
 {
-class Account
+class Account final : public Actor
 {
 public:
     using BalanceTree = crypto::Account;
 
-    auto finish_background_tasks() noexcept -> void;
-    auto mempool(std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept
-        -> void;
-    auto reorg(const block::Position& parent) noexcept -> bool;
-    auto shutdown() noexcept -> void;
-    auto state_machine(bool enabled) noexcept -> bool;
+    auto FinishBackgroundTasks() noexcept -> void final;
+    auto ProcessBlockAvailable(const block::Hash& block) noexcept -> void final;
+    auto ProcessKey() noexcept -> void final;
+    auto ProcessMempool(
+        std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept
+        -> void final;
+    auto ProcessNewFilter(const block::Position& tip) noexcept -> void final;
+    auto ProcessReorg(const block::Position& parent) noexcept -> bool final;
+    auto ProcessStateMachine(bool enabled) noexcept -> bool final;
+    auto Shutdown() noexcept -> void final;
+    auto ProcessTaskComplete(
+        const Identifier& id,
+        const char* type,
+        bool enabled) noexcept -> void final;
 
     Account(
         const api::Core& api,
         const api::client::internal::Blockchain& crypto,
         const BalanceTree& ref,
         const node::internal::Network& node,
+        Accounts& parent,
         const node::internal::WalletDatabase& db,
         const filter::Type filter,
         Outstanding&& jobs,
-        const SimpleCallback& taskFinished) noexcept;
+        const std::function<void(const Identifier&, const char*)>&
+            taskFinished) noexcept;
     Account(Account&&) noexcept;
 
-    ~Account();
+    ~Account() final;
 
 private:
     struct Imp;

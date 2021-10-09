@@ -5,8 +5,11 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
+#include <mutex>
 
+#include "blockchain/node/wallet/Actor.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -63,22 +66,35 @@ class Push;
 class Frame;
 }  // namespace zeromq
 }  // namespace network
+
+class Identifier;
 }  // namespace opentxs
 
 namespace opentxs::blockchain::node::wallet
 {
-class Accounts
+class Accounts final : public Actor
 {
 public:
-    auto Add(const identifier::Nym& nym) noexcept -> bool;
-    auto Add(const network::zeromq::Frame& message) noexcept -> bool;
-    auto finish_background_tasks() noexcept -> void;
-    auto Mempool(
-        std::shared_ptr<const block::bitcoin::Transaction>&& tx) noexcept
-        -> void;
-    auto Reorg(const block::Position& parent) noexcept -> bool;
-    auto shutdown() noexcept -> void;
-    auto state_machine(bool enabled) noexcept -> bool;
+    auto Query() const noexcept -> bool;
+
+    auto Complete(const Identifier& id) noexcept -> void;
+    auto FinishBackgroundTasks() noexcept -> void final;
+    auto ProcessBlockAvailable(const block::Hash& block) noexcept -> void final;
+    auto ProcessKey() noexcept -> void final;
+    auto ProcessMempool(
+        std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept
+        -> void final;
+    auto ProcessNewFilter(const block::Position& tip) noexcept -> void final;
+    auto ProcessNym(const identifier::Nym& nym) noexcept -> bool;
+    auto ProcessNym(const network::zeromq::Frame& message) noexcept -> bool;
+    auto ProcessReorg(const block::Position& parent) noexcept -> bool final;
+    auto ProcessStateMachine(bool enabled) noexcept -> bool final;
+    auto ProcessTaskComplete(
+        const Identifier& id,
+        const char* type,
+        bool enabled) noexcept -> void final;
+    auto Register(const Identifier& id) noexcept -> void;
+    auto Shutdown() noexcept -> void final;
 
     Accounts(
         const api::Core& api,
@@ -86,8 +102,10 @@ public:
         const node::internal::Network& node,
         const node::internal::WalletDatabase& db,
         const Type chain,
-        const SimpleCallback& taskFinished) noexcept;
-    ~Accounts();
+        const std::function<void(const Identifier&, const char*)>&
+            taskFinished) noexcept;
+
+    ~Accounts() final;
 
 private:
     struct Imp;

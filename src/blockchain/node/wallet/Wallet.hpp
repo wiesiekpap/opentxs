@@ -162,31 +162,43 @@ private:
     enum class Work : OTZMQWorkType {
         shutdown = value(WorkType::Shutdown),
         nym = value(WorkType::NymCreated),
-        block = value(WorkType::BlockchainNewHeader),
+        header = value(WorkType::BlockchainNewHeader),
         reorg = value(WorkType::BlockchainReorg),
+        filter = value(WorkType::BlockchainNewFilter),
         mempool = value(WorkType::BlockchainMempoolUpdated),
+        block = value(WorkType::BlockchainBlockAvailable),
+        job_finished = OT_ZMQ_INTERNAL_SIGNAL + 0,
+        init_wallet = OT_ZMQ_INTERNAL_SIGNAL + 1,
         key = OT_ZMQ_NEW_BLOCKCHAIN_WALLET_KEY_SIGNAL,
-        filter = OT_ZMQ_NEW_FILTER_SIGNAL,
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
     using DBUTXOs = std::vector<node::internal::WalletDatabase::UTXO>;
+    using TaskCallback = std::function<void(const Identifier&, const char*)>;
 
     const node::internal::Network& parent_;
     const node::internal::WalletDatabase& db_;
     const node::internal::Mempool& mempool_;
     const api::client::internal::Blockchain& crypto_;
     const Type chain_;
-    const SimpleCallback task_finished_;
+    const TaskCallback task_finished_;
     std::atomic_bool enabled_;
     wallet::Accounts accounts_;
     wallet::Proposals proposals_;
 
     auto convert(const DBUTXOs& in) const noexcept -> std::vector<UTXO>;
+    auto trigger_wallet() const noexcept -> void;
+
     auto pipeline(const zmq::Message& in) noexcept -> void;
-    auto process_block(const zmq::Message& in) noexcept -> void;
+    auto process_block_download(const zmq::Message& in) noexcept -> void;
+    auto process_block_header(const zmq::Message& in) noexcept -> void;
+    auto process_filter(const zmq::Message& in) noexcept -> void;
+    auto process_job_finished(const zmq::Message& in) noexcept -> void;
+    auto process_key(const zmq::Message& in) noexcept -> void;
     auto process_mempool(const zmq::Message& in) noexcept -> void;
+    auto process_nym(const zmq::Message& in) noexcept -> void;
     auto process_reorg(const zmq::Message& in) noexcept -> void;
+    auto process_wallet() noexcept -> void;
     auto shutdown(std::promise<void>& promise) noexcept -> void;
     auto state_machine() noexcept -> bool;
 

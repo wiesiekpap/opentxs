@@ -7,10 +7,8 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/wallet/NotificationStateData.hpp"  // IWYU pragma: associated
 
-#include <array>
 #include <cstddef>
 #include <iterator>
-#include <map>
 #include <memory>
 #include <optional>
 #include <sstream>
@@ -23,7 +21,6 @@
 #include "Proto.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -56,8 +53,9 @@ NotificationStateData::NotificationStateData(
     const api::Core& api,
     const api::client::internal::Blockchain& crypto,
     const node::internal::Network& node,
+    Accounts& parent,
     const WalletDatabase& db,
-    const SimpleCallback& taskFinished,
+    const std::function<void(const Identifier&, const char*)>& taskFinished,
     Outstanding& jobCounter,
     const filter::Type filter,
     const Type chain,
@@ -68,6 +66,7 @@ NotificationStateData::NotificationStateData(
           api,
           crypto,
           node,
+          parent,
           db,
           OTNymID{nym},
           crypto::SubaccountType::Notification,
@@ -77,7 +76,8 @@ NotificationStateData::NotificationStateData(
           filter,
           Subchain::Notification)
     , path_(std::move(path))
-    , code_(std::move(code))
+    , index_(*this, scan_, rescan_, progress_, std::move(code))
+    , code_(index_.code_)
 {
     init();
     auto reason =
@@ -85,7 +85,7 @@ NotificationStateData::NotificationStateData(
     auto mNym = api_.Wallet().mutable_Nym(nym, reason);
     const auto type = Translate(chain);
     const auto existing = mNym.PaymentCode(type);
-    const auto expected = code_->asBase58();
+    const auto expected = code_.asBase58();
 
     if (existing != expected) {
         mNym.AddPaymentCode(expected, type, existing.empty(), true, reason);
@@ -105,26 +105,6 @@ auto NotificationStateData::calculate_id(
     return output;
 }
 
-auto NotificationStateData::check_index() noexcept -> bool
-{
-    const auto index = db_.SubchainLastIndexed(index_);
-
-    if (index.value_or(0) < code_->Version()) {
-        LogVerbose(OT_METHOD)(__func__)(": Payment code ")(code_->asBase58())(
-            " notification elements not yet indexed")
-            .Flush();
-        static constexpr auto job{"index"};
-
-        return queue_work(Task::index, job);
-    } else {
-        LogTrace(OT_METHOD)(__func__)(": Payment code ")(code_->asBase58())(
-            " already indexed")
-            .Flush();
-    }
-
-    return false;
-}
-
 auto NotificationStateData::handle_confirmed_matches(
     const block::bitcoin::Block& block,
     const block::Position& position,
@@ -132,7 +112,7 @@ auto NotificationStateData::handle_confirmed_matches(
 {
     const auto& [utxo, general] = confirmed;
     LogVerbose(OT_METHOD)(__func__)(": ")(general.size())(
-        " confirmed matches for ")(code_->asBase58())(" on ")(
+        " confirmed matches for ")(code_.asBase58())(" on ")(
         DisplayString(node_.Chain()))
         .Flush();
 
@@ -145,7 +125,7 @@ auto NotificationStateData::handle_confirmed_matches(
         const auto& [version, subchainID] = elementID;
         LogVerbose(OT_METHOD)(__func__)(": ")(DisplayString(node_.Chain()))(
             " transaction ")(txid->asHex())(" contains a version ")(
-            version)(" notification for ")(code_->asBase58())
+            version)(" notification for ")(code_.asBase58())
             .Flush();
         const auto tx = block.at(txid->Bytes());
 
@@ -170,44 +150,10 @@ auto NotificationStateData::handle_mempool_matches(
         const auto& [version, subchainID] = elementID;
         LogVerbose(OT_METHOD)(__func__)(": ")(DisplayString(node_.Chain()))(
             " mempool transaction ")(txid->asHex())(" contains a version ")(
-            version)(" notification for ")(code_->asBase58())
+            version)(" notification for ")(code_.asBase58())
             .Flush();
         process(match, *tx, reason);
     }
-}
-
-auto NotificationStateData::index() noexcept -> void
-{
-    auto elements = WalletDatabase::ElementMap{};
-
-    for (auto i{code_->Version()}; i > 0; --i) {
-        auto& vector = elements[i];
-
-        switch (i) {
-            case 1:
-            case 2: {
-                code_->Locator(writer(vector.emplace_back()), i);
-            } break;
-            case 3:
-            default: {
-                vector.reserve(2);
-                auto b = std::array<std::byte, 33>{};
-                auto& prefix = b[0];
-                auto* start = std::next(b.data(), 1);
-                auto* stop = std::next(b.data(), b.size());
-                code_->Locator(preallocated(32, start), i);
-                prefix = std::byte{0x02};
-                vector.emplace_back(b.data(), stop);
-                prefix = std::byte{0x03};
-                vector.emplace_back(b.data(), stop);
-            }
-        }
-    }
-
-    db_.SubchainAddElements(index_, elements);
-    LogTrace(OT_METHOD)(__func__)(": Payment code ")(code_->asBase58())(
-        " indexed")
-        .Flush();
 }
 
 auto NotificationStateData::init_keys() noexcept -> OTPasswordPrompt
@@ -215,11 +161,11 @@ auto NotificationStateData::init_keys() noexcept -> OTPasswordPrompt
     const auto reason = api_.Factory().PasswordPrompt(
         "Decoding payment code notification transaction");
 
-    if (auto key{code_->Key()}; key) {
+    if (auto key{code_.Key()}; key) {
         if (false == key->HasPrivate()) {
             auto seed{path_.root()};
             const auto upgraded =
-                code_->AddPrivateKeys(seed, *path_.child().rbegin(), reason);
+                code_.AddPrivateKeys(seed, *path_.child().rbegin(), reason);
 
             if (false == upgraded) { OT_FAIL; }
         }
@@ -261,14 +207,14 @@ auto NotificationStateData::process(
             }();
 
             auto pSender =
-                code_->DecodeNotificationElements(version, elements, reason);
+                code_.DecodeNotificationElements(version, elements, reason);
 
             if (!pSender) { continue; }
 
             const auto& sender = *pSender;
             LogVerbose(OT_METHOD)(__func__)(": decoded incoming notification "
                                             "from ")(sender.asBase58())(" on ")(
-                DisplayString(node_.Chain()))(" for ")(code_->asBase58())
+                DisplayString(node_.Chain()))(" for ")(code_.asBase58())
                 .Flush();
             const auto& account = crypto_.PaymentCodeSubaccount(
                 owner_, code_, sender, path_, node_.Chain(), reason);

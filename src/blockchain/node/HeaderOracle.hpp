@@ -85,6 +85,8 @@ public:
         noexcept(false) -> Positions final;
     auto BestHash(const block::Height height) const noexcept
         -> block::pHash final;
+    auto BestHash(const block::Height height, const block::Position& check)
+        const noexcept -> block::pHash final;
     auto BestHashes(const block::Height start, const std::size_t limit = 0)
         const noexcept -> Hashes final;
     auto BestHashes(
@@ -101,6 +103,8 @@ public:
         -> std::pair<block::Position, block::Position> final;
     auto GetCheckpoint() const noexcept -> block::Position final;
     auto GetDefaultCheckpoint() const noexcept -> CheckpointData final;
+    auto GetPosition(const block::Height height) const noexcept
+        -> block::Position final;
     auto IsInBestChain(const block::Hash& hash) const noexcept -> bool final;
     auto IsInBestChain(const block::Position& position) const noexcept
         -> bool final;
@@ -163,6 +167,8 @@ private:
         const block::Height start,
         const block::Hash& stop,
         const std::size_t limit) const noexcept -> Hashes;
+    auto blank_hash() const noexcept -> const block::pHash&;
+    auto blank_position() const noexcept -> const block::Position&;
     auto common_parent(const Lock& lock, const block::Position& position)
         const noexcept -> std::pair<block::Position, block::Position>;
     auto is_in_best_chain(const Lock& lock, const block::Hash& hash)

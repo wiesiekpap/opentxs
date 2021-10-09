@@ -6,6 +6,7 @@
 #pragma once
 
 #include <atomic>
+#include <functional>
 #include <iosfwd>
 #include <map>
 #include <memory>
@@ -15,6 +16,7 @@
 #include <utility>
 #include <vector>
 
+#include "blockchain/node/wallet/Index.hpp"
 #include "blockchain/node/wallet/SubchainStateData.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -67,6 +69,14 @@ namespace internal
 {
 struct Network;
 }  // namespace internal
+
+namespace wallet
+{
+class Accounts;
+class Progress;
+class Rescan;
+class Scan;
+}  // namespace wallet
 }  // namespace node
 }  // namespace blockchain
 
@@ -81,6 +91,7 @@ class Push;
 }  // namespace zeromq
 }  // namespace network
 
+class Identifier;
 class Outstanding;
 }  // namespace opentxs
 
@@ -91,15 +102,14 @@ class DeterministicStateData final : public SubchainStateData
 public:
     const crypto::Deterministic& subaccount_;
 
-    auto index() noexcept -> void final;
-
     DeterministicStateData(
         const api::Core& api,
         const api::client::internal::Blockchain& crypto,
         const node::internal::Network& node,
+        Accounts& parent,
         const WalletDatabase& db,
         const crypto::Deterministic& subaccount,
-        const SimpleCallback& taskFinished,
+        const std::function<void(const Identifier&, const char*)>& taskFinished,
         Outstanding& jobCounter,
         const filter::Type filter,
         const Subchain subchain) noexcept;
@@ -110,9 +120,34 @@ private:
     using MatchedTransaction =
         std::pair<std::vector<Bip32Index>, const block::bitcoin::Transaction*>;
 
-    auto type() const noexcept -> std::stringstream final;
+    class Index final : public wallet::Index
+    {
+    public:
+        auto Do(std::optional<Bip32Index> current, Bip32Index target) noexcept
+            -> void final;
 
-    auto check_index() noexcept -> bool final;
+        Index(
+            const crypto::Deterministic& subaccount,
+            SubchainStateData& parent,
+            Scan& scan,
+            Rescan& rescan,
+            Progress& progress) noexcept;
+
+        ~Index() final = default;
+
+    private:
+        const crypto::Deterministic& subaccount_;
+
+        auto need_index(const std::optional<Bip32Index>& current) const noexcept
+            -> std::optional<Bip32Index> final;
+    };
+
+    Index index_;
+
+    auto type() const noexcept -> std::stringstream final;
+    auto update_scan(const block::Position& pos) const noexcept -> void final;
+
+    auto get_index() noexcept -> Index& final { return index_; }
     auto handle_confirmed_matches(
         const block::bitcoin::Block& block,
         const block::Position& position,
@@ -121,12 +156,10 @@ private:
         const block::Block::Matches& matches,
         std::unique_ptr<const block::bitcoin::Transaction> tx) noexcept
         -> void final;
-    using SubchainStateData::process;
     auto process(
         const block::Block::Match match,
         const block::bitcoin::Transaction& tx,
         MatchedTransaction& output) noexcept -> void;
-    auto update_scan(const block::Position& pos) noexcept -> void final;
 
     DeterministicStateData() = delete;
     DeterministicStateData(const DeterministicStateData&) = delete;

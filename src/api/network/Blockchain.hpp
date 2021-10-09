@@ -80,6 +80,10 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
     {
         return {};
     }
+    auto BlockAvailable() const noexcept -> const zmq::socket::Publish& override
+    {
+        OT_FAIL;
+    }
     auto BlockQueueUpdate() const noexcept
         -> const zmq::socket::Publish& override
     {

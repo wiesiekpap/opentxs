@@ -81,6 +81,16 @@ public:
         const std::size_t limit = 0) const noexcept(false) -> Positions = 0;
     virtual auto BestHash(const block::Height height) const noexcept
         -> block::pHash = 0;
+    /** Returns best hash at specified height if the provides position is still
+     *  in the best chain
+     *
+     *  Returns the best hash at the specified height if it exists and if the
+     *  check position is in the best chain, otherwise returns an empty value.
+     *
+     */
+    virtual auto BestHash(
+        const block::Height height,
+        const block::Position& check) const noexcept -> block::pHash = 0;
     virtual auto BestHashes(
         const block::Height start,
         const std::size_t limit = 0) const noexcept -> Hashes = 0;
@@ -119,6 +129,8 @@ public:
     virtual auto CommonParent(const block::Position& input) const noexcept
         -> std::pair<block::Position, block::Position> = 0;
     virtual auto GetCheckpoint() const noexcept -> block::Position = 0;
+    virtual auto GetPosition(const block::Height height) const noexcept
+        -> block::Position = 0;
     virtual auto IsInBestChain(const block::Hash& hash) const noexcept
         -> bool = 0;
     virtual auto IsInBestChain(const block::Position& position) const noexcept

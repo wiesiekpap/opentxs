@@ -53,6 +53,14 @@ BlockchainImp::BlockchainImp(
 
         return out;
     }())
+    , block_available_([&] {
+        auto out = zmq.PublishSocket();
+        const auto listen = out->Start(endpoints.BlockchainBlockAvailable());
+
+        OT_ASSERT(listen);
+
+        return out;
+    }())
     , block_download_queue_([&] {
         auto out = zmq.PublishSocket();
         const auto listen =

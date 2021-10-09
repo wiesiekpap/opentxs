@@ -151,7 +151,8 @@ private:
             const api::Core& api_,
             const internal::Network& node,
             const internal::BlockDatabase& db,
-            const network::zeromq::socket::Publish& socket,
+            const network::zeromq::socket::Publish& blockAvailable,
+            const network::zeromq::socket::Publish& downloadCache,
             const blockchain::Type chain) noexcept;
         ~Cache() { Shutdown(); }
 
@@ -182,6 +183,7 @@ private:
         const api::Core& api_;
         const internal::Network& node_;
         const internal::BlockDatabase& db_;
+        const network::zeromq::socket::Publish& block_available_;
         const network::zeromq::socket::Publish& cache_size_publisher_;
         const blockchain::Type chain_;
         mutable std::mutex lock_;
@@ -191,6 +193,7 @@ private:
 
         auto download(const block::Hash& block) const noexcept -> bool;
         auto publish(std::size_t cache) const noexcept -> void;
+        auto publish(const block::Hash& block) const noexcept -> void;
     };
 
     const internal::Network& node_;

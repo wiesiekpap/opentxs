@@ -6,6 +6,7 @@
 #pragma once
 
 #include <atomic>
+#include <functional>
 #include <iosfwd>
 #include <map>
 #include <memory>
@@ -14,6 +15,7 @@
 #include <queue>
 #include <vector>
 
+#include "blockchain/node/wallet/Index.hpp"
 #include "blockchain/node/wallet/SubchainStateData.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -72,6 +74,14 @@ namespace internal
 {
 struct Network;
 }  // namespace internal
+
+namespace wallet
+{
+class Accounts;
+class Progress;
+class Rescan;
+class Scan;
+}  // namespace wallet
 }  // namespace node
 }  // namespace blockchain
 
@@ -105,14 +115,13 @@ public:
         const Type chain,
         const PaymentCode& code) noexcept -> OTIdentifier;
 
-    auto index() noexcept -> void final;
-
     NotificationStateData(
         const api::Core& api,
         const api::client::internal::Blockchain& crypto,
         const node::internal::Network& node,
+        Accounts& parent,
         const WalletDatabase& db,
-        const SimpleCallback& taskFinished,
+        const std::function<void(const Identifier&, const char*)>& taskFinished,
         Outstanding& jobCounter,
         const filter::Type filter,
         const Type chain,
@@ -123,12 +132,35 @@ public:
     ~NotificationStateData() final = default;
 
 private:
+    class Index final : public wallet::Index
+    {
+    public:
+        OTPaymentCode code_;
+
+        auto Do(std::optional<Bip32Index> current, Bip32Index target) noexcept
+            -> void final;
+
+        Index(
+            SubchainStateData& parent,
+            Scan& scan,
+            Rescan& rescan,
+            Progress& progress,
+            OTPaymentCode&& code) noexcept;
+
+        ~Index() final = default;
+
+    private:
+        auto need_index(const std::optional<Bip32Index>& current) const noexcept
+            -> std::optional<Bip32Index> final;
+    };
+
     const proto::HDPath path_;
-    OTPaymentCode code_;
+    Index index_;
+    PaymentCode& code_;
 
     auto type() const noexcept -> std::stringstream final;
 
-    auto check_index() noexcept -> bool final;
+    auto get_index() noexcept -> Index& final { return index_; }
     auto handle_confirmed_matches(
         const block::bitcoin::Block& block,
         const block::Position& position,
@@ -138,7 +170,6 @@ private:
         std::unique_ptr<const block::bitcoin::Transaction> tx) noexcept
         -> void final;
     auto init_keys() noexcept -> OTPasswordPrompt;
-    using SubchainStateData::process;
     auto process(
         const block::Block::Match match,
         const block::bitcoin::Transaction& tx,

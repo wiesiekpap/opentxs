@@ -208,6 +208,7 @@ private:
     mutable std::unique_ptr<HeaderDownloader> header_downloader_;
     mutable std::unique_ptr<BlockIndexer> block_indexer_;
     mutable Time last_sync_progress_;
+    mutable std::map<filter::Type, block::Position> last_broadcast_;
     mutable JobCounter outstanding_jobs_;
     std::atomic_bool running_;
 

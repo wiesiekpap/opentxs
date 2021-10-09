@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"          // IWYU pragma: associated
 #include "api/client/Manager.hpp"  // IWYU pragma: associated
 
+#include <exception>
 #include <functional>
 #include <map>
 #include <memory>
@@ -63,15 +64,21 @@ auto ClientManager(
 {
     using ReturnType = api::client::implementation::Manager;
 
-    return std::make_unique<ReturnType>(
-        parent,
-        running,
-        std::move(args),
-        config,
-        crypto,
-        context,
-        dataFolder,
-        instance);
+    try {
+        return std::make_unique<ReturnType>(
+            parent,
+            running,
+            std::move(args),
+            config,
+            crypto,
+            context,
+            dataFolder,
+            instance);
+    } catch (const std::exception& e) {
+        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+
+        return {};
+    }
 }
 }  // namespace opentxs::factory
 

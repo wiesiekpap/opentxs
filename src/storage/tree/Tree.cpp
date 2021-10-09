@@ -8,6 +8,7 @@
 #include "storage/tree/Tree.hpp"  // IWYU pragma: associated
 
 #include <functional>
+#include <stdexcept>
 
 #include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/core/Log.hpp"
@@ -180,31 +181,35 @@ auto Tree::get_editor(
 
 void Tree::init(const std::string& hash)
 {
-    std::shared_ptr<proto::StorageItems> serialized{nullptr};
-    driver_.LoadProto(hash, serialized);
+    try {
+        auto serialized = std::shared_ptr<proto::StorageItems>{};
+        driver_.LoadProto(hash, serialized);
 
-    if (false == bool(serialized)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to load root index file.")
-            .Flush();
+        if (false == bool(serialized)) {
+            throw std::runtime_error{"Failed to load root index file"};
+        }
+
+        init_version(TREE_VERSION, *serialized);
+        account_root_ = normalize_hash(serialized->accounts());
+        // NOTE blockchaintransactions field is no longer used
+        contact_root_ = normalize_hash(serialized->contacts());
+        credential_root_ = normalize_hash(serialized->creds());
+        notary_root_ = normalize_hash(serialized->notary());
+        nym_root_ = normalize_hash(serialized->nyms());
+        seed_root_ = normalize_hash(serialized->seeds());
+        server_root_ = normalize_hash(serialized->servers());
+        unit_root_ = normalize_hash(serialized->units());
+
+        if (serialized->has_master_secret()) {
+            master_key_.reset(
+                new proto::Ciphertext(serialized->master_secret()));
+
+            OT_ASSERT(master_key_);
+        }
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         OT_FAIL
-    }
-
-    init_version(TREE_VERSION, *serialized);
-    account_root_ = normalize_hash(serialized->accounts());
-    // NOTE blockchaintransactions field is no longer used
-    contact_root_ = normalize_hash(serialized->contacts());
-    credential_root_ = normalize_hash(serialized->creds());
-    notary_root_ = normalize_hash(serialized->notary());
-    nym_root_ = normalize_hash(serialized->nyms());
-    seed_root_ = normalize_hash(serialized->seeds());
-    server_root_ = normalize_hash(serialized->servers());
-    unit_root_ = normalize_hash(serialized->units());
-
-    if (serialized->has_master_secret()) {
-        master_key_.reset(new proto::Ciphertext(serialized->master_secret()));
-
-        OT_ASSERT(master_key_);
     }
 }
 

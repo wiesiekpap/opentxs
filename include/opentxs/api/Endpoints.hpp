@@ -60,6 +60,17 @@ public:
      */
     virtual auto BlockchainBalance() const noexcept -> std::string = 0;
 
+    /** Blockchain block available notifications
+     *
+     *  A subscribe socket can connect to this endpoint to receive
+     *  BlockchainBlockAvailable tagged messages
+     *
+     *  See opentxs/util/WorkTypes.hpp for message format documentation
+     *
+     *  This endpoint is active for client sessions only.
+     */
+    virtual auto BlockchainBlockAvailable() const noexcept -> std::string = 0;
+
     /** Blockchain block download queue notifications
      *
      *  A subscribe socket can connect to this endpoint to receive

@@ -6,6 +6,8 @@
 #pragma once
 
 #include <atomic>
+#include <condition_variable>
+#include <functional>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -17,6 +19,13 @@
 #include <utility>
 #include <vector>
 
+#include "blockchain/node/wallet/Actor.hpp"
+#include "blockchain/node/wallet/BlockIndex.hpp"
+#include "blockchain/node/wallet/Mempool.hpp"
+#include "blockchain/node/wallet/Process.hpp"
+#include "blockchain/node/wallet/Progress.hpp"
+#include "blockchain/node/wallet/Rescan.hpp"
+#include "blockchain/node/wallet/Scan.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
@@ -76,6 +85,9 @@ struct WalletDatabase;
 
 namespace wallet
 {
+class Accounts;
+class Index;
+class Job;
 class ScriptForm;
 }  // namespace wallet
 }  // namespace node
@@ -97,75 +109,60 @@ class Outstanding;
 
 namespace opentxs::blockchain::node::wallet
 {
-class SubchainStateData
+class SubchainStateData : virtual public Actor
 {
 public:
     using WalletDatabase = node::internal::WalletDatabase;
     using Subchain = WalletDatabase::Subchain;
-    using OutstandingMap =
-        std::map<block::pHash, BlockOracle::BitcoinBlockFuture>;
-    using ProcessQueue = std::queue<OutstandingMap::iterator>;
     using SubchainIndex = WalletDatabase::pSubchainIndex;
-    using Transactions =
-        std::vector<std::shared_ptr<const block::bitcoin::Transaction>>;
 
-    struct MempoolQueue {
-        auto Empty() const noexcept -> bool;
-
-        auto Queue(
-            std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept
-            -> bool;
-        auto Queue(Transactions&& transactions) noexcept -> bool;
-        auto Next() noexcept
-            -> std::shared_ptr<const block::bitcoin::Transaction>;
-
-    private:
-        mutable std::mutex lock_{};
-        std::queue<std::shared_ptr<const block::bitcoin::Transaction>> tx_{};
-    };
-
+    const api::Core& api_;
+    const api::client::internal::Blockchain& crypto_;
+    const node::internal::Network& node_;
+    Accounts& parent_;
+    const WalletDatabase& db_;
+    const std::function<void(const Identifier&, const char*)>& task_finished_;
+    const std::string name_;
     const OTNymID owner_;
     const crypto::SubaccountType account_type_;
     const OTIdentifier id_;
     const Subchain subchain_;
     const filter::Type filter_type_;
-    const SubchainIndex index_;
-    Outstanding& job_counter_;
-    const SimpleCallback& task_finished_;
-    std::atomic<bool> running_;
-    MempoolQueue mempool_;
-    std::optional<Bip32Index> last_indexed_;
-    std::optional<block::Position> last_scanned_;
-    std::optional<block::Position> progress_;
-    std::vector<block::pHash> blocks_to_request_;
-    OutstandingMap outstanding_blocks_;
-    ProcessQueue process_block_queue_;
+    const SubchainIndex db_key_;
+    const block::Position null_position_;
 
-    auto finish_background_tasks() noexcept -> void;
-    virtual auto index() noexcept -> void = 0;
-    virtual auto process() noexcept -> void;
-    auto queue_reorg(const block::Position& ancestor) noexcept -> bool;
-    virtual auto reorg() noexcept -> void;
-    virtual auto scan() noexcept -> void;
+    auto FinishBackgroundTasks() noexcept -> void final;
+    auto ProcessBlockAvailable(const block::Hash& block) noexcept -> void final;
+    auto ProcessKey() noexcept -> void final;
+    auto ProcessMempool(
+        std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept
+        -> void final;
+    auto ProcessNewFilter(const block::Position& tip) noexcept -> void final;
+    auto ProcessReorg(const block::Position& ancestor) noexcept -> bool final;
+    auto ProcessStateMachine(bool enabled) noexcept -> bool final;
+    auto ProcessTaskComplete(
+        const Identifier& id,
+        const char* type,
+        bool enabled) noexcept -> void final;
+    auto Shutdown() noexcept -> void final;
 
-    auto state_machine(bool enabled) noexcept -> bool;
-
-    virtual ~SubchainStateData();
+    ~SubchainStateData() override;
 
 protected:
+    using Transactions =
+        std::vector<std::shared_ptr<const block::bitcoin::Transaction>>;
     using Task = node::internal::Wallet::Task;
     using Patterns = WalletDatabase::Patterns;
     using UTXOs = std::vector<WalletDatabase::UTXO>;
     using Targets = GCS::Targets;
     using Tested = WalletDatabase::MatchingIndices;
 
-    const api::Core& api_;
-    const api::client::internal::Blockchain& crypto_;
-    const node::internal::Network& node_;
-    const WalletDatabase& db_;
-    const std::string name_;
-    const block::Position null_position_;
-    block::Position reorg_;
+    Outstanding& job_counter_;
+    mutable BlockIndex block_index_;
+    Progress progress_;
+    Process process_;
+    Scan scan_;
+    Rescan rescan_;
 
     auto describe() const noexcept -> std::string;
     auto get_account_targets() const noexcept
@@ -174,38 +171,51 @@ protected:
         const noexcept -> std::pair<Patterns, Targets>;
     auto get_block_targets(const block::Hash& id, Tested& tested) const noexcept
         -> std::tuple<Patterns, UTXOs, Targets, Patterns>;
-    virtual auto type() const noexcept -> std::stringstream = 0;
+    auto index_element(
+        const filter::Type type,
+        const blockchain::crypto::Element& input,
+        const Bip32Index index,
+        WalletDatabase::ElementMap& output) const noexcept -> void;
     auto set_key_data(block::bitcoin::Transaction& tx) const noexcept -> void;
     auto supported_scripts(const crypto::Element& element) const noexcept
         -> std::vector<ScriptForm>;
     auto translate(
         const std::vector<WalletDatabase::UTXO>& utxos,
         Patterns& outpoints) const noexcept -> void;
+    virtual auto type() const noexcept -> std::stringstream = 0;
+    virtual auto update_scan(const block::Position& pos) const noexcept -> void;
 
-    auto index_element(
-        const filter::Type type,
-        const blockchain::crypto::Element& input,
-        const Bip32Index index,
-        WalletDatabase::ElementMap& output) noexcept -> void;
+    virtual auto get_index() noexcept -> Index& = 0;
+    virtual auto handle_confirmed_matches(
+        const block::bitcoin::Block& block,
+        const block::Position& position,
+        const block::Block::Matches& confirmed) noexcept -> void = 0;
     // NOTE call from all and only final constructor bodies
     auto init() noexcept -> void;
-    auto queue_work(const Task task, const char* log) noexcept -> bool;
 
     SubchainStateData(
         const api::Core& api,
         const api::client::internal::Blockchain& crypto,
         const node::internal::Network& node,
+        Accounts& parent,
         const WalletDatabase& db,
         OTNymID&& owner,
         crypto::SubaccountType accountType,
         OTIdentifier&& id,
-        const SimpleCallback& taskFinished,
+        const std::function<void(const Identifier&, const char*)>& taskFinished,
         Outstanding& jobCounter,
         const filter::Type filter,
         const Subchain subchain) noexcept;
 
 private:
-    block::Position last_reported_;
+    friend Index;
+    friend Job;
+    friend Mempool;
+    friend Process;
+    friend Progress;
+    friend Scan;
+
+    Mempool mempool_;
 
     auto get_targets(
         const Patterns& elements,
@@ -217,27 +227,12 @@ private:
         Targets& targets,
         Patterns& outpoints,
         Tested& tested) const noexcept -> void;
-    auto have_outstanding_process() const noexcept -> bool;
 
-    auto adjust_progress_finished() noexcept -> void;
-    auto adjust_progress_process(block::Position pos) noexcept -> void;
-    auto adjust_progress_reorg(block::Position pos) noexcept -> void;
-    auto adjust_progress_scan(block::Position pos) noexcept -> void;
-    auto check_blocks() noexcept -> bool;
-    virtual auto check_index() noexcept -> bool = 0;
-    auto check_mempool() noexcept -> void;
-    auto check_process() noexcept -> bool;
-    auto check_scan() noexcept -> bool;
-    virtual auto handle_confirmed_matches(
-        const block::bitcoin::Block& block,
-        const block::Position& position,
-        const block::Block::Matches& confirmed) noexcept -> void = 0;
+    auto do_reorg(const block::Position ancestor) noexcept -> void;
     virtual auto handle_mempool_matches(
         const block::Block::Matches& matches,
         std::unique_ptr<const block::bitcoin::Transaction> tx) noexcept
         -> void = 0;
-    auto report_scan() noexcept -> void;
-    virtual auto update_scan(const block::Position& pos) noexcept -> void {}
 
     SubchainStateData() = delete;
     SubchainStateData(const SubchainStateData&) = delete;

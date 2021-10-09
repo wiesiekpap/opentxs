@@ -103,6 +103,8 @@ private:
 };
 
 struct Blockchain {
+    virtual auto BlockAvailable() const noexcept
+        -> const opentxs::network::zeromq::socket::Publish& = 0;
     virtual auto BlockQueueUpdate() const noexcept
         -> const opentxs::network::zeromq::socket::Publish& = 0;
     virtual auto Database() const noexcept

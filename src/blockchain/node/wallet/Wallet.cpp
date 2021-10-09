@@ -20,16 +20,21 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/Node.hpp"
+#include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/node/TxoState.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
+#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/Pipeline.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::implementation::Wallet::"
 
@@ -68,7 +73,12 @@ Wallet::Wallet(
     , mempool_(mempool)
     , crypto_(crypto)
     , chain_(chain)
-    , task_finished_([this]() { trigger(); })
+    , task_finished_([this](const Identifier& id, const char* type) {
+        auto work = MakeWork(Work::job_finished);
+        work->AddFrame(id.data(), id.size());
+        work->AddFrame(std::string(type));
+        pipeline_->Push(work);
+    })
     , enabled_(false)
     , accounts_(api, crypto_, parent_, db_, chain_, task_finished_)
     , proposals_(api, crypto_, parent_, db_, chain_)
@@ -77,10 +87,12 @@ Wallet::Wallet(
         shutdown,
         api.Endpoints().BlockchainReorg(),
         api.Endpoints().NymCreated(),
-        api.Endpoints().InternalBlockchainFilterUpdated(chain),
+        api.Endpoints().BlockchainNewFilter(),
         crypto_.KeyEndpoint(),
         api.Endpoints().BlockchainMempool(),
+        api.Endpoints().BlockchainBlockAvailable(),
     });
+    trigger_wallet();
 }
 
 auto Wallet::ConstructTransaction(
@@ -189,6 +201,7 @@ auto Wallet::Height() const noexcept -> block::Height
 auto Wallet::Init() noexcept -> void
 {
     enabled_ = true;
+    trigger_wallet();
     trigger();
 }
 
@@ -218,25 +231,37 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
         case Work::shutdown: {
             shutdown(shutdown_promise_);
         } break;
-        case Work::block: {
-            process_block(in);
+        case Work::nym: {
+            process_nym(in);
+            process_wallet();
+        } break;
+        case Work::header: {
+            process_block_header(in);
         } break;
         case Work::reorg: {
             process_reorg(in);
-            do_work();
+            // TODO ensure filter oracle has processed the reorg before running
+            // state machine again
+            process_wallet();
         } break;
         case Work::mempool: {
             process_mempool(in);
-            do_work();
         } break;
-        case Work::nym: {
-            OT_ASSERT(1 < body.size());
-
-            accounts_.Add(body.at(1));
-            [[fallthrough]];
-        }
-        case Work::key:
-        case Work::filter:
+        case Work::block: {
+            process_block_download(in);
+        } break;
+        case Work::job_finished: {
+            process_job_finished(in);
+        } break;
+        case Work::init_wallet: {
+            process_wallet();
+        } break;
+        case Work::key: {
+            process_key(in);
+        } break;
+        case Work::filter: {
+            process_filter(in);
+        } break;
         case Work::statemachine: {
             do_work();
         } break;
@@ -248,11 +273,30 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
     }
 }
 
-auto Wallet::process_block(const zmq::Message& in) noexcept -> void
+auto Wallet::process_block_download(const zmq::Message& in) noexcept -> void
 {
     const auto body = in.Body();
 
-    if (4 > body.size()) {
+    OT_ASSERT(2 < body.size());
+
+    const auto chain = body.at(1).as<blockchain::Type>();
+
+    if (chain_ != chain) { return; }
+
+    const auto hash = [&] {
+        auto out = api_.Factory().Data();
+        out->Assign(body.at(2).Bytes());
+
+        return out;
+    }();
+    accounts_.ProcessBlockAvailable(hash);
+}
+
+auto Wallet::process_block_header(const zmq::Message& in) noexcept -> void
+{
+    const auto body = in.Body();
+
+    if (3 >= body.size()) {
         LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
@@ -268,6 +312,53 @@ auto Wallet::process_block(const zmq::Message& in) noexcept -> void
     db_.AdvanceTo(position);
 }
 
+auto Wallet::process_filter(const zmq::Message& in) noexcept -> void
+{
+    const auto body = in.Body();
+
+    OT_ASSERT(4 < body.size());
+
+    const auto chain = body.at(1).as<blockchain::Type>();
+
+    if (chain_ != chain) { return; }
+
+    const auto type = body.at(2).as<filter::Type>();
+
+    if (type != parent_.FilterOracleInternal().DefaultType()) { return; }
+
+    const auto position = block::Position{body.at(3).as<block::Height>(), [&] {
+                                              auto out = api_.Factory().Data();
+                                              out->Assign(body.at(4).Bytes());
+
+                                              return out;
+                                          }()};
+
+    if (enabled_) { accounts_.ProcessNewFilter(position); }
+}
+
+auto Wallet::process_job_finished(const zmq::Message& in) noexcept -> void
+{
+    const auto body = in.Body();
+
+    OT_ASSERT(2 < body.size());
+
+    const auto id = [&] {
+        auto out = api_.Factory().Identifier();
+        out->Assign(body.at(1).Bytes());
+
+        return out;
+    }();
+    const auto type = std::string{body.at(2).Bytes()};
+    accounts_.ProcessTaskComplete(id, type.c_str(), enabled_);
+}
+
+auto Wallet::process_key(const zmq::Message& in) noexcept -> void
+{
+    // TODO extract subchain id to filter which state machines get activated
+
+    accounts_.ProcessKey();
+}
+
 auto Wallet::process_mempool(const zmq::Message& in) noexcept -> void
 {
     const auto body = in.Body();
@@ -276,8 +367,17 @@ auto Wallet::process_mempool(const zmq::Message& in) noexcept -> void
     if (chain_ != chain) { return; }
 
     if (auto tx = mempool_.Query(body.at(2).Bytes()); tx) {
-        accounts_.Mempool(std::move(tx));
+        accounts_.ProcessMempool(std::move(tx));
     }
+}
+
+auto Wallet::process_nym(const zmq::Message& in) noexcept -> void
+{
+    const auto body = in.Body();
+
+    OT_ASSERT(1 < body.size());
+
+    accounts_.ProcessNym(body.at(1));
 }
 
 auto Wallet::process_reorg(const zmq::Message& in) noexcept -> void
@@ -300,18 +400,23 @@ auto Wallet::process_reorg(const zmq::Message& in) noexcept -> void
     const auto tip = block::Position{
         body.at(5).as<block::Height>(),
         api_.Factory().Data(body.at(4).Bytes())};
-    accounts_.finish_background_tasks();
-    accounts_.Reorg(ancestor);
-    accounts_.finish_background_tasks();
+    accounts_.FinishBackgroundTasks();
+    accounts_.ProcessReorg(ancestor);
+    accounts_.FinishBackgroundTasks();
     db_.RollbackTo(ancestor);
     db_.AdvanceTo(tip);
+}
+
+auto Wallet::process_wallet() noexcept -> void
+{
+    accounts_.ProcessStateMachine(enabled_);
 }
 
 auto Wallet::shutdown(std::promise<void>& promise) noexcept -> void
 {
     if (running_->Off()) {
         LogDetail("Shutting down ")(DisplayString(chain_))(" wallet").Flush();
-        accounts_.shutdown();
+        accounts_.Shutdown();
 
         try {
             promise.set_value();
@@ -324,11 +429,16 @@ auto Wallet::state_machine() noexcept -> bool
 {
     if (false == running_.get()) { return false; }
 
-    auto repeat = accounts_.state_machine(enabled_);
+    auto repeat{false};
 
     if (enabled_) { repeat |= proposals_.Run(); }
 
     return repeat;
+}
+
+auto Wallet::trigger_wallet() const noexcept -> void
+{
+    pipeline_->Push(MakeWork(Work::init_wallet));
 }
 
 Wallet::~Wallet() { Shutdown().get(); }

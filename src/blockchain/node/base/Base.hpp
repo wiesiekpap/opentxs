@@ -140,6 +140,10 @@ public:
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
+    const api::client::internal::Blockchain& crypto_;
+    const api::network::internal::Blockchain& network_;
+    const Type chain_;
+
     auto AddBlock(const std::shared_ptr<const block::bitcoin::Block> block)
         const noexcept -> bool final;
     auto AddPeer(const p2p::Address& address) const noexcept -> bool final;
@@ -260,9 +264,6 @@ private:
     std::unique_ptr<node::internal::Wallet> wallet_p_;
 
 protected:
-    const api::client::internal::Blockchain& crypto_;
-    const api::network::internal::Blockchain& network_;
-    const Type chain_;
     blockchain::internal::Database& database_;
     node::internal::FilterOracle& filters_;
     node::internal::HeaderOracle& header_;

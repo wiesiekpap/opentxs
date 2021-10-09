@@ -197,6 +197,7 @@ FilterOracle::FilterOracle(
         }
     }())
     , last_sync_progress_()
+    , last_broadcast_()
     , outstanding_jobs_()
     , running_(true)
 {
@@ -375,7 +376,24 @@ auto FilterOracle::new_tip(
     const filter::Type type,
     const block::Position& tip) const noexcept -> void
 {
+    auto last = last_broadcast_.find(type);
+
+    if (last_broadcast_.end() != last) {
+        if (tip == last->second) {
+            // NOTE: new tip is same as previously broadcast
+
+            return;
+        } else {
+            // NOTE: new tip is different from previously broadcast
+            last->second = tip;
+        }
+    } else {
+        // NOTE: first tip broadcast
+        last_broadcast_.emplace(type, tip);
+    }
+
     last_sync_progress_ = Clock::now();
+
     {
         auto work = MakeWork(api_, OT_ZMQ_NEW_FILTER_SIGNAL);
         work->AddFrame(type);
