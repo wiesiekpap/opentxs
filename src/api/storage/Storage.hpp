@@ -24,10 +24,10 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Editor.hpp"
+#include "opentxs/api/Storage.hpp"
 #include "opentxs/api/client/PaymentWorkflowState.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
 #include "opentxs/api/client/Types.hpp"
-#include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
@@ -38,16 +38,16 @@
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
-#include "storage/StorageConfig.hpp"
+#include "storage/Config.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace storage
+namespace network
 {
-class Multiplex;
-}  // namespace storage
+class Asio;
+}  // namespace network
 
 class Crypto;
 }  // namespace api
@@ -82,11 +82,19 @@ class UnitDefinition;
 
 namespace storage
 {
+namespace driver
+{
+namespace internal
+{
+class Multiplex;
+}  // namespace internal
+}  // namespace driver
+
+class Config;
 class Root;
 }  // namespace storage
 
 class Data;
-class Factory;
 class String;
 }  // namespace opentxs
 
@@ -113,7 +121,7 @@ namespace opentxs::api::storage::implementation
 // Objects are either stored and retrieved from either the primary bucket, or
 // the alternate bucket. This allows for garbage collection of outdated keys
 // to be implemented.
-class Storage final : public opentxs::api::storage::StorageInternal
+class Storage final : public internal::Storage
 {
 public:
     auto AccountAlias(const Identifier& accountID) const -> std::string final;
@@ -457,23 +465,27 @@ public:
         const -> std::size_t final;
     void UpgradeNyms() final;
 
+    Storage(
+        const api::Crypto& crypto,
+        const network::Asio& asio,
+        const Flag& running,
+        const opentxs::storage::Config& config);
+
     ~Storage() final;
 
 private:
-    friend opentxs::Factory;
-
     static const std::uint32_t HASH_TYPE;
 
     const api::Crypto& crypto_;
+    const network::Asio& asio_;
     const Flag& running_;
-    std::int64_t gc_interval_{std::numeric_limits<std::int64_t>::max()};
+    std::int64_t gc_interval_;
     mutable std::mutex write_lock_;
     mutable std::unique_ptr<opentxs::storage::Root> root_;
     mutable OTFlag primary_bucket_;
-    std::vector<std::thread> background_threads_;
-    const StorageConfig config_;
-    std::unique_ptr<Multiplex> multiplex_p_;
-    Multiplex& multiplex_;
+    const opentxs::storage::Config config_;
+    std::unique_ptr<opentxs::storage::driver::internal::Multiplex> multiplex_p_;
+    opentxs::storage::driver::internal::Multiplex& multiplex_;
 
     auto root() const -> opentxs::storage::Root*;
     auto Root() const -> const opentxs::storage::Root&;
@@ -495,15 +507,6 @@ private:
     void save(opentxs::storage::Root* in, const Lock& lock) const;
     void start() final;
 
-    Storage(
-        const api::Crypto& crypto,
-        const Flag& running,
-        const StorageConfig& config,
-        const String& primary,
-        const bool migrate,
-        const String& previous,
-        const Digest& hash,
-        const Random& random);
     Storage(const Storage&) = delete;
     Storage(Storage&&) = delete;
     auto operator=(const Storage&) -> Storage& = delete;

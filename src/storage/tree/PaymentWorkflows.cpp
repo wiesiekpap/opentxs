@@ -13,7 +13,6 @@
 #include "internal/api/client/Client.hpp"
 #include "opentxs/api/client/PaymentWorkflowState.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
-#include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/Check.hpp"
@@ -25,6 +24,7 @@
 #include "opentxs/protobuf/StorageWorkflowType.pb.h"
 #include "opentxs/protobuf/verify/PaymentWorkflow.hpp"
 #include "opentxs/protobuf/verify/StoragePaymentWorkflows.hpp"
+#include "opentxs/storage/Driver.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 
@@ -38,7 +38,7 @@
 namespace opentxs::storage
 {
 PaymentWorkflows::PaymentWorkflows(
-    const opentxs::api::storage::Driver& storage,
+    const Driver& storage,
     const std::string& hash)
     : Node(storage, hash)
     , archived_()

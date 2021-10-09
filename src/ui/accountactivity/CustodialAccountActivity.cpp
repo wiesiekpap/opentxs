@@ -22,12 +22,12 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Endpoints.hpp"  // IWYU pragma: keep
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/Storage.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/PaymentWorkflowState.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
 #include "opentxs/api/client/Workflow.hpp"
-#include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"

@@ -10,18 +10,24 @@
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/storage/Driver.hpp"
-#include "storage/drivers/StorageFS.hpp"
+#include "opentxs/storage/Driver.hpp"
+#include "storage/drivers/filesystem/Common.hpp"
 
 namespace opentxs
 {
 namespace api
 {
+namespace network
+{
+class Asio;
+}  // namespace network
+
 namespace storage
 {
-class Plugin;
 class Storage;
 }  // namespace storage
+
+class Crypto;
 }  // namespace api
 
 namespace crypto
@@ -32,31 +38,41 @@ class Symmetric;
 }  // namespace key
 }  // namespace crypto
 
-class Factory;
+namespace storage
+{
+class Config;
+class Plugin;
+}  // namespace storage
+
 class Flag;
-class StorageConfig;
 }  // namespace opentxs
 
-namespace opentxs::storage::implementation
+namespace opentxs::storage::driver::filesystem
 {
-class StorageFSArchive final : public StorageFS,
-                               public virtual opentxs::api::storage::Driver
+class Archiving final : public Common, public virtual storage::Driver
 {
 private:
-    using ot_super = StorageFS;
+    using ot_super = Common;
 
 public:
     auto EmptyBucket(const bool bucket) const -> bool final;
 
     void Cleanup() final;
 
-    ~StorageFSArchive() final;
+    Archiving(
+        const api::Crypto& crypto,
+        const api::network::Asio& asio,
+        const api::storage::Storage& storage,
+        const storage::Config& config,
+        const Flag& bucket,
+        const std::string& folder,
+        crypto::key::Symmetric& key);
+
+    ~Archiving() final;
 
 private:
-    friend Factory;
-
     crypto::key::Symmetric& encryption_key_;
-    const bool encrypted_{false};
+    const bool encrypted_;
 
     auto calculate_path(
         const std::string& key,
@@ -66,21 +82,13 @@ private:
     auto prepare_write(const std::string& plaintext) const -> std::string final;
     auto root_filename() const -> std::string final;
 
-    void Init_StorageFSArchive();
-    void Cleanup_StorageFSArchive();
+    void Init_Archiving();
+    void Cleanup_Archiving();
 
-    StorageFSArchive(
-        const api::storage::Storage& storage,
-        const StorageConfig& config,
-        const Digest& hash,
-        const Random& random,
-        const Flag& bucket,
-        const std::string& folder,
-        crypto::key::Symmetric& key);
-    StorageFSArchive() = delete;
-    StorageFSArchive(const StorageFSArchive&) = delete;
-    StorageFSArchive(StorageFSArchive&&) = delete;
-    auto operator=(const StorageFSArchive&) -> StorageFSArchive& = delete;
-    auto operator=(StorageFSArchive&&) -> StorageFSArchive& = delete;
+    Archiving() = delete;
+    Archiving(const Archiving&) = delete;
+    Archiving(Archiving&&) = delete;
+    auto operator=(const Archiving&) -> Archiving& = delete;
+    auto operator=(Archiving&&) -> Archiving& = delete;
 };
-}  // namespace opentxs::storage::implementation
+}  // namespace opentxs::storage::driver::filesystem

@@ -13,7 +13,6 @@
 #include <tuple>
 
 #include "internal/contact/Contact.hpp"
-#include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/contact/ContactSectionName.hpp"
 #include "opentxs/core/Log.hpp"
@@ -29,6 +28,7 @@
 #include "opentxs/protobuf/StorageItemHash.pb.h"
 #include "opentxs/protobuf/verify/Contact.hpp"
 #include "opentxs/protobuf/verify/StorageContacts.hpp"
+#include "opentxs/storage/Driver.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 
@@ -36,9 +36,7 @@
 
 namespace opentxs::storage
 {
-Contacts::Contacts(
-    const opentxs::api::storage::Driver& storage,
-    const std::string& hash)
+Contacts::Contacts(const Driver& storage, const std::string& hash)
     : Node(storage, hash)
     , merge_()
     , merged_()

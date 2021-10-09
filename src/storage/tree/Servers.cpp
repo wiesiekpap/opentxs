@@ -14,13 +14,13 @@
 #include <utility>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/ServerContract.pb.h"
 #include "opentxs/protobuf/StorageItemHash.pb.h"
 #include "opentxs/protobuf/StorageServers.pb.h"
 #include "opentxs/protobuf/verify/ServerContract.hpp"
 #include "opentxs/protobuf/verify/StorageServers.hpp"
+#include "opentxs/storage/Driver.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 
@@ -28,9 +28,7 @@ namespace opentxs
 {
 namespace storage
 {
-Servers::Servers(
-    const opentxs::api::storage::Driver& storage,
-    const std::string& hash)
+Servers::Servers(const Driver& storage, const std::string& hash)
     : Node(storage, hash)
 {
     if (check_hash(hash)) {

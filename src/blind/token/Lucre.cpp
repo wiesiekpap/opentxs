@@ -26,7 +26,7 @@ extern "C" {
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/api/Storage.hpp"
 #include "opentxs/blind/Mint.hpp"
 #include "opentxs/blind/Purse.hpp"
 #include "opentxs/blind/TokenState.hpp"

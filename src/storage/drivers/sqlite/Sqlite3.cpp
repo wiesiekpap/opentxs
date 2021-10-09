@@ -5,7 +5,7 @@
 
 #include "0_stdafx.hpp"                        // IWYU pragma: associated
 #include "1_Internal.hpp"                      // IWYU pragma: associated
-#include "storage/drivers/StorageSqlite3.hpp"  // IWYU pragma: associated
+#include "storage/drivers/sqlite/Sqlite3.hpp"  // IWYU pragma: associated
 
 #include <iostream>
 #include <limits>
@@ -13,46 +13,48 @@
 #include <string>
 #include <vector>
 
-#include "2_Factory.hpp"
+#include "internal/storage/drivers/Factory.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "storage/StorageConfig.hpp"
+#include "storage/Config.hpp"
 
-#define OT_METHOD "opentxs::StorageSqlite3::"
+#define OT_METHOD "opentxs::storage::driver::Sqlite3::"
 
-namespace opentxs
+namespace opentxs::factory
 {
-auto Factory::StorageSqlite3(
-    const api::storage::Storage& storage,
-    const StorageConfig& config,
-    const Digest& hash,
-    const Random& random,
-    const Flag& bucket) -> opentxs::api::storage::Plugin*
+auto StorageSqlite3(
+    const api::Crypto& crypto,
+    const api::network::Asio& asio,
+    const api::storage::Storage& parent,
+    const storage::Config& config,
+    const Flag& bucket) noexcept -> std::unique_ptr<storage::Plugin>
 {
-    return new opentxs::storage::implementation::StorageSqlite3(
-        storage, config, hash, random, bucket);
+    using ReturnType = storage::driver::Sqlite3;
+
+    return std::make_unique<ReturnType>(crypto, asio, parent, config, bucket);
 }
-}  // namespace opentxs
+}  // namespace opentxs::factory
 
-namespace opentxs::storage::implementation
+namespace opentxs::storage::driver
 {
-StorageSqlite3::StorageSqlite3(
+Sqlite3::Sqlite3(
+    const api::Crypto& crypto,
+    const api::network::Asio& asio,
     const api::storage::Storage& storage,
-    const StorageConfig& config,
-    const Digest& hash,
-    const Random& random,
+    const storage::Config& config,
     const Flag& bucket)
-    : ot_super(storage, config, hash, random, bucket)
+    : ot_super(crypto, asio, storage, config, bucket)
     , folder_(config.path_)
     , transaction_lock_()
     , transaction_bucket_(Flag::Factory(false))
     , pending_()
     , db_(nullptr)
 {
-    Init_StorageSqlite3();
+    Init_Sqlite3();
 }
 
-auto StorageSqlite3::bind_key(
+auto Sqlite3::bind_key(
     const std::string& source,
     const std::string& key,
     const std::size_t start) const -> std::string
@@ -74,17 +76,16 @@ auto StorageSqlite3::bind_key(
     return output;
 }
 
-void StorageSqlite3::Cleanup() { Cleanup_StorageSqlite3(); }
+void Sqlite3::Cleanup() { Cleanup_Sqlite3(); }
 
-void StorageSqlite3::Cleanup_StorageSqlite3() { sqlite3_close(db_); }
+void Sqlite3::Cleanup_Sqlite3() { sqlite3_close(db_); }
 
-void StorageSqlite3::commit(std::stringstream& sql) const
+void Sqlite3::commit(std::stringstream& sql) const
 {
     sql << "COMMIT TRANSACTION;";
 }
 
-auto StorageSqlite3::commit_transaction(const std::string& rootHash) const
-    -> bool
+auto Sqlite3::commit_transaction(const std::string& rootHash) const -> bool
 {
     Lock lock(transaction_lock_);
     std::stringstream sql{};
@@ -100,7 +101,7 @@ auto StorageSqlite3::commit_transaction(const std::string& rootHash) const
         sqlite3_exec(db_, sql.str().c_str(), nullptr, nullptr, nullptr));
 }
 
-auto StorageSqlite3::Create(const std::string& tablename) const -> bool
+auto Sqlite3::Create(const std::string& tablename) const -> bool
 {
     const std::string createTable = "create table if not exists ";
     const std::string tableFormat = " (k text PRIMARY KEY, v BLOB);";
@@ -110,12 +111,12 @@ auto StorageSqlite3::Create(const std::string& tablename) const -> bool
         SQLITE_OK == sqlite3_exec(db_, sql.c_str(), nullptr, nullptr, nullptr));
 }
 
-auto StorageSqlite3::EmptyBucket(const bool bucket) const -> bool
+auto Sqlite3::EmptyBucket(const bool bucket) const -> bool
 {
     return Purge(GetTableName(bucket));
 }
 
-auto StorageSqlite3::expand_sql(sqlite3_stmt* statement) const -> std::string
+auto Sqlite3::expand_sql(sqlite3_stmt* statement) const -> std::string
 {
     const auto sql = sqlite3_expanded_sql(statement);
     const std::string output{sql};
@@ -124,13 +125,13 @@ auto StorageSqlite3::expand_sql(sqlite3_stmt* statement) const -> std::string
     return output;
 }
 
-auto StorageSqlite3::GetTableName(const bool bucket) const -> std::string
+auto Sqlite3::GetTableName(const bool bucket) const -> std::string
 {
     return bucket ? config_.sqlite3_secondary_bucket_
                   : config_.sqlite3_primary_bucket_;
 }
 
-void StorageSqlite3::Init_StorageSqlite3()
+void Sqlite3::Init_Sqlite3()
 {
     const std::string filename = folder_ + "/" + config_.sqlite3_db_file_;
 
@@ -153,7 +154,7 @@ void StorageSqlite3::Init_StorageSqlite3()
     }
 }
 
-auto StorageSqlite3::LoadFromBucket(
+auto Sqlite3::LoadFromBucket(
     const std::string& key,
     std::string& value,
     const bool bucket) const -> bool
@@ -161,7 +162,7 @@ auto StorageSqlite3::LoadFromBucket(
     return Select(key, GetTableName(bucket), value);
 }
 
-auto StorageSqlite3::LoadRoot() const -> std::string
+auto Sqlite3::LoadRoot() const -> std::string
 {
     std::string value{""};
 
@@ -174,7 +175,7 @@ auto StorageSqlite3::LoadRoot() const -> std::string
     return "";
 }
 
-auto StorageSqlite3::Purge(const std::string& tablename) const -> bool
+auto Sqlite3::Purge(const std::string& tablename) const -> bool
 {
     const std::string sql = "DROP TABLE `" + tablename + "`;";
 
@@ -186,7 +187,7 @@ auto StorageSqlite3::Purge(const std::string& tablename) const -> bool
     return false;
 }
 
-auto StorageSqlite3::Select(
+auto Sqlite3::Select(
     const std::string& key,
     const std::string& tablename,
     std::string& value) const -> bool
@@ -234,7 +235,7 @@ auto StorageSqlite3::Select(
     return success;
 }
 
-void StorageSqlite3::set_data(std::stringstream& sql) const
+void Sqlite3::set_data(std::stringstream& sql) const
 {
     OT_ASSERT(std::numeric_limits<int>::max() >= pending_.size());
 
@@ -289,9 +290,8 @@ void StorageSqlite3::set_data(std::stringstream& sql) const
     sqlite3_finalize(data);
 }
 
-void StorageSqlite3::set_root(
-    const std::string& rootHash,
-    std::stringstream& sql) const
+void Sqlite3::set_root(const std::string& rootHash, std::stringstream& sql)
+    const
 {
     OT_ASSERT(
         std::numeric_limits<int>::max() >= config_.sqlite3_root_key_.size());
@@ -324,12 +324,12 @@ void StorageSqlite3::set_root(
     sqlite3_finalize(root);
 }
 
-void StorageSqlite3::start_transaction(std::stringstream& sql) const
+void Sqlite3::start_transaction(std::stringstream& sql) const
 {
     sql << "BEGIN TRANSACTION; ";
 }
 
-void StorageSqlite3::store(
+void Sqlite3::store(
     const bool isTransaction,
     const std::string& key,
     const std::string& value,
@@ -348,7 +348,7 @@ void StorageSqlite3::store(
     }
 }
 
-auto StorageSqlite3::StoreRoot(const bool commit, const std::string& hash) const
+auto Sqlite3::StoreRoot(const bool commit, const std::string& hash) const
     -> bool
 {
     if (commit) {
@@ -361,7 +361,7 @@ auto StorageSqlite3::StoreRoot(const bool commit, const std::string& hash) const
     }
 }
 
-auto StorageSqlite3::Upsert(
+auto Sqlite3::Upsert(
     const std::string& key,
     const std::string& tablename,
     const std::string& value) const -> bool
@@ -389,5 +389,5 @@ auto StorageSqlite3::Upsert(
     return (result == SQLITE_DONE);
 }
 
-StorageSqlite3::~StorageSqlite3() { Cleanup_StorageSqlite3(); }
-}  // namespace opentxs::storage::implementation
+Sqlite3::~Sqlite3() { Cleanup_Sqlite3(); }
+}  // namespace opentxs::storage::driver

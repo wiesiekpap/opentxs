@@ -76,8 +76,8 @@ auto Job::queue_work(
         ++running_;
     }
 
-    const auto queued = parent_.api_.Network().Asio().Internal().PostCPU(
-        [this, job = std::move(cb)] {
+    const auto queued = parent_.api_.Network().Asio().Internal().Post(
+        ThreadPool::General, [this, job = std::move(cb)] {
             auto post = ScopeGuard{[this] {
                 parent_.task_finished_(parent_.db_key_, type());
                 --parent_.job_counter_;

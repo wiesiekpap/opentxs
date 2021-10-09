@@ -11,7 +11,7 @@
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/storage/Driver.hpp"
+#include "opentxs/storage/Driver.hpp"
 #include "storage/Plugin.hpp"
 #include "util/LMDB.hpp"
 
@@ -19,23 +19,34 @@ namespace opentxs
 {
 namespace api
 {
+namespace network
+{
+class Asio;
+}  // namespace network
+
 namespace storage
 {
-class Plugin;
 class Storage;
 }  // namespace storage
+
+class Crypto;
 }  // namespace api
+
+namespace storage
+{
+class Config;
+class Plugin;
+}  // namespace storage
 
 class Factory;
 class Flag;
-class StorageConfig;
 }  // namespace opentxs
 
-namespace opentxs::storage::implementation
+namespace opentxs::storage::driver
 {
 // LMDB implementation of opentxs::storage
-class StorageLMDB final : public virtual Plugin,
-                          public virtual opentxs::api::storage::Driver
+class LMDB final : public virtual implementation::Plugin,
+                   public virtual storage::Driver
 {
 public:
     auto EmptyBucket(const bool bucket) const -> bool final;
@@ -48,9 +59,16 @@ public:
         -> bool final;
 
     void Cleanup() final;
-    void Cleanup_StorageLMDB();
+    void Cleanup_LMDB();
 
-    ~StorageLMDB() final;
+    LMDB(
+        const api::Crypto& crypto,
+        const api::network::Asio& asio,
+        const api::storage::Storage& storage,
+        const storage::Config& config,
+        const Flag& bucket);
+
+    ~LMDB() final;
 
 private:
     using ot_super = Plugin;
@@ -74,18 +92,12 @@ private:
         const bool bucket,
         std::promise<bool>* promise) const final;
 
-    void Init_StorageLMDB();
+    void Init_LMDB();
 
-    StorageLMDB(
-        const api::storage::Storage& storage,
-        const StorageConfig& config,
-        const Digest& hash,
-        const Random& random,
-        const Flag& bucket);
-    StorageLMDB() = delete;
-    StorageLMDB(const StorageLMDB&) = delete;
-    StorageLMDB(StorageLMDB&&) = delete;
-    auto operator=(const StorageLMDB&) -> StorageLMDB& = delete;
-    auto operator=(StorageLMDB&&) -> StorageLMDB& = delete;
+    LMDB() = delete;
+    LMDB(const LMDB&) = delete;
+    LMDB(LMDB&&) = delete;
+    auto operator=(const LMDB&) -> LMDB& = delete;
+    auto operator=(LMDB&&) -> LMDB& = delete;
 };
-}  // namespace opentxs::storage::implementation
+}  // namespace opentxs::storage::driver

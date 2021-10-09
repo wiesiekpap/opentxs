@@ -8,12 +8,12 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/core/Amount.hpp"
-
 #include <cstdint>
 #include <string>
 #include <tuple>
 #include <utility>
+
+#include "opentxs/core/Amount.hpp"
 
 namespace opentxs
 {

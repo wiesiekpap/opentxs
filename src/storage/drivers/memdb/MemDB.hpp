@@ -11,32 +11,43 @@
 
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/core/Lockable.hpp"
+#include "opentxs/storage/Driver.hpp"
 #include "storage/Plugin.hpp"
 
 namespace opentxs
 {
 namespace api
 {
+namespace network
+{
+class Asio;
+}  // namespace network
+
 namespace storage
 {
-class Plugin;
 class Storage;
 }  // namespace storage
+
+class Crypto;
 }  // namespace api
+
+namespace storage
+{
+class Config;
+class Plugin;
+}  // namespace storage
 
 class Factory;
 class Flag;
-class StorageConfig;
 }  // namespace opentxs
 
-namespace opentxs::storage::implementation
+namespace opentxs::storage::driver
 {
 // In-memory implementation of opentxs::storage
-class StorageMemDB final : public Plugin,
-                           virtual public opentxs::api::storage::Driver,
-                           Lockable
+class MemDB final : public implementation::Plugin,
+                    virtual public storage::Driver,
+                    Lockable
 {
 public:
     auto EmptyBucket(const bool bucket) const -> bool final;
@@ -50,16 +61,23 @@ public:
 
     void Cleanup() final {}
 
-    ~StorageMemDB() final = default;
+    MemDB(
+        const api::Crypto& crypto,
+        const api::network::Asio& asio,
+        const api::storage::Storage& storage,
+        const storage::Config& config,
+        const Flag& bucket);
+
+    ~MemDB() final = default;
 
 private:
     using ot_super = Plugin;
 
     friend opentxs::Factory;
 
-    mutable std::string root_{""};
-    mutable std::map<std::string, std::string> a_{};
-    mutable std::map<std::string, std::string> b_{};
+    mutable std::string root_;
+    mutable std::map<std::string, std::string> a_;
+    mutable std::map<std::string, std::string> b_;
 
     void store(
         const bool isTransaction,
@@ -68,16 +86,10 @@ private:
         const bool bucket,
         std::promise<bool>* promise) const final;
 
-    StorageMemDB(
-        const api::storage::Storage& storage,
-        const StorageConfig& config,
-        const Digest& hash,
-        const Random& random,
-        const Flag& bucket);
-    StorageMemDB() = delete;
-    StorageMemDB(const StorageMemDB&) = delete;
-    StorageMemDB(StorageMemDB&&) = delete;
-    auto operator=(const StorageMemDB&) -> StorageMemDB& = delete;
-    auto operator=(StorageMemDB&&) -> StorageMemDB& = delete;
+    MemDB() = delete;
+    MemDB(const MemDB&) = delete;
+    MemDB(MemDB&&) = delete;
+    auto operator=(const MemDB&) -> MemDB& = delete;
+    auto operator=(MemDB&&) -> MemDB& = delete;
 };
-}  // namespace opentxs::storage::implementation
+}  // namespace opentxs::storage::driver

@@ -16,7 +16,6 @@
 #include "internal/contact/Contact.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/Bip47Channel.pb.h"
@@ -28,6 +27,7 @@
 #include "opentxs/protobuf/StorageItemHash.pb.h"
 #include "opentxs/protobuf/verify/Bip47Channel.hpp"
 #include "opentxs/protobuf/verify/StorageBip47Contexts.hpp"
+#include "opentxs/storage/Driver.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 
@@ -38,9 +38,7 @@
 
 namespace opentxs::storage
 {
-Bip47Channels::Bip47Channels(
-    const opentxs::api::storage::Driver& storage,
-    const std::string& hash)
+Bip47Channels::Bip47Channels(const Driver& storage, const std::string& hash)
     : Node(storage, hash)
     , index_lock_()
     , channel_data_()

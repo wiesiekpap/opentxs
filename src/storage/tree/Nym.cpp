@@ -11,7 +11,6 @@
 #include <type_traits>
 
 #include "internal/contact/Contact.hpp"
-#include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -32,6 +31,7 @@
 #include "opentxs/protobuf/verify/Nym.hpp"
 #include "opentxs/protobuf/verify/Purse.hpp"
 #include "opentxs/protobuf/verify/StorageNym.hpp"
+#include "opentxs/storage/Driver.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Bip47Channels.hpp"
 #include "storage/tree/Contexts.hpp"
@@ -81,7 +81,7 @@ void Nym::_save(
 }
 
 Nym::Nym(
-    const opentxs::api::storage::Driver& storage,
+    const Driver& storage,
     const std::string& id,
     const std::string& hash,
     const std::string& alias)
@@ -471,7 +471,7 @@ auto Nym::MailInbox() const -> const Mailbox& { return *mail_inbox(); }
 
 auto Nym::MailOutbox() const -> const Mailbox& { return *mail_outbox(); }
 
-auto Nym::Migrate(const opentxs::api::storage::Driver& to) const -> bool
+auto Nym::Migrate(const Driver& to) const -> bool
 {
     bool output{true};
     output &= migrate(credentials_, to);

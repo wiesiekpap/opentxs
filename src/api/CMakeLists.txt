@@ -56,6 +56,7 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/Periodic.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/Primitives.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/Settings.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/api/Storage.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/Wallet.hpp"
 )
 

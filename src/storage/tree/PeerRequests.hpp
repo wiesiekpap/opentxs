@@ -16,14 +16,6 @@
 
 namespace opentxs
 {
-namespace api
-{
-namespace storage
-{
-class Driver;
-}  // namespace storage
-}  // namespace api
-
 namespace proto
 {
 class PeerRequest;
@@ -31,8 +23,13 @@ class PeerRequest;
 
 namespace storage
 {
+class Driver;
 class Nym;
+}  // namespace storage
+}  // namespace opentxs
 
+namespace opentxs::storage
+{
 class PeerRequests final : public Node
 {
 private:
@@ -42,9 +39,7 @@ private:
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
     auto serialize() const -> proto::StorageNymList;
 
-    PeerRequests(
-        const opentxs::api::storage::Driver& storage,
-        const std::string& hash);
+    PeerRequests(const Driver& storage, const std::string& hash);
     PeerRequests() = delete;
     PeerRequests(const PeerRequests&) = delete;
     PeerRequests(PeerRequests&&) = delete;
@@ -65,5 +60,4 @@ public:
 
     ~PeerRequests() final = default;
 };
-}  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::storage

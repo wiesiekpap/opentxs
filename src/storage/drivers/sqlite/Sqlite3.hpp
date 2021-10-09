@@ -20,30 +20,41 @@ extern "C" {
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/core/Flag.hpp"
+#include "opentxs/storage/Driver.hpp"
 #include "storage/Plugin.hpp"
 
 namespace opentxs
 {
 namespace api
 {
+namespace network
+{
+class Asio;
+}  // namespace network
+
 namespace storage
 {
-class Plugin;
 class Storage;
 }  // namespace storage
+
+class Crypto;
 }  // namespace api
 
+namespace storage
+{
+class Config;
+class Plugin;
+}  // namespace storage
+
 class Factory;
-class StorageConfig;
 }  // namespace opentxs
 
-namespace opentxs::storage::implementation
+namespace opentxs::storage::driver
 {
 // SQLite3 implementation of opentxs::storage
-class StorageSqlite3 final : public virtual Plugin,
-                             public virtual opentxs::api::storage::Driver
+class Sqlite3 final : public virtual implementation::Plugin,
+                      public virtual storage::Driver
 {
 public:
     auto EmptyBucket(const bool bucket) const -> bool final;
@@ -56,9 +67,16 @@ public:
         -> bool final;
 
     void Cleanup() final;
-    void Cleanup_StorageSqlite3();
+    void Cleanup_Sqlite3();
 
-    ~StorageSqlite3() final;
+    Sqlite3(
+        const api::Crypto& crypto,
+        const api::network::Asio& asio,
+        const api::storage::Storage& storage,
+        const storage::Config& config,
+        const Flag& bucket);
+
+    ~Sqlite3() final;
 
 private:
     using ot_super = Plugin;
@@ -100,18 +118,12 @@ private:
         const std::string& tablename,
         const std::string& value) const -> bool;
 
-    void Init_StorageSqlite3();
+    void Init_Sqlite3();
 
-    StorageSqlite3(
-        const api::storage::Storage& storage,
-        const StorageConfig& config,
-        const Digest& hash,
-        const Random& random,
-        const Flag& bucket);
-    StorageSqlite3() = delete;
-    StorageSqlite3(const StorageSqlite3&) = delete;
-    StorageSqlite3(StorageSqlite3&&) = delete;
-    auto operator=(const StorageSqlite3&) -> StorageSqlite3& = delete;
-    auto operator=(StorageSqlite3&&) -> StorageSqlite3& = delete;
+    Sqlite3() = delete;
+    Sqlite3(const Sqlite3&) = delete;
+    Sqlite3(Sqlite3&&) = delete;
+    auto operator=(const Sqlite3&) -> Sqlite3& = delete;
+    auto operator=(Sqlite3&&) -> Sqlite3& = delete;
 };
-}  // namespace opentxs::storage::implementation
+}  // namespace opentxs::storage::driver

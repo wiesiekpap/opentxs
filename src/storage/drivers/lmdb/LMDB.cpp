@@ -3,44 +3,46 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                     // IWYU pragma: associated
-#include "1_Internal.hpp"                   // IWYU pragma: associated
-#include "storage/drivers/StorageLMDB.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                   // IWYU pragma: associated
+#include "1_Internal.hpp"                 // IWYU pragma: associated
+#include "storage/drivers/lmdb/LMDB.hpp"  // IWYU pragma: associated
 
+#include <memory>
 #include <string>
 #include <utility>
 
-#include "2_Factory.hpp"
+#include "internal/storage/drivers/Factory.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "storage/StorageConfig.hpp"
+#include "storage/Config.hpp"
 #include "util/LMDB.hpp"
 
-#define OT_METHOD "opentxs::StorageLMDB::"
+#define OT_METHOD "opentxs::storage::driver::LMDB::"
 
-namespace opentxs
+namespace opentxs::factory
 {
-auto Factory::StorageLMDB(
-    const api::storage::Storage& storage,
-    const StorageConfig& config,
-    const Digest& hash,
-    const Random& random,
-    const Flag& bucket) -> opentxs::api::storage::Plugin*
+auto StorageLMDB(
+    const api::Crypto& crypto,
+    const api::network::Asio& asio,
+    const api::storage::Storage& parent,
+    const storage::Config& config,
+    const Flag& bucket) noexcept -> std::unique_ptr<storage::Plugin>
 {
-    return new opentxs::storage::implementation::StorageLMDB(
-        storage, config, hash, random, bucket);
+    using ReturnType = storage::driver::LMDB;
+
+    return std::make_unique<ReturnType>(crypto, asio, parent, config, bucket);
 }
-}  // namespace opentxs
+}  // namespace opentxs::factory
 
-namespace opentxs::storage::implementation
+namespace opentxs::storage::driver
 {
-StorageLMDB::StorageLMDB(
+LMDB::LMDB(
+    const api::Crypto& crypto,
+    const api::network::Asio& asio,
     const api::storage::Storage& storage,
-    const StorageConfig& config,
-    const Digest& hash,
-    const Random& random,
+    const storage::Config& config,
     const Flag& bucket)
-    : ot_super(storage, config, hash, random, bucket)
+    : ot_super(crypto, asio, storage, config, bucket)
     , table_names_({
           {Table::Control, config.lmdb_control_table_},
           {Table::A, config.lmdb_primary_bucket_},
@@ -56,29 +58,29 @@ StorageLMDB::StorageLMDB(
           })
 {
     LogVerbose(OT_METHOD)(__func__)(": Using ")(config_.path_).Flush();
-    Init_StorageLMDB();
+    Init_LMDB();
 }
 
-void StorageLMDB::Cleanup() { Cleanup_StorageLMDB(); }
+void LMDB::Cleanup() { Cleanup_LMDB(); }
 
-void StorageLMDB::Cleanup_StorageLMDB() {}
+void LMDB::Cleanup_LMDB() {}
 
-auto StorageLMDB::EmptyBucket(const bool bucket) const -> bool
+auto LMDB::EmptyBucket(const bool bucket) const -> bool
 {
     return lmdb_.Delete(get_table(bucket));
 }
 
-auto StorageLMDB::get_table(const bool bucket) const -> StorageLMDB::Table
+auto LMDB::get_table(const bool bucket) const -> LMDB::Table
 {
     return (bucket) ? Table::A : Table::B;
 }
 
-void StorageLMDB::Init_StorageLMDB()
+void LMDB::Init_LMDB()
 {
     LogVerbose(OT_METHOD)(__func__)(": Database initialized.").Flush();
 }
 
-auto StorageLMDB::LoadFromBucket(
+auto LMDB::LoadFromBucket(
     const std::string& key,
     std::string& value,
     const bool bucket) const -> bool
@@ -90,7 +92,7 @@ auto StorageLMDB::LoadFromBucket(
     return false == value.empty();
 }
 
-auto StorageLMDB::LoadRoot() const -> std::string
+auto LMDB::LoadRoot() const -> std::string
 {
     auto output = std::string{};
     lmdb_.Load(
@@ -101,7 +103,7 @@ auto StorageLMDB::LoadRoot() const -> std::string
     return output;
 }
 
-void StorageLMDB::store(
+void LMDB::store(
     const bool isTransaction,
     const std::string& key,
     const std::string& value,
@@ -117,8 +119,7 @@ void StorageLMDB::store(
     }
 }
 
-auto StorageLMDB::StoreRoot(const bool commit, const std::string& hash) const
-    -> bool
+auto LMDB::StoreRoot(const bool commit, const std::string& hash) const -> bool
 {
     if (commit) {
         if (lmdb_.Queue(Table::Control, config_.lmdb_root_key_, hash)) {
@@ -133,5 +134,5 @@ auto StorageLMDB::StoreRoot(const bool commit, const std::string& hash) const
     }
 }
 
-StorageLMDB::~StorageLMDB() { Cleanup_StorageLMDB(); }
-}  // namespace opentxs::storage::implementation
+LMDB::~LMDB() { Cleanup_LMDB(); }
+}  // namespace opentxs::storage::driver

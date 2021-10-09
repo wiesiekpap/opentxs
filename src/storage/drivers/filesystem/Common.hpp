@@ -30,19 +30,29 @@ namespace opentxs
 {
 namespace api
 {
+namespace network
+{
+class Asio;
+}  // namespace network
+
 namespace storage
 {
 class Storage;
 }  // namespace storage
+
+class Crypto;
 }  // namespace api
 
-class StorageConfig;
+namespace storage
+{
+class Config;
+}  // namespace storage
 }  // namespace opentxs
 
-namespace opentxs
+namespace opentxs::storage::driver::filesystem
 {
 // Simple filesystem implementation of opentxs::storage
-class StorageFS : public Plugin
+class Common : public implementation::Plugin
 {
 private:
     using ot_super = Plugin;
@@ -58,20 +68,20 @@ public:
 
     void Cleanup() override;
 
-    ~StorageFS() override;
+    ~Common() override;
 
 protected:
     const std::string folder_;
-    const std::string path_seperator_{};
+    const std::string path_seperator_;
     OTFlag ready_;
 
     auto sync(const std::string& path) const -> bool;
 
-    StorageFS(
+    Common(
+        const api::Crypto& crypto,
+        const api::network::Asio& asio,
         const api::storage::Storage& storage,
-        const StorageConfig& config,
-        const Digest& hash,
-        const Random& random,
+        const storage::Config& config,
         const std::string& folder,
         const Flag& bucket);
 
@@ -100,13 +110,13 @@ private:
         const std::string& filename,
         const std::string& contents) const -> bool;
 
-    void Cleanup_StorageFS();
-    void Init_StorageFS();
+    void Cleanup_Common();
+    void Init_Common();
 
-    StorageFS() = delete;
-    StorageFS(const StorageFS&) = delete;
-    StorageFS(StorageFS&&) = delete;
-    auto operator=(const StorageFS&) -> StorageFS& = delete;
-    auto operator=(StorageFS&&) -> StorageFS& = delete;
+    Common() = delete;
+    Common(const Common&) = delete;
+    Common(Common&&) = delete;
+    auto operator=(const Common&) -> Common& = delete;
+    auto operator=(Common&&) -> Common& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::storage::driver::filesystem

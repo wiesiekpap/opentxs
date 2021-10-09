@@ -15,22 +15,15 @@
 #include "Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Editor.hpp"
-#include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/api/Storage.hpp"
 #include "opentxs/protobuf/StorageNymList.pb.h"
 #include "storage/tree/Node.hpp"
 
 namespace opentxs
 {
-namespace api
-{
 namespace storage
 {
 class Driver;
-}  // namespace storage
-}  // namespace api
-
-namespace storage
-{
 class Nym;
 class Tree;
 }  // namespace storage
@@ -56,7 +49,7 @@ private:
     auto save(const Lock& lock) const -> bool final;
     auto serialize() const -> proto::StorageNymList;
 
-    Nyms(const opentxs::api::storage::Driver& storage, const std::string& hash);
+    Nyms(const Driver& storage, const std::string& hash);
     Nyms() = delete;
     Nyms(const Nyms&) = delete;
     Nyms(Nyms&&) = delete;
@@ -67,7 +60,7 @@ public:
     auto Exists(const std::string& id) const -> bool;
     auto LocalNyms() const -> const std::set<std::string>;
     void Map(NymLambda lambda) const;
-    auto Migrate(const opentxs::api::storage::Driver& to) const -> bool final;
+    auto Migrate(const Driver& to) const -> bool final;
     auto Nym(const std::string& id) const -> const storage::Nym&;
 
     auto mutable_Nym(const std::string& id) -> Editor<storage::Nym>;

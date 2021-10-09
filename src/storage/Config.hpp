@@ -20,12 +20,28 @@
 
 namespace opentxs
 {
+namespace api
+{
+class Legacy;
+class Settings;
+}  // namespace api
+
+class Options;
+class String;
+}  // namespace opentxs
+
+namespace opentxs::storage
+{
 using InsertCB = std::function<void(const std::string&, const std::string&)>;
 
-class StorageConfig
+class Config
 {
 public:
     static const std::string default_plugin_;
+
+    std::string previous_primary_plugin_;
+    std::string primary_plugin_;
+    bool migrate_plugin_;
 
     bool auto_publish_nyms_;
     bool auto_publish_servers_;
@@ -33,8 +49,6 @@ public:
     std::int64_t gc_interval_;
     std::string path_;
     InsertCB dht_callback_;
-
-    std::string primary_plugin_;
 
     std::string fs_primary_bucket_;
     std::string fs_secondary_bucket_;
@@ -53,6 +67,10 @@ public:
     std::string lmdb_control_table_;
     std::string lmdb_root_key_;
 
-    StorageConfig() noexcept;
+    Config(
+        const api::Legacy& legacy,
+        const api::Settings& options,
+        const Options& cli,
+        const String& dataFolder) noexcept;
 };
-}  // namespace opentxs
+}  // namespace opentxs::storage

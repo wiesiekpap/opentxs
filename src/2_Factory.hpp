@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "opentxs/blind/Types.hpp"
 #include "opentxs/blind/Token.hpp"
+#include "opentxs/blind/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
@@ -82,20 +82,6 @@ class Manager;
 
 class Manager;
 }  // namespace server
-
-namespace storage
-{
-namespace implementation
-{
-class Storage;
-}  // namespace implementation
-
-class Driver;
-class Multiplex;
-class Plugin;
-class Storage;
-class StorageInternal;
-}  // namespace storage
 
 class Context;
 class Core;
@@ -311,11 +297,6 @@ class ReplyMessage;
 
 namespace storage
 {
-namespace implementation
-{
-class StorageMultiplex;
-}  // namespace implementation
-
 class Accounts;
 class Bip47Channels;
 class BlockchainTransactions;
@@ -352,7 +333,6 @@ class PasswordPrompt;
 class PaymentCode;
 class PeerObject;
 class Secret;
-class StorageConfig;
 }  // namespace opentxs
 
 namespace opentxs
@@ -745,58 +725,6 @@ public:
         const network::zeromq::Context& context,
         const std::string& dataFolder,
         const int instance) -> api::server::Manager*;
-    static auto Storage(
-        const Flag& running,
-        const api::Crypto& crypto,
-        const api::Settings& config,
-        const api::Legacy& legacy,
-        const std::string& dataFolder,
-        const String& defaultPluginCLI,
-        const String& archiveDirectoryCLI,
-        const std::chrono::seconds gcIntervalCLI,
-        String& encryptedDirectoryCLI,
-        StorageConfig& storageConfig) -> api::storage::StorageInternal*;
-    static auto StorageFSArchive(
-        const api::storage::Storage& storage,
-        const StorageConfig& config,
-        const Digest& hash,
-        const Random& random,
-        const Flag& bucket,
-        const std::string& folder,
-        crypto::key::Symmetric& key) -> opentxs::api::storage::Plugin*;
-    static auto StorageFSGC(
-        const api::storage::Storage& storage,
-        const StorageConfig& config,
-        const Digest& hash,
-        const Random& random,
-        const Flag& bucket) -> opentxs::api::storage::Plugin*;
-    static auto StorageMemDB(
-        const api::storage::Storage& storage,
-        const StorageConfig& config,
-        const Digest& hash,
-        const Random& random,
-        const Flag& bucket) -> opentxs::api::storage::Plugin*;
-    static auto StorageLMDB(
-        const api::storage::Storage& storage,
-        const StorageConfig& config,
-        const Digest& hash,
-        const Random& random,
-        const Flag& bucket) -> opentxs::api::storage::Plugin*;
-    static auto StorageMultiplex(
-        const api::storage::Storage& storage,
-        const Flag& primaryBucket,
-        const StorageConfig& config,
-        const String& primary,
-        const bool migrate,
-        const String& previous,
-        const Digest& hash,
-        const Random& random) -> opentxs::api::storage::Multiplex*;
-    static auto StorageSqlite3(
-        const api::storage::Storage& storage,
-        const StorageConfig& config,
-        const Digest& hash,
-        const Random& random,
-        const Flag& bucket) -> opentxs::api::storage::Plugin*;
     static auto StoreSecret(
         const api::Core& api,
         const Nym_p& nym,

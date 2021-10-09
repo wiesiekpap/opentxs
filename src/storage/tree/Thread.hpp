@@ -23,24 +23,15 @@
 
 namespace opentxs
 {
-namespace api
-{
 namespace storage
 {
 class Driver;
-}  // namespace storage
-}  // namespace api
-
-namespace storage
-{
 class Mailbox;
 class Threads;
 }  // namespace storage
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace storage
+namespace opentxs::storage
 {
 class Thread final : public Node
 {
@@ -66,14 +57,14 @@ private:
     void upgrade(const Lock& lock);
 
     Thread(
-        const opentxs::api::storage::Driver& storage,
+        const Driver& storage,
         const std::string& id,
         const std::string& hash,
         const std::string& alias,
         Mailbox& mailInbox,
         Mailbox& mailOutbox);
     Thread(
-        const opentxs::api::storage::Driver& storage,
+        const Driver& storage,
         const std::string& id,
         const std::set<std::string>& participants,
         Mailbox& mailInbox,
@@ -89,7 +80,7 @@ public:
     auto Check(const std::string& id) const -> bool;
     auto ID() const -> std::string;
     auto Items() const -> proto::StorageThread;
-    auto Migrate(const opentxs::api::storage::Driver& to) const -> bool final;
+    auto Migrate(const Driver& to) const -> bool final;
     auto UnreadCount() const -> std::size_t;
 
     auto Add(
@@ -108,5 +99,4 @@ public:
 
     ~Thread() final = default;
 };
-}  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::storage

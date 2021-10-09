@@ -12,7 +12,6 @@
 #include <tuple>
 #include <utility>
 
-#include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -22,6 +21,7 @@
 #include "opentxs/protobuf/StorageNymList.pb.h"
 #include "opentxs/protobuf/verify/Nym.hpp"
 #include "opentxs/protobuf/verify/StorageNymList.hpp"
+#include "opentxs/storage/Driver.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 #include "storage/tree/Nym.hpp"
@@ -36,9 +36,7 @@ namespace opentxs
 {
 namespace storage
 {
-Nyms::Nyms(
-    const opentxs::api::storage::Driver& storage,
-    const std::string& hash)
+Nyms::Nyms(const Driver& storage, const std::string& hash)
     : Node(storage, hash)
     , nyms_()
     , local_nyms_()
@@ -104,7 +102,7 @@ void Nyms::Map(NymLambda lambda) const
     }
 }
 
-auto Nyms::Migrate(const opentxs::api::storage::Driver& to) const -> bool
+auto Nyms::Migrate(const Driver& to) const -> bool
 {
     bool output{true};
 

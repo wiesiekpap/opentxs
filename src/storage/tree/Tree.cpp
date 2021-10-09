@@ -10,13 +10,13 @@
 #include <functional>
 #include <stdexcept>
 
-#include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
 #include "opentxs/protobuf/StorageItems.pb.h"
 #include "opentxs/protobuf/verify/StorageItems.hpp"
+#include "opentxs/storage/Driver.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Accounts.hpp"
 #include "storage/tree/Contacts.hpp"
@@ -35,9 +35,7 @@
 
 namespace opentxs::storage
 {
-Tree::Tree(
-    const opentxs::api::storage::Driver& storage,
-    const std::string& hash)
+Tree::Tree(const Driver& storage, const std::string& hash)
     : Node(storage, hash)
     , account_root_(Node::BLANK_HASH)
     , contact_root_(Node::BLANK_HASH)
@@ -234,7 +232,7 @@ auto Tree::Load(std::shared_ptr<proto::Ciphertext>& output, const bool checking)
     return false;
 }
 
-auto Tree::Migrate(const opentxs::api::storage::Driver& to) const -> bool
+auto Tree::Migrate(const Driver& to) const -> bool
 {
     bool output{true};
     output &= accounts()->Migrate(to);

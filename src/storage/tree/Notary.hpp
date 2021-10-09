@@ -14,21 +14,13 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Editor.hpp"
-#include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/api/Storage.hpp"
 #include "opentxs/protobuf/SpentTokenList.pb.h"
 #include "opentxs/protobuf/StorageNotary.pb.h"
 #include "storage/tree/Node.hpp"
 
 namespace opentxs
 {
-namespace api
-{
-namespace storage
-{
-class Driver;
-}  // namespace storage
-}  // namespace api
-
 namespace identifier
 {
 class UnitDefinition;
@@ -36,6 +28,7 @@ class UnitDefinition;
 
 namespace storage
 {
+class Driver;
 class Tree;
 }  // namespace storage
 }  // namespace opentxs
@@ -86,7 +79,7 @@ private:
     void init(const std::string& hash) final;
 
     Notary(
-        const opentxs::api::storage::Driver& storage,
+        const Driver& storage,
         const std::string& key,
         const std::string& id);
     Notary() = delete;

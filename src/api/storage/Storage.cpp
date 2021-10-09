@@ -7,36 +7,30 @@
 #include "1_Internal.hpp"           // IWYU pragma: associated
 #include "api/storage/Storage.hpp"  // IWYU pragma: associated
 
-#include <chrono>
 #include <cstdint>
 #include <ctime>
 #include <functional>
 #include <limits>
 #include <stdexcept>
-#include <string_view>
-#include <thread>
 #include <utility>
 #include <vector>
 
-#include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "core/OTStorage.hpp"
+#include "internal/api/network/Network.hpp"
+#include "internal/api/storage/Factory.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
+#include "internal/storage/drivers/Drivers.hpp"
+#include "internal/storage/drivers/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Editor.hpp"
-#include "opentxs/api/Legacy.hpp"
-#include "opentxs/api/Settings.hpp"
-#include "opentxs/api/crypto/Crypto.hpp"
-#include "opentxs/api/crypto/Encode.hpp"
-#include "opentxs/api/crypto/Hash.hpp"
-#include "opentxs/api/storage/Multiplex.hpp"
+#include "opentxs/api/network/Asio.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -58,7 +52,7 @@
 #include "opentxs/protobuf/StorageThread.pb.h"
 #include "opentxs/protobuf/StorageThreadItem.pb.h"
 #include "opentxs/protobuf/UnitDefinition.pb.h"
-#include "storage/StorageConfig.hpp"
+#include "storage/Config.hpp"
 #include "storage/tree/Accounts.hpp"
 #include "storage/tree/Bip47Channels.hpp"
 #include "storage/tree/Contacts.hpp"
@@ -80,276 +74,26 @@
 #include "storage/tree/Tree.hpp"
 #include "storage/tree/Units.hpp"
 
-#define STORAGE_CONFIG_KEY "storage"
-
 #define OT_METHOD "opentxs::api::storage::implementation::Storage::"
 
-namespace opentxs
+namespace opentxs::factory
 {
-auto Factory::Storage(
-    const Flag& running,
+auto StorageInterface(
     const api::Crypto& crypto,
-    const api::Settings& config,
-    const api::Legacy& legacy,
-    const std::string& dataFolder,
-    const String& defaultPluginCLI,
-    const String& archiveDirectoryCLI,
-    const std::chrono::seconds gcIntervalCLI,
-    String& encryptedDirectoryCLI,
-    StorageConfig& storageConfig) -> api::storage::StorageInternal*
+    const api::network::Asio& asio,
+    const Flag& running,
+    const opentxs::storage::Config& config) noexcept
+    -> std::unique_ptr<api::storage::internal::Storage>
 {
-    Digest hash = std::bind(
-        static_cast<bool (api::crypto::Hash::*)(
-            const std::uint32_t, const ReadView, const AllocateOutput) const>(
-            &api::crypto::Hash::Digest),
-        &(crypto.Hash()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3);
-    Random random =
-        std::bind(&api::crypto::Encode::RandomFilename, &(crypto.Encode()));
-    std::shared_ptr<OTDB::StorageFS> storage(OTDB::StorageFS::Instantiate());
-
     {
-        auto path = String::Factory();
-
-        if (false == legacy.AppendFolder(
-                         path,
-                         String::Factory(dataFolder),
-                         String::Factory(legacy.Common()))) {
-            LogOutput("opentxs::Factory::")(__func__)(
-                "Failed to calculate storage path")
-                .Flush();
-
-            return nullptr;
-        }
-
-        if (false == legacy.BuildFolderPath(path)) {
-            LogOutput("opentxs::Factory::")(__func__)(
-                "Failed to construct storage path")
-                .Flush();
-
-            return nullptr;
-        }
-
-        storageConfig.path_ = path->Get();
+        auto otdb =
+            std::unique_ptr<OTDB::StorageFS>{OTDB::StorageFS::Instantiate()};
     }
 
-    bool notUsed;
-    bool migrate{false};
-    auto old = String::Factory();
-    OTString defaultPlugin = defaultPluginCLI;
-    auto archiveDirectory = String::Factory();
-    auto encryptedDirectory = String::Factory();
-
-    LogDetail(OT_METHOD)(__func__)(": Using ")(
-        defaultPlugin)(" as primary storage plugin.")
-        .Flush();
-
-    if (archiveDirectoryCLI.empty()) {
-        archiveDirectory =
-            String::Factory(storageConfig.fs_backup_directory_.c_str());
-    } else {
-        archiveDirectory = archiveDirectoryCLI;
-    }
-
-    if (encryptedDirectoryCLI.empty()) {
-        encryptedDirectory = String::Factory(
-            storageConfig.fs_encrypted_backup_directory_.c_str());
-    } else {
-        encryptedDirectory = encryptedDirectoryCLI;
-    }
-
-    const bool haveGCInterval = (0 != gcIntervalCLI.count());
-    std::int64_t defaultGcInterval{0};
-    std::int64_t configGcInterval{0};
-
-    if (haveGCInterval) {
-        defaultGcInterval = gcIntervalCLI.count();
-    } else {
-        defaultGcInterval = storageConfig.gc_interval_;
-    }
-
-    encryptedDirectoryCLI.Set(encryptedDirectory);
-
-    config.CheckSet_bool(
-        String::Factory(STORAGE_CONFIG_KEY),
-        String::Factory("auto_publish_nyms"),
-        storageConfig.auto_publish_nyms_,
-        storageConfig.auto_publish_nyms_,
-        notUsed);
-    config.CheckSet_bool(
-        String::Factory(STORAGE_CONFIG_KEY),
-        String::Factory("auto_publish_servers_"),
-        storageConfig.auto_publish_servers_,
-        storageConfig.auto_publish_servers_,
-        notUsed);
-    config.CheckSet_bool(
-        String::Factory(STORAGE_CONFIG_KEY),
-        String::Factory("auto_publish_units_"),
-        storageConfig.auto_publish_units_,
-        storageConfig.auto_publish_units_,
-        notUsed);
-    config.CheckSet_long(
-        String::Factory(STORAGE_CONFIG_KEY),
-        String::Factory("gc_interval"),
-        defaultGcInterval,
-        configGcInterval,
-        notUsed);
-    config.CheckSet_str(
-        String::Factory(STORAGE_CONFIG_KEY),
-        String::Factory("path"),
-        String::Factory(storageConfig.path_),
-        storageConfig.path_,
-        notUsed);
-    config.CheckSet_str(
-        String::Factory(STORAGE_CONFIG_KEY),
-        String::Factory("fs_primary"),
-        String::Factory(storageConfig.fs_primary_bucket_),
-        storageConfig.fs_primary_bucket_,
-        notUsed);
-    config.CheckSet_str(
-        String::Factory(STORAGE_CONFIG_KEY),
-        String::Factory("fs_secondary"),
-        String::Factory(storageConfig.fs_secondary_bucket_),
-        storageConfig.fs_secondary_bucket_,
-        notUsed);
-    config.CheckSet_str(
-        String::Factory(STORAGE_CONFIG_KEY),
-        String::Factory("fs_root_file"),
-        String::Factory(storageConfig.fs_root_file_),
-        storageConfig.fs_root_file_,
-        notUsed);
-    config.CheckSet_str(
-        String::Factory(STORAGE_CONFIG_KEY),
-        String::Factory(STORAGE_CONFIG_FS_BACKUP_DIRECTORY_KEY),
-        archiveDirectory,
-        storageConfig.fs_backup_directory_,
-        notUsed);
-    archiveDirectory =
-        String::Factory(storageConfig.fs_backup_directory_.c_str());
-    config.CheckSet_str(
-        String::Factory(STORAGE_CONFIG_KEY),
-        String::Factory(STORAGE_CONFIG_FS_ENCRYPTED_BACKUP_DIRECTORY_KEY),
-        encryptedDirectory,
-        storageConfig.fs_encrypted_backup_directory_,
-        notUsed);
-    encryptedDirectory =
-        String::Factory(storageConfig.fs_encrypted_backup_directory_.c_str());
-    config.CheckSet_str(
-        String::Factory(STORAGE_CONFIG_KEY),
-        String::Factory("sqlite3_primary"),
-        String::Factory(storageConfig.sqlite3_primary_bucket_),
-        storageConfig.sqlite3_primary_bucket_,
-        notUsed);
-    config.CheckSet_str(
-        String::Factory(STORAGE_CONFIG_KEY),
-        String::Factory("sqlite3_secondary"),
-        String::Factory(storageConfig.sqlite3_secondary_bucket_),
-        storageConfig.sqlite3_secondary_bucket_,
-        notUsed);
-    config.CheckSet_str(
-        String::Factory(STORAGE_CONFIG_KEY),
-        String::Factory("sqlite3_control"),
-        String::Factory(storageConfig.sqlite3_control_table_),
-        storageConfig.sqlite3_control_table_,
-        notUsed);
-    config.CheckSet_str(
-        String::Factory(STORAGE_CONFIG_KEY),
-        String::Factory("sqlite3_root_key"),
-        String::Factory(storageConfig.sqlite3_root_key_),
-        storageConfig.sqlite3_root_key_,
-        notUsed);
-    config.CheckSet_str(
-        String::Factory(STORAGE_CONFIG_KEY),
-        String::Factory("sqlite3_db_file"),
-        String::Factory(storageConfig.sqlite3_db_file_),
-        storageConfig.sqlite3_db_file_,
-        notUsed);
-    config.CheckSet_str(
-        String::Factory(STORAGE_CONFIG_KEY),
-        String::Factory("lmdb_primary"),
-        String::Factory(storageConfig.lmdb_primary_bucket_),
-        storageConfig.lmdb_primary_bucket_,
-        notUsed);
-    config.CheckSet_str(
-        String::Factory(STORAGE_CONFIG_KEY),
-        String::Factory("lmdb_secondary"),
-        String::Factory(storageConfig.lmdb_secondary_bucket_),
-        storageConfig.lmdb_secondary_bucket_,
-        notUsed);
-    config.CheckSet_str(
-        String::Factory(STORAGE_CONFIG_KEY),
-        String::Factory("lmdb_control"),
-        String::Factory(storageConfig.lmdb_control_table_),
-        storageConfig.lmdb_control_table_,
-        notUsed);
-    config.CheckSet_str(
-        String::Factory(STORAGE_CONFIG_KEY),
-        String::Factory("lmdb_root_key"),
-        String::Factory(storageConfig.lmdb_root_key_),
-        storageConfig.lmdb_root_key_,
-        notUsed);
-
-    if (haveGCInterval) {
-        storageConfig.gc_interval_ = defaultGcInterval;
-        config.Set_long(
-            String::Factory(STORAGE_CONFIG_KEY),
-            String::Factory("gc_interval"),
-            defaultGcInterval,
-            notUsed);
-    } else {
-        storageConfig.gc_interval_ = configGcInterval;
-    }
-
-    const std::string defaultPluginName(defaultPlugin.get().Get());
-
-    if (defaultPluginName == OT_STORAGE_PRIMARY_PLUGIN_LMDB) {
-        {
-            auto path = String::Factory();
-            const auto subdir = std::string{legacy.Common()} + "_lmdb";
-
-            if (false == legacy.AppendFolder(
-                             path,
-                             String::Factory(dataFolder),
-                             String::Factory(subdir))) {
-                LogOutput("opentxs::Factory::")(__func__)(
-                    "Failed to calculate lmdb storage path")
-                    .Flush();
-
-                return nullptr;
-            }
-
-            if (false == legacy.BuildFolderPath(path)) {
-                LogOutput("opentxs::Factory::")(__func__)(
-                    "Failed to construct lmdb storage path")
-                    .Flush();
-
-                return nullptr;
-            }
-
-            storageConfig.path_ = path->Get();
-        }
-    }
-
-    config.Set_str(
-        String::Factory(STORAGE_CONFIG_KEY),
-        String::Factory(STORAGE_CONFIG_PRIMARY_PLUGIN_KEY),
-        defaultPlugin,
-        notUsed);
-    config.Save();
-
-    return new api::storage::implementation::Storage(
-        crypto,
-        running,
-        storageConfig,
-        defaultPlugin,
-        migrate,
-        old,
-        hash,
-        random);
+    return std::make_unique<api::storage::implementation::Storage>(
+        crypto, asio, running, config);
 }
-}  // namespace opentxs
+}  // namespace opentxs::factory
 
 namespace opentxs::api::storage::implementation
 {
@@ -357,30 +101,23 @@ const std::uint32_t Storage::HASH_TYPE = 2;  // BTC160
 
 Storage::Storage(
     const api::Crypto& crypto,
+    const network::Asio& asio,
     const Flag& running,
-    const StorageConfig& config,
-    const String& primary,
-    const bool migrate,
-    const String& previous,
-    const Digest& hash,
-    const Random& random)
+    const opentxs::storage::Config& config)
     : crypto_(crypto)
+    , asio_(asio)
     , running_(running)
     , gc_interval_(config.gc_interval_)
     , write_lock_()
     , root_(nullptr)
     , primary_bucket_(Flag::Factory(false))
-    , background_threads_()
     , config_(config)
-    , multiplex_p_(opentxs::Factory::StorageMultiplex(
+    , multiplex_p_(factory::StorageMultiplex(
+          crypto_,
+          asio_,
           *this,
           primary_bucket_,
-          config_,
-          primary,
-          migrate,
-          previous,
-          hash,
-          random))
+          config_))
     , multiplex_(*multiplex_p_)
 {
     OT_ASSERT(multiplex_p_);
@@ -565,10 +302,6 @@ auto Storage::CheckTokenSpent(
 
 void Storage::Cleanup_Storage()
 {
-    for (auto& thread : background_threads_) {
-        if (thread.joinable()) { thread.join(); }
-    }
-
     if (root_) { root_->cleanup(); }
 }
 
@@ -696,6 +429,7 @@ void Storage::InitPlugins()
     if (hash.empty()) { return; }
 
     std::unique_ptr<opentxs::storage::Root> root{new opentxs::storage::Root(
+        asio_,
         multiplex_,
         hash,
         std::numeric_limits<std::int64_t>::max(),
@@ -1162,26 +896,23 @@ auto Storage::LocalNyms() const -> const std::set<std::string>
 }
 
 // Applies a lambda to all public nyms in the database in a detached thread.
-void Storage::MapPublicNyms(NymLambda& lambda) const
+void Storage::MapPublicNyms(NymLambda& cb) const
 {
-    std::thread bgMap(&Storage::RunMapPublicNyms, this, lambda);
-    bgMap.detach();
+    asio_.Internal().Post(ThreadPool::General, [=] { RunMapPublicNyms(cb); });
 }
 
 // Applies a lambda to all server contracts in the database in a detached
 // thread.
-void Storage::MapServers(ServerLambda& lambda) const
+void Storage::MapServers(ServerLambda& cb) const
 {
-    std::thread bgMap(&Storage::RunMapServers, this, lambda);
-    bgMap.detach();
+    asio_.Internal().Post(ThreadPool::General, [=] { RunMapServers(cb); });
 }
 
 // Applies a lambda to all unit definitions in the database in a detached
 // thread.
-void Storage::MapUnitDefinitions(UnitLambda& lambda) const
+void Storage::MapUnitDefinitions(UnitLambda& cb) const
 {
-    std::thread bgMap(&Storage::RunMapUnits, this, lambda);
-    bgMap.detach();
+    asio_.Internal().Post(ThreadPool::General, [=] { RunMapUnits(cb); });
 }
 
 auto Storage::MarkTokenSpent(
@@ -1811,7 +1542,11 @@ auto Storage::root() const -> opentxs::storage::Root*
 
     if (!root_) {
         root_.reset(new opentxs::storage::Root(
-            multiplex_, multiplex_.LoadRoot(), gc_interval_, primary_bucket_));
+            asio_,
+            multiplex_,
+            multiplex_.LoadRoot(),
+            gc_interval_,
+            primary_bucket_));
     }
 
     OT_ASSERT(root_);

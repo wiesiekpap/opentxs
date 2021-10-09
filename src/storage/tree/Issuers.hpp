@@ -16,14 +16,6 @@
 
 namespace opentxs
 {
-namespace api
-{
-namespace storage
-{
-class Driver;
-}  // namespace storage
-}  // namespace api
-
 namespace proto
 {
 class Issuer;
@@ -31,8 +23,13 @@ class Issuer;
 
 namespace storage
 {
+class Driver;
 class Nym;
+}  // namespace storage
+}  // namespace opentxs
 
+namespace opentxs::storage
+{
 class Issuers final : public Node
 {
 public:
@@ -54,14 +51,11 @@ private:
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
     auto serialize() const -> proto::StorageIssuers;
 
-    Issuers(
-        const opentxs::api::storage::Driver& storage,
-        const std::string& hash);
+    Issuers(const Driver& storage, const std::string& hash);
     Issuers() = delete;
     Issuers(const Issuers&) = delete;
     Issuers(Issuers&&) = delete;
     auto operator=(const Issuers&) -> Issuers = delete;
     auto operator=(Issuers&&) -> Issuers = delete;
 };
-}  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::storage

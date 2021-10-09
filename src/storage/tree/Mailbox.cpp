@@ -15,12 +15,12 @@
 #include <utility>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/StorageEnums.pb.h"
 #include "opentxs/protobuf/StorageItemHash.pb.h"
 #include "opentxs/protobuf/StorageNymList.pb.h"
 #include "opentxs/protobuf/verify/StorageNymList.hpp"
+#include "opentxs/storage/Driver.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 
@@ -28,9 +28,7 @@ namespace opentxs
 {
 namespace storage
 {
-Mailbox::Mailbox(
-    const opentxs::api::storage::Driver& storage,
-    const std::string& hash)
+Mailbox::Mailbox(const Driver& storage, const std::string& hash)
     : Node(storage, hash)
 {
     if (check_hash(hash)) {

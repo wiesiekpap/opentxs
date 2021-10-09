@@ -15,7 +15,6 @@
 
 #include "internal/crypto/key/Key.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/crypto/key/asymmetric/Mode.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Credential.pb.h"
@@ -24,6 +23,7 @@
 #include "opentxs/protobuf/StorageItemHash.pb.h"
 #include "opentxs/protobuf/verify/Credential.hpp"
 #include "opentxs/protobuf/verify/StorageCredentials.hpp"
+#include "opentxs/storage/Driver.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 
@@ -31,9 +31,7 @@ namespace opentxs
 {
 namespace storage
 {
-Credentials::Credentials(
-    const opentxs::api::storage::Driver& storage,
-    const std::string& hash)
+Credentials::Credentials(const Driver& storage, const std::string& hash)
     : Node(storage, hash)
 {
     if (check_hash(hash)) {

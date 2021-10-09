@@ -17,14 +17,6 @@
 
 namespace opentxs
 {
-namespace api
-{
-namespace storage
-{
-class Driver;
-}  // namespace storage
-}  // namespace api
-
 namespace proto
 {
 class Seed;
@@ -32,13 +24,12 @@ class Seed;
 
 namespace storage
 {
+class Driver;
 class Tree;
 }  // namespace storage
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace storage
+namespace opentxs::storage
 {
 class Seeds final : public Node
 {
@@ -54,9 +45,7 @@ private:
         const std::string& id);
     auto serialize() const -> proto::StorageSeeds;
 
-    Seeds(
-        const opentxs::api::storage::Driver& storage,
-        const std::string& hash);
+    Seeds(const Driver& storage, const std::string& hash);
     Seeds() = delete;
     Seeds(const Seeds&) = delete;
     Seeds(Seeds&&) = delete;
@@ -79,5 +68,4 @@ public:
 
     ~Seeds() final = default;
 };
-}  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::storage

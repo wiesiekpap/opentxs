@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/api/Storage.hpp"
 
 namespace opentxs
 {
@@ -18,24 +18,24 @@ class Symmetric;
 }  // namespace crypto
 }  // namespace opentxs
 
-namespace opentxs::api::storage
+namespace opentxs::api::storage::internal
 {
-class StorageInternal : virtual public Storage
+class Storage : virtual public storage::Storage
 {
 public:
     virtual void InitBackup() = 0;
     virtual void InitEncryptedBackup(opentxs::crypto::key::Symmetric& key) = 0;
     virtual void start() = 0;
 
-    virtual ~StorageInternal() override = default;
+    virtual ~Storage() override = default;
 
 protected:
-    StorageInternal() = default;
+    Storage() = default;
 
 private:
-    StorageInternal(const StorageInternal&) = delete;
-    StorageInternal(StorageInternal&&) = delete;
-    auto operator=(const StorageInternal&) -> StorageInternal& = delete;
-    auto operator=(StorageInternal&&) -> StorageInternal& = delete;
+    Storage(const Storage&) = delete;
+    Storage(Storage&&) = delete;
+    auto operator=(const Storage&) -> Storage& = delete;
+    auto operator=(Storage&&) -> Storage& = delete;
 };
-}  // namespace opentxs::api::storage
+}  // namespace opentxs::api::storage::internal

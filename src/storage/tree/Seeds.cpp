@@ -14,13 +14,13 @@
 #include <utility>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Seed.pb.h"
 #include "opentxs/protobuf/StorageItemHash.pb.h"
 #include "opentxs/protobuf/StorageSeeds.pb.h"
 #include "opentxs/protobuf/verify/Seed.hpp"
 #include "opentxs/protobuf/verify/StorageSeeds.hpp"
+#include "opentxs/storage/Driver.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 
@@ -32,9 +32,7 @@ namespace opentxs
 {
 namespace storage
 {
-Seeds::Seeds(
-    const opentxs::api::storage::Driver& storage,
-    const std::string& hash)
+Seeds::Seeds(const Driver& storage, const std::string& hash)
     : Node(storage, hash)
     , default_seed_()
 {

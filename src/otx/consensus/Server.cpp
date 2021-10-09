@@ -31,6 +31,7 @@
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Legacy.hpp"
+#include "opentxs/api/Storage.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Activity.hpp"
 #include "opentxs/api/client/Contacts.hpp"
@@ -40,7 +41,6 @@
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
 #include "opentxs/api/client/Workflow.hpp"
 #include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/storage/Storage.hpp"
 #if OT_CASH
 #include "opentxs/blind/Mint.hpp"
 #include "opentxs/blind/Purse.hpp"

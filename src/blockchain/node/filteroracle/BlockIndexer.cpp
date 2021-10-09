@@ -331,8 +331,8 @@ auto FilterOracle::BlockIndexer::queue_processing(
             auto& job = cache.emplace_back(
                 blank, *task, type_, filter, header, jobCounter);
             ++jobCounter;
-            const auto queued = api_.Network().Asio().Internal().PostCPU(
-                [&] { parent_.ProcessBlock(job); });
+            const auto queued = api_.Network().Asio().Internal().Post(
+                ThreadPool::General, [&] { parent_.ProcessBlock(job); });
 
             if (false == queued) {
                 --jobCounter;

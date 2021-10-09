@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <future>
+#include <map>
 #include <shared_mutex>
 #include <string>
 #include <string_view>
@@ -79,8 +80,7 @@ struct Asio::Imp final : public api::network::internal::Asio,
     auto GetPublicAddress6() const noexcept -> std::shared_future<OTData>;
     auto Init() noexcept -> void;
     auto IOContext() noexcept -> boost::asio::io_context& final;
-    auto PostIO(Asio::Callback cb) noexcept -> bool final;
-    auto PostCPU(Asio::Callback cb) noexcept -> bool final;
+    auto Post(ThreadPool type, Asio::Callback cb) noexcept -> bool final;
     auto Receive(
         const ReadView id,
         const OTZMQWorkType type,
@@ -116,7 +116,7 @@ private:
     asio::Buffers buffers_;
     mutable std::shared_mutex lock_;
     mutable asio::Context io_context_;
-    mutable asio::Context cpu_context_;
+    mutable std::map<ThreadPool, asio::Context> thread_pools_;
     mutable asio::Acceptors acceptors_;
     std::promise<OTData> ipv4_promise_;
     std::promise<OTData> ipv6_promise_;

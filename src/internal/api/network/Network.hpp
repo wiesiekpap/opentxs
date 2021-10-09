@@ -72,6 +72,15 @@ class Identifier;
 class Options;
 }  // namespace opentxs
 
+namespace opentxs
+{
+enum class ThreadPool {
+    General,
+    Network,
+    Storage,
+};
+}  // namespace opentxs
+
 namespace opentxs::api::network::internal
 {
 struct Asio {
@@ -82,8 +91,7 @@ struct Asio {
     virtual auto Connect(const ReadView id, Socket& socket) noexcept
         -> bool = 0;
     virtual auto IOContext() noexcept -> boost::asio::io_context& = 0;
-    virtual auto PostIO(Callback cb) noexcept -> bool = 0;
-    virtual auto PostCPU(Callback cb) noexcept -> bool = 0;
+    virtual auto Post(ThreadPool type, Callback cb) noexcept -> bool = 0;
     virtual auto Receive(
         const ReadView id,
         const OTZMQWorkType type,

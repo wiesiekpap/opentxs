@@ -25,14 +25,6 @@
 
 namespace opentxs
 {
-namespace api
-{
-namespace storage
-{
-class Driver;
-}  // namespace storage
-}  // namespace api
-
 namespace proto
 {
 class Contact;
@@ -40,6 +32,7 @@ class Contact;
 
 namespace storage
 {
+class Driver;
 class Tree;
 }  // namespace storage
 }  // namespace opentxs
@@ -87,9 +80,7 @@ private:
     void reconcile_maps(const Lock& lock, const proto::Contact& data);
     void reverse_merged();
 
-    Contacts(
-        const opentxs::api::storage::Driver& storage,
-        const std::string& hash);
+    Contacts(const Driver& storage, const std::string& hash);
     Contacts() = delete;
     Contacts(const Contacts&) = delete;
     Contacts(Contacts&&) = delete;

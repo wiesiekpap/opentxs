@@ -22,16 +22,9 @@
 
 namespace opentxs
 {
-namespace api
-{
 namespace storage
 {
 class Driver;
-}  // namespace storage
-}  // namespace api
-
-namespace storage
-{
 class Tree;
 }  // namespace storage
 }  // namespace opentxs
@@ -141,9 +134,7 @@ private:
     void init(const std::string& hash) final;
     auto save(const Lock& lock) const -> bool final;
 
-    Accounts(
-        const opentxs::api::storage::Driver& storage,
-        const std::string& key);
+    Accounts(const Driver& storage, const std::string& key);
     Accounts() = delete;
     Accounts(const Accounts&) = delete;
     Accounts(Accounts&&) = delete;

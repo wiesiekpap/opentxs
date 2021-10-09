@@ -25,11 +25,6 @@ namespace implementation
 {
 class Storage;
 }  // namespace implementation
-
-namespace storage
-{
-class Driver;
-}  // namespace storage
 }  // namespace api
 
 namespace proto
@@ -42,6 +37,7 @@ namespace storage
 class Accounts;
 class Contacts;
 class Credentials;
+class Driver;
 class Notary;
 class Nyms;
 class Root;
@@ -77,7 +73,7 @@ public:
     auto Load(
         std::shared_ptr<proto::Ciphertext>& output,
         const bool checking = false) const -> bool;
-    auto Migrate(const opentxs::api::storage::Driver& to) const -> bool final;
+    auto Migrate(const Driver& to) const -> bool final;
 
     auto Store(const proto::Ciphertext& serialized) -> bool;
 
@@ -147,7 +143,7 @@ private:
     auto serialize() const -> proto::StorageItems;
     auto update_root(const std::string& hash) -> bool;
 
-    Tree(const opentxs::api::storage::Driver& storage, const std::string& key);
+    Tree(const Driver& storage, const std::string& key);
     Tree() = delete;
     Tree(const Tree&);
     Tree(Tree&&) = delete;
