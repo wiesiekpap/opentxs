@@ -3,16 +3,17 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                          // IWYU pragma: associated
-#include "1_Internal.hpp"                        // IWYU pragma: associated
-#include "storage/drivers/StorageFSArchive.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                              // IWYU pragma: associated
+#include "1_Internal.hpp"                            // IWYU pragma: associated
+#include "storage/drivers/filesystem/Archiving.hpp"  // IWYU pragma: associated
 
 #include <boost/filesystem.hpp>
 #include <boost/system/error_code.hpp>
 #include <memory>
 
-#include "2_Factory.hpp"
 #include "Proto.tpp"
+#include "internal/storage/drivers/Factory.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -21,46 +22,48 @@
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
-#include "storage/StorageConfig.hpp"
+#include "storage/Config.hpp"
 
 #define ROOT_FILE_EXTENSION ".hash"
 
-#define OT_METHOD "opentxs::StorageFSArchive::"
+#define OT_METHOD "opentxs::storage::driver::filesystem::Archiving::"
 
-namespace opentxs
+namespace opentxs::factory
 {
-auto Factory::StorageFSArchive(
-    const api::storage::Storage& storage,
-    const StorageConfig& config,
-    const Digest& hash,
-    const Random& random,
+auto StorageFSArchive(
+    const api::Crypto& crypto,
+    const api::network::Asio& asio,
+    const api::storage::Storage& parent,
+    const storage::Config& config,
     const Flag& bucket,
     const std::string& folder,
-    crypto::key::Symmetric& key) -> opentxs::api::storage::Plugin*
+    crypto::key::Symmetric& key) noexcept -> std::unique_ptr<storage::Plugin>
 {
-    return new opentxs::storage::implementation::StorageFSArchive(
-        storage, config, hash, random, bucket, folder, key);
-}
-}  // namespace opentxs
+    using ReturnType = storage::driver::filesystem::Archiving;
 
-namespace opentxs::storage::implementation
+    return std::make_unique<ReturnType>(
+        crypto, asio, parent, config, bucket, folder, key);
+}
+}  // namespace opentxs::factory
+
+namespace opentxs::storage::driver::filesystem
 {
-StorageFSArchive::StorageFSArchive(
+Archiving::Archiving(
+    const api::Crypto& crypto,
+    const api::network::Asio& asio,
     const api::storage::Storage& storage,
-    const StorageConfig& config,
-    const Digest& hash,
-    const Random& random,
+    const storage::Config& config,
     const Flag& bucket,
     const std::string& folder,
     crypto::key::Symmetric& key)
-    : ot_super(storage, config, hash, random, folder, bucket)
+    : ot_super(crypto, asio, storage, config, folder, bucket)
     , encryption_key_(key)
     , encrypted_(bool(encryption_key_))
 {
-    Init_StorageFSArchive();
+    Init_Archiving();
 }
 
-auto StorageFSArchive::calculate_path(
+auto Archiving::calculate_path(
     const std::string& key,
     const bool,
     std::string& directory) const -> std::string
@@ -100,20 +103,20 @@ auto StorageFSArchive::calculate_path(
     return {directory + path_seperator_ + key};
 }
 
-void StorageFSArchive::Cleanup()
+void Archiving::Cleanup()
 {
-    Cleanup_StorageFSArchive();
+    Cleanup_Archiving();
     ot_super::Cleanup();
 }
 
-void StorageFSArchive::Cleanup_StorageFSArchive()
+void Archiving::Cleanup_Archiving()
 {
     // future cleanup actions go here
 }
 
-auto StorageFSArchive::EmptyBucket(const bool) const -> bool { return true; }
+auto Archiving::EmptyBucket(const bool) const -> bool { return true; }
 
-void StorageFSArchive::Init_StorageFSArchive()
+void Archiving::Init_Archiving()
 {
     OT_ASSERT(false == folder_.empty());
 
@@ -122,8 +125,7 @@ void StorageFSArchive::Init_StorageFSArchive()
     if (boost::filesystem::create_directory(folder_, ec)) { ready_->On(); }
 }
 
-auto StorageFSArchive::prepare_read(const std::string& input) const
-    -> std::string
+auto Archiving::prepare_read(const std::string& input) const -> std::string
 {
     if (false == encrypted_) { return input; }
 
@@ -142,8 +144,7 @@ auto StorageFSArchive::prepare_read(const std::string& input) const
     return output;
 }
 
-auto StorageFSArchive::prepare_write(const std::string& plaintext) const
-    -> std::string
+auto Archiving::prepare_write(const std::string& plaintext) const -> std::string
 {
     if (false == encrypted_) { return plaintext; }
 
@@ -162,11 +163,11 @@ auto StorageFSArchive::prepare_write(const std::string& plaintext) const
     return proto::ToString(ciphertext);
 }
 
-auto StorageFSArchive::root_filename() const -> std::string
+auto Archiving::root_filename() const -> std::string
 {
     return folder_ + path_seperator_ + config_.fs_root_file_ +
            ROOT_FILE_EXTENSION;
 }
 
-StorageFSArchive::~StorageFSArchive() { Cleanup_StorageFSArchive(); }
-}  // namespace opentxs::storage::implementation
+Archiving::~Archiving() { Cleanup_Archiving(); }
+}  // namespace opentxs::storage::driver::filesystem

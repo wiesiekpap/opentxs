@@ -10,40 +10,57 @@
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/storage/Driver.hpp"
-#include "storage/drivers/StorageFS.hpp"
+#include "opentxs/storage/Driver.hpp"
+#include "storage/drivers/filesystem/Common.hpp"
 
 namespace opentxs
 {
 namespace api
 {
+namespace network
+{
+class Asio;
+}  // namespace network
+
 namespace storage
 {
-class Plugin;
 class Storage;
 }  // namespace storage
+
+class Crypto;
 }  // namespace api
+
+namespace storage
+{
+class Config;
+class Plugin;
+}  // namespace storage
 
 class Factory;
 class Flag;
-class StorageConfig;
 }  // namespace opentxs
 
-namespace opentxs::storage::implementation
+namespace opentxs::storage::driver::filesystem
 {
 // Simple filesystem implementation of opentxs::storage
-class StorageFSGC final : public StorageFS,
-                          public virtual opentxs::api::storage::Driver
+class GarbageCollected final : public Common, public virtual storage::Driver
 {
 private:
-    using ot_super = StorageFS;
+    using ot_super = Common;
 
 public:
     auto EmptyBucket(const bool bucket) const -> bool final;
 
     void Cleanup() final;
 
-    ~StorageFSGC() final;
+    GarbageCollected(
+        const api::Crypto& crypto,
+        const api::network::Asio& asio,
+        const api::storage::Storage& storage,
+        const storage::Config& config,
+        const Flag& bucket);
+
+    ~GarbageCollected() final;
 
 private:
     friend Factory;
@@ -56,19 +73,13 @@ private:
     void purge(const std::string& path) const;
     auto root_filename() const -> std::string final;
 
-    void Cleanup_StorageFSGC();
-    void Init_StorageFSGC();
+    void Cleanup_GarbageCollected();
+    void Init_GarbageCollected();
 
-    StorageFSGC(
-        const api::storage::Storage& storage,
-        const StorageConfig& config,
-        const Digest& hash,
-        const Random& random,
-        const Flag& bucket);
-    StorageFSGC() = delete;
-    StorageFSGC(const StorageFSGC&) = delete;
-    StorageFSGC(StorageFSGC&&) = delete;
-    auto operator=(const StorageFSGC&) -> StorageFSGC& = delete;
-    auto operator=(StorageFSGC&&) -> StorageFSGC& = delete;
+    GarbageCollected() = delete;
+    GarbageCollected(const GarbageCollected&) = delete;
+    GarbageCollected(GarbageCollected&&) = delete;
+    auto operator=(const GarbageCollected&) -> GarbageCollected& = delete;
+    auto operator=(GarbageCollected&&) -> GarbageCollected& = delete;
 };
-}  // namespace opentxs::storage::implementation
+}  // namespace opentxs::storage::driver::filesystem

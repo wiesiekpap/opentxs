@@ -298,11 +298,12 @@ auto SubchainStateData::ProcessReorg(const block::Position& ancestor) noexcept
 {
     LogInsane(OT_METHOD)(__func__)(": ")(name_).Flush();
     ++job_counter_;
-    const auto queued = api_.Network().Asio().Internal().PostCPU([=] {
-        auto post = ScopeGuard{[this] { --job_counter_; }};
+    const auto queued =
+        api_.Network().Asio().Internal().Post(ThreadPool::General, [=] {
+            auto post = ScopeGuard{[this] { --job_counter_; }};
 
-        do_reorg(ancestor);
-    });
+            do_reorg(ancestor);
+        });
 
     if (queued) {
         LogDebug(OT_METHOD)(__func__)(": ")(name_)(" reorg job queued").Flush();

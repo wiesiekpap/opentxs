@@ -16,21 +16,15 @@
 
 namespace opentxs
 {
-namespace api
-{
-namespace storage
-{
-class Driver;
-}  // namespace storage
-}  // namespace api
-
 namespace proto
 {
 class Context;
+class Driver;
 }  // namespace proto
 
 namespace storage
 {
+class Driver;
 class Nym;
 
 class Contexts final : public Node
@@ -42,9 +36,7 @@ private:
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
     auto serialize() const -> proto::StorageNymList;
 
-    Contexts(
-        const opentxs::api::storage::Driver& storage,
-        const std::string& hash);
+    Contexts(const Driver& storage, const std::string& hash);
     Contexts() = delete;
     Contexts(const Contexts&) = delete;
     Contexts(Contexts&&) = delete;

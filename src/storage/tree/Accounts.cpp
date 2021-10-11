@@ -12,7 +12,6 @@
 
 #include "internal/contact/Contact.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -23,6 +22,7 @@
 #include "opentxs/protobuf/StorageIDList.pb.h"
 #include "opentxs/protobuf/StorageItemHash.pb.h"
 #include "opentxs/protobuf/verify/StorageAccounts.hpp"
+#include "opentxs/storage/Driver.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 
@@ -95,9 +95,7 @@
 
 namespace opentxs::storage
 {
-Accounts::Accounts(
-    const opentxs::api::storage::Driver& storage,
-    const std::string& hash)
+Accounts::Accounts(const Driver& storage, const std::string& hash)
     : Node(storage, hash)
 {
     if (check_hash(hash)) {

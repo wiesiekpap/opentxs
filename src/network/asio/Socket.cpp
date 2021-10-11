@@ -83,7 +83,7 @@ auto Socket::Imp::Transmit(const ReadView data, Notification notifier) noexcept
             socket_, boost::asio::buffer(buf->data(), buf->size()), cb);
     };
 
-    return asio_.PostIO(std::move(work));
+    return asio_.Post(ThreadPool::Network, std::move(work));
 }
 
 Socket::Imp::~Imp() { Close(); }

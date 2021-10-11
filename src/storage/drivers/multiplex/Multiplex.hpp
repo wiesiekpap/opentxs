@@ -10,38 +10,45 @@
 #include <string>
 #include <vector>
 
+#include "internal/storage/drivers/Drivers.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/storage/Driver.hpp"
-#include "opentxs/api/storage/Multiplex.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
+#include "opentxs/storage/Driver.hpp"
 
 namespace opentxs
 {
 namespace api
 {
+namespace network
+{
+class Asio;
+}  // namespace network
+
 namespace storage
 {
-class Plugin;
 class Storage;
 }  // namespace storage
+
+class Crypto;
 }  // namespace api
 
 namespace storage
 {
+class Config;
+class Plugin;
 class Root;
 }  // namespace storage
 
 class Factory;
 class Flag;
-class StorageConfig;
 class String;
 }  // namespace opentxs
 
-namespace opentxs::storage::implementation
+namespace opentxs::storage::driver
 {
-class StorageMultiplex final : virtual public opentxs::api::storage::Multiplex
+class Multiplex final : virtual public internal::Multiplex
 {
 public:
     auto EmptyBucket(const bool bucket) const -> bool final;
@@ -52,9 +59,8 @@ public:
     auto Load(const std::string& key, const bool checking, std::string& value)
         const -> bool final;
     auto LoadRoot() const -> std::string final;
-    auto Migrate(
-        const std::string& key,
-        const opentxs::api::storage::Driver& to) const -> bool final;
+    auto Migrate(const std::string& key, const storage::Driver& to) const
+        -> bool final;
     auto Store(
         const bool isTransaction,
         const std::string& key,
@@ -76,60 +82,51 @@ public:
     auto BestRoot(bool& primaryOutOfSync) -> std::string final;
     void InitBackup() final;
     void InitEncryptedBackup(crypto::key::Symmetric& key) final;
-    auto Primary() -> opentxs::api::storage::Driver& final;
+    auto Primary() -> storage::Driver& final;
     void SynchronizePlugins(
         const std::string& hash,
         const storage::Root& root,
         const bool syncPrimary) final;
 
-    ~StorageMultiplex() final;
+    Multiplex(
+        const api::Crypto& crypto,
+        const api::network::Asio& asio,
+        const api::storage::Storage& storage,
+        const Flag& primaryBucket,
+        const storage::Config& config);
+
+    ~Multiplex() final;
 
 private:
     friend Factory;
 
+    const api::Crypto& crypto_;
+    const api::network::Asio& asio_;
     const api::storage::Storage& storage_;
     const Flag& primary_bucket_;
-    const StorageConfig& config_;
-    std::unique_ptr<opentxs::api::storage::Plugin> primary_plugin_;
-    std::vector<std::unique_ptr<opentxs::api::storage::Plugin>> backup_plugins_;
-    const Digest digest_;
-    const Random random_;
+    const storage::Config& config_;
+    std::unique_ptr<storage::Plugin> primary_plugin_;
+    std::vector<std::unique_ptr<storage::Plugin>> backup_plugins_;
     OTSymmetricKey null_;
 
     auto Cleanup() -> void;
-    auto Cleanup_StorageMultiplex() -> void;
+    auto Cleanup_Multiplex() -> void;
     auto init(
         const std::string& primary,
-        std::unique_ptr<opentxs::api::storage::Plugin>& plugin) -> void;
-    auto init_fs(std::unique_ptr<opentxs::api::storage::Plugin>& plugin)
-        -> void;
+        std::unique_ptr<storage::Plugin>& plugin) -> void;
+    auto init_fs(std::unique_ptr<storage::Plugin>& plugin) -> void;
     auto init_fs_backup(const std::string& dir) -> void;
-    auto init_lmdb(std::unique_ptr<opentxs::api::storage::Plugin>& plugin)
-        -> void;
-    auto init_memdb(std::unique_ptr<opentxs::api::storage::Plugin>& plugin)
-        -> void;
-    auto init_sqlite(std::unique_ptr<opentxs::api::storage::Plugin>& plugin)
-        -> void;
-    auto Init_StorageMultiplex(
-        const String& primary,
-        const bool migrate,
-        const String& previous) -> void;
+    auto init_lmdb(std::unique_ptr<storage::Plugin>& plugin) -> void;
+    auto init_memdb(std::unique_ptr<storage::Plugin>& plugin) -> void;
+    auto init_sqlite(std::unique_ptr<storage::Plugin>& plugin) -> void;
+    auto Init_Multiplex() -> void;
     auto migrate_primary(const std::string& from, const std::string& to)
         -> void;
 
-    StorageMultiplex(
-        const api::storage::Storage& storage,
-        const Flag& primaryBucket,
-        const StorageConfig& config,
-        const String& primary,
-        const bool migrate,
-        const String& previous,
-        const Digest& hash,
-        const Random& random);
-    StorageMultiplex() = delete;
-    StorageMultiplex(const StorageMultiplex&) = delete;
-    StorageMultiplex(StorageMultiplex&&) = delete;
-    auto operator=(const StorageMultiplex&) -> StorageMultiplex& = delete;
-    auto operator=(StorageMultiplex&&) -> StorageMultiplex& = delete;
+    Multiplex() = delete;
+    Multiplex(const Multiplex&) = delete;
+    Multiplex(Multiplex&&) = delete;
+    auto operator=(const Multiplex&) -> Multiplex& = delete;
+    auto operator=(Multiplex&&) -> Multiplex& = delete;
 };
-}  // namespace opentxs::storage::implementation
+}  // namespace opentxs::storage::driver

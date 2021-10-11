@@ -24,10 +24,10 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/Storage.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -242,7 +242,8 @@ struct MailCache::Imp {
 
         const auto& future = fIt->second;
         fifo_.push(std::move(key));
-        const auto sent = api_.Network().Asio().Internal().PostCPU(
+        const auto sent = api_.Network().Asio().Internal().Post(
+            ThreadPool::General,
             [this, pTask = &task] { ProcessThreadPool(pTask); });
 
         OT_ASSERT(sent);

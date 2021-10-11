@@ -122,7 +122,13 @@ Asio::Imp::Imp(const zmq::Context& zmq) noexcept
     , buffers_()
     , lock_()
     , io_context_()
-    , cpu_context_()
+    , thread_pools_([] {
+        auto out = std::map<ThreadPool, asio::Context>{};
+        out[ThreadPool::General];
+        out[ThreadPool::Storage];
+
+        return out;
+    }())
     , acceptors_(*this, io_context_)
     , ipv4_promise_()
     , ipv6_promise_()
@@ -251,7 +257,10 @@ auto Asio::Imp::Init() noexcept -> void
     const auto threads =
         std::max<unsigned int>(std::thread::hardware_concurrency(), 1u);
     io_context_.Init(std::max<unsigned int>(threads / 8, 1));
-    cpu_context_.Init(std::max<unsigned int>(threads - 1, 1));
+    thread_pools_.at(ThreadPool::General)
+        .Init(std::max<unsigned int>(threads - 1, 1));
+    thread_pools_.at(ThreadPool::Storage)
+        .Init(std::max<unsigned int>(threads / 4, 1));
 }
 
 auto Asio::Imp::load_root_certificates(
@@ -302,24 +311,24 @@ auto Asio::Imp::NotificationEndpoint() const noexcept -> const char*
     return notification_endpoint_.c_str();
 }
 
-auto Asio::Imp::PostIO(Asio::Callback cb) noexcept -> bool
+auto Asio::Imp::Post(ThreadPool type, Asio::Callback cb) noexcept -> bool
 {
     auto lock = sLock{lock_};
 
     if (shutdown()) { return false; }
 
-    boost::asio::post(io_context_.get(), std::move(cb));
+    auto& pool = [&]() -> auto&
+    {
+        if (ThreadPool::Network == type) {
 
-    return true;
-}
+            return io_context_;
+        } else {
 
-auto Asio::Imp::PostCPU(Asio::Callback cb) noexcept -> bool
-{
-    auto lock = sLock{lock_};
-
-    if (shutdown()) { return false; }
-
-    boost::asio::post(cpu_context_.get(), std::move(cb));
+            return thread_pools_.at(type);
+        }
+    }
+    ();
+    boost::asio::post(pool.get(), std::move(cb));
 
     return true;
 }
@@ -835,7 +844,9 @@ auto Asio::Imp::Shutdown() noexcept -> void
         auto lock = eLock{lock_};
         acceptors_.Stop();
         io_context_.Stop();
-        cpu_context_.Stop();
+
+        for (auto& [type, pool] : thread_pools_) { pool.Stop(); }
+
         data_socket_->Close();
     }
 }

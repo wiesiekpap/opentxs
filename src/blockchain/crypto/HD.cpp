@@ -24,7 +24,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/HDSeed.hpp"
-#include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/api/Storage.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/HDProtocol.hpp"

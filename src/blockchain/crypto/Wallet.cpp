@@ -19,7 +19,7 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/api/Storage.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"

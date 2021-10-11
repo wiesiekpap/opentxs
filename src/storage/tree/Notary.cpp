@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -24,6 +23,7 @@
 #include "opentxs/protobuf/StorageNotary.pb.h"
 #include "opentxs/protobuf/verify/SpentTokenList.hpp"
 #include "opentxs/protobuf/verify/StorageNotary.hpp"
+#include "opentxs/storage/Driver.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 
@@ -38,7 +38,7 @@
 namespace opentxs::storage
 {
 Notary::Notary(
-    const opentxs::api::storage::Driver& storage,
+    const Driver& storage,
     const std::string& hash,
     const std::string& id)
     : Node(storage, hash)

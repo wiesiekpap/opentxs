@@ -28,14 +28,6 @@
 
 namespace opentxs
 {
-namespace api
-{
-namespace storage
-{
-class Driver;
-}  // namespace storage
-}  // namespace api
-
 namespace identity
 {
 class Nym;
@@ -52,6 +44,7 @@ namespace storage
 {
 class Bip47Channels;
 class Contexts;
+class Driver;
 class Issuers;
 class Mailbox;
 class Nyms;
@@ -125,7 +118,7 @@ public:
         const identifier::UnitDefinition& unit,
         std::shared_ptr<proto::Purse>& output,
         const bool checking) const -> bool;
-    auto Migrate(const opentxs::api::storage::Driver& to) const -> bool final;
+    auto Migrate(const Driver& to) const -> bool final;
 
     auto SetAlias(const std::string& alias) -> bool;
     auto Store(
@@ -242,7 +235,7 @@ private:
         std::string& root);
     auto serialize() const -> proto::StorageNym;
 
-    Nym(const opentxs::api::storage::Driver& storage,
+    Nym(const Driver& storage,
         const std::string& id,
         const std::string& hash,
         const std::string& alias);

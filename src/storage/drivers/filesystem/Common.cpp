@@ -5,9 +5,9 @@
 
 // IWYU pragma: no_include <boost/iostreams/detail/wrap_unwrap.hpp>
 
-#include "0_stdafx.hpp"                   // IWYU pragma: associated
-#include "1_Internal.hpp"                 // IWYU pragma: associated
-#include "storage/drivers/StorageFS.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                           // IWYU pragma: associated
+#include "1_Internal.hpp"                         // IWYU pragma: associated
+#include "storage/drivers/filesystem/Common.hpp"  // IWYU pragma: associated
 
 extern "C" {
 #include <fcntl.h>
@@ -27,38 +27,38 @@ extern "C" {
 
 #define PATH_SEPERATOR "/"
 
-#define OT_METHOD "opentxs::StorageFS::"
+#define OT_METHOD "opentxs::storage::driver::filesystem::Common::"
 
-namespace opentxs
+namespace opentxs::storage::driver::filesystem
 {
-StorageFS::StorageFS(
+Common::Common(
+    const api::Crypto& crypto,
+    const api::network::Asio& asio,
     const api::storage::Storage& storage,
-    const StorageConfig& config,
-    const Digest& hash,
-    const Random& random,
+    const storage::Config& config,
     const std::string& folder,
     const Flag& bucket)
-    : ot_super(storage, config, hash, random, bucket)
+    : ot_super(crypto, asio, storage, config, bucket)
     , folder_(folder)
     , path_seperator_(PATH_SEPERATOR)
     , ready_(Flag::Factory(false))
 {
-    Init_StorageFS();
+    Init_Common();
 }
 
-void StorageFS::Cleanup() { Cleanup_StorageFS(); }
+void Common::Cleanup() { Cleanup_Common(); }
 
-void StorageFS::Cleanup_StorageFS()
+void Common::Cleanup_Common()
 {
     // future cleanup actions go here
 }
 
-void StorageFS::Init_StorageFS()
+void Common::Init_Common()
 {
     // future init actions go here
 }
 
-auto StorageFS::LoadFromBucket(
+auto Common::LoadFromBucket(
     const std::string& key,
     std::string& value,
     const bool bucket) const -> bool
@@ -77,7 +77,7 @@ auto StorageFS::LoadFromBucket(
     return false == value.empty();
 }
 
-auto StorageFS::LoadRoot() const -> std::string
+auto Common::LoadRoot() const -> std::string
 {
     if (ready_.get() && false == folder_.empty()) {
 
@@ -87,17 +87,17 @@ auto StorageFS::LoadRoot() const -> std::string
     return "";
 }
 
-auto StorageFS::prepare_read(const std::string& input) const -> std::string
+auto Common::prepare_read(const std::string& input) const -> std::string
 {
     return input;
 }
 
-auto StorageFS::prepare_write(const std::string& input) const -> std::string
+auto Common::prepare_write(const std::string& input) const -> std::string
 {
     return input;
 }
 
-auto StorageFS::read_file(const std::string& filename) const -> std::string
+auto Common::read_file(const std::string& filename) const -> std::string
 {
     boost::system::error_code ec{};
 
@@ -122,7 +122,7 @@ auto StorageFS::read_file(const std::string& filename) const -> std::string
     return {};
 }
 
-void StorageFS::store(
+void Common::store(
     const bool,
     const std::string& key,
     const std::string& value,
@@ -140,7 +140,7 @@ void StorageFS::store(
     }
 }
 
-auto StorageFS::StoreRoot(const bool, const std::string& hash) const -> bool
+auto Common::StoreRoot(const bool, const std::string& hash) const -> bool
 {
     if (ready_.get() && false == folder_.empty()) {
 
@@ -150,7 +150,7 @@ auto StorageFS::StoreRoot(const bool, const std::string& hash) const -> bool
     return false;
 }
 
-auto StorageFS::sync(const std::string& path) const -> bool
+auto Common::sync(const std::string& path) const -> bool
 {
     class FileDescriptor
     {
@@ -191,9 +191,9 @@ auto StorageFS::sync(const std::string& path) const -> bool
     return sync(fd);
 }
 
-auto StorageFS::sync(File& file) const -> bool { return sync(file->handle()); }
+auto Common::sync(File& file) const -> bool { return sync(file->handle()); }
 
-auto StorageFS::sync(int fd) const -> bool
+auto Common::sync(int fd) const -> bool
 {
 #if defined(__APPLE__)
     // This is a Mac OS X system which does not implement
@@ -204,7 +204,7 @@ auto StorageFS::sync(int fd) const -> bool
 #endif
 }
 
-auto StorageFS::write_file(
+auto Common::write_file(
     const std::string& directory,
     const std::string& filename,
     const std::string& contents) const -> bool
@@ -243,6 +243,6 @@ auto StorageFS::write_file(
     return false;
 }
 
-StorageFS::~StorageFS() { Cleanup_StorageFS(); }
+Common::~Common() { Cleanup_Common(); }
 
-}  // namespace opentxs
+}  // namespace opentxs::storage::driver::filesystem

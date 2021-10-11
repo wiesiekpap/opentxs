@@ -18,22 +18,14 @@
 
 #include "Proto.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/StorageEnums.pb.h"
+#include "opentxs/storage/Driver.hpp"
 #include "storage/Plugin.hpp"
 
 namespace opentxs
 {
-namespace api
-{
-namespace storage
-{
-class Driver;
-}  // namespace storage
-}  // namespace api
-
 namespace proto
 {
 class Contact;
@@ -47,13 +39,12 @@ namespace opentxs
 {
 namespace storage
 {
+class Driver;
 class Root;
 }  // namespace storage
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace storage
+namespace opentxs::storage
 {
 using keyFunction = std::function<bool(const std::string&)>;
 /** A set of metadata associated with a stored object
@@ -202,7 +193,7 @@ protected:
 
     static const std::string BLANK_HASH;
 
-    const opentxs::api::storage::Driver& driver_;
+    const Driver& driver_;
     VersionNumber version_;
     VersionNumber original_version_;
     mutable std::string root_;
@@ -221,9 +212,7 @@ protected:
         std::string& output,
         std::string& alias,
         const bool checking) const -> bool;
-    auto migrate(
-        const std::string& hash,
-        const opentxs::api::storage::Driver& to) const -> bool;
+    auto migrate(const std::string& hash, const Driver& to) const -> bool;
     virtual auto save(const Lock& lock) const -> bool = 0;
     void serialize_index(
         const VersionNumber version,
@@ -270,15 +259,14 @@ protected:
 
     virtual void init(const std::string& hash) = 0;
 
-    Node(const opentxs::api::storage::Driver& storage, const std::string& key);
+    Node(const Driver& storage, const std::string& key);
 
 public:
     virtual auto List() const -> ObjectList;
-    virtual auto Migrate(const opentxs::api::storage::Driver& to) const -> bool;
+    virtual auto Migrate(const Driver& to) const -> bool;
     auto Root() const -> std::string;
     auto UpgradeLevel() const -> VersionNumber;
 
     virtual ~Node() = default;
 };
-}  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::storage

@@ -15,6 +15,7 @@ add_library(
   "Contexts.hpp"
   "Credentials.cpp"
   "Credentials.hpp"
+  "GC.cpp"
   "Issuers.cpp"
   "Issuers.hpp"
   "Mailbox.cpp"

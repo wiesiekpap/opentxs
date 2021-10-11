@@ -3,8 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_API_STORAGE_DRIVER_HPP
-#define OPENTXS_API_STORAGE_DRIVER_HPP
+#ifndef OPENTXS_STORAGE_DRIVER_HPP
+#define OPENTXS_STORAGE_DRIVER_HPP
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -13,8 +13,6 @@
 #include <string>
 
 namespace opentxs
-{
-namespace api
 {
 namespace storage
 {
@@ -83,6 +81,5 @@ private:
     auto operator=(Driver&&) -> Driver& = delete;
 };
 }  // namespace storage
-}  // namespace api
 }  // namespace opentxs
 #endif

@@ -14,13 +14,13 @@
 #include <utility>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Issuer.pb.h"
 #include "opentxs/protobuf/StorageIssuers.pb.h"
 #include "opentxs/protobuf/StorageItemHash.pb.h"
 #include "opentxs/protobuf/verify/Issuer.hpp"
 #include "opentxs/protobuf/verify/StorageIssuers.hpp"
+#include "opentxs/storage/Driver.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 
@@ -30,9 +30,7 @@ namespace opentxs
 {
 namespace storage
 {
-Issuers::Issuers(
-    const opentxs::api::storage::Driver& storage,
-    const std::string& hash)
+Issuers::Issuers(const Driver& storage, const std::string& hash)
     : Node(storage, hash)
 {
     if (check_hash(hash)) {

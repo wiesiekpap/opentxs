@@ -14,23 +14,15 @@
 #include "Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Editor.hpp"
+#include "opentxs/api/Storage.hpp"
 #include "opentxs/api/client/PaymentWorkflowState.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
-#include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/protobuf/StoragePaymentWorkflows.pb.h"
 #include "storage/tree/Node.hpp"
 
 namespace opentxs
 {
-namespace api
-{
-namespace storage
-{
-class Driver;
-}  // namespace storage
-}  // namespace api
-
 namespace proto
 {
 class PaymentWorkflow;
@@ -38,6 +30,7 @@ class PaymentWorkflow;
 
 namespace storage
 {
+class Driver;
 class Nym;
 }  // namespace storage
 }  // namespace opentxs
@@ -98,9 +91,7 @@ private:
         const api::client::PaymentWorkflowState newState,
         api::client::PaymentWorkflowState& state);
 
-    PaymentWorkflows(
-        const opentxs::api::storage::Driver& storage,
-        const std::string& key);
+    PaymentWorkflows(const Driver& storage, const std::string& key);
     PaymentWorkflows() = delete;
     PaymentWorkflows(const PaymentWorkflows&) = delete;
     PaymentWorkflows(PaymentWorkflows&&) = delete;

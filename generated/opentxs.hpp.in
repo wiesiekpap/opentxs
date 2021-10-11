@@ -20,6 +20,7 @@
 #include "opentxs/api/Options.hpp"
 #include "opentxs/api/Periodic.hpp"
 #include "opentxs/api/Settings.hpp"
+#include "opentxs/api/Storage.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Activity.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
@@ -46,7 +47,6 @@
 #include "opentxs/api/network/ZAP.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
 #include "opentxs/api/server/Manager.hpp"
-#include "opentxs/api/storage/Storage.hpp"
 #if OT_CASH
 #include "opentxs/blind/CashType.hpp"
 #include "opentxs/blind/Mint.hpp"

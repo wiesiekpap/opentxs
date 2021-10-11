@@ -7,27 +7,29 @@
 #include "1_Internal.hpp"      // IWYU pragma: associated
 #include "storage/Plugin.hpp"  // IWYU pragma: associated
 
-#include <thread>
-
-#include "opentxs/api/storage/Storage.hpp"
+#include "internal/api/network/Network.hpp"
+#include "opentxs/Bytes.hpp"
+#include "opentxs/api/Storage.hpp"
+#include "opentxs/api/crypto/Crypto.hpp"
+#include "opentxs/api/crypto/Hash.hpp"
+#include "opentxs/api/network/Asio.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 
 #define OT_METHOD "opentxs::Plugin"
 
-namespace opentxs
+namespace opentxs::storage::implementation
 {
-
 Plugin::Plugin(
+    const api::Crypto& crypto,
+    const api::network::Asio& asio,
     const api::storage::Storage& storage,
-    const StorageConfig& config,
-    const Digest& hash,
-    const Random& random,
+    const storage::Config& config,
     const Flag& bucket)
-    : config_(config)
-    , random_(random)
+    : crypto_(crypto)
+    , asio_(asio)
+    , config_(config)
     , storage_(storage)
-    , digest_(hash)
     , current_bucket_(bucket)
 {
 }
@@ -72,9 +74,8 @@ auto Plugin::Load(
     return valid;
 }
 
-auto Plugin::Migrate(
-    const std::string& key,
-    const opentxs::api::storage::Driver& to) const -> bool
+auto Plugin::Migrate(const std::string& key, const storage::Driver& to) const
+    -> bool
 {
     if (key.empty()) { return false; }
 
@@ -130,9 +131,12 @@ void Plugin::Store(
     const bool bucket,
     std::promise<bool>& promise) const
 {
-    std::thread thread(
-        &Plugin::store, this, isTransaction, key, value, bucket, &promise);
-    thread.detach();
+    // NOTE taking arguments by reference is safe if and only if the caller is
+    // waiting on the future before allowing the input values to pass out of
+    // scope
+    asio_.Internal().Post(ThreadPool::Storage, [&] {
+        store(isTransaction, key, value, bucket, &promise);
+    });
 }
 
 auto Plugin::Store(
@@ -141,13 +145,11 @@ auto Plugin::Store(
     std::string& key) const -> bool
 {
     const bool bucket{current_bucket_};
+    const auto hashed =
+        crypto_.Hash().Digest(storage_.HashType(), value, writer(key));
 
-    if (digest_) {
-        digest_(storage_.HashType(), value, writer(key));
-
-        return Store(isTransaction, key, value, bucket);
-    }
+    if (hashed) { return Store(isTransaction, key, value, bucket); }
 
     return false;
 }
-}  // namespace opentxs
+}  // namespace opentxs::storage::implementation

@@ -80,8 +80,6 @@ using DhtResults = std::vector<std::shared_ptr<std::string>>;
 using DhtDoneCallback = std::function<void(bool)>;
 using DhtResultsCallback = std::function<bool(const DhtResults&)>;
 
-using Random = std::function<std::string()>;
-
 using PeriodicTask = std::function<void()>;
 
 /** C++11 representation of a claim. This version is more useful than the

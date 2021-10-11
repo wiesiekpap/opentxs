@@ -3,9 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                          // IWYU pragma: associated
-#include "1_Internal.hpp"                        // IWYU pragma: associated
-#include "storage/drivers/StorageMultiplex.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                             // IWYU pragma: associated
+#include "1_Internal.hpp"                           // IWYU pragma: associated
+#include "storage/drivers/multiplex/Multiplex.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
 #include <cstdint>
@@ -14,69 +14,58 @@
 #include <stdexcept>
 #include <vector>
 
-#include "2_Factory.hpp"
+#include "internal/storage/drivers/Factory.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/storage/Plugin.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "opentxs/core/String.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
-#include "storage/StorageConfig.hpp"
+#include "opentxs/storage/Plugin.hpp"
+#include "storage/Config.hpp"
 #include "storage/tree/Root.hpp"
 #include "storage/tree/Tree.hpp"
 
-#define OT_METHOD "opentxs::storage::implementation::StorageMultiplex::"
+#define OT_METHOD "opentxs::storage::driver::Multiplex::"
 
-namespace opentxs
+namespace opentxs::factory
 {
-auto Factory::StorageMultiplex(
-    const api::storage::Storage& storage,
+auto StorageMultiplex(
+    const api::Crypto& crypto,
+    const api::network::Asio& asio,
+    const api::storage::Storage& parent,
     const Flag& primaryBucket,
-    const StorageConfig& config,
-    const String& primary,
-    const bool migrate,
-    const String& previous,
-    const Digest& hash,
-    const Random& random) -> opentxs::api::storage::Multiplex*
+    const storage::Config& config) noexcept
+    -> std::unique_ptr<storage::driver::internal::Multiplex>
 {
-    return new opentxs::storage::implementation::StorageMultiplex(
-        storage,
-        primaryBucket,
-        config,
-        primary,
-        migrate,
-        previous,
-        hash,
-        random);
+    using ReturnType = opentxs::storage::driver::Multiplex;
+
+    return std::make_unique<ReturnType>(
+        crypto, asio, parent, primaryBucket, config);
 }
-}  // namespace opentxs
+}  // namespace opentxs::factory
 
-namespace opentxs::storage::implementation
+namespace opentxs::storage::driver
 {
-StorageMultiplex::StorageMultiplex(
+Multiplex::Multiplex(
+    const api::Crypto& crypto,
+    const api::network::Asio& asio,
     const api::storage::Storage& storage,
     const Flag& primaryBucket,
-    const StorageConfig& config,
-    const String& primary,
-    const bool migrate,
-    const String& previous,
-    const Digest& hash,
-    const Random& random)
-    : storage_(storage)
+    const storage::Config& config)
+    : crypto_(crypto)
+    , asio_(asio)
+    , storage_(storage)
     , primary_bucket_(primaryBucket)
     , config_(config)
     , primary_plugin_()
     , backup_plugins_()
-    , digest_(hash)
-    , random_(random)
     , null_(crypto::key::Symmetric::Factory())
 {
-    Init_StorageMultiplex(primary, migrate, previous);
+    Init_Multiplex();
 }
 
-auto StorageMultiplex::BestRoot(bool& primaryOutOfSync) -> std::string
+auto Multiplex::BestRoot(bool& primaryOutOfSync) -> std::string
 {
     OT_ASSERT(primary_plugin_);
 
@@ -89,7 +78,11 @@ auto StorageMultiplex::BestRoot(bool& primaryOutOfSync) -> std::string
 
     try {
         localRoot.reset(new storage::Root(
-            *this, bestHash, std::numeric_limits<std::int64_t>::max(), bucket));
+            asio_,
+            *this,
+            bestHash,
+            std::numeric_limits<std::int64_t>::max(),
+            bucket));
         bestVersion = localRoot->Sequence();
         bestRoot = localRoot;
     } catch (std::runtime_error&) {
@@ -103,6 +96,7 @@ auto StorageMultiplex::BestRoot(bool& primaryOutOfSync) -> std::string
 
         try {
             localRoot.reset(new storage::Root(
+                asio_,
                 *this,
                 rootHash,
                 std::numeric_limits<std::int64_t>::max(),
@@ -131,11 +125,11 @@ auto StorageMultiplex::BestRoot(bool& primaryOutOfSync) -> std::string
     return bestHash;
 }
 
-void StorageMultiplex::Cleanup() { Cleanup_StorageMultiplex(); }
+void Multiplex::Cleanup() { Cleanup_Multiplex(); }
 
-void StorageMultiplex::Cleanup_StorageMultiplex() {}
+void Multiplex::Cleanup_Multiplex() {}
 
-auto StorageMultiplex::EmptyBucket(const bool bucket) const -> bool
+auto Multiplex::EmptyBucket(const bool bucket) const -> bool
 {
     OT_ASSERT(primary_plugin_);
 
@@ -148,9 +142,9 @@ auto StorageMultiplex::EmptyBucket(const bool bucket) const -> bool
     return primary_plugin_->EmptyBucket(bucket);
 }
 
-void StorageMultiplex::init(
+void Multiplex::init(
     const std::string& primary,
-    std::unique_ptr<opentxs::api::storage::Plugin>& plugin)
+    std::unique_ptr<storage::Plugin>& plugin)
 {
     if (OT_STORAGE_PRIMARY_PLUGIN_MEMDB == primary) {
         init_memdb(plugin);
@@ -165,37 +159,34 @@ void StorageMultiplex::init(
     OT_ASSERT(plugin);
 }
 
-void StorageMultiplex::init_memdb(
-    std::unique_ptr<opentxs::api::storage::Plugin>& plugin)
+void Multiplex::init_memdb(std::unique_ptr<storage::Plugin>& plugin)
 {
     LogVerbose(OT_METHOD)(__func__)(": Initializing primary MemDB plugin.")
         .Flush();
-    plugin.reset(Factory::StorageMemDB(
-        storage_, config_, digest_, random_, primary_bucket_));
+    plugin = factory::StorageMemDB(
+        crypto_, asio_, storage_, config_, primary_bucket_);
 }
 
-void StorageMultiplex::Init_StorageMultiplex(
-    const String& primary,
-    const bool migrate,
-    const String& previous)
+void Multiplex::Init_Multiplex()
 {
-    if (migrate) {
-        migrate_primary(previous.Get(), primary.Get());
+    if (config_.migrate_plugin_) {
+        migrate_primary(
+            config_.previous_primary_plugin_, config_.primary_plugin_);
     } else {
-        init(primary.Get(), primary_plugin_);
+        init(config_.primary_plugin_, primary_plugin_);
     }
 
     OT_ASSERT(primary_plugin_);
 }
 
-void StorageMultiplex::InitBackup()
+void Multiplex::InitBackup()
 {
     if (config_.fs_backup_directory_.empty()) { return; }
 
     init_fs_backup(config_.fs_backup_directory_);
 }
 
-void StorageMultiplex::InitEncryptedBackup(
+void Multiplex::InitEncryptedBackup(
     [[maybe_unused]] crypto::key::Symmetric& key)
 {
     if (config_.fs_encrypted_backup_directory_.empty()) { return; }
@@ -203,7 +194,7 @@ void StorageMultiplex::InitEncryptedBackup(
     init_fs_backup(config_.fs_encrypted_backup_directory_);
 }
 
-auto StorageMultiplex::Load(
+auto Multiplex::Load(
     const std::string& key,
     const bool checking,
     std::string& value) const -> bool
@@ -249,7 +240,7 @@ auto StorageMultiplex::Load(
     return false;
 }
 
-auto StorageMultiplex::LoadFromBucket(
+auto Multiplex::LoadFromBucket(
     const std::string& key,
     std::string& value,
     const bool bucket) const -> bool
@@ -267,7 +258,7 @@ auto StorageMultiplex::LoadFromBucket(
     return false;
 }
 
-auto StorageMultiplex::LoadRoot() const -> std::string
+auto Multiplex::LoadRoot() const -> std::string
 {
     OT_ASSERT(primary_plugin_);
 
@@ -286,9 +277,8 @@ auto StorageMultiplex::LoadRoot() const -> std::string
     return root;
 }
 
-auto StorageMultiplex::Migrate(
-    const std::string& key,
-    const opentxs::api::storage::Driver& to) const -> bool
+auto Multiplex::Migrate(const std::string& key, const storage::Driver& to) const
+    -> bool
 {
     OT_ASSERT(primary_plugin_);
 
@@ -303,9 +293,7 @@ auto StorageMultiplex::Migrate(
     return false;
 }
 
-void StorageMultiplex::migrate_primary(
-    const std::string& from,
-    const std::string& to)
+void Multiplex::migrate_primary(const std::string& from, const std::string& to)
 {
     auto& old = primary_plugin_;
 
@@ -313,7 +301,7 @@ void StorageMultiplex::migrate_primary(
 
     OT_ASSERT(old);
 
-    std::unique_ptr<opentxs::api::storage::Plugin> newPlugin{nullptr};
+    std::unique_ptr<storage::Plugin> newPlugin{nullptr};
     init(to, newPlugin);
 
     OT_ASSERT(newPlugin);
@@ -322,7 +310,11 @@ void StorageMultiplex::migrate_primary(
     std::shared_ptr<storage::Root> root{nullptr};
     auto bucket = Flag::Factory(false);
     root.reset(new storage::Root(
-        *this, rootHash, std::numeric_limits<std::int64_t>::max(), bucket));
+        asio_,
+        *this,
+        rootHash,
+        std::numeric_limits<std::int64_t>::max(),
+        bucket));
 
     OT_ASSERT(root);
 
@@ -346,14 +338,14 @@ void StorageMultiplex::migrate_primary(
     old.reset(newPlugin.release());
 }
 
-auto StorageMultiplex::Primary() -> opentxs::api::storage::Driver&
+auto Multiplex::Primary() -> storage::Driver&
 {
     OT_ASSERT(primary_plugin_);
 
     return *primary_plugin_;
 }
 
-auto StorageMultiplex::Store(
+auto Multiplex::Store(
     const bool isTransaction,
     const std::string& key,
     const std::string& value,
@@ -384,7 +376,7 @@ auto StorageMultiplex::Store(
     return output;
 }
 
-void StorageMultiplex::Store(
+void Multiplex::Store(
     const bool,
     const std::string&,
     const std::string&,
@@ -396,7 +388,7 @@ void StorageMultiplex::Store(
     OT_FAIL;
 }
 
-auto StorageMultiplex::Store(
+auto Multiplex::Store(
     const bool isTransaction,
     const std::string& key,
     std::string& value) const -> bool
@@ -414,8 +406,8 @@ auto StorageMultiplex::Store(
     return output;
 }
 
-auto StorageMultiplex::StoreRoot(const bool commit, const std::string& hash)
-    const -> bool
+auto Multiplex::StoreRoot(const bool commit, const std::string& hash) const
+    -> bool
 {
     OT_ASSERT(primary_plugin_);
 
@@ -428,7 +420,7 @@ auto StorageMultiplex::StoreRoot(const bool commit, const std::string& hash)
     return primary_plugin_->StoreRoot(commit, hash);
 }
 
-void StorageMultiplex::SynchronizePlugins(
+void Multiplex::SynchronizePlugins(
     const std::string& hash,
     const storage::Root& root,
     const bool syncPrimary)
@@ -487,5 +479,5 @@ void StorageMultiplex::SynchronizePlugins(
     }
 }
 
-StorageMultiplex::~StorageMultiplex() { Cleanup_StorageMultiplex(); }
-}  // namespace opentxs::storage::implementation
+Multiplex::~Multiplex() { Cleanup_Multiplex(); }
+}  // namespace opentxs::storage::driver

@@ -11,8 +11,8 @@
 #include <limits>
 #include <ratio>
 
+#include "opentxs/api/Storage.hpp"
 #include "opentxs/api/network/Dht.hpp"
-#include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/identity/Nym.hpp"

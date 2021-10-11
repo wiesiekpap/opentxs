@@ -7,13 +7,13 @@
 #include "1_Internal.hpp"         // IWYU pragma: associated
 #include "storage/tree/Node.hpp"  // IWYU pragma: associated
 
-#include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/protobuf/Contact.pb.h"
 #include "opentxs/protobuf/Nym.pb.h"
 #include "opentxs/protobuf/Seed.pb.h"
 #include "opentxs/protobuf/StorageEnums.pb.h"
 #include "opentxs/protobuf/StorageItemHash.pb.h"
+#include "opentxs/storage/Driver.hpp"
 
 #define OT_METHOD "opentxs::storage::Node::"
 
@@ -21,7 +21,7 @@ namespace opentxs::storage
 {
 const std::string Node::BLANK_HASH = "blankblankblankblankblank";
 
-Node::Node(const opentxs::api::storage::Driver& storage, const std::string& key)
+Node::Node(const Driver& storage, const std::string& key)
     : driver_(storage)
     , version_(0)
     , original_version_(0)
@@ -129,16 +129,14 @@ auto Node::load_raw(
     return driver_.Load(std::get<0>(it->second), checking, output);
 }
 
-auto Node::migrate(
-    const std::string& hash,
-    const opentxs::api::storage::Driver& to) const -> bool
+auto Node::migrate(const std::string& hash, const Driver& to) const -> bool
 {
     if (false == check_hash(hash)) { return true; }
 
     return driver_.Migrate(hash, to);
 }
 
-auto Node::Migrate(const opentxs::api::storage::Driver& to) const -> bool
+auto Node::Migrate(const Driver& to) const -> bool
 {
     if (std::string(BLANK_HASH) == root_) {
         if (0 < item_map_.size()) {

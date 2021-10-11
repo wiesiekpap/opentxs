@@ -11,20 +11,12 @@
 
 #include "Proto.hpp"
 #include "opentxs/api/Editor.hpp"
-#include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/api/Storage.hpp"
 #include "opentxs/protobuf/StorageServers.pb.h"
 #include "storage/tree/Node.hpp"
 
 namespace opentxs
 {
-namespace api
-{
-namespace storage
-{
-class Driver;
-}  // namespace storage
-}  // namespace api
-
 namespace proto
 {
 class ServerContract;
@@ -32,13 +24,12 @@ class ServerContract;
 
 namespace storage
 {
+class Driver;
 class Tree;
 }  // namespace storage
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace storage
+namespace opentxs::storage
 {
 class Servers final : public Node
 {
@@ -49,9 +40,7 @@ private:
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
     auto serialize() const -> proto::StorageServers;
 
-    Servers(
-        const opentxs::api::storage::Driver& storage,
-        const std::string& hash);
+    Servers(const Driver& storage, const std::string& hash);
     Servers() = delete;
     Servers(const Servers&) = delete;
     Servers(Servers&&) = delete;
@@ -76,5 +65,4 @@ public:
 
     ~Servers() final = default;
 };
-}  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::storage

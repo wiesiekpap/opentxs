@@ -14,27 +14,41 @@
 #include "Proto.tpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/storage/Driver.hpp"
-#include "opentxs/api/storage/Plugin.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/Check.hpp"
+#include "opentxs/storage/Driver.hpp"
+#include "opentxs/storage/Plugin.hpp"
 
 namespace opentxs
 {
 namespace api
 {
+namespace network
+{
+class Asio;
+}  // namespace network
+
 namespace storage
 {
 class Storage;
 }  // namespace storage
+
+class Crypto;
 }  // namespace api
 
-class Flag;
-class StorageConfig;
+namespace storage
+{
+class Config;
+}  // namespace storage
 
-class Plugin : virtual public opentxs::api::storage::Plugin
+class Flag;
+}  // namespace opentxs
+
+namespace opentxs::storage::implementation
+{
+class Plugin : virtual public storage::Plugin
 {
 public:
     auto EmptyBucket(const bool bucket) const -> bool override = 0;
@@ -61,9 +75,8 @@ public:
         const std::string& value,
         std::string& key) const -> bool override;
 
-    auto Migrate(
-        const std::string& key,
-        const opentxs::api::storage::Driver& to) const -> bool override;
+    auto Migrate(const std::string& key, const storage::Driver& to) const
+        -> bool override;
 
     auto LoadRoot() const -> std::string override = 0;
     auto StoreRoot(const bool commit, const std::string& hash) const
@@ -74,14 +87,15 @@ public:
     ~Plugin() override = default;
 
 protected:
-    const StorageConfig& config_;
-    const Random& random_;
+    const api::Crypto& crypto_;
+    const api::network::Asio& asio_;
+    const storage::Config& config_;
 
     Plugin(
+        const api::Crypto& crypto,
+        const api::network::Asio& asio,
         const api::storage::Storage& storage,
-        const StorageConfig& config,
-        const Digest& hash,
-        const Random& random,
+        const storage::Config& config,
         const Flag& bucket);
     Plugin() = delete;
 
@@ -94,7 +108,6 @@ protected:
 
 private:
     const api::storage::Storage& storage_;
-    const Digest& digest_;
     const Flag& current_bucket_;
 
     Plugin(const Plugin&) = delete;
@@ -102,9 +115,12 @@ private:
     auto operator=(const Plugin&) -> Plugin& = delete;
     auto operator=(Plugin&&) -> Plugin& = delete;
 };
+}  // namespace opentxs::storage::implementation
 
+namespace opentxs::storage
+{
 template <class T>
-auto opentxs::api::storage::Driver::LoadProto(
+auto Driver::LoadProto(
     const std::string& hash,
     std::shared_ptr<T>& serialized,
     const bool checking) const -> bool
@@ -145,10 +161,8 @@ auto opentxs::api::storage::Driver::LoadProto(
 }
 
 template <class T>
-auto opentxs::api::storage::Driver::StoreProto(
-    const T& data,
-    std::string& key,
-    std::string& plaintext) const -> bool
+auto Driver::StoreProto(const T& data, std::string& key, std::string& plaintext)
+    const -> bool
 {
     if (!proto::Validate<T>(data, VERBOSE)) { return false; }
 
@@ -158,8 +172,7 @@ auto opentxs::api::storage::Driver::StoreProto(
 }
 
 template <class T>
-auto opentxs::api::storage::Driver::StoreProto(const T& data, std::string& key)
-    const -> bool
+auto Driver::StoreProto(const T& data, std::string& key) const -> bool
 {
     std::string notUsed;
 
@@ -167,10 +180,10 @@ auto opentxs::api::storage::Driver::StoreProto(const T& data, std::string& key)
 }
 
 template <class T>
-auto opentxs::api::storage::Driver::StoreProto(const T& data) const -> bool
+auto Driver::StoreProto(const T& data) const -> bool
 {
     std::string notUsed;
 
     return StoreProto<T>(data, notUsed);
 }
-}  // namespace opentxs
+}  // namespace opentxs::storage

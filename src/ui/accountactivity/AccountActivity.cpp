@@ -13,9 +13,9 @@
 
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/Storage.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Manager.hpp"
-#include "opentxs/api/storage/Storage.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"

@@ -33,9 +33,9 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/Storage.hpp"
 #include "opentxs/api/client/Issuer.hpp"
 #include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/storage/Storage.hpp"
 #if OT_CASH
 #include "opentxs/blind/Purse.hpp"
 #endif

@@ -11,20 +11,12 @@
 
 #include "Proto.hpp"
 #include "opentxs/api/Editor.hpp"
-#include "opentxs/api/storage/Storage.hpp"
+#include "opentxs/api/Storage.hpp"
 #include "opentxs/protobuf/StorageUnits.pb.h"
 #include "storage/tree/Node.hpp"
 
 namespace opentxs
 {
-namespace api
-{
-namespace storage
-{
-class Driver;
-}  // namespace storage
-}  // namespace api
-
 namespace proto
 {
 class UnitDefinition;
@@ -32,13 +24,12 @@ class UnitDefinition;
 
 namespace storage
 {
+class Driver;
 class Tree;
 }  // namespace storage
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace storage
+namespace opentxs::storage
 {
 class Units final : public Node
 {
@@ -49,7 +40,7 @@ private:
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
     auto serialize() const -> proto::StorageUnits;
 
-    Units(const opentxs::api::storage::Driver& storage, const std::string& key);
+    Units(const Driver& storage, const std::string& key);
     Units() = delete;
     Units(const Units&) = delete;
     Units(Units&&) = delete;
@@ -74,5 +65,4 @@ public:
 
     ~Units() final = default;
 };
-}  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::storage

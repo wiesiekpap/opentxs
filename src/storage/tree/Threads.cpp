@@ -21,7 +21,6 @@
 #include <utility>
 
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/Check.hpp"
@@ -30,6 +29,7 @@
 #include "opentxs/protobuf/StorageNymList.pb.h"
 #include "opentxs/protobuf/verify/StorageBlockchainTransactions.hpp"
 #include "opentxs/protobuf/verify/StorageNymList.hpp"
+#include "opentxs/storage/Driver.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 #include "storage/tree/Thread.hpp"
@@ -49,7 +49,7 @@ namespace opentxs
 namespace storage
 {
 Threads::Threads(
-    const opentxs::api::storage::Driver& storage,
+    const Driver& storage,
     const std::string& hash,
     Mailbox& mailInbox,
     Mailbox& mailOutbox)
@@ -260,7 +260,7 @@ auto Threads::List(const bool unreadOnly) const -> ObjectList
     return output;
 }
 
-auto Threads::Migrate(const opentxs::api::storage::Driver& to) const -> bool
+auto Threads::Migrate(const Driver& to) const -> bool
 {
     bool output{true};
 

@@ -16,14 +16,6 @@
 
 namespace opentxs
 {
-namespace api
-{
-namespace storage
-{
-class Driver;
-}  // namespace storage
-}  // namespace api
-
 namespace proto
 {
 class PeerReply;
@@ -31,8 +23,13 @@ class PeerReply;
 
 namespace storage
 {
+class Driver;
 class Nym;
+}  // namespace storage
+}  // namespace opentxs
 
+namespace opentxs::storage
+{
 class PeerReplies final : public Node
 {
 private:
@@ -42,9 +39,7 @@ private:
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
     auto serialize() const -> proto::StorageNymList;
 
-    PeerReplies(
-        const opentxs::api::storage::Driver& storage,
-        const std::string& hash);
+    PeerReplies(const Driver& storage, const std::string& hash);
     PeerReplies() = delete;
     PeerReplies(const PeerReplies&) = delete;
     PeerReplies(PeerReplies&&) = delete;
@@ -62,5 +57,4 @@ public:
 
     ~PeerReplies() final = default;
 };
-}  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::storage

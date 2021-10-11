@@ -15,18 +15,15 @@
 
 namespace opentxs
 {
-namespace api
-{
 namespace storage
 {
 class Driver;
-}  // namespace storage
-}  // namespace api
-
-namespace storage
-{
 class Nym;
+}  // namespace storage
+}  // namespace opentxs
 
+namespace opentxs::storage
+{
 class Mailbox final : public Node
 {
 private:
@@ -36,9 +33,7 @@ private:
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
     auto serialize() const -> proto::StorageNymList;
 
-    Mailbox(
-        const opentxs::api::storage::Driver& storage,
-        const std::string& hash);
+    Mailbox(const Driver& storage, const std::string& hash);
     Mailbox() = delete;
     Mailbox(const Mailbox&) = delete;
     Mailbox(Mailbox&&) = delete;
@@ -60,5 +55,4 @@ public:
 
     ~Mailbox() final = default;
 };
-}  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::storage

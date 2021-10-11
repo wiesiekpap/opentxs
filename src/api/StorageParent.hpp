@@ -9,24 +9,41 @@
 #include <memory>
 #include <string>
 
-#include "internal/api/storage/Storage.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Options.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
-#include "storage/StorageConfig.hpp"
+#include "storage/Config.hpp"
 
 namespace opentxs
 {
 namespace api
 {
+namespace network
+{
+class Asio;
+}  // namespace network
+
+namespace storage
+{
+namespace internal
+{
+class Storage;
+}  // namespace internal
+}  // namespace storage
+
 class Crypto;
 class Factory;
 class HDSeed;
 class Legacy;
 class Settings;
 }  // namespace api
+
+namespace storage
+{
+class Config;
+}  // namespace storage
 
 class Flag;
 class Options;
@@ -40,15 +57,9 @@ protected:
     const api::Crypto& crypto_;
     const api::Settings& config_;
     const Options args_;
-    const std::chrono::seconds gc_interval_{0};
     const std::string data_folder_;
-    StorageConfig storage_config_;
-    bool migrate_storage_{false};
-    OTString migrate_from_;
-    OTString primary_storage_plugin_;
-    OTString archive_directory_;
-    OTString encrypted_directory_;
-    std::unique_ptr<api::storage::StorageInternal> storage_;
+    const opentxs::storage::Config storage_config_;
+    std::unique_ptr<api::storage::internal::Storage> storage_;
 #if OT_CRYPTO_WITH_BIP32
     OTSymmetricKey storage_encryption_key_;
 #endif
@@ -67,18 +78,12 @@ protected:
         const api::Crypto& crypto,
         const api::Settings& config,
         const api::Legacy& legacy,
+        const api::network::Asio& asio,
         const std::string& dataFolder);
 
-    virtual ~StorageParent() = default;
+    virtual ~StorageParent();
 
 private:
-    static auto get_primary_storage_plugin(
-        const api::Settings& config,
-        const StorageConfig& storageConfig,
-        const Options& args,
-        bool& migrate,
-        String& previous) -> OTString;
-
     StorageParent() = delete;
     StorageParent(const StorageParent&) = delete;
     StorageParent(StorageParent&&) = delete;

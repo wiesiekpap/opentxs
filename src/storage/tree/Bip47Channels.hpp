@@ -21,14 +21,6 @@
 
 namespace opentxs
 {
-namespace api
-{
-namespace storage
-{
-class Driver;
-}  // namespace storage
-}  // namespace api
-
 namespace proto
 {
 class Bip47Channel;
@@ -37,6 +29,7 @@ class Bip47Direction;
 
 namespace storage
 {
+class Driver;
 class Nym;
 }  // namespace storage
 
@@ -92,9 +85,7 @@ private:
     auto save(const Lock& lock) const -> bool final;
     auto serialize() const -> proto::StorageBip47Contexts;
 
-    Bip47Channels(
-        const opentxs::api::storage::Driver& storage,
-        const std::string& hash);
+    Bip47Channels(const Driver& storage, const std::string& hash);
     Bip47Channels() = delete;
     Bip47Channels(const Bip47Channels&) = delete;
     Bip47Channels(Bip47Channels&&) = delete;

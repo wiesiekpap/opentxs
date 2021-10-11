@@ -5,7 +5,7 @@
 
 #pragma once
 
-namespace opentxs
+namespace opentxs::storage
 {
 /** \brief An example implementation of \ref Storage which demonstrates how
  *  to implement support for new storage backends.
@@ -51,29 +51,26 @@ namespace opentxs
  *: ot_super(config, hash random)
  *  \par Configuration
  *  Define all needed runtime configuration parameters in the
- *  \ref StorageConfig class.
+ *  \ref storage::Config class.
  *
  *  \par
  *  Instantate these parameters in the \ref OT::Init_Storage method,
  *  using the existing sections as a template.
  */
-class StorageExample : public virtual Plugin,
-                       public virtual opentxs::api::storage::Driver
+class StorageExample : public virtual Plugin, public virtual Driver
 {
 private:
     using ot_super = Plugin;  // Used for constructor delegation
 
-    friend Storage;  // Allows access private constructor
-
     /** The default constructor can not be used because any implementation
-     *   of \ref opentxs::api::storage::Driver will require arguments.
+     *   of \ref opentxs::storage::Driver will require arguments.
      */
     StorageExample() = delete;
 
     /** This is the required parameter profile for an opentx::storage child
      *  class constructor.
      *
-     *  \param[in] config An instantiated \ref StorageConfig object
+     *  \param[in] config An instantiated \ref storage::Config object
      *                    containing configuration information. Used both by
      *                    the child class and the parent class.
      *  \param[in] hash   A std::function providing digest functionality. Only
@@ -83,7 +80,7 @@ private:
      *  \param[in] bucket Reference to bool containing the current bucket
      */
     StorageExample(
-        const StorageConfig& config,
+        const storage::Config& config,
         const Digest& hash,
         const Random& random,
         const Flag& bucket)
@@ -219,4 +216,4 @@ public:
     ~StorageExample() { Cleanup_StorageExample(); }
 };
 
-}  // namespace opentxs
+}  // namespace opentxs::storage

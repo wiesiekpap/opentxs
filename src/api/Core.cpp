@@ -106,6 +106,7 @@ Core::Core(
           crypto,
           config,
           parent.Legacy(),
+          parent.Asio(),
           dataFolder)
     , network_(network(zmq_context_, endpoints_, *this))
     , factory_p_(std::move(factory))

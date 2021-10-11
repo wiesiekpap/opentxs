@@ -3,48 +3,50 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                      // IWYU pragma: associated
-#include "1_Internal.hpp"                    // IWYU pragma: associated
-#include "storage/drivers/StorageMemDB.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                     // IWYU pragma: associated
+#include "1_Internal.hpp"                   // IWYU pragma: associated
+#include "storage/drivers/memdb/MemDB.hpp"  // IWYU pragma: associated
 
 #include <memory>
 #include <string>
 
-#include "2_Factory.hpp"
+#include "internal/storage/drivers/Factory.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/core/Log.hpp"
 
-//#define OT_METHOD "opentxs::StorageMemDB::"
+// #define OT_METHOD "opentxs::storage::driver::MemDB::"
 
-namespace opentxs
+namespace opentxs::factory
 {
-auto Factory::StorageMemDB(
-    const api::storage::Storage& storage,
-    const StorageConfig& config,
-    const Digest& hash,
-    const Random& random,
-    const Flag& bucket) -> opentxs::api::storage::Plugin*
+auto StorageMemDB(
+    const api::Crypto& crypto,
+    const api::network::Asio& asio,
+    const api::storage::Storage& parent,
+    const storage::Config& config,
+    const Flag& bucket) noexcept -> std::unique_ptr<storage::Plugin>
 {
-    return new opentxs::storage::implementation::StorageMemDB(
-        storage, config, hash, random, bucket);
+    using ReturnType = storage::driver::MemDB;
+
+    return std::make_unique<ReturnType>(crypto, asio, parent, config, bucket);
 }
-}  // namespace opentxs
+}  // namespace opentxs::factory
 
-namespace opentxs::storage::implementation
+namespace opentxs::storage::driver
 {
-StorageMemDB::StorageMemDB(
+MemDB::MemDB(
+    const api::Crypto& crypto,
+    const api::network::Asio& asio,
     const api::storage::Storage& storage,
-    const StorageConfig& config,
-    const Digest& hash,
-    const Random& random,
+    const storage::Config& config,
     const Flag& bucket)
-    : ot_super(storage, config, hash, random, bucket)
+    : ot_super(crypto, asio, storage, config, bucket)
     , root_("")
     , a_()
     , b_()
 {
 }
 
-auto StorageMemDB::EmptyBucket(const bool bucket) const -> bool
+auto MemDB::EmptyBucket(const bool bucket) const -> bool
 {
     eLock lock(shared_lock_);
 
@@ -57,7 +59,7 @@ auto StorageMemDB::EmptyBucket(const bool bucket) const -> bool
     return true;
 }
 
-auto StorageMemDB::LoadFromBucket(
+auto MemDB::LoadFromBucket(
     const std::string& key,
     std::string& value,
     const bool bucket) const -> bool
@@ -78,14 +80,14 @@ auto StorageMemDB::LoadFromBucket(
     return (false == value.empty());
 }
 
-auto StorageMemDB::LoadRoot() const -> std::string
+auto MemDB::LoadRoot() const -> std::string
 {
     sLock lock(shared_lock_);
 
     return root_;
 }
 
-void StorageMemDB::store(
+void MemDB::store(
     [[maybe_unused]] const bool isTransaction,
     const std::string& key,
     const std::string& value,
@@ -103,7 +105,7 @@ void StorageMemDB::store(
     promise->set_value(true);
 }
 
-auto StorageMemDB::StoreRoot(
+auto MemDB::StoreRoot(
     [[maybe_unused]] const bool commit,
     const std::string& hash) const -> bool
 {
@@ -112,4 +114,4 @@ auto StorageMemDB::StoreRoot(
 
     return true;
 }
-}  // namespace opentxs::storage::implementation
+}  // namespace opentxs::storage::driver

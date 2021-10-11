@@ -16,14 +16,6 @@
 
 namespace opentxs
 {
-namespace api
-{
-namespace storage
-{
-class Driver;
-}  // namespace storage
-}  // namespace api
-
 namespace proto
 {
 class Credential;
@@ -31,6 +23,7 @@ class Credential;
 
 namespace storage
 {
+class Driver;
 class Tree;
 }  // namespace storage
 }  // namespace opentxs
@@ -49,9 +42,7 @@ private:
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
     auto serialize() const -> proto::StorageCredentials;
 
-    Credentials(
-        const opentxs::api::storage::Driver& storage,
-        const std::string& hash);
+    Credentials(const Driver& storage, const std::string& hash);
     Credentials() = delete;
     Credentials(const Credentials&) = delete;
     Credentials(Credentials&&) = delete;

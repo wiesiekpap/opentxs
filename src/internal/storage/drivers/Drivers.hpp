@@ -3,12 +3,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_API_STORAGE_MULTIPLEX_HPP
-#define OPENTXS_API_STORAGE_MULTIPLEX_HPP
+#pragma once
 
-#include "opentxs/Version.hpp"  // IWYU pragma: associated
+#include <string>
 
-#include "opentxs/api/storage/Driver.hpp"
+#include "opentxs/storage/Driver.hpp"
 
 namespace opentxs
 {
@@ -26,11 +25,7 @@ class Root;
 }  // namespace storage
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace api
-{
-namespace storage
+namespace opentxs::storage::driver::internal
 {
 class Multiplex : virtual public Driver
 {
@@ -55,7 +50,4 @@ private:
     auto operator=(const Multiplex&) -> Multiplex& = delete;
     auto operator=(Multiplex&&) -> Multiplex& = delete;
 };
-}  // namespace storage
-}  // namespace api
-}  // namespace opentxs
-#endif  // OPENTXS_API_STORAGE_MULTIPLEX_HPP
+}  // namespace opentxs::storage::driver::internal

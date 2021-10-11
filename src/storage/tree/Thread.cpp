@@ -10,7 +10,6 @@
 #include <memory>
 #include <utility>
 
-#include "opentxs/api/storage/Driver.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/Check.hpp"
@@ -18,6 +17,7 @@
 #include "opentxs/protobuf/StorageThreadItem.pb.h"
 #include "opentxs/protobuf/verify/StorageThread.hpp"
 #include "opentxs/protobuf/verify/StorageThreadItem.hpp"
+#include "opentxs/storage/Driver.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Mailbox.hpp"
 #include "storage/tree/Node.hpp"
@@ -29,7 +29,7 @@ namespace opentxs
 namespace storage
 {
 Thread::Thread(
-    const opentxs::api::storage::Driver& storage,
+    const Driver& storage,
     const std::string& id,
     const std::string& hash,
     const std::string& alias,
@@ -52,7 +52,7 @@ Thread::Thread(
 }
 
 Thread::Thread(
-    const opentxs::api::storage::Driver& storage,
+    const Driver& storage,
     const std::string& id,
     const std::set<std::string>& participants,
     Mailbox& mailInbox,
@@ -194,7 +194,7 @@ auto Thread::Items() const -> proto::StorageThread
     return serialize(lock);
 }
 
-auto Thread::Migrate(const opentxs::api::storage::Driver& to) const -> bool
+auto Thread::Migrate(const Driver& to) const -> bool
 {
     return Node::migrate(root_, to);
 }
