@@ -11,6 +11,7 @@
 #include <map>
 #include <string>
 
+#include "core/Amount.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Manager.hpp"
@@ -250,7 +251,7 @@ OTAPI_Func::OTAPI_Func(
     const identifier::Nym& nymID,
     const identifier::Server& serverID,
     const identifier::Nym& nymID2,
-    const std::int64_t& int64val)
+    const Amount& int64val)
     : OTAPI_Func(reason, apilock, api, nymID, serverID, theType)
 {
     switch (theType) {
@@ -266,7 +267,8 @@ OTAPI_Func::OTAPI_Func(
         case KILL_MARKET_OFFER: {
             nTransNumsNeeded_ = 1;
             accountID_ = nymID2;
-            transactionNumber_ = int64val;
+            transactionNumber_ =
+                int64val.Internal().amount_.convert_to<std::int64_t>();
         } break;
         default: {
             LogNormal(OT_METHOD)(__func__)(
@@ -430,7 +432,7 @@ OTAPI_Func::OTAPI_Func(
     const Identifier& currencyAccountID,
     const Amount& scale,
     const Amount& increment,
-    const Amount& quantity,
+    const std::int64_t& quantity,
     const Amount& price,
     const bool selling,
     const Time lifetime,

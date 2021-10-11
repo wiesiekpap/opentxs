@@ -1579,7 +1579,7 @@ auto RPC::move_funds(const proto::RPCCommand& command) const
                 notary,
                 sourceaccount,
                 targetaccount,
-                movefunds.amount(),
+                Amount{movefunds.amount()},
                 movefunds.memo());
 
             if (false == ready) {

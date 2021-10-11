@@ -27,12 +27,12 @@ namespace proto
 {
 auto CheckProto_1(const Purse& input, const bool silent) -> bool
 {
-    std::int64_t value{};
+    std::string value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_1(const Purse& input, const bool silent, std::int64_t& value)
+auto CheckProto_1(const Purse& input, const bool silent, std::string& value)
     -> bool
 {
     switch (input.type()) {
@@ -87,7 +87,7 @@ auto CheckProto_1(const Purse& input, const bool silent, std::int64_t& value)
         validTo);
 
     if (input.totalvalue() != value) {
-        FAIL_2("Incorrect value", std::to_string(input.totalvalue()));
+        FAIL_2("Incorrect value", input.totalvalue());
     }
 
     if (input.latestvalidfrom() != validFrom) {
@@ -106,12 +106,12 @@ auto CheckProto_1(const Purse& input, const bool silent, std::int64_t& value)
 
 auto CheckProto_2(const Purse& input, const bool silent) -> bool
 {
-    std::int64_t value{};
+    std::string value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_2(const Purse& input, const bool silent, std::int64_t& value)
+auto CheckProto_2(const Purse& input, const bool silent, std::string& value)
     -> bool
 {
     UNDEFINED_VERSION(2)
@@ -119,12 +119,12 @@ auto CheckProto_2(const Purse& input, const bool silent, std::int64_t& value)
 
 auto CheckProto_3(const Purse& input, const bool silent) -> bool
 {
-    std::int64_t value{};
+    std::string value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_3(const Purse& input, const bool silent, std::int64_t& value)
+auto CheckProto_3(const Purse& input, const bool silent, std::string& value)
     -> bool
 {
     UNDEFINED_VERSION(3)
@@ -132,12 +132,12 @@ auto CheckProto_3(const Purse& input, const bool silent, std::int64_t& value)
 
 auto CheckProto_4(const Purse& input, const bool silent) -> bool
 {
-    std::int64_t value{};
+    std::string value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_4(const Purse& input, const bool silent, std::int64_t& value)
+auto CheckProto_4(const Purse& input, const bool silent, std::string& value)
     -> bool
 {
     UNDEFINED_VERSION(4)
@@ -145,12 +145,12 @@ auto CheckProto_4(const Purse& input, const bool silent, std::int64_t& value)
 
 auto CheckProto_5(const Purse& input, const bool silent) -> bool
 {
-    std::int64_t value{};
+    std::string value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_5(const Purse& input, const bool silent, std::int64_t& value)
+auto CheckProto_5(const Purse& input, const bool silent, std::string& value)
     -> bool
 {
     UNDEFINED_VERSION(5)
@@ -158,12 +158,12 @@ auto CheckProto_5(const Purse& input, const bool silent, std::int64_t& value)
 
 auto CheckProto_6(const Purse& input, const bool silent) -> bool
 {
-    std::int64_t value{};
+    std::string value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_6(const Purse& input, const bool silent, std::int64_t& value)
+auto CheckProto_6(const Purse& input, const bool silent, std::string& value)
     -> bool
 {
     UNDEFINED_VERSION(6)
@@ -171,12 +171,12 @@ auto CheckProto_6(const Purse& input, const bool silent, std::int64_t& value)
 
 auto CheckProto_7(const Purse& input, const bool silent) -> bool
 {
-    std::int64_t value{};
+    std::string value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_7(const Purse& input, const bool silent, std::int64_t& value)
+auto CheckProto_7(const Purse& input, const bool silent, std::string& value)
     -> bool
 {
     UNDEFINED_VERSION(7)
@@ -184,12 +184,12 @@ auto CheckProto_7(const Purse& input, const bool silent, std::int64_t& value)
 
 auto CheckProto_8(const Purse& input, const bool silent) -> bool
 {
-    std::int64_t value{};
+    std::string value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_8(const Purse& input, const bool silent, std::int64_t& value)
+auto CheckProto_8(const Purse& input, const bool silent, std::string& value)
     -> bool
 {
     UNDEFINED_VERSION(8)
@@ -197,12 +197,12 @@ auto CheckProto_8(const Purse& input, const bool silent, std::int64_t& value)
 
 auto CheckProto_9(const Purse& input, const bool silent) -> bool
 {
-    std::int64_t value{};
+    std::string value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_9(const Purse& input, const bool silent, std::int64_t& value)
+auto CheckProto_9(const Purse& input, const bool silent, std::string& value)
     -> bool
 {
     UNDEFINED_VERSION(9)
@@ -210,12 +210,12 @@ auto CheckProto_9(const Purse& input, const bool silent, std::int64_t& value)
 
 auto CheckProto_10(const Purse& input, const bool silent) -> bool
 {
-    std::int64_t value{};
+    std::string value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_10(const Purse& input, const bool silent, std::int64_t& value)
+auto CheckProto_10(const Purse& input, const bool silent, std::string& value)
     -> bool
 {
     UNDEFINED_VERSION(10)
@@ -223,12 +223,12 @@ auto CheckProto_10(const Purse& input, const bool silent, std::int64_t& value)
 
 auto CheckProto_11(const Purse& input, const bool silent) -> bool
 {
-    std::int64_t value{};
+    std::string value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_11(const Purse& input, const bool silent, std::int64_t& value)
+auto CheckProto_11(const Purse& input, const bool silent, std::string& value)
     -> bool
 {
     UNDEFINED_VERSION(11)
@@ -236,12 +236,12 @@ auto CheckProto_11(const Purse& input, const bool silent, std::int64_t& value)
 
 auto CheckProto_12(const Purse& input, const bool silent) -> bool
 {
-    std::int64_t value{};
+    std::string value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_12(const Purse& input, const bool silent, std::int64_t& value)
+auto CheckProto_12(const Purse& input, const bool silent, std::string& value)
     -> bool
 {
     UNDEFINED_VERSION(12)
@@ -249,12 +249,12 @@ auto CheckProto_12(const Purse& input, const bool silent, std::int64_t& value)
 
 auto CheckProto_13(const Purse& input, const bool silent) -> bool
 {
-    std::int64_t value{};
+    std::string value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_13(const Purse& input, const bool silent, std::int64_t& value)
+auto CheckProto_13(const Purse& input, const bool silent, std::string& value)
     -> bool
 {
     UNDEFINED_VERSION(13)
@@ -262,12 +262,12 @@ auto CheckProto_13(const Purse& input, const bool silent, std::int64_t& value)
 
 auto CheckProto_14(const Purse& input, const bool silent) -> bool
 {
-    std::int64_t value{};
+    std::string value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_14(const Purse& input, const bool silent, std::int64_t& value)
+auto CheckProto_14(const Purse& input, const bool silent, std::string& value)
     -> bool
 {
     UNDEFINED_VERSION(14)
@@ -275,12 +275,12 @@ auto CheckProto_14(const Purse& input, const bool silent, std::int64_t& value)
 
 auto CheckProto_15(const Purse& input, const bool silent) -> bool
 {
-    std::int64_t value{};
+    std::string value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_15(const Purse& input, const bool silent, std::int64_t& value)
+auto CheckProto_15(const Purse& input, const bool silent, std::string& value)
     -> bool
 {
     UNDEFINED_VERSION(15)
@@ -288,12 +288,12 @@ auto CheckProto_15(const Purse& input, const bool silent, std::int64_t& value)
 
 auto CheckProto_16(const Purse& input, const bool silent) -> bool
 {
-    std::int64_t value{};
+    std::string value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_16(const Purse& input, const bool silent, std::int64_t& value)
+auto CheckProto_16(const Purse& input, const bool silent, std::string& value)
     -> bool
 {
     UNDEFINED_VERSION(16)
@@ -301,12 +301,12 @@ auto CheckProto_16(const Purse& input, const bool silent, std::int64_t& value)
 
 auto CheckProto_17(const Purse& input, const bool silent) -> bool
 {
-    std::int64_t value{};
+    std::string value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_17(const Purse& input, const bool silent, std::int64_t& value)
+auto CheckProto_17(const Purse& input, const bool silent, std::string& value)
     -> bool
 {
     UNDEFINED_VERSION(17)
@@ -314,12 +314,12 @@ auto CheckProto_17(const Purse& input, const bool silent, std::int64_t& value)
 
 auto CheckProto_18(const Purse& input, const bool silent) -> bool
 {
-    std::int64_t value{};
+    std::string value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_18(const Purse& input, const bool silent, std::int64_t& value)
+auto CheckProto_18(const Purse& input, const bool silent, std::string& value)
     -> bool
 {
     UNDEFINED_VERSION(18)
@@ -327,12 +327,12 @@ auto CheckProto_18(const Purse& input, const bool silent, std::int64_t& value)
 
 auto CheckProto_19(const Purse& input, const bool silent) -> bool
 {
-    std::int64_t value{};
+    std::string value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_19(const Purse& input, const bool silent, std::int64_t& value)
+auto CheckProto_19(const Purse& input, const bool silent, std::string& value)
     -> bool
 {
     UNDEFINED_VERSION(19)
@@ -340,12 +340,12 @@ auto CheckProto_19(const Purse& input, const bool silent, std::int64_t& value)
 
 auto CheckProto_20(const Purse& input, const bool silent) -> bool
 {
-    std::int64_t value{};
+    std::string value{"0"};
 
     return CheckProto_1(input, silent, value);
 }
 
-auto CheckProto_20(const Purse& input, const bool silent, std::int64_t& value)
+auto CheckProto_20(const Purse& input, const bool silent, std::string& value)
     -> bool
 {
     UNDEFINED_VERSION(20)

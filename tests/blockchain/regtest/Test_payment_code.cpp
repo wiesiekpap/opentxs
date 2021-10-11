@@ -392,7 +392,7 @@ TEST_F(Regtest_payment_code, send_to_bob)
 
     {
         const auto& element = SendPC().BalanceElement(Subchain::Outgoing, 0);
-        constexpr auto amount = ot::blockchain::Amount{1000000000};
+        const auto amount = ot::blockchain::Amount{1000000000};
         expected_.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(txid->Bytes(), 0),
@@ -403,7 +403,7 @@ TEST_F(Regtest_payment_code, send_to_bob)
     }
     {
         const auto& element = SendHD().BalanceElement(Subchain::Internal, 0);
-        constexpr auto amount = ot::blockchain::Amount{8999999684};
+        const auto amount = ot::blockchain::Amount{8999999684};
         expected_.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(txid->Bytes(), 1),
@@ -1226,7 +1226,7 @@ TEST_F(Regtest_payment_code, send_to_bob_again)
 
     {
         const auto& element = SendPC().BalanceElement(Subchain::Outgoing, 1);
-        constexpr auto amount = ot::blockchain::Amount{1500000000};
+        const auto amount = ot::blockchain::Amount{1500000000};
         expected_.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(txid->Bytes(), 0),
@@ -1237,7 +1237,7 @@ TEST_F(Regtest_payment_code, send_to_bob_again)
     }
     {
         const auto& element = SendHD().BalanceElement(Subchain::Internal, 1);
-        constexpr auto amount = ot::blockchain::Amount{7499999448};
+        const auto amount = ot::blockchain::Amount{7499999448};
         expected_.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(txid->Bytes(), 1),

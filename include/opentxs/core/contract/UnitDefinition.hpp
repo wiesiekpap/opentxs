@@ -29,6 +29,7 @@ class UnitDefinition;
 
 class Account;
 class AccountVisitor;
+class Amount;
 class PasswordPrompt;
 
 using OTUnitDefinition = SharedPimpl<contract::Unit>;
@@ -47,7 +48,7 @@ public:
     static const VersionNumber MaxVersion;
 
     static auto formatLongAmount(
-        const Amount lValue,
+        Amount lValue,
         const std::int32_t nFactor = 100,
         const std::int32_t nPower = 2,
         const char* szCurrencySymbol = "",

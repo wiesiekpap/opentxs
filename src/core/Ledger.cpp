@@ -1376,7 +1376,7 @@ auto Ledger::GetFinalReceipt(std::int64_t lReferenceNum)
 /// returns a new balance statement item containing the inbox report
 /// CALLER IS RESPONSIBLE TO DELETE.
 auto Ledger::GenerateBalanceStatement(
-    std::int64_t lAdjustment,
+    const Amount& lAdjustment,
     const OTTransaction& theOwner,
     const otx::context::Server& context,
     const Account& theAccount,
@@ -1394,7 +1394,7 @@ auto Ledger::GenerateBalanceStatement(
 }
 
 auto Ledger::GenerateBalanceStatement(
-    std::int64_t lAdjustment,
+    const Amount& lAdjustment,
     const OTTransaction& theOwner,
     const otx::context::Server& context,
     const Account& theAccount,
@@ -1522,7 +1522,7 @@ auto Ledger::GenerateBalanceStatement(
     if (!statement) { return nullptr; }
 
     pBalanceItem->SetAttachment(OTString(*statement));
-    std::int64_t lCurrentBalance = theAccount.GetBalance();
+    const auto lCurrentBalance{theAccount.GetBalance()};
     // The new (predicted) balance for after the transaction is complete.
     // (item.GetAmount)
     pBalanceItem->SetAmount(lCurrentBalance + lAdjustment);
@@ -1560,9 +1560,9 @@ auto Ledger::GenerateBalanceStatement(
 // (And it really loads the items to check the amount, but does all this ONLY
 // for pending transfers.)
 //
-auto Ledger::GetTotalPendingValue(const PasswordPrompt& reason) -> std::int64_t
+auto Ledger::GetTotalPendingValue(const PasswordPrompt& reason) -> Amount
 {
-    std::int64_t lTotalPendingValue = 0;
+    Amount lTotalPendingValue = 0;
 
     if (ledgerType::inbox != GetType()) {
         LogOutput(OT_METHOD)(__func__)(": Wrong ledger type (expected "
@@ -1961,8 +1961,8 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                         transactionType::error_state;  // default
                     auto strHash = String::Factory();
 
-                    std::int64_t lAdjustment = 0;
-                    std::int64_t lDisplayValue = 0;
+                    Amount lAdjustment = 0;
+                    Amount lDisplayValue = 0;
                     std::int64_t lClosingNum = 0;
                     std::int64_t lRequestNum = 0;
                     bool bReplyTransSuccess = false;

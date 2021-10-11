@@ -33,6 +33,7 @@ namespace proto
 class UnitDefinition;
 }  // namespace proto
 
+class Amount;
 class OTPaymentPlan;
 class OTSmartContract;
 class PasswordPrompt;
@@ -61,7 +62,7 @@ public:
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::Nym& targetNymID,
-        const Amount adjustment) const -> Action = 0;
+        const Amount& adjustment) const -> Action = 0;
     virtual auto CancelPaymentPlan(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
@@ -71,10 +72,10 @@ public:
         const PasswordPrompt& reason,
         const Identifier& assetAccountID,
         const Identifier& currencyAccountID,
-        const Amount scale,
-        const Amount increment,
-        const Amount quantity,
-        const Amount price,
+        const Amount& scale,
+        const Amount& increment,
+        const std::int64_t quantity,
+        const Amount& price,
         const bool selling,
         const std::chrono::seconds lifetime,
         const std::string& stopSign,

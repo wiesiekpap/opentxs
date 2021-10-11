@@ -21,6 +21,7 @@ namespace proto
 {
 class AccountData;
 }  // namespace proto
+class Amount;
 }  // namespace opentxs
 
 namespace opentxs

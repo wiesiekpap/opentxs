@@ -281,14 +281,14 @@ public:
         const identifier::Server& serverID,
         const Identifier& sourceAccountID,
         const Identifier& targetAccountID,
-        const Amount value,
+        const Amount& value,
         const std::string& memo) const -> BackgroundTask final;
     auto SendTransfer(
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const Identifier& sourceAccountID,
         const Identifier& targetAccountID,
-        const Amount value,
+        const Amount& value,
         const std::string& memo) const -> BackgroundTask final;
     void StartIntroductionServer(const identifier::Nym& localNymID) const final;
     auto Status(const TaskID taskID) const -> ThreadStatus final;

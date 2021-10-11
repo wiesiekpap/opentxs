@@ -1877,7 +1877,7 @@ auto OT_API::SmartContract_RemoveVariable(
 // (Caller responsible to delete.)
 auto OT_API::WriteCheque(
     const identifier::Server& NOTARY_ID,
-    const std::int64_t& CHEQUE_AMOUNT,
+    const Amount& CHEQUE_AMOUNT,
     const Time& VALID_FROM,
     const Time& VALID_TO,
     const Identifier& SENDER_accountID,
@@ -2445,7 +2445,7 @@ auto OT_API::GetBasketMemberMinimumTransferAmount(
 // (Or 0.)
 //
 auto OT_API::GetBasketMinimumTransferAmount(
-    const identifier::UnitDefinition& id) const -> std::int64_t
+    const identifier::UnitDefinition& id) const -> Amount
 {
     auto serialized = proto::UnitDefinition{};
 
@@ -2456,7 +2456,7 @@ auto OT_API::GetBasketMinimumTransferAmount(
         return 0;
     }
 
-    return serialized.basket().weight();
+    return Amount{serialized.basket().weight()};
 }
 
 // ADD BASKET CREATION ITEM
@@ -3150,14 +3150,14 @@ auto OT_API::payDividend(
     // let's say $5, resulting in a totalCost of $500,000 that must be
     // available in the dollar account (in order to successfully pay this
     // dividend.)
-    const Amount totalCost =
+    const Amount& totalCost =
         ((-1) * issuerAccount.get().GetBalance()) * AMOUNT_PER_SHARE;
 
     if (dividendAccount.get().GetBalance() < totalCost) {
         LogOutput(OT_METHOD)(__func__)(": Failure: There's not enough (")(
-            dividendAccount.get().GetBalance())(
+            dividendAccount.get().GetBalance().str())(
             ") in the source account, to cover the total cost of the dividend "
-            "(")(totalCost)(").")
+            "(")(totalCost.str())(").")
             .Flush();
 
         return output;
@@ -4315,8 +4315,8 @@ auto OT_API::issueMarketOffer(
                          (std::chrono::seconds{0} == tLifespanInSeconds)
                              ? std::chrono::hours{24}
                              : tLifespanInSeconds};
-    std::int64_t lTotalAssetsOnOffer = 1, lMinimumIncrement = 1,
-                 lPriceLimit = 0,  // your price limit, per scale of assets.
+    Amount lTotalAssetsOnOffer{1}, lMinimumIncrement{1},
+        lPriceLimit{0},  // your price limit, per scale of assets.
         lMarketScale = 1, lActivationPrice = 0;
 
     if (TOTAL_ASSETS_ON_OFFER > 0) {
@@ -4352,21 +4352,21 @@ auto OT_API::issueMarketOffer(
     if (0 != cStopSign) {
         if (lPriceLimit > 0) {
             strOfferType->Format(
-                "stop limit order, at threshhold: %c%" PRId64,
+                "stop limit order, at threshhold: %c%s",
                 cStopSign,
-                lActivationPrice);
+                lActivationPrice.str().c_str());
         } else {
             strOfferType->Format(
-                "stop order, at threshhold: %c%" PRId64,
+                "stop order, at threshhold: %c%s",
                 cStopSign,
-                lActivationPrice);
+                lActivationPrice.str().c_str());
         }
     }
 
     auto strPrice = String::Factory();
 
     if (lPriceLimit > 0) {
-        strPrice->Format("Price: %" PRId64 "\n", lPriceLimit);
+        strPrice->Format("Price: %s\n", lPriceLimit.str().c_str());
     }
 
     auto offer{api_.Factory().Offer(
@@ -4465,9 +4465,9 @@ auto OT_API::issueMarketOffer(
         openingNumber->Value())(", type: ")(
         bBuyingOrSelling ? "selling" : "buying")(", ")(strOfferType)(", ")(
         strPrice)(".")(" Assets for sale/purchase: ")(
-        lTotalAssetsOnOffer)(". In minimum increments of: ")(
-        lMinimumIncrement)(". At market of scale: ")(
-        lMarketScale)(". Valid From: ")(VALID_FROM)(". To: ")(VALID_TO)
+        lTotalAssetsOnOffer.str())(". In minimum increments of: ")(
+        lMinimumIncrement.str())(". At market of scale: ")(lMarketScale.str())(
+        ". Valid From: ")(VALID_FROM)(". To: ")(VALID_TO)
         .Flush();
     auto transaction{api_.Factory().Transaction(
         nymID,

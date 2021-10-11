@@ -65,7 +65,7 @@ auto ServerAction::AdjustUsageCredits(
     const identifier::Nym& localNymID,
     const identifier::Server& serverID,
     const identifier::Nym& targetNymID,
-    const Amount adjustment) const -> ServerAction::Action
+    const Amount& adjustment) const -> ServerAction::Action
 {
     return Action(new OTAPI_Func(reason,
         ADJUST_USAGE_CREDITS,
@@ -106,10 +106,10 @@ auto ServerAction::CreateMarketOffer(
     const PasswordPrompt& reason,
     const Identifier& assetAccountID,
     const Identifier& currencyAccountID,
-    const Amount scale,
-    const Amount increment,
-    const Amount quantity,
-    const Amount price,
+    const Amount& scale,
+    const Amount& increment,
+    const std::int64_t quantity,
+    const Amount& price,
     const bool selling,
     const std::chrono::seconds lifetime,
     const std::string& stopSign,

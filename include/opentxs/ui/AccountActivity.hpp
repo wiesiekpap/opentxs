@@ -21,6 +21,8 @@ namespace ui
 class AccountActivity;
 class BalanceItem;
 }  // namespace ui
+
+class Amount;
 }  // namespace opentxs
 
 namespace opentxs
@@ -33,7 +35,7 @@ public:
     using Scale = unsigned int;
 
     virtual auto AccountID() const noexcept -> std::string = 0;
-    virtual auto Balance() const noexcept -> Amount = 0;
+    virtual auto Balance() const noexcept -> const Amount = 0;
     virtual auto BalancePolarity() const noexcept -> int = 0;
     virtual auto ContractID() const noexcept -> std::string = 0;
     virtual auto DepositAddress() const noexcept -> std::string = 0;
@@ -52,7 +54,7 @@ public:
     virtual auto NotaryName() const noexcept -> std::string = 0;
     virtual auto Send(
         const Identifier& contact,
-        const Amount amount,
+        const Amount& amount,
         const std::string& memo = {}) const noexcept -> bool = 0;
     virtual auto Send(
         const Identifier& contact,
@@ -61,7 +63,7 @@ public:
         Scale scale = 0) const noexcept -> bool = 0;
     virtual auto Send(
         const std::string& address,
-        const Amount amount,
+        const Amount& amount,
         const std::string& memo = {}) const noexcept -> bool = 0;
     virtual auto Send(
         const std::string& address,

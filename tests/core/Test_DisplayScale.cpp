@@ -14,6 +14,7 @@
 #include "display/Definition.hpp"
 #include "display/Scale.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 
 TEST(DisplayScale, usd)
 {

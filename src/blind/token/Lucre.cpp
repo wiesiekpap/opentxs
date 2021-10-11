@@ -118,7 +118,7 @@ Lucre::Lucre(const api::Core& api, Purse& purse, const proto::Token& in)
           in.lucre().version(),
           internal::translate(in.state()),
           in.series(),
-          in.denomination(),
+          Amount{in.denomination()},
           Clock::from_time_t(in.validfrom()),
           Clock::from_time_t(in.validto()),
           String::Factory(),
@@ -265,12 +265,13 @@ auto Lucre::GenerateTokenRequest(
 
     if (serializedMint->empty()) {
         LogOutput(OT_METHOD)(__func__)(
-            ": Failed to get public mint for series ")(denomination_)
+            ": Failed to get public mint for series ")(denomination_.str())
             .Flush();
 
         return false;
     } else {
-        LogInsane(OT_METHOD)(__func__)(": Begin mint series ")(denomination_)
+        LogInsane(OT_METHOD)(__func__)(": Begin mint series ")(
+            denomination_.str())
             .Flush();
         LogInsane(serializedMint).Flush();
         LogInsane(OT_METHOD)(__func__)(": End mint").Flush();
@@ -536,12 +537,13 @@ auto Lucre::Process(
 
     if (serializedMint->empty()) {
         LogOutput(OT_METHOD)(__func__)(
-            ": Failed to get public mint for series ")(denomination_)
+            ": Failed to get public mint for series ")(denomination_.str())
             .Flush();
 
         return false;
     } else {
-        LogInsane(OT_METHOD)(__func__)(": Begin mint series ")(denomination_)
+        LogInsane(OT_METHOD)(__func__)(": Begin mint series ")(
+            denomination_.str())
             .Flush();
         LogInsane(serializedMint).Flush();
         LogInsane(OT_METHOD)(__func__)(": End mint").Flush();

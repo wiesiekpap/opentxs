@@ -127,7 +127,7 @@ public:
     // (Caller responsible to delete.)
     auto WriteCheque(
         const identifier::Server& NOTARY_ID,
-        const std::int64_t& CHEQUE_AMOUNT,
+        const Amount& CHEQUE_AMOUNT,
         const Time& VALID_FROM,
         const Time& VALID_TO,
         const Identifier& SENDER_accountID,
@@ -180,7 +180,7 @@ public:
 
     auto GetBasketMinimumTransferAmount(
         const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID) const
-        -> std::int64_t;
+        -> Amount;
 
     auto GetBasketMemberCount(
         const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID) const

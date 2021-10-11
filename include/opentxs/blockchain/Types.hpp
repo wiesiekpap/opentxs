@@ -8,6 +8,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include "opentxs/core/Amount.hpp"
+
 #include <cstdint>
 #include <string>
 #include <tuple>
@@ -33,7 +35,7 @@ enum class Type : TypeEnum;
 enum class BloomUpdateFlag : std::uint8_t;
 enum class SendResult : TypeEnum;
 
-using Amount = std::uint64_t;
+using Amount = opentxs::Amount;
 using ChainHeight = std::int64_t;
 using HDIndex = std::uint32_t;
 using ConfirmedBalance = Amount;

@@ -27,7 +27,7 @@ auto CheckProto_1(
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
-    std::int64_t& totalValue,
+    std::string& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool;
 auto CheckProto_2(
@@ -35,7 +35,7 @@ auto CheckProto_2(
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
-    std::int64_t& totalValue,
+    std::string& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool;
 auto CheckProto_3(
@@ -43,7 +43,7 @@ auto CheckProto_3(
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
-    std::int64_t& totalValue,
+    std::string& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool;
 auto CheckProto_4(
@@ -51,7 +51,7 @@ auto CheckProto_4(
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
-    std::int64_t& totalValue,
+    std::string& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool;
 auto CheckProto_5(
@@ -59,7 +59,7 @@ auto CheckProto_5(
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
-    std::int64_t& totalValue,
+    std::string& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool;
 auto CheckProto_6(
@@ -67,7 +67,7 @@ auto CheckProto_6(
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
-    std::int64_t& totalValue,
+    std::string& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool;
 auto CheckProto_7(
@@ -75,7 +75,7 @@ auto CheckProto_7(
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
-    std::int64_t& totalValue,
+    std::string& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool;
 auto CheckProto_8(
@@ -83,7 +83,7 @@ auto CheckProto_8(
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
-    std::int64_t& totalValue,
+    std::string& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool;
 auto CheckProto_9(
@@ -91,7 +91,7 @@ auto CheckProto_9(
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
-    std::int64_t& totalValue,
+    std::string& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool;
 auto CheckProto_10(
@@ -99,7 +99,7 @@ auto CheckProto_10(
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
-    std::int64_t& totalValue,
+    std::string& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool;
 auto CheckProto_11(
@@ -107,7 +107,7 @@ auto CheckProto_11(
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
-    std::int64_t& totalValue,
+    std::string& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool;
 auto CheckProto_12(
@@ -115,7 +115,7 @@ auto CheckProto_12(
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
-    std::int64_t& totalValue,
+    std::string& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool;
 auto CheckProto_13(
@@ -123,7 +123,7 @@ auto CheckProto_13(
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
-    std::int64_t& totalValue,
+    std::string& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool;
 auto CheckProto_14(
@@ -131,7 +131,7 @@ auto CheckProto_14(
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
-    std::int64_t& totalValue,
+    std::string& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool;
 auto CheckProto_15(
@@ -139,7 +139,7 @@ auto CheckProto_15(
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
-    std::int64_t& totalValue,
+    std::string& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool;
 auto CheckProto_16(
@@ -147,7 +147,7 @@ auto CheckProto_16(
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
-    std::int64_t& totalValue,
+    std::string& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool;
 auto CheckProto_17(
@@ -155,7 +155,7 @@ auto CheckProto_17(
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
-    std::int64_t& totalValue,
+    std::string& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool;
 auto CheckProto_18(
@@ -163,7 +163,7 @@ auto CheckProto_18(
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
-    std::int64_t& totalValue,
+    std::string& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool;
 auto CheckProto_19(
@@ -171,7 +171,7 @@ auto CheckProto_19(
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
-    std::int64_t& totalValue,
+    std::string& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool;
 auto CheckProto_20(
@@ -179,7 +179,7 @@ auto CheckProto_20(
     const bool silent,
     const CashType expectedType,
     const std::set<TokenState>& expectedState,
-    std::int64_t& totalValue,
+    std::string& totalValue,
     std::int64_t& validFrom,
     std::int64_t& validTo) -> bool;
 }  // namespace proto

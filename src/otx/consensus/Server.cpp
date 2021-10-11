@@ -2844,7 +2844,7 @@ void Server::process_accept_cron_receipt_reply(
 
         OT_ASSERT((pData));
 
-        std::int64_t lScale = theOffer->GetScale();
+        const Amount& lScale = theOffer->GetScale();
 
         // TransID for original offer.
         // (Offer may trade many times.)
@@ -2869,18 +2869,18 @@ void Server::process_accept_cron_receipt_reply(
         if (bIsAsset) {
             const auto strInstrumentDefinitionID =
                 String::Factory(theTrade->GetInstrumentDefinitionID());
-            std::int64_t lAssetsThisTrade = pServerItem->GetAmount();
+            const Amount& lAssetsThisTrade = pServerItem->GetAmount();
             pData->instrument_definition_id = strInstrumentDefinitionID->Get();
             // The amount of ASSETS moved, this trade.
-            pData->amount_sold = std::to_string(lAssetsThisTrade);
+            pData->amount_sold = lAssetsThisTrade.str();
             pData->asset_acct_id = strAcctID->Get();
             pData->asset_receipt = strServerTransaction->Get();
         } else if (bIsCurrency) {
             const auto strCurrencyID =
                 String::Factory(theTrade->GetCurrencyID());
-            std::int64_t lCurrencyThisTrade = pServerItem->GetAmount();
+            const Amount& lCurrencyThisTrade = pServerItem->GetAmount();
             pData->currency_id = strCurrencyID->Get();
-            pData->currency_paid = std::to_string(lCurrencyThisTrade);
+            pData->currency_paid = lCurrencyThisTrade.str();
             pData->currency_acct_id = strAcctID->Get();
             pData->currency_receipt = strServerTransaction->Get();
         }
@@ -2889,11 +2889,11 @@ void Server::process_accept_cron_receipt_reply(
         pData->date = std::to_string(Clock::to_time_t(tProcessDate));
 
         // The original offer price. (Might be 0, if it's a market order.)
-        const std::int64_t& lPriceLimit = theOffer->GetPriceLimit();
-        pData->offer_price = std::to_string(lPriceLimit);
-        const std::int64_t& lFinishedSoFar = theOffer->GetFinishedSoFar();
-        pData->finished_so_far = std::to_string(lFinishedSoFar);
-        pData->scale = std::to_string(lScale);
+        const Amount& lPriceLimit = theOffer->GetPriceLimit();
+        pData->offer_price = lPriceLimit.str();
+        const Amount& lFinishedSoFar = theOffer->GetFinishedSoFar();
+        pData->finished_so_far = lFinishedSoFar.str();
+        pData->scale = lScale.str();
         pData->is_bid = theOffer->IsBid();
 
         // save to local storage...
@@ -2972,18 +2972,17 @@ void Server::process_accept_cron_receipt_reply(
                 if (!pTradeData->amount_sold.empty() &&
                     !pTradeData->currency_paid.empty()) {
 
-                    const std::int64_t lAmountSold =
-                        String::StringToLong(pTradeData->amount_sold);
-                    const std::int64_t lCurrencyPaid =
-                        String::StringToLong(pTradeData->currency_paid);
+                    const Amount lAmountSold = Amount{pTradeData->amount_sold};
+                    const Amount lCurrencyPaid =
+                        Amount{pTradeData->currency_paid};
 
                     // just in case (divide by 0.)
                     if ((lAmountSold != 0) && (lScale != 0)) {
-                        const std::int64_t lSalePrice =
+                        const Amount lSalePrice =
                             (lCurrencyPaid / (lAmountSold / lScale));
 
                         auto strSalePrice = String::Factory();
-                        strSalePrice->Format("%" PRId64 "", lSalePrice);
+                        strSalePrice->Format("%s", lSalePrice.str().c_str());
 
                         pTradeData->price = strSalePrice->Get();
                     }

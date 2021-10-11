@@ -27,6 +27,7 @@
 #include "opentxs/blockchain/SendResult.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/crypto/HashType.hpp"
@@ -392,7 +393,7 @@ auto BlankHash() noexcept -> pHash
 
 namespace opentxs::blockchain::internal
 {
-auto Format(const Type chain, const opentxs::Amount amount) noexcept
+auto Format(const Type chain, const opentxs::Amount& amount) noexcept
     -> std::string
 {
     try {

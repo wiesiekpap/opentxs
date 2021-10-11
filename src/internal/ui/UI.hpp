@@ -29,6 +29,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/contact/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"

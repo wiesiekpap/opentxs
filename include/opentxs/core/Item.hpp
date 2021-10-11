@@ -15,6 +15,7 @@
 #include <set>
 
 #include "opentxs/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -156,7 +157,7 @@ public:
     // whether the wallet side set it up correctly (and thus it's okay to sign
     // and return with acknowledgement.)
     auto VerifyBalanceStatement(
-        std::int64_t lActualAdjustment,
+        const Amount& lActualAdjustment,
         const otx::context::Client& context,
         const Ledger& THE_INBOX,
         const Ledger& THE_OUTBOX,
@@ -184,8 +185,8 @@ public:
     inline void SetStatus(const Item::itemStatus& theVal) { m_Status = theVal; }
     inline auto GetType() const -> itemType { return m_Type; }
     inline void SetType(itemType theType) { m_Type = theType; }
-    inline auto GetAmount() const -> std::int64_t { return m_lAmount; }
-    inline void SetAmount(std::int64_t lAmount) { m_lAmount = lAmount; }
+    inline auto GetAmount() const -> Amount { return m_lAmount; }
+    inline void SetAmount(Amount lAmount) { m_lAmount = lAmount; }
     void GetNote(String& theStr) const;
     void SetNote(const String& theStr);
     void GetAttachment(String& theStr) const;

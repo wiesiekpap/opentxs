@@ -140,7 +140,7 @@ Token::Token(const api::Core& api, Purse& purse, const proto::Token& in)
           identifier::Server::Factory(in.notary()),
           identifier::UnitDefinition::Factory(in.mint()),
           in.series(),
-          in.denomination(),
+          Amount{in.denomination()},
           Clock::from_time_t(in.validfrom()),
           Clock::from_time_t(in.validto()),
           in.version())

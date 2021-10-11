@@ -53,6 +53,7 @@ namespace proto
 class Purse;
 }  // namespace proto
 
+class Amount;
 class PasswordPrompt;
 
 using OTPurse = Pimpl<blind::Purse>;
@@ -91,7 +92,7 @@ public:
     virtual auto Unlock(const identity::Nym& nym, const PasswordPrompt& reason)
         const -> bool = 0;
     virtual auto Verify(const api::server::Manager& server) const -> bool = 0;
-    virtual auto Value() const -> Amount = 0;
+    virtual auto Value() const -> const Amount& = 0;
 
     virtual auto AddNym(const identity::Nym& nym, const PasswordPrompt& reason)
         -> bool = 0;

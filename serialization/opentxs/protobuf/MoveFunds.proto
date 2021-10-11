@@ -12,11 +12,12 @@ option optimize_for = LITE_RUNTIME;
 
 import public "RPCEnums.proto";
 
-message MoveFunds {
+message MoveFunds
+{
     optional uint32 version = 1;
-    optional RPCPaymentType type = 2;		// see RPCEnums.proto
-    optional string sourceaccount = 3;		// source account id
-    optional string destinationaccount = 4;	// destination account id
+    optional RPCPaymentType type = 2;        // see RPCEnums.proto
+    optional string sourceaccount = 3;       // source account id
+    optional string destinationaccount = 4;  // destination account id
     optional string memo = 5;
-    optional uint64 amount = 6;
+    optional bytes amount = 6;
 }

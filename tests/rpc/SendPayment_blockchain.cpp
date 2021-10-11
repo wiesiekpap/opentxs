@@ -95,8 +95,7 @@ protected:
                        .at(0))
         , mine_to_alex_([&](Height height) -> Transaction {
             using OutputBuilder = ot::api::Factory::OutputBuilder;
-            static constexpr auto baseAmount =
-                ot::blockchain::Amount{10000000000};
+            static const auto baseAmount = ot::blockchain::Amount{10000000000};
             auto output = miner_.Factory().BitcoinGenerationTransaction(
                 test_chain_,
                 height,
@@ -168,7 +167,7 @@ TEST_F(RPC_BC, blockchain_payment)
 {
     const auto index{client_1_.Instance()};
     constexpr auto address{"n4VQ5YdHf7hLQ2gWQYYrcxoE5B7nWuDFNF"};
-    constexpr auto amount = ot::Amount{140000};
+    const auto amount = ot::Amount{140000};
     const auto account = account_.Parent().AccountID().str();
     const auto command =
         ot::rpc::request::SendPayment{index, account, address, amount};

@@ -71,7 +71,7 @@ auto AccountListItem::DisplayBalance() const noexcept -> std::string
 
     if (formatted) { return output; }
 
-    return std::to_string(balance_);
+    return balance_;
 }
 
 auto AccountListItem::load_server(

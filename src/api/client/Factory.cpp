@@ -143,7 +143,7 @@ auto Factory::BitcoinGenerationTransaction(
             blockchain,
             chain,
             static_cast<std::uint32_t>(++index),
-            amount,
+            Amount{amount},
             factory::BitcoinScript(chain, reader(bytes), Position::Output),
             std::move(keys)));
     }

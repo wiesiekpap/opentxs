@@ -173,7 +173,7 @@ void Notary::cancel_cheque(
 
     if (cheque.GetAmount() != 0) {
         LogOutput(OT_METHOD)(__func__)(": Invalid amount (")(
-            cheque.GetAmount())(").")
+            cheque.GetAmount().str())(").")
             .Flush();
 
         return;
@@ -1184,11 +1184,9 @@ void Notary::NotarizeTransfer(
                         theFromAccount.Abort();
                         destinationAccount.Abort();
                         LogOutput(OT_METHOD)(__func__)(
-                            ": Unable to debit "
-                            "account ")(strAccountID)(" in the "
-                                                      "amount "
-                                                      "of:"
-                                                      " ")(pItem->GetAmount())
+                            ": Unable to debit account ")(
+                            strAccountID)(" in the amount of: ")(
+                            pItem->GetAmount().str())
                             .Flush();
                     }
                 }
@@ -1875,7 +1873,7 @@ void Notary::NotarizePayDividend(
         pResponseBalanceItem->SetReferenceString(strBalanceItem);
         // This response item is IN RESPONSE to pItem and its Owner Transaction.
         pResponseBalanceItem->SetReferenceToNum(pItem->GetTransactionNum());
-        const std::int64_t lTotalCostOfDividend = pItem->GetAmount();
+        const Amount& lTotalCostOfDividend = pItem->GetAmount();
         auto theVoucherRequest{manager_.Factory().Cheque()};
 
         OT_ASSERT(false != bool(theVoucherRequest));
@@ -1909,8 +1907,7 @@ void Notary::NotarizePayDividend(
                 // multiplied by number of shares.)
                 //
                 // already validated, just above.
-                const std::int64_t lAmountPerShare =
-                    theVoucherRequest->GetAmount();
+                const Amount& lAmountPerShare = theVoucherRequest->GetAmount();
                 const Identifier& SHARES_ISSUER_ACCT_ID =
                     theVoucherRequest->GetSenderAcctID();
                 const auto strSharesIssuerAcct =
@@ -2004,10 +2001,11 @@ void Notary::NotarizePayDividend(
                     LogOutput(OT_METHOD)(__func__)(
                         ": ERROR: total payout of dividend as calculated (")(
                         (sharesIssuerAccount.get().GetBalance() * (-1) *
-                         lAmountPerShare))(
+                         lAmountPerShare)
+                            .str())(
                         ") doesn't match client's request "
-                        "(")(lTotalCostOfDividend)(") for source "
-                                                   "acct: ")(strAccountID)
+                        "(")(lTotalCostOfDividend.str())(") for source "
+                                                         "acct: ")(strAccountID)
                         .Flush();
                 } else if (
                     theSourceAccount.get().GetBalance() <
@@ -2015,19 +2013,11 @@ void Notary::NotarizePayDividend(
                     const auto strIssuerAcctID =
                         String::Factory(SHARES_ISSUER_ACCT_ID);
                     LogOutput(OT_METHOD)(__func__)(
-                        ": FAILURE: not enough funds "
-                        "(")(theSourceAccount.get().GetBalance())(
-                        ") to cover "
-                        "total dividend "
-                        "payout "
-                        "(")(lTotalCostOfDividend)(") "
-                                                   "for"
-                                                   " so"
-                                                   "urc"
-                                                   "e "
-                                                   "acc"
-                                                   "t:"
-                                                   " ")(strAccountID)
+                        ": FAILURE: not enough funds (")(
+                        theSourceAccount.get().GetBalance().str())(
+                        ") to cover otal dividend payout (")(
+                        lTotalCostOfDividend.str())(") for source acct: ")(
+                        strAccountID)
                         .Flush();
                 } else {
                     // Remove all the funds at once (so the balance agreement
@@ -2145,24 +2135,8 @@ void Notary::NotarizePayDividend(
                                     LogOutput(OT_METHOD)(__func__)(
                                         ": Failed "
                                         "crediting ")(
-                                        lTotalCostOfDividend)(" u"
-                                                              "ni"
-                                                              "ts"
-                                                              " t"
-                                                              "o "
-                                                              "vo"
-                                                              "uc"
-                                                              "he"
-                                                              "r "
-                                                              "re"
-                                                              "se"
-                                                              "rv"
-                                                              "e "
-                                                              "ac"
-                                                              "co"
-                                                              "un"
-                                                              "t:"
-                                                              " ")(
+                                        lTotalCostOfDividend.str())(
+                                        "units to voucher reserve account: ")(
                                         strVoucherAcctID)
                                         .Flush();
                                     // Since pVoucherReserveAcct->Credit failed,
@@ -2307,7 +2281,7 @@ void Notary::NotarizePayDividend(
                                     //
                                     // REFUND ANY LEFTOVERS
                                     //
-                                    const std::int64_t lLeftovers =
+                                    const Amount lLeftovers =
                                         lTotalCostOfDividend -
                                         (actionPayDividend.GetAmountPaidOut() +
                                          actionPayDividend.GetAmountReturned());
@@ -2321,23 +2295,13 @@ void Notary::NotarizePayDividend(
                                         //
                                         LogOutput(OT_METHOD)(__func__)(
                                             ": After dividend payout, "
-                                            "with ")(lTotalCostOfDividend)(" un"
-                                                                           "its"
-                                                                           " re"
-                                                                           "mov"
-                                                                           "ed "
-                                                                           "ini"
-                                                                           "tia"
-                                                                           "lly"
-                                                                           ", "
-                                                                           "the"
-                                                                           "re "
-                                                                           "wer"
-                                                                           "e"
-                                                                           " ")(
-                                            lLeftovers)(" units remaining. "
-                                                        "(Returning them "
-                                                        "to sender...)")
+                                            "with ")(
+                                            lTotalCostOfDividend.str())(
+                                            " units removed initially, there "
+                                            "were ")(lLeftovers.str())(
+                                            " units remaining. "
+                                            "(Returning them "
+                                            "to sender...)")
                                             .Flush();
                                         auto theVoucher{manager_.Factory().Cheque(
                                             NOTARY_ID,
@@ -2495,12 +2459,9 @@ void Notary::NotarizePayDividend(
                                                     "leftovers back to the "
                                                     "dividend payout "
                                                     "initiator.) WAS TRYING TO "
-                                                    "PAY ")(lLeftovers)(" of "
-                                                                        "instru"
-                                                                        "ment "
-                                                                        "defini"
-                                                                        "tion"
-                                                                        " ")(
+                                                    "PAY ")(lLeftovers.str())(
+                                                    " of instrument "
+                                                    "definition ")(
                                                     strPayoutInstrumentDefinitionID)(" to Nym ")(
                                                     strSenderNymID)
                                                     .Flush();
@@ -2520,9 +2481,8 @@ void Notary::NotarizePayDividend(
                                                 "(while returning leftover "
                                                 "funds, after paying "
                                                 "dividends.) WAS TRYING TO "
-                                                "PAY ")(lLeftovers)(" of asset "
-                                                                    "type"
-                                                                    " ")(
+                                                "PAY ")(lLeftovers.str())(
+                                                " of asset type ")(
                                                 strPayoutInstrumentDefinitionID)(" to Nym ")(
                                                 strRecipientNymID)
                                                 .Flush();
@@ -4544,7 +4504,7 @@ void Notary::NotarizeExchangeBasket(
             OT_ASSERT(false != bool(theRequestBasket));
 
             pItem->GetAttachment(strBasket);
-            std::int64_t lTransferAmount = 0;
+            Amount lTransferAmount = 0;
 
             // Now we have the Contract ID from the basket account,
             // we can get a pointer to its asset contract...
@@ -4606,7 +4566,7 @@ void Notary::NotarizeExchangeBasket(
                         // Now let's load up the actual basket, from the actual
                         // asset contract.
                         std::int64_t currencies = basket->Currencies().size();
-                        std::int64_t weight = basket->Weight();
+                        const Amount& weight = basket->Weight();
 
                         if (currencies == theRequestBasket->Count() &&
                             weight == theRequestBasket->GetMinimumTransfer()) {
@@ -5666,13 +5626,10 @@ void Notary::NotarizeMarketOffer(
                     .Flush();
             } else if (
                 theOffer->GetScale() < ServerSettings::GetMinMarketScale()) {
-                LogOutput(OT_METHOD)(__func__)(": FAILED verifying Offer, "
-                                               "SCALE: ")(theOffer->GetScale())(
-                    ". "
-                    "(Min"
-                    "imum"
-                    " is"
-                    " ")(ServerSettings::GetMinMarketScale())(".)")
+                LogOutput(OT_METHOD)(__func__)(
+                    ": FAILED verifying Offer, "
+                    "SCALE: ")(theOffer->GetScale().str())(". (Minimum is ")(
+                    ServerSettings::GetMinMarketScale())(".)")
                     .Flush();
             } else if (
                 static_cast<std::int64_t>((context.OpenCronItems() / 3)) >=
@@ -6968,7 +6925,7 @@ void Notary::NotarizeProcessInbox(
     processInboxResponse.AddItem(pResponseBalanceItem);
 
     bool bSuccessFindingAllTransactions{true};
-    std::int64_t lTotalBeingAccepted{0};
+    Amount lTotalBeingAccepted{0};
     std::list<TransactionNumber> theListOfInboxReceiptsBeingRemoved{};
     bool bVerifiedBalanceStatement{false};
     const bool allowed =
@@ -7080,8 +7037,8 @@ void Notary::NotarizeProcessInbox(
             pServerTransaction->GetReceiptAmount(reason_) != item.GetAmount()) {
             LogOutput(OT_METHOD)(__func__)(
                 ": Receipt amounts don't "
-                "match: ")(pServerTransaction->GetReceiptAmount(reason_))(
-                " and ")(item.GetAmount())(". Nym ")(strNymID)
+                "match: ")(pServerTransaction->GetReceiptAmount(reason_).str())(
+                " and ")(item.GetAmount().str())(". Nym ")(strNymID)
                 .Flush();
             bSuccessFindingAllTransactions = false;
             break;
@@ -8969,11 +8926,7 @@ auto Notary::process_token_withdrawal(
         }
     } else {
         LogOutput(OT_METHOD)(__func__)(": Unable to debit account ")(
-            account.GetPurportedAccountID())(" in "
-                                             "the "
-                                             "amount"
-                                             " of:"
-                                             " ")(value)
+            account.GetPurportedAccountID())(" in the amount of: ")(value.str())
             .Flush();
 
         return false;

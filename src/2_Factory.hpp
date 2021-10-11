@@ -6,6 +6,7 @@
 #pragma once
 
 #include "opentxs/blind/Types.hpp"
+#include "opentxs/blind/Token.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
@@ -338,6 +339,7 @@ class Txos;
 class Units;
 }  // namespace storage
 
+class Amount;
 class DhtConfig;
 class Flag;
 class Libsecp256k1;
@@ -613,7 +615,7 @@ public:
         const identifier::Nym& recipientID,
         const identifier::UnitDefinition& unitID,
         const identifier::Server& serverID,
-        const std::uint64_t& amount,
+        const Amount& amount,
         const std::string& terms,
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::request::Outbailment>;
@@ -661,7 +663,7 @@ public:
         const otx::context::Server&,
         const blind::CashType type,
         const blind::Mint& mint,
-        const Amount totalValue,
+        const Amount& totalValue,
         const opentxs::PasswordPrompt& reason) -> blind::Purse*;
     static auto Purse(
         const api::Core& api,
@@ -670,7 +672,7 @@ public:
         const identity::Nym& serverNym,
         const blind::CashType type,
         const blind::Mint& mint,
-        const Amount totalValue,
+        const Amount& totalValue,
         const opentxs::PasswordPrompt& reason) -> blind::Purse*;
     static auto Purse(
         const api::Core& api,
@@ -822,7 +824,7 @@ public:
         const api::Core& api,
         const identity::Nym& owner,
         const blind::Mint& mint,
-        const std::uint64_t value,
+        const blind::Token::Denomination value,
         blind::Purse& purse,
         const opentxs::PasswordPrompt& reason) noexcept(false)
         -> std::unique_ptr<blind::Token>;

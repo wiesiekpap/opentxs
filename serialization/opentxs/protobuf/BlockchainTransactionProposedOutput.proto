@@ -12,12 +12,14 @@ option optimize_for = LITE_RUNTIME;
 
 import public "BlockchainOutputMultisigDetails.proto";
 
-message BlockchainTransactionProposedOutput {
+message BlockchainTransactionProposedOutput
+{
     optional uint32 version = 1;
-    optional uint64 amount = 2;
+    optional bytes amount = 2;
     optional uint32 index = 3;
     optional bytes paymentcodechannel = 4;
-    oneof style {
+    oneof style
+    {
         bytes raw = 5;
         bytes pubkey = 6;
         bytes pubkeyhash = 7;

@@ -221,8 +221,8 @@ OTTransaction::OTTransaction(
     const Time the_DATE_SIGNED,
     const transactionType theType,
     const String& strHash,
-    const std::int64_t& lAdjustment,
-    const std::int64_t& lDisplayValue,
+    const Amount& lAdjustment,
+    const Amount& lDisplayValue,
     const std::int64_t& lClosingNum,
     const std::int64_t& lRequestNum,
     const bool bReplyTransSuccess,
@@ -2061,7 +2061,7 @@ auto OTTransaction::VerifyBalanceReceipt(
     const char* pszLedgerType = nullptr;
     // For measuring the amount of the total of items in the inbox that have
     // changed the balance (like cheque receipts)
-    std::int64_t lReceiptBalanceChange = 0;
+    Amount lReceiptBalanceChange = 0;
 
     // Notice here, I'm back to using pBalanceItem instead of
     // pItemWithIssuedList, since this is the inbox/outbox section...
@@ -2080,7 +2080,7 @@ auto OTTransaction::VerifyBalanceReceipt(
     for (std::int32_t i = 0; i < pBalanceItem->GetItemCount(); i++) {
         // for outbox calculations. (It's the only case where GetReceiptAmount()
         // is wrong and needs -1 multiplication.)
-        std::int64_t lReceiptAmountMultiplier = 1;
+        Amount lReceiptAmountMultiplier = 1;
         auto pSubItem = pBalanceItem->GetItem(i);
 
         OT_ASSERT(false != bool(pSubItem));
@@ -2294,7 +2294,7 @@ auto OTTransaction::VerifyBalanceReceipt(
             LogNormal(OT_METHOD)(__func__)(": Expected ")(
                 pszLedgerType)(" transaction (")(
                 lTempTransactionNum)(") not found. (Amount ")(
-                pSubItem->GetAmount())(".)")
+                pSubItem->GetAmount().str())(".)")
                 .Flush();
 
             return false;
@@ -2324,19 +2324,18 @@ auto OTTransaction::VerifyBalanceReceipt(
             return false;
         }
 
-        std::int64_t lTransactionAmount =
-            pTransaction->GetReceiptAmount(reason);
+        Amount lTransactionAmount = pTransaction->GetReceiptAmount(reason);
         lTransactionAmount *= lReceiptAmountMultiplier;
 
         if (pSubItem->GetAmount() != lTransactionAmount) {
             LogNormal(OT_METHOD)(__func__)(": ")(
                 pszLedgerType)(" transaction (")(
                 lTempTransactionNum)(") amounts don't match: Report says ")(
-                pSubItem->GetAmount())(", but expected ")(
-                lTransactionAmount)(". Trans recpt amt: ")(
-                pTransaction->GetReceiptAmount(reason))(
-                ", (pBalanceItem->GetAmount() == ")(pBalanceItem->GetAmount())(
-                ".)")
+                pSubItem->GetAmount().str())(", but expected ")(
+                lTransactionAmount.str())(". Trans recpt amt: ")(
+                pTransaction->GetReceiptAmount(reason).str())(
+                ", (pBalanceItem->GetAmount() == ")(
+                pBalanceItem->GetAmount().str())(".)")
                 .Flush();
 
             return false;
@@ -2465,10 +2464,10 @@ auto OTTransaction::VerifyBalanceReceipt(
 
     // Change in the account balance we'd expect, based on TOTAL receipts in the
     // inbox.
-    std::int64_t lInboxBalanceChange = 0;
+    Amount lInboxBalanceChange = 0;
     // Change in the account balance we'd expect, based on the NEW receipts in
     // the inbox.
-    std::int64_t lInboxSupposedDifference = 0;
+    Amount lInboxSupposedDifference = 0;
 
     for (std::int32_t i = 0; i < pInbox->GetTransactionCount(); i++) {
         const auto pTransaction = pInbox->GetTransactionByIndex(i);
@@ -2649,10 +2648,10 @@ auto OTTransaction::VerifyBalanceReceipt(
                 (pTransaction->GetReceiptAmount(reason))) {
                 LogNormal(OT_METHOD)(__func__)(": Inbox transaction (")(
                     pSubItem->GetTransactionNum())(") amounts don't match: ")(
-                    pSubItem->GetAmount())(", expected ")(
-                    pTransaction->GetReceiptAmount(reason))(
+                    pSubItem->GetAmount().str())(", expected ")(
+                    pTransaction->GetReceiptAmount(reason).str())(
                     ". (pBalanceItem->GetAmount() == ")(
-                    pBalanceItem->GetAmount())(").")
+                    pBalanceItem->GetAmount().str())(").")
                     .Flush();
                 return false;
             }
@@ -2898,9 +2897,11 @@ auto OTTransaction::VerifyBalanceReceipt(
 
     // How much money came out? (Or went in, if the chequeReceipt was for
     // an invoice...) 901 -99 (example of 1000 absolute difference)
-    const std::int64_t lAbsoluteDifference =
-        std::abs(lInboxBalanceChange - lReceiptBalanceChange);
-    const std::int64_t lNegativeDifference = (lAbsoluteDifference * (-1));
+    const Amount lAbsoluteDifference =
+        lInboxBalanceChange > lReceiptBalanceChange
+            ? lInboxBalanceChange - lReceiptBalanceChange
+            : lReceiptBalanceChange - lInboxBalanceChange;
+    const Amount lNegativeDifference = (lAbsoluteDifference * (-1));
 
     // The new (current) inbox has a larger overall value than the balance in
     // the old (receipt) inbox. (As shown by subitem.)
@@ -2908,7 +2909,7 @@ auto OTTransaction::VerifyBalanceReceipt(
         ((lInboxBalanceChange > lReceiptBalanceChange) ? true : false);
     const bool bNewInboxWasSmaller =
         ((lInboxBalanceChange < lReceiptBalanceChange) ? true : false);
-    std::int64_t lActualDifference;
+    Amount lActualDifference;
 
     if (bNewInboxWasBigger) {
         lActualDifference = lAbsoluteDifference;
@@ -2923,11 +2924,12 @@ auto OTTransaction::VerifyBalanceReceipt(
     // probably impossible anyway) then return false.
     if (lActualDifference != lInboxSupposedDifference) {
         LogOutput(OT_METHOD)(__func__)(": lActualDifference (")(
-            lActualDifference)(") is not equal to lInboxSupposedDifference (")(
-            lInboxSupposedDifference)("). "
-                                      "FYI, Inbox balance on old receipt: ")(
-            lReceiptBalanceChange)(". Inbox balance on current inbox: ")(
-            lInboxBalanceChange)(".")
+            lActualDifference.str())(
+            ") is not equal to lInboxSupposedDifference (")(
+            lInboxSupposedDifference.str())(
+            "). FYI, Inbox balance on old receipt: ")(
+            lReceiptBalanceChange.str())(". Inbox balance on current inbox: ")(
+            lInboxBalanceChange.str())(".")
             .Flush();
 
         return false;
@@ -2951,10 +2953,10 @@ auto OTTransaction::VerifyBalanceReceipt(
 
     if (wrongBalance) {
         LogOutput(OT_METHOD)(__func__)(": lActualDifference in receipts (")(
-            lActualDifference)(") plus current acct balance (")(
-            account.get().GetBalance())(
+            lActualDifference.str())(") plus current acct balance (")(
+            account.get().GetBalance().str())(
             ") is NOT equal to last signed balance (")(
-            pBalanceItem->GetAmount())(").")
+            pBalanceItem->GetAmount().str())(").")
             .Flush();
 
         return false;
@@ -3924,8 +3926,8 @@ auto OTTransaction::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         transactionType theType = transactionType::error_state;  // default
         auto strHash = String::Factory();
 
-        std::int64_t lAdjustment = 0;
-        std::int64_t lDisplayValue = 0;
+        Amount lAdjustment = 0;
+        Amount lDisplayValue = 0;
         std::int64_t lClosingNum = 0;
         std::int64_t lRequestNumber = 0;
         bool bReplyTransSuccess = false;
@@ -4446,7 +4448,7 @@ void OTTransaction::SaveAbbrevPaymentInboxRecord(
     Tag& parent,
     const PasswordPrompt& reason)
 {
-    std::int64_t lDisplayValue = 0;
+    Amount lDisplayValue = 0;
 
     switch (m_Type) {
         case transactionType::incomingCash:
@@ -4506,7 +4508,7 @@ void OTTransaction::SaveAbbrevPaymentInboxRecord(
     pTag->add_attribute("type", strType->Get());
     pTag->add_attribute("dateSigned", formatTimestamp(m_DATE_SIGNED));
     pTag->add_attribute("receiptHash", strHash->Get());
-    pTag->add_attribute("displayValue", std::to_string(lDisplayValue));
+    pTag->add_attribute("displayValue", lDisplayValue);
     pTag->add_attribute("transactionNum", std::to_string(GetTransactionNum()));
     pTag->add_attribute(
         "inRefDisplay", std::to_string(GetReferenceNumForDisplay()));
@@ -4524,7 +4526,7 @@ void OTTransaction::SaveAbbrevExpiredBoxRecord(
     Tag& parent,
     const PasswordPrompt& reason)
 {
-    std::int64_t lDisplayValue = 0;
+    Amount lDisplayValue = 0;
 
     switch (m_Type) {
         // PAYMENT INBOX / PAYMENT OUTBOX
@@ -4597,7 +4599,7 @@ void OTTransaction::SaveAbbrevExpiredBoxRecord(
     pTag->add_attribute("type", strType->Get());
     pTag->add_attribute("dateSigned", formatTimestamp(m_DATE_SIGNED));
     pTag->add_attribute("receiptHash", strHash->Get());
-    pTag->add_attribute("displayValue", std::to_string(lDisplayValue));
+    pTag->add_attribute("displayValue", lDisplayValue);
     pTag->add_attribute("transactionNum", std::to_string(GetTransactionNum()));
     pTag->add_attribute(
         "inRefDisplay", std::to_string(GetReferenceNumForDisplay()));
@@ -4660,7 +4662,7 @@ void OTTransaction::SaveAbbrevRecordBoxRecord(
     // Some recordBoxes DO, and some DON'T (the different kinds store different
     // kinds of receipts. See above comment.)
 
-    std::int64_t lAdjustment = 0, lDisplayValue = 0;
+    Amount lAdjustment = 0, lDisplayValue = 0;
 
     switch (m_Type) {
         // ASSET ACCOUNT INBOX
@@ -4809,8 +4811,8 @@ void OTTransaction::SaveAbbrevRecordBoxRecord(
     pTag->add_attribute("type", strType->Get());
     pTag->add_attribute("dateSigned", formatTimestamp(m_DATE_SIGNED));
     pTag->add_attribute("receiptHash", strHash->Get());
-    pTag->add_attribute("adjustment", std::to_string(lAdjustment));
-    pTag->add_attribute("displayValue", std::to_string(lDisplayValue));
+    pTag->add_attribute("adjustment", lAdjustment);
+    pTag->add_attribute("displayValue", lDisplayValue);
     pTag->add_attribute(
         "numberOfOrigin", std::to_string(GetRawNumberOfOrigin()));
 
@@ -4842,7 +4844,7 @@ void OTTransaction::SaveAbbreviatedNymboxRecord(
     Tag& parent,
     const PasswordPrompt& reason)
 {
-    std::int64_t lDisplayValue = 0;
+    Amount lDisplayValue = 0;
     bool bAddRequestNumber = false;
     auto strListOfBlanks =
         String::Factory();  // IF this transaction is "blank" or
@@ -4970,7 +4972,7 @@ void OTTransaction::SaveAbbreviatedNymboxRecord(
             // IF this transaction is passing through on its
             // way to the paymentInbox, it will have a
             // displayValue.
-            pTag->add_attribute("displayValue", std::to_string(lDisplayValue));
+            pTag->add_attribute("displayValue", lDisplayValue);
         }
     }
 
@@ -4981,7 +4983,7 @@ void OTTransaction::SaveAbbreviatedOutboxRecord(
     Tag& parent,
     const PasswordPrompt& reason)
 {
-    std::int64_t lAdjustment = 0, lDisplayValue = 0;
+    Amount lAdjustment = 0, lDisplayValue = 0;
 
     switch (m_Type) {
         case transactionType::pending:
@@ -5047,8 +5049,8 @@ void OTTransaction::SaveAbbreviatedOutboxRecord(
     pTag->add_attribute("type", strType->Get());
     pTag->add_attribute("dateSigned", formatTimestamp(m_DATE_SIGNED));
     pTag->add_attribute("receiptHash", strHash->Get());
-    pTag->add_attribute("adjustment", std::to_string(lAdjustment));
-    pTag->add_attribute("displayValue", std::to_string(lDisplayValue));
+    pTag->add_attribute("adjustment", lAdjustment);
+    pTag->add_attribute("displayValue", lDisplayValue);
     pTag->add_attribute(
         "numberOfOrigin", std::to_string(GetRawNumberOfOrigin()));
 
@@ -5090,7 +5092,7 @@ void OTTransaction::SaveAbbreviatedInboxRecord(
     // ref# that OT needs to use, it will return the one that the user probably
     // wants to see.
     //
-    std::int64_t lAdjustment = 0, lDisplayValue = 0;
+    Amount lAdjustment = 0, lDisplayValue = 0;
 
     switch (m_Type) {
         // -- In inbox, pending hasn't been accepted yet. In outbox, it's
@@ -5204,8 +5206,8 @@ void OTTransaction::SaveAbbreviatedInboxRecord(
     pTag->add_attribute("type", strType->Get());
     pTag->add_attribute("dateSigned", formatTimestamp(m_DATE_SIGNED));
     pTag->add_attribute("receiptHash", strHash->Get());
-    pTag->add_attribute("adjustment", std::to_string(lAdjustment));
-    pTag->add_attribute("displayValue", std::to_string(lDisplayValue));
+    pTag->add_attribute("adjustment", lAdjustment);
+    pTag->add_attribute("displayValue", lDisplayValue);
     pTag->add_attribute(
         "numberOfOrigin", std::to_string(GetRawNumberOfOrigin()));
 
@@ -5331,7 +5333,7 @@ void OTTransaction::ProduceInboxReportItem(
     if (false != bool(pReportItem))  // above line will assert if mem allocation
                                      // fails.
     {
-        std::int64_t lAmount = GetReceiptAmount(reason);
+        Amount lAmount = GetReceiptAmount(reason);
         pReportItem->SetAmount(lAmount);
 
         pReportItem->SetTransactionNum(
@@ -5409,9 +5411,9 @@ void OTTransaction::ProduceOutboxReportItem(
         // getting this far. There is no other transaction type that I even have
         // to
         // worry about.
-        const std::int64_t lAmount = GetReceiptAmount(reason) *
-                                     (-1);  // in outbox, a transfer is leaving
-                                            // my account. Balance gets smaller.
+        const Amount lAmount = GetReceiptAmount(reason) *
+                               (-1);  // in outbox, a transfer is leaving
+                                      // my account. Balance gets smaller.
         pReportItem->SetAmount(lAmount);
 
         pReportItem->SetTransactionNum(
@@ -5441,12 +5443,11 @@ void OTTransaction::ProduceOutboxReportItem(
 // NOTE: Not ALL transaction types with an amount are listed here,
 // just the ones necessary for balance agreement.
 //
-auto OTTransaction::GetReceiptAmount(const PasswordPrompt& reason)
-    -> std::int64_t
+auto OTTransaction::GetReceiptAmount(const PasswordPrompt& reason) -> Amount
 {
     if (IsAbbreviated()) return GetAbbrevAdjustment();
 
-    std::int64_t lAdjustment = 0;
+    Amount lAdjustment = 0;
 
     std::shared_ptr<Item> pOriginalItem;
 

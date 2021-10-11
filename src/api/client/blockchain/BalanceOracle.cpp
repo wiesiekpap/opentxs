@@ -65,8 +65,8 @@ struct BalanceOracle::Imp {
             out->AddFrame();
             out->AddFrame(value(type));
             out->AddFrame(chain);
-            out->AddFrame(balance.first);
-            out->AddFrame(balance.second);
+            out->AddFrame(balance.first.str());
+            out->AddFrame(balance.second.str());
         };
         {
             auto out = zmq_.Message();
@@ -95,8 +95,8 @@ struct BalanceOracle::Imp {
             out->AddFrame();
             out->AddFrame(value(type));
             out->AddFrame(chain);
-            out->AddFrame(balance.first);
-            out->AddFrame(balance.second);
+            out->AddFrame(balance.first.str());
+            out->AddFrame(balance.second.str());
             out->AddFrame(owner);
         };
         {
@@ -185,8 +185,8 @@ private:
         auto postcondition = ScopeGuard{[&]() {
             auto message = zmq_.TaggedReply(in, WorkType::BlockchainBalance);
             message->AddFrame(chainFrame);
-            message->AddFrame(output.first);
-            message->AddFrame(output.second);
+            message->AddFrame(output.first.str());
+            message->AddFrame(output.second.str());
 
             if (haveNym) { message->AddFrame(nym); }
 

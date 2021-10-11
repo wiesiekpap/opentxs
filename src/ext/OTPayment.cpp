@@ -572,7 +572,7 @@ auto OTPayment::GetMemo(String& strOutput) const -> bool
     return bSuccess;
 }
 
-auto OTPayment::GetAmount(std::int64_t& lOutput) const -> bool
+auto OTPayment::GetAmount(Amount& lOutput) const -> bool
 {
     lOutput = 0;
 

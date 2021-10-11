@@ -102,7 +102,7 @@ public:
     auto IssueTrade(
         OTOffer& offer,
         char stopSign = 0,
-        std::int64_t stopPrice = 0) -> bool;
+        const Amount& stopPrice = 0) -> bool;
 
     // The Trade always stores the original, signed version of its Offer.
     // This method allows you to grab a copy of it.
@@ -119,10 +119,7 @@ public:
         return false;
     }
 
-    inline auto GetStopPrice() const -> const std::int64_t&
-    {
-        return stopPrice_;
-    }
+    inline auto GetStopPrice() const -> const Amount& { return stopPrice_; }
 
     inline auto IsGreaterThan() const -> bool
     {
@@ -244,7 +241,7 @@ private:
     bool hasTradeActivated_{false};  // Has the offer yet been first added to a
                                      // market?
 
-    std::int64_t stopPrice_{0};  // The price limit that activates the STOP
+    Amount stopPrice_{0};        // The price limit that activates the STOP
                                  // order.
     char stopSign_{0x0};         // Value is 0, or '<', or '>'.
     bool stopActivated_{false};  // If the Stop Order has already activated, I

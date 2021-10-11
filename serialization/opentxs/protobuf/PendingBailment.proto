@@ -17,5 +17,5 @@ message PendingBailment
     optional string serverID = 3;
     optional string txid = 4;
     optional string requestID = 5;
-    optional int64 amount = 6;
+    optional bytes amount = 6;
 }

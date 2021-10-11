@@ -389,7 +389,7 @@ protected:
     using Script = ot::blockchain::block::bitcoin::Script;
     using UTXO = ot::blockchain::node::Wallet::UTXO;
     using Key = ot::OTData;
-    using Amount = std::int64_t;
+    using Amount = ot::Amount;
     using OutpointMetadata = std::tuple<Key, Amount, Pattern>;
     using Expected = std::map<Outpoint, OutpointMetadata>;
     using Subchain = bca::Subchain;

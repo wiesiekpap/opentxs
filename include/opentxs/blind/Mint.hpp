@@ -32,6 +32,8 @@ class Nym;
 class Server;
 class UnitDefinition;
 }  // namespace identifier
+
+class Amount;
 }  // namespace opentxs
 
 namespace opentxs
@@ -43,14 +45,14 @@ class OPENTXS_EXPORT Mint : virtual public Contract
 public:
     virtual auto AccountID() const -> OTIdentifier = 0;
     virtual auto Expired() const -> bool = 0;
-    virtual auto GetDenomination(std::int32_t nIndex) const -> std::int64_t = 0;
+    virtual auto GetDenomination(std::int32_t nIndex) const -> Amount = 0;
     virtual auto GetDenominationCount() const -> std::int32_t = 0;
     virtual auto GetExpiration() const -> Time = 0;
-    virtual auto GetLargestDenomination(std::int64_t lAmount) const
-        -> std::int64_t = 0;
-    virtual auto GetPrivate(Armored& theArmor, std::int64_t lDenomination) const
-        -> bool = 0;
-    virtual auto GetPublic(Armored& theArmor, std::int64_t lDenomination) const
+    virtual auto GetLargestDenomination(const Amount& lAmount) const
+        -> Amount = 0;
+    virtual auto GetPrivate(Armored& theArmor, const Amount& lDenomination)
+        const -> bool = 0;
+    virtual auto GetPublic(Armored& theArmor, const Amount& lDenomination) const
         -> bool = 0;
     virtual auto GetSeries() const -> std::int32_t = 0;
     virtual auto GetValidFrom() const -> Time = 0;
@@ -60,7 +62,7 @@ public:
 
     virtual auto AddDenomination(
         const identity::Nym& theNotary,
-        const std::int64_t denomination,
+        const Amount& denomination,
         const std::size_t keySize,
         const PasswordPrompt& reason) -> bool = 0;
     virtual void GenerateNewMint(
@@ -72,16 +74,16 @@ public:
         const identifier::UnitDefinition& theInstrumentDefinitionID,
         const identifier::Server& theNotaryID,
         const identity::Nym& theNotary,
-        const std::int64_t nDenom1,
-        const std::int64_t nDenom2,
-        const std::int64_t nDenom3,
-        const std::int64_t nDenom4,
-        const std::int64_t nDenom5,
-        const std::int64_t nDenom6,
-        const std::int64_t nDenom7,
-        const std::int64_t nDenom8,
-        const std::int64_t nDenom9,
-        const std::int64_t nDenom10,
+        const Amount& nDenom1,
+        const Amount& nDenom2,
+        const Amount& nDenom3,
+        const Amount& nDenom4,
+        const Amount& nDenom5,
+        const Amount& nDenom6,
+        const Amount& nDenom7,
+        const Amount& nDenom8,
+        const Amount& nDenom9,
+        const Amount& nDenom10,
         const std::size_t keySize,
         const PasswordPrompt& reason) = 0;
     virtual auto LoadMint(const char* szAppend = nullptr) -> bool = 0;

@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "internal/rpc/RPC.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/protobuf/AccountData.pb.h"
 #include "opentxs/rpc/AccountType.hpp"
 
@@ -120,8 +121,8 @@ AccountData::AccountData(const proto::AccountData& in) noexcept(false)
                in.issuer(),
                in.balanceformatted(),
                in.pendingbalanceformatted(),
-               in.balance(),
-               in.pendingbalance(),
+               Amount{in.balance()},
+               Amount{in.pendingbalance()},
                translate(in.type()))
                .release())
 {

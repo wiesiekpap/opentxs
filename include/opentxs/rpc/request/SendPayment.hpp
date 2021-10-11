@@ -19,6 +19,7 @@ namespace proto
 {
 class RPCCommand;
 }  // namespace proto
+class Amount;
 }  // namespace opentxs
 
 namespace opentxs

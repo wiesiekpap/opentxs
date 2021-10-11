@@ -12,6 +12,7 @@
 #include <cstdint>
 
 #include "opentxs/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/basket/BasketItem.hpp"
@@ -103,7 +104,7 @@ public:
 
     void CalculateContractID(Identifier& newID) const final;
 
-    inline auto GetMinimumTransfer() const -> std::int64_t
+    inline auto GetMinimumTransfer() const -> const Amount&
     {
         return m_lMinimumTransfer;
     }
@@ -209,7 +210,7 @@ private:
     Basket(
         const api::Core& api,
         std::int32_t nCount,
-        std::int64_t lMinimumTransferAmount);
+        const Amount& lMinimumTransferAmount);
 
     void GenerateContents(StringXML& xmlUnsigned, bool bHideAccountID) const;
 

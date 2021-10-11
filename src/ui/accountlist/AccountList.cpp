@@ -205,7 +205,7 @@ auto AccountList::process_account(const Message& message) noexcept -> void
 
     auto accountID = Widget::api_.Factory().Identifier();
     accountID->Assign(body.at(1).Bytes());
-    const auto balance = body.at(2).as<Amount>();
+    const auto balance = body.at(2).Bytes();
     process_account(accountID, balance);
 }
 
@@ -243,8 +243,8 @@ auto AccountList::process_blockchain_balance(const Message& message) noexcept
     OT_ASSERT(3 < body.size());
 
     const auto chain = body.at(1).as<blockchain::Type>();
-    [[maybe_unused]] const auto confirmed = body.at(2).as<Amount>();
-    const auto unconfirmed = body.at(3).as<Amount>();
+    [[maybe_unused]] const auto confirmed = Amount{body.at(2)};
+    const auto unconfirmed = Amount{body.at(3)};
     const auto& accountID =
         Widget::api_.Blockchain().Account(primary_id_, chain).AccountID();
     auto index = make_blank<AccountListSortKey>::value(Widget::api_);

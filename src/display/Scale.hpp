@@ -17,6 +17,11 @@
 
 #include "opentxs/Types.hpp"
 
+namespace opentxs
+{
+class Amount;
+}  // namespace opentxs
+
 namespace opentxs::display
 {
 class Scale
@@ -28,7 +33,7 @@ public:
     using OptionalInt = std::optional<std::uint8_t>;
 
     auto Format(
-        const Amount amount,
+        const Amount& amount,
         const OptionalInt minDecimals = std::nullopt,
         const OptionalInt maxDecimals = std::nullopt) const noexcept(false)
         -> std::string;

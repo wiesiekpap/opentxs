@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "internal/rpc/RPC.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/protobuf/RPCCommand.pb.h"
 #include "opentxs/protobuf/SendPayment.pb.h"
 #include "opentxs/rpc/CommandType.hpp"

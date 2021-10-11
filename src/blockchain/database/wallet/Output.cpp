@@ -1096,7 +1096,7 @@ private:
         {
             const auto& [state, position, data] = find_output(lock, outpoint);
 
-            return previous + data.value();
+            return previous + Amount{data.value()};
         };
 
         const auto unconfirmedSpendTotal = [&] {
@@ -1108,8 +1108,7 @@ private:
                 nullptr,
                 key);
 
-            return std::accumulate(
-                txos.begin(), txos.end(), std::uint64_t{0}, cb);
+            return std::accumulate(txos.begin(), txos.end(), Amount{0}, cb);
         }();
 
         {
@@ -1122,7 +1121,7 @@ private:
                 key);
             confirmed =
                 unconfirmedSpendTotal +
-                std::accumulate(txos.begin(), txos.end(), std::uint64_t{0}, cb);
+                std::accumulate(txos.begin(), txos.end(), Amount{0}, cb);
         }
 
         {
@@ -1303,7 +1302,7 @@ private:
             const auto& [state, position, proto] = *data.second;
             auto& out = output[state];
             out.text_ << "\n * " << outpoint.str() << ' ';
-            out.text_ << " value: " << std::to_string(proto.value());
+            out.text_ << " value: " << proto.value();
             out.total_ += proto.value();
             using Position = block::bitcoin::Script::Position;
             const auto pScript = factory::BitcoinScript(

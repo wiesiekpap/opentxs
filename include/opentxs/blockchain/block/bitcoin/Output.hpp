@@ -75,7 +75,7 @@ public:
         const api::client::Blockchain& blockchain,
         SerializeType& destination) const noexcept -> bool = 0;
     virtual auto Script() const noexcept -> const bitcoin::Script& = 0;
-    virtual auto Value() const noexcept -> std::int64_t = 0;
+    virtual auto Value() const noexcept -> blockchain::Amount = 0;
 
     virtual auto SetKeyData(const KeyData& data) noexcept -> void = 0;
 

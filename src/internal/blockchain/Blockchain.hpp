@@ -54,6 +54,8 @@ namespace proto
 {
 class GCS;
 }  // namespace proto
+
+class Amount;
 }  // namespace opentxs
 
 namespace be = boost::endian;
@@ -176,7 +178,7 @@ auto FilterToHeader(
     const api::Core& api,
     const ReadView filter,
     const ReadView previous = {}) noexcept -> OTData;
-auto Format(const Type chain, const opentxs::Amount) noexcept -> std::string;
+auto Format(const Type chain, const opentxs::Amount&) noexcept -> std::string;
 auto GetFilterParams(const filter::Type type) noexcept(false) -> FilterParams;
 auto Grind(const std::function<void()> function) noexcept -> void;
 auto Serialize(const Type chain, const filter::Type type) noexcept(false)

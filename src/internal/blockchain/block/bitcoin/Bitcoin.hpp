@@ -32,6 +32,7 @@
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -188,7 +189,7 @@ struct Output : virtual public bitcoin::Output {
     virtual auto ForTestingOnlyAddKey(const KeyID& key) noexcept -> void = 0;
     virtual auto MergeMetadata(const SerializeType& rhs) noexcept -> void = 0;
     virtual auto SetIndex(const std::uint32_t index) noexcept -> void = 0;
-    virtual auto SetValue(const std::uint64_t value) noexcept -> void = 0;
+    virtual auto SetValue(const blockchain::Amount& value) noexcept -> void = 0;
     virtual auto SetPayee(const Identifier& contact) noexcept -> void = 0;
     virtual auto SetPayer(const Identifier& contact) noexcept -> void = 0;
 
@@ -374,7 +375,7 @@ auto BitcoinTransactionOutput(
     const api::client::Blockchain& blockchain,
     const blockchain::Type chain,
     const std::uint32_t index,
-    const std::uint64_t value,
+    const blockchain::Amount& value,
     std::unique_ptr<const blockchain::block::bitcoin::internal::Script> script,
     const std::set<blockchain::crypto::Key>& keys) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Output>;
@@ -383,7 +384,7 @@ auto BitcoinTransactionOutput(
     const api::client::Blockchain& blockchain,
     const blockchain::Type chain,
     const std::uint32_t index,
-    const std::uint64_t value,
+    const blockchain::Amount& value,
     const blockchain::bitcoin::CompactSize& cs,
     const ReadView script) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Output>;

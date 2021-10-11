@@ -358,7 +358,7 @@ TEST_F(Regtest_fixture_hd, mature)
 TEST_F(Regtest_fixture_hd, key_index)
 {
     static constexpr auto count = 100u;
-    static constexpr auto baseAmount = ot::blockchain::Amount{100000000};
+    static const auto baseAmount = ot::blockchain::Amount{100000000};
     const auto& account = SendHD();
     using Index = ot::Bip32Index;
 
@@ -478,7 +478,7 @@ TEST_F(Regtest_fixture_hd, spend)
     EXPECT_FALSE(txid->empty());
 
     const auto& element = SendHD().BalanceElement(Subchain::Internal, 0);
-    constexpr auto amount = ot::blockchain::Amount{99997807};
+    const auto amount = ot::blockchain::Amount{99997807};
     expected_.emplace(
         std::piecewise_construct,
         std::forward_as_tuple(txid->Bytes(), 0),

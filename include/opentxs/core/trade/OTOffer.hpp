@@ -66,12 +66,12 @@ class OPENTXS_EXPORT OTOffer : public Instrument
 public:
     auto MakeOffer(
         bool bBuyingOrSelling,            // True == SELLING, False == BUYING
-        const std::int64_t& lPriceLimit,  // Per Scale...
-        const std::int64_t& lTotalAssetsOffer,  // Total assets available for
-                                                // sale or
-                                                // purchase.
-        const std::int64_t& lMinimumIncrement,  // The minimum increment that
-                                                // must be
+        const Amount& lPriceLimit,        // Per Scale...
+        const Amount& lTotalAssetsOffer,  // Total assets available for
+                                          // sale or
+                                          // purchase.
+        const Amount& lMinimumIncrement,  // The minimum increment that
+                                          // must be
         // bought or sold for each transaction
         const std::int64_t& lTransactionNum,  // The transaction number
                                               // authorizing
@@ -79,12 +79,12 @@ public:
         const Time VALID_FROM = {},           // defaults to RIGHT NOW
         const Time VALID_TO = {}) -> bool;    // defaults to 24 hours (a
                                               // "Day Order")
-    inline void IncrementFinishedSoFar(const std::int64_t& lFinishedSoFar)
+    inline void IncrementFinishedSoFar(const Amount& lFinishedSoFar)
     {
         m_lFinishedSoFar += lFinishedSoFar;
     }
 
-    inline auto GetAmountAvailable() const -> std::int64_t
+    inline auto GetAmountAvailable() const -> Amount
     {
         return GetTotalAssetsOnOffer() - GetFinishedSoFar();
     }
@@ -93,24 +93,21 @@ public:
         return m_lTransactionNum;
     }
 
-    inline auto GetPriceLimit() const -> const std::int64_t&
-    {
-        return m_lPriceLimit;
-    }
-    inline auto GetTotalAssetsOnOffer() const -> const std::int64_t&
+    inline auto GetPriceLimit() const -> const Amount& { return m_lPriceLimit; }
+    inline auto GetTotalAssetsOnOffer() const -> const Amount&
     {
         return m_lTotalAssetsOffer;
     }
-    inline auto GetFinishedSoFar() const -> const std::int64_t&
+    inline auto GetFinishedSoFar() const -> const Amount&
     {
         return m_lFinishedSoFar;
     }
-    inline auto GetMinimumIncrement() -> const std::int64_t&
+    inline auto GetMinimumIncrement() -> const Amount&
     {
         if (m_lMinimumIncrement < 1) m_lMinimumIncrement = 1;
         return m_lMinimumIncrement;
     }
-    inline auto GetScale() const -> const std::int64_t& { return m_lScale; }
+    inline auto GetScale() const -> const Amount& { return m_lScale; }
 
     inline auto GetCurrencyID() const -> const Identifier&
     {
@@ -172,23 +169,23 @@ protected:
     // will sell for. My limit.
     // (Normally the price I get is whatever is the best one on the market right
     // now.)
-    std::int64_t m_lPriceLimit{0};  // Denominated in CURRENCY TYPE, and priced
-                                    // per SCALE. 1oz market price limit might
-                                    // be 1,300
+    Amount m_lPriceLimit{0};  // Denominated in CURRENCY TYPE, and priced
+                              // per SCALE. 1oz market price limit might
+                              // be 1,300
     // 100oz market price limit might be 130,000 (or 127,987 or whatever)
 
-    std::int64_t m_lTransactionNum{0};    // Matches to an OTTrade stored in
-                                          // OTCron.
-    std::int64_t m_lTotalAssetsOffer{0};  // Total amount of ASSET TYPE trying
-                                          // to BUY or SELL, this trade.
-    std::int64_t m_lFinishedSoFar{0};     // Number of ASSETs bought or sold
-                                          // already against the above total.
+    std::int64_t m_lTransactionNum{0};  // Matches to an OTTrade stored in
+                                        // OTCron.
+    Amount m_lTotalAssetsOffer{0};      // Total amount of ASSET TYPE trying
+                                        // to BUY or SELL, this trade.
+    Amount m_lFinishedSoFar{0};         // Number of ASSETs bought or sold
+                                        // already against the above total.
 
-    std::int64_t m_lScale{0};  // 1oz market? 100oz market? 10,000oz market?
-                               // This determines size and granularity.
-    std::int64_t m_lMinimumIncrement{0};  // Each sale or purchase against the
-                                          // above total must be in minimum
-                                          // increments.
+    Amount m_lScale{0};  // 1oz market? 100oz market? 10,000oz market?
+                         // This determines size and granularity.
+    Amount m_lMinimumIncrement{0};  // Each sale or purchase against the
+                                    // above total must be in minimum
+                                    // increments.
     // Minimum Increment must be evenly divisible by m_lScale.
     // (This effectively becomes a "FILL OR KILL" order if set to the same value
     // as m_lTotalAssetsOffer. Also, MUST be 1
@@ -198,11 +195,11 @@ protected:
     {
         m_lTransactionNum = lTransactionNum;
     }
-    inline void SetPriceLimit(const std::int64_t& lPriceLimit)
+    inline void SetPriceLimit(const Amount& lPriceLimit)
     {
         m_lPriceLimit = lPriceLimit;
     }
-    inline void SetTotalAssetsOnOffer(const std::int64_t& lTotalAssets)
+    inline void SetTotalAssetsOnOffer(const Amount& lTotalAssets)
     {
         m_lTotalAssetsOffer = lTotalAssets;
     }
@@ -210,12 +207,12 @@ protected:
     {
         m_lFinishedSoFar = lFinishedSoFar;
     }
-    inline void SetMinimumIncrement(const std::int64_t& lMinIncrement)
+    inline void SetMinimumIncrement(const Amount& lMinIncrement)
     {
         m_lMinimumIncrement = lMinIncrement;
         if (m_lMinimumIncrement < 1) m_lMinimumIncrement = 1;
     }
-    inline void SetScale(const std::int64_t& lScale)
+    inline void SetScale(const Amount& lScale)
     {
         m_lScale = lScale;
         if (m_lScale < 1) m_lScale = 1;
@@ -238,7 +235,7 @@ private:
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const identifier::UnitDefinition& CURRENCY_ID,
-        const std::int64_t& MARKET_SCALE);
+        const Amount& MARKET_SCALE);
     OTOffer(const OTOffer&) = delete;
     OTOffer(OTOffer&&) = delete;
     auto operator=(const OTOffer&) -> OTOffer& = delete;

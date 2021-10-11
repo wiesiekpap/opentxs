@@ -175,7 +175,7 @@ auto OTPaymentPlan::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         m_bInitialPaymentDone = strCompleted->Compare("true");
 
         LogDetail(OT_METHOD)(__func__)(": Initial Payment. Amount: ")(
-            m_lInitialPaymentAmount)(". Date: ")(GetInitialPaymentDate())(
+            m_lInitialPaymentAmount.str())(". Date: ")(GetInitialPaymentDate())(
             ". Completed Date: ")(GetInitialPaymentCompletedDate())(
             ". Number of failed attempts: ")(
             m_nNumberInitialFailures)(". Date of last failed attempt: ")(
@@ -218,7 +218,7 @@ auto OTPaymentPlan::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         SetDateOfLastFailedPayment(tLastAttempt);
 
         LogDetail(OT_METHOD)(__func__)(": Payment Plan. Amount per payment: ")(
-            m_lPaymentPlanAmount)(". Seconds between payments: ")(
+            m_lPaymentPlanAmount.str())(". Seconds between payments: ")(
             tBetween.count())(". Payment plan Start Date: ")(
             tStart)(". Length: ")(tLength.count())(
             ". Maximum No. of Payments: ")(
@@ -305,8 +305,7 @@ void OTPaymentPlan::UpdateContents(const PasswordPrompt& reason)
 
         tagInitial->add_attribute(
             "date", formatTimestamp(GetInitialPaymentDate()));
-        tagInitial->add_attribute(
-            "amount", std::to_string(GetInitialPaymentAmount()));
+        tagInitial->add_attribute("amount", GetInitialPaymentAmount());
         tagInitial->add_attribute(
             "numberOfAttempts", std::to_string(GetNoInitialFailures()));
         tagInitial->add_attribute(
@@ -327,8 +326,7 @@ void OTPaymentPlan::UpdateContents(const PasswordPrompt& reason)
 
         TagPtr tagPlan(new Tag("paymentPlan"));
 
-        tagPlan->add_attribute(
-            "amountPerPayment", std::to_string(GetPaymentPlanAmount()));
+        tagPlan->add_attribute("amountPerPayment", GetPaymentPlanAmount());
         tagPlan->add_attribute(
             "timeBetweenPayments", std::to_string(lTimeBetween.count()));
         tagPlan->add_attribute(
@@ -528,7 +526,7 @@ auto OTPaymentPlan::VerifyAgreement(
 // *** Set Payment Plan *** / Make sure to call SetAgreement() first.
 // default: 1st payment in 30 days
 auto OTPaymentPlan::SetPaymentPlan(
-    const Amount lPaymentAmount,
+    const Amount& lPaymentAmount,
     const std::chrono::seconds tTimeUntilPlanStart,
     const std::chrono::seconds tBetweenPayments,
     const std::chrono::seconds tPlanLength,

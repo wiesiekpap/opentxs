@@ -52,7 +52,9 @@ BlockchainStatisticsItem::BlockchainStatisticsItem(
 
 auto BlockchainStatisticsItem::Balance() const noexcept -> std::string
 {
-    return blockchain::internal::Format(row_id_, balance_.load());
+    sLock lock(shared_lock_);
+
+    return blockchain::internal::Format(row_id_, balance_);
 }
 
 auto BlockchainStatisticsItem::reindex(
@@ -72,7 +74,13 @@ auto BlockchainStatisticsItem::reindex(
     const auto oldConnected = connected_peers_.exchange(connected);
     const auto oldActive = active_peers_.exchange(active);
     const auto oldBlocks = blocks_.exchange(blocks);
-    const auto oldBalance = balance_.exchange(balance);
+    const auto oldBalance = [&] {
+        eLock lock(shared_lock_);
+
+        const auto oldbalance = balance_;
+        balance_ = balance;
+        return oldbalance;
+    }();
 
     const auto changed = (header != oldHeader) || (filter != oldFilter) ||
                          (connected != oldConnected) || (active != oldActive) ||

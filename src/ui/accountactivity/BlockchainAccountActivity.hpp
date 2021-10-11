@@ -121,7 +121,7 @@ public:
     using AccountActivity::Send;
     auto Send(
         const std::string& address,
-        const Amount amount,
+        const Amount& amount,
         const std::string& memo) const noexcept -> bool final;
     auto Send(
         const std::string& address,
@@ -204,7 +204,7 @@ private:
     };
 
     const blockchain::Type chain_;
-    mutable std::atomic<Amount> confirmed_;
+    mutable Amount confirmed_;
     OTZMQListenCallback balance_cb_;
     OTZMQDealerSocket balance_socket_;
     Progress progress_;

@@ -93,14 +93,14 @@ public:
     // agreement.  We also store a list of issued transactions, the new balance,
     // and the outbox hash.
     auto GenerateBalanceStatement(
-        std::int64_t lAdjustment,
+        const Amount& lAdjustment,
         const OTTransaction& theOwner,
         const otx::context::Server& context,
         const Account& theAccount,
         Ledger& theOutbox,
         const PasswordPrompt& reason) const -> std::unique_ptr<Item>;
     auto GenerateBalanceStatement(
-        std::int64_t lAdjustment,
+        const Amount& lAdjustment,
         const OTTransaction& theOwner,
         const otx::context::Server& context,
         const Account& theAccount,
@@ -214,8 +214,8 @@ public:
     auto GetTransactionCountInRefTo(std::int64_t lReferenceNum) const
         -> std::int32_t;
     auto GetTotalPendingValue(const PasswordPrompt& reason)
-        -> std::int64_t;  // for inbox only, allows you
-                          // to
+        -> Amount;  // for inbox only, allows you
+                    // to
     // lookup the total value of pending
     // transfers within.
     auto GetTransactionMap() const -> const mapOfTransactions&;

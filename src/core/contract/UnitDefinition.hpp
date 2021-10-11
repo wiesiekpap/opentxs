@@ -61,20 +61,19 @@ public:
         const std::string& dataFolder,
         const Identifier& theAcctID) const -> bool override;
     auto FormatAmountLocale(
-        std::int64_t amount,
+        Amount amount,
         std::string& str_output,
         const std::string& str_thousand,
         const std::string& str_decimal) const -> bool override;
-    auto FormatAmountLocale(std::int64_t amount, std::string& str_output) const
+    auto FormatAmountLocale(Amount amount, std::string& str_output) const
         -> bool final;
     auto FormatAmountWithoutSymbolLocale(
-        std::int64_t amount,
+        Amount amount,
         std::string& str_output,
         const std::string& str_thousand,
         const std::string& str_decimal) const -> bool override;
-    auto FormatAmountWithoutSymbolLocale(
-        std::int64_t amount,
-        std::string& str_output) const -> bool final;
+    auto FormatAmountWithoutSymbolLocale(Amount amount, std::string& str_output)
+        const -> bool final;
     auto FractionalUnitName() const -> std::string override { return ""; }
     auto GetCurrencyName() const -> const std::string& override
     {
@@ -91,7 +90,7 @@ public:
     auto Serialize(SerializedType&, bool includeNym = false) const
         -> bool override;
     auto StringToAmountLocale(
-        std::int64_t& amount,
+        Amount& amount,
         const std::string& str_input,
         const std::string& str_thousand,
         const std::string& str_decimal) const -> bool override;

@@ -66,7 +66,9 @@ auto BlockchainBalanceItem::Contacts() const noexcept
 
 auto BlockchainBalanceItem::DisplayAmount() const noexcept -> std::string
 {
-    return blockchain::internal::Format(chain_, amount_.load());
+    sLock lock(shared_lock_);
+
+    return blockchain::internal::Format(chain_, amount_);
 }
 
 auto BlockchainBalanceItem::Memo() const noexcept -> std::string
@@ -99,11 +101,12 @@ auto BlockchainBalanceItem::reindex(
     OT_ASSERT(chain_ == chain);
     OT_ASSERT(txid_ == txid);
 
-    const auto oldAmount = amount_.exchange(amount);
+    eLock lock{shared_lock_};
+
+    const auto oldAmount = amount_;
+    amount_ = amount;
 
     if (oldAmount != amount) { output |= true; }
-
-    eLock lock{shared_lock_};
 
     if (memo_ != memo) {
         memo_ = memo;

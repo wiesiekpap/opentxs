@@ -55,16 +55,17 @@
 
 inline auto separateThousands(
     std::stringstream& sss,
-    std::int64_t value,
+    const opentxs::Amount& value,
     const char* szSeparator) -> void
 {
     if (value < 1000) {
-        sss << value;
+        sss << value.str();
         return;
     }
 
     separateThousands(sss, value / 1000, szSeparator);
-    sss << szSeparator << std::setfill('0') << std::setw(3) << value % 1000;
+    sss << szSeparator << std::setfill('0') << std::setw(3)
+        << (value % 1000).str();
 }
 
 namespace opentxs
@@ -108,7 +109,7 @@ const VersionNumber Unit::DefaultVersion{2};
 const VersionNumber Unit::MaxVersion{2};
 
 auto Unit::formatLongAmount(
-    std::int64_t lValue,
+    Amount lValue,
     std::int32_t nFactor,
     std::int32_t nPower,
     const char* szCurrencySymbol,
@@ -134,7 +135,7 @@ auto Unit::formatLongAmount(
     // Handle fractional value
     if (1 < nFactor) {
         sss << szDecimalPoint << std::setfill('0') << std::setw(nPower)
-            << (lValue % nFactor);
+            << (lValue % nFactor).str();
     }
 
     std::string str_result(sss.str());
@@ -143,7 +144,7 @@ auto Unit::formatLongAmount(
 }
 
 auto Unit::ParseFormatted(
-    std::int64_t& lResult,
+    Amount& lResult,
     const std::string& str_input,
     std::int32_t nFactor,
     std::int32_t nPower,
@@ -634,7 +635,7 @@ auto Unit::EraseAccountRecord(
 // (Assuming a Factor of 100, Decimal Power of 2, Currency Symbol of "$",
 //  separator of "," and decimal point of ".")
 auto Unit::FormatAmountLocale(
-    std::int64_t amount,
+    Amount amount,
     std::string& str_output,
     const std::string& str_thousand,
     const std::string& str_decimal) const -> bool
@@ -672,8 +673,8 @@ auto Unit::FormatAmountLocale(
     return true;  // Note: might want to return false if str_output is empty.
 }
 
-auto Unit::FormatAmountLocale(std::int64_t amount, std::string& str_output)
-    const -> bool
+auto Unit::FormatAmountLocale(Amount amount, std::string& str_output) const
+    -> bool
 {
     return FormatAmountLocale(
         amount,
@@ -687,7 +688,7 @@ auto Unit::FormatAmountLocale(std::int64_t amount, std::string& str_output)
 // (Example assumes a Factor of 100, Decimal Power of 2
 //  separator of "," and decimal point of ".")
 auto Unit::FormatAmountWithoutSymbolLocale(
-    std::int64_t amount,
+    Amount amount,
     std::string& str_output,
     const std::string& str_thousand,
     const std::string& str_decimal) const -> bool
@@ -717,7 +718,7 @@ auto Unit::FormatAmountWithoutSymbolLocale(
 }
 
 auto Unit::FormatAmountWithoutSymbolLocale(
-    std::int64_t amount,
+    Amount amount,
     std::string& str_output) const -> bool
 {
     return FormatAmountWithoutSymbolLocale(
@@ -825,7 +826,7 @@ auto Unit::SigVersion(const Lock& lock) const -> SerializedType
 // (Assuming a Factor of 100, Decimal Power of 2, separator of "," and decimal
 // point of ".")
 auto Unit::StringToAmountLocale(
-    std::int64_t& amount,
+    Amount& amount,
     const std::string& str_input,
     const std::string& str_thousand,
     const std::string& str_decimal) const -> bool
