@@ -79,7 +79,7 @@ Wallet::Wallet(
         work->AddFrame(std::string(type));
         pipeline_->Push(work);
     })
-    , enabled_(false)
+    , enabled_(true)
     , accounts_(api, crypto_, parent_, db_, chain_, task_finished_)
     , proposals_(api, crypto_, parent_, db_, chain_)
 {

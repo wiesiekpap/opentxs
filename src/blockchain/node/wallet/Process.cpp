@@ -8,31 +8,23 @@
 #include "blockchain/node/wallet/Process.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
-#include <atomic>
-#include <chrono>
 #include <cstddef>
-#include <future>
 #include <iterator>
 #include <memory>
 #include <thread>
-#include <type_traits>
+#include <utility>
 
-#include "blockchain/node/wallet/Accounts.hpp"
 #include "blockchain/node/wallet/BlockIndex.hpp"
-#include "blockchain/node/wallet/Index.hpp"
 #include "blockchain/node/wallet/Progress.hpp"
 #include "blockchain/node/wallet/SubchainStateData.hpp"
+#include "blockchain/node/wallet/Work.hpp"
+#include "internal/api/network/Network.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/blockchain/GCS.hpp"
-#include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"  // IWYU pragma: keep
 #include "util/ScopeGuard.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::wallet::Process::"
@@ -40,7 +32,7 @@
 namespace opentxs::blockchain::node::wallet
 {
 Process::Process(SubchainStateData& parent, Progress& progress) noexcept
-    : Job(parent)
+    : Job(ThreadPool::Blockchain, parent)
     , progress_(progress)
     , cache_(parent_)
     , waiting_()
@@ -50,13 +42,34 @@ Process::Process(SubchainStateData& parent, Progress& progress) noexcept
 
 Process::Cache::Cache(const SubchainStateData& parent) noexcept
     : parent_(parent)
-    , limit_(params::Data::Chains()
-                 .at(parent_.node_.Chain())
-                 .block_download_batch_)
+    , limit_(
+          4u * params::Data::Chains()
+                   .at(parent_.node_.Chain())
+                   .block_download_batch_)
     , lock_()
+    , batches_()
     , pending_()
     , downloading_()
 {
+}
+
+auto Process::Cache::FinishBatch(BatchMap::iterator batch) noexcept -> void
+{
+    auto lock = Lock{lock_};
+    batches_.erase(batch);
+}
+
+auto Process::Cache::Flush() noexcept -> std::vector<BatchMap::iterator>
+{
+    auto output = std::vector<BatchMap::iterator>{};
+
+    if (auto lock = Lock{lock_, std::defer_lock}; lock.try_lock()) {
+        for (auto i{batches_.begin()}, end{batches_.end()}; i != end; ++i) {
+            if (i->second->IsFinished()) { output.emplace_back(i); }
+        }
+    }
+
+    return output;
 }
 
 auto Process::Cache::Pop(BlockMap& dest) noexcept -> bool
@@ -67,13 +80,11 @@ auto Process::Cache::Pop(BlockMap& dest) noexcept -> bool
             downloading_,
             dest,
             [&](auto i) {
-                using State = std::future_status;
-                static constexpr auto zero = std::chrono::microseconds{0};
-                const auto& [cookie, data] = *i;
-                const auto& [position, future] = data;
+                const auto& [cookie, job] = *i;
+                const auto& position = job->position_;
                 const auto& [height, hash] = position;
 
-                if (auto state = future.wait_for(zero); State::ready == state) {
+                if (job->IsReady()) {
                     LogVerbose(OT_METHOD)(__func__)(": ")(parent_.name_)(
                         " ready to process block ")(hash->asHex())
                         .Flush();
@@ -92,9 +103,9 @@ auto Process::Cache::Pop(BlockMap& dest) noexcept -> bool
 
                 return downloading >= limit_;
             },
-            [&](auto it) {
-                const auto& [cookie, data] = *it;
-                const auto& [position, future] = data;
+            [&](auto i) {
+                const auto& [cookie, job] = *i;
+                const auto& position = job->position_;
                 const auto& [height, hash] = position;
                 hashes.emplace_back(hash);
             });
@@ -122,28 +133,33 @@ auto Process::Cache::Pop(BlockMap& dest) noexcept -> bool
 auto Process::Cache::download(const Lock& lock) noexcept -> void
 {
     auto positions = std::vector<block::Position>{};
+    auto jobs = std::vector<Work*>{};
     auto count{downloading_.size()};
 
     while ((0 < pending_.size()) && (limit_ > count)) {
         ++count;
-        auto& position = pending_.front();
-        positions.emplace_back(position);
+        auto& job = *jobs.emplace_back(pending_.front());
+        positions.emplace_back(job.position_);
         pending_.pop_front();
     }
 
-    if (0u < positions.size()) { parent_.block_index_.Add(positions); }
+    if (0u < jobs.size()) { parent_.block_index_.Add(positions); }
 
-    for (auto& position : positions) {
-        auto future = parent_.node_.BlockOracle().LoadBitcoin(position.second);
-        downloading_.try_emplace(
-            next(), std::move(position), std::move(future));
-    }
+    for (auto* job : jobs) { request(lock, job); }
 }
 
-auto Process::Cache::Push(std::vector<block::Position>& blocks) noexcept -> void
+auto Process::Cache::Push(
+    std::vector<std::unique_ptr<Batch>>&& batches,
+    std::vector<Work*>&& jobs) noexcept -> void
 {
     auto lock = Lock{lock_};
-    std::move(blocks.begin(), blocks.end(), std::back_inserter(pending_));
+
+    for (auto& batch : batches) {
+        auto id = batch->id_;
+        batches_.emplace(std::move(id), std::move(batch));
+    }
+
+    std::move(jobs.begin(), jobs.end(), std::back_inserter(pending_));
     download(lock);
 }
 
@@ -152,7 +168,10 @@ auto Process::Cache::Reorg(const block::Position& parent) noexcept -> void
     auto lock = Lock{lock_};
 
     for (auto i{pending_.begin()}; i != pending_.end();) {
-        if (*i > parent) {
+        const auto* job = *i;
+        const auto& position = job->position_;
+
+        if (position > parent) {
             i = pending_.erase(i);
         } else {
             ++i;
@@ -162,106 +181,40 @@ auto Process::Cache::Reorg(const block::Position& parent) noexcept -> void
     flush(parent, downloading_);
 }
 
-auto Process::Do(const Cookie key) noexcept -> void
+auto Process::Cache::request(const Lock& lock, Work* job) noexcept -> void
 {
-    const auto start = Clock::now();
-    const auto& db = parent_.db_;
-    const auto& name = parent_.name_;
-    const auto& type = parent_.filter_type_;
-    const auto& node = parent_.node_;
-    const auto& filters = node.FilterOracleInternal();
-    const auto& data = [&]() -> auto&
-    {
-        auto lock = Lock{lock_};
+    job->DownloadBlock(parent_.node_.BlockOracle());
+    downloading_.try_emplace(job->id_, job);
+}
 
-        return processing_.at(key);
-    }
-    ();
-    const auto& [position, future] = data;
-    const auto& blockHash = position.second.get();
-    auto matchCount = std::size_t{0};
-    auto processed{false};
-    auto postcondition = ScopeGuard{[&] {
-        const auto& processedPosition = data.first;
+auto Process::Cache::ReRequest(Work* job) noexcept -> void
+{
+    auto lock = Lock{lock_};
+    request(lock, job);
+}
 
-        if (processed) {
-            progress_.UpdateProcess(processedPosition);
-            parent_.get_index().Processed(processedPosition, matchCount);
-        }
+auto Process::FinishBatches() noexcept -> bool
+{
+    auto output{false};
 
-        auto lock = Lock{lock_};
-        processing_.erase(key);
-        finish(lock);
-    }};
-    const auto pBlock = future.get();
-
-    if (false == bool(pBlock)) {
-        LogVerbose(OT_METHOD)(__func__)(": ")(name)(" invalid block ")(
-            blockHash.asHex())
+    for (auto i : cache_.Flush()) {
+        auto& [id, batch] = *i;
+        LogTrace(OT_METHOD)(__func__)(": ")(parent_.name_)(" batch ")(
+            id)(" finished ")
             .Flush();
-        Request({position});
-
-        return;
+        static constexpr auto job{"process batch"};
+        queue_work([=] { ProcessBatch(i); }, job, false);
+        output = true;
     }
 
-    processed = true;
-    const auto& block = *pBlock;
-    auto tested = node::internal::WalletDatabase::MatchingIndices{};
-    auto [elements, utxos, targets, outpoints] =
-        parent_.get_block_targets(blockHash, tested);
-    const auto pFilter = filters.LoadFilter(type, blockHash);
-
-    OT_ASSERT(pFilter);
-
-    const auto& filter = *pFilter;
-    auto potential = node::internal::WalletDatabase::Patterns{};
-
-    for (const auto& it : filter.Match(targets)) {
-        // NOTE GCS::Match returns const_iterators to items in the input vector
-        const auto pos = std::distance(targets.cbegin(), it);
-        auto& [id, element] = elements.at(pos);
-        potential.emplace_back(std::move(id), std::move(element));
-    }
-
-    const auto confirmed = block.FindMatches(type, outpoints, potential);
-    const auto& [utxo, general] = confirmed;
-    matchCount = general.size();
-    const auto& oracle = node.HeaderOracleInternal();
-    const auto pHeader = oracle.LoadHeader(blockHash);
-
-    OT_ASSERT(pHeader);
-
-    const auto& header = *pHeader;
-
-    OT_ASSERT(position == header.Position());
-
-    parent_.handle_confirmed_matches(block, position, confirmed);
-    LogVerbose(OT_METHOD)(__func__)(": ")(name)(" block ")(block.ID().asHex())(
-        " at height ")(position.first)(" processed in ")(
-        std::chrono::duration_cast<std::chrono::milliseconds>(
-            Clock::now() - start)
-            .count())(" milliseconds. ")(matchCount)(" of ")(potential.size())(
-        " potential matches confirmed.")
-        .Flush();
-    db.SubchainMatchBlock(parent_.db_key_, tested, blockHash.Bytes());
-
-    if (false == parent_.parent_.Query()) {
-        // NOTE reduce lock and thread pool contention during initial sync
-        static constexpr auto rateLimit = std::chrono::seconds{1};
-        static constexpr auto zero = std::chrono::milliseconds{0};
-        const auto elapsed =
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                Clock::now() - start);
-        Sleep(std::max(rateLimit - elapsed, zero));
-    }
+    return output;
 }
 
 auto Process::flush(const block::Position& parent, BlockMap& map) noexcept
     -> void
 {
     for (auto i{map.begin()}; i != map.end();) {
-        const auto& [id, data] = *i;
-        const auto& [position, future] = data;
+        const auto& position = i->second->position_;
 
         if (position > parent) {
             i = map.erase(i);
@@ -276,16 +229,10 @@ auto Process::limit(const Lock& lock, const std::size_t outstanding)
 {
     const auto running = processing_.size() + outstanding;
     const auto limit = [&]() -> std::size_t {
-        const auto cores = std::max<std::size_t>(
+        const auto cores = std::min<std::size_t>(
             std::max(std::thread::hardware_concurrency(), 1u) - 1u, 1u);
 
-        if (parent_.parent_.Query()) {
-
-            return cores;
-        } else {
-
-            return 1u;
-        }
+        return cores;
     }();
 
     return running >= limit;
@@ -329,11 +276,29 @@ auto Process::move_nodes(
     items.clear();
 }
 
-auto Process::next() noexcept -> Cookie
+auto Process::ProcessBatch(Cache::BatchMap::iterator it) noexcept -> void
 {
-    static auto counter = std::atomic<Cookie>{-1};
+    auto postcondition = ScopeGuard{[&] {
+        cache_.FinishBatch(it);
+        auto lock = Lock{lock_};
+        finish(lock);
+    }};
+    auto& [id, pBatch] = *it;
+    auto& batch = *pBatch;
+    batch.Write(parent_.db_key_, parent_.db_);
+    batch.UpdateProgress(progress_, parent_.get_index());
+}
 
-    return ++counter;
+auto Process::ProcessPosition(const Cookie key, Work* work) noexcept -> void
+{
+    auto postcondition = ScopeGuard{[&] {
+        auto lock = Lock{lock_};
+        processing_.erase(key);
+        finish(lock);
+    }};
+    const auto validBlock = work->Do(parent_);
+
+    if (false == validBlock) { cache_.ReRequest(work); }
 }
 
 auto Process::Reorg(const block::Position& parent) noexcept -> void
@@ -343,14 +308,19 @@ auto Process::Reorg(const block::Position& parent) noexcept -> void
     flush(parent, processing_);
 }
 
-auto Process::Request(std::vector<block::Position> blocks) noexcept -> void
+auto Process::Request(
+    const std::optional<block::Position>& highestClean,
+    const std::vector<block::Position>& blocks,
+    std::vector<std::unique_ptr<Batch>>&& batches,
+    std::vector<Work*>&& jobs) noexcept -> void
 {
-    cache_.Push(blocks);
+    progress_.UpdateScan(highestClean, blocks);
+    cache_.Push(std::move(batches), std::move(jobs));
 }
 
 auto Process::Run() noexcept -> bool
 {
-    auto again{false};
+    auto again = FinishBatches();
     auto lock = Lock{lock_};
     again |= cache_.Pop(waiting_);
     move_nodes(
@@ -359,9 +329,10 @@ auto Process::Run() noexcept -> bool
         [](auto i) { return true; },
         [&](auto move) { return limit(lock, move); },
         [this](auto i) {
-            const auto& cookie = i->first;
-            static constexpr auto job{"process"};
-            queue_work([=] { Do(cookie); }, job, true);
+            const auto& key = i->first;
+            auto* work = i->second;
+            static constexpr auto job{"process position"};
+            queue_work([=] { ProcessPosition(key, work); }, job, true);
         });
     again |= (0u < waiting_.size());
     again |= (0u < processing_.size());

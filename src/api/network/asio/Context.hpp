@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "util/Thread.hpp"
+
 namespace boost
 {
 namespace asio
@@ -29,7 +31,7 @@ public:
 
     operator boost::asio::io_context&() noexcept;
     auto get() noexcept -> boost::asio::io_context& { return *this; }
-    auto Init(unsigned int threads) noexcept -> bool;
+    auto Init(unsigned int threads, ThreadPriority priority) noexcept -> bool;
     auto Stop() noexcept -> void;
 
     Context() noexcept;

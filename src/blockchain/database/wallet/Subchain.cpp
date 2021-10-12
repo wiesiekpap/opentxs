@@ -167,14 +167,17 @@ struct SubchainData::Imp {
     }
     auto SubchainMatchBlock(
         const SubchainIndex& subchain,
-        const MatchingIndices& indices,
-        const ReadView blockID) const noexcept -> bool
+        const std::vector<std::pair<ReadView, MatchingIndices>>& results)
+        const noexcept -> bool
     {
         auto lock = Lock{lock_};
-        auto& matchSet = match_index_[api_.Factory().Data(blockID)];
 
-        for (const auto& index : indices) {
-            matchSet.emplace(pattern_id(subchain, index));
+        for (const auto& [blockID, indices] : results) {
+            auto& matchSet = match_index_[api_.Factory().Data(blockID)];
+
+            for (const auto& index : indices) {
+                matchSet.emplace(pattern_id(subchain, index));
+            }
         }
 
         return true;
@@ -433,11 +436,11 @@ auto SubchainData::SubchainLastScanned(
 }
 
 auto SubchainData::SubchainMatchBlock(
-    const SubchainIndex& subchain,
-    const MatchingIndices& indices,
-    const ReadView blockID) const noexcept -> bool
+    const SubchainIndex& index,
+    const std::vector<std::pair<ReadView, MatchingIndices>>& results)
+    const noexcept -> bool
 {
-    return imp_->SubchainMatchBlock(subchain, indices, blockID);
+    return imp_->SubchainMatchBlock(index, results);
 }
 
 auto SubchainData::SubchainSetLastScanned(

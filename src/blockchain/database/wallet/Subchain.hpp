@@ -8,6 +8,8 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <utility>
+#include <vector>
 
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -68,9 +70,9 @@ public:
     auto SubchainLastScanned(const SubchainIndex& subchain) const noexcept
         -> block::Position;
     auto SubchainMatchBlock(
-        const SubchainIndex& subchain,
-        const MatchingIndices& indices,
-        const ReadView blockID) const noexcept -> bool;
+        const SubchainIndex& index,
+        const std::vector<std::pair<ReadView, MatchingIndices>>& results)
+        const noexcept -> bool;
     auto SubchainSetLastScanned(
         const SubchainIndex& subchain,
         const block::Position& position) const noexcept -> bool;

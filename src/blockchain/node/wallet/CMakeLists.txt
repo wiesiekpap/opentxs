@@ -10,6 +10,8 @@ add_library(
   "Accounts.cpp"
   "Accounts.hpp"
   "Actor.hpp"
+  "Batch.cpp"
+  "Batch.hpp"
   "BitcoinTransactionBuilder.cpp"
   "BitcoinTransactionBuilder.hpp"
   "BlockIndex.cpp"
@@ -40,8 +42,11 @@ add_library(
   "ScriptForm.hpp"
   "SubchainStateData.cpp"
   "SubchainStateData.hpp"
+  "Types.hpp"
   "Wallet.cpp"
   "Wallet.hpp"
+  "Work.cpp"
+  "Work.hpp"
 )
 target_link_libraries(
   opentxs-blockchain-node-wallet PRIVATE Boost::headers opentxs::messages

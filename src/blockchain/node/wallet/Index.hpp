@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "blockchain/node/wallet/Job.hpp"
+#include "blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -51,9 +52,7 @@ namespace opentxs::blockchain::node::wallet
 class Index : public Job
 {
 public:
-    auto Processed(
-        const block::Position& pos,
-        const std::size_t matches) noexcept -> void;
+    auto Processed(const ProgressBatch& processed) noexcept -> void;
     auto Reorg(const block::Position& parent) noexcept -> void final;
     auto Run() noexcept -> bool final;
 

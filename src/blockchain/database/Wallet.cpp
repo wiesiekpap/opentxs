@@ -294,10 +294,10 @@ auto Wallet::SubchainLastScanned(const SubchainIndex& index) const noexcept
 
 auto Wallet::SubchainMatchBlock(
     const SubchainIndex& index,
-    const MatchingIndices& indices,
-    const ReadView blockID) const noexcept -> bool
+    const std::vector<std::pair<ReadView, MatchingIndices>>& results)
+    const noexcept -> bool
 {
-    return subchains_.SubchainMatchBlock(index, indices, blockID);
+    return subchains_.SubchainMatchBlock(index, results);
 }
 
 auto Wallet::SubchainSetLastScanned(

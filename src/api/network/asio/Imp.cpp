@@ -57,6 +57,7 @@
 #include "opentxs/network/zeromq/socket/Sender.tpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "util/Thread.hpp"
 
 #define OT_METHOD "opentxs::api::network::Asio::Imp::"
 
@@ -126,6 +127,7 @@ Asio::Imp::Imp(const zmq::Context& zmq) noexcept
         auto out = std::map<ThreadPool, asio::Context>{};
         out[ThreadPool::General];
         out[ThreadPool::Storage];
+        out[ThreadPool::Blockchain];
 
         return out;
     }())
@@ -256,11 +258,17 @@ auto Asio::Imp::Init() noexcept -> void
 
     const auto threads =
         std::max<unsigned int>(std::thread::hardware_concurrency(), 1u);
-    io_context_.Init(std::max<unsigned int>(threads / 8, 1));
+    io_context_.Init(
+        std::max<unsigned int>(threads / 8u, 1u), ThreadPriority::Normal);
     thread_pools_.at(ThreadPool::General)
-        .Init(std::max<unsigned int>(threads - 1, 1));
+        .Init(
+            std::max<unsigned int>(threads - 1u, 1u),
+            ThreadPriority::AboveNormal);
     thread_pools_.at(ThreadPool::Storage)
-        .Init(std::max<unsigned int>(threads / 4, 1));
+        .Init(
+            std::max<unsigned int>(threads / 4u, 2u), ThreadPriority::Highest);
+    thread_pools_.at(ThreadPool::Blockchain)
+        .Init(std::max<unsigned int>(threads, 1u), ThreadPriority::Lowest);
 }
 
 auto Asio::Imp::load_root_certificates(

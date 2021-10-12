@@ -22,7 +22,9 @@ namespace wallet
 {
 class Process;
 class Progress;
+class Rescan;
 class SubchainStateData;
+class Work;
 }  // namespace wallet
 }  // namespace node
 }  // namespace blockchain
@@ -37,38 +39,35 @@ public:
 
     auto Reorg(const block::Position& parent) noexcept -> void override;
     using Job::Run;
-    auto Run() noexcept -> bool final;
+    auto Run() noexcept -> bool override;
     auto Run(const block::Position& filterTip) noexcept -> bool;
     auto SetReady() noexcept -> void;
+    auto UpdateTip(const block::Position& tip) noexcept -> void;
 
-    Scan(
-        SubchainStateData& parent,
-        Process& process,
-        Progress& progress) noexcept;
+    Scan(SubchainStateData& parent, Process& process, Rescan& rescan) noexcept;
 
     ~Scan() override = default;
 
 protected:
-    Progress& progress_;
     std::optional<block::Position> last_scanned_;
-    bool ready_;
-
-    virtual auto caught_up() noexcept -> void;
-    virtual auto handle_stopped() noexcept -> void;
-    auto set_ready(const Lock& lock) noexcept -> void;
-
-private:
-    Process& process_;
     std::optional<block::Position> filter_tip_;
-
-    virtual auto get_stop() const noexcept -> block::Height;
-    auto type() const noexcept -> const char* override { return "scan"; }
+    bool ready_;
 
     auto Do(
         const block::Position best,
         const block::Height stop,
         block::Position highestTested) noexcept -> void;
-    virtual auto flush(const Lock& lock) noexcept -> void;
+    auto set_ready(const Lock& lock) noexcept -> void;
+    auto update_tip() noexcept -> block::Position;
+    auto update_tip(const Lock& lock) noexcept -> block::Position;
+
+private:
+    Process& process_;
+    Rescan& rescan_;
+
+    auto type() const noexcept -> const char* override { return "scan"; }
+
+    auto finish(Lock& lock) noexcept -> void override;
 
     Scan() = delete;
     Scan(const Scan&) = delete;

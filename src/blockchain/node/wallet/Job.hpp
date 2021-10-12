@@ -10,6 +10,7 @@
 #include <mutex>
 #include <string>
 
+#include "internal/api/network/Network.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 
@@ -37,8 +38,6 @@ public:
     virtual auto Run() noexcept -> bool = 0;
     auto Shutdown() noexcept -> void;
 
-    Job(SubchainStateData& parent) noexcept;
-
     virtual ~Job() = default;
 
 protected:
@@ -51,13 +50,16 @@ protected:
     // WARNING lock will be released and re-acquired
     auto wait(Lock& lock) const noexcept -> void;
 
-    auto finish(Lock& lock) noexcept -> void;
+    virtual auto finish(Lock& lock) noexcept -> void;
     auto queue_work(
         SimpleCallback cb,
         const char* log,
         bool lockIsHeld) noexcept -> bool;
 
+    Job(const ThreadPool pool, SubchainStateData& parent) noexcept;
+
 private:
+    const ThreadPool thread_pool_;
     long long int running_;
     mutable std::condition_variable cv_;
 

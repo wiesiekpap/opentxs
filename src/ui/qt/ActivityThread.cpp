@@ -14,7 +14,6 @@
 #include <memory>
 #include <string>
 
-#include "core/Amount.hpp"
 #include "internal/ui/UI.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"

@@ -36,26 +36,25 @@ class Rescan final : public Scan
 public:
     auto Queue(const block::Position& position) noexcept -> void;
     auto Reorg(const block::Position& parent) noexcept -> void final;
+    auto Run() noexcept -> bool final;
+    auto SetCeiling(const block::Position& ceiling) noexcept -> void;
 
     Rescan(
         SubchainStateData& parent,
         Process& process,
-        Progress& progress,
-        Scan& scan) noexcept;
+        Progress& progress) noexcept;
 
     ~Rescan() final = default;
 
 private:
-    Scan& scan_;
-    mutable std::mutex rescan_lock_;
+    Progress& progress_;
     std::queue<block::Position> rescan_requests_;
+    block::Position ceiling_;
 
-    auto get_stop() const noexcept -> block::Height final;
     auto type() const noexcept -> const char* final { return "rescan"; }
 
-    auto caught_up() noexcept -> void final;
-    auto flush(const Lock& lock) noexcept -> void final;
-    auto handle_stopped() noexcept -> void final;
+    auto finish(Lock& lock) noexcept -> void final;
+    auto flush(const Lock& lock) noexcept -> void;
     auto process(const Lock& lock, const block::Position& position) noexcept
         -> void;
 

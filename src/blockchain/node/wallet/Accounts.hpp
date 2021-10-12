@@ -75,9 +75,6 @@ namespace opentxs::blockchain::node::wallet
 class Accounts final : public Actor
 {
 public:
-    auto Query() const noexcept -> bool;
-
-    auto Complete(const Identifier& id) noexcept -> void;
     auto FinishBackgroundTasks() noexcept -> void final;
     auto ProcessBlockAvailable(const block::Hash& block) noexcept -> void final;
     auto ProcessKey() noexcept -> void final;
@@ -93,7 +90,6 @@ public:
         const Identifier& id,
         const char* type,
         bool enabled) noexcept -> void final;
-    auto Register(const Identifier& id) noexcept -> void;
     auto Shutdown() noexcept -> void final;
 
     Accounts(
