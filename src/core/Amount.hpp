@@ -26,6 +26,10 @@ struct Amount::Imp {
         : amount_{}
     {
     }
+    Imp(const Backend& amount) noexcept
+        : amount_(amount)
+    {
+    }
     Imp(int amount) noexcept
         : amount_(amount)
     {
@@ -54,6 +58,11 @@ struct Amount::Imp {
         : amount_(str)
     {
     }
+
+    Imp(const Imp& rhs) noexcept = default;
+    Imp(Imp&& rhs) noexcept = delete;
+    auto operator=(const Imp& rhs) -> Imp& = delete;
+    auto operator=(Imp&& rhs) -> Imp& = delete;
 
     Backend amount_;
 };

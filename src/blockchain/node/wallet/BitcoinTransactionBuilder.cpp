@@ -853,7 +853,15 @@ private:
         // TODO this should account for script type
 
         const auto amount = 148 * fee_rate_ / 1000;
-        return amount.Internal().amount_.convert_to<std::size_t>();
+        auto dust = std::size_t{};
+        try {
+            dust = amount.Internal().amount_.convert_to<std::size_t>();
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": error calculating dust: ")(
+                e.what())
+                .Flush();
+        }
+        return dust;
     }
     auto get_private_key(
         const opentxs::crypto::key::EllipticCurve& pubkey,

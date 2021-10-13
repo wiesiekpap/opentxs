@@ -108,8 +108,14 @@ auto BitcoinTransaction(
     for (const auto& output : *outputs) {
         raw.outputs_.emplace_back();
         auto& out = *raw.outputs_.rbegin();
-        out.value_ =
-            output.Value().Internal().amount_.convert_to<std::int64_t>();
+        try {
+            out.value_ =
+                output.Value().Internal().amount_.convert_to<std::int64_t>();
+        } catch (const std::exception& e) {
+            LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+
+            return {};
+        }
         output.Script().Serialize(writer(out.script_));
         out.cs_ = out.script_.size();
     }
