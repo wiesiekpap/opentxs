@@ -10,6 +10,7 @@
 #include <memory>
 #include <utility>
 
+#include "opentxs/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/Nym.hpp"

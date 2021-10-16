@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "opentxs/contact/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 
 namespace opentxs
 {

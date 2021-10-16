@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <stdexcept>
+#include <string>
 
 #include "2_Factory.hpp"
 #if OT_CASH_USING_LUCRE
@@ -18,6 +19,7 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/blind/CashType.hpp"
 #include "opentxs/blind/Purse.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"

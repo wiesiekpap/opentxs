@@ -7,10 +7,14 @@
 #include "1_Internal.hpp"           // IWYU pragma: associated
 #include "opentxs/core/Amount.hpp"  // IWYU pragma: associated
 
+#include <boost/cstdint.hpp>
 #include <boost/endian/buffers.hpp>
+#include <limits>
+#include <memory>
 
 #include "core/Amount.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/network/zeromq/Frame.hpp"
 
 namespace be = boost::endian;
 

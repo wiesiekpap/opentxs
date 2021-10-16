@@ -11,6 +11,7 @@
 #include "1_Internal.hpp"
 #include "internal/ui/UI.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "ui/activitythread/ActivityThreadItem.hpp"
 
 namespace opentxs

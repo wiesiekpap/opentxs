@@ -30,6 +30,7 @@ class Nym;
 class Server;
 }  // namespace identifier
 
+class Amount;
 class Identifier;
 class Ledger;
 class NumList;

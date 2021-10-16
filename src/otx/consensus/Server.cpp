@@ -9,7 +9,6 @@
 
 #include <algorithm>
 #include <atomic>
-#include <cinttypes>
 #include <functional>
 #include <iterator>
 #include <list>
@@ -47,6 +46,7 @@
 #include "opentxs/blind/Token.hpp"
 #endif  // OT_CASH
 #include "opentxs/core/Account.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Data.hpp"

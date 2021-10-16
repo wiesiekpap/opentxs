@@ -8,7 +8,6 @@
 #include "server/PayDividendVisitor.hpp"  // IWYU pragma: associated
 
 #include <chrono>
-#include <cstdint>
 #include <memory>
 
 #include "opentxs/Pimpl.hpp"

@@ -600,8 +600,7 @@ auto check_row(
         const auto pendingState =
             (expected.pending_) ? Qt::Checked : Qt::Unchecked;
         const auto index = model.index(row, column, parent);
-        const auto iAmount = model.data(index, Model::IntAmountRole);
-        const auto sAmount = model.data(index, Model::StringAmountRole);
+        const auto amount = model.data(index, Model::AmountRole);
         const auto loading = model.data(index, Model::LoadingRole);
         const auto memo = model.data(index, Model::MemoRole);
         const auto pending = model.data(index, Model::PendingRole);
@@ -640,9 +639,9 @@ auto check_row(
                 EXPECT_EQ(display, text);
             } break;
             case Model::AmountColumn: {
-                output &= (display == sAmount);
+                output &= (display == amount);
 
-                EXPECT_EQ(display, sAmount);
+                EXPECT_EQ(display, amount);
             } break;
             case Model::MemoColumn: {
                 output &= (display == memo);
@@ -666,9 +665,7 @@ auto check_row(
             }
         }
 
-        output &= (iAmount.toInt() == expected.amount_);
-        output &=
-            (sAmount.toString().toStdString() == expected.display_amount_);
+        output &= (amount.toString().toStdString() == expected.display_amount_);
         output &= (loading.toBool() == expected.loading_);
         output &= (memo.toString().toStdString() == expected.memo_);
         output &= (pending.toBool() == expected.pending_);
@@ -680,8 +677,7 @@ auto check_row(
         output &= (model.columnCount(index) == activity_thread_columns_);
         output &= (static_cast<std::size_t>(model.rowCount(index)) == vCount);
 
-        EXPECT_EQ(iAmount.toInt(), expected.amount_);
-        EXPECT_EQ(sAmount.toString().toStdString(), expected.display_amount_);
+        EXPECT_EQ(amount.toString().toStdString(), expected.display_amount_);
         EXPECT_EQ(loading.toBool(), expected.loading_);
         EXPECT_EQ(memo.toString().toStdString(), expected.memo_);
         EXPECT_EQ(pending.toBool(), expected.pending_);

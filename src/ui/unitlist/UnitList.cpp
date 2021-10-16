@@ -26,7 +26,7 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"

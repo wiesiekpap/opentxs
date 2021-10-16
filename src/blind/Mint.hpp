@@ -13,6 +13,7 @@
 
 #include "opentxs/Types.hpp"
 #include "opentxs/blind/Mint.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/Identifier.hpp"

@@ -18,6 +18,7 @@
 
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/OTTransactionType.hpp"

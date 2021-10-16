@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "core/OTStorage.hpp"

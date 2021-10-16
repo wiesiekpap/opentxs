@@ -3,13 +3,18 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include <boost/endian/buffers.hpp>
+#include <boost/exception/exception.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <gtest/gtest.h>
+#include <limits>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <utility>
 
 #include "core/Amount.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 
 using namespace opentxs;

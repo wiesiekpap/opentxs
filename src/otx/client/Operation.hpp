@@ -24,6 +24,7 @@
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/contact/ContactSectionName.hpp"
 #include "opentxs/core/Account.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Ledger.hpp"
 #include "opentxs/core/Message.hpp"

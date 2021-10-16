@@ -32,6 +32,7 @@
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #endif  // OT_BLOCKCHAIN
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"

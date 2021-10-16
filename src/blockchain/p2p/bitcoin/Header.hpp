@@ -21,6 +21,7 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 
 namespace opentxs

@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "ui/accountactivity/BlockchainAccountActivity.hpp"  // IWYU pragma: associated
 
-#include <atomic>
 #include <functional>
 #include <future>
 #include <limits>

@@ -42,6 +42,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/core/Account.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"

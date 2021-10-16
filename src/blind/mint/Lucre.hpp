@@ -10,6 +10,7 @@
 #include <iosfwd>
 
 #include "blind/Mint.hpp"
+#include "opentxs/core/Amount.hpp"
 
 namespace opentxs
 {

@@ -61,17 +61,16 @@ public:
 
 public:
     enum Roles {
-        IntAmountRole = Qt::UserRole + 0,     // int
-        StringAmountRole = Qt::UserRole + 1,  // QString
-        LoadingRole = Qt::UserRole + 2,       // bool
-        MemoRole = Qt::UserRole + 3,          // QString
-        PendingRole = Qt::UserRole + 4,       // bool
-        PolarityRole = Qt::UserRole + 5,      // int, -1, 0, or 1
-        TextRole = Qt::UserRole + 6,          // QString
-        TimeRole = Qt::UserRole + 7,          // QDateTime
-        TypeRole = Qt::UserRole + 8,          // int, opentxs::StorageBox
-        OutgoingRole = Qt::UserRole + 9,      // bool
-        FromRole = Qt::UserRole + 10,         // QString
+        AmountRole = Qt::UserRole + 0,    // QString
+        LoadingRole = Qt::UserRole + 1,   // bool
+        MemoRole = Qt::UserRole + 2,      // QString
+        PendingRole = Qt::UserRole + 3,   // bool
+        PolarityRole = Qt::UserRole + 4,  // int, -1, 0, or 1
+        TextRole = Qt::UserRole + 5,      // QString
+        TimeRole = Qt::UserRole + 6,      // QDateTime
+        TypeRole = Qt::UserRole + 7,      // int, opentxs::StorageBox
+        OutgoingRole = Qt::UserRole + 8,  // bool
+        FromRole = Qt::UserRole + 9,      // QString
     };
     enum Columns {
         TimeColumn = 0,

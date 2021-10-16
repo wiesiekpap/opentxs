@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                            // IWYU pragma: associated
 #include "blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: associated
 
+#include <boost/cstdint.hpp>
 #include <boost/endian/buffers.hpp>
 #include <algorithm>
 #include <cstring>
@@ -29,6 +30,7 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"

@@ -37,6 +37,7 @@
 #include "opentxs/blockchain/p2p/Types.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/contact/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"

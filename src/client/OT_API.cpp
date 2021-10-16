@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"             // IWYU pragma: associated
 #include "opentxs/client/OT_API.hpp"  // IWYU pragma: associated
 
-#include <cinttypes>
 #include <cstdlib>
 #include <iterator>
 #include <limits>

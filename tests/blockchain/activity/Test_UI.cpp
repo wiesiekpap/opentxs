@@ -35,6 +35,7 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/identifier/Nym.hpp"

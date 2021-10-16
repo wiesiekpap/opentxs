@@ -11,6 +11,7 @@
 #include "1_Internal.hpp"
 #include "internal/ui/UI.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "ui/accountactivity/BalanceItem.hpp"
 

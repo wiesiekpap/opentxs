@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"         // IWYU pragma: associated
 #include "client/OTAPI_Func.hpp"  // IWYU pragma: associated
 
+#include <boost/cstdint.hpp>
 #include <cstdint>
 #include <map>
 #include <string>

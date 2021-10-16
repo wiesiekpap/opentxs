@@ -24,6 +24,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"

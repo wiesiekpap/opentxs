@@ -46,6 +46,7 @@
 #include "opentxs/blockchain/node/Wallet.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/blockchain/p2p/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/crypto/Types.hpp"

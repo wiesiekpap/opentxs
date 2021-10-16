@@ -8,7 +8,6 @@
 #include "opentxs/core/trade/OTOffer.hpp"  // IWYU pragma: associated
 
 #include <chrono>
-#include <cinttypes>
 #include <cstdint>
 #include <cstring>
 #include <memory>
