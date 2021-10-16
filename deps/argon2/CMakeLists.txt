@@ -25,7 +25,9 @@ endif()
 target_include_directories(
   opentxs-argon2 SYSTEM PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
 )
-target_compile_definitions(opentxs-argon2 PRIVATE "ARGON2_NO_THREADS")
+target_compile_definitions(
+  opentxs-argon2 PRIVATE "ARGON2_NO_THREADS" "NO_WARN_X86_INTRINSICS"
+)
 set_target_properties(
   opentxs-argon2 PROPERTIES C_INCLUDE_WHAT_YOU_USE "" C_STANDARD 90
 )
