@@ -16,6 +16,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Account.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Types.hpp"

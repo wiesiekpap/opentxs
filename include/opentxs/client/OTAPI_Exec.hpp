@@ -16,6 +16,7 @@
 
 #include "opentxs/Types.hpp"
 #include "opentxs/client/OT_API.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 

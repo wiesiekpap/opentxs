@@ -31,6 +31,7 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/ui/ActivityThread.hpp"
 #include "opentxs/util/WorkType.hpp"

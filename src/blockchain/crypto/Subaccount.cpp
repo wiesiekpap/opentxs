@@ -22,6 +22,7 @@
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/key/HD.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/BlockchainAccountData.pb.h"

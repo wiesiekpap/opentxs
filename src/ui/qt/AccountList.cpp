@@ -13,7 +13,7 @@
 #include <string>
 
 #include "internal/ui/UI.hpp"
-#include "opentxs/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "ui/accountlist/AccountListItem.hpp"
 #include "util/Polarity.hpp"  // IWYU pragma: keep
 

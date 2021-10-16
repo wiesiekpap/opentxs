@@ -10,6 +10,8 @@
 #include <memory>
 
 #include "internal/blockchain/Blockchain.hpp"
+#include "opentxs/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Log.hpp"
 #include "ui/base/Widget.hpp"
 

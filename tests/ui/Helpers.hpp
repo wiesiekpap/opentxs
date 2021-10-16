@@ -26,6 +26,7 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/contact/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/ui/Types.hpp"
 

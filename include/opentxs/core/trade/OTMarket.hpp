@@ -16,6 +16,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/cron/OTCron.hpp"
 #include "opentxs/core/identifier/Server.hpp"

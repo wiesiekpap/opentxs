@@ -28,6 +28,7 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Account.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"

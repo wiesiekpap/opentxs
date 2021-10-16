@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                           // IWYU pragma: associated
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"  // IWYU pragma: associated
 
+#include <boost/cstdint.hpp>
 #include <boost/endian/buffers.hpp>
 #include <cstdint>
 #include <cstring>
@@ -18,6 +19,7 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"

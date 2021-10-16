@@ -19,6 +19,7 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "ui/activitythread/ActivityThreadItem.hpp"
 #include "ui/qt/DraftValidator.hpp"
@@ -57,8 +58,7 @@ ActivityThreadQt::ActivityThreadQt(internal::ActivityThread& parent) noexcept
     if (nullptr != internal_) {
         internal_->SetColumnCount(nullptr, 7);
         internal_->SetRoleData({
-            {ActivityThreadQt::IntAmountRole, "intamount"},
-            {ActivityThreadQt::StringAmountRole, "stramount"},
+            {ActivityThreadQt::AmountRole, "amount"},
             {ActivityThreadQt::LoadingRole, "loading"},
             {ActivityThreadQt::MemoRole, "memo"},
             {ActivityThreadQt::PendingRole, "pending"},
@@ -201,7 +201,7 @@ auto ActivityThreadItem::qt_data(
                     qt_data(column, ActivityThreadQt::TextRole, out);
                 } break;
                 case ActivityThreadQt::AmountColumn: {
-                    qt_data(column, ActivityThreadQt::StringAmountRole, out);
+                    qt_data(column, ActivityThreadQt::AmountRole, out);
                 } break;
                 case ActivityThreadQt::MemoColumn: {
                     qt_data(column, ActivityThreadQt::MemoRole, out);
@@ -228,10 +228,7 @@ auto ActivityThreadItem::qt_data(
                 }
             }
         } break;
-        case ActivityThreadQt::IntAmountRole: {
-            out = Amount().Internal().amount_.convert_to<int>();
-        } break;
-        case ActivityThreadQt::StringAmountRole: {
+        case ActivityThreadQt::AmountRole: {
             out = DisplayAmount().c_str();
         } break;
         case ActivityThreadQt::LoadingRole: {

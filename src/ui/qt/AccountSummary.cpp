@@ -14,6 +14,7 @@
 
 #include "core/Amount.hpp"
 #include "internal/ui/UI.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "ui/accountsummary/AccountSummaryItem.hpp"
 #include "ui/accountsummary/IssuerItem.hpp"
 

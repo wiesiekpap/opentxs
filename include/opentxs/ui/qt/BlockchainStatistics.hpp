@@ -38,7 +38,7 @@ public:
     //
     // All data is available in a list view via the user roles defined below:
     enum Roles {
-        Balance = Qt::UserRole + 0,     // int, opentxs::blockchain::Amount
+        Balance = Qt::UserRole + 0,     // QString
         BlockQueue = Qt::UserRole + 1,  // int, std::size_t
         Chain = Qt::UserRole + 2,       // int, opentxs::blockchain::Type
         FilterHeight =

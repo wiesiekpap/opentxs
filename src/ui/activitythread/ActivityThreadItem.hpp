@@ -13,6 +13,7 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/ui/ActivityThreadItem.hpp"
 #include "ui/base/Row.hpp"

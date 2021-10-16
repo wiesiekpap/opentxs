@@ -6,6 +6,12 @@
 #ifndef OPENTXS_CORE_AMOUNT_HPP
 #define OPENTXS_CORE_AMOUNT_HPP
 
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
+
+#include <cstddef>
+#include <string>
+#include <string_view>
+
 #include "opentxs/Bytes.hpp"
 
 namespace opentxs
@@ -79,7 +85,7 @@ auto operator*(const unsigned long long int lhs, const Amount& rhs) noexcept(
 
 namespace opentxs
 {
-class Amount
+class OPENTXS_EXPORT Amount
 {
 public:
     auto operator<(const Amount& rhs) const noexcept -> bool;

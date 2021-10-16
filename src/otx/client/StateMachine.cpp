@@ -33,6 +33,7 @@
 #include "opentxs/client/OT_API.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"

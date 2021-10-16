@@ -44,7 +44,6 @@
 #include "opentxs/api/server/Manager.hpp"
 #include "opentxs/blind/Purse.hpp"
 #include "opentxs/blind/Token.hpp"
-#include "opentxs/blind/Types.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/client/OT_API.hpp"
 #include "opentxs/contact/ContactItemType.hpp"

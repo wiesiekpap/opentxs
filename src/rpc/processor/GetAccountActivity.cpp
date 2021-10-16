@@ -20,6 +20,7 @@
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/UI.hpp"
 #include "opentxs/api/client/Workflow.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/protobuf/PaymentWorkflow.pb.h"

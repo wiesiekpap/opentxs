@@ -6,11 +6,13 @@
 #pragma once
 
 #include <chrono>
+#include <cstdint>
 #include <memory>
 #include <string>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/api/client/ServerAction.hpp"
+#include "opentxs/core/Amount.hpp"
 
 namespace opentxs
 {

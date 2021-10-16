@@ -27,6 +27,7 @@
 #include "opentxs/api/client/Issuer.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/core/Account.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"

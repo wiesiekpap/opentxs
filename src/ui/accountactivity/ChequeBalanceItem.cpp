@@ -12,6 +12,7 @@
 #include <string>
 
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/Workflow.hpp"
 #include "opentxs/core/Cheque.hpp"

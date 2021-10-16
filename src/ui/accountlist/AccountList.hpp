@@ -19,6 +19,7 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/network/zeromq/ListenCallback.hpp"

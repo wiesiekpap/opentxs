@@ -21,6 +21,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/core/Account.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Item.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/OTTransaction.hpp"

@@ -8,6 +8,7 @@
 #include "display/Scale.hpp"  // IWYU pragma: associated
 
 #include "display/Scale_imp.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Log.hpp"
 
 namespace opentxs::display

@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "opentxs/core/Account.hpp"  // IWYU pragma: associated
 
-#include <cinttypes>
 #include <cstdint>
 #include <memory>
 #include <set>

@@ -33,6 +33,7 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/contact/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/crypto/Types.hpp"
 

@@ -6,6 +6,7 @@
 #pragma once
 
 #include <boost/multiprecision/cpp_int.hpp>
+#include <string_view>
 
 #include "opentxs/core/Amount.hpp"
 

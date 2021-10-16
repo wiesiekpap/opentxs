@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Activity.hpp"
 #include "opentxs/api/client/Manager.hpp"

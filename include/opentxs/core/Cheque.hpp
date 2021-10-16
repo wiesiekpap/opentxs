@@ -12,6 +12,7 @@
 #include <cstdint>
 
 #include "opentxs/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/OTTrackable.hpp"
