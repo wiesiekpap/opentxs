@@ -10,8 +10,8 @@
 #include <tuple>
 #include <vector>
 
-#include "opentxs/crypto/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/crypto/Types.hpp"
 
 namespace opentxs
 {

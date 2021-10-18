@@ -35,6 +35,8 @@ set(cxx-install-headers
 
 if(WIN32)
   target_sources(opentxs-util PRIVATE "Thread_win32.cpp")
+elseif(APPLE)
+  target_sources(opentxs-util PRIVATE "Thread_mac.cpp")
 else()
   target_sources(opentxs-util PRIVATE "Thread_linux.cpp")
 endif()
