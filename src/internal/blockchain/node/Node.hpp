@@ -694,8 +694,6 @@ struct WalletDatabase {
     virtual auto SubchainSetLastScanned(
         const SubchainIndex& index,
         const block::Position& position) const noexcept -> bool = 0;
-    virtual auto TransactionLoadBitcoin(const ReadView txid) const noexcept
-        -> std::unique_ptr<block::bitcoin::Transaction> = 0;
 
     virtual ~WalletDatabase() = default;
 };

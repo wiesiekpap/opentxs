@@ -26,7 +26,6 @@
 #include "blockchain/database/wallet/Output.hpp"
 #include "blockchain/database/wallet/Proposal.hpp"
 #include "blockchain/database/wallet/Subchain.hpp"
-#include "blockchain/database/wallet/Transaction.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/Database.hpp"
@@ -204,8 +203,6 @@ public:
     auto SubchainSetLastScanned(
         const SubchainIndex& index,
         const block::Position& position) const noexcept -> bool;
-    auto TransactionLoadBitcoin(const ReadView txid) const noexcept
-        -> std::unique_ptr<block::bitcoin::Transaction>;
 
     Wallet(
         const api::Core& api,
@@ -217,7 +214,6 @@ private:
     const common::Database& common_;
     mutable wallet::SubchainData subchains_;
     mutable wallet::Proposal proposals_;
-    mutable wallet::Transaction transactions_;
     mutable wallet::Output outputs_;
 };
 }  // namespace opentxs::blockchain::database

@@ -59,7 +59,6 @@ namespace wallet
 {
 class Proposal;
 class SubchainData;
-class Transaction;
 }  // namespace wallet
 }  // namespace database
 }  // namespace blockchain
@@ -147,8 +146,7 @@ public:
         const api::client::internal::Blockchain& blockchain,
         const blockchain::Type chain,
         const wallet::SubchainData& subchains,
-        wallet::Proposal& proposals,
-        wallet::Transaction& transactions) noexcept;
+        wallet::Proposal& proposals) noexcept;
 
     ~Output();
 

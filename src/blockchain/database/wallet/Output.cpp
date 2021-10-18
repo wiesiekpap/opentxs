@@ -26,7 +26,6 @@
 
 #include "blockchain/database/wallet/Proposal.hpp"
 #include "blockchain/database/wallet/Subchain.hpp"
-#include "blockchain/database/wallet/Transaction.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
@@ -393,10 +392,11 @@ struct Output::Imp {
         const auto reason = api_.Factory().PasswordPrompt(
             "Save a received blockchain transaction");
 
-        if (false == transactions_.Add(chain_, block, copy, reason)) {
+        if (!blockchain_.ProcessTransaction(chain_, copy, reason)) {
             LogOutput(OT_METHOD)(__func__)(
                 ": Error adding transaction to database")
                 .Flush();
+            // TODO rollback transaction
 
             return false;
         }
@@ -557,7 +557,7 @@ struct Output::Imp {
         const auto reason = api_.Factory().PasswordPrompt(
             "Save an outgoing blockchain transaction");
 
-        if (false == transactions_.Add(chain_, blank_, transaction, reason)) {
+        if (!blockchain_.ProcessTransaction(chain_, transaction, reason)) {
             LogOutput(OT_METHOD)(__func__)(
                 ": Error adding transaction to database")
                 .Flush();
@@ -783,14 +783,6 @@ struct Output::Imp {
                      sKey.index()},
                     txid);
             }
-
-            if (false == transactions_.Rollback(position.first, txid)) {
-                LogOutput(OT_METHOD)(__func__)(
-                    ": Failed to update transaction history")
-                    .Flush();
-
-                return false;
-            }
         }
 
         return true;
@@ -836,14 +828,12 @@ struct Output::Imp {
         const api::client::internal::Blockchain& blockchain,
         const blockchain::Type chain,
         const wallet::SubchainData& subchains,
-        wallet::Proposal& proposals,
-        wallet::Transaction& transactions) noexcept
+        wallet::Proposal& proposals) noexcept
         : api_(api)
         , blockchain_(blockchain)
         , chain_(chain)
         , subchains_(subchains)
         , proposals_(proposals)
-        , transactions_(transactions)
         , blank_([&] {
             auto out = make_blank<block::Position>::value(api_);
 
@@ -902,7 +892,6 @@ private:
     const blockchain::Type chain_;
     const wallet::SubchainData& subchains_;
     wallet::Proposal& proposals_;
-    wallet::Transaction& transactions_;
     const block::Position blank_;
     const block::Height maturation_target_;
     mutable std::shared_mutex lock_;
@@ -1619,10 +1608,8 @@ Output::Output(
     const api::client::internal::Blockchain& blockchain,
     const blockchain::Type chain,
     const wallet::SubchainData& subchains,
-    wallet::Proposal& proposals,
-    wallet::Transaction& transactions) noexcept
-    : imp_(std::make_unique<
-           Imp>(api, blockchain, chain, subchains, proposals, transactions))
+    wallet::Proposal& proposals) noexcept
+    : imp_(std::make_unique<Imp>(api, blockchain, chain, subchains, proposals))
 {
     OT_ASSERT(imp_);
 }

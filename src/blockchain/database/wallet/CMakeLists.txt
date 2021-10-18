@@ -12,8 +12,6 @@ target_sources(
     "Proposal.hpp"
     "Subchain.cpp"
     "Subchain.hpp"
-    "Transaction.cpp"
-    "Transaction.hpp"
 )
 target_link_libraries(opentxs-blockchain-database PRIVATE Boost::headers)
 target_include_directories(

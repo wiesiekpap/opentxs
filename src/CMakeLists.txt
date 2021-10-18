@@ -65,6 +65,10 @@ set_target_properties(
     POSITION_INDEPENDENT_CODE 1
 )
 
+if(Threads_FOUND)
+  target_link_libraries(opentxs PUBLIC Threads::Threads)
+endif()
+
 if(CMAKE_DL_LIBS)
   target_link_libraries(opentxs PUBLIC ${CMAKE_DL_LIBS})
 endif()

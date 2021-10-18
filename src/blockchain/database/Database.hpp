@@ -523,11 +523,6 @@ public:
     {
         return sync_.Tip();
     }
-    auto TransactionLoadBitcoin(const ReadView txid) const noexcept
-        -> std::unique_ptr<block::bitcoin::Transaction> final
-    {
-        return wallet_.TransactionLoadBitcoin(txid);
-    }
     // Returns null pointer if the header does not exist
     auto TryLoadBitcoinHeader(const block::Hash& hash) const noexcept
         -> std::unique_ptr<block::bitcoin::Header> final

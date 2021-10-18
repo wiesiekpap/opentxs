@@ -32,8 +32,7 @@ Wallet::Wallet(
     : common_(common)
     , subchains_(api)
     , proposals_()
-    , transactions_(api, blockchain, common_)
-    , outputs_(api, blockchain, chain, subchains_, proposals_, transactions_)
+    , outputs_(api, blockchain, chain, subchains_, proposals_)
 {
 }
 
@@ -305,11 +304,5 @@ auto Wallet::SubchainSetLastScanned(
     const block::Position& position) const noexcept -> bool
 {
     return subchains_.SubchainSetLastScanned(index, position);
-}
-
-auto Wallet::TransactionLoadBitcoin(const ReadView txid) const noexcept
-    -> std::unique_ptr<block::bitcoin::Transaction>
-{
-    return transactions_.TransactionLoadBitcoin(txid);
 }
 }  // namespace opentxs::blockchain::database
