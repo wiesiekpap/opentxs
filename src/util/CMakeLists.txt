@@ -24,12 +24,21 @@ add_library(
   "Signals.cpp"
   "Sodium.cpp"
   "Sodium.hpp"
+  "Thread.hpp"
+  "Thread.cpp"
   "Work.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Signals.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/WorkType.hpp"
 )
+
+if(WIN32)
+  target_sources(opentxs-util PRIVATE "Thread_win32.cpp")
+else()
+  target_sources(opentxs-util PRIVATE "Thread_linux.cpp")
+endif()
+
 target_link_libraries(
   opentxs-util
   PRIVATE

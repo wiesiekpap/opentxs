@@ -14,6 +14,7 @@
 #include <mutex>
 #include <optional>
 #include <set>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -63,18 +64,22 @@ struct Progress::Imp {
 
         report(lock);
     }
-    auto UpdateProcess(const block::Position& pos) noexcept -> void
+    auto UpdateProcess(const ProgressBatch& data) noexcept -> void
     {
         auto lock = Lock{lock_};
-        dirty_blocks_.erase(pos);
+
+        for (const auto& [position, matches] : data) {
+            dirty_blocks_.erase(position);
+        }
+
         report(lock);
     }
     auto UpdateScan(
         const std::optional<block::Position>& highestClean,
-        std::vector<block::Position>& in) noexcept -> void
+        const std::vector<block::Position>& in) noexcept -> void
     {
         auto lock = Lock{lock_};
-        std::move(
+        std::copy(
             in.begin(),
             in.end(),
             std::inserter(dirty_blocks_, dirty_blocks_.end()));
@@ -193,14 +198,14 @@ auto Progress::Reorg(const block::Position& parent) noexcept -> void
     imp_->Reorg(parent);
 }
 
-auto Progress::UpdateProcess(const block::Position& pos) noexcept -> void
+auto Progress::UpdateProcess(const ProgressBatch& processed) noexcept -> void
 {
-    imp_->UpdateProcess(pos);
+    imp_->UpdateProcess(processed);
 }
 
 auto Progress::UpdateScan(
     const std::optional<block::Position>& highestClean,
-    std::vector<block::Position> dirtyBlocks) noexcept -> void
+    const std::vector<block::Position>& dirtyBlocks) noexcept -> void
 {
     imp_->UpdateScan(highestClean, dirtyBlocks);
 }

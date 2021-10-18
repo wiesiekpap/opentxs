@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "blockchain/node/wallet/SubchainStateData.hpp"
+#include "internal/api/network/Network.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Types.hpp"
@@ -22,7 +23,7 @@
 namespace opentxs::blockchain::node::wallet
 {
 Mempool::Mempool(SubchainStateData& parent) noexcept
-    : Job(parent)
+    : Job(ThreadPool::General, parent)
     , queue_()
 {
 }

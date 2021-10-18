@@ -508,10 +508,10 @@ public:
     }
     auto SubchainMatchBlock(
         const SubchainIndex& index,
-        const MatchingIndices& indices,
-        const ReadView blockID) const noexcept -> bool final
+        const std::vector<std::pair<ReadView, MatchingIndices>>& results)
+        const noexcept -> bool final
     {
-        return wallet_.SubchainMatchBlock(index, indices, blockID);
+        return wallet_.SubchainMatchBlock(index, results);
     }
     auto SubchainSetLastScanned(
         const SubchainIndex& index,

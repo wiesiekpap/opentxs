@@ -89,6 +89,7 @@ class Accounts;
 class Index;
 class Job;
 class ScriptForm;
+class Work;
 }  // namespace wallet
 }  // namespace node
 }  // namespace blockchain
@@ -161,8 +162,8 @@ protected:
     mutable BlockIndex block_index_;
     Progress progress_;
     Process process_;
-    Scan scan_;
     Rescan rescan_;
+    Scan scan_;
 
     auto describe() const noexcept -> std::string;
     auto get_account_targets() const noexcept
@@ -214,6 +215,7 @@ private:
     friend Process;
     friend Progress;
     friend Scan;
+    friend Work;
 
     Mempool mempool_;
 

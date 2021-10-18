@@ -12,15 +12,18 @@
 #include <chrono>
 #include <limits>
 #include <memory>
+#include <mutex>
 #include <stdexcept>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
-#include "blockchain/node/wallet/Accounts.hpp"
+#include "blockchain/node/wallet/Batch.hpp"
 #include "blockchain/node/wallet/Process.hpp"
-#include "blockchain/node/wallet/Progress.hpp"
+#include "blockchain/node/wallet/Rescan.hpp"
 #include "blockchain/node/wallet/SubchainStateData.hpp"
+#include "internal/api/network/Network.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -38,22 +41,14 @@
 
 namespace opentxs::blockchain::node::wallet
 {
-Scan::Scan(
-    SubchainStateData& parent,
-    Process& process,
-    Progress& progress) noexcept
-    : Job(parent)
-    , progress_(progress)
+Scan::Scan(SubchainStateData& parent, Process& process, Rescan& rescan) noexcept
+    : Job(ThreadPool::General, parent)
     , last_scanned_(parent_.db_.SubchainLastScanned(parent_.db_key_))
+    , filter_tip_(std::nullopt)
     , ready_(false)
     , process_(process)
-    , filter_tip_(std::nullopt)
+    , rescan_(rescan)
 {
-}
-
-auto Scan::caught_up() noexcept -> void
-{
-    parent_.parent_.Complete(parent_.db_key_);
 }
 
 auto Scan::Do(
@@ -67,24 +62,35 @@ auto Scan::Do(
     const auto& type = parent_.filter_type_;
     const auto& headers = node.HeaderOracleInternal();
     const auto& filters = node.FilterOracleInternal();
-    auto atLeastOnce{false};
-    auto highestClean = std::optional<block::Position>{std::nullopt};
-    auto dirty = std::vector<block::Position>{};
-    auto postcondition = ScopeGuard{[&] {
-        auto lock = Lock{lock_};
-
-        if (atLeastOnce) {
-            progress_.UpdateScan(highestClean, std::move(dirty));
-            last_scanned_ = highestTested;
-        }
-
-        finish(lock);
-    }};
-
     const auto start = Clock::now();
     const auto startHeight = highestTested.first + 1;
     const auto stopHeight =
         std::min(std::min(startHeight + 9999, best.first), stop);
+    auto atLeastOnce{false};
+    auto highestClean = std::optional<block::Position>{std::nullopt};
+    auto batches = std::vector<std::unique_ptr<Batch>>{};
+    auto jobs = std::vector<Work*>{};
+    auto blocks = std::vector<block::Position>{};
+    auto postcondition = ScopeGuard{[&] {
+        for (auto& batch : batches) { batch->Finalize(); }
+
+        auto lock = Lock{lock_, std::defer_lock};
+
+        if (atLeastOnce) {
+            process_.Request(
+                highestClean, blocks, std::move(batches), std::move(jobs));
+            lock.lock();
+            last_scanned_ = highestTested;
+        } else {
+            LogTrace(OT_METHOD)(__func__)(": ")(name)(" ")(this->type())(
+                " job had no work to do. Start height: ")(
+                startHeight)(", stop height: ")(stopHeight)
+                .Flush();
+            lock.lock();
+        }
+
+        finish(lock);
+    }};
 
     if (startHeight > stopHeight) { return; }
 
@@ -93,7 +99,6 @@ auto Scan::Do(
         .Flush();
     const auto [elements, utxos, patterns] = parent_.get_account_targets();
     auto blockHash = api.Factory().Data();
-    auto cache = std::vector<block::Position>{};
 
     for (auto i{startHeight}; i <= stopHeight; ++i) {
         if (shutdown_) { return; }
@@ -136,22 +141,27 @@ auto Scan::Do(
                     " new potential matches for the ")(patterns.size())(
                     " target elements for ")(parent_.id_)
                     .Flush();
-                cache.emplace_back(testPosition);
                 isClean = false;
             }
         }
 
         if (isClean) {
-            if (0u == dirty.size()) { highestClean = testPosition; }
+            if (0u == jobs.size()) { highestClean = testPosition; }
         } else {
-            dirty.emplace_back(testPosition);
+            if ((0u == batches.size()) || (batches.back()->IsFull())) {
+                batches.emplace_back(std::make_unique<Batch>());
+            }
+
+            auto& batch = batches.back();
+            blocks.emplace_back(testPosition);
+            jobs.emplace_back(batch->AddJob(testPosition));
         }
 
         highestTested = std::move(testPosition);
     }
 
     if (atLeastOnce) {
-        const auto count = cache.size();
+        const auto count = jobs.size();
         LogVerbose(OT_METHOD)(__func__)(": ")(name)(" ")(this->type())(
             " found ")(count)(" new potential matches between blocks ")(
             startHeight)(" and ")(highestTested.first)(" in ")(
@@ -159,7 +169,6 @@ auto Scan::Do(
                 Clock::now() - start)
                 .count())(" milliseconds")
             .Flush();
-        process_.Request(std::move(cache));
     } else {
         LogVerbose(OT_METHOD)(__func__)(": ")(name)(" ")(this->type())(
             " interrupted due to missing filter")
@@ -167,19 +176,13 @@ auto Scan::Do(
     }
 }
 
-auto Scan::flush(const Lock&) noexcept -> void {}
-
-auto Scan::get_stop() const noexcept -> block::Height
+auto Scan::finish(Lock& lock) noexcept -> void
 {
-    return std::numeric_limits<block::Height>::max();
-}
+    if (last_scanned_.has_value()) {
+        rescan_.SetCeiling(last_scanned_.value());
+    }
 
-auto Scan::handle_stopped() noexcept -> void
-{
-    const auto& name = parent_.name_;
-    LogVerbose(OT_METHOD)(__func__)(": ")(name)(" ")(this->type())(
-        " progress paused")
-        .Flush();
+    Job::finish(lock);
 }
 
 auto Scan::Position() const noexcept -> block::Position
@@ -200,24 +203,7 @@ auto Scan::Reorg(const block::Position& parent) noexcept -> void
     }
 }
 
-auto Scan::Run() noexcept -> bool
-{
-    const auto tip = [this] {
-        auto lock = Lock{lock_};
-
-        if (false == filter_tip_.has_value()) {
-            const auto& node = parent_.node_;
-            const auto& filters = node.FilterOracleInternal();
-            filter_tip_ = filters.FilterTip(parent_.filter_type_);
-        }
-
-        OT_ASSERT(filter_tip_.has_value());
-
-        return filter_tip_.value();
-    }();
-
-    return Run(tip);
-}
+auto Scan::Run() noexcept -> bool { return Run(update_tip()); }
 
 auto Scan::Run(const block::Position& filterTip) noexcept -> bool
 {
@@ -229,7 +215,6 @@ auto Scan::Run(const block::Position& filterTip) noexcept -> bool
         const auto current = [&] {
             auto lock = Lock{lock_};
             filter_tip_ = filterTip;
-            flush(lock);
 
             if (is_running(lock)) {
                 throw std::runtime_error{"job is already running"};
@@ -241,7 +226,6 @@ auto Scan::Run(const block::Position& filterTip) noexcept -> bool
 
             return last_scanned_;
         }();
-        const auto stop = get_stop();
         // NOTE below this line we can assume only one Scan thread is running
         if (current.has_value()) {
             if (current == filterTip) {
@@ -265,23 +249,19 @@ auto Scan::Run(const block::Position& filterTip) noexcept -> bool
         }
 
         if (needScan) {
+            static constexpr auto stop =
+                std::numeric_limits<block::Height>::max();
             auto highestTested = current.value_or(null);
-
-            if (highestTested.first > stop) {
-                handle_stopped();
-            } else {
-                needScan = queue_work(
-                    [=,
-                     last = std::move(highestTested),
-                     best = std::move(filterTip)] {
-                        Do(std::move(best), stop, std::move(last));
-                    },
-                    type(),
-                    false);
-            }
+            needScan = queue_work(
+                [=,
+                 last = std::move(highestTested),
+                 best = std::move(filterTip)] {
+                    Do(std::move(best), stop, std::move(last));
+                },
+                type(),
+                false);
         } else {
-            progress_.UpdateScan(filterTip, {});
-            caught_up();
+            process_.Request(filterTip, {}, {}, {});
         }
     } catch (...) {
         needScan = true;
@@ -297,4 +277,30 @@ auto Scan::SetReady() noexcept -> void
 }
 
 auto Scan::set_ready(const Lock& lock) noexcept -> void { ready_ = true; }
+
+auto Scan::UpdateTip(const block::Position& tip) noexcept -> void
+{
+    auto lock = Lock{lock_};
+    filter_tip_ = tip;
+}
+
+auto Scan::update_tip() noexcept -> block::Position
+{
+    auto lock = Lock{lock_};
+
+    return update_tip(lock);
+}
+
+auto Scan::update_tip(const Lock& lock) noexcept -> block::Position
+{
+    if (false == filter_tip_.has_value()) {
+        const auto& node = parent_.node_;
+        const auto& filters = node.FilterOracleInternal();
+        filter_tip_ = filters.FilterTip(parent_.filter_type_);
+    }
+
+    OT_ASSERT(filter_tip_.has_value());
+
+    return filter_tip_.value();
+}
 }  // namespace opentxs::blockchain::node::wallet

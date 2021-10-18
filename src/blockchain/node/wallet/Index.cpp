@@ -10,10 +10,12 @@
 #include <algorithm>
 #include <stdexcept>
 #include <type_traits>
+#include <vector>
 
 #include "blockchain/node/wallet/Rescan.hpp"
 #include "blockchain/node/wallet/Scan.hpp"
 #include "blockchain/node/wallet/SubchainStateData.hpp"
+#include "internal/api/network/Network.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
@@ -30,7 +32,7 @@ Index::Index(
     Scan& scan,
     Rescan& rescan,
     Progress& progress) noexcept
-    : Job(parent)
+    : Job(ThreadPool::General, parent)
     , scan_(scan)
     , rescan_(rescan)
     , progress_(progress)
@@ -74,12 +76,13 @@ auto Index::index_element(
     parent_.index_element(type, input, index, output);
 }
 
-auto Index::Processed(
-    const block::Position& pos,
-    const std::size_t matches) noexcept -> void
+auto Index::Processed(const ProgressBatch& data) noexcept -> void
 {
     auto lock = Lock{lock_};
-    queue_.emplace(pos, matches);
+
+    for (const auto& [position, matches] : data) {
+        queue_.emplace(position, matches);
+    }
 }
 
 auto Index::ready_for_scan() noexcept -> void

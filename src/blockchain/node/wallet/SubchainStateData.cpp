@@ -13,7 +13,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "blockchain/node/wallet/Accounts.hpp"
 #include "blockchain/node/wallet/Index.hpp"
 #include "blockchain/node/wallet/ScriptForm.hpp"
 #include "internal/api/client/Client.hpp"
@@ -70,15 +69,13 @@ SubchainStateData::SubchainStateData(
     , block_index_()
     , progress_(*this)
     , process_(*this, progress_)
-    , scan_(*this, process_, progress_)
-    , rescan_(*this, process_, progress_, scan_)
+    , rescan_(*this, process_, progress_)
+    , scan_(*this, process_, rescan_)
     , mempool_(*this)
 {
     OT_ASSERT(task_finished_);
     OT_ASSERT(false == owner_->empty());
     OT_ASSERT(false == id_->empty());
-
-    parent_.Register(db_key_);
 }
 
 auto SubchainStateData::describe() const noexcept -> std::string
@@ -290,6 +287,7 @@ auto SubchainStateData::ProcessNewFilter(const block::Position& tip) noexcept
     -> void
 {
     LogInsane(OT_METHOD)(__func__)(": ")(name_).Flush();
+    rescan_.UpdateTip(tip);
     scan_.Run(tip);
 }
 

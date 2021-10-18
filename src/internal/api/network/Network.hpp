@@ -78,6 +78,7 @@ enum class ThreadPool {
     General,
     Network,
     Storage,
+    Blockchain,
 };
 }  // namespace opentxs
 

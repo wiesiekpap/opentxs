@@ -8,6 +8,7 @@
 #include <optional>
 #include <vector>
 
+#include "blockchain/node/wallet/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 
 namespace opentxs
@@ -33,10 +34,10 @@ public:
     auto Get() const noexcept -> block::Position;
 
     auto Reorg(const block::Position& parent) noexcept -> void;
-    auto UpdateProcess(const block::Position& processed) noexcept -> void;
+    auto UpdateProcess(const ProgressBatch& processed) noexcept -> void;
     auto UpdateScan(
         const std::optional<block::Position>& highestClean,
-        std::vector<block::Position> dirtyBlocks) noexcept -> void;
+        const std::vector<block::Position>& dirtyBlocks) noexcept -> void;
 
     Progress(const SubchainStateData& parent) noexcept;
 

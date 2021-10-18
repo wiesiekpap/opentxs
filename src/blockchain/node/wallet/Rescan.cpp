@@ -10,14 +10,19 @@
 #include <algorithm>
 #include <chrono>
 #include <limits>
+#include <mutex>
 #include <optional>
+#include <stdexcept>
 #include <utility>
 
+#include "blockchain/node/wallet/Job.hpp"
 #include "blockchain/node/wallet/Progress.hpp"
 #include "blockchain/node/wallet/SubchainStateData.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -29,25 +34,27 @@ namespace opentxs::blockchain::node::wallet
 Rescan::Rescan(
     SubchainStateData& parent,
     Process& process,
-    Progress& progress,
-    Scan& scan) noexcept
-    : Scan(parent, process, progress)
-    , scan_(scan)
-    , rescan_lock_()
+    Progress& progress) noexcept
+    : Scan(parent, process, *this)
+    , progress_(progress)
     , rescan_requests_()
+    , ceiling_(parent_.null_position_)
 {
 }
 
-auto Rescan::caught_up() noexcept -> void
+auto Rescan::finish(Lock& lock) noexcept -> void
 {
-    auto lock = Lock{lock_};
-    ready_ = false;
-    last_scanned_ = std::nullopt;
+    if (last_scanned_.has_value() && filter_tip_.has_value()) {
+        if (last_scanned_.value() == filter_tip_.value()) {
+            last_scanned_ = std::nullopt;
+        }
+    }
+
+    Job::finish(lock);
 }
 
 auto Rescan::flush(const Lock& lock) noexcept -> void
 {
-    auto qLock = Lock{rescan_lock_};
     const auto have = 0 < rescan_requests_.size();
 
     while (0 < rescan_requests_.size()) {
@@ -68,33 +75,9 @@ auto Rescan::flush(const Lock& lock) noexcept -> void
     }
 }
 
-auto Rescan::get_stop() const noexcept -> block::Height
-{
-    const auto dirty = [this] {
-        auto out = progress_.Dirty();
-
-        if (out.has_value()) {
-
-            return std::max<block::Height>(out.value().first, 1u) - 1u;
-        } else {
-
-            return std::numeric_limits<block::Height>::max();
-        }
-    }();
-
-    return std::min(scan_.Position().first, dirty);
-}
-
-auto Rescan::handle_stopped() noexcept -> void
-{
-    Scan::handle_stopped();
-    queue_work([] { Sleep(std::chrono::milliseconds{250}); }, type(), false);
-}
-
 auto Rescan::process(const Lock& lock, const block::Position& position) noexcept
     -> void
 {
-    set_ready(lock);
     LogVerbose(OT_METHOD)(__func__)(": ")(parent_.name_)(
         " incoming position: ")(position.second->asHex())(" at height ")(
         position.first)
@@ -114,6 +97,13 @@ auto Rescan::process(const Lock& lock, const block::Position& position) noexcept
     }
 }
 
+auto Rescan::Queue(const block::Position& position) noexcept -> void
+{
+    auto lock = Lock{lock_};
+    rescan_requests_.push(position);
+    set_ready(lock);
+}
+
 auto Rescan::Reorg(const block::Position& parent) noexcept -> void
 {
     {
@@ -121,12 +111,128 @@ auto Rescan::Reorg(const block::Position& parent) noexcept -> void
         flush(lock);
     }
 
+    if (ceiling_ > parent) { ceiling_ = parent; }
+
     Scan::Reorg(parent);
 }
 
-auto Rescan::Queue(const block::Position& position) noexcept -> void
+auto Rescan::Run() noexcept -> bool
 {
-    auto lock = Lock{rescan_lock_};
-    rescan_requests_.push(position);
+    auto needScan{false};
+
+    try {
+        auto lock = Lock{lock_};
+        const auto current = [&] {
+            if (is_running(lock)) {
+                throw std::runtime_error{"job is already running"};
+            }
+
+            if (false == ready_) {
+                throw std::runtime_error{"job is disabled"};
+            }
+
+            return last_scanned_;
+        }();
+        auto& log = LogTrace;
+        const auto& name = parent_.name_;
+        log(OT_METHOD)(__func__)(": ")(name)(" last_scanned_ before flush is ");
+
+        if (last_scanned_.has_value()) {
+            const auto& value = last_scanned_.value();
+            log(value.second->asHex())(" at height ")(value.first);
+        } else {
+            log("not set");
+        };
+
+        log.Flush();
+        flush(lock);
+        log(OT_METHOD)(__func__)(": ")(name)(" last_scanned_ after flush is ");
+        if (last_scanned_.has_value()) {
+            const auto& value = last_scanned_.value();
+            log(value.second->asHex())(" at height ")(value.first);
+        } else {
+            log("not set");
+        };
+
+        log.Flush();
+        auto caughtUp{false};
+        auto wait{false};
+
+        if (last_scanned_.has_value()) {
+            const auto& last = last_scanned_.value();
+
+            if (last.first >= (ceiling_.first - 1)) {
+                log(OT_METHOD)(__func__)(": ")(
+                    name)(" unable to rescan until scan has made more progress")
+                    .Flush();
+                wait = true;
+            } else if (last_scanned_ == ceiling_) {
+                log(OT_METHOD)(__func__)(": ")(
+                    name)(" rescan has caught up to scan progress")
+                    .Flush();
+                caughtUp = true;
+            } else {
+                const auto ld = progress_.Dirty();
+
+                if (ld.has_value() && (last > ld.value())) {
+                    last_scanned_ = parent_.node_.HeaderOracle().GetPosition(
+                        ld.value().first - 1);
+                    wait = true;
+                } else {
+                    auto ceiling = [&] {
+                        const auto dirty = [&] {
+                            auto out = ld;
+
+                            if (out.has_value()) {
+
+                                return std::max<block::Height>(
+                                           out.value().first, 1u) -
+                                       1u;
+                            } else {
+
+                                return std::numeric_limits<
+                                    block::Height>::max();
+                            }
+                        }();
+
+                        return std::min(ceiling_.first, dirty);
+                    }();
+                    log(OT_METHOD)(__func__)(": ")(
+                        name)(" highest clean block height is ")(ceiling)
+                        .Flush();
+                    auto best = update_tip(lock);
+                    log(OT_METHOD)(__func__)(": ")(name)(" best cfilter is ")(
+                        best.second->asHex())(" at height ")(best.first)
+                        .Flush();
+                    needScan = queue_work(
+                        [=, target = std::move(best)] {
+                            Do(std::move(target), ceiling, last);
+                        },
+                        type(),
+                        true);
+                }
+            }
+        } else {
+        }
+
+        if (caughtUp) {
+            ready_ = false;
+            last_scanned_ = std::nullopt;
+            needScan = false;
+        } else if (wait) {
+            needScan = queue_work(
+                [] { Sleep(std::chrono::milliseconds{250}); }, type(), true);
+        }
+    } catch (...) {
+        needScan = true;
+    }
+
+    return needScan;
+}
+
+auto Rescan::SetCeiling(const block::Position& ceiling) noexcept -> void
+{
+    auto lock = Lock{lock_};
+    ceiling_ = ceiling;
 }
 }  // namespace opentxs::blockchain::node::wallet

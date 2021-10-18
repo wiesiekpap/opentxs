@@ -24,7 +24,7 @@ namespace opentxs::api::network::asio
 struct Context::Imp {
     operator boost::asio::io_context&() noexcept { return context_; }
 
-    auto Init(unsigned int threads) noexcept -> bool
+    auto Init(unsigned int threads, ThreadPriority priority) noexcept -> bool
     {
         if (false == running_) {
             work_ = boost::asio::require(
@@ -33,7 +33,7 @@ struct Context::Imp {
 
             for (unsigned int i{0}; i < threads; ++i) {
                 auto* thread = thread_pool_.create_thread(
-                    boost::bind(&boost::asio::io_context::run, &context_));
+                    boost::bind(&Imp::run, this, priority));
 
                 if (nullptr == thread) { OT_FAIL; }
             }
@@ -74,6 +74,12 @@ private:
     boost::asio::any_io_executor work_;
     boost::thread_group thread_pool_;
 
+    auto run(ThreadPriority priority) noexcept -> void
+    {
+        SetThisThreadsPriority(priority);
+        context_.run();
+    }
+
     Imp(const Imp&) = delete;
     Imp(Imp&&) = delete;
     auto operator=(const Imp&) -> Imp& = delete;
@@ -87,9 +93,10 @@ Context::Context() noexcept
 
 Context::operator boost::asio::io_context&() noexcept { return *imp_; }
 
-auto Context::Init(unsigned int threads) noexcept -> bool
+auto Context::Init(unsigned int threads, ThreadPriority priority) noexcept
+    -> bool
 {
-    return imp_->Init(threads);
+    return imp_->Init(threads, priority);
 }
 
 auto Context::Stop() noexcept -> void { imp_->Stop(); }

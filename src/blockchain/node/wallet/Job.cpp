@@ -25,10 +25,11 @@
 
 namespace opentxs::blockchain::node::wallet
 {
-Job::Job(SubchainStateData& parent) noexcept
+Job::Job(const ThreadPool pool, SubchainStateData& parent) noexcept
     : parent_(parent)
     , shutdown_(false)
     , lock_()
+    , thread_pool_(pool)
     , running_(0)
     , cv_()
 {
@@ -77,7 +78,7 @@ auto Job::queue_work(
     }
 
     const auto queued = parent_.api_.Network().Asio().Internal().Post(
-        ThreadPool::General, [this, job = std::move(cb)] {
+        thread_pool_, [this, job = std::move(cb)] {
             auto post = ScopeGuard{[this] {
                 parent_.task_finished_(parent_.db_key_, type());
                 --parent_.job_counter_;

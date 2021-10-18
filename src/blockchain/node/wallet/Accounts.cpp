@@ -8,9 +8,7 @@
 #include "blockchain/node/wallet/Accounts.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
-#include <atomic>
 #include <map>
-#include <mutex>
 #include <random>
 #include <set>
 #include <utility>
@@ -21,7 +19,6 @@
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Wallet.hpp"
@@ -42,8 +39,6 @@
 namespace opentxs::blockchain::node::wallet
 {
 struct Accounts::Imp {
-    auto Query() const noexcept -> bool { return subchains_.Query(); }
-
     auto Add(const identifier::Nym& nym) noexcept -> bool
     {
         auto ticket = gatekeeper_.get();
@@ -89,10 +84,6 @@ struct Accounts::Imp {
 
         for_each([&](auto& a) { a.ProcessBlockAvailable(block); });
     }
-    auto Complete(const Identifier& id) noexcept -> void
-    {
-        subchains_.Complete(id);
-    }
     auto finish_background_tasks() noexcept -> void
     {
         for_each([](auto& a) { a.FinishBackgroundTasks(); });
@@ -126,10 +117,6 @@ struct Accounts::Imp {
         if (ticket) { return; }
 
         for_each([](auto& a) { a.ProcessKey(); });
-    }
-    auto Register(const Identifier& id) noexcept -> void
-    {
-        subchains_.Register(id);
     }
     auto Reorg(const block::Position& parent) noexcept -> bool
     {
@@ -196,7 +183,6 @@ struct Accounts::Imp {
         , task_finished_(taskFinished)
         , chain_(chain)
         , filter_type_(node_.FilterOracleInternal().DefaultType())
-        , subchains_()
         , rng_(std::random_device{}())
         , job_counter_()
         , map_()
@@ -212,28 +198,6 @@ private:
     using AccountMap = std::map<OTNymID, wallet::Account>;
     using PCMap = std::map<OTIdentifier, NotificationStateData>;
 
-    struct Subchains {
-        auto Query() const noexcept -> bool { return finished_; }
-
-        auto Complete(const Identifier& id) noexcept -> void
-        {
-            auto lock = Lock{lock_};
-            done_.emplace(id);
-            finished_ = (done_.size() == registered_.size());
-        }
-        auto Register(const Identifier& id) noexcept -> void
-        {
-            auto lock = Lock{lock_};
-            registered_.emplace(id);
-            finished_ = (done_.size() == registered_.size());
-        }
-
-        mutable std::mutex lock_{};
-        std::set<OTIdentifier> registered_{};
-        std::set<OTIdentifier> done_{};
-        std::atomic_bool finished_{false};
-    };
-
     const api::Core& api_;
     const api::client::internal::Blockchain& crypto_;
     const node::internal::Network& node_;
@@ -242,7 +206,6 @@ private:
     const std::function<void(const Identifier&, const char*)>& task_finished_;
     const Type chain_;
     const filter::Type filter_type_;
-    Subchains subchains_;
     std::default_random_engine rng_;
     JobCounter job_counter_;
     AccountMap map_;
@@ -319,11 +282,6 @@ Accounts::Accounts(
     imp_->Init();
 }
 
-auto Accounts::Complete(const Identifier& id) noexcept -> void
-{
-    imp_->Complete(id);
-}
-
 auto Accounts::FinishBackgroundTasks() noexcept -> void
 {
     return imp_->finish_background_tasks();
@@ -373,13 +331,6 @@ auto Accounts::ProcessTaskComplete(
     bool enabled) noexcept -> void
 {
     imp_->TaskComplete(id, type, enabled);
-}
-
-auto Accounts::Query() const noexcept -> bool { return imp_->Query(); }
-
-auto Accounts::Register(const Identifier& id) noexcept -> void
-{
-    return imp_->Register(id);
 }
 
 auto Accounts::Shutdown() noexcept -> void { imp_->shutdown(); }
