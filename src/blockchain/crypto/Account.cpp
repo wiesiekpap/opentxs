@@ -50,6 +50,7 @@ namespace opentxs::factory
 {
 auto BlockchainAccountKeys(
     const api::Core& api,
+    const api::client::Contacts& contacts,
     const blockchain::crypto::Wallet& parent,
     const blockchain::crypto::AccountIndex& index,
     const identifier::Nym& id,
@@ -61,7 +62,7 @@ auto BlockchainAccountKeys(
     using ReturnType = blockchain::crypto::implementation::Account;
 
     return std::make_unique<ReturnType>(
-        api, parent, index, id, hd, imported, pc);
+        api, contacts, parent, index, id, hd, imported, pc);
 }
 }  // namespace opentxs::factory
 
@@ -69,6 +70,7 @@ namespace opentxs::blockchain::crypto::implementation
 {
 Account::Account(
     const api::Core& api,
+    const api::client::Contacts& contacts,
     const crypto::Wallet& parent,
     const AccountIndex& index,
     const identifier::Nym& nym,
@@ -76,6 +78,7 @@ Account::Account(
     const Accounts& imported,
     const Accounts& paymentCode) noexcept
     : api_(api)
+    , contacts_(contacts)
     , parent_(parent)
     , account_index_(index)
     , chain_(parent.Chain())
@@ -318,7 +321,7 @@ auto Account::init_payment_code(const Accounts& accounts) noexcept -> void
         if (false == loaded) { continue; }
 
         auto notUsed = Identifier::Factory();
-        payment_code_.Construct(notUsed, account);
+        payment_code_.Construct(notUsed, contacts_, account);
     }
 }
 

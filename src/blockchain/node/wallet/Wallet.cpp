@@ -7,17 +7,15 @@
 #include "1_Internal.hpp"                     // IWYU pragma: associated
 #include "blockchain/node/wallet/Wallet.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <future>
-#include <iterator>
 #include <memory>
+#include <stdexcept>
 #include <utility>
 
 #include "core/Worker.hpp"
 #include "internal/api/client/Client.hpp"
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -35,6 +33,7 @@
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "util/LMDB.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::implementation::Wallet::"
 
@@ -378,10 +377,38 @@ auto Wallet::process_reorg(const zmq::Message& in) noexcept -> void
         body.at(5).as<block::Height>(),
         api_.Factory().Data(body.at(4).Bytes())};
     accounts_.FinishBackgroundTasks();
-    accounts_.ProcessReorg(ancestor);
-    accounts_.FinishBackgroundTasks();
-    db_.RollbackTo(ancestor);
-    db_.AdvanceTo(tip);
+    auto errors = std::atomic_int{};
+    {
+        auto tx = db_.StartReorg();
+        accounts_.ProcessReorg(tx, errors, ancestor);
+        accounts_.FinishBackgroundTasks();
+
+        if (false == db_.FinalizeReorg(tx, ancestor)) { ++errors; }
+
+        try {
+            if (0 < errors) { throw std::runtime_error{"Prepare step failed"}; }
+
+            if (false == tx.Finalize(true)) {
+
+                throw std::runtime_error{"Finalize transaction failed"};
+            }
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+
+            OT_FAIL;
+        }
+    }
+
+    try {
+        if (false == db_.AdvanceTo(tip)) {
+
+            throw std::runtime_error{"Advance chain failed"};
+        }
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+
+        OT_FAIL;
+    }
 }
 
 auto Wallet::process_wallet() noexcept -> void

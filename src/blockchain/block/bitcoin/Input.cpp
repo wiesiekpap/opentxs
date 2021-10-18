@@ -35,6 +35,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
+#include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Data.hpp"
@@ -45,7 +46,6 @@
 #include "opentxs/protobuf/BlockchainInputWitness.pb.h"
 #include "opentxs/protobuf/BlockchainPreviousOutput.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionInput.pb.h"
-#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
 #include "opentxs/protobuf/BlockchainWalletKey.pb.h"
 
 namespace be = boost::endian;
@@ -736,7 +736,7 @@ auto Input::ExtractElements(const filter::Type style) const noexcept
 
 auto Input::FindMatches(
     const ReadView txid,
-    const FilterType type,
+    const filter::Type type,
     const Patterns& txos,
     const ParsedPatterns&) const noexcept -> Matches
 {

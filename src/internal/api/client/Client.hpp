@@ -145,7 +145,6 @@ auto translate(const proto::PaymentWorkflowType in) noexcept
     -> api::client::PaymentWorkflowType;
 
 struct Blockchain : virtual public api::client::Blockchain {
-    /// Throws std::runtime_error if type is invalid
     virtual auto Contacts() const noexcept -> const api::client::Contacts& = 0;
     virtual auto KeyEndpoint() const noexcept -> const std::string& = 0;
     virtual auto KeyGenerated(const Chain chain) const noexcept -> void = 0;
@@ -154,6 +153,7 @@ struct Blockchain : virtual public api::client::Blockchain {
     virtual bool ProcessMergedContact(
         const Contact& parent,
         const Contact& child) const noexcept = 0;
+    /// Throws std::runtime_error if type is invalid
     virtual auto PubkeyHash(
         const opentxs::blockchain::Type chain,
         const Data& pubkey) const noexcept(false) -> OTData = 0;

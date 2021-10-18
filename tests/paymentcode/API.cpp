@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "Basic.hpp"
 #include "VectorsV3.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"

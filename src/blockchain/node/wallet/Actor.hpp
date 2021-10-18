@@ -5,9 +5,11 @@
 
 #pragma once
 
+#include <atomic>
 #include <memory>
 
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "util/LMDB.hpp"
 
 namespace opentxs
 {
@@ -39,8 +41,10 @@ public:
         -> void = 0;
     virtual auto ProcessNewFilter(const block::Position& tip) noexcept
         -> void = 0;
-    virtual auto ProcessReorg(const block::Position& ancestor) noexcept
-        -> bool = 0;
+    virtual auto ProcessReorg(
+        storage::lmdb::LMDB::Transaction& tx,
+        std::atomic_int& errors,
+        const block::Position& ancestor) noexcept -> bool = 0;
     virtual auto ProcessStateMachine(bool enabled) noexcept -> bool = 0;
     virtual auto ProcessTaskComplete(
         const Identifier& id,

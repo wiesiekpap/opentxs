@@ -17,7 +17,6 @@
 #include "blockchain/node/wallet/ScriptForm.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/network/Network.hpp"
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
@@ -25,13 +24,12 @@
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
-#include "opentxs/protobuf/BlockchainWalletKey.pb.h"
 #include "util/JobCounter.hpp"
 #include "util/ScopeGuard.hpp"
 
@@ -64,7 +62,7 @@ SubchainStateData::SubchainStateData(
     , id_(std::move(id))
     , subchain_(subchain)
     , filter_type_(filter)
-    , db_key_(db.GetIndex(id_, subchain_, filter_type_))
+    , db_key_(db.GetSubchainID(id_, subchain_))
     , null_position_(make_blank<block::Position>::value(api_))
     , job_counter_(jobCounter)
     , block_index_()
@@ -113,17 +111,25 @@ auto SubchainStateData::describe() const noexcept -> std::string
     return out.str();
 }
 
-auto SubchainStateData::do_reorg(const block::Position ancestor) noexcept
-    -> void
+auto SubchainStateData::do_reorg(
+    storage::lmdb::LMDB::Transaction& tx,
+    std::atomic_int& errors,
+    const block::Position ancestor) noexcept -> void
 {
     const auto tip = db_.SubchainLastScanned(db_key_);
     // TODO use ancestor
-    const auto reorg = node_.HeaderOracleInternal().CalculateReorg(tip);
-    db_.ReorgTo(id_, subchain_, db_key_, reorg);
-    scan_.Reorg(ancestor);
-    rescan_.Reorg(ancestor);
-    process_.Reorg(ancestor);
-    progress_.Reorg(ancestor);
+    const auto& headers = node_.HeaderOracleInternal();
+    const auto reorg = headers.CalculateReorg(tip);
+
+    if (db_.ReorgTo(tx, headers, id_, subchain_, db_key_, reorg)) {
+        scan_.Reorg(ancestor);
+        rescan_.Reorg(ancestor);
+        process_.Reorg(ancestor);
+        progress_.Reorg(ancestor);
+    } else {
+
+        ++errors;
+    }
 }
 
 auto SubchainStateData::FinishBackgroundTasks() noexcept -> void
@@ -292,16 +298,18 @@ auto SubchainStateData::ProcessNewFilter(const block::Position& tip) noexcept
     scan_.Run(tip);
 }
 
-auto SubchainStateData::ProcessReorg(const block::Position& ancestor) noexcept
-    -> bool
+auto SubchainStateData::ProcessReorg(
+    storage::lmdb::LMDB::Transaction& tx,
+    std::atomic_int& errors,
+    const block::Position& ancestor) noexcept -> bool
 {
     LogInsane(OT_METHOD)(__func__)(": ")(name_).Flush();
     ++job_counter_;
     const auto queued =
-        api_.Network().Asio().Internal().Post(ThreadPool::General, [=] {
+        api_.Network().Asio().Internal().Post(ThreadPool::General, [&] {
             auto post = ScopeGuard{[this] { --job_counter_; }};
 
-            do_reorg(ancestor);
+            do_reorg(tx, errors, ancestor);
         });
 
     if (queued) {
@@ -310,6 +318,7 @@ auto SubchainStateData::ProcessReorg(const block::Position& ancestor) noexcept
         LogDebug(OT_METHOD)(__func__)(": ")(name_)(" failed to queue reorg job")
             .Flush();
         --job_counter_;
+        ++errors;
     }
 
     return queued;
@@ -409,10 +418,11 @@ auto SubchainStateData::translate(
     }
 }
 
-auto SubchainStateData::update_scan(const block::Position& pos) const noexcept
-    -> void
+auto SubchainStateData::update_scan(const block::Position& pos, bool reorg)
+    const noexcept -> void
 {
-    db_.SubchainSetLastScanned(db_key_, pos);
+    if (false == reorg) { db_.SubchainSetLastScanned(db_key_, pos); }
+
     crypto_.ReportScan(
         node_.Chain(), owner_, account_type_, id_, subchain_, pos);
 }

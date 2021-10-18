@@ -5,7 +5,7 @@
 
 // IWYU pragma: no_include "internal/blockchain/p2p/P2P.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
-// IWYU pragma: no_include "opentxs/blockchain/FilterType.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/filter::Type.hpp"
 
 #pragma once
 
@@ -42,7 +42,6 @@ using FilterData = opentxs::blockchain::node::internal::FilterDatabase::Filter;
 using FilterHash = opentxs::blockchain::node::internal::FilterDatabase::Hash;
 using FilterHeader =
     opentxs::blockchain::node::internal::FilterDatabase::Header;
-using FilterType = opentxs::blockchain::filter::Type;
 using Position = opentxs::blockchain::block::Position;
 using Protocol = opentxs::blockchain::p2p::Protocol;
 using Service = opentxs::blockchain::p2p::Service;

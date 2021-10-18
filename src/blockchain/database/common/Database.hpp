@@ -26,6 +26,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -132,22 +133,22 @@ public:
         const std::set<Service> withServices) const noexcept -> Address_p;
     auto GetSyncServers() const noexcept -> Endpoints;
     auto HashKey() const noexcept -> ReadView;
-    auto HaveFilter(const FilterType type, const ReadView blockHash)
+    auto HaveFilter(const filter::Type type, const ReadView blockHash)
         const noexcept -> bool;
-    auto HaveFilterHeader(const FilterType type, const ReadView blockHash)
+    auto HaveFilterHeader(const filter::Type type, const ReadView blockHash)
         const noexcept -> bool;
     auto Import(std::vector<Address_p> peers) const noexcept -> bool;
     auto LoadBlockHeader(const BlockHash& hash) const noexcept(false)
         -> proto::BlockchainBlockHeader;
     auto LoadEnabledChains() const noexcept -> std::vector<EnabledChain>;
-    auto LoadFilter(const FilterType type, const ReadView blockHash)
+    auto LoadFilter(const filter::Type type, const ReadView blockHash)
         const noexcept -> std::unique_ptr<const opentxs::blockchain::GCS>;
     auto LoadFilterHash(
-        const FilterType type,
+        const filter::Type type,
         const ReadView blockHash,
         const AllocateOutput filterHash) const noexcept -> bool;
     auto LoadFilterHeader(
-        const FilterType type,
+        const filter::Type type,
         const ReadView blockHash,
         const AllocateOutput header) const noexcept -> bool;
     auto LoadSync(
@@ -167,12 +168,12 @@ public:
         const noexcept -> bool;
     auto StoreBlockHeaders(const UpdatedHeader& headers) const noexcept -> bool;
     auto StoreFilterHeaders(
-        const FilterType type,
+        const filter::Type type,
         const std::vector<FilterHeader>& headers) const noexcept -> bool;
-    auto StoreFilters(const FilterType type, std::vector<FilterData>& filters)
+    auto StoreFilters(const filter::Type type, std::vector<FilterData>& filters)
         const noexcept -> bool;
     auto StoreFilters(
-        const FilterType type,
+        const filter::Type type,
         const std::vector<FilterHeader>& headers,
         const std::vector<FilterData>& filters) const noexcept -> bool;
     auto StoreSync(const Chain chain, const SyncItems& items) const noexcept

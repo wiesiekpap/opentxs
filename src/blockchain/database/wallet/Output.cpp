@@ -17,22 +17,28 @@
 #include <mutex>
 #include <numeric>
 #include <set>
+#include <shared_mutex>
+#include <stdexcept>
 #include <string>
 #include <string_view>
-#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <variant>
 
+#include "Proto.hpp"
+#include "Proto.tpp"
+#include "blockchain/database/wallet/Position.hpp"
 #include "blockchain/database/wallet/Proposal.hpp"
 #include "blockchain/database/wallet/Subchain.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -43,25 +49,27 @@
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
-#include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/TxoState.hpp"
 #include "opentxs/blockchain/node/TxoTag.hpp"
+#include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
-#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
-#include "opentxs/protobuf/BlockchainWalletKey.pb.h"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/verify/BlockchainTransactionOutput.hpp"
-#include "util/Container.hpp"
+#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"  // IWYU pragma: keep
+#include "util/LMDB.hpp"
 
 #define OT_METHOD "opentxs::blockchain::database::Output::"
+
+namespace opentxs
+{
+auto key_to_bytes(const blockchain::crypto::Key& in) noexcept -> Space;
+}  // namespace opentxs
 
 namespace std
 {
@@ -127,22 +135,14 @@ template <>
 struct hash<Key> {
     auto operator()(const Key& data) const noexcept -> std::size_t
     {
-        const auto preimage = [&]() {
-            const auto& [account, subchain, index] = data;
-            auto out = opentxs::Data::Factory();
-            out->Concatenate(account);
-            out->Concatenate(&subchain, sizeof(subchain));
-            out->Concatenate(&index, sizeof(index));
-
-            return out;
-        }();
+        const auto preimage = opentxs::key_to_bytes(data);
         static const auto& api = opentxs::Context().Crypto().Hash();
         static const auto key = std::array<char, 16>{};
         auto out = std::size_t{};
         api.HMAC(
             opentxs::crypto::HashType::SipHash24,
             {key.data(), key.size()},
-            preimage->Bytes(),
+            opentxs::reader(preimage),
             opentxs::preallocated(sizeof(out), &out));
 
         return out;
@@ -150,8 +150,48 @@ struct hash<Key> {
 };
 }  // namespace std
 
+namespace opentxs
+{
+auto key_to_bytes(const blockchain::crypto::Key& in) noexcept -> Space
+{
+    const auto& [id, subchain, index] = in;
+    auto out = space(id.size() + sizeof(subchain) + sizeof(index));
+    auto i = out.data();
+    std::memcpy(i, id.data(), id.size());
+    std::advance(i, id.size());
+    std::memcpy(i, &subchain, sizeof(subchain));
+    std::advance(i, sizeof(subchain));
+    std::memcpy(i, &index, sizeof(index));
+    std::advance(i, sizeof(index));
+
+    return out;
+}
+}  // namespace opentxs
+
 namespace opentxs::blockchain::database::wallet
 {
+template <typename Input>
+auto tsv(const Input& in) noexcept -> ReadView
+{
+    return {reinterpret_cast<const char*>(&in), sizeof(in)};
+}
+
+using Dir = storage::lmdb::LMDB::Dir;
+using Mode = storage::lmdb::LMDB::Mode;
+
+constexpr auto accounts_{Table::AccountOutputs};
+constexpr auto config_{Table::Config};
+constexpr auto generation_{Table::GenerationOutputs};
+constexpr auto keys_{Table::KeyOutputs};
+constexpr auto nyms_{Table::NymOutputs};
+constexpr auto output_proposal_{Table::OutputProposals};
+constexpr auto outputs_{Table::WalletOutputs};
+constexpr auto positions_{Table::PositionOutputs};
+constexpr auto proposal_created_{Table::ProposalCreatedOutputs};
+constexpr auto proposal_spent_{Table::ProposalSpentOutputs};
+constexpr auto states_{Table::StateOutputs};
+constexpr auto subchains_{Table::SubchainOutputs};
+
 struct Output::Imp {
     auto GetBalance() const noexcept -> Balance
     {
@@ -184,7 +224,6 @@ struct Output::Imp {
 
         return get_balance(lock, owner, node, &key);
     }
-    auto GetMutex() const noexcept -> std::shared_mutex& { return lock_; }
     auto GetOutputs(node::TxoState type) const noexcept -> std::vector<UTXO>
     {
         if (node::TxoState::Error == type) { return {}; }
@@ -242,6 +281,15 @@ struct Output::Imp {
             return {};
         }
     }
+    auto GetTransactions() const noexcept -> std::vector<block::pTxid>
+    {
+        return translate(GetOutputs(node::TxoState::All));
+    }
+    auto GetTransactions(const identifier::Nym& account) const noexcept
+        -> std::vector<block::pTxid>
+    {
+        return translate(GetOutputs(account, node::TxoState::All));
+    }
     auto GetUnspentOutputs() const noexcept -> std::vector<UTXO>
     {
         static const auto blank = api_.Factory().Identifier();
@@ -258,7 +306,7 @@ struct Output::Imp {
     {
         auto lock = sLock{lock_};
 
-        return position_.first;
+        return get_position().Height();
     }
 
     auto AddTransaction(
@@ -271,148 +319,164 @@ struct Output::Imp {
         const node::TxoState created) noexcept -> bool
     {
         auto lock = eLock{lock_};
-        const auto isGeneration = original.IsGeneration();
-        auto pCopy = original.clone();
 
-        OT_ASSERT(pCopy);
+        try {
+            const auto isGeneration = original.IsGeneration();
+            auto pCopy = original.clone();
 
-        auto& copy = *pCopy;
-        auto inputIndex = std::ptrdiff_t{-1};
+            OT_ASSERT(pCopy);
 
-        for (const auto& input : copy.Inputs()) {
-            const auto& outpoint = input.PreviousOutput();
-            ++inputIndex;
+            auto& copy = *pCopy;
+            auto inputIndex = std::ptrdiff_t{-1};
+            auto tx = lmdb_.TransactionRW();
+            auto proposals = std::set<OTIdentifier>{};
 
-            if (false == check_proposals(lock, outpoint, block, copy.ID())) {
-                LogOutput(OT_METHOD)(__func__)(": Error updating proposals")
-                    .Flush();
-
-                return false;
-            }
-
-            try {
-                auto& existing = find_output(lock, outpoint);
-
-                if (!copy.AssociatePreviousOutput(
-                        blockchain_, inputIndex, existing)) {
-                    LogOutput(OT_METHOD)(__func__)(
-                        ": Error associating previous output to input")
-                        .Flush();
-
-                    return false;
-                }
+            for (const auto& input : copy.Inputs()) {
+                const auto& outpoint = input.PreviousOutput();
+                ++inputIndex;
 
                 if (false ==
-                    change_state(lock, outpoint, existing, consumed, block)) {
-                    LogOutput(OT_METHOD)(__func__)(
-                        ": Error updating consumed output state")
-                        .Flush();
-
-                    return false;
+                    check_proposals(
+                        lock, tx, outpoint, block, copy.ID(), proposals)) {
+                    throw std::runtime_error{"Error updating proposals"};
                 }
-            } catch (...) {
+
+                try {
+                    auto& existing = find_output(lock, outpoint);
+
+                    if (!copy.AssociatePreviousOutput(
+                            blockchain_, inputIndex, existing)) {
+                        LogOutput(OT_METHOD)(__func__)(
+                            ": Error associating previous output to input")
+                            .Flush();
+                        clear_cache(lock);
+
+                        return false;
+                    }
+
+                    if (false ==
+                        change_state(
+                            lock, tx, outpoint, existing, consumed, block)) {
+                        LogOutput(OT_METHOD)(__func__)(
+                            ": Error updating consumed output state")
+                            .Flush();
+                        clear_cache(lock);
+
+                        return false;
+                    }
+                } catch (...) {
+                }
+
+                // NOTE consider the case of parallel chain scanning where one
+                // transaction spends inputs that belong to two different
+                // subchains. The first subchain to find the transaction will
+                // recognize the inputs belonging to itself but might miss the
+                // inputs belonging to the other subchain if the other
+                // subchain's scanning process has not yet discovered those
+                // outputs. This is fine. The other scanning process will parse
+                // this transaction again and at that point all inputs will be
+                // recognized. The only impact is that net balance change of the
+                // transaction will underestimated temporarily until scanning is
+                // complete for all subchains.
             }
 
-            // NOTE consider the case of parallel chain scanning where one
-            // transaction spends inputs that belong to two different subchains.
-            // The first subchain to find the transaction will recognize the
-            // inputs belonging to itself but might miss the inputs belonging to
-            // the other subchain if the other subchain's scanning process has
-            // not yet discovered those outputs. This is fine. The other
-            // scanning process will parse this transaction again and at that
-            // point all inputs will be recognized. The only impact is that net
-            // balance change of the transaction will underestimated temporarily
-            // until scanning is complete for all subchains.
-        }
+            for (const auto& index : outputIndices) {
+                const auto outpoint = block::Outpoint{copy.ID().Bytes(), index};
+                const auto& output = copy.Outputs().at(index);
+                const auto keys = output.Keys();
 
-        for (const auto& index : outputIndices) {
-            const auto outpoint = Outpoint{copy.ID().Bytes(), index};
-            const auto& output = copy.Outputs().at(index);
-            const auto keys = output.Keys();
+                OT_ASSERT(0 < keys.size());
+                // NOTE until multisig is supported there is never a reason for
+                // an output to be associated with more than one key.
+                OT_ASSERT(1 == keys.size());
+                OT_ASSERT(outpoint.Index() == index);
 
-            OT_ASSERT(0 < keys.size());
-            // NOTE until multisig is supported there is never a reason for an
-            // output to be associated with more than one key.
-            OT_ASSERT(1 == keys.size());
-            OT_ASSERT(outpoint.Index() == index);
+                try {
+                    auto& existing = find_output(lock, outpoint);
 
-            try {
-                auto& existing = find_output(lock, outpoint);
+                    if (false ==
+                        change_state(
+                            lock, tx, outpoint, existing, created, block)) {
+                        LogOutput(OT_METHOD)(__func__)(
+                            ": Error updating created output state")
+                            .Flush();
+                        clear_cache(lock);
 
-                if (false ==
-                    change_state(lock, outpoint, existing, created, block)) {
-                    LogOutput(OT_METHOD)(__func__)(
-                        ": Error updating created output state")
-                        .Flush();
+                        return false;
+                    }
+                } catch (...) {
+                    if (false == create_state(
+                                     lock,
+                                     tx,
+                                     isGeneration,
+                                     outpoint,
+                                     created,
+                                     block,
+                                     output)) {
+                        LogOutput(OT_METHOD)(__func__)(
+                            ": Error created new output state")
+                            .Flush();
+                        clear_cache(lock);
 
-                    return false;
-                }
-            } catch (...) {
-                if (false ==
-                    create_state(
-                        lock, isGeneration, outpoint, created, block, output)) {
-                    LogOutput(OT_METHOD)(__func__)(
-                        ": Error created new output state")
-                        .Flush();
-
-                    return false;
-                }
-            }
-
-            if (false == associate(lock, outpoint, account, subchain)) {
-                LogOutput(OT_METHOD)(__func__)(
-                    ": Error associating outpoint to subchain")
-                    .Flush();
-
-                return false;
-            }
-
-            for (const auto& key : keys) {
-                const auto& [subaccount, subchain, bip32] = key;
-
-                if (Subchain::Outgoing == subchain) {
-                    // TODO make sure this output is associated with the correct
-                    // contact
-
-                    continue;
+                        return false;
+                    }
                 }
 
-                const auto& owner = blockchain_.Owner(key);
-
-                if (owner.empty()) {
-                    LogOutput(OT_METHOD)(__func__)(": No owner found for key ")(
-                        opentxs::print(key))
-                        .Flush();
-
-                    OT_FAIL;
+                if (false == associate(lock, tx, outpoint, account, subchain)) {
+                    throw std::runtime_error{
+                        "Error associating outpoint to subchain"};
                 }
 
-                if (false == associate(lock, outpoint, owner)) {
-                    LogOutput(OT_METHOD)(__func__)(
-                        ": Error associating outpoint to nym")
-                        .Flush();
+                for (const auto& key : keys) {
+                    const auto& [subaccount, subchain, bip32] = key;
 
-                    return false;
+                    if (crypto::Subchain::Outgoing == subchain) {
+                        // TODO make sure this output is associated with the
+                        // correct contact
+
+                        continue;
+                    }
+
+                    const auto& owner = blockchain_.Owner(key);
+
+                    if (owner.empty()) {
+                        LogOutput(OT_METHOD)(__func__)(
+                            ": No owner found for key ")(opentxs::print(key))
+                            .Flush();
+
+                        OT_FAIL;
+                    }
+
+                    if (false == associate(lock, tx, outpoint, owner)) {
+                        throw std::runtime_error{
+                            "Error associating outpoint to nym"};
+                    }
                 }
             }
-        }
 
-        const auto reason = api_.Factory().PasswordPrompt(
-            "Save a received blockchain transaction");
+            const auto reason = api_.Factory().PasswordPrompt(
+                "Save a received blockchain transaction");
 
-        if (!blockchain_.ProcessTransaction(chain_, copy, reason)) {
-            LogOutput(OT_METHOD)(__func__)(
-                ": Error adding transaction to database")
-                .Flush();
-            // TODO rollback transaction
+            if (!blockchain_.ProcessTransaction(chain_, copy, reason)) {
+                throw std::runtime_error{
+                    "Error adding transaction to database"};
+            }
+
+            if (false == tx.Finalize(true)) {
+                throw std::runtime_error{
+                    "Failed to commit database transaction"};
+            }
+
+            // NOTE uncomment this for detailed debugging: print(lock);
+            publish_balance(lock);
+
+            return true;
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            clear_cache(lock);
 
             return false;
         }
-
-        // NOTE uncomment this for detailed debugging: print(lock);
-        publish_balance(lock);
-
-        return true;
     }
     auto AddConfirmedTransaction(
         const AccountID& account,
@@ -456,378 +520,614 @@ struct Output::Imp {
 
         auto lock = eLock{lock_};
 
-        for (const auto& input : transaction.Inputs()) {
-            const auto& outpoint = input.PreviousOutput();
+        try {
+            for (const auto& input : transaction.Inputs()) {
+                const auto& outpoint = input.PreviousOutput();
 
-            try {
-                if (proposalID != output_proposal_.at(outpoint)) {
-                    LogOutput(OT_METHOD)(__func__)(": Incorrect proposal ID")
+                auto found{false};
+                lmdb_.Load(
+                    output_proposal_, outpoint.Bytes(), [&](const auto bytes) {
+                        found = true;
+
+                        if (bytes != proposalID.Bytes()) {
+                            throw std::runtime_error{"Incorrect proposal ID"};
+                        }
+                    });
+
+                if (false == found) {
+                    const auto error = std::string{
+                        "Input spending " + outpoint.str() +
+                        " is not registered with a proposal"};
+
+                    throw std::runtime_error{error};
+                }
+
+                // NOTE it's not necessary to change the state of the spent
+                // outputs because that was done when they were reserved for the
+                // proposal
+            }
+
+            auto index{-1};
+            auto pending = std::vector<block::Outpoint>{};
+            auto tx = lmdb_.TransactionRW();
+
+            for (const auto& output : transaction.Outputs()) {
+                ++index;
+                const auto keys = output.Keys();
+
+                if (0 == keys.size()) {
+                    LogTrace(OT_METHOD)(__func__)(": output ")(
+                        index)(" belongs to someone else")
                         .Flush();
 
-                    return false;
+                    continue;
+                } else {
+                    LogTrace(OT_METHOD)(__func__)(": output ")(
+                        index)(" belongs to me")
+                        .Flush();
                 }
-            } catch (...) {
-                LogOutput(OT_METHOD)(__func__)(": Input spending")(
-                    outpoint.str())(" not registered with a proposal")
+
+                OT_ASSERT(1 == keys.size());
+
+                const auto& outpoint = pending.emplace_back(
+                    transaction.ID().Bytes(),
+                    static_cast<std::uint32_t>(index));
+
+                try {
+                    auto& existing = find_output(lock, outpoint);
+
+                    if (false == change_state(
+                                     lock,
+                                     tx,
+                                     outpoint,
+                                     existing,
+                                     node::TxoState::UnconfirmedNew,
+                                     blank_)) {
+                        LogOutput(OT_METHOD)(__func__)(
+                            ": Error updating created output state")
+                            .Flush();
+                        clear_cache(lock);
+
+                        return false;
+                    }
+                } catch (...) {
+                    if (false == create_state(
+                                     lock,
+                                     tx,
+                                     false,
+                                     outpoint,
+                                     node::TxoState::UnconfirmedNew,
+                                     blank_,
+                                     output)) {
+                        LogOutput(OT_METHOD)(__func__)(
+                            ": Error creating new output state")
+                            .Flush();
+                        clear_cache(lock);
+
+                        return false;
+                    }
+                }
+
+                for (const auto& key : keys) {
+                    const auto& owner = blockchain_.Owner(key);
+
+                    if (false == associate(lock, tx, outpoint, key)) {
+                        throw std::runtime_error{
+                            "Error associating output to subchain"};
+                    }
+
+                    if (false == associate(lock, tx, outpoint, owner)) {
+                        throw std::runtime_error{
+                            "Error associating output to nym"};
+                    }
+                }
+            }
+
+            for (const auto& outpoint : pending) {
+                LogVerbose(OT_METHOD)(__func__)(": proposal ")(
+                    proposalID.str())(" created outpoint ")(outpoint.str())
                     .Flush();
+                auto rc = lmdb_
+                              .Store(
+                                  proposal_created_,
+                                  proposalID.Bytes(),
+                                  outpoint.Bytes(),
+                                  tx)
+                              .first;
 
-                return false;
-            }
-
-            // NOTE it's not necessary to change the state of the spent outputs
-            // because that was done when they were reserved for the proposal
-        }
-
-        auto index{-1};
-        auto& pending = proposal_created_[proposalID];
-
-        for (const auto& output : transaction.Outputs()) {
-            ++index;
-            const auto keys = output.Keys();
-
-            if (0 == keys.size()) {
-                LogTrace(OT_METHOD)(__func__)(": output ")(
-                    index)(" belongs to someone else")
-                    .Flush();
-
-                continue;
-            } else {
-                LogTrace(OT_METHOD)(__func__)(": output ")(
-                    index)(" belongs to me")
-                    .Flush();
-            }
-
-            OT_ASSERT(1 == keys.size());
-
-            const auto [it, added] = pending.emplace(
-                transaction.ID().Bytes(), static_cast<std::uint32_t>(index));
-            const auto& outpoint = *it;
-
-            try {
-                auto& existing = find_output(lock, outpoint);
-
-                if (false == change_state(
-                                 lock,
-                                 outpoint,
-                                 existing,
-                                 node::TxoState::UnconfirmedNew,
-                                 blank_)) {
-                    LogOutput(OT_METHOD)(__func__)(
-                        ": Error updating created output state")
-                        .Flush();
-
-                    return false;
+                if (false == rc) {
+                    throw std::runtime_error{
+                        "Failed to update proposal created outpoint index"};
                 }
-            } catch (...) {
-                if (false == create_state(
-                                 lock,
-                                 false,
-                                 outpoint,
-                                 node::TxoState::UnconfirmedNew,
-                                 blank_,
-                                 output)) {
-                    LogOutput(OT_METHOD)(__func__)(
-                        ": Error creating new output state")
-                        .Flush();
 
-                    return false;
+                rc = lmdb_
+                         .Store(
+                             output_proposal_,
+                             outpoint.Bytes(),
+                             proposalID.Bytes(),
+                             tx)
+                         .first;
+
+                if (false == rc) {
+                    throw std::runtime_error{
+                        "Failed to update outpoint proposal index"};
                 }
             }
 
-            for (const auto& key : keys) {
-                const auto& owner = blockchain_.Owner(key);
+            const auto reason = api_.Factory().PasswordPrompt(
+                "Save an outgoing blockchain transaction");
 
-                if (false == associate(lock, outpoint, key)) {
-                    LogOutput(OT_METHOD)(__func__)(
-                        ": Error associating output to subchain")
-                        .Flush();
-
-                    return false;
-                }
-
-                if (false == associate(lock, outpoint, owner)) {
-                    LogOutput(OT_METHOD)(__func__)(
-                        ": Error associating output to nym")
-                        .Flush();
-
-                    return false;
-                }
+            if (!blockchain_.ProcessTransaction(chain_, transaction, reason)) {
+                throw std::runtime_error{
+                    "Error adding transaction to database"};
             }
-        }
 
-        const auto reason = api_.Factory().PasswordPrompt(
-            "Save an outgoing blockchain transaction");
+            if (false == tx.Finalize(true)) {
+                throw std::runtime_error{
+                    "Failed to commit database transaction"};
+            }
 
-        if (!blockchain_.ProcessTransaction(chain_, transaction, reason)) {
-            LogOutput(OT_METHOD)(__func__)(
-                ": Error adding transaction to database")
-                .Flush();
+            // NOTE uncomment this for detailed debugging: print(lock);
+            publish_balance(lock);
+
+            return true;
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            clear_cache(lock);
 
             return false;
         }
-
-        // NOTE uncomment this for detailed debugging: print(lock);
-        publish_balance(lock);
-
-        return true;
     }
     auto AdvanceTo(const block::Position& pos) noexcept -> bool
     {
         auto output{true};
         auto changed{0};
         auto lock = eLock{lock_};
-        const auto start = position_.first;
 
-        if (pos == position_) { return true; }
-        if (pos.first < position_.first) { return true; }
+        try {
+            const auto current = get_position().Decode(api_);
+            const auto start = current.first;
 
-        OT_ASSERT(pos.first > start);
+            if (pos == current) { return true; }
+            if (pos.first < current.first) { return true; }
 
-        auto count = (pos.first - start);
-        const auto stop = std::max<block::Height>(
-            0,
-            start - params::Data::Chains().at(chain_).maturation_interval_ - 1);
+            OT_ASSERT(pos.first > start);
 
-        for (auto i{generation_.crbegin()}; i != generation_.crend(); ++i) {
-            const auto& [height, outputs] = *i;
+            const auto stop = std::max<block::Height>(
+                0,
+                start - params::Data::Chains().at(chain_).maturation_interval_ -
+                    1);
+            const auto matured = [&] {
+                auto m = std::set<block::Outpoint>{};
+                lmdb_.Read(
+                    generation_,
+                    [&](const auto key, const auto value) {
+                        const auto height = [&] {
+                            auto out = block::Height{};
 
-            if (height <= stop) {
-                break;
-            } else if (is_mature(lock, height, pos)) {
-                using State = node::TxoState;
+                            OT_ASSERT(sizeof(out) == key.size());
 
-                for (const auto& outpoint : outputs) {
-                    output &=
-                        change_state(lock, outpoint, State::ConfirmedNew, pos);
+                            std::memcpy(&out, key.data(), key.size());
 
-                    OT_ASSERT(output);
+                            return out;
+                        }();
 
+                        if (is_mature(lock, height, pos)) {
+                            m.emplace(block::Outpoint{value});
+                        }
+
+                        return (height > stop);
+                    },
+                    Dir::Backward);
+
+                return m;
+            }();
+            auto tx = lmdb_.TransactionRW();
+
+            for (const auto& outpoint : matured) {
+                static constexpr auto state = node::TxoState::ConfirmedNew;
+                const auto& output = find_output(lock, outpoint);
+
+                if (output.State() == state) { continue; }
+
+                if (false == change_state(lock, tx, outpoint, state, pos)) {
+                    throw std::runtime_error{"failed to mature output"};
+                } else {
                     ++changed;
                 }
-
-                --count;
             }
 
-            if (0 == count) { break; }
+            const auto sPosition = db::Position{pos};
+            const auto rc = lmdb_
+                                .Store(
+                                    config_,
+                                    tsv(database::Key::WalletPosition),
+                                    reader(sPosition.data_),
+                                    tx)
+                                .first;
+
+            if (false == rc) {
+                throw std::runtime_error{"Failed to update wallet position"};
+            }
+
+            if (false == tx.Finalize(true)) {
+                throw std::runtime_error{
+                    "Failed to commit database transaction"};
+            }
+
+            cache_.position_.emplace(std::move(pos));
+
+            if (0 < changed) { publish_balance(lock); }
+
+            return output;
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            clear_cache(lock);
+
+            return false;
         }
-
-        position_ = pos;
-
-        if (0 < changed) { publish_balance(lock); }
-
-        return output;
     }
     auto CancelProposal(const Identifier& id) noexcept -> bool
     {
         auto lock = eLock{lock_};
-        auto& reserved = proposal_spent_[id];
-        auto& created = proposal_created_[id];
 
-        for (const auto& id : reserved) {
-            if (false == change_state(
-                             lock,
-                             id,
-                             node::TxoState::UnconfirmedSpend,
-                             node::TxoState::ConfirmedNew)) {
-                LogOutput(OT_METHOD)(__func__)(": failed to reclaim outpoint ")(
-                    id.str())
-                    .Flush();
+        try {
+            const auto reserved = [&] {
+                auto out = std::vector<block::Outpoint>{};
+                lmdb_.Load(
+                    proposal_spent_,
+                    id.Bytes(),
+                    [&](const auto bytes) { out.emplace_back(bytes); },
+                    Mode::Multiple);
 
-                return false;
+                return out;
+            }();
+            const auto created = [&] {
+                auto out = std::vector<block::Outpoint>{};
+                lmdb_.Load(
+                    proposal_created_,
+                    id.Bytes(),
+                    [&](const auto bytes) { out.emplace_back(bytes); },
+                    Mode::Multiple);
+
+                return out;
+            }();
+            auto tx = lmdb_.TransactionRW();
+            auto rc{true};
+
+            for (const auto& id : reserved) {
+                rc = change_state(
+                    lock,
+                    tx,
+                    id,
+                    node::TxoState::UnconfirmedSpend,
+                    node::TxoState::ConfirmedNew);
+
+                if (false == rc) {
+                    const auto error =
+                        std::string{"failed to reclaim outpoint " + id.str()};
+
+                    throw std::runtime_error{error};
+                }
+
+                rc = lmdb_.Delete(output_proposal_, id.Bytes(), tx);
+
+                if (false == rc) {
+                    throw std::runtime_error{
+                        "Failed to update outpoint - proposal index"};
+                }
             }
 
-            output_proposal_.erase(id);
-        }
+            for (const auto& id : created) {
+                auto rc = change_state(
+                    lock,
+                    tx,
+                    id,
+                    node::TxoState::UnconfirmedNew,
+                    node::TxoState::OrphanedNew);
 
-        for (const auto& id : created) {
-            if (false == change_state(
-                             lock,
-                             id,
-                             node::TxoState::UnconfirmedNew,
-                             node::TxoState::OrphanedNew)) {
-                LogOutput(OT_METHOD)(__func__)(
-                    ": failed to orphan canceled outpoint ")(id.str())
-                    .Flush();
+                if (false == rc) {
+                    const auto error = std::string{
+                        "failed to orphan cancelled outpoint " + id.str()};
 
-                return false;
+                    throw std::runtime_error{error};
+                }
             }
+
+            rc = lmdb_.Delete(proposal_spent_, id.Bytes(), tx);
+
+            if (false == rc) {
+                throw std::runtime_error{"failed to erase spent outpoints"};
+            }
+
+            rc = lmdb_.Delete(proposal_created_, id.Bytes(), tx);
+
+            if (false == rc) {
+                throw std::runtime_error{"failed to erase created outpoints"};
+            }
+
+            rc = proposals_.CancelProposal(tx, id);
+
+            if (false == rc) {
+                throw std::runtime_error{"failed to cancel proposal"};
+            }
+
+            if (false == tx.Finalize(true)) {
+                throw std::runtime_error{
+                    "Failed to commit database transaction"};
+            }
+
+            return true;
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            clear_cache(lock);
+
+            return false;
+        }
+    }
+    auto FinalizeReorg(MDB_txn* tx, const block::Position& pos) noexcept -> bool
+    {
+        auto output{true};
+        auto lock = eLock{lock_};
+
+        try {
+            if (get_position().Decode(api_) != pos) {
+                auto outputs = std::vector<block::Outpoint>{};
+                const auto heights = [&] {
+                    auto out = std::set<block::Height>{};
+                    lmdb_.Read(
+                        generation_,
+                        [&](const auto key, const auto value) {
+                            const auto height = [&] {
+                                auto out = block::Height{};
+
+                                OT_ASSERT(sizeof(out) == key.size());
+
+                                std::memcpy(&out, key.data(), key.size());
+
+                                return out;
+                            }();
+                            outputs.emplace_back(value);
+
+                            if (height >= pos.first) {
+                                out.emplace(height);
+
+                                return true;
+                            } else {
+
+                                return false;
+                            }
+                        },
+                        Dir::Backward);
+
+                    return out;
+                }();
+
+                for (const auto height : heights) {
+                    output = lmdb_.Delete(
+                        generation_, static_cast<std::size_t>(height), tx);
+
+                    if (false == output) {
+                        throw std::runtime_error{
+                            "failed to delete generation output index"};
+                    }
+                }
+
+                for (const auto& id : outputs) {
+                    using State = node::TxoState;
+                    output =
+                        change_state(lock, tx, id, State::OrphanedNew, pos);
+
+                    if (false == output) {
+                        throw std::runtime_error{
+                            "failed to orphan generation output"};
+                    }
+                }
+
+                const auto sPosition = db::Position{pos};
+                output = lmdb_
+                             .Store(
+                                 config_,
+                                 tsv(database::Key::WalletPosition),
+                                 reader(sPosition.data_),
+                                 tx)
+                             .first;
+
+                if (false == output) {
+                    throw std::runtime_error{
+                        "Failed to update wallet position"};
+                }
+
+                cache_.position_.emplace(pos);
+            }
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            output = false;
         }
 
-        proposal_spent_.erase(id);
-        proposal_created_.erase(id);
+        clear_cache(lock);
 
-        return proposals_.CancelProposal(id);
+        return output;
     }
     auto ReserveUTXO(
         const identifier::Nym& spender,
         const Identifier& id,
         const Spend policy) noexcept -> std::optional<UTXO>
     {
-        // TODO implement smarter selection algorithms
-        auto lock = eLock{lock_};
         auto output = std::optional<UTXO>{std::nullopt};
-        const auto choose = [&](const auto outpoint) -> std::optional<UTXO> {
-            auto& existing = find_output(lock, outpoint);
+        auto lock = eLock{lock_};
 
-            if (const auto& s = nyms_[spender]; 0u == s.count(outpoint)) {
+        try {
+            // TODO implement smarter selection algorithms
+            auto tx = lmdb_.TransactionRW();
+            const auto choose =
+                [&](const auto outpoint) -> std::optional<UTXO> {
+                auto& existing = find_output(lock, outpoint);
+
+                if (const auto& s = find_nym(lock, spender);
+                    0u == s.count(outpoint)) {
+
+                    return std::nullopt;
+                }
+
+                auto output = std::make_optional<UTXO>(
+                    std::make_pair(outpoint, existing.clone()));
+                auto rc = change_state(
+                    lock,
+                    tx,
+                    outpoint,
+                    existing,
+                    node::TxoState::UnconfirmedSpend,
+                    blank_);
+
+                if (false == rc) {
+                    throw std::runtime_error{"Failed to update outpoint state"};
+                }
+
+                rc = lmdb_
+                         .Store(
+                             proposal_spent_, id.Bytes(), outpoint.Bytes(), tx)
+                         .first;
+
+                if (false == rc) {
+                    throw std::runtime_error{
+                        "Failed to update proposal spent index"};
+                }
+
+                rc = lmdb_
+                         .Store(
+                             output_proposal_, outpoint.Bytes(), id.Bytes(), tx)
+                         .first;
+
+                if (false == rc) {
+                    throw std::runtime_error{
+                        "Failed to update outpoint proposal index"};
+                }
+
+                LogVerbose(OT_METHOD)(__func__)(": proposal ")(id.str())(
+                    " consumed outpoint ")(outpoint.str())
+                    .Flush();
+
+                return output;
+            };
+            const auto select = [&](const auto& group) -> std::optional<UTXO> {
+                for (const auto& outpoint : fifo(lock, group)) {
+                    auto utxo = choose(outpoint);
+
+                    if (utxo.has_value()) { return utxo; }
+                }
+
+                LogTrace(OT_METHOD)(__func__)(
+                    ": No spendable outputs for this group")
+                    .Flush();
 
                 return std::nullopt;
+            };
+
+            output = select(find_state(lock, node::TxoState::ConfirmedNew));
+
+            if ((!output.has_value()) && (Spend::UnconfirmedToo == policy)) {
+                output =
+                    select(find_state(lock, node::TxoState::UnconfirmedNew));
             }
 
-            auto output = std::make_optional<UTXO>(
-                std::make_pair(outpoint, existing.clone()));
-            const auto changed = change_state(
-                lock,
-                outpoint,
-                existing,
-                node::TxoState::UnconfirmedSpend,
-                blank_);
+            if (false == output.has_value()) {
+                throw std::runtime_error{
+                    "No spendable outputs for specified nym"};
+            }
 
-            OT_ASSERT(changed);
-
-            proposal_spent_[id].emplace(outpoint);
-            output_proposal_.emplace(outpoint, id);
-            LogVerbose(OT_METHOD)(__func__)(": Reserving output ")(
-                outpoint.str())
-                .Flush();
+            if (false == tx.Finalize(true)) {
+                throw std::runtime_error{
+                    "Failed to commit database transaction"};
+            }
 
             return output;
-        };
-        const auto select = [&](const auto& group) -> std::optional<UTXO> {
-            for (const auto& outpoint : group) {
-                auto utxo = choose(outpoint);
-
-                if (utxo.has_value()) { return utxo; }
-            }
-
-            LogTrace(OT_METHOD)(__func__)(
-                ": No spendable outputs for this group")
-                .Flush();
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            clear_cache(lock);
 
             return std::nullopt;
-        };
-
-        output = select(find_state(lock, node::TxoState::ConfirmedNew));
-
-        if (output.has_value()) { return output; }
-
-        if (Spend::UnconfirmedToo == policy) {
-            output = select(find_state(lock, node::TxoState::UnconfirmedNew));
-
-            if (output.has_value()) { return output; }
         }
-
-        LogOutput(OT_METHOD)(__func__)(
-            ": No spendable outputs for specified nym")
-            .Flush();
-
-        return output;
     }
-    auto Rollback(
-        const eLock& lock,
+    auto StartReorg(
+        MDB_txn* tx,
         const SubchainID& subchain,
         const block::Position& position) noexcept -> bool
     {
-        // TODO rebroadcast transactions which have become unconfirmed
-        const auto outpoints = [&] {
-            auto out = std::vector<Outpoint>{};
-
-            try {
-                for (const auto& outpoint : positions_.at(position)) {
-                    if (belongs_to(lock, outpoint, subchain)) {
-                        insert_sorted(out, outpoint);
-                    }
-                }
-            } catch (...) {
-            }
-
-            return out;
-        }();
-
-        for (const auto& id : outpoints) {
-            auto& output = find_output(lock, id);
-            using State = node::TxoState;
-            const auto state = [&]() -> std::optional<State> {
-                switch (output.State()) {
-                    case State::ConfirmedNew:
-                    case State::OrphanedNew: {
-
-                        return State::UnconfirmedNew;
-                    }
-                    case State::ConfirmedSpend:
-                    case State::OrphanedSpend: {
-
-                        return State::UnconfirmedSpend;
-                    }
-                    default: {
-
-                        return std::nullopt;
-                    }
-                }
-            }();
-
-            if (state.has_value() &&
-                (!change_state(lock, id, output, state.value(), position))) {
-                LogOutput(OT_METHOD)(__func__)(
-                    ": Failed to update output state")
-                    .Flush();
-
-                return false;
-            }
-
-            const auto& txid = api_.Factory().Data(id.Txid());
-
-            for (const auto& key : output.Keys()) {
-                blockchain_.Unconfirm(key, txid);
-            }
-        }
-
-        return true;
-    }
-    auto RollbackTo(const block::Position& pos) noexcept -> bool
-    {
-        auto output{true};
         auto lock = eLock{lock_};
 
-        if (position_ != pos) {
-            auto outputs = Outpoints{};
-            auto heights = std::set<block::Height>{};
+        try {
+            // TODO rebroadcast transactions which have become unconfirmed
+            const auto outpoints = [&] {
+                auto out = std::set<block::Outpoint>{};
+                const auto sPosition = db::Position{position};
+                lmdb_.Load(
+                    positions_,
+                    reader(sPosition.data_),
+                    [&](const auto bytes) {
+                        auto outpoint = block::Outpoint{bytes};
 
-            for (auto i{generation_.rbegin()}; i != generation_.rend(); ++i) {
-                const auto& [height, data] = *i;
+                        if (has_subchain(lock, subchain, outpoint)) {
+                            out.emplace(std::move(outpoint));
+                        }
+                    },
+                    Mode::Multiple);
 
-                if (height < pos.first) { break; }
+                return out;
+            }();
 
-                std::move(
-                    data.begin(),
-                    data.end(),
-                    std::inserter(outputs, outputs.end()));
-                heights.emplace(height);
-            }
-
-            for (const auto height : heights) { generation_.erase(height); }
-
-            for (const auto& id : outputs) {
+            for (const auto& id : outpoints) {
+                auto& output = find_output(lock, id);
                 using State = node::TxoState;
-                output &= change_state(lock, id, State::OrphanedNew, pos);
+                const auto state = [&]() -> std::optional<State> {
+                    switch (output.State()) {
+                        case State::ConfirmedNew:
+                        case State::OrphanedNew: {
 
-                OT_ASSERT(output);
+                            return State::UnconfirmedNew;
+                        }
+                        case State::ConfirmedSpend:
+                        case State::OrphanedSpend: {
+
+                            return State::UnconfirmedSpend;
+                        }
+                        default: {
+
+                            return std::nullopt;
+                        }
+                    }
+                }();
+
+                if (state.has_value() &&
+                    (!change_state(
+                        lock, tx, id, output, state.value(), position))) {
+                    throw std::runtime_error{"Failed to update output state"};
+                }
+
+                const auto& txid = api_.Factory().Data(id.Txid());
+
+                for (const auto& key : output.Keys()) {
+                    blockchain_.Unconfirm(key, txid);
+                }
             }
 
-            position_ = pos;
-            publish_balance(lock);
-        }
+            return true;
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
-        return output;
+            return false;
+        }
     }
 
     Imp(const api::Core& api,
         const api::client::internal::Blockchain& blockchain,
+        const storage::lmdb::LMDB& lmdb,
         const blockchain::Type chain,
         const wallet::SubchainData& subchains,
         wallet::Proposal& proposals) noexcept
         : api_(api)
         , blockchain_(blockchain)
+        , lmdb_(lmdb)
         , chain_(chain)
         , subchain_(subchains)
         , proposals_(proposals)
@@ -841,64 +1141,64 @@ struct Output::Imp {
         , maturation_target_(
               params::Data::Chains().at(chain_).maturation_interval_)
         , lock_()
-        , position_(blank_)
-        , outputs_()
-        , accounts_()
-        , nyms_()
-        , positions_()
-        , proposal_created_()
-        , proposal_spent_()
-        , output_proposal_()
-        , states_()
-        , subchains_()
-        , keys_()
-        , generation_()
+        , cache_()
     {
+        try {
+            lmdb_.Load(
+                config_,
+                tsv(database::Key::WalletPosition),
+                [&](const auto bytes) { cache_.position_.emplace(bytes); });
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+
+            OT_FAIL;
+        }
     }
 
 private:
     using SubchainID = Identifier;
     using pSubchainID = OTIdentifier;
-    using Outpoint = block::Outpoint;
-    using Outpoints = std::set<Outpoint>;
-    using OutputMap = robin_hood::unordered_node_map<
-        Outpoint,
-        std::unique_ptr<block::bitcoin::internal::Output>>;
-    using AccountIndex = std::map<OTIdentifier, Outpoints>;
-    using NymIndex = std::map<OTNymID, Outpoints>;
-    using PositionIndex = std::map<block::Position, Outpoints>;
-    using ProposalIndex = std::map<OTIdentifier, Outpoints>;
-    using ProposalReverseIndex = std::map<Outpoint, OTIdentifier>;
-    using StateIndex = std::map<node::TxoState, Outpoints>;
-    using SubchainIndex =
-        robin_hood::unordered_flat_map<pSubchainID, Outpoints>;
-    using KeyIndex = robin_hood::unordered_flat_map<crypto::Key, Outpoints>;
-    using NymBalances = std::map<OTNymID, Balance>;
-    using KeyID = blockchain::crypto::Key;
     using States = std::vector<node::TxoState>;
-    using Matches = std::vector<Outpoint>;
-    using GenerationMap = std::map<block::Height, Outpoints>;
+    using Matches = std::vector<block::Outpoint>;
+    using Outpoints = robin_hood::unordered_node_set<block::Outpoint>;
+    using NymBalances = std::map<OTNymID, Balance>;
+    using Nyms = robin_hood::unordered_node_set<OTNymID>;
+
+    struct Cache {
+        // NOTE if an exclusive lock is being held in the parent then locking
+        // these mutexes is redundant
+        std::mutex position_lock_{};
+        std::optional<db::Position> position_{};
+        std::mutex output_lock_{};
+        robin_hood::unordered_node_map<
+            block::Outpoint,
+            std::unique_ptr<block::bitcoin::internal::Output>>
+            outputs_{};
+        std::mutex account_lock_{};
+        robin_hood::unordered_node_map<OTIdentifier, Outpoints> accounts_{};
+        std::mutex key_lock_{};
+        robin_hood::unordered_node_map<crypto::Key, Outpoints> keys_{};
+        std::mutex nym_lock_{};
+        robin_hood::unordered_node_map<OTNymID, Outpoints> nyms_{};
+        std::optional<Nyms> nym_list_{};
+        std::mutex positions_lock_{};
+        robin_hood::unordered_node_map<block::Position, Outpoints> positions_{};
+        std::mutex state_lock_{};
+        robin_hood::unordered_node_map<node::TxoState, Outpoints> states_{};
+        std::mutex subchain_lock_{};
+        robin_hood::unordered_node_map<OTIdentifier, Outpoints> subchains_{};
+    };
 
     const api::Core& api_;
     const api::client::internal::Blockchain& blockchain_;
+    const storage::lmdb::LMDB& lmdb_;
     const blockchain::Type chain_;
     const wallet::SubchainData& subchain_;
     wallet::Proposal& proposals_;
     const block::Position blank_;
     const block::Height maturation_target_;
     mutable std::shared_mutex lock_;
-    block::Position position_;
-    OutputMap outputs_;
-    AccountIndex accounts_;
-    NymIndex nyms_;
-    PositionIndex positions_;
-    ProposalIndex proposal_created_;
-    ProposalIndex proposal_spent_;
-    ProposalReverseIndex output_proposal_;
-    StateIndex states_;
-    SubchainIndex subchains_;
-    KeyIndex keys_;
-    GenerationMap generation_;
+    mutable Cache cache_;
 
     static auto states(node::TxoState in) noexcept -> States
     {
@@ -918,23 +1218,6 @@ private:
         return States{in};
     }
 
-    auto belongs_to(
-        const eLock& lock,
-        const Outpoint& id,
-        const SubchainID& subchain) const noexcept -> bool
-    {
-        const auto it1 = subchains_.find(subchain);
-
-        if (subchains_.cend() == it1) { return false; }
-
-        const auto& vector = it1->second;
-
-        for (const auto& outpoint : vector) {
-            if (id == outpoint) { return true; }
-        }
-
-        return false;
-    }
     auto effective_position(
         const node::TxoState state,
         const block::Position& oldPos,
@@ -954,81 +1237,85 @@ private:
             }
         }
     }
+    auto fifo(const eLock& lock, const Outpoints& in) const noexcept
+        -> std::vector<block::Outpoint>
+    {
+        auto counter = std::size_t{0};
+        auto map = std::map<block::Position, std::set<block::Outpoint>>{};
+
+        for (const auto& id : in) {
+            const auto& output = find_output(lock, id);
+            map[output.MinedPosition()].emplace(id);
+            ++counter;
+        }
+
+        auto out = std::vector<block::Outpoint>{};
+        out.reserve(counter);
+
+        for (const auto& [position, set] : map) {
+            for (const auto& id : set) { out.emplace_back(id); }
+        }
+
+        return out;
+    }
+
     template <typename LockType>
     auto find_account(const LockType& lock, const AccountID& id) const noexcept
         -> const Outpoints&
     {
-        static const auto empty = Outpoints{};
-
-        try {
-
-            return accounts_.at(id);
-        } catch (...) {
-
-            return empty;
-        }
+        return load_output_index(
+            lock,
+            accounts_,
+            id,
+            id.Bytes(),
+            cache_.account_lock_,
+            cache_.accounts_);
     }
     template <typename LockType>
     auto find_key(const LockType& lock, const crypto::Key& id) const noexcept
         -> const Outpoints&
     {
-        static const auto empty = Outpoints{};
+        const auto key = key_to_bytes(id);
 
-        try {
-
-            return keys_.at(id);
-        } catch (...) {
-
-            return empty;
-        }
+        return load_output_index(
+            lock, keys_, id, reader(key), cache_.key_lock_, cache_.keys_);
     }
     template <typename LockType>
     auto find_nym(const LockType& lock, const identifier::Nym& id)
         const noexcept -> const Outpoints&
     {
-        static const auto empty = Outpoints{};
-
-        try {
-
-            return nyms_.at(id);
-        } catch (...) {
-
-            return empty;
-        }
+        return load_output_index(
+            lock, nyms_, id, id.Bytes(), cache_.nym_lock_, cache_.nyms_);
     }
     template <typename LockType>
-    auto find_output(const LockType& lock, const Outpoint& id) const
+    auto find_output(const LockType& lock, const block::Outpoint& id) const
         noexcept(false) -> const block::bitcoin::internal::Output&
     {
-        return *outputs_.at(id);
+        return load_output(lock, id);
     }
     template <typename LockType>
     auto find_state(const LockType& lock, node::TxoState state) const noexcept
         -> const Outpoints&
     {
-        static const auto empty = Outpoints{};
-
-        try {
-
-            return states_.at(state);
-        } catch (...) {
-
-            return empty;
-        }
+        return load_output_index(
+            lock,
+            states_,
+            state,
+            static_cast<std::size_t>(state),
+            cache_.state_lock_,
+            cache_.states_);
     }
     template <typename LockType>
     auto find_subchain(const LockType& lock, const NodeID& id) const noexcept
         -> const Outpoints&
     {
-        static const auto empty = Outpoints{};
-
-        try {
-
-            return subchains_.at(id);
-        } catch (...) {
-
-            return empty;
-        }
+        return load_output_index(
+            lock,
+            subchains_,
+            id,
+            id.Bytes(),
+            cache_.subchain_lock_,
+            cache_.subchains_);
     }
     template <typename LockType>
     auto get_balance(const LockType& lock) const noexcept -> Balance
@@ -1108,7 +1395,7 @@ private:
     {
         auto output = NymBalances{};
 
-        for (const auto& [nym, outpoints] : nyms_) {
+        for (const auto& nym : load_nyms(lock)) {
             output[nym] = get_balance(lock, nym);
         }
 
@@ -1132,6 +1419,20 @@ private:
 
         return output;
     }
+    auto get_position() const noexcept -> const db::Position&
+    {
+        static const auto null = db::Position{blank_};
+        auto lock = Lock{cache_.position_lock_};
+        const auto& pos = cache_.position_;
+
+        if (pos.has_value()) {
+
+            return pos.value();
+        } else {
+
+            return null;
+        }
+    }
     auto get_unspent_outputs(const sLock& lock, const NodeID& id) const noexcept
         -> std::vector<UTXO>
     {
@@ -1151,7 +1452,7 @@ private:
     auto has_account(
         const LockType& lock,
         const AccountID& id,
-        const Outpoint& outpoint) const noexcept -> bool
+        const block::Outpoint& outpoint) const noexcept -> bool
     {
         return 0 < find_account<LockType>(lock, id).count(outpoint);
     }
@@ -1159,7 +1460,7 @@ private:
     auto has_key(
         const LockType& lock,
         const crypto::Key& key,
-        const Outpoint& outpoint) const noexcept -> bool
+        const block::Outpoint& outpoint) const noexcept -> bool
     {
         return 0 < find_key<LockType>(lock, key).count(outpoint);
     }
@@ -1167,7 +1468,7 @@ private:
     auto has_nym(
         const LockType& lock,
         const identifier::Nym& id,
-        const Outpoint& outpoint) const noexcept -> bool
+        const block::Outpoint& outpoint) const noexcept -> bool
     {
         return 0 < find_nym<LockType>(lock, id).count(outpoint);
     }
@@ -1175,38 +1476,18 @@ private:
     auto has_subchain(
         const LockType& lock,
         const NodeID& id,
-        const Outpoint& outpoint) const noexcept -> bool
+        const block::Outpoint& outpoint) const noexcept -> bool
     {
         return 0 < find_subchain<LockType>(lock, id).count(outpoint);
-    }
-    template <typename LockType>
-    auto has_tag(
-        const LockType& lock,
-        const Outpoint& outpoint,
-        const node::TxoTag tag) const noexcept -> bool
-    {
-        try {
-
-            return 0 < find_output(lock, outpoint).Tags().count(tag);
-        } catch (...) {
-
-            return false;
-        }
-    }
-    template <typename LockType>
-    auto is_generation(const LockType& lock, const Outpoint& outpoint)
-        const noexcept -> bool
-    {
-        using Tag = node::TxoTag;
-
-        return has_tag(lock, outpoint, Tag::Generation);
     }
     // NOTE: a mature output is available to be spent in the next block
     template <typename LockType>
     auto is_mature(const LockType& lock, const block::Height height)
         const noexcept -> bool
     {
-        return is_mature(lock, height, position_);
+        const auto position = get_position().Decode(api_);
+
+        return is_mature(lock, height, position);
     }
     template <typename LockType>
     auto is_mature(
@@ -1215,6 +1496,117 @@ private:
         const block::Position& pos) const noexcept -> bool
     {
         return (pos.first - height) >= maturation_target_;
+    }
+    template <typename LockType>
+    auto load_nyms(const LockType& lock) const noexcept -> Nyms&
+    {
+        auto cacheLock = Lock{cache_.nym_lock_};
+        auto& set = cache_.nym_list_;
+
+        if (false == set.has_value()) {
+            auto& value = set.emplace();
+            auto tested = std::set<ReadView>{};
+            lmdb_.Read(
+                nyms_,
+                [&](const auto key, const auto bytes) {
+                    if (0u == tested.count(key)) {
+                        value.emplace([&] {
+                            auto out = api_.Factory().NymID();
+                            out->Assign(key);
+
+                            return out;
+                        }());
+                        tested.emplace(key);
+                    }
+
+                    return true;
+                },
+                Dir::Forward);
+        }
+
+        return set.value();
+    }
+    template <typename LockType>
+    auto load_output(const LockType& lock, const block::Outpoint& id) const
+        noexcept(false) -> block::bitcoin::internal::Output&
+    {
+        auto cacheLock = Lock{cache_.output_lock_};
+        auto& map = cache_.outputs_;
+        auto it = map.find(id);
+
+        if (map.end() != it) {
+            auto& out = *it->second;
+
+            OT_ASSERT(0 < out.Keys().size());
+
+            return out;
+        }
+
+        lmdb_.Load(outputs_, id.Bytes(), [&](const auto bytes) {
+            const auto proto =
+                proto::Factory<proto::BlockchainTransactionOutput>(bytes);
+            auto pOutput = factory::BitcoinTransactionOutput(
+                api_, blockchain_, chain_, proto);
+
+            if (pOutput) {
+                auto [row, added] = map.try_emplace(id, std::move(pOutput));
+
+                OT_ASSERT(added);
+
+                it = row;
+            }
+        });
+
+        if (map.end() != it) {
+            auto& out = *it->second;
+
+            OT_ASSERT(0 < out.Keys().size());
+
+            return out;
+        }
+
+        const auto error = std::string{"output "} + id.str() + " not found";
+
+        throw std::out_of_range{error};
+    }
+    template <
+        typename LockType,
+        typename MapKeyType,
+        typename DBKeyType,
+        typename MapType>
+    auto load_output_index(
+        const LockType& lock,
+        const Table table,
+        const MapKeyType& key,
+        const DBKeyType dbKey,
+        std::mutex& cacheMutex,
+        MapType& map) const noexcept -> const Outpoints&
+    {
+        static const auto empty = Outpoints{};
+        auto cacheLock = Lock{cacheMutex};
+        auto it = map.find(key);
+
+        if (map.end() != it) { return it->second; }
+
+        auto [row, added] = map.try_emplace(key, Outpoints{});
+
+        OT_ASSERT(added);
+
+        auto& set = row->second;
+        const auto loaded = lmdb_.Load(
+            table,
+            dbKey,
+            [&](const auto bytes) { set.emplace(bytes); },
+            Mode::Multiple);
+
+        if (loaded) {
+
+            return row->second;
+        } else {
+            map.erase(row);
+
+            return empty;
+        }
     }
     template <typename LockType>
     auto match(
@@ -1252,6 +1644,7 @@ private:
 
         return output;
     }
+    /*  TODO read from database instead of cache
     template <typename LockType>
     auto print(const LockType&) const noexcept -> void
     {
@@ -1402,6 +1795,7 @@ private:
 
         LogOutput.Flush();
     }
+    */
     auto publish_balance(const eLock& lock) const noexcept -> void
     {
         blockchain_.UpdateBalance(chain_, get_balance(lock));
@@ -1410,47 +1804,104 @@ private:
             blockchain_.UpdateBalance(nym, chain_, balance);
         }
     }
+    auto translate(std::vector<UTXO>&& outputs) const noexcept
+        -> std::vector<block::pTxid>
+    {
+        auto out = std::vector<block::pTxid>{};
+        auto temp = std::set<block::pTxid>{};
+
+        for (auto& [outpoint, output] : outputs) {
+            temp.emplace(api_.Factory().Data(outpoint.Txid()));
+        }
+
+        out.reserve(temp.size());
+        std::move(temp.begin(), temp.end(), std::back_inserter(out));
+
+        return out;
+    }
 
     auto associate(
         const eLock& lock,
-        const Outpoint& outpoint,
-        const KeyID& key) noexcept -> bool
+        storage::lmdb::LMDB::Transaction& tx,
+        const block::Outpoint& outpoint,
+        const crypto::Key& key) noexcept -> bool
     {
         const auto& [nodeID, subchain, index] = key;
         const auto accountID = api_.Factory().Identifier(nodeID);
-        const auto subchainID = subchain_.GetSubchainID(accountID, subchain);
+        const auto subchainID =
+            subchain_.GetSubchainID(accountID, subchain, tx);
 
-        return associate(lock, outpoint, accountID, subchainID);
+        return associate(lock, tx, outpoint, accountID, subchainID);
     }
     auto associate(
         const eLock& lock,
-        const Outpoint& outpoint,
+        storage::lmdb::LMDB::Transaction& tx,
+        const block::Outpoint& outpoint,
         const AccountID& accountID,
         const SubchainID& subchainID) noexcept -> bool
     {
         OT_ASSERT(false == accountID.empty());
         OT_ASSERT(false == subchainID.empty());
 
-        accounts_[accountID].emplace(outpoint);
-        subchains_[subchainID].emplace(outpoint);
+        try {
+            auto rc =
+                lmdb_.Store(accounts_, accountID.Bytes(), outpoint.Bytes(), tx)
+                    .first;
+
+            if (false == rc) {
+                throw std::runtime_error{"Failed to update account index"};
+            }
+
+            rc =
+                lmdb_
+                    .Store(subchains_, subchainID.Bytes(), outpoint.Bytes(), tx)
+                    .first;
+
+            if (false == rc) {
+                throw std::runtime_error{"Failed to update subchain index"};
+            }
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+
+            return false;
+        }
+
+        cache_.accounts_[accountID].emplace(outpoint);
+        cache_.subchains_[subchainID].emplace(outpoint);
 
         return true;
     }
     auto associate(
         const eLock& lock,
-        const Outpoint& outpoint,
+        storage::lmdb::LMDB::Transaction& tx,
+        const block::Outpoint& outpoint,
         const identifier::Nym& nymID) noexcept -> bool
     {
         OT_ASSERT(false == nymID.empty());
 
-        nyms_[nymID].emplace(outpoint);
+        try {
+            auto rc =
+                lmdb_.Store(nyms_, nymID.Bytes(), outpoint.Bytes(), tx).first;
+
+            if (false == rc) {
+                throw std::runtime_error{"Failed to update nym index"};
+            }
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+
+            return false;
+        }
+
+        cache_.nyms_[OTNymID{nymID}].emplace(outpoint);
+        load_nyms(lock).emplace(nymID);
 
         return true;
     }
     // Only used by CancelProposal
     auto change_state(
         const eLock& lock,
-        const Outpoint& id,
+        MDB_txn* tx,
+        const block::Outpoint& id,
         const node::TxoState oldState,
         const node::TxoState newState) noexcept -> bool
     {
@@ -1465,7 +1916,7 @@ private:
                 return false;
             }
 
-            return change_state(lock, id, existing, newState, blank_);
+            return change_state(lock, tx, id, existing, newState, blank_);
         } catch (...) {
             LogOutput(OT_METHOD)(__func__)(": outpoint ")(id.str())(
                 " does not exist")
@@ -1476,14 +1927,15 @@ private:
     }
     auto change_state(
         const eLock& lock,
-        const Outpoint& id,
+        MDB_txn* tx,
+        const block::Outpoint& id,
         const node::TxoState newState,
         const block::Position newPosition) noexcept -> bool
     {
         try {
-            auto& serialized = find_output(lock, id);
+            auto& output = find_output(lock, id);
 
-            return change_state(lock, id, serialized, newState, newPosition);
+            return change_state(lock, tx, id, output, newState, newPosition);
         } catch (...) {
             LogOutput(OT_METHOD)(__func__)(": outpoint ")(id.str())(
                 " does not exist")
@@ -1494,7 +1946,8 @@ private:
     }
     auto change_state(
         const eLock& lock,
-        const Outpoint& id,
+        MDB_txn* tx,
+        const block::Outpoint& id,
         block::bitcoin::internal::Output& output,
         const node::TxoState newState,
         const block::Position newPosition) noexcept -> bool
@@ -1503,18 +1956,75 @@ private:
         const auto& oldPosition = output.MinedPosition();
         const auto effective =
             effective_position(newState, oldPosition, newPosition);
+        const auto updateState = (newState != oldState);
+        const auto updatePosition = (effective != oldPosition);
+        auto rc{true};
 
-        if (newState != oldState) {
-            auto& from = states_[oldState];
-            auto& to = states_[newState];
-            to.insert(from.extract(id));
+        try {
+            if (updateState) {
+                rc = lmdb_.Delete(
+                    states_,
+                    static_cast<std::size_t>(oldState),
+                    id.Bytes(),
+                    tx);
+
+                if (false == rc) {
+                    throw std::runtime_error{
+                        "Failed to remove old state index"};
+                }
+
+                rc = lmdb_
+                         .Store(
+                             states_,
+                             static_cast<std::size_t>(newState),
+                             id.Bytes(),
+                             tx)
+                         .first;
+
+                if (false == rc) {
+                    throw std::runtime_error{"Failed to add new state index"};
+                }
+            }
+
+            if (updatePosition) {
+                const auto oldP = db::Position{oldPosition};
+                const auto newP = db::Position{newPosition};
+
+                rc = lmdb_.Delete(
+                    positions_, reader(oldP.data_), id.Bytes(), tx);
+
+                if (false == rc) {
+                    throw std::runtime_error{
+                        "Failed to remove old position index"};
+                }
+
+                rc = lmdb_.Store(positions_, reader(newP.data_), id.Bytes(), tx)
+                         .first;
+
+                if (false == rc) {
+                    throw std::runtime_error{
+                        "Failed to add position state index"};
+                }
+            }
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+
+            return false;
+        }
+
+        if (updateState) {
+            auto& from = cache_.states_[oldState];
+            auto& to = cache_.states_[newState];
+            from.erase(id);
+            to.emplace(id);
             output.SetState(newState);
         }
 
-        if (effective != oldPosition) {
-            auto& from = positions_[oldPosition];
-            auto& to = positions_[effective];
-            to.insert(from.extract(id));
+        if (updatePosition) {
+            auto& from = cache_.positions_[oldPosition];
+            auto& to = cache_.positions_[effective];
+            from.erase(id);
+            to.emplace(id);
             output.SetMinedPosition(effective);
         }
 
@@ -1522,65 +2032,171 @@ private:
     }
     auto check_proposals(
         const eLock& lock,
-        const Outpoint& outpoint,
+        storage::lmdb::LMDB::Transaction& tx,
+        const block::Outpoint& outpoint,
         const block::Position& block,
-        const block::Txid& txid) noexcept -> bool
-
+        const block::Txid& txid,
+        std::set<OTIdentifier>& processed) noexcept -> bool
     {
         if (-1 == block.first) { return true; }
 
-        if (0 == output_proposal_.count(outpoint)) { return true; }
+        auto oProposalID = std::optional<OTIdentifier>{};
 
-        auto proposalID{output_proposal_.at(outpoint)};
+        lmdb_.Load(output_proposal_, outpoint.Bytes(), [&](const auto bytes) {
+            auto& id = oProposalID.emplace(api_.Factory().Identifier()).get();
+            id.Assign(bytes);
 
-        if (0 < proposal_created_.count(proposalID)) {
-            auto& created = proposal_created_.at(proposalID);
+            if (id.empty()) { oProposalID = std::nullopt; }
+        });
 
-            for (const auto& newOutpoint : created) {
-                const auto rhs = api_.Factory().Data(newOutpoint.Txid());
+        if (false == oProposalID.has_value()) { return true; }
 
-                if (txid != rhs) {
-                    const auto changed = change_state(
-                        lock, outpoint, node::TxoState::OrphanedNew, block);
+        const auto& proposalID = oProposalID.value().get();
 
-                    if (false == changed) {
-                        LogOutput(OT_METHOD)(__func__)(
-                            ": Failed to update txo state")
-                            .Flush();
+        if (0u < processed.count(proposalID)) { return true; }
 
-                        return false;
-                    }
+        const auto created = [&] {
+            auto out = std::vector<block::Outpoint>{};
+            lmdb_.Load(
+                proposal_created_,
+                proposalID.Bytes(),
+                [&](const auto bytes) { out.emplace_back(bytes); },
+                Mode::Multiple);
+
+            return out;
+        }();
+        const auto spent = [&] {
+            auto out = std::vector<block::Outpoint>{};
+            lmdb_.Load(
+                proposal_spent_,
+                proposalID.Bytes(),
+                [&](const auto bytes) { out.emplace_back(bytes); },
+                Mode::Multiple);
+
+            return out;
+        }();
+
+        for (const auto& newOutpoint : created) {
+            const auto rhs = api_.Factory().Data(newOutpoint.Txid());
+
+            if (txid != rhs) {
+                static constexpr auto state = node::TxoState::OrphanedNew;
+                const auto changed =
+                    change_state(lock, tx, outpoint, state, block);
+
+                if (changed) {
+                    LogTrace(OT_METHOD)(__func__)(": Updated ")(outpoint.str())(
+                        " to state ")(opentxs::print(state))
+                        .Flush();
+                } else {
+                    LogOutput(OT_METHOD)(__func__)(": Failed to update ")(
+                        outpoint.str())(" to state ")(opentxs::print(state))
+                        .Flush();
+
+                    return false;
                 }
             }
 
-            proposal_created_.erase(proposalID);
-        }
+            auto rc = lmdb_.Delete(
+                proposal_created_, proposalID.Bytes(), newOutpoint.Bytes(), tx);
 
-        if (0 < proposal_spent_.count(proposalID)) {
-            auto& spent = proposal_spent_.at(proposalID);
+            if (rc) {
+                LogTrace(OT_METHOD)(__func__)(": Deleted index for proposal ")(
+                    proposalID.str())(" to created output ")(newOutpoint.str())
+                    .Flush();
+            } else {
+                LogOutput(OT_METHOD)(__func__)(
+                    ": Failed to delete index for proposal ")(proposalID.str())(
+                    " to created output ")(newOutpoint.str())
+                    .Flush();
 
-            for (const auto& spentOutpoint : spent) {
-                output_proposal_.erase(spentOutpoint);
+                return false;
             }
 
-            proposal_spent_.erase(proposalID);
+            rc = lmdb_.Delete(output_proposal_, newOutpoint.Bytes(), tx);
+
+            if (rc) {
+                LogTrace(OT_METHOD)(__func__)(
+                    ": Deleted index for created outpoint ")(newOutpoint.str())(
+                    " to proposal ")(proposalID.str())
+                    .Flush();
+            } else {
+                LogOutput(OT_METHOD)(__func__)(
+                    ": Failed to delete index for created outpoint ")(
+                    newOutpoint.str())(" to proposal ")(proposalID.str())
+                    .Flush();
+
+                return false;
+            }
         }
 
-        return proposals_.FinishProposal(proposalID);
+        for (const auto& spentOutpoint : spent) {
+            auto rc = lmdb_.Delete(
+                proposal_spent_, proposalID.Bytes(), spentOutpoint.Bytes(), tx);
+
+            if (rc) {
+                LogTrace(OT_METHOD)(__func__)(": Delete index for proposal ")(
+                    proposalID.str())(" to consumed output ")(
+                    spentOutpoint.str())
+                    .Flush();
+            } else {
+                LogOutput(OT_METHOD)(__func__)(
+                    ": Failed to delete index for proposal ")(proposalID.str())(
+                    " to consumed output ")(spentOutpoint.str())
+                    .Flush();
+
+                return false;
+            }
+
+            rc = lmdb_.Delete(output_proposal_, spentOutpoint.Bytes(), tx);
+
+            if (rc) {
+                LogTrace(OT_METHOD)(__func__)(
+                    ": Deleted index for consumed outpoint ")(
+                    spentOutpoint.str())(" to proposal ")(proposalID.str())
+                    .Flush();
+            } else {
+                LogOutput(OT_METHOD)(__func__)(
+                    ": Failed to delete index for consumed outpoint ")(
+                    spentOutpoint.str())(" to proposal ")(proposalID.str())
+                    .Flush();
+
+                return false;
+            }
+        }
+
+        processed.emplace(proposalID);
+
+        return proposals_.FinishProposal(tx, proposalID);
+    }
+    auto clear_cache(const eLock&) noexcept -> void
+    {
+        cache_.position_ = std::nullopt;
+        cache_.nym_list_ = std::nullopt;
+        cache_.outputs_.clear();
+        cache_.accounts_.clear();
+        cache_.keys_.clear();
+        cache_.nyms_.clear();
+        cache_.positions_.clear();
+        cache_.states_.clear();
+        cache_.subchains_.clear();
     }
     auto create_state(
         const eLock& lock,
+        storage::lmdb::LMDB::Transaction& tx,
         bool isGeneration,
-        const Outpoint& id,
+        const block::Outpoint& id,
         const node::TxoState state,
         const block::Position position,
         const block::bitcoin::Output& output) noexcept -> bool
     {
-        if (0 < outputs_.count(id)) {
+        try {
+            [[maybe_unused]] const auto& existing = find_output(lock, id);
             LogOutput(OT_METHOD)(__func__)(": Outpoint already exists in db")
                 .Flush();
 
             return false;
+        } catch (...) {
         }
 
         const auto& pos = effective_position(state, blank_, position);
@@ -1608,47 +2224,128 @@ private:
                 return state;
             }
         }();
+        auto pOutput = output.Internal().clone();
 
-        auto [it, added] = outputs_.try_emplace(id, output.Internal().clone());
-        auto& pCreated = it->second;
+        OT_ASSERT(pOutput);
 
-        if ((false == added) || (!pCreated)) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to create output").Flush();
+        try {
+            auto& created = *pOutput;
+
+            OT_ASSERT(0u < created.Keys().size());
+
+            created.SetState(effState);
+            created.SetMinedPosition(pos);
+
+            if (isGeneration) {
+                created.AddTag(node::TxoTag::Generation);
+            } else {
+                created.AddTag(node::TxoTag::Normal);
+            }
+
+            const auto serialized = [&] {
+                auto out = Space{};
+                const auto data = [&] {
+                    auto proto = block::bitcoin::Output::SerializeType{};
+                    const auto rc = created.Serialize(blockchain_, proto);
+
+                    if (false == rc) {
+                        throw std::runtime_error{
+                            "failed to serialize as protobuf"};
+                    }
+
+                    return proto;
+                }();
+
+                if (false == proto::write(data, writer(out))) {
+                    throw std::runtime_error{"failed to serialize as bytes"};
+                }
+
+                return out;
+            }();
+            const auto sPos = db::Position{pos};
+            auto rc =
+                lmdb_.Store(outputs_, id.Bytes(), reader(serialized), tx).first;
+
+            if (false == rc) {
+                throw std::runtime_error{"failed to write output"};
+            }
+
+            rc = lmdb_
+                     .Store(
+                         states_,
+                         static_cast<std::size_t>(effState),
+                         id.Bytes(),
+                         tx)
+                     .first;
+
+            if (false == rc) {
+                throw std::runtime_error{"update to state index"};
+            }
+
+            rc = lmdb_.Store(positions_, reader(sPos.data_), id.Bytes(), tx)
+                     .first;
+
+            if (false == rc) {
+                throw std::runtime_error{"update to position index"};
+            }
+
+            for (const auto& key : created.Keys()) {
+                const auto sKey = key_to_bytes(key);
+                rc = lmdb_.Store(keys_, reader(sKey), id.Bytes(), tx).first;
+
+                if (false == rc) {
+                    throw std::runtime_error{"update to key index"};
+                }
+            }
+
+            if (isGeneration) {
+                rc = lmdb_
+                         .Store(
+                             generation_,
+                             static_cast<std::size_t>(pos.first),
+                             id.Bytes(),
+                             tx)
+                         .first;
+
+                if (false == rc) {
+                    throw std::runtime_error{"update to generation index"};
+                }
+            }
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
 
-        auto& created = *pCreated;
-        created.SetState(effState);
-        created.SetMinedPosition(pos);
-        states_[effState].emplace(id);
-        positions_[pos].emplace(id);
+        cache_.outputs_.try_emplace(id, std::move(pOutput));
+        cache_.states_[effState].emplace(id);
+        cache_.positions_[pos].emplace(id);
 
-        for (const auto& key : output.Keys()) { keys_[key].emplace(id); }
-
-        if (isGeneration) {
-            generation_[position.first].emplace(id);
-            created.AddTag(node::TxoTag::Generation);
-        } else {
-            created.AddTag(node::TxoTag::Normal);
-        }
+        for (const auto& key : output.Keys()) { cache_.keys_[key].emplace(id); }
 
         return true;
     }
-    auto find_output(const eLock& lock, const Outpoint& id) noexcept(false)
-        -> block::bitcoin::internal::Output&
+    auto find_output(const eLock& lock, const block::Outpoint& id) noexcept(
+        false) -> block::bitcoin::internal::Output&
     {
-        return *outputs_.at(id);
+        return load_output(lock, id);
     }
+
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 };
 
 Output::Output(
     const api::Core& api,
     const api::client::internal::Blockchain& blockchain,
+    const storage::lmdb::LMDB& lmdb,
     const blockchain::Type chain,
     const wallet::SubchainData& subchains,
     wallet::Proposal& proposals) noexcept
-    : imp_(std::make_unique<Imp>(api, blockchain, chain, subchains, proposals))
+    : imp_(std::make_unique<
+           Imp>(api, blockchain, lmdb, chain, subchains, proposals))
 {
     OT_ASSERT(imp_);
 }
@@ -1691,6 +2388,12 @@ auto Output::AdvanceTo(const block::Position& pos) noexcept -> bool
 auto Output::CancelProposal(const Identifier& id) noexcept -> bool
 {
     return imp_->CancelProposal(id);
+}
+
+auto Output::FinalizeReorg(MDB_txn* tx, const block::Position& pos) noexcept
+    -> bool
+{
+    return imp_->FinalizeReorg(tx, pos);
 }
 
 auto Output::GetBalance() const noexcept -> Balance
@@ -1739,15 +2442,21 @@ auto Output::GetOutputs(const crypto::Key& key, node::TxoState type)
     return imp_->GetOutputs(key, type);
 }
 
-auto Output::GetMutex() const noexcept -> std::shared_mutex&
-{
-    return imp_->GetMutex();
-}
-
 auto Output::GetOutputTags(const block::Outpoint& output) const noexcept
     -> std::set<node::TxoTag>
 {
     return imp_->GetOutputTags(output);
+}
+
+auto Output::GetTransactions() const noexcept -> std::vector<block::pTxid>
+{
+    return imp_->GetTransactions();
+}
+
+auto Output::GetTransactions(const identifier::Nym& account) const noexcept
+    -> std::vector<block::pTxid>
+{
+    return imp_->GetTransactions(account);
 }
 
 auto Output::GetUnspentOutputs() const noexcept -> std::vector<UTXO>
@@ -1774,17 +2483,12 @@ auto Output::ReserveUTXO(
     return imp_->ReserveUTXO(spender, proposal, policy);
 }
 
-auto Output::Rollback(
-    const eLock& lock,
+auto Output::StartReorg(
+    MDB_txn* tx,
     const SubchainID& subchain,
     const block::Position& position) noexcept -> bool
 {
-    return imp_->Rollback(lock, subchain, position);
-}
-
-auto Output::RollbackTo(const block::Position& pos) noexcept -> bool
-{
-    return imp_->RollbackTo(pos);
+    return imp_->StartReorg(tx, subchain, position);
 }
 
 Output::~Output() = default;

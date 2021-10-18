@@ -78,7 +78,7 @@ public:
         -> std::vector<Space> final;
     auto FindMatches(
         const ReadView txid,
-        const FilterType type,
+        const filter::Type type,
         const ParsedPatterns& elements) const noexcept -> Matches final;
     auto GetPatterns() const noexcept -> std::vector<PatternID> final;
     auto Keys() const noexcept -> std::vector<KeyID> final;

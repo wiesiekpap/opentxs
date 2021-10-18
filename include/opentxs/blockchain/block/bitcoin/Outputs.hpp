@@ -28,7 +28,6 @@ public:
     using value_type = Output;
     using const_iterator =
         opentxs::iterator::Bidirectional<const Outputs, const value_type>;
-    using FilterType = Transaction::FilterType;
     using ParsedPatterns = Transaction::ParsedPatterns;
     using Match = Transaction::Match;
     using Matches = Transaction::Matches;
@@ -46,7 +45,7 @@ public:
         -> std::vector<Space> = 0;
     virtual auto FindMatches(
         const ReadView txid,
-        const FilterType type,
+        const filter::Type type,
         const ParsedPatterns& elements) const noexcept -> Matches = 0;
     virtual auto GetPatterns() const noexcept -> std::vector<PatternID> = 0;
     virtual auto Keys() const noexcept -> std::vector<KeyID> = 0;

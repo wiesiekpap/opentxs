@@ -1,0 +1,62 @@
+// Copyright (c) 2010-2021 The Open-Transactions developers
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+#pragma once
+
+#include <mutex>
+#include <optional>
+
+#include "opentxs/Bytes.hpp"
+#include "opentxs/Types.hpp"
+#include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
+#include "opentxs/core/Identifier.hpp"
+
+namespace opentxs
+{
+namespace api
+{
+class Core;
+}  // namespace api
+}  // namespace opentxs
+
+namespace opentxs::blockchain::database::wallet::db
+{
+class SubchainID
+{
+public:
+    const Space data_;
+
+    auto FilterType() const noexcept -> filter::Type;
+    auto SubaccountID(const api::Core& api) const noexcept -> const Identifier&;
+    auto Type() const noexcept -> crypto::Subchain;
+    auto Version() const noexcept -> VersionNumber;
+
+    SubchainID(
+        const crypto::Subchain type,
+        const filter::Type filter,
+        const VersionNumber version,
+        const Identifier& subaccount) noexcept;
+    SubchainID(const ReadView bytes) noexcept(false);
+
+    ~SubchainID() = default;
+
+private:
+    static constexpr auto fixed_ =
+        sizeof(crypto::Subchain) + sizeof(filter::Type) + sizeof(VersionNumber);
+
+    mutable std::mutex lock_;
+    mutable std::optional<crypto::Subchain> subchain_;
+    mutable std::optional<filter::Type> filter_;
+    mutable std::optional<VersionNumber> version_;
+    mutable std::optional<OTIdentifier> subaccount_;
+
+    SubchainID() = delete;
+    SubchainID(const SubchainID&) = delete;
+    SubchainID(SubchainID&&) = delete;
+    auto operator=(const SubchainID&) -> SubchainID& = delete;
+    auto operator=(SubchainID&&) -> SubchainID& = delete;
+};
+}  // namespace opentxs::blockchain::database::wallet::db

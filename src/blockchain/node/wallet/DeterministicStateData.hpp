@@ -145,7 +145,8 @@ private:
     Index index_;
 
     auto type() const noexcept -> std::stringstream final;
-    auto update_scan(const block::Position& pos) const noexcept -> void final;
+    auto update_scan(const block::Position& pos, bool reorg) const noexcept
+        -> void final;
 
     auto get_index() noexcept -> Index& final { return index_; }
     auto handle_confirmed_matches(

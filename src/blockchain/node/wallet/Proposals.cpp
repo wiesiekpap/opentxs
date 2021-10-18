@@ -31,7 +31,6 @@
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/SendResult.hpp"
-#include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"

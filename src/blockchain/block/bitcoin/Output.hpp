@@ -35,6 +35,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
+#include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -74,7 +75,7 @@ public:
         -> std::vector<Space> final;
     auto FindMatches(
         const ReadView txid,
-        const FilterType type,
+        const filter::Type type,
         const ParsedPatterns& patterns) const noexcept -> Matches final;
     auto GetPatterns() const noexcept -> std::vector<PatternID> final;
     auto Internal() const noexcept -> const internal::Output& final

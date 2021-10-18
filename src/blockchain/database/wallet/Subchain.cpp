@@ -7,52 +7,109 @@
 #include "1_Internal.hpp"                           // IWYU pragma: associated
 #include "blockchain/database/wallet/Subchain.hpp"  // IWYU pragma: associated
 
-#include <boost/container/flat_set.hpp>
-#include <boost/container/vector.hpp>
 #include <algorithm>
+#include <cstring>
+#include <future>
 #include <iterator>
 #include <map>
-#include <tuple>
+#include <mutex>
+#include <shared_mutex>
+#include <stdexcept>
+#include <string>
 #include <utility>
 #include <vector>
 
+#include "blockchain/database/wallet/Pattern.hpp"
+#include "blockchain/database/wallet/Position.hpp"
+#include "blockchain/database/wallet/SubchainID.hpp"
+#include "internal/api/network/Network.hpp"
 #include "opentxs/Pimpl.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/network/Asio.hpp"
+#include "opentxs/api/network/Network.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/core/LogSource.hpp"
+#include "util/LMDB.hpp"
 
-// #define OT_METHOD "opentxs::blockchain::database::SubchainData::"
+#define OT_METHOD "opentxs::blockchain::database::SubchainData::"
 
 namespace opentxs::blockchain::database::wallet
 {
+template <typename Input>
+auto tsv(const Input& in) noexcept -> ReadView
+{
+    return {reinterpret_cast<const char*>(&in), sizeof(in)};
+}
+
+using Mode = storage::lmdb::LMDB::Mode;
+
+constexpr auto config_{Table::Config};
+constexpr auto last_indexed_{Table::SubchainLastIndexed};
+constexpr auto last_scanned_{Table::SubchainLastScanned};
+constexpr auto id_index_{Table::SubchainID};
+constexpr auto patterns_{Table::WalletPatterns};
+constexpr auto pattern_index_{Table::SubchainPatterns};
+constexpr auto match_index_{Table::SubchainMatches};
+
 struct SubchainData::Imp {
-    auto GetSubchainID(const NodeID& balanceNode, const Subchain subchain)
-        const noexcept -> pSubchainID
-    {
-        return subchain_id(balanceNode, subchain);
-    }
-    auto GetSubchainIndex(
-        const NodeID& balanceNode,
+    auto GetSubchainID(
+        const NodeID& subaccount,
         const Subchain subchain,
-        const FilterType type) const noexcept -> pSubchainID
+        MDB_txn* tx) const noexcept -> pSubchainIndex
     {
-        auto lock = Lock{lock_};
-        auto output = subchain_index(lock, balanceNode, subchain, type);
-        reverse_index_.try_emplace(output, balanceNode, subchain, type);
+        auto lock = sLock{lock_};
+        upgrade_future_.get();
+        const auto output = subchain_index(
+            subaccount, subchain, default_filter_type_, current_version_);
+        const auto& s = [&]() -> const db::SubchainID& {
+            auto& map = cache_.subchain_id_;
+            auto lock = Lock{cache_.id_lock_};
+
+            if (auto it = map.find(output); map.end() != it) {
+
+                return it->second;
+            }
+
+            const auto [it, added] = map.try_emplace(
+                output,
+                subchain,
+                default_filter_type_,
+                current_version_,
+                subaccount);
+
+            OT_ASSERT(added);
+
+            return it->second;
+        }();
+        const auto key = output->Bytes();
+
+        if (false == lmdb_.Exists(id_index_, key)) {
+            const auto rc =
+                lmdb_.Store(id_index_, key, reader(s.data_), tx).first;
+
+            OT_ASSERT(rc);
+        }
 
         return output;
     }
-    auto GetMutex() const noexcept -> std::mutex& { return lock_; }
     auto GetPatterns(const SubchainIndex& subchain) const noexcept -> Patterns
     {
-        auto lock = Lock{lock_};
+        auto lock = sLock{lock_};
+        upgrade_future_.get();
 
         try {
-            const auto& patterns = get_patterns(lock, subchain);
+            const auto& key = decode_key(subchain);
+            const auto patterns = get_patterns(subchain);
 
-            return load_patterns(lock, subchain, patterns);
-        } catch (...) {
+            return load_patterns(key, patterns);
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return {};
         }
@@ -61,228 +118,390 @@ struct SubchainData::Imp {
         const SubchainIndex& subchain,
         const ReadView blockID) const noexcept -> Patterns
     {
-        auto lock = Lock{lock_};
+        auto lock = sLock{lock_};
+        upgrade_future_.get();
 
         try {
-            const auto& allPatterns = get_patterns(lock, subchain);
-            auto effectiveIDs = std::vector<pPatternID>{};
+            const auto& key = decode_key(subchain);
+            const auto patterns = [&] {
+                const auto all = [&] {
+                    auto out = get_patterns(subchain);
+                    std::sort(out.begin(), out.end());
 
-            try {
-                const auto& matchedPatterns =
-                    match_index_.at(api_.Factory().Data(blockID));
+                    return out;
+                }();
+                const auto matches = [&] {
+                    auto out = get_matches(blockID);
+                    std::sort(out.begin(), out.end());
+
+                    return out;
+                }();
+                auto out = std::vector<pPatternID>{};
                 std::set_difference(
-                    std::begin(allPatterns),
-                    std::end(allPatterns),
-                    std::begin(matchedPatterns),
-                    std::end(matchedPatterns),
-                    std::back_inserter(effectiveIDs));
-            } catch (...) {
+                    std::begin(all),
+                    std::end(all),
+                    std::begin(matches),
+                    std::end(matches),
+                    std::back_inserter(out));
 
-                return load_patterns(lock, subchain, allPatterns);
-            }
+                return out;
+            }();
 
-            return load_patterns(lock, subchain, effectiveIDs);
-        } catch (...) {
+            return load_patterns(key, patterns);
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return {};
         }
     }
     auto Reorg(
-        const Lock& lock,
+        MDB_txn* tx,
+        const node::HeaderOracle& headers,
         const SubchainIndex& subchain,
         const block::Height lastGoodHeight) const noexcept(false) -> bool
     {
-        try {
-            auto& scanned = last_scanned_.at(subchain);
+        auto lock = eLock{lock_};
+        upgrade_future_.get();
+        const auto [height, hash] = last_scanned(lock, subchain);
 
-            if (const auto& height = scanned.first; height < lastGoodHeight) {
-                // noop
-            } else if (height > lastGoodHeight) {
-                scanned.first = lastGoodHeight;
-            } else {
-                scanned.first = std::min<block::Height>(lastGoodHeight - 1, 0);
-            }
+        if (height < lastGoodHeight) {
 
-            // FIXME use header oracle to set correct block hash if
-            // scanned.first is modified
-        } catch (...) {
+            return true;
+        } else if (height > lastGoodHeight) {
+
+            return set_last_scanned(
+                lock, tx, subchain, headers.GetPosition(lastGoodHeight));
+        } else {
+
+            return set_last_scanned(
+                lock, tx, subchain, headers.GetPosition(lastGoodHeight - 1));
         }
-
-        return false;
-    }
-    auto SetDefaultFilterType(const FilterType type) const noexcept -> bool
-    {
-        auto lock = Lock{lock_};
-        const_cast<FilterType&>(default_filter_type_) = type;
-
-        return true;
     }
     auto SubchainAddElements(
         const SubchainIndex& subchain,
         const ElementMap& elements) const noexcept -> bool
     {
-        auto lock = Lock{lock_};
-        auto newIndices = std::vector<OTIdentifier>{};
-        auto highest = Bip32Index{};
+        auto lock = eLock{lock_};
+        upgrade_future_.get();
 
-        for (const auto& [index, patterns] : elements) {
-            auto patternID = pattern_id(subchain, index);
-            auto& vector = patterns_[patternID];
-            newIndices.emplace_back(std::move(patternID));
-            highest = std::max(highest, index);
+        try {
+            auto output{false};
+            const auto key = subchain.Bytes();
+            auto newIndices = std::vector<pPatternID>{};
+            auto highest = Bip32Index{};
+            auto tx = lmdb_.TransactionRW();
 
-            for (const auto& pattern : patterns) {
-                vector.emplace_back(index, pattern);
+            for (const auto& [index, patterns] : elements) {
+                const auto id = pattern_id(subchain, index);
+                newIndices.emplace_back(id);
+                highest = std::max(highest, index);
+
+                for (const auto& pattern : patterns) {
+                    const auto data = db::Pattern{index, reader(pattern)};
+                    output =
+                        lmdb_
+                            .Store(
+                                patterns_, id->Bytes(), reader(data.data_), tx)
+                            .first;
+
+                    if (false == output) {
+                        throw std::runtime_error{"failed to store pattern"};
+                    }
+                }
             }
+
+            output = lmdb_.Store(last_indexed_, key, tsv(highest), tx).first;
+
+            if (false == output) {
+                throw std::runtime_error{"failed to update highest indexed"};
+            }
+
+            cache_.last_indexed_[subchain] = highest;
+
+            for (auto& patternID : newIndices) {
+                output =
+                    lmdb_.Store(pattern_index_, key, patternID->Bytes(), tx)
+                        .first;
+
+                if (false == output) {
+                    throw std::runtime_error{
+                        "failed to store subchain pattern index"};
+                }
+            }
+
+            output = tx.Finalize(true);
+
+            if (false == output) {
+                throw std::runtime_error{"failed to commit transaction"};
+            }
+
+            return true;
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+
+            return false;
         }
-
-        last_indexed_[subchain] = highest;
-        auto& index = subchain_pattern_index_[subchain];
-
-        for (auto& id : newIndices) { index.emplace(std::move(id)); }
-
-        return true;
     }
     auto SubchainLastIndexed(const SubchainIndex& subchain) const noexcept
         -> std::optional<Bip32Index>
     {
-        auto lock = Lock{lock_};
+        auto lock = sLock{lock_};
+        upgrade_future_.get();
+        auto& map = cache_.last_indexed_;
+        auto cLock = Lock{cache_.index_lock_};
+        auto it = map.find(subchain);
 
-        try {
-            return last_indexed_.at(subchain);
-        } catch (...) {
-            return {};
-        }
+        if (map.end() != it) { return it->second; }
+
+        lmdb_.Load(last_indexed_, subchain.Bytes(), [&](const auto bytes) {
+            if (sizeof(Bip32Index) == bytes.size()) {
+                auto value = Bip32Index{};
+                std::memcpy(&value, bytes.data(), bytes.size());
+                auto [i, added] = map.try_emplace(subchain, value);
+
+                OT_ASSERT(added);
+
+                it = i;
+            } else {
+
+                OT_FAIL;
+            }
+        });
+
+        if (map.end() != it) { return it->second; }
+
+        return std::nullopt;
     }
     auto SubchainLastScanned(const SubchainIndex& subchain) const noexcept
         -> block::Position
     {
-        auto lock = Lock{lock_};
+        auto lock = sLock{lock_};
+        upgrade_future_.get();
 
-        try {
-            return last_scanned_.at(subchain);
-        } catch (...) {
-            return make_blank<block::Position>::value(api_);
-        }
+        return last_scanned(lock, subchain);
     }
     auto SubchainMatchBlock(
         const SubchainIndex& subchain,
         const std::vector<std::pair<ReadView, MatchingIndices>>& results)
         const noexcept -> bool
     {
-        auto lock = Lock{lock_};
+        auto lock = eLock{lock_};
+        upgrade_future_.get();
+        auto tx = lmdb_.TransactionRW();
+        auto output{true};
 
-        for (const auto& [blockID, indices] : results) {
-            auto& matchSet = match_index_[api_.Factory().Data(blockID)];
+        try {
+            for (const auto& [blockID, indices] : results) {
+                for (const auto& index : indices) {
+                    const auto id = pattern_id(subchain, index);
+                    output = lmdb_.Store(match_index_, blockID, id->Bytes(), tx)
+                                 .first;
 
-            for (const auto& index : indices) {
-                matchSet.emplace(pattern_id(subchain, index));
+                    if (false == output) {
+                        throw std::runtime_error{"Failed to add match"};
+                    }
+                }
             }
-        }
 
-        return true;
+            output = tx.Finalize(true);
+
+            if (false == output) {
+                throw std::runtime_error{"failed to commit transaction"};
+            }
+
+            return output;
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+
+            return false;
+        }
     }
     auto SubchainSetLastScanned(
         const SubchainIndex& subchain,
         const block::Position& position) const noexcept -> bool
     {
-        auto lock = Lock{lock_};
-        auto& map = last_scanned_;
-        auto it = map.find(subchain);
+        auto lock = eLock{lock_};
+        upgrade_future_.get();
 
-        if (map.end() == it) {
-            map.emplace(subchain, position);
-
-            return true;
-        } else {
-            it->second = position;
-
-            return true;
-        }
-    }
-    auto Type() const noexcept -> FilterType
-    {
-        auto lock = Lock{lock_};
-
-        return default_filter_type_;
+        return set_last_scanned(lock, nullptr, subchain, position);
     }
 
-    Imp(const api::Core& api) noexcept
+    Imp(const api::Core& api,
+        const storage::lmdb::LMDB& lmdb,
+        const blockchain::filter::Type filter) noexcept
         : api_(api)
-        , default_filter_type_()
-        , current_version_(1)
+        , lmdb_(lmdb)
+        , default_filter_type_(filter)
+        , current_version_([&] {
+            auto version = std::optional<VersionNumber>{};
+            lmdb_.Load(
+                config_, tsv(database::Key::Version), [&](const auto bytes) {
+                    if (sizeof(VersionNumber) == bytes.size()) {
+                        auto& out = version.emplace();
+                        std::memcpy(&out, bytes.data(), bytes.size());
+                    } else if (sizeof(std::size_t) == bytes.size()) {
+                        auto& out = version.emplace();
+                        std::memcpy(
+                            &out,
+                            bytes.data(),
+                            std::min(bytes.size(), sizeof(out)));
+                    } else {
+
+                        OT_FAIL;
+                    }
+                });
+
+            OT_ASSERT(version.has_value());
+
+            return version.value();
+        }())
+        , upgrade_promise_()
+        , upgrade_future_(upgrade_promise_.get_future())
         , lock_()
-        , last_indexed_()
-        , last_scanned_()
-        , subchain_version_()
-        , patterns_()
-        , subchain_pattern_index_()
-        , match_index_()
-        , reverse_index_()
+        , cache_()
     {
-        // TODO persist default_filter_type_ and reindex various tables
-        // if the type provided by the filter oracle has changed
+        api_.Network().Asio().Internal().Post(
+            ThreadPool::General, [this] { upgrade(); });
     }
 
 private:
-    using pSubchainVersionIndex = OTIdentifier;
     using PatternID = Identifier;
     using pPatternID = OTIdentifier;
-    using Pattern = Parent::Pattern;
-    using SubchainIndexMap = std::map<pSubchainIndex, Bip32Index>;
-    using PositionMap = std::map<pSubchainIndex, block::Position>;
-    using VersionIndex = std::map<pSubchainVersionIndex, VersionNumber>;
-    using PatternMap =
-        std::map<pPatternID, std::vector<std::pair<Bip32Index, Space>>>;
-    using IDSet = boost::container::flat_set<pPatternID>;
-    using SubchainPatternIndex = std::map<pSubchainIndex, IDSet>;
-    using MatchIndex = std::map<block::pHash, IDSet>;
-    using ReverseIndex =
-        std::map<pSubchainIndex, std::tuple<pNodeID, Subchain, FilterType>>;
+
+    struct Cache {
+        // NOTE if an exclusive lock is being held in the parent then locking
+        // these mutexes is redundant
+        std::mutex id_lock_{};
+        std::map<pSubchainIndex, db::SubchainID> subchain_id_{};
+        std::mutex index_lock_{};
+        std::map<pSubchainIndex, Bip32Index> last_indexed_{};
+        std::mutex scanned_lock_{};
+        std::map<pSubchainIndex, db::Position> last_scanned_{};
+    };
 
     const api::Core& api_;
-    const FilterType default_filter_type_;
+    const storage::lmdb::LMDB& lmdb_;
+    const filter::Type default_filter_type_;
     const VersionNumber current_version_;
-    mutable std::mutex lock_;
-    mutable SubchainIndexMap last_indexed_;
-    mutable PositionMap last_scanned_;
-    mutable VersionIndex subchain_version_;
-    mutable PatternMap patterns_;
-    mutable SubchainPatternIndex subchain_pattern_index_;
-    mutable MatchIndex match_index_;
-    mutable ReverseIndex reverse_index_;
+    std::promise<void> upgrade_promise_;
+    std::shared_future<void> upgrade_future_;
+    mutable std::shared_mutex lock_;
+    mutable Cache cache_;
 
-    auto check_subchain_version(
-        const Lock& lock,
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> void
+    auto decode_key(const SubchainIndex& key) const noexcept(false)
+        -> const db::SubchainID&
     {
-        // TODO compared stored value of the subchain's version to the default
-        // version and reindex if necessary.
+        auto& map = cache_.subchain_id_;
+        auto lock = Lock{cache_.id_lock_};
+        auto it = map.find(key);
+
+        if (map.end() != it) { return it->second; }
+
+        lmdb_.Load(id_index_, key.Bytes(), [&](const auto bytes) {
+            try {
+                auto [first, second] = map.try_emplace(key, bytes);
+                it = first;
+            } catch (const std::exception& e) {
+                LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            }
+        });
+
+        if (map.end() == it) {
+            const auto error =
+                std::string{"key "} + key.str() + " invalid or not found";
+            throw std::runtime_error{error};
+        }
+
+        return it->second;
+    }
+    auto get_matches(const ReadView block) const noexcept
+        -> std::vector<pPatternID>
+    {
+        auto out = std::vector<pPatternID>{};
+        lmdb_.Load(
+            match_index_,
+            block,
+            [&](const auto bytes) {
+                if (0u < bytes.size()) {
+                    auto& id = out.emplace_back(api_.Factory().Identifier());
+                    id->Assign(bytes.data(), bytes.size());
+                } else {
+
+                    OT_FAIL;
+                }
+            },
+            Mode::Multiple);
+
+        return out;
+    }
+    auto get_patterns(const SubchainIndex& subchain) const noexcept
+        -> std::vector<pPatternID>
+    {
+        auto out = std::vector<pPatternID>{};
+        lmdb_.Load(
+            pattern_index_,
+            subchain.Bytes(),
+            [&](const auto bytes) {
+                if (0u < bytes.size()) {
+                    auto& id = out.emplace_back(api_.Factory().Identifier());
+                    id->Assign(bytes.data(), bytes.size());
+                } else {
+
+                    OT_FAIL;
+                }
+            },
+            Mode::Multiple);
+
+        return out;
+    }
+    template <typename LockType>
+    auto last_scanned(const LockType& lock, const SubchainIndex& subchain)
+        const noexcept -> block::Position
+    {
+        auto& map = cache_.last_scanned_;
+        auto cLock = Lock{cache_.scanned_lock_};
+        auto it = map.find(subchain);
+
+        if (map.end() != it) { return it->second.Decode(api_); }
+
+        lmdb_.Load(last_scanned_, subchain.Bytes(), [&](const auto bytes) {
+            try {
+                auto [first, second] = map.try_emplace(subchain, bytes);
+                it = first;
+            } catch (const std::exception& e) {
+                LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            }
+        });
+
+        if (map.end() == it) {
+            static const auto null = make_blank<block::Position>::value(api_);
+
+            return null;
+        }
+
+        return it->second.Decode(api_);
     }
 
-    auto get_patterns(const Lock& lock, const SubchainIndex& subchain) const
-        noexcept(false) -> const IDSet&
-    {
-        return subchain_pattern_index_.at(subchain);
-    }
-    template <typename PatternList>
     auto load_patterns(
-        const Lock& lock,
-        const SubchainIndex& subchain,
-        const PatternList& patterns) const noexcept -> Patterns
+        const db::SubchainID& key,
+        const std::vector<pPatternID>& patterns) const noexcept(false)
+        -> Patterns
     {
         auto output = Patterns{};
-        const auto [node, sub, type] = reverse_index_.at(subchain);
+        const auto& subaccount = key.SubaccountID(api_);
+        const auto subchain = key.Type();
 
-        for (const auto& patternID : patterns) {
-            try {
-                for (const auto& [index, pattern] : patterns_.at(patternID)) {
-                    output.emplace_back(Pattern{{index, {sub, node}}, pattern});
-                }
-            } catch (...) {
-            }
+        for (const auto& id : patterns) {
+            lmdb_.Load(
+                patterns_,
+                id->Bytes(),
+                [&](const auto bytes) {
+                    const auto data = db::Pattern{bytes};
+                    output.emplace_back(Parent::Pattern{
+                        {data.Index(), {subchain, subaccount}},
+                        space(data.Data())});
+                },
+                Mode::Multiple);
         }
 
         return output;
@@ -297,23 +516,40 @@ private:
 
         return output;
     }
-    auto subchain_id(const NodeID& nodeID, const Subchain subchain)
-        const noexcept -> pSubchainID
+    auto set_last_scanned(
+        const eLock& lock,
+        MDB_txn* tx,
+        const SubchainIndex& subchain,
+        const block::Position& position) const noexcept -> bool
     {
-        auto preimage = OTData{nodeID};
-        preimage->Concatenate(&subchain, sizeof(subchain));
-        auto output = api_.Factory().Identifier();
-        output->CalculateDigest(preimage->Bytes());
+        try {
+            const auto key = subchain.Bytes();
+            const auto s = db::Position{position};
 
-        return output;
+            if (!lmdb_.Store(last_scanned_, key, reader(s.data_), tx).first) {
+                throw std::runtime_error{"failed to update database"};
+            }
+
+            auto& map = cache_.last_scanned_;
+            map.erase(subchain);
+            const auto [it, added] = map.try_emplace(subchain, position);
+
+            OT_ASSERT(added);
+
+            return true;
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+
+            return false;
+        }
     }
     auto subchain_index(
-        const NodeID& balanceNode,
+        const NodeID& subaccount,
         const Subchain subchain,
-        const FilterType type,
+        const filter::Type type,
         const VersionNumber version) const noexcept -> pSubchainIndex
     {
-        auto preimage = OTData{balanceNode};
+        auto preimage = OTData{subaccount};
         preimage->Concatenate(&subchain, sizeof(subchain));
         preimage->Concatenate(&type, sizeof(type));
         preimage->Concatenate(&version, sizeof(version));
@@ -322,71 +558,38 @@ private:
 
         return output;
     }
-    auto subchain_index(
-        const Lock& lock,
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> pSubchainIndex
+
+    auto upgrade() noexcept -> void
     {
-        check_subchain_version(lock, balanceNode, subchain, type);
+        // TODO
+        // 1. read every value from Table::SubchainID
+        // 2. if the filter type or version does not match the current value,
+        // reindex everything
 
-        return subchain_index(balanceNode, subchain, type, current_version_);
+        upgrade_promise_.set_value();
     }
-    auto subchain_version(
-        const Lock& lock,
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> VersionNumber
-    {
-        const auto id = subchain_version_index(balanceNode, subchain, type);
 
-        try {
-
-            return subchain_version_.at(id);
-        } catch (...) {
-
-            return 0;
-        }
-    }
-    auto subchain_version_index(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> pSubchainVersionIndex
-    {
-        auto preimage = OTData{balanceNode};
-        preimage->Concatenate(&subchain, sizeof(subchain));
-        preimage->Concatenate(&type, sizeof(type));
-        auto output = api_.Factory().Identifier();
-        output->CalculateDigest(preimage->Bytes());
-
-        return output;
-    }
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 };
 
-SubchainData::SubchainData(const api::Core& api) noexcept
-    : imp_(std::make_unique<Imp>(api))
+SubchainData::SubchainData(
+    const api::Core& api,
+    const storage::lmdb::LMDB& lmdb,
+    const blockchain::filter::Type filter) noexcept
+    : imp_(std::make_unique<Imp>(api, lmdb, filter))
 {
     OT_ASSERT(imp_);
 }
 
-auto SubchainData::GetIndex(
-    const NodeID& balanceNode,
-    const Subchain subchain,
-    const FilterType type) const noexcept -> pSubchainIndex
-{
-    return imp_->GetSubchainIndex(balanceNode, subchain, type);
-}
-
 auto SubchainData::GetSubchainID(
-    const NodeID& balanceNode,
-    const Subchain subchain) const noexcept -> pSubchainID
+    const NodeID& subaccount,
+    const Subchain subchain,
+    MDB_txn* tx) const noexcept -> pSubchainIndex
 {
-    return imp_->GetSubchainID(balanceNode, subchain);
-}
-
-auto SubchainData::GetMutex() const noexcept -> std::mutex&
-{
-    return imp_->GetMutex();
+    return imp_->GetSubchainID(subaccount, subchain, tx);
 }
 
 auto SubchainData::GetPatterns(const SubchainIndex& subchain) const noexcept
@@ -403,17 +606,12 @@ auto SubchainData::GetUntestedPatterns(
 }
 
 auto SubchainData::Reorg(
-    const Lock& lock,
+    MDB_txn* tx,
+    const node::HeaderOracle& headers,
     const SubchainIndex& subchain,
     const block::Height lastGoodHeight) const noexcept(false) -> bool
 {
-    return imp_->Reorg(lock, subchain, lastGoodHeight);
-}
-
-auto SubchainData::SetDefaultFilterType(const FilterType type) const noexcept
-    -> bool
-{
-    return imp_->SetDefaultFilterType(type);
+    return imp_->Reorg(tx, headers, subchain, lastGoodHeight);
 }
 
 auto SubchainData::SubchainAddElements(
@@ -449,8 +647,6 @@ auto SubchainData::SubchainSetLastScanned(
 {
     return imp_->SubchainSetLastScanned(subchain, position);
 }
-
-auto SubchainData::Type() const noexcept -> FilterType { return imp_->Type(); }
 
 SubchainData::~SubchainData() = default;
 }  // namespace opentxs::blockchain::database::wallet

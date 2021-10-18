@@ -63,12 +63,22 @@ auto BlockchainFilterOracle(
     const blockchain::node::internal::HeaderOracle& header,
     const blockchain::node::internal::BlockOracle& block,
     const blockchain::node::internal::FilterDatabase& database,
-    const blockchain::Type type,
+    const blockchain::Type chain,
+    const blockchain::filter::Type filter,
     const std::string& shutdown) noexcept
     -> std::unique_ptr<blockchain::node::internal::FilterOracle>
 {
     return std::make_unique<ReturnType>(
-        api, network, config, node, header, block, database, type, shutdown);
+        api,
+        network,
+        config,
+        node,
+        header,
+        block,
+        database,
+        chain,
+        filter,
+        shutdown);
 }
 }  // namespace opentxs::factory
 
@@ -116,6 +126,7 @@ FilterOracle::FilterOracle(
     const internal::BlockOracle& block,
     const internal::FilterDatabase& database,
     const blockchain::Type chain,
+    const blockchain::filter::Type filter,
     const std::string& shutdown) noexcept
     : internal::FilterOracle()
     , api_(api)
@@ -124,14 +135,7 @@ FilterOracle::FilterOracle(
     , database_(database)
     , filter_notifier_(network.FilterUpdate())
     , chain_(chain)
-    , default_type_([&] {
-        if (config.generate_cfilters_ || config.use_sync_server_) {
-
-            return filter::Type::ES;
-        }
-
-        return blockchain::internal::DefaultFilter(chain_);
-    }())
+    , default_type_(filter)
     , lock_()
     , new_filters_([&] {
         auto socket = api_.Network().ZeroMQ().PublishSocket();

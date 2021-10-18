@@ -16,8 +16,10 @@
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "util/LMDB.hpp"
 
 namespace opentxs
 {
@@ -25,7 +27,27 @@ namespace api
 {
 class Core;
 }  // namespace api
+
+namespace blockchain
+{
+namespace node
+{
+class HeaderOracle;
+}  // namespace node
+}  // namespace blockchain
+
+namespace storage
+{
+namespace lmdb
+{
+class LMDB;
+}  // namespace lmdb
+}  // namespace storage
 }  // namespace opentxs
+
+extern "C" {
+typedef struct MDB_txn MDB_txn;
+}
 
 namespace opentxs::blockchain::database::wallet
 {
@@ -34,34 +56,28 @@ class SubchainData
 public:
     using Common = api::client::blockchain::database::implementation::Database;
     using Parent = node::internal::WalletDatabase;
-    using SubchainID = Identifier;
-    using pSubchainID = OTIdentifier;
     using SubchainIndex = Parent::SubchainIndex;
     using pSubchainIndex = Parent::pSubchainIndex;
     using NodeID = Parent::NodeID;
     using pNodeID = Parent::pNodeID;
     using Subchain = Parent::Subchain;
-    using FilterType = Parent::FilterType;
     using Patterns = Parent::Patterns;
     using ElementMap = Parent::ElementMap;
     using MatchingIndices = Parent::MatchingIndices;
 
-    auto GetIndex(
-        const NodeID& balanceNode,
+    auto GetSubchainID(
+        const NodeID& subaccount,
         const Subchain subchain,
-        const FilterType type) const noexcept -> pSubchainIndex;
-    auto GetSubchainID(const NodeID& balanceNode, const Subchain subchain)
-        const noexcept -> pSubchainID;
-    auto GetMutex() const noexcept -> std::mutex&;
+        MDB_txn* tx) const noexcept -> pSubchainIndex;
     auto GetPatterns(const SubchainIndex& subchain) const noexcept -> Patterns;
     auto GetUntestedPatterns(
         const SubchainIndex& subchain,
         const ReadView blockID) const noexcept -> Patterns;
     auto Reorg(
-        const Lock& lock,
+        MDB_txn* tx,
+        const node::HeaderOracle& headers,
         const SubchainIndex& subchain,
         const block::Height lastGoodHeight) const noexcept(false) -> bool;
-    auto SetDefaultFilterType(const FilterType type) const noexcept -> bool;
     auto SubchainAddElements(
         const SubchainIndex& subchain,
         const ElementMap& elements) const noexcept -> bool;
@@ -76,9 +92,11 @@ public:
     auto SubchainSetLastScanned(
         const SubchainIndex& subchain,
         const block::Position& position) const noexcept -> bool;
-    auto Type() const noexcept -> FilterType;
 
-    SubchainData(const api::Core& api) noexcept;
+    SubchainData(
+        const api::Core& api,
+        const storage::lmdb::LMDB& lmdb,
+        const blockchain::filter::Type filter) noexcept;
 
     ~SubchainData();
 
@@ -86,5 +104,10 @@ private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
+
+    SubchainData() = delete;
+    SubchainData(const SubchainData&) = delete;
+    auto operator=(const SubchainData&) -> SubchainData& = delete;
+    auto operator=(SubchainData&&) -> SubchainData& = delete;
 };
 }  // namespace opentxs::blockchain::database::wallet

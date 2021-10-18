@@ -20,10 +20,10 @@
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Storage.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -142,8 +142,17 @@ auto BlockchainAccountActivity::display_balance(
 
 auto BlockchainAccountActivity::load_thread() noexcept -> void
 {
-    const auto transactions =
-        Widget::api_.Storage().BlockchainTransactionList(primary_id_);
+    const auto transactions = [&]() -> std::vector<blockchain::block::pTxid> {
+        try {
+            const auto& chain =
+                Widget::api_.Network().Blockchain().GetChain(chain_);
+
+            return chain.Internal().GetTransactions(primary_id_);
+        } catch (...) {
+
+            return {};
+        }
+    }();
     auto active = std::set<AccountActivityRowID>{};
 
     for (const auto& txid : transactions) {

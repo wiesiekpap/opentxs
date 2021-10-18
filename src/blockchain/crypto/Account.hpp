@@ -47,6 +47,11 @@ namespace opentxs
 {
 namespace api
 {
+namespace client
+{
+class Contacts;
+}  // namespace client
+
 class Core;
 }  // namespace api
 
@@ -145,7 +150,8 @@ public:
         const PasswordPrompt& reason,
         Identifier& out) noexcept -> bool final
     {
-        return payment_code_.Construct(out, local, remote, path, reason);
+        return payment_code_.Construct(
+            out, contacts_, local, remote, path, reason);
     }
     auto AddUpdatePaymentCode(
         const opentxs::PaymentCode& local,
@@ -155,11 +161,13 @@ public:
         const PasswordPrompt& reason,
         Identifier& out) noexcept -> bool final
     {
-        return payment_code_.Construct(out, local, remote, path, txid, reason);
+        return payment_code_.Construct(
+            out, contacts_, local, remote, path, txid, reason);
     }
 
     Account(
         const api::Core& api,
+        const api::client::Contacts& contacts,
         const crypto::Wallet& parent,
         const AccountIndex& index,
         const identifier::Nym& nym,
@@ -317,6 +325,7 @@ private:
         NodeGroup<PaymentCodeAccounts, crypto::PaymentCode>;
 
     const api::Core& api_;
+    const api::client::Contacts& contacts_;
     const crypto::Wallet& parent_;
     const AccountIndex& account_index_;
     const opentxs::blockchain::Type chain_;

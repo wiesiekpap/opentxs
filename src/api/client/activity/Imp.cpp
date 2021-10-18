@@ -101,10 +101,7 @@ auto Activity::Imp::add_blockchain_transaction(
     const auto incoming =
         transaction.AssociatedRemoteContacts(blockchain, contact_, nym);
     LogTrace(OT_METHOD)(__func__)(": transaction ")(transaction.ID().asHex())(
-        " is associated "
-        "with ")(incoming.size())(" con"
-                                  "tact"
-                                  "s")
+        " is associated  with ")(incoming.size())(" contacts")
         .Flush();
     const auto existing =
         api_.Storage().BlockchainThreadMap(nym, transaction.ID());
@@ -188,8 +185,8 @@ auto Activity::Imp::AddBlockchainTransaction(
 
     for (const auto& nym : transaction.AssociatedLocalNyms(api)) {
         LogTrace(OT_METHOD)(__func__)(": blockchain transaction ")(
-            transaction.ID().asHex())(" is relevant to local "
-                                      "nym ")(nym->asHex())
+            transaction.ID().asHex())(" is relevant to local nym ")(
+            nym->asHex())
             .Flush();
 
         OT_ASSERT(false == nym->empty());
@@ -715,8 +712,8 @@ auto Activity::Imp::thread_preload_thread(
     auto cached = std::size_t{0};
 
     if (start > size) {
-        LogOutput(OT_METHOD)(__func__)(": Error: start larger than size "
-                                       "(")(start)(" / ")(size)(").")
+        LogOutput(OT_METHOD)(__func__)(": Error: start larger than size (")(
+            start)(" / ")(size)(")")
             .Flush();
 
         return;

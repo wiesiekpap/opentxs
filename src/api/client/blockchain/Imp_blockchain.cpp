@@ -156,14 +156,13 @@ auto BlockchainImp::ActivityDescription(
     auto output = std::stringstream{};
     const auto amount = tx.NetBalanceChange(parent_, nym);
     const auto memo = tx.Memo(parent_);
-    const auto& contactAPI = Contacts();
     const auto names = [&] {
         auto out = std::set<std::string>{};
         const auto contacts =
-            tx.AssociatedRemoteContacts(parent_, contactAPI, nym);
+            tx.AssociatedRemoteContacts(parent_, contacts_, nym);
 
         for (const auto& id : contacts) {
-            out.emplace(contactAPI.ContactName(id, Translate(chain)));
+            out.emplace(contacts_.ContactName(id, Translate(chain)));
         }
 
         return out;

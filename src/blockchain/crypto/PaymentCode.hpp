@@ -48,6 +48,7 @@ namespace api
 namespace client
 {
 class Blockchain;
+class Contacts;
 }  // namespace client
 
 class Core;
@@ -116,6 +117,7 @@ public:
 
     PaymentCode(
         const api::Core& api,
+        const api::client::Contacts& contacts,
         const Account& parent,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
@@ -125,6 +127,7 @@ public:
         Identifier& id) noexcept(false);
     PaymentCode(
         const api::Core& api,
+        const api::client::Contacts& contacts,
         const Account& parent,
         const SerializedType& serialized,
         Identifier& id,

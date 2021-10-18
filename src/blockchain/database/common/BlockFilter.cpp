@@ -47,7 +47,7 @@ BlockFilter::BlockFilter(
 {
 }
 
-auto BlockFilter::HaveFilter(const FilterType type, const ReadView blockHash)
+auto BlockFilter::HaveFilter(const filter::Type type, const ReadView blockHash)
     const noexcept -> bool
 {
     try {
@@ -60,7 +60,7 @@ auto BlockFilter::HaveFilter(const FilterType type, const ReadView blockHash)
 }
 
 auto BlockFilter::HaveFilterHeader(
-    const FilterType type,
+    const filter::Type type,
     const ReadView blockHash) const noexcept -> bool
 {
     try {
@@ -72,7 +72,7 @@ auto BlockFilter::HaveFilterHeader(
     }
 }
 
-auto BlockFilter::LoadFilter(const FilterType type, const ReadView blockHash)
+auto BlockFilter::LoadFilter(const filter::Type type, const ReadView blockHash)
     const noexcept -> std::unique_ptr<const opentxs::blockchain::GCS>
 {
     auto output = std::unique_ptr<const opentxs::blockchain::GCS>{};
@@ -103,7 +103,7 @@ auto BlockFilter::LoadFilter(const FilterType type, const ReadView blockHash)
 }
 
 auto BlockFilter::LoadFilterHash(
-    const FilterType type,
+    const filter::Type type,
     const ReadView blockHash,
     const AllocateOutput filterHash) const noexcept -> bool
 {
@@ -134,7 +134,7 @@ auto BlockFilter::LoadFilterHash(
 }
 
 auto BlockFilter::LoadFilterHeader(
-    const FilterType type,
+    const filter::Type type,
     const ReadView blockHash,
     const AllocateOutput header) const noexcept -> bool
 {
@@ -168,7 +168,7 @@ auto BlockFilter::store(
     const Lock& lock,
     storage::lmdb::LMDB::Transaction& tx,
     const ReadView blockHash,
-    const FilterType type,
+    const filter::Type type,
     const GCS& filter) const noexcept -> bool
 {
     try {
@@ -223,21 +223,21 @@ auto BlockFilter::store(
 }
 
 auto BlockFilter::StoreFilterHeaders(
-    const FilterType type,
+    const filter::Type type,
     const std::vector<FilterHeader>& headers) const noexcept -> bool
 {
     return StoreFilters(type, headers, {});
 }
 
 auto BlockFilter::StoreFilters(
-    const FilterType type,
+    const filter::Type type,
     std::vector<FilterData>& filters) const noexcept -> bool
 {
     return StoreFilters(type, {}, filters);
 }
 
 auto BlockFilter::StoreFilters(
-    const FilterType type,
+    const filter::Type type,
     const std::vector<FilterHeader>& headers,
     const std::vector<FilterData>& filters) const noexcept -> bool
 {
@@ -276,17 +276,17 @@ auto BlockFilter::StoreFilters(
     return tx.Finalize(true);
 }
 
-auto BlockFilter::translate_filter(const FilterType type) noexcept(false)
+auto BlockFilter::translate_filter(const filter::Type type) noexcept(false)
     -> Table
 {
     switch (type) {
-        case FilterType::Basic_BIP158: {
+        case filter::Type::Basic_BIP158: {
             return FilterIndexBasic;
         }
-        case FilterType::Basic_BCHVariant: {
+        case filter::Type::Basic_BCHVariant: {
             return FilterIndexBCH;
         }
-        case FilterType::ES: {
+        case filter::Type::ES: {
             return FilterIndexES;
         }
         default: {
@@ -295,17 +295,17 @@ auto BlockFilter::translate_filter(const FilterType type) noexcept(false)
     }
 }
 
-auto BlockFilter::translate_header(const FilterType type) noexcept(false)
+auto BlockFilter::translate_header(const filter::Type type) noexcept(false)
     -> Table
 {
     switch (type) {
-        case FilterType::Basic_BIP158: {
+        case filter::Type::Basic_BIP158: {
             return FilterHeadersBasic;
         }
-        case FilterType::Basic_BCHVariant: {
+        case filter::Type::Basic_BCHVariant: {
             return FilterHeadersBCH;
         }
-        case FilterType::ES: {
+        case filter::Type::ES: {
             return FilterHeadersOpentxs;
         }
         default: {

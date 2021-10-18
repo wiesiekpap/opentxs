@@ -101,10 +101,10 @@ public:
         return const_iterator(this, index_.size());
     }
     auto end() const noexcept -> const_iterator final { return cend(); }
-    auto ExtractElements(const FilterType style) const noexcept
+    auto ExtractElements(const filter::Type style) const noexcept
         -> std::vector<Space> final;
     auto FindMatches(
-        const FilterType type,
+        const filter::Type type,
         const Patterns& outpoints,
         const Patterns& scripts) const noexcept -> Matches final;
     auto Print() const noexcept -> std::string override;

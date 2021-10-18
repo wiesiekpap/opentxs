@@ -49,7 +49,6 @@ namespace bitcoin
 class OPENTXS_EXPORT Input
 {
 public:
-    using FilterType = Transaction::FilterType;
     using KeyID = Transaction::KeyID;
     using KeyData = Transaction::KeyData;
     using Match = Transaction::Match;
@@ -65,7 +64,7 @@ public:
         -> std::vector<Space> = 0;
     virtual auto FindMatches(
         const ReadView txid,
-        const FilterType type,
+        const filter::Type type,
         const Patterns& txos,
         const ParsedPatterns& elements) const noexcept -> Matches = 0;
     virtual auto GetPatterns() const noexcept -> std::vector<PatternID> = 0;

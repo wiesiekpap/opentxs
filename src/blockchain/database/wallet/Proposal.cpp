@@ -7,19 +7,26 @@
 #include "1_Internal.hpp"                           // IWYU pragma: associated
 #include "blockchain/database/wallet/Proposal.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
-#include <iterator>
-#include <map>
-#include <utility>
+#include <mutex>
+#include <stdexcept>
 
+#include "Proto.hpp"
+#include "Proto.tpp"
+#include "internal/blockchain/database/Database.hpp"
+#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
+#include "util/LMDB.hpp"
 
-// #define OT_METHOD "opentxs::blockchain::database::Proposal::"
+#define OT_METHOD "opentxs::blockchain::database::Proposal::"
 
 namespace opentxs::blockchain::database::wallet
 {
+using Direction = storage::lmdb::LMDB::Dir;
+constexpr auto table_{Table::Proposals};
+
 struct Proposal::Imp {
     auto CompletedProposals() const noexcept -> std::set<OTIdentifier>
     {
@@ -29,28 +36,27 @@ struct Proposal::Imp {
     }
     auto Exists(const Identifier& id) const noexcept -> bool
     {
-        auto lock = Lock{lock_};
-
-        return proposals_.count(id);
+        return lmdb_.Exists(table_, id.Bytes());
     }
-    auto GetMutex() const noexcept -> std::mutex& { return lock_; }
     auto LoadProposal(const Identifier& id) const noexcept
         -> std::optional<proto::BlockchainTransactionProposal>
     {
-        auto lock = Lock{lock_};
-
-        return load_proposal(lock, id);
+        return load_proposal(id);
     }
     auto LoadProposals() const noexcept
         -> std::vector<proto::BlockchainTransactionProposal>
     {
         auto output = std::vector<proto::BlockchainTransactionProposal>{};
-        auto lock = Lock{lock_};
-        std::transform(
-            std::begin(proposals_),
-            std::end(proposals_),
-            std::back_inserter(output),
-            [](const auto& in) -> auto { return in.second; });
+        lmdb_.Read(
+            table_,
+            [&](const auto key, const auto value) -> bool {
+                output.emplace_back(
+                    proto::Factory<proto::BlockchainTransactionProposal>(
+                        value.data(), value.size()));
+
+                return true;
+            },
+            Direction::Forward);
 
         return output;
     }
@@ -59,25 +65,52 @@ struct Proposal::Imp {
         const Identifier& id,
         const proto::BlockchainTransactionProposal& tx) noexcept -> bool
     {
-        auto lock = Lock{lock_};
-        proposals_[id] = tx;
+        try {
+            const auto bytes = [&] {
+                auto out = Space{};
 
-        return true;
-    }
-    auto CancelProposal(const Identifier& id) noexcept -> bool
-    {
-        auto lock = Lock{lock_};
-        proposals_.erase(id);
+                if (false == proto::write(tx, writer(out))) {
+                    throw std::runtime_error{"failed to serialize proposal"};
+                }
 
-        return true;
+                return out;
+            }();
+
+            if (lmdb_.Store(table_, id.Bytes(), reader(bytes)).first) {
+                LogVerbose(OT_METHOD)(__func__)(": proposal ")(id)(" added ")
+                    .Flush();
+
+                return true;
+            } else {
+                throw std::runtime_error{"failed to store proposal"};
+            }
+        } catch (const std::exception& e) {
+            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+
+            return false;
+        }
     }
-    auto FinishProposal(const Identifier& id) noexcept -> bool
+    auto CancelProposal(MDB_txn* tx, const Identifier& id) noexcept -> bool
     {
+        if (lmdb_.Delete(table_, id.Bytes(), tx)) {
+            LogVerbose(OT_METHOD)(__func__)(": proposal ")(id)(" cancelled ")
+                .Flush();
+
+            return true;
+        } else {
+            LogOutput(OT_METHOD)(__func__)(": failed to cancel proposal ")(id)
+                .Flush();
+
+            return false;
+        }
+    }
+    auto FinishProposal(MDB_txn* tx, const Identifier& id) noexcept -> bool
+    {
+        const auto out = CancelProposal(tx, id);
         auto lock = Lock{lock_};
-        proposals_.erase(id);
         finished_proposals_.emplace(id);
 
-        return true;
+        return out;
     }
     auto ForgetProposals(const std::set<OTIdentifier>& ids) noexcept -> bool
     {
@@ -88,35 +121,40 @@ struct Proposal::Imp {
         return true;
     }
 
-    Imp() noexcept
-        : lock_()
-        , proposals_()
+    Imp(const storage::lmdb::LMDB& lmdb) noexcept
+        : lmdb_(lmdb)
+        , lock_()
         , finished_proposals_()
     {
     }
 
 private:
-    using ProposalMap =
-        std::map<OTIdentifier, proto::BlockchainTransactionProposal>;
     using FinishedProposals = std::set<OTIdentifier>;
 
+    const storage::lmdb::LMDB& lmdb_;
     mutable std::mutex lock_;
-    mutable ProposalMap proposals_;
-    mutable FinishedProposals finished_proposals_;  // NOTE don't move to lmdb
+    mutable FinishedProposals finished_proposals_;
 
-    auto load_proposal(const Lock& lock, const Identifier& id) const noexcept
+    auto load_proposal(const Identifier& id) const noexcept
         -> std::optional<proto::BlockchainTransactionProposal>
     {
-        auto it = proposals_.find(id);
+        auto out = std::optional<proto::BlockchainTransactionProposal>{};
+        lmdb_.Load(Table::Proposals, id.Bytes(), [&](const auto bytes) {
+            out = proto::Factory<proto::BlockchainTransactionProposal>(
+                bytes.data(), bytes.size());
+        });
 
-        if (proposals_.end() == it) { return std::nullopt; }
-
-        return it->second;
+        return out;
     }
+
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 };
 
-Proposal::Proposal() noexcept
-    : imp_(std::make_unique<Imp>())
+Proposal::Proposal(const storage::lmdb::LMDB& lmdb) noexcept
+    : imp_(std::make_unique<Imp>(lmdb))
 {
     OT_ASSERT(imp_);
 }
@@ -128,9 +166,10 @@ auto Proposal::AddProposal(
     return imp_->AddProposal(id, tx);
 }
 
-auto Proposal::CancelProposal(const Identifier& id) noexcept -> bool
+auto Proposal::CancelProposal(MDB_txn* tx, const Identifier& id) noexcept
+    -> bool
 {
-    return imp_->CancelProposal(id);
+    return imp_->CancelProposal(tx, id);
 }
 
 auto Proposal::CompletedProposals() const noexcept -> std::set<OTIdentifier>
@@ -143,20 +182,16 @@ auto Proposal::Exists(const Identifier& id) const noexcept -> bool
     return imp_->Exists(id);
 }
 
-auto Proposal::FinishProposal(const Identifier& id) noexcept -> bool
+auto Proposal::FinishProposal(MDB_txn* tx, const Identifier& id) noexcept
+    -> bool
 {
-    return imp_->FinishProposal(id);
+    return imp_->FinishProposal(tx, id);
 }
 
 auto Proposal::ForgetProposals(const std::set<OTIdentifier>& ids) noexcept
     -> bool
 {
     return imp_->ForgetProposals(ids);
-}
-
-auto Proposal::GetMutex() const noexcept -> std::mutex&
-{
-    return imp_->GetMutex();
 }
 
 auto Proposal::LoadProposal(const Identifier& id) const noexcept

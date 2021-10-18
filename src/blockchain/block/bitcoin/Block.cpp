@@ -495,7 +495,7 @@ auto Block::calculate_size() const noexcept -> CalculatedSize
     return output;
 }
 
-auto Block::ExtractElements(const FilterType style) const noexcept
+auto Block::ExtractElements(const filter::Type style) const noexcept
     -> std::vector<Space>
 {
     auto output = std::vector<Space>{};
@@ -519,7 +519,7 @@ auto Block::ExtractElements(const FilterType style) const noexcept
 }
 
 auto Block::FindMatches(
-    const FilterType style,
+    const filter::Type style,
     const Patterns& outpoints,
     const Patterns& patterns) const noexcept -> Matches
 {

@@ -143,7 +143,7 @@ auto Outputs::ExtractElements(const filter::Type style) const noexcept
 
 auto Outputs::FindMatches(
     const ReadView txid,
-    const FilterType type,
+    const filter::Type type,
     const ParsedPatterns& patterns) const noexcept -> Matches
 {
     auto output = Matches{};

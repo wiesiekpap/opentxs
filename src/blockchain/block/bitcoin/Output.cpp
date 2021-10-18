@@ -37,6 +37,7 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/TxoState.hpp"
 #include "opentxs/blockchain/node/TxoTag.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -387,7 +388,7 @@ auto Output::ExtractElements(const filter::Type style) const noexcept
 
 auto Output::FindMatches(
     const ReadView txid,
-    const FilterType type,
+    const filter::Type type,
     const ParsedPatterns& patterns) const noexcept -> Matches
 {
     const auto output =

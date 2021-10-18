@@ -175,7 +175,7 @@ Blockchain::Imp::Imp(
     , lock_()
     , nym_lock_()
     , accounts_(api_)
-    , wallets_(api_, parent)
+    , wallets_(api_, contacts_, parent)
 {
 }
 
