@@ -16,6 +16,8 @@
 #include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 
+#define OT_METHOD "opentxs::Amount::"
+
 namespace be = boost::endian;
 
 namespace opentxs
@@ -184,152 +186,152 @@ auto Amount::operator>=(const unsigned long long int rhs) const noexcept -> bool
 auto Amount::operator+(const Amount& rhs) const noexcept(false) -> Amount
 {
     const auto total = imp_->amount_ + rhs.imp_->amount_;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator+(const long int rhs) const noexcept(false) -> Amount
 {
     const auto total = imp_->amount_ + rhs;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator+(const long long int rhs) const noexcept(false) -> Amount
 {
     const auto total = imp_->amount_ + rhs;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator+(const unsigned int rhs) const noexcept(false) -> Amount
 {
     const auto total = imp_->amount_ + rhs;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator+(const unsigned long int rhs) const noexcept(false)
     -> Amount
 {
     const auto total = imp_->amount_ + rhs;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator+(const unsigned long long int rhs) const noexcept(false)
     -> Amount
 {
     const auto total = imp_->amount_ + rhs;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator-(const Amount& rhs) const noexcept(false) -> Amount
 {
     const auto total = imp_->amount_ - rhs.imp_->amount_;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator-(const long int rhs) const noexcept(false) -> Amount
 {
     const auto total = imp_->amount_ - rhs;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator-(const long long int rhs) const noexcept(false) -> Amount
 {
     const auto total = imp_->amount_ - rhs;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator-(const unsigned long int rhs) const noexcept(false)
     -> Amount
 {
     const auto total = imp_->amount_ - rhs;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator-(const unsigned long long int rhs) const noexcept(false)
     -> Amount
 {
     const auto total = imp_->amount_ - rhs;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator*(const Amount& rhs) const noexcept(false) -> Amount
 {
     const auto total = imp_->amount_ * rhs.imp_->amount_;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator*(const int rhs) const noexcept(false) -> Amount
 {
     const auto total = imp_->amount_ * rhs;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator*(const long int rhs) const noexcept(false) -> Amount
 {
     const auto total = imp_->amount_ * rhs;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator*(const long long int rhs) const noexcept(false) -> Amount
 {
     const auto total = imp_->amount_ * rhs;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator*(const unsigned long long int rhs) const noexcept(false)
     -> Amount
 {
     const auto total = imp_->amount_ * rhs;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator/(const Amount& rhs) const noexcept(false) -> Amount
 {
     const auto total = imp_->amount_ / rhs.imp_->amount_;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator/(const int rhs) const noexcept(false) -> Amount
 {
     const auto total = imp_->amount_ / rhs;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator/(const long long int rhs) const noexcept(false) -> Amount
 {
     const auto total = imp_->amount_ / rhs;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator/(const unsigned long long int rhs) const noexcept(false)
     -> Amount
 {
     const auto total = imp_->amount_ / rhs;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator%(const Amount& rhs) const noexcept(false) -> Amount
 {
     const auto total = imp_->amount_ % rhs.imp_->amount_;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator%(const int rhs) const noexcept(false) -> Amount
 {
     const auto total = imp_->amount_ % rhs;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator%(const long long int rhs) const noexcept(false) -> Amount
 {
     const auto total = imp_->amount_ % rhs;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator%(const unsigned long long int rhs) const noexcept(false)
     -> Amount
 {
     const auto total = imp_->amount_ % rhs;
-    return Amount(total.str());
+    return Amount(Imp(total));
 }
 
 auto Amount::operator*=(const Amount& amount) noexcept(false) -> Amount&
@@ -367,7 +369,7 @@ auto Amount::operator-=(const unsigned long int amount) noexcept(false)
 auto Amount::operator-() -> Amount
 {
     auto amount = -imp_->amount_;
-    return Amount(amount.str());
+    return Amount(Imp(amount));
 }
 
 auto Amount::str() const -> std::string { return imp_->amount_.str(); }
@@ -378,7 +380,14 @@ auto Amount::SerializeBitcoin(const AllocateOutput dest) const noexcept -> bool
         imp_->amount_ > std::numeric_limits<std::int64_t>::max())
         return false;
 
-    const auto amount = imp_->amount_.convert_to<std::int64_t>();
+    auto amount = std::int64_t{};
+    try {
+        amount = imp_->amount_.convert_to<std::int64_t>();
+    } catch (const std::exception& e) {
+        LogOutput(OT_METHOD)(__func__)(" Error serializing amount: ")(e.what())
+            .Flush();
+        return false;
+    }
     const auto buffer = be::little_int64_buf_t(amount);
 
     const auto view =
@@ -399,6 +408,11 @@ auto Amount::Internal() const noexcept -> Imp&
     return *const_cast<Amount&>(*this).imp_;
 }
 
+Amount::Amount(const Imp& amount)
+    : imp_(std::make_unique<Imp>(amount).release())
+{
+    OT_ASSERT(imp_);
+}
 Amount::Amount(int amount)
     : imp_(std::make_unique<Imp>(amount).release())
 {
@@ -578,61 +592,61 @@ auto operator>=(const unsigned long long int lhs, const Amount& rhs) noexcept
 auto operator+(const long int lhs, const Amount& rhs) noexcept(false) -> Amount
 {
     const auto total = lhs + rhs.imp_->amount_;
-    return Amount(total.str());
+    return Amount(Amount::Imp(total));
 }
 auto operator+(const long long int lhs, const Amount& rhs) noexcept(false)
     -> Amount
 {
     const auto total = lhs + rhs.imp_->amount_;
-    return Amount(total.str());
+    return Amount(Amount::Imp(total));
 }
 auto operator+(const unsigned long int lhs, const Amount& rhs) noexcept(false)
     -> Amount
 {
     const auto total = lhs + rhs.imp_->amount_;
-    return Amount(total.str());
+    return Amount(Amount::Imp(total));
 }
 
 auto operator-(const long int lhs, const Amount& rhs) noexcept(false) -> Amount
 {
     const auto total = lhs - rhs.imp_->amount_;
-    return Amount(total.str());
+    return Amount(Amount::Imp(total));
 }
 auto operator-(const long long int lhs, const Amount& rhs) noexcept(false)
     -> Amount
 {
     const auto total = lhs - rhs.imp_->amount_;
-    return Amount(total.str());
+    return Amount(Amount::Imp(total));
 }
 
 auto operator*(const int lhs, const Amount& rhs) noexcept(false) -> Amount
 {
     const auto total = lhs * rhs.imp_->amount_;
-    return Amount(total.str());
+    return Amount(Amount::Imp(total));
 }
 auto operator*(const long long int lhs, const Amount& rhs) noexcept(false)
     -> Amount
 {
     const auto total = lhs * rhs.imp_->amount_;
-    return Amount(total.str());
+    return Amount(Amount::Imp(total));
 }
 auto operator*(const unsigned int lhs, const Amount& rhs) noexcept(false)
     -> Amount
 {
     const auto total = lhs * rhs.imp_->amount_;
-    return Amount(total.str());
+    return Amount(Amount::Imp(total));
 }
 auto operator*(const unsigned long int lhs, const Amount& rhs) noexcept(false)
     -> Amount
 {
     const auto total = lhs * rhs.imp_->amount_;
-    return Amount(total.str());
+    return Amount(Amount::Imp(total));
 }
 auto operator*(const unsigned long long int lhs, const Amount& rhs) noexcept(
     false) -> Amount
 {
     const auto total = lhs * rhs.imp_->amount_;
-    return Amount(total.str());
+    return Amount(Amount::Imp(total));
 }
 
 }  // namespace opentxs

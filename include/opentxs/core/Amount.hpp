@@ -200,6 +200,8 @@ public:
     ~Amount();
 
 private:
+    Amount(const Imp&);
+
     friend auto operator<(const int lhs, const Amount& rhs) noexcept -> bool;
     friend auto operator<(const long int lhs, const Amount& rhs) noexcept
         -> bool;

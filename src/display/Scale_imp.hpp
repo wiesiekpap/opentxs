@@ -114,7 +114,6 @@ struct Scale::Imp {
             amount.Internal().amount_ =
                 output.convert_to<Amount::Imp::Backend>();
             return amount;
-            // return output.convert_to<Amount>();
         } catch (const std::exception& e) {
             LogTrace(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 

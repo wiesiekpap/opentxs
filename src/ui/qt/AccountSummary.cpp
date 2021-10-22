@@ -15,8 +15,11 @@
 #include "core/Amount.hpp"
 #include "internal/ui/UI.hpp"
 #include "opentxs/core/Amount.hpp"
+#include "opentxs/core/Log.hpp"
 #include "ui/accountsummary/AccountSummaryItem.hpp"
 #include "ui/accountsummary/IssuerItem.hpp"
+
+#define OT_METHOD "opentxs::ui::implementation::AccountSummaryItem::"
 
 namespace opentxs::factory
 {
@@ -79,7 +82,16 @@ auto AccountSummaryItem::qt_data(
             out = AccountID().c_str();
         } break;
         case AccountSummaryQt::BalanceRole: {
-            out = Balance().Internal().amount_.convert_to<unsigned long long>();
+            try {
+                out = Balance()
+                          .Internal()
+                          .amount_.convert_to<unsigned long long>();
+            } catch (const std::exception& e) {
+                LogOutput(OT_METHOD)(__func__)(" Error getting balance.")(
+                    e.what())
+                    .Flush();
+                out = {};
+            }
         } break;
         case Qt::DisplayRole: {
             switch (column) {

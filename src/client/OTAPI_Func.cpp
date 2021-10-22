@@ -268,8 +268,15 @@ OTAPI_Func::OTAPI_Func(
         case KILL_MARKET_OFFER: {
             nTransNumsNeeded_ = 1;
             accountID_ = nymID2;
-            transactionNumber_ =
-                int64val.Internal().amount_.convert_to<std::int64_t>();
+            try {
+                transactionNumber_ =
+                    int64val.Internal().amount_.convert_to<std::int64_t>();
+            } catch (const std::exception& e) {
+                LogNormal(OT_METHOD)(__func__)(
+                    ": Error setting transaction number. ")(e.what())
+                    .Flush();
+                OT_FAIL
+            }
         } break;
         default: {
             LogNormal(OT_METHOD)(__func__)(
