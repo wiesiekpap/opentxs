@@ -392,7 +392,7 @@ using BlockchainSelectionRowInterface = ui::BlockchainSelectionItem;
 using BlockchainSelectionRowInternal = ui::internal::BlockchainSelectionItem;
 using BlockchainSelectionRowBlank =
     ui::internal::blank::BlockchainSelectionItem;
-using BlockchainSelectionSortKey = std::pair<bool, std::string>;
+using BlockchainSelectionSortKey = std::pair<std::string, bool>;
 
 // Blockchain statistics
 using BlockchainStatisticsPrimaryID = OTIdentifier;

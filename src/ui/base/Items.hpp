@@ -223,28 +223,28 @@ private:
     Data data_;
     Index index_;
 
-    template <typename T>
-    auto sort(const T& lhs, const T& rhs) const noexcept -> bool
-    {
-        static const auto compare = std::less<T>{};
+    auto compare_id(const RowID& lhs, const RowID& rhs) const noexcept -> bool;
+    auto compare_key(const SortKey& lhs, const SortKey& rhs) const noexcept
+        -> bool;
 
-        if (reverse_sort_) {
-
-            return compare(rhs, lhs);
-        } else {
-
-            return compare(lhs, rhs);
-        }
-    }
     auto sort(
         const SortKey& incomingKey,
         const RowID& incomingID,
         const SortKey& existingKey,
         const RowID& existingID) const noexcept -> bool
     {
-        if (sort(existingKey, incomingKey)) { return true; }
+        const auto& lKey = reverse_sort_ ? incomingKey : existingKey;
+        const auto& rKey = reverse_sort_ ? existingKey : incomingKey;
+        const auto& lID = reverse_sort_ ? incomingID : existingID;
+        const auto& rID = reverse_sort_ ? existingID : incomingID;
 
-        return (existingKey == incomingKey) && sort(existingID, incomingID);
+        if (compare_key(lKey, rKey)) {
+
+            return true;
+        } else {
+
+            return (lKey == rKey) && compare_id(lID, rID);
+        }
     }
 };
 }  // namespace opentxs::ui::implementation

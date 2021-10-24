@@ -23,6 +23,7 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/Options.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/network/Dht.hpp"
@@ -71,7 +72,7 @@ auto DhtAPI(
     api.Config().CheckSet_bool(
         String::Factory("OpenDHT"),
         String::Factory("enable_dht"),
-        defaultEnable,
+        defaultEnable && (false == api.GetOptions().TestMode()),
         config.enable_dht_,
         notUsed);
     api.Config().CheckSet_long(
@@ -129,7 +130,8 @@ auto DhtAPI(
         config.bootstrap_port_,
         notUsed);
 
-    return std::make_unique<ReturnType>(api, zeromq, endpoints, config);
+    return std::make_unique<ReturnType>(
+        api, zeromq, endpoints, std::move(config));
 }
 }  // namespace opentxs::factory
 
@@ -139,10 +141,10 @@ Dht::Dht(
     const api::Core& api,
     const opentxs::network::zeromq::Context& zeromq,
     const api::Endpoints& endpoints,
-    opentxs::network::DhtConfig& config) noexcept
+    opentxs::network::DhtConfig&& config) noexcept
     : api_(api)
     , callback_map_()
-    , config_(config)
+    , config_(std::move(config))
     , node_(factory::OpenDHT(config_))
     , request_nym_callback_{zmq::ReplyCallback::Factory(
           [=](const zmq::Message& incoming) -> OTZMQMessage {

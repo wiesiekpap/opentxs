@@ -226,6 +226,7 @@ Options::Imp::Imp() noexcept
     , notary_terms_(std::nullopt)
     , qt_root_object_(std::nullopt)
     , storage_primary_plugin_(std::nullopt)
+    , test_mode_(std::nullopt)
 {
 }
 
@@ -255,6 +256,7 @@ Options::Imp::Imp(const Imp& rhs) noexcept
     , notary_terms_(rhs.notary_terms_)
     , qt_root_object_(rhs.qt_root_object_)
     , storage_primary_plugin_(rhs.storage_primary_plugin_)
+    , test_mode_(rhs.test_mode_)
 {
 }
 
@@ -710,6 +712,10 @@ auto operator+(const Options& lhs, const Options& rhs) noexcept -> Options
         l.storage_primary_plugin_ = v.value();
     }
 
+    if (const auto& v = r.test_mode_; v.has_value()) {
+        l.test_mode_ = v.value();
+    }
+
     return out;
 }
 
@@ -1064,9 +1070,21 @@ auto Options::SetStoragePlugin(const char* name) noexcept -> Options&
     return *this;
 }
 
+auto Options::SetTestMode(bool test) noexcept -> Options&
+{
+    imp_->test_mode_ = test;
+
+    return *this;
+}
+
 auto Options::StoragePrimaryPlugin() const noexcept -> const char*
 {
     return Imp::get(imp_->storage_primary_plugin_);
+}
+
+auto Options::TestMode() const noexcept -> bool
+{
+    return Imp::get(imp_->test_mode_);
 }
 
 Options::~Options()

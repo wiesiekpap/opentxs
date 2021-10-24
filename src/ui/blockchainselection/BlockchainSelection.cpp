@@ -268,7 +268,7 @@ auto BlockchainSelection::process_state(
     custom.emplace_back(new bool{enabled});
     const_cast<BlockchainSelection&>(*this).add_item(
         chain,
-        {blockchain::IsTestnet(chain), blockchain::DisplayString(chain)},
+        {blockchain::DisplayString(chain), blockchain::IsTestnet(chain)},
         custom);
 }
 

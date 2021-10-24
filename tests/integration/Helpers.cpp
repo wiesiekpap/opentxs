@@ -19,6 +19,7 @@
 #include "opentxs/api/HDSeed.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/server/Manager.hpp"
@@ -281,6 +282,10 @@ auto User::init_basic(
                 seed_id_, index_, ot::PaymentCode::DefaultVersion, Reason())
             ->asBase58();
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+
+    if (false == name_.empty()) {
+        contacts_.emplace(name_, api.Contacts().NymToContact(nym_id_));
+    }
 
     return true;
 }

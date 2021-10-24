@@ -9,6 +9,7 @@
 
 #include <QObject>
 #include <QVariant>
+#include <exception>
 #include <memory>
 #include <string>
 
@@ -16,6 +17,7 @@
 #include "internal/ui/UI.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/core/LogSource.hpp"
 #include "ui/accountsummary/AccountSummaryItem.hpp"
 #include "ui/accountsummary/IssuerItem.hpp"
 

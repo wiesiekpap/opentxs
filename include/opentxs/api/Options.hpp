@@ -56,6 +56,7 @@ public:
         -> const std::set<std::string>&;
     auto RemoteLogEndpoint() const noexcept -> const char*;
     auto StoragePrimaryPlugin() const noexcept -> const char*;
+    auto TestMode() const noexcept -> bool;
 
     auto AddBlockchainIpv4Bind(const char* endpoint) noexcept -> Options&;
     auto AddBlockchainIpv6Bind(const char* endpoint) noexcept -> Options&;
@@ -86,6 +87,7 @@ public:
     auto SetNotaryTerms(const char* value) noexcept -> Options&;
     auto SetQtRootObject(QObject*) noexcept -> Options&;
     auto SetStoragePlugin(const char* name) noexcept -> Options&;
+    auto SetTestMode(bool test) noexcept -> Options&;
 
     Options() noexcept;
     Options(int argc, char** argv) noexcept;

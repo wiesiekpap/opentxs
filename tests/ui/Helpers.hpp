@@ -234,6 +234,13 @@ auto check_contact_list_qt(
     const User& user,
     const ContactListData& expected) noexcept -> bool;
 
+auto check_messagable_list(
+    const User& user,
+    const ContactListData& expected) noexcept -> bool;
+auto check_messagable_list_qt(
+    const User& user,
+    const ContactListData& expected) noexcept -> bool;
+
 auto init_account_activity(
     const User& user,
     const ot::Identifier& account,
@@ -244,6 +251,7 @@ auto init_activity_thread(
     const User& contact,
     Counter& counter) noexcept -> void;
 auto init_contact_list(const User& user, Counter& counter) noexcept -> void;
+auto init_messagable_list(const User& user, Counter& counter) noexcept -> void;
 
 auto make_cb(Counter& counter, const std::string name) noexcept
     -> std::function<void()>;

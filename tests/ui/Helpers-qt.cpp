@@ -31,6 +31,7 @@
 #include "opentxs/ui/qt/BlockchainAccountStatus.hpp"
 #include "opentxs/ui/qt/BlockchainSelection.hpp"
 #include "opentxs/ui/qt/ContactList.hpp"
+#include "opentxs/ui/qt/MessagableList.hpp"
 
 namespace ottest
 {
@@ -334,6 +335,37 @@ auto check_contact_list_qt(
     const ContactListData& expected) noexcept -> bool
 {
     const auto* pModel = user.api_->UI().ContactListQt(user.nym_id_);
+
+    EXPECT_NE(pModel, nullptr);
+
+    if (nullptr == pModel) { return false; }
+
+    const auto& model = *pModel;
+    auto output = check_qt_common(model);
+    auto parent = QModelIndex{};
+    const auto vCount = expected.rows_.size();
+    output &= (model.columnCount(parent) == contact_list_columns_);
+    output &= (static_cast<std::size_t>(model.rowCount(parent)) == vCount);
+
+    EXPECT_EQ(model.columnCount(parent), contact_list_columns_);
+    EXPECT_EQ(model.rowCount(parent), vCount);
+
+    if (0u == vCount) { return output; }
+
+    auto it{expected.rows_.begin()};
+
+    for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+        output &= check_row(user, model, parent, *it, static_cast<int>(i));
+    }
+
+    return output;
+}
+
+auto check_messagable_list_qt(
+    const User& user,
+    const ContactListData& expected) noexcept -> bool
+{
+    const auto* pModel = user.api_->UI().MessagableListQt(user.nym_id_);
 
     EXPECT_NE(pModel, nullptr);
 

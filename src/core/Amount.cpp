@@ -9,11 +9,13 @@
 
 #include <boost/cstdint.hpp>
 #include <boost/endian/buffers.hpp>
+#include <exception>
 #include <limits>
 #include <memory>
 
 #include "core/Amount.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 
 #define OT_METHOD "opentxs::Amount::"

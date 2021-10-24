@@ -31,7 +31,8 @@ auto Args(bool lowlevel, int argc, char** argv) noexcept -> const ot::Options&
                                     .SetHome(Home().c_str())
                                     .SetIpv4ConnectionMode(Connection::off)
                                     .SetIpv6ConnectionMode(Connection::off)
-                                    .SetNotaryInproc(true);
+                                    .SetNotaryInproc(true)
+                                    .SetTestMode(true);
     static const auto full = ot::Options{minimal}.SetStoragePlugin("mem");
 
     if (lowlevel) {

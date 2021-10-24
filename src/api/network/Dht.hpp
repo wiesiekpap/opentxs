@@ -60,7 +60,7 @@ public:
     Dht(const api::Core& api,
         const opentxs::network::zeromq::Context& zeromq,
         const api::Endpoints& endpoints,
-        opentxs::network::DhtConfig& config) noexcept;
+        opentxs::network::DhtConfig&& config) noexcept;
 
     ~Dht() final = default;
 

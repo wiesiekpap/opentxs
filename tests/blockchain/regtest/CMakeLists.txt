@@ -30,9 +30,6 @@ if(NOT WIN32)
   add_opentx_test(
     unittests-opentxs-blockchain-regtest-sync-server Test_sync_server.cpp
   )
-  set_tests_properties(
-    unittests-opentxs-blockchain-regtest-sync-server PROPERTIES RUN_SERIAL TRUE
-  )
 endif()
 
 set_tests_properties(
