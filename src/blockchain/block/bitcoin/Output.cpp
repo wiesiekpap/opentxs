@@ -23,6 +23,7 @@
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "internal/contact/Contact.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -34,6 +35,8 @@
 #include "opentxs/blockchain/crypto/Element.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
+#include "opentxs/blockchain/node/TxoState.hpp"
+#include "opentxs/blockchain/node/TxoTag.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -161,7 +164,28 @@ auto BitcoinTransactionOutput(
             (in.has_script_hash()
                  ? std::make_optional<blockchain::PatternID>(in.script_hash())
                  : std::nullopt),
-            in.indexed());
+            in.indexed(),
+            [&]() -> blockchain::block::Position {
+                if (const auto& hash = in.mined_block(); 0 < hash.size()) {
+
+                    return std::make_pair(
+                        in.mined_height(),
+                        api.Factory().Data(hash, StringStyle::Raw));
+                } else {
+
+                    return make_blank<blockchain::block::Position>::value(api);
+                }
+            }(),
+            static_cast<blockchain::node::TxoState>(in.state()),
+            [&] {
+                auto out = std::set<blockchain::node::TxoTag>{};
+
+                for (const auto& tag : in.tag()) {
+                    out.emplace(static_cast<blockchain::node::TxoTag>(tag));
+                }
+
+                return out;
+            }());
 
         for (const auto& payer : in.payer()) {
             if (false == payer.empty()) {
@@ -216,7 +240,10 @@ Output::Output(
     boost::container::flat_set<KeyID>&& keys,
     boost::container::flat_set<PatternID>&& pubkeyHashes,
     std::optional<PatternID>&& scriptHash,
-    const bool indexed) noexcept(false)
+    bool indexed,
+    block::Position minedPosition,
+    node::TxoState state,
+    std::set<node::TxoTag> tags) noexcept(false)
     : api_(api)
     , crypto_(blockchain)
     , chain_(chain)
@@ -227,6 +254,9 @@ Output::Output(
     , pubkey_hashes_(std::move(pubkeyHashes))
     , script_hash_(std::move(scriptHash))
     , cache_(api, std::move(size), std::move(keys))
+    , mined_position_(std::move(minedPosition))
+    , state_(state)
+    , tags_(std::move(tags))
 {
     if (false == bool(script_)) {
         throw std::runtime_error("Invalid output script");
@@ -256,7 +286,10 @@ Output::Output(
           {},
           {},
           {},
-          false)
+          false,
+          make_blank<block::Position>::value(api),
+          node::TxoState::Error,
+          {})
 {
 }
 
@@ -281,7 +314,10 @@ Output::Output(
           std::move(keys),
           {},
           {},
-          false)
+          false,
+          make_blank<block::Position>::value(api),
+          node::TxoState::Error,
+          {})
 {
 }
 
@@ -296,6 +332,9 @@ Output::Output(const Output& rhs) noexcept
     , pubkey_hashes_(rhs.pubkey_hashes_)
     , script_hash_(rhs.script_hash_)
     , cache_(rhs.cache_)
+    , mined_position_(rhs.mined_position_)
+    , state_(rhs.state_)
+    , tags_(rhs.tags_)
 {
 }
 
@@ -569,6 +608,19 @@ auto Output::Serialize(
 
     if (const auto payee = cache_.payee(); false == payee->empty()) {
         out.add_payee(std::string{payee->Bytes()});
+    }
+
+    if (const auto& [height, hash] = mined_position_; - 1 < height) {
+        out.set_mined_height(height);
+        out.set_mined_block(hash->data(), hash->size());
+    }
+
+    if (node::TxoState::Error != state_) {
+        out.set_state(static_cast<std::uint32_t>(state_));
+    }
+
+    for (const auto tag : tags_) {
+        out.add_tag(static_cast<std::uint32_t>(tag));
     }
 
     return true;

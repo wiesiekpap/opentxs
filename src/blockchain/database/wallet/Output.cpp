@@ -187,6 +187,8 @@ struct Output::Imp {
     auto GetMutex() const noexcept -> std::shared_mutex& { return lock_; }
     auto GetOutputs(node::TxoState type) const noexcept -> std::vector<UTXO>
     {
+        if (node::TxoState::Error == type) { return {}; }
+
         auto lock = sLock{lock_};
 
         return get_outputs(
@@ -195,6 +197,8 @@ struct Output::Imp {
     auto GetOutputs(const identifier::Nym& owner, node::TxoState type)
         const noexcept -> std::vector<UTXO>
     {
+        if (node::TxoState::Error == type) { return {}; }
+
         auto lock = sLock{lock_};
 
         if (owner.empty()) { return {}; }
@@ -207,6 +211,8 @@ struct Output::Imp {
         const Identifier& node,
         node::TxoState type) const noexcept -> std::vector<UTXO>
     {
+        if (node::TxoState::Error == type) { return {}; }
+
         auto lock = sLock{lock_};
 
         if (owner.empty() || node.empty()) { return {}; }
@@ -216,6 +222,8 @@ struct Output::Imp {
     auto GetOutputs(const crypto::Key& key, node::TxoState type) const noexcept
         -> std::vector<UTXO>
     {
+        if (node::TxoState::Error == type) { return {}; }
+
         auto lock = sLock{lock_};
 
         return get_outputs(lock, states(type), nullptr, nullptr, nullptr, &key);
@@ -226,8 +234,9 @@ struct Output::Imp {
         auto lock = sLock{lock_};
 
         try {
+            auto& existing = find_output(lock, output);
 
-            return tags_.at(output);
+            return existing.Tags();
         } catch (...) {
 
             return {};
@@ -282,11 +291,10 @@ struct Output::Imp {
             }
 
             try {
-                auto& serialized = find_output(lock, outpoint);
-                const auto& [state, position, proto] = serialized;
+                auto& existing = find_output(lock, outpoint);
 
                 if (!copy.AssociatePreviousOutput(
-                        blockchain_, inputIndex, proto)) {
+                        blockchain_, inputIndex, existing)) {
                     LogOutput(OT_METHOD)(__func__)(
                         ": Error associating previous output to input")
                         .Flush();
@@ -295,7 +303,7 @@ struct Output::Imp {
                 }
 
                 if (false ==
-                    change_state(lock, outpoint, serialized, consumed, block)) {
+                    change_state(lock, outpoint, existing, consumed, block)) {
                     LogOutput(OT_METHOD)(__func__)(
                         ": Error updating consumed output state")
                         .Flush();
@@ -329,10 +337,10 @@ struct Output::Imp {
             OT_ASSERT(outpoint.Index() == index);
 
             try {
-                auto& serialized = find_output(lock, outpoint);
+                auto& existing = find_output(lock, outpoint);
 
                 if (false ==
-                    change_state(lock, outpoint, serialized, created, block)) {
+                    change_state(lock, outpoint, existing, created, block)) {
                     LogOutput(OT_METHOD)(__func__)(
                         ": Error updating created output state")
                         .Flush();
@@ -439,13 +447,6 @@ struct Output::Imp {
             node::TxoState::UnconfirmedSpend,
             node::TxoState::UnconfirmedNew);
     }
-    auto AddNotificationOutput(const block::Outpoint& output) noexcept -> bool
-    {
-        auto lock = eLock{lock_};
-        tags_[output].emplace(node::TxoTag::Notification);
-
-        return true;
-    }
     auto AddOutgoingTransaction(
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
@@ -459,7 +460,7 @@ struct Output::Imp {
             const auto& outpoint = input.PreviousOutput();
 
             try {
-                if (proposalID != proposal_reverse_index_.at(outpoint)) {
+                if (proposalID != output_proposal_.at(outpoint)) {
                     LogOutput(OT_METHOD)(__func__)(": Incorrect proposal ID")
                         .Flush();
 
@@ -478,7 +479,7 @@ struct Output::Imp {
         }
 
         auto index{-1};
-        auto& pending = proposal_created_index_[proposalID];
+        auto& pending = proposal_created_[proposalID];
 
         for (const auto& output : transaction.Outputs()) {
             ++index;
@@ -503,12 +504,12 @@ struct Output::Imp {
             const auto& outpoint = *it;
 
             try {
-                auto& serialized = find_output(lock, outpoint);
+                auto& existing = find_output(lock, outpoint);
 
                 if (false == change_state(
                                  lock,
                                  outpoint,
-                                 serialized,
+                                 existing,
                                  node::TxoState::UnconfirmedNew,
                                  blank_)) {
                     LogOutput(OT_METHOD)(__func__)(
@@ -587,7 +588,7 @@ struct Output::Imp {
             0,
             start - params::Data::Chains().at(chain_).maturation_interval_ - 1);
 
-        for (auto i{gen_.crbegin()}; i != gen_.crend(); ++i) {
+        for (auto i{generation_.crbegin()}; i != generation_.crend(); ++i) {
             const auto& [height, outputs] = *i;
 
             if (height <= stop) {
@@ -619,8 +620,8 @@ struct Output::Imp {
     auto CancelProposal(const Identifier& id) noexcept -> bool
     {
         auto lock = eLock{lock_};
-        auto& reserved = proposal_spent_index_[id];
-        auto& created = proposal_created_index_[id];
+        auto& reserved = proposal_spent_[id];
+        auto& created = proposal_created_[id];
 
         for (const auto& id : reserved) {
             if (false == change_state(
@@ -635,7 +636,7 @@ struct Output::Imp {
                 return false;
             }
 
-            proposal_reverse_index_.erase(id);
+            output_proposal_.erase(id);
         }
 
         for (const auto& id : created) {
@@ -652,8 +653,8 @@ struct Output::Imp {
             }
         }
 
-        proposal_spent_index_.erase(id);
-        proposal_created_index_.erase(id);
+        proposal_spent_.erase(id);
+        proposal_created_.erase(id);
 
         return proposals_.CancelProposal(id);
     }
@@ -666,23 +667,26 @@ struct Output::Imp {
         auto lock = eLock{lock_};
         auto output = std::optional<UTXO>{std::nullopt};
         const auto choose = [&](const auto outpoint) -> std::optional<UTXO> {
-            auto& serialized = find_output(lock, outpoint);
-            const auto& [state, position, data] = serialized;
+            auto& existing = find_output(lock, outpoint);
 
-            if (false == owns(spender, data)) { return std::nullopt; }
+            if (const auto& s = nyms_[spender]; 0u == s.count(outpoint)) {
 
-            auto output = std::make_optional<UTXO>(outpoint, data);
+                return std::nullopt;
+            }
+
+            auto output = std::make_optional<UTXO>(
+                std::make_pair(outpoint, existing.clone()));
             const auto changed = change_state(
                 lock,
                 outpoint,
-                serialized,
+                existing,
                 node::TxoState::UnconfirmedSpend,
                 blank_);
 
             OT_ASSERT(changed);
 
-            proposal_spent_index_[id].emplace(outpoint);
-            proposal_reverse_index_.emplace(outpoint, id);
+            proposal_spent_[id].emplace(outpoint);
+            output_proposal_.emplace(outpoint, id);
             LogVerbose(OT_METHOD)(__func__)(": Reserving output ")(
                 outpoint.str())
                 .Flush();
@@ -729,7 +733,7 @@ struct Output::Imp {
             auto out = std::vector<Outpoint>{};
 
             try {
-                for (const auto& outpoint : position_index_.at(position)) {
+                for (const auto& outpoint : positions_.at(position)) {
                     if (belongs_to(lock, outpoint, subchain)) {
                         insert_sorted(out, outpoint);
                     }
@@ -741,10 +745,10 @@ struct Output::Imp {
         }();
 
         for (const auto& id : outpoints) {
-            auto& serialized = find_output(lock, id);
+            auto& output = find_output(lock, id);
             using State = node::TxoState;
             const auto state = [&]() -> std::optional<State> {
-                switch (std::get<0>(serialized)) {
+                switch (output.State()) {
                     case State::ConfirmedNew:
                     case State::OrphanedNew: {
 
@@ -763,8 +767,7 @@ struct Output::Imp {
             }();
 
             if (state.has_value() &&
-                (!change_state(
-                    lock, id, serialized, state.value(), position))) {
+                (!change_state(lock, id, output, state.value(), position))) {
                 LogOutput(OT_METHOD)(__func__)(
                     ": Failed to update output state")
                     .Flush();
@@ -773,15 +776,9 @@ struct Output::Imp {
             }
 
             const auto& txid = api_.Factory().Data(id.Txid());
-            const auto& [opState, opPosition, data] = serialized;
 
-            for (const auto& sKey : data.key()) {
-                using Subchain = blockchain::crypto::Subchain;
-                blockchain_.Unconfirm(
-                    {sKey.subaccount(),
-                     static_cast<Subchain>(sKey.subchain()),
-                     sKey.index()},
-                    txid);
+            for (const auto& key : output.Keys()) {
+                blockchain_.Unconfirm(key, txid);
             }
         }
 
@@ -796,7 +793,7 @@ struct Output::Imp {
             auto outputs = Outpoints{};
             auto heights = std::set<block::Height>{};
 
-            for (auto i{gen_.rbegin()}; i != gen_.rend(); ++i) {
+            for (auto i{generation_.rbegin()}; i != generation_.rend(); ++i) {
                 const auto& [height, data] = *i;
 
                 if (height < pos.first) { break; }
@@ -808,7 +805,7 @@ struct Output::Imp {
                 heights.emplace(height);
             }
 
-            for (const auto height : heights) { gen_.erase(height); }
+            for (const auto height : heights) { generation_.erase(height); }
 
             for (const auto& id : outputs) {
                 using State = node::TxoState;
@@ -832,7 +829,7 @@ struct Output::Imp {
         : api_(api)
         , blockchain_(blockchain)
         , chain_(chain)
-        , subchains_(subchains)
+        , subchain_(subchains)
         , proposals_(proposals)
         , blank_([&] {
             auto out = make_blank<block::Position>::value(api_);
@@ -846,17 +843,16 @@ struct Output::Imp {
         , lock_()
         , position_(blank_)
         , outputs_()
-        , account_index_()
-        , nym_index_()
-        , position_index_()
-        , proposal_created_index_()
-        , proposal_spent_index_()
-        , proposal_reverse_index_()
-        , state_index_()
-        , subchain_index_()
-        , key_index_()
-        , tags_()
-        , gen_()
+        , accounts_()
+        , nyms_()
+        , positions_()
+        , proposal_created_()
+        , proposal_spent_()
+        , output_proposal_()
+        , states_()
+        , subchains_()
+        , keys_()
+        , generation_()
     {
     }
 
@@ -865,12 +861,9 @@ private:
     using pSubchainID = OTIdentifier;
     using Outpoint = block::Outpoint;
     using Outpoints = std::set<Outpoint>;
-    using Output = std::tuple<
-        node::TxoState,
-        block::Position,
-        proto::BlockchainTransactionOutput>;
-    using OutputMap =
-        robin_hood::unordered_flat_map<Outpoint, std::unique_ptr<Output>>;
+    using OutputMap = robin_hood::unordered_node_map<
+        Outpoint,
+        std::unique_ptr<block::bitcoin::internal::Output>>;
     using AccountIndex = std::map<OTIdentifier, Outpoints>;
     using NymIndex = std::map<OTNymID, Outpoints>;
     using PositionIndex = std::map<block::Position, Outpoints>;
@@ -884,47 +877,29 @@ private:
     using KeyID = blockchain::crypto::Key;
     using States = std::vector<node::TxoState>;
     using Matches = std::vector<Outpoint>;
-    using TagMap = std::map<Outpoint, std::set<node::TxoTag>>;
     using GenerationMap = std::map<block::Height, Outpoints>;
 
     const api::Core& api_;
     const api::client::internal::Blockchain& blockchain_;
     const blockchain::Type chain_;
-    const wallet::SubchainData& subchains_;
+    const wallet::SubchainData& subchain_;
     wallet::Proposal& proposals_;
     const block::Position blank_;
     const block::Height maturation_target_;
     mutable std::shared_mutex lock_;
     block::Position position_;
     OutputMap outputs_;
-    AccountIndex account_index_;
-    NymIndex nym_index_;
-    PositionIndex position_index_;
-    ProposalIndex proposal_created_index_;
-    ProposalIndex proposal_spent_index_;
-    ProposalReverseIndex proposal_reverse_index_;
-    StateIndex state_index_;
-    SubchainIndex subchain_index_;
-    KeyIndex key_index_;
-    TagMap tags_;
-    GenerationMap gen_;
+    AccountIndex accounts_;
+    NymIndex nyms_;
+    PositionIndex positions_;
+    ProposalIndex proposal_created_;
+    ProposalIndex proposal_spent_;
+    ProposalReverseIndex output_proposal_;
+    StateIndex states_;
+    SubchainIndex subchains_;
+    KeyIndex keys_;
+    GenerationMap generation_;
 
-    static auto owns(
-        const identifier::Nym& spender,
-        const proto::BlockchainTransactionOutput& output) noexcept -> bool
-    {
-        const auto id = spender.str();
-
-        for (const auto& key : output.key()) {
-            if (key.nym() == id) { return true; }
-        }
-
-        if (0 == output.key_size()) {
-            LogOutput(OT_METHOD)(__func__)(": No keys").Flush();
-        }
-
-        return false;
-    }
     static auto states(node::TxoState in) noexcept -> States
     {
         using State = node::TxoState;
@@ -948,9 +923,9 @@ private:
         const Outpoint& id,
         const SubchainID& subchain) const noexcept -> bool
     {
-        const auto it1 = subchain_index_.find(subchain);
+        const auto it1 = subchains_.find(subchain);
 
-        if (subchain_index_.cend() == it1) { return false; }
+        if (subchains_.cend() == it1) { return false; }
 
         const auto& vector = it1->second;
 
@@ -987,7 +962,7 @@ private:
 
         try {
 
-            return account_index_.at(id);
+            return accounts_.at(id);
         } catch (...) {
 
             return empty;
@@ -1001,7 +976,7 @@ private:
 
         try {
 
-            return key_index_.at(id);
+            return keys_.at(id);
         } catch (...) {
 
             return empty;
@@ -1015,7 +990,7 @@ private:
 
         try {
 
-            return nym_index_.at(id);
+            return nyms_.at(id);
         } catch (...) {
 
             return empty;
@@ -1023,7 +998,7 @@ private:
     }
     template <typename LockType>
     auto find_output(const LockType& lock, const Outpoint& id) const
-        noexcept(false) -> const Output&
+        noexcept(false) -> const block::bitcoin::internal::Output&
     {
         return *outputs_.at(id);
     }
@@ -1035,7 +1010,7 @@ private:
 
         try {
 
-            return state_index_.at(state);
+            return states_.at(state);
         } catch (...) {
 
             return empty;
@@ -1049,7 +1024,7 @@ private:
 
         try {
 
-            return subchain_index_.at(id);
+            return subchains_.at(id);
         } catch (...) {
 
             return empty;
@@ -1083,9 +1058,9 @@ private:
         const auto* pAcct = account.empty() ? nullptr : &account;
         auto cb = [&](const auto previous, const auto& outpoint) -> auto
         {
-            const auto& [state, position, data] = find_output(lock, outpoint);
+            const auto& existing = find_output(lock, outpoint);
 
-            return previous + Amount{data.value()};
+            return previous + existing.Value();
         };
 
         const auto unconfirmedSpendTotal = [&] {
@@ -1133,7 +1108,7 @@ private:
     {
         auto output = NymBalances{};
 
-        for (const auto& [nym, outpoints] : nym_index_) {
+        for (const auto& [nym, outpoints] : nyms_) {
             output[nym] = get_balance(lock, nym);
         }
 
@@ -1151,8 +1126,8 @@ private:
         auto output = std::vector<UTXO>{};
 
         for (const auto& outpoint : matches) {
-            const auto& [state, position, data] = find_output(lock, outpoint);
-            output.emplace_back(outpoint, data);
+            const auto& existing = find_output(lock, outpoint);
+            output.emplace_back(std::make_pair(outpoint, existing.clone()));
         }
 
         return output;
@@ -1212,7 +1187,7 @@ private:
     {
         try {
 
-            return 0 < tags_.at(outpoint).count(tag);
+            return 0 < find_output(lock, outpoint).Tags().count(tag);
         } catch (...) {
 
             return false;
@@ -1282,24 +1257,18 @@ private:
     {
         struct Output {
             std::stringstream text_{};
-            std::size_t total_{};
+            Amount total_{};
         };
         auto output = std::map<node::TxoState, Output>{};
 
         for (const auto& data : outputs_) {
             const auto& outpoint = data.first;
-            const auto& [state, position, proto] = *data.second;
-            auto& out = output[state];
+            const auto& item = *data.second;
+            auto& out = output[item.State()];
             out.text_ << "\n * " << outpoint.str() << ' ';
-            out.text_ << " value: " << proto.value();
-            out.total_ += proto.value();
-            using Position = block::bitcoin::Script::Position;
-            const auto pScript = factory::BitcoinScript(
-                chain_, proto.script(), Position::Output);
-
-            OT_ASSERT(pScript);
-
-            const auto& script = *pScript;
+            out.text_ << " value: " << item.Value().str();
+            out.total_ += item.Value();
+            const auto& script = item.Script();
             out.text_ << ", type: ";
             using Pattern = block::bitcoin::Script::Pattern;
 
@@ -1353,6 +1322,85 @@ private:
         LogOutput(OT_METHOD)(__func__)(": Immature value: ")(immature.total_)(
             immature.text_.str())
             .Flush();
+
+        LogOutput(OT_METHOD)(__func__)(": Outputs by block:\n");
+
+        for (const auto& [position, outputs] : positions_) {
+            const auto& [height, hash] = position;
+            LogOutput("  * block ")(hash->asHex())(" at height ")(height)("\n");
+
+            for (const auto& outpoint : outputs) {
+                LogOutput("    * ")(outpoint.str())("\n");
+            }
+        }
+
+        LogOutput.Flush();
+        LogOutput(OT_METHOD)(__func__)(": Outputs by nym:\n");
+
+        for (const auto& [id, outputs] : nyms_) {
+            LogOutput("  * ")(id->str())("\n");
+
+            for (const auto& outpoint : outputs) {
+                LogOutput("    * ")(outpoint.str())("\n");
+            }
+        }
+
+        LogOutput.Flush();
+        LogOutput(OT_METHOD)(__func__)(": Outputs by subaccount:\n");
+
+        for (const auto& [id, outputs] : accounts_) {
+            LogOutput("  * ")(id->str())("\n");
+
+            for (const auto& outpoint : outputs) {
+                LogOutput("    * ")(outpoint.str())("\n");
+            }
+        }
+
+        LogOutput.Flush();
+        LogOutput(OT_METHOD)(__func__)(": Outputs by subchain:\n");
+
+        for (const auto& [id, outputs] : subchains_) {
+            LogOutput("  * ")(id->str())("\n");
+
+            for (const auto& outpoint : outputs) {
+                LogOutput("    * ")(outpoint.str())("\n");
+            }
+        }
+
+        LogOutput.Flush();
+        LogOutput(OT_METHOD)(__func__)(": Outputs by key:\n");
+
+        for (const auto& [key, outputs] : keys_) {
+            LogOutput("  * ")(opentxs::print(key))("\n");
+
+            for (const auto& outpoint : outputs) {
+                LogOutput("    * ")(outpoint.str())("\n");
+            }
+        }
+
+        LogOutput.Flush();
+        LogOutput(OT_METHOD)(__func__)(": Outputs by state:\n");
+
+        for (const auto& [state, outputs] : states_) {
+            LogOutput("  * ")(opentxs::print(state))("\n");
+
+            for (const auto& outpoint : outputs) {
+                LogOutput("    * ")(outpoint.str())("\n");
+            }
+        }
+
+        LogOutput.Flush();
+        LogOutput(OT_METHOD)(__func__)(": Generation outputs:\n");
+
+        for (const auto& [height, outputs] : generation_) {
+            LogOutput("  * height ")(height)("\n");
+
+            for (const auto& outpoint : outputs) {
+                LogOutput("    * ")(outpoint.str())("\n");
+            }
+        }
+
+        LogOutput.Flush();
     }
     auto publish_balance(const eLock& lock) const noexcept -> void
     {
@@ -1370,7 +1418,7 @@ private:
     {
         const auto& [nodeID, subchain, index] = key;
         const auto accountID = api_.Factory().Identifier(nodeID);
-        const auto subchainID = subchains_.GetSubchainID(accountID, subchain);
+        const auto subchainID = subchain_.GetSubchainID(accountID, subchain);
 
         return associate(lock, outpoint, accountID, subchainID);
     }
@@ -1383,8 +1431,8 @@ private:
         OT_ASSERT(false == accountID.empty());
         OT_ASSERT(false == subchainID.empty());
 
-        account_index_[accountID].emplace(outpoint);
-        subchain_index_[subchainID].emplace(outpoint);
+        accounts_[accountID].emplace(outpoint);
+        subchains_[subchainID].emplace(outpoint);
 
         return true;
     }
@@ -1395,7 +1443,7 @@ private:
     {
         OT_ASSERT(false == nymID.empty());
 
-        nym_index_[nymID].emplace(outpoint);
+        nyms_[nymID].emplace(outpoint);
 
         return true;
     }
@@ -1407,10 +1455,9 @@ private:
         const node::TxoState newState) noexcept -> bool
     {
         try {
-            auto& serialized = find_output(lock, id);
-            const auto& [state, position, data] = serialized;
+            auto& existing = find_output(lock, id);
 
-            if (state != oldState) {
+            if (existing.State() != oldState) {
                 LogOutput(OT_METHOD)(__func__)(
                     ": incorrect state for outpoint ")(id.str())
                     .Flush();
@@ -1418,7 +1465,7 @@ private:
                 return false;
             }
 
-            return change_state(lock, id, serialized, newState, blank_);
+            return change_state(lock, id, existing, newState, blank_);
         } catch (...) {
             LogOutput(OT_METHOD)(__func__)(": outpoint ")(id.str())(
                 " does not exist")
@@ -1448,26 +1495,27 @@ private:
     auto change_state(
         const eLock& lock,
         const Outpoint& id,
-        Output& serialized,
+        block::bitcoin::internal::Output& output,
         const node::TxoState newState,
         const block::Position newPosition) noexcept -> bool
     {
-        auto& [oldState, oldPosition, data] = serialized;
+        const auto oldState = output.State();
+        const auto& oldPosition = output.MinedPosition();
         const auto effective =
             effective_position(newState, oldPosition, newPosition);
 
         if (newState != oldState) {
-            auto& from = state_index_[oldState];
-            auto& to = state_index_[newState];
+            auto& from = states_[oldState];
+            auto& to = states_[newState];
             to.insert(from.extract(id));
-            oldState = newState;
+            output.SetState(newState);
         }
 
         if (effective != oldPosition) {
-            auto& from = position_index_[oldPosition];
-            auto& to = position_index_[effective];
+            auto& from = positions_[oldPosition];
+            auto& to = positions_[effective];
             to.insert(from.extract(id));
-            oldPosition = effective;
+            output.SetMinedPosition(effective);
         }
 
         return true;
@@ -1481,12 +1529,12 @@ private:
     {
         if (-1 == block.first) { return true; }
 
-        if (0 == proposal_reverse_index_.count(outpoint)) { return true; }
+        if (0 == output_proposal_.count(outpoint)) { return true; }
 
-        auto proposalID{proposal_reverse_index_.at(outpoint)};
+        auto proposalID{output_proposal_.at(outpoint)};
 
-        if (0 < proposal_created_index_.count(proposalID)) {
-            auto& created = proposal_created_index_.at(proposalID);
+        if (0 < proposal_created_.count(proposalID)) {
+            auto& created = proposal_created_.at(proposalID);
 
             for (const auto& newOutpoint : created) {
                 const auto rhs = api_.Factory().Data(newOutpoint.Txid());
@@ -1505,17 +1553,17 @@ private:
                 }
             }
 
-            proposal_created_index_.erase(proposalID);
+            proposal_created_.erase(proposalID);
         }
 
-        if (0 < proposal_spent_index_.count(proposalID)) {
-            auto& spent = proposal_spent_index_.at(proposalID);
+        if (0 < proposal_spent_.count(proposalID)) {
+            auto& spent = proposal_spent_.at(proposalID);
 
             for (const auto& spentOutpoint : spent) {
-                proposal_reverse_index_.erase(spentOutpoint);
+                output_proposal_.erase(spentOutpoint);
             }
 
-            proposal_spent_index_.erase(proposalID);
+            proposal_spent_.erase(proposalID);
         }
 
         return proposals_.FinishProposal(proposalID);
@@ -1561,43 +1609,34 @@ private:
             }
         }();
 
-        {
-            auto data = block::bitcoin::Output::SerializeType{};
+        auto [it, added] = outputs_.try_emplace(id, output.Internal().clone());
+        auto& pCreated = it->second;
 
-            if (false == output.Serialize(blockchain_, data)) {
-                LogOutput(OT_METHOD)(__func__)(": Failed to serialize output")
-                    .Flush();
+        if ((false == added) || (!pCreated)) {
+            LogOutput(OT_METHOD)(__func__)(": Failed to create output").Flush();
 
-                return false;
-            }
-
-            OT_ASSERT(proto::Validate(data, VERBOSE));
-
-            outputs_.emplace(
-                std::piecewise_construct,
-                std::forward_as_tuple(id),
-                std::forward_as_tuple(
-                    std::make_unique<Output>(effState, pos, std::move(data))));
+            return false;
         }
 
-        state_index_[effState].emplace(id);
-        position_index_[pos].emplace(id);
+        auto& created = *pCreated;
+        created.SetState(effState);
+        created.SetMinedPosition(pos);
+        states_[effState].emplace(id);
+        positions_[pos].emplace(id);
 
-        for (const auto& key : output.Keys()) { key_index_[key].emplace(id); }
-
-        auto& tags = tags_[id];
+        for (const auto& key : output.Keys()) { keys_[key].emplace(id); }
 
         if (isGeneration) {
-            gen_[position.first].emplace(id);
-            tags.emplace(node::TxoTag::Generation);
+            generation_[position.first].emplace(id);
+            created.AddTag(node::TxoTag::Generation);
         } else {
-            tags.emplace(node::TxoTag::Normal);
+            created.AddTag(node::TxoTag::Normal);
         }
 
         return true;
     }
     auto find_output(const eLock& lock, const Outpoint& id) noexcept(false)
-        -> Output&
+        -> block::bitcoin::internal::Output&
     {
         return *outputs_.at(id);
     }
@@ -1634,12 +1673,6 @@ auto Output::AddMempoolTransaction(
 {
     return imp_->AddMempoolTransaction(
         account, subchain, outputIndices, transaction);
-}
-
-auto Output::AddNotificationOutput(const block::Outpoint& output) noexcept
-    -> bool
-{
-    return imp_->AddNotificationOutput(output);
 }
 
 auto Output::AddOutgoingTransaction(

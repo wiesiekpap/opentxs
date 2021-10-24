@@ -117,7 +117,6 @@ class Block;
 
 namespace proto
 {
-class BlockchainTransactionOutput;
 class BlockchainTransactionProposal;
 }  // namespace proto
 
@@ -157,11 +156,6 @@ public:
     {
         return wallet_.AddMempoolTransaction(
             balanceNode, subchain, outputIndices, transaction);
-    }
-    auto AddNotificationOutput(const block::Outpoint& output) const noexcept
-        -> bool final
-    {
-        return wallet_.AddNotificationOutput(output);
     }
     auto AddOutgoingTransaction(
         const Identifier& proposalID,

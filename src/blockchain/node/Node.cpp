@@ -48,6 +48,7 @@ auto print(blockchain::node::TxoState in) noexcept -> std::string
 {
     using Type = blockchain::node::TxoState;
     static const auto map = std::map<Type, std::string>{
+        {Type::Error, "error"},
         {Type::UnconfirmedNew, "unspent (unconfirmed)"},
         {Type::UnconfirmedSpend, "spent (unconfirmed)"},
         {Type::ConfirmedNew, "unspent"},

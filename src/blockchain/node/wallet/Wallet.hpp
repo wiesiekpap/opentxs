@@ -173,7 +173,6 @@ private:
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
-    using DBUTXOs = std::vector<node::internal::WalletDatabase::UTXO>;
     using TaskCallback = std::function<void(const Identifier&, const char*)>;
 
     const node::internal::Network& parent_;
@@ -186,7 +185,6 @@ private:
     wallet::Accounts accounts_;
     wallet::Proposals proposals_;
 
-    auto convert(const DBUTXOs& in) const noexcept -> std::vector<UTXO>;
     auto trigger_wallet() const noexcept -> void;
 
     auto pipeline(const zmq::Message& in) noexcept -> void;

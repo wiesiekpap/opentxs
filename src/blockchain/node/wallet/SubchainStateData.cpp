@@ -17,6 +17,7 @@
 #include "blockchain/node/wallet/ScriptForm.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/network/Network.hpp"
+#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
@@ -29,7 +30,7 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"  // IWYU pragma: keep
+#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
 #include "opentxs/protobuf/BlockchainWalletKey.pb.h"
 #include "util/JobCounter.hpp"
 #include "util/ScopeGuard.hpp"
@@ -380,14 +381,19 @@ auto SubchainStateData::translate(
     const std::vector<WalletDatabase::UTXO>& utxos,
     Patterns& outpoints) const noexcept -> void
 {
-    for (const auto& [outpoint, proto] : utxos) {
-        OT_ASSERT(0 < proto.key().size());
+    for (const auto& [outpoint, output] : utxos) {
+        OT_ASSERT(output);
+
+        auto keys = output->Keys();
+
+        OT_ASSERT(0 < keys.size());
         // TODO the assertion below will not always be true in the future but
         // for now it will catch some bugs
-        OT_ASSERT(1 == proto.key().size());
+        OT_ASSERT(1 == keys.size());
 
-        for (const auto& key : proto.key()) {
-            auto account = api_.Factory().Identifier(key.subaccount());
+        for (auto& key : keys) {
+            const auto& [id, subchain, index] = key;
+            auto account = api_.Factory().Identifier(id);
 
             OT_ASSERT(false == account->empty());
             // TODO the assertion below will not always be true in the future
@@ -396,9 +402,8 @@ auto SubchainStateData::translate(
 
             outpoints.emplace_back(
                 WalletDatabase::ElementID{
-                    static_cast<Bip32Index>(key.index()),
-                    {static_cast<Subchain>(key.subchain()),
-                     std::move(account)}},
+                    static_cast<Bip32Index>(index),
+                    {static_cast<Subchain>(subchain), std::move(account)}},
                 space(outpoint.Bytes()));
         }
     }

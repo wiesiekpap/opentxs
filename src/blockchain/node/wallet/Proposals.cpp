@@ -337,11 +337,6 @@ private:
         const auto sent = node_.BroadcastTransaction(transaction);
 
         try {
-            for (const auto index : builder.Notifications()) {
-                const auto outpoint = block::Outpoint{txid->Bytes(), index};
-                db_.AddNotificationOutput(outpoint);
-            }
-
             if (sent) {
                 auto bytes = api_.Factory().Data();
                 transaction.Serialize(bytes->WriteInto());

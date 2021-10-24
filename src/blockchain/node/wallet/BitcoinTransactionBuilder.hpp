@@ -79,6 +79,8 @@ namespace internal
 {
 struct Transaction;
 }  // namespace internal
+
+class Output;
 }  // namespace bitcoin
 }  // namespace block
 
@@ -105,15 +107,15 @@ namespace opentxs::blockchain::node::wallet
 class BitcoinTransactionBuilder
 {
 public:
-    using UTXO = std::
-        pair<blockchain::block::Outpoint, proto::BlockchainTransactionOutput>;
+    using UTXO = std::pair<
+        blockchain::block::Outpoint,
+        std::unique_ptr<block::bitcoin::Output>>;
     using Transaction = std::unique_ptr<block::bitcoin::internal::Transaction>;
     using KeyID = blockchain::crypto::Key;
     using Proposal = proto::BlockchainTransactionProposal;
 
     auto IsFunded() const noexcept -> bool;
     auto Spender() const noexcept -> const identifier::Nym&;
-    auto Notifications() const noexcept -> std::set<std::uint32_t>;
 
     auto AddChange(const Proposal& proposal) noexcept -> bool;
     auto AddInput(const UTXO& utxo) noexcept -> bool;

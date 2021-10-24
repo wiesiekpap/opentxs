@@ -30,6 +30,11 @@
 
 namespace opentxs
 {
+class Amount;
+}  // namespace opentxs
+
+namespace opentxs
+{
 class OPENTXS_EXPORT LogSource
 {
 public:
@@ -46,6 +51,7 @@ public:
     auto operator()(const OTString& in) const noexcept -> const LogSource&;
     auto operator()(const OTStringXML& in) const noexcept -> const LogSource&;
     auto operator()(const OTArmored& in) const noexcept -> const LogSource&;
+    auto operator()(const Amount& in) const noexcept -> const LogSource&;
     auto operator()(const String& in) const noexcept -> const LogSource&;
     auto operator()(const StringXML& in) const noexcept -> const LogSource&;
     auto operator()(const Armored& in) const noexcept -> const LogSource&;

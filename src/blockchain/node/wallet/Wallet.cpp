@@ -103,29 +103,6 @@ auto Wallet::ConstructTransaction(
     trigger();
 }
 
-auto Wallet::convert(const DBUTXOs& in) const noexcept -> std::vector<UTXO>
-{
-    auto out = std::vector<UTXO>{};
-    out.reserve(in.size());
-    std::transform(
-        in.begin(),
-        in.end(),
-        std::back_inserter(out),
-        [this](const auto& utxo) {
-            const auto& [outpoint, proto] = utxo;
-            auto converted = UTXO{
-                outpoint,
-                factory::BitcoinTransactionOutput(
-                    api_, crypto_, chain_, proto)};
-
-            OT_ASSERT(converted.second);
-
-            return converted;
-        });
-
-    return out;
-}
-
 auto Wallet::GetBalance() const noexcept -> Balance { return db_.GetBalance(); }
 
 auto Wallet::GetBalance(const identifier::Nym& owner) const noexcept -> Balance
@@ -151,7 +128,7 @@ auto Wallet::GetOutputs() const noexcept -> std::vector<UTXO>
 
 auto Wallet::GetOutputs(TxoState type) const noexcept -> std::vector<UTXO>
 {
-    return convert(db_.GetOutputs(type));
+    return db_.GetOutputs(type);
 }
 
 auto Wallet::GetOutputs(const identifier::Nym& owner) const noexcept
@@ -163,7 +140,7 @@ auto Wallet::GetOutputs(const identifier::Nym& owner) const noexcept
 auto Wallet::GetOutputs(const identifier::Nym& owner, TxoState type)
     const noexcept -> std::vector<UTXO>
 {
-    return convert(db_.GetOutputs(owner, type));
+    return db_.GetOutputs(owner, type);
 }
 
 auto Wallet::GetOutputs(
@@ -178,13 +155,13 @@ auto Wallet::GetOutputs(
     const Identifier& node,
     TxoState type) const noexcept -> std::vector<UTXO>
 {
-    return convert(db_.GetOutputs(owner, node, type));
+    return db_.GetOutputs(owner, node, type);
 }
 
 auto Wallet::GetOutputs(const crypto::Key& key, TxoState type) const noexcept
     -> std::vector<UTXO>
 {
-    return convert(db_.GetOutputs(key, type));
+    return db_.GetOutputs(key, type);
 }
 
 auto Wallet::GetTags(const block::Outpoint& output) const noexcept

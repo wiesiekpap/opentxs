@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "blockchain/database/common/Database.hpp"
+#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -60,12 +61,6 @@ auto Wallet::AddMempoolTransaction(
 
     return outputs_.AddMempoolTransaction(
         balanceNode, id, outputIndices, original);
-}
-
-auto Wallet::AddNotificationOutput(const block::Outpoint& output) const noexcept
-    -> bool
-{
-    return outputs_.AddNotificationOutput(output);
 }
 
 auto Wallet::AddOutgoingTransaction(

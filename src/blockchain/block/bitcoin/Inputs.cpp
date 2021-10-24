@@ -110,7 +110,7 @@ auto Inputs::AssociatedRemoteContacts(
 auto Inputs::AssociatePreviousOutput(
     const api::client::Blockchain& blockchain,
     const std::size_t index,
-    const proto::BlockchainTransactionOutput& output) noexcept -> bool
+    const internal::Output& output) noexcept -> bool
 {
     try {
 

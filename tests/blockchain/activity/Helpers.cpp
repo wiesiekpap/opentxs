@@ -183,47 +183,6 @@ auto Test_BlockchainActivity::get_test_transaction(
     return output;
 }
 
-auto Test_BlockchainActivity::get_test_transaction(
-    const Element& inputKey1,
-    const Element& inputKey2,
-    const Element& inputKey3,
-    const Element& outputKey1,
-    const ot::proto::BlockchainTransactionOutput& prevOut1,
-    const ot::proto::BlockchainTransactionOutput& prevOut2,
-    const ot::proto::BlockchainTransactionOutput& prevOut3,
-    const std::string& secondOutput,
-    const ot::Time& time) const -> std::unique_ptr<const Transaction>
-{
-    const auto raw = api_.Factory().Data(
-        monkey_patch(outputKey1.PubkeyHash()->asHex(), secondOutput),
-        ot::StringStyle::Hex);
-    auto output = api_.Factory().BitcoinTransaction(
-        ot::blockchain::Type::Bitcoin, raw->Bytes(), false, time);
-
-    if (output) {
-        auto& tx = dynamic_cast<
-            ot::blockchain::block::bitcoin::internal::Transaction&>(
-            const_cast<ot::blockchain::block::bitcoin::Transaction&>(*output));
-        auto added = tx.ForTestingOnlyAddKey(0, outputKey1.KeyID());
-
-        OT_ASSERT(added);
-
-        added = tx.AssociatePreviousOutput(api_.Blockchain(), 0, prevOut1);
-
-        OT_ASSERT(added);
-
-        added = tx.AssociatePreviousOutput(api_.Blockchain(), 1, prevOut2);
-
-        OT_ASSERT(added);
-
-        added = tx.AssociatePreviousOutput(api_.Blockchain(), 2, prevOut3);
-
-        OT_ASSERT(added);
-    }
-
-    return output;
-}
-
 auto Test_BlockchainActivity::monkey_patch(
     const Element& first,
     const Element& second) const noexcept -> std::string

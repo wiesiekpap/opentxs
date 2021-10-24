@@ -25,4 +25,8 @@ message BlockchainTransactionOutput {
     optional bool indexed = 10;
     repeated bytes payer = 11;
     repeated bytes payee = 12;
+    optional int64 mined_height = 13;
+    optional bytes mined_block = 14;
+    optional uint32 state = 15;
+    repeated uint32 tag = 16;
 }
