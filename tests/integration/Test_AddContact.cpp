@@ -70,112 +70,90 @@ TEST_F(Test_AddContact, init_ot) {}
 TEST_F(Test_AddContact, init_ui)
 {
     contact_list_alex_.expected_ = 1;
-    messagable_list_alex_.expected_ = 0;
     contact_list_bob_.expected_ = 1;
-    messagable_list_bob_.expected_ = 0;
     contact_list_chris_.expected_ = 1;
+    messagable_list_alex_.expected_ = 0;
+    messagable_list_bob_.expected_ = 0;
     messagable_list_chris_.expected_ = 0;
-    api_alex_.UI().ContactList(
-        alex_.nym_id_, make_cb(contact_list_alex_, "alex contact list"));
-    api_alex_.UI().MessagableList(
-        alex_.nym_id_, make_cb(messagable_list_alex_, "alex messagable list"));
-    api_bob_.UI().ContactList(
-        bob_.nym_id_, make_cb(contact_list_bob_, "bob contact list"));
-    api_bob_.UI().MessagableList(
-        bob_.nym_id_, make_cb(messagable_list_bob_, "bob messagable list"));
-    api_chris_.UI().ContactList(
-        chris_.nym_id_, make_cb(contact_list_chris_, "chris contact list"));
-    api_chris_.UI().MessagableList(
-        chris_.nym_id_,
-        make_cb(messagable_list_chris_, "chris messagable list"));
+
+    init_contact_list(alex_, contact_list_alex_);
+    init_contact_list(bob_, contact_list_bob_);
+    init_contact_list(chris_, contact_list_chris_);
+    init_messagable_list(alex_, messagable_list_alex_);
+    init_messagable_list(bob_, messagable_list_bob_);
+    init_messagable_list(chris_, messagable_list_chris_);
 }
 
 TEST_F(Test_AddContact, initial_state_contact_list_alex)
 {
     ASSERT_TRUE(wait_for_counter(contact_list_alex_));
 
-    const auto& widget = alex_.api_->UI().ContactList(alex_.nym_id_);
-    const auto row = widget.First();
+    const auto expected = ContactListData{{
+        {true, alex_.name_, alex_.name_, "ME", ""},
+    }};
 
-    ASSERT_TRUE(row->Valid());
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(
-        row->DisplayName() == alex_.name_ || row->DisplayName() == "Owner");
-    ASSERT_TRUE(row->Valid());
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("ME", row->Section().c_str());
-    EXPECT_TRUE(row->Last());
-
-    EXPECT_TRUE(alex_.SetContact(alex_.name_, row->ContactID()));
-    EXPECT_FALSE(alex_.Contact(alex_.name_).empty());
+    ASSERT_TRUE(wait_for_counter(contact_list_alex_));
+    EXPECT_TRUE(check_contact_list(alex_, expected));
+    EXPECT_TRUE(check_contact_list_qt(alex_, expected));
 }
 
 TEST_F(Test_AddContact, initial_state_messagable_list_alex)
 {
     ASSERT_TRUE(wait_for_counter(messagable_list_alex_));
 
-    const auto& widget = alex_.api_->UI().MessagableList(alex_.nym_id_);
-    auto row = widget.First();
+    const auto expected = ContactListData{};
 
-    EXPECT_FALSE(row->Valid());
+    ASSERT_TRUE(wait_for_counter(messagable_list_alex_));
+    EXPECT_TRUE(check_messagable_list(alex_, expected));
+    EXPECT_TRUE(check_messagable_list_qt(alex_, expected));
 }
 
 TEST_F(Test_AddContact, initial_state_contact_list_bob)
 {
     ASSERT_TRUE(wait_for_counter(contact_list_bob_));
 
-    const auto& widget = bob_.api_->UI().ContactList(bob_.nym_id_);
-    const auto row = widget.First();
+    const auto expected = ContactListData{{
+        {true, bob_.name_, bob_.name_, "ME", ""},
+    }};
 
-    ASSERT_TRUE(row->Valid());
-    EXPECT_TRUE(
-        row->DisplayName() == bob_.name_ || row->DisplayName() == "Owner");
-    ASSERT_TRUE(row->Valid());
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("ME", row->Section().c_str());
-    EXPECT_TRUE(row->Last());
-
-    EXPECT_TRUE(bob_.SetContact(bob_.name_, row->ContactID()));
-    EXPECT_FALSE(bob_.Contact(bob_.name_).empty());
+    ASSERT_TRUE(wait_for_counter(contact_list_bob_));
+    EXPECT_TRUE(check_contact_list(bob_, expected));
+    EXPECT_TRUE(check_contact_list_qt(bob_, expected));
 }
 
 TEST_F(Test_AddContact, initial_state_messagable_list_bob)
 {
     ASSERT_TRUE(wait_for_counter(messagable_list_bob_));
 
-    const auto& widget = bob_.api_->UI().MessagableList(bob_.nym_id_);
-    auto row = widget.First();
+    const auto expected = ContactListData{};
 
-    EXPECT_FALSE(row->Valid());
+    ASSERT_TRUE(wait_for_counter(messagable_list_bob_));
+    EXPECT_TRUE(check_messagable_list(bob_, expected));
+    EXPECT_TRUE(check_messagable_list_qt(bob_, expected));
 }
 
 TEST_F(Test_AddContact, initial_state_contact_list_chris)
 {
     ASSERT_TRUE(wait_for_counter(contact_list_chris_));
 
-    const auto& widget = chris_.api_->UI().ContactList(chris_.nym_id_);
-    const auto row = widget.First();
+    const auto expected = ContactListData{{
+        {true, chris_.name_, chris_.name_, "ME", ""},
+    }};
 
-    ASSERT_TRUE(row->Valid());
-    EXPECT_TRUE(
-        row->DisplayName() == chris_.name_ || row->DisplayName() == "Owner");
-    ASSERT_TRUE(row->Valid());
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("ME", row->Section().c_str());
-    EXPECT_TRUE(row->Last());
-
-    EXPECT_TRUE(chris_.SetContact(chris_.name_, row->ContactID()));
-    EXPECT_FALSE(chris_.Contact(chris_.name_).empty());
+    ASSERT_TRUE(wait_for_counter(contact_list_chris_));
+    EXPECT_TRUE(check_contact_list(chris_, expected));
+    EXPECT_TRUE(check_contact_list_qt(chris_, expected));
 }
 
 TEST_F(Test_AddContact, initial_state_messagable_list_chris)
 {
     ASSERT_TRUE(wait_for_counter(messagable_list_chris_));
 
-    const auto& widget = chris_.api_->UI().MessagableList(chris_.nym_id_);
-    auto row = widget.First();
+    const auto expected = ContactListData{};
 
-    EXPECT_FALSE(row->Valid());
+    ASSERT_TRUE(wait_for_counter(messagable_list_chris_));
+    EXPECT_TRUE(check_messagable_list(chris_, expected));
+    EXPECT_TRUE(check_messagable_list_qt(chris_, expected));
 }
 
 TEST_F(Test_AddContact, introduction_server)
@@ -213,51 +191,37 @@ TEST_F(Test_AddContact, nymid)
     messagable_list_alex_.expected_ += 1;
     const auto& widget = alex_.api_->UI().ContactList(alex_.nym_id_);
     const auto id = widget.AddContact(bob_.name_, bob_.nym_id_->str(), "");
+    api_alex_.OTX().ContextIdle(alex_.nym_id_, server_1_.id_).get();
 
-    EXPECT_FALSE(id.empty());
+    ASSERT_FALSE(id.empty());
+    EXPECT_TRUE(alex_.SetContact(bob_.name_, id));
 }
 
 TEST_F(Test_AddContact, add_nymid_contact_list_alex)
 {
     ASSERT_TRUE(wait_for_counter(contact_list_alex_));
 
-    const auto& widget = alex_.api_->UI().ContactList(alex_.nym_id_);
-    auto row = widget.First();
+    const auto expected = ContactListData{{
+        {true, alex_.name_, alex_.name_, "ME", ""},
+        {true, bob_.name_, bob_.name_, "B", ""},
+    }};
 
-    ASSERT_TRUE(row->Valid());
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(row->DisplayName() == alex_.name_);
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("ME", row->Section().c_str());
-    ASSERT_FALSE(row->Last());
-
-    row = widget.Next();
-
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(row->DisplayName() == bob_.name_);
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("B", row->Section().c_str());
-    EXPECT_TRUE(row->Last());
-
-    EXPECT_TRUE(alex_.SetContact(bob_.name_, row->ContactID()));
-    EXPECT_FALSE(alex_.Contact(bob_.name_).empty());
+    ASSERT_TRUE(wait_for_counter(contact_list_alex_));
+    EXPECT_TRUE(check_contact_list(alex_, expected));
+    EXPECT_TRUE(check_contact_list_qt(alex_, expected));
 }
 
 TEST_F(Test_AddContact, add_nymid_messagable_list_alex)
 {
     ASSERT_TRUE(wait_for_counter(messagable_list_alex_));
 
-    const auto& widget = alex_.api_->UI().MessagableList(alex_.nym_id_);
-    auto row = widget.First();
+    const auto expected = ContactListData{{
+        {true, bob_.name_, bob_.name_, "B", ""},
+    }};
 
-    ASSERT_TRUE(row->Valid());
-
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_EQ(row->DisplayName(), bob_.name_);
-    ASSERT_TRUE(row->Valid());
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("B", row->Section().c_str());
-    EXPECT_TRUE(row->Last());
+    ASSERT_TRUE(wait_for_counter(messagable_list_alex_));
+    EXPECT_TRUE(check_messagable_list(alex_, expected));
+    EXPECT_TRUE(check_messagable_list_qt(alex_, expected));
 }
 
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
@@ -269,65 +233,39 @@ TEST_F(Test_AddContact, paymentcode)
     messagable_list_alex_.expected_ += 1;
     const auto& widget = alex_.api_->UI().ContactList(alex_.nym_id_);
     const auto id = widget.AddContact(chris_.name_, "", chris_.payment_code_);
+    api_alex_.OTX().ContextIdle(alex_.nym_id_, server_1_.id_).get();
 
-    EXPECT_FALSE(id.empty());
+    ASSERT_FALSE(id.empty());
+    EXPECT_TRUE(alex_.SetContact(chris_.name_, id));
 }
 
 TEST_F(Test_AddContact, add_paymentcode_contact_list_alex)
 {
     ASSERT_TRUE(wait_for_counter(contact_list_alex_));
 
-    const auto& widget = alex_.api_->UI().ContactList(alex_.nym_id_);
-    auto row = widget.First();
+    const auto expected = ContactListData{{
+        {true, alex_.name_, alex_.name_, "ME", ""},
+        {true, bob_.name_, bob_.name_, "B", ""},
+        {true, chris_.name_, chris_.name_, "C", ""},
+    }};
 
-    ASSERT_TRUE(row->Valid());
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(row->DisplayName() == alex_.name_);
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("ME", row->Section().c_str());
-    ASSERT_FALSE(row->Last());
-
-    row = widget.Next();
-
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(row->DisplayName() == bob_.name_);
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("B", row->Section().c_str());
-    ASSERT_FALSE(row->Last());
-
-    row = widget.Next();
-
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(row->DisplayName() == chris_.name_);
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("C", row->Section().c_str());
-    EXPECT_TRUE(row->Last());
-
-    EXPECT_TRUE(alex_.SetContact(chris_.name_, row->ContactID()));
-    EXPECT_FALSE(alex_.Contact(chris_.name_).empty());
+    ASSERT_TRUE(wait_for_counter(contact_list_alex_));
+    EXPECT_TRUE(check_contact_list(alex_, expected));
+    EXPECT_TRUE(check_contact_list_qt(alex_, expected));
 }
 
 TEST_F(Test_AddContact, add_paymentcode_messagable_list_alex)
 {
     ASSERT_TRUE(wait_for_counter(messagable_list_alex_));
 
-    const auto& widget = alex_.api_->UI().MessagableList(alex_.nym_id_);
-    auto row = widget.First();
+    const auto expected = ContactListData{{
+        {true, bob_.name_, bob_.name_, "B", ""},
+        {true, chris_.name_, chris_.name_, "C", ""},
+    }};
 
-    ASSERT_TRUE(row->Valid());
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(row->DisplayName() == bob_.name_);
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("B", row->Section().c_str());
-    ASSERT_FALSE(row->Last());
-
-    row = widget.Next();
-
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(row->DisplayName() == chris_.name_);
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("C", row->Section().c_str());
-    EXPECT_TRUE(row->Last());
+    ASSERT_TRUE(wait_for_counter(messagable_list_alex_));
+    EXPECT_TRUE(check_messagable_list(alex_, expected));
+    EXPECT_TRUE(check_messagable_list_qt(alex_, expected));
 }
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 
@@ -343,52 +281,37 @@ TEST_F(Test_AddContact, both)
     const auto& widget = bob_.api_->UI().ContactList(bob_.nym_id_);
     const auto id = widget.AddContact(
         alex_.name_, alex_.nym_id_->str(), alex_.payment_code_);
+    api_bob_.OTX().ContextIdle(bob_.nym_id_, server_1_.id_).get();
 
-    EXPECT_FALSE(id.empty());
+    ASSERT_FALSE(id.empty());
+    EXPECT_TRUE(bob_.SetContact(alex_.name_, id));
 }
 
 TEST_F(Test_AddContact, add_both_contact_list_bob)
 {
     ASSERT_TRUE(wait_for_counter(contact_list_bob_));
 
-    const auto& widget = bob_.api_->UI().ContactList(bob_.nym_id_);
-    auto row = widget.First();
+    const auto expected = ContactListData{{
+        {true, bob_.name_, bob_.name_, "ME", ""},
+        {true, alex_.name_, alex_.name_, "A", ""},
+    }};
 
-    ASSERT_TRUE(row->Valid());
-
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(row->DisplayName() == bob_.name_);
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("ME", row->Section().c_str());
-    ASSERT_FALSE(row->Last());
-
-    row = widget.Next();
-
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(row->DisplayName() == alex_.name_);
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("A", row->Section().c_str());
-    EXPECT_TRUE(row->Last());
-
-    EXPECT_TRUE(bob_.SetContact(alex_.name_, row->ContactID()));
-    EXPECT_FALSE(bob_.Contact(alex_.name_).empty());
+    ASSERT_TRUE(wait_for_counter(contact_list_bob_));
+    EXPECT_TRUE(check_contact_list(bob_, expected));
+    EXPECT_TRUE(check_contact_list_qt(bob_, expected));
 }
 
 TEST_F(Test_AddContact, add_both_messagable_list_bob)
 {
     ASSERT_TRUE(wait_for_counter(messagable_list_bob_));
 
-    const auto& widget = bob_.api_->UI().MessagableList(bob_.nym_id_);
-    auto row = widget.First();
+    const auto expected = ContactListData{{
+        {true, alex_.name_, alex_.name_, "A", ""},
+    }};
 
-    ASSERT_TRUE(row->Valid());
-
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_EQ(row->DisplayName(), alex_.name_);
-    ASSERT_TRUE(row->Valid());
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("A", row->Section().c_str());
-    EXPECT_TRUE(row->Last());
+    ASSERT_TRUE(wait_for_counter(messagable_list_bob_));
+    EXPECT_TRUE(check_messagable_list(bob_, expected));
+    EXPECT_TRUE(check_messagable_list_qt(bob_, expected));
 }
 
 TEST_F(Test_AddContact, backwards)
@@ -403,67 +326,39 @@ TEST_F(Test_AddContact, backwards)
     const auto& widget = bob_.api_->UI().ContactList(bob_.nym_id_);
     const auto id = widget.AddContact(
         chris_.name_, chris_.payment_code_, chris_.nym_id_->str());
+    api_bob_.OTX().ContextIdle(bob_.nym_id_, server_1_.id_).get();
 
-    EXPECT_FALSE(id.empty());
+    ASSERT_FALSE(id.empty());
+    EXPECT_TRUE(bob_.SetContact(chris_.name_, id));
 }
 
 TEST_F(Test_AddContact, add_backwards_contact_list_bob)
 {
     ASSERT_TRUE(wait_for_counter(contact_list_bob_));
 
-    const auto& widget = bob_.api_->UI().ContactList(bob_.nym_id_);
-    auto row = widget.First();
+    const auto expected = ContactListData{{
+        {true, bob_.name_, bob_.name_, "ME", ""},
+        {true, alex_.name_, alex_.name_, "A", ""},
+        {true, chris_.name_, chris_.name_, "C", ""},
+    }};
 
-    ASSERT_TRUE(row->Valid());
-
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(row->DisplayName() == bob_.name_);
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("ME", row->Section().c_str());
-    ASSERT_FALSE(row->Last());
-
-    row = widget.Next();
-
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(row->DisplayName() == alex_.name_);
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("A", row->Section().c_str());
-    ASSERT_FALSE(row->Last());
-
-    row = widget.Next();
-
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(row->DisplayName() == chris_.name_);
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("C", row->Section().c_str());
-    EXPECT_TRUE(row->Last());
-
-    EXPECT_TRUE(bob_.SetContact(chris_.name_, row->ContactID()));
-    EXPECT_FALSE(bob_.Contact(chris_.name_).empty());
+    ASSERT_TRUE(wait_for_counter(contact_list_bob_));
+    EXPECT_TRUE(check_contact_list(bob_, expected));
+    EXPECT_TRUE(check_contact_list_qt(bob_, expected));
 }
 
 TEST_F(Test_AddContact, add_backwards_messagable_list_bob)
 {
     ASSERT_TRUE(wait_for_counter(messagable_list_bob_));
 
-    const auto& widget = bob_.api_->UI().MessagableList(bob_.nym_id_);
-    auto row = widget.First();
+    const auto expected = ContactListData{{
+        {true, alex_.name_, alex_.name_, "A", ""},
+        {true, chris_.name_, chris_.name_, "C", ""},
+    }};
 
-    ASSERT_TRUE(row->Valid());
-
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(row->DisplayName() == alex_.name_);
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("A", row->Section().c_str());
-    ASSERT_FALSE(row->Last());
-
-    row = widget.Next();
-
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(row->DisplayName() == chris_.name_);
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("C", row->Section().c_str());
-    EXPECT_TRUE(row->Last());
+    ASSERT_TRUE(wait_for_counter(messagable_list_bob_));
+    EXPECT_TRUE(check_messagable_list(bob_, expected));
+    EXPECT_TRUE(check_messagable_list_qt(bob_, expected));
 }
 
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
@@ -475,52 +370,37 @@ TEST_F(Test_AddContact, paymentcode_as_nymid)
     messagable_list_chris_.expected_ += 1;
     const auto& widget = chris_.api_->UI().ContactList(chris_.nym_id_);
     const auto id = widget.AddContact(alex_.name_, alex_.payment_code_, "");
+    api_chris_.OTX().ContextIdle(chris_.nym_id_, server_1_.id_).get();
 
-    EXPECT_FALSE(id.empty());
+    ASSERT_FALSE(id.empty());
+    EXPECT_TRUE(chris_.SetContact(alex_.name_, id));
 }
 
 TEST_F(Test_AddContact, add_payment_code_as_nymid_contact_list_chris)
 {
     ASSERT_TRUE(wait_for_counter(contact_list_chris_));
 
-    const auto& widget = chris_.api_->UI().ContactList(chris_.nym_id_);
-    auto row = widget.First();
+    const auto expected = ContactListData{{
+        {true, chris_.name_, chris_.name_, "ME", ""},
+        {true, alex_.name_, alex_.name_, "A", ""},
+    }};
 
-    ASSERT_TRUE(row->Valid());
-
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(row->DisplayName() == chris_.name_);
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("ME", row->Section().c_str());
-    ASSERT_FALSE(row->Last());
-
-    row = widget.Next();
-
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(row->DisplayName() == alex_.name_);
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("A", row->Section().c_str());
-    EXPECT_TRUE(row->Last());
-
-    EXPECT_TRUE(chris_.SetContact(alex_.name_, row->ContactID()));
-    EXPECT_FALSE(chris_.Contact(alex_.name_).empty());
+    ASSERT_TRUE(wait_for_counter(contact_list_chris_));
+    EXPECT_TRUE(check_contact_list(chris_, expected));
+    EXPECT_TRUE(check_contact_list_qt(chris_, expected));
 }
 
 TEST_F(Test_AddContact, add_payment_code_as_nymid_messagable_list_chris)
 {
     ASSERT_TRUE(wait_for_counter(messagable_list_chris_));
 
-    const auto& widget = chris_.api_->UI().MessagableList(chris_.nym_id_);
-    auto row = widget.First();
+    const auto expected = ContactListData{{
+        {true, alex_.name_, alex_.name_, "A", ""},
+    }};
 
-    ASSERT_TRUE(row->Valid());
-
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_EQ(row->DisplayName(), alex_.name_);
-    ASSERT_TRUE(row->Valid());
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("A", row->Section().c_str());
-    EXPECT_TRUE(row->Last());
+    ASSERT_TRUE(wait_for_counter(messagable_list_chris_));
+    EXPECT_TRUE(check_messagable_list(chris_, expected));
+    EXPECT_TRUE(check_messagable_list_qt(chris_, expected));
 }
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 
@@ -532,71 +412,43 @@ TEST_F(Test_AddContact, nymid_as_paymentcode)
     messagable_list_chris_.expected_ += 1;
     const auto& widget = chris_.api_->UI().ContactList(chris_.nym_id_);
     const auto id = widget.AddContact(bob_.name_, "", bob_.nym_id_->str());
+    api_chris_.OTX().ContextIdle(chris_.nym_id_, server_1_.id_).get();
 
-    EXPECT_FALSE(id.empty());
+    ASSERT_FALSE(id.empty());
+    EXPECT_TRUE(chris_.SetContact(bob_.name_, id));
 }
 
 TEST_F(Test_AddContact, add_nymid_as_paymentcode_contact_list_chris)
 {
     ASSERT_TRUE(wait_for_counter(contact_list_chris_));
 
-    const auto& widget = chris_.api_->UI().ContactList(chris_.nym_id_);
-    auto row = widget.First();
-
-    ASSERT_TRUE(row->Valid());
-
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(row->DisplayName() == chris_.name_);
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("ME", row->Section().c_str());
-    ASSERT_FALSE(row->Last());
-
-    row = widget.Next();
-
+    const auto expected = ContactListData{{
+        {true, chris_.name_, chris_.name_, "ME", ""},
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(row->DisplayName() == alex_.name_);
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("A", row->Section().c_str());
-    ASSERT_FALSE(row->Last());
-
-    row = widget.Next();
+        {true, alex_.name_, alex_.name_, "A", ""},
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+        {true, bob_.name_, bob_.name_, "B", ""},
+    }};
 
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(row->DisplayName() == bob_.name_);
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("B", row->Section().c_str());
-    EXPECT_TRUE(row->Last());
-
-    EXPECT_TRUE(chris_.SetContact(bob_.name_, row->ContactID()));
-    EXPECT_FALSE(chris_.Contact(bob_.name_).empty());
+    ASSERT_TRUE(wait_for_counter(contact_list_chris_));
+    EXPECT_TRUE(check_contact_list(chris_, expected));
+    EXPECT_TRUE(check_contact_list_qt(chris_, expected));
 }
 
 TEST_F(Test_AddContact, add_nymid_as_paymentcode_messagable_list_chris)
 {
     ASSERT_TRUE(wait_for_counter(messagable_list_chris_));
 
-    const auto& widget = chris_.api_->UI().MessagableList(chris_.nym_id_);
-    auto row = widget.First();
-
-    ASSERT_TRUE(row->Valid());
-
+    const auto expected = ContactListData{{
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(row->DisplayName() == alex_.name_);
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("A", row->Section().c_str());
-    ASSERT_FALSE(row->Last());
-
-    row = widget.Next();
+        {true, alex_.name_, alex_.name_, "A", ""},
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+        {true, bob_.name_, bob_.name_, "B", ""},
+    }};
 
-    EXPECT_FALSE(row->ContactID().empty());
-    EXPECT_TRUE(row->DisplayName() == bob_.name_);
-    EXPECT_STREQ("", row->ImageURI().c_str());
-    EXPECT_STREQ("B", row->Section().c_str());
-    EXPECT_TRUE(row->Last());
+    ASSERT_TRUE(wait_for_counter(messagable_list_chris_));
+    EXPECT_TRUE(check_messagable_list(chris_, expected));
+    EXPECT_TRUE(check_messagable_list_qt(chris_, expected));
 }
 
 TEST_F(Test_AddContact, shutdown)

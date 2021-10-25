@@ -40,8 +40,8 @@ BlockchainSelectionItem::BlockchainSelectionItem(
     const BlockchainSelectionSortKey& sortKey,
     CustomData& custom) noexcept
     : BlockchainSelectionItemRow(parent, api, rowID, true)
-    , testnet_(sortKey.first)
-    , name_(sortKey.second)
+    , testnet_(sortKey.second)
+    , name_(sortKey.first)
     , enabled_(extract_custom<bool>(custom, 0))
 {
 }
@@ -50,8 +50,8 @@ auto BlockchainSelectionItem::reindex(
     const BlockchainSelectionSortKey& key,
     CustomData& custom) noexcept -> bool
 {
-    OT_ASSERT(testnet_ == key.first);
-    OT_ASSERT(name_ == key.second);
+    OT_ASSERT(testnet_ == key.second);
+    OT_ASSERT(name_ == key.first);
 
     Lock lock{lock_};
 

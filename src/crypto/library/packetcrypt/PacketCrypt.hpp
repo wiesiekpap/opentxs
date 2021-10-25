@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "internal/blockchain/node/Node.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
 
 namespace opentxs
 {

@@ -46,6 +46,7 @@ struct Options::Imp final {
     std::optional<std::string> notary_terms_;
     std::optional<QObject*> qt_root_object_;
     std::optional<std::string> storage_primary_plugin_;
+    std::optional<bool> test_mode_;
 
     template <typename T>
     static auto get(const std::optional<T>& data, T defaultValue = {}) noexcept

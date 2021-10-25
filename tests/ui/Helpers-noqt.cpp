@@ -48,4 +48,10 @@ auto check_contact_list_qt(const User&, const ContactListData&) noexcept -> bool
 {
     return true;
 }
+
+auto check_messagable_list_qt(const User&, const ContactListData&) noexcept
+    -> bool
+{
+    return true;
+}
 }  // namespace ottest

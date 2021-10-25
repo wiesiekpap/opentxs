@@ -47,6 +47,7 @@ struct OptionsData {
     std::uint16_t notary_public_port_;
     std::string notary_terms_;
     std::string storage_primary_plugin_;
+    bool test_mode_;
 };
 
 auto check_options(

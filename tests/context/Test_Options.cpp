@@ -59,6 +59,8 @@ constexpr auto storage_plugin_1_{"sqlite"};
 constexpr auto storage_plugin_2_{"fs"};
 constexpr auto sync_server_1_{"tcp://some.ip:1234"};
 constexpr auto sync_server_2_{"tcp://another.ip:1234"};
+constexpr auto test_mode_on_{true};
+constexpr auto test_mode_off_{false};
 
 namespace ottest
 {
@@ -89,7 +91,8 @@ TEST(Options, default_values)
         {},
         0,
         "",
-        ""};
+        "",
+        false};
 
     EXPECT_TRUE(check_options(test, expected));
 }
@@ -121,7 +124,8 @@ TEST(Options, setters)
             .SetNotaryName(notary_name_1_)
             .SetNotaryPublicPort(notary_public_port_1_)
             .SetNotaryTerms(notary_terms_1_)
-            .SetStoragePlugin(storage_plugin_1_);
+            .SetStoragePlugin(storage_plugin_1_)
+            .SetTestMode(test_mode_on_);
     const auto test2{test1};
     const auto test3 =
         opentxs::Options{test2}
@@ -148,7 +152,8 @@ TEST(Options, setters)
             .SetNotaryName(notary_name_2_)
             .SetNotaryPublicPort(notary_public_port_2_)
             .SetNotaryTerms(notary_terms_2_)
-            .SetStoragePlugin(storage_plugin_2_);
+            .SetStoragePlugin(storage_plugin_2_)
+            .SetTestMode(test_mode_off_);
 
     const auto expected1 = OptionsData{
         {bind_ipv4_1_},
@@ -174,7 +179,8 @@ TEST(Options, setters)
         {notary_public_opion_1_},
         notary_public_port_1_,
         notary_terms_1_,
-        storage_plugin_1_};
+        storage_plugin_1_,
+        test_mode_on_};
     const auto expected2 = OptionsData{
         {bind_ipv4_1_, bind_ipv4_2_},
         {bind_ipv6_1_, bind_ipv6_2_},
@@ -199,7 +205,8 @@ TEST(Options, setters)
         {notary_public_opion_1_, notary_public_opion_2_},
         notary_public_port_2_,
         notary_terms_2_,
-        storage_plugin_2_};
+        storage_plugin_2_,
+        test_mode_off_};
 
     EXPECT_TRUE(check_options(test1, expected1));
     EXPECT_TRUE(check_options(test2, expected1));
@@ -232,7 +239,8 @@ TEST(Options, merge)
             .SetNotaryName(notary_name_1_)
             .SetNotaryPublicPort(notary_public_port_1_)
             .SetNotaryTerms(notary_terms_1_)
-            .SetStoragePlugin(storage_plugin_1_);
+            .SetStoragePlugin(storage_plugin_1_)
+            .SetTestMode(test_mode_on_);
     const auto test2 =
         opentxs::Options{}
             .AddBlockchainIpv4Bind(bind_ipv4_2_)
@@ -258,7 +266,8 @@ TEST(Options, merge)
             .SetNotaryName(notary_name_2_)
             .SetNotaryPublicPort(notary_public_port_2_)
             .SetNotaryTerms(notary_terms_2_)
-            .SetStoragePlugin(storage_plugin_2_);
+            .SetStoragePlugin(storage_plugin_2_)
+            .SetTestMode(test_mode_off_);
     const auto test3 = opentxs::Options{}.SetNotaryName(notary_name_3_);
 
     const auto expected1 = OptionsData{
@@ -285,7 +294,8 @@ TEST(Options, merge)
         {notary_public_opion_1_},
         notary_public_port_1_,
         notary_terms_1_,
-        storage_plugin_1_};
+        storage_plugin_1_,
+        test_mode_on_};
     const auto expected2 = OptionsData{
         {bind_ipv4_1_, bind_ipv4_2_},
         {bind_ipv6_1_, bind_ipv6_2_},
@@ -310,7 +320,8 @@ TEST(Options, merge)
         {notary_public_opion_1_, notary_public_opion_2_},
         notary_public_port_2_,
         notary_terms_2_,
-        storage_plugin_2_};
+        storage_plugin_2_,
+        test_mode_off_};
     const auto expected3 = OptionsData{
         {bind_ipv4_2_},
         {bind_ipv6_2_},
@@ -335,7 +346,8 @@ TEST(Options, merge)
         {notary_public_opion_2_},
         notary_public_port_2_,
         notary_terms_2_,
-        storage_plugin_2_};
+        storage_plugin_2_,
+        test_mode_off_};
 
     EXPECT_TRUE(check_options(test1 + blank, expected1));
     EXPECT_TRUE(check_options(blank + test1, expected1));

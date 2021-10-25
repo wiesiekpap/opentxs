@@ -13,17 +13,31 @@ extern "C" {
 }
 
 #include <boost/endian/buffers.hpp>
+#include <array>
+#include <cstddef>
+#include <cstring>
+#include <iterator>
+#include <limits>
+#include <optional>
+#include <stdexcept>
+#include <type_traits>
+#include <vector>
 
 #include "blockchain/block/pkt/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
-#include "opentxs/blockchain/block/bitcoin/Input.hpp"
+#include "opentxs/Pimpl.hpp"
+#include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/core/LogSource.hpp"
+#include "opentxs/iterator/Bidirectional.hpp"
 
 #define OT_METHOD "opentxs::crypto::implementation::PacketCrypt::"
 

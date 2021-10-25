@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <cstdlib>
+#include <functional>
 #include <iosfwd>
 #include <list>
 #include <memory>
@@ -71,6 +72,33 @@ auto operator==(const Value& lhs, const ValueType& rhs) noexcept -> bool
 using Type =
     opentxs::ui::implementation::ListItems<ID, Key, std::shared_ptr<Value>>;
 
+}  // namespace ottest
+
+namespace opentxs::ui::implementation
+{
+template <>
+auto ListItems<ottest::ID, ottest::Key, std::shared_ptr<ottest::Value>>::
+    compare_id(const ottest::ID& lhs, const ottest::ID& rhs) const noexcept
+    -> bool
+{
+    static const auto compare = std::less<ottest::ID>{};
+
+    return compare(lhs, rhs);
+}
+
+template <>
+auto ListItems<ottest::ID, ottest::Key, std::shared_ptr<ottest::Value>>::
+    compare_key(const ottest::Key& lhs, const ottest::Key& rhs) const noexcept
+    -> bool
+{
+    static const auto compare = std::less<ottest::Key>{};
+
+    return compare(lhs, rhs);
+}
+}  // namespace opentxs::ui::implementation
+
+namespace ottest
+{
 struct Data {
     Key key_;
     ID id_;

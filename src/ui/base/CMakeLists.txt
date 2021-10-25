@@ -11,6 +11,7 @@ add_library(
   "List.hpp"
   "Row.hpp"
   "RowType.hpp"
+  "Sort.cpp"
   "Widget.cpp"
   "Widget.hpp"
 )

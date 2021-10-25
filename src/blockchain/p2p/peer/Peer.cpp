@@ -279,6 +279,8 @@ auto Peer::on_pipeline(
 
 auto Peer::pipeline(zmq::Message& message) noexcept -> void
 {
+    init_.get();
+
     if (false == running_.get()) { return; }
 
     const auto header = message.Header();
