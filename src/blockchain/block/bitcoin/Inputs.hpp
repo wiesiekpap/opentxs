@@ -100,8 +100,7 @@ public:
     auto AssociatePreviousOutput(
         const api::client::Blockchain& blockchain,
         const std::size_t inputIndex,
-        const proto::BlockchainTransactionOutput& output) noexcept
-        -> bool final;
+        const internal::Output& output) noexcept -> bool final;
     auto at(const std::size_t position) noexcept(false) -> value_type& final
     {
         return *inputs_.at(position);

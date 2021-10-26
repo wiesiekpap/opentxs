@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "blockchain/database/common/Database.hpp"
+#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -32,8 +33,7 @@ Wallet::Wallet(
     : common_(common)
     , subchains_(api)
     , proposals_()
-    , transactions_(api, blockchain, common_)
-    , outputs_(api, blockchain, chain, subchains_, proposals_, transactions_)
+    , outputs_(api, blockchain, chain, subchains_, proposals_)
 {
 }
 
@@ -61,12 +61,6 @@ auto Wallet::AddMempoolTransaction(
 
     return outputs_.AddMempoolTransaction(
         balanceNode, id, outputIndices, original);
-}
-
-auto Wallet::AddNotificationOutput(const block::Outpoint& output) const noexcept
-    -> bool
-{
-    return outputs_.AddNotificationOutput(output);
 }
 
 auto Wallet::AddOutgoingTransaction(
@@ -305,11 +299,5 @@ auto Wallet::SubchainSetLastScanned(
     const block::Position& position) const noexcept -> bool
 {
     return subchains_.SubchainSetLastScanned(index, position);
-}
-
-auto Wallet::TransactionLoadBitcoin(const ReadView txid) const noexcept
-    -> std::unique_ptr<block::bitcoin::Transaction>
-{
-    return transactions_.TransactionLoadBitcoin(txid);
 }
 }  // namespace opentxs::blockchain::database

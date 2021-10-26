@@ -3,6 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/node/TxoState.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/node/TxoTag.hpp"
+
 #pragma once
 
 #include <boost/endian/buffers.hpp>
@@ -33,6 +36,7 @@
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
+#include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -63,8 +67,6 @@ struct EncodedTransaction;
 
 namespace block
 {
-class Header;
-
 namespace bitcoin
 {
 namespace internal
@@ -84,6 +86,7 @@ class Script;
 class Transaction;
 }  // namespace bitcoin
 
+class Header;
 struct Outpoint;
 }  // namespace block
 }  // namespace blockchain
@@ -141,7 +144,7 @@ struct Input : virtual public bitcoin::Input {
         -> bool = 0;
     virtual auto AssociatePreviousOutput(
         const api::client::Blockchain& api,
-        const proto::BlockchainTransactionOutput& output) noexcept -> bool = 0;
+        const Output& output) noexcept -> bool = 0;
     virtual auto MergeMetadata(
         const api::client::Blockchain& api,
         const SerializeType& rhs) noexcept -> void = 0;
@@ -165,7 +168,7 @@ struct Inputs : virtual public bitcoin::Inputs {
     virtual auto AssociatePreviousOutput(
         const api::client::Blockchain& api,
         const std::size_t inputIndex,
-        const proto::BlockchainTransactionOutput& output) noexcept -> bool = 0;
+        const Output& output) noexcept -> bool = 0;
     virtual auto MergeMetadata(
         const api::client::Blockchain& api,
         const Input::SerializeType& rhs) noexcept(false) -> void = 0;
@@ -181,18 +184,30 @@ struct Output : virtual public bitcoin::Output {
         const api::client::Blockchain& blockchain,
         std::vector<OTIdentifier>& output) const noexcept -> void = 0;
     virtual auto clone() const noexcept -> std::unique_ptr<Output> = 0;
+    virtual auto MinedPosition() const noexcept -> const block::Position& = 0;
     virtual auto NetBalanceChange(
         const api::client::Blockchain& blockchain,
         const identifier::Nym& nym) const noexcept -> opentxs::Amount = 0;
+    using bitcoin::Output::Serialize;
+    virtual auto Serialize(
+        const api::client::Blockchain& blockchain,
+        SerializeType& destination) const noexcept -> bool = 0;
     virtual auto SigningSubscript() const noexcept
         -> std::unique_ptr<internal::Script> = 0;
+    virtual auto State() const noexcept -> node::TxoState = 0;
+    virtual auto Tags() const noexcept -> const std::set<node::TxoTag>& = 0;
 
+    virtual auto AddTag(node::TxoTag tag) noexcept -> void = 0;
     virtual auto ForTestingOnlyAddKey(const KeyID& key) noexcept -> void = 0;
     virtual auto MergeMetadata(const SerializeType& rhs) noexcept -> void = 0;
     virtual auto SetIndex(const std::uint32_t index) noexcept -> void = 0;
-    virtual auto SetValue(const blockchain::Amount& value) noexcept -> void = 0;
+    virtual auto SetKeyData(const KeyData& data) noexcept -> void = 0;
+    virtual auto SetMinedPosition(const block::Position& pos) noexcept
+        -> void = 0;
     virtual auto SetPayee(const Identifier& contact) noexcept -> void = 0;
     virtual auto SetPayer(const Identifier& contact) noexcept -> void = 0;
+    virtual auto SetState(node::TxoState state) noexcept -> void = 0;
+    virtual auto SetValue(const blockchain::Amount& value) noexcept -> void = 0;
 
     ~Output() override = default;
 };
@@ -242,7 +257,7 @@ struct Transaction : virtual public bitcoin::Transaction {
     virtual auto AssociatePreviousOutput(
         const api::client::Blockchain& api,
         const std::size_t inputIndex,
-        const proto::BlockchainTransactionOutput& output) noexcept -> bool = 0;
+        const Output& output) noexcept -> bool = 0;
     virtual auto ForTestingOnlyAddKey(
         const std::size_t index,
         const blockchain::crypto::Key& key) noexcept -> bool = 0;
@@ -259,8 +274,9 @@ struct Transaction : virtual public bitcoin::Transaction {
 namespace opentxs::factory
 {
 #if OT_BLOCKCHAIN
-using UTXO =
-    std::pair<blockchain::block::Outpoint, proto::BlockchainTransactionOutput>;
+using UTXO = std::pair<
+    blockchain::block::Outpoint,
+    std::unique_ptr<blockchain::block::bitcoin::Output>>;
 using Transaction_p =
     std::shared_ptr<const opentxs::blockchain::block::bitcoin::Transaction>;
 using AbortFunction = std::function<bool()>;

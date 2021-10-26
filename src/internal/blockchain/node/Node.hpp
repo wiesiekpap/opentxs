@@ -91,6 +91,7 @@ namespace bitcoin
 {
 namespace internal
 {
+struct Output;
 struct Transaction;
 }  // namespace internal
 
@@ -586,8 +587,9 @@ struct WalletDatabase {
     using Pattern = std::pair<ElementID, Space>;
     using Patterns = std::vector<Pattern>;
     using MatchingIndices = std::vector<Bip32Index>;
-    using UTXO = std::
-        pair<blockchain::block::Outpoint, proto::BlockchainTransactionOutput>;
+    using UTXO = std::pair<
+        blockchain::block::Outpoint,
+        std::unique_ptr<block::bitcoin::Output>>;
     using KeyID = blockchain::crypto::Key;
 
     enum class Spend : bool {
@@ -609,8 +611,6 @@ struct WalletDatabase {
         const std::vector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction) const noexcept
         -> bool = 0;
-    virtual auto AddNotificationOutput(
-        const block::Outpoint& output) const noexcept -> bool = 0;
     virtual auto AddOutgoingTransaction(
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
@@ -694,8 +694,6 @@ struct WalletDatabase {
     virtual auto SubchainSetLastScanned(
         const SubchainIndex& index,
         const block::Position& position) const noexcept -> bool = 0;
-    virtual auto TransactionLoadBitcoin(const ReadView txid) const noexcept
-        -> std::unique_ptr<block::bitcoin::Transaction> = 0;
 
     virtual ~WalletDatabase() = default;
 };

@@ -17,6 +17,7 @@
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Context.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -98,6 +99,11 @@ auto LogSource::operator()(const OTArmored& in) const noexcept
     -> const LogSource&
 {
     return operator()(in.get());
+}
+
+auto LogSource::operator()(const Amount& in) const noexcept -> const LogSource&
+{
+    return operator()(in.str());
 }
 
 auto LogSource::operator()(const String& in) const noexcept -> const LogSource&

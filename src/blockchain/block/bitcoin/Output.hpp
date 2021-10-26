@@ -4,6 +4,8 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 // IWYU pragma: no_include <boost/intrusive/detail/iterator.hpp>
+// IWYU pragma: no_include "opentxs/blockchain/node/TxoState.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/node/TxoTag.hpp"
 
 #pragma once
 
@@ -75,9 +77,17 @@ public:
         const FilterType type,
         const ParsedPatterns& patterns) const noexcept -> Matches final;
     auto GetPatterns() const noexcept -> std::vector<PatternID> final;
+    auto Internal() const noexcept -> const internal::Output& final
+    {
+        return *this;
+    }
     auto Keys() const noexcept -> std::vector<KeyID> final
     {
         return cache_.keys();
+    }
+    auto MinedPosition() const noexcept -> const block::Position& final
+    {
+        return mined_position_;
     }
     auto NetBalanceChange(
         const api::client::Blockchain& blockchain,
@@ -101,12 +111,19 @@ public:
     {
         return *script_;
     }
+    auto State() const noexcept -> node::TxoState final { return state_; }
+    auto Tags() const noexcept -> const std::set<node::TxoTag>& final
+    {
+        return tags_;
+    }
     auto Value() const noexcept -> blockchain::Amount final { return value_; }
 
+    auto AddTag(node::TxoTag tag) noexcept -> void final { tags_.emplace(tag); }
     auto ForTestingOnlyAddKey(const KeyID& key) noexcept -> void final
     {
         cache_.add(KeyID{key});
     }
+    auto Internal() noexcept -> internal::Output& final { return *this; }
     auto MergeMetadata(const SerializeType& rhs) noexcept -> void final;
     auto SetIndex(const std::uint32_t index) noexcept -> void final
     {
@@ -116,6 +133,10 @@ public:
     {
         cache_.set(data);
     }
+    auto SetMinedPosition(const block::Position& pos) noexcept -> void final
+    {
+        mined_position_ = pos;
+    }
     auto SetPayee(const Identifier& contact) noexcept -> void final
     {
         cache_.set_payee(contact);
@@ -123,6 +144,10 @@ public:
     auto SetPayer(const Identifier& contact) noexcept -> void final
     {
         cache_.set_payer(contact);
+    }
+    auto SetState(node::TxoState state) noexcept -> void final
+    {
+        state_ = state;
     }
     auto SetValue(const blockchain::Amount& value) noexcept -> void final
     {
@@ -159,7 +184,10 @@ public:
         boost::container::flat_set<KeyID>&& keys,
         boost::container::flat_set<PatternID>&& pubkeyHashes,
         std::optional<PatternID>&& scriptHash,
-        const bool indexed) noexcept(false);
+        bool indexed,
+        block::Position minedPosition,
+        node::TxoState state,
+        std::set<node::TxoTag> tags) noexcept(false);
     Output(const Output&) noexcept;
 
     ~Output() final = default;
@@ -222,6 +250,9 @@ private:
     const boost::container::flat_set<PatternID> pubkey_hashes_;
     const std::optional<PatternID> script_hash_;
     mutable Cache cache_;
+    block::Position mined_position_;
+    node::TxoState state_;
+    std::set<node::TxoTag> tags_;
 
     auto index_elements() noexcept -> void;
 

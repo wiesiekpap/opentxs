@@ -438,6 +438,7 @@ if(OPENTXS_BUILD_TESTS)
   enable_testing()
 endif()
 
+find_package(Threads REQUIRED)
 find_package(unofficial-sodium REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(ZLIB REQUIRED)

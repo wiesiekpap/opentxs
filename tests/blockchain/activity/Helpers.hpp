@@ -94,17 +94,6 @@ struct Test_BlockchainActivity : public ::testing::Test {
         const Element& second,
         const ot::Time& time = ot::Clock::now()) const
         -> std::unique_ptr<const Transaction>;
-    auto get_test_transaction(
-        const Element& inputKey1,
-        const Element& inputKey2,
-        const Element& inputKey3,
-        const Element& outputKey1,
-        const ot::proto::BlockchainTransactionOutput& prevOut1,
-        const ot::proto::BlockchainTransactionOutput& prevOut2,
-        const ot::proto::BlockchainTransactionOutput& prevOut3,
-        const std::string& secondOutput,
-        const ot::Time& time = ot::Clock::now()) const
-        -> std::unique_ptr<const Transaction>;
     auto monkey_patch(const Element& first, const Element& second)
         const noexcept -> std::string;
     auto monkey_patch(const std::string& first, const std::string& second)

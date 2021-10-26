@@ -144,8 +144,7 @@ public:
     auto AddSignatures(const Signatures& signatures) noexcept -> bool final;
     auto AssociatePreviousOutput(
         const api::client::Blockchain& blockchain,
-        const proto::BlockchainTransactionOutput& output) noexcept
-        -> bool final;
+        const internal::Output& output) noexcept -> bool final;
     auto MergeMetadata(
         const api::client::Blockchain& blockchain,
         const SerializeType& rhs) noexcept -> void final;
@@ -266,27 +265,26 @@ private:
             auto lock = rLock{lock_};
             keys_.emplace(std::move(key));
         }
-        template <typename F>
         auto associate(
             const api::client::Blockchain& blockchain,
-            const proto::BlockchainTransactionOutput& in,
-            F cb) noexcept -> bool
+            const internal::Output& in) noexcept -> bool
         {
             auto lock = rLock{lock_};
 
-            if (false == bool(previous_output_)) { previous_output_ = cb(); }
+            if (false == bool(previous_output_)) {
+                previous_output_ = in.clone();
+            }
 
             // NOTE this should only happen during unit testing
             if (keys_.empty()) {
-                OT_ASSERT(0 < in.key_size());
+                auto keys = in.Keys();
 
-                for (const auto& key : in.key()) {
-                    keys_.emplace(
-                        key.subaccount(),
-                        static_cast<blockchain::crypto::Subchain>(
-                            static_cast<std::uint8_t>(key.subchain())),
-                        key.index());
-                }
+                OT_ASSERT(0 < keys.size());
+
+                std::move(
+                    keys.begin(),
+                    keys.end(),
+                    std::inserter(keys_, keys_.end()));
             }
 
             return bool(previous_output_);

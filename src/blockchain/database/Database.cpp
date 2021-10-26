@@ -14,6 +14,7 @@ extern "C" {
 #include <memory>
 #include <string>
 
+#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "opentxs/core/Log.hpp"
 #include "util/LMDB.hpp"

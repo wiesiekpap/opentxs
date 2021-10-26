@@ -50,6 +50,7 @@
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
+#include "opentxs/blockchain/node/TxoTag.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -79,10 +80,6 @@ struct BitcoinTransactionBuilder::Imp {
     auto IsFunded() const noexcept -> bool
     {
         return input_value_ > (output_value_ + required_fee());
-    }
-    auto Notifications() const noexcept -> std::set<std::uint32_t>
-    {
-        return notifications_;
     }
     auto Spender() const noexcept -> const identifier::Nym&
     {
@@ -194,9 +191,7 @@ struct BitcoinTransactionBuilder::Imp {
                 throw std::runtime_error{"Failed to construct output"};
             }
 
-            if (isNotification) {
-                notification_outputs_.emplace(pOutput.get());
-            }
+            if (isNotification) { pOutput->AddTag(TxoTag::Notification); }
 
             {
                 auto& output = *pOutput;
@@ -237,7 +232,7 @@ struct BitcoinTransactionBuilder::Imp {
             .Flush();
         input_count_ = inputs_.size();
         input_total_ += input.CalculateSize();
-        const auto amount = Amount{utxo.second.value()};
+        const auto amount = Amount{utxo.second->Value()};
         input_value_ += amount;
         inputs_.emplace_back(std::move(pInput), amount);
 
@@ -501,8 +496,6 @@ struct BitcoinTransactionBuilder::Imp {
 
             return out;
         }())
-        , notification_outputs_()
-        , notifications_()
     {
         OT_ASSERT(sender_);
     }
@@ -537,8 +530,6 @@ private:
     Amount output_value_;
     std::set<KeyID> change_keys_;
     std::set<KeyID> outgoing_keys_;
-    std::set<OutputType*> notification_outputs_;
-    std::set<std::uint32_t> notifications_;
 
     static auto is_segwit(const block::bitcoin::internal::Input& input) noexcept
         -> bool
@@ -1264,15 +1255,7 @@ private:
         std::sort(std::begin(outputs_), std::end(outputs_), outputSort);
         auto index{-1};
 
-        for (const auto& output : outputs_) {
-            output->SetIndex(++index);
-
-            if (0 < notification_outputs_.count(output.get())) {
-                notifications_.emplace(index);
-            }
-        }
-
-        notification_outputs_.clear();
+        for (const auto& output : outputs_) { output->SetIndex(++index); }
     }
 };
 
@@ -1318,12 +1301,6 @@ auto BitcoinTransactionBuilder::FinalizeTransaction() noexcept -> Transaction
 auto BitcoinTransactionBuilder::IsFunded() const noexcept -> bool
 {
     return imp_->IsFunded();
-}
-
-auto BitcoinTransactionBuilder::Notifications() const noexcept
-    -> std::set<std::uint32_t>
-{
-    return imp_->Notifications();
 }
 
 auto BitcoinTransactionBuilder::ReleaseKeys() noexcept -> void

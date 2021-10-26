@@ -43,7 +43,7 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
-#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"  // IWYU pragma: keep
+#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
 #include "util/ScopeGuard.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::wallet::DeterministicStateData::"

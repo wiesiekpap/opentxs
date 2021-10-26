@@ -69,12 +69,10 @@ auto BitcoinTransactionInput(
     namespace bb = b::block::bitcoin;
     namespace bi = bb::internal;
 
-    auto pPrevOut =
-        BitcoinTransactionOutput(api, blockchain, chain, spends.second);
+    auto& pPrevOut = spends.second;
 
     if (false == bool(pPrevOut)) {
-        LogOutput("opentxs::factory::")(__func__)(
-            ": Failed to instantiate previous output")
+        LogOutput("opentxs::factory::")(__func__)(": Invalid previous output")
             .Flush();
 
         return {};
@@ -143,7 +141,7 @@ auto BitcoinTransactionInput(
         std::move(witness),
         BitcoinScript(chain, std::move(elements), Position::Input),
         ReturnType::default_version_,
-        std::move(pPrevOut),
+        prevOut.Internal().clone(),
         std::move(keys));
 }
 
@@ -538,17 +536,9 @@ auto Input::AssociatedRemoteContacts(
 
 auto Input::AssociatePreviousOutput(
     const api::client::Blockchain& blockchain,
-    const proto::BlockchainTransactionOutput& in) noexcept -> bool
+    const internal::Output& in) noexcept -> bool
 {
-    if (previous_.Index() != in.index()) {
-        LogOutput(OT_METHOD)(__func__)(": Wrong previous output").Flush();
-
-        return false;
-    }
-
-    return cache_.associate(blockchain, in, [&] {
-        return factory::BitcoinTransactionOutput(api_, blockchain, chain_, in);
-    });
+    return cache_.associate(blockchain, in);
 }
 
 auto Input::CalculateSize(const bool normalized) const noexcept -> std::size_t

@@ -127,7 +127,7 @@ public:
     auto AssociatePreviousOutput(
         const api::client::Blockchain& blockchain,
         const std::size_t index,
-        const proto::BlockchainTransactionOutput& output) noexcept -> bool final
+        const internal::Output& output) noexcept -> bool final
     {
         return inputs_->AssociatePreviousOutput(blockchain, index, output);
     }

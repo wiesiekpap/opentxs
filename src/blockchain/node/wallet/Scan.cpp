@@ -24,6 +24,7 @@
 #include "blockchain/node/wallet/Rescan.hpp"
 #include "blockchain/node/wallet/SubchainStateData.hpp"
 #include "internal/api/network/Network.hpp"
+#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -34,7 +35,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
-#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"  // IWYU pragma: keep
+#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
 #include "util/ScopeGuard.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::wallet::Scan::"

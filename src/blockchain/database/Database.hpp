@@ -117,7 +117,6 @@ class Block;
 
 namespace proto
 {
-class BlockchainTransactionOutput;
 class BlockchainTransactionProposal;
 }  // namespace proto
 
@@ -157,11 +156,6 @@ public:
     {
         return wallet_.AddMempoolTransaction(
             balanceNode, subchain, outputIndices, transaction);
-    }
-    auto AddNotificationOutput(const block::Outpoint& output) const noexcept
-        -> bool final
-    {
-        return wallet_.AddNotificationOutput(output);
     }
     auto AddOutgoingTransaction(
         const Identifier& proposalID,
@@ -522,11 +516,6 @@ public:
     auto SyncTip() const noexcept -> block::Position final
     {
         return sync_.Tip();
-    }
-    auto TransactionLoadBitcoin(const ReadView txid) const noexcept
-        -> std::unique_ptr<block::bitcoin::Transaction> final
-    {
-        return wallet_.TransactionLoadBitcoin(txid);
     }
     // Returns null pointer if the header does not exist
     auto TryLoadBitcoinHeader(const block::Hash& hash) const noexcept

@@ -59,7 +59,6 @@ namespace wallet
 {
 class Proposal;
 class SubchainData;
-class Transaction;
 }  // namespace wallet
 }  // namespace database
 }  // namespace blockchain
@@ -123,7 +122,6 @@ public:
         const SubchainID& subchain,
         const std::vector<std::uint32_t> outputIndices,
         const block::bitcoin::Transaction& transaction) const noexcept -> bool;
-    auto AddNotificationOutput(const block::Outpoint& output) noexcept -> bool;
     auto AddOutgoingTransaction(
         const Identifier& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
@@ -147,8 +145,7 @@ public:
         const api::client::internal::Blockchain& blockchain,
         const blockchain::Type chain,
         const wallet::SubchainData& subchains,
-        wallet::Proposal& proposals,
-        wallet::Transaction& transactions) noexcept;
+        wallet::Proposal& proposals) noexcept;
 
     ~Output();
 

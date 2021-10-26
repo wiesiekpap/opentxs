@@ -24,6 +24,11 @@ namespace block
 {
 namespace bitcoin
 {
+namespace internal
+{
+struct Output;
+}  // namespace internal
+
 class Script;
 }  // namespace bitcoin
 }  // namespace block
@@ -63,6 +68,8 @@ public:
         const FilterType type,
         const ParsedPatterns& elements) const noexcept -> Matches = 0;
     virtual auto GetPatterns() const noexcept -> std::vector<PatternID> = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
+        -> const internal::Output& = 0;
     virtual auto Note(const api::client::Blockchain& blockchain) const noexcept
         -> std::string = 0;
     virtual auto Keys() const noexcept -> std::vector<KeyID> = 0;
@@ -71,13 +78,10 @@ public:
     virtual auto Print() const noexcept -> std::string = 0;
     virtual auto Serialize(const AllocateOutput destination) const noexcept
         -> std::optional<std::size_t> = 0;
-    virtual auto Serialize(
-        const api::client::Blockchain& blockchain,
-        SerializeType& destination) const noexcept -> bool = 0;
     virtual auto Script() const noexcept -> const bitcoin::Script& = 0;
     virtual auto Value() const noexcept -> blockchain::Amount = 0;
 
-    virtual auto SetKeyData(const KeyData& data) noexcept -> void = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::Output& = 0;
 
     virtual ~Output() = default;
 

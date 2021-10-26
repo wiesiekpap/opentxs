@@ -18,7 +18,7 @@
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Log.hpp"
-#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"  // IWYU pragma: keep
+#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
 
 namespace opentxs::blockchain::node::wallet
 {
@@ -58,7 +58,7 @@ auto Mempool::Run() noexcept -> bool
 
     auto lock = Lock{lock_};
     const auto targets = parent_.get_account_targets();
-    const auto [elements, utxos, patterns] = targets;
+    const auto& [elements, utxos, patterns] = targets;
     const auto parsed = block::Block::ParsedPatterns{elements};
     const auto outpoints = [&] {
         auto out = SubchainStateData::Patterns{};
