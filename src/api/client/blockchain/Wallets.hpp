@@ -41,6 +41,7 @@ namespace api
 namespace client
 {
 class Blockchain;
+class Contacts;
 }  // namespace client
 
 class Core;
@@ -76,10 +77,14 @@ public:
         -> opentxs::blockchain::crypto::Wallet&;
     auto LookupAccount(const Identifier& id) const noexcept -> AccountData;
 
-    Wallets(const api::Core& api, api::client::Blockchain& parent) noexcept;
+    Wallets(
+        const api::Core& api,
+        const api::client::Contacts& contacts,
+        api::client::Blockchain& parent) noexcept;
 
 private:
     const api::Core& api_;
+    const api::client::Contacts& contacts_;
     api::client::Blockchain& parent_;
     opentxs::blockchain::crypto::AccountIndex index_;
     mutable std::mutex lock_;

@@ -18,7 +18,6 @@
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Log.hpp"
-#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
 
 namespace opentxs::blockchain::node::wallet
 {

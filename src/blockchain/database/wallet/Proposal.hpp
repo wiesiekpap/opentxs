@@ -18,8 +18,20 @@ namespace opentxs
 namespace proto
 {
 class BlockchainTransactionProposal;
-}
+}  // namespace proto
+
+namespace storage
+{
+namespace lmdb
+{
+class LMDB;
+}  // namespace lmdb
+}  // namespace storage
 }  // namespace opentxs
+
+extern "C" {
+typedef struct MDB_txn MDB_txn;
+}
 
 namespace opentxs::blockchain::database::wallet
 {
@@ -28,7 +40,6 @@ class Proposal
 public:
     auto CompletedProposals() const noexcept -> std::set<OTIdentifier>;
     auto Exists(const Identifier& id) const noexcept -> bool;
-    auto GetMutex() const noexcept -> std::mutex&;
     auto LoadProposal(const Identifier& id) const noexcept
         -> std::optional<proto::BlockchainTransactionProposal>;
     auto LoadProposals() const noexcept
@@ -37,11 +48,11 @@ public:
     auto AddProposal(
         const Identifier& id,
         const proto::BlockchainTransactionProposal& tx) noexcept -> bool;
-    auto CancelProposal(const Identifier& id) noexcept -> bool;
-    auto FinishProposal(const Identifier& id) noexcept -> bool;
+    auto CancelProposal(MDB_txn* tx, const Identifier& id) noexcept -> bool;
+    auto FinishProposal(MDB_txn* tx, const Identifier& id) noexcept -> bool;
     auto ForgetProposals(const std::set<OTIdentifier>& ids) noexcept -> bool;
 
-    Proposal() noexcept;
+    Proposal(const storage::lmdb::LMDB& lmdb) noexcept;
 
     ~Proposal();
 
@@ -49,5 +60,10 @@ private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
+
+    Proposal() = delete;
+    Proposal(const Proposal&) = delete;
+    auto operator=(const Proposal&) -> Proposal& = delete;
+    auto operator=(Proposal&&) -> Proposal& = delete;
 };
 }  // namespace opentxs::blockchain::database::wallet

@@ -510,14 +510,15 @@ auto Database::HashKey() const noexcept -> ReadView
     return reader(imp_.siphash_key_);
 }
 
-auto Database::HaveFilter(const FilterType type, const ReadView blockHash)
+auto Database::HaveFilter(const filter::Type type, const ReadView blockHash)
     const noexcept -> bool
 {
     return imp_.filters_.HaveFilter(type, blockHash);
 }
 
-auto Database::HaveFilterHeader(const FilterType type, const ReadView blockHash)
-    const noexcept -> bool
+auto Database::HaveFilterHeader(
+    const filter::Type type,
+    const ReadView blockHash) const noexcept -> bool
 {
     return imp_.filters_.HaveFilterHeader(type, blockHash);
 }
@@ -533,14 +534,14 @@ auto Database::LoadBlockHeader(const BlockHash& hash) const noexcept(false)
     return imp_.headers_.Load(hash);
 }
 
-auto Database::LoadFilter(const FilterType type, const ReadView blockHash)
+auto Database::LoadFilter(const filter::Type type, const ReadView blockHash)
     const noexcept -> std::unique_ptr<const opentxs::blockchain::GCS>
 {
     return imp_.filters_.LoadFilter(type, blockHash);
 }
 
 auto Database::LoadFilterHash(
-    const FilterType type,
+    const filter::Type type,
     const ReadView blockHash,
     const AllocateOutput filterHash) const noexcept -> bool
 {
@@ -548,7 +549,7 @@ auto Database::LoadFilterHash(
 }
 
 auto Database::LoadFilterHeader(
-    const FilterType type,
+    const filter::Type type,
     const ReadView blockHash,
     const AllocateOutput header) const noexcept -> bool
 {
@@ -640,21 +641,21 @@ auto Database::StoreBlockHeaders(const UpdatedHeader& headers) const noexcept
 }
 
 auto Database::StoreFilterHeaders(
-    const FilterType type,
+    const filter::Type type,
     const std::vector<FilterHeader>& headers) const noexcept -> bool
 {
     return imp_.filters_.StoreFilterHeaders(type, headers);
 }
 
 auto Database::StoreFilters(
-    const FilterType type,
+    const filter::Type type,
     std::vector<FilterData>& filters) const noexcept -> bool
 {
     return imp_.filters_.StoreFilters(type, filters);
 }
 
 auto Database::StoreFilters(
-    const FilterType type,
+    const filter::Type type,
     const std::vector<FilterHeader>& headers,
     const std::vector<FilterData>& filters) const noexcept -> bool
 {

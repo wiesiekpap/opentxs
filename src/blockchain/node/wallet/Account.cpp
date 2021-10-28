@@ -71,7 +71,10 @@ struct Account::Imp {
 
         for_each_subchain([&](auto& s) { s.ProcessKey(); });
     }
-    auto reorg(const block::Position& parent) noexcept -> bool
+    auto reorg(
+        storage::lmdb::LMDB::Transaction& tx,
+        std::atomic_int& errors,
+        const block::Position& parent) noexcept -> bool
     {
         auto ticket = gatekeeper_.get();
 
@@ -79,7 +82,8 @@ struct Account::Imp {
 
         auto output{false};
 
-        for_each_subchain([&](auto& s) { output |= s.ProcessReorg(parent); });
+        for_each_subchain(
+            [&](auto& s) { output |= s.ProcessReorg(tx, errors, parent); });
 
         return output;
     }
@@ -294,9 +298,12 @@ auto Account::ProcessNewFilter(const block::Position& tip) noexcept -> void
     imp_->new_filter(tip);
 }
 
-auto Account::ProcessReorg(const block::Position& parent) noexcept -> bool
+auto Account::ProcessReorg(
+    storage::lmdb::LMDB::Transaction& tx,
+    std::atomic_int& errors,
+    const block::Position& parent) noexcept -> bool
 {
-    return imp_->reorg(parent);
+    return imp_->reorg(tx, errors, parent);
 }
 
 auto Account::ProcessStateMachine(bool enabled) noexcept -> bool

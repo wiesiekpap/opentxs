@@ -44,6 +44,7 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "util/LMDB.hpp"
 
 namespace opentxs
 {
@@ -139,7 +140,10 @@ public:
         std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept
         -> void final;
     auto ProcessNewFilter(const block::Position& tip) noexcept -> void final;
-    auto ProcessReorg(const block::Position& ancestor) noexcept -> bool final;
+    auto ProcessReorg(
+        storage::lmdb::LMDB::Transaction& tx,
+        std::atomic_int& errors,
+        const block::Position& ancestor) noexcept -> bool final;
     auto ProcessStateMachine(bool enabled) noexcept -> bool final;
     auto ProcessTaskComplete(
         const Identifier& id,
@@ -184,7 +188,8 @@ protected:
         const std::vector<WalletDatabase::UTXO>& utxos,
         Patterns& outpoints) const noexcept -> void;
     virtual auto type() const noexcept -> std::stringstream = 0;
-    virtual auto update_scan(const block::Position& pos) const noexcept -> void;
+    virtual auto update_scan(const block::Position& pos, bool reorg)
+        const noexcept -> void;
 
     virtual auto get_index() noexcept -> Index& = 0;
     virtual auto handle_confirmed_matches(
@@ -230,7 +235,10 @@ private:
         Patterns& outpoints,
         Tested& tested) const noexcept -> void;
 
-    auto do_reorg(const block::Position ancestor) noexcept -> void;
+    auto do_reorg(
+        storage::lmdb::LMDB::Transaction& tx,
+        std::atomic_int& errors,
+        const block::Position ancestor) noexcept -> void;
     virtual auto handle_mempool_matches(
         const block::Block::Matches& matches,
         std::unique_ptr<const block::bitcoin::Transaction> tx) noexcept

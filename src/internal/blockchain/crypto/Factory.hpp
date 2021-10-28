@@ -19,6 +19,7 @@ namespace api
 namespace client
 {
 class Blockchain;
+class Contacts;
 }  // namespace client
 
 class Core;
@@ -58,6 +59,7 @@ namespace opentxs::factory
 {
 auto BlockchainAccountKeys(
     const api::Core& api,
+    const api::client::Contacts& contacts,
     const blockchain::crypto::Wallet& parent,
     const blockchain::crypto::AccountIndex& index,
     const identifier::Nym& id,
@@ -79,6 +81,7 @@ auto BlockchainHDSubaccount(
     Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::HD>;
 auto BlockchainPCSubaccount(
     const api::Core& api,
+    const api::client::Contacts& contacts,
     const blockchain::crypto::Account& parent,
     const opentxs::PaymentCode& local,
     const opentxs::PaymentCode& remote,
@@ -89,12 +92,14 @@ auto BlockchainPCSubaccount(
     -> std::unique_ptr<blockchain::crypto::PaymentCode>;
 auto BlockchainPCSubaccount(
     const api::Core& api,
+    const api::client::Contacts& contacts,
     const blockchain::crypto::Account& parent,
     const proto::Bip47Channel& serialized,
     Identifier& id) noexcept
     -> std::unique_ptr<blockchain::crypto::PaymentCode>;
 auto BlockchainWalletKeys(
     const api::Core& api,
+    const api::client::Contacts& contacts,
     const api::client::Blockchain& parent,
     const blockchain::crypto::AccountIndex& index,
     const blockchain::Type chain) noexcept

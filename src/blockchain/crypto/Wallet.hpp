@@ -32,6 +32,11 @@ namespace opentxs
 {
 namespace api
 {
+namespace client
+{
+class Contacts;
+}  // namespace client
+
 class Core;
 }  // namespace api
 
@@ -100,6 +105,7 @@ public:
 
     Wallet(
         const api::Core& api,
+        const api::client::Contacts& contacts,
         const api::client::Blockchain& parent,
         const AccountIndex& index,
         const opentxs::blockchain::Type chain) noexcept;
@@ -112,6 +118,7 @@ private:
     const api::client::Blockchain& parent_;
     const AccountIndex& account_index_;
     const api::Core& api_;
+    const api::client::Contacts& contacts_;
     const opentxs::blockchain::Type chain_;
     mutable std::mutex lock_;
     std::vector<std::unique_ptr<crypto::Account>> trees_;

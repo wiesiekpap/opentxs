@@ -26,7 +26,6 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Storage.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
@@ -51,6 +50,7 @@ using ReturnType = blockchain::crypto::implementation::PaymentCode;
 
 auto BlockchainPCSubaccount(
     const api::Core& api,
+    const api::client::Contacts& contacts,
     const blockchain::crypto::Account& parent,
     const opentxs::PaymentCode& local,
     const opentxs::PaymentCode& remote,
@@ -62,7 +62,7 @@ auto BlockchainPCSubaccount(
     try {
 
         return std::make_unique<ReturnType>(
-            api, parent, local, remote, path, txid, reason, id);
+            api, contacts, parent, local, remote, path, txid, reason, id);
     } catch (const std::exception& e) {
         LogVerbose("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
@@ -72,20 +72,20 @@ auto BlockchainPCSubaccount(
 
 auto BlockchainPCSubaccount(
     const api::Core& api,
+    const api::client::Contacts& contacts,
     const blockchain::crypto::Account& parent,
     const proto::Bip47Channel& serialized,
     Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::PaymentCode>
 {
-    auto contact =
-        parent.Parent().Parent().Internal().Contacts().PaymentCodeToContact(
-            api.Factory().PaymentCode(serialized.remote()), parent.Chain());
+    auto contact = contacts.PaymentCodeToContact(
+        api.Factory().PaymentCode(serialized.remote()), parent.Chain());
 
     OT_ASSERT(false == contact->empty());
 
     try {
 
         return std::make_unique<ReturnType>(
-            api, parent, serialized, id, std::move(contact));
+            api, contacts, parent, serialized, id, std::move(contact));
     } catch (const std::exception& e) {
         LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
@@ -120,6 +120,7 @@ constexpr auto externalType{Subchain::Incoming};
 
 PaymentCode::PaymentCode(
     const api::Core& api,
+    const api::client::Contacts& contacts,
     const Account& parent,
     const opentxs::PaymentCode& local,
     const opentxs::PaymentCode& remote,
@@ -146,10 +147,7 @@ PaymentCode::PaymentCode(
     }())
     , local_(local, compare_)
     , remote_(remote, compare_)
-    , contact_id_(
-          parent_.Parent().Parent().Internal().Contacts().PaymentCodeToContact(
-              remote_,
-              chain_))
+    , contact_id_(contacts.PaymentCodeToContact(remote_, chain_))
 {
     const auto test_path = [&] {
         auto seed{path_.root()};
@@ -170,6 +168,7 @@ PaymentCode::PaymentCode(
 
 PaymentCode::PaymentCode(
     const api::Core& api,
+    const api::client::Contacts& contacts,
     const Account& parent,
     const SerializedType& serialized,
     Identifier& id,
@@ -243,10 +242,7 @@ PaymentCode::PaymentCode(
     }())
     , local_(api_.Factory().PaymentCode(serialized.local()), compare_)
     , remote_(api_.Factory().PaymentCode(serialized.remote()), compare_)
-    , contact_id_(
-          parent_.Parent().Parent().Internal().Contacts().PaymentCodeToContact(
-              remote_,
-              chain_))
+    , contact_id_(contacts.PaymentCodeToContact(remote_, chain_))
 {
     if (contact_id_->empty()) { throw std::runtime_error("Missing contact"); }
 

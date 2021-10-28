@@ -50,14 +50,18 @@ struct LMDB::Imp {
                     MDB_val{index.size(), const_cast<char*>(index.data())};
                 auto value =
                     MDB_val{data.size(), const_cast<char*>(data.data())};
-                success = 0 == ::mdb_put(tx, dbi, &key, &value, 0);
 
-                if (false == success) { break; }
+                if (const auto rc = ::mdb_put(tx, dbi, &key, &value, 0);
+                    0 != rc) {
+                    throw std::runtime_error{::mdb_strerror(rc)};
+                } else {
+                    success = true;
+                }
             }
 
             return success;
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogTrace(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
@@ -68,11 +72,16 @@ struct LMDB::Imp {
             auto tx = TransactionRW(parent);
             auto& success = tx.success_;
             const auto dbi = db_.at(table);
-            success = 0 == ::mdb_drop(tx, dbi, 0);
+
+            if (const auto rc = ::mdb_drop(tx, dbi, 0); 0 != rc) {
+                throw std::runtime_error{::mdb_strerror(rc)};
+            } else {
+                success = true;
+            }
 
             return success;
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogTrace(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
@@ -85,11 +94,16 @@ struct LMDB::Imp {
             auto& success = tx.success_;
             const auto dbi = db_.at(table);
             auto key = MDB_val{index.size(), const_cast<char*>(index.data())};
-            success = 0 == ::mdb_del(tx, dbi, &key, nullptr);
+
+            if (const auto rc = ::mdb_del(tx, dbi, &key, nullptr); 0 != rc) {
+                throw std::runtime_error{::mdb_strerror(rc)};
+            } else {
+                success = true;
+            }
 
             return success;
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogTrace(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
@@ -126,11 +140,16 @@ struct LMDB::Imp {
             const auto dbi = db_.at(table);
             auto key = MDB_val{index.size(), const_cast<char*>(index.data())};
             auto value = MDB_val{data.size(), const_cast<char*>(data.data())};
-            success = 0 == ::mdb_del(tx, dbi, &key, &value);
+
+            if (const auto rc = ::mdb_del(tx, dbi, &key, &value); 0 != rc) {
+                throw std::runtime_error{::mdb_strerror(rc)};
+            } else {
+                success = true;
+            }
 
             return success;
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogTrace(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }

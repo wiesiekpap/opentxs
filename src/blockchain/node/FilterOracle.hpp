@@ -177,7 +177,8 @@ public:
         const internal::HeaderOracle& header,
         const internal::BlockOracle& block,
         const internal::FilterDatabase& database,
-        const blockchain::Type type,
+        const blockchain::Type chain,
+        const blockchain::filter::Type filter,
         const std::string& shutdown) noexcept;
 
     ~FilterOracle() final;

@@ -62,7 +62,7 @@ struct Progress::Imp {
             }
         }
 
-        report(lock);
+        report(lock, true);
     }
     auto UpdateProcess(const ProgressBatch& data) noexcept -> void
     {
@@ -72,7 +72,7 @@ struct Progress::Imp {
             dirty_blocks_.erase(position);
         }
 
-        report(lock);
+        report(lock, false);
     }
     auto UpdateScan(
         const std::optional<block::Position>& highestClean,
@@ -88,7 +88,7 @@ struct Progress::Imp {
             set_highest_clean(lock, highestClean.value());
         }
 
-        report(lock);
+        report(lock, false);
     }
 
     Imp(const SubchainStateData& parent) noexcept
@@ -119,7 +119,7 @@ private:
         return *dirty_blocks_.begin();
     }
 
-    auto report(const Lock& lock) noexcept -> void
+    auto report(const Lock& lock, bool reorg) noexcept -> void
     {
         const auto& best = highest_clean_.value_or(parent_.null_position_);
         const auto report = [&] {
@@ -137,7 +137,7 @@ private:
             LogVerbose(OT_METHOD)(__func__)(": ")(parent_.name_)(" progress: ")(
                 best.first)
                 .Flush();
-            parent_.update_scan(best);
+            parent_.update_scan(best, reorg);
             last_reported_ = std::move(best);
         }
     }

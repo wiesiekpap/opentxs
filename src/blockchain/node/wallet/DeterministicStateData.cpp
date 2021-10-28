@@ -43,7 +43,6 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
-#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
 #include "util/ScopeGuard.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::wallet::DeterministicStateData::"
@@ -284,10 +283,10 @@ auto DeterministicStateData::type() const noexcept -> std::stringstream
     return output;
 }
 
-auto DeterministicStateData::update_scan(
-    const block::Position& pos) const noexcept -> void
+auto DeterministicStateData::update_scan(const block::Position& pos, bool reorg)
+    const noexcept -> void
 {
     subaccount_.Internal().SetScanProgress(pos, subchain_);
-    SubchainStateData::update_scan(pos);
+    SubchainStateData::update_scan(pos, reorg);
 }
 }  // namespace opentxs::blockchain::node::wallet

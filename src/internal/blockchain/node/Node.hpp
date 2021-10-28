@@ -55,6 +55,7 @@
 #include "opentxs/network/zeromq/socket/Router.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Blank.hpp"
+#include "util/LMDB.hpp"
 #include "util/Work.hpp"
 
 namespace opentxs
@@ -97,6 +98,7 @@ struct Transaction;
 
 class Block;
 class Header;
+class Output;
 class Transaction;
 }  // namespace bitcoin
 
@@ -112,6 +114,7 @@ struct Database;
 
 namespace node
 {
+class HeaderOracle;
 class UpdateTransaction;
 }  // namespace node
 
@@ -506,6 +509,10 @@ struct Network : virtual public node::Manager {
     }
     virtual auto FilterOracleInternal() const noexcept
         -> const internal::FilterOracle& = 0;
+    virtual auto GetTransactions() const noexcept
+        -> std::vector<block::pTxid> = 0;
+    virtual auto GetTransactions(const identifier::Nym& account) const noexcept
+        -> std::vector<block::pTxid> = 0;
     auto HeaderOracle() const noexcept -> const node::HeaderOracle& final
     {
         return HeaderOracleInternal();
@@ -575,7 +582,6 @@ struct Wallet : virtual public node::Wallet {
 };
 
 struct WalletDatabase {
-    using FilterType = filter::Type;
     using NodeID = Identifier;
     using pNodeID = OTIdentifier;
     using SubchainIndex = Identifier;
@@ -626,6 +632,9 @@ struct WalletDatabase {
         -> bool = 0;
     virtual auto CompletedProposals() const noexcept
         -> std::set<OTIdentifier> = 0;
+    virtual auto FinalizeReorg(
+        storage::lmdb::LMDB::Transaction& tx,
+        const block::Position& pos) const noexcept -> bool = 0;
     virtual auto ForgetProposals(
         const std::set<OTIdentifier>& ids) const noexcept -> bool = 0;
     virtual auto GetBalance() const noexcept -> Balance = 0;
@@ -635,10 +644,6 @@ struct WalletDatabase {
         const noexcept -> Balance = 0;
     virtual auto GetBalance(const crypto::Key& key) const noexcept
         -> Balance = 0;
-    virtual auto GetIndex(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> pSubchainIndex = 0;
     virtual auto GetOutputs(node::TxoState type) const noexcept
         -> std::vector<UTXO> = 0;
     virtual auto GetOutputs(const identifier::Nym& owner, node::TxoState type)
@@ -653,6 +658,13 @@ struct WalletDatabase {
         -> std::set<node::TxoTag> = 0;
     virtual auto GetPatterns(const SubchainIndex& index) const noexcept
         -> Patterns = 0;
+    virtual auto GetSubchainID(
+        const NodeID& balanceNode,
+        const Subchain subchain) const noexcept -> pSubchainIndex = 0;
+    virtual auto GetTransactions() const noexcept
+        -> std::vector<block::pTxid> = 0;
+    virtual auto GetTransactions(const identifier::Nym& account) const noexcept
+        -> std::vector<block::pTxid> = 0;
     virtual auto GetUnspentOutputs() const noexcept -> std::vector<UTXO> = 0;
     virtual auto GetUnspentOutputs(
         const NodeID& balanceNode,
@@ -668,6 +680,8 @@ struct WalletDatabase {
     virtual auto LookupContact(const Data& pubkeyHash) const noexcept
         -> std::set<OTIdentifier> = 0;
     virtual auto ReorgTo(
+        storage::lmdb::LMDB::Transaction& tx,
+        const node::HeaderOracle& headers,
         const NodeID& balanceNode,
         const Subchain subchain,
         const SubchainIndex& index,
@@ -676,10 +690,8 @@ struct WalletDatabase {
         const identifier::Nym& spender,
         const Identifier& proposal,
         const Spend policy) const noexcept -> std::optional<UTXO> = 0;
-    virtual auto RollbackTo(const block::Position& pos) const noexcept
-        -> bool = 0;
-    virtual auto SetDefaultFilterType(const FilterType type) const noexcept
-        -> bool = 0;
+    virtual auto StartReorg() const noexcept
+        -> storage::lmdb::LMDB::Transaction = 0;
     virtual auto SubchainAddElements(
         const SubchainIndex& index,
         const ElementMap& elements) const noexcept -> bool = 0;

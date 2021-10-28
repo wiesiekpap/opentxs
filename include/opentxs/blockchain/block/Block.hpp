@@ -41,7 +41,6 @@ namespace block
 class OPENTXS_EXPORT Block
 {
 public:
-    using FilterType = filter::Type;
     using Subchain = blockchain::crypto::Subchain;
     using SubchainID = std::pair<Subchain, OTIdentifier>;
     using ElementID = std::pair<Bip32Index, SubchainID>;
@@ -59,10 +58,10 @@ public:
     struct ParsedPatterns;
 
     virtual auto CalculateSize() const noexcept -> std::size_t = 0;
-    virtual auto ExtractElements(const FilterType style) const noexcept
+    virtual auto ExtractElements(const filter::Type style) const noexcept
         -> std::vector<Space> = 0;
     virtual auto FindMatches(
-        const FilterType type,
+        const filter::Type type,
         const Patterns& txos,
         const Patterns& elements) const noexcept -> Matches = 0;
     virtual auto Header() const noexcept -> const block::Header& = 0;

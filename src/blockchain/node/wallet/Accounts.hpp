@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -13,6 +14,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "util/LMDB.hpp"
 
 namespace opentxs
 {
@@ -84,7 +86,10 @@ public:
     auto ProcessNewFilter(const block::Position& tip) noexcept -> void final;
     auto ProcessNym(const identifier::Nym& nym) noexcept -> bool;
     auto ProcessNym(const network::zeromq::Frame& message) noexcept -> bool;
-    auto ProcessReorg(const block::Position& parent) noexcept -> bool final;
+    auto ProcessReorg(
+        storage::lmdb::LMDB::Transaction& tx,
+        std::atomic_int& errors,
+        const block::Position& parent) noexcept -> bool final;
     auto ProcessStateMachine(bool enabled) noexcept -> bool final;
     auto ProcessTaskComplete(
         const Identifier& id,

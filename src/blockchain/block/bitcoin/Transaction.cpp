@@ -534,7 +534,7 @@ auto Transaction::ExtractElements(const filter::Type style) const noexcept
 }
 
 auto Transaction::FindMatches(
-    const FilterType style,
+    const filter::Type style,
     const Patterns& txos,
     const ParsedPatterns& elements) const noexcept -> Matches
 {

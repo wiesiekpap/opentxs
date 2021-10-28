@@ -20,8 +20,12 @@
 
 namespace opentxs::api::client::blockchain
 {
-Wallets::Wallets(const api::Core& api, api::client::Blockchain& parent) noexcept
+Wallets::Wallets(
+    const api::Core& api,
+    const api::client::Contacts& contacts,
+    api::client::Blockchain& parent) noexcept
     : api_(api)
+    , contacts_(contacts)
     , parent_(parent)
     , index_(api_)
     , lock_()
@@ -69,7 +73,8 @@ auto Wallets::get(const Lock& lock, const opentxs::blockchain::Type chain)
     if (lists_.end() != it) { return *it->second; }
 
     auto [it2, added] = lists_.emplace(
-        chain, factory::BlockchainWalletKeys(api_, parent_, index_, chain));
+        chain,
+        factory::BlockchainWalletKeys(api_, contacts_, parent_, index_, chain));
 
     OT_ASSERT(added);
     OT_ASSERT(it2->second);

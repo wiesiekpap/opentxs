@@ -52,6 +52,7 @@ struct Account::Factory<crypto::HD, proto::HDAccount> {
 template <>
 struct Account::Factory<
     crypto::PaymentCode,
+    api::client::Contacts,
     opentxs::PaymentCode,
     opentxs::PaymentCode,
     proto::HDPath,
@@ -60,6 +61,7 @@ struct Account::Factory<
         const api::Core& api,
         const Account& parent,
         Identifier& id,
+        const api::client::Contacts& contacts,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
         const proto::HDPath& path,
@@ -69,12 +71,13 @@ struct Account::Factory<
         static const auto blank = api.Factory().Data();
 
         return factory::BlockchainPCSubaccount(
-            api, parent, local, remote, path, blank, reason, id);
+            api, contacts, parent, local, remote, path, blank, reason, id);
     }
 };
 template <>
 struct Account::Factory<
     crypto::PaymentCode,
+    api::client::Contacts,
     opentxs::PaymentCode,
     opentxs::PaymentCode,
     proto::HDPath,
@@ -84,6 +87,7 @@ struct Account::Factory<
         const api::Core& api,
         const Account& parent,
         Identifier& id,
+        const api::client::Contacts& contacts,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
         const proto::HDPath& path,
@@ -92,19 +96,21 @@ struct Account::Factory<
         -> std::unique_ptr<crypto::PaymentCode>
     {
         return factory::BlockchainPCSubaccount(
-            api, parent, local, remote, path, txid, reason, id);
+            api, contacts, parent, local, remote, path, txid, reason, id);
     }
 };
 template <>
-struct Account::Factory<crypto::PaymentCode, proto::Bip47Channel> {
+struct Account::
+    Factory<crypto::PaymentCode, api::client::Contacts, proto::Bip47Channel> {
     static auto get(
         const api::Core& api,
         const Account& parent,
         Identifier& id,
+        const api::client::Contacts& contacts,
         const proto::Bip47Channel& data) noexcept
         -> std::unique_ptr<crypto::PaymentCode>
     {
-        return factory::BlockchainPCSubaccount(api, parent, data, id);
+        return factory::BlockchainPCSubaccount(api, contacts, parent, data, id);
     }
 };
 

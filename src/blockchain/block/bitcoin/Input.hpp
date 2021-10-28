@@ -89,7 +89,7 @@ public:
         -> std::vector<Space> final;
     auto FindMatches(
         const ReadView txid,
-        const FilterType type,
+        const filter::Type type,
         const Patterns& txos,
         const ParsedPatterns& elements) const noexcept -> Matches final;
     auto GetPatterns() const noexcept -> std::vector<PatternID> final;

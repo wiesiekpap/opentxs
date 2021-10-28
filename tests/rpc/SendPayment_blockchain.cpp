@@ -6,41 +6,39 @@
 #include "rpc/Helpers.hpp"  // IWYU pragma: associated
 
 #include <gtest/gtest.h>
-#include <array>
+#include <algorithm>
+#include <deque>
+#include <optional>
 
 #include "blockchain/regtest/Helpers.hpp"
+#include "opentxs/Pimpl.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Storage.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/Manager.hpp"
-#include "opentxs/api/client/UI.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/server/Manager.hpp"
-#include "opentxs/blockchain/block/bitcoin/Output.hpp"
+#include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
 #include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
-#include "opentxs/core/Account.hpp"
+#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/Log.hpp"
+#include "opentxs/identity/Nym.hpp"
 #include "opentxs/rpc/CommandType.hpp"
-#include "opentxs/rpc/PaymentType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
+#include "opentxs/rpc/request/Base.hpp"
 #include "opentxs/rpc/request/SendPayment.hpp"
+#include "opentxs/rpc/response/Base.hpp"
 #include "opentxs/rpc/response/SendPayment.hpp"
-#include "opentxs/ui/AccountActivity.hpp"
-#include "opentxs/ui/AccountList.hpp"
-#include "opentxs/ui/AccountListItem.hpp"
-#include "opentxs/ui/BalanceItem.hpp"
-#include "paymentcode/VectorsV3.hpp"
-#include "ui/Helpers.hpp"
 
 namespace ottest
 {

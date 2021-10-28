@@ -8,10 +8,16 @@ target_sources(
   PRIVATE
     "Output.cpp"
     "Output.hpp"
+    "Pattern.cpp"
+    "Pattern.hpp"
+    "Position.cpp"
+    "Position.hpp"
     "Proposal.cpp"
     "Proposal.hpp"
     "Subchain.cpp"
     "Subchain.hpp"
+    "SubchainID.cpp"
+    "SubchainID.hpp"
 )
 target_link_libraries(opentxs-blockchain-database PRIVATE Boost::headers)
 target_include_directories(

@@ -7,19 +7,17 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "blockchain/database/Wallet.hpp"  // IWYU pragma: associated
 
-#include <mutex>
 #include <stdexcept>
 #include <utility>
 
 #include "blockchain/database/common/Database.hpp"
-#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
+#include "util/LMDB.hpp"
 
 #define OT_METHOD "opentxs::blockchain::database::Wallet::"
 
@@ -29,11 +27,15 @@ Wallet::Wallet(
     const api::Core& api,
     const api::client::internal::Blockchain& blockchain,
     const common::Database& common,
-    const blockchain::Type chain) noexcept
-    : common_(common)
-    , subchains_(api)
-    , proposals_()
-    , outputs_(api, blockchain, chain, subchains_, proposals_)
+    const storage::lmdb::LMDB& lmdb,
+    const blockchain::Type chain,
+    const blockchain::filter::Type filter) noexcept
+    : api_(api)
+    , common_(common)
+    , lmdb_(lmdb)
+    , subchains_(api_, lmdb_, filter)
+    , proposals_(lmdb_)
+    , outputs_(api_, blockchain, lmdb_, chain, subchains_, proposals_)
 {
 }
 
@@ -45,7 +47,7 @@ auto Wallet::AddConfirmedTransaction(
     const std::vector<std::uint32_t> outputIndices,
     const block::bitcoin::Transaction& original) const noexcept -> bool
 {
-    const auto id = subchains_.GetSubchainID(balanceNode, subchain);
+    const auto id = subchains_.GetSubchainID(balanceNode, subchain, nullptr);
 
     return outputs_.AddConfirmedTransaction(
         balanceNode, id, block, blockIndex, outputIndices, original);
@@ -57,7 +59,7 @@ auto Wallet::AddMempoolTransaction(
     const std::vector<std::uint32_t> outputIndices,
     const block::bitcoin::Transaction& original) const noexcept -> bool
 {
-    const auto id = subchains_.GetSubchainID(balanceNode, subchain);
+    const auto id = subchains_.GetSubchainID(balanceNode, subchain, nullptr);
 
     return outputs_.AddMempoolTransaction(
         balanceNode, id, outputIndices, original);
@@ -93,6 +95,13 @@ auto Wallet::CompletedProposals() const noexcept -> std::set<OTIdentifier>
     return proposals_.CompletedProposals();
 }
 
+auto Wallet::FinalizeReorg(
+    storage::lmdb::LMDB::Transaction& tx,
+    const block::Position& pos) const noexcept -> bool
+{
+    return outputs_.FinalizeReorg(tx, pos);
+}
+
 auto Wallet::ForgetProposals(const std::set<OTIdentifier>& ids) const noexcept
     -> bool
 {
@@ -118,14 +127,6 @@ auto Wallet::GetBalance(const identifier::Nym& owner, const NodeID& node)
 auto Wallet::GetBalance(const crypto::Key& key) const noexcept -> Balance
 {
     return outputs_.GetBalance(key);
-}
-
-auto Wallet::GetIndex(
-    const NodeID& balanceNode,
-    const Subchain subchain,
-    const FilterType type) const noexcept -> pSubchainIndex
-{
-    return subchains_.GetIndex(balanceNode, subchain, type);
 }
 
 auto Wallet::GetOutputs(node::TxoState type) const noexcept -> std::vector<UTXO>
@@ -164,6 +165,23 @@ auto Wallet::GetPatterns(const SubchainIndex& index) const noexcept -> Patterns
     return subchains_.GetPatterns(index);
 }
 
+auto Wallet::GetSubchainID(const NodeID& balanceNode, const Subchain subchain)
+    const noexcept -> pSubchainIndex
+{
+    return subchains_.GetSubchainID(balanceNode, subchain, nullptr);
+}
+
+auto Wallet::GetTransactions() const noexcept -> std::vector<block::pTxid>
+{
+    return outputs_.GetTransactions();
+}
+
+auto Wallet::GetTransactions(const identifier::Nym& account) const noexcept
+    -> std::vector<block::pTxid>
+{
+    return outputs_.GetTransactions(account);
+}
+
 auto Wallet::GetUnspentOutputs() const noexcept -> std::vector<UTXO>
 {
     return outputs_.GetUnspentOutputs();
@@ -173,7 +191,7 @@ auto Wallet::GetUnspentOutputs(
     const NodeID& balanceNode,
     const Subchain subchain) const noexcept -> std::vector<UTXO>
 {
-    const auto id = subchains_.GetSubchainID(balanceNode, subchain);
+    const auto id = subchains_.GetSubchainID(balanceNode, subchain, nullptr);
 
     return outputs_.GetUnspentOutputs(id);
 }
@@ -209,6 +227,8 @@ auto Wallet::LookupContact(const Data& pubkeyHash) const noexcept
 }
 
 auto Wallet::ReorgTo(
+    storage::lmdb::LMDB::Transaction& tx,
+    const node::HeaderOracle& headers,
     const NodeID& balanceNode,
     const Subchain subchain,
     const SubchainIndex& index,
@@ -218,14 +238,10 @@ auto Wallet::ReorgTo(
 
     const auto& oldest = *reorg.crbegin();
     const auto lastGoodHeight = block::Height{oldest.first - 1};
-    const auto subchainID = subchains_.GetSubchainID(balanceNode, subchain);
-    auto subchainLock = Lock{subchains_.GetMutex(), std::defer_lock};
-    auto outputLock = eLock{outputs_.GetMutex(), std::defer_lock};
-    std::lock(outputLock, subchainLock);
+    const auto subchainID = subchains_.GetSubchainID(balanceNode, subchain, tx);
 
     try {
-        if (subchains_.Reorg(subchainLock, index, lastGoodHeight)) {
-
+        if (subchains_.Reorg(tx, headers, index, lastGoodHeight)) {
             return true;
         }
     } catch (const std::exception& e) {
@@ -235,7 +251,8 @@ auto Wallet::ReorgTo(
     }
 
     for (const auto& position : reorg) {
-        if (false == outputs_.Rollback(outputLock, subchainID, position)) {
+        if (false == outputs_.StartReorg(tx, subchainID, position)) {
+
             return false;
         }
     }
@@ -249,22 +266,13 @@ auto Wallet::ReserveUTXO(
     const Spend policy) const noexcept -> std::optional<UTXO>
 {
     if (false == proposals_.Exists(id)) {
-        LogOutput(OT_METHOD)(__func__)(": Proposal does not exist").Flush();
+        LogOutput(OT_METHOD)(__func__)(": Proposal ")(id)(" does not exist")
+            .Flush();
 
         return std::nullopt;
     }
 
     return outputs_.ReserveUTXO(spender, id, policy);
-}
-
-auto Wallet::RollbackTo(const block::Position& pos) const noexcept -> bool
-{
-    return outputs_.RollbackTo(pos);
-}
-
-auto Wallet::SetDefaultFilterType(const FilterType type) const noexcept -> bool
-{
-    return subchains_.SetDefaultFilterType(type);
 }
 
 auto Wallet::SubchainAddElements(

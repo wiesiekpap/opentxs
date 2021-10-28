@@ -78,7 +78,8 @@ auto BlockchainDatabase(
     const api::client::internal::Blockchain& crypto,
     const blockchain::node::internal::Network& node,
     const blockchain::database::common::Database& db,
-    const blockchain::Type type) noexcept
+    const blockchain::Type chain,
+    const blockchain::filter::Type filter) noexcept
     -> std::unique_ptr<blockchain::internal::Database>;
 auto BlockchainFilterOracle(
     const api::Core& api,
@@ -88,7 +89,8 @@ auto BlockchainFilterOracle(
     const blockchain::node::internal::HeaderOracle& header,
     const blockchain::node::internal::BlockOracle& block,
     const blockchain::node::internal::FilterDatabase& database,
-    const blockchain::Type type,
+    const blockchain::Type chain,
+    const blockchain::filter::Type filter,
     const std::string& shutdown) noexcept
     -> std::unique_ptr<blockchain::node::internal::FilterOracle>;
 auto BlockchainNetworkBitcoin(

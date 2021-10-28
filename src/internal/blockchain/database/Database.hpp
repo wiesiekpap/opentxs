@@ -47,6 +47,24 @@ enum Table {
     BlockHeaderDisconnected = 5,
     BlockFilterBest = 6,
     BlockFilterHeaderBest = 7,
+    Proposals = 8,
+    SubchainLastIndexed = 9,
+    SubchainLastScanned = 10,
+    SubchainID = 11,
+    WalletPatterns = 12,
+    SubchainPatterns = 13,
+    SubchainMatches = 14,
+    WalletOutputs = 15,
+    AccountOutputs = 16,
+    NymOutputs = 17,
+    PositionOutputs = 18,
+    ProposalCreatedOutputs = 19,
+    ProposalSpentOutputs = 20,
+    OutputProposals = 21,
+    StateOutputs = 22,
+    SubchainOutputs = 23,
+    KeyOutputs = 24,
+    GenerationOutputs = 25,
 };
 
 enum class Key : std::size_t {
@@ -56,6 +74,7 @@ enum class Key : std::size_t {
     CheckpointHash = 3,
     BestFullBlock = 4,
     SyncPosition = 5,
+    WalletPosition = 6,
 };
 
 enum class BlockStorage : std::uint8_t {

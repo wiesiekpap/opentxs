@@ -27,6 +27,7 @@
 #include "opentxs/blockchain/node/TxoTag.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "util/LMDB.hpp"
 
 namespace opentxs
 {
@@ -73,8 +74,20 @@ namespace proto
 class BlockchainTransactionProposal;
 }  // namespace proto
 
+namespace storage
+{
+namespace lmdb
+{
+class LMDB;
+}  // namespace lmdb
+}  // namespace storage
+
 class Identifier;
 }  // namespace opentxs
+
+extern "C" {
+typedef struct MDB_txn MDB_txn;
+}
 
 namespace opentxs::blockchain::database::wallet
 {
@@ -86,7 +99,6 @@ public:
     using Parent = node::internal::WalletDatabase;
     using NodeID = Parent::NodeID;
     using Subchain = Parent::Subchain;
-    using FilterType = Parent::FilterType;
     using UTXO = Parent::UTXO;
     using Spend = Parent::Spend;
 
@@ -105,7 +117,9 @@ public:
         node::TxoState type) const noexcept -> std::vector<UTXO>;
     auto GetOutputs(const crypto::Key& key, node::TxoState type) const noexcept
         -> std::vector<UTXO>;
-    auto GetMutex() const noexcept -> std::shared_mutex&;
+    auto GetTransactions() const noexcept -> std::vector<block::pTxid>;
+    auto GetTransactions(const identifier::Nym& account) const noexcept
+        -> std::vector<block::pTxid>;
     auto GetUnspentOutputs() const noexcept -> std::vector<UTXO>;
     auto GetUnspentOutputs(const NodeID& balanceNode) const noexcept
         -> std::vector<UTXO>;
@@ -127,6 +141,8 @@ public:
         const proto::BlockchainTransactionProposal& proposal,
         const block::bitcoin::Transaction& transaction) noexcept -> bool;
     auto AdvanceTo(const block::Position& pos) noexcept -> bool;
+    auto FinalizeReorg(MDB_txn* tx, const block::Position& pos) noexcept
+        -> bool;
     auto GetOutputTags(const block::Outpoint& output) const noexcept
         -> std::set<node::TxoTag>;
     auto GetWalletHeight() const noexcept -> block::Height;
@@ -134,15 +150,15 @@ public:
         const identifier::Nym& spender,
         const Identifier& proposal,
         const Spend policy) noexcept -> std::optional<UTXO>;
-    auto Rollback(
-        const eLock& lock,
+    auto StartReorg(
+        MDB_txn* tx,
         const SubchainID& subchain,
         const block::Position& position) noexcept -> bool;
-    auto RollbackTo(const block::Position& pos) noexcept -> bool;
 
     Output(
         const api::Core& api,
         const api::client::internal::Blockchain& blockchain,
+        const storage::lmdb::LMDB& lmdb,
         const blockchain::Type chain,
         const wallet::SubchainData& subchains,
         wallet::Proposal& proposals) noexcept;
@@ -153,5 +169,10 @@ private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
+
+    Output() = delete;
+    Output(const Output&) = delete;
+    auto operator=(const Output&) -> Output& = delete;
+    auto operator=(Output&&) -> Output& = delete;
 };
 }  // namespace opentxs::blockchain::database::wallet

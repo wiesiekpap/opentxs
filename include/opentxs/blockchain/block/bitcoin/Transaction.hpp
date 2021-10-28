@@ -68,7 +68,6 @@ namespace bitcoin
 class OPENTXS_EXPORT Transaction
 {
 public:
-    using FilterType = block::Block::FilterType;
     using Patterns = block::Block::Patterns;
     using ParsedPatterns = block::Block::ParsedPatterns;
     using Match = block::Block::Match;
@@ -92,7 +91,7 @@ public:
     virtual auto ExtractElements(const filter::Type style) const noexcept
         -> std::vector<Space> = 0;
     virtual auto FindMatches(
-        const FilterType type,
+        const filter::Type type,
         const Patterns& txos,
         const ParsedPatterns& elements) const noexcept -> Matches = 0;
     virtual auto GetPatterns() const noexcept -> std::vector<PatternID> = 0;

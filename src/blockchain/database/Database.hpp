@@ -93,6 +93,7 @@ class Database;
 
 namespace node
 {
+class HeaderOracle;
 class UpdateTransaction;
 }  // namespace node
 
@@ -239,6 +240,12 @@ public:
     {
         return filters_.CurrentTip(type);
     }
+    auto FinalizeReorg(
+        storage::lmdb::LMDB::Transaction& tx,
+        const block::Position& pos) const noexcept -> bool final
+    {
+        return wallet_.FinalizeReorg(tx, pos);
+    }
     auto ForgetProposals(const std::set<OTIdentifier>& ids) const noexcept
         -> bool final
     {
@@ -273,13 +280,6 @@ public:
     {
         return wallet_.GetBalance(key);
     }
-    auto GetIndex(
-        const NodeID& balanceNode,
-        const Subchain subchain,
-        const FilterType type) const noexcept -> pSubchainIndex final
-    {
-        return wallet_.GetIndex(balanceNode, subchain, type);
-    }
     auto GetOutputs(node::TxoState type) const noexcept
         -> std::vector<UTXO> final
     {
@@ -311,6 +311,20 @@ public:
         -> Patterns final
     {
         return wallet_.GetPatterns(index);
+    }
+    auto GetSubchainID(const NodeID& balanceNode, const Subchain subchain)
+        const noexcept -> pSubchainIndex final
+    {
+        return wallet_.GetSubchainID(balanceNode, subchain);
+    }
+    auto GetTransactions() const noexcept -> std::vector<block::pTxid> final
+    {
+        return wallet_.GetTransactions();
+    }
+    auto GetTransactions(const identifier::Nym& account) const noexcept
+        -> std::vector<block::pTxid> final
+    {
+        return wallet_.GetTransactions(account);
     }
     auto GetUnspentOutputs() const noexcept -> std::vector<UTXO> final
     {
@@ -411,12 +425,15 @@ public:
         return sync_.Reorg(height);
     }
     auto ReorgTo(
+        storage::lmdb::LMDB::Transaction& tx,
+        const node::HeaderOracle& headers,
         const NodeID& balanceNode,
         const Subchain subchain,
         const SubchainIndex& index,
         const std::vector<block::Position>& reorg) const noexcept -> bool final
     {
-        return wallet_.ReorgTo(balanceNode, subchain, index, reorg);
+        return wallet_.ReorgTo(
+            tx, headers, balanceNode, subchain, index, reorg);
     }
     auto ReserveUTXO(
         const identifier::Nym& spender,
@@ -425,19 +442,10 @@ public:
     {
         return wallet_.ReserveUTXO(spender, proposal, policy);
     }
-    auto RollbackTo(const block::Position& pos) const noexcept -> bool final
-    {
-        return wallet_.RollbackTo(pos);
-    }
     auto SetBlockTip(const block::Position& position) const noexcept
         -> bool final
     {
         return blocks_.SetTip(position);
-    }
-    auto SetDefaultFilterType(const FilterType type) const noexcept
-        -> bool final
-    {
-        return wallet_.SetDefaultFilterType(type);
     }
     auto SetFilterHeaderTip(
         const filter::Type type,
@@ -458,6 +466,10 @@ public:
     auto SiblingHashes() const noexcept -> node::Hashes final
     {
         return headers_.SiblingHashes();
+    }
+    auto StartReorg() const noexcept -> storage::lmdb::LMDB::Transaction final
+    {
+        return lmdb_.TransactionRW();
     }
     auto StoreFilters(const filter::Type type, std::vector<Filter> filters)
         const noexcept -> bool final
@@ -535,16 +547,18 @@ public:
         const api::client::internal::Blockchain& blockchain,
         const node::internal::Network& network,
         const database::common::Database& common,
-        const blockchain::Type type) noexcept;
+        const blockchain::Type chain,
+        const blockchain::filter::Type filter) noexcept;
 
     ~Database() final = default;
 
 private:
     friend opentxs::Factory;
 
-    static const std::size_t db_version_;
+    static const VersionNumber db_version_;
     static const storage::lmdb::TableNames table_names_;
 
+    const api::Core& api_;
     const blockchain::Type chain_;
     const database::common::Database& common_;
     storage::lmdb::LMDB lmdb_;

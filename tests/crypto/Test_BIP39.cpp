@@ -7,12 +7,18 @@
 #include <cctype>
 #include <cstddef>
 #include <map>
+#include <memory>
+#include <optional>
 #include <set>
 #include <string>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "crypto/Bip39.hpp"
 #include "opentxs/OT.hpp"
+#include "opentxs/Pimpl.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/HDSeed.hpp"
@@ -24,10 +30,16 @@
 #include "opentxs/blockchain/crypto/HD.hpp"
 #include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
+#include "opentxs/core/Data.hpp"
+#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
+#include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStrength.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
+#include "opentxs/crypto/Types.hpp"
+#include "opentxs/crypto/key/EllipticCurve.hpp"
+#include "opentxs/identity/Nym.hpp"
 
 namespace ot = opentxs;
 

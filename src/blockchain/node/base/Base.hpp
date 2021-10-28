@@ -178,6 +178,9 @@ public:
         return local_chain_height_.load();
     }
     auto GetPeerCount() const noexcept -> std::size_t final;
+    auto GetTransactions() const noexcept -> std::vector<block::pTxid> final;
+    auto GetTransactions(const identifier::Nym& account) const noexcept
+        -> std::vector<block::pTxid> final;
     auto GetType() const noexcept -> Type final { return chain_; }
     auto GetVerifiedPeerCount() const noexcept -> std::size_t final;
     auto HeaderOracleInternal() const noexcept
@@ -254,6 +257,7 @@ public:
     ~Base() override;
 
 private:
+    const filter::Type filter_type_;
     opentxs::internal::ShutdownSender shutdown_sender_;
     std::unique_ptr<blockchain::internal::Database> database_p_;
     const node::internal::Config& config_;

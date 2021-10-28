@@ -52,7 +52,6 @@ class OPENTXS_EXPORT Output
 {
 public:
     using ContactID = Transaction::ContactID;
-    using FilterType = Transaction::FilterType;
     using ParsedPatterns = Transaction::ParsedPatterns;
     using Match = Transaction::Match;
     using Matches = Transaction::Matches;
@@ -65,7 +64,7 @@ public:
         -> std::vector<Space> = 0;
     virtual auto FindMatches(
         const ReadView txid,
-        const FilterType type,
+        const filter::Type type,
         const ParsedPatterns& elements) const noexcept -> Matches = 0;
     virtual auto GetPatterns() const noexcept -> std::vector<PatternID> = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept

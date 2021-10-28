@@ -177,23 +177,32 @@ Base::Base(
     , crypto_(crypto)
     , network_(network)
     , chain_(type)
+    , filter_type_([&] {
+        if (config.generate_cfilters_ || config.use_sync_server_) {
+
+            return filter::Type::ES;
+        }
+
+        return blockchain::internal::DefaultFilter(chain_);
+    }())
     , shutdown_sender_(api.Network().ZeroMQ(), shutdown_endpoint())
     , database_p_(factory::BlockchainDatabase(
           api,
           crypto,
           *this,
           network.Database(),
-          type))
+          chain_,
+          filter_type_))
     , config_(config)
-    , mempool_(api, network.Mempool(), type)
-    , header_p_(factory::HeaderOracle(api, *database_p_, type))
+    , mempool_(api, network.Mempool(), chain_)
+    , header_p_(factory::HeaderOracle(api, *database_p_, chain_))
     , block_p_(factory::BlockOracle(
           api,
           network,
           *this,
           *header_p_,
           *database_p_,
-          type,
+          chain_,
           shutdown_sender_.endpoint_))
     , filter_p_(factory::BlockchainFilterOracle(
           api,
@@ -203,7 +212,8 @@ Base::Base(
           *header_p_,
           *block_p_,
           *database_p_,
-          type,
+          chain_,
+          filter_type_,
           shutdown_sender_.endpoint_))
     , peer_p_(factory::BlockchainPeerManager(
           api,
@@ -215,7 +225,7 @@ Base::Base(
           *filter_p_,
           *block_p_,
           *database_p_,
-          type,
+          chain_,
           database_p_->BlockPolicy(),
           seednode,
           shutdown_sender_.endpoint_))
@@ -230,7 +240,7 @@ Base::Base(
                 *this,
                 *database_p_,
                 mempool_,
-                type,
+                chain_,
                 shutdown_sender_.endpoint_);
         }
     }())
@@ -304,7 +314,6 @@ Base::Base(
     OT_ASSERT(block_p_);
     OT_ASSERT(wallet_p_);
 
-    database_.SetDefaultFilterType(filters_.DefaultType());
     header_.Init();
     init_executor({api_.Endpoints().InternalBlockchainFilterUpdated(chain_)});
     LogVerbose(config_.print()).Flush();
@@ -498,6 +507,17 @@ auto Base::GetPeerCount() const noexcept -> std::size_t
     if (false == running_.get()) { return 0; }
 
     return peer_.GetPeerCount();
+}
+
+auto Base::GetTransactions() const noexcept -> std::vector<block::pTxid>
+{
+    return database_.GetTransactions();
+}
+
+auto Base::GetTransactions(const identifier::Nym& account) const noexcept
+    -> std::vector<block::pTxid>
+{
+    return database_.GetTransactions(account);
 }
 
 auto Base::GetVerifiedPeerCount() const noexcept -> std::size_t

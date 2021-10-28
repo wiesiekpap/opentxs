@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <functional>
 #include <memory>
 
@@ -15,6 +16,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
+#include "util/LMDB.hpp"
 
 namespace opentxs
 {
@@ -91,7 +93,10 @@ public:
         std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept
         -> void final;
     auto ProcessNewFilter(const block::Position& tip) noexcept -> void final;
-    auto ProcessReorg(const block::Position& parent) noexcept -> bool final;
+    auto ProcessReorg(
+        storage::lmdb::LMDB::Transaction& tx,
+        std::atomic_int& errors,
+        const block::Position& parent) noexcept -> bool final;
     auto ProcessStateMachine(bool enabled) noexcept -> bool final;
     auto Shutdown() noexcept -> void final;
     auto ProcessTaskComplete(
