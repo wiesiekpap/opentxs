@@ -92,6 +92,8 @@ public:
         const ReadView value,
         MDB_txn* parent = nullptr) const noexcept -> bool;
     auto Exists(const Table table, const ReadView key) const noexcept -> bool;
+    auto Exists(const Table table, const ReadView key, const ReadView value)
+        const noexcept -> bool;
     auto Load(
         const Table table,
         const ReadView key,
